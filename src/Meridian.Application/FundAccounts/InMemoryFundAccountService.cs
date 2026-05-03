@@ -663,11 +663,14 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             }
 
             var breaks = stored.ReconciliationResults
-                .Where(r => !r.IsMatch && string.Equals(r.Category, "Position", StringComparison.OrdinalIgnoreCase))
+                .Where(r => !r.IsMatch
+                    && (string.Equals(r.Category, "Position", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(r.Category, "Positions", StringComparison.OrdinalIgnoreCase)))
                 .Select(r => new PositionReconciliationBreakDto(
                     r.ResultId,
                     accountId,
-                    DateOnly.FromDateTime(DateTime.UtcNow),
+                    stored.ReconciliationRuns.FirstOrDefault(run => run.ReconciliationRunId == r.ReconciliationRunId)?.AsOfDate
+                        ?? DateOnly.FromDateTime(DateTime.UtcNow),
                     r.CheckLabel,
                     r.ExpectedAmount ?? 0m,
                     r.ActualAmount ?? 0m,
@@ -694,8 +697,9 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
                 .Select(r => new CashReconciliationBreakDto(
                     r.ResultId,
                     accountId,
-                    DateOnly.FromDateTime(DateTime.UtcNow),
-                    "USD",
+                    stored.ReconciliationRuns.FirstOrDefault(run => run.ReconciliationRunId == r.ReconciliationRunId)?.AsOfDate
+                        ?? DateOnly.FromDateTime(DateTime.UtcNow),
+                    stored.Summary.BaseCurrency,
                     r.ExpectedAmount ?? 0m,
                     r.ActualAmount ?? 0m,
                     r.Variance ?? 0m,
