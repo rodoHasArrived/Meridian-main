@@ -59,6 +59,8 @@ $originalFixtureEnv = @{
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" -ForegroundColor Gray }
 function Write-Ok([string]$Message) { Write-Host "[OK]   $Message" -ForegroundColor Green }
 function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
+function Write-Step([string]$Message) { Write-Host "`n[STEP] === $Message ===" -ForegroundColor Cyan }
+function Write-Fail([string]$Message) { Write-Host "[FAIL] $Message" -ForegroundColor Red }
 
 function Get-WorkspaceDesktopProcesses {
     $expectedPath = [System.IO.Path]::GetFullPath($desktopExe)
@@ -160,6 +162,39 @@ function Stop-OwnedHost {
     }
 }
 
+function Test-SufficientDiskSpaceForBuild {
+    $warnThresholdGb = 2.0
+    $blockThresholdGb = 0.5
+
+    $pathsToCheck = [System.Collections.Generic.List[string]]::new()
+    if (-not [string]::IsNullOrWhiteSpace($env:TEMP)) { $pathsToCheck.Add($env:TEMP) }
+    $nugetCache = Join-Path ([System.Environment]::GetFolderPath('UserProfile')) '.nuget'
+    if (Test-Path $nugetCache) { $pathsToCheck.Add($nugetCache) }
+    $pathsToCheck.Add($repoRoot)
+
+    foreach ($checkPath in $pathsToCheck) {
+        $root = $null
+        try { $root = [System.IO.Path]::GetPathRoot($checkPath) } catch { continue }
+        if ([string]::IsNullOrWhiteSpace($root)) { continue }
+
+        $drive = $null
+        try { $drive = [System.IO.DriveInfo]::new($root) } catch { continue }
+        if ($null -eq $drive -or -not $drive.IsReady) { continue }
+
+        $freeGb = $drive.AvailableFreeSpace / 1GB
+        if ($freeGb -lt $blockThresholdGb) {
+            Write-Fail ("Disk space critically low on drive {0}: {1:0.00} GB free." -f $drive.Name, $freeGb)
+            Write-Warn 'Free up disk space before retrying. To clear the NuGet package cache, run:'
+            Write-Warn '  dotnet nuget locals all --clear'
+            throw ("Insufficient disk space on drive {0} ({1:0.00} GB free). See suggestions above." -f $drive.Name, $freeGb)
+        }
+        elseif ($freeGb -lt $warnThresholdGb) {
+            Write-Warn ("Low disk space on drive {0}: {1:0.00} GB free — NuGet restore may fail." -f $drive.Name, $freeGb)
+            Write-Warn 'Consider clearing the NuGet cache to free space: dotnet nuget locals all --clear'
+        }
+    }
+}
+
 try {
     if (-not $IsWindows -and $env:OS -ne 'Windows_NT') {
         throw 'The desktop launcher requires Windows because Meridian.Wpf is a Windows-only application.'
@@ -177,6 +212,14 @@ try {
         $env:MDC_FIXTURE_MODE = '1'
     }
 
+    Write-Step 'Meridian desktop launcher'
+    Write-Info "Profile       : $Profile"
+    Write-Info "Fixture mode  : $Fixture"
+    Write-Info "Build         : $(-not $NoBuild)"
+    Write-Info "Host URL      : $hostBaseUrl"
+    Write-Info "Desktop       : $desktopExeName ($desktopConfiguration / $desktopFramework)"
+    Write-Info "Artifacts     : $artifactsDir"
+
     New-Item -ItemType Directory -Path $artifactsDir -Force | Out-Null
     Remove-Item $hostStdout, $hostStderr, $desktopStdout, $desktopStderr -ErrorAction SilentlyContinue
 
@@ -187,35 +230,61 @@ try {
             Stop-WorkspaceDesktopProcesses
         }
 
-        Write-Info 'Building Meridian host...'
+        Write-Step 'Build'
+        Test-SufficientDiskSpaceForBuild
+
+        Write-Info 'Restoring Meridian host packages...'
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
         & dotnet restore $hostProject -v minimal @(
             Get-MeridianBuildArguments -IsolationKey $buildIsolationKey
         )
+        $sw.Stop()
         if ($LASTEXITCODE -ne 0) {
+            Write-Fail 'Meridian host restore failed.'
+            Write-Warn 'If the error mentions disk space or a corrupt archive, run: dotnet nuget locals all --clear'
             throw 'Meridian host restore failed.'
         }
+        Write-Ok ("Host packages restored ({0:0.0}s)" -f $sw.Elapsed.TotalSeconds)
 
+        Write-Info 'Building Meridian host...'
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
         & dotnet build $hostProject -c Debug -v minimal -nologo --no-restore @(
             Get-MeridianBuildArguments -IsolationKey $buildIsolationKey
         )
+        $sw.Stop()
         if ($LASTEXITCODE -ne 0) {
+            Write-Fail 'Meridian host build failed.'
             throw 'Meridian host build failed.'
         }
+        Write-Ok ("Host built ({0:0.0}s)" -f $sw.Elapsed.TotalSeconds)
 
-        Write-Info 'Building Meridian desktop shell...'
+        Write-Info 'Restoring Meridian desktop shell packages...'
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
         & dotnet restore $desktopProject -v minimal @(
             Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -EnableFullWpfBuild
         )
+        $sw.Stop()
         if ($LASTEXITCODE -ne 0) {
+            Write-Fail 'Meridian desktop restore failed.'
+            Write-Warn 'If the error mentions disk space or a corrupt archive, run: dotnet nuget locals all --clear'
             throw 'Meridian desktop restore failed.'
         }
+        Write-Ok ("Desktop packages restored ({0:0.0}s)" -f $sw.Elapsed.TotalSeconds)
 
+        Write-Info 'Building Meridian desktop shell...'
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
         & dotnet build $desktopProject -c $desktopConfiguration -v minimal -nologo --no-restore @(
             Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -TargetFramework $desktopFramework -EnableFullWpfBuild
         )
+        $sw.Stop()
         if ($LASTEXITCODE -ne 0) {
+            Write-Fail 'Meridian desktop build failed.'
             throw 'Meridian desktop build failed.'
         }
+        Write-Ok ("Desktop shell built ({0:0.0}s)" -f $sw.Elapsed.TotalSeconds)
+    }
+    else {
+        Write-Info 'Skipping build step (-NoBuild).'
     }
 
     if (-not (Test-Path $hostExe)) {
@@ -226,6 +295,7 @@ try {
         throw "Desktop executable not found at '$desktopExe'."
     }
 
+    Write-Step 'Start host'
     if (Test-HealthyHost) {
         Write-Ok "Reusing existing local Meridian host on $hostBaseUrl"
     }
@@ -250,10 +320,18 @@ try {
                 break
             }
 
+            $pct = [int](($attempt / $hostStartupTimeoutSec) * 100)
+            Write-Progress -Activity 'Waiting for Meridian host to become healthy' `
+                -Status "$attempt / $hostStartupTimeoutSec s elapsed" `
+                -PercentComplete $pct
             Start-Sleep -Seconds 1
         }
+        Write-Progress -Activity 'Waiting for Meridian host to become healthy' -Completed
 
         if (-not $healthy) {
+            Write-Fail "Meridian host did not become healthy within ${hostStartupTimeoutSec}s."
+            Write-Warn "Host stdout log : $hostStdout"
+            Write-Warn "Host stderr log : $hostStderr"
             Show-HostLogs
             throw "Local Meridian host failed to become healthy on $hostBaseUrl."
         }
@@ -261,6 +339,7 @@ try {
         Write-Ok 'Local Meridian host is healthy'
     }
 
+    Write-Step 'Launch shell'
     $desktopLaunchArgs = @()
     if ($Fixture) {
         $desktopLaunchArgs += '--fixture'
@@ -282,9 +361,15 @@ try {
 
     if ($desktopProcess.ExitCode -ne 0) {
         if (Test-Path $desktopStderr) {
-            Get-Content $desktopStderr
+            $stderrContent = Get-Content $desktopStderr | Out-String
+            if (-not [string]::IsNullOrWhiteSpace($stderrContent)) {
+                Write-Host $stderrContent.TrimEnd()
+            }
         }
 
+        Write-Fail "Meridian desktop exited with code $($desktopProcess.ExitCode)."
+        Write-Warn "Desktop stdout log : $desktopStdout"
+        Write-Warn "Desktop stderr log : $desktopStderr"
         throw "Meridian desktop exited with code $($desktopProcess.ExitCode)."
     }
 
