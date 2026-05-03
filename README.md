@@ -5826,7 +5826,8 @@ Use these documents together when planning or implementing new work:
 │   │       ├── StrategyRunReadModels.cs
 │   │       ├── TradingOperatorReadinessDtos.cs
 │   │       ├── WorkflowLibraryDtos.cs
-│   │       └── WorkflowSummaryDtos.cs
+│   │       ├── WorkflowSummaryDtos.cs
+│   │       └── WorkstationBootstrapDtos.cs
 │   ├── Meridian.Core
 │   │   ├── Config
 │   │   │   ├── AlpacaOptions.cs
@@ -8187,6 +8188,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-622 directories, 7390 files
+622 directories, 7391 files
 ```
 <!-- readme-tree end -->
