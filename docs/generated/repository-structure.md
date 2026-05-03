@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-05-03 08:35:35 UTC. Do not edit manually.
+> Auto-generated on 2026-05-03 09:14:21 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -7919,6 +7919,7 @@ Meridian-main
 │   │   ├── test_central_package_versions.py
 │   │   ├── test_check_contract_compatibility_gate.py
 │   │   ├── test_check_program_state_consistency.py
+│   │   ├── test_check_workflow_docs_parity.py
 │   │   ├── test_cleanup_generated_script.py
 │   │   ├── test_code_quality_workflow.py
 │   │   ├── test_compare_run_contract.py
