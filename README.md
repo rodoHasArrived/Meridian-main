@@ -5168,6 +5168,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── screenshot_diff_report.py
 │   │   ├── shared
 │   │   │   └── retry.ps1
+│   │   ├── summarize-desktop-workflow-bundle.ps1
 │   │   ├── validate-operator-inbox-route.ps1
 │   │   ├── validate-position-blotter-route.ps1
 │   │   ├── validate-screenshot-contract.py
@@ -8192,6 +8193,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-623 directories, 7394 files
+623 directories, 7395 files
 ```
 <!-- readme-tree end -->
