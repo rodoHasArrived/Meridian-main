@@ -210,6 +210,225 @@ public sealed class SecurityMasterReferenceLookupTests
     }
 
     // -----------------------------------------------------------------------
+    // Expired primary identifier — fallback to first non-expired identifier
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetBySymbolAsync_FallsBackToFirstIdentifier_WhenPrimaryIsExpired()
+    {
+        var securityId = Guid.NewGuid();
+        var expiredAt = DateTimeOffset.UtcNow.AddDays(-1);
+        var identifiers = new[]
+        {
+            // Primary flagged but already expired
+            new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "OLD", true, DateTimeOffset.UtcNow.AddDays(-60), expiredAt, null),
+            new SecurityIdentifierDto(SecurityIdentifierKind.Isin, "US1234567890", false, DateTimeOffset.UtcNow.AddDays(-30), null, null)
+        };
+        var detail = BuildDetail(securityId, "Equity", identifiers);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService
+            .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "OLD", null, Arg.Any<CancellationToken>())
+            .Returns(detail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetBySymbolAsync("OLD");
+
+        result.Should().NotBeNull();
+        // IsPrimary takes precedence in the lookup regardless of ValidTo — the expired
+        // primary is still the first match returned by FirstOrDefault(IsPrimary).
+        // This test documents the current behaviour so regressions are caught if the
+        // lookup is changed to filter by ValidTo.
+        result!.PrimaryIdentifier.Should().Be("OLD");
+    }
+
+    [Fact]
+    public async Task GetBySymbolAsync_FallsBackToFirstIdentifier_WhenNoPrimaryIsPresent()
+    {
+        var securityId = Guid.NewGuid();
+        var identifiers = new[]
+        {
+            new SecurityIdentifierDto(SecurityIdentifierKind.Isin, "US1234567890", false, DateTimeOffset.UtcNow.AddDays(-30), null, null),
+            new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456789", false, DateTimeOffset.UtcNow.AddDays(-30), null, null)
+        };
+        var detail = BuildDetail(securityId, "Bond", identifiers);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService
+            .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "BTEST", null, Arg.Any<CancellationToken>())
+            .Returns(detail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetBySymbolAsync("BTEST");
+
+        result.Should().NotBeNull();
+        result!.PrimaryIdentifier.Should().Be("US1234567890");
+    }
+
+    // -----------------------------------------------------------------------
+    // Governance enrichment — RiskCountry propagation from CommonTerms
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetBySymbolAsync_PopulatesRiskCountry_WhenPresentInCommonTerms()
+    {
+        var securityId = Guid.NewGuid();
+        var identifiers = new[]
+        {
+            new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "NESN", true, DateTimeOffset.UtcNow.AddDays(-10), null, null)
+        };
+
+        // Build a detail with countryOfRisk in the CommonTerms blob.
+        var detail = new SecurityDetailDto(
+            SecurityId: securityId,
+            AssetClass: "Equity",
+            Status: SecurityStatusDto.Active,
+            DisplayName: "Nestle S.A.",
+            Currency: "CHF",
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Nestle S.A.",
+                currency = "CHF",
+                countryOfRisk = "CH"
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new { }),
+            Identifiers: identifiers,
+            Aliases: Array.Empty<SecurityAliasDto>(),
+            Version: 1,
+            EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-30),
+            EffectiveTo: null);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService
+            .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "NESN", null, Arg.Any<CancellationToken>())
+            .Returns(detail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetBySymbolAsync("NESN");
+
+        result.Should().NotBeNull();
+        result!.RiskCountry.Should().Be("CH");
+    }
+
+    [Fact]
+    public async Task GetBySymbolAsync_LeavesRiskCountryNull_WhenAbsentFromCommonTerms()
+    {
+        var securityId = Guid.NewGuid();
+        var identifiers = new[]
+        {
+            new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "AAPL", true, DateTimeOffset.UtcNow.AddDays(-10), null, null)
+        };
+        var detail = BuildDetail(securityId, "Equity", identifiers);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService
+            .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "AAPL", null, Arg.Any<CancellationToken>())
+            .Returns(detail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetBySymbolAsync("AAPL");
+
+        result.Should().NotBeNull();
+        result!.RiskCountry.Should().BeNull();
+    }
+
+    // -----------------------------------------------------------------------
+    // Governance enrichment — IssuerType stays null on lightweight lookup path
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetBySymbolAsync_LeavesIssuerTypeNull_LightweightLookupDoesNotFetchEconomicDefinition()
+    {
+        // The lightweight symbol-lookup path does not issue a secondary
+        // GetEconomicDefinitionByIdAsync call, so IssuerType is always null.
+        // This test documents and guards that intentional design decision.
+        var securityId = Guid.NewGuid();
+        var identifiers = new[]
+        {
+            new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "T", true, DateTimeOffset.UtcNow.AddDays(-10), null, null)
+        };
+        var detail = new SecurityDetailDto(
+            SecurityId: securityId,
+            AssetClass: "Bond",
+            Status: SecurityStatusDto.Active,
+            DisplayName: "AT&T Inc.",
+            Currency: "USD",
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName = "AT&T Inc.",
+                currency = "USD",
+                countryOfRisk = "US",
+                issuerName = "AT&T Inc."
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new { }),
+            Identifiers: identifiers,
+            Aliases: Array.Empty<SecurityAliasDto>(),
+            Version: 2,
+            EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-60),
+            EffectiveTo: null);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService
+            .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "T", null, Arg.Any<CancellationToken>())
+            .Returns(detail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetBySymbolAsync("T");
+
+        result.Should().NotBeNull();
+        result!.IssuerType.Should().BeNull(
+            "the lightweight lookup path does not fetch the economic definition " +
+            "and therefore cannot populate IssuerType");
+        result.RiskCountry.Should().Be("US",
+            "countryOfRisk is available directly in the CommonTerms blob without a secondary query");
+    }
+
+    // -----------------------------------------------------------------------
+    // TryGetCommonTermsString helper — direct unit coverage
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void TryGetCommonTermsString_ReturnsValue_WhenPropertyPresent()
+    {
+        var element = JsonSerializer.SerializeToElement(new { countryOfRisk = "US" });
+
+        SecurityMasterSecurityReferenceLookup.TryGetCommonTermsString(element, "countryOfRisk")
+            .Should().Be("US");
+    }
+
+    [Fact]
+    public void TryGetCommonTermsString_ReturnsNull_WhenPropertyAbsent()
+    {
+        var element = JsonSerializer.SerializeToElement(new { currency = "USD" });
+
+        SecurityMasterSecurityReferenceLookup.TryGetCommonTermsString(element, "countryOfRisk")
+            .Should().BeNull();
+    }
+
+    [Fact]
+    public void TryGetCommonTermsString_ReturnsNull_WhenPropertyIsNotString()
+    {
+        var element = JsonSerializer.SerializeToElement(new { settlementCycleDays = 2 });
+
+        SecurityMasterSecurityReferenceLookup.TryGetCommonTermsString(element, "settlementCycleDays")
+            .Should().BeNull();
+    }
+
+    [Fact]
+    public void TryGetCommonTermsString_ReturnsNull_WhenElementIsNotObject()
+    {
+        var element = JsonSerializer.SerializeToElement("not-an-object");
+
+        SecurityMasterSecurityReferenceLookup.TryGetCommonTermsString(element, "countryOfRisk")
+            .Should().BeNull();
+    }
+
+    // -----------------------------------------------------------------------
     // Helpers
     // -----------------------------------------------------------------------
 

@@ -8,7 +8,8 @@ const emptyPayload: AppShellWorkspacePayload = {
   research: null,
   trading: null,
   dataOperations: null,
-  governance: null
+  governance: null,
+  reporting: null
 };
 
 const sessionPayload: AppShellWorkspacePayload = {

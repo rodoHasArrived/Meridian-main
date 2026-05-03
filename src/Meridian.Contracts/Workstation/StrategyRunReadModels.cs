@@ -197,6 +197,9 @@ public enum WorkstationSecurityCoverageStatus : byte
 /// <para><see cref="SubType"/> is the most specific classification available at query time
 /// (e.g. "CommonShare", "Bond", "OptionContract"). It is derived from the security's asset
 /// class and is null when the asset class does not map to a unique sub-type.</para>
+/// <para><see cref="RiskCountry"/> is extracted from the CommonTerms JSON blob when available.
+/// <see cref="IssuerType"/> is only populated by full workbench queries; the lightweight
+/// symbol-lookup path leaves it null to avoid an extra round-trip.</para>
 /// </summary>
 public sealed record WorkstationSecurityReference(
     Guid SecurityId,
@@ -213,7 +216,11 @@ public sealed record WorkstationSecurityReference(
     string? ResolutionReason = null,
     string? LookupPath = null,
     string? LookupSource = null,
-    bool IsInferredMatch = false);
+    bool IsInferredMatch = false,
+    /// <summary>ISO 3166-1 alpha-2 country of risk extracted from CommonTerms, if available.</summary>
+    string? RiskCountry = null,
+    /// <summary>Issuer type classification populated by full workbench queries only.</summary>
+    string? IssuerType = null);
 
 /// <summary>
 /// Shared portfolio rollup for workstation research and trading surfaces.

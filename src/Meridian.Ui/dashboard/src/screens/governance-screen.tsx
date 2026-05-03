@@ -1,10 +1,12 @@
 import { AlertCircle, BookCheck, CheckCircle2, Landmark, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { runAnalysisExport } from "@/lib/api";
 import { workspaceForPath } from "@/lib/workspace";
 import {
   buildReconciliationNarrative,
@@ -54,6 +56,7 @@ const focusCopy: Record<string, { title: string; description: string }> = {
 
 export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const { pathname } = useLocation();
+  const [reportingExportStatus, setReportingExportStatus] = useState<string | null>(null);
   const workstream = resolveGovernanceWorkstream(pathname);
   const workspace = workspaceForPath(pathname);
   const reconciliation = useGovernanceReconciliationViewModel(data, workstream);
@@ -75,6 +78,24 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   }
 
   const focus = focusCopy[workstream];
+  const selectedReportingProfileId =
+    reporting.selectedProfile?.fields.find((field) => field.label === "Profile ID")?.value
+    ?? data.reporting.recommendedProfiles[0]
+    ?? data.reporting.profiles[0]?.id
+    ?? "python-pandas";
+  const triggerReportingExport = async () => {
+    setReportingExportStatus(`Starting export for ${selectedReportingProfileId}.`);
+    try {
+      const result = await runAnalysisExport(selectedReportingProfileId);
+      setReportingExportStatus(
+        result.success
+          ? `Export ${result.jobId} completed with ${result.filesGenerated} file(s).`
+          : `Export ${result.jobId} failed: ${result.error ?? "No error detail returned."}`
+      );
+    } catch (err) {
+      setReportingExportStatus(err instanceof Error ? `Export failed: ${err.message}` : "Export failed.");
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -305,8 +326,11 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             </CardHeader>
             <CardContent className="space-y-3">
               <Button asChild><a href="/api/export/preview" target="_blank" rel="noreferrer">Preview report payload</a></Button>
-              <Button asChild variant="outline"><a href="/api/export/analysis" target="_blank" rel="noreferrer">Run reporting export</a></Button>
+              <Button type="button" variant="outline" onClick={() => void triggerReportingExport()}>Run reporting export</Button>
               <Button asChild variant="outline"><a href="/api/export/formats" target="_blank" rel="noreferrer">List export formats</a></Button>
+              {reportingExportStatus ? (
+                <p role="status" className="text-sm text-muted-foreground">{reportingExportStatus}</p>
+              ) : null}
             </CardContent>
           </Card>
         </section>

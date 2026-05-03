@@ -130,6 +130,10 @@ export function getGovernanceWorkspace() {
   return getJson<GovernanceWorkspaceResponse>("/api/workstation/accounting");
 }
 
+export function getReportingWorkspace() {
+  return getJson<GovernanceWorkspaceResponse>("/api/workstation/reporting");
+}
+
 export function runAnalysisExport(profileId: string) {
   return postJson<ExportAnalysisResult>("/api/export/analysis", { profileId });
 }

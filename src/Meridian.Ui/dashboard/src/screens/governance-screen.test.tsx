@@ -31,6 +31,7 @@ vi.mock("@/lib/api", async () => {
     }),
     resolveReconciliationBreak: vi.fn(),
     reviewReconciliationBreak: vi.fn(),
+    runAnalysisExport: vi.fn(),
     getRunTrialBalance: vi.fn().mockResolvedValue([]),
     resolveSecurityConflict: vi.fn()
   };
@@ -188,6 +189,33 @@ describe("GovernanceScreen", () => {
 
     expect(await screen.findByRole("status")).toHaveTextContent("No trial balance lines");
     expect(screen.queryByRole("table", { name: "Trial balance lines for run-42" })).not.toBeInTheDocument();
+  });
+
+  it("runs ledger reporting export through the POST mutation instead of a GET link", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.runAnalysisExport).mockResolvedValueOnce({
+      jobId: "export-1",
+      success: true,
+      status: "completed",
+      profileId: "excel",
+      symbols: [],
+      filesGenerated: 2,
+      totalRecords: 12,
+      totalBytes: 2048,
+      outputDirectory: "artifacts/exports/export-1",
+      durationSeconds: 1.5,
+      error: null,
+      warnings: [],
+      timestamp: "2026-01-01T00:00:00Z"
+    });
+
+    await renderGovernanceScreen(data, "/accounting");
+
+    await user.click(screen.getByRole("button", { name: "Run reporting export" }));
+
+    expect(api.runAnalysisExport).toHaveBeenCalledWith("excel");
+    expect(await screen.findByText("Export export-1 completed with 2 file(s).")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Run reporting export" })).not.toBeInTheDocument();
   });
 
   it("renders reporting profile detail state and updates selected profile", async () => {

@@ -22,6 +22,7 @@ interface OperatorReadinessConsoleProps {
   trading: TradingWorkspaceResponse | null;
   dataOperations: DataOperationsWorkspaceResponse | null;
   governance: GovernanceWorkspaceResponse | null;
+  reporting: GovernanceWorkspaceResponse | null;
 }
 
 const levelBadge: Record<ReadinessConsoleLevel, "success" | "warning" | "danger" | "outline"> = {
@@ -58,13 +59,15 @@ export function OperatorReadinessConsole({
   research,
   trading,
   dataOperations,
-  governance
+  governance,
+  reporting
 }: OperatorReadinessConsoleProps) {
   const vm = useOperatorReadinessConsoleViewModel({
     research,
     trading,
     dataOperations,
-    governance
+    governance,
+    reporting
   });
 
   return (

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
@@ -84,6 +85,8 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
             && !string.IsNullOrWhiteSpace(request.Symbol)
             && !string.Equals(normalizedIdentifierValue, request.Symbol, StringComparison.OrdinalIgnoreCase);
 
+        var riskCountry = TryGetCommonTermsString(detail.CommonTerms, "countryOfRisk");
+
         return new WorkstationSecurityReference(
             SecurityId: detail.SecurityId,
             DisplayName: detail.DisplayName,
@@ -99,7 +102,27 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
             ResolutionReason: request.Source,
             LookupPath: lookupPath,
             LookupSource: request.Source,
-            IsInferredMatch: inferred);
+            IsInferredMatch: inferred,
+            RiskCountry: riskCountry);
+    }
+
+    /// <summary>
+    /// Attempts to read a string property from a <see cref="System.Text.Json.JsonElement"/>
+    /// CommonTerms blob. Returns null if the property is absent, null, or not a string.
+    /// </summary>
+    internal static string? TryGetCommonTermsString(JsonElement commonTerms, string propertyName)
+    {
+        if (commonTerms.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        if (!commonTerms.TryGetProperty(propertyName, out var property))
+        {
+            return null;
+        }
+
+        return property.ValueKind == JsonValueKind.String ? property.GetString() : null;
     }
 
     /// <summary>

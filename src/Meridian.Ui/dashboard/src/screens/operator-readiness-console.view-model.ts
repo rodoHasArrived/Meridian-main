@@ -113,6 +113,7 @@ export interface BuildOperatorReadinessConsoleStateOptions {
   trading: TradingWorkspaceResponse | null;
   dataOperations: DataOperationsWorkspaceResponse | null;
   governance: GovernanceWorkspaceResponse | null;
+  reporting?: GovernanceWorkspaceResponse | null;
   operatorInbox: OperatorInbox | null;
   inboxLoading: boolean;
   inboxError: string | null;
@@ -143,10 +144,10 @@ export function useOperatorReadinessConsoleViewModel(
     setInboxLoading(true);
     setInboxError(null);
 
-    services.getOperatorInbox(activeFundAccountId)
+    Promise.resolve(services.getOperatorInbox(activeFundAccountId))
       .then((inbox) => {
         if (!cancelled) {
-          setOperatorInbox(inbox);
+          setOperatorInbox(inbox ?? null);
         }
       })
       .catch((err) => {
@@ -182,6 +183,7 @@ export function buildOperatorReadinessConsoleState({
   trading,
   dataOperations,
   governance,
+  reporting,
   operatorInbox,
   inboxLoading,
   inboxError
@@ -194,7 +196,7 @@ export function buildOperatorReadinessConsoleState({
   const reconciliationRows = withRowPresentation(buildReconciliationRows(governance), "reconciliation");
   const promotionRows = withRowPresentation(buildPromotionRows(readiness, workItems), "promotion");
   const prioritizedWorkItems = prioritizeWorkItems(workItems);
-  const reportPackFacts = withRowPresentation(buildReportPackFacts(governance), "report-pack");
+  const reportPackFacts = withRowPresentation(buildReportPackFacts(reporting ?? governance), "report-pack");
   const workItemRows = withRowPresentation(buildWorkItemRows(prioritizedWorkItems), "work-items");
   const metrics = withMetricPresentation(buildMetrics({
     latestRuns,
@@ -202,7 +204,7 @@ export function buildOperatorReadinessConsoleState({
     providerTrustRows,
     reconciliationRows,
     promotionRows,
-    governance
+    reporting: reporting ?? governance
   }));
   const overallLevel = determineOverallLevel({
     readiness,
@@ -245,6 +247,7 @@ export function buildOperatorReadinessConsoleState({
       trading,
       dataOperations,
       governance,
+      reporting,
       operatorInbox,
       inboxLoading,
       inboxError
@@ -765,17 +768,17 @@ function buildMetrics({
   providerTrustRows,
   reconciliationRows,
   promotionRows,
-  governance
+  reporting
 }: {
   latestRuns: ReadinessConsoleRow[];
   readiness: TradingOperatorReadiness | null;
   providerTrustRows: ReadinessConsoleRow[];
   reconciliationRows: ReadinessConsoleRow[];
   promotionRows: ReadinessConsoleRow[];
-  governance: GovernanceWorkspaceResponse | null;
+  reporting: GovernanceWorkspaceResponse | null;
 }): ReadinessConsoleMetricBase[] {
   const activeSession = readiness?.activeSession;
-  const reportTargets = governance?.reporting.reportPackTargets.length ?? 0;
+  const reportTargets = reporting?.reporting.reportPackTargets.length ?? 0;
 
   return [
     {
@@ -828,6 +831,7 @@ function buildApiSources({
   trading,
   dataOperations,
   governance,
+  reporting,
   operatorInbox,
   inboxLoading,
   inboxError
@@ -836,6 +840,7 @@ function buildApiSources({
   trading: TradingWorkspaceResponse | null;
   dataOperations: DataOperationsWorkspaceResponse | null;
   governance: GovernanceWorkspaceResponse | null;
+  reporting?: GovernanceWorkspaceResponse | null;
   operatorInbox: OperatorInbox | null;
   inboxLoading: boolean;
   inboxError: string | null;
@@ -871,10 +876,17 @@ function buildApiSources({
     },
     {
       id: "governance",
-      label: "Governance",
-      endpoint: "/api/workstation/governance",
-      status: governance ? `${governance.breakQueue.length} breaks, ${governance.reporting.profileCount} report profiles` : "Unavailable",
+      label: "Accounting",
+      endpoint: "/api/workstation/accounting",
+      status: governance ? `${governance.breakQueue.length} breaks` : "Unavailable",
       level: governance ? "ready" : "review"
+    },
+    {
+      id: "reporting",
+      label: "Reporting",
+      endpoint: "/api/workstation/reporting",
+      status: reporting ? `${reporting.reporting.profileCount} report profiles` : "Unavailable",
+      level: reporting ? "ready" : "review"
     }
   ];
 }
