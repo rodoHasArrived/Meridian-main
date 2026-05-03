@@ -18,10 +18,10 @@ public sealed record ConsoleOutputEntry(
 /// </summary>
 public sealed class QuantScriptGlobals
 {
-    private const string ContextSymbolKey = "symbol";
-    private const string ContextFromKey = "from";
-    private const string ContextToKey = "to";
-    private const string ContextIntervalKey = "interval";
+    private const string ContextSymbolKey = "context.symbol";
+    private const string ContextFromKey = "context.from";
+    private const string ContextToKey = "context.to";
+    private const string ContextIntervalKey = "context.interval";
     private readonly List<ConsoleOutputEntry> _output = [];
     private readonly object _outputLock = new();
     private readonly object _parameterRegistrationLock = new();
@@ -257,8 +257,6 @@ public sealed class QuantScriptGlobals
 
     private object? GetContextValue(string key)
     {
-        if (_parameters.TryGetValue(key, out var value))
-            return value;
-        return _parameters.TryGetValue($"context.{key}", out value) ? value : null;
+        return _parameters.TryGetValue(key, out var value) ? value : null;
     }
 }

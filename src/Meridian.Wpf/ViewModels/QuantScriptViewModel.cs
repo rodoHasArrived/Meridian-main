@@ -1067,11 +1067,11 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             StringComparer.OrdinalIgnoreCase);
 
         if (!string.IsNullOrWhiteSpace(AssetSymbol))
-            parameters["symbol"] = AssetSymbol.Trim().ToUpperInvariant();
+            parameters["context.symbol"] = AssetSymbol.Trim().ToUpperInvariant();
 
-        parameters["from"] = DateOnly.FromDateTime(FromDate);
-        parameters["to"] = DateOnly.FromDateTime(ToDate);
-        parameters["interval"] = NormalizeInterval(SelectedInterval);
+        parameters["context.from"] = DateOnly.FromDateTime(FromDate);
+        parameters["context.to"] = DateOnly.FromDateTime(ToDate);
+        parameters["context.interval"] = NormalizeInterval(SelectedInterval);
         return parameters;
     }
 
