@@ -149,7 +149,7 @@ public sealed class PortfolioReadServiceTests
 
         summary.Should().NotBeNull();
         summary!.AccountScopeId.Should().BeNull();
-        summary.Positions.Should().OnlyContain(static position => position.AccountScopeId is null);
+        summary.Positions.Should().OnlyContain(static position => position.AccountScopeId == null);
     }
 
     // ── BuildSummaryAsync – without security lookup ──────────────────────────
