@@ -284,7 +284,7 @@ public sealed class OrderManagementSystemTests : IDisposable
                 return Task.CompletedTask;
             });
         gateway.SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
-            .Returns(_ => throw new InvalidOperationException("robinhood is not connected. Call ConnectAsync first."));
+            .Returns((_) => Task.FromException<ExecutionReport>(new InvalidOperationException("robinhood is not connected. Call ConnectAsync first.")));
 
         var tempRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempRoot);

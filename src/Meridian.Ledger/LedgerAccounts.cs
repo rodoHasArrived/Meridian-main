@@ -37,10 +37,6 @@ public static class LedgerAccounts
     public static readonly LedgerAccount ShortRebateIncome =
         new("Short Rebate Income", LedgerAccountType.Revenue);
 
-    /// <summary>Outstanding broker loan used to finance margin long positions.</summary>
-    public static readonly LedgerAccount MarginLoanPayable =
-        new("Margin Loan Payable", LedgerAccountType.Liability);
-
     /// <summary>Dividend income received on long positions.</summary>
     public static readonly LedgerAccount DividendIncome =
         new("Dividend Income", LedgerAccountType.Revenue);
