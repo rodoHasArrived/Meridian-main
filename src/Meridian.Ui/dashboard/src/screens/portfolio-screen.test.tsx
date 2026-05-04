@@ -93,6 +93,7 @@ const governance: GovernanceWorkspaceResponse = {
 describe("PortfolioScreen", () => {
   it("renders position table with trading data", () => {
     renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
+    expect(screen.getByRole("region", { name: /portfolio workbench context/i })).toBeDefined();
     expect(screen.getByRole("table", { name: /open positions/i })).toBeDefined();
     expect(screen.getByRole("button", { name: /inspect aapl long holding/i })).toBeDefined();
     expect(screen.getByRole("complementary", { name: /aapl holding detail/i })).toBeDefined();

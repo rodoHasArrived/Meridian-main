@@ -287,9 +287,12 @@ async function renderTradingScreen(
 describe("TradingScreen", () => {
   it("renders cockpit tables and wiring state", async () => {
     await renderTradingScreen();
+    expect(screen.getByRole("region", { name: "Execution cockpit context" })).toBeInTheDocument();
+    const workflowStrip = screen.getByRole("region", { name: "Workflow control strip" });
+    expect(within(workflowStrip).getByRole("button", { name: /strategy controls/i })).toBeInTheDocument();
+    expect(within(workflowStrip).getByRole("button", { name: /session replay/i })).toBeInTheDocument();
+    expect(within(workflowStrip).getByRole("button", { name: /promotion gate/i })).toBeInTheDocument();
     expect(screen.getByText("Live positions")).toBeInTheDocument();
-    expect(screen.getByText("Session replay controls")).toBeInTheDocument();
-    expect(screen.getByText("Backtest → Paper promotion gate")).toBeInTheDocument();
   });
 
   it("fetches and renders execution controls snapshot", async () => {

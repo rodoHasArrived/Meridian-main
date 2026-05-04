@@ -45,9 +45,10 @@ export function App() {
       <header className="workstation-masthead">
         <div className="workstation-brand">
           <img src={meridianMarkUrl} alt="" aria-hidden="true" />
-          <div className="min-w-0">
+          <div className="workstation-brand-copy min-w-0">
             <div className="name">Meridian</div>
             <div className="sub">Operator workstation</div>
+            <div className="workstation-brand-eyebrow">Evidence-backed operations</div>
           </div>
         </div>
 
@@ -58,18 +59,28 @@ export function App() {
           aria-label="Open workstation command palette"
         >
           <Search className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span className="truncate">
-            <b>{shell.activeWorkspace.label}</b> · {shell.activeWorkspace.status} · Command palette
+          <span className="workstation-search-copy">
+            <span className="workstation-search-title">Search workspaces, routes, and shell commands</span>
+            <span className="workstation-search-detail">
+              <b>{shell.activeWorkspace.label}</b> · {shell.activeWorkspace.status} lane · Ctrl K
+            </span>
           </span>
+          <span className="workstation-search-kbd" aria-hidden="true">Ctrl K</span>
         </button>
 
         <div className="workstation-actions">
           {session ? (
-            <>
-              <Badge variant={session.environment}>{session.environment}</Badge>
-              <span>{session.displayName}</span>
-              <span className="text-muted-foreground">{session.role}</span>
-            </>
+            <div className="workstation-session-card">
+              <div className="workstation-session-primary">
+                <Badge variant={session.environment} dot>{session.environment}</Badge>
+                <span className="workstation-session-name">{session.displayName}</span>
+                <span className="text-muted-foreground">{session.role}</span>
+              </div>
+              <div className="workstation-session-meta">
+                <span className="workstation-active-pill">{shell.activeWorkspace.label}</span>
+                <span>{session.commandCount} cmds</span>
+              </div>
+            </div>
           ) : (
             <span>Session loading</span>
           )}

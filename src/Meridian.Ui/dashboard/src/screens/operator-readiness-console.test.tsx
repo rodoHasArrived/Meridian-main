@@ -162,6 +162,7 @@ describe("OperatorReadinessConsole", () => {
 
     expect(action).toHaveAttribute("href", "/trading/readiness");
     expect(screen.getAllByText("Promotion checklist incomplete").length).toBeGreaterThan(0);
+    expect(screen.getByRole("region", { name: "Readiness control strip" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Shared readiness API sources" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Latest runs readiness evidence" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Prioritized operator work items" })).toBeInTheDocument();

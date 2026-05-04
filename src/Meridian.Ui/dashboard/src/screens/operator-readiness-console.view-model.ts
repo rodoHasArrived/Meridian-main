@@ -382,7 +382,7 @@ function buildLatestRunRows(runs: ResearchRunRecord[]): ReadinessConsoleRowBase[
     label: run.strategyName,
     value: run.status,
     detail: `${run.mode} run on ${run.engine}; ${run.notes}`,
-    meta: `${run.id} - ${run.lastUpdated} - P&L ${run.pnl} - Sharpe ${run.sharpe}`,
+    meta: `${run.id} · ${run.lastUpdated} · P&L ${run.pnl} · Sharpe ${run.sharpe}`,
     level: run.status === "Needs Review" ? "review" : run.status === "Completed" ? "ready" : "neutral"
   }));
 }
@@ -406,7 +406,7 @@ function buildActiveSessionFacts(readiness: TradingOperatorReadiness | null): Re
       label: "Active paper session",
       value: session.sessionId,
       detail: session.strategyName ?? session.strategyId,
-      meta: `${session.orderCount} orders - ${session.positionCount} positions - ${session.symbolCount} symbols`,
+      meta: `${session.orderCount} orders · ${session.positionCount} positions · ${session.symbolCount} symbols`,
       level: session.isActive ? "ready" : "review"
     },
     {
@@ -442,7 +442,7 @@ function buildProviderTrustRows(
       label: "DK1 provider trust",
       value: trustGate.status,
       detail: trustGate.detail,
-      meta: `${trustGate.readySampleCount}/${trustGate.requiredSampleCount} samples ready - ${trustGate.validatedEvidenceDocumentCount} evidence documents`,
+       meta: `${trustGate.readySampleCount}/${trustGate.requiredSampleCount} samples ready · ${trustGate.validatedEvidenceDocumentCount} evidence documents`,
       level: trustGate.blockers.length > 0
         ? "blocked"
         : trustGate.operatorSignoffStatus.toLowerCase().includes("signed")
@@ -466,7 +466,7 @@ function buildProviderTrustRows(
         provider.trustScore ? `Trust ${provider.trustScore}` : null,
         provider.signalSource,
         provider.gateImpact
-      ].filter(Boolean).join(" - ") || provider.capability,
+      ].filter(Boolean).join(" · ") || provider.capability,
       level: provider.status === "Healthy" ? "ready" : provider.status === "Degraded" ? "blocked" : "review"
     });
   });

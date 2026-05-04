@@ -36,7 +36,7 @@ describe("workspace placeholder view model", () => {
       overview
     });
 
-    expect(model.title).toBe("Portfolio route is available");
+    expect(model.title).toBe("Portfolio workspace route is staged");
     expect(model.route).toBe("/portfolio");
     expect(model.routeStatus).toBe("Reserved pending surface");
     expect(model.statusCells).toContainEqual({
@@ -44,6 +44,18 @@ describe("workspace placeholder view model", () => {
       label: "Session",
       value: "Ops Desk - Operator",
       ariaLabel: "Session: Ops Desk - Operator"
+    });
+    expect(model.statusCells).toContainEqual({
+      id: "commands",
+      label: "Commands",
+      value: "7 commands ready",
+      ariaLabel: "Commands: 7 commands ready"
+    });
+    expect(model.telemetryCells).toContainEqual({
+      id: "providers",
+      label: "Providers",
+      value: "3 of 4 online",
+      ariaLabel: "Providers: 3 of 4 online"
     });
     expect(model.telemetryCells).toContainEqual({
       id: "last-heartbeat",
@@ -55,6 +67,13 @@ describe("workspace placeholder view model", () => {
     expect(model.pendingRegionLabel).toBe("Portfolio pending workspace guidance");
     expect(model.actionsLabel).toBe("Portfolio temporary workflow actions");
     expect(model.telemetryLabel).toBe("Portfolio route telemetry");
+    expect(model.coverageLabel).toBe("Portfolio current workflow coverage");
+    expect(model.coverageTitle).toBe("Current portfolio review path");
+    expect(model.coverageItems.map((item) => item.title)).toEqual([
+      "Exposure posture stays in Trading",
+      "Control evidence lands in Accounting",
+      "Run attribution stays linked in Strategy"
+    ]);
     expect(model.actions.map((action) => action.route)).toEqual(["/trading", "/accounting", "/strategy"]);
     expect(model.actions[0]).toMatchObject({
       detailId: "placeholder-action-trading-readiness-detail",
@@ -78,12 +97,25 @@ describe("workspace placeholder view model", () => {
       value: "Session loading",
       ariaLabel: "Session: Session loading"
     });
+    expect(model.statusCells).toContainEqual({
+      id: "commands",
+      label: "Commands",
+      value: "Command surface loading",
+      ariaLabel: "Commands: Command surface loading"
+    });
+    expect(model.telemetryCells).toContainEqual({
+      id: "providers",
+      label: "Providers",
+      value: "Provider posture loading",
+      ariaLabel: "Providers: Provider posture loading"
+    });
     expect(model.telemetryCells).toContainEqual({
       id: "last-heartbeat",
       label: "Last heartbeat",
       value: "No heartbeat loaded",
       ariaLabel: "Last heartbeat: No heartbeat loaded"
     });
+    expect(model.coverageTitle).toBe("Current setup and controls path");
     expect(model.actions.map((action) => action.label)).toEqual([
       "Review provider setup",
       "Check session readiness",

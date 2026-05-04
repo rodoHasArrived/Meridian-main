@@ -85,13 +85,13 @@ interface CockpitAcceptanceItem {
 const promotionOutcomeTone: Record<PromotionOutcomeLevel, string> = {
   success: "text-success",
   warning: "text-warning",
-  error: "text-destructive"
+  danger: "text-danger"
 };
 
 const acceptanceTone: Record<AcceptanceLevel, string> = {
   ready: "border-success/30 bg-success/10 text-success",
   review: "border-warning/30 bg-warning/10 text-warning",
-  atRisk: "border-destructive/30 bg-destructive/10 text-destructive"
+  atRisk: "border-danger/30 bg-danger/10 text-danger"
 };
 
 const acceptanceLabel: Record<AcceptanceLevel, string> = {
@@ -104,7 +104,7 @@ const workItemTone: Record<string, string> = {
   Info: "border-border/70 bg-secondary/25 text-muted-foreground",
   Success: "border-success/30 bg-success/10 text-success",
   Warning: "border-warning/30 bg-warning/10 text-warning",
-  Critical: "border-destructive/30 bg-destructive/10 text-destructive"
+  Critical: "border-danger/30 bg-danger/10 text-danger"
 };
 
 export function TradingScreen({ data }: TradingScreenProps) {
@@ -188,8 +188,31 @@ export function TradingScreen({ data }: TradingScreenProps) {
         ))}
       </section>
 
+      <section
+        role="region"
+        aria-label="Execution cockpit context"
+        className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+      >
+        <div className="min-w-0">
+          <div className="eyebrow-label">Trading lane</div>
+          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
+            {focusCopy[workstream].title}
+          </h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
+            {focusCopy[workstream].description}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <CockpitChip label="Route" value={pathname} />
+          <CockpitChip label="Account" value={data.brokerage.account} />
+          <CockpitChip label="Environment" value={data.brokerage.environment.toUpperCase()} />
+          <CockpitChip label="Orders" value={String(data.openOrders.length)} />
+          <CockpitChip label="Fills" value={String(data.fills.length)} />
+        </div>
+      </section>
+
       <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Trading Lane</div>
             <CardTitle className="flex items-center gap-2">
@@ -217,21 +240,21 @@ export function TradingScreen({ data }: TradingScreenProps) {
           </CardContent>
         </Card>
 
-        <Card className="bg-panel-strong text-slate-50">
+        <Card className="panel-surface-strong bg-panel-strong">
           <CardHeader>
             <div className="eyebrow-label">Route Context</div>
             <CardTitle>Current workstream</CardTitle>
-            <CardDescription className="text-slate-300">
+            <CardDescription>
               Deep links under{" "}
               <code className="rounded-sm bg-background/70 px-1 py-0.5 text-xs text-foreground">{pathname}</code>{" "}
               reuse the same prefetched cockpit payload.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-slate-200">
-            <ContextRow label="Open positions" value={String(data.positions.length)} />
-            <ContextRow label="Working orders" value={String(data.openOrders.length)} />
-            <ContextRow label="Completed fills" value={String(data.fills.length)} />
-            <ContextRow label="Risk state" value={data.risk.state} />
+          <CardContent className="space-y-3 text-sm">
+            <KeyValueRow label="Open positions" value={String(data.positions.length)} />
+            <KeyValueRow label="Working orders" value={String(data.openOrders.length)} />
+            <KeyValueRow label="Completed fills" value={String(data.fills.length)} />
+            <KeyValueRow label="Risk state" value={data.risk.state} />
           </CardContent>
         </Card>
       </section>
@@ -242,8 +265,14 @@ export function TradingScreen({ data }: TradingScreenProps) {
       />
 
       {/* Workflow tools strip — triggered workflows live in side panels, not inline */}
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-secondary/20 px-4 py-3">
+      <div
+        role="region"
+        aria-label="Workflow control strip"
+        className="panel-surface flex flex-wrap items-center gap-3 px-4 py-3"
+      >
         <span className="mr-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Workflow tools</span>
+        <CockpitChip label="Positions" value={String(data.positions.length)} />
+        <CockpitChip label="Connection" value={data.brokerage.connection} />
         <Button size="sm" variant="outline" onClick={() => setStrategySheetOpen(true)}>
           <PlayCircle className="mr-2 h-4 w-4" />
           Strategy controls
@@ -259,7 +288,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </div>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Risk State</div>
             <CardTitle className="flex items-center gap-2">
@@ -338,29 +367,29 @@ export function TradingScreen({ data }: TradingScreenProps) {
           </CardContent>
         </Card>
 
-        <Card className="bg-panel-strong text-slate-50">
+        <Card className="panel-surface-strong bg-panel-strong">
           <CardHeader>
             <div className="eyebrow-label">Brokerage Wiring</div>
             <CardTitle className="flex items-center gap-2">
               <Cable className="h-5 w-5 text-primary" />
               Execution adapter health
             </CardTitle>
-            <CardDescription className="text-slate-300">{data.brokerage.notes}</CardDescription>
+            <CardDescription>{data.brokerage.notes}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <WiringRow label="Provider" value={data.brokerage.provider} />
-            <WiringRow label="Account" value={data.brokerage.account} />
-            <WiringRow label="Environment" value={data.brokerage.environment.toUpperCase()} />
-            <WiringRow label="Connection" value={data.brokerage.connection} tone={wiringTone[data.brokerage.connection]} />
-            <WiringRow label="Last heartbeat" value={data.brokerage.lastHeartbeat} />
-            <WiringRow label="Order ingress" value={data.brokerage.orderIngress} />
-            <WiringRow label="Fill feed" value={data.brokerage.fillFeed} />
+            <KeyValueRow label="Provider" value={data.brokerage.provider} />
+            <KeyValueRow label="Account" value={data.brokerage.account} />
+            <KeyValueRow label="Environment" value={data.brokerage.environment.toUpperCase()} />
+            <KeyValueRow label="Connection" value={data.brokerage.connection} tone={wiringTone[data.brokerage.connection]} />
+            <KeyValueRow label="Last heartbeat" value={data.brokerage.lastHeartbeat} />
+            <KeyValueRow label="Order ingress" value={data.brokerage.orderIngress} />
+            <KeyValueRow label="Fill feed" value={data.brokerage.fillFeed} />
           </CardContent>
         </Card>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Wallet className="h-4 w-4 text-primary" />
@@ -408,7 +437,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2 text-base">
@@ -612,7 +641,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
         </Card>
       </section>
 
-      <Card>
+      <Card className="panel-surface">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <CandlestickChart className="h-4 w-4 text-primary" />
@@ -638,7 +667,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
 
       <section className="grid gap-4 xl:grid-cols-2">
         {/* Paper session management */}
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
@@ -664,7 +693,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
 
           {paperSessions.errorText && (
             <CardContent className="pt-0 pb-2">
-              <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+              <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
                 <XCircle className="h-4 w-4 shrink-0" />
                 {paperSessions.errorText}
               </div>
@@ -689,7 +718,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                       placeholder="my-strategy-01"
                       value={paperSessions.form.strategyId}
                       onChange={(e) => paperSessions.updateField("strategyId", e.target.value)}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     />
                   </div>
                   <div className="space-y-1">
@@ -705,7 +734,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                       onChange={(e) => paperSessions.updateField("initialCash", e.target.value)}
                       aria-describedby={paperSessions.formDescriptionId}
                       aria-invalid={!paperSessions.canSubmitCreate ? true : undefined}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                       required
                     />
                   </div>
@@ -875,7 +904,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 value={strategyLifecycle.strategyId}
                 aria-describedby={`${strategyLifecycle.strategyIdHelpId} ${strategyLifecycle.strategyIdStatusId}`}
                 onChange={(e) => strategyLifecycle.updateStrategyId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               />
               <p id={strategyLifecycle.strategyIdHelpId} className="text-xs text-muted-foreground">
                 {strategyLifecycle.helpText}
@@ -1015,7 +1044,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
               {sessionReplay.statusText}
             </div>
             {(sessionReplay.errorText || sessionReplay.speedValidationText || sessionReplay.seekValidationText) && (
-              <p id={sessionReplay.errorId} className="text-xs text-destructive">
+              <p id={sessionReplay.errorId} className="text-xs text-danger">
                 {sessionReplay.errorText ?? sessionReplay.speedValidationText ?? sessionReplay.seekValidationText}
               </p>
             )}
@@ -1057,7 +1086,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   value={promotionGate.form.runId}
                   onChange={(e) => promotionGate.updateField("runId", e.target.value)}
                   aria-describedby="promotion-run-help promotion-action-state"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
                 <span id="promotion-run-help" className="text-xs text-muted-foreground">Evaluate this run before writing a promotion decision.</span>
               </label>
@@ -1070,7 +1099,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   value={promotionGate.form.approvedBy}
                   onChange={(e) => promotionGate.updateField("approvedBy", e.target.value)}
                   aria-describedby="promotion-action-state"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   required
                 />
               </label>
@@ -1084,7 +1113,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 value={promotionGate.form.approvalReason}
                 onChange={(e) => promotionGate.updateField("approvalReason", e.target.value)}
                 aria-describedby="promotion-action-state"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 required
               />
             </label>
@@ -1097,7 +1126,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 value={promotionGate.form.rejectionReason}
                 onChange={(e) => promotionGate.updateField("rejectionReason", e.target.value)}
                 aria-describedby="promotion-action-state"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               />
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -1109,7 +1138,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   placeholder="optional review notes"
                   value={promotionGate.form.reviewNotes}
                   onChange={(e) => promotionGate.updateField("reviewNotes", e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
               </label>
               <label htmlFor="promotion-manual-override" className="grid gap-1 text-sm">
@@ -1120,7 +1149,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   placeholder="optional manual override id"
                   value={promotionGate.form.manualOverrideId}
                   onChange={(e) => promotionGate.updateField("manualOverrideId", e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
               </label>
             </div>
@@ -1158,7 +1187,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 {promotionGate.outcome.message}
               </p>
             )}
-            {promotionGate.errorText && <p role="alert" className="text-xs text-destructive">{promotionGate.errorText}</p>}
+            {promotionGate.errorText && <p role="alert" className="text-xs text-danger">{promotionGate.errorText}</p>}
             <div className="rounded-lg border border-border/60 p-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Audit trail</p>
               <ul className="space-y-1 text-xs">
@@ -1397,7 +1426,7 @@ function AcceptanceStatusCard({
   const overallLevel: AcceptanceLevel = readyCount === totalCount ? "ready" : hasAtRisk ? "atRisk" : "review";
 
   return (
-    <Card>
+    <Card className="panel-surface">
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -1459,7 +1488,7 @@ function AcceptanceStatusCard({
 
 function ReadinessSummaryPill({ row }: { row: TradingReadinessSummaryRow }) {
   return (
-    <div className={cn("rounded-lg border px-3 py-2", acceptanceTone[row.level])} aria-label={row.ariaLabel}>
+    <div className={cn("data-grid-surface border px-3 py-2", acceptanceTone[row.level])} aria-label={row.ariaLabel}>
       <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{row.label}</p>
       <p className="mt-1 break-words font-mono text-xs font-semibold text-foreground">{row.label}: {row.value}</p>
     </div>
@@ -1468,7 +1497,7 @@ function ReadinessSummaryPill({ row }: { row: TradingReadinessSummaryRow }) {
 
 function AcceptanceRow({ item }: { item: CockpitAcceptanceItem }) {
   return (
-    <div className={cn("rounded-xl border px-4 py-3", acceptanceTone[item.level])}>
+    <div className={cn("data-grid-surface border px-4 py-3", acceptanceTone[item.level])}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{item.label}</p>
@@ -1493,7 +1522,7 @@ function OperatorWorkItemList({
   const primaryWorkItem = workItems[0] ?? null;
 
   return (
-    <div className="rounded-xl border border-border/70 bg-secondary/25 p-4">
+    <div className="panel-surface p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Operator work items</p>
@@ -1560,14 +1589,14 @@ function PaperSessionDetailPanelView({ detail }: { detail: PaperSessionDetailPan
 
       <div className="grid gap-3 sm:grid-cols-2">
         {detail.infoRows.map((row) => (
-          <SessionInfoRow key={row.label} label={row.label} value={row.value} />
+          <DataRow key={row.label} label={row.label} value={row.value} />
         ))}
       </div>
 
       {detail.metricRows.length > 0 && (
         <div className="grid gap-3 sm:grid-cols-3">
           {detail.metricRows.map((row) => (
-            <SessionMetric key={row.label} label={row.label} value={row.value} />
+            <DataRow key={row.label} label={row.label} value={row.value} />
           ))}
         </div>
       )}
@@ -1612,20 +1641,12 @@ function PaperSessionReplayPanelView({ panel }: { panel: PaperSessionReplayPanel
   );
 }
 
-function SessionInfoRow({ label, value }: { label: string; value: string | null }) {
+/** Shared label+value tile used in session info and session metric contexts. */
+function DataRow({ label, value }: { label: string; value: string | null }) {
   return (
-    <div className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-2">
+    <div className="data-grid-surface px-3 py-2">
       <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
       <div className="mt-1 font-mono text-sm text-foreground">{value ?? "Unavailable"}</div>
-    </div>
-  );
-}
-
-function SessionMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-2">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
-      <div className="mt-1 font-mono text-sm text-foreground">{value}</div>
     </div>
   );
 }
@@ -1647,7 +1668,7 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
 
         {vm.errorPanel && (
-          <div role="alert" aria-label={vm.errorPanel.ariaLabel} className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+          <div role="alert" aria-label={vm.errorPanel.ariaLabel} className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
             <XCircle className="h-4 w-4 shrink-0" />
             {vm.errorPanel.text}
           </div>
@@ -1702,7 +1723,7 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
 
 function TradingTable({ columns, rows }: { columns: string[]; rows: string[][] }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-border/70">
+    <div className="data-grid-surface overflow-x-auto">
       <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
         <thead className="bg-secondary/30">
           <tr>
@@ -1731,25 +1752,26 @@ function TradingTable({ columns, rows }: { columns: string[]; rows: string[][] }
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="rounded-xl border border-border/70 bg-secondary/30 p-4">
+    <div className="workspace-header-card p-4">
       <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
       <div className={cn("mt-2 font-mono text-sm font-semibold text-foreground", tone)}>{value}</div>
     </div>
   );
 }
 
-function WiringRow({ label, value, tone }: { label: string; value: string; tone?: string }) {
+/** Shared key-value row used in brokerage wiring and route context panels. */
+function KeyValueRow({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
-      <span className="text-slate-300">{label}</span>
-      <span className={cn("font-mono text-slate-100", tone)}>{value}</span>
+    <div className="data-grid-surface flex items-center justify-between gap-4 px-3 py-2">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={cn("font-mono text-foreground", tone)}>{value}</span>
     </div>
   );
 }
 
 function TradingHighlight({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
   return (
-    <div className="rounded-xl border border-border/70 bg-secondary/30 p-4">
+    <div className="workspace-header-card p-4">
       <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
         <Icon className="h-4 w-4 text-primary shrink-0" />
         {title}
@@ -1759,11 +1781,12 @@ function TradingHighlight({ icon: Icon, title, description }: { icon: React.Elem
   );
 }
 
-function ContextRow({ label, value }: { label: string; value: string }) {
+function CockpitChip({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
-      <span className="text-slate-300">{label}</span>
-      <span className="font-mono text-slate-100">{value}</span>
-    </div>
+    <span className="toolbar-chip">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-mono text-foreground">{value}</span>
+    </span>
   );
 }
+

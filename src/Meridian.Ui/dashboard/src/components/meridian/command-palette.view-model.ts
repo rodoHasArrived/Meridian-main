@@ -6,6 +6,7 @@ export interface CommandPaletteItem {
   label: string;
   description: string;
   route: string;
+  routeLabel: string;
   statusLabel: string;
   commandLabel: string;
   ariaLabel: string;
@@ -21,6 +22,8 @@ export interface CommandPaletteViewModel {
   title: string;
   subtitle: string;
   routeSummary: string;
+  shortcutHint: string;
+  scopeLabel: string;
   commandListLabel: string;
   itemCountLabel: string;
   activeWorkspaceLabel: string;
@@ -43,6 +46,7 @@ export function buildCommandPaletteViewModel(
       label: workspace.label,
       description: workspace.description,
       route,
+      routeLabel: route,
       statusLabel: active ? "Current" : workspace.status,
       commandLabel: active ? `Stay in ${workspace.label}` : `Open ${workspace.label}`,
       ariaLabel: active ? `${workspace.label}, current workspace` : `Open ${workspace.label} workspace`,
@@ -57,6 +61,8 @@ export function buildCommandPaletteViewModel(
     title: "Open workspace",
     subtitle: "Route to a canonical operator workspace.",
     routeSummary: activeWorkspace ? `Route to a canonical operator workspace. ${activeWorkspaceLabel}.` : "Route to a canonical operator workspace. No active workspace.",
+    shortcutHint: "Esc to close",
+    scopeLabel: "Canonical workspace routing",
     commandListLabel: `${items.length} workspace command${items.length === 1 ? "" : "s"}`,
     itemCountLabel: `${items.length} workspace${items.length === 1 ? "" : "s"}`,
     activeWorkspaceLabel,

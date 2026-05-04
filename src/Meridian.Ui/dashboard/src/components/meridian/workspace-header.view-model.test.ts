@@ -34,6 +34,18 @@ describe("workspace header view model", () => {
       variant: "warning",
       ariaLabel: "Trading workspace status Review"
     });
+    expect(model.metaItems).toContainEqual({
+      id: "route",
+      label: "Canonical route",
+      value: "/trading",
+      ariaLabel: "Canonical route /trading"
+    });
+    expect(model.metaItems).toContainEqual({
+      id: "palette",
+      label: "Command palette",
+      value: "8 commands · Ctrl K",
+      ariaLabel: "8 commands available in the command palette"
+    });
     expect(model.sessionLabel).toBe("Ops Desk");
     expect(model.sessionRoleLabel).toBe("Operator");
     expect(model.refreshAction).toEqual({
@@ -54,6 +66,7 @@ describe("workspace header view model", () => {
     });
 
     expect(model.badges.map((badge) => badge.id)).toEqual(["workspace", "workspace-status"]);
+    expect(model.metaItems.find((item) => item.id === "palette")?.value).toBe("Ctrl K when ready");
     expect(model.badges).toContainEqual({
       id: "workspace-status",
       label: "Setup",

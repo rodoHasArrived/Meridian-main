@@ -12,5 +12,7 @@ describe("WorkspaceNav", () => {
     expect(screen.getByLabelText("Accounting workspace, current route, Review")).toHaveAttribute("aria-current", "page");
     expect(screen.getByText("Review · Current")).toBeInTheDocument();
     expect(screen.getByText("Review posture")).toHaveClass("operator-nav-status-review");
+    expect(screen.getAllByLabelText("Canonical route /accounting")[0]).toHaveTextContent("/accounting");
+    expect(screen.getByLabelText("Open command palette with Control K")).toHaveTextContent("Ctrl K");
   });
 });

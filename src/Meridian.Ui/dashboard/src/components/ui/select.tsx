@@ -1,6 +1,24 @@
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Native `<select>` with Meridian styling and a custom chevron overlay.
+ * Appearance is reset (`appearance-none`) so the chevron SVG is consistent across browsers.
+ *
+ * **Error state:** set `error` to apply danger border and focus ring tones and add
+ * `aria-invalid` for screen readers. Mirror the `Input` error behaviour.
+ *
+ * **Placeholder:** pass `placeholder` to render a disabled first `<option>` with that text.
+ * Useful for required selects that should not have a default value.
+ *
+ * Populate options as children: `<option value="buy">Buy</option>`.
+ *
+ * @example
+ * <Select value={side} onChange={(e) => setSide(e.target.value)} error={!side}>
+ *   <option value="buy">Buy</option>
+ *   <option value="sell">Sell</option>
+ * </Select>
+ */
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   error?: boolean;
   placeholder?: string;

@@ -38,6 +38,9 @@ describe("SettingsScreen", () => {
   it("renders recent events as accessible status evidence rows", () => {
     renderWithRouter(<SettingsScreen session={session} overview={overview} />);
 
+    expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
+      "Operator control posture"
+    );
     const eventList = screen.getByRole("list", { name: "1 recent system event" });
     const eventRow = within(eventList).getByRole("group", {
       name: /OBS event from Provider health at 2026-05-01T00:00:00Z\. Brokerage sync delayed\./i
@@ -45,7 +48,7 @@ describe("SettingsScreen", () => {
 
     expect(within(eventRow).getByText("OBS")).toBeInTheDocument();
     expect(within(eventRow).getByText("Brokerage sync delayed.")).toBeInTheDocument();
-    expect(within(eventRow).getByText("Provider health")).toBeInTheDocument();
+    expect(within(eventRow).getByText("Provider health · evt-1")).toBeInTheDocument();
   });
 
   it("keeps the recent-events panel visible when there are no events", () => {
@@ -80,7 +83,7 @@ describe("SettingsScreen", () => {
       "/api/status"
     );
     expect(screen.getByRole("list", { name: "Diagnostic endpoint availability" })).toBeInTheDocument();
-    expect(screen.getByText("All reachable")).toBeInTheDocument();
+    expect(screen.getAllByText("All reachable").length).toBeGreaterThan(0);
   });
 
   it("renders diagnostic endpoint failures as accessible endpoint cards", () => {

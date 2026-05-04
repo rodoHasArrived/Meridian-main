@@ -4,6 +4,24 @@ import { X } from "lucide-react";
 import { buildCommandPaletteViewModel } from "@/components/meridian/command-palette.view-model";
 import { cn } from "@/lib/utils";
 
+/**
+ * Full-screen command palette overlay for quick workspace navigation.
+ *
+ * Opened and closed by the parent via `open` / `onOpenChange`. The current workspace
+ * item (matched from `useLocation`) is highlighted and receives initial focus on open.
+ *
+ * **Keyboard:** Escape closes the palette and returns focus to the trigger. The item list
+ * supports standard Tab/Shift-Tab navigation.
+ *
+ * **Backdrop:** clicking outside the panel card calls `onOpenChange(false)`.
+ *
+ * Route commands and descriptions are derived from `buildCommandPaletteViewModel` —
+ * no prop is needed for the item list. Items are generated from the canonical workspace
+ * route map maintained in the view-model.
+ *
+ * @example
+ * <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+ */
 interface CommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -38,7 +56,15 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-background/70 px-4 py-24 backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center bg-background/70 px-4 py-24 backdrop-blur-sm"
+      data-testid="command-palette-backdrop"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          onOpenChange(false);
+        }
+      }}
+    >
       <div
         ref={dialogRef}
         role="dialog"
@@ -46,7 +72,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         aria-labelledby="command-palette-title"
         aria-describedby="command-palette-route-context"
         tabIndex={-1}
-        className="w-full max-w-xl rounded-lg border border-border bg-card p-4 shadow-float outline-none"
+        className="command-palette-shell w-full max-w-xl outline-none"
       >
         <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
           <div>
@@ -67,6 +93,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             <X className="h-4 w-4" />
           </button>
         </div>
+        <div className="command-palette-summary" aria-label={viewModel.scopeLabel}>
+          <span className="command-palette-chip">{viewModel.activeWorkspaceLabel}</span>
+          <span className="command-palette-chip">{viewModel.shortcutHint}</span>
+        </div>
         <nav className="mt-3 grid gap-2" aria-label={viewModel.commandListLabel}>
           <div className="eyebrow-label">{viewModel.itemCountLabel}</div>
           {viewModel.emptyState ? (
@@ -84,7 +114,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               aria-label={item.ariaLabel}
               aria-current={item.active ? "page" : undefined}
               className={cn(
-                "rounded-md border px-3 py-3 text-sm transition-colors",
+                "command-palette-command rounded-md border px-3 py-3 text-sm transition-colors",
                 item.active
                   ? "border-primary/35 bg-primary/10 text-foreground"
                   : "border-transparent hover:border-border/70 hover:bg-secondary/70"
@@ -93,15 +123,20 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             >
               <span className="flex items-start justify-between gap-3">
                 <span>
-                  <span className="block font-semibold">{item.commandLabel}</span>
-                  <span className="mt-1 block text-muted-foreground">{item.description}</span>
+                    <span className="block font-semibold">{item.commandLabel}</span>
+                    <span className="mt-1 block text-muted-foreground">{item.description}</span>
+                  </span>
+                  <span className="flex shrink-0 flex-col items-end gap-2">
+                    <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`}>
+                      {item.routeLabel}
+                    </span>
+                    <span className="rounded-sm border border-border/70 bg-secondary/55 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                      {item.statusLabel}
+                    </span>
+                  </span>
                 </span>
-                <span className="shrink-0 rounded-sm border border-border/70 bg-secondary/55 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                  {item.statusLabel}
-                </span>
-              </span>
-            </Link>
-          ))}
+              </Link>
+            ))}
         </nav>
       </div>
     </div>
