@@ -294,7 +294,7 @@ public static class ExecutionEndpoints
 
         group.MapPost("/controls/manual-overrides", async (CreateExecutionManualOverrideRequest request, HttpContext context) =>
         {
-            if (!HasExecutionControlMutationPermission(context))
+            if (!HasExecutionControlPermission(context))
             {
                 return Results.Forbid();
             }
@@ -333,7 +333,7 @@ public static class ExecutionEndpoints
 
         group.MapPost("/controls/manual-overrides/{overrideId}/clear", async (string overrideId, ClearExecutionManualOverrideRequest request, HttpContext context) =>
         {
-            if (!HasExecutionControlMutationPermission(context))
+            if (!HasExecutionControlPermission(context))
             {
                 return Results.Forbid();
             }
@@ -985,25 +985,35 @@ public static class ExecutionEndpoints
 
     private static string GenerateActionId() => $"act-{Guid.NewGuid():N}";
 
+    private static bool HasExecutionControlPermission(HttpContext context)
+    {
+        if (!context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var rawPermissions) ||
+            rawPermissions is not UserPermission permissions)
+        {
+            return false;
+        }
+
+        return permissions.HasFlag(UserPermission.ExecuteTrades) ||
+               permissions.HasFlag(UserPermission.ManageOrders);
+    }
+
     private static ILogger GetLogger(IServiceProvider sp) =>
         sp.GetRequiredService<ILoggerFactory>()
           .CreateLogger("Meridian.Ui.Shared.Endpoints.ExecutionEndpoints");
 
     private static string ResolveActor(HttpContext context)
     {
-        if (context.Request.Headers.TryGetValue("X-Meridian-Actor", out var actorValues))
-        {
-            var actor = actorValues.ToString().Trim();
-            if (!string.IsNullOrWhiteSpace(actor))
-            {
-                return actor;
-            }
-        }
-
         if (context.User.Identity?.IsAuthenticated == true &&
             !string.IsNullOrWhiteSpace(context.User.Identity.Name))
         {
             return context.User.Identity.Name!;
+        }
+
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserKey, out var currentUser) &&
+            currentUser is string username &&
+            !string.IsNullOrWhiteSpace(username))
+        {
+            return username;
         }
 
         return "operator";

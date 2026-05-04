@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Auth;
 using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -127,6 +128,33 @@ public sealed class ExecutionGovernanceEndpointsTests
             entry.Actor == "ops" &&
             entry.RunId == "run-123" &&
             entry.CorrelationId == "corr-override-clear");
+    }
+
+    [Fact]
+    public async Task ControlsEndpoints_ManualOverrideMutations_ForbidReadOnlyPermissions()
+    {
+        var tempRoot = CreateTempRoot();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")));
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<ExecutionOperatorControlService>();
+        }, RolePermissions.For(UserRole.ReadOnly));
+
+        var client = app.GetTestClient();
+        var createResponse = await client.PostAsync(
+            "/api/execution/controls/manual-overrides",
+            JsonContent(new
+            {
+                kind = ExecutionManualOverrideKinds.AllowLivePromotion,
+                reason = "Risk review completed",
+                strategyId = "strategy-live",
+                runId = "run-123"
+            }));
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -284,7 +312,9 @@ public sealed class ExecutionGovernanceEndpointsTests
             entry.Symbol == "AAPL");
     }
 
-    private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection> configureServices)
+    private static async Task<WebApplication> CreateAppAsync(
+        Action<IServiceCollection> configureServices,
+        UserPermission permissions = UserPermission.ExecuteTrades | UserPermission.ManageOrders)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -294,6 +324,12 @@ public sealed class ExecutionGovernanceEndpointsTests
         configureServices(builder.Services);
 
         var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "ops-user";
+            await next(context);
+        });
         app.MapExecutionEndpoints(JsonOptions());
         await app.StartAsync();
         return app;
