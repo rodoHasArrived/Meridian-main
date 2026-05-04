@@ -216,6 +216,73 @@ public sealed class ProviderEndpointTests
         source.GetProperty("alpaca").GetProperty("keyId").GetString().Should().BeEmpty();
         source.GetProperty("alpaca").GetProperty("secretKey").GetString().Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task GetDataSources_RedactsPolygonApiKey()
+    {
+        var displayName = $"Polygon Redaction {Guid.NewGuid():N}";
+        var configurePayload = new
+        {
+            Kind = "polygon",
+            DisplayName = displayName,
+            ApiKey = "polygon-secret-key",
+            ApiSecret = (string?)null,
+            Endpoint = (string?)null,
+            Capabilities = new[] { "backfill", "reference" }
+        };
+
+        var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
+        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var response = await _client.GetAsync("/api/config/datasources");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var json = await DeserializeAsync(response);
+        json.Should().ContainKey("sources");
+        var sources = json["sources"];
+        var source = sources.EnumerateArray().FirstOrDefault(s =>
+            string.Equals(s.GetProperty("name").GetString(), displayName, StringComparison.Ordinal));
+
+        source.ValueKind.Should().NotBe(JsonValueKind.Undefined);
+        var polygonElement = source.GetProperty("polygon");
+        // apiKey should either be absent (WhenWritingNull) or present with a null value
+        if (polygonElement.TryGetProperty("apiKey", out var apiKeyElement))
+            apiKeyElement.ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    [Fact]
+    public async Task GetDataSources_AliasEndpoint_RedactsProviderCredentials()
+    {
+        var displayName = $"Alpaca Alias Redaction {Guid.NewGuid():N}";
+        var configurePayload = new
+        {
+            Kind = "alpaca",
+            DisplayName = displayName,
+            ApiKey = "alpaca-alias-key",
+            ApiSecret = "alpaca-alias-secret",
+            Endpoint = (string?)null,
+            Capabilities = new[] { "streaming" }
+        };
+
+        var configureContent = new StringContent(JsonSerializer.Serialize(configurePayload), Encoding.UTF8, "application/json");
+        var configureResponse = await _client.PostAsync("/api/providers/configure", configureContent);
+        configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var response = await _client.GetAsync("/api/config/data-sources");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var json = await DeserializeAsync(response);
+        json.Should().ContainKey("sources");
+        var sources = json["sources"];
+        var source = sources.EnumerateArray().FirstOrDefault(s =>
+            string.Equals(s.GetProperty("name").GetString(), displayName, StringComparison.Ordinal));
+
+        source.ValueKind.Should().NotBe(JsonValueKind.Undefined);
+        source.GetProperty("alpaca").GetProperty("keyId").GetString().Should().BeEmpty();
+        source.GetProperty("alpaca").GetProperty("secretKey").GetString().Should().BeEmpty();
+    }
+
     [Fact]
     public async Task GetDataSources_ReturnsJsonWithSources()
     {
