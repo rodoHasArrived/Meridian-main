@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.AspNetCore.Builder;
@@ -311,10 +312,21 @@ public static class SecurityMasterEndpoints
         group.MapPatch(UiApiRoutes.SecurityMasterConvertibleEquityTerms, async (
             Guid securityId,
             AmendConvertibleEquityTermsRequest request,
+            HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
+            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+            {
+                return Results.Unauthorized();
+            }
+
+            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
+            {
+                return Results.Forbid();
+            }
+
             var currentTerms = await queryService.GetConvertibleEquityTermsAsync(securityId, ct).ConfigureAwait(false);
             if (currentTerms is null)
             {

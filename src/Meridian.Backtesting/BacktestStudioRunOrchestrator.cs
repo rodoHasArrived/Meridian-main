@@ -44,7 +44,15 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
         var engine = ResolveEngine(request.Engine);
         var handle = await engine.StartAsync(request, ct).ConfigureAwait(false);
 
-        var sweepHash = request.SweepDefinitionHash ?? ComputeSweepDefinitionHash(request.SweepObjective, request.Parameters);
+        var computedSweepHash = ComputeSweepDefinitionHash(request.SweepObjective, request.Parameters);
+        if (!string.IsNullOrWhiteSpace(request.SweepDefinitionHash) &&
+            !string.Equals(request.SweepDefinitionHash, computedSweepHash, StringComparison.Ordinal))
+        {
+            _logger.LogWarning(
+                "Backtest Studio run request {StrategyId} supplied a sweep definition hash that did not match the canonical value. Persisting canonical hash.",
+                request.StrategyId);
+        }
+
         var entry = StrategyRunEntry.Start(
             request.StrategyId,
             request.StrategyName,
@@ -56,7 +64,7 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
             parameterSet: request.Parameters) with
         {
             SweepId = request.SweepId,
-            SweepDefinitionHash = sweepHash,
+            SweepDefinitionHash = computedSweepHash,
             SweepObjective = request.SweepObjective
         };
 

@@ -327,6 +327,7 @@ public static class ExecutionEndpoints
         })
         .WithName("CreateExecutionManualOverride")
         .Produces<ExecutionManualOverride>(201)
+        .Produces(403)
         .Produces(400)
         .Produces(503);
 
@@ -365,6 +366,7 @@ public static class ExecutionEndpoints
         })
         .WithName("ClearExecutionManualOverride")
         .Produces<TradingActionResult>(200)
+        .Produces(403)
         .Produces(404)
         .Produces(503);
 
@@ -1015,6 +1017,23 @@ public static class ExecutionEndpoints
         }
 
         return "operator";
+    }
+
+    private static bool HasExecutionControlMutationPermission(HttpContext context)
+    {
+        const UserPermission requiredPermission = UserPermission.ManageOrders;
+
+        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissionsFromContext)
+        {
+            return (permissionsFromContext & requiredPermission) == requiredPermission;
+        }
+
+        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is UserRole roleFromContext)
+        {
+            return RolePermissions.HasPermission(roleFromContext, requiredPermission);
+        }
+
+        return false;
     }
 
     private static Dictionary<string, string> MergeMetadata(

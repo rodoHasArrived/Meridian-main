@@ -29,6 +29,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class WorkstationEndpoints
 {
+    private const int MaxRunComparisonRequestIds = 10;
     private const int SecurityCoveragePreviewLimit = 5;
 
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
@@ -775,6 +776,11 @@ public static class WorkstationEndpoints
                 return Results.BadRequest(new { error = "At least two run IDs are required for comparison." });
             }
 
+            if (request.RunIds.Count > MaxRunComparisonRequestIds)
+            {
+                return Results.BadRequest(new { error = $"A maximum of {MaxRunComparisonRequestIds} run IDs can be compared per request." });
+            }
+
             var comparison = await readService.CompareRunsAsync(request.RunIds, context.RequestAborted).ConfigureAwait(false);
             if (request.Modes is { Count: > 0 })
             {
@@ -932,6 +938,11 @@ public static class WorkstationEndpoints
                 return Results.BadRequest(new { error = "At least two run IDs are required for comparison." });
             }
 
+            if (runIds.Length > MaxRunComparisonRequestIds)
+            {
+                return Results.BadRequest(new { error = $"A maximum of {MaxRunComparisonRequestIds} run IDs can be compared per request." });
+            }
+
             var comparison = await readService.GetRunComparisonDtosAsync(runIds, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(comparison, jsonOptions);
         })
@@ -1026,8 +1037,15 @@ public static class WorkstationEndpoints
             // UseStaticFiles() middleware runs after routing in WebApplication, so the
             // catch-all route must serve these files explicitly.
             var root = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
-            var filePath = Path.Combine(root, "workstation", path.Replace('/', Path.DirectorySeparatorChar));
-            if (!File.Exists(filePath))
+            var workstationRoot = Path.GetFullPath(Path.Combine(root, "workstation"));
+            var normalizedPath = path.Replace('/', Path.DirectorySeparatorChar)
+                .Replace('\\', Path.DirectorySeparatorChar);
+            if (Path.IsPathRooted(normalizedPath))
+                return Results.NotFound();
+
+            var filePath = Path.GetFullPath(Path.Combine(workstationRoot, normalizedPath));
+            var rootWithSeparator = workstationRoot.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            if (!filePath.StartsWith(rootWithSeparator, StringComparison.Ordinal) || !File.Exists(filePath))
                 return Results.NotFound();
 
             var ext = Path.GetExtension(filePath).ToLowerInvariant();

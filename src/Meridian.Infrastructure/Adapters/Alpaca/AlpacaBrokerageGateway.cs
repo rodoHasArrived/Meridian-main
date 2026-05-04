@@ -29,9 +29,6 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// - Supports fractional shares
 /// - Supports extended hours trading
 /// - Supports US equities and fixed income (US Treasuries, corporate bonds)
-/// - Fixed income orders may use notional sizing: set Metadata["notional"] = "true" on the OrderRequest
-///   and pass the dollar amount as Quantity. Optionally set Metadata["asset_class"] = "us_treasury"
-///   to route treasury orders explicitly.
 /// - Rate limit: 200 req/min
 /// </remarks>
 [DataSource("alpaca-brokerage", "Alpaca Brokerage", DataSourceType.Realtime, DataSourceCategory.Broker,
@@ -136,24 +133,16 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
             "Alpaca submitting order: {Side} {Quantity} {Symbol} @ {Type}",
             request.Side, request.Quantity, request.Symbol, request.Type);
 
-        var isNotional = request.Metadata?.TryGetValue("notional", out var notionalFlag) == true
-            && string.Equals(notionalFlag, "true", StringComparison.OrdinalIgnoreCase);
-
-        string? assetClass = request.Metadata is not null
-            && request.Metadata.TryGetValue("asset_class", out var ac) ? ac : null;
-
         var payload = new AlpacaOrderPayload
         {
             Symbol = request.Symbol,
-            Qty = isNotional ? null : request.Quantity.ToString("G"),
-            Notional = isNotional ? request.Quantity.ToString("G") : null,
+            Qty = request.Quantity.ToString("G"),
             Side = request.Side == OrderSide.Buy ? "buy" : "sell",
             Type = MapOrderType(request.Type),
             TimeInForce = MapTimeInForce(request.TimeInForce),
             LimitPrice = request.LimitPrice?.ToString("G"),
             StopPrice = request.StopPrice?.ToString("G"),
             ClientOrderId = request.ClientOrderId,
-            AssetClass = assetClass,
         };
 
         using var client = CreateHttpClient();

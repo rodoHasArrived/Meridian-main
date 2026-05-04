@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Application.Accounts;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
@@ -16,6 +17,7 @@ public static class FundAccountEndpoints
     public static void MapFundAccountEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("/api/fund-accounts").WithTags("Fund Accounts");
+        group.AddEndpointFilter(RequireFundAccountAccess);
 
         // ── Account CRUD ─────────────────────────────────────────────────────
 
@@ -183,6 +185,9 @@ public static class FundAccountEndpoints
 
         group.MapGet("/brokerage-sync/accounts", async (HttpContext context) =>
         {
+            if (!HasBrokerageSyncAccess(context))
+                return Results.Forbid();
+
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
                 return BrokerageSyncUnavailable();
@@ -196,6 +201,9 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/brokerage-sync/status", async (Guid accountId, HttpContext context) =>
         {
+            if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
+                return Results.Forbid();
+
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
                 return BrokerageSyncUnavailable();
@@ -209,6 +217,9 @@ public static class FundAccountEndpoints
 
         group.MapPost("/{accountId:guid}/brokerage-sync/run", async (Guid accountId, HttpContext context) =>
         {
+            if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context, requireWriteAccess: true).ConfigureAwait(false))
+                return Results.Forbid();
+
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
                 return BrokerageSyncUnavailable();
@@ -226,6 +237,9 @@ public static class FundAccountEndpoints
 #pragma warning disable CS0618 // Compatibility routes retain legacy brokerage projection payloads; readiness uses status DTOs.
         group.MapGet("/{accountId:guid}/brokerage-sync/positions", async (Guid accountId, HttpContext context) =>
         {
+            if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
+                return Results.Forbid();
+
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
                 return BrokerageSyncUnavailable();
@@ -239,6 +253,9 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/brokerage-sync/activity", async (Guid accountId, HttpContext context) =>
         {
+            if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
+                return Results.Forbid();
+
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
                 return BrokerageSyncUnavailable();
@@ -460,11 +477,82 @@ public static class FundAccountEndpoints
         return Guid.TryParse(raw, out var parsed) ? parsed : null;
     }
 
+    private static ValueTask<object?> RequireFundAccountAccess(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    {
+        if (!TryGetCurrentRole(context.HttpContext, out var role))
+        {
+            return ValueTask.FromResult<object?>(Results.Unauthorized());
+        }
+
+        if (role is UserRole.Admin or UserRole.Developer or UserRole.Accounting)
+        {
+            return next(context);
+        }
+
+        return ValueTask.FromResult<object?>(Results.Forbid());
+    }
+
+    private static bool TryGetCurrentRole(HttpContext context, out UserRole role)
+    {
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleKey, out var item) && item is UserRole currentRole)
+        {
+            role = currentRole;
+            return true;
+        }
+
+        role = default;
+        return false;
+    }
+
     private static IResult ServiceUnavailable() =>
         Results.Problem("Fund account service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
     private static IResult BrokerageSyncUnavailable() =>
         Results.Problem("Brokerage sync service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+    private static bool HasBrokerageSyncAccess(HttpContext context)
+        => TryGetCurrentPermissions(context, out var permissions)
+           && permissions.HasFlag(UserPermission.ViewTrades);
+
+    private static async Task<bool> CanAccessFundAccountBrokerageSyncAsync(
+        Guid accountId,
+        HttpContext context,
+        bool requireWriteAccess = false)
+    {
+        if (!TryGetCurrentPermissions(context, out var permissions)
+            || !permissions.HasFlag(UserPermission.ViewTrades))
+        {
+            return false;
+        }
+
+        if (requireWriteAccess
+            && !permissions.HasFlag(UserPermission.ExecuteTrades)
+            && !permissions.HasFlag(UserPermission.ManageOrders))
+        {
+            return false;
+        }
+
+        var queryService = ResolveQueryService(context);
+        if (queryService is null)
+        {
+            return false;
+        }
+
+        var account = await queryService.GetAccountAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+        return account is not null;
+    }
+
+    private static bool TryGetCurrentPermissions(HttpContext context, out UserPermission permissions)
+    {
+        permissions = UserPermission.None;
+        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission currentPermissions)
+        {
+            permissions = currentPermissions;
+            return true;
+        }
+
+        return false;
+    }
 
     private static async Task<WorkstationBrokerageSyncRunRequestDto?> ReadBrokerageSyncRequestAsync(
         HttpContext context,

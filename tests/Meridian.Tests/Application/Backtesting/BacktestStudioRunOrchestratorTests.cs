@@ -53,6 +53,34 @@ public sealed class BacktestStudioRunOrchestratorTests
         completed.TerminalStatus.Should().BeNull();
     }
 
+
+    [Fact]
+    public async Task StartAsync_IgnoresCallerSuppliedSweepDefinitionHash()
+    {
+        var store = new StrategyRunStore();
+        var engine = new StubBacktestStudioEngine();
+        await using var orchestrator = new BacktestStudioRunOrchestrator(
+            store,
+            [engine],
+            NullLogger<BacktestStudioRunOrchestrator>.Instance);
+
+        var request = new BacktestStudioRunRequest(
+            StrategyId: "strategy-sweep-hash",
+            StrategyName: "Momentum",
+            Engine: StrategyRunEngine.MeridianNative,
+            NativeRequest: BuildRequest(),
+            Parameters: new Dictionary<string, string> { ["lookback"] = "10" },
+            SweepId: "sweep-abc",
+            SweepDefinitionHash: "FORGED-HASH",
+            SweepObjective: "FinalEquity");
+
+        await orchestrator.StartAsync(request);
+
+        var started = await store.GetLatestRunAsync("strategy-sweep-hash");
+        started.Should().NotBeNull();
+        started!.SweepDefinitionHash.Should().NotBe("FORGED-HASH");
+    }
+
     [Fact]
     public async Task StartAsync_WhenEngineFails_RecordsFailedRun()
     {

@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Security.Cryptography;
 
 namespace Meridian.Ui.Services;
 
@@ -724,7 +725,7 @@ public sealed class AnalysisExportWizardService
         CancellationToken ct)
     {
         var result = new SymbolExportResult { Symbol = symbol };
-        var outputFile = Path.Combine(config.OutputPath, $"{CreateSafeFileStem(symbol)}.csv");
+        var outputFile = Path.Combine(config.OutputPath, $"{CreateUniqueFileStem(symbol)}.csv");
         var headers = await DiscoverCsvHeadersAsync(sourceFiles, ct);
 
         await using var writer = new StreamWriter(outputFile, false, Encoding.UTF8);
@@ -895,6 +896,15 @@ public sealed class AnalysisExportWizardService
         return builder.ToString();
     }
 
+    internal static string CreateUniqueFileStem(string symbol)
+    {
+        var safeStem = CreateUniqueFileStem(symbol);
+        var normalizedSymbol = symbol.Trim();
+        var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(normalizedSymbol));
+        var suffix = Convert.ToHexString(hashBytes, 0, 4).ToLowerInvariant();
+        return $"{safeStem}_{suffix}";
+    }
+
     /// <summary>
     /// Placeholder for Parquet export (requires Apache.Arrow or Parquet.Net library).
     /// </summary>
@@ -907,7 +917,7 @@ public sealed class AnalysisExportWizardService
         // Parquet export requires additional libraries (Apache.Arrow.Parquet)
         // For now, fall back to CSV with a note
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateSafeFileStem(symbol);
+        var safeStem = CreateUniqueFileStem(symbol);
 
         // Rename to indicate it's a placeholder
         var csvFile = result.OutputFile;
@@ -941,7 +951,7 @@ public sealed class AnalysisExportWizardService
         // Excel export requires additional libraries (EPPlus, ClosedXML, etc.)
         // For now, export to CSV which can be opened in Excel
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateSafeFileStem(symbol);
+        var safeStem = CreateUniqueFileStem(symbol);
 
         // Add a note file explaining the Excel fallback
         var csvFile = result.OutputFile;
@@ -981,7 +991,7 @@ public sealed class AnalysisExportWizardService
         // HDF5 export requires additional libraries (HDF5.NET, or Python h5py)
         // For now, export to CSV with conversion instructions
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateSafeFileStem(symbol);
+        var safeStem = CreateUniqueFileStem(symbol);
 
         var csvFile = result.OutputFile;
         if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
@@ -1027,7 +1037,7 @@ public sealed class AnalysisExportWizardService
         // ClickHouse native export requires ClickHouse client tools
         // Export to CSV with ClickHouse import instructions
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateSafeFileStem(symbol);
+        var safeStem = CreateUniqueFileStem(symbol);
         var tableName = CreateSafeSqlIdentifier("market_data_", symbol);
 
         var csvFile = result.OutputFile;
@@ -1081,7 +1091,7 @@ public sealed class AnalysisExportWizardService
         // Lean format requires specific directory structure and format
         // Export to CSV with instructions for Lean format conversion
         var result = await ExportToCsvAsync(symbol, sourceFiles, config, ct);
-        var safeStem = CreateSafeFileStem(symbol);
+        var safeStem = CreateUniqueFileStem(symbol);
 
         var csvFile = result.OutputFile;
         if (!string.IsNullOrEmpty(csvFile) && File.Exists(csvFile))
@@ -1122,7 +1132,7 @@ public sealed class AnalysisExportWizardService
         CancellationToken ct)
     {
         var result = new SymbolExportResult { Symbol = symbol };
-        var safeStem = CreateSafeFileStem(symbol);
+        var safeStem = CreateUniqueFileStem(symbol);
         var tableName = CreateSafeSqlIdentifier("market_data_", symbol);
 
         // First export data as CSV for COPY command

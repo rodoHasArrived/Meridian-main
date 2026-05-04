@@ -38,7 +38,7 @@ public sealed class AnalysisExportWizardServiceTests : IDisposable
             CancellationToken.None);
 
         result.RecordCount.Should().Be(3);
-        result.OutputFile.Should().Be(Path.Combine(outputPath, "SPY.csv"));
+        result.OutputFile.Should().Be(Path.Combine(outputPath, "SPY_6493341e.csv"));
         var lines = await File.ReadAllLinesAsync(result.OutputFile);
         lines.Should().Equal(
             "timestamp,price,volume,bid",
@@ -73,8 +73,8 @@ public sealed class AnalysisExportWizardServiceTests : IDisposable
             new ExportConfiguration { OutputPath = outputPath },
             CancellationToken.None);
 
-        var csvPath = Path.Combine(outputPath, "BRK_B.csv");
-        var scriptPath = Path.Combine(outputPath, "BRK_B_load.sql");
+        var csvPath = Path.Combine(outputPath, "BRK_B_82f67012.csv");
+        var scriptPath = Path.Combine(outputPath, "BRK_B_82f67012_load.sql");
 
         result.OutputFile.Should().Be(csvPath);
         result.GeneratedFiles.Should().ContainSingle().Which.Should().Be(scriptPath);
@@ -82,7 +82,18 @@ public sealed class AnalysisExportWizardServiceTests : IDisposable
         File.Exists(scriptPath).Should().BeTrue();
         var script = await File.ReadAllTextAsync(scriptPath);
         script.Should().Contain("CREATE TABLE IF NOT EXISTS market_data_brk_b");
-        script.Should().Contain("\\COPY market_data_brk_b FROM 'BRK_B.csv' WITH CSV HEADER;");
+        script.Should().Contain("\\COPY market_data_brk_b FROM 'BRK_B_82f67012.csv' WITH CSV HEADER;");
+    }
+
+    [Fact]
+    public void CreateUniqueFileStem_ShouldDisambiguateSymbolsWithSameSafeStem()
+    {
+        var first = AnalysisExportWizardService.CreateUniqueFileStem("A'B");
+        var second = AnalysisExportWizardService.CreateUniqueFileStem("A;B");
+
+        first.Should().StartWith("A_B_");
+        second.Should().StartWith("A_B_");
+        first.Should().NotBe(second);
     }
 
     [Fact]
