@@ -234,6 +234,18 @@ public sealed class PromotionService
                 Reason: "Live runs cannot be promoted further.");
         }
 
+        var evaluation = await EvaluateAsync(run.RunId, ct: ct).ConfigureAwait(false);
+        if (!evaluation.IsEligible)
+        {
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: evaluation.BlockingReasons?.FirstOrDefault()
+                    ?? evaluation.Reason
+                    ?? "Promotion gate is blocked.");
+        }
+
         var targetRunType = run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live;
         var approvalChecklist = PromotionApprovalChecklist.Normalize(request.ApprovalChecklist);
         var missingChecklistItems = PromotionApprovalChecklist.GetMissingRequiredItems(targetRunType, approvalChecklist);

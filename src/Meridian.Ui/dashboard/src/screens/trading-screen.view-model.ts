@@ -2586,6 +2586,10 @@ export function validatePromotionApproval(
     return evaluation.blockingReasons?.[0] ?? evaluation.reason ?? "Promotion gate is blocked.";
   }
 
+  if (evaluation.runId !== trimmedForm.runId) {
+    return "Run id changed. Re-evaluate gate checks before confirming promotion.";
+  }
+
   if (!trimmedForm.runId || !trimmedForm.approvedBy || !trimmedForm.approvalReason) {
     return "Run id, operator, and approval reason are required.";
   }
