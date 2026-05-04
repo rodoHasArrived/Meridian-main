@@ -705,9 +705,13 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
     {
         if (string.IsNullOrWhiteSpace(instrumentUrl))
             return null;
+
+        if (!TryBuildTrustedRobinhoodUri(instrumentUrl, out var requestUri))
+            return null;
+
         try
         {
-            var resp = await client.GetAsync(instrumentUrl, ct).ConfigureAwait(false);
+            var resp = await client.GetAsync(requestUri, ct).ConfigureAwait(false);
             if (!resp.IsSuccessStatusCode)
                 return null;
             var instrument = await resp.Content.ReadFromJsonAsync(
@@ -728,9 +732,12 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         if (string.IsNullOrWhiteSpace(optionInstrumentUrl))
             return null;
 
+        if (!TryBuildTrustedRobinhoodUri(optionInstrumentUrl, out var requestUri))
+            return null;
+
         try
         {
-            var response = await client.GetAsync(optionInstrumentUrl, ct).ConfigureAwait(false);
+            var response = await client.GetAsync(requestUri, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
                 return null;
 
@@ -742,6 +749,22 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         {
             return null;
         }
+    }
+
+    private static bool TryBuildTrustedRobinhoodUri(string url, out Uri uri)
+    {
+        uri = null!;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var parsed))
+            return false;
+
+        if (!string.Equals(parsed.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        if (!string.Equals(parsed.Host, "api.robinhood.com", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        uri = parsed;
+        return true;
     }
 
     private static Dictionary<string, string> BuildOptionPositionMetadata(

@@ -284,6 +284,39 @@ public sealed class ProviderEndpointTests
     }
 
     [Fact]
+    public async Task GetDataSources_DoesNotReturnProviderSecrets()
+    {
+        var payload = new
+        {
+            Kind = "alpaca",
+            DisplayName = $"Alpaca Secret Test {Guid.NewGuid():N}",
+            ApiKey = "sensitive-key",
+            ApiSecret = "sensitive-secret",
+            Endpoint = (string?)null,
+            Capabilities = new[] { "streaming" }
+        };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var setupResponse = await _client.PostAsync("/api/providers/configure", content);
+        setupResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var response = await _client.GetAsync("/api/config/datasources");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var json = await DeserializeAsync(response);
+        var sources = json["sources"];
+        sources.ValueKind.Should().Be(JsonValueKind.Array);
+
+        var configuredSource = sources.EnumerateArray()
+            .FirstOrDefault(source => source.GetProperty("name").GetString() == payload.DisplayName);
+
+        configuredSource.ValueKind.Should().NotBe(JsonValueKind.Undefined);
+        var alpaca = configuredSource.GetProperty("alpaca");
+        alpaca.GetProperty("keyId").GetString().Should().BeEmpty();
+        alpaca.GetProperty("secretKey").GetString().Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task GetDataSources_ReturnsJsonWithSources()
     {
         var response = await _client.GetAsync("/api/config/datasources");

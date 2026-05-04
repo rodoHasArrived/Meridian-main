@@ -1018,7 +1018,7 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldExcludeOlderRunReviewPacketBlockersWhenLatestRunIsClean()
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeOlderRunReviewPacketBlockersWhenLatestRunIsClean()
     {
         await using var app = await CreateAppAsync(services =>
         {
@@ -1048,12 +1048,12 @@ public sealed class WorkstationEndpointsTests
                 ServerJsonOptions);
 
         inbox.Should().NotBeNull();
-        inbox!.Items.Should().NotContain(item =>
+        inbox!.Items.Should().Contain(item =>
             item.WorkItemId == $"promotion-review-{olderRunId.ToLowerInvariant()}");
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeLatestRunReviewPacketBlockers()
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeReviewPacketBlockersFromRecentRuns()
     {
         await using var app = await CreateAppAsync(services =>
         {
@@ -1085,15 +1085,23 @@ public sealed class WorkstationEndpointsTests
         inbox.Should().NotBeNull();
         inbox!.Items.Should().Contain(item => item.WorkItemId == "paper-session-missing");
 
-        var reviewItem = inbox.Items.Should().ContainSingle(item =>
+        var newestReviewItem = inbox.Items.Should().ContainSingle(item =>
             item.WorkItemId == $"promotion-review-{newestRunId.ToLowerInvariant()}" &&
             item.Kind == OperatorWorkItemKindDto.PromotionReview).Which;
+        var olderReviewItem = inbox.Items.Should().ContainSingle(item =>
+            item.WorkItemId == $"promotion-review-{olderRunId.ToLowerInvariant()}" &&
+            item.Kind == OperatorWorkItemKindDto.PromotionReview).Which;
 
-        reviewItem.Tone.Should().Be(OperatorWorkItemToneDto.Warning);
-        reviewItem.Workspace.Should().Be("Trading");
-        reviewItem.RunId.Should().Be(newestRunId);
-        reviewItem.TargetRoute.Should().Be(UiApiRoutes.RunsReviewPacket.Replace("{runId}", newestRunId, StringComparison.Ordinal));
-        reviewItem.TargetPageTag.Should().Be("TradingShell");
+        newestReviewItem.Tone.Should().Be(OperatorWorkItemToneDto.Warning);
+        newestReviewItem.Workspace.Should().Be("Trading");
+        newestReviewItem.RunId.Should().Be(newestRunId);
+        newestReviewItem.TargetRoute.Should().Be(UiApiRoutes.RunsReviewPacket.Replace("{runId}", newestRunId, StringComparison.Ordinal));
+        newestReviewItem.TargetPageTag.Should().Be("TradingShell");
+        olderReviewItem.Tone.Should().Be(OperatorWorkItemToneDto.Warning);
+        olderReviewItem.Workspace.Should().Be("Trading");
+        olderReviewItem.RunId.Should().Be(olderRunId);
+        olderReviewItem.TargetRoute.Should().Be(UiApiRoutes.RunsReviewPacket.Replace("{runId}", olderRunId, StringComparison.Ordinal));
+        olderReviewItem.TargetPageTag.Should().Be("TradingShell");
         inbox.Items.Should().OnlyContain(item =>
             !item.WorkItemId.StartsWith("promotion-review-", StringComparison.OrdinalIgnoreCase) ||
             item.Tone == OperatorWorkItemToneDto.Warning ||
@@ -2546,6 +2554,38 @@ public sealed class WorkstationEndpointsTests
 
         var client = app.GetTestClient();
         var response = await client.PostAsJsonAsync("/api/workstation/runs/compare", new { runIds = new[] { "only-one" } });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_CompareRuns_ShouldReturnBadRequestWhenTooManyRunIdsProvided()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var runIds = Enumerable.Range(1, 11).Select(index => $"cmp-{index}").ToArray();
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync("/api/workstation/runs/compare", new { runIds });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task MapStrategyRunsCompare_ShouldReturnBadRequestWhenTooManyRunIdsProvided()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var ids = string.Join(',', Enumerable.Range(1, 11).Select(index => $"cmp-{index}"));
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync($"/api/strategies/runs/compare?ids={ids}");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
