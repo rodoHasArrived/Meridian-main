@@ -224,10 +224,6 @@ public static class LedgerAccounts
     // Margin / financing accounts
     // -------------------------------------------------------------------------
 
-    /// <summary>Margin loan payable — the debit balance owed to the broker for leveraged positions.</summary>
-    public static readonly LedgerAccount MarginLoanPayable =
-        new("Margin Loan Payable", LedgerAccountType.Liability);
-
     /// <summary>Borrow fee expense charged daily on short-sold securities.</summary>
     public static readonly LedgerAccount StockBorrowFeeExpense =
         new("Stock Borrow Fee Expense", LedgerAccountType.Expense);
