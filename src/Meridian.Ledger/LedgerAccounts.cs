@@ -228,6 +228,10 @@ public static class LedgerAccounts
     public static readonly LedgerAccount StockBorrowFeeExpense =
         new("Stock Borrow Fee Expense", LedgerAccountType.Expense);
 
+    /// <summary>Margin loan payable — the liability representing borrowed funds used to finance leveraged positions.</summary>
+    public static readonly LedgerAccount MarginLoanPayable =
+        new("Margin Loan Payable", LedgerAccountType.Liability);
+
     /// <summary>
     /// Margin loan payable scoped to a specific brokerage account.
     /// </summary>
