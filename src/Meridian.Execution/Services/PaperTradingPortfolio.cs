@@ -984,7 +984,25 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             }
         }
 
+        CostBasis = CalculateRemainingLotCostBasis(isCoveringShort);
+
         return removedCostBasis;
+    }
+
+    private decimal CalculateRemainingLotCostBasis(bool isCoveringShort)
+    {
+        var remainingLots = isCoveringShort
+            ? _lots.Where(static lot => lot.OpenQuantity < 0m)
+            : _lots.Where(static lot => lot.OpenQuantity > 0m);
+
+        var remainingQuantity = remainingLots.Sum(static lot => Math.Abs(lot.OpenQuantity));
+        if (remainingQuantity == 0m)
+        {
+            return 0m;
+        }
+
+        var remainingNotional = remainingLots.Sum(static lot => Math.Abs(lot.OpenQuantity) * lot.EntryPrice);
+        return remainingNotional / remainingQuantity;
     }
 
     private PositionLot? SelectNextLot(PositionLotSelectionMethod method, bool isCoveringShort)
