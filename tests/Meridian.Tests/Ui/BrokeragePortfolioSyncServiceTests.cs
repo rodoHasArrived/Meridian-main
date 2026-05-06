@@ -356,6 +356,60 @@ public sealed class BrokeragePortfolioSyncServiceTests
         }
     }
 
+    [Fact]
+    public async Task Scenario_NullSourceSnapshotPresent_ReconciliationStillCompletes()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+            await fundAccountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-NULLSRC",
+                    "Null Source Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-2),
+                    "tests"),
+                cts.Token);
+
+            var snapshotBody = $$"""
+                                 {
+                                   "accountId": "{{fundAccountId}}",
+                                   "asOfDate": "{{DateOnly.FromDateTime(DateTime.UtcNow):yyyy-MM-dd}}",
+                                   "currency": "USD",
+                                   "cashBalance": 49900,
+                                   "source": null,
+                                   "recordedBy": "tests"
+                                 }
+                                 """;
+            var request = JsonSerializer.Deserialize(
+                snapshotBody,
+                FundStructureContractsJsonContext.Default.RecordAccountBalanceSnapshotRequest);
+            request.Should().NotBeNull();
+
+            await fundAccountService.RecordBalanceSnapshotAsync(request!, cts.Token);
+            var run = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-NULLSRC", "ops-review"),
+                cts.Token);
+
+            run.ReconciliationRunId.Should().NotBe(Guid.Empty);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
     private static (BrokeragePortfolioSyncService Service, ServiceProvider Provider) CreateService(
         string root,
         IBrokeragePortfolioSync portfolioAdapter,
