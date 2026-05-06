@@ -21,7 +21,7 @@ public sealed record QuantScriptExecutionRecordRequest(
     List<string> PlotTitles,
     IReadOnlyList<BacktestResult> CapturedBacktests);
 
-public sealed class QuantScriptExecutionHistoryService
+public sealed partial class QuantScriptExecutionHistoryService
 {
     private readonly ConfigService _configService;
     private readonly StrategyRunWorkspaceService _strategyRunWorkspaceService;

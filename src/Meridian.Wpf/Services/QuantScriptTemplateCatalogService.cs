@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Wpf.Services;
 
-public sealed class QuantScriptTemplateCatalogService
+public sealed partial class QuantScriptTemplateCatalogService
 {
     private readonly ILogger<QuantScriptTemplateCatalogService> _logger;
     private readonly string _catalogRoot;

@@ -74,9 +74,6 @@
     <!-- Modern WPF Controls -->
     <PackageReference Include="MaterialDesignThemes" />
 
-    <!-- JSON Serialization -->
-    <PackageReference Include="System.Text.Json" />
-
     <!-- HttpClientFactory for proper HttpClient lifecycle management -->
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" />
