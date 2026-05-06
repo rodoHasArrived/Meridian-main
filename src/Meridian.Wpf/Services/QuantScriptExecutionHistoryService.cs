@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Backtesting.Sdk;
 using Meridian.QuantScript.Documents;
 using Meridian.Storage.Archival;
@@ -55,7 +56,7 @@ public sealed class QuantScriptExecutionHistoryService
                 await using var stream = File.OpenRead(path);
                 var record = await JsonSerializer.DeserializeAsync(
                     stream,
-                    QuantScriptStorageJsonContext.Default.QuantScriptExecutionRecord,
+                    StorageJsonContext.Default.QuantScriptExecutionRecord,
                     ct).ConfigureAwait(false);
 
                 if (record is not null)
@@ -123,7 +124,7 @@ public sealed class QuantScriptExecutionHistoryService
 
         var historyDirectory = await ResolveHistoryDirectoryAsync().ConfigureAwait(false);
         var path = Path.Combine(historyDirectory, $"{record.ExecutionId}.json");
-        var json = JsonSerializer.Serialize(record, QuantScriptStorageJsonContext.Default.QuantScriptExecutionRecord);
+        var json = JsonSerializer.Serialize(record, StorageJsonContext.Default.QuantScriptExecutionRecord);
         await AtomicFileWriter.WriteAsync(path, json, ct).ConfigureAwait(false);
 
         return record;
@@ -150,4 +151,8 @@ public sealed class QuantScriptExecutionHistoryService
             _ => value.ToString() ?? string.Empty
         };
     }
+
+    [JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonSerializable(typeof(QuantScriptExecutionRecord))]
+    private sealed partial class StorageJsonContext : JsonSerializerContext;
 }

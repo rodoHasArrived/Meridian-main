@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.QuantScript.Documents;
 using Meridian.Wpf.Models;
 using Microsoft.Extensions.Logging;
@@ -33,7 +34,7 @@ public sealed class QuantScriptTemplateCatalogService
             var json = File.ReadAllText(_catalogPath);
             var manifest = JsonSerializer.Deserialize(
                 json,
-                QuantScriptStorageJsonContext.Default.QuantScriptTemplateCatalogManifest);
+                StorageJsonContext.Default.QuantScriptTemplateCatalogManifest);
 
             return manifest?.Templates
                 ?.OrderBy(static template => template.Category, StringComparer.OrdinalIgnoreCase)
@@ -65,4 +66,8 @@ public sealed class QuantScriptTemplateCatalogService
         var source = await File.ReadAllTextAsync(contentPath, ct).ConfigureAwait(false);
         return new QuantScriptTemplateDocument(template, source, contentPath);
     }
+
+    [JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonSerializable(typeof(QuantScriptTemplateCatalogManifest))]
+    private sealed partial class StorageJsonContext : JsonSerializerContext;
 }
