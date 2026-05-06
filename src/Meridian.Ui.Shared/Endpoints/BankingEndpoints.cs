@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.Banking;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Banking;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -59,7 +60,16 @@ public static class BankingEndpoints
                 return ServiceUnavailable();
             }
 
-            Guid? entityId = Guid.TryParse(context.Request.Query["entityId"], out var eid) ? eid : null;
+            if (!TryGetRequiredEntityId(context, out var entityId, out var entityError))
+            {
+                return entityError!;
+            }
+
+            if (!HasPermission(context, UserPermission.ViewDirectLending))
+            {
+                return Results.Problem("Forbidden.", statusCode: StatusCodes.Status403Forbidden);
+            }
+
             var results = await service.GetPendingPaymentsAsync(entityId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
@@ -74,12 +84,34 @@ public static class BankingEndpoints
                 return ServiceUnavailable();
             }
 
+            if (!TryGetRequiredEntityId(context, out var entityId, out var entityError))
+            {
+                return entityError!;
+            }
+
+            if (!TryGetCurrentUsername(context, out var currentUser))
+            {
+                return Results.Problem("Unauthorized.", statusCode: StatusCodes.Status401Unauthorized);
+            }
+
+            if (!HasPermission(context, UserPermission.ManageDirectLending))
+            {
+                return Results.Problem("Forbidden.", statusCode: StatusCodes.Status403Forbidden);
+            }
+
+            var pending = await service.GetPendingPaymentsAsync(entityId, context.RequestAborted).ConfigureAwait(false);
+            if (!pending.Any(static p => p.PendingPaymentId == pendingPaymentId))
+            {
+                return Results.NotFound();
+            }
+
             var request = JsonSerializer.Deserialize<ApprovePaymentRequest>(body.GetRawText(), jsonOptions)
                           ?? new ApprovePaymentRequest(ReviewNotes: null, ReviewedBy: null);
+            var serverRequest = request with { ReviewedBy = currentUser };
 
             try
             {
-                var result = await service.ApprovePaymentAsync(pendingPaymentId, request, context.RequestAborted).ConfigureAwait(false);
+                var result = await service.ApprovePaymentAsync(pendingPaymentId, serverRequest, context.RequestAborted).ConfigureAwait(false);
                 return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
             }
             catch (BankingException ex)
@@ -100,15 +132,38 @@ public static class BankingEndpoints
                 return ServiceUnavailable();
             }
 
+            if (!TryGetRequiredEntityId(context, out var entityId, out var entityError))
+            {
+                return entityError!;
+            }
+
+            if (!TryGetCurrentUsername(context, out var currentUser))
+            {
+                return Results.Problem("Unauthorized.", statusCode: StatusCodes.Status401Unauthorized);
+            }
+
+            if (!HasPermission(context, UserPermission.ManageDirectLending))
+            {
+                return Results.Problem("Forbidden.", statusCode: StatusCodes.Status403Forbidden);
+            }
+
+            var pending = await service.GetPendingPaymentsAsync(entityId, context.RequestAborted).ConfigureAwait(false);
+            if (!pending.Any(static p => p.PendingPaymentId == pendingPaymentId))
+            {
+                return Results.NotFound();
+            }
+
             var request = JsonSerializer.Deserialize<RejectPaymentRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
             {
                 return Results.Problem("Rejection request body is required.", statusCode: StatusCodes.Status400BadRequest);
             }
 
+            var serverRequest = request with { ReviewedBy = currentUser };
+
             try
             {
-                var result = await service.RejectPaymentAsync(pendingPaymentId, request, context.RequestAborted).ConfigureAwait(false);
+                var result = await service.RejectPaymentAsync(pendingPaymentId, serverRequest, context.RequestAborted).ConfigureAwait(false);
                 return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
             }
             catch (BankingException ex)
@@ -171,6 +226,35 @@ public static class BankingEndpoints
         .WithName("SeedBankTransactions")
         .Produces<BankTransactionSeedResultDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
+    }
+
+
+    private static bool TryGetRequiredEntityId(HttpContext context, out Guid entityId, out IResult? error)
+    {
+        if (!Guid.TryParse(context.Request.Query["entityId"], out entityId))
+        {
+            error = Results.Problem("'entityId' query parameter is required.", statusCode: StatusCodes.Status400BadRequest);
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
+
+    private static bool TryGetCurrentUsername(HttpContext context, out string username)
+    {
+        username = context.Items[LoginSessionMiddleware.CurrentUserKey] as string ?? string.Empty;
+        return !string.IsNullOrWhiteSpace(username);
+    }
+
+    private static bool HasPermission(HttpContext context, UserPermission requiredPermission)
+    {
+        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+        {
+            return false;
+        }
+
+        return (permissions & requiredPermission) == requiredPermission;
     }
 
     private static IBankingService? ResolveService(HttpContext context) =>
