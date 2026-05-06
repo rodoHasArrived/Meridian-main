@@ -427,8 +427,16 @@ public static class WorkstationEndpoints
                 return Results.BadRequest(new { error = "Operator rationale is required for resolve or waive transitions." });
             }
 
+            var currentUser = context.Items[LoginSessionMiddleware.CurrentUserKey] as string;
+            if (string.IsNullOrWhiteSpace(currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var trustedRequest = request with { ResolvedBy = currentUser };
+
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ResolveBreakAsync(context.RequestServices, request, context.RequestAborted).ConfigureAwait(false);
+            var transition = await ResolveBreakAsync(context.RequestServices, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
             {
                 ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
