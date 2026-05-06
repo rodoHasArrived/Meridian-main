@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Contracts.Auth;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
@@ -42,9 +43,10 @@ public static class PromotionEndpoints
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
-            var normalizedRequest = string.IsNullOrWhiteSpace(request.ApprovedBy)
-                ? request with { ApprovedBy = ResolveActor(context) }
-                : request;
+            if (!HasPromotionPermission(context))
+                return Results.Json(new PromotionDecisionResult(false, null, null, "Forbidden."), jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+
+            var normalizedRequest = request with { ApprovedBy = ResolveActor(context) };
 
             var result = await service.ApproveAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
 
@@ -55,7 +57,9 @@ public static class PromotionEndpoints
         .WithName("ApprovePromotion")
         .Produces<PromotionDecisionResult>(201)
         .Produces<PromotionDecisionResult>(400)
-        .Produces(501);
+        .Produces<PromotionDecisionResult>(403)
+        .Produces(501)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost("/reject", async (PromotionRejectionRequest request, HttpContext context) =>
         {
@@ -63,16 +67,19 @@ public static class PromotionEndpoints
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
-            var normalizedRequest = string.IsNullOrWhiteSpace(request.RejectedBy)
-                ? request with { RejectedBy = ResolveActor(context) }
-                : request;
+            if (!HasPromotionPermission(context))
+                return Results.Json(new PromotionDecisionResult(false, null, null, "Forbidden."), jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+
+            var normalizedRequest = request with { RejectedBy = ResolveActor(context) };
 
             var result = await service.RejectAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("RejectPromotion")
         .Produces<PromotionDecisionResult>(200)
-        .Produces(501);
+        .Produces<PromotionDecisionResult>(403)
+        .Produces(501)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet("/history", async (HttpContext context) =>
         {
@@ -100,5 +107,11 @@ public static class PromotionEndpoints
         }
 
         return null;
+    }
+
+    private static bool HasPromotionPermission(HttpContext context)
+    {
+        var permissions = context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] as UserPermission?;
+        return permissions is not null && (permissions.Value & UserPermission.ManageStrategies) == UserPermission.ManageStrategies;
     }
 }

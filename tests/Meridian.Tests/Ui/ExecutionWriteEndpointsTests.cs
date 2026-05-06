@@ -9,6 +9,7 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -534,6 +535,23 @@ public sealed class ExecutionWriteEndpointsTests
         }
     }
 
+    [Fact]
+    public async Task PromotionApprove_WhenUserLacksManageStrategies_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(RegisterPromotionServices, UserPermission.ViewStrategies);
+        var client = app.GetTestClient();
+
+        var approveResponse = await client.PostAsync(
+            "/api/promotion/approve",
+            JsonContent(new PromotionApprovalRequest(
+                RunId: "run-backtest-01",
+                ApprovedBy: "forged-actor",
+                ApprovalReason: "Attempted unauthorized approval.",
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper))));
+
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     // ------------------------------------------------------------------ //
     //  Helpers                                                            //
     // ------------------------------------------------------------------ //
@@ -607,7 +625,9 @@ public sealed class ExecutionWriteEndpointsTests
             auditTrail: sp.GetRequiredService<ExecutionServices.ExecutionAuditTrailService>()));
     }
 
-    private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
+    private static async Task<WebApplication> CreateAppAsync(
+        Action<IServiceCollection>? configureServices = null,
+        UserPermission currentUserPermissions = UserPermission.ManageStrategies)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -617,6 +637,11 @@ public sealed class ExecutionWriteEndpointsTests
         configureServices?.Invoke(builder.Services);
 
         var app = builder.Build();
+        app.Use((context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
+            return next(context);
+        });
         app.MapExecutionEndpoints(new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
