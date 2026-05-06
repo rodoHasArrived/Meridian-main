@@ -40,7 +40,14 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
         if (request.SecurityId is Guid securityId)
         {
             detail = await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-            lookupPath = "security-id";
+            if (detail is not null && MatchesRequest(detail, request))
+            {
+                lookupPath = "security-id";
+            }
+            else
+            {
+                detail = null;
+            }
         }
 
         if (detail is null)
@@ -104,6 +111,24 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
             LookupSource: request.Source,
             IsInferredMatch: inferred,
             RiskCountry: riskCountry);
+    }
+
+    private static bool MatchesRequest(SecurityDetailDto detail, SecurityReferenceLookupRequest request)
+    {
+        var requestedSymbol = request.Symbol;
+        var requestedIdentifier = request.IdentifierValue;
+
+        if (string.IsNullOrWhiteSpace(requestedSymbol) && string.IsNullOrWhiteSpace(requestedIdentifier))
+        {
+            return true;
+        }
+
+        return detail.Identifiers.Any(
+            identifier =>
+                (!string.IsNullOrWhiteSpace(requestedSymbol)
+                 && string.Equals(identifier.Value, requestedSymbol, StringComparison.OrdinalIgnoreCase))
+                || (!string.IsNullOrWhiteSpace(requestedIdentifier)
+                    && string.Equals(identifier.Value, requestedIdentifier, StringComparison.OrdinalIgnoreCase)));
     }
 
     /// <summary>
