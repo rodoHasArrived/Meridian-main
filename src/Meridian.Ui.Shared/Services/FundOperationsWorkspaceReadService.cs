@@ -1033,9 +1033,24 @@ public sealed class FundOperationsWorkspaceReadService
             _ => value.ToString() ?? string.Empty
         };
 
+        if (IsPotentialSpreadsheetFormula(text))
+        {
+            text = $"'{text}";
+        }
+
         return text.IndexOfAny(['"', ',', '\r', '\n']) < 0
             ? text
             : $"\"{text.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
+    }
+
+    private static bool IsPotentialSpreadsheetFormula(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return false;
+        }
+
+        return text[0] is '=' or '+' or '-' or '@' or '\t' or '\r';
     }
 
     private static IReadOnlyList<string> BuildReportPackWarnings(
