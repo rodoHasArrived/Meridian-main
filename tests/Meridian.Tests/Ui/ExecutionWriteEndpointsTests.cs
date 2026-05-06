@@ -535,6 +535,23 @@ public sealed class ExecutionWriteEndpointsTests
         }
     }
 
+    [Fact]
+    public async Task PromotionApprove_WhenUserLacksManageStrategies_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(services => RegisterPromotionServices(services), UserPermission.ViewStrategies);
+        var client = app.GetTestClient();
+
+        var approveResponse = await client.PostAsync(
+            "/api/promotion/approve",
+            JsonContent(new PromotionApprovalRequest(
+                RunId: "run-backtest-01",
+                ApprovedBy: "forged-actor",
+                ApprovalReason: "Attempted unauthorized approval.",
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper))));
+
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     // ------------------------------------------------------------------ //
     //  Helpers                                                            //
     // ------------------------------------------------------------------ //
@@ -608,7 +625,9 @@ public sealed class ExecutionWriteEndpointsTests
             auditTrail: sp.GetRequiredService<ExecutionServices.ExecutionAuditTrailService>()));
     }
 
-    private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
+    private static async Task<WebApplication> CreateAppAsync(
+        Action<IServiceCollection>? configureServices = null,
+        UserPermission currentUserPermissions = UserPermission.ExecuteTrades | UserPermission.ManageOrders)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -620,7 +639,7 @@ public sealed class ExecutionWriteEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ExecuteTrades | UserPermission.ManageOrders;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
             await next();
         });
 
