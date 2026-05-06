@@ -156,12 +156,12 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
       detail: vm.storageLabel ? `Storage ${vm.storageLabel}` : "Storage posture loading",
       tone:
         current?.systemStatus === "Offline"
-          ? "danger"
+          ? "danger" as const
           : current?.systemStatus === "Degraded"
-            ? "warning"
+            ? "warning" as const
             : current
-              ? "success"
-              : "default",
+              ? "success" as const
+              : "default" as const,
       badgeVariant: null
     },
     {
