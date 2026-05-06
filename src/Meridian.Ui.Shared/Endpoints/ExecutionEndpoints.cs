@@ -186,6 +186,11 @@ public static class ExecutionEndpoints
 
         group.MapPost("/orders/cancel-all", async (HttpContext context) =>
         {
+            if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
+            {
+                return Results.Forbid();
+            }
+
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
@@ -207,7 +212,10 @@ public static class ExecutionEndpoints
             return Results.Json(actionResult, jsonOptions);
         })
         .WithName("CancelAllOrders")
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<TradingActionResult>(200)
+        .Produces(403)
+        .Produces(429)
         .Produces(503);
 
         // --- Gateway health & capabilities ---
@@ -753,8 +761,11 @@ public static class ExecutionEndpoints
                 context: context).ConfigureAwait(false);
         })
         .WithName("ClosePosition")
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
+        .Produces(403)
+        .Produces(429)
         .Produces(503);
     }
 
@@ -1019,10 +1030,11 @@ public static class ExecutionEndpoints
         return "operator";
     }
 
-    private static bool HasExecutionControlMutationPermission(HttpContext context)
-    {
-        const UserPermission requiredPermission = UserPermission.ManageOrders;
+    private static bool HasExecutionControlMutationPermission(HttpContext context) =>
+        HasExecutionTradingPermission(context, UserPermission.ManageOrders);
 
+    private static bool HasExecutionTradingPermission(HttpContext context, UserPermission requiredPermission)
+    {
         if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissionsFromContext)
         {
             return (permissionsFromContext & requiredPermission) == requiredPermission;
