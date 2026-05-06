@@ -267,7 +267,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                     map[position.Symbol] = new SecurityClassificationSummaryDto(
                         AssetClass: position.Security.AssetClass,
                         SubType: position.Security.SubType,
-                        PrimaryIdentifierKind: position.Security.MatchedIdentifierKind ?? "Ticker",
+                        PrimaryIdentifierKind: "Ticker",
                         PrimaryIdentifierValue: position.Security.PrimaryIdentifier ?? position.Symbol,
                         MatchedIdentifierKind: position.Security.MatchedIdentifierKind,
                         MatchedIdentifierValue: position.Security.MatchedIdentifierValue,
@@ -287,7 +287,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                     map[line.Symbol] = new SecurityClassificationSummaryDto(
                         AssetClass: line.Security.AssetClass,
                         SubType: line.Security.SubType,
-                        PrimaryIdentifierKind: line.Security.MatchedIdentifierKind ?? "Ticker",
+                        PrimaryIdentifierKind: "Ticker",
                         PrimaryIdentifierValue: line.Security.PrimaryIdentifier ?? line.Symbol,
                         MatchedIdentifierKind: line.Security.MatchedIdentifierKind,
                         MatchedIdentifierValue: line.Security.MatchedIdentifierValue,
