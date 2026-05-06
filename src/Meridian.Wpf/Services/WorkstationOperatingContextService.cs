@@ -808,7 +808,7 @@ public sealed partial class WorkstationOperatingContextService
         try
         {
             var json = await File.ReadAllTextAsync(_storagePath, ct).ConfigureAwait(false);
-            var model = JsonSerializer.Deserialize(json, StorageJsonContext.Default.WorkstationOperatingContextStorageModel);
+            var model = JsonSerializer.Deserialize(json, OperatingContextStorageJsonContext.Default.WorkstationOperatingContextStorageModel);
             if (model is null)
             {
                 return;
@@ -843,7 +843,7 @@ public sealed partial class WorkstationOperatingContextService
                     WindowMode = CurrentWindowMode,
                     CurrentLayoutPresetId = CurrentLayoutPresetId
                 },
-                StorageJsonContext.Default.WorkstationOperatingContextStorageModel);
+                OperatingContextStorageJsonContext.Default.WorkstationOperatingContextStorageModel);
 
             await File.WriteAllTextAsync(_storagePath, json, ct).ConfigureAwait(false);
         }
@@ -909,5 +909,5 @@ public sealed partial class WorkstationOperatingContextService
 
     [JsonSourceGenerationOptions(WriteIndented = true)]
     [JsonSerializable(typeof(WorkstationOperatingContextStorageModel))]
-    private sealed partial class StorageJsonContext : JsonSerializerContext;
+    private sealed partial class OperatingContextStorageJsonContext : JsonSerializerContext;
 }
