@@ -7099,7 +7099,6 @@ Use these documents together when planning or implementing new work:
 │       │   ├── PendingOperationsQueueService.cs
 │       │   ├── QuantScriptExecutionHistoryService.cs
 │       │   ├── QuantScriptLayoutService.cs
-│       │   ├── QuantScriptStorageJsonContext.cs
 │       │   ├── QuantScriptTemplateCatalogService.cs
 │       │   ├── ReconciliationReadService.cs
 │       │   ├── ResearchWorkspaceShellPresentationService.cs
@@ -7126,7 +7125,6 @@ Use these documents together when planning or implementing new work:
 │       │   ├── WorkspaceService.cs
 │       │   ├── WorkspaceShellContextService.cs
 │       │   ├── WorkspaceShellStateProviders.cs
-│       │   ├── WorkstationOperatingContextJsonContext.cs
 │       │   ├── WorkstationOperatingContextService.cs
 │       │   ├── WorkstationOperatorInboxApiClient.cs
 │       │   ├── WorkstationReconciliationApiClient.cs
@@ -8199,6 +8197,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-623 directories, 7401 files
+623 directories, 7399 files
 ```
 <!-- readme-tree end -->
