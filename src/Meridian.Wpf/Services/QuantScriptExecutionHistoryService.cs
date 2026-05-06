@@ -56,7 +56,7 @@ public sealed class QuantScriptExecutionHistoryService
                 await using var stream = File.OpenRead(path);
                 var record = await JsonSerializer.DeserializeAsync(
                     stream,
-                    StorageJsonContext.Default.QuantScriptExecutionRecord,
+                    ExecutionHistoryStorageJsonContext.Default.QuantScriptExecutionRecord,
                     ct).ConfigureAwait(false);
 
                 if (record is not null)
@@ -124,7 +124,7 @@ public sealed class QuantScriptExecutionHistoryService
 
         var historyDirectory = await ResolveHistoryDirectoryAsync().ConfigureAwait(false);
         var path = Path.Combine(historyDirectory, $"{record.ExecutionId}.json");
-        var json = JsonSerializer.Serialize(record, StorageJsonContext.Default.QuantScriptExecutionRecord);
+        var json = JsonSerializer.Serialize(record, ExecutionHistoryStorageJsonContext.Default.QuantScriptExecutionRecord);
         await AtomicFileWriter.WriteAsync(path, json, ct).ConfigureAwait(false);
 
         return record;
@@ -154,5 +154,5 @@ public sealed class QuantScriptExecutionHistoryService
 
     [JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonSerializable(typeof(QuantScriptExecutionRecord))]
-    private sealed partial class StorageJsonContext : JsonSerializerContext;
+    private sealed partial class ExecutionHistoryStorageJsonContext : JsonSerializerContext;
 }

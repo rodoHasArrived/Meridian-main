@@ -34,7 +34,7 @@ public sealed class QuantScriptTemplateCatalogService
             var json = File.ReadAllText(_catalogPath);
             var manifest = JsonSerializer.Deserialize(
                 json,
-                StorageJsonContext.Default.QuantScriptTemplateCatalogManifest);
+                TemplateCatalogStorageJsonContext.Default.QuantScriptTemplateCatalogManifest);
 
             return manifest?.Templates
                 ?.OrderBy(static template => template.Category, StringComparer.OrdinalIgnoreCase)
@@ -69,5 +69,5 @@ public sealed class QuantScriptTemplateCatalogService
 
     [JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonSerializable(typeof(QuantScriptTemplateCatalogManifest))]
-    private sealed partial class StorageJsonContext : JsonSerializerContext;
+    private sealed partial class TemplateCatalogStorageJsonContext : JsonSerializerContext;
 }
