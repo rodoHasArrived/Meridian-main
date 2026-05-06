@@ -82,6 +82,9 @@ jobs:
           continuity_contracts:
             - 'src/Meridian.Contracts/Workstation/**'
             - 'src/Meridian.Contracts/Api/**'
+            - 'src/Meridian.Strategies/Services/**'
+            - 'src/Meridian.Ledger/**'
+            - 'src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs'
 
     - name: Capture PR body
       if: steps.continuity-filter.outputs.continuity_contracts == 'true'
@@ -120,7 +123,7 @@ jobs:
 
     - name: Skip note when no continuity contract files changed
       if: steps.continuity-filter.outputs.continuity_contracts != 'true'
-      run: echo "Contract compatibility gate skipped because this PR does not touch src/Meridian.Contracts/Workstation or src/Meridian.Contracts/Api." >> $GITHUB_STEP_SUMMARY
+      run: echo "Contract compatibility gate skipped because this PR does not touch any tracked shared-contract surfaces (Contracts/Workstation, Contracts/Api, Strategies/Services, Ledger, or Ui.Shared WorkstationEndpoints)." >> $GITHUB_STEP_SUMMARY
 
   config-schema:
     name: Config Schema Check
