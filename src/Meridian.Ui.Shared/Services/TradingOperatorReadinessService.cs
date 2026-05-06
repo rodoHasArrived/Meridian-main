@@ -803,8 +803,7 @@ public sealed class TradingOperatorReadinessService
             Status: status,
             Detail: brokerageStatus.Warnings.FirstOrDefault()
                 ?? brokerageStatus.LastError
-                ?? $"Brokerage sync health is {brokerageStatus.Health}.",
-            FundAccountId: brokerageStatus.FundAccountId);
+                ?? $"Brokerage sync health is {brokerageStatus.Health}.");
     }
 
     private static TradingAcceptanceGateDto BuildSessionGate(
