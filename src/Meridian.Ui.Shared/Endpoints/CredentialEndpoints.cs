@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Meridian.Contracts.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -39,15 +40,21 @@ public static class CredentialEndpoints
         var group = app.MapGroup("").WithTags("Credentials");
 
         // GET /api/credentials — list all providers with their credential status
-        group.MapGet(global::Meridian.Contracts.Api.UiApiRoutes.Credentials, () =>
+        group.MapGet(global::Meridian.Contracts.Api.UiApiRoutes.Credentials, (HttpContext ctx) =>
         {
+            if (!HasManageCredentialsPermission(ctx))
+                return Results.Forbid();
+
             var result = KnownProviders.Select(p => BuildStatus(p));
             return Results.Json(result, jsonOptions);
         });
 
         // GET /api/credentials/{provider}
-        group.MapGet(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, IResult (string provider) =>
+        group.MapGet(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, IResult (string provider, HttpContext ctx) =>
         {
+            if (!HasManageCredentialsPermission(ctx))
+                return Results.Forbid();
+
             var descriptor = FindProvider(provider);
             if (descriptor is null)
                 return Results.NotFound(new { error = $"Provider '{provider}' not found." });
@@ -75,6 +82,9 @@ public static class CredentialEndpoints
         // POST /api/credentials/{provider} — set env vars for a provider
         group.MapPost(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, async Task<IResult> (string provider, HttpContext ctx) =>
         {
+            if (!HasManageCredentialsPermission(ctx))
+                return Results.Forbid();
+
             var descriptor = FindProvider(provider);
             if (descriptor is null)
                 return Results.NotFound(new { error = $"Provider '{provider}' not found." });
@@ -107,8 +117,11 @@ public static class CredentialEndpoints
         });
 
         // DELETE /api/credentials/{provider} — clear env vars
-        group.MapDelete(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, IResult (string provider) =>
+        group.MapDelete(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, IResult (string provider, HttpContext ctx) =>
         {
+            if (!HasManageCredentialsPermission(ctx))
+                return Results.Forbid();
+
             var descriptor = FindProvider(provider);
             if (descriptor is null)
                 return Results.NotFound(new { error = $"Provider '{provider}' not found." });
@@ -124,8 +137,11 @@ public static class CredentialEndpoints
         });
 
         // POST /api/credentials/{provider}/test — verify credentials present
-        group.MapPost(global::Meridian.Contracts.Api.UiApiRoutes.CredentialTest, IResult (string provider) =>
+        group.MapPost(global::Meridian.Contracts.Api.UiApiRoutes.CredentialTest, IResult (string provider, HttpContext ctx) =>
         {
+            if (!HasManageCredentialsPermission(ctx))
+                return Results.Forbid();
+
             var descriptor = FindProvider(provider);
             if (descriptor is null)
                 return Results.NotFound(new { error = $"Provider '{provider}' not found." });
@@ -177,6 +193,14 @@ public static class CredentialEndpoints
         if (value.Length <= 4)
             return new string('*', value.Length);
         return string.Concat(value.AsSpan(0, 4), new string('*', Math.Min(value.Length - 4, 12)));
+    }
+
+    private static bool HasManageCredentialsPermission(HttpContext context)
+    {
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var value) && value is UserPermission current)
+            return (current & UserPermission.ManageCredentials) == UserPermission.ManageCredentials;
+
+        return false;
     }
 
     private sealed record ProviderCredentialDescriptor(
