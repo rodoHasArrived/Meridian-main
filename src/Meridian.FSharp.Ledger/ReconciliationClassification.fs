@@ -333,6 +333,17 @@ module ReconciliationClassification =
 
     /// Migration helper to safely map legacy break discriminators into the new canonical model.
     let classifyLegacy (nominalAmount: decimal) (legacy: LedgerBreakClassification) : CanonicalBreakClassification =
+        let minLegacyTimingDays = (DateTimeOffset.MinValue - DateTimeOffset.UnixEpoch).TotalDays
+        let maxLegacyTimingDays = (DateTimeOffset.MaxValue - DateTimeOffset.UnixEpoch).TotalDays
+
+        let safeLegacyTimingDate (daysLate: int) : DateTimeOffset =
+            let boundedDays =
+                daysLate
+                |> float
+                |> max minLegacyTimingDays
+                |> min maxLegacyTimingDays
+            DateTimeOffset.UnixEpoch.AddDays(boundedDays)
+
         let baseline: RawBreakFacts = {
             BreakType = None
             ExpectedQuantity = None
@@ -366,7 +377,7 @@ module ReconciliationClassification =
                 { baseline with
                     BreakType = Some "timing"
                     ExpectedSettlementDate = Some DateTimeOffset.UnixEpoch
-                    ActualSettlementDate = Some (DateTimeOffset.UnixEpoch.AddDays(float daysLate))
+                    ActualSettlementDate = Some (safeLegacyTimingDate daysLate)
                     TimingToleranceDays = 0 }
             | MissingEntry ->
                 { baseline with BreakType = Some "mapping-error"; MappingResolved = Some false }
