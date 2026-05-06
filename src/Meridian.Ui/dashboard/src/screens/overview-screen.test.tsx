@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import { OverviewScreen } from "@/screens/overview-screen";
 import { renderWithRouter } from "@/test/render";
-import type { SystemOverviewResponse } from "@/types";
+import type { SessionInfo, SystemOverviewResponse } from "@/types";
 
 const overview: SystemOverviewResponse = {
   systemStatus: "Degraded",
@@ -23,6 +23,14 @@ const overview: SystemOverviewResponse = {
       timestamp: "2026-04-28T18:15:00Z"
     }
   ]
+};
+
+const session: SessionInfo = {
+  displayName: "Meridian Ops",
+  role: "Operator",
+  environment: "paper",
+  activeWorkspace: "trading",
+  commandCount: 9
 };
 
 describe("OverviewScreen", () => {
@@ -65,5 +73,20 @@ describe("OverviewScreen", () => {
     expect(within(activityRow).getByText("OBS")).toBeInTheDocument();
     expect(within(activityRow).getByText("Provider health")).toBeInTheDocument();
     expect(within(activityRow).getByText("Brokerage sync delayed.")).toBeInTheDocument();
+  });
+
+  it("renders an operator briefing with priority workspace calls to action", () => {
+    renderWithRouter(<OverviewScreen data={overview} session={session} />);
+
+    expect(screen.getByText("Meridian workstation control tower")).toBeInTheDocument();
+    expect(screen.getByText("Meridian Ops")).toBeInTheDocument();
+    expect(screen.getByText(/Operator · 9 commands ready/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/^paper$/i).length).toBeGreaterThan(0);
+
+    const priorityCard = screen.getByText("Move from posture to action").closest("div");
+    expect(screen.getByText("Open trading cockpit")).toBeInTheDocument();
+    expect(screen.getByText("Open accounting lane")).toBeInTheDocument();
+    expect(screen.getByText("Open reporting lane")).toBeInTheDocument();
+    expect(priorityCard).not.toBeNull();
   });
 });

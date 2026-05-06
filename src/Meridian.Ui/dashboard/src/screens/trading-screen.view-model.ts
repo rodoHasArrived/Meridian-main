@@ -2336,7 +2336,7 @@ export interface PromotionGateForm {
 }
 
 export type PromotionGatePhase = "idle" | "evaluating" | "approving" | "rejecting";
-export type PromotionOutcomeLevel = "success" | "warning" | "error";
+export type PromotionOutcomeLevel = "success" | "warning" | "danger";
 
 export interface PromotionOutcome {
   level: PromotionOutcomeLevel;
@@ -2638,7 +2638,7 @@ function trimPromotionGateForm(form: PromotionGateForm): PromotionGateForm {
 
 function buildApprovalOutcome(result: PromotionDecisionResult): PromotionOutcome {
   return {
-    level: result.success ? "success" : "error",
+    level: result.success ? "success" : "danger",
     message: result.success
       ? `Promoted. Promotion ID: ${result.promotionId ?? "n/a"}${result.auditReference ? ` · Audit reference ${result.auditReference}` : ""}`
       : result.reason
@@ -2647,7 +2647,7 @@ function buildApprovalOutcome(result: PromotionDecisionResult): PromotionOutcome
 
 function buildRejectionOutcome(result: PromotionDecisionResult): PromotionOutcome {
   return {
-    level: result.success ? "warning" : "error",
+    level: result.success ? "warning" : "danger",
     message: `${result.reason}${result.auditReference ? ` · Audit reference ${result.auditReference}` : ""}`
   };
 }

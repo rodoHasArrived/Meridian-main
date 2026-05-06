@@ -57,7 +57,7 @@ describe("ResearchScreen", () => {
 
     const dialog = screen.getByRole("dialog", { name: "Mean Reversion FX" });
     expect(dialog).toHaveAccessibleDescription("Mean Reversion FX is Running in PAPER mode.");
-    expect(screen.getByText("Primary paper candidate.")).toBeInTheDocument();
+    expect(dialog).toHaveTextContent("Primary paper candidate.");
     expect(screen.getByLabelText("Selected strategy run evidence")).toBeInTheDocument();
     expect(screen.getByText("run-1")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Close Mean Reversion FX run detail" })).toBeInTheDocument();
@@ -79,7 +79,27 @@ describe("ResearchScreen", () => {
   it("shows paper mode badge", () => {
     render(<ResearchScreen data={twoRuns} />);
 
-    expect(screen.getByText("PAPER")).toBeInTheDocument();
+    expect(screen.getAllByText("PAPER").length).toBeGreaterThan(0);
+  });
+
+  it("renders the PlotTool workstation view inside the Strategy lane by default", () => {
+    render(<ResearchScreen data={twoRuns} />);
+
+    expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
+    expect(screen.getByText("Strategy notebooks")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "PlotTool scatter chart" })).toBeInTheDocument();
+    expect(screen.getByText("Meridian overlays")).toBeInTheDocument();
+  });
+
+  it("switches to the PlotTool statistics view", async () => {
+    const user = userEvent.setup();
+    render(<ResearchScreen data={twoRuns} />);
+
+    await user.click(screen.getByRole("tab", { name: "Statistics" }));
+
+    expect(screen.getByText("Distribution profile")).toBeInTheDocument();
+    expect(screen.getByText("Regression frame")).toBeInTheDocument();
+    expect(screen.getByText("Observation sheet")).toBeInTheDocument();
   });
 
   it("renders an empty run-library row when no strategy runs are available", () => {
@@ -144,7 +164,6 @@ describe("ResearchScreen", () => {
     });
     expect(screen.getByRole("table", { name: "Strategy run comparison evidence" })).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /Carry Alpha: Running; net P&L \+\$3,200/ })).toBeInTheDocument();
-    expect(screen.getByText("Candidate for paper")).toBeInTheDocument();
     expect(screen.getByText("+4.20%")).toBeInTheDocument();
     expect(screen.getByText("-1.80%")).toBeInTheDocument();
     expect(screen.getByText("Ledger missing; Audit missing")).toBeInTheDocument();

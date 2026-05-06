@@ -7,6 +7,35 @@ import {
   useDialogInteractionViewModel
 } from "@/components/ui/dialog.view-model";
 
+/**
+ * Controlled modal dialog with backdrop, focus trap, and Escape-to-close.
+ *
+ * **Usage pattern:** control open state externally via `open` / `onOpenChange`.
+ * The dialog renders `null` when closed, so no lazy-loading is needed.
+ *
+ * **Sub-components:**
+ * - `DialogContent` — the white/card panel, handles `role="dialog"` and `aria-modal`.
+ * - `DialogHeader` — spacing wrapper for title and description.
+ * - `DialogTitle` — `<h2>` — pass an `id` and reference it via `aria-labelledby` on `DialogContent`.
+ * - `DialogDescription` — muted subtitle — reference via `aria-describedby` on `DialogContent`.
+ * - `DialogCloseButton` — absolute-positioned ✕ button with optional `disabledReason` tooltip.
+ *
+ * Clicking the backdrop or pressing Escape calls `onOpenChange(false)`.
+ *
+ * @example
+ * <Dialog open={open} onOpenChange={setOpen}>
+ *   <DialogContent aria-labelledby="title-id" aria-describedby="desc-id">
+ *     <DialogHeader>
+ *       <DialogTitle id="title-id">Confirm cancellation</DialogTitle>
+ *       <DialogDescription id="desc-id">This action cannot be undone.</DialogDescription>
+ *     </DialogHeader>
+ *     <div className="flex justify-end gap-3 pt-2">
+ *       <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+ *       <Button onClick={handleConfirm}>Confirm</Button>
+ *     </div>
+ *   </DialogContent>
+ * </Dialog>
+ */
 interface DialogProps {
   open: boolean;
   onOpenChange?: (open: boolean) => void;

@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Meridian.Application.EnvironmentDesign;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.EnvironmentDesign;
@@ -898,7 +897,7 @@ public sealed partial class WorkstationOperatingContextService
         return Path.Combine(directory, "workstation-operating-context.json");
     }
 
-    private sealed class WorkstationOperatingContextStorageModel
+    internal sealed class WorkstationOperatingContextStorageModel
     {
         public string? LastSelectedOperatingContextKey { get; set; }
 
@@ -906,8 +905,4 @@ public sealed partial class WorkstationOperatingContextService
 
         public string? CurrentLayoutPresetId { get; set; }
     }
-
-    [JsonSourceGenerationOptions(WriteIndented = true)]
-    [JsonSerializable(typeof(WorkstationOperatingContextStorageModel))]
-    private sealed partial class WorkstationOperatingContextJsonContext : JsonSerializerContext;
 }

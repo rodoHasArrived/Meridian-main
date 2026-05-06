@@ -115,7 +115,7 @@ public sealed class ReconciliationRunServiceTests
         detail.SecurityClassifications!.Should().ContainKey("AAPL");
         detail.SecurityClassifications["AAPL"].AssetClass.Should().Be("Equity");
         detail.SecurityClassifications["AAPL"].SubType.Should().Be("CommonShare");
-        detail.SecurityClassifications["AAPL"].PrimaryIdentifierKind.Should().Be("ISIN");
+        detail.SecurityClassifications["AAPL"].PrimaryIdentifierKind.Should().Be("Ticker");
         detail.SecurityClassifications["AAPL"].PrimaryIdentifierValue.Should().Be("AAPL");
         detail.SecurityClassifications["AAPL"].MatchedIdentifierKind.Should().Be("ISIN");
         detail.SecurityClassifications["AAPL"].MatchedIdentifierValue.Should().Be("US0378331005");

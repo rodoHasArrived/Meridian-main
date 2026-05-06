@@ -74,8 +74,29 @@ export function OperatorReadinessConsole({
     <div className="space-y-6">
       <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
 
+      <section
+        role="region"
+        aria-label="Readiness control strip"
+        className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+      >
+        <div className="min-w-0">
+          <div className="eyebrow-label">Trading readiness</div>
+          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
+            {vm.title}
+          </h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{vm.subtitle}</p>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ConsoleChip label="As of" value={vm.asOf} />
+          <ConsoleChip label="Inbox" value={vm.inboxSummary} />
+          <span className={cn("rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", levelPanel[vm.overallLevel])}>
+            {vm.overallLabel}
+          </span>
+        </div>
+      </section>
+
       <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-        <Card className={cn("border", levelPanel[vm.overallLevel])}>
+        <Card className={cn("panel-surface-strong border", levelPanel[vm.overallLevel])}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -91,10 +112,9 @@ export function OperatorReadinessConsole({
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm leading-6 text-foreground/85">{vm.overallDetail}</p>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <span className="font-mono">As of {vm.asOf}</span>
-              <span aria-hidden="true">/</span>
-              <span>{vm.inboxSummary}</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <ConsoleChip label="Snapshot" value={vm.asOf} />
+              <ConsoleChip label="Operator inbox" value={vm.inboxSummary} />
             </div>
             {vm.inboxLoadingLabel ? (
               <p role="status" className="text-sm text-muted-foreground">{vm.inboxLoadingLabel}</p>
@@ -118,11 +138,16 @@ export function OperatorReadinessConsole({
           </CardContent>
         </Card>
 
-        <Card aria-labelledby="api-contract-coverage-title">
+        <Card aria-labelledby="api-contract-coverage-title" className="panel-surface">
           <CardHeader>
-            <div className="eyebrow-label">API Contract Coverage</div>
-            <CardTitle id="api-contract-coverage-title">Shared sources</CardTitle>
-            <CardDescription>Local API payload health for readiness review.</CardDescription>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="eyebrow-label">API Contract Coverage</div>
+                <CardTitle id="api-contract-coverage-title">Shared sources</CardTitle>
+                <CardDescription>Local API payload health for readiness review.</CardDescription>
+              </div>
+              <ConsoleChip label="Sources" value={String(vm.apiSources.length)} />
+            </div>
           </CardHeader>
           <CardContent className="space-y-2" role="list" aria-label={vm.apiSourcesLabel}>
             {vm.apiSources.map((source) => (
@@ -149,7 +174,7 @@ export function OperatorReadinessConsole({
             key={metric.id}
             role="group"
             aria-label={metric.ariaLabel}
-            className={cn("rounded-lg border px-3 py-3", levelPanel[metric.level])}
+            className={cn("metric-tile border", levelPanel[metric.level])}
           >
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -169,11 +194,16 @@ export function OperatorReadinessConsole({
         ))}
       </section>
 
-      <Card role="region" aria-label={vm.workItemsRegionLabel}>
+      <Card role="region" aria-label={vm.workItemsRegionLabel} className="panel-surface">
         <CardHeader>
-          <div className="eyebrow-label">Operator Inbox</div>
-          <CardTitle>Review work items</CardTitle>
-          <CardDescription>{vm.workItemsSummary}</CardDescription>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="eyebrow-label">Operator Inbox</div>
+              <CardTitle>Review work items</CardTitle>
+              <CardDescription>{vm.workItemsSummary}</CardDescription>
+            </div>
+            <ConsoleChip label="Visible" value={String(vm.workItems.length)} />
+          </div>
         </CardHeader>
         <CardContent>
           {vm.workItemsOverflowText ? (
@@ -203,12 +233,15 @@ function ConsolePanel({ panel }: { panel: ReadinessConsolePanel }) {
   const titleId = `${panel.id}-title`;
 
   return (
-    <Card role="region" aria-label={panel.ariaLabel}>
+    <Card role="region" aria-label={panel.ariaLabel} className="panel-surface">
       <CardHeader>
-        <CardTitle id={titleId} className="flex items-center gap-2 text-base">
-          <Icon className="h-4 w-4 text-primary" />
-          {panel.title}
-        </CardTitle>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <CardTitle id={titleId} className="flex items-center gap-2 text-base">
+            <Icon className="h-4 w-4 text-primary" />
+            {panel.title}
+          </CardTitle>
+          <ConsoleChip label="Rows" value={String(panel.rows.length)} />
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {panel.rows.length > 0 ? (
@@ -233,7 +266,7 @@ function ReadinessRow({ row }: { row: ReadinessConsoleRow }) {
       role="group"
       aria-label={row.ariaLabel}
       aria-describedby={row.detailId}
-      className={cn("rounded-lg border px-3 py-3", levelPanel[row.level])}
+      className={cn("rounded-lg border bg-card px-3 py-3 shadow-[var(--shadow-panel)]", levelPanel[row.level])}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
@@ -261,5 +294,14 @@ function EmptyConsoleState({ text }: { text: string }) {
     <div role="status" className="rounded-lg border border-dashed border-border/80 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground">
       {text}
     </div>
+  );
+}
+
+function ConsoleChip({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="toolbar-chip">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="min-w-0 break-words font-mono text-foreground">{value}</span>
+    </span>
   );
 }

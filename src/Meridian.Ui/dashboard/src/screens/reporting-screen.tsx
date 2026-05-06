@@ -16,7 +16,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
 
   if (!data) {
     return (
-      <Card>
+      <Card className="panel-surface">
         <CardHeader>
           <CardTitle>{vm.loadingTitle}</CardTitle>
           <CardDescription>{vm.loadingDetail}</CardDescription>
@@ -25,8 +25,33 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
     );
   }
 
+  const recommendedCount = data.reporting.recommendedProfiles.length;
+
   return (
     <div className="space-y-8">
+      <section
+        role="region"
+        aria-label="Reporting workbench context"
+        className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+      >
+        <div className="min-w-0">
+          <div className="eyebrow-label">Reporting lane</div>
+          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
+            Governed export workbench
+          </h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
+            Report packs, export routes, and review evidence stay in one cockpit so governed output can be
+            checked before it leaves Reporting.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ReportingChip label="Profiles" value={vm.countLabel} />
+          <ReportingChip label="Pack targets" value={String(vm.packTargets.length)} />
+          <ReportingChip label="Recommended" value={String(recommendedCount)} />
+          <ReportingChip label="Export route" value="/api/export/analysis" />
+        </div>
+      </section>
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => (
           <MetricCard key={metric.id} {...metric} />
@@ -34,52 +59,63 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Reporting Lane</div>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
-              Governed report packs
+              Evidence and distribution
             </CardTitle>
             <CardDescription>
-              Export profiles tied to accounting evidence, ledger outputs, and report-pack targets.
+              Export profiles stay tied to accounting evidence, loader posture, and governed delivery targets.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
+          <CardContent className="grid gap-3 md:grid-cols-3">
             <ReportingHighlight
-              title="Export profiles"
-              description="Profiles determine format, target tool, loader scripts, and data dictionaries for each governed export."
+              title="Profile wiring"
+              description="Each queue row keeps profile ID, format, target tool, and loader posture visible before export."
             />
             <ReportingHighlight
-              title="Report-pack targets"
-              description="Targets map export profiles to board, audit, and compliance outputs from the same accounting evidence."
+              title="Pack routing"
+              description="Report-pack targets map the same evidence to board, audit, and compliance distribution lanes."
             />
             <ReportingHighlight
-              title="Approval posture"
-              description="Governed outputs track approval and version state so restated reports remain auditable."
+              title="Review posture"
+              description="Dictionary and loader evidence remain attached so governed output can be reviewed without context switching."
             />
           </CardContent>
         </Card>
 
-        <Card className="bg-panel-strong text-slate-50">
+        <Card className="panel-surface-strong text-slate-50">
           <CardHeader>
             <div className="eyebrow-label">Pack targets</div>
             <CardTitle>Report-pack targets</CardTitle>
             <CardDescription className="text-slate-300">{vm.packTargetsSummary}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm text-slate-200">
+          <CardContent className="space-y-3 text-sm text-slate-200">
+            <div className="flex flex-wrap gap-2">
+              <ReportingChip label="Visible" value={String(vm.packTargets.length)} />
+              <ReportingChip label="Inspector" value={vm.statusTitle} />
+            </div>
             {vm.hasPackTargets ? (
-              <div role="list" aria-label={vm.packTargetsListLabel} className="space-y-2">
+              <div
+                role="list"
+                aria-label={vm.packTargetsListLabel}
+                className="data-grid-surface space-y-2 border-0 bg-background/40 p-3"
+              >
                 {vm.packTargets.map((target) => (
-                <div
-                  key={target.id}
-                  role="listitem"
-                  aria-label={target.ariaLabel}
-                  className="flex items-center gap-2 rounded-lg border border-border/70 bg-background/20 px-3 py-2"
-                >
-                  <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                  <span className="font-mono capitalize">{target.label}</span>
-                </div>
+                  <div
+                    key={target.id}
+                    role="listitem"
+                    aria-label={target.ariaLabel}
+                    className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-background/20 px-3 py-2"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                      <span className="font-mono capitalize text-foreground">{target.label}</span>
+                    </span>
+                    <Badge variant="outline">Target</Badge>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -90,27 +126,25 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Landmark className="h-4 w-4 text-primary" />
-                  {vm.title}
+                  Governed export queue
                 </CardTitle>
                 <CardDescription className="mt-2">{vm.description}</CardDescription>
               </div>
-              <span className="w-fit rounded-sm border border-primary/35 bg-primary/10 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-primary">
-                {vm.countLabel}
-              </span>
+              <Badge variant="outline">{vm.countLabel}</Badge>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                {vm.listLabel}
-              </span>
-              <span className="font-mono text-muted-foreground">{vm.visibleCountLabel}</span>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <ReportingChip label="Visible" value={vm.visibleCountLabel} />
+              <ReportingChip label="Recommended" value={String(recommendedCount)} />
+              <ReportingChip label="Targets" value={String(vm.packTargets.length)} />
+              <ReportingChip label="List" value={vm.listLabel} />
             </div>
             <div role="list" aria-label={vm.listLabel} className="space-y-2">
               {vm.hasRows ? (
@@ -120,41 +154,42 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       type="button"
                       aria-pressed={profile.isSelected}
                       aria-controls={vm.detailId}
-                      aria-label={profile.selectAriaLabel}
-                      onClick={() => vm.selectProfile(profile.id)}
-                      className={cn(
-                        "w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
-                        profile.isSelected
-                          ? "border-primary/45 bg-primary/10"
-                          : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="font-semibold text-foreground">{profile.name}</div>
-                          <div className="mt-1 truncate font-mono text-xs text-muted-foreground">
-                            {profile.targetLabel}
-                          </div>
-                        </div>
-                        <span className="shrink-0 rounded-sm border border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-primary">
-                          {profile.formatLabel}
-                        </span>
-                      </div>
-                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
-                        {profile.description}
-                      </p>
-                      {profile.badges.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {profile.badges.map((badge) => (
-                            <Badge key={badge.label} variant={badgeVariant(badge.tone)}>
-                              {badge.label}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </button>
-                  </div>
-                ))
+                       aria-label={profile.selectAriaLabel}
+                       onClick={() => vm.selectProfile(profile.id)}
+                       className={cn(
+                         "w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
+                         profile.isSelected
+                           ? "border-primary/45 bg-primary/10"
+                           : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
+                       )}
+                     >
+                       <div className="flex flex-col gap-3">
+                         <div className="flex items-start justify-between gap-3">
+                           <div className="min-w-0">
+                             <div className="font-semibold text-foreground">{profile.name}</div>
+                             <div className="mt-1 font-mono text-xs text-muted-foreground">{profile.id}</div>
+                           </div>
+                           <div className="flex flex-wrap justify-end gap-2">
+                             <Badge variant="outline">{profile.formatLabel}</Badge>
+                             {profile.badges.map((badge) => (
+                               <Badge key={badge.label} variant={badgeVariant(badge.tone)}>
+                                 {badge.label}
+                               </Badge>
+                             ))}
+                           </div>
+                         </div>
+                         <div className="grid gap-2 sm:grid-cols-3">
+                           <ReportingEvidenceField label="Profile ID" value={profile.id} />
+                           <ReportingEvidenceField label="Target" value={profile.targetLabel} />
+                           <ReportingEvidenceField label="Format" value={profile.formatLabel} />
+                         </div>
+                         <p className="text-sm leading-6 text-muted-foreground">
+                           {profile.description}
+                         </p>
+                       </div>
+                     </button>
+                   </div>
+                 ))
               ) : (
                 <div
                   role="status"
@@ -172,15 +207,35 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
           role="complementary"
           aria-label={vm.statusTitle}
           aria-live="polite"
-          className="h-fit min-w-0 overflow-hidden rounded-lg border border-border/70 bg-background/35 p-4"
+          className="panel-surface h-fit min-w-0 overflow-hidden p-4"
         >
-          <div className="eyebrow-label">{vm.statusTitle}</div>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.statusDetail}</p>
-          <p className="mt-2 font-mono text-xs text-muted-foreground">{vm.nextAction}</p>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="eyebrow-label">Selected profile inspector</div>
+              <h3 className="mt-2 text-base font-semibold text-foreground">
+                {vm.selectedProfile?.title ?? vm.statusTitle}
+              </h3>
+              <p className="mt-1 font-mono text-xs text-muted-foreground">
+                {vm.selectedProfile ? `${vm.selectedProfile.id} · ${vm.selectedProfile.subtitle}` : vm.nextAction}
+              </p>
+            </div>
+            <Badge variant={vm.selectedProfile ? "default" : "outline"}>
+              {vm.selectedProfile ? "Selected" : "Waiting"}
+            </Badge>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.statusDetail}</p>
+          {vm.exportStatus ? (
+            <div
+              role="status"
+              aria-label={vm.exportStatus.ariaLabel}
+              className={cn("mt-3 rounded-md border px-3 py-2 text-sm leading-6", exportStatusToneClass(vm.exportStatus.tone))}
+            >
+              {vm.exportStatus.text}
+            </div>
+          ) : null}
+          <p className="mt-3 font-mono text-xs text-muted-foreground">{vm.nextAction}</p>
           {vm.selectedProfile ? (
             <div className="mt-4 space-y-3 border-t border-border/70 pt-4">
-              <div className="font-semibold text-foreground">{vm.selectedProfile.title}</div>
-              <div className="font-mono text-xs text-muted-foreground">{vm.selectedProfile.subtitle}</div>
               <p className="text-sm leading-6 text-muted-foreground">{vm.selectedProfile.description}</p>
               <div
                 role="status"
@@ -189,18 +244,6 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
               >
                 {vm.selectedProfile.readinessSummary}
               </div>
-              {vm.exportStatus ? (
-                <div
-                  role="status"
-                  aria-label={vm.exportStatus.ariaLabel}
-                  className={cn(
-                    "rounded-md border px-3 py-2 text-sm leading-6",
-                    exportStatusToneClass(vm.exportStatus.tone)
-                  )}
-                >
-                  {vm.exportStatus.text}
-                </div>
-              ) : null}
               <dl className="grid gap-2">
                 {vm.selectedProfile.fields.map((field) => (
                   <div
@@ -220,10 +263,11 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     key={action.href}
                     asChild={action.method === "GET" && !action.isDisabled}
                     disabled={action.isDisabled}
+                    busy={action.isRunning}
+                    busyLabel={action.isRunning ? "Running export…" : null}
                     size="sm"
                     variant={action.variant}
                     aria-label={action.ariaLabel}
-                    aria-busy={action.isRunning || undefined}
                     title={action.disabledReason ?? undefined}
                     onClick={
                       action.method === "POST"
@@ -253,9 +297,27 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
 
 function ReportingHighlight({ title, description }: { title: string; description: string }) {
   return (
-    <div className="rounded-xl border border-border/70 bg-secondary/35 p-4">
+    <div className="rounded-lg border border-border/70 bg-secondary/35 p-4">
       <div className="font-semibold">{title}</div>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function ReportingChip({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="toolbar-chip" aria-label={`${label} ${value}`}>
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-mono text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function ReportingEvidenceField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-border/60 bg-background/20 px-3 py-2">
+      <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
+      <div className="mt-1 font-mono text-xs text-foreground">{value}</div>
     </div>
   );
 }

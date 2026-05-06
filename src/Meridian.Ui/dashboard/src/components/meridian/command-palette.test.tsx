@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { CommandPalette } from "@/components/meridian/command-palette";
@@ -11,6 +11,8 @@ describe("CommandPalette", () => {
     expect(screen.getByRole("dialog", { name: "Open workspace" })).toBeInTheDocument();
     expect(screen.getByText("Route to a canonical operator workspace. Current: Portfolio.")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "7 workspace commands" })).toBeInTheDocument();
+    expect(screen.getByText("Esc to close")).toBeInTheDocument();
+    expect(screen.getByLabelText("Route /portfolio")).toBeInTheDocument();
     expect(screen.getByLabelText("Portfolio, current workspace")).toHaveAttribute("aria-current", "page");
     expect(screen.getByLabelText("Portfolio, current workspace")).toHaveFocus();
   });
@@ -33,6 +35,16 @@ describe("CommandPalette", () => {
     renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/trading"] });
 
     await user.click(screen.getByLabelText("Open Settings workspace"));
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("closes when the backdrop is selected", () => {
+    const onOpenChange = vi.fn();
+
+    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/trading"] });
+
+    fireEvent.click(screen.getByTestId("command-palette-backdrop"));
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });

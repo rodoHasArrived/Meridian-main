@@ -3,10 +3,33 @@ import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buildButtonCommandViewModel } from "@/components/ui/button.view-model";
 
+/**
+ * Primary interactive element for user actions.
+ *
+ * **Variants:** `"default"` (cyan primary), `"secondary"` (muted surface),
+ * `"outline"` (transparent with border), `"ghost"` (text-only), `"destructive"` (danger-toned).
+ *
+ * **Sizes:** `"sm"` (32 px), `"default"` (36 px), `"lg"` (44 px, for hero/full-width CTAs).
+ *
+ * **Busy state:** pass `busy` to replace the label with a spinner and set `aria-busy`.
+ * Pair with `busyLabel` to provide an accessible announcement (e.g. `"Saving…"`).
+ *
+ * **Disabled reason:** pass `disabledReason` to surface an explanatory tooltip when the
+ * button is disabled, without changing visible text.
+ *
+ * **AsChild:** set `asChild` to render the button styles on a child `<Link>` or `<a>`
+ * instead of a native `<button>`. The child must accept `className`.
+ *
+ * @example
+ * <Button size="sm" variant="outline" busy={isLoading} busyLabel="Saving…">
+ *   Save
+ * </Button>
+ */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
   variant?: "default" | "secondary" | "outline" | "ghost" | "destructive";
-  size?: "default" | "sm";
+  /** `"sm"` — compact (32 px min-height). `"default"` — standard (36 px). `"lg"` — full-width CTA or hero action (44 px). */
+  size?: "sm" | "default" | "lg";
   busy?: boolean;
   busyLabel?: string | null;
   disabledReason?: string | null;
@@ -21,8 +44,9 @@ const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
 };
 
 const sizeClasses: Record<NonNullable<ButtonProps["size"]>, string> = {
+  sm: "min-h-8 px-3 py-1.5 text-xs",
   default: "min-h-9 px-4 py-2 text-sm",
-  sm: "min-h-8 px-3 py-1.5 text-xs"
+  lg: "min-h-11 px-6 py-3 text-base"
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

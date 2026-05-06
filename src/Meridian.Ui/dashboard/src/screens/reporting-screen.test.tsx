@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportingScreen } from "@/screens/reporting-screen";
 import { renderWithRouter } from "@/test/render";
@@ -77,7 +77,7 @@ describe("ReportingScreen", () => {
     renderWithRouter(<ReportingScreen data={null} />, { initialEntries: ["/reporting"] });
 
     expect(screen.getByText("Loading Reporting")).toBeInTheDocument();
-    expect(screen.getByText(/waiting for governed report-pack/i)).toBeInTheDocument();
+    expect(screen.getByText(/waiting for governed report-pack and export evidence/i)).toBeInTheDocument();
   });
 
   it("renders report-pack targets with accessible row labels", () => {
@@ -96,10 +96,13 @@ describe("ReportingScreen", () => {
     await user.click(auditButton);
 
     expect(auditButton).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("complementary", { name: /audit pack selected/i })).toBeInTheDocument();
+    const inspector = screen.getByRole("complementary", { name: /audit pack selected/i });
+    expect(inspector).toBeInTheDocument();
     expect(screen.getByRole("status", { name: /audit pack readiness/i })).toHaveTextContent(
       "Loader and dictionary evidence are ready"
     );
+    expect(within(inspector).getByText("Profile ID")).toBeInTheDocument();
+    expect(within(inspector).getByText("audit-pack")).toBeInTheDocument();
 
     const preview = screen.getByRole("link", { name: "Preview Audit Pack export payload" });
     const run = screen.getByRole("button", { name: "Run Audit Pack export analysis" });
@@ -124,7 +127,7 @@ describe("ReportingScreen", () => {
     );
     await waitFor(() => {
       expect(screen.getByRole("status", { name: "Reporting export status" })).toHaveTextContent(
-        "Audit Pack export completed: 2 files generated."
+        "Audit Pack export completed — 2 files generated."
       );
     });
   });

@@ -18,6 +18,8 @@ export interface WorkspaceNavCurrentWorkspaceViewModel {
   description: string;
   statusLabel: string;
   statusTone: WorkspaceNavStatusTone;
+  route: string;
+  routeAriaLabel: string;
   ariaLabel: string;
 }
 
@@ -31,6 +33,8 @@ export interface WorkspaceNavViewModel {
   deliveryEyebrow: string;
   deliveryTitle: string;
   deliveryDescription: string;
+  deliveryShortcutLabel: string;
+  deliveryShortcutAriaLabel: string;
   items: WorkspaceNavItemViewModel[];
 }
 
@@ -73,13 +77,17 @@ export function buildWorkspaceNavViewModel(
       description: currentWorkspace.description,
       statusLabel: `${currentWorkspace.status} posture`,
       statusTone: workspaceStatusTone(currentWorkspace.status),
+      route: workspacePath(currentWorkspace.key),
+      routeAriaLabel: `Canonical route ${workspacePath(currentWorkspace.key)}`,
       ariaLabel: `Current workspace: ${currentWorkspace.label}, ${currentWorkspace.status} posture`
     },
     navEyebrow: "Workspaces",
-    deliveryEyebrow: "Web delivery",
-    deliveryTitle: "Seven-workspace operator lane",
+    deliveryEyebrow: "Shell controls",
+    deliveryTitle: "Palette-first routing",
     deliveryDescription:
-      "Browser navigation follows the canonical workstation taxonomy while legacy route aliases stay available.",
+      "Use the shared command palette and canonical routes to move between lanes while legacy aliases stay available.",
+    deliveryShortcutLabel: "Ctrl K",
+    deliveryShortcutAriaLabel: "Open command palette with Control K",
     items
   };
 }

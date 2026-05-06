@@ -32,6 +32,8 @@ describe("WorkspaceHeader", () => {
     expect(screen.getByRole("button", { name: "Open workspace command palette" })).toHaveTextContent(
       "Open command palette"
     );
+    expect(screen.getByLabelText("Canonical route /trading")).toHaveTextContent("/trading");
+    expect(screen.getByLabelText("8 commands available in the command palette")).toHaveTextContent("8 commands · Ctrl K");
     expect(screen.getByText("Refreshing Trading workspace data.")).toHaveClass("sr-only");
   });
 });

@@ -71,6 +71,10 @@ describe("useReportingScreenViewModel", () => {
     act(() => { result.current.selectProfile("excel"); });
     expect(result.current.selectedProfile).not.toBeNull();
     expect(result.current.selectedProfile?.title).toBe("Excel");
+    expect(result.current.selectedProfile?.fields[0]).toMatchObject({
+      label: "Profile ID",
+      value: "excel"
+    });
     expect(result.current.selectedProfile?.readinessSummary).toContain("Data dictionary is present");
     expect(result.current.selectedProfile?.actions[0]).toMatchObject({
       id: "preview",
@@ -78,8 +82,14 @@ describe("useReportingScreenViewModel", () => {
       href: "/api/export/preview?profile=excel",
       ariaLabel: "Preview Excel export payload",
       isDisabled: false,
+      variant: "outline",
       method: "GET",
       profileId: "excel"
+    });
+    expect(result.current.selectedProfile?.actions[1]).toMatchObject({
+      id: "run",
+      label: "Run export",
+      variant: "default"
     });
     expect(result.current.rows.find((r) => r.id === "excel")?.isSelected).toBe(true);
   });
@@ -131,9 +141,9 @@ describe("useReportingScreenViewModel", () => {
 
     await waitFor(() => {
       expect(result.current.runningProfileId).toBe("excel");
-      expect(result.current.exportStatus?.text).toBe("Starting Excel export.");
+      expect(result.current.exportStatus?.text).toBe("Starting Excel export…");
       expect(result.current.selectedProfile?.actions[1]).toMatchObject({
-        label: "Running export",
+        label: "Running export…",
         isDisabled: true,
         isRunning: true,
         disabledReason: "Excel export is already running."
@@ -161,7 +171,7 @@ describe("useReportingScreenViewModel", () => {
     await waitFor(() => {
       expect(result.current.runningProfileId).toBeNull();
       expect(result.current.exportStatus).toMatchObject({
-        text: "Excel export completed: 1 file generated.",
+        text: "Excel export completed — 1 file generated.",
         tone: "success",
         ariaLabel: "Reporting export status"
       });
@@ -181,7 +191,7 @@ describe("useReportingScreenViewModel", () => {
 
     expect(result.current.runningProfileId).toBeNull();
     expect(result.current.exportStatus).toMatchObject({
-      text: "CSV export failed: Disk full",
+      text: "CSV export failed. Disk full",
       tone: "danger"
     });
   });

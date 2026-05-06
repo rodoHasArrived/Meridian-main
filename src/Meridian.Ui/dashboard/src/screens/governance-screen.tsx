@@ -99,6 +99,26 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
 
   return (
     <div className="space-y-8">
+      <section
+        role="region"
+        aria-label="Governance workbench context"
+        className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+      >
+        <div className="min-w-0">
+          <div className="eyebrow-label">{workspace.label} lane</div>
+          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
+            {focus.title}
+          </h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{focus.description}</p>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <GovernanceChip label="Workstream" value={workstream} />
+          <GovernanceChip label="Queue" value={String(data.reconciliationQueue.length)} />
+          <GovernanceChip label="Breaks" value={String(data.breakQueue.length)} />
+          <GovernanceChip label="Profiles" value={String(data.reporting.profileCount)} />
+        </div>
+      </section>
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => (
           <MetricCard key={metric.id} {...metric} />
@@ -106,7 +126,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">{workspace.label} Lane</div>
             <CardTitle className="flex items-center gap-2">
@@ -134,7 +154,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
           </CardContent>
         </Card>
 
-        <Card className="bg-panel-strong text-slate-50" role="region" aria-label={cashFlow.ariaLabel}>
+        <Card className="panel-surface-strong bg-panel-strong text-slate-50" role="region" aria-label={cashFlow.ariaLabel}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
@@ -174,7 +194,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
 
       {workstream === "reconciliation" && selectedReconciliation ? (
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-          <Card>
+          <Card className="panel-surface">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <BookCheck className="h-4 w-4 text-primary" />
@@ -211,7 +231,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             </CardContent>
           </Card>
 
-          <Card className="bg-panel-strong text-slate-50">
+          <Card className="panel-surface-strong bg-panel-strong text-slate-50">
             <CardHeader>
               <div className="eyebrow-label">Reconciliation Detail</div>
               <CardTitle>{selectedReconciliation.strategyName}</CardTitle>
@@ -241,7 +261,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
 
       {workstream === "ledger" && selectedReconciliation ? (
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-          <Card aria-labelledby="trial-balance-title" aria-describedby="trial-balance-description">
+          <Card aria-labelledby="trial-balance-title" aria-describedby="trial-balance-description" className="panel-surface">
             <CardHeader>
               <CardTitle id="trial-balance-title">{reconciliation.trialBalanceView.title}</CardTitle>
               <CardDescription id="trial-balance-description">{reconciliation.trialBalanceView.description}</CardDescription>
@@ -319,7 +339,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               ) : null}
             </CardContent>
           </Card>
-          <Card>
+          <Card className="panel-surface">
             <CardHeader>
               <CardTitle>Reporting exports</CardTitle>
               <CardDescription>Entry points for report/export handoff using existing export infrastructure.</CardDescription>
@@ -337,7 +357,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
       ) : null}
 
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <BookCheck className="h-4 w-4 text-primary" />
@@ -375,7 +395,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -477,7 +497,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
       {workstream === "security-master" && (
         <section className="space-y-6">
           {/* Search panel */}
-          <Card>
+          <Card className="panel-surface">
             <CardHeader>
               <div className="eyebrow-label">Security Master</div>
               <CardTitle className="flex items-center gap-2">
@@ -669,7 +689,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
           </Card>
 
           {/* Conflicts panel */}
-          <Card>
+          <Card className="panel-surface">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-primary" />
@@ -770,7 +790,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
 
       {workstream === "reconciliation" && (
         <section className="space-y-4">
-          <Card>
+          <Card className="panel-surface">
             <CardHeader>
               <CardTitle>Reconciliation break queue</CardTitle>
               <CardDescription>Review/resolve workflow with assignment and audit metadata.</CardDescription>
@@ -819,7 +839,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                       variant="outline"
                       disabled={!item.canResolve}
                       aria-label={item.resolveAriaLabel}
-                      onClick={() => void reconciliation.resolveBreak(item.breakId, "Resolved")}
+                      onClick={() => {
+                        const operatorRationale = window.prompt("Enter operator rationale for resolving this break:", "");
+                        if (operatorRationale === null) {
+                          return;
+                        }
+
+                        void reconciliation.resolveBreak(item.breakId, "Resolved", operatorRationale);
+                      }}
                     >
                       {item.resolveLabel}
                     </Button>
@@ -828,7 +855,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                       variant="ghost"
                       disabled={!item.canDismiss}
                       aria-label={item.dismissAriaLabel}
-                      onClick={() => void reconciliation.resolveBreak(item.breakId, "Dismissed")}
+                      onClick={() => {
+                        const operatorRationale = window.prompt("Enter operator rationale for dismissing this break:", "");
+                        if (operatorRationale === null) {
+                          return;
+                        }
+
+                        void reconciliation.resolveBreak(item.breakId, "Dismissed", operatorRationale);
+                      }}
                     >
                       {item.dismissLabel}
                     </Button>
@@ -851,7 +885,7 @@ function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewState }
   const bannerClass = view.statusTone === "success" ? "border-success/30 bg-success/5" : view.statusTone === "danger" ? "border-danger/30 bg-danger/5" : "border-warning/30 bg-warning/5";
 
   return (
-    <Card>
+          <Card className="panel-surface">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <BookCheck className="h-4 w-4 text-primary" />
@@ -1046,9 +1080,9 @@ function GovernanceHighlight({
   description: string;
 }) {
   return (
-    <div className="rounded-xl border border-border/70 bg-secondary/35 p-4">
+    <div className="workspace-header-card">
       <Icon className="mb-3 h-5 w-5 text-primary" />
-      <div className="font-semibold">{title}</div>
+      <div className="font-semibold text-foreground">{title}</div>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
     </div>
   );
@@ -1056,10 +1090,19 @@ function GovernanceHighlight({
 
 function GovernanceValue({ label, value, tone, ariaLabel }: { label: string; value: string; tone?: string; ariaLabel?: string }) {
   return (
-    <div aria-label={ariaLabel} className="flex items-center justify-between gap-4 rounded-lg border border-border/70 bg-secondary/40 px-3 py-2">
+    <div aria-label={ariaLabel} className="data-grid-surface flex items-center justify-between gap-4 px-3 py-2">
       <span className="text-slate-300">{label}</span>
       <span className={cn("font-mono text-slate-50", tone)}>{value}</span>
     </div>
+  );
+}
+
+function GovernanceChip({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="toolbar-chip">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-mono capitalize text-foreground">{value}</span>
+    </span>
   );
 }
 

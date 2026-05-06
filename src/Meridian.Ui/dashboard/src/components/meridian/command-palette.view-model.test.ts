@@ -9,9 +9,11 @@ describe("command palette view model", () => {
     expect(model.commandListLabel).toBe("7 workspace commands");
     expect(model.activeWorkspaceLabel).toBe("Current: Settings");
     expect(model.routeSummary).toBe("Route to a canonical operator workspace. Current: Settings.");
+    expect(model.shortcutHint).toBe("Esc to close");
     expect(model.initialFocusItemId).toBe("settings");
     expect(model.items.find((item) => item.id === "settings")).toMatchObject({
       route: "/settings",
+      routeLabel: "/settings",
       statusLabel: "Current",
       commandLabel: "Stay in Settings",
       active: true

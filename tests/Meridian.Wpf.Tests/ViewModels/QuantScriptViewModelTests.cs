@@ -330,10 +330,10 @@ public sealed class QuantScriptViewModelTests
 
         runner.CallCount.Should().Be(1);
         runner.LastParameters.Should().NotBeNull();
-        runner.LastParameters!["symbol"].Should().Be("SPY");
-        runner.LastParameters["from"].Should().Be(new DateOnly(2024, 1, 2));
-        runner.LastParameters["to"].Should().Be(new DateOnly(2024, 2, 3));
-        runner.LastParameters["interval"].Should().Be("daily");
+        runner.LastParameters!["context.symbol"].Should().Be("SPY");
+        runner.LastParameters["context.from"].Should().Be(new DateOnly(2024, 1, 2));
+        runner.LastParameters["context.to"].Should().Be(new DateOnly(2024, 2, 3));
+        runner.LastParameters["context.interval"].Should().Be("daily");
     }
 
     [Fact]

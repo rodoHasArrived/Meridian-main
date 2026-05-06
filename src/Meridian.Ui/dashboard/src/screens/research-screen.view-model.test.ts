@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildComparisonTable,
   buildDiffPanel,
+  buildPlotToolState,
   buildPromotionHistoryTable,
   buildResearchRunLibraryState,
   buildRunDetail,
@@ -9,7 +10,7 @@ import {
   shouldCloseRunDetailForKey,
   toggleRunSelection
 } from "@/screens/research-screen.view-model";
-import type { PromotionRecord, ResearchRunRecord, RunComparisonRow, RunDiff } from "@/types";
+import type { MetricSnapshot, PromotionRecord, ResearchRunRecord, RunComparisonRow, RunDiff } from "@/types";
 
 const runs: ResearchRunRecord[] = [
   {
@@ -105,6 +106,12 @@ const history: PromotionRecord[] = [
     qualifyingTotalReturn: 0.065,
     promotedAt: "2026-03-25T12:00:00Z"
   }
+];
+
+const metrics: MetricSnapshot[] = [
+  { id: "runs", label: "Runs", value: "24", delta: "+8%", tone: "success" },
+  { id: "queued", label: "Queued", value: "3", delta: "0%", tone: "default" },
+  { id: "review", label: "Needs Review", value: "2", delta: "-1%", tone: "warning" }
 ];
 
 describe("research-screen view model", () => {
@@ -297,6 +304,30 @@ describe("research-screen view model", () => {
       valueText: "20 -> 30",
       ariaLabel: "lookback changed from 20 to 30."
     });
+  });
+
+  it("builds plottool workstation and statistics state from strategy runs", () => {
+    const plotTool = buildPlotToolState({
+      metrics,
+      runs,
+      selectedRuns: [runs[0], runs[1]],
+      comparison,
+      runDiff: diff
+    });
+
+    expect(plotTool.workspace.title).toBe("Mean Reversion FX vs Index Momentum workstation");
+    expect(plotTool.workspace.expression).toContain("mean_reversion_fx.spread()");
+    expect(plotTool.workspace.signalCards[2]).toMatchObject({
+      label: "Queued studies",
+      value: "3",
+      tone: "warning"
+    });
+    expect(plotTool.workspace.overlayItems[1]).toContain("Ledger missing; Audit missing");
+    expect(plotTool.statistics.title).toBe("Mean Reversion FX vs Index Momentum analysis");
+    expect(plotTool.statistics.summaryTiles).toHaveLength(9);
+    expect(plotTool.statistics.summaryTiles[7]).toMatchObject({ label: "Sharpe (5d)", value: "1.41", tone: "success" });
+    expect(plotTool.statistics.regression.detailItems[2]).toContain("position changes linked");
+    expect(plotTool.statistics.sampleRows[0]).toMatchObject({ signalText: "Crowded vol", tone: "warning" });
   });
 
   it("keeps run detail keyboard-close decisions testable outside the view", () => {

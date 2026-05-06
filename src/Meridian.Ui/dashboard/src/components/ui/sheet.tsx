@@ -2,13 +2,44 @@ import { type HTMLAttributes, type ReactNode, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Slide-in side panel (drawer) for contextual controls and detail views.
+ * Renders over the main content with a semi-transparent backdrop.
+ *
+ * **Side:** defaults to `"right"` (panel slides in from the right edge). Pass `side="left"`
+ * for panels anchored to a left-side context area. The `SheetContent` `side` prop must match.
+ *
+ * **Sub-components:**
+ * - `SheetContent` — the panel surface; handles `role="dialog"`, `aria-modal`, and border side.
+ * - `SheetHeader` — sticky header strip with bottom border.
+ * - `SheetTitle` — `<h2>` inside the header.
+ * - `SheetDescription` — muted subtitle below the title.
+ * - `SheetBody` — scrollable body with `flex-1` and consistent padding.
+ * - `SheetCloseButton` — absolute-positioned ✕ button in the top-right corner.
+ *
+ * Pressing Escape or clicking the backdrop calls `onOpenChange(false)`.
+ *
+ * @example
+ * <Sheet open={open} onOpenChange={setOpen}>
+ *   <SheetContent>
+ *     <SheetHeader>
+ *       <SheetTitle>Strategy controls</SheetTitle>
+ *       <SheetDescription>Pause or stop the active strategy run.</SheetDescription>
+ *       <SheetCloseButton onClick={() => setOpen(false)} />
+ *     </SheetHeader>
+ *     <SheetBody>…controls…</SheetBody>
+ *   </SheetContent>
+ * </Sheet>
+ */
 interface SheetProps {
   open: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Which edge the panel anchors from. Defaults to `"right"`. */
+  side?: "left" | "right";
   children: ReactNode;
 }
 
-export function Sheet({ open, onOpenChange, children }: SheetProps) {
+export function Sheet({ open, onOpenChange, side = "right", children }: SheetProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -25,7 +56,10 @@ export function Sheet({ open, onOpenChange, children }: SheetProps) {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex justify-end bg-background/70"
+      className={cn(
+        "fixed inset-0 z-50 flex bg-background/70",
+        side === "left" ? "justify-start" : "justify-end"
+      )}
       onMouseDown={(e) => {
         if (e.target === overlayRef.current) onOpenChange?.(false);
       }}
@@ -35,14 +69,20 @@ export function Sheet({ open, onOpenChange, children }: SheetProps) {
   );
 }
 
-export function SheetContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+interface SheetContentProps extends HTMLAttributes<HTMLDivElement> {
+  /** Which edge the panel border appears on. Must match the parent `Sheet` side. Defaults to `"right"` (left border). */
+  side?: "left" | "right";
+}
+
+export function SheetContent({ className, side = "right", ...props }: SheetContentProps) {
   return (
     <div
       role="dialog"
       aria-modal="true"
       tabIndex={-1}
       className={cn(
-        "relative flex h-full w-full max-w-2xl flex-col overflow-y-auto border-l border-border bg-card shadow-float focus:outline-none",
+        "relative flex h-full w-full max-w-2xl flex-col overflow-y-auto border-border bg-card shadow-float focus:outline-none",
+        side === "left" ? "border-r" : "border-l",
         className
       )}
       {...props}

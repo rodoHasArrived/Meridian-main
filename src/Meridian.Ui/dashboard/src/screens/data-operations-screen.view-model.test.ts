@@ -10,6 +10,7 @@ import {
   buildExportSection,
   buildProviderRow,
   buildProviderSection,
+  buildSecurityMasterWorkspaceState,
   buildSelectedBackfillDetail,
   resolveDataOperationsWorkstream,
   resolveSelectedBackfill,
@@ -328,6 +329,36 @@ describe("data-operations-screen view model", () => {
     expect(detail?.ariaLabel).toContain("Backfill detail for BF-1044");
     expect(detail?.rows).toContainEqual({ id: "updated", label: "Updated", value: "5m ago" });
     expect(buildSelectedBackfillDetail([], null)).toBeNull();
+  });
+
+  it("builds a security master workspace with search results, tab state, and packet detail", () => {
+    const securityMaster = buildSecurityMasterWorkspaceState({
+      query: "goldman",
+      selectedSecurityId: "gs-bond-de",
+      activeTab: "corporate-actions",
+      statusFilter: "active"
+    });
+
+    expect(securityMaster.resultCountLabel).toBe("5 results");
+    expect(securityMaster.statusChipLabel).toBe("Status: Active");
+    expect(securityMaster.results.some((row) => row.selected && row.securityId === "gs-bond-de")).toBe(true);
+    expect(securityMaster.tabs.find((tab) => tab.id === "corporate-actions")?.selected).toBe(true);
+    expect(securityMaster.selectedSecurity?.titleCode).toBe("GOS 3.625 10/30");
+    expect(securityMaster.selectedSecurity?.corporateActions[0].description).toContain("Semi-annual coupon");
+    expect(securityMaster.selectedSecurity?.printPacketId).toBe("SM-PACKET-2026-06-09-GOS");
+  });
+
+  it("derives a security master empty state when the query returns no matches", () => {
+    const securityMaster = buildSecurityMasterWorkspaceState({
+      query: "nonexistent issuer",
+      selectedSecurityId: null,
+      activeTab: "overview",
+      statusFilter: "active"
+    });
+
+    expect(securityMaster.hasResults).toBe(false);
+    expect(securityMaster.emptyState?.title).toBe("No matching securities");
+    expect(securityMaster.selectedSecurity).toBeNull();
   });
 
   it("derives a data operations presentation state for empty workspace arrays", () => {

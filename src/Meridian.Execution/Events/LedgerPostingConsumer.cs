@@ -12,9 +12,8 @@ namespace Meridian.Execution.Events;
 /// enhancement plan. The portfolio layer publishes events; this consumer writes to the ledger
 /// asynchronously, removing the synchronous ledger dependency from hot execution paths.
 ///
-/// The channel is bounded (capacity configurable via constructor) and uses
-/// <see cref="BoundedChannelFullMode.DropOldest"/> as a safety valve; callers should size
-/// the capacity appropriately for expected fill throughput.
+/// The channel is bounded (capacity configurable via constructor) and applies backpressure
+/// when full so trade-fill events are never silently discarded.
 /// </remarks>
 public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposable
 {
@@ -30,7 +29,8 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     /// <param name="ledger">The double-entry ledger that journal entries will be posted to.</param>
     /// <param name="logger">Logger for diagnostic output.</param>
     /// <param name="channelCapacity">
-    ///     Maximum number of un-processed events to buffer before oldest events are dropped.
+    ///     Maximum number of un-processed events to buffer before additional publishes are
+    ///     rejected.
     ///     Defaults to 10 000.
     /// </param>
     public LedgerPostingConsumer(
@@ -48,7 +48,7 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
 
         var options = new BoundedChannelOptions(channelCapacity)
         {
-            FullMode = BoundedChannelFullMode.DropOldest,
+            FullMode = BoundedChannelFullMode.Wait,
             SingleWriter = false,
             SingleReader = true
         };
@@ -67,7 +67,7 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
         if (!_channel.Writer.TryWrite(tradeEvent))
         {
             _logger.LogWarning(
-                "LedgerPostingConsumer channel is full; dropping event for fill {FillId} on {Symbol}",
+                "LedgerPostingConsumer channel is full; failed to enqueue event for fill {FillId} on {Symbol}",
                 tradeEvent.FillId, tradeEvent.Symbol);
         }
     }

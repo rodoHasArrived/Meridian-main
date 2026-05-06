@@ -178,6 +178,77 @@ public sealed class SecurityMasterReferenceLookupTests
         result.SubType.Should().BeNull();
     }
 
+    [Fact]
+    public async Task GetByCanonicalAsync_WithMismatchedSecurityId_FallsBackToIdentifierLookup()
+    {
+        var requestedSecurityId = Guid.NewGuid();
+        var mismatchedDetail = BuildDetail(
+            requestedSecurityId,
+            "Equity",
+            [new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "MSFT", true, DateTimeOffset.UtcNow, null, null)]);
+        var expectedDetail = BuildDetail(
+            Guid.NewGuid(),
+            "Equity",
+            [new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "AAPL", true, DateTimeOffset.UtcNow, null, null)]);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetByIdAsync(requestedSecurityId, Arg.Any<CancellationToken>()).Returns(mismatchedDetail);
+        queryService.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "AAPL", "XNYS", Arg.Any<CancellationToken>())
+            .Returns(expectedDetail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetByCanonicalAsync(
+            new SecurityReferenceLookupRequest(
+                SecurityId: requestedSecurityId,
+                IdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
+                IdentifierValue: "AAPL",
+                Symbol: "AAPL",
+                Venue: "XNYS",
+                Source: "test"));
+
+        result.Should().NotBeNull();
+        result!.SecurityId.Should().Be(expectedDetail.SecurityId);
+        result.LookupPath.Should().Be("identifier+venue");
+        await queryService.Received(1).GetByIdentifierAsync(
+            SecurityIdentifierKind.Ticker,
+            "AAPL",
+            "XNYS",
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetByCanonicalAsync_WithMatchingSecurityId_ReturnsSecurityIdMatch()
+    {
+        var requestedSecurityId = Guid.NewGuid();
+        var matchingDetail = BuildDetail(
+            requestedSecurityId,
+            "Equity",
+            [new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "AAPL", true, DateTimeOffset.UtcNow, null, null)]);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetByIdAsync(requestedSecurityId, Arg.Any<CancellationToken>()).Returns(matchingDetail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetByCanonicalAsync(
+            new SecurityReferenceLookupRequest(
+                SecurityId: requestedSecurityId,
+                IdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
+                IdentifierValue: "AAPL",
+                Symbol: "AAPL",
+                Venue: "XNYS",
+                Source: "test"));
+
+        result.Should().NotBeNull();
+        result!.LookupPath.Should().Be("security-id");
+        await queryService.DidNotReceive().GetByIdentifierAsync(
+            Arg.Any<SecurityIdentifierKind>(),
+            Arg.Any<string>(),
+            Arg.Any<string?>(),
+            Arg.Any<CancellationToken>());
+    }
+
     [Theory]
     [InlineData("Bond", "Bond")]
     [InlineData("TreasuryBill", "TreasuryBill")]

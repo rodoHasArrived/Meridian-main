@@ -1287,6 +1287,7 @@ try {
             keys = $keys
             launchArgs = $launchArgs
             capturePath = $capturePath
+            bundleCapturePath = $null
             status = 'pending'
             startedAt = (Get-Date).ToString('o')
         }

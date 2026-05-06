@@ -136,7 +136,7 @@ export function useReportingScreenViewModel(
       packTargetsSummary: "No report-pack targets configured.",
       packTargetsListLabel: "Report-pack targets",
       loadingTitle: "Loading Reporting",
-      loadingDetail: "Waiting for governed report-pack and export-profile data.",
+      loadingDetail: "Waiting for governed report-pack and export evidence.",
       exportStatus,
       runningProfileId,
       runExport: runExportCommand,
@@ -172,6 +172,7 @@ export function useReportingScreenViewModel(
         subtitle: `${selectedProfileData.format} · ${selectedProfileData.targetTool}`,
         description: selectedProfileData.description,
         fields: [
+          { label: "Profile ID", value: selectedProfileData.id, tone: "default" },
           { label: "Format", value: selectedProfileData.format, tone: "default" },
           { label: "Target", value: selectedProfileData.targetTool, tone: "default" },
           {
@@ -203,29 +204,29 @@ export function useReportingScreenViewModel(
     description: reporting.summary,
     countLabel,
     hasRows: rows.length > 0,
-    rows,
-    emptyText:
-      "No export profiles are configured. Add reporting profiles to the governance configuration.",
-    listLabel: "Export profiles",
-    visibleCountLabel: `${rows.length} of ${profiles.length}`,
-    detailId: "reporting-profile-detail",
-    statusTitle: selectedProfileData ? `${selectedProfileData.name} selected` : "No profile selected",
-    statusDetail: selectedProfileData
-      ? `${selectedProfileData.name} exports governance outputs as ${selectedProfileData.format} for ${selectedProfileData.targetTool}.`
-      : "Select a profile to review its configuration and export readiness.",
-    nextAction: selectedProfileData
-      ? "Use /api/export/analysis to trigger this profile, or /api/export/formats to list all format targets."
-      : `${profiles.length} profile${profiles.length === 1 ? "" : "s"} available. Select one to review export details.`,
-    selectedProfile: detail,
-    packTargets,
-    hasPackTargets: packCount > 0,
+      rows,
+      emptyText:
+      "No export profiles are configured. Add a governed profile to restore reporting evidence.",
+      listLabel: "Export profiles",
+      visibleCountLabel: `${rows.length} of ${profiles.length}`,
+      detailId: "reporting-profile-detail",
+      statusTitle: selectedProfileData ? `${selectedProfileData.name} selected` : "No profile selected",
+      statusDetail: selectedProfileData
+      ? `${selectedProfileData.name} routes ${selectedProfileData.format} output to ${selectedProfileData.targetTool}.`
+      : "Select a profile to inspect export evidence and ready-state.",
+      nextAction: selectedProfileData
+      ? `POST /api/export/analysis · GET /api/export/preview?profile=${selectedProfileData.id}`
+      : `${profiles.length} profile${profiles.length === 1 ? "" : "s"} on desk. Select one to inspect export evidence.`,
+      selectedProfile: detail,
+      packTargets,
+      hasPackTargets: packCount > 0,
     packTargetsSummary:
       packCount > 0
         ? `${packCount} report-pack target${packCount === 1 ? "" : "s"} configured.`
         : "No report-pack targets configured.",
     packTargetsListLabel: "Report-pack targets",
     loadingTitle: "Loading Reporting",
-    loadingDetail: "Waiting for governed report-pack and export-profile data.",
+    loadingDetail: "Waiting for governed report-pack and export evidence.",
     exportStatus,
     runningProfileId,
     runExport: runExportCommand,
@@ -261,7 +262,7 @@ function buildProfileActions(
       id: "preview",
       label: "Preview payload",
       href: `/api/export/preview?${profileQuery}`,
-      variant: "default",
+      variant: "outline",
       ariaLabel: `Preview ${profile.name} export payload`,
       isDisabled: false,
       disabledReason: null,
@@ -271,9 +272,9 @@ function buildProfileActions(
     },
     {
       id: "run",
-      label: isRunningThisProfile ? "Running export" : "Run export",
+      label: isRunningThisProfile ? "Running export…" : "Run export",
       href: "/api/export/analysis",
-      variant: "outline",
+      variant: "default",
       ariaLabel: `Run ${profile.name} export analysis`,
       isDisabled: isRunningThisProfile,
       disabledReason: isRunningThisProfile ? `${profile.name} export is already running.` : null,
@@ -286,7 +287,7 @@ function buildProfileActions(
 
 export function buildExportStatusStarting(profileName: string): ReportingExportStatusState {
   return {
-    text: `Starting ${profileName} export.`,
+    text: `Starting ${profileName} export…`,
     tone: "default",
     ariaLabel: "Reporting export status"
   };
@@ -297,8 +298,8 @@ export function buildExportStatusResult(
   result: ExportAnalysisResult
 ): ReportingExportStatusState {
   const text = result.success
-    ? `${profileName} export completed: ${result.filesGenerated} file${result.filesGenerated === 1 ? "" : "s"} generated.`
-    : `${profileName} export failed: ${result.error ?? "No error detail returned."}`;
+    ? `${profileName} export completed — ${result.filesGenerated} file${result.filesGenerated === 1 ? "" : "s"} generated.`
+    : `${profileName} export failed. ${result.error ?? "No error detail returned."}`;
 
   return {
     text,
@@ -311,7 +312,7 @@ export function buildExportStatusFailure(profileName: string, error: unknown): R
   const message = error instanceof Error ? error.message : "Unknown export error.";
 
   return {
-    text: `${profileName} export failed: ${message}`,
+    text: `${profileName} export failed. ${message}`,
     tone: "danger",
     ariaLabel: "Reporting export status"
   };

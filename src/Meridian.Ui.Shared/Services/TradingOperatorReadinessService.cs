@@ -228,6 +228,7 @@ public sealed class TradingOperatorReadinessService
             trustGate,
             reportPack,
             reconciliationGate,
+            brokerageStatus,
             auditEntries);
         var overallStatus = ResolveOverallStatus(acceptanceGates);
         var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
@@ -762,6 +763,7 @@ public sealed class TradingOperatorReadinessService
         TradingTrustGateReadinessDto trustGate,
         TradingReportPackReadinessDto reportPack,
         ReconciliationGateEvaluation? reconciliationGate,
+        WorkstationBrokerageSyncStatusDto? brokerageStatus,
         IReadOnlyList<ExecutionAuditEntry> auditEntries)
         =>
         [
@@ -771,8 +773,38 @@ public sealed class TradingOperatorReadinessService
             BuildPromotionGate(promotion),
             BuildTrustGateAcceptance(trustGate),
             BuildReportPackGate(reportPack),
-            BuildReconciliationGate(reconciliationGate)
+            BuildReconciliationGate(reconciliationGate),
+            BuildBrokerageSyncGate(brokerageStatus)
         ];
+
+
+    private static TradingAcceptanceGateDto BuildBrokerageSyncGate(WorkstationBrokerageSyncStatusDto? brokerageStatus)
+    {
+        if (brokerageStatus is null)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "brokerage-sync",
+                Label: "Brokerage sync",
+                Status: TradingAcceptanceGateStatusDto.Ready,
+                Detail: "Brokerage sync gate is not account-scoped for this readiness query.");
+        }
+
+        var status = brokerageStatus.Health switch
+        {
+            WorkstationBrokerageSyncHealth.Healthy => TradingAcceptanceGateStatusDto.Ready,
+            WorkstationBrokerageSyncHealth.Degraded => TradingAcceptanceGateStatusDto.ReviewRequired,
+            WorkstationBrokerageSyncHealth.Failed => TradingAcceptanceGateStatusDto.Blocked,
+            _ => TradingAcceptanceGateStatusDto.ReviewRequired
+        };
+
+        return new TradingAcceptanceGateDto(
+            GateId: "brokerage-sync",
+            Label: "Brokerage sync",
+            Status: status,
+            Detail: brokerageStatus.Warnings.FirstOrDefault()
+                ?? brokerageStatus.LastError
+                ?? $"Brokerage sync health is {brokerageStatus.Health}.");
+    }
 
     private static TradingAcceptanceGateDto BuildSessionGate(
         TradingPaperSessionReadinessDto? activeSession,

@@ -43,6 +43,28 @@ export function PortfolioScreen({ trading, research, governance }: PortfolioScre
 
   return (
     <div className="space-y-8">
+      <section
+        role="region"
+        aria-label="Portfolio workbench context"
+        className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+      >
+        <div className="min-w-0">
+          <div className="eyebrow-label">Portfolio lane</div>
+          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
+            Execution-linked holdings
+          </h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
+            Holdings, run evidence, and cash posture stay aligned with the active paper workflow.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <PortfolioChip label="Open positions" value={String(vm.openPositionCount)} />
+          <PortfolioChip label="Exposure" value={vm.fallbackStats[0]?.value ?? "—"} />
+          <PortfolioChip label="Unrealized P&L" value={vm.fallbackStats[1]?.value ?? "—"} />
+          {vm.cashVarianceLabel ? <PortfolioChip label="Cash variance" value={vm.cashVarianceLabel} /> : null}
+        </div>
+      </section>
+
       {vm.metricsFromTrading ? (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {vm.metricCards.map((metric) => (
@@ -52,18 +74,16 @@ export function PortfolioScreen({ trading, research, governance }: PortfolioScre
       ) : (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {vm.fallbackStats.map((stat) => (
-            <Card key={stat.label}>
-              <CardContent className="pt-5 pb-4">
-                <div className="text-xs text-muted-foreground mb-2">{stat.label}</div>
-                <p className="text-2xl font-semibold tabular-nums text-foreground">{stat.value}</p>
-              </CardContent>
-            </Card>
+            <div key={stat.label} className="metric-tile">
+              <div className="text-xs text-muted-foreground mb-2 font-mono uppercase tracking-[0.14em]">{stat.label}</div>
+              <p className="text-2xl font-semibold tabular-nums font-mono text-foreground">{stat.value}</p>
+            </div>
           ))}
         </section>
       )}
 
       <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-        <Card>
+        <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Portfolio Lane</div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -82,8 +102,13 @@ export function PortfolioScreen({ trading, research, governance }: PortfolioScre
             </div>
           </CardHeader>
           <CardContent>
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <PortfolioChip label="Selected detail" value={vm.selectedPosition?.title ?? "None"} />
+              <PortfolioChip label="Execution source" value={trading ? "Trading workspace" : "Unavailable"} />
+              <PortfolioChip label="Run evidence" value={vm.hasRuns ? `${vm.runRows.length} linked run${vm.runRows.length === 1 ? "" : "s"}` : "No linked runs"} />
+            </div>
             {vm.hasPositions ? (
-              <div className="overflow-x-auto rounded-lg border border-border/70">
+              <div className="data-grid-surface overflow-x-auto">
                 <table
                   className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm"
                   aria-label={vm.positionListLabel}
@@ -117,7 +142,7 @@ export function PortfolioScreen({ trading, research, governance }: PortfolioScre
                         aria-selected={row.isSelected}
                         className={cn(
                           "bg-background/20 transition-colors",
-                          row.isSelected && "bg-primary/10"
+                          row.isSelected ? "bg-primary/10" : "hover:bg-secondary/20"
                         )}
                       >
                         <td className="px-3 py-2">
@@ -160,10 +185,11 @@ export function PortfolioScreen({ trading, research, governance }: PortfolioScre
 
         <aside
           id={vm.positionDetailId}
+          role="complementary"
           aria-live="polite"
           aria-label={vm.selectedPosition?.ariaLabel ?? "Portfolio holding detail"}
           className={cn(
-            "h-fit min-w-0 overflow-hidden rounded-lg border bg-background/35 p-4",
+            "panel-surface h-fit min-w-0 overflow-hidden p-4",
             vm.selectedPosition
               ? cashFlowBorderClass[vm.selectedPosition.statusTone]
               : "border-border/70"
@@ -205,19 +231,24 @@ export function PortfolioScreen({ trading, research, governance }: PortfolioScre
         </aside>
       </section>
 
-      <Card>
+      <Card className="panel-surface">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <LineChart className="h-4 w-4 text-primary" />
-            Run-linked equity
-          </CardTitle>
-          <CardDescription>
-            Strategy runs contributing to portfolio equity state. Promote runs to paper to connect execution evidence.
-          </CardDescription>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <LineChart className="h-4 w-4 text-primary" />
+                Run-linked equity
+              </CardTitle>
+              <CardDescription>
+                Strategy runs contributing to portfolio equity state. Promote runs to paper to connect execution evidence.
+              </CardDescription>
+            </div>
+            <PortfolioChip label="Runs" value={vm.hasRuns ? String(vm.runRows.length) : "0"} />
+          </div>
         </CardHeader>
         <CardContent>
           {vm.hasRuns ? (
-            <div className="overflow-x-auto rounded-xl border border-border/70">
+            <div className="data-grid-surface overflow-x-auto">
               <table
                 className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm"
                 aria-label="Run-linked equity"
@@ -259,13 +290,18 @@ export function PortfolioScreen({ trading, research, governance }: PortfolioScre
       </Card>
 
       {vm.cashFlowSummary ? (
-        <Card className={cn("border", cashFlowBorderClass[vm.cashFlowTone])}>
+        <Card className={cn("panel-surface border", cashFlowBorderClass[vm.cashFlowTone])}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BriefcaseBusiness className="h-4 w-4 text-primary" />
-              Cash-flow posture
-            </CardTitle>
-            <CardDescription>{vm.cashFlowSummary}</CardDescription>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <BriefcaseBusiness className="h-4 w-4 text-primary" />
+                  Cash-flow posture
+                </CardTitle>
+                <CardDescription>{vm.cashFlowSummary}</CardDescription>
+              </div>
+              {vm.cashVarianceLabel ? <PortfolioChip label="Net variance" value={vm.cashVarianceLabel} /> : null}
+            </div>
           </CardHeader>
           {vm.cashVarianceLabel ? (
             <CardContent>
@@ -278,5 +314,14 @@ export function PortfolioScreen({ trading, research, governance }: PortfolioScre
         </Card>
       ) : null}
     </div>
+  );
+}
+
+function PortfolioChip({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="toolbar-chip">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-mono text-foreground">{value}</span>
+    </span>
   );
 }

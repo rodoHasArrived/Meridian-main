@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.AspNetCore.Builder;
@@ -311,10 +312,21 @@ public static class SecurityMasterEndpoints
         group.MapPatch(UiApiRoutes.SecurityMasterConvertibleEquityTerms, async (
             Guid securityId,
             AmendConvertibleEquityTermsRequest request,
+            HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
+            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+            {
+                return Results.Unauthorized();
+            }
+
+            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
+            {
+                return Results.Forbid();
+            }
+
             var currentTerms = await queryService.GetConvertibleEquityTermsAsync(securityId, ct).ConfigureAwait(false);
             if (currentTerms is null)
             {
@@ -364,9 +376,20 @@ public static class SecurityMasterEndpoints
         group.MapPost(UiApiRoutes.SecurityMasterCorporateActions, async (
             Guid securityId,
             CorporateActionDto dto,
+            HttpContext context,
             [FromServices] ISecurityMasterEventStore eventStore,
             CancellationToken ct) =>
         {
+            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+            {
+                return Results.Forbid();
+            }
+
+            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
+            {
+                return Results.Forbid();
+            }
+
             if (dto.SecurityId != securityId)
             {
                 return Results.BadRequest("Corporate action SecurityId must match route parameter");
@@ -378,7 +401,9 @@ public static class SecurityMasterEndpoints
         .WithName("AppendSecurityMasterCorporateAction")
         .Accepts<CorporateActionDto>("application/json")
         .Produces(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest);
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // GET /api/security-master/conflicts
         group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (

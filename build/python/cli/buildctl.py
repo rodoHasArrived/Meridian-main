@@ -516,6 +516,9 @@ def _check_global_json() -> tuple[bool, bool, str, str | None]:
     if not required:
         return True, False, "global.json: no SDK version constraint", None
 
+    if not _have("dotnet"):
+        return False, False, "dotnet SDK not found", "Install from https://dot.net/download"
+
     result = _run(["dotnet", "--version"])
     if result.returncode != 0:
         return False, False, "dotnet SDK not found", "Install from https://dot.net/download"

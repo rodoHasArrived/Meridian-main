@@ -4,6 +4,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Models;
@@ -29,6 +30,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class WorkstationEndpoints
 {
+    private const int MaxRunComparisonRequestIds = 10;
     private const int SecurityCoveragePreviewLimit = 5;
 
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
@@ -427,8 +429,16 @@ public static class WorkstationEndpoints
                 return Results.BadRequest(new { error = "Operator rationale is required for resolve or waive transitions." });
             }
 
+            var currentUser = context.Items[LoginSessionMiddleware.CurrentUserKey] as string;
+            if (string.IsNullOrWhiteSpace(currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var trustedRequest = request with { ResolvedBy = currentUser };
+
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var transition = await ResolveBreakAsync(context.RequestServices, request, context.RequestAborted).ConfigureAwait(false);
+            var transition = await ResolveBreakAsync(context.RequestServices, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
             {
                 ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
@@ -743,6 +753,11 @@ public static class WorkstationEndpoints
             BulkResolveSecurityMasterConflictsRequest request,
             HttpContext context) =>
         {
+            if (!HasPermission(context, UserPermission.ModifySecurityMaster))
+            {
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            }
+
             var workbenchService = context.RequestServices.GetService<ISecurityMasterWorkbenchQueryService>();
             if (workbenchService is null)
             {
@@ -758,6 +773,7 @@ public static class WorkstationEndpoints
         .WithName("BulkResolveSecurityMasterWorkstationConflicts")
         .Accepts<BulkResolveSecurityMasterConflictsRequest>("application/json")
         .Produces<BulkResolveSecurityMasterConflictsResult>(200)
+        .Produces(403)
         .Produces(501);
 
         // --- Multi-run comparison and diff ---
@@ -773,6 +789,11 @@ public static class WorkstationEndpoints
             if (request.RunIds is not { Count: >= 2 })
             {
                 return Results.BadRequest(new { error = "At least two run IDs are required for comparison." });
+            }
+
+            if (request.RunIds.Count > MaxRunComparisonRequestIds)
+            {
+                return Results.BadRequest(new { error = $"A maximum of {MaxRunComparisonRequestIds} run IDs can be compared per request." });
             }
 
             var comparison = await readService.CompareRunsAsync(request.RunIds, context.RequestAborted).ConfigureAwait(false);
@@ -932,6 +953,11 @@ public static class WorkstationEndpoints
                 return Results.BadRequest(new { error = "At least two run IDs are required for comparison." });
             }
 
+            if (runIds.Length > MaxRunComparisonRequestIds)
+            {
+                return Results.BadRequest(new { error = $"A maximum of {MaxRunComparisonRequestIds} run IDs can be compared per request." });
+            }
+
             var comparison = await readService.GetRunComparisonDtosAsync(runIds, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(comparison, jsonOptions);
         })
@@ -1026,8 +1052,15 @@ public static class WorkstationEndpoints
             // UseStaticFiles() middleware runs after routing in WebApplication, so the
             // catch-all route must serve these files explicitly.
             var root = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
-            var filePath = Path.Combine(root, "workstation", path.Replace('/', Path.DirectorySeparatorChar));
-            if (!File.Exists(filePath))
+            var workstationRoot = Path.GetFullPath(Path.Combine(root, "workstation"));
+            var normalizedPath = path.Replace('/', Path.DirectorySeparatorChar)
+                .Replace('\\', Path.DirectorySeparatorChar);
+            if (Path.IsPathRooted(normalizedPath))
+                return Results.NotFound();
+
+            var filePath = Path.GetFullPath(Path.Combine(workstationRoot, normalizedPath));
+            var rootWithSeparator = workstationRoot.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            if (!filePath.StartsWith(rootWithSeparator, StringComparison.Ordinal) || !File.Exists(filePath))
                 return Results.NotFound();
 
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
@@ -4066,6 +4099,16 @@ public static class WorkstationEndpoints
         }
 
         return await repository.ResolveAsync(request, ct).ConfigureAwait(false);
+    }
+
+    private static bool HasPermission(HttpContext context, UserPermission requiredPermission)
+    {
+        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissions)
+        {
+            return (permissions & requiredPermission) == requiredPermission;
+        }
+
+        return false;
     }
 
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)

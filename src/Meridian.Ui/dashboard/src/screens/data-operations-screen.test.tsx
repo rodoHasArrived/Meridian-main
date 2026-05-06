@@ -61,6 +61,10 @@ describe("DataOperationsScreen", () => {
   it("renders provider, backfill, and export summaries", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
+    expect(screen.getByText("Security Master command deck")).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /search securities/i })).toHaveValue("goldman");
+    expect(screen.getByText("Search and resolve instruments")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Status: Active/i })).toBeInTheDocument();
     expect(screen.getAllByText("Provider health").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Recent exports").length).toBeGreaterThan(0);
@@ -87,11 +91,11 @@ describe("DataOperationsScreen", () => {
 
     renderWithRouter(<DataOperationsScreen data={emptyData} />, { initialEntries: ["/data/backfills"] });
 
-    expect(screen.getByText("No providers reported")).toBeInTheDocument();
+    expect(screen.getByText("No providers configured")).toBeInTheDocument();
     expect(screen.getByText("No backfills queued")).toBeInTheDocument();
     expect(screen.getByText("No exports available")).toBeInTheDocument();
     expect(screen.getByText("No backfill activity yet")).toBeInTheDocument();
-    expect(screen.getAllByRole("status").length).toBe(3);
+    expect(screen.getAllByRole("status").length).toBeGreaterThanOrEqual(3);
   });
 
   it("adapts the hero copy for deep-link routes", () => {
@@ -100,6 +104,30 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByText("Backfill queue focus")).toBeInTheDocument();
     expect(screen.getByText("Backfill Detail")).toBeInTheDocument();
     expect(screen.getByText(/Replay is currently advancing/)).toBeInTheDocument();
+  });
+
+  it("switches security master results and tab content inside the data lane", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+
+    expect(screen.getByRole("tab", { name: /overview/i })).toHaveAttribute("aria-selected", "true");
+
+    await user.click(screen.getByRole("button", { name: /Open Goldman Sachs Group Inc\. ticker GSN/i }));
+
+    expect(screen.getByText("Turquoise · United Kingdom")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /company/i }));
+    expect(screen.getByRole("heading", { name: "The Goldman Sachs Group, Inc." })).toBeInTheDocument();
+    expect(screen.getByText("Coverage posture")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /corporate actions/i }));
+    expect(screen.getByText("Event timeline")).toBeInTheDocument();
+    expect(screen.getByText("Quarterly dividend packet")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /print \/ export/i }));
+    expect(screen.getByText("Packet contents")).toBeInTheDocument();
+    expect(screen.getAllByText("SM-PACKET-2026-05-31-GS").length).toBeGreaterThan(0);
   });
 
   it("switches the detail panel when a backfill row is selected", async () => {

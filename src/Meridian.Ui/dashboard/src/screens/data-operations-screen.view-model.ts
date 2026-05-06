@@ -1,5 +1,13 @@
 import { useCallback, useMemo, useState } from "react";
 import * as workstationApi from "@/lib/api";
+import {
+  buildSecurityMasterWorkspaceState,
+  SECURITY_MASTER_DEFAULT_QUERY
+} from "@/screens/data-operations-screen.security-master";
+import type {
+  SecurityMasterStatusFilter,
+  SecurityMasterTab
+} from "@/screens/data-operations-screen.security-master";
 import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
@@ -173,6 +181,16 @@ export interface DataOperationsPresentationState {
   backfillDetailEmptyState: DataOperationsEmptyState | null;
 }
 
+export {
+  buildSecurityMasterWorkspaceState,
+  SECURITY_MASTER_DEFAULT_QUERY
+} from "@/screens/data-operations-screen.security-master";
+export type {
+  SecurityMasterStatusFilter,
+  SecurityMasterTab,
+  SecurityMasterWorkspaceState
+} from "@/screens/data-operations-screen.security-master";
+
 // --- Provider setup types ---
 
 export interface ProviderSetupFormState {
@@ -304,6 +322,10 @@ export function useDataOperationsViewModel(
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
+  const [securityMasterQuery, setSecurityMasterQuery] = useState(SECURITY_MASTER_DEFAULT_QUERY);
+  const [selectedSecurityMasterId, setSelectedSecurityMasterId] = useState<string | null>(null);
+  const [securityMasterTab, setSecurityMasterTab] = useState<SecurityMasterTab>("overview");
+  const [securityMasterStatusFilter, setSecurityMasterStatusFilter] = useState<SecurityMasterStatusFilter>("active");
 
   // Provider setup state
   const [providerSetupOpen, setProviderSetupOpen] = useState(false);
@@ -320,6 +342,15 @@ export function useDataOperationsViewModel(
   const presentation = useMemo(
     () => buildDataOperationsPresentationState(data, selectedBackfill?.jobId ?? null, workstream),
     [data, selectedBackfill?.jobId, workstream]
+  );
+  const securityMaster = useMemo(
+    () => buildSecurityMasterWorkspaceState({
+      query: securityMasterQuery,
+      selectedSecurityId: selectedSecurityMasterId,
+      activeTab: securityMasterTab,
+      statusFilter: securityMasterStatusFilter
+    }),
+    [securityMasterQuery, selectedSecurityMasterId, securityMasterStatusFilter, securityMasterTab]
   );
 
   const triggerState = useMemo(
@@ -487,8 +518,34 @@ export function useDataOperationsViewModel(
     [providerPhase, providerForm]
   );
 
+  const updateSecurityMasterQuery = useCallback((value: string) => {
+    setSecurityMasterQuery(value);
+    setSelectedSecurityMasterId(null);
+  }, []);
+
+  const selectSecurityMaster = useCallback((securityId: string) => {
+    setSelectedSecurityMasterId(securityId);
+  }, []);
+
+  const selectSecurityMasterTab = useCallback((tab: SecurityMasterTab) => {
+    setSecurityMasterTab(tab);
+  }, []);
+
+  const toggleSecurityMasterStatusFilter = useCallback(() => {
+    setSecurityMasterStatusFilter((current) => current === "active" ? "all" : "active");
+    setSelectedSecurityMasterId(null);
+  }, []);
+
   return {
     workstream,
+    securityMaster,
+    securityMasterQuery,
+    updateSecurityMasterQuery,
+    selectSecurityMaster,
+    securityMasterTab,
+    selectSecurityMasterTab,
+    securityMasterStatusFilter,
+    toggleSecurityMasterStatusFilter,
     selectedBackfill,
     selectedBackfillId,
     selectBackfill: setSelectedBackfillId,

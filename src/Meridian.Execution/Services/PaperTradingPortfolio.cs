@@ -130,7 +130,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// <inheritdoc />
     public decimal PortfolioValue
     {
-        get { lock (_lock) { return _accounts.Values.Sum(static a => a.Cash + a.Positions.Values.Sum(static p => p.MarketValue)); } }
+        get { lock (_lock) { return _accounts.Values.Sum(static a => a.Cash + a.Positions.Values.Sum(static p => p.MarketValue) - a.MarginBalance); } }
     }
 
     /// <inheritdoc />
@@ -578,11 +578,28 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             account.Cash -= notional + commission;
         }
 
-        _ledger?.PostLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
-        [
-            (LedgerAccounts.Securities(symbol), notional, 0m),
-            (LedgerAccounts.Cash, 0m, notional),
-        ]);
+        if (_ledger is not null)
+        {
+            if (account.MarginModel is RegTMarginModel regtForLedger)
+            {
+                var cashRequired = notional * regtForLedger.LongInitialRate;
+                var borrowed = notional - cashRequired;
+                _ledger.PostLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
+                [
+                    (LedgerAccounts.Securities(symbol), notional, 0m),
+                    (LedgerAccounts.Cash, 0m, cashRequired),
+                    (LedgerAccounts.MarginLoanPayable, 0m, borrowed),
+                ]);
+            }
+            else
+            {
+                _ledger.PostLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
+                [
+                    (LedgerAccounts.Securities(symbol), notional, 0m),
+                    (LedgerAccounts.Cash, 0m, notional),
+                ]);
+            }
+        }
     }
 
     private void ApplyCoverShort(
@@ -653,7 +670,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         account.RealisedPnl += realised;
 
         if (_ledger is not null)
-            PostSellLongEntry(symbol, closeQty, price, costBasisRemoved, realised, ts);
+            PostSellLongEntry(symbol, closeQty, price, costBasisRemoved, realised, loanRepaid, ts);
     }
 
     private void ApplyShortSell(
@@ -698,28 +715,32 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     }
 
     private void PostSellLongEntry(string symbol, decimal closeQty, decimal price,
-        decimal costBasisRemoved, decimal realised, DateTimeOffset ts)
+        decimal costBasisRemoved, decimal realised, decimal loanRepaid, DateTimeOffset ts)
     {
         var proceeds = closeQty * price;
+        var cashProceeds = proceeds - loanRepaid;
         var description = $"Sell {closeQty} {symbol} @ {price:F4}";
         if (realised > 0)
             _ledger!.PostLines(ts, description,
             [
-                (LedgerAccounts.Cash, proceeds, 0m),
+                (LedgerAccounts.Cash, cashProceeds, 0m),
+                (LedgerAccounts.MarginLoanPayable, loanRepaid, 0m),
                 (LedgerAccounts.Securities(symbol), 0m, costBasisRemoved),
                 (LedgerAccounts.RealizedGain, 0m, realised),
             ]);
         else if (realised < 0)
             _ledger!.PostLines(ts, description,
             [
-                (LedgerAccounts.Cash, proceeds, 0m),
+                (LedgerAccounts.Cash, cashProceeds, 0m),
+                (LedgerAccounts.MarginLoanPayable, loanRepaid, 0m),
                 (LedgerAccounts.RealizedLoss, Math.Abs(realised), 0m),
                 (LedgerAccounts.Securities(symbol), 0m, costBasisRemoved),
             ]);
         else
             _ledger!.PostLines(ts, description,
             [
-                (LedgerAccounts.Cash, proceeds, 0m),
+                (LedgerAccounts.Cash, cashProceeds, 0m),
+                (LedgerAccounts.MarginLoanPayable, loanRepaid, 0m),
                 (LedgerAccounts.Securities(symbol), 0m, costBasisRemoved),
             ]);
     }
@@ -984,7 +1005,25 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             }
         }
 
+        CostBasis = CalculateRemainingLotCostBasis(isCoveringShort);
+
         return removedCostBasis;
+    }
+
+    private decimal CalculateRemainingLotCostBasis(bool isCoveringShort)
+    {
+        var remainingLots = isCoveringShort
+            ? _lots.Where(static lot => lot.OpenQuantity < 0m)
+            : _lots.Where(static lot => lot.OpenQuantity > 0m);
+
+        var remainingQuantity = remainingLots.Sum(static lot => Math.Abs(lot.OpenQuantity));
+        if (remainingQuantity == 0m)
+        {
+            return 0m;
+        }
+
+        var remainingNotional = remainingLots.Sum(static lot => Math.Abs(lot.OpenQuantity) * lot.EntryPrice);
+        return remainingNotional / remainingQuantity;
     }
 
     private PositionLot? SelectNextLot(PositionLotSelectionMethod method, bool isCoveringShort)

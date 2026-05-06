@@ -95,11 +95,84 @@ const fallbackStatIcons: Record<OverviewFallbackStatId, ElementType> = {
   backfills: Activity
 };
 
+const priorityRouteCopy: Record<
+  "trading" | "accounting" | "reporting",
+  {
+    eyebrow: string;
+    title: string;
+    detail: string;
+    buttonLabel: string;
+  }
+> = {
+  trading: {
+    eyebrow: "Execution posture",
+    title: "Keep the active session ready",
+    detail: "Review paper-session evidence, promotion blockers, and live readiness before the next operator action.",
+    buttonLabel: "Open trading cockpit"
+  },
+  accounting: {
+    eyebrow: "Control evidence",
+    title: "Clear ledger and trust-gate blockers",
+    detail: "Resolve reconciliation, Security Master, and control follow-up before treating the day as sign-off ready.",
+    buttonLabel: "Open accounting lane"
+  },
+  reporting: {
+    eyebrow: "Governed outputs",
+    title: "Prepare distribution-ready reporting",
+    detail: "Check report-pack posture, approvals, and export readiness before circulating governed output.",
+    buttonLabel: "Open reporting lane"
+  }
+};
+
 export function OverviewScreen({ data, session }: OverviewScreenProps) {
   const vm = useOverviewStatusViewModel(data);
   const current = vm.current;
   const statusConfig = current ? systemStatusConfig[current.systemStatus] : null;
   const StatusIcon = statusConfig?.icon ?? Radio;
+  const priorityRoutes = vm.workspaceLinks.filter(
+    (workspace) => workspace.id === "trading" || workspace.id === "accounting" || workspace.id === "reporting"
+  );
+  const briefingItems = [
+    {
+      id: "session",
+      label: "Session",
+      value: session ? session.displayName : "Awaiting session",
+      detail: session ? `${session.role} · ${session.commandCount} commands ready` : "Load a session to unlock command context",
+      tone: "default" as const,
+      badgeVariant: null
+    },
+    {
+      id: "environment",
+      label: "Operating mode",
+      value: session ? session.environment : "Pending",
+      detail: session ? `Current route ${session.activeWorkspace}` : "Environment is not loaded yet",
+      tone: session?.environment === "live" ? "danger" as const : session?.environment === "paper" ? "success" as const : "default" as const,
+      badgeVariant: session ? session.environment : null
+    },
+    {
+      id: "providers",
+      label: "Provider posture",
+      value: vm.providerSummary ?? "Provider posture loading",
+      detail: vm.storageLabel ? `Storage ${vm.storageLabel}` : "Storage posture loading",
+      tone:
+        current?.systemStatus === "Offline"
+          ? "danger" as const
+          : current?.systemStatus === "Degraded"
+            ? "warning" as const
+            : current
+              ? "success" as const
+              : "default" as const,
+      badgeVariant: null
+    },
+    {
+      id: "heartbeat",
+      label: "Heartbeat",
+      value: vm.lastHeartbeatLabel ?? "Waiting for heartbeat",
+      detail: vm.refreshErrorText ?? "Refresh the status banner to confirm the latest control-room posture",
+      tone: vm.refreshErrorText ? "danger" as const : "default" as const,
+      badgeVariant: null
+    }
+  ];
 
   return (
     <div className="space-y-6">
@@ -154,6 +227,65 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
           {vm.refreshErrorText}
         </div>
       )}
+
+      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <Card className="border-border/70 bg-panel-strong">
+          <CardHeader className="pb-3">
+            <div className="eyebrow-label">Operator briefing</div>
+            <CardTitle className="text-xl">Meridian workstation control tower</CardTitle>
+            <CardDescription>
+              System posture, session context, and operator follow-up aligned in one surface before you step into a workspace.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3 md:grid-cols-2">
+            {briefingItems.map((item) => (
+              <BriefingTile
+                key={item.id}
+                label={item.label}
+                value={item.value}
+                detail={item.detail}
+                tone={item.tone}
+                badgeVariant={item.badgeVariant}
+              />
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/70">
+          <CardHeader className="pb-3">
+            <div className="eyebrow-label">Priority routes</div>
+            <CardTitle className="text-base">Move from posture to action</CardTitle>
+            <CardDescription>
+              Start with these lanes when triaging readiness, control evidence, or governed output for the current operating window.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {priorityRoutes.map((workspace) => {
+              const copy = priorityRouteCopy[workspace.id as keyof typeof priorityRouteCopy];
+
+              return (
+                <div key={workspace.id} className="rounded-lg border border-border/70 bg-secondary/25 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div className="eyebrow-label">{copy.eyebrow}</div>
+                      <h3 className="mt-2 text-sm font-semibold text-foreground">{copy.title}</h3>
+                    </div>
+                    <Badge variant={workspace.badgeVariant}>{workspace.status}</Badge>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.detail}</p>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{workspace.description}</p>
+                  <Button asChild variant="outline" size="sm" className="mt-4">
+                    <Link to={workspace.href} aria-label={workspace.ariaLabel}>
+                      {copy.buttonLabel}
+                      <ArrowRight className="size-3.5" aria-hidden="true" />
+                    </Link>
+                  </Button>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Metrics grid */}
       {vm.hasMetrics ? (
@@ -233,37 +365,6 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
         </Card>
       </div>
 
-      {/* Session context */}
-      {session && (
-        <Card className="border-border/50">
-          <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-4 text-sm flex-wrap">
-              <span className="text-muted-foreground">
-                Signed in as <span className="text-foreground font-medium">{session.displayName}</span>
-              </span>
-              <span className="text-muted-foreground/50">·</span>
-              <span className="text-muted-foreground">
-                Role: <span className="text-foreground">{session.role}</span>
-              </span>
-              <span className="text-muted-foreground/50">·</span>
-              <span className="text-muted-foreground">
-                Environment:{" "}
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "text-xs capitalize",
-                    session.environment === "live" && "border-danger/40 text-danger",
-                    session.environment === "paper" && "border-warning/40 text-warning",
-                    session.environment === "research" && "border-blue-400/40 text-blue-400"
-                  )}
-                >
-                  {session.environment}
-                </Badge>
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
@@ -295,6 +396,29 @@ function StatCard({ icon: Icon, label, value, tone }: StatCardProps) {
         <p className={cn("text-2xl font-semibold tabular-nums", toneClass[tone])}>{value}</p>
       </CardContent>
     </Card>
+  );
+}
+
+interface BriefingTileProps {
+  label: string;
+  value: string;
+  detail: string;
+  tone: "default" | "success" | "warning" | "danger";
+  badgeVariant: "paper" | "live" | "research" | null;
+}
+
+function BriefingTile({ label, value, detail, tone, badgeVariant }: BriefingTileProps) {
+  return (
+    <div className="rounded-lg border border-border/70 bg-background/70 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="eyebrow-label">{label}</div>
+        {badgeVariant ? <Badge variant={badgeVariant}>{value}</Badge> : null}
+      </div>
+      {!badgeVariant ? (
+        <p className={cn("mt-2 text-sm font-semibold text-foreground", toneClass[tone])}>{value}</p>
+      ) : null}
+      <p className="mt-2 text-xs leading-5 text-muted-foreground">{detail}</p>
+    </div>
   );
 }
 

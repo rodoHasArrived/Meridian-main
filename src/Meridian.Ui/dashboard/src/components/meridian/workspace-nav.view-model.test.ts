@@ -19,8 +19,11 @@ describe("workspace nav view model", () => {
       label: "Portfolio",
       statusLabel: "Preview posture",
       statusTone: "preview",
+      route: "/portfolio",
+      routeAriaLabel: "Canonical route /portfolio",
       ariaLabel: "Current workspace: Portfolio, Preview posture"
     });
+    expect(model.deliveryShortcutLabel).toBe("Ctrl K");
     expect(model.items.find((item) => item.key === "trading")).toMatchObject({
       route: "/trading",
       active: false,

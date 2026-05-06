@@ -6647,6 +6647,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   └── workspace.ts
 │   │   │   │   ├── main.tsx
 │   │   │   │   ├── screens
+│   │   │   │   │   ├── data-operations-screen.security-master.ts
 │   │   │   │   │   ├── data-operations-screen.test.tsx
 │   │   │   │   │   ├── data-operations-screen.tsx
 │   │   │   │   │   ├── data-operations-screen.view-model.test.ts
@@ -6683,6 +6684,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
 │   │   │   │   │   ├── trading-screen.view-model.ts
+│   │   │   │   │   ├── workspace-placeholder-screen.test.tsx
 │   │   │   │   │   ├── workspace-placeholder-screen.tsx
 │   │   │   │   │   ├── workspace-placeholder-screen.view-model.test.ts
 │   │   │   │   │   └── workspace-placeholder-screen.view-model.ts
@@ -6701,8 +6703,10 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
+│   │           │   ├── index-B-ZOQBU5.js
 │   │           │   ├── index-Bt1jnUdW.js
 │   │           │   ├── index-C-UoWgmp.css
+│   │           │   ├── index-D9leyTuV.css
 │   │           │   └── index-HZREMjYN.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
@@ -7122,6 +7126,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── WorkspaceService.cs
 │       │   ├── WorkspaceShellContextService.cs
 │       │   ├── WorkspaceShellStateProviders.cs
+│       │   ├── WorkstationOperatingContextJsonContext.cs
 │       │   ├── WorkstationOperatingContextService.cs
 │       │   ├── WorkstationOperatorInboxApiClient.cs
 │       │   ├── WorkstationReconciliationApiClient.cs
@@ -7961,6 +7966,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ExecutionGovernanceEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
 │   │       ├── ExportEndpointsTests.cs
+│   │       ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │       ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │       ├── TradingOperatorReadinessServiceTests.cs
@@ -8193,6 +8199,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-623 directories, 7395 files
+623 directories, 7401 files
 ```
 <!-- readme-tree end -->

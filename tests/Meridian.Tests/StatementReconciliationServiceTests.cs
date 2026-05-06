@@ -28,4 +28,30 @@ public sealed class StatementReconciliationServiceTests
         Assert.Single(result.Cases);
         Assert.Equal("case:2", result.Cases[0].CaseId);
     }
+
+    [Fact]
+    public async Task ValidateAsync_ThrowsWhenLocalFileMissing()
+    {
+        var svc = new StatementReconciliationService();
+
+        await Assert.ThrowsAsync<FileNotFoundException>(() =>
+            svc.ValidateAsync("local", "/tmp/does-not-exist.csv", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ImportAsync_CountsRowsForLocalFile()
+    {
+        var svc = new StatementReconciliationService();
+        var filePath = Path.GetTempFileName();
+        try
+        {
+            await File.WriteAllLinesAsync(filePath, ["header", "row1", "row2"]);
+            var result = await svc.ImportAsync("local", filePath, CancellationToken.None);
+            Assert.Equal(3, result.RowCount);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
 }

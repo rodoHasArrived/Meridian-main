@@ -627,7 +627,7 @@ public sealed class ExecutionWriteEndpointsTests
 
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection>? configureServices = null,
-        UserPermission currentUserPermissions = UserPermission.ManageStrategies)
+        UserPermission currentUserPermissions = UserPermission.ExecuteTrades | UserPermission.ManageOrders)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -637,11 +637,12 @@ public sealed class ExecutionWriteEndpointsTests
         configureServices?.Invoke(builder.Services);
 
         var app = builder.Build();
-        app.Use((context, next) =>
+        app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
-            return next(context);
+            await next();
         });
+
         app.MapExecutionEndpoints(new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase

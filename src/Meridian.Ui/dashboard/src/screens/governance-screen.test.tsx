@@ -161,6 +161,7 @@ describe("GovernanceScreen", () => {
   it("renders reconciliation, cash-flow, and reporting summaries", async () => {
     await renderGovernanceScreen();
 
+    expect(screen.getByRole("region", { name: "Governance workbench context" })).toBeInTheDocument();
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
     expect(screen.getByText("Reporting profiles")).toBeInTheDocument();
     expect(screen.getByText("Cash-flow coverage is available for 4 runs; 1 run needs variance review.")).toBeInTheDocument();
@@ -263,7 +264,7 @@ describe("GovernanceScreen", () => {
   it("adapts the hero copy for security-master deep links", async () => {
     await renderGovernanceScreen(data, "/accounting/security-master");
 
-    expect(screen.getByText("Security coverage")).toBeInTheDocument();
+    expect(screen.getAllByText("Security coverage").length).toBeGreaterThan(0);
   });
 
   it("announces security search failures as alerts", async () => {

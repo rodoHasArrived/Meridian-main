@@ -130,7 +130,7 @@ public sealed class DirectLendingEndpointsTests
     }
 
     [Fact]
-    public async Task DirectLendingEndpoints_ShouldPreserveIngressEnvelopeMetadataInHistory()
+    public async Task DirectLendingEndpoints_ShouldIgnoreIngressReplayFlagMetadataInHistory()
     {
         await using var app = await CreateAppAsync(services =>
         {
@@ -149,7 +149,7 @@ public sealed class DirectLendingEndpointsTests
                 CorrelationId: correlationId,
                 CausationId: causationId,
                 SourceSystem: "ops-audit-test",
-                ReplayFlag: false));
+                ReplayFlag: true));
 
         var createResponse = await client.PostAsJsonAsync("/api/loans", createEnvelope);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -164,6 +164,7 @@ public sealed class DirectLendingEndpointsTests
         history[0].CorrelationId.Should().Be(correlationId);
         history[0].CausationId.Should().Be(causationId);
         history[0].SourceSystem.Should().Be("ops-audit-test");
+        history[0].ReplayFlag.Should().BeFalse();
     }
 
     private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection> configureServices)

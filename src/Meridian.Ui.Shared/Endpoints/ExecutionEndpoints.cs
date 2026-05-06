@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -185,6 +186,11 @@ public static class ExecutionEndpoints
 
         group.MapPost("/orders/cancel-all", async (HttpContext context) =>
         {
+            if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
+            {
+                return Results.Forbid();
+            }
+
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
@@ -206,7 +212,10 @@ public static class ExecutionEndpoints
             return Results.Json(actionResult, jsonOptions);
         })
         .WithName("CancelAllOrders")
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<TradingActionResult>(200)
+        .Produces(403)
+        .Produces(429)
         .Produces(503);
 
         // --- Gateway health & capabilities ---
@@ -293,6 +302,11 @@ public static class ExecutionEndpoints
 
         group.MapPost("/controls/manual-overrides", async (CreateExecutionManualOverrideRequest request, HttpContext context) =>
         {
+            if (!HasExecutionControlPermission(context))
+            {
+                return Results.Forbid();
+            }
+
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
             if (controls is null)
             {
@@ -321,11 +335,17 @@ public static class ExecutionEndpoints
         })
         .WithName("CreateExecutionManualOverride")
         .Produces<ExecutionManualOverride>(201)
+        .Produces(403)
         .Produces(400)
         .Produces(503);
 
         group.MapPost("/controls/manual-overrides/{overrideId}/clear", async (string overrideId, ClearExecutionManualOverrideRequest request, HttpContext context) =>
         {
+            if (!HasExecutionControlPermission(context))
+            {
+                return Results.Forbid();
+            }
+
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
             if (controls is null)
             {
@@ -354,6 +374,7 @@ public static class ExecutionEndpoints
         })
         .WithName("ClearExecutionManualOverride")
         .Produces<TradingActionResult>(200)
+        .Produces(403)
         .Produces(404)
         .Produces(503);
 
@@ -740,8 +761,11 @@ public static class ExecutionEndpoints
                 context: context).ConfigureAwait(false);
         })
         .WithName("ClosePosition")
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
+        .Produces(403)
+        .Produces(429)
         .Produces(503);
     }
 
@@ -972,28 +996,56 @@ public static class ExecutionEndpoints
 
     private static string GenerateActionId() => $"act-{Guid.NewGuid():N}";
 
+    private static bool HasExecutionControlPermission(HttpContext context)
+    {
+        if (!context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var rawPermissions) ||
+            rawPermissions is not UserPermission permissions)
+        {
+            return false;
+        }
+
+        return permissions.HasFlag(UserPermission.ExecuteTrades) ||
+               permissions.HasFlag(UserPermission.ManageOrders);
+    }
+
     private static ILogger GetLogger(IServiceProvider sp) =>
         sp.GetRequiredService<ILoggerFactory>()
           .CreateLogger("Meridian.Ui.Shared.Endpoints.ExecutionEndpoints");
 
     private static string ResolveActor(HttpContext context)
     {
-        if (context.Request.Headers.TryGetValue("X-Meridian-Actor", out var actorValues))
-        {
-            var actor = actorValues.ToString().Trim();
-            if (!string.IsNullOrWhiteSpace(actor))
-            {
-                return actor;
-            }
-        }
-
         if (context.User.Identity?.IsAuthenticated == true &&
             !string.IsNullOrWhiteSpace(context.User.Identity.Name))
         {
             return context.User.Identity.Name!;
         }
 
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserKey, out var currentUser) &&
+            currentUser is string username &&
+            !string.IsNullOrWhiteSpace(username))
+        {
+            return username;
+        }
+
         return "operator";
+    }
+
+    private static bool HasExecutionControlMutationPermission(HttpContext context) =>
+        HasExecutionTradingPermission(context, UserPermission.ManageOrders);
+
+    private static bool HasExecutionTradingPermission(HttpContext context, UserPermission requiredPermission)
+    {
+        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissionsFromContext)
+        {
+            return (permissionsFromContext & requiredPermission) == requiredPermission;
+        }
+
+        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is UserRole roleFromContext)
+        {
+            return RolePermissions.HasPermission(roleFromContext, requiredPermission);
+        }
+
+        return false;
     }
 
     private static Dictionary<string, string> MergeMetadata(
