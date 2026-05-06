@@ -538,7 +538,7 @@ public sealed class ExecutionWriteEndpointsTests
     [Fact]
     public async Task PromotionApprove_WhenUserLacksManageStrategies_ReturnsForbidden()
     {
-        await using var app = await CreateAppAsync(RegisterPromotionServices, UserPermission.ViewStrategies);
+        await using var app = await CreateAppAsync(services => RegisterPromotionServices(services), UserPermission.ViewStrategies);
         var client = app.GetTestClient();
 
         var approveResponse = await client.PostAsync(
