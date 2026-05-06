@@ -819,7 +819,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                       variant="outline"
                       disabled={!item.canResolve}
                       aria-label={item.resolveAriaLabel}
-                      onClick={() => void reconciliation.resolveBreak(item.breakId, "Resolved")}
+                      onClick={() => {
+                        const operatorRationale = window.prompt("Enter operator rationale for resolving this break:", "");
+                        if (operatorRationale === null) {
+                          return;
+                        }
+
+                        void reconciliation.resolveBreak(item.breakId, "Resolved", operatorRationale);
+                      }}
                     >
                       {item.resolveLabel}
                     </Button>
@@ -828,7 +835,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                       variant="ghost"
                       disabled={!item.canDismiss}
                       aria-label={item.dismissAriaLabel}
-                      onClick={() => void reconciliation.resolveBreak(item.breakId, "Dismissed")}
+                      onClick={() => {
+                        const operatorRationale = window.prompt("Enter operator rationale for dismissing this break:", "");
+                        if (operatorRationale === null) {
+                          return;
+                        }
+
+                        void reconciliation.resolveBreak(item.breakId, "Dismissed", operatorRationale);
+                      }}
                     >
                       {item.dismissLabel}
                     </Button>

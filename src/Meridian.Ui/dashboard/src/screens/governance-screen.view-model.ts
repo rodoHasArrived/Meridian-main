@@ -778,8 +778,15 @@ export function useGovernanceReconciliationViewModel(
 
   const resolveBreak = useCallback(async (
     breakId: string,
-    status: ResolveReconciliationBreakRequest["status"]
+    status: ResolveReconciliationBreakRequest["status"],
+    operatorRationale: string
   ) => {
+    const trimmedRationale = operatorRationale.trim();
+    if (!trimmedRationale) {
+      setBreakActionError("Operator rationale is required.");
+      return;
+    }
+
     const command: ReconciliationBreakCommand = status === "Resolved" ? "resolve" : "dismiss";
     setBreakAction({ breakId, command });
     setBreakActionError(null);
@@ -790,7 +797,7 @@ export function useGovernanceReconciliationViewModel(
         status,
         resolvedBy: "ops.gov",
         resolutionNote: "Reviewed in governance panel.",
-        operatorRationale: "Reviewed and actioned via governance panel."
+        operatorRationale: trimmedRationale
       });
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
     } catch (err) {
