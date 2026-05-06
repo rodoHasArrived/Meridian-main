@@ -592,12 +592,12 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             }
 
             accountSync = stored.Snapshots
-                .Where(static s => s.Source.StartsWith("brokerage-sync:", StringComparison.OrdinalIgnoreCase))
+                .Where(static s => s.Source is not null && s.Source.StartsWith("brokerage-sync:", StringComparison.OrdinalIgnoreCase))
                 .Where(s => s.AsOfDate == asOfDate)
                 .OrderByDescending(static s => s.RecordedAt)
                 .FirstOrDefault();
             runDerived = stored.Snapshots
-                .Where(static s => !s.Source.StartsWith("brokerage-sync:", StringComparison.OrdinalIgnoreCase))
+                .Where(static s => s.Source is null || !s.Source.StartsWith("brokerage-sync:", StringComparison.OrdinalIgnoreCase))
                 .Where(s => s.AsOfDate == asOfDate)
                 .OrderByDescending(static s => s.RecordedAt)
                 .FirstOrDefault();
