@@ -41,8 +41,7 @@ public static class ConfigEndpoints
                         keyId = SensitiveValueMasker.Mask(cfg.Alpaca.KeyId),
                         secretKey = SensitiveValueMasker.MaskCompletely(cfg.Alpaca.SecretKey),
                         feed = cfg.Alpaca.Feed,
-                        useSandbox = cfg.Alpaca.UseSandbox,
-                        baseUrl = cfg.Alpaca.BaseUrl
+                        useSandbox = cfg.Alpaca.UseSandbox
                     },
                 storage = cfg.Storage,
                 symbols = cfg.Symbols ?? Array.Empty<SymbolConfig>(),
