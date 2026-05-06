@@ -47,7 +47,7 @@ jobs:
         - language: actions
           build-mode: none
         - language: csharp
-          build-mode: none
+          build-mode: manual
         - language: javascript-typescript
           build-mode: none
         - language: python
@@ -76,6 +76,20 @@ jobs:
 
         # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
         # queries: security-extended,security-and-quality
+
+    - name: Setup .NET
+      if: matrix.language == 'csharp'
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore C# solution
+      if: matrix.language == 'csharp'
+      run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+
+    - name: Build C# solution
+      if: matrix.language == 'csharp'
+      run: dotnet build Meridian.sln --configuration Release --no-restore /p:EnableWindowsTargeting=true
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4
