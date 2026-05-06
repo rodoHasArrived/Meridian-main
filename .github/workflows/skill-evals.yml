@@ -165,6 +165,7 @@ jobs:
     # (e.g. when workflow_dispatch targets only a non-code-review skill).
     needs: [detect-changed-skills, validate-skill-structure]
     if: |
+      github.event_name == 'workflow_dispatch' &&
       needs.detect-changed-skills.outputs.mdc_code_review_changed == 'true' &&
       (needs.validate-skill-structure.result == 'success' || needs.validate-skill-structure.result == 'skipped')
     permissions:
