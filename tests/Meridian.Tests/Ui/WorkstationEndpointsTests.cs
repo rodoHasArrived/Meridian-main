@@ -1332,6 +1332,31 @@ public sealed class WorkstationEndpointsTests
         readiness.Blockers.Should().BeEmpty();
         readiness.TrustRationaleContract.Should().NotBeNull();
         readiness.TrustRationaleContract!.Status.Should().Be("validated");
+        readiness.PacketPath.Should().NotBeNull();
+        Path.IsPathRooted(readiness.PacketPath!).Should().BeFalse();
+        readiness.PacketPath.Should().Contain("dk1-pilot-parity-packet.json");
+    }
+
+    [Fact]
+    public async Task Dk1TrustGateReadinessService_WhenPacketMissing_ShouldNotDiscloseFilesystemPaths()
+    {
+        var automationRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "dk1-missing-packet",
+            Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(automationRoot);
+
+        var service = new Dk1TrustGateReadinessService(
+            new Dk1TrustGateReadinessOptions(automationRoot),
+            NullLogger<Dk1TrustGateReadinessService>.Instance);
+
+        var readiness = await service.GetCurrentAsync();
+
+        readiness.Status.Should().Be("packet-unavailable");
+        readiness.PacketPath.Should().BeNull();
+        readiness.Detail.Should().Be("No DK1 pilot parity packet was found under the configured automation root.");
+        readiness.Detail.Should().NotContain(NormalizePathForAssertion(automationRoot));
     }
 
     [Fact]
@@ -2814,6 +2839,9 @@ public sealed class WorkstationEndpointsTests
             throw new InvalidOperationException(message);
         }
     }
+
+    private static string NormalizePathForAssertion(string path) =>
+        path.Replace(Path.DirectorySeparatorChar, '/');
 
     private sealed class ThrowingReconciliationBreakQueueRepository : IReconciliationBreakQueueRepository
     {

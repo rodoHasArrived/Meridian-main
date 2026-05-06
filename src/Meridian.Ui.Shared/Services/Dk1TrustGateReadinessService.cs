@@ -101,24 +101,24 @@ public sealed class Dk1TrustGateReadinessService
         if (packetPath is null)
         {
             return CreateUnavailable(
-                $"No DK1 pilot parity packet was found under {NormalizePath(automationRoot)}.");
+                "No DK1 pilot parity packet was found under the configured automation root.");
         }
 
         try
         {
             await using var stream = File.OpenRead(packetPath);
             using var document = await JsonDocument.ParseAsync(stream, cancellationToken: ct).ConfigureAwait(false);
-            return BuildReadinessFromPacket(packetPath, document.RootElement);
+            return BuildReadinessFromPacket(packetPath, automationRoot, document.RootElement);
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
             _logger.LogWarning(ex, "Unable to read DK1 pilot parity packet at {PacketPath}.", packetPath);
             return CreateUnavailable(
-                $"DK1 pilot parity packet could not be read from {NormalizePath(packetPath)}.");
+                "DK1 pilot parity packet could not be read from the automation archive.");
         }
     }
 
-    private TradingTrustGateReadinessDto BuildReadinessFromPacket(string packetPath, JsonElement root)
+    private TradingTrustGateReadinessDto BuildReadinessFromPacket(string packetPath, string automationRoot, JsonElement root)
     {
         var status = GetString(root, "status") ?? "unknown";
         var generatedAt = TryParseDateTimeOffset(GetString(root, "generatedAtUtc"));
@@ -178,7 +178,7 @@ public sealed class Dk1TrustGateReadinessService
             OperatorSignoffRequired: operatorSignoffRequired,
             OperatorSignoffStatus: operatorSignoffStatus,
             GeneratedAt: generatedAt,
-            PacketPath: NormalizePath(packetPath),
+            PacketPath: BuildDisplayPacketPath(packetPath, automationRoot),
             SourceSummary: sourceSummary,
             RequiredSampleCount: requiredSampleCount,
             ReadySampleCount: readySampleCount,
@@ -266,6 +266,34 @@ public sealed class Dk1TrustGateReadinessService
             .OrderByDescending(file => file.LastWriteTimeUtc)
             .Select(file => file.FullName)
             .FirstOrDefault();
+    }
+
+    private static string? BuildDisplayPacketPath(string? packetPath, string automationRoot)
+    {
+        if (string.IsNullOrWhiteSpace(packetPath))
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(automationRoot))
+        {
+            return Path.GetFileName(packetPath);
+        }
+
+        try
+        {
+            var relativePath = Path.GetRelativePath(automationRoot, packetPath);
+            if (relativePath.StartsWith("..", StringComparison.Ordinal))
+            {
+                return Path.GetFileName(packetPath);
+            }
+
+            return NormalizePath(relativePath);
+        }
+        catch (ArgumentException)
+        {
+            return Path.GetFileName(packetPath);
+        }
     }
 
     private static string BuildDetail(
