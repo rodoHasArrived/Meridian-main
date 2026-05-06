@@ -34,7 +34,16 @@ public static class ConfigEndpoints
                 dataRoot = cfg.DataRoot,
                 compress = cfg.Compress,
                 dataSource = cfg.DataSource.ToString(),
-                alpaca = cfg.Alpaca,
+                alpaca = cfg.Alpaca is null
+                    ? null
+                    : new
+                    {
+                        keyId = SensitiveValueMasker.Mask(cfg.Alpaca.KeyId),
+                        secretKey = SensitiveValueMasker.MaskCompletely(cfg.Alpaca.SecretKey),
+                        feed = cfg.Alpaca.Feed,
+                        useSandbox = cfg.Alpaca.UseSandbox,
+                        baseUrl = cfg.Alpaca.BaseUrl
+                    },
                 storage = cfg.Storage,
                 symbols = cfg.Symbols ?? Array.Empty<SymbolConfig>(),
                 backfill = cfg.Backfill,
