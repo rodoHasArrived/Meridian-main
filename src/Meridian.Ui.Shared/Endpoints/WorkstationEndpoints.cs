@@ -4,6 +4,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Models;
@@ -744,6 +745,11 @@ public static class WorkstationEndpoints
             BulkResolveSecurityMasterConflictsRequest request,
             HttpContext context) =>
         {
+            if (!HasPermission(context, UserPermission.ModifySecurityMaster))
+            {
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            }
+
             var workbenchService = context.RequestServices.GetService<ISecurityMasterWorkbenchQueryService>();
             if (workbenchService is null)
             {
@@ -759,6 +765,7 @@ public static class WorkstationEndpoints
         .WithName("BulkResolveSecurityMasterWorkstationConflicts")
         .Accepts<BulkResolveSecurityMasterConflictsRequest>("application/json")
         .Produces<BulkResolveSecurityMasterConflictsResult>(200)
+        .Produces(403)
         .Produces(501);
 
         // --- Multi-run comparison and diff ---
@@ -4084,6 +4091,16 @@ public static class WorkstationEndpoints
         }
 
         return await repository.ResolveAsync(request, ct).ConfigureAwait(false);
+    }
+
+    private static bool HasPermission(HttpContext context, UserPermission requiredPermission)
+    {
+        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissions)
+        {
+            return (permissions & requiredPermission) == requiredPermission;
+        }
+
+        return false;
     }
 
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
