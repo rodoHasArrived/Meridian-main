@@ -924,7 +924,7 @@ internal sealed class SimulatedPortfolio
 
             account.ClosedLots.Add(new ClosedLot(
                 lot.LotId, symbol, lotClose, lot.EntryPrice, lot.OpenedAt,
-                lot.OpenFillId, coverPrice, closedAt, closeFillId, account.Account.AccountId));
+                lot.OpenFillId, coverPrice, closedAt, closeFillId, account.Account.AccountId, IsShort: true));
 
             if (lot.Quantity <= remaining)
             {
