@@ -9,6 +9,7 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -617,6 +618,12 @@ public sealed class ExecutionWriteEndpointsTests
         configureServices?.Invoke(builder.Services);
 
         var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ExecuteTrades | UserPermission.ManageOrders;
+            await next();
+        });
+
         app.MapExecutionEndpoints(new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
