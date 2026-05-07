@@ -114,67 +114,67 @@
 <!-- generated -->
 <g id="node1" class="node">
 <title>generated</title>
-<polygon fill="#1d4ed8" stroke="#60a5fa" points="821.5,-721 566.5,-721 566.5,-668 827.5,-668 827.5,-715 821.5,-721"/>
-<polyline fill="none" stroke="#60a5fa" points="821.5,-721 821.5,-715 "/>
-<polyline fill="none" stroke="#60a5fa" points="827.5,-715 821.5,-715 "/>
-<text text-anchor="middle" x="697" y="-705.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Source fingerprint: e9de62599c44</text>
-<text text-anchor="middle" x="697" y="-690.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Transient pages in App.xaml.cs: 34</text>
-<text text-anchor="middle" x="697" y="-675.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Navigation tags: 0</text>
+<polygon fill="#1d4ed8" stroke="#60a5fa" points="873.5,-721 618.5,-721 618.5,-668 879.5,-668 879.5,-715 873.5,-721"/>
+<polyline fill="none" stroke="#60a5fa" points="873.5,-721 873.5,-715 "/>
+<polyline fill="none" stroke="#60a5fa" points="879.5,-715 873.5,-715 "/>
+<text text-anchor="middle" x="749" y="-705.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Source fingerprint: 21bca71ef3b4</text>
+<text text-anchor="middle" x="749" y="-690.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Transient pages in App.xaml.cs: 34</text>
+<text text-anchor="middle" x="749" y="-675.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Navigation tags: 0</text>
 </g>
 <!-- app -->
 <g id="node2" class="node">
 <title>app</title>
-<polygon fill="#0f766e" stroke="#2dd4bf" points="1022.5,-713.5 849.5,-713.5 849.5,-709.5 845.5,-709.5 845.5,-705.5 849.5,-705.5 849.5,-683.5 845.5,-683.5 845.5,-679.5 849.5,-679.5 849.5,-675.5 1022.5,-675.5 1022.5,-713.5"/>
-<polyline fill="none" stroke="#2dd4bf" points="849.5,-709.5 853.5,-709.5 853.5,-705.5 849.5,-705.5 "/>
-<polyline fill="none" stroke="#2dd4bf" points="849.5,-683.5 853.5,-683.5 853.5,-679.5 849.5,-679.5 "/>
-<text text-anchor="middle" x="936" y="-698.3" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">App.xaml.cs</text>
-<text text-anchor="middle" x="936" y="-683.3" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Host + DI composition</text>
+<polygon fill="#0f766e" stroke="#2dd4bf" points="1074.5,-713.5 901.5,-713.5 901.5,-709.5 897.5,-709.5 897.5,-705.5 901.5,-705.5 901.5,-683.5 897.5,-683.5 897.5,-679.5 901.5,-679.5 901.5,-675.5 1074.5,-675.5 1074.5,-713.5"/>
+<polyline fill="none" stroke="#2dd4bf" points="901.5,-709.5 905.5,-709.5 905.5,-705.5 901.5,-705.5 "/>
+<polyline fill="none" stroke="#2dd4bf" points="901.5,-683.5 905.5,-683.5 905.5,-679.5 901.5,-679.5 "/>
+<text text-anchor="middle" x="988" y="-698.3" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">App.xaml.cs</text>
+<text text-anchor="middle" x="988" y="-683.3" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Host + DI composition</text>
 </g>
 <!-- window -->
 <g id="node3" class="node">
 <title>window</title>
-<polygon fill="#2563eb" stroke="#93c5fd" points="1049,-605 823,-605 823,-601 819,-601 819,-597 823,-597 823,-575 819,-575 819,-571 823,-571 823,-567 1049,-567 1049,-605"/>
-<polyline fill="none" stroke="#93c5fd" points="823,-601 827,-601 827,-597 823,-597 "/>
-<polyline fill="none" stroke="#93c5fd" points="823,-575 827,-575 827,-571 823,-571 "/>
-<text text-anchor="middle" x="936" y="-589.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">MainWindow.xaml(.cs)</text>
-<text text-anchor="middle" x="936" y="-574.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Root frame + global shortcuts</text>
+<polygon fill="#2563eb" stroke="#93c5fd" points="1101,-605 875,-605 875,-601 871,-601 871,-597 875,-597 875,-575 871,-575 871,-571 875,-571 875,-567 1101,-567 1101,-605"/>
+<polyline fill="none" stroke="#93c5fd" points="875,-601 879,-601 879,-597 875,-597 "/>
+<polyline fill="none" stroke="#93c5fd" points="875,-575 879,-575 879,-571 875,-571 "/>
+<text text-anchor="middle" x="988" y="-589.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">MainWindow.xaml(.cs)</text>
+<text text-anchor="middle" x="988" y="-574.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Root frame + global shortcuts</text>
 </g>
 <!-- app&#45;&gt;window -->
 <g id="edge1" class="edge">
 <title>app&#45;&gt;window</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M936,-675.43C936,-658.37 936,-632.59 936,-613.26"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="938.8,-613.15 936,-605.15 933.2,-613.15 938.8,-613.15"/>
-<text text-anchor="middle" x="1035.5" y="-632.8" font-family="Segoe UI" font-size="14.00">resolve MainWindow from DI</text>
+<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M988,-675.43C988,-658.37 988,-632.59 988,-613.26"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="990.8,-613.15 988,-605.15 985.2,-613.15 990.8,-613.15"/>
+<text text-anchor="middle" x="1087.5" y="-632.8" font-family="Segoe UI" font-size="14.00">resolve MainWindow from DI</text>
 </g>
 <!-- page -->
 <g id="node4" class="node">
 <title>page</title>
-<polygon fill="#7c3aed" stroke="#c4b5fd" points="583.5,-504 334.5,-504 334.5,-500 330.5,-500 330.5,-496 334.5,-496 334.5,-474 330.5,-474 330.5,-470 334.5,-470 334.5,-466 583.5,-466 583.5,-504"/>
-<polyline fill="none" stroke="#c4b5fd" points="334.5,-500 338.5,-500 338.5,-496 334.5,-496 "/>
-<polyline fill="none" stroke="#c4b5fd" points="334.5,-474 338.5,-474 338.5,-470 334.5,-470 "/>
-<text text-anchor="middle" x="459" y="-488.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">MainPage.xaml(.cs)</text>
-<text text-anchor="middle" x="459" y="-473.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Sidebar shell + command palette</text>
+<polygon fill="#7c3aed" stroke="#c4b5fd" points="635.5,-504 386.5,-504 386.5,-500 382.5,-500 382.5,-496 386.5,-496 386.5,-474 382.5,-474 382.5,-470 386.5,-470 386.5,-466 635.5,-466 635.5,-504"/>
+<polyline fill="none" stroke="#c4b5fd" points="386.5,-500 390.5,-500 390.5,-496 386.5,-496 "/>
+<polyline fill="none" stroke="#c4b5fd" points="386.5,-474 390.5,-474 390.5,-470 386.5,-470 "/>
+<text text-anchor="middle" x="511" y="-488.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">MainPage.xaml(.cs)</text>
+<text text-anchor="middle" x="511" y="-473.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Sidebar shell + command palette</text>
 </g>
 <!-- window&#45;&gt;page -->
 <g id="edge2" class="edge">
 <title>window&#45;&gt;page</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M849.07,-566.96C765.55,-549.62 639.69,-523.5 553.68,-505.65"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="554.14,-502.89 545.74,-504 553,-508.37 554.14,-502.89"/>
-<text text-anchor="middle" x="834.5" y="-531.8" font-family="Segoe UI" font-size="14.00">RootFrame.Navigate(MainPage)</text>
+<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M901.07,-566.96C817.55,-549.62 691.69,-523.5 605.68,-505.65"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="606.14,-502.89 597.74,-504 605,-508.37 606.14,-502.89"/>
+<text text-anchor="middle" x="886.5" y="-531.8" font-family="Segoe UI" font-size="14.00">RootFrame.Navigate(MainPage)</text>
 </g>
 <!-- main_window_services -->
 <g id="node8" class="node">
 <title>main_window_services</title>
-<path fill="#172554" stroke="#93c5fd" d="M2206.5,-504C2206.5,-504 617.5,-504 617.5,-504 611.5,-504 605.5,-498 605.5,-492 605.5,-492 605.5,-478 605.5,-478 605.5,-472 611.5,-466 617.5,-466 617.5,-466 2206.5,-466 2206.5,-466 2212.5,-466 2218.5,-472 2218.5,-478 2218.5,-478 2218.5,-492 2218.5,-492 2218.5,-498 2212.5,-504 2206.5,-504"/>
-<text text-anchor="middle" x="1412" y="-488.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">MainWindow dependencies</text>
-<text text-anchor="middle" x="1412" y="-473.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">MainWindowViewModel\nNavigationService\nKeyboardShortcutService\nNotificationService\nOnboardingTourService\nAlertService\nWorkspaceService\nFundContextService\nWorkstationOperatingContextService\nDispatcherTimer</text>
+<path fill="#172554" stroke="#93c5fd" d="M2258.5,-504C2258.5,-504 669.5,-504 669.5,-504 663.5,-504 657.5,-498 657.5,-492 657.5,-492 657.5,-478 657.5,-478 657.5,-472 663.5,-466 669.5,-466 669.5,-466 2258.5,-466 2258.5,-466 2264.5,-466 2270.5,-472 2270.5,-478 2270.5,-478 2270.5,-492 2270.5,-492 2270.5,-498 2264.5,-504 2258.5,-504"/>
+<text text-anchor="middle" x="1464" y="-488.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">MainWindow dependencies</text>
+<text text-anchor="middle" x="1464" y="-473.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">MainWindowViewModel\nNavigationService\nKeyboardShortcutService\nNotificationService\nOnboardingTourService\nAlertService\nWorkspaceService\nFundContextService\nWorkstationOperatingContextService\nDispatcherTimer</text>
 </g>
 <!-- window&#45;&gt;main_window_services -->
 <g id="edge6" class="edge">
 <title>window&#45;&gt;main_window_services</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M1022.75,-566.96C1106.09,-549.62 1231.68,-523.5 1317.52,-505.65"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="1318.18,-508.37 1325.44,-504 1317.04,-502.89 1318.18,-508.37"/>
-<text text-anchor="middle" x="1273.5" y="-531.8" font-family="Segoe UI" font-size="14.00">constructor injection</text>
+<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M1074.75,-566.96C1158.09,-549.62 1283.68,-523.5 1369.52,-505.65"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="1370.18,-508.37 1377.44,-504 1369.04,-502.89 1370.18,-508.37"/>
+<text text-anchor="middle" x="1325.5" y="-531.8" font-family="Segoe UI" font-size="14.00">constructor injection</text>
 </g>
 <!-- nav -->
 <g id="node5" class="node">
@@ -188,23 +188,23 @@
 <!-- page&#45;&gt;nav -->
 <g id="edge3" class="edge">
 <title>page&#45;&gt;nav</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M431.3,-465.84C406.29,-449.44 369.39,-425.25 342.48,-407.61"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="343.75,-405.09 335.52,-403.04 340.68,-409.77 343.75,-405.09"/>
-<text text-anchor="middle" x="446.5" y="-430.8" font-family="Segoe UI" font-size="14.00">navigate by tag</text>
+<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M473.77,-465.84C439.57,-449.17 388.84,-424.43 352.52,-406.71"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="353.42,-404.03 345,-403.04 350.96,-409.07 353.42,-404.03"/>
+<text text-anchor="middle" x="475.5" y="-430.8" font-family="Segoe UI" font-size="14.00">navigate by tag</text>
 </g>
 <!-- main_page_services -->
 <g id="node9" class="node">
 <title>main_page_services</title>
-<path fill="#3b0764" stroke="#d8b4fe" d="M759.5,-403C759.5,-403 460.5,-403 460.5,-403 454.5,-403 448.5,-397 448.5,-391 448.5,-391 448.5,-377 448.5,-377 448.5,-371 454.5,-365 460.5,-365 460.5,-365 759.5,-365 759.5,-365 765.5,-365 771.5,-371 771.5,-377 771.5,-377 771.5,-391 771.5,-391 771.5,-397 765.5,-403 759.5,-403"/>
-<text text-anchor="middle" x="610" y="-387.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">MainPage dependencies</text>
-<text text-anchor="middle" x="610" y="-372.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">WpfNavigationService\nMainPageViewModel</text>
+<path fill="#3b0764" stroke="#d8b4fe" d="M967,-403C967,-403 461,-403 461,-403 455,-403 449,-397 449,-391 449,-391 449,-377 449,-377 449,-371 455,-365 461,-365 461,-365 967,-365 967,-365 973,-365 979,-371 979,-377 979,-377 979,-391 979,-391 979,-397 973,-403 967,-403"/>
+<text text-anchor="middle" x="714" y="-387.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">MainPage dependencies</text>
+<text text-anchor="middle" x="714" y="-372.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">WpfNavigationService\nIShellNavigationCoordinator\nMainPageViewModel</text>
 </g>
 <!-- page&#45;&gt;main_page_services -->
 <g id="edge7" class="edge">
 <title>page&#45;&gt;main_page_services</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M486.7,-465.84C511.71,-449.44 548.61,-425.25 575.52,-407.61"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="577.32,-409.77 582.48,-403.04 574.25,-405.09 577.32,-409.77"/>
-<text text-anchor="middle" x="614.5" y="-430.8" font-family="Segoe UI" font-size="14.00">constructor injection</text>
+<path fill="none" stroke="#94a3b8" stroke-width="1.3" d="M548.23,-465.84C582.43,-449.17 633.16,-424.43 669.48,-406.71"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.3" points="671.04,-409.07 677,-403.04 668.58,-404.03 671.04,-409.07"/>
+<text text-anchor="middle" x="695.5" y="-430.8" font-family="Segoe UI" font-size="14.00">constructor injection</text>
 </g>
 <!-- views -->
 <g id="node6" class="node">
