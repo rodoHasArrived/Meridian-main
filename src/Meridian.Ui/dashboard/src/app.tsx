@@ -4,6 +4,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
 import { buildAppShellViewState, type ShellStatusPanel } from "@/app-shell.view-model";
 import { CommandPalette } from "@/components/meridian/command-palette";
+import { MegaMenu } from "@/components/meridian/mega-menu";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Badge } from "@/components/ui/badge";
@@ -88,6 +89,7 @@ export function App() {
         </button>
 
         <div className="workstation-actions">
+          <MegaMenu />
           {session ? (
             <div className="workstation-session-card">
               <div className="workstation-session-primary">
