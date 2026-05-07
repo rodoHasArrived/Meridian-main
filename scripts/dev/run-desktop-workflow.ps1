@@ -719,6 +719,7 @@ function Send-WindowKeys {
 function Add-StageStatus {
     param(
         [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
         [System.Collections.Generic.List[object]]$StageStatus,
 
         [Parameter(Mandatory = $true)]
@@ -730,6 +731,10 @@ function Add-StageStatus {
         [string]$Message = '',
         [object]$Metadata = $null
     )
+
+    if ($null -eq $StageStatus) {
+        throw 'StageStatus list was not initialized.'
+    }
 
     $StageStatus.Add([ordered]@{
             stage = $Stage
