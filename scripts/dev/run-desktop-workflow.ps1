@@ -719,7 +719,8 @@ function Send-WindowKeys {
 function Add-StageStatus {
     param(
         [Parameter(Mandatory = $true)]
-        [System.Collections.Generic.List[object]]$StageStatus,
+        [AllowEmptyCollection()]
+        [System.Collections.IList]$StageStatus,
 
         [Parameter(Mandatory = $true)]
         [string]$Stage,
@@ -981,7 +982,7 @@ for ($i = $resumeFromIndex + 1; $i -lt $stageOrder.Count; $i++) {
 $ownedProcess = $null
 $window = $null
 $workflowTranscriptActive = $false
-$stageStatus = [System.Collections.Generic.List[object]]::new()
+$stageStatusLog = [System.Collections.Generic.List[object]]::new()
 $lastSuccessfulStep = $null
 $originalFixtureEnv = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
 
@@ -1018,7 +1019,7 @@ if ($preflight.status -eq 'blocked') {
     $preflight | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $preflightPath -Encoding utf8
     throw "Preflight failed. See '$preflightPath' for diagnostics."
 }
-Add-StageStatus -StageStatus $stageStatus -Stage 'preflight' -Status 'ok' -Message 'Desktop workflow preflight checks completed.'
+Add-StageStatus -StageStatus $stageStatusLog -Stage 'preflight' -Status 'ok' -Message 'Desktop workflow preflight checks completed.'
 
 $retryTelemetry = New-Object System.Collections.ArrayList
 $originalFixtureEnv = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
@@ -1134,14 +1135,14 @@ try {
             $stageContracts['build'] = (Get-StageState -Path $buildStagePath)
         }
         Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'build-desktop' -ArtifactPointers @($exePath)
-        Add-StageStatus -StageStatus $stageStatus -Stage 'build-desktop' -Status 'ok' -Message 'Desktop build completed.' -Metadata @{ exePath = $exePath }
+        Add-StageStatus -StageStatus $stageStatusLog -Stage 'build-desktop' -Status 'ok' -Message 'Desktop build completed.' -Metadata @{ exePath = $exePath }
     }
     elseif (-not $SkipBuild) {
         Write-Info 'Skipping desktop build (checkpoint resume).'
-        Add-StageStatus -StageStatus $stageStatus -Stage 'build-desktop' -Status 'skipped' -Message 'Skipped via checkpoint resume.'
+        Add-StageStatus -StageStatus $stageStatusLog -Stage 'build-desktop' -Status 'skipped' -Message 'Skipped via checkpoint resume.'
     }
     else {
-        Add-StageStatus -StageStatus $stageStatus -Stage 'build-desktop' -Status 'skipped' -Message 'Skipped because -SkipBuild was supplied.'
+        Add-StageStatus -StageStatus $stageStatusLog -Stage 'build-desktop' -Status 'skipped' -Message 'Skipped because -SkipBuild was supplied.'
     }
 
     if (-not (Test-Path -LiteralPath $exePath)) {
@@ -1183,7 +1184,7 @@ try {
                 if ($useFixture) { $launchArguments += '--fixture' }
 
                 if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId 'launch-desktop') {
-                    Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'running' -Message 'Launching Meridian desktop process.'
+                    Add-StageStatus -StageStatus $stageStatusLog -Stage 'launch-desktop' -Status 'running' -Message 'Launching Meridian desktop process.'
                     Start-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -Description 'Launch Meridian desktop app.'
                     Write-Info "Launching Meridian desktop: $exePath"
                     $ownedProcess = Start-Process -FilePath $exePath `
@@ -1197,7 +1198,7 @@ try {
                     $manifest.run.processId = $ownedProcess.Id
                     $window = Wait-MeridianWindow -TimeoutSec $LaunchTimeoutSec -Process $ownedProcess
                     Complete-MeridianCheckpointStep -Context $checkpoint -StepId 'launch-desktop' -ArtifactPointers @($stdoutPath, $stderrPath)
-                    Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'ok' -Message 'Desktop process launched.' -Metadata @{ processId = $ownedProcess.Id }
+                    Add-StageStatus -StageStatus $stageStatusLog -Stage 'launch-desktop' -Status 'ok' -Message 'Desktop process launched.' -Metadata @{ processId = $ownedProcess.Id }
                     Write-Ok 'Meridian window detected.'
                     $launchStage.outputs = @{
                         processId = $ownedProcess.Id
@@ -1208,7 +1209,7 @@ try {
                 }
                 else {
                     Write-Info 'Skipping desktop launch step marker (checkpoint resume).'
-                    Add-StageStatus -StageStatus $stageStatus -Stage 'launch-desktop' -Status 'skipped' -Message 'Skipped via checkpoint resume.'
+                    Add-StageStatus -StageStatus $stageStatusLog -Stage 'launch-desktop' -Status 'skipped' -Message 'Skipped via checkpoint resume.'
                 }
             }
             $launchStage.status = 'succeeded'
@@ -1236,7 +1237,7 @@ try {
     if (-not $operatingContextConfirmed) {
         throw 'Operating context was not confirmed; screenshot workflow cannot continue before shell readiness. Check EnterWorkstationButton and Seed Sample Contexts automation.'
     }
-    Add-StageStatus -StageStatus $stageStatus -Stage 'ensure-operating-context' -Status 'ok' -Message 'Operating context confirmed.'
+    Add-StageStatus -StageStatus $stageStatusLog -Stage 'ensure-operating-context' -Status 'ok' -Message 'Operating context confirmed.'
 
     Write-Ok 'Operating context confirmed.'
 
@@ -1244,7 +1245,7 @@ try {
     $window = $startupReadiness.Window
     $manifest.run.initialPageTag = $startupReadiness.State.PageTag
     $manifest.run.initialPageTitle = $startupReadiness.State.PageTitle
-    Add-StageStatus -StageStatus $stageStatus -Stage 'startup-readiness' -Status 'ok' -Message 'Shell readiness confirmed.' -Metadata @{ pageTag = $startupReadiness.State.PageTag; pageTitle = $startupReadiness.State.PageTitle }
+    Add-StageStatus -StageStatus $stageStatusLog -Stage 'startup-readiness' -Status 'ok' -Message 'Shell readiness confirmed.' -Metadata @{ pageTag = $startupReadiness.State.PageTag; pageTitle = $startupReadiness.State.PageTitle }
     Write-Ok "Shell ready on $($startupReadiness.State.PageTag) ($($startupReadiness.State.PageTitle))."
 
     $captureFailedSteps = @()
@@ -1303,7 +1304,7 @@ try {
                 continue
             }
             Start-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -Description $title
-            Add-StageStatus -StageStatus $stageStatus -Stage $checkpointStepId -Status 'running' -Message $title
+            Add-StageStatus -StageStatus $stageStatusLog -Stage $checkpointStepId -Status 'running' -Message $title
 
             if ($null -ne $ownedProcess -and $ownedProcess.HasExited) {
                 throw "Meridian desktop exited unexpectedly with code $($ownedProcess.ExitCode)."
@@ -1437,13 +1438,13 @@ try {
                 completedAt = $stepResult.completedAt
             }
             Complete-MeridianCheckpointStep -Context $checkpoint -StepId $checkpointStepId -ArtifactPointers @($capturePath)
-            Add-StageStatus -StageStatus $stageStatus -Stage $checkpointStepId -Status 'ok' -Message $title -Metadata @{ capturePath = $capturePath }
+            Add-StageStatus -StageStatus $stageStatusLog -Stage $checkpointStepId -Status 'ok' -Message $title -Metadata @{ capturePath = $capturePath }
         }
         catch {
             $stepResult.status = 'failed'
             $stepResult.error = $_.Exception.Message
             $stepResult.completedAt = (Get-Date).ToString('o')
-            Add-StageStatus -StageStatus $stageStatus -Stage $checkpointStepId -Status 'failed' -Message $_.Exception.Message -Metadata @{ title = $title; index = $stepIndex }
+            Add-StageStatus -StageStatus $stageStatusLog -Stage $checkpointStepId -Status 'failed' -Message $_.Exception.Message -Metadata @{ title = $title; index = $stepIndex }
             try {
                 if ($null -ne $window) {
                     $failedCapturePath = Join-Path $bundleScreenshotDirectory ('{0:D2}-{1}-failed-attempt.png' -f $stepIndex, (($title -replace '[^A-Za-z0-9]+', '-').Trim('-').ToLowerInvariant()))
@@ -1544,7 +1545,7 @@ try {
 catch {
     $manifest.run.status = 'failed'
     $manifest.run.error = $_.Exception.Message
-    Add-StageStatus -StageStatus $stageStatus -Stage 'workflow' -Status 'failed' -Message $_.Exception.Message
+    Add-StageStatus -StageStatus $stageStatusLog -Stage 'workflow' -Status 'failed' -Message $_.Exception.Message
     throw
 }
 finally {
@@ -1566,7 +1567,7 @@ finally {
         )
     }
     $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $manifestPath -Encoding utf8
-    $stageStatus | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $bundleStageStatusPath -Encoding utf8
+    $stageStatusLog | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $bundleStageStatusPath -Encoding utf8
     if ($null -ne $lastSuccessfulStep) {
         $lastSuccessfulStep | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $bundleLastSuccessfulStepPath -Encoding utf8
     }
