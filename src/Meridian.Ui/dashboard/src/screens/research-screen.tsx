@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Sigma, Sparkles } from "lucide-react";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { DenseDataTable, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { cn } from "@/lib/utils";
 import { useResearchRunLibraryViewModel } from "@/screens/research-screen.view-model";
 import type {
+  ResearchPlotLegendItem,
   ResearchPlotSampleRow,
   ResearchPlotScatterPoint,
   ResearchPlotStatisticsState,
@@ -40,6 +41,13 @@ const plotToneClass = {
   success: "text-success",
   warning: "text-warning",
   danger: "text-danger"
+} as const;
+
+const plotLegendToneClass = {
+  history: "bg-primary/75",
+  current: "bg-warning",
+  trend: "bg-danger",
+  muted: "bg-muted-foreground/70"
 } as const;
 
 const sampleToneBadgeVariant = {
@@ -447,6 +455,16 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
       className="grid gap-4 xl:grid-cols-[0.9fr_1.55fr_0.85fr]"
     >
       <div className="space-y-4">
+        <EntitySummary
+          eyebrow={vm.eyebrow}
+          title={vm.title}
+          subtitle={vm.metaItems.join(" · ")}
+          description={vm.description}
+          status={<Badge variant={vm.statusBadgeVariant}>{vm.statusBadgeLabel}</Badge>}
+          fields={vm.studySummary.map((field) => ({ label: field.label, value: field.value }))}
+          ariaLabel="PlotTool study brief"
+        />
+
         <Card className="border-border/70 bg-background/35">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -510,13 +528,30 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
             <CardDescription className="font-mono text-xs">{vm.metaItems.join(" · ")}</CardDescription>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="rounded-xl border border-border/70 bg-[#05101B] p-3">
-            <PlotToolScatterChart points={vm.points} />
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
-              <div className="font-mono uppercase tracking-[0.14em]">{vm.xAxisLabel}</div>
-              <div className="font-mono uppercase tracking-[0.14em]">{vm.yAxisLabel}</div>
+        <CardContent className="space-y-4">
+          <div className="plottool-chart-shell">
+            <PlotToolScatterChart
+              points={vm.points}
+              xTicks={vm.xTicks}
+              yTicks={vm.yTicks}
+              xAxisLabel={vm.xAxisLabel}
+              yAxisLabel={vm.yAxisLabel}
+              focusPoint={vm.focusPoint}
+            />
+          </div>
+          <div className="plottool-chart-legend" aria-label="PlotTool chart legend">
+            {vm.legendItems.map((item) => <PlotToolLegendItem key={item.id} item={item} />)}
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 bg-secondary/15 px-3 py-3 text-xs text-muted-foreground">
+            <div>
+              <div className="eyebrow-label">{vm.focusPoint.label}</div>
+              <div className="mt-1 font-mono text-sm text-foreground">
+                {vm.focusPoint.xValueText}
+                <span className="px-2 text-muted-foreground">/</span>
+                {vm.focusPoint.yValueText}
+              </div>
             </div>
+            <div className="max-w-sm text-right leading-5">{vm.focusPoint.detail}</div>
           </div>
         </CardContent>
       </Card>
@@ -530,6 +565,15 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3">
+            <div className="rounded-lg border border-border/70 bg-background/70 px-3 py-3">
+              <div className="eyebrow-label">{vm.focusPoint.label}</div>
+              <div className="mt-2 flex items-baseline gap-2 font-mono text-lg text-foreground">
+                <span>{vm.focusPoint.xValueText}</span>
+                <span className="text-muted-foreground">/</span>
+                <span>{vm.focusPoint.yValueText}</span>
+              </div>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">{vm.focusPoint.detail}</p>
+            </div>
             {vm.signalCards.map((card) => (
               <div key={card.id} className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-3">
                 <div className="eyebrow-label">{card.label}</div>
@@ -596,16 +640,21 @@ function PlotToolStatisticsPanel({ vm }: { vm: ResearchPlotStatisticsState }) {
             <CardTitle className="text-base">Distribution profile</CardTitle>
             <CardDescription>Histogram snapshot for the active PlotTool scatter study.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg border border-border/70 bg-secondary/15 px-3 py-3 text-xs text-muted-foreground">
+              <div className="font-mono uppercase tracking-[0.14em] text-foreground">Residual distribution</div>
+              <p className="mt-2 leading-5">{vm.distributionSummary}</p>
+            </div>
             <div className="flex h-56 items-end gap-1 rounded-lg border border-border/70 bg-[#05101B] px-3 py-4" aria-label="PlotTool distribution chart">
               {vm.distributionBars.map((bar, index) => (
                 <div
                   key={`${bar}-${index}`}
-                  className="flex-1 rounded-t-sm bg-primary/70"
+                  className={cn("flex-1 rounded-t-sm", index >= 8 && index <= 14 ? "bg-primary" : "bg-primary/65")}
                   style={{ height: `${Math.max(bar, 4)}%` }}
                 />
               ))}
             </div>
+            <p className="text-xs leading-5 text-muted-foreground">{vm.distributionFootnote}</p>
           </CardContent>
         </Card>
 
@@ -688,12 +737,42 @@ function PlotToolStatisticsPanel({ vm }: { vm: ResearchPlotStatisticsState }) {
   );
 }
 
-function PlotToolScatterChart({ points }: { points: ResearchPlotScatterPoint[] }) {
+function PlotToolScatterChart({
+  points,
+  xTicks,
+  yTicks,
+  xAxisLabel,
+  yAxisLabel,
+  focusPoint
+}: {
+  points: ResearchPlotScatterPoint[];
+  xTicks: ResearchPlotWorkspaceState["xTicks"];
+  yTicks: ResearchPlotWorkspaceState["yTicks"];
+  xAxisLabel: string;
+  yAxisLabel: string;
+  focusPoint: ResearchPlotWorkspaceState["focusPoint"];
+}) {
+  const markerPoint = findLastPlotPoint(points, (point) => point.emphasis) ?? points[points.length - 1];
+
   return (
     <svg viewBox="0 0 640 320" className="h-[320px] w-full" role="img" aria-label="PlotTool scatter chart">
       <g stroke="#18283C" strokeWidth="1">
         {[40, 90, 140, 190, 240, 290].map((y) => <line key={`h-${y}`} x1="50" y1={y} x2="610" y2={y} />)}
         {[50, 130, 210, 290, 370, 450, 530, 610].map((x) => <line key={`v-${x}`} x1={x} y1="40" x2={x} y2="290" />)}
+      </g>
+      <g fill="#A8B5C4" fontFamily="IBM Plex Mono" fontSize="10">
+        {yTicks.map((tick) => (
+          <text key={`y-${tick.value}`} x="44" y={tick.value} textAnchor="end">
+            {tick.label}
+          </text>
+        ))}
+        {xTicks.map((tick) => (
+          <text key={`x-${tick.value}`} x={tick.value + 20} y="304" textAnchor="middle">
+            {tick.label}
+          </text>
+        ))}
+        <text x="330" y="318" textAnchor="middle">{xAxisLabel}</text>
+        <text x="16" y="170" textAnchor="middle" transform="rotate(-90 16 170)">{yAxisLabel}</text>
       </g>
       <polyline
         fill="none"
@@ -702,6 +781,8 @@ function PlotToolScatterChart({ points }: { points: ResearchPlotScatterPoint[] }
         strokeDasharray="5 4"
         points="90,250 150,222 210,198 270,170 330,142 390,114 450,88 510,66 564,54"
       />
+      <line x1={markerPoint.x} y1="40" x2={markerPoint.x} y2="290" stroke="#E6A93C" strokeDasharray="4 4" opacity="0.55" />
+      <line x1="50" y1={markerPoint.y} x2="610" y2={markerPoint.y} stroke="#E6A93C" strokeDasharray="4 4" opacity="0.55" />
       {points.map((point, index) => (
         <circle
           key={`${point.x}-${point.y}-${index}`}
@@ -712,8 +793,35 @@ function PlotToolScatterChart({ points }: { points: ResearchPlotScatterPoint[] }
           fillOpacity={point.emphasis ? 0.95 : 0.65}
         />
       ))}
+      <circle cx={markerPoint.x} cy={markerPoint.y} r="6" fill="#E6A93C" stroke="#05101B" strokeWidth="2" />
+      <rect x={Math.min(markerPoint.x + 10, 512)} y={Math.max(markerPoint.y - 26, 52)} width="96" height="22" rx="4" fill="#0B1520" stroke="#E6A93C" />
+      <text x={Math.min(markerPoint.x + 18, 520)} y={Math.max(markerPoint.y - 12, 66)} fill="#E6A93C" fontFamily="IBM Plex Mono" fontSize="10">
+        {focusPoint.xValueText}, {focusPoint.yValueText}
+      </text>
     </svg>
   );
+}
+
+function PlotToolLegendItem({ item }: { item: ResearchPlotLegendItem }) {
+  return (
+    <div className="plottool-legend-card">
+      <div className="flex items-center gap-2 text-xs text-foreground">
+        <span className={cn("h-2.5 w-2.5 rounded-full", plotLegendToneClass[item.tone])} aria-hidden="true" />
+        <span className="font-mono uppercase tracking-[0.14em]">{item.label}</span>
+      </div>
+      <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
+    </div>
+  );
+}
+
+function findLastPlotPoint<T>(items: T[], predicate: (item: T) => boolean): T | undefined {
+  for (let index = items.length - 1; index >= 0; index -= 1) {
+    if (predicate(items[index])) {
+      return items[index];
+    }
+  }
+
+  return undefined;
 }
 
 function PlotToolObservationRow({ row }: { row: ResearchPlotSampleRow }) {

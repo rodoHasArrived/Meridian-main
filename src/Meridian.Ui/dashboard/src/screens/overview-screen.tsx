@@ -27,6 +27,8 @@ import { cn } from "@/lib/utils";
 import {
   useOverviewStatusViewModel,
   type OverviewActivityRow,
+  type OverviewBriefingBadgeVariant,
+  type OverviewBriefingTone,
   type OverviewFallbackStatId
 } from "@/screens/overview-screen.view-model";
 import type { SessionInfo, SystemOverviewResponse, WorkspaceKey } from "@/types";
@@ -95,84 +97,11 @@ const fallbackStatIcons: Record<OverviewFallbackStatId, ElementType> = {
   backfills: Activity
 };
 
-const priorityRouteCopy: Record<
-  "trading" | "accounting" | "reporting",
-  {
-    eyebrow: string;
-    title: string;
-    detail: string;
-    buttonLabel: string;
-  }
-> = {
-  trading: {
-    eyebrow: "Execution posture",
-    title: "Keep the active session ready",
-    detail: "Review paper-session evidence, promotion blockers, and live readiness before the next operator action.",
-    buttonLabel: "Open trading cockpit"
-  },
-  accounting: {
-    eyebrow: "Control evidence",
-    title: "Clear ledger and trust-gate blockers",
-    detail: "Resolve reconciliation, Security Master, and control follow-up before treating the day as sign-off ready.",
-    buttonLabel: "Open accounting lane"
-  },
-  reporting: {
-    eyebrow: "Governed outputs",
-    title: "Prepare distribution-ready reporting",
-    detail: "Check report-pack posture, approvals, and export readiness before circulating governed output.",
-    buttonLabel: "Open reporting lane"
-  }
-};
-
 export function OverviewScreen({ data, session }: OverviewScreenProps) {
-  const vm = useOverviewStatusViewModel(data);
+  const vm = useOverviewStatusViewModel(data, session);
   const current = vm.current;
   const statusConfig = current ? systemStatusConfig[current.systemStatus] : null;
   const StatusIcon = statusConfig?.icon ?? Radio;
-  const priorityRoutes = vm.workspaceLinks.filter(
-    (workspace) => workspace.id === "trading" || workspace.id === "accounting" || workspace.id === "reporting"
-  );
-  const briefingItems = [
-    {
-      id: "session",
-      label: "Session",
-      value: session ? session.displayName : "Awaiting session",
-      detail: session ? `${session.role} · ${session.commandCount} commands ready` : "Load a session to unlock command context",
-      tone: "default" as const,
-      badgeVariant: null
-    },
-    {
-      id: "environment",
-      label: "Operating mode",
-      value: session ? session.environment : "Pending",
-      detail: session ? `Current route ${session.activeWorkspace}` : "Environment is not loaded yet",
-      tone: session?.environment === "live" ? "danger" as const : session?.environment === "paper" ? "success" as const : "default" as const,
-      badgeVariant: session ? session.environment : null
-    },
-    {
-      id: "providers",
-      label: "Provider posture",
-      value: vm.providerSummary ?? "Provider posture loading",
-      detail: vm.storageLabel ? `Storage ${vm.storageLabel}` : "Storage posture loading",
-      tone:
-        current?.systemStatus === "Offline"
-          ? "danger" as const
-          : current?.systemStatus === "Degraded"
-            ? "warning" as const
-            : current
-              ? "success" as const
-              : "default" as const,
-      badgeVariant: null
-    },
-    {
-      id: "heartbeat",
-      label: "Heartbeat",
-      value: vm.lastHeartbeatLabel ?? "Waiting for heartbeat",
-      detail: vm.refreshErrorText ?? "Refresh the status banner to confirm the latest control-room posture",
-      tone: vm.refreshErrorText ? "danger" as const : "default" as const,
-      badgeVariant: null
-    }
-  ];
 
   return (
     <div className="space-y-6">
@@ -238,7 +167,7 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-2">
-            {briefingItems.map((item) => (
+            {vm.briefingItems.map((item) => (
               <BriefingTile
                 key={item.id}
                 label={item.label}
@@ -246,6 +175,7 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
                 detail={item.detail}
                 tone={item.tone}
                 badgeVariant={item.badgeVariant}
+                ariaLabel={item.ariaLabel}
               />
             ))}
           </CardContent>
@@ -260,29 +190,25 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {priorityRoutes.map((workspace) => {
-              const copy = priorityRouteCopy[workspace.id as keyof typeof priorityRouteCopy];
-
-              return (
-                <div key={workspace.id} className="rounded-lg border border-border/70 bg-secondary/25 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <div className="eyebrow-label">{copy.eyebrow}</div>
-                      <h3 className="mt-2 text-sm font-semibold text-foreground">{copy.title}</h3>
-                    </div>
-                    <Badge variant={workspace.badgeVariant}>{workspace.status}</Badge>
+            {vm.priorityRoutes.map((route) => (
+              <div key={route.id} className="rounded-lg border border-border/70 bg-secondary/25 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div className="eyebrow-label">{route.eyebrow}</div>
+                    <h3 className="mt-2 text-sm font-semibold text-foreground">{route.title}</h3>
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.detail}</p>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{workspace.description}</p>
-                  <Button asChild variant="outline" size="sm" className="mt-4">
-                    <Link to={workspace.href} aria-label={workspace.ariaLabel}>
-                      {copy.buttonLabel}
-                      <ArrowRight className="size-3.5" aria-hidden="true" />
-                    </Link>
-                  </Button>
+                  <Badge variant={route.badgeVariant}>{route.status}</Badge>
                 </div>
-              );
-            })}
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{route.detail}</p>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">{route.description}</p>
+                <Button asChild variant="outline" size="sm" className="mt-4">
+                  <Link to={route.href} aria-label={route.ariaLabel}>
+                    {route.buttonLabel}
+                    <ArrowRight className="size-3.5" aria-hidden="true" />
+                  </Link>
+                </Button>
+              </div>
+            ))}
           </CardContent>
         </Card>
       </div>
@@ -403,13 +329,14 @@ interface BriefingTileProps {
   label: string;
   value: string;
   detail: string;
-  tone: "default" | "success" | "warning" | "danger";
-  badgeVariant: "paper" | "live" | "research" | null;
+  tone: OverviewBriefingTone;
+  badgeVariant: OverviewBriefingBadgeVariant | null;
+  ariaLabel: string;
 }
 
-function BriefingTile({ label, value, detail, tone, badgeVariant }: BriefingTileProps) {
+function BriefingTile({ label, value, detail, tone, badgeVariant, ariaLabel }: BriefingTileProps) {
   return (
-    <div className="rounded-lg border border-border/70 bg-background/70 p-4">
+    <div role="group" aria-label={ariaLabel} className="rounded-lg border border-border/70 bg-background/70 p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="eyebrow-label">{label}</div>
         {badgeVariant ? <Badge variant={badgeVariant}>{value}</Badge> : null}

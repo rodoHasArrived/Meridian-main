@@ -309,6 +309,28 @@ describe("data-operations-screen view model", () => {
     expect(yahooDialog.submitAction.disabled).toBe(false);
   });
 
+  it("keeps non-active security records hidden until the filter is expanded", () => {
+    const activeState = buildSecurityMasterWorkspaceState({
+      query: "goldman",
+      selectedSecurityId: null,
+      activeTab: "overview",
+      statusFilter: "active"
+    });
+
+    const allState = buildSecurityMasterWorkspaceState({
+      query: "goldman",
+      selectedSecurityId: null,
+      activeTab: "overview",
+      statusFilter: "all"
+    });
+
+    expect(activeState.results).toHaveLength(5);
+    expect(allState.results).toHaveLength(7);
+    expect(activeState.results.some((row) => row.status === "Pending")).toBe(false);
+    expect(allState.results.some((row) => row.status === "Pending")).toBe(true);
+    expect(allState.results.some((row) => row.status === "Inactive")).toBe(true);
+  });
+
   it("maps export row status into semantic tones and next actions", () => {
     const exportSection = buildExportSection([
       {

@@ -207,15 +207,16 @@ describe("GovernanceScreen", () => {
       durationSeconds: 1.5,
       error: null,
       warnings: [],
+      files: [],
       timestamp: "2026-01-01T00:00:00Z"
     });
 
     await renderGovernanceScreen(data, "/accounting");
 
-    await user.click(screen.getByRole("button", { name: "Run reporting export" }));
+    await user.click(screen.getByRole("button", { name: "Run reporting export for Excel" }));
 
     expect(api.runAnalysisExport).toHaveBeenCalledWith("excel");
-    expect(await screen.findByText("Export export-1 completed with 2 file(s).")).toBeInTheDocument();
+    expect(await screen.findByText("Export export-1 completed with 2 file(s), 12 record(s), and 2 KB. Output artifacts/exports/export-1.")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Run reporting export" })).not.toBeInTheDocument();
   });
 

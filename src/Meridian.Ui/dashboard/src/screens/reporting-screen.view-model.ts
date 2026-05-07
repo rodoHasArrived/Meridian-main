@@ -49,6 +49,9 @@ export interface ReportingExportStatusState {
   text: string;
   tone: "default" | "success" | "danger";
   ariaLabel: string;
+  fields: ReportingDetailField[];
+  warnings: string[];
+  artifacts: ReportingDetailField[];
 }
 
 export interface ReportingExportServices {
@@ -118,7 +121,7 @@ export function useReportingScreenViewModel(
 
     try {
       const result = await services.runExport(profileId);
-      setExportStatus(buildExportStatusResult(profileName, result));
+      setExportStatus(buildExportStatusResult(profileId, profileName, result));
     } catch (error) {
       setExportStatus(buildExportStatusFailure(profileName, error));
     } finally {
@@ -351,11 +354,18 @@ export function buildExportStatusStarting(profileName: string): ReportingExportS
   return {
     text: `Starting ${profileName} export…`,
     tone: "default",
-    ariaLabel: "Reporting export status"
+    ariaLabel: "Reporting export status",
+    fields: [
+      { label: "Profile", value: profileName, tone: "default" },
+      { label: "State", value: "Running", tone: "warning" }
+    ],
+    warnings: [],
+    artifacts: []
   };
 }
 
 export function buildExportStatusResult(
+  requestedProfileId: string,
   profileName: string,
   result: ExportAnalysisResult
 ): ReportingExportStatusState {
@@ -366,7 +376,10 @@ export function buildExportStatusResult(
   return {
     text,
     tone: result.success ? "success" : "danger",
-    ariaLabel: "Reporting export status"
+    ariaLabel: "Reporting export status",
+    fields: buildExportResultFields(requestedProfileId, result),
+    warnings: buildExportResultWarnings(requestedProfileId, result),
+    artifacts: buildExportArtifactFields(result)
   };
 }
 
@@ -376,6 +389,66 @@ export function buildExportStatusFailure(profileName: string, error: unknown): R
   return {
     text: `${profileName} export failed. ${message}`,
     tone: "danger",
-    ariaLabel: "Reporting export status"
+    ariaLabel: "Reporting export status",
+    fields: [
+      { label: "Profile", value: profileName, tone: "default" },
+      { label: "Failure", value: message, tone: "warning" }
+    ],
+    warnings: [],
+    artifacts: []
   };
+}
+
+function buildExportResultFields(requestedProfileId: string, result: ExportAnalysisResult): ReportingDetailField[] {
+  const byteLabel = formatBytes(result.totalBytes);
+  const durationLabel = `${result.durationSeconds.toLocaleString(undefined, { maximumFractionDigits: 2 })}s`;
+  const symbolsLabel = result.symbols?.length ? result.symbols.join(", ") : "All configured symbols";
+
+  return [
+    { label: "Job ID", value: result.jobId ?? "Unavailable", tone: result.jobId ? "default" : "muted" },
+    { label: "Status", value: result.status, tone: result.success ? "success" : "warning" },
+    { label: "Requested", value: requestedProfileId, tone: "default" },
+    { label: "Profile", value: result.profileId, tone: "default" },
+    { label: "Symbols", value: symbolsLabel, tone: result.symbols?.length ? "default" : "muted" },
+    { label: "Output", value: result.outputDirectory ?? "Unavailable", tone: result.outputDirectory ? "default" : "muted" },
+    { label: "Files", value: String(result.filesGenerated), tone: result.filesGenerated > 0 ? "success" : "warning" },
+    { label: "Records", value: result.totalRecords.toLocaleString(), tone: result.totalRecords > 0 ? "default" : "muted" },
+    { label: "Bytes", value: byteLabel, tone: result.totalBytes > 0 ? "default" : "muted" },
+    { label: "Duration", value: durationLabel, tone: "muted" },
+    { label: "Timestamp", value: result.timestamp, tone: "muted" }
+  ];
+}
+
+function buildExportResultWarnings(requestedProfileId: string, result: ExportAnalysisResult): string[] {
+  const warnings = [...(result.warnings ?? [])];
+  if (result.profileId && requestedProfileId && result.profileId !== requestedProfileId) {
+    warnings.unshift(`Requested profile ${requestedProfileId} resolved as ${result.profileId}.`);
+  }
+
+  return warnings;
+}
+
+function buildExportArtifactFields(result: ExportAnalysisResult): ReportingDetailField[] {
+  return (result.files ?? []).map((file) => ({
+    label: file.symbol ? `${file.symbol} ${file.format ?? "file"}` : file.format ?? "File",
+    value: `${file.path} · ${file.recordCount.toLocaleString()} records · ${formatBytes(file.sizeBytes)}`,
+    tone: file.recordCount > 0 ? "default" : "warning"
+  }));
+}
+
+function formatBytes(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) {
+    return "0 B";
+  }
+
+  const units = ["B", "KB", "MB", "GB"];
+  let amount = value;
+  let unitIndex = 0;
+
+  while (amount >= 1024 && unitIndex < units.length - 1) {
+    amount /= 1024;
+    unitIndex += 1;
+  }
+
+  return `${amount.toLocaleString(undefined, { maximumFractionDigits: amount >= 10 ? 1 : 2 })} ${units[unitIndex]}`;
 }

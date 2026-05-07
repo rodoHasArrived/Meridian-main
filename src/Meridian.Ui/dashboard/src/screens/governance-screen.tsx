@@ -1,5 +1,4 @@
 import { AlertCircle, BookCheck, CheckCircle2, Landmark, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
-import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -7,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { runAnalysisExport } from "@/lib/api";
 import { workspaceForPath } from "@/lib/workspace";
 import {
   buildReconciliationNarrative,
@@ -57,7 +55,6 @@ const focusCopy: Record<string, { title: string; description: string }> = {
 
 export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const { pathname } = useLocation();
-  const [reportingExportStatus, setReportingExportStatus] = useState<string | null>(null);
   const workstream = resolveGovernanceWorkstream(pathname);
   const workspace = workspaceForPath(pathname);
   const reconciliation = useGovernanceReconciliationViewModel(data, workstream);
@@ -103,24 +100,6 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   }
 
   const focus = focusCopy[workstream];
-  const selectedReportingProfileId =
-    reporting.selectedProfile?.fields.find((field) => field.label === "Profile ID")?.value
-    ?? data.reporting.recommendedProfiles[0]
-    ?? data.reporting.profiles[0]?.id
-    ?? "python-pandas";
-  const triggerReportingExport = async () => {
-    setReportingExportStatus(`Starting export for ${selectedReportingProfileId}.`);
-    try {
-      const result = await runAnalysisExport(selectedReportingProfileId);
-      setReportingExportStatus(
-        result.success
-          ? `Export ${result.jobId} completed with ${result.filesGenerated} file(s).`
-          : `Export ${result.jobId} failed: ${result.error ?? "No error detail returned."}`
-      );
-    } catch (err) {
-      setReportingExportStatus(err instanceof Error ? `Export failed: ${err.message}` : "Export failed.");
-    }
-  };
 
   return (
     <div className="space-y-8">
@@ -371,10 +350,29 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             </CardHeader>
             <CardContent className="space-y-3">
               <Button asChild><a href="/api/export/preview" target="_blank" rel="noreferrer">Preview report payload</a></Button>
-              <Button type="button" variant="outline" onClick={() => void triggerReportingExport()}>Run reporting export</Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!reporting.exportCanRun}
+                aria-label={reporting.exportAriaLabel}
+                aria-busy={reporting.exportBusy}
+                onClick={() => void reporting.runExport()}
+              >
+                {reporting.exportButtonLabel}
+              </Button>
               <Button asChild variant="outline"><a href="/api/export/formats" target="_blank" rel="noreferrer">List export formats</a></Button>
-              {reportingExportStatus ? (
-                <p role="status" className="text-sm text-muted-foreground">{reportingExportStatus}</p>
+              {reporting.exportStatusText ? (
+                <p
+                  role={reporting.exportStatusRole}
+                  className={cn(
+                    "rounded-lg border px-3 py-2 text-sm",
+                    reporting.exportStatusTone === "success" ? "border-success/30 bg-success/10 text-success" : "",
+                    reporting.exportStatusTone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : "",
+                    reporting.exportStatusTone === "neutral" ? "border-border/70 bg-secondary/25 text-muted-foreground" : ""
+                  )}
+                >
+                  {reporting.exportStatusText}
+                </p>
               ) : null}
             </CardContent>
           </Card>

@@ -51,7 +51,7 @@ compatibility aliases or grouping language, not new root navigation.
 | Priority | Capability | Roadmap placement | Current posture |
 | ---: | --- | --- | --- |
 | 1 | Run Evidence Graph and Evidence Vault | Wave 3 backbone into Wave 4 | Planned; provider packets, run continuity, paper replay metadata, reconciliation work items, and report-pack seams are inputs |
-| 2 | Governed Report Pack Studio | Wave 4 | Partial support through report-pack schema/version checks and export/reporting seams |
+| 2 | Governed Report Pack Studio | Wave 4 | Partial support through report-pack schema/version checks and export/reporting seams; `/api/export/analysis` now returns a shared typed response with normalized profile scope, warnings, and file-level artifact evidence for the browser Reporting lane |
 | 3 | Reconciliation Desk / Casework | Wave 4 | Early in progress through file-backed break queues, tolerance/sign-off metadata, audit history, and calibration rollups |
 | 4 | Accounting-grade PaperOps | Wave 2 into Wave 3 | Partial support through paper sessions, replay/audit metadata, readiness gates, and ledger count checks |
 | 5 | Shadow Books and Shadow NAV | Wave 4 later slice | Planned on top of ledger, reconciliation, external-statement import, and report-pack foundations |

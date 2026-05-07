@@ -316,7 +316,11 @@ describe("research-screen view model", () => {
     });
 
     expect(plotTool.workspace.title).toBe("Mean Reversion FX vs Index Momentum workstation");
+    expect(plotTool.workspace.statusBadgeLabel).toBe("PAPER");
     expect(plotTool.workspace.expression).toContain("mean_reversion_fx.spread()");
+    expect(plotTool.workspace.studySummary[0]).toMatchObject({ label: "Primary notebook", value: "Mean Reversion FX" });
+    expect(plotTool.workspace.legendItems[1]).toMatchObject({ label: "Current", detail: "88.40 / 73.80", tone: "current" });
+    expect(plotTool.workspace.focusPoint).toMatchObject({ label: "Current marker", xValueText: "88.40", yValueText: "73.80" });
     expect(plotTool.workspace.signalCards[2]).toMatchObject({
       label: "Queued studies",
       value: "3",
@@ -325,6 +329,8 @@ describe("research-screen view model", () => {
     expect(plotTool.workspace.overlayItems[1]).toContain("Ledger missing; Audit missing");
     expect(plotTool.statistics.title).toBe("Mean Reversion FX vs Index Momentum analysis");
     expect(plotTool.statistics.summaryTiles).toHaveLength(9);
+    expect(plotTool.statistics.distributionSummary).toContain("2,211 samples");
+    expect(plotTool.statistics.distributionFootnote).toContain("Latest observation 2026-04-25");
     expect(plotTool.statistics.summaryTiles[7]).toMatchObject({ label: "Sharpe (5d)", value: "1.41", tone: "success" });
     expect(plotTool.statistics.regression.detailItems[2]).toContain("position changes linked");
     expect(plotTool.statistics.sampleRows[0]).toMatchObject({ signalText: "Crowded vol", tone: "warning" });

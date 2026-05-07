@@ -587,7 +587,16 @@ export interface ExportAnalysisResult {
   durationSeconds: number;
   error: string | null;
   warnings: string[] | null;
+  files: ExportAnalysisFile[];
   timestamp: string;
+}
+
+export interface ExportAnalysisFile {
+  path: string;
+  symbol: string | null;
+  format: string | null;
+  sizeBytes: number;
+  recordCount: number;
 }
 
 export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed";

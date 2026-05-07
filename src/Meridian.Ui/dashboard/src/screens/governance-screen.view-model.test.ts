@@ -3,6 +3,7 @@ import {
   buildGovernanceCashFlowViewState,
   buildGovernanceReportingViewState,
   buildGovernanceTrialBalanceViewState,
+  formatReportingExportResult,
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
   buildReconciliationNarrative,
@@ -519,31 +520,34 @@ describe("governance-screen view model", () => {
 
   it("derives reporting profile selector rows and detail state", () => {
     const state = buildGovernanceReportingViewState({
-      profileCount: 2,
-      recommendedProfiles: ["board"],
-      reportPackTargets: ["board", "audit"],
-      summary: "2 export/reporting profiles are available for governance workflows.",
-      profiles: [
-        {
-          id: "excel",
-          name: "Excel",
-          targetTool: "Excel",
-          format: "Xlsx",
-          description: "Board-ready workbook export.",
-          loaderScript: false,
-          dataDictionary: true
-        },
-        {
-          id: "board",
-          name: "Board packet",
-          targetTool: "Board",
-          format: "Markdown",
-          description: "Owner sign-off packet.",
-          loaderScript: true,
-          dataDictionary: false
-        }
-      ]
-    }, "board");
+      reporting: {
+        profileCount: 2,
+        recommendedProfiles: ["board"],
+        reportPackTargets: ["board", "audit"],
+        summary: "2 export/reporting profiles are available for governance workflows.",
+        profiles: [
+          {
+            id: "excel",
+            name: "Excel",
+            targetTool: "Excel",
+            format: "Xlsx",
+            description: "Board-ready workbook export.",
+            loaderScript: false,
+            dataDictionary: true
+          },
+          {
+            id: "board",
+            name: "Board packet",
+            targetTool: "Board",
+            format: "Markdown",
+            description: "Owner sign-off packet.",
+            loaderScript: true,
+            dataDictionary: false
+          }
+        ]
+      },
+      selectedProfileId: "board"
+    });
 
     expect(state.countLabel).toBe("2 profiles");
     expect(state.targetSummary).toBe("Targets: board, audit.");
@@ -560,20 +564,72 @@ describe("governance-screen view model", () => {
       expect.objectContaining({ label: "Data dictionary", value: "Missing", tone: "warning" }),
       expect.objectContaining({ label: "Loader script", value: "Available", tone: "success" })
     ]));
+    expect(state.selectedExportProfileId).toBe("board");
+    expect(state.exportCanRun).toBe(true);
+    expect(state.exportAriaLabel).toBe("Run reporting export for Board packet");
   });
 
   it("surfaces reporting profile empty state from the view model", () => {
     const state = buildGovernanceReportingViewState({
-      profileCount: 0,
-      recommendedProfiles: [],
-      reportPackTargets: [],
-      profiles: [],
-      summary: "No profiles loaded."
-    }, null);
+      reporting: {
+        profileCount: 0,
+        recommendedProfiles: [],
+        reportPackTargets: [],
+        profiles: [],
+        summary: "No profiles loaded."
+      },
+      selectedProfileId: null
+    });
 
     expect(state.hasRows).toBe(false);
     expect(state.emptyText).toBe("No reporting profiles available. Sync report-pack metadata before export review.");
     expect(state.statusDetail).toBe("No reporting profiles are configured for packet generation.");
     expect(state.nextAction).toBe("Sync reporting profile metadata before packet generation.");
+    expect(state.exportCanRun).toBe(false);
+    expect(state.exportAriaLabel).toBe("Run reporting export unavailable until a reporting profile is loaded");
+  });
+
+  it("formats reporting export command results for success and failure states", () => {
+    expect(formatReportingExportResult({
+      jobId: "export-1",
+      success: true,
+      status: "completed",
+      profileId: "excel",
+      symbols: [],
+      filesGenerated: 2,
+      totalRecords: 12,
+      totalBytes: 2048,
+      outputDirectory: "artifacts/exports/export-1",
+      durationSeconds: 1.5,
+      error: null,
+      warnings: [],
+      files: [],
+      timestamp: "2026-01-01T00:00:00Z"
+    })).toEqual({
+      text: "Export export-1 completed with 2 file(s), 12 record(s), and 2 KB. Output artifacts/exports/export-1.",
+      tone: "success",
+      role: "status"
+    });
+
+    expect(formatReportingExportResult({
+      jobId: null,
+      success: false,
+      status: "failed",
+      profileId: "excel",
+      symbols: null,
+      filesGenerated: 0,
+      totalRecords: 0,
+      totalBytes: 0,
+      outputDirectory: null,
+      durationSeconds: 0,
+      error: "Exporter unavailable",
+      warnings: null,
+      files: [],
+      timestamp: "2026-01-01T00:00:00Z"
+    })).toEqual({
+      text: "Export excel failed: Exporter unavailable",
+      tone: "danger",
+      role: "alert"
+    });
   });
 });

@@ -7,6 +7,7 @@ import {
   getSecurityConflicts,
   getSecurityIdentity,
   getTradingParameters,
+  runAnalysisExport,
   resolveReconciliationBreak,
   resolveSecurityConflict,
   reviewReconciliationBreak,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/api";
 import type {
   CorporateAction,
+  ExportAnalysisResult,
   GovernanceCashFlowSummary,
   GovernanceReportingProfile,
   GovernanceReportingSummary,
@@ -50,6 +52,10 @@ export interface GovernanceReconciliationServices {
   resolveBreak: (request: ResolveReconciliationBreakRequest) => Promise<ReconciliationBreakQueueItem>;
   getTrialBalance: (runId: string) => Promise<LedgerTrialBalanceLine[]>;
   getCalibrationSummary: () => Promise<ReconciliationCalibrationSummary>;
+}
+
+export interface GovernanceReportingServices {
+  runAnalysisExport: (profileId: string) => Promise<ExportAnalysisResult>;
 }
 
 export type CalibrationStatusTone = "success" | "warning" | "danger";
@@ -280,6 +286,14 @@ export interface GovernanceReportingViewState {
   statusTitle: string;
   statusDetail: string;
   nextAction: string;
+  selectedExportProfileId: string | null;
+  exportButtonLabel: string;
+  exportAriaLabel: string;
+  exportStatusText: string | null;
+  exportStatusTone: "neutral" | "success" | "danger";
+  exportStatusRole: "status" | "alert";
+  exportCanRun: boolean;
+  exportBusy: boolean;
 }
 
 export type GovernanceTrialBalanceState = "ready" | "loading" | "empty" | "error";
@@ -323,6 +337,10 @@ const defaultGovernanceReconciliationServices: GovernanceReconciliationServices 
   getCalibrationSummary: () => getReconciliationCalibrationSummary()
 };
 
+const defaultGovernanceReportingServices: GovernanceReportingServices = {
+  runAnalysisExport: (profileId) => runAnalysisExport(profileId)
+};
+
 const defaultSecurityMasterDrillInServices: SecurityMasterDrillInServices = {
   getCorporateActions: (securityId) => getCorporateActions(securityId),
   getTradingParameters: (securityId) => getTradingParameters(securityId)
@@ -340,18 +358,62 @@ export function useGovernanceCashFlowViewModel(
 }
 
 export function useGovernanceReportingViewModel(
-  reporting: GovernanceReportingSummary | null
+  reporting: GovernanceReportingSummary | null,
+  services: GovernanceReportingServices = defaultGovernanceReportingServices
 ) {
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+  const [exportBusy, setExportBusy] = useState(false);
+  const [exportStatus, setExportStatus] = useState<{
+    text: string;
+    tone: GovernanceReportingViewState["exportStatusTone"];
+    role: GovernanceReportingViewState["exportStatusRole"];
+  } | null>(null);
   const viewState = useMemo(
-    () => buildGovernanceReportingViewState(reporting, selectedProfileId),
-    [reporting, selectedProfileId]
+    () => buildGovernanceReportingViewState({
+      reporting,
+      selectedProfileId,
+      exportBusy,
+      exportStatus
+    }),
+    [exportBusy, exportStatus, reporting, selectedProfileId]
   );
-  const selectProfile = useCallback((profileId: string) => setSelectedProfileId(profileId), []);
+  const selectProfile = useCallback((profileId: string) => {
+    setSelectedProfileId(profileId);
+    setExportStatus(null);
+  }, []);
+  const runExport = useCallback(async () => {
+    if (!viewState.selectedExportProfileId || exportBusy) {
+      return;
+    }
+
+    const profileId = viewState.selectedExportProfileId;
+    setExportBusy(true);
+    setExportStatus({
+      text: `Starting export for ${profileId}.`,
+      tone: "neutral",
+      role: "status"
+    });
+
+    try {
+      const result = await services.runAnalysisExport(profileId);
+      setExportStatus(formatReportingExportResult(result));
+    } catch (err) {
+      setExportStatus({
+        text: err instanceof Error && err.message.trim()
+          ? `Export failed: ${err.message}`
+          : "Export failed.",
+        tone: "danger",
+        role: "alert"
+      });
+    } finally {
+      setExportBusy(false);
+    }
+  }, [exportBusy, services, viewState.selectedExportProfileId]);
 
   return {
     ...viewState,
-    selectProfile
+    selectProfile,
+    runExport
   };
 }
 
@@ -1147,10 +1209,21 @@ export function buildReconciliationNarrative(item: GovernanceWorkspaceResponse["
   return "Open reconciliation breaks remain on this run. Prioritize amount mismatches, timing drift, and unresolved references before moving on.";
 }
 
-export function buildGovernanceReportingViewState(
-  reporting: GovernanceReportingSummary | null,
-  selectedProfileId: string | null
-): GovernanceReportingViewState {
+export function buildGovernanceReportingViewState({
+  reporting,
+  selectedProfileId,
+  exportBusy = false,
+  exportStatus = null
+}: {
+  reporting: GovernanceReportingSummary | null;
+  selectedProfileId: string | null;
+  exportBusy?: boolean;
+  exportStatus?: {
+    text: string;
+    tone: GovernanceReportingViewState["exportStatusTone"];
+    role: GovernanceReportingViewState["exportStatusRole"];
+  } | null;
+}): GovernanceReportingViewState {
   const profileCount = reporting?.profileCount ?? 0;
   const profiles = reporting?.profiles ?? [];
   const visibleProfiles = profiles.slice(0, 4);
@@ -1166,6 +1239,8 @@ export function buildGovernanceReportingViewState(
   const visibleCountLabel = hiddenProfileCount > 0
     ? `Showing ${rows.length} of ${profileCount} profiles.`
     : `${formatCount(rows.length, "profile")} loaded.`;
+
+  const exportCanRun = selectedRow !== null && !exportBusy;
 
   return {
     title: "Reporting profiles",
@@ -1185,7 +1260,39 @@ export function buildGovernanceReportingViewState(
       : "No reporting profiles are configured for packet generation.",
     nextAction: selectedRow
       ? `Inspect ${selectedRow.name} before packet generation.`
-      : "Sync reporting profile metadata before packet generation."
+      : "Sync reporting profile metadata before packet generation.",
+    selectedExportProfileId: selectedRow?.id ?? null,
+    exportButtonLabel: exportBusy ? "Export running..." : "Run reporting export",
+    exportAriaLabel: selectedRow
+      ? `Run reporting export for ${selectedRow.name}`
+      : "Run reporting export unavailable until a reporting profile is loaded",
+    exportStatusText: exportStatus?.text ?? null,
+    exportStatusTone: exportStatus?.tone ?? "neutral",
+    exportStatusRole: exportStatus?.role ?? "status",
+    exportCanRun,
+    exportBusy
+  };
+}
+
+export function formatReportingExportResult(result: ExportAnalysisResult): {
+  text: string;
+  tone: GovernanceReportingViewState["exportStatusTone"];
+  role: GovernanceReportingViewState["exportStatusRole"];
+} {
+  const jobLabel = result.jobId ?? result.profileId;
+  if (result.success) {
+    const output = result.outputDirectory ? ` Output ${result.outputDirectory}.` : "";
+    return {
+      text: `Export ${jobLabel} completed with ${result.filesGenerated} file(s), ${result.totalRecords} record(s), and ${formatBytes(result.totalBytes)}.${output}`,
+      tone: "success",
+      role: "status"
+    };
+  }
+
+  return {
+    text: `Export ${jobLabel} failed: ${result.error ?? "No error detail returned."}`,
+    tone: "danger",
+    role: "alert"
   };
 }
 
@@ -1412,6 +1519,25 @@ function normalizeCashFlowTone(
 
 function formatCount(count: number, singular: string): string {
   return `${count} ${singular}${count === 1 ? "" : "s"}`;
+}
+
+function formatBytes(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) {
+    return "0 B";
+  }
+
+  const units = ["B", "KB", "MB", "GB"];
+  let size = value;
+  let unitIndex = 0;
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex += 1;
+  }
+
+  const formatted = size >= 10 || unitIndex === 0
+    ? size.toFixed(0)
+    : size.toFixed(1).replace(/\.0$/, "");
+  return `${formatted} ${units[unitIndex]}`;
 }
 
 function formatCurrency(value: number) {

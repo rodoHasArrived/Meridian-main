@@ -165,6 +165,11 @@ describe("useReportingScreenViewModel", () => {
     await waitFor(() => {
       expect(result.current.runningProfileId).toBe("excel");
       expect(result.current.exportStatus?.text).toBe("Starting Excel export…");
+      expect(result.current.exportStatus?.fields).toEqual([
+        { label: "Profile", value: "Excel", tone: "default" },
+        { label: "State", value: "Running", tone: "warning" }
+      ]);
+      expect(result.current.exportStatus?.artifacts).toEqual([]);
       expect(result.current.selectedProfile?.actions[1]).toMatchObject({
         label: "Running export…",
         isDisabled: true,
@@ -187,6 +192,15 @@ describe("useReportingScreenViewModel", () => {
         durationSeconds: 1,
         error: null,
         warnings: [],
+        files: [
+          {
+            path: "excel/export-1.xlsx",
+            symbol: "SPY",
+            format: "xlsx",
+            sizeBytes: 1200,
+            recordCount: 20
+          }
+        ],
         timestamp: "2026-05-01T00:00:00Z"
       });
     });
@@ -196,9 +210,59 @@ describe("useReportingScreenViewModel", () => {
       expect(result.current.exportStatus).toMatchObject({
         text: "Excel export completed — 1 file generated.",
         tone: "success",
-        ariaLabel: "Reporting export status"
+        ariaLabel: "Reporting export status",
+        fields: expect.arrayContaining([
+          { label: "Job ID", value: "export-1", tone: "default" },
+          { label: "Requested", value: "excel", tone: "default" },
+          { label: "Output", value: "exports", tone: "default" },
+          { label: "Records", value: "20", tone: "default" },
+          { label: "Bytes", value: "1.17 KB", tone: "default" }
+        ]),
+        warnings: [],
+        artifacts: [
+          {
+            label: "SPY xlsx",
+            value: "excel/export-1.xlsx · 20 records · 1.17 KB",
+            tone: "default"
+          }
+        ]
       });
     });
+  });
+
+  it("warns when the export service resolves a different profile id", async () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(reporting, {
+      runExport: async () => ({
+        jobId: "export-2",
+        success: true,
+        status: "completed",
+        profileId: "python-pandas",
+        symbols: null,
+        filesGenerated: 0,
+        totalRecords: 0,
+        totalBytes: 0,
+        outputDirectory: null,
+        durationSeconds: 0,
+        error: null,
+        warnings: ["No source files matched the selected range."],
+        files: [],
+        timestamp: "2026-05-01T00:00:00Z"
+      })
+    }));
+
+    await act(async () => {
+      await result.current.runExport("excel", "Excel");
+    });
+
+    expect(result.current.exportStatus?.warnings).toEqual([
+      "Requested profile excel resolved as python-pandas.",
+      "No source files matched the selected range."
+    ]);
+    expect(result.current.exportStatus?.fields).toEqual(expect.arrayContaining([
+      { label: "Requested", value: "excel", tone: "default" },
+      { label: "Profile", value: "python-pandas", tone: "default" },
+      { label: "Symbols", value: "All configured symbols", tone: "muted" }
+    ]));
   });
 
   it("reports export command failures from the view model", async () => {
@@ -215,7 +279,12 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.runningProfileId).toBeNull();
     expect(result.current.exportStatus).toMatchObject({
       text: "CSV export failed. Disk full",
-      tone: "danger"
+      tone: "danger",
+      fields: expect.arrayContaining([
+        { label: "Profile", value: "CSV", tone: "default" },
+        { label: "Failure", value: "Disk full", tone: "warning" }
+      ]),
+      artifacts: []
     });
   });
 

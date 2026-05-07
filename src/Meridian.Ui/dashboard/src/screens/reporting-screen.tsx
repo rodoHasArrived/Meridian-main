@@ -225,9 +225,50 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
             <div
               role="status"
               aria-label={vm.exportStatus.ariaLabel}
-              className={cn("mt-3 rounded-md border px-3 py-2 text-sm leading-6", exportStatusToneClass(vm.exportStatus.tone))}
+              className={cn("mt-3 space-y-3 rounded-md border px-3 py-2 text-sm leading-6", exportStatusToneClass(vm.exportStatus.tone))}
             >
-              {vm.exportStatus.text}
+              <p>{vm.exportStatus.text}</p>
+              {vm.exportStatus.fields.length > 0 ? (
+                <dl className="grid gap-2 sm:grid-cols-2">
+                  {vm.exportStatus.fields.map((field) => (
+                    <div
+                      key={field.label}
+                      className="rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+                    >
+                      <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                        {field.label}
+                      </dt>
+                      <dd className={cn("mt-1 break-words font-mono text-xs", fieldToneClass(field.tone))}>
+                        {field.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : null}
+              {vm.exportStatus.warnings.length > 0 ? (
+                <ul className="space-y-1 rounded-sm border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs text-warning">
+                  {vm.exportStatus.warnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              ) : null}
+              {vm.exportStatus.artifacts.length > 0 ? (
+                <dl
+                  aria-label="Export artifacts"
+                  className="space-y-1 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+                >
+                  {vm.exportStatus.artifacts.map((artifact) => (
+                    <div key={`${artifact.label}-${artifact.value}`} className="grid gap-1">
+                      <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                        {artifact.label}
+                      </dt>
+                      <dd className={cn("break-words font-mono text-xs", fieldToneClass(artifact.tone))}>
+                        {artifact.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : null}
             </div>
           ) : null}
           <p className="mt-3 font-mono text-xs text-muted-foreground">{vm.nextAction}</p>

@@ -45,6 +45,7 @@ import type {
   SecurityMasterVenueRow,
   SecurityMasterWorkspaceState
 } from "@/screens/data-operations-screen.security-master";
+import { SECURITY_MASTER_DEFAULT_QUERY } from "@/screens/data-operations-screen.security-master";
 
 interface DataOperationsScreenProps {
   data: DataOperationsWorkspaceResponse | null;
@@ -664,6 +665,10 @@ function SecurityMasterSearchPanel({
   onSelect: (securityId: string) => void;
   onToggleStatusFilter: () => void;
 }) {
+  const assetCount = new Set(state.results.map((result) => result.assetType)).size;
+  const countryCount = new Set(state.results.map((result) => result.country)).size;
+  const selectedSecurity = state.selectedSecurity;
+
   return (
     <Card>
       <CardHeader>
@@ -677,24 +682,63 @@ function SecurityMasterSearchPanel({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <label htmlFor="security-master-search" className="grid gap-2 text-sm">
-          Search securities
-          <input
-            id="security-master-search"
-            className="rounded-lg border border-border/70 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            value={state.searchValue}
-            placeholder="Search by issuer, ticker, or ISIN"
-            onChange={(event) => onQueryChange(event.target.value)}
-          />
-        </label>
+        <div className="rounded-xl border border-border/70 bg-panel-strong p-4 text-slate-50">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="eyebrow-label text-slate-300">Command search</div>
+                <div className="mt-1 text-sm text-slate-300">
+                  Search score stays primary while filters and packet posture remain visible.
+                </div>
+              </div>
+              <Badge variant="outline" className="border-slate-700/80 bg-slate-950/50 text-slate-300">
+                Ctrl K
+              </Badge>
+            </div>
+            <label htmlFor="security-master-search" className="grid gap-2 text-sm">
+              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-slate-300">Search securities</span>
+              <div className="flex flex-col gap-3 rounded-xl border border-slate-700/80 bg-slate-950/55 p-3 shadow-[var(--shadow-panel)]">
+                <div className="flex items-center gap-3">
+                  <Search className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                  <input
+                    id="security-master-search"
+                    className="min-h-10 flex-1 bg-transparent font-mono text-sm text-slate-50 placeholder:text-slate-500 focus-visible:outline-none"
+                    value={state.searchValue}
+                    placeholder="Search by issuer, ticker, or ISIN"
+                    onChange={(event) => onQueryChange(event.target.value)}
+                  />
+                  {state.searchValue.trim() ? (
+                    <Button size="sm" variant="ghost" className="text-slate-300 hover:bg-slate-800/70 hover:text-slate-50" onClick={() => onQueryChange("")}>
+                      Clear
+                    </Button>
+                  ) : null}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-300">
+                  <Badge variant="outline" className="border-slate-700/80 bg-slate-950/50 text-slate-300">
+                    {state.searchMetaLabel}
+                  </Badge>
+                  <Badge variant="outline" className="border-slate-700/80 bg-slate-950/50 text-slate-300">
+                    Assets · {assetCount}
+                  </Badge>
+                  <Badge variant="outline" className="border-slate-700/80 bg-slate-950/50 text-slate-300">
+                    Countries · {countryCount}
+                  </Badge>
+                  <Badge variant="outline" className="border-slate-700/80 bg-slate-950/50 text-slate-300">
+                    Packet lanes · {state.results.length}
+                  </Badge>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline">{state.searchMetaLabel}</Badge>
           <Button size="sm" variant="outline" onClick={onToggleStatusFilter}>
             {state.statusChipLabel}
           </Button>
-          <Badge variant="outline">Sort · Search score</Badge>
+          <Badge variant="outline">Sort · Search score desc</Badge>
           <Badge variant="outline">Coverage · venues + packets</Badge>
+          <Badge variant="outline">Detail link · selected row drives panel</Badge>
         </div>
 
         {state.hasResults ? (
@@ -702,6 +746,13 @@ function SecurityMasterSearchPanel({
             <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.14em] text-muted-foreground">
               <span>{state.resultCountLabel}</span>
               <span>Issuer · type · venue · ISIN · score</span>
+            </div>
+            <div className="grid gap-3 rounded-t-xl border border-border/70 bg-secondary/20 px-4 py-3 text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:grid-cols-[minmax(0,1.6fr)_minmax(110px,0.8fr)_minmax(120px,0.85fr)_minmax(150px,0.9fr)_minmax(90px,0.5fr)]">
+              <span>Name · ticker</span>
+              <span>Type</span>
+              <span>Market</span>
+              <span>ISIN</span>
+              <span className="text-right">Score</span>
             </div>
             <div className="space-y-2" aria-label="Security master search results">
               {state.results.map((result) => (
@@ -713,14 +764,24 @@ function SecurityMasterSearchPanel({
                   className={cn(
                     "w-full rounded-xl border px-4 py-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                     result.selected
-                      ? "border-primary/50 bg-primary/8 shadow-[inset_3px_0_0_hsl(var(--primary))]"
+                      ? "border-primary/50 bg-primary/8 shadow-[inset_3px_0_0_hsl(var(--primary)),0_0_0_1px_rgba(42,178,212,0.08)]"
                       : "border-border/70 bg-secondary/20 hover:bg-secondary/35"
                   )}
                   onClick={() => onSelect(result.securityId)}
                 >
                   <div className="grid gap-3 sm:grid-cols-[minmax(0,1.5fr)_minmax(110px,0.8fr)_minmax(120px,0.85fr)_minmax(150px,0.9fr)_minmax(90px,0.5fr)]">
                     <div className="min-w-0">
-                      <div className="truncate font-semibold text-foreground">{result.displayName}</div>
+                      <div className="flex items-center gap-2 truncate font-semibold text-foreground">
+                        <span className={cn(
+                          "h-2.5 w-2.5 rounded-full",
+                          result.statusVariant === "success"
+                            ? "bg-success shadow-[0_0_0_3px_rgba(38,191,134,0.15)]"
+                            : result.statusVariant === "warning"
+                              ? "bg-warning shadow-[0_0_0_3px_rgba(214,158,56,0.15)]"
+                              : "bg-muted-foreground/60 shadow-[0_0_0_3px_rgba(124,138,155,0.12)]"
+                        )} />
+                        <span className="truncate">{result.displayName}</span>
+                      </div>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                         <span className="font-mono text-primary">{result.ticker}</span>
                         <span>{result.issuer}</span>
@@ -738,14 +799,43 @@ function SecurityMasterSearchPanel({
                       <div className="mt-1 h-1 rounded-full bg-border/70">
                         <div className="h-1 rounded-full bg-primary" style={{ width: result.scoreWidth }} />
                       </div>
+                      <div className="mt-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                        {result.selected ? "In focus" : "Open"}
+                      </div>
                     </div>
                   </div>
                 </button>
               ))}
             </div>
+            {selectedSecurity ? (
+              <div className="rounded-xl border border-border/70 bg-secondary/15 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="eyebrow-label">Selected row detail</div>
+                    <div className="mt-1 text-sm font-semibold text-foreground">{selectedSecurity.titleCode} · {selectedSecurity.title}</div>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {selectedSecurity.subtitle}. Packet {selectedSecurity.printPacketId} routes to {selectedSecurity.exportEvidence.length} downstream lanes.
+                    </p>
+                  </div>
+                  <Badge variant={selectedSecurity.statusVariant} dot>{selectedSecurity.status}</Badge>
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : state.emptyState ? (
-          <EmptyState state={state.emptyState} />
+          <div className="space-y-3">
+            <EmptyState state={state.emptyState} />
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={() => onQueryChange(SECURITY_MASTER_DEFAULT_QUERY)}>
+                Reset to default search
+              </Button>
+              {state.statusFilter === "active" ? (
+                <Button size="sm" variant="outline" onClick={onToggleStatusFilter}>
+                  Show all statuses
+                </Button>
+              ) : null}
+            </div>
+          </div>
         ) : null}
       </CardContent>
     </Card>
@@ -760,6 +850,8 @@ function SecurityMasterDetailCard({
   onSelectTab: (tab: "overview" | "company" | "corporate-actions" | "print") => void;
 }) {
   const selected = state.selectedSecurity;
+  const activeTab = state.tabs.find((tab) => tab.selected)?.id ?? "overview";
+  const packetStatus = selected ? resolvePacketChecklistStatus(selected.printChecklist) : null;
 
   return (
     <Card className="overflow-hidden">
@@ -768,7 +860,9 @@ function SecurityMasterDetailCard({
           <CardHeader className="border-b border-border/70 bg-secondary/20">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <div className="eyebrow-label">Security Master / {selected.assetType}</div>
+                <div className="eyebrow-label">
+                  Reference data / {selected.assetType} / {selected.subtitle} / {activeTab.replace("-", " ")}
+                </div>
                 <div className="mt-2 flex flex-wrap items-center gap-3">
                   <CardTitle className="text-2xl">{selected.title}</CardTitle>
                   <span className="rounded-md bg-primary/10 px-2.5 py-1 font-mono text-sm text-primary">{selected.titleCode}</span>
@@ -779,21 +873,31 @@ function SecurityMasterDetailCard({
                   <Badge variant={selected.statusVariant} dot>{selected.status}</Badge>
                   <Badge variant="outline">{selected.assetType}</Badge>
                   <Badge variant="default">Score {selected.scoreText}</Badge>
+                  {packetStatus ? <Badge variant={packetStatus.variant}>{packetStatus.label}</Badge> : null}
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" onClick={() => onSelectTab("company")}>
-                  <Building2 className="h-3.5 w-3.5" />
-                  Company view
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => onSelectTab("corporate-actions")}>
-                  <TimerReset className="h-3.5 w-3.5" />
-                  Corporate actions
-                </Button>
-                <Button size="sm" onClick={() => onSelectTab("print")}>
-                  <FileOutput className="h-3.5 w-3.5" />
-                  Print packet
-                </Button>
+              <div className="space-y-3 lg:max-w-xs">
+                <div className="rounded-xl border border-border/70 bg-background/80 p-4">
+                  <div className="eyebrow-label">Packet posture</div>
+                  <div className="mt-2 font-mono text-sm text-foreground">{selected.printPacketId}</div>
+                  <div className="mt-2 text-sm text-muted-foreground">
+                    {selected.exportEvidence.length} export lanes · {selected.printChecklist.length} sign-off steps
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={() => onSelectTab("company")}>
+                    <Building2 className="h-3.5 w-3.5" />
+                    Company view
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => onSelectTab("corporate-actions")}>
+                    <TimerReset className="h-3.5 w-3.5" />
+                    Corporate actions
+                  </Button>
+                  <Button size="sm" onClick={() => onSelectTab("print")}>
+                    <FileOutput className="h-3.5 w-3.5" />
+                    Print packet
+                  </Button>
+                </div>
               </div>
             </div>
           </CardHeader>
@@ -865,6 +969,12 @@ function SecurityOverviewPanel({ selected }: { selected: SecurityMasterSelectedS
       className="grid gap-4 p-4 xl:grid-cols-[1fr_320px]"
     >
       <div className="space-y-4">
+        <div className="grid gap-3 md:grid-cols-4">
+          <SummaryPill label="Identifier groups" value={`${selected.identifierSections.length}`} />
+          <SummaryPill label="Active venues" value={`${selected.venues.length}`} />
+          <SummaryPill label="Audit steps" value={`${selected.auditTrail.length}`} />
+          <SummaryPill label="Packet" value={selected.printPacketId} mono />
+        </div>
         {selected.identifierSections.map((section) => (
           <div key={section.id} className="rounded-xl border border-border/70 bg-background/80">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 bg-secondary/20 px-4 py-3">
@@ -910,6 +1020,11 @@ function SecurityCompanyPanel({ selected }: { selected: SecurityMasterSelectedSt
       className="grid gap-4 p-4 xl:grid-cols-[1fr_320px]"
     >
       <div className="space-y-4">
+        <div className="grid gap-3 md:grid-cols-4">
+          {selected.companyMetrics.map((field) => (
+            <SummaryPill key={field.id} label={field.label} value={field.value} tone={field.tone} mono />
+          ))}
+        </div>
         <div className="rounded-xl border border-border/70 bg-background/80 p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 font-display text-xl font-semibold text-primary">
@@ -1022,6 +1137,11 @@ function SecurityCorporateActionsPanel({ selected }: { selected: SecurityMasterS
 }
 
 function SecurityPrintPanel({ selected }: { selected: SecurityMasterSelectedState }) {
+  const packetStatus = resolvePacketChecklistStatus(selected.printChecklist);
+  const readyCount = selected.printChecklist.filter((item) => item.status === "Ready").length;
+  const reviewCount = selected.printChecklist.filter((item) => item.status === "Review").length;
+  const draftCount = selected.printChecklist.filter((item) => item.status === "Draft").length;
+
   return (
     <div
       id="security-master-panel-print"
@@ -1037,13 +1157,61 @@ function SecurityPrintPanel({ selected }: { selected: SecurityMasterSelectedStat
               <h3 className="mt-2 text-lg font-semibold">{selected.printPacketId}</h3>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">{selected.printSummary}</p>
             </div>
-            <Badge variant="success" dot>Ready for review</Badge>
+            <Badge variant={packetStatus.variant} dot>{packetStatus.label}</Badge>
           </div>
           <dl className="mt-4 grid gap-3 sm:grid-cols-3">
             <DetailRow label="Generated" value={selected.printGeneratedAt} inverted />
             <DetailRow label="Distribution" value={selected.printDistribution} inverted />
             <DetailRow label="Sections" value={`${selected.printSections.length}`} inverted />
           </dl>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+          <div className="rounded-xl border border-border/70 bg-background/80 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="font-semibold text-foreground">Print preview</div>
+              <Badge variant="outline">Page-ready layout</Badge>
+            </div>
+            <div className="mt-4 rounded-xl border border-border/60 bg-secondary/10 p-4">
+              <div className="security-master-print-preview">
+                <div className="security-master-print-sheet">
+                  <div className="security-master-print-sheet__eyebrow">Meridian // security master</div>
+                  <div className="security-master-print-sheet__title">{selected.title}</div>
+                  <div className="security-master-print-sheet__subtitle">{selected.titleCode} · {selected.subtitle}</div>
+                  <div className="security-master-print-sheet__grid">
+                    {selected.summaryFields.slice(0, 4).map((field) => (
+                      <div key={field.id} className="security-master-print-sheet__cell">
+                        <span>{field.label}</span>
+                        <strong>{field.value}</strong>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="security-master-print-sheet__section-list">
+                    {selected.printSections.map((section) => (
+                      <div key={section.id} className="security-master-print-sheet__section">
+                        <span>{section.title}</span>
+                        <strong>{section.description}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-xl border border-border/70 bg-background/80 p-5">
+            <div className="font-semibold text-foreground">Packet readiness</div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+              <SummaryPill label="Ready" value={`${readyCount}`} tone="success" mono />
+              <SummaryPill label="Review" value={`${reviewCount}`} tone="warning" mono />
+              <SummaryPill label="Draft" value={`${draftCount}`} mono />
+            </div>
+            <div className="mt-4 rounded-lg border border-border/60 bg-secondary/20 px-4 py-3">
+              <div className="eyebrow-label">Routing guidance</div>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Keep packet posture aligned with downstream export lanes so reporting, accounting, and replay workflows all reference the same evidence cut.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="rounded-xl border border-border/70 bg-background/80 p-5">
@@ -1278,6 +1446,33 @@ function RailCard({
   );
 }
 
+function SummaryPill({
+  label,
+  value,
+  tone,
+  mono = false
+}: {
+  label: string;
+  value: string;
+  tone?: "default" | "success" | "warning";
+  mono?: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-border/70 bg-background/80 px-4 py-3">
+      <div className="eyebrow-label">{label}</div>
+      <div
+        className={cn(
+          "mt-2 text-sm font-semibold text-foreground",
+          mono && "font-mono",
+          tone === "success" ? "text-success" : tone === "warning" ? "text-warning" : "text-foreground"
+        )}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
 function EmptyState({ state }: { state: DataOperationsEmptyState }) {
   return (
     <div role="status" className="rounded-lg border border-dashed border-border/80 bg-secondary/20 px-3 py-4">
@@ -1366,4 +1561,16 @@ function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
       {state.errorText && <p className="mt-3 text-xs leading-5">{state.errorText}</p>}
     </div>
   );
+}
+
+function resolvePacketChecklistStatus(items: SecurityMasterPrintChecklistItem[]) {
+  if (items.some((item) => item.status === "Draft")) {
+    return { label: "Draft sections remain", variant: "outline" as const };
+  }
+
+  if (items.some((item) => item.status === "Review")) {
+    return { label: "Review required", variant: "warning" as const };
+  }
+
+  return { label: "Ready for review", variant: "success" as const };
 }

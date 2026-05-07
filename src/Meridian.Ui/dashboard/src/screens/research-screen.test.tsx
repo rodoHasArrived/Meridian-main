@@ -86,8 +86,11 @@ describe("ResearchScreen", () => {
     render(<ResearchScreen data={twoRuns} />);
 
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
+    expect(screen.getByLabelText("PlotTool study brief")).toBeInTheDocument();
     expect(screen.getByText("Strategy notebooks")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "PlotTool scatter chart" })).toBeInTheDocument();
+    expect(screen.getByLabelText("PlotTool chart legend")).toBeInTheDocument();
+    expect(screen.getAllByText("Current marker").length).toBeGreaterThan(0);
     expect(screen.getByText("Meridian overlays")).toBeInTheDocument();
   });
 
@@ -98,6 +101,7 @@ describe("ResearchScreen", () => {
     await user.click(screen.getByRole("tab", { name: "Statistics" }));
 
     expect(screen.getByText("Distribution profile")).toBeInTheDocument();
+    expect(screen.getByText("Residual distribution")).toBeInTheDocument();
     expect(screen.getByText("Regression frame")).toBeInTheDocument();
     expect(screen.getByText("Observation sheet")).toBeInTheDocument();
   });
@@ -166,7 +170,7 @@ describe("ResearchScreen", () => {
     expect(screen.getByRole("row", { name: /Carry Alpha: Running; net P&L \+\$3,200/ })).toBeInTheDocument();
     expect(screen.getByText("+4.20%")).toBeInTheDocument();
     expect(screen.getByText("-1.80%")).toBeInTheDocument();
-    expect(screen.getByText("Ledger missing; Audit missing")).toBeInTheDocument();
+    expect(screen.getAllByText("Ledger missing; Audit missing").length).toBeGreaterThanOrEqual(1);
     expect(api.compareRuns).toHaveBeenCalledOnce();
   });
 

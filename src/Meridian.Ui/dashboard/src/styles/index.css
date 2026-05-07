@@ -157,6 +157,58 @@
     @apply rounded-lg border border-border/80 bg-card shadow-[var(--shadow-panel)];
   }
 
+  .security-master-print-preview {
+    @apply rounded-xl border border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))] p-3;
+  }
+
+  .security-master-print-sheet {
+    @apply rounded-lg border border-slate-700/70 bg-slate-950/80 p-4 shadow-[var(--shadow-float)];
+  }
+
+  .security-master-print-sheet__eyebrow {
+    @apply font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400;
+  }
+
+  .security-master-print-sheet__title {
+    @apply mt-3 font-display text-lg font-semibold text-slate-50;
+  }
+
+  .security-master-print-sheet__subtitle {
+    @apply mt-1 font-mono text-xs text-primary;
+  }
+
+  .security-master-print-sheet__grid {
+    @apply mt-4 grid gap-px overflow-hidden rounded-lg border border-slate-700/70 bg-slate-800/80 sm:grid-cols-2;
+  }
+
+  .security-master-print-sheet__cell {
+    @apply bg-slate-950/80 px-3 py-3;
+  }
+
+  .security-master-print-sheet__cell span {
+    @apply block font-mono text-[10px] uppercase tracking-[0.14em] text-slate-400;
+  }
+
+  .security-master-print-sheet__cell strong {
+    @apply mt-1 block font-mono text-xs font-medium text-slate-100;
+  }
+
+  .security-master-print-sheet__section-list {
+    @apply mt-4 space-y-2;
+  }
+
+  .security-master-print-sheet__section {
+    @apply rounded-lg border border-slate-800/80 bg-slate-900/80 px-3 py-3;
+  }
+
+  .security-master-print-sheet__section span {
+    @apply block text-sm font-semibold text-slate-100;
+  }
+
+  .security-master-print-sheet__section strong {
+    @apply mt-1 block text-xs font-normal leading-5 text-slate-400;
+  }
+
   .top-bar-gradient {
     background: var(--surface-topbar);
     border-bottom: 1px solid var(--border-color);
@@ -799,6 +851,31 @@
     font-family: "IBM Plex Mono", ui-monospace, monospace;
     font-size: 0.75rem;
     line-height: 1.5;
+  }
+
+  .plottool-chart-shell {
+    border: 1px solid rgba(31, 52, 76, 0.95);
+    border-radius: var(--radius-xl);
+    background:
+      radial-gradient(circle at top right, rgba(42, 178, 212, 0.12), transparent 28%),
+      linear-gradient(180deg, rgba(246, 251, 255, 0.02), rgba(246, 251, 255, 0)),
+      #05101b;
+    padding: 0.875rem;
+    box-shadow: var(--shadow-panel);
+  }
+
+  .plottool-chart-legend {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .plottool-legend-card {
+    min-width: 0;
+    padding: 0.75rem 0.875rem;
+    border: 1px solid rgba(31, 52, 76, 0.9);
+    border-radius: var(--radius-lg);
+    background: rgba(8, 16, 26, 0.55);
   }
 
   .plottool-overlay-list li {

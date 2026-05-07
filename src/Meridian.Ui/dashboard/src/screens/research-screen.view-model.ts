@@ -199,6 +199,8 @@ export interface ResearchPlotWorkspaceState {
   eyebrow: string;
   title: string;
   description: string;
+  statusBadgeLabel: string;
+  statusBadgeVariant: ResearchComparisonBadgeVariant;
   expression: string;
   toolbarPills: string[];
   metaItems: string[];
@@ -207,6 +209,9 @@ export interface ResearchPlotWorkspaceState {
   xTicks: ResearchPlotAxisTick[];
   yTicks: ResearchPlotAxisTick[];
   points: ResearchPlotScatterPoint[];
+  studySummary: ResearchPlotWorkspaceField[];
+  legendItems: ResearchPlotLegendItem[];
+  focusPoint: ResearchPlotFocusPointState;
   signalCards: ResearchPlotSignalCard[];
   consoleTitle: string;
   consoleBody: string;
@@ -220,6 +225,8 @@ export interface ResearchPlotStatisticsState {
   description: string;
   summaryTiles: ResearchPlotSummaryTile[];
   distributionBars: number[];
+  distributionSummary: string;
+  distributionFootnote: string;
   moments: ResearchPlotMomentRow[];
   regression: ResearchPlotRegressionState;
   sampleRows: ResearchPlotSampleRow[];
@@ -234,6 +241,26 @@ export interface ResearchPlotScatterPoint {
   x: number;
   y: number;
   emphasis: boolean;
+}
+
+export interface ResearchPlotWorkspaceField {
+  id: string;
+  label: string;
+  value: string;
+}
+
+export interface ResearchPlotLegendItem {
+  id: string;
+  label: string;
+  detail: string;
+  tone: "history" | "current" | "trend" | "muted";
+}
+
+export interface ResearchPlotFocusPointState {
+  label: string;
+  xValueText: string;
+  yValueText: string;
+  detail: string;
 }
 
 export interface ResearchPlotSignalCard {
@@ -572,6 +599,8 @@ export function buildPlotToolState({
     ? `${runDiff.parameterChanges.length} parameter changes and ${runDiff.addedPositions.length + runDiff.removedPositions.length + runDiff.modifiedPositions.length} position changes linked.`
     : "Load a diff to attach position and parameter drift.";
   const chartStudyLabel = companionName ? `${studyName} vs ${companionName}` : studyName;
+  const latestObservation = plotToolSampleRows[0];
+  const focusPoint = findLastPlotPoint(plotToolScatterPoints, (point) => point.emphasis) ?? plotToolScatterPoints[plotToolScatterPoints.length - 1];
 
   return {
     studies: runs.map((run, index) => ({
@@ -589,6 +618,8 @@ export function buildPlotToolState({
       eyebrow: "Strategy Lane · PlotTool",
       title: `${chartStudyLabel} workstation`,
       description: "Meridian notebooks, evidence cues, and factor scatter analysis folded into the Strategy route.",
+      statusBadgeLabel: formatText(activeRun?.mode ?? "research").toUpperCase(),
+      statusBadgeVariant: badgeVariantForMode(activeRun?.mode ?? "research"),
       expression: buildPlotExpression(activeRun, companionRun),
       toolbarPills: [
         windowName,
@@ -608,6 +639,26 @@ export function buildPlotToolState({
       xTicks: plotToolXTicks,
       yTicks: plotToolYTicks,
       points: plotToolScatterPoints,
+      studySummary: [
+        { id: "primary", label: "Primary notebook", value: studyName },
+        { id: "companion", label: "Pair target", value: companionName ?? "Select a second run" },
+        { id: "promotion", label: "Promotion posture", value: promotionCue },
+        { id: "evidence", label: "Evidence pack", value: evidenceCue },
+        { id: "diff", label: "Diff posture", value: diffCue },
+        { id: "refresh", label: "Last refresh", value: formatText(activeRun?.lastUpdated ?? latestObservation.timestamp) }
+      ],
+      legendItems: [
+        { id: "history", label: "History", detail: `${observationCount.toLocaleString()} observations`, tone: "history" },
+        { id: "current", label: "Current", detail: `${latestObservation.spreadText} / ${latestObservation.impliedVolText}`, tone: "current" },
+        { id: "trend", label: "OLS fit", detail: "y = 0.48x + 39.31", tone: "trend" },
+        { id: "refresh", label: "Refresh", detail: formatText(activeRun?.lastUpdated ?? "2m ago"), tone: "muted" }
+      ],
+      focusPoint: {
+        label: "Current marker",
+        xValueText: latestObservation.spreadText,
+        yValueText: latestObservation.impliedVolText,
+        detail: `${latestObservation.signalText} · highlighted at ${formatText(activeRun?.lastUpdated ?? "2m ago")} · x ${focusPoint.x}, y ${focusPoint.y}`
+      },
       signalCards: [
         {
           id: "correlation",
@@ -719,6 +770,8 @@ export function buildPlotToolState({
         }
       ],
       distributionBars: plotToolDistributionBars,
+      distributionSummary: `${observationCount.toLocaleString()} samples centered on spread ${meanX.toFixed(2)} and IV ${meanY.toFixed(2)}.`,
+      distributionFootnote: `Latest observation ${latestObservation.timestamp} · ${latestObservation.signalText} · z-score ${latestObservation.zScoreText}.`,
       moments: [
         { id: "net-pnl", label: "Net P&L", value: formatMoney(comparison[0]?.netPnl ?? activeRun?.netPnl ?? 3200, true), benchmark: "Pair summary" },
         { id: "return", label: "Total return", value: formatSignedPercent(parsedReturn), benchmark: "Run linked" },
@@ -1277,6 +1330,16 @@ function modeBadgeVariantFor(mode: ResearchRunRecord["mode"]): ResearchRunDetail
 function sanitizeDomId(value: string): string {
   const normalized = value.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
   return normalized || "run";
+}
+
+function findLastPlotPoint<T>(items: T[], predicate: (item: T) => boolean): T | undefined {
+  for (let index = items.length - 1; index >= 0; index -= 1) {
+    if (predicate(items[index])) {
+      return items[index];
+    }
+  }
+
+  return undefined;
 }
 
 function buildResearchStatusAnnouncement({

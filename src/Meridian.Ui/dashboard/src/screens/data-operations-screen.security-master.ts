@@ -657,6 +657,125 @@ const SECURITY_MASTER_RECORDS: SecurityMasterRecord[] = [
     upcomingActionTitle: "Preferred dividend notice",
     upcomingActionDescription: "Series A dividend packet and floating-rate reference must be attested before export to investor reporting.",
     printPacketId: "SM-PACKET-2026-05-31-GS-PRA"
+  },
+  {
+    ...makeEquityRecord({
+      securityId: "gs-dr-us",
+      displayName: "Goldman Sachs Group Inc",
+      ticker: "GS.DR",
+      market: "OTCQX",
+      country: "United States",
+      isin: "US38141G8860",
+      score: 42.15
+    }),
+    status: "Pending",
+    assetType: "Depositary receipt",
+    subtitle: "OTCQX · Pending activation",
+    description: "Pending security profile awaiting final listing attestation and export packet approval before it can join active workstation coverage.",
+    summaryFields: [
+      { id: "summary-1", label: "Ticker", value: "GS.DR" },
+      { id: "summary-2", label: "Primary venue", value: "OTCQX" },
+      { id: "summary-3", label: "Country", value: "United States" },
+      { id: "summary-4", label: "ISIN", value: "US38141G8860" },
+      { id: "summary-5", label: "Provider pack", value: "Pending refdata" },
+      { id: "summary-6", label: "Last reviewed", value: "5m ago" }
+    ],
+    auditTrail: [
+      {
+        id: "audit-pending-1",
+        label: "Listing alias proposed and awaiting operations sign-off.",
+        meta: "09:41 UTC · packet DK1-SM-420 · owner JR",
+        current: true
+      },
+      {
+        id: "audit-pending-2",
+        label: "Issuer legal-entity references reconciled with internal mapping.",
+        meta: "09:12 UTC · onboarding sync"
+      },
+      {
+        id: "audit-pending-3",
+        label: "Print distribution draft staged for data and reporting review.",
+        meta: "08:57 UTC · packet staging"
+      }
+    ],
+    companyMetrics: [
+      { id: "market-cap", label: "Issue posture", value: "Pending activation", tone: "warning" },
+      { id: "employees", label: "Mapped venues", value: "2" },
+      { id: "ops-risk", label: "Ops risk", value: "Review", tone: "warning" },
+      { id: "review-window", label: "Review window", value: "Pre-live packet" }
+    ],
+    printPacketId: "SM-PACKET-2026-05-31-GS-DR",
+    printGeneratedAt: "2026-05-31 09:41 UTC",
+    printDistribution: "Data Operations · Reporting",
+    printSummary: "Pending packet captures onboarding evidence, alias mapping, and approval steps required before active workstation coverage.",
+    printChecklist: [
+      { id: "check-pending-1", label: "Identifier parity", owner: "Reference Ops", status: "Ready" },
+      { id: "check-pending-2", label: "Listing activation review", owner: "Data Operations", status: "Review" },
+      { id: "check-pending-3", label: "Distribution approval", owner: "Reporting", status: "Draft" }
+    ],
+    searchTags: ["goldman", "pending", "depositary receipt", "activation", "onboarding"]
+  },
+  {
+    ...makeEquityRecord({
+      securityId: "gs-legacy-fr",
+      displayName: "Goldman Sachs Group Inc",
+      ticker: "GSL",
+      market: "Euronext Paris",
+      country: "France",
+      isin: "US38141GZK64",
+      score: 29.44
+    }),
+    status: "Inactive",
+    assetType: "Legacy receipt",
+    subtitle: "Euronext Paris · Retired coverage",
+    description: "Historical security profile retained for audit and packet traceability after coverage moved to newer canonical identifiers.",
+    summaryFields: [
+      { id: "summary-1", label: "Ticker", value: "GSL" },
+      { id: "summary-2", label: "Primary venue", value: "Euronext Paris" },
+      { id: "summary-3", label: "Country", value: "France" },
+      { id: "summary-4", label: "ISIN", value: "US38141GZK64" },
+      { id: "summary-5", label: "Provider pack", value: "Archive" },
+      { id: "summary-6", label: "Last reviewed", value: "2d ago" }
+    ],
+    auditTrail: [
+      {
+        id: "audit-inactive-1",
+        label: "Coverage retired and historical mappings frozen for traceability.",
+        meta: "2026-05-29 · archive packet SM-LEGACY-019",
+        current: true
+      },
+      {
+        id: "audit-inactive-2",
+        label: "Legacy venue aliases preserved for downstream package replay.",
+        meta: "2026-05-29 · export archive"
+      },
+      {
+        id: "audit-inactive-3",
+        label: "Inactive packet routed to long-term evidence storage.",
+        meta: "2026-05-28 · cold-storage queue"
+      }
+    ],
+    companyMetrics: [
+      { id: "market-cap", label: "Coverage posture", value: "Archived", tone: "warning" },
+      { id: "employees", label: "Mapped venues", value: "1" },
+      { id: "ops-risk", label: "Ops risk", value: "Low", tone: "success" },
+      { id: "review-window", label: "Review window", value: "Historical only" }
+    ],
+    upcomingActionLabel: "Archived event",
+    upcomingActionTitle: "Legacy packet retention review",
+    upcomingActionDescription: "Historical evidence remains available for replay, report reconstruction, and audit requests.",
+    upcomingActionCountdown: "30",
+    upcomingActionCountdownLabel: "days to archive audit",
+    printPacketId: "SM-PACKET-2026-05-29-GSL",
+    printGeneratedAt: "2026-05-29 14:12 UTC",
+    printDistribution: "Archive · Fund Accounting",
+    printSummary: "Inactive packet preserves the final identifier set, venue mapping, and export evidence for historical replay.",
+    printChecklist: [
+      { id: "check-inactive-1", label: "Historical identifiers locked", owner: "Reference Ops", status: "Ready" },
+      { id: "check-inactive-2", label: "Archive retention review", owner: "Compliance", status: "Review" },
+      { id: "check-inactive-3", label: "Downstream replay note", owner: "Reporting", status: "Ready" }
+    ],
+    searchTags: ["goldman", "legacy", "inactive", "archive", "retired"]
   }
 ];
 

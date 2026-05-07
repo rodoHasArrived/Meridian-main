@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   buildOverviewActivityRows,
+  buildOverviewBriefingItems,
+  buildOverviewPriorityRoutes,
   buildOverviewStatusBanner,
   buildOverviewStatusState,
   buildOverviewWorkspaceLinks
 } from "@/screens/overview-screen.view-model";
-import type { SystemOverviewResponse } from "@/types";
+import type { SessionInfo, SystemOverviewResponse } from "@/types";
 
 const overview: SystemOverviewResponse = {
   systemStatus: "Degraded",
@@ -21,10 +23,19 @@ const overview: SystemOverviewResponse = {
   recentEvents: []
 };
 
+const session: SessionInfo = {
+  displayName: "Meridian Ops",
+  role: "Operator",
+  environment: "paper",
+  activeWorkspace: "trading",
+  commandCount: 9
+};
+
 describe("overview-screen view model", () => {
   it("derives status, fallback stats, and empty activity copy", () => {
     const state = buildOverviewStatusState({
       current: overview,
+      session: null,
       refreshing: false,
       refreshError: null,
       refreshedAt: null
@@ -70,6 +81,7 @@ describe("overview-screen view model", () => {
   it("surfaces refresh failures while keeping stale data available", () => {
     const state = buildOverviewStatusState({
       current: overview,
+      session: null,
       refreshing: false,
       refreshError: "Provider offline",
       refreshedAt: null
@@ -86,6 +98,7 @@ describe("overview-screen view model", () => {
   it("announces active refresh state", () => {
     const state = buildOverviewStatusState({
       current: null,
+      session: null,
       refreshing: true,
       refreshError: null,
       refreshedAt: null
@@ -120,6 +133,57 @@ describe("overview-screen view model", () => {
     expect(links.find((link) => link.id === "strategy")?.badgeVariant).toBe("paper");
     expect(links.find((link) => link.id === "data")?.badgeVariant).toBe("live");
     expect(links[0].ariaLabel).toContain("Open Trading workspace");
+  });
+
+  it("derives operator briefing tiles from session and status state", () => {
+    const briefingItems = buildOverviewBriefingItems({
+      session,
+      current: overview,
+      providerSummary: "2 of 4 providers online",
+      storageLabel: "Warning",
+      lastHeartbeatLabel: "11:15 AM",
+      refreshErrorText: null
+    });
+
+    expect(briefingItems).toContainEqual({
+      id: "session",
+      label: "Session",
+      value: "Meridian Ops",
+      detail: "Operator - 9 commands ready",
+      tone: "default",
+      badgeVariant: null,
+      ariaLabel: "Session: Meridian Ops. Operator - 9 commands ready"
+    });
+    expect(briefingItems).toContainEqual({
+      id: "environment",
+      label: "Operating mode",
+      value: "paper",
+      detail: "Current route trading",
+      tone: "success",
+      badgeVariant: "paper",
+      ariaLabel: "Operating mode: paper. Current route trading"
+    });
+    expect(briefingItems.find((item) => item.id === "providers")?.tone).toBe("warning");
+  });
+
+  it("derives priority route presentation copy from canonical workspace links", () => {
+    const routes = buildOverviewPriorityRoutes(buildOverviewWorkspaceLinks());
+
+    expect(routes.map((route) => route.id)).toEqual(["trading", "accounting", "reporting"]);
+    expect(routes[0]).toMatchObject({
+      eyebrow: "Execution posture",
+      title: "Keep the active session ready",
+      buttonLabel: "Open trading cockpit",
+      href: "/trading"
+    });
+    expect(routes[1]).toMatchObject({
+      buttonLabel: "Open accounting lane",
+      href: "/accounting"
+    });
+    expect(routes[2]).toMatchObject({
+      buttonLabel: "Open reporting lane",
+      href: "/reporting"
+    });
   });
 
   it("derives activity row status, fallback timestamps, and accessible summaries", () => {

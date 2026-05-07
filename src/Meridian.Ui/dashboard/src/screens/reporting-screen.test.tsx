@@ -67,6 +67,15 @@ describe("ReportingScreen", () => {
         durationSeconds: 1,
         error: null,
         warnings: [],
+        files: [
+          {
+            path: "audit/export-1.md",
+            symbol: "SPY",
+            format: "markdown",
+            sizeBytes: 1200,
+            recordCount: 20
+          }
+        ],
         timestamp: "2026-05-01T00:00:00Z"
       })
     });
@@ -130,6 +139,15 @@ describe("ReportingScreen", () => {
         "Audit Pack export completed — 2 files generated."
       );
     });
+    const exportStatus = screen.getByRole("status", { name: "Reporting export status" });
+    expect(within(exportStatus).getByText("Job ID")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("export-1")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("Output")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("exports")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("Records")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("20")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("SPY markdown")).toBeInTheDocument();
+    expect(within(exportStatus).getByText(/audit\/export-1\.md/)).toBeInTheDocument();
   });
 
   it("renders explicit empty states for missing reporting profiles and pack targets", () => {

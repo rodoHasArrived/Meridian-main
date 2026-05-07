@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { getSystemStatus } from "@/lib/api";
 import { WORKSPACES, workspacePath } from "@/lib/workspace";
-import type { MetricSnapshot, SystemEventRecord, SystemOverviewResponse, WorkspaceKey } from "@/types";
+import type { MetricSnapshot, SessionInfo, SystemEventRecord, SystemOverviewResponse, WorkspaceKey } from "@/types";
 
 export type OverviewRefreshFetcher = () => Promise<SystemOverviewResponse>;
 
@@ -40,6 +40,32 @@ export interface OverviewActivityRow {
   ariaLabel: string;
 }
 
+export type OverviewBriefingTone = "default" | "success" | "warning" | "danger";
+export type OverviewBriefingBadgeVariant = "paper" | "live" | "research";
+
+export interface OverviewBriefingItem {
+  id: "session" | "environment" | "providers" | "heartbeat";
+  label: string;
+  value: string;
+  detail: string;
+  tone: OverviewBriefingTone;
+  badgeVariant: OverviewBriefingBadgeVariant | null;
+  ariaLabel: string;
+}
+
+export interface OverviewPriorityRoute {
+  id: "trading" | "accounting" | "reporting";
+  eyebrow: string;
+  title: string;
+  detail: string;
+  buttonLabel: string;
+  href: string;
+  status: string;
+  badgeVariant: OverviewWorkspaceLink["badgeVariant"];
+  description: string;
+  ariaLabel: string;
+}
+
 export interface OverviewStatusBannerState {
   role: "status" | "alert";
   ariaLive: "polite" | "assertive";
@@ -55,6 +81,8 @@ export interface OverviewStatusState {
   metrics: MetricSnapshot[];
   events: SystemEventRecord[];
   activityRows: OverviewActivityRow[];
+  briefingItems: OverviewBriefingItem[];
+  priorityRoutes: OverviewPriorityRoute[];
   fallbackStats: OverviewFallbackStat[];
   workspaceLinks: OverviewWorkspaceLink[];
   workspaceSummary: string;
@@ -75,6 +103,7 @@ export interface OverviewStatusState {
 
 interface BuildOverviewStatusStateOptions {
   current: SystemOverviewResponse | null;
+  session: SessionInfo | null;
   refreshing: boolean;
   refreshError: string | null;
   refreshedAt: Date | null;
@@ -82,6 +111,7 @@ interface BuildOverviewStatusStateOptions {
 
 export function buildOverviewStatusState({
   current,
+  session,
   refreshing,
   refreshError,
   refreshedAt
@@ -89,6 +119,7 @@ export function buildOverviewStatusState({
   const metrics = current?.metrics ?? [];
   const events = current?.recentEvents ?? [];
   const activityRows = buildOverviewActivityRows(events);
+  const workspaceLinks = buildOverviewWorkspaceLinks();
   const refreshErrorText = refreshError
     ? `Refresh failed: ${refreshError}. Showing the last known status.`
     : null;
@@ -103,8 +134,17 @@ export function buildOverviewStatusState({
     metrics,
     events,
     activityRows,
+    briefingItems: buildOverviewBriefingItems({
+      session,
+      current,
+      providerSummary,
+      storageLabel,
+      lastHeartbeatLabel,
+      refreshErrorText
+    }),
+    priorityRoutes: buildOverviewPriorityRoutes(workspaceLinks),
     fallbackStats: buildFallbackStats(current),
-    workspaceLinks: buildOverviewWorkspaceLinks(),
+    workspaceLinks,
     workspaceSummary: "7 canonical operator routes. Legacy routes redirect to their canonical workspaces.",
     hasMetrics: metrics.length > 0,
     hasEvents: activityRows.length > 0,
@@ -133,6 +173,7 @@ export function buildOverviewStatusState({
 
 export function useOverviewStatusViewModel(
   initialData: SystemOverviewResponse | null,
+  session: SessionInfo | null,
   fetchSystemStatus: OverviewRefreshFetcher = getSystemStatus
 ) {
   const [refreshing, setRefreshing] = useState(false);
@@ -158,8 +199,8 @@ export function useOverviewStatusViewModel(
   }, [fetchSystemStatus]);
 
   const state = useMemo(
-    () => buildOverviewStatusState({ current, refreshing, refreshError, refreshedAt }),
-    [current, refreshing, refreshError, refreshedAt]
+    () => buildOverviewStatusState({ current, session, refreshing, refreshError, refreshedAt }),
+    [current, session, refreshing, refreshError, refreshedAt]
   );
 
   return {
@@ -178,6 +219,84 @@ export function buildOverviewWorkspaceLinks(): OverviewWorkspaceLink[] {
     status: workspace.status,
     badgeVariant: badgeVariantForWorkspaceStatus(workspace.status),
     ariaLabel: `Open ${workspace.label} workspace. ${workspace.description} Status ${workspace.status}.`
+  }));
+}
+
+export function buildOverviewPriorityRoutes(workspaces: OverviewWorkspaceLink[]): OverviewPriorityRoute[] {
+  return workspaces
+    .filter((workspace): workspace is OverviewWorkspaceLink & { id: OverviewPriorityRoute["id"] } => (
+      workspace.id === "trading" || workspace.id === "accounting" || workspace.id === "reporting"
+    ))
+    .map((workspace) => ({
+      id: workspace.id,
+      ...priorityRouteCopy[workspace.id],
+      href: workspace.href,
+      status: workspace.status,
+      badgeVariant: workspace.badgeVariant,
+      description: workspace.description,
+      ariaLabel: workspace.ariaLabel
+    }));
+}
+
+export function buildOverviewBriefingItems({
+  session,
+  current,
+  providerSummary,
+  storageLabel,
+  lastHeartbeatLabel,
+  refreshErrorText
+}: {
+  session: SessionInfo | null;
+  current: SystemOverviewResponse | null;
+  providerSummary: string | null;
+  storageLabel: string | null;
+  lastHeartbeatLabel: string | null;
+  refreshErrorText: string | null;
+}): OverviewBriefingItem[] {
+  const items: Omit<OverviewBriefingItem, "ariaLabel">[] = [
+    {
+      id: "session",
+      label: "Session",
+      value: session ? session.displayName : "Awaiting session",
+      detail: session ? `${session.role} - ${session.commandCount} commands ready` : "Load a session to unlock command context",
+      tone: "default",
+      badgeVariant: null
+    },
+    {
+      id: "environment",
+      label: "Operating mode",
+      value: session ? session.environment : "Pending",
+      detail: session ? `Current route ${session.activeWorkspace}` : "Environment is not loaded yet",
+      tone: session?.environment === "live" ? "danger" : session?.environment === "paper" ? "success" : "default",
+      badgeVariant: session ? session.environment : null
+    },
+    {
+      id: "providers",
+      label: "Provider posture",
+      value: providerSummary ?? "Provider posture loading",
+      detail: storageLabel ? `Storage ${storageLabel}` : "Storage posture loading",
+      tone: current?.systemStatus === "Offline"
+        ? "danger"
+        : current?.systemStatus === "Degraded"
+          ? "warning"
+          : current
+            ? "success"
+            : "default",
+      badgeVariant: null
+    },
+    {
+      id: "heartbeat",
+      label: "Heartbeat",
+      value: lastHeartbeatLabel ?? "Waiting for heartbeat",
+      detail: refreshErrorText ?? "Refresh the status banner to confirm the latest control-room posture",
+      tone: refreshErrorText ? "danger" : "default",
+      badgeVariant: null
+    }
+  ];
+
+  return items.map((item) => ({
+    ...item,
+    ariaLabel: `${item.label}: ${item.value}. ${item.detail}`
   }));
 }
 
@@ -265,6 +384,27 @@ const activityTypeState: Record<SystemEventRecord["type"], Pick<OverviewActivity
     statusCode: "ERR",
     badgeVariant: "danger",
     tone: "danger"
+  }
+};
+
+const priorityRouteCopy: Record<OverviewPriorityRoute["id"], Pick<OverviewPriorityRoute, "eyebrow" | "title" | "detail" | "buttonLabel">> = {
+  trading: {
+    eyebrow: "Execution posture",
+    title: "Keep the active session ready",
+    detail: "Review paper-session evidence, promotion blockers, and live readiness before the next operator action.",
+    buttonLabel: "Open trading cockpit"
+  },
+  accounting: {
+    eyebrow: "Control evidence",
+    title: "Clear ledger and trust-gate blockers",
+    detail: "Resolve reconciliation, Security Master, and control follow-up before treating the day as sign-off ready.",
+    buttonLabel: "Open accounting lane"
+  },
+  reporting: {
+    eyebrow: "Governed outputs",
+    title: "Prepare distribution-ready reporting",
+    detail: "Check report-pack posture, approvals, and export readiness before circulating governed output.",
+    buttonLabel: "Open reporting lane"
   }
 };
 

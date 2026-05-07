@@ -80,7 +80,7 @@ describe("OverviewScreen", () => {
 
     expect(screen.getByText("Meridian workstation control tower")).toBeInTheDocument();
     expect(screen.getByText("Meridian Ops")).toBeInTheDocument();
-    expect(screen.getByText(/Operator · 9 commands ready/i)).toBeInTheDocument();
+    expect(screen.getByText(/Operator - 9 commands ready/i)).toBeInTheDocument();
     expect(screen.getAllByText(/^paper$/i).length).toBeGreaterThan(0);
 
     const priorityCard = screen.getByText("Move from posture to action").closest("div");

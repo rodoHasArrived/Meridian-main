@@ -130,6 +130,40 @@ describe("DataOperationsScreen", () => {
     expect(screen.getAllByText("SM-PACKET-2026-05-31-GS").length).toBeGreaterThan(0);
   });
 
+  it("reveals pending and inactive matches when the status filter is expanded", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+
+    expect(screen.queryByRole("button", { name: /ticker GS\.DR/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /ticker GSL/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Status: Active/i }));
+
+    expect(screen.getByRole("button", { name: /Status: All/i })).toBeInTheDocument();
+    expect(screen.getByText("7 results")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ticker GS\.DR/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ticker GSL/i })).toBeInTheDocument();
+  });
+
+  it("offers a reset path when a security master search returns no rows", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+
+    const searchBox = screen.getByRole("textbox", { name: /search securities/i });
+
+    await user.clear(searchBox);
+    await user.type(searchBox, "zzzz");
+
+    expect(screen.getByText("No matching securities")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /reset to default search/i }));
+
+    expect(screen.queryByText("No matching securities")).not.toBeInTheDocument();
+    expect(searchBox).toHaveValue("goldman");
+  });
+
   it("switches the detail panel when a backfill row is selected", async () => {
     const user = userEvent.setup();
 
