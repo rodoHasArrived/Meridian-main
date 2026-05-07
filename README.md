@@ -6704,8 +6704,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-8590u0QL.js
-│   │           │   └── index-BWGYJbCW.css
+│   │           │   ├── index-C3eEdy7w.css
+│   │           │   └── index-Dbu3ad81.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
