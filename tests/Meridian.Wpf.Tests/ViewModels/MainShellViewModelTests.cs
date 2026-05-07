@@ -66,7 +66,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToResearchWorkspace()
+    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToStrategyWorkspace()
     {
         WpfTestThread.Run(() =>
         {
@@ -74,8 +74,8 @@ public sealed class MainShellViewModelTests
 
             vm.ActivateShell();
 
-            vm.CurrentPageTag.Should().Be("ResearchShell");
-            vm.CurrentPageTitle.Should().Be("Research Workspace");
+            vm.CurrentPageTag.Should().Be("StrategyShell");
+            vm.CurrentPageTitle.Should().Be("Strategy Workspace");
             vm.BackButtonVisibility.Should().Be(Visibility.Collapsed);
         });
     }
@@ -156,9 +156,9 @@ public sealed class MainShellViewModelTests
 
             vm.SelectWorkspaceCommand.Execute("governance");
 
-            vm.CurrentWorkspace.Should().Be("governance");
-            vm.CurrentPageTag.Should().Be("GovernanceShell");
-            vm.PrimaryNavigationItems.Select(item => item.PageTag).Should().Contain(["GovernanceShell", "FundLedger", "FundReconciliation"]);
+            vm.CurrentWorkspace.Should().Be("accounting");
+            vm.CurrentPageTag.Should().Be("AccountingShell");
+            vm.PrimaryNavigationItems.Select(item => item.PageTag).Should().Contain(["AccountingShell", "FundLedger", "FundReconciliation"]);
             vm.OverflowNavigationItems.Select(item => item.PageTag).Should().Contain("Settings");
             vm.RelatedWorkflowItems.Select(item => item.PageTag).Should().Contain(["FundLedger", "FundReconciliation", "SecurityMaster"]);
         });
@@ -187,19 +187,19 @@ public sealed class MainShellViewModelTests
 
             vm.ActivateShell();
             vm.NavigateToPageCommand.Execute("Backtest");
-            vm.NavigateToPageCommand.Execute("GovernanceShell");
+            vm.NavigateToPageCommand.Execute("AccountingShell");
             vm.NavigateToPageCommand.Execute("SecurityMaster");
 
             vm.CurrentWorkspace.Should().Be("accounting");
-            vm.RecentPages.Select(page => page.PageTag).Should().Equal("GovernanceShell");
-            vm.RecentPagesSummaryText.Should().Be("1 recent governance workflow");
+            vm.RecentPages.Select(page => page.PageTag).Should().Equal("AccountingShell");
+            vm.RecentPagesSummaryText.Should().Be("1 recent accounting workflow");
 
             vm.SelectWorkspaceCommand.Execute("research");
 
-            vm.CurrentWorkspace.Should().Be("research");
-            vm.CurrentPageTag.Should().Be("ResearchShell");
+            vm.CurrentWorkspace.Should().Be("strategy");
+            vm.CurrentPageTag.Should().Be("StrategyShell");
             vm.RecentPages.Select(page => page.PageTag).Should().Equal("Backtest");
-            vm.RecentPagesSummaryText.Should().Be("1 recent research workflow");
+            vm.RecentPagesSummaryText.Should().Be("1 recent strategy workflow");
         });
     }
 
@@ -220,7 +220,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void NavigateToEventReplay_KeepsResearchWorkspaceActive()
+    public void NavigateToEventReplay_KeepsStrategyWorkspaceActive()
     {
         WpfTestThread.Run(() =>
         {
@@ -228,7 +228,7 @@ public sealed class MainShellViewModelTests
 
             vm.NavigateToPageCommand.Execute("EventReplay");
 
-            vm.CurrentWorkspace.Should().Be("research");
+            vm.CurrentWorkspace.Should().Be("strategy");
             vm.CurrentPageTag.Should().Be("EventReplay");
         });
     }
@@ -252,7 +252,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void NavigateToAddProviderWizard_KeepsDataOperationsWorkspaceActive()
+    public void NavigateToAddProviderWizard_KeepsDataWorkspaceActive()
     {
         WpfTestThread.Run(() =>
         {
@@ -260,13 +260,13 @@ public sealed class MainShellViewModelTests
 
             vm.NavigateToPageCommand.Execute("AddProviderWizard");
 
-            vm.CurrentWorkspace.Should().Be("data-operations");
+            vm.CurrentWorkspace.Should().Be("data");
             vm.CurrentPageTag.Should().Be("AddProviderWizard");
         });
     }
 
     [Fact]
-    public void NavigateToProviderHealth_KeepsDataOperationsWorkspaceActive()
+    public void NavigateToProviderHealth_KeepsDataWorkspaceActive()
     {
         WpfTestThread.Run(() =>
         {
@@ -274,13 +274,13 @@ public sealed class MainShellViewModelTests
 
             vm.NavigateToPageCommand.Execute("ProviderHealth");
 
-            vm.CurrentWorkspace.Should().Be("data-operations");
+            vm.CurrentWorkspace.Should().Be("data");
             vm.CurrentPageTag.Should().Be("ProviderHealth");
         });
     }
 
     [Fact]
-    public void NavigateToDiagnostics_KeepsGovernanceWorkspaceActive()
+    public void NavigateToDiagnostics_KeepsSettingsWorkspaceActive()
     {
         WpfTestThread.Run(() =>
         {
@@ -288,7 +288,7 @@ public sealed class MainShellViewModelTests
 
             vm.NavigateToPageCommand.Execute("Diagnostics");
 
-            vm.CurrentWorkspace.Should().Be("governance");
+            vm.CurrentWorkspace.Should().Be("settings");
             vm.CurrentPageTag.Should().Be("Diagnostics");
         });
     }
@@ -598,8 +598,8 @@ public sealed class MainShellViewModelTests
                 vm.SecondaryWorkflowSummaries.Count == 3);
 
             vm.PrimaryWorkflowSummary.Should().NotBeNull();
-            vm.PrimaryWorkflowSummary!.WorkspaceId.Should().Be("research");
-            vm.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("research");
+            vm.PrimaryWorkflowSummary!.WorkspaceId.Should().Be("strategy");
+            vm.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("strategy");
 
             vm.SelectWorkspaceCommand.Execute("trading");
 

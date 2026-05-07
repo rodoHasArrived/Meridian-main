@@ -8,7 +8,7 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.Services;
 
-public sealed class QuantScriptTemplateCatalogServiceTests
+public sealed partial class QuantScriptTemplateCatalogServiceTests
 {
     [Fact]
     public async Task LoadTemplateAsync_ReturnsTemplateSourceFromCatalog()

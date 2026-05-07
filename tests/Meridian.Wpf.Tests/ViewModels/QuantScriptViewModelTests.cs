@@ -259,6 +259,7 @@ public sealed class QuantScriptViewModelTests
             CompileTime: TimeSpan.FromMilliseconds(10),
             PeakMemoryBytes: 0,
             CompilationErrors: Array.Empty<ScriptDiagnostic>(),
+            RuntimeDiagnostics: Array.Empty<ScriptDiagnostic>(),
             RuntimeError: "boom",
             ConsoleOutput: "error",
             Metrics: Array.Empty<KeyValuePair<string, string>>(),
