@@ -134,6 +134,110 @@ public sealed class TradingOperatorReadinessServiceTests
             gate.Status == TradingAcceptanceGateStatusDto.Ready);
     }
 
+    [Fact]
+    public async Task GetAsync_WithActivePaperSession_ShouldClearSessionBlockerAndMarkGateReady()
+    {
+        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithActivePaperSession_ShouldClearSessionBlockerAndMarkGateReady));
+        var persistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance,
+            auditTrail: auditTrail);
+        await persistence.CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "strat-happy",
+            StrategyName: "Happy Path Strategy",
+            InitialCash: 100_000m));
+
+        using var provider = new ServiceCollection()
+            .AddSingleton(auditTrail)
+            .AddSingleton(persistence)
+            .BuildServiceProvider();
+        var service = new TradingOperatorReadinessService(
+            provider,
+            NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readiness = await service.GetAsync();
+
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "session" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
+        readiness.WorkItems.Should().NotContain(item => item.WorkItemId == "paper-session-missing");
+        readiness.ActiveSession.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GetAsync_WithActiveSessionAndVerifiedReplay_ShouldMarkBothSessionAndReplayGatesReady()
+    {
+        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithActiveSessionAndVerifiedReplay_ShouldMarkBothSessionAndReplayGatesReady));
+        var persistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance,
+            auditTrail: auditTrail);
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "strat-replay",
+            StrategyName: "Replay Strategy",
+            InitialCash: 50_000m,
+            Symbols: ["AAPL"]));
+        var replay = await persistence.VerifyReplayAsync(session.SessionId);
+
+        using var provider = new ServiceCollection()
+            .AddSingleton(auditTrail)
+            .AddSingleton(persistence)
+            .BuildServiceProvider();
+        var service = new TradingOperatorReadinessService(
+            provider,
+            NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readiness = await service.GetAsync();
+
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "session" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "replay" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
+        readiness.Replay.Should().NotBeNull();
+        readiness.Replay!.IsConsistent.Should().BeTrue();
+        readiness.Replay.VerificationAuditId.Should().Be(replay!.VerificationAuditId);
+        readiness.WorkItems.Should().NotContain(item =>
+            item.WorkItemId == "paper-session-missing" ||
+            item.WorkItemId == "replay-stale" ||
+            item.WorkItemId == "replay-inconsistent");
+    }
+
+    [Fact]
+    public async Task GetAsync_WithControlsRegistered_ShouldSurfaceControlsSnapshotAndClearAuditBlocker()
+    {
+        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithControlsRegistered_ShouldSurfaceControlsSnapshotAndClearAuditBlocker));
+        var controlsRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "trading-readiness",
+            nameof(GetAsync_WithControlsRegistered_ShouldSurfaceControlsSnapshotAndClearAuditBlocker),
+            Guid.NewGuid().ToString("N"),
+            "controls");
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(controlsRoot),
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
+        await controls.SetDefaultPositionLimitAsync(100_000m, "risk.lead", "Paper desk limit accepted.");
+
+        using var provider = new ServiceCollection()
+            .AddSingleton(auditTrail)
+            .AddSingleton(controls)
+            .BuildServiceProvider();
+        var service = new TradingOperatorReadinessService(
+            provider,
+            NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readiness = await service.GetAsync();
+
+        readiness.Controls.Should().NotBeNull();
+        readiness.Controls.CircuitBreakerOpen.Should().BeFalse();
+        readiness.Controls.ExplainableEvidenceCount.Should().Be(1);
+        readiness.Controls.UnexplainedEvidenceCount.Should().Be(0);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "audit-controls" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
+    }
+
     private static ExecutionAuditTrailService CreateAuditTrail(string scenario)
     {
         var root = Path.Combine(
