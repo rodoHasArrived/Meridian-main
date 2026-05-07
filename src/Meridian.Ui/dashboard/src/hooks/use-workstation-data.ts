@@ -1,20 +1,28 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+  getBrokerageHouseholdPortfolio,
   getDataWorkspace,
   getGovernanceWorkspace,
+  getAlpacaConnectionStatus,
   getReportingWorkspace,
   getSession,
   getStrategyWorkspace,
   getSystemStatus,
-  getTradingWorkspace
+  getTradingWorkspace,
+  getWorkflowLibrary,
+  getWorkflowPresets
 } from "@/lib/api";
 import type {
+  BrokerageConnectionStatus,
+  BrokerageHouseholdPortfolio,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
   TradingWorkspaceResponse,
+  WorkflowLibrary,
+  WorkflowPresetLibrary,
   WorkspaceKey
 } from "@/types";
 
@@ -28,6 +36,11 @@ interface WorkstationDataState {
   dataOperations: DataOperationsWorkspaceResponse | null;
   governance: GovernanceWorkspaceResponse | null;
   reporting: GovernanceWorkspaceResponse | null;
+  brokerageConnection: BrokerageConnectionStatus | null;
+  brokeragePortfolio: BrokerageHouseholdPortfolio | null;
+  workflowLibrary: WorkflowLibrary | null;
+  workflowPresets: WorkflowPresetLibrary | null;
+  workflowError: string | null;
   loading: boolean;
   error: string | null;
   workspaceErrors: WorkspaceErrorMap;
@@ -41,6 +54,11 @@ const initialState: WorkstationDataState = {
   dataOperations: null,
   governance: null,
   reporting: null,
+  brokerageConnection: null,
+  brokeragePortfolio: null,
+  workflowLibrary: null,
+  workflowPresets: null,
+  workflowError: null,
   loading: true,
   error: null,
   workspaceErrors: {}
@@ -50,7 +68,7 @@ export function useWorkstationData() {
   const [state, setState] = useState<WorkstationDataState>(initialState);
 
   const refresh = useCallback(async () => {
-    setState((current) => ({ ...current, loading: true, error: null, workspaceErrors: {} }));
+    setState((current) => ({ ...current, loading: true, error: null, workflowError: null, workspaceErrors: {} }));
 
     const [
       session,
@@ -59,7 +77,11 @@ export function useWorkstationData() {
       trading,
       dataOperations,
       governance,
-      reporting
+      reporting,
+      brokerageConnection,
+      brokeragePortfolio,
+      workflowLibrary,
+      workflowPresets
     ] = await Promise.allSettled([
       getSession(),
       getSystemStatus(),
@@ -67,11 +89,16 @@ export function useWorkstationData() {
       getTradingWorkspace(),
       getDataWorkspace(),
       getGovernanceWorkspace(),
-      getReportingWorkspace()
+      getReportingWorkspace(),
+      getAlpacaConnectionStatus(),
+      getBrokerageHouseholdPortfolio("alpaca"),
+      getWorkflowLibrary(),
+      getWorkflowPresets()
     ]);
 
     const workspaceErrors: WorkspaceErrorMap = {};
     const bootstrapErrors: string[] = [];
+    const workflowErrors: string[] = [];
     const readWorkspace = <T,>(keys: WorkspaceKey[], result: PromiseSettledResult<T>): T | null => {
       if (result.status === "fulfilled") {
         return result.value;
@@ -93,6 +120,15 @@ export function useWorkstationData() {
       return null;
     };
 
+    const readWorkflow = <T,>(result: PromiseSettledResult<T>): T | null => {
+      if (result.status === "fulfilled") {
+        return result.value;
+      }
+
+      workflowErrors.push(result.reason instanceof Error ? result.reason.message : "Workflow library request failed.");
+      return null;
+    };
+
     const nextState: WorkstationDataState = {
       session: readBootstrap(session),
       overview: readBootstrap(overview),
@@ -101,6 +137,11 @@ export function useWorkstationData() {
       dataOperations: readWorkspace(["data"], dataOperations),
       governance: readWorkspace(["accounting"], governance),
       reporting: readWorkspace(["reporting"], reporting),
+      brokerageConnection: readWorkspace(["portfolio"], brokerageConnection),
+      brokeragePortfolio: readWorkspace(["portfolio"], brokeragePortfolio),
+      workflowLibrary: readWorkflow(workflowLibrary),
+      workflowPresets: readWorkflow(workflowPresets),
+      workflowError: workflowErrors[0] ?? null,
       loading: false,
       error: Object.values(workspaceErrors)[0] ?? bootstrapErrors[0] ?? null,
       workspaceErrors

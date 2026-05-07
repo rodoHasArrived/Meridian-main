@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Sigma, Sparkles } from "lucide-react";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -21,8 +20,6 @@ import type { ResearchWorkspaceResponse } from "@/types";
 interface ResearchScreenProps {
   data: ResearchWorkspaceResponse | null;
 }
-
-type PlotToolView = "workspace" | "statistics";
 
 const comparisonValueToneClass = {
   success: "text-success",
@@ -59,7 +56,6 @@ const sampleToneBadgeVariant = {
 
 export function ResearchScreen({ data }: ResearchScreenProps) {
   const vm = useResearchRunLibraryViewModel(data);
-  const [plotToolView, setPlotToolView] = useState<PlotToolView>("workspace");
 
   if (!data) {
     return (
@@ -89,29 +85,32 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
               </CardTitle>
               <CardDescription>{vm.plotTool.workspace.description}</CardDescription>
             </div>
-            <div role="tablist" aria-label="PlotTool views" className="inline-flex rounded-md border border-border/70 bg-secondary/25 p-1">
-              <Button
-                type="button"
-                variant={plotToolView === "workspace" ? "secondary" : "ghost"}
-                role="tab"
-                aria-selected={plotToolView === "workspace"}
-                aria-controls="plottool-workspace-panel"
-                id="plottool-workspace-tab"
-                onClick={() => setPlotToolView("workspace")}
-              >
-                Workstation
-              </Button>
-              <Button
-                type="button"
-                variant={plotToolView === "statistics" ? "secondary" : "ghost"}
-                role="tab"
-                aria-selected={plotToolView === "statistics"}
-                aria-controls="plottool-statistics-panel"
-                id="plottool-statistics-tab"
-                onClick={() => setPlotToolView("statistics")}
-              >
-                Statistics
-              </Button>
+            <div
+              role="tablist"
+              aria-label="PlotTool views"
+              className="inline-flex rounded-md border border-border/70 bg-secondary/25 p-1"
+              onKeyDown={(event) => {
+                if (vm.selectPlotToolViewForKey(event.key)) {
+                  event.preventDefault();
+                }
+              }}
+            >
+              {vm.plotToolTabs.map((tab) => (
+                <Button
+                  key={tab.id}
+                  type="button"
+                  variant={tab.buttonVariant}
+                  role="tab"
+                  aria-selected={tab.selected}
+                  aria-controls={tab.panelId}
+                  aria-label={tab.ariaLabel}
+                  tabIndex={tab.tabIndex}
+                  id={tab.tabId}
+                  onClick={() => vm.selectPlotToolView(tab.id)}
+                >
+                  {tab.label}
+                </Button>
+              ))}
             </div>
           </div>
         </CardHeader>
@@ -142,7 +141,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
             </div>
           )}
 
-          {plotToolView === "workspace" ? (
+          {vm.activePlotToolView === "workspace" ? (
             <PlotToolWorkspacePanel vm={vm.plotTool.workspace} studies={vm.plotTool.studies} />
           ) : (
             <PlotToolStatisticsPanel vm={vm.plotTool.statistics} />

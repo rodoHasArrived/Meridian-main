@@ -1,9 +1,16 @@
-import { Activity, ExternalLink, LoaderCircle, MonitorCheck, User } from "lucide-react";
+import { useState, type FormEvent } from "react";
+import { Activity, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, ShieldCheck, Trash2, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { connectAlpacaConnection, revokeAlpacaConnection } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { buildSettingsScreenViewModel } from "@/screens/settings-screen.view-model";
 import type {
+  AlpacaBrokerageConnectionRequest,
+  BrokerageConnectionStatus,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
   ResearchWorkspaceResponse,
@@ -21,6 +28,8 @@ interface SettingsScreenProps {
   dataOperations?: DataOperationsWorkspaceResponse | null;
   governance?: GovernanceWorkspaceResponse | null;
   reporting?: GovernanceWorkspaceResponse | null;
+  brokerageConnection?: BrokerageConnectionStatus | null;
+  onRefresh?: () => Promise<void> | void;
   loading?: boolean;
   error?: string | null;
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
@@ -62,6 +71,8 @@ export function SettingsScreen({
   dataOperations = null,
   governance = null,
   reporting = null,
+  brokerageConnection = null,
+  onRefresh,
   loading = false,
   error = null,
   workspaceErrors = {}
@@ -74,10 +85,55 @@ export function SettingsScreen({
     dataOperations,
     governance,
     reporting,
+    brokerageConnection,
     loading,
     error,
     workspaceErrors
   });
+  const [alpacaKeyId, setAlpacaKeyId] = useState("");
+  const [alpacaSecretKey, setAlpacaSecretKey] = useState("");
+  const [alpacaEnvironment, setAlpacaEnvironment] = useState<AlpacaBrokerageConnectionRequest["environment"]>("paper");
+  const [alpacaBusy, setAlpacaBusy] = useState<"connect" | "clear" | null>(null);
+  const [alpacaActionMessage, setAlpacaActionMessage] = useState<string | null>(null);
+
+  const handleAlpacaConnect = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAlpacaBusy("connect");
+    setAlpacaActionMessage(null);
+
+    try {
+      const status = await connectAlpacaConnection({
+        keyId: alpacaKeyId,
+        secretKey: alpacaSecretKey,
+        environment: alpacaEnvironment
+      });
+      setAlpacaSecretKey("");
+      setAlpacaActionMessage(status.isConnected ? "Alpaca account verified." : status.lastError ?? status.warnings[0] ?? "Alpaca connection updated.");
+      await onRefresh?.();
+    } catch (err) {
+      setAlpacaActionMessage(err instanceof Error ? err.message : "Alpaca connection request failed.");
+    } finally {
+      setAlpacaBusy(null);
+    }
+  };
+
+  const handleAlpacaClear = async () => {
+    setAlpacaBusy("clear");
+    setAlpacaActionMessage(null);
+
+    try {
+      await revokeAlpacaConnection();
+      setAlpacaKeyId("");
+      setAlpacaSecretKey("");
+      setAlpacaEnvironment("paper");
+      setAlpacaActionMessage("Alpaca credentials cleared.");
+      await onRefresh?.();
+    } catch (err) {
+      setAlpacaActionMessage(err instanceof Error ? err.message : "Alpaca clear request failed.");
+    } finally {
+      setAlpacaBusy(null);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -180,6 +236,105 @@ export function SettingsScreen({
           </CardContent>
         </Card>
       </section>
+
+      <Card className={cn("panel-surface border", diagnosticToneClass[vm.alpacaConnectionPanel.statusTone])}>
+        <CardHeader>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="eyebrow-label">Brokerage connection</div>
+              <CardTitle className="mt-2 flex items-center gap-2 text-base">
+                <KeyRound className="h-4 w-4 text-primary" />
+                Alpaca paper API keys
+              </CardTitle>
+              <CardDescription className="mt-2">{vm.alpacaConnectionPanel.statusDetail}</CardDescription>
+            </div>
+            <Badge variant={vm.alpacaConnectionPanel.badgeVariant} dot={vm.alpacaConnectionPanel.statusTone === "success"}>
+              {vm.alpacaConnectionPanel.stateLabel}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
+          <form className="grid gap-3" onSubmit={handleAlpacaConnect}>
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Key ID
+                <Input
+                  value={alpacaKeyId}
+                  onChange={(event) => setAlpacaKeyId(event.target.value)}
+                  autoComplete="off"
+                  placeholder="ALPACA_KEY_ID"
+                  leadingIcon={<KeyRound className="h-4 w-4" />}
+                  disabled={alpacaBusy !== null}
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Secret key
+                <Input
+                  type="password"
+                  value={alpacaSecretKey}
+                  onChange={(event) => setAlpacaSecretKey(event.target.value)}
+                  autoComplete="off"
+                  placeholder="ALPACA_SECRET_KEY"
+                  leadingIcon={<ShieldCheck className="h-4 w-4" />}
+                  disabled={alpacaBusy !== null}
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Environment
+                <Select
+                  value={alpacaEnvironment}
+                  onChange={(event) => setAlpacaEnvironment(event.target.value === "live" ? "live" : "paper")}
+                  disabled={alpacaBusy !== null}
+                  aria-label="Alpaca trading environment"
+                >
+                  <option value="paper">Paper</option>
+                  <option value="live">Live</option>
+                </Select>
+              </label>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="submit"
+                size="sm"
+                disabled={alpacaBusy !== null || alpacaKeyId.trim().length === 0 || alpacaSecretKey.trim().length === 0}
+              >
+                {alpacaBusy === "connect" ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <ShieldCheck className="h-4 w-4" aria-hidden="true" />}
+                Connect / Test
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleAlpacaClear}
+                disabled={alpacaBusy !== null || !vm.alpacaConnectionPanel.canClear}
+              >
+                {alpacaBusy === "clear" ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Trash2 className="h-4 w-4" aria-hidden="true" />}
+                Clear
+              </Button>
+              {alpacaActionMessage ? (
+                <span role="status" className="text-sm text-muted-foreground">{alpacaActionMessage}</span>
+              ) : null}
+            </div>
+          </form>
+
+          <div className="grid gap-2">
+            <div className="flex flex-wrap gap-2">
+              <SettingsChip label="Provider" value={vm.alpacaConnectionPanel.providerLabel} />
+              <SettingsChip label="Environment" value={vm.alpacaConnectionPanel.environmentLabel} />
+            </div>
+            <dl className="grid gap-2">
+              <SettingsFieldRow label="Key ID" value={vm.alpacaConnectionPanel.maskedKeyIdLabel} tone="muted" />
+              <SettingsFieldRow label="Account" value={vm.alpacaConnectionPanel.accountLabel} tone={vm.alpacaConnectionPanel.statusTone === "success" ? "success" : "muted"} />
+              <SettingsFieldRow label="Verified" value={vm.alpacaConnectionPanel.verifiedAtLabel} tone="muted" />
+            </dl>
+            {vm.alpacaConnectionPanel.warnings.length > 0 ? (
+              <div className="rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning">
+                {vm.alpacaConnectionPanel.warnings[0]}
+              </div>
+            ) : null}
+          </div>
+        </CardContent>
+      </Card>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card className="panel-surface">
@@ -304,6 +459,71 @@ export function SettingsScreen({
           </CardContent>
         </Card>
       </section>
+
+      <Card className="panel-surface">
+        <CardHeader>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="eyebrow-label">Backend reachability</div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ExternalLink className="h-4 w-4 text-primary" />
+                Capability coverage
+              </CardTitle>
+              <CardDescription className="mt-2">{vm.backendCapabilitySummary}</CardDescription>
+            </div>
+            <Badge variant={vm.backendCapabilityStatusVariant} dot={vm.backendCapabilityStatusVariant === "success"}>
+              {vm.backendCapabilityStatusLabel}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 xl:grid-cols-2" role="list" aria-label={vm.backendCapabilityListLabel}>
+            {vm.backendCapabilityGroups.map((group) => (
+              <div
+                key={group.id}
+                role="listitem"
+                className={cn("rounded-lg border px-4 py-4", diagnosticToneClass[capabilityTone(group.statusVariant)])}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="eyebrow-label">{group.workspaceLabel} · {group.route}</div>
+                    <h3 className="mt-2 text-sm font-semibold text-foreground">{group.title}</h3>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{group.description}</p>
+                  </div>
+                  <Badge variant={group.statusVariant} className="shrink-0">
+                    {group.statusLabel}
+                  </Badge>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <SettingsChip label="Mapped" value={group.endpointCountLabel} />
+                  <SettingsChip label="Loaded" value={group.loadedCountLabel} />
+                </div>
+                <p className="mt-3 text-xs leading-5 text-foreground/75">{group.statusDetail}</p>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  {group.endpoints.map((endpoint) => (
+                    <a
+                      key={endpoint.id}
+                      href={endpoint.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={endpoint.ariaLabel}
+                      className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-background/45 px-3 py-2 text-xs transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    >
+                      <Badge variant="outline" className="shrink-0">{endpoint.method}</Badge>
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-foreground">{endpoint.label}</span>
+                        <span className="mt-1 block break-all font-mono text-[10px] leading-4 text-muted-foreground">
+                          {endpoint.href}
+                        </span>
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -345,6 +565,13 @@ function systemVariant(tone: keyof typeof systemToneClass): "outline" | "success
   if (tone === "warning") return "warning";
   if (tone === "danger") return "danger";
   return "outline";
+}
+
+function capabilityTone(tone: "success" | "warning" | "danger" | "outline"): keyof typeof diagnosticToneClass {
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  if (tone === "danger") return "danger";
+  return "default";
 }
 
 function sessionVariant(environment: SessionInfo["environment"] | undefined): "outline" | "paper" | "live" | "research" {

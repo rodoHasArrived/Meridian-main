@@ -34,6 +34,8 @@ You don't need access to the repo to use this design system — everything is co
 - **`assets/brand/`** — Meridian logo marks, wordmark, tile
 - **`assets/icons/`** — 47 custom 24×24 stroke icons
 - **`preview/`** — Design System review cards
+- **`preview/index.html`** — browsable catalogue for all preview review cards
+- **`preview/preview-common.css`** — shared preview navigation, focus, and accessible-heading utilities
 - **`preview/component-state-matrix.html`** — component states across operator state semantics
 - **`preview/screen-recipes.html`** — seven-workspace screen recipes for implementation handoff
 - **`preview/chart-table-standards.html`** — chart, dense-table, status-window, and row-detail standards
@@ -105,7 +107,8 @@ python -m unittest "Meridian Design System (3)/tests/test_design_system_governan
 
 The checker intentionally baselines older preview exceptions so new files must use tokens, current
 workspace names, tight radii, approved gradients, valid links, and mono/right-aligned numeric table
-cells.
+cells. Preview HTML files must also include mobile viewport metadata, a `<main>` landmark, an
+`<h1>` heading, and the shared `preview/preview-common.css` utilities.
 
 ---
 

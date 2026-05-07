@@ -1,6 +1,6 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-05-07
 **Horizon:** Next 6 weeks
 **Status:** Short-horizon execution slice derived from the canonical roadmap and current DK readiness dashboard
 
@@ -40,6 +40,8 @@ Explicit non-goals in this window:
 This plan starts from the current repo state:
 
 - the web dashboard in `src/Meridian.Ui/dashboard/` is now the active operator UI lane, with built assets served from `src/Meridian.Ui/wwwroot/workstation/`; the retained WPF shell remains support evidence for compatibility and shared-contract regression checks
+- current browser workstation support now includes shared workflow library/preset commands in the command palette, dedicated Portfolio brokerage-sync evidence, Reporting report-pack task state, Settings backend capability coverage plus Alpaca paper-key verification, Data Security Master print-packet readiness, and shared API clients for portfolio aggregate/exposure. Treat these as Wave 2-4 support evidence, not as completed cockpit, reporting, or live-readiness claims
+- current brokerage/account-sync support includes fund-account brokerage links, positions/activity reads, cash-adjusted performance, cash-flow summaries, household portfolio rollups, Alpaca paper connection verification/revocation, and a read-only Robinhood aggregation adapter. Use it to strengthen Wave 3/Wave 4 continuity while keeping external-statement acceptance, reconciliation casework, and controlled live-readiness open
 - buyer-facing demo paths, role-based views, readiness dashboards, close workflow previews, and evidence packet actions should be planned for the web dashboard after shared contracts exist; retained WPF coverage should stay limited to support and regression validation
 - the web Research run library already has a support slice for retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, component/view-model coverage, and refreshed built assets; canonical seven-workspace web navigation, strategy-aware launch/preflight, persisted sweep grouping, and Backtest Studio unification remain open
 - the retained WPF workstation shell is already organized around compatibility workspace groupings
@@ -111,6 +113,7 @@ This plan starts from the current repo state:
 
 - `Research`, `Trading`, and `Governance` rely more consistently on the shared run, portfolio, and ledger model
 - run comparison, fills, attribution, ledger, cash-flow, and reconciliation flows feel more like one system than adjacent slices
+- brokerage/account posture, household portfolio rollups, performance, and cash-flow summaries reinforce the same shared model without becoming a live-readiness shortcut
 - WPF refinements in scope reinforce the same shared orchestration seams instead of introducing new page-local logic
 - the Research desk briefing hero remains a shared-model consumer for selected runs, portfolio drill-ins, and `Backtest -> Paper` promotion review instead of becoming a separate research-only orchestration path
 - StrategyRuns filter recovery and comparison guidance remain shared-run support improvements: they should recover already-loaded run rows, clarify visible-versus-recorded scope, and prevent invalid compare pairs without becoming a separate run-store workflow
@@ -123,7 +126,7 @@ This plan starts from the current repo state:
 ### Outcome 4: Wave 4 governance work shows up as product, not just planning
 
 - Security Master remains the delivered baseline while account/entity, reconciliation, cash-flow, multi-ledger, and reporting-adjacent workflows deepen on top of it
-- the next governance slice is defined in terms of shared DTOs, read models, export seams, account/provider-routing evidence, reconciliation break-queue state, calibration-summary rollups, seeded exception-route/tolerance/sign-off metadata, and operator surfaces rather than a parallel governance stack
+- the next governance slice is defined in terms of shared DTOs, read models, export seams, account/provider-routing evidence, brokerage account posture, report-pack task state, reconciliation break-queue state, calibration-summary rollups, seeded exception-route/tolerance/sign-off metadata, and operator surfaces rather than a parallel governance stack
 - accounting-led and Evidence OS commercial slices should start as shared acceptance definitions for accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, instrument passport projections, proof/certificate projections, strategy-to-ledger lineage, report-line provenance, break explanation summaries, report restatement tracking, controls-policy summaries, evidence SLA freshness, decision memory, no-orphan-evidence validation, and evidence packet readiness
 
 ---

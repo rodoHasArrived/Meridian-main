@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Channels;
+using Meridian.Application.Config;
 using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
@@ -58,7 +59,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        if (string.IsNullOrWhiteSpace(_options.KeyId) || string.IsNullOrWhiteSpace(_options.SecretKey))
+        if (!CurrentCredentials.HasCredentials)
         {
             _logger.LogWarning(
                 "Alpaca brokerage credentials are missing or incomplete; gateway will remain unavailable until valid credentials are provided.");
@@ -94,7 +95,9 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
     string IBrokerageActivitySync.ProviderId => GatewayId;
 
-    private string BaseUrl => _options.UseSandbox ? PaperBaseUrl : LiveBaseUrl;
+    private AlpacaCredentialSnapshot CurrentCredentials => AlpacaCredentialEnvironment.Resolve(_options);
+
+    private string BaseUrl => CurrentCredentials.UseSandbox ? PaperBaseUrl : LiveBaseUrl;
 
     /// <inheritdoc />
     public async Task ConnectAsync(CancellationToken ct = default)
@@ -103,7 +106,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
         if (_connected)
             return;
 
-        if (string.IsNullOrWhiteSpace(_options.KeyId) || string.IsNullOrWhiteSpace(_options.SecretKey))
+        if (!CurrentCredentials.HasCredentials)
             throw new InvalidOperationException(
                 "Alpaca KeyId and SecretKey are required for brokerage. Configure credentials before calling ConnectAsync.");
 
@@ -397,7 +400,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
                 RetrievedAt: account.RetrievedAt,
                 Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["environment"] = _options.UseSandbox ? "paper" : "live",
+                    ["environment"] = CurrentCredentials.Environment,
                     ["broker"] = BrokerDisplayName
                 })
         ];
@@ -422,7 +425,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
             Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["requestedAccountId"] = externalAccountId,
-                ["environment"] = _options.UseSandbox ? "paper" : "live"
+                ["environment"] = CurrentCredentials.Environment
             });
 
         return new BrokeragePortfolioSnapshotDto(
@@ -534,9 +537,16 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccoun
 
     private HttpClient CreateHttpClient()
     {
+        var credentials = CurrentCredentials;
+        if (!credentials.HasCredentials)
+        {
+            throw new InvalidOperationException(
+                "Alpaca KeyId and SecretKey are required for brokerage. Configure credentials before calling Alpaca Trading API.");
+        }
+
         var client = _httpClientFactory.CreateClient("AlpacaBrokerage");
-        client.DefaultRequestHeaders.Add("APCA-API-KEY-ID", _options.KeyId);
-        client.DefaultRequestHeaders.Add("APCA-API-SECRET-KEY", _options.SecretKey);
+        client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-KEY-ID", credentials.KeyId);
+        client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-SECRET-KEY", credentials.SecretKey);
         return client;
     }
 

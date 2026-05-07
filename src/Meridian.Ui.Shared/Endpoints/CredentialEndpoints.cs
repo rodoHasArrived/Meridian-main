@@ -21,7 +21,7 @@ public static class CredentialEndpoints
     /// </summary>
     private static readonly IReadOnlyList<ProviderCredentialDescriptor> KnownProviders =
     [
-        new("alpaca",       "Alpaca",           ["APCA_API_KEY_ID", "APCA_API_SECRET_KEY"]),
+        new("alpaca",       "Alpaca",           ["ALPACA_KEY_ID", "ALPACA_SECRET_KEY"]),
         new("polygon",      "Polygon",          ["POLYGON_API_KEY"]),
         new("finnhub",      "Finnhub",          ["FINNHUB_API_KEY"]),
         new("tiingo",       "Tiingo",           ["TIINGO_API_TOKEN"]),
@@ -61,7 +61,7 @@ public static class CredentialEndpoints
 
             var envVarStatus = descriptor.RequiredEnvVars.Select(v =>
             {
-                var value = Environment.GetEnvironmentVariable(v);
+                var value = ReadEnvWithAliases(v);
                 return new
                 {
                     name = v,
@@ -103,9 +103,14 @@ public static class CredentialEndpoints
 
                 var value = el.GetString();
                 if (value is not null)
+                {
+                    Environment.SetEnvironmentVariable(envVar, value);
                     Environment.SetEnvironmentVariable(envVar, value, EnvironmentVariableTarget.User);
+                }
                 else
+                {
                     warnings.Add($"Value for '{envVar}' was null; skipped.");
+                }
             }
 
             return Results.Json(new
@@ -127,7 +132,15 @@ public static class CredentialEndpoints
                 return Results.NotFound(new { error = $"Provider '{provider}' not found." });
 
             foreach (var envVar in descriptor.RequiredEnvVars)
+            {
+                Environment.SetEnvironmentVariable(envVar, null);
                 Environment.SetEnvironmentVariable(envVar, null, EnvironmentVariableTarget.User);
+                foreach (var alias in AliasesFor(envVar))
+                {
+                    Environment.SetEnvironmentVariable(alias, null);
+                    Environment.SetEnvironmentVariable(alias, null, EnvironmentVariableTarget.User);
+                }
+            }
 
             return Results.Json(new
             {
@@ -172,7 +185,7 @@ public static class CredentialEndpoints
         if (p.RequiredEnvVars.Count == 0)
             return "NotRequired";
         var missing = p.RequiredEnvVars
-            .Where(v => string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(v)))
+            .Where(v => string.IsNullOrWhiteSpace(ReadEnvWithAliases(v)))
             .ToList();
         return missing.Count == 0 ? "Configured"
             : missing.Count < p.RequiredEnvVars.Count ? "Partial"
@@ -194,6 +207,30 @@ public static class CredentialEndpoints
             return new string('*', value.Length);
         return string.Concat(value.AsSpan(0, 4), new string('*', Math.Min(value.Length - 4, 12)));
     }
+
+    private static string? ReadEnvWithAliases(string name)
+    {
+        var value = Environment.GetEnvironmentVariable(name);
+        if (!string.IsNullOrWhiteSpace(value))
+            return value;
+
+        foreach (var alias in AliasesFor(name))
+        {
+            value = Environment.GetEnvironmentVariable(alias);
+            if (!string.IsNullOrWhiteSpace(value))
+                return value;
+        }
+
+        return null;
+    }
+
+    private static IReadOnlyList<string> AliasesFor(string name)
+        => name switch
+        {
+            "ALPACA_KEY_ID" => ["APCA_API_KEY_ID"],
+            "ALPACA_SECRET_KEY" => ["APCA_API_SECRET_KEY"],
+            _ => []
+        };
 
     private static bool HasManageCredentialsPermission(HttpContext context)
     {

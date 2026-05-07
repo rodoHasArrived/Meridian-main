@@ -122,6 +122,9 @@ public static class UiEndpoints
         services.TryAddSingleton<StrategyRunReadService>();
         services.TryAddSingleton<CashFlowProjectionService>();
         services.TryAddSingleton<StrategyRunContinuityService>();
+        services.TryAddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
+        services.TryAddSingleton<BrokerageConnectionService>();
+        services.TryAddSingleton<AlpacaBrokerageConnectionService>();
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
         services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
@@ -266,6 +269,9 @@ public static class UiEndpoints
         // Credential management endpoints
         app.MapCredentialEndpoints(jsonOptions);
 
+        // Read-only brokerage OAuth connection endpoints
+        app.MapBrokerageConnectionEndpoints(jsonOptions);
+
         // Map quality drops endpoints (C3/#16)
         var auditTrail = app.Services.GetService<DroppedEventAuditTrail>();
         app.MapQualityDropsEndpoints(auditTrail, jsonOptions);
@@ -382,6 +388,9 @@ public static class UiEndpoints
 
         // Credential management endpoints
         app.MapCredentialEndpoints(jsonOptions);
+
+        // Read-only brokerage OAuth connection endpoints
+        app.MapBrokerageConnectionEndpoints(jsonOptions);
 
         // Map quality drops endpoints (C3/#16 - DroppedEventAuditTrail exposure)
         var auditTrail = app.Services.GetService<DroppedEventAuditTrail>();

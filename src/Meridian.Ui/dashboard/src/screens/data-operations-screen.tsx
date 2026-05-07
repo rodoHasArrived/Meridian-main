@@ -665,8 +665,6 @@ function SecurityMasterSearchPanel({
   onSelect: (securityId: string) => void;
   onToggleStatusFilter: () => void;
 }) {
-  const assetCount = new Set(state.results.map((result) => result.assetType)).size;
-  const countryCount = new Set(state.results.map((result) => result.country)).size;
   const selectedSecurity = state.selectedSecurity;
 
   return (
@@ -717,15 +715,16 @@ function SecurityMasterSearchPanel({
                   <Badge variant="outline" className="border-slate-700/80 bg-slate-950/50 text-slate-300">
                     {state.searchMetaLabel}
                   </Badge>
-                  <Badge variant="outline" className="border-slate-700/80 bg-slate-950/50 text-slate-300">
-                    Assets · {assetCount}
-                  </Badge>
-                  <Badge variant="outline" className="border-slate-700/80 bg-slate-950/50 text-slate-300">
-                    Countries · {countryCount}
-                  </Badge>
-                  <Badge variant="outline" className="border-slate-700/80 bg-slate-950/50 text-slate-300">
-                    Packet lanes · {state.results.length}
-                  </Badge>
+                  {state.searchSummaryBadges.map((badge) => (
+                    <Badge
+                      key={badge.id}
+                      variant="outline"
+                      aria-label={badge.ariaLabel}
+                      className="border-slate-700/80 bg-slate-950/50 text-slate-300"
+                    >
+                      {badge.label} · {badge.value}
+                    </Badge>
+                  ))}
                 </div>
               </div>
             </label>
@@ -851,7 +850,7 @@ function SecurityMasterDetailCard({
 }) {
   const selected = state.selectedSecurity;
   const activeTab = state.tabs.find((tab) => tab.selected)?.id ?? "overview";
-  const packetStatus = selected ? resolvePacketChecklistStatus(selected.printChecklist) : null;
+  const packetStatus = selected?.printPacketState ?? null;
 
   return (
     <Card className="overflow-hidden">
@@ -873,7 +872,7 @@ function SecurityMasterDetailCard({
                   <Badge variant={selected.statusVariant} dot>{selected.status}</Badge>
                   <Badge variant="outline">{selected.assetType}</Badge>
                   <Badge variant="default">Score {selected.scoreText}</Badge>
-                  {packetStatus ? <Badge variant={packetStatus.variant}>{packetStatus.label}</Badge> : null}
+                  {packetStatus ? <Badge variant={packetStatus.statusVariant}>{packetStatus.statusLabel}</Badge> : null}
                 </div>
               </div>
               <div className="space-y-3 lg:max-w-xs">
@@ -1137,10 +1136,7 @@ function SecurityCorporateActionsPanel({ selected }: { selected: SecurityMasterS
 }
 
 function SecurityPrintPanel({ selected }: { selected: SecurityMasterSelectedState }) {
-  const packetStatus = resolvePacketChecklistStatus(selected.printChecklist);
-  const readyCount = selected.printChecklist.filter((item) => item.status === "Ready").length;
-  const reviewCount = selected.printChecklist.filter((item) => item.status === "Review").length;
-  const draftCount = selected.printChecklist.filter((item) => item.status === "Draft").length;
+  const packet = selected.printPacketState;
 
   return (
     <div
@@ -1157,7 +1153,7 @@ function SecurityPrintPanel({ selected }: { selected: SecurityMasterSelectedStat
               <h3 className="mt-2 text-lg font-semibold">{selected.printPacketId}</h3>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">{selected.printSummary}</p>
             </div>
-            <Badge variant={packetStatus.variant} dot>{packetStatus.label}</Badge>
+            <Badge variant={packet.statusVariant} dot>{packet.statusLabel}</Badge>
           </div>
           <dl className="mt-4 grid gap-3 sm:grid-cols-3">
             <DetailRow label="Generated" value={selected.printGeneratedAt} inverted />
@@ -1179,7 +1175,7 @@ function SecurityPrintPanel({ selected }: { selected: SecurityMasterSelectedStat
                   <div className="security-master-print-sheet__title">{selected.title}</div>
                   <div className="security-master-print-sheet__subtitle">{selected.titleCode} · {selected.subtitle}</div>
                   <div className="security-master-print-sheet__grid">
-                    {selected.summaryFields.slice(0, 4).map((field) => (
+                    {packet.previewFields.map((field) => (
                       <div key={field.id} className="security-master-print-sheet__cell">
                         <span>{field.label}</span>
                         <strong>{field.value}</strong>
@@ -1198,23 +1194,27 @@ function SecurityPrintPanel({ selected }: { selected: SecurityMasterSelectedStat
               </div>
             </div>
           </div>
-          <div className="rounded-xl border border-border/70 bg-background/80 p-5">
+          <div
+            role="status"
+            aria-label={packet.statusAriaLabel}
+            className="rounded-xl border border-border/70 bg-background/80 p-5"
+          >
             <div className="font-semibold text-foreground">Packet readiness</div>
             <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-              <SummaryPill label="Ready" value={`${readyCount}`} tone="success" mono />
-              <SummaryPill label="Review" value={`${reviewCount}`} tone="warning" mono />
-              <SummaryPill label="Draft" value={`${draftCount}`} mono />
+              {packet.readinessPills.map((pill) => (
+                <SummaryPill key={pill.id} label={pill.label} value={pill.value} tone={pill.tone} mono />
+              ))}
             </div>
             <div className="mt-4 rounded-lg border border-border/60 bg-secondary/20 px-4 py-3">
               <div className="eyebrow-label">Routing guidance</div>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Keep packet posture aligned with downstream export lanes so reporting, accounting, and replay workflows all reference the same evidence cut.
+                {packet.routingGuidance}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border/70 bg-background/80 p-5">
+        <div className="rounded-xl border border-border/70 bg-background/80 p-5" aria-label={packet.contentsLabel}>
           <div className="font-semibold text-foreground">Packet contents</div>
           <div className="mt-4 grid gap-3">
             {selected.printSections.map((section) => (
@@ -1226,7 +1226,7 @@ function SecurityPrintPanel({ selected }: { selected: SecurityMasterSelectedStat
           </div>
         </div>
 
-        <div className="rounded-xl border border-border/70 bg-background/80 p-5">
+        <div className="rounded-xl border border-border/70 bg-background/80 p-5" aria-label={packet.checklistLabel}>
           <div className="font-semibold text-foreground">Sign-off checklist</div>
           <div className="mt-4 space-y-2">
             {selected.printChecklist.map((item) => (
@@ -1238,7 +1238,7 @@ function SecurityPrintPanel({ selected }: { selected: SecurityMasterSelectedStat
 
       <div className="space-y-4">
         <RailCard title="Export evidence" icon={Download}>
-          <div className="space-y-2">
+          <div className="space-y-2" aria-label={packet.exportLabel}>
             {selected.exportEvidence.map((item) => (
               <div key={item.id} className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-3">
                 <div className="font-semibold text-foreground">{item.title}</div>
@@ -1561,16 +1561,4 @@ function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
       {state.errorText && <p className="mt-3 text-xs leading-5">{state.errorText}</p>}
     </div>
   );
-}
-
-function resolvePacketChecklistStatus(items: SecurityMasterPrintChecklistItem[]) {
-  if (items.some((item) => item.status === "Draft")) {
-    return { label: "Draft sections remain", variant: "outline" as const };
-  }
-
-  if (items.some((item) => item.status === "Review")) {
-    return { label: "Review required", variant: "warning" as const };
-  }
-
-  return { label: "Ready for review", variant: "success" as const };
 }

@@ -15,6 +15,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `docs/plans/evidence-backed-investment-operations-plan.md` for the active differentiation plan and archive rule.
 - `docs/development/documentation-automation.md` for local docs automation profiles and generated-docs rules.
 - `docs/operations/msix-packaging.md` for desktop MSIX packaging and install workflows.
+- `docs/operations/provider-degradation-calibration.md` for provider calibration inputs and promotion-gate outputs.
 - `docs/status/provider-validation-matrix.md` for Wave 1 provider evidence gates.
 - `docs/status/dk1-pilot-parity-runbook.md` for the DK1 provider parity packet workflow.
 - `docs/status/kernel-readiness-dashboard.md` for DK gate status and operator sign-off.
@@ -39,7 +40,9 @@ Keep it short and prefer the canonical Meridian guidance sources:
 make help
 dotnet run --project src/Meridian/Meridian.csproj -- --help
 dotnet run --project src/Meridian/Meridian.csproj -- --help diagnostics
+dotnet run --project src/Meridian/Meridian.csproj -- --help runbooks
 dotnet run --project src/Meridian/Meridian.csproj -- --help security-master
+dotnet run --project src/Meridian/Meridian.csproj -- --help statements
 python3 build/python/cli/buildctl.py --help
 ```
 
@@ -87,7 +90,12 @@ dotnet run --project src/Meridian/Meridian.csproj -- --simulate-feed
 dotnet run --project src/Meridian/Meridian.csproj -- --selftest
 dotnet run --project src/Meridian/Meridian.csproj -- --dry-run --offline
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
+dotnet run --project src/Meridian/Meridian.csproj -- --runbook-list
+dotnet run --project src/Meridian/Meridian.csproj -- --runbook-create "Daily readiness" --runbook-steps readiness:global,replay:latest
+dotnet run --project src/Meridian/Meridian.csproj -- --runbook-run daily-readiness --dry-run
 ```
+
+`--runbook-create` requires `--runbook-steps`; use `--help runbooks` before adding new step kinds.
 
 ## CLI Data Workflows
 
@@ -124,16 +132,31 @@ dotnet run --project src/Meridian/Meridian.csproj -- --validate-schemas --strict
 dotnet run --project src/Meridian/Meridian.csproj -- --check-schemas --max-files 100
 dotnet run --project src/Meridian/Meridian.csproj -- --wal-repair --dry-run --output artifacts/wal-repair-report.txt
 dotnet run --project src/Meridian/Meridian.csproj -- --generate-loader python --output ./loaders
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-validate --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-import --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-reconcile --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
 ```
 
 `src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`, `--etl-export`,
 `--etl-roundtrip`, and `--etl-resume`. Use `docs/HELP.md` for the verified local-file ETL
 operator examples and required `--etl-source-kind` / `--etl-source-path` arguments.
 
-TODO: `SecurityMasterCommands` and `ProviderCalibrationCommand` expose `--security-master-ingest`
-and `--calibrate-provider-degradation`, but their prerequisites are specialized. Use
-`--help security-master` for Security Master details, and verify current operator setup before
-adding short-form examples here.
+`src/Meridian.Application/Commands/StatementCommands.cs` exposes `--statement-validate`,
+`--statement-import`, and `--statement-reconcile`. Use `docs/HELP.md` for the verified local-file
+examples and required `--statement-source-kind` / `--statement-source-path` arguments. Current
+service support is `local`; verify non-local statement adapters before advertising `s3` or `sftp`.
+
+TODO: `docs/HELP.md` also includes `--statement-broker` and `--statement-date` examples, but the
+current dispatcher reaches `StatementCommands` first for statement validate/import flags. Verify the
+intended broker/date workflow before adding those examples here.
+
+TODO: `SecurityMasterCommands` exposes `--security-master-ingest`, but its prerequisites are
+specialized. Use `--help security-master` for Security Master details, and verify current operator
+setup before adding short-form examples here.
+
+`ProviderCalibrationCommand` exposes `--calibrate-provider-degradation`; use
+`docs/operations/provider-degradation-calibration.md` for the incident dataset shape, report output,
+and governance gate before promoting provider-degradation kernel weights.
 
 `--diagnostics` is a standalone CLI flag that prints the configuration summary and runs the quick
 configuration health check. Use the specific flags (`--quick-check`, `--test-connectivity`,
@@ -204,8 +227,11 @@ python3 -m unittest tests/scripts/test_prepare_dk1_operator_signoff.py
 ```bash
 cd src/Meridian.Ui/dashboard
 npm install
+npm run dev
 npm run test
 npm run build
+npm run preview
+npm run screenshots
 ```
 
 Prefer these dashboard commands for browser-operator UI changes. Broaden to `tests/Meridian.Ui.Tests`
@@ -281,6 +307,11 @@ when the desktop exits.
 
 Named workflow automation is defined in `scripts/dev/desktop-workflows.json`; it defaults to
 fixture mode and writes run artifacts under `artifacts/desktop-workflows/`.
+Workflow artifact retention prunes timestamped run directories older than 14 days or beyond the
+latest 10 runs under each configured output root; it skips non-run folders such as `checkpoints/`.
+Tune per-profile with `screenshots.retention.maxAgeDays` and
+`screenshots.retention.retainLatest`, or set both to `0` for a run that must keep all workflow
+artifacts.
 
 Use `run-desktop-workflow.ps1 -NoFixture -ReuseExistingApp` after launching
 `run-desktop.ps1` when driving an already-open shell against live local services; the runner
@@ -418,6 +449,7 @@ pwsh ./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provid
 pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json
 pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
 pwsh ./scripts/dev/build-ibapi-smoke.ps1
+dotnet run --project src/Meridian/Meridian.csproj -- --calibrate-provider-degradation --calibration-input ./incidents-2026-q1.json --candidate-kernel-version kernel-v2 --baseline-kernel-version kernel-v1
 ```
 
 This is the active Wave 1 gate for Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet

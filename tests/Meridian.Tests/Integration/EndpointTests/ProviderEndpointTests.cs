@@ -158,6 +158,41 @@ public sealed class ProviderEndpointTests
     }
 
     [Fact]
+    public async Task ConfigureProvider_WithYahooPayload_PersistsHistoricalDataSource()
+    {
+        var displayName = $"Yahoo Finance Test {Guid.NewGuid():N}";
+        var payload = new
+        {
+            Kind = "yahoo",
+            DisplayName = displayName,
+            ApiKey = (string?)null,
+            ApiSecret = (string?)null,
+            Endpoint = (string?)null,
+            Capabilities = new[] { "backfill" }
+        };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/api/providers/configure", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await DeserializeAsync(response);
+        result["success"].GetBoolean().Should().BeTrue();
+        result["providerId"].GetString().Should().StartWith("yahoo");
+        result["providerName"].GetString().Should().Be(displayName);
+        result["error"].ValueKind.Should().Be(JsonValueKind.Null);
+
+        var dataSourcesResponse = await _client.GetAsync("/api/config/datasources");
+        dataSourcesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var dataSources = await DeserializeAsync(dataSourcesResponse);
+        var source = dataSources["sources"].EnumerateArray().FirstOrDefault(s =>
+            string.Equals(s.GetProperty("name").GetString(), displayName, StringComparison.Ordinal));
+
+        source.ValueKind.Should().NotBe(JsonValueKind.Undefined);
+        source.GetProperty("id").GetString().Should().StartWith("yahoo");
+        source.GetProperty("type").GetString().Should().Be("Historical");
+    }
+
+    [Fact]
     public async Task ConfigureProvider_WithUnsupportedProvider_ReturnsBadRequestResult()
     {
         var payload = new

@@ -107,6 +107,25 @@ export interface SecurityMasterExportEvidence {
   destination: string;
 }
 
+export interface SecurityMasterPrintReadinessPill {
+  id: string;
+  label: string;
+  value: string;
+  tone?: SecurityMasterDetailField["tone"];
+}
+
+export interface SecurityMasterPrintPacketState {
+  statusLabel: string;
+  statusVariant: "success" | "warning" | "outline";
+  statusAriaLabel: string;
+  previewFields: SecurityMasterDetailField[];
+  readinessPills: SecurityMasterPrintReadinessPill[];
+  routingGuidance: string;
+  contentsLabel: string;
+  checklistLabel: string;
+  exportLabel: string;
+}
+
 interface SecurityMasterRecord {
   securityId: string;
   displayName: string;
@@ -167,6 +186,13 @@ export interface SecurityMasterSearchRowState {
   ariaLabel: string;
 }
 
+export interface SecurityMasterSearchSummaryBadge {
+  id: string;
+  label: string;
+  value: string;
+  ariaLabel: string;
+}
+
 export interface SecurityMasterTabState {
   id: SecurityMasterTab;
   label: string;
@@ -211,6 +237,7 @@ export interface SecurityMasterSelectedState {
   printSummary: string;
   printSections: SecurityMasterPrintSection[];
   printChecklist: SecurityMasterPrintChecklistItem[];
+  printPacketState: SecurityMasterPrintPacketState;
   exportEvidence: SecurityMasterExportEvidence[];
 }
 
@@ -219,6 +246,7 @@ export interface SecurityMasterWorkspaceState {
   statusFilter: SecurityMasterStatusFilter;
   resultCountLabel: string;
   searchMetaLabel: string;
+  searchSummaryBadges: SecurityMasterSearchSummaryBadge[];
   statusChipLabel: string;
   hasResults: boolean;
   emptyState: { title: string; description: string } | null;
@@ -826,6 +854,7 @@ export function buildSecurityMasterWorkspaceState({
     statusFilter,
     resultCountLabel,
     searchMetaLabel: `${visibleRecords.length} results · 0.184s`,
+    searchSummaryBadges: buildSearchSummaryBadges(visibleRecords),
     statusChipLabel: statusFilter === "active" ? "Status: Active" : "Status: All",
     hasResults: visibleRecords.length > 0,
     emptyState: visibleRecords.length === 0
@@ -838,6 +867,32 @@ export function buildSecurityMasterWorkspaceState({
     tabs: buildTabState(activeTab, selectedRecord),
     selectedSecurity: selectedRecord ? buildSelectedSecurityState(selectedRecord) : null
   };
+}
+
+function buildSearchSummaryBadges(records: SecurityMasterRecord[]): SecurityMasterSearchSummaryBadge[] {
+  const assetCount = new Set(records.map((record) => record.assetType)).size;
+  const countryCount = new Set(records.map((record) => record.country)).size;
+
+  return [
+    {
+      id: "assets",
+      label: "Assets",
+      value: String(assetCount),
+      ariaLabel: `${assetCount} asset ${assetCount === 1 ? "type" : "types"} in current security search results`
+    },
+    {
+      id: "countries",
+      label: "Countries",
+      value: String(countryCount),
+      ariaLabel: `${countryCount} ${countryCount === 1 ? "country" : "countries"} in current security search results`
+    },
+    {
+      id: "packet-lanes",
+      label: "Packet lanes",
+      value: String(records.length),
+      ariaLabel: `${records.length} packet ${records.length === 1 ? "lane" : "lanes"} in current security search results`
+    }
+  ];
 }
 
 function buildSearchRowState(record: SecurityMasterRecord, selectedSecurityId: string | null): SecurityMasterSearchRowState {
@@ -918,6 +973,50 @@ function buildSelectedSecurityState(record: SecurityMasterRecord): SecurityMaste
     printSummary: record.printSummary,
     printSections: record.printSections,
     printChecklist: record.printChecklist,
+    printPacketState: buildPrintPacketState(record),
     exportEvidence: record.exportEvidence
   };
+}
+
+function buildPrintPacketState(record: SecurityMasterRecord): SecurityMasterPrintPacketState {
+  const readyCount = record.printChecklist.filter((item) => item.status === "Ready").length;
+  const reviewCount = record.printChecklist.filter((item) => item.status === "Review").length;
+  const draftCount = record.printChecklist.filter((item) => item.status === "Draft").length;
+  const status = resolvePacketChecklistStatus(record.printChecklist);
+
+  return {
+    statusLabel: status.label,
+    statusVariant: status.variant,
+    statusAriaLabel: [
+      `Print packet ${record.printPacketId}`,
+      `${readyCount} ready`,
+      `${reviewCount} review`,
+      `${draftCount} draft`,
+      `${record.exportEvidence.length} export lanes`
+    ].join(". "),
+    previewFields: record.summaryFields.slice(0, 4),
+    readinessPills: [
+      { id: "ready", label: "Ready", value: String(readyCount), tone: "success" },
+      { id: "review", label: "Review", value: String(reviewCount), tone: "warning" },
+      { id: "draft", label: "Draft", value: String(draftCount) }
+    ],
+    routingGuidance: "Keep packet posture aligned with downstream export lanes so reporting, accounting, and replay workflows all reference the same evidence cut.",
+    contentsLabel: `${record.printSections.length} packet content section${record.printSections.length === 1 ? "" : "s"}`,
+    checklistLabel: `${record.printChecklist.length} sign-off checklist item${record.printChecklist.length === 1 ? "" : "s"}`,
+    exportLabel: `${record.exportEvidence.length} downstream export lane${record.exportEvidence.length === 1 ? "" : "s"}`
+  };
+}
+
+function resolvePacketChecklistStatus(
+  checklist: SecurityMasterPrintChecklistItem[]
+): { label: string; variant: "success" | "warning" | "outline" } {
+  if (checklist.some((item) => item.status === "Draft")) {
+    return { label: "Draft sections remain", variant: "outline" };
+  }
+
+  if (checklist.some((item) => item.status === "Review")) {
+    return { label: "Review required", variant: "warning" };
+  }
+
+  return { label: "Ready for review", variant: "success" };
 }

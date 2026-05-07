@@ -118,6 +118,22 @@ export interface TradingReadinessSummaryRow {
   ariaLabel: string;
 }
 
+export interface TradingReadinessWorkItemRow {
+  workItemId: string;
+  kind: string;
+  label: string;
+  detail: string;
+  tone: OperatorWorkItem["tone"];
+  metadataText: string | null;
+  ariaLabel: string;
+}
+
+export interface TradingReadinessWarningRow {
+  id: string;
+  text: string;
+  ariaLabel: string;
+}
+
 export interface TradingReadinessState {
   readiness: TradingOperatorReadiness | null;
   refreshing: boolean;
@@ -126,6 +142,16 @@ export interface TradingReadinessState {
   warnings: string[];
   summaryRows: TradingReadinessSummaryRow[];
   summaryLabel: string;
+  hasOperatorAttention: boolean;
+  visibleWorkItems: TradingReadinessWorkItemRow[];
+  hiddenWorkItemCount: number;
+  workItemOverflowLabel: string | null;
+  visibleWarnings: TradingReadinessWarningRow[];
+  hiddenWarningCount: number;
+  warningOverflowLabel: string | null;
+  primaryWorkItemKind: string | null;
+  workItemSummaryText: string;
+  workItemListLabel: string;
   refreshButtonLabel: string;
   refreshAriaLabel: string;
   statusAnnouncement: string;
@@ -148,6 +174,9 @@ export interface BuildTradingReadinessStateOptions {
 const defaultTradingReadinessServices: TradingReadinessServices = {
   getTradingReadiness: () => workstationApi.getTradingReadiness()
 };
+
+const visibleWorkItemLimit = 4;
+const visibleWarningLimit = 3;
 
 export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null): TradingBlotterViewModel {
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
@@ -260,19 +289,73 @@ export function buildTradingReadinessState({
   errorText
 }: BuildTradingReadinessStateOptions): TradingReadinessState {
   const summaryRows = readiness ? buildTradingReadinessSummaryRows(readiness) : [];
+  const workItems = readiness?.workItems ?? [];
+  const warnings = readiness?.warnings ?? [];
+  const visibleWorkItems = buildTradingReadinessWorkItemRows(workItems.slice(0, visibleWorkItemLimit));
+  const visibleWarnings = buildTradingReadinessWarningRows(warnings.slice(0, visibleWarningLimit));
+  const hiddenWorkItemCount = Math.max(0, workItems.length - visibleWorkItemLimit);
+  const hiddenWarningCount = Math.max(0, warnings.length - visibleWarningLimit);
 
   return {
     readiness,
     refreshing,
     errorText,
-    workItems: readiness?.workItems ?? [],
-    warnings: readiness?.warnings ?? [],
+    workItems,
+    warnings,
     summaryRows,
     summaryLabel: "Trading readiness contract summary",
+    hasOperatorAttention: workItems.length > 0 || warnings.length > 0,
+    visibleWorkItems,
+    hiddenWorkItemCount,
+    workItemOverflowLabel: hiddenWorkItemCount > 0
+      ? `${hiddenWorkItemCount} more readiness item${hiddenWorkItemCount === 1 ? "" : "s"} in the Operator Readiness Console.`
+      : null,
+    visibleWarnings,
+    hiddenWarningCount,
+    warningOverflowLabel: hiddenWarningCount > 0
+      ? `${hiddenWarningCount} more warning${hiddenWarningCount === 1 ? "" : "s"} in the Operator Readiness Console.`
+      : null,
+    primaryWorkItemKind: workItems[0]?.kind ?? null,
+    workItemSummaryText: `${workItems.length} readiness item${workItems.length === 1 ? "" : "s"} and ${warnings.length} warning${warnings.length === 1 ? "" : "s"}.`,
+    workItemListLabel: "Trading readiness operator work items",
     refreshButtonLabel: refreshing ? "Refreshing..." : "Refresh readiness",
     refreshAriaLabel: refreshing ? "Refreshing trading readiness" : "Refresh trading readiness",
     statusAnnouncement: buildTradingReadinessAnnouncement({ readiness, refreshing, errorText })
   };
+}
+
+function buildTradingReadinessWorkItemRows(items: OperatorWorkItem[]): TradingReadinessWorkItemRow[] {
+  return items.map((item) => {
+    const metadataText = [
+      item.workspace,
+      item.targetPageTag,
+      item.runId,
+      item.auditReference
+    ].filter(Boolean).join(" · ");
+
+    return {
+      workItemId: item.workItemId,
+      kind: item.kind,
+      label: item.label,
+      detail: item.detail,
+      tone: item.tone,
+      metadataText: metadataText || null,
+      ariaLabel: [
+        `${item.tone} readiness item`,
+        item.label,
+        item.detail,
+        metadataText || null
+      ].filter(Boolean).map((part) => String(part).trim().replace(/[.]+$/g, "")).join(". ")
+    };
+  });
+}
+
+function buildTradingReadinessWarningRows(warnings: string[]): TradingReadinessWarningRow[] {
+  return warnings.map((warning, index) => ({
+    id: `warning-${index + 1}-${warning.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "item"}`,
+    text: warning,
+    ariaLabel: `Trading readiness warning: ${warning}`
+  }));
 }
 
 export function formatReadinessStatusValue(status: TradingAcceptanceGateStatus | string): string {

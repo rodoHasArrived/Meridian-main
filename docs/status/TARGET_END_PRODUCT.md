@@ -1,7 +1,7 @@
 # Meridian - Target End Product
 
-**Last Updated:** 2026-04-29
-**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, signed DK1 parity-packet evidence with packet-bound sign-off validation, cockpit readiness projection, the active web dashboard lane, the web Research run-library support slice, stable route-aware run review-packet work items surfaced through operator inbox when actionable, seeded reconciliation exception-route/tolerance/sign-off metadata plus calibration-summary rollups, initial shared operator-inbox contract with route-aware account-scoped retained WPF shell queue-button consumption and shell-context attention cues, retained WPF shell support evidence, workflow automation hardening, scheduled/manual WPF screenshot evidence capture, and demo-data fixture semantics
+**Last Updated:** 2026-05-07
+**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, signed DK1 parity-packet evidence with packet-bound sign-off validation, cockpit readiness projection, the active browser workstation lane, the web Research run-library support slice, shared workflow command-palette commands, browser Portfolio/Reporting/Settings/Data task panels, paper-first Alpaca connection verification, read-only Robinhood brokerage aggregation support, stable route-aware run review-packet work items surfaced through operator inbox when actionable, seeded reconciliation exception-route/tolerance/sign-off metadata plus calibration-summary rollups, retained WPF shell support evidence, workflow automation hardening, scheduled/manual WPF screenshot evidence capture, and demo-data fixture semantics
 
 ---
 
@@ -9,7 +9,7 @@
 
 Meridian's target end state is a self-hosted evidence-backed investment operations platform organized around the visible `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces.
 
-`Data` establishes evidence-backed provider trust through reproducible provider, replay, checkpoint, DK1 pilot sample-set, parity-packet evidence, and operator-visible sign-off posture. `Strategy` turns that data into reviewed runs and comparisons, `Trading` promotes approved runs into paper workflows, `Portfolio` and `Accounting` review the resulting positions, account posture, ledger, cash-flow, and reconciliation evidence, and `Reporting` turns the governed evidence set into retained report packs.
+`Data` establishes evidence-backed provider trust through reproducible provider, replay, checkpoint, DK1 pilot sample-set, parity-packet evidence, Security Master print-packet readiness, and operator-visible sign-off posture. `Strategy` turns that data into reviewed runs and comparisons, `Trading` promotes approved runs into paper workflows, `Portfolio` and `Accounting` review the resulting positions, brokerage account posture, household rollups, ledger, cash-flow, performance, and reconciliation evidence, `Reporting` turns the governed evidence set into retained report packs, and `Settings` keeps capability coverage and paper-first credential checks reproducible.
 
 The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context. Commercially, Meridian should become the system of record for investment decision evidence. New operator UI delivery should prove that continuity in the web dashboard, while retained WPF surfaces remain compatibility and support evidence.
 
@@ -50,7 +50,7 @@ Trading is where operators run paper workflows, manage sessions, review orders a
 
 ### Portfolio
 
-Portfolio is where operators inspect account posture, positions, exposure, attribution, and balance evidence created by research and paper workflows.
+Portfolio is where operators inspect account posture, positions, exposure, attribution, brokerage sync evidence, household rollups, and balance evidence created by research, paper, and read-only account-sync workflows.
 
 ### Accounting
 
@@ -62,7 +62,7 @@ Reporting is where operators preview, generate, approve, retain, and restate gov
 
 ### Settings
 
-Settings is where operators manage credentials, environment posture, storage roots, provider setup, and evidence paths that make the pilot workflow reproducible.
+Settings is where operators manage credentials, environment posture, storage roots, provider setup, backend capability coverage, and evidence paths that make the pilot workflow reproducible.
 
 ---
 
@@ -91,6 +91,7 @@ Only the underlying support evidence already described in the roadmap should be 
 - the delivered Security Master baseline as the authoritative instrument-definition layer
 - governance and fund-operations workflows treated as core product surfaces rather than optional add-ons
 - a primary web operator dashboard and retained WPF/local API support surfaces that reinforce the same operator model instead of diverging from it; the current web Research run library already supports retained-run review, two-run compare/diff readiness, promotion-history loading, and operator-visible command errors, while the retained WPF shell/navigation baseline plus Trading, Research, and Data Operations desk briefing heroes, Trading Hours session and holiday-calendar guidance, OrderBook order-flow posture, Storage archive posture plus preview scope/guidance, Provider Health posture briefing, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage/export/clear support, Watchlist posture with pinned-first list loading, Messaging Hub delivery posture with refresh recency, StrategyRuns filter-aware recovery/run-scope presentation and comparison guidance, BatchBacktest results empty guidance, stable route-aware run review-packet work items, account-scoped operator-inbox routing with shell-context attention cues, QuantScript local execution-history handoffs to shared Research surfaces for mirrored runs, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data and balance-evidence briefing, canonical workspace launch/deep-link routing, single-instance launch-argument forwarding, workflow automation hardening, and clear demo-data fixture cues are present as support evidence. Workflow-level acceptance remains tied to Waves 2-4.
+- browser workstation workflow commands, Portfolio brokerage-sync review, Reporting report-pack task state, Settings backend capability coverage and Alpaca paper-key verification, Data Security Master print-packet readiness, fund-account brokerage links, household portfolio rollups, and read-only Robinhood aggregation are current support evidence for the seven-workspace product path; they do not by themselves close live-readiness, report-pack approval, or reconciliation casework gates
 - release-evidence automation that captures WPF catalog/manual screenshots through scheduled, push, or manually selected workflow groups, publishes diagnostic artifacts, and commits screenshot changes once after the capture matrix while leaving product acceptance tied to the wave gates
 - first-run, storage, context-strip, and hosted-page orientation that keeps the workstation coherent: Welcome readiness progress for provider, symbol, and storage posture; Storage archive posture for growth, capacity, and last-scan state; Storage preview scope/guidance for archive-path decisions; compact shared deep-page command chrome; related-workflow and trust-state cues around hosted legacy pages; actionable attention details with severity/owner/source/action; provider-degradation next actions that route to `ProviderHealth`; and Trading hero attention states for warning or critical shared work items
 

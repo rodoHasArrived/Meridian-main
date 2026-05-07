@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
+import { markWorkflowPresetUsed } from "@/lib/api";
 import { legacyWorkspaceRedirect } from "@/lib/workspace";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
 import { GovernanceScreen } from "@/screens/governance-screen";
@@ -23,7 +24,25 @@ import { TradingScreen } from "@/screens/trading-screen";
 export function App() {
   const [commandOpen, setCommandOpen] = useState(false);
   const { pathname } = useLocation();
-  const { session, overview, research, trading, dataOperations, governance, reporting, loading, error, workspaceErrors, refresh } = useWorkstationData();
+  const {
+    session,
+    overview,
+    research,
+    trading,
+    dataOperations,
+    governance,
+    reporting,
+    brokerageConnection,
+    brokeragePortfolio,
+    workflowLibrary,
+    workflowPresets,
+    workflowError,
+    loading,
+    error,
+    workspaceErrors,
+    refresh
+  } = useWorkstationData();
+  const handleWorkflowPresetUsed = (presetId: string) => markWorkflowPresetUsed(presetId).then(() => undefined);
   const shell = buildAppShellViewState({
     pathname,
     loading,
@@ -60,7 +79,7 @@ export function App() {
         >
           <Search className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span className="workstation-search-copy">
-            <span className="workstation-search-title">Search workspaces, routes, and shell commands</span>
+            <span className="workstation-search-title">Search workflows, presets, and workspaces</span>
             <span className="workstation-search-detail">
               <b>{shell.activeWorkspace.label}</b> · {shell.activeWorkspace.status} lane · Ctrl K
             </span>
@@ -114,7 +133,15 @@ export function App() {
                   />
                 )} />
                 <Route path="/trading/*" element={<TradingScreen data={trading} />} />
-                <Route path="/portfolio/*" element={<PortfolioScreen trading={trading} research={research} governance={governance} />} />
+                <Route path="/portfolio/*" element={(
+                  <PortfolioScreen
+                    trading={trading}
+                    research={research}
+                    governance={governance}
+                    brokerageConnection={brokerageConnection}
+                    brokeragePortfolio={brokeragePortfolio}
+                  />
+                )} />
                 <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />
                 <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
                 <Route path="/strategy/*" element={<ResearchScreen data={research} />} />
@@ -128,6 +155,8 @@ export function App() {
                     dataOperations={dataOperations}
                     governance={governance}
                     reporting={reporting}
+                    brokerageConnection={brokerageConnection}
+                    onRefresh={refresh}
                     loading={loading}
                     error={error}
                     workspaceErrors={workspaceErrors}
@@ -144,7 +173,14 @@ export function App() {
         </main>
       </div>
 
-      <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+      <CommandPalette
+        open={commandOpen}
+        onOpenChange={setCommandOpen}
+        workflowLibrary={workflowLibrary}
+        workflowPresets={workflowPresets}
+        workflowError={workflowError}
+        onPresetUsed={handleWorkflowPresetUsed}
+      />
     </div>
   );
 }

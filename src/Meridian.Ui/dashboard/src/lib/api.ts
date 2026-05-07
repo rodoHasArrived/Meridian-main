@@ -2,6 +2,9 @@ import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
+  AlpacaBrokerageConnectionRequest,
+  BrokerageConnectionStatus,
+  BrokerageHouseholdPortfolio,
   CorporateAction,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
@@ -41,6 +44,10 @@ import type {
   TradingOperatorReadiness,
   TradingParameters,
   TradingWorkspaceResponse,
+  WorkflowLibrary,
+  WorkflowPreset,
+  WorkflowPresetLibrary,
+  WorkflowPresetSaveRequest,
   CreateExecutionManualOverrideRequest,
   ExecutionManualOverride
 } from "@/types";
@@ -101,6 +108,52 @@ async function postJson<T>(path: string, body?: unknown): Promise<T> {
   return (text ? JSON.parse(text) : null) as T;
 }
 
+async function putJson<T>(path: string, body?: unknown): Promise<T> {
+  const response = await fetch(path, {
+    method: "PUT",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined
+  });
+
+  if (!response.ok) {
+    throw new Error(`Request failed for ${path} (${response.status})`);
+  }
+
+  const text = await response.text();
+  return (text ? JSON.parse(text) : null) as T;
+}
+
+async function deleteJson<T>(path: string): Promise<T> {
+  const response = await fetch(path, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json"
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Request failed for ${path} (${response.status})`);
+  }
+
+  const text = await response.text();
+  return (text ? JSON.parse(text) : null) as T;
+}
+
+function queryString(params: Record<string, string | number | boolean | null | undefined>) {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== null && value !== undefined && value !== "") {
+      search.set(key, String(value));
+    }
+  }
+
+  const value = search.toString();
+  return value ? `?${value}` : "";
+}
+
 async function getDevelopmentSearchFallback(query: string, take: number, activeOnly: boolean) {
   if (!import.meta.env.DEV) {
     return undefined;
@@ -133,6 +186,43 @@ export function getTradingReadiness() {
 export function getOperatorInbox(fundAccountId?: string) {
   const params = fundAccountId ? `?fundAccountId=${encodeURIComponent(fundAccountId)}` : "";
   return getJson<OperatorInbox>(`/api/workstation/operator/inbox${params}`);
+}
+
+export function getWorkstationWorkflowSummary(options: {
+  hasOperatingContext?: boolean;
+  operatingContext?: string;
+  fundProfileId?: string;
+  fundDisplayName?: string;
+} = {}) {
+  return getJson<unknown>(`/api/workstation/workflow-summary${queryString(options)}`);
+}
+
+export function getWorkflowLibrary() {
+  return getJson<WorkflowLibrary>("/api/workstation/workflows");
+}
+
+export function getWorkflowPresets() {
+  return getJson<WorkflowPresetLibrary>("/api/workstation/workflows/presets");
+}
+
+export function saveWorkflowPreset(request: WorkflowPresetSaveRequest) {
+  return postJson<WorkflowPreset>("/api/workstation/workflows/presets", request);
+}
+
+export function updateWorkflowPreset(presetId: string, request: WorkflowPresetSaveRequest) {
+  return putJson<WorkflowPreset>(`/api/workstation/workflows/presets/${encodeURIComponent(presetId)}`, request);
+}
+
+export function pinWorkflowPreset(presetId: string, isPinned: boolean) {
+  return postJson<WorkflowPreset>(`/api/workstation/workflows/presets/${encodeURIComponent(presetId)}/pin`, { isPinned });
+}
+
+export function markWorkflowPresetUsed(presetId: string) {
+  return postJson<WorkflowPreset>(`/api/workstation/workflows/presets/${encodeURIComponent(presetId)}/used`);
+}
+
+export function deleteWorkflowPreset(presetId: string) {
+  return deleteJson<void>(`/api/workstation/workflows/presets/${encodeURIComponent(presetId)}`);
 }
 
 export function getDataWorkspace() {
@@ -342,6 +432,40 @@ export function getRunTrialBalance(runId: string, accountType?: string) {
   return getJson<LedgerTrialBalanceLine[]>(`/api/workstation/runs/${encodeURIComponent(runId)}/ledger/trial-balance${params}`);
 }
 
+export function getRunLedgerJournal(runId: string, take?: number) {
+  const params = queryString({ take });
+  return getJson<unknown>(`/api/workstation/runs/${encodeURIComponent(runId)}/ledger/journal${params}`);
+}
+
+export function getRunContinuity(runId: string) {
+  return getJson<unknown>(`/api/workstation/runs/${encodeURIComponent(runId)}/continuity`);
+}
+
+export function getRunReviewPacket(runId: string, fundAccountId?: string) {
+  const params = queryString({ fundAccountId });
+  return getJson<unknown>(`/api/workstation/runs/${encodeURIComponent(runId)}/review-packet${params}`);
+}
+
+export function getRunReconciliation(runId: string) {
+  return getJson<unknown>(`/api/workstation/runs/${encodeURIComponent(runId)}/reconciliation`);
+}
+
+export function getRunReconciliationHistory(runId: string) {
+  return getJson<unknown>(`/api/workstation/runs/${encodeURIComponent(runId)}/reconciliation/history`);
+}
+
+export function getRunHistory(options: { mode?: string; status?: string; limit?: number } = {}) {
+  return getJson<unknown>(`/api/workstation/runs/history${queryString(options)}`);
+}
+
+export function getRunTimeline(options: { runId?: string; strategyId?: string; limit?: number } = {}) {
+  return getJson<unknown>(`/api/workstation/runs/timeline${queryString(options)}`);
+}
+
+export function getRunSweeps(limit?: number) {
+  return getJson<unknown>(`/api/workstation/runs/sweeps${queryString({ limit })}`);
+}
+
 // --- Security Master search ---
 
 export async function searchSecurities(query: string, take = 25, activeOnly = true) {
@@ -369,6 +493,18 @@ export function getSecurityDetail(securityId: string) {
 
 export function getSecurityIdentity(securityId: string) {
   return getJson<SecurityIdentityDrillIn>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/identity`);
+}
+
+export function getSecurityHistory(securityId: string) {
+  return getJson<unknown>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/history`);
+}
+
+export function getSecurityEconomicDefinition(securityId: string) {
+  return getJson<unknown>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/economic-definition`);
+}
+
+export function getSecurityTrustSnapshot(securityId: string) {
+  return getJson<unknown>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/trust-snapshot`);
 }
 
 export function createSecurityMasterEntry(request: Record<string, unknown>) {
@@ -406,6 +542,18 @@ export function resolveSecurityConflict(request: ResolveConflictRequest) {
   );
 }
 
+export function bulkResolveSecurityConflicts(request: Record<string, unknown>) {
+  return postJson<unknown>("/api/workstation/security-master/conflicts/bulk-resolve", request);
+}
+
+export function runReconciliation(request: Record<string, unknown>) {
+  return postJson<unknown>("/api/workstation/reconciliation/runs", request);
+}
+
+export function getReconciliationRun(reconciliationRunId: string) {
+  return getJson<unknown>(`/api/workstation/reconciliation/runs/${encodeURIComponent(reconciliationRunId)}`);
+}
+
 export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) {
   const search = new URLSearchParams();
   if (status) search.set("status", status);
@@ -416,6 +564,10 @@ export function getReconciliationBreakQueue(status?: string, fundAccountId?: str
 
 export function getReconciliationBreakDetail(breakId: string) {
   return getJson<ReconciliationBreakQueueItem>(`/api/workstation/reconciliation/break-queue/${encodeURIComponent(breakId)}`);
+}
+
+export function getReconciliationBreakAudit(breakId: string) {
+  return getJson<unknown>(`/api/workstation/reconciliation/break-queue/${encodeURIComponent(breakId)}/audit`);
 }
 
 export function reviewReconciliationBreak(request: ReviewReconciliationBreakRequest) {
@@ -520,4 +672,44 @@ export function acknowledgeAnomaly(anomalyId: string) {
 
 export function getQualityCompleteness() {
   return getJson<Array<{ symbol: string; score: number; sampledAt: string }>>("/api/quality/completeness");
+}
+
+export function getRobinhoodConnectionStatus() {
+  return getJson<BrokerageConnectionStatus>("/api/brokerage-connections/robinhood/status");
+}
+
+export function startRobinhoodConnection() {
+  return postJson<BrokerageConnectionStatus>("/api/brokerage-connections/robinhood/connect");
+}
+
+export function revokeRobinhoodConnection() {
+  return deleteJson<BrokerageConnectionStatus>("/api/brokerage-connections/robinhood");
+}
+
+export function getAlpacaConnectionStatus() {
+  return getJson<BrokerageConnectionStatus>("/api/brokerage-connections/alpaca/status");
+}
+
+export function connectAlpacaConnection(request: AlpacaBrokerageConnectionRequest) {
+  return postJson<BrokerageConnectionStatus>("/api/brokerage-connections/alpaca/connect", request);
+}
+
+export function revokeAlpacaConnection() {
+  return deleteJson<BrokerageConnectionStatus>("/api/brokerage-connections/alpaca");
+}
+
+export function getBrokerageHouseholdPortfolio(provider = "alpaca") {
+  return getJson<BrokerageHouseholdPortfolio>(`/api/portfolio/household${queryString({ provider })}`);
+}
+
+export function getPortfolioAggregate() {
+  return getJson<unknown>("/api/portfolio/aggregate");
+}
+
+export function getPortfolioExposure() {
+  return getJson<unknown>("/api/portfolio/exposure");
+}
+
+export function getPortfolioSymbolExposure(symbol: string) {
+  return getJson<unknown>(`/api/portfolio/symbols/${encodeURIComponent(symbol)}/exposure`);
 }

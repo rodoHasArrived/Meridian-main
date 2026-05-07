@@ -11,6 +11,7 @@ namespace Meridian.Application.Config;
 /// Market data provider selector:
 /// - <see cref="DataSourceKind.IB"/> uses Interactive Brokers via IMarketDataClient/IBMarketDataClient.
 /// - <see cref="DataSourceKind.Alpaca"/> uses Alpaca market data via WebSocket (trades; quotes optional in future).
+/// - <see cref="DataSourceKind.Yahoo"/> uses Yahoo Finance historical/backfill data.
 /// - <see cref="DataSourceKind.NYSE"/> uses the NYSE market data feed.
 /// - <see cref="DataSourceKind.Synthetic"/> uses the built-in synthetic historical/reference dataset for offline development.
 /// </param>

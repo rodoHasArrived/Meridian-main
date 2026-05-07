@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Meridian — Banners</title>
 <link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; padding: 20px; font-family: var(--font-sans); color: var(--fg); }
   .banner { display: flex; gap: 10px; align-items: center; border: 1px solid; border-radius: 6px; padding: 9px 12px; margin-bottom: 8px; font-size: 12px; }
@@ -16,6 +18,9 @@
 </style>
 </head>
 <body class="bg-app">
+<main class="preview-sheet" aria-label="Banners">
+<h1 class="preview-sr-only">Banners</h1>
+<a class="preview-home-link" href="index.html">Catalogue</a>
   <div class="banner success">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
     <div><div class="t">All systems healthy</div><div class="sub">5 / 5 providers online · storage OK · heartbeat 14:32:07</div></div>
@@ -28,5 +33,6 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
     <div><div class="t">System offline</div><div class="sub">Execution layer unreachable — orders disabled.</div></div>
   </div>
+</main>
 </body>
 </html>

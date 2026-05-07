@@ -397,12 +397,146 @@ public sealed class BrokeragePortfolioSyncServiceTests
             request.Should().NotBeNull();
 
             await fundAccountService.RecordBalanceSnapshotAsync(request!, cts.Token);
-            var run = await service.RunSyncAsync(
+            var status = await service.RunSyncAsync(
                 fundAccountId,
                 new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-NULLSRC", "ops-review"),
                 cts.Token);
 
-            run.ReconciliationRunId.Should().NotBe(Guid.Empty);
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Healthy);
+            var reconciliationRuns = await fundAccountService.GetReconciliationRunsAsync(fundAccountId, cts.Token);
+            reconciliationRuns.Should().ContainSingle(run => run.ReconciliationRunId != Guid.Empty);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_RobinhoodThreeAccountLinks_BrokerageSyncPreservesAccountKindsAndHouseholdRollup()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("robinhood"),
+                new FixedActivityAdapter("robinhood"),
+                includeSecurityLookup: true);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+            var accountSpecs = new[]
+            {
+                new { AccountId = Guid.NewGuid(), Code = "RH-ROTH", Name = "Robinhood Roth IRA", Kind = BrokerageAccountKindDto.RothIra },
+                new { AccountId = Guid.NewGuid(), Code = "RH-TRAD", Name = "Robinhood Traditional IRA", Kind = BrokerageAccountKindDto.TraditionalIra },
+                new { AccountId = Guid.NewGuid(), Code = "RH-TAX", Name = "Robinhood Brokerage", Kind = BrokerageAccountKindDto.TaxableBrokerage }
+            };
+
+            foreach (var spec in accountSpecs)
+            {
+                await fundAccountService.CreateAccountAsync(
+                    new CreateAccountRequest(
+                        spec.AccountId,
+                        AccountTypeDto.Brokerage,
+                        spec.Code,
+                        spec.Name,
+                        "USD",
+                        DateTimeOffset.UtcNow.AddDays(-30),
+                        "tests"),
+                    cts.Token);
+
+                var link = await service.LinkAccountAsync(
+                    spec.AccountId,
+                    new BrokerageAccountLinkRequestDto("robinhood", spec.Code, spec.Name, "ops-review", spec.Kind),
+                    cts.Token);
+
+                link.Should().NotBeNull();
+                link!.AccountKind.Should().Be(spec.Kind);
+
+                var preSyncStatus = await service.GetStatusAsync(spec.AccountId, cts.Token);
+                preSyncStatus.ProviderId.Should().Be("robinhood");
+                preSyncStatus.ExternalAccountId.Should().Be(spec.Code);
+                preSyncStatus.AccountKind.Should().Be(spec.Kind);
+
+                var status = await service.RunSyncAsync(spec.AccountId, request: null, cts.Token);
+                status.Health.Should().Be(WorkstationBrokerageSyncHealth.Healthy);
+                status.AccountKind.Should().Be(spec.Kind);
+            }
+
+            var household = await service.GetHouseholdAsync("robinhood", cts.Token);
+
+            household.ProviderId.Should().Be("robinhood");
+            household.Accounts.Should().HaveCount(3);
+            household.Accounts.Select(static account => account.AccountKind).Should().BeEquivalentTo([
+                BrokerageAccountKindDto.RothIra,
+                BrokerageAccountKindDto.TraditionalIra,
+                BrokerageAccountKindDto.TaxableBrokerage
+            ]);
+            household.TotalEquity.Should().Be(375000m);
+            household.TotalCash.Should().Be(150000m);
+            household.Positions.Should().HaveCount(3);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_RobinhoodCashFlowAndPerformance_BrokerageSyncReportsCashAdjustedHistory()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("robinhood"),
+                new FixedActivityAdapter("robinhood"),
+                includeSecurityLookup: true);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+
+            await fundAccountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "RH-ROTH",
+                    "Robinhood Roth IRA",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-30),
+                    "tests"),
+                cts.Token);
+            await service.LinkAccountAsync(
+                fundAccountId,
+                new BrokerageAccountLinkRequestDto("robinhood", "RH-ROTH", "Robinhood Roth IRA", "ops-review", BrokerageAccountKindDto.RothIra),
+                cts.Token);
+            await fundAccountService.RecordBalanceSnapshotAsync(
+                new RecordAccountBalanceSnapshotRequest(
+                    fundAccountId,
+                    DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
+                    "USD",
+                    CashBalance: 49000m,
+                    SecuritiesMarketValue: 71000m,
+                    Source: "brokerage-sync:robinhood",
+                    RecordedBy: "tests",
+                    ExternalReference: "RH-ROTH"),
+                cts.Token);
+
+            _ = await service.RunSyncAsync(fundAccountId, request: null, cts.Token);
+
+            var cashFlow = await service.GetCashFlowAsync(fundAccountId, null, null, cts.Token);
+            cashFlow.AccountKind.Should().Be(BrokerageAccountKindDto.RothIra);
+            cashFlow.TransactionCount.Should().Be(1);
+            cashFlow.NetCashFlow.Should().Be(42.50m);
+            cashFlow.Entries.Should().ContainSingle(entry => entry.Category == "Dividend");
+
+            var performance = await service.GetPerformanceAsync(fundAccountId, null, null, cts.Token);
+            performance.HasSufficientHistory.Should().BeTrue();
+            performance.BeginningEquity.Should().Be(120000m);
+            performance.EndingEquity.Should().Be(125000m);
+            performance.NetCashFlow.Should().Be(42.50m);
+            performance.CashAdjustedReturn.Should().Be(4957.50m);
         }
         finally
         {
@@ -415,7 +549,8 @@ public sealed class BrokeragePortfolioSyncServiceTests
         IBrokeragePortfolioSync portfolioAdapter,
         IBrokerageActivitySync activityAdapter,
         bool includeSecurityLookup,
-        TimeSpan? staleAfter = null)
+        TimeSpan? staleAfter = null,
+        IReadOnlyList<IBrokerageAccountCatalog>? catalogs = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton<IFundAccountService, InMemoryFundAccountService>();
@@ -427,7 +562,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
 
         var syncService = new BrokeragePortfolioSyncService(
             new BrokeragePortfolioSyncOptions(root, staleAfter ?? TimeSpan.FromMinutes(30), "alpaca"),
-            catalogs: [],
+            catalogs: catalogs ?? [],
             portfolioAdapters: [portfolioAdapter],
             activityAdapters: [activityAdapter],
             services: serviceProvider,

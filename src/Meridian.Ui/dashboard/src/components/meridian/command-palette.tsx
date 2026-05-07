@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 import { buildCommandPaletteViewModel } from "@/components/meridian/command-palette.view-model";
 import { cn } from "@/lib/utils";
+import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
 
 /**
  * Full-screen command palette overlay for quick workspace navigation.
@@ -15,9 +16,9 @@ import { cn } from "@/lib/utils";
  *
  * **Backdrop:** clicking outside the panel card calls `onOpenChange(false)`.
  *
- * Route commands and descriptions are derived from `buildCommandPaletteViewModel` —
- * no prop is needed for the item list. Items are generated from the canonical workspace
- * route map maintained in the view-model.
+ * Route commands and descriptions are derived from `buildCommandPaletteViewModel`.
+ * The view-model combines canonical workspaces with backend workflow library and
+ * preset payloads when those payloads are available.
  *
  * @example
  * <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
@@ -25,13 +26,28 @@ import { cn } from "@/lib/utils";
 interface CommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  workflowLibrary?: WorkflowLibrary | null;
+  workflowPresets?: WorkflowPresetLibrary | null;
+  workflowError?: string | null;
+  onPresetUsed?: (presetId: string) => void | Promise<void>;
 }
 
-export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
+export function CommandPalette({
+  open,
+  onOpenChange,
+  workflowLibrary,
+  workflowPresets,
+  workflowError,
+  onPresetUsed
+}: CommandPaletteProps) {
   const { pathname } = useLocation();
   const dialogRef = useRef<HTMLDivElement>(null);
   const initialCommandRef = useRef<HTMLAnchorElement | null>(null);
-  const viewModel = buildCommandPaletteViewModel(pathname);
+  const viewModel = buildCommandPaletteViewModel(pathname, undefined, {
+    workflowLibrary,
+    workflowPresets,
+    workflowError
+  });
 
   useEffect(() => {
     if (!open) {
@@ -96,8 +112,11 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         <div className="command-palette-summary" aria-label={viewModel.scopeLabel}>
           <span className="command-palette-chip">{viewModel.activeWorkspaceLabel}</span>
           <span className="command-palette-chip">{viewModel.shortcutHint}</span>
+          {viewModel.backendStatusLabel ? (
+            <span className="command-palette-chip">{viewModel.backendStatusLabel}</span>
+          ) : null}
         </div>
-        <nav className="mt-3 grid gap-2" aria-label={viewModel.commandListLabel}>
+        <nav className="mt-3 grid max-h-[68vh] gap-2 overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
           <div className="eyebrow-label">{viewModel.itemCountLabel}</div>
           {viewModel.emptyState ? (
             <div className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm">
@@ -115,28 +134,35 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               aria-current={item.active ? "page" : undefined}
               className={cn(
                 "command-palette-command rounded-md border px-3 py-3 text-sm transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                 item.active
                   ? "border-primary/35 bg-primary/10 text-foreground"
                   : "border-transparent hover:border-border/70 hover:bg-secondary/70"
               )}
-              onClick={() => onOpenChange(false)}
+              onClick={() => {
+                if (item.presetId && onPresetUsed) {
+                  void Promise.resolve(onPresetUsed(item.presetId)).catch(() => undefined);
+                }
+
+                onOpenChange(false);
+              }}
             >
               <span className="flex items-start justify-between gap-3">
-                <span>
-                    <span className="block font-semibold">{item.commandLabel}</span>
-                    <span className="mt-1 block text-muted-foreground">{item.description}</span>
+                <span className="min-w-0">
+                  <span className="block font-semibold">{item.commandLabel}</span>
+                  <span className="mt-1 block text-muted-foreground">{item.description}</span>
+                </span>
+                <span className="flex shrink-0 flex-col items-end gap-2">
+                  <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`}>
+                    {item.routeLabel}
                   </span>
-                  <span className="flex shrink-0 flex-col items-end gap-2">
-                    <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`}>
-                      {item.routeLabel}
-                    </span>
-                    <span className="rounded-sm border border-border/70 bg-secondary/55 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                      {item.statusLabel}
-                    </span>
+                  <span className="rounded-sm border border-border/70 bg-secondary/55 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                    {item.statusLabel}
                   </span>
                 </span>
-              </Link>
-            ))}
+              </span>
+            </Link>
+          ))}
         </nav>
       </div>
     </div>

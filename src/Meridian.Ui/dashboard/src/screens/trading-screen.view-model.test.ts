@@ -606,7 +606,67 @@ describe("trading readiness view model", () => {
     ]);
     expect(state.workItems).toHaveLength(1);
     expect(state.warnings).toEqual(["Portfolio snapshot failed."]);
+    expect(state.hasOperatorAttention).toBe(true);
+    expect(state.workItemSummaryText).toBe("1 readiness item and 1 warning.");
+    expect(state.primaryWorkItemKind).toBe("BrokerageSync");
+    expect(state.visibleWorkItems).toEqual([
+      expect.objectContaining({
+        workItemId: "brokerage-sync-failed-fund-1",
+        kind: "BrokerageSync",
+        label: "Brokerage sync failed",
+        metadataText: "Trading · AccountPortfolio",
+        ariaLabel: "Critical readiness item. Brokerage sync failed. Sync broker credentials before paper operation. Trading · AccountPortfolio"
+      })
+    ]);
+    expect(state.visibleWarnings).toEqual([
+      {
+        id: "warning-1-portfolio-snapshot-failed",
+        text: "Portfolio snapshot failed.",
+        ariaLabel: "Trading readiness warning: Portfolio snapshot failed."
+      }
+    ]);
     expect(state.statusAnnouncement).toBe("Trading readiness blocked as of 2026-04-26T16:05:00Z.");
+  });
+
+  it("limits displayed operator work items and warnings in the view model", () => {
+    const readiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      workItems: Array.from({ length: 6 }, (_, index) => ({
+        ...blockedReadiness.workItems[0],
+        workItemId: `work-${index + 1}`,
+        kind: index === 0 ? "BrokerageSync" : "ReportPackApproval",
+        label: `Work item ${index + 1}`,
+        detail: `Detail ${index + 1}`,
+        tone: index === 0 ? "Critical" : "Warning",
+        workspace: index % 2 === 0 ? "Trading" : null,
+        targetPageTag: index % 2 === 0 ? "RunRisk" : null,
+        runId: index % 2 === 0 ? `run-${index + 1}` : null,
+        auditReference: index % 2 === 0 ? `audit-${index + 1}` : null
+      })),
+      warnings: ["Warning one.", "Warning two.", "Warning three.", "Warning four."]
+    };
+
+    const state = buildTradingReadinessState({
+      readiness,
+      refreshing: false,
+      errorText: null
+    });
+
+    expect(state.workItemSummaryText).toBe("6 readiness items and 4 warnings.");
+    expect(state.visibleWorkItems).toHaveLength(4);
+    expect(state.hiddenWorkItemCount).toBe(2);
+    expect(state.workItemOverflowLabel).toBe("2 more readiness items in the Operator Readiness Console.");
+    expect(state.visibleWorkItems[0]).toMatchObject({
+      workItemId: "work-1",
+      metadataText: "Trading · RunRisk · run-1 · audit-1"
+    });
+    expect(state.visibleWarnings.map((warning) => warning.text)).toEqual([
+      "Warning one.",
+      "Warning two.",
+      "Warning three."
+    ]);
+    expect(state.hiddenWarningCount).toBe(1);
+    expect(state.warningOverflowLabel).toBe("1 more warning in the Operator Readiness Console.");
   });
 
   it("derives refresh and error copy for readiness commands", () => {

@@ -1,4 +1,5 @@
 import { FileText, Landmark } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,8 @@ interface ReportingScreenProps {
 }
 
 export function ReportingScreen({ data }: ReportingScreenProps) {
-  const vm = useReportingScreenViewModel(data?.reporting ?? null);
+  const { pathname } = useLocation();
+  const vm = useReportingScreenViewModel(data?.reporting ?? null, undefined, pathname);
 
   if (!data) {
     return (
@@ -54,6 +56,113 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
           <MetricCard key={metric.id} {...metric} />
         ))}
       </section>
+
+      {vm.workflowTaskPanel ? (
+        <section
+          role="region"
+          aria-label={vm.workflowTaskPanel.regionLabel}
+          className="panel-surface-strong grid gap-4 px-4 py-4 xl:grid-cols-[1.05fr_0.95fr]"
+        >
+          <div className="min-w-0 space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="eyebrow-label">{vm.workflowTaskPanel.eyebrow}</div>
+                <h3 className="mt-2 text-lg font-semibold text-foreground">{vm.workflowTaskPanel.title}</h3>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+                  {vm.workflowTaskPanel.description}
+                </p>
+              </div>
+              <Badge variant={workflowStatusVariant(vm.workflowTaskPanel.statusTone)}>
+                {vm.workflowTaskPanel.statusLabel}
+              </Badge>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {vm.workflowTaskPanel.chips.map((chip) => (
+                <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
+              ))}
+            </div>
+            <div
+              role="status"
+              aria-label="Selected report-pack profile"
+              className="rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-sm leading-6 text-primary"
+            >
+              {vm.workflowTaskPanel.selectedSummary}
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div>
+                <div className="eyebrow-label">Targets</div>
+                <div role="list" aria-label={vm.workflowTaskPanel.targetsLabel} className="mt-2 grid gap-2">
+                  {vm.workflowTaskPanel.targets.length > 0 ? (
+                    vm.workflowTaskPanel.targets.map((target) => (
+                      <div
+                        key={target.id}
+                        role="listitem"
+                        aria-label={target.ariaLabel}
+                        className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2"
+                      >
+                        <span className="font-mono text-sm text-foreground">{target.label}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                      No report-pack targets loaded.
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="eyebrow-label">Backend</div>
+                <div aria-label={vm.workflowTaskPanel.backendLinksLabel} className="mt-2 grid gap-2">
+                  {vm.workflowTaskPanel.backendLinks.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={link.ariaLabel}
+                      className="flex min-w-0 items-center gap-2 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    >
+                      <Badge variant="outline">{link.method}</Badge>
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-foreground">{link.label}</span>
+                        <span className="block break-all font-mono text-[11px] text-muted-foreground">{link.href}</span>
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div className="eyebrow-label">Approval profile</div>
+            <div role="list" aria-label={vm.workflowTaskPanel.profileListLabel} className="mt-3 grid gap-2">
+              {vm.workflowTaskPanel.profiles.map((profile) => (
+                <button
+                  key={profile.id}
+                  type="button"
+                  aria-pressed={profile.isSelected}
+                  aria-label={profile.selectAriaLabel}
+                  onClick={() => vm.selectProfile(profile.id)}
+                  className={cn(
+                    "rounded-md border px-3 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
+                    profile.isSelected
+                      ? "border-primary/45 bg-primary/10"
+                      : "border-border/70 bg-secondary/25 hover:bg-secondary/45"
+                  )}
+                >
+                  <span className="flex items-start justify-between gap-3">
+                    <span>
+                      <span className="block font-semibold text-foreground">{profile.name}</span>
+                      <span className="mt-1 block text-xs text-muted-foreground">{profile.summary}</span>
+                    </span>
+                    <Badge variant={workflowStatusVariant(profile.readinessTone)}>{profile.readinessLabel}</Badge>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="panel-surface">
@@ -365,6 +474,12 @@ function badgeVariant(tone: "primary" | "success" | "warning" | "muted"): "defau
   if (tone === "warning") return "warning";
   if (tone === "muted") return "outline";
   return "default";
+}
+
+function workflowStatusVariant(tone: "success" | "warning" | "muted"): "success" | "warning" | "outline" {
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  return "outline";
 }
 
 function fieldToneClass(tone: "default" | "success" | "warning" | "muted") {

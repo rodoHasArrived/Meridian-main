@@ -97,6 +97,30 @@ describe("ReportingScreen", () => {
     expect(screen.getByLabelText("audit report-pack target")).toBeInTheDocument();
   });
 
+  it("renders the dedicated report-pack approval workflow panel", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting/report-packs"] });
+
+    const task = screen.getByRole("region", { name: "Report-pack approval task" });
+    expect(task).toBeInTheDocument();
+    expect(within(task).getByText("Report-pack approval")).toBeInTheDocument();
+    expect(within(task).getByRole("list", { name: "Report-pack approval targets" })).toBeInTheDocument();
+    expect(within(task).getByLabelText("Open report-pack catalog backend endpoint")).toHaveAttribute(
+      "href",
+      "/api/fund-structure/report-packs"
+    );
+
+    await user.click(within(task).getByRole("button", { name: "Select Audit Pack for report-pack approval" }));
+
+    expect(within(task).getByRole("status", { name: "Selected report-pack profile" })).toHaveTextContent(
+      "Audit Pack is selected for report-pack approval using Markdown output to Audit portal."
+    );
+    expect(within(task).getByLabelText("Preview Audit Pack export payload")).toHaveAttribute(
+      "href",
+      "/api/export/preview?profile=audit-pack"
+    );
+  });
+
   it("updates selected profile detail and profile-scoped actions", async () => {
     const user = userEvent.setup();
     renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting"] });

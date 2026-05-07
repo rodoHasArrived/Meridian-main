@@ -406,11 +406,49 @@ describe("data-operations-screen view model", () => {
 
     expect(securityMaster.resultCountLabel).toBe("5 results");
     expect(securityMaster.statusChipLabel).toBe("Status: Active");
+    expect(securityMaster.searchSummaryBadges).toEqual([
+      {
+        id: "assets",
+        label: "Assets",
+        value: "3",
+        ariaLabel: "3 asset types in current security search results"
+      },
+      {
+        id: "countries",
+        label: "Countries",
+        value: "4",
+        ariaLabel: "4 countries in current security search results"
+      },
+      {
+        id: "packet-lanes",
+        label: "Packet lanes",
+        value: "5",
+        ariaLabel: "5 packet lanes in current security search results"
+      }
+    ]);
     expect(securityMaster.results.some((row) => row.selected && row.securityId === "gs-bond-de")).toBe(true);
     expect(securityMaster.tabs.find((tab) => tab.id === "corporate-actions")?.selected).toBe(true);
     expect(securityMaster.selectedSecurity?.titleCode).toBe("GOS 3.625 10/30");
     expect(securityMaster.selectedSecurity?.corporateActions[0].description).toContain("Semi-annual coupon");
     expect(securityMaster.selectedSecurity?.printPacketId).toBe("SM-PACKET-2026-06-09-GOS");
+    expect(securityMaster.selectedSecurity?.printPacketState).toMatchObject({
+      statusLabel: "Review required",
+      statusVariant: "warning",
+      contentsLabel: "4 packet content sections",
+      checklistLabel: "3 sign-off checklist items",
+      exportLabel: "3 downstream export lanes"
+    });
+    expect(securityMaster.selectedSecurity?.printPacketState.previewFields.map((field) => field.label)).toEqual([
+      "Ticker",
+      "Primary venue",
+      "Country",
+      "ISIN"
+    ]);
+    expect(securityMaster.selectedSecurity?.printPacketState.readinessPills).toEqual([
+      { id: "ready", label: "Ready", value: "2", tone: "success" },
+      { id: "review", label: "Review", value: "1", tone: "warning" },
+      { id: "draft", label: "Draft", value: "0" }
+    ]);
   });
 
   it("derives a security master empty state when the query returns no matches", () => {

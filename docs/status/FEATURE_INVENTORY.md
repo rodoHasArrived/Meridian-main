@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
-**Version:** 1.7.5
-**Date:** 2026-04-29
+**Version:** 1.7.6
+**Date:** 2026-05-07
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md) (2026-04-29 differentiation filter and archive rule), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -29,7 +29,7 @@ These modules describe Meridian's sellable product direction. They are conservat
 | Meridian Assurance Loop | 🔄 | Product framing for trusted data -> research -> paper trading -> ledger/reconciliation -> governed report pack. Support evidence exists across DK1, readiness, shared run, reconciliation, and report-pack seams; end-to-end acceptance remains open. |
 | Meridian Evidence OS | 📝 | Umbrella product positioning for the evidence graph, vault, completeness scoring, decision lineage, approval packets, replay verification, report-line provenance, and governed report packs. This is not a delivered platform layer. |
 | Run Evidence Graph | 📝 | Planned canonical lineage graph across provider evidence, dataset snapshot, run parameters, fills/orders, positions, cash flows, ledger entries, reconciliation breaks, approvals, and report packs. Existing run/readiness/evidence seams are inputs, not a completed graph. |
-| Governed Report Pack Studio | 🔄 | Early support exists through report-pack schema/version checks, export/reporting seams, and governed output direction. Browser studio workflow and retained approval/restatement lifecycle remain open. |
+| Governed Report Pack Studio | 🔄 | Early support exists through report-pack schema/version checks, export/reporting seams, governed output direction, and a browser Reporting task panel for report-pack review targets and backend links. Browser studio workflow and retained approval/restatement lifecycle remain open. |
 | Reconciliation Casework Module | 🔄 | Early in progress through file-backed break queues, seeded owner/tolerance/sign-off metadata, audit history, and calibration-summary rollups. Durable generalized casework, SLA/aging, comments, and full close workflow remain open. |
 | Accounting-Grade Paper Trading | 🔄 | Support evidence exists through paper sessions, replay/audit metadata, order/fill/ledger count checks, and readiness gates. Paper books, journal-entry review, trial-balance impact, and reconciliation-ready accounting views remain open. |
 | Accounting-Aware Backtesting | 📝 | Planned research extension that projects journal entries, realized/unrealized bridge, cash ledger movement, fees, financing accruals, and trial-balance preview from a run. Existing backtest and ledger seams are prerequisites. |
@@ -47,7 +47,7 @@ These modules describe Meridian's sellable product direction. They are conservat
 | Evidence Vault | 📝 | Planned durable artifact store for run packets, report packs, approvals, screenshots, validation outputs, external statements, reconciliation decisions, and generated certificates. Every artifact should retain lineage. |
 | Decision Memory | 📝 | Planned decision record with evidence used, approver, rationale, expected result, later outcome, related exceptions, and review date. Current approval metadata is support evidence only. |
 | No Orphan Evidence Rule | 📝 | Planned validation rule that every artifact links to a run, account, fund, strategy, instrument, reconciliation case, report pack, approval, or other governed subject. |
-| Operator Readiness Console | 🔄 | Read-only browser support exists at `/trading/readiness` using shared readiness payloads. Manager command-center scope, SLA aging, and report-pack readiness controls remain open. |
+| Operator Readiness Console | 🔄 | Read-only browser support exists at `/trading/readiness` using shared readiness payloads, and the browser command palette now loads shared workflow library/preset commands. Manager command-center scope, SLA aging, and report-pack readiness controls remain open. |
 | Strategy / Promotion Passport | 🔄 | Promotion checklist and review-packet support exist. A canonical passport projection with owner, approved use, required evidence, open exceptions, and approval history remains planned. |
 | Proof of Strategy Certificate | 📝 | Planned static certificate for one strategy version or run showing identity, version hash, parameters, approved universe, data trust, backtest, paper, replay, risk, ledger consistency, blockers, and approval history. |
 | Data Trust Passport | 🔄 | DK1 provider trust packets, validation evidence, freshness/completeness posture, and data-quality services provide support evidence. Dataset-level passport projection remains planned. |
@@ -285,8 +285,11 @@ retained for desktop compatibility, shared-contract regression checks, and suppo
 
 | Feature | Status | Notes |
 | --------- | -------- | ------- |
-| Web workstation dashboard | ⚠️ | React/Vite source in `src/Meridian.Ui/dashboard/` with built workstation assets in `src/Meridian.Ui/wwwroot/workstation/`; current screens cover overview, strategy, trading, data, accounting/reporting, and retained legacy paths, and `buildAppShellViewState` centralizes active workspace resolution plus loading, partial-degradation, retry, and bootstrap-failure status panels. Canonical seven-workspace navigation is present, while full cockpit/governance acceptance remains open |
+| Web workstation dashboard | ⚠️ | React/Vite source in `src/Meridian.Ui/dashboard/` with built workstation assets in `src/Meridian.Ui/wwwroot/workstation/`; current screens cover overview, strategy, trading, portfolio, data, accounting, reporting, settings, and retained legacy paths, and `buildAppShellViewState` centralizes active workspace resolution plus loading, partial-degradation, retry, and bootstrap-failure status panels. Canonical seven-workspace navigation is present, the command palette now consumes shared workflow library/preset payloads, and placeholder routes are being replaced by dedicated task panels, while full cockpit/governance acceptance remains open |
 | Operator Readiness Console | ⚠️ | Browser-first read-only console at `/trading/readiness` aggregates latest runs, active paper session, DK1/provider trust, reconciliation breaks, promotion blockers, governance report-pack readiness, and operator-inbox work items from `/api/workstation/*` payloads; it is the first API-first web readiness surface, not a WPF replacement |
+| Browser Portfolio brokerage support | ⚠️ | Portfolio screen/view-model support now projects brokerage connection state, household account rows, account-kind filters, brokerage positions, selected-run evidence, and backend links from shared API payloads. It is read-only portfolio/accounting continuity evidence, not live trading readiness |
+| Browser Reporting task panel | ⚠️ | Reporting screen/view-model support now exposes report-pack workflow task state, approval-profile selection, target readiness, and backend endpoint links. Governed report-pack generation, approval, restatement, and publication lifecycle remain open |
+| Browser Settings capability coverage | ⚠️ | Settings screen/view-model support now shows backend capability coverage for canonical routes/endpoints and can verify or clear Alpaca paper API keys through shared brokerage connection endpoints. Broader credential policy, evidence-path governance, and live-account readiness remain open |
 | Web Research run library | ⚠️ | `ResearchScreen` and `useResearchRunLibraryViewModel` expose retained run review, two-run compare/diff readiness, promotion-history loading, accessible command-error alerts, and component/view-model coverage; Backtest Studio unification and strategy-aware launch/preflight remain open |
 | HTML dashboard (auto-refreshing) | ✅ | `HtmlTemplateGenerator`; SSE-powered live updates |
 | Server-Sent Events stream | ✅ | `/api/events/stream`; 2-second push cycle |
@@ -411,6 +414,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 - Run-scoped reconciliation contracts and service flows now exist through `ReconciliationRunRequest`, `ReconciliationRunSummary`, `ReconciliationRunDetail`, `ReconciliationRunService`, and `/api/workstation/reconciliation/*`.
 - Governance fund operations now exposes explicit fund cash-flow projection ladders/events and account-linked multi-ledger views across consolidated, entity, sleeve, and vehicle dimensions.
 - **Allowed sync data-flow path:** brokerage/provider sync ingestion must flow through fund-account scope first (`/api/fund-accounts/*` + `WorkstationBrokerageSyncStatusDto`), then shared run/portfolio/ledger/reconciliation services, and finally continuity/governance workstation DTOs (`/api/workstation/trading/readiness`, `/api/workstation/operator/inbox`, and reconciliation queue projections). Avoid introducing standalone sync projection endpoint contracts that bypass fund-account and shared services.
+- Current account-sync support now includes explicit brokerage account kinds, fund-account brokerage links, positions/activity reads, cash-adjusted performance, cash-flow summaries, household portfolio rollups, Alpaca paper connection verification/revocation, and a read-only Robinhood aggregation adapter that consumes configured normalized endpoints without storing Robinhood passwords.
 - The remaining gap is broader paper/live data-source adoption, richer portfolio/ledger analytics, deeper per-entity/per-sleeve/per-vehicle posting fidelity, richer reconciliation UX, and more complete cockpit-style workflow integration.
 
 ### Known WPF limitations
@@ -527,7 +531,7 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 | Position limit rule | ✅ | `PositionLimitRule`; configurable per-symbol and total position limits |
 | Drawdown circuit breaker | ✅ | `DrawdownCircuitBreaker`; automatic stop on drawdown threshold |
 | Order rate throttle | ✅ | `OrderRateThrottle`; configurable order frequency limits |
-| **Brokerage gateway framework** | ✅ | `IBrokerageGateway`, `BaseBrokerageGateway`, `BrokerageGatewayAdapter` |
+| **Brokerage gateway framework** | ✅ | `IBrokerageGateway`, `BaseBrokerageGateway`, `BrokerageGatewayAdapter`; shared UI services now add paper-first Alpaca connection verification and separate read-only Robinhood portfolio aggregation support, while controlled live-readiness remains gated |
 | **Alpaca brokerage gateway** | ✅ | `AlpacaBrokerageGateway`; fractional quantity support, client order ID mapping |
 | **Robinhood brokerage gateway** | ✅ | `RobinhoodBrokerageGateway`; unofficial API, equity + option order support, cancel-via-resubmit semantics, and stable `/api/execution/*` seam coverage |
 | **IB brokerage gateway** | 🔑 | `IBBrokerageGateway`; conditional on IBAPI build flag |

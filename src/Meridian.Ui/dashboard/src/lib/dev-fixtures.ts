@@ -1,4 +1,6 @@
 import type {
+  BrokerageConnectionStatus,
+  BrokerageHouseholdPortfolio,
   CorporateAction,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
@@ -12,7 +14,10 @@ import type {
   SystemOverviewResponse,
   TradingOperatorReadiness,
   TradingParameters,
-  TradingWorkspaceResponse
+  TradingWorkspaceResponse,
+  WorkflowAction,
+  WorkflowLibrary,
+  WorkflowPresetLibrary
 } from "@/types";
 
 const fixtureSession: SessionInfo = {
@@ -467,6 +472,241 @@ const fixtureOperatorInbox: OperatorInbox = {
   ]
 };
 
+const fixtureAlpacaConnection: BrokerageConnectionStatus = {
+  providerId: "alpaca",
+  displayName: "Alpaca paper",
+  state: "Connected",
+  isConfigured: true,
+  isConnected: true,
+  authorizationUrl: null,
+  connectedAt: "2026-05-07T11:50:00Z",
+  expiresAt: null,
+  lastError: null,
+  warnings: [],
+  scopes: ["trading:account", "brokerage-sync:read"],
+  environment: "paper",
+  externalAccountId: "PA-DEMO",
+  verifiedAt: "2026-05-07T11:50:00Z",
+  maskedKeyId: "********DEMO"
+};
+
+const fixtureAlpacaPortfolio: BrokerageHouseholdPortfolio = {
+  providerId: "alpaca",
+  asOf: "2026-05-07T12:00:00Z",
+  totalCash: 87500,
+  totalEquity: 312400,
+  totalBuyingPower: 87500,
+  currency: "USD",
+  warnings: [],
+  accounts: [
+    {
+      fundAccountId: "rh-fund-roth",
+      providerId: "alpaca",
+      externalAccountId: "alpaca-roth",
+      displayName: "Alpaca Roth IRA",
+      accountKind: "RothIra",
+      health: "Healthy",
+      cash: 18500,
+      equity: 104200,
+      buyingPower: 18500,
+      currency: "USD",
+      syncedAt: "2026-05-07T12:00:00Z",
+      positionCount: 2,
+      cashTransactionCount: 4,
+      warnings: []
+    },
+    {
+      fundAccountId: "rh-fund-traditional",
+      providerId: "alpaca",
+      externalAccountId: "alpaca-traditional",
+      displayName: "Alpaca Traditional IRA",
+      accountKind: "TraditionalIra",
+      health: "Healthy",
+      cash: 24000,
+      equity: 98200,
+      buyingPower: 24000,
+      currency: "USD",
+      syncedAt: "2026-05-07T12:00:00Z",
+      positionCount: 1,
+      cashTransactionCount: 2,
+      warnings: []
+    },
+    {
+      fundAccountId: "rh-fund-taxable",
+      providerId: "alpaca",
+      externalAccountId: "alpaca-taxable",
+      displayName: "Alpaca Brokerage",
+      accountKind: "TaxableBrokerage",
+      health: "Stale",
+      cash: 45000,
+      equity: 110000,
+      buyingPower: 45000,
+      currency: "USD",
+      syncedAt: "2026-05-07T10:30:00Z",
+      positionCount: 2,
+      cashTransactionCount: 5,
+      warnings: ["Brokerage sync is stale."]
+    }
+  ],
+  positions: [
+    {
+      fundAccountId: "rh-fund-roth",
+      providerId: "alpaca",
+      externalAccountId: "alpaca-roth",
+      accountKind: "RothIra",
+      symbol: "AAPL",
+      quantity: 38,
+      averageEntryPrice: 142.2,
+      marketPrice: 188.4,
+      marketValue: 7159.2,
+      unrealizedPnl: 1755.6,
+      assetClass: "equity",
+      security: null,
+      description: "Apple Inc.",
+      positionId: "rh-roth-aapl",
+      currency: "USD"
+    },
+    {
+      fundAccountId: "rh-fund-traditional",
+      providerId: "alpaca",
+      externalAccountId: "alpaca-traditional",
+      accountKind: "TraditionalIra",
+      symbol: "VTI",
+      quantity: 120,
+      averageEntryPrice: 205,
+      marketPrice: 254.5,
+      marketValue: 30540,
+      unrealizedPnl: 5940,
+      assetClass: "etf",
+      security: null,
+      description: "Vanguard Total Stock Market ETF",
+      positionId: "rh-traditional-vti",
+      currency: "USD"
+    },
+    {
+      fundAccountId: "rh-fund-taxable",
+      providerId: "alpaca",
+      externalAccountId: "alpaca-taxable",
+      accountKind: "TaxableBrokerage",
+      symbol: "MSFT",
+      quantity: 16,
+      averageEntryPrice: 312,
+      marketPrice: 421.7,
+      marketValue: 6747.2,
+      unrealizedPnl: 1755.2,
+      assetClass: "equity",
+      security: null,
+      description: "Microsoft Corporation",
+      positionId: "rh-taxable-msft",
+      currency: "USD"
+    }
+  ]
+};
+
+const fixtureTradingWorkflowActions: WorkflowAction[] = [
+  {
+    actionId: "workflow.trading.review-paper-candidate",
+    label: "Review Candidate for Paper",
+    detail: "Continue the Strategy to Trading handoff.",
+    targetPageTag: "TradingShell",
+    tone: "Primary",
+    workItemKind: "PromotionReview",
+    routePrefixes: ["/api/workstation/trading/readiness"],
+    routeContains: [],
+    aliases: []
+  },
+  {
+    actionId: "workflow.trading.review-execution-controls",
+    label: "Review Execution Controls",
+    detail: "Inspect control evidence and operator override posture.",
+    targetPageTag: "RunRisk",
+    tone: "Warning",
+    workItemKind: "ExecutionControl",
+    routePrefixes: ["/api/execution/controls"],
+    routeContains: [],
+    aliases: []
+  }
+];
+
+const fixtureDataWorkflowActions: WorkflowAction[] = [
+  {
+    actionId: "workflow.data.open-provider-health",
+    label: "Open Provider Health",
+    detail: "Inspect provider posture and reconnect degraded feeds.",
+    targetPageTag: "ProviderHealth",
+    tone: "Warning",
+    workItemKind: null,
+    routePrefixes: [],
+    routeContains: [],
+    aliases: []
+  },
+  {
+    actionId: "workflow.data.review-security-master",
+    label: "Review Security Master",
+    detail: "Review reference-data coverage and symbol lifecycle issues.",
+    targetPageTag: "SecurityMaster",
+    tone: "Warning",
+    workItemKind: "SecurityMasterCoverage",
+    routePrefixes: ["/api/workstation/security-master/securities"],
+    routeContains: [],
+    aliases: []
+  }
+];
+
+const fixtureWorkflowLibrary: WorkflowLibrary = {
+  generatedAt: "2026-04-28T18:15:00Z",
+  workflows: [
+    {
+      workflowId: "paper-trading-readiness",
+      title: "Paper Trading Readiness",
+      summary: "Review context, replay, controls, and cockpit readiness before live escalation.",
+      workspaceId: "trading",
+      workspaceTitle: "Trading",
+      entryPageTag: "TradingShell",
+      tone: "Warning",
+      actions: fixtureTradingWorkflowActions,
+      evidenceTags: ["readiness gates", "replay verification", "control evidence", "operator work items"],
+      marketPatternTags: ["paper trading", "live readiness gate", "execution controls"]
+    },
+    {
+      workflowId: "data-provider-recovery",
+      title: "Data Provider Recovery",
+      summary: "Review provider health, failed backfills, security coverage, and data quality.",
+      workspaceId: "data",
+      workspaceTitle: "Data",
+      entryPageTag: "DataShell",
+      tone: "Warning",
+      actions: fixtureDataWorkflowActions,
+      evidenceTags: ["provider metrics", "backfill status", "security coverage", "data quality"],
+      marketPatternTags: ["provider dashboard", "data quality queue", "coverage workbench"]
+    }
+  ],
+  actions: [...fixtureTradingWorkflowActions, ...fixtureDataWorkflowActions]
+};
+
+const fixtureWorkflowPresetLibrary: WorkflowPresetLibrary = {
+  generatedAt: "2026-04-28T18:15:00Z",
+  presets: [
+    {
+      presetId: "daily-paper-readiness",
+      name: "Daily paper readiness",
+      description: "Review session, replay, brokerage sync, and execution controls before the desk opens.",
+      workflowId: "paper-trading-readiness",
+      workflowTitle: "Paper Trading Readiness",
+      actionId: "workflow.trading.review-paper-candidate",
+      actionLabel: "Review Candidate for Paper",
+      workspaceId: "trading",
+      workspaceTitle: "Trading",
+      targetPageTag: "TradingShell",
+      tags: ["paper", "readiness"],
+      isPinned: true,
+      createdAt: "2026-04-28T17:00:00Z",
+      updatedAt: "2026-04-28T18:15:00Z",
+      lastUsedAt: null
+    }
+  ]
+};
+
 const fixtureCalibrationSummary: ReconciliationCalibrationSummary = {
   asOf: "2026-04-28T18:15:00Z",
   status: "ReviewRequired",
@@ -763,6 +1003,11 @@ const fixtures = {
   "/api/workstation/trading": fixtureTradingWorkspace,
   "/api/workstation/trading/readiness": fixtureTradingReadiness,
   "/api/workstation/operator/inbox": fixtureOperatorInbox,
+  "/api/workstation/workflows": fixtureWorkflowLibrary,
+  "/api/workstation/workflows/presets": fixtureWorkflowPresetLibrary,
+  "/api/brokerage-connections/alpaca/status": fixtureAlpacaConnection,
+  "/api/brokerage-connections/robinhood/status": fixtureAlpacaConnection,
+  "/api/portfolio/household": fixtureAlpacaPortfolio,
   "/api/workstation/data": fixtureDataOperationsWorkspace,
   "/api/workstation/data-operations": fixtureDataOperationsWorkspace,
   "/api/workstation/accounting": fixtureGovernanceWorkspace,

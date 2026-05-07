@@ -3,10 +3,12 @@ import {
   buildComparisonTable,
   buildDiffPanel,
   buildPlotToolState,
+  buildPlotToolTabs,
   buildPromotionHistoryTable,
   buildResearchRunLibraryState,
   buildRunDetail,
   buildRunTable,
+  nextPlotToolViewForKey,
   shouldCloseRunDetailForKey,
   toggleRunSelection
 } from "@/screens/research-screen.view-model";
@@ -334,6 +336,34 @@ describe("research-screen view model", () => {
     expect(plotTool.statistics.summaryTiles[7]).toMatchObject({ label: "Sharpe (5d)", value: "1.41", tone: "success" });
     expect(plotTool.statistics.regression.detailItems[2]).toContain("position changes linked");
     expect(plotTool.statistics.sampleRows[0]).toMatchObject({ signalText: "Crowded vol", tone: "warning" });
+  });
+
+  it("derives PlotTool tab selection and keyboard transitions outside the view", () => {
+    const tabs = buildPlotToolTabs("statistics");
+
+    expect(tabs).toEqual([
+      expect.objectContaining({
+        id: "workspace",
+        panelId: "plottool-workspace-panel",
+        selected: false,
+        buttonVariant: "ghost",
+        tabIndex: -1,
+        ariaLabel: "Workstation"
+      }),
+      expect.objectContaining({
+        id: "statistics",
+        panelId: "plottool-statistics-panel",
+        selected: true,
+        buttonVariant: "secondary",
+        tabIndex: 0,
+        ariaLabel: "Statistics"
+      })
+    ]);
+    expect(nextPlotToolViewForKey("workspace", "ArrowRight")).toBe("statistics");
+    expect(nextPlotToolViewForKey("statistics", "ArrowLeft")).toBe("workspace");
+    expect(nextPlotToolViewForKey("statistics", "Home")).toBe("workspace");
+    expect(nextPlotToolViewForKey("workspace", "End")).toBe("statistics");
+    expect(nextPlotToolViewForKey("workspace", "Enter")).toBeNull();
   });
 
   it("keeps run detail keyboard-close decisions testable outside the view", () => {

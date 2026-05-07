@@ -106,6 +106,17 @@ describe("ResearchScreen", () => {
     expect(screen.getByText("Observation sheet")).toBeInTheDocument();
   });
 
+  it("switches PlotTool tabs from keyboard navigation", async () => {
+    const user = userEvent.setup();
+    render(<ResearchScreen data={twoRuns} />);
+
+    screen.getByRole("tab", { name: "Workstation" }).focus();
+    await user.keyboard("{ArrowRight}");
+
+    expect(screen.getByRole("tab", { name: "Statistics" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByText("Distribution profile")).toBeInTheDocument();
+  });
+
   it("renders an empty run-library row when no strategy runs are available", () => {
     render(<ResearchScreen data={{ ...twoRuns, runs: [] }} />);
 

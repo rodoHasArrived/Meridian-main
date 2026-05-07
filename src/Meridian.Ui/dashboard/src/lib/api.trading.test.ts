@@ -1,30 +1,60 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   approvePromotion,
+  bulkResolveSecurityConflicts,
   clearExecutionManualOverride,
+  connectAlpacaConnection,
   createExecutionManualOverride,
+  deleteWorkflowPreset,
   evaluatePromotion,
+  getAlpacaConnectionStatus,
+  getBrokerageHouseholdPortfolio,
   getDataOperationsWorkspace,
   getExecutionControls,
   getGovernanceWorkspace,
   getPaperSessionDetail,
+  getPortfolioAggregate,
+  getPortfolioExposure,
+  getPortfolioSymbolExposure,
   getReportingWorkspace,
   getReplayStatus,
+  getReconciliationBreakAudit,
+  getReconciliationRun,
+  getRunContinuity,
+  getRunHistory,
+  getRunLedgerJournal,
+  getRunReconciliation,
+  getRunReconciliationHistory,
+  getRunReviewPacket,
+  getRunSweeps,
+  getRunTimeline,
+  getSecurityEconomicDefinition,
+  getSecurityHistory,
   getSecurityIdentity,
+  getSecurityTrustSnapshot,
   getSession,
   getSystemStatus,
   getStrategyWorkspace,
   getTradingReadiness,
   getTradingWorkspace,
+  getWorkflowLibrary,
+  getWorkflowPresets,
+  getWorkstationWorkflowSummary,
+  markWorkflowPresetUsed,
+  pinWorkflowPreset,
   pauseReplay,
+  runReconciliation,
   runAnalysisExport,
   resumeReplay,
+  revokeAlpacaConnection,
+  saveWorkflowPreset,
   searchSecurities,
   seekReplay,
   setReplaySpeed,
   startReplay,
   stopReplay,
-  submitOrder
+  submitOrder,
+  updateWorkflowPreset
 } from "@/lib/api";
 
 describe("trading endpoint wiring", () => {
@@ -119,6 +149,35 @@ describe("trading endpoint wiring", () => {
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reporting", expect.anything());
   });
 
+  it("wires Alpaca brokerage connection endpoints", async () => {
+    await getAlpacaConnectionStatus();
+    await connectAlpacaConnection({
+      keyId: "paper-key",
+      secretKey: "paper-secret",
+      environment: "paper"
+    });
+    await revokeAlpacaConnection();
+    await getBrokerageHouseholdPortfolio();
+
+    expect(fetchMock).toHaveBeenCalledWith("/api/brokerage-connections/alpaca/status", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/brokerage-connections/alpaca/connect",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          keyId: "paper-key",
+          secretKey: "paper-secret",
+          environment: "paper"
+        })
+      })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/brokerage-connections/alpaca",
+      expect.objectContaining({ method: "DELETE" })
+    );
+    expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/household?provider=alpaca", expect.anything());
+  });
+
   it("uses dev security fixtures when the search endpoint responds with an empty set", async () => {
     fetchMock.mockResolvedValue({ ok: true, status: 200, json: async () => [], text: async () => "[]" });
 
@@ -167,5 +226,116 @@ describe("trading endpoint wiring", () => {
         body: JSON.stringify({ profileId: "audit-pack" })
       })
     );
+  });
+
+  it("wires workstation workflow library and preset endpoints", async () => {
+    await getWorkstationWorkflowSummary({
+      hasOperatingContext: true,
+      fundProfileId: "fund-1"
+    });
+    await getWorkflowLibrary();
+    await getWorkflowPresets();
+    await saveWorkflowPreset({
+      name: "Daily desk",
+      description: "Open paper readiness review",
+      workflowId: "paper-trading-readiness",
+      actionId: "workflow.trading.review-paper-candidate",
+      tags: ["paper"],
+      isPinned: true
+    });
+    await updateWorkflowPreset("preset-1", {
+      presetId: "preset-1",
+      name: "Updated desk",
+      description: "Open paper readiness review",
+      workflowId: "paper-trading-readiness",
+      actionId: "workflow.trading.review-paper-candidate",
+      tags: ["paper"],
+      isPinned: true
+    });
+    await pinWorkflowPreset("preset-1", true);
+    await markWorkflowPresetUsed("preset-1");
+    await deleteWorkflowPreset("preset-1");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/workflow-summary?hasOperatingContext=true&fundProfileId=fund-1",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/workflows", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/workflows/presets", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/workflows/presets",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/workflows/presets/preset-1",
+      expect.objectContaining({ method: "PUT" })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/workflows/presets/preset-1/pin",
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ isPinned: true }) })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/workflows/presets/preset-1/used",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/workflows/presets/preset-1",
+      expect.objectContaining({ method: "DELETE" })
+    );
+  });
+
+  it("wires run continuity, reconciliation, security, and portfolio workstation endpoints", async () => {
+    await getRunLedgerJournal("run-1", 10);
+    await getRunContinuity("run-1");
+    await getRunReviewPacket("run-1", "fund-1");
+    await getRunReconciliation("run-1");
+    await getRunReconciliationHistory("run-1");
+    await getRunHistory({ mode: "paper", limit: 25 });
+    await getRunTimeline({ strategyId: "strategy-1", limit: 5 });
+    await getRunSweeps(3);
+    await getSecurityHistory("00000000-0000-0000-0000-000000000001");
+    await getSecurityEconomicDefinition("00000000-0000-0000-0000-000000000001");
+    await getSecurityTrustSnapshot("00000000-0000-0000-0000-000000000001");
+    await bulkResolveSecurityConflicts({ conflictIds: ["conflict-1"], resolvedBy: "ops" });
+    await runReconciliation({ runId: "run-1" });
+    await getReconciliationRun("recon-1");
+    await getReconciliationBreakAudit("break-1");
+    await getPortfolioAggregate();
+    await getPortfolioExposure();
+    await getPortfolioSymbolExposure("AAPL");
+
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/ledger/journal?take=10", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/continuity", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/review-packet?fundAccountId=fund-1", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/reconciliation", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/reconciliation/history", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/history?mode=paper&limit=25", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/timeline?strategyId=strategy-1&limit=5", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/sweeps?limit=3", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/security-master/securities/00000000-0000-0000-0000-000000000001/history",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/security-master/securities/00000000-0000-0000-0000-000000000001/economic-definition",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/security-master/securities/00000000-0000-0000-0000-000000000001/trust-snapshot",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/security-master/conflicts/bulk-resolve",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/reconciliation/runs",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reconciliation/runs/recon-1", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reconciliation/break-queue/break-1/audit", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/aggregate", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/exposure", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/symbols/AAPL/exposure", expect.anything());
   });
 });

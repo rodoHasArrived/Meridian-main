@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { buildPortfolioScreenViewModel } from "@/screens/portfolio-screen.view-model";
 import type {
+  BrokerageConnectionStatus,
+  BrokerageHouseholdPortfolio,
   GovernanceWorkspaceResponse,
   ResearchWorkspaceResponse,
   TradingWorkspaceResponse
@@ -87,6 +89,104 @@ const governance: GovernanceWorkspaceResponse = {
   }
 };
 
+const brokerageConnection: BrokerageConnectionStatus = {
+  providerId: "alpaca",
+  displayName: "Alpaca paper",
+  state: "Connected",
+  isConfigured: true,
+  isConnected: true,
+  authorizationUrl: null,
+  connectedAt: "2026-05-07T11:50:00Z",
+  expiresAt: null,
+  lastError: null,
+  warnings: [],
+  scopes: ["trading:account", "brokerage-sync:read"],
+  environment: "paper",
+  externalAccountId: "PA123",
+  verifiedAt: "2026-05-07T11:50:00Z",
+  maskedKeyId: "********1234"
+};
+
+const brokeragePortfolio: BrokerageHouseholdPortfolio = {
+  providerId: "alpaca",
+  asOf: "2026-05-07T12:00:00Z",
+  totalCash: 150000,
+  totalEquity: 375000,
+  totalBuyingPower: 150000,
+  currency: "USD",
+  warnings: [],
+  accounts: [
+    {
+      fundAccountId: "fund-roth",
+      providerId: "alpaca",
+      externalAccountId: "alpaca-roth",
+      displayName: "Alpaca Roth IRA",
+      accountKind: "RothIra",
+      health: "Healthy",
+      cash: 50000,
+      equity: 125000,
+      buyingPower: 50000,
+      currency: "USD",
+      syncedAt: "2026-05-07T12:00:00Z",
+      positionCount: 1,
+      cashTransactionCount: 1,
+      warnings: []
+    },
+    {
+      fundAccountId: "fund-taxable",
+      providerId: "alpaca",
+      externalAccountId: "alpaca-taxable",
+      displayName: "Alpaca Brokerage",
+      accountKind: "TaxableBrokerage",
+      health: "Healthy",
+      cash: 100000,
+      equity: 250000,
+      buyingPower: 100000,
+      currency: "USD",
+      syncedAt: "2026-05-07T12:00:00Z",
+      positionCount: 1,
+      cashTransactionCount: 1,
+      warnings: []
+    }
+  ],
+  positions: [
+    {
+      fundAccountId: "fund-roth",
+      providerId: "alpaca",
+      externalAccountId: "alpaca-roth",
+      accountKind: "RothIra",
+      symbol: "AAPL",
+      quantity: 10,
+      averageEntryPrice: 150,
+      marketPrice: 170,
+      marketValue: 1700,
+      unrealizedPnl: 200,
+      assetClass: "equity",
+      security: null,
+      description: "Apple Inc.",
+      positionId: "pos-aapl",
+      currency: "USD"
+    },
+    {
+      fundAccountId: "fund-taxable",
+      providerId: "alpaca",
+      externalAccountId: "alpaca-taxable",
+      accountKind: "TaxableBrokerage",
+      symbol: "MSFT",
+      quantity: 5,
+      averageEntryPrice: 300,
+      marketPrice: 350,
+      marketValue: 1750,
+      unrealizedPnl: 250,
+      assetClass: "equity",
+      security: null,
+      description: "Microsoft Corporation",
+      positionId: "pos-msft",
+      currency: "USD"
+    }
+  ]
+};
+
 describe("buildPortfolioScreenViewModel", () => {
   it("returns position rows from trading data", () => {
     const vm = buildPortfolioScreenViewModel({ trading, research, governance });
@@ -106,6 +206,10 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.runRows[0].promotionState).toBe("Promoted");
     expect(vm.runRows[0].modeBadgeVariant).toBe("paper");
     expect(vm.runRows[0].pnlTone).toBe("success");
+    expect(vm.runRows[0].isSelected).toBe(true);
+    expect(vm.runRows[0].selectAriaLabel).toBe("Inspect Mean Reversion run evidence");
+    expect(vm.selectedRun?.title).toBe("Mean Reversion");
+    expect(vm.selectedRun?.statusDetail).toContain("Running paper run with +4.2% P&L");
   });
 
   it("surfaces cash-flow summary from governance data", () => {
@@ -127,6 +231,7 @@ describe("buildPortfolioScreenViewModel", () => {
     const vm = buildPortfolioScreenViewModel({ trading, research: null, governance });
     expect(vm.hasRuns).toBe(false);
     expect(vm.runEmptyText).toContain("unavailable");
+    expect(vm.selectedRun).toBeNull();
   });
 
   it("computes danger pnl tone for negative values", () => {
@@ -149,6 +254,8 @@ describe("buildPortfolioScreenViewModel", () => {
     const vm = buildPortfolioScreenViewModel({ trading, research, governance });
 
     expect(vm.headerChips).toEqual([
+      { label: "Alpaca paper equity", value: "—" },
+      { label: "Alpaca paper cash", value: "—" },
       { label: "Open positions", value: "1" },
       { label: "Exposure", value: "$18,900" },
       { label: "Unrealized P&L", value: "+$90" },
@@ -156,10 +263,58 @@ describe("buildPortfolioScreenViewModel", () => {
     ]);
   });
 
+  it("does not add a workflow task panel on the broad portfolio route", () => {
+    const vm = buildPortfolioScreenViewModel({ trading, research, governance, pathname: "/portfolio" });
+
+    expect(vm.workflowTaskPanel).toBeNull();
+  });
+
+  it("builds a dedicated brokerage-sync task panel from trading posture", () => {
+    const vm = buildPortfolioScreenViewModel({
+      trading,
+      research,
+      governance,
+      pathname: "/portfolio/brokerage-sync"
+    });
+
+    expect(vm.workflowTaskPanel).toMatchObject({
+      regionLabel: "Brokerage sync task",
+      title: "Brokerage sync review",
+      statusLabel: "Brokerage synced",
+      statusTone: "success",
+      selectedSummary: expect.stringContaining("Alpaca / paper account PA-DEMO")
+    });
+    expect(vm.workflowTaskPanel?.statusRows.find((row) => row.label === "Order ingress")).toMatchObject({
+      value: "healthy",
+      tone: "success"
+    });
+    expect(vm.workflowTaskPanel?.backendLinks.map((link) => link.href)).toEqual([
+      "/api/workstation/trading",
+      "/api/workstation/trading/readiness",
+      "/api/portfolio/aggregate",
+      "/api/portfolio/exposure"
+    ]);
+  });
+
+  it("marks the brokerage-sync panel as blocked when trading data is unavailable", () => {
+    const vm = buildPortfolioScreenViewModel({
+      trading: null,
+      research,
+      governance,
+      pathname: "/portfolio/brokerage-sync"
+    });
+
+    expect(vm.workflowTaskPanel?.statusLabel).toBe("Trading unavailable");
+    expect(vm.workflowTaskPanel?.statusTone).toBe("danger");
+    expect(vm.workflowTaskPanel?.selectedSummary).toContain("Trading workspace data is unavailable");
+  });
+
   it("uses stable placeholder header chips when trading data is unavailable", () => {
     const vm = buildPortfolioScreenViewModel({ trading: null, research, governance });
 
     expect(vm.headerChips).toEqual([
+      { label: "Alpaca paper equity", value: "—" },
+      { label: "Alpaca paper cash", value: "—" },
       { label: "Open positions", value: "0" },
       { label: "Exposure", value: "—" },
       { label: "Unrealized P&L", value: "—" },
@@ -197,5 +352,66 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.selectedPosition?.title).toBe("MSFT");
     expect(vm.selectedPosition?.statusDetail).toContain("$10,250 exposure");
     expect(vm.selectedPosition?.fields.find((field) => field.label === "Guardrails")?.value).toBe("No active guardrails");
+  });
+
+  it("keeps selected run evidence state in the view model", () => {
+    const researchWithTwoRuns: ResearchWorkspaceResponse = {
+      ...research,
+      runs: [
+        research.runs[0],
+        {
+          id: "run-2",
+          strategyName: "Volatility Carry",
+          engine: "QuantConnect",
+          mode: "backtest",
+          status: "Needs Review",
+          dataset: "US Options",
+          window: "180d",
+          pnl: "-1.2%",
+          sharpe: "0.82",
+          lastUpdated: "5m ago",
+          notes: "Drawdown review required.",
+          promotionState: null
+        }
+      ]
+    };
+
+    const vm = buildPortfolioScreenViewModel({
+      trading,
+      research: researchWithTwoRuns,
+      governance,
+      selectedRunId: "run-2"
+    });
+
+    expect(vm.runRows.map((row) => row.isSelected)).toEqual([false, true]);
+    expect(vm.selectedRun?.title).toBe("Volatility Carry");
+    expect(vm.selectedRun?.statusTone).toBe("warning");
+    expect(vm.selectedRun?.statusBadgeLabel).toBe("Needs Review");
+    expect(vm.selectedRun?.statusBadgeVariant).toBe("warning");
+    expect(vm.selectedRun?.statusDetail).toContain("Drawdown review required.");
+    expect(vm.selectedRun?.fields.find((field) => field.label === "Promotion")?.value).toBe("Not promoted");
+  });
+
+  it("derives provider-aware account selector and filtered brokerage positions", () => {
+    const vm = buildPortfolioScreenViewModel({
+      trading,
+      research,
+      governance,
+      brokerageConnection,
+      brokeragePortfolio,
+      selectedBrokerageAccountKey: "fund-roth"
+    });
+
+    expect(vm.brokerageConnectionLabel).toBe("Connected");
+    expect(vm.brokerageConnectionTone).toBe("success");
+    expect(vm.brokerageProviderLabel).toBe("Alpaca paper");
+    expect(vm.brokerageAccountFilterLabel).toBe("Alpaca paper account filter");
+    expect(vm.brokerageAccountOptions.map((option) => option.label)).toEqual(["All", "Roth IRA", "Brokerage"]);
+    expect(vm.brokerageAccountOptions.find((option) => option.key === "fund-roth")?.isSelected).toBe(true);
+    expect(vm.brokerageAccountRows).toHaveLength(2);
+    expect(vm.brokeragePositionRows).toHaveLength(1);
+    expect(vm.brokeragePositionRows[0].symbol).toBe("AAPL");
+    expect(vm.brokeragePositionRows[0].accountKind).toBe("Roth IRA");
+    expect(vm.headerChips[0]).toEqual({ label: "Alpaca paper equity", value: "$375,000" });
   });
 });

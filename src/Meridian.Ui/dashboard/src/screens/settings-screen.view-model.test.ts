@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildSettingsScreenViewModel } from "@/screens/settings-screen.view-model";
-import type { SessionInfo, SystemOverviewResponse } from "@/types";
+import type { BrokerageConnectionStatus, SessionInfo, SystemOverviewResponse } from "@/types";
 
 const session: SessionInfo = {
   displayName: "Andrew Rowden",
@@ -24,6 +24,24 @@ const overview: SystemOverviewResponse = {
   recentEvents: [
     { id: "e1", type: "info", message: "Backfill completed.", source: "DataPipeline", timestamp: "2026-05-01T00:00:00Z" }
   ]
+};
+
+const alpacaConnection: BrokerageConnectionStatus = {
+  providerId: "alpaca",
+  displayName: "Alpaca paper",
+  state: "Connected",
+  isConfigured: true,
+  isConnected: true,
+  authorizationUrl: null,
+  connectedAt: "2026-05-07T11:50:00Z",
+  expiresAt: null,
+  lastError: null,
+  warnings: [],
+  scopes: ["trading:account", "brokerage-sync:read"],
+  environment: "paper",
+  externalAccountId: "PA123",
+  verifiedAt: "2026-05-07T11:50:00Z",
+  maskedKeyId: "********1234"
 };
 
 describe("buildSettingsScreenViewModel", () => {
@@ -174,6 +192,83 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.diagnosticLinks.every((link) => link.statusLabel === "Loaded")).toBe(true);
   });
 
+  it("derives Alpaca connection panel state without exposing secrets", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      brokerageConnection: alpacaConnection
+    });
+
+    expect(vm.alpacaConnectionPanel).toMatchObject({
+      providerLabel: "Alpaca paper",
+      stateLabel: "Connected",
+      statusTone: "success",
+      environmentLabel: "PAPER",
+      accountLabel: "PA123",
+      maskedKeyIdLabel: "********1234",
+      canClear: true
+    });
+    expect(vm.alpacaConnectionPanel.statusDetail).toContain("PA123");
+    expect(vm.alpacaConnectionPanel.statusDetail).not.toContain("secret");
+  });
+
+  it("marks invalid Alpaca credentials as a degraded connection state", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      brokerageConnection: {
+        ...alpacaConnection,
+        state: "Degraded",
+        isConnected: false,
+        lastError: "Alpaca /v2/account verification failed: status 401",
+        warnings: ["Alpaca /v2/account verification failed: status 401"]
+      }
+    });
+
+    expect(vm.alpacaConnectionPanel.stateLabel).toBe("Verification failed");
+    expect(vm.alpacaConnectionPanel.statusTone).toBe("danger");
+    expect(vm.alpacaConnectionPanel.statusDetail).toContain("401");
+  });
+
+  it("surfaces canonical backend capability groups with browser routes and mapped endpoints", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      research: { metrics: [], runs: [] },
+      trading: {} as never,
+      dataOperations: { metrics: [], providers: [], backfills: [], exports: [] },
+      governance: {} as never,
+      reporting: {} as never,
+      loading: false,
+      error: null,
+      workspaceErrors: {}
+    });
+
+    expect(vm.backendCapabilityStatusLabel).toBe("All surfaced");
+    expect(vm.backendCapabilityStatusVariant).toBe("success");
+    expect(vm.backendCapabilityGroups.map((group) => group.workspaceLabel)).toEqual([
+      "Trading",
+      "Portfolio",
+      "Accounting",
+      "Reporting",
+      "Strategy",
+      "Data",
+      "Settings"
+    ]);
+    expect(vm.backendCapabilityGroups.find((group) => group.id === "strategy")?.endpoints).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ href: "/api/workstation/runs/history", method: "GET" }),
+        expect.objectContaining({ href: "/api/workstation/runs/compare", method: "POST" })
+      ])
+    );
+    expect(vm.backendCapabilityGroups.find((group) => group.id === "settings")?.endpoints).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ href: "/api/workstation/workflows" }),
+        expect.objectContaining({ href: "/api/workstation/workflows/presets" })
+      ])
+    );
+  });
+
   it("surfaces workspace diagnostic failures without hiding endpoint links", () => {
     const vm = buildSettingsScreenViewModel({
       session,
@@ -227,6 +322,7 @@ describe("buildSettingsScreenViewModel", () => {
     });
 
     expect(vm.diagnosticStatusLabel).toBe("7 checking");
+    expect(vm.backendCapabilityStatusLabel).toBe("7 checking");
     expect(vm.diagnosticCounts).toMatchObject({
       loaded: 0,
       failed: 0,

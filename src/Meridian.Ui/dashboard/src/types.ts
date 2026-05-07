@@ -249,6 +249,70 @@ export interface OperatorInbox {
   summary: string;
 }
 
+export interface WorkflowAction {
+  actionId: string;
+  label: string;
+  detail: string;
+  targetPageTag: string;
+  tone: string;
+  workItemKind: OperatorWorkItemKind | null;
+  routePrefixes: string[];
+  routeContains: string[];
+  aliases: string[];
+}
+
+export interface WorkflowDefinition {
+  workflowId: string;
+  title: string;
+  summary: string;
+  workspaceId: string;
+  workspaceTitle: string;
+  entryPageTag: string;
+  tone: string;
+  actions: WorkflowAction[];
+  evidenceTags: string[];
+  marketPatternTags: string[];
+}
+
+export interface WorkflowLibrary {
+  generatedAt: string;
+  workflows: WorkflowDefinition[];
+  actions: WorkflowAction[];
+}
+
+export interface WorkflowPreset {
+  presetId: string;
+  name: string;
+  description: string | null;
+  workflowId: string;
+  workflowTitle: string;
+  actionId: string | null;
+  actionLabel: string;
+  workspaceId: string;
+  workspaceTitle: string;
+  targetPageTag: string;
+  tags: string[];
+  isPinned: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastUsedAt: string | null;
+}
+
+export interface WorkflowPresetLibrary {
+  generatedAt: string;
+  presets: WorkflowPreset[];
+}
+
+export interface WorkflowPresetSaveRequest {
+  presetId?: string | null;
+  name: string;
+  description?: string | null;
+  workflowId: string;
+  actionId?: string | null;
+  tags?: string[] | null;
+  isPinned: boolean;
+}
+
 export interface TradingAcceptanceGate {
   gateId: string;
   label: string;
@@ -354,6 +418,115 @@ export interface WorkstationBrokerageSyncStatus {
   fillCount: number;
   cashTransactionCount: number;
   securityMissingCount: number;
+  warnings: string[];
+  accountKind?: BrokerageAccountKind;
+}
+
+export type BrokerageAccountKind = "Unknown" | "TaxableBrokerage" | "RothIra" | "TraditionalIra";
+
+export type BrokerageConnectionState =
+  | "NotConfigured"
+  | "Disconnected"
+  | "AuthorizationPending"
+  | "Connected"
+  | "ReauthorizationRequired"
+  | "Degraded";
+
+export interface BrokerageConnectionStatus {
+  providerId: string;
+  displayName: string;
+  state: BrokerageConnectionState;
+  isConfigured: boolean;
+  isConnected: boolean;
+  authorizationUrl: string | null;
+  connectedAt: string | null;
+  expiresAt: string | null;
+  lastError: string | null;
+  warnings: string[];
+  scopes: string[];
+  environment?: "paper" | "live" | string | null;
+  externalAccountId?: string | null;
+  verifiedAt?: string | null;
+  maskedKeyId?: string | null;
+}
+
+export interface AlpacaBrokerageConnectionRequest {
+  keyId: string;
+  secretKey: string;
+  environment: "paper" | "live";
+}
+
+export interface BrokerageHouseholdAccount {
+  fundAccountId: string;
+  providerId: string;
+  externalAccountId: string;
+  displayName: string;
+  accountKind: BrokerageAccountKind;
+  health: WorkstationBrokerageSyncStatus["health"];
+  cash: number;
+  equity: number;
+  buyingPower: number;
+  currency: string;
+  syncedAt: string;
+  positionCount: number;
+  cashTransactionCount: number;
+  warnings: string[];
+}
+
+export interface BrokerageHouseholdPosition {
+  fundAccountId: string;
+  providerId: string;
+  externalAccountId: string;
+  accountKind: BrokerageAccountKind;
+  symbol: string;
+  quantity: number;
+  averageEntryPrice: number;
+  marketPrice: number;
+  marketValue: number;
+  unrealizedPnl: number;
+  assetClass: string;
+  security: WorkstationSecurityReference | null;
+  description: string | null;
+  positionId: string | null;
+  currency: string | null;
+}
+
+export interface BrokerageHouseholdPortfolio {
+  providerId: string;
+  asOf: string;
+  totalCash: number;
+  totalEquity: number;
+  totalBuyingPower: number;
+  currency: string;
+  accounts: BrokerageHouseholdAccount[];
+  positions: BrokerageHouseholdPosition[];
+  warnings: string[];
+}
+
+export interface BrokerageCashFlowEntry {
+  transactionId: string;
+  transactionType: string;
+  category: string;
+  amount: number;
+  currency: string;
+  postedAt: string;
+  symbol: string | null;
+  description: string | null;
+}
+
+export interface BrokerageCashFlowSummary {
+  fundAccountId: string;
+  providerId: string | null;
+  externalAccountId: string | null;
+  accountKind: BrokerageAccountKind;
+  from: string | null;
+  to: string | null;
+  totalInflows: number;
+  totalOutflows: number;
+  netCashFlow: number;
+  currency: string;
+  transactionCount: number;
+  entries: BrokerageCashFlowEntry[];
   warnings: string[];
 }
 

@@ -96,6 +96,14 @@ Bundle contents:
 
 The bundle is generated for successful runs and for failures that occur after the workflow runner enters its main execution path, so contributors can usually use one troubleshooting schema across local debugging and CI automation. Very early startup failures, such as preflight blocks or assembly-load errors, may not include the full bundle contents.
 
+Before each workflow run, `SharedBuild.ps1` applies retention to timestamped run directories
+(`yyyyMMdd-HHmmss-*`) under the configured screenshot output root. The default policy prunes runs
+older than 14 days or beyond the latest 10 runs so same-day screenshot/debug loops cannot grow
+without bound. Non-run folders such as `checkpoints/` are not retention candidates. Tune the policy
+with `screenshots.retention.maxAgeDays` and `screenshots.retention.retainLatest` in
+`scripts/dev/workflow-profiles/*.json`; set both values to `0` to disable workflow artifact
+retention for a one-off run.
+
 ## Manual Generation
 
 The manual generator runs every workflow marked `includeInManual: true` in `scripts/dev/desktop-workflows.json`, then writes:

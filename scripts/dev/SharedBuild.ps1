@@ -67,6 +67,12 @@ function Get-MeridianDirectorySizeBytes {
     return [int64]$sum
 }
 
+function Test-MeridianWorkflowRunArtifactDirectory {
+    param([Parameter(Mandatory = $true)][string]$Name)
+
+    return $Name -match '^\d{8}-\d{6}($|-)'
+}
+
 function Invoke-MeridianBuildArtifactRetention {
     param(
         [Parameter(Mandatory = $true)][string]$RepoRoot,
@@ -215,7 +221,15 @@ function Invoke-MeridianWorkflowArtifactRetention {
         [int]$RetainLatest = 10
     )
 
-    if ($MaxAgeDays -le 0) {
+    if ($MaxAgeDays -lt 0) {
+        throw 'MaxAgeDays must be greater than or equal to 0.'
+    }
+
+    if ($RetainLatest -lt 0) {
+        throw 'RetainLatest must be greater than or equal to 0.'
+    }
+
+    if ($MaxAgeDays -le 0 -and $RetainLatest -le 0) {
         return
     }
 
@@ -237,6 +251,7 @@ function Invoke-MeridianWorkflowArtifactRetention {
 
     $runDirectories = @(
         Get-ChildItem -LiteralPath $resolvedRoot -Directory -Force -ErrorAction SilentlyContinue |
+            Where-Object { Test-MeridianWorkflowRunArtifactDirectory -Name $_.Name } |
             Sort-Object LastWriteTimeUtc -Descending
     )
 
@@ -251,22 +266,20 @@ function Invoke-MeridianWorkflowArtifactRetention {
         }
     }
 
-    $cutoffUtc = (Get-Date).ToUniversalTime().AddDays(-$MaxAgeDays)
+    $cutoffUtc = if ($MaxAgeDays -gt 0) { (Get-Date).ToUniversalTime().AddDays(-$MaxAgeDays) } else { $null }
     $deletedCount = 0
     $freedBytes = 0L
 
     foreach ($directory in $runDirectories) {
-        if ($directory.LastWriteTimeUtc -ge $cutoffUtc) {
-            continue
-        }
-
         $candidatePath = [System.IO.Path]::GetFullPath($directory.FullName)
-        if ($retainedDirectories.Contains($candidatePath)) {
-            continue
-        }
-
         if (-not $candidatePath.StartsWith($resolvedRootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
             Write-Warning "Skipping workflow artifact retention candidate outside expected root: $candidatePath"
+            continue
+        }
+
+        $ageExpired = $MaxAgeDays -gt 0 -and $directory.LastWriteTimeUtc -lt $cutoffUtc
+        $countExceeded = $RetainLatest -gt 0 -and -not $retainedDirectories.Contains($candidatePath)
+        if (-not $ageExpired -and -not $countExceeded) {
             continue
         }
 
@@ -282,12 +295,20 @@ function Invoke-MeridianWorkflowArtifactRetention {
     }
 
     if ($deletedCount -gt 0) {
-        Write-Host ("[INFO] Pruned {0} stale workflow artifact director{1} older than {2} days from {3}; retained latest {4} ({5} recovered)." -f `
+        $policies = New-Object System.Collections.Generic.List[string]
+        if ($MaxAgeDays -gt 0) {
+            $policies.Add("older than $MaxAgeDays days")
+        }
+
+        if ($RetainLatest -gt 0) {
+            $policies.Add("beyond latest $RetainLatest")
+        }
+
+        Write-Host ("[INFO] Pruned {0} workflow artifact director{1} using age/count retention ({2}) from {3} ({4} recovered)." -f `
                 $deletedCount, `
                 $(if ($deletedCount -eq 1) { 'y' } else { 'ies' }), `
-                $MaxAgeDays, `
+                ([string]::Join(' or ', $policies)), `
                 $resolvedRoot, `
-                $RetainLatest, `
                 (Format-MeridianBuildBytes -Bytes $freedBytes))
     }
 }

@@ -60,6 +60,42 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.packTargets[0].ariaLabel).toBe("board report-pack target");
   });
 
+  it("builds a route-specific report-pack approval task panel", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/report-packs"));
+
+    expect(result.current.workflowTaskPanel).toMatchObject({
+      regionLabel: "Report-pack approval task",
+      title: "Report-pack approval",
+      statusLabel: "Evidence review",
+      targetsLabel: "Report-pack approval targets",
+      profileListLabel: "Report-pack export profiles"
+    });
+    expect(result.current.workflowTaskPanel?.targets.map((target) => target.label)).toEqual(["board", "audit"]);
+    expect(result.current.workflowTaskPanel?.profiles.map((profile) => profile.readinessLabel)).toEqual([
+      "Dictionary only",
+      "Loader only"
+    ]);
+    expect(result.current.workflowTaskPanel?.backendLinks.map((link) => link.href)).toEqual([
+      "/api/fund-structure/report-packs",
+      "/api/export/preview",
+      "/api/export/analysis"
+    ]);
+  });
+
+  it("scopes report-pack preview backend links to the selected profile", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/report-packs"));
+
+    act(() => { result.current.selectProfile("excel"); });
+
+    expect(result.current.workflowTaskPanel?.selectedSummary).toBe(
+      "Excel is selected for report-pack approval using Xlsx output to Excel."
+    );
+    expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "export-preview")).toMatchObject({
+      href: "/api/export/preview?profile=excel",
+      ariaLabel: "Preview Excel export payload"
+    });
+  });
+
   it("derives report queue summary chips in the view model", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
 

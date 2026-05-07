@@ -13,6 +13,7 @@ import type {
 } from "@/types";
 
 export type ResearchCommand = "compare" | "diff" | "history";
+export type ResearchPlotToolView = "workspace" | "statistics";
 
 export interface ResearchRunLibraryServices {
   compareRuns: (runIds: string[]) => Promise<RunComparisonRow[]>;
@@ -24,6 +25,8 @@ export interface ResearchRunLibraryState {
   runs: ResearchRunRecord[];
   runTable: ResearchResultTableState<ResearchRunTableRow>;
   plotTool: ResearchPlotToolState;
+  activePlotToolView: ResearchPlotToolView;
+  plotToolTabs: ResearchPlotToolTab[];
   selectedIds: string[];
   selectedRuns: ResearchRunRecord[];
   selectedRun: ResearchRunRecord | null;
@@ -48,6 +51,17 @@ export interface ResearchRunLibraryState {
   diffButtonLabel: string;
   promotionHistoryButtonLabel: string;
   statusAnnouncement: string;
+}
+
+export interface ResearchPlotToolTab {
+  id: ResearchPlotToolView;
+  label: string;
+  tabId: string;
+  panelId: string;
+  selected: boolean;
+  buttonVariant: "secondary" | "ghost";
+  tabIndex: 0 | -1;
+  ariaLabel: string;
 }
 
 export interface ResearchResultTableState<T> {
@@ -327,6 +341,7 @@ export function useResearchRunLibraryViewModel(
   const [promotionHistoryLoaded, setPromotionHistoryLoaded] = useState(false);
   const [activeCommand, setActiveCommand] = useState<ResearchCommand | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [activePlotToolView, setActivePlotToolView] = useState<ResearchPlotToolView>("workspace");
 
   const metrics = data?.metrics ?? [];
   const runs = data?.runs ?? [];
@@ -344,7 +359,8 @@ export function useResearchRunLibraryViewModel(
       runDiffLoaded,
       promotionHistoryLoaded,
       activeCommand,
-      actionError
+      actionError,
+      activePlotToolView
     }),
     [
       actionError,
@@ -358,7 +374,8 @@ export function useResearchRunLibraryViewModel(
       metrics,
       runs,
       selectedIds,
-      selectedRun
+      selectedRun,
+      activePlotToolView
     ]
   );
 
@@ -383,6 +400,16 @@ export function useResearchRunLibraryViewModel(
     setSelectedRun(null);
     return true;
   }, []);
+
+  const selectPlotToolViewForKey = useCallback((key: string) => {
+    const nextView = nextPlotToolViewForKey(activePlotToolView, key);
+    if (!nextView) {
+      return false;
+    }
+
+    setActivePlotToolView(nextView);
+    return true;
+  }, [activePlotToolView]);
 
   const loadPromotionHistory = useCallback(async () => {
     setActiveCommand("history");
@@ -449,6 +476,8 @@ export function useResearchRunLibraryViewModel(
     openRunDetail,
     closeRunDetail,
     closeRunDetailForKey,
+    selectPlotToolView: setActivePlotToolView,
+    selectPlotToolViewForKey,
     loadPromotionHistory,
     compareSelectedRuns,
     diffSelectedRuns
@@ -467,7 +496,8 @@ export function buildResearchRunLibraryState({
   runDiffLoaded = false,
   promotionHistoryLoaded = false,
   activeCommand,
-  actionError
+  actionError,
+  activePlotToolView = "workspace"
 }: {
   metrics?: MetricSnapshot[];
   runs: ResearchRunRecord[];
@@ -481,6 +511,7 @@ export function buildResearchRunLibraryState({
   promotionHistoryLoaded?: boolean;
   activeCommand: ResearchCommand | null;
   actionError: string | null;
+  activePlotToolView?: ResearchPlotToolView;
 }): ResearchRunLibraryState {
   const selectedRuns = selectedIds
     .map((id) => runs.find((run) => run.id === id))
@@ -503,6 +534,8 @@ export function buildResearchRunLibraryState({
     runs,
     runTable,
     plotTool,
+    activePlotToolView,
+    plotToolTabs: buildPlotToolTabs(activePlotToolView),
     selectedIds,
     selectedRuns,
     selectedRun,
@@ -539,6 +572,58 @@ export function buildResearchRunLibraryState({
       promotionHistoryLoaded
     })
   };
+}
+
+export function buildPlotToolTabs(activeView: ResearchPlotToolView): ResearchPlotToolTab[] {
+  const tabs: Array<Pick<ResearchPlotToolTab, "id" | "label" | "tabId" | "panelId">> = [
+    {
+      id: "workspace",
+      label: "Workstation",
+      tabId: "plottool-workspace-tab",
+      panelId: "plottool-workspace-panel"
+    },
+    {
+      id: "statistics",
+      label: "Statistics",
+      tabId: "plottool-statistics-tab",
+      panelId: "plottool-statistics-panel"
+    }
+  ];
+
+  return tabs.map((tab) => {
+    const selected = tab.id === activeView;
+
+    return {
+      ...tab,
+      selected,
+      buttonVariant: selected ? "secondary" : "ghost",
+      tabIndex: selected ? 0 : -1,
+      ariaLabel: tab.label
+    };
+  });
+}
+
+export function nextPlotToolViewForKey(
+  currentView: ResearchPlotToolView,
+  key: string
+): ResearchPlotToolView | null {
+  if (key === "ArrowLeft" || key === "ArrowUp") {
+    return currentView === "workspace" ? "statistics" : "workspace";
+  }
+
+  if (key === "ArrowRight" || key === "ArrowDown") {
+    return currentView === "workspace" ? "statistics" : "workspace";
+  }
+
+  if (key === "Home") {
+    return "workspace";
+  }
+
+  if (key === "End") {
+    return "statistics";
+  }
+
+  return null;
 }
 
 export function buildRunTable(runs: ResearchRunRecord[]): ResearchResultTableState<ResearchRunTableRow> {

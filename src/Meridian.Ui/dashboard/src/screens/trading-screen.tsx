@@ -42,10 +42,12 @@ import {
   type TradingBlotterDetail,
   type TradingDataTone,
   type TradingConfirmViewModel,
+  type TradingReadinessWorkItemRow,
   type TradingReadinessState,
-  type TradingReadinessSummaryRow
+  type TradingReadinessSummaryRow,
+  type TradingReadinessWarningRow
 } from "@/screens/trading-screen.view-model";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, OperatorWorkItem, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingAcceptanceGate, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingAcceptanceGate, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -1550,8 +1552,16 @@ function AcceptanceStatusCard({
             <AcceptanceRow key={item.label} item={item} />
           ))}
         </div>
-        {(readinessVm.workItems.length > 0 || readinessVm.warnings.length > 0) && (
-          <OperatorWorkItemList workItems={readinessVm.workItems} warnings={readinessVm.warnings} />
+        {readinessVm.hasOperatorAttention && (
+          <OperatorWorkItemList
+            summaryText={readinessVm.workItemSummaryText}
+            listLabel={readinessVm.workItemListLabel}
+            primaryKind={readinessVm.primaryWorkItemKind}
+            workItems={readinessVm.visibleWorkItems}
+            workItemOverflowLabel={readinessVm.workItemOverflowLabel}
+            warnings={readinessVm.visibleWarnings}
+            warningOverflowLabel={readinessVm.warningOverflowLabel}
+          />
         )}
       </CardContent>
     </Card>
@@ -1585,58 +1595,76 @@ function AcceptanceRow({ item }: { item: CockpitAcceptanceItem }) {
 }
 
 function OperatorWorkItemList({
+  summaryText,
+  listLabel,
+  primaryKind,
   workItems,
-  warnings
+  workItemOverflowLabel,
+  warnings,
+  warningOverflowLabel
 }: {
-  workItems: OperatorWorkItem[];
-  warnings: string[];
+  summaryText: string;
+  listLabel: string;
+  primaryKind: string | null;
+  workItems: TradingReadinessWorkItemRow[];
+  workItemOverflowLabel: string | null;
+  warnings: TradingReadinessWarningRow[];
+  warningOverflowLabel: string | null;
 }) {
-  const primaryWorkItem = workItems[0] ?? null;
-
   return (
-    <div className="panel-surface p-4">
+    <div className="panel-surface p-4" role="region" aria-label={listLabel}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Operator work items</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {workItems.length} readiness item{workItems.length === 1 ? "" : "s"} and {warnings.length} warning{warnings.length === 1 ? "" : "s"}.
+            {summaryText}
           </p>
         </div>
-        {primaryWorkItem && (
+        {primaryKind && (
           <span className="rounded-sm border border-border/70 px-3 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            {primaryWorkItem.kind}
+            {primaryKind}
           </span>
         )}
       </div>
 
       {workItems.length > 0 && (
         <ul className="mt-3 grid gap-2 md:grid-cols-2">
-          {workItems.slice(0, 4).map((item) => (
-            <li key={item.workItemId} className={cn("rounded-lg border px-3 py-2 text-sm", workItemTone[item.tone] ?? workItemTone.Info)}>
+          {workItems.map((item) => (
+            <li
+              key={item.workItemId}
+              aria-label={item.ariaLabel}
+              className={cn("rounded-lg border px-3 py-2 text-sm", workItemTone[item.tone] ?? workItemTone.Info)}
+            >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-semibold text-foreground">{item.label}</span>
                 <span className="font-mono text-[11px] uppercase tracking-[0.12em]">{item.tone}</span>
               </div>
               <p className="mt-1 text-xs leading-5 text-foreground/80">{item.detail}</p>
-              {(item.runId || item.auditReference || item.targetPageTag || item.workspace) && (
+              {item.metadataText && (
                 <p className="mt-2 font-mono text-[11px] text-foreground/70">
-                  {[item.workspace, item.targetPageTag, item.runId, item.auditReference].filter(Boolean).join(" · ")}
+                  {item.metadataText}
                 </p>
               )}
             </li>
           ))}
         </ul>
       )}
+      {workItemOverflowLabel && (
+        <p className="mt-3 font-mono text-[11px] text-muted-foreground">{workItemOverflowLabel}</p>
+      )}
 
       {warnings.length > 0 && (
         <ul className="mt-3 space-y-1 text-xs text-warning">
-          {warnings.slice(0, 3).map((warning) => (
-            <li key={warning} className="flex gap-2">
+          {warnings.map((warning) => (
+            <li key={warning.id} aria-label={warning.ariaLabel} className="flex gap-2">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              <span>{warning}</span>
+              <span>{warning.text}</span>
             </li>
           ))}
         </ul>
+      )}
+      {warningOverflowLabel && (
+        <p className="mt-3 font-mono text-[11px] text-warning/90">{warningOverflowLabel}</p>
       )}
     </div>
   );

@@ -101,6 +101,121 @@ class SharedBuildRetentionTests(unittest.TestCase):
             self.assertFalse(middle_bin.exists(), result.stdout)
             self.assertTrue(newest_bin.exists(), result.stdout)
 
+    def test_prunes_recent_workflow_runs_beyond_retained_latest(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            oldest = self._create_artifact(
+                repo_root,
+                "artifacts/desktop-workflows/20260507-010000-debug-startup",
+                age_days=3,
+            )
+            retained = self._create_artifact(
+                repo_root,
+                "artifacts/desktop-workflows/20260507-020000-debug-startup",
+                age_days=2,
+            )
+            newest = self._create_artifact(
+                repo_root,
+                "artifacts/desktop-workflows/20260507-030000-debug-startup",
+                age_days=1,
+            )
+
+            result = self._run_workflow_retention(
+                repo_root / "artifacts" / "desktop-workflows",
+                max_age_days=14,
+                retain_latest=2,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertFalse(oldest.exists(), result.stdout)
+            self.assertTrue(retained.exists(), result.stdout)
+            self.assertTrue(newest.exists(), result.stdout)
+
+    def test_workflow_count_retention_runs_when_age_retention_is_disabled(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            oldest = self._create_artifact(
+                repo_root,
+                "artifacts/desktop-workflows/20260507-010000-debug-startup",
+                age_days=2,
+            )
+            newest = self._create_artifact(
+                repo_root,
+                "artifacts/desktop-workflows/20260507-020000-debug-startup",
+                age_days=1,
+            )
+
+            result = self._run_workflow_retention(
+                repo_root / "artifacts" / "desktop-workflows",
+                max_age_days=0,
+                retain_latest=1,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertFalse(oldest.exists(), result.stdout)
+            self.assertTrue(newest.exists(), result.stdout)
+
+    def test_workflow_retention_ignores_non_run_directories(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            checkpoints = self._create_artifact(
+                repo_root,
+                "artifacts/desktop-workflows/checkpoints",
+                age_days=30,
+            )
+            old_run = self._create_artifact(
+                repo_root,
+                "artifacts/desktop-workflows/20260401-010000-debug-startup",
+                age_days=30,
+            )
+            newest = self._create_artifact(
+                repo_root,
+                "artifacts/desktop-workflows/20260507-010000-debug-startup",
+                age_days=1,
+            )
+
+            result = self._run_workflow_retention(
+                repo_root / "artifacts" / "desktop-workflows",
+                max_age_days=14,
+                retain_latest=1,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue(checkpoints.exists(), result.stdout)
+            self.assertFalse(old_run.exists(), result.stdout)
+            self.assertTrue(newest.exists(), result.stdout)
+
+    def _run_workflow_retention(
+        self,
+        output_root: Path,
+        *,
+        max_age_days: int,
+        retain_latest: int,
+    ) -> subprocess.CompletedProcess[str]:
+        powershell = shutil.which("pwsh") or shutil.which("powershell")
+        if powershell is None:
+            self.skipTest("PowerShell is not available")
+
+        command = [
+            powershell,
+            "-NoProfile",
+        ]
+        if Path(powershell).name.lower().startswith("powershell"):
+            command.extend(["-ExecutionPolicy", "Bypass"])
+        command.extend(
+            [
+                "-Command",
+                (
+                    "$ErrorActionPreference = 'Stop'; "
+                    f". '{SCRIPT_PATH}'; "
+                    f"Invoke-MeridianWorkflowArtifactRetention -OutputRoot '{output_root}' "
+                    f"-MaxAgeDays {max_age_days} -RetainLatest {retain_latest}"
+                ),
+            ]
+        )
+
+        return subprocess.run(command, capture_output=True, text=True)
+
     @staticmethod
     def _create_artifact(
         repo_root: Path,
@@ -115,7 +230,7 @@ class SharedBuildRetentionTests(unittest.TestCase):
         output_file = nested / "output.dll"
         output_file.write_bytes(b"x" * size_bytes)
 
-        timestamp = datetime(2026, 4, 28, tzinfo=timezone.utc).timestamp() - (age_days * 24 * 60 * 60)
+        timestamp = datetime.now(timezone.utc).timestamp() - (age_days * 24 * 60 * 60)
         for candidate in (output_file, nested, path):
             os.utime(candidate, (timestamp, timestamp))
 

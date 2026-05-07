@@ -2,7 +2,7 @@ import { screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
-import type { SessionInfo, SystemOverviewResponse } from "@/types";
+import type { BrokerageConnectionStatus, SessionInfo, SystemOverviewResponse } from "@/types";
 
 const session: SessionInfo = {
   displayName: "Andrew Rowden",
@@ -32,6 +32,24 @@ const overview: SystemOverviewResponse = {
       timestamp: "2026-05-01T00:00:00Z"
     }
   ]
+};
+
+const alpacaConnection: BrokerageConnectionStatus = {
+  providerId: "alpaca",
+  displayName: "Alpaca paper",
+  state: "Connected",
+  isConfigured: true,
+  isConnected: true,
+  authorizationUrl: null,
+  connectedAt: "2026-05-07T11:50:00Z",
+  expiresAt: null,
+  lastError: null,
+  warnings: [],
+  scopes: ["trading:account", "brokerage-sync:read"],
+  environment: "paper",
+  externalAccountId: "PA123",
+  verifiedAt: "2026-05-07T11:50:00Z",
+  maskedKeyId: "********1234"
 };
 
 describe("SettingsScreen", () => {
@@ -82,8 +100,61 @@ describe("SettingsScreen", () => {
       "href",
       "/api/status"
     );
+    expect(screen.getByRole("link", { name: "Open Data workspace diagnostic endpoint" })).toHaveAttribute(
+      "href",
+      "/api/workstation/data"
+    );
+    expect(screen.getByRole("link", { name: "Open Strategy workspace diagnostic endpoint" })).toHaveAttribute(
+      "href",
+      "/api/workstation/strategy"
+    );
     expect(screen.getByRole("list", { name: "Diagnostic endpoint availability" })).toBeInTheDocument();
     expect(screen.getAllByText("All reachable").length).toBeGreaterThan(0);
+  });
+
+  it("renders the Alpaca paper connection panel", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+      />
+    );
+
+    expect(screen.getByText("Alpaca paper API keys")).toBeInTheDocument();
+    expect(screen.getByLabelText("Alpaca trading environment")).toHaveValue("paper");
+    expect(screen.getByText("********1234")).toBeInTheDocument();
+    expect(screen.getByText("PA123")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /connect \/ test/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /clear/i })).toBeEnabled();
+  });
+
+  it("renders backend capability groups with mapped API links", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        research={{ metrics: [], runs: [] }}
+        trading={{} as never}
+        dataOperations={{ metrics: [], providers: [], backfills: [], exports: [] }}
+        governance={{} as never}
+        reporting={{} as never}
+      />
+    );
+
+    expect(screen.getByRole("list", { name: "Backend capability coverage by workstation route" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "GET /api/workstation/workflows for Settings Workflow library" })).toHaveAttribute(
+      "href",
+      "/api/workstation/workflows"
+    );
+    expect(screen.getByRole("link", { name: "GET /api/workstation/runs/history for Strategy Run history" })).toHaveAttribute(
+      "href",
+      "/api/workstation/runs/history"
+    );
+    expect(screen.getByRole("link", { name: "POST /api/workstation/reconciliation/runs for Accounting Run reconciliation" })).toHaveAttribute(
+      "href",
+      "/api/workstation/reconciliation/runs"
+    );
   });
 
   it("renders diagnostic endpoint failures as accessible endpoint cards", () => {

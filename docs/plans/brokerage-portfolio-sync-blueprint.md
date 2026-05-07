@@ -1,6 +1,6 @@
 # Brokerage Portfolio Sync Blueprint
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-05-07
 
 ## Summary
 
@@ -24,8 +24,9 @@ The key design decision is boundary discipline:
 
 ## Current Operator-Ready Slice
 
-The first implemented slice keeps WPF as the operator acceptance lane and treats Alpaca plugin
-checks as market-data evidence only. Brokerage/account continuity is read-side and Meridian-owned:
+The first implemented slice keeps brokerage/account continuity read-side and Meridian-owned. The
+active operator UI lane is now the browser workstation; WPF remains retained support evidence for
+shared contracts and compatibility:
 
 - `src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs` defines account catalog, portfolio sync,
   activity sync, balances, positions, orders, fills, and cash activity.
@@ -45,6 +46,11 @@ checks as market-data evidence only. Brokerage/account continuity is read-side a
 - `src/Meridian.Wpf/ViewModels/FundAccountsViewModel.cs` and `FundAccountsPage.xaml` project
   fund-context, account-queue, provider-routing, shared-data-access, and ready-for-reconciliation
   posture from loaded account/provider evidence as the current WPF account handoff surface.
+- `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.*` projects brokerage connection state,
+  household accounts, account-kind filters, brokerage positions, selected-run evidence, and backend
+  links into the active browser Portfolio workspace.
+- `src/Meridian.Ui/dashboard/src/screens/settings-screen.*` exposes Alpaca paper API-key
+  verification/revocation and backend capability coverage in the active browser Settings workspace.
 
 Implemented routes:
 
@@ -58,6 +64,7 @@ Implemented routes:
 
 Durable local storage now uses `%LocalAppData%/Meridian/workstation/brokerage-sync` by default:
 
+- account links: `links/{fundAccountId}.json`
 - raw provider snapshots: `raw/{provider}/{externalAccount}/{timestamp}.json`
 - normalized projections: `projections/{fundAccountId}/current.json`
 - sync cursors: `cursors/{fundAccountId}.json`
@@ -65,6 +72,60 @@ Durable local storage now uses `%LocalAppData%/Meridian/workstation/brokerage-sy
 This slice is intentionally not a live-trading readiness expansion. Sync failures, stale cursors,
 and Security Master gaps surface as operator warnings and work items; they do not authorize order
 routing.
+
+### Robinhood Read-Only Portfolio Lane
+
+The Robinhood portfolio-viewing slice keeps live brokerage truth separate from paper trading and
+execution evidence. It uses an authorized OAuth-style brokerage aggregation flow and normalized
+read-only account-state endpoints; it does not store Robinhood usernames or passwords, and it does
+not reuse the existing Robinhood execution gateway for portfolio sync.
+
+Implemented Robinhood connection and portfolio routes:
+
+- `POST /api/brokerage-connections/robinhood/connect`
+- `GET /api/brokerage-connections/robinhood/status`
+- `GET /api/brokerage-connections/robinhood/callback`
+- `DELETE /api/brokerage-connections/robinhood`
+- `POST /api/fund-accounts/{accountId}/brokerage-sync/link`
+- `POST /api/fund-accounts/{accountId}/brokerage-sync/run`
+- `GET /api/fund-accounts/{accountId}/brokerage-sync/positions`
+- `GET /api/fund-accounts/{accountId}/brokerage-sync/activity`
+- `POST /api/fund-accounts/{accountId}/brokerage-sync/link`
+- `GET /api/fund-accounts/{accountId}/performance?from=&to=`
+- `GET /api/fund-accounts/{accountId}/cash-flow?from=&to=`
+- `GET /api/portfolio/household?provider=alpaca`
+- `GET /api/brokerage-connections/alpaca/status`
+- `POST /api/brokerage-connections/alpaca/connect`
+- `DELETE /api/brokerage-connections/alpaca`
+- `GET /api/fund-accounts/{accountId}/performance?from=&to=`
+- `GET /api/fund-accounts/{accountId}/cash-flow?from=&to=`
+- `GET /api/portfolio/household?provider=robinhood`
+
+Robinhood account classification is explicit in workstation contracts through
+`BrokerageAccountKindDto` values for `RothIra`, `TraditionalIra`, and `TaxableBrokerage`.
+Each external Robinhood account links to one Meridian `FundAccount`; the household portfolio route
+is a derived rollup and is not the source of truth.
+
+Additional durable local storage:
+
+- account links: `links/{fundAccountId}.json`
+- raw provider snapshots: `raw/robinhood/{externalAccount}/{timestamp}.json`
+- normalized projections: `projections/{fundAccountId}/current.json`
+- sync cursors: `cursors/{fundAccountId}.json`
+
+Robinhood connection configuration is environment-backed and credential-store compatible:
+
+- OAuth connection: `ROBINHOOD_BROKERAGE_AUTHORIZATION_ENDPOINT`,
+  `ROBINHOOD_BROKERAGE_TOKEN_ENDPOINT`, `ROBINHOOD_BROKERAGE_REVOKE_ENDPOINT`,
+  `ROBINHOOD_BROKERAGE_CLIENT_ID`, `ROBINHOOD_BROKERAGE_CLIENT_SECRET`,
+  `ROBINHOOD_BROKERAGE_REDIRECT_URI`, and `ROBINHOOD_BROKERAGE_SCOPE`.
+- Token references/status: `ROBINHOOD_BROKERAGE_ACCESS_TOKEN`,
+  `ROBINHOOD_BROKERAGE_REFRESH_TOKEN`, `ROBINHOOD_BROKERAGE_TOKEN_EXPIRES_AT`,
+  `ROBINHOOD_BROKERAGE_CONNECTED_AT`, and `ROBINHOOD_BROKERAGE_OAUTH_STATE`.
+- Normalized read-only aggregation endpoints: `ROBINHOOD_BROKERAGE_ACCOUNTS_ENDPOINT`,
+  `ROBINHOOD_BROKERAGE_PORTFOLIO_ENDPOINT_TEMPLATE`,
+  `ROBINHOOD_BROKERAGE_ACTIVITY_ENDPOINT_TEMPLATE`, and
+  `ROBINHOOD_BROKERAGE_DISPLAY_NAME`.
 
 ## Scope
 

@@ -602,6 +602,7 @@ public static class ProviderEndpoints
         {
             "alpaca" => DataSourceKind.Alpaca,
             "polygon" => DataSourceKind.Polygon,
+            "yahoo" or "yahoofinance" => DataSourceKind.Yahoo,
             "interactivebrokers" or "ib" => DataSourceKind.IB,
             "synthetic" or "custom" => DataSourceKind.Synthetic,
             _ => default

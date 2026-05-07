@@ -199,6 +199,22 @@ public static class FundAccountEndpoints
         .Produces<IReadOnlyList<WorkstationBrokerageAccountDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        app.MapGet("/api/portfolio/household", async (string? provider, HttpContext context) =>
+        {
+            if (!HasBrokerageSyncAccess(context))
+                return Results.Forbid();
+
+            var sync = ResolveBrokerageSyncService(context);
+            if (sync is null)
+                return BrokerageSyncUnavailable();
+
+            var household = await sync.GetHouseholdAsync(provider, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(household, jsonOptions);
+        })
+        .WithName("GetBrokerageHouseholdPortfolio")
+        .Produces<BrokerageHouseholdPortfolioDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status501NotImplemented);
+
         group.MapGet("/{accountId:guid}/brokerage-sync/status", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
@@ -213,6 +229,30 @@ public static class FundAccountEndpoints
         })
         .WithName("GetAccountBrokerageSyncStatus")
         .Produces<WorkstationBrokerageSyncStatusDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        group.MapPost("/{accountId:guid}/brokerage-sync/link", async (Guid accountId, HttpContext context) =>
+        {
+            if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context, requireWriteAccess: true).ConfigureAwait(false))
+                return Results.Forbid();
+
+            var sync = ResolveBrokerageSyncService(context);
+            if (sync is null)
+                return BrokerageSyncUnavailable();
+
+            var request = await ReadBrokerageLinkRequestAsync(context, jsonOptions).ConfigureAwait(false);
+            if (request is null)
+                return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
+
+            var link = await sync.LinkAccountAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
+            return link is null
+                ? Results.Problem("Fund account or brokerage account link is invalid.", statusCode: StatusCodes.Status400BadRequest)
+                : Results.Json(link, jsonOptions, statusCode: StatusCodes.Status201Created);
+        })
+        .WithName("LinkAccountBrokerageSync")
+        .Accepts<BrokerageAccountLinkRequestDto>("application/json")
+        .Produces<WorkstationBrokerageAccountLinkDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status501NotImplemented);
 
         group.MapPost("/{accountId:guid}/brokerage-sync/run", async (Guid accountId, HttpContext context) =>
@@ -270,6 +310,44 @@ public static class FundAccountEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
 #pragma warning restore CS0618
+
+        group.MapGet("/{accountId:guid}/performance", async (Guid accountId, HttpContext context) =>
+        {
+            if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
+                return Results.Forbid();
+
+            var sync = ResolveBrokerageSyncService(context);
+            if (sync is null)
+                return BrokerageSyncUnavailable();
+
+            var q = context.Request.Query;
+            var from = DateOnly.TryParse(q["from"], out var parsedFrom) ? parsedFrom : (DateOnly?)null;
+            var to = DateOnly.TryParse(q["to"], out var parsedTo) ? parsedTo : (DateOnly?)null;
+            var performance = await sync.GetPerformanceAsync(accountId, from, to, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(performance, jsonOptions);
+        })
+        .WithName("GetAccountBrokeragePerformance")
+        .Produces<BrokeragePortfolioPerformanceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        group.MapGet("/{accountId:guid}/cash-flow", async (Guid accountId, HttpContext context) =>
+        {
+            if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
+                return Results.Forbid();
+
+            var sync = ResolveBrokerageSyncService(context);
+            if (sync is null)
+                return BrokerageSyncUnavailable();
+
+            var q = context.Request.Query;
+            var from = DateOnly.TryParse(q["from"], out var parsedFrom) ? parsedFrom : (DateOnly?)null;
+            var to = DateOnly.TryParse(q["to"], out var parsedTo) ? parsedTo : (DateOnly?)null;
+            var cashFlow = await sync.GetCashFlowAsync(accountId, from, to, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(cashFlow, jsonOptions);
+        })
+        .WithName("GetAccountBrokerageCashFlow")
+        .Produces<BrokerageCashFlowSummaryDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status501NotImplemented);
 
         // ── Balance snapshots ─────────────────────────────────────────────────
 
@@ -564,6 +642,22 @@ public static class FundAccountEndpoints
         }
 
         return await JsonSerializer.DeserializeAsync<WorkstationBrokerageSyncRunRequestDto>(
+                context.Request.Body,
+                jsonOptions,
+                context.RequestAborted)
+            .ConfigureAwait(false);
+    }
+
+    private static async Task<BrokerageAccountLinkRequestDto?> ReadBrokerageLinkRequestAsync(
+        HttpContext context,
+        JsonSerializerOptions jsonOptions)
+    {
+        if (context.Request.ContentLength is null or 0)
+        {
+            return null;
+        }
+
+        return await JsonSerializer.DeserializeAsync<BrokerageAccountLinkRequestDto>(
                 context.Request.Body,
                 jsonOptions,
                 context.RequestAborted)

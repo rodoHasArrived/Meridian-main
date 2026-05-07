@@ -135,6 +135,7 @@ public sealed class AlpacaBrokerageGatewayTests
     [Fact]
     public async Task ConnectAsync_MissingCredentials_ThrowsInvalidOperationException()
     {
+        using var env = AlpacaEnvScope.Clear();
         var options = new AlpacaOptions(KeyId: "", SecretKey: "");
         var sut = new AlpacaBrokerageGateway(
             new StubHttpClientFactory(new ConstantStubHandler(HttpStatusCode.OK, BuildAccountResponse())),
@@ -146,6 +147,47 @@ public sealed class AlpacaBrokerageGatewayTests
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*KeyId*SecretKey*");
+    }
+
+    [Fact]
+    public async Task ConnectAsync_DefaultOptions_UsesPaperAccountEndpointAndAlpacaHeaders()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        HttpRequestMessage? capturedRequest = null;
+        var sut = new AlpacaBrokerageGateway(
+            new StubHttpClientFactory(new CapturingStubHandler(
+                request => capturedRequest = request,
+                _ => BuildAccountResponse())),
+            new AlpacaOptions(KeyId: "paper-key", SecretKey: "paper-secret"),
+            NullLogger<AlpacaBrokerageGateway>.Instance);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        await sut.ConnectAsync(cts.Token);
+
+        capturedRequest.Should().NotBeNull();
+        capturedRequest!.RequestUri!.ToString().Should().Be($"{PaperBaseUrl}/v2/account");
+        capturedRequest.Headers.GetValues("APCA-API-KEY-ID").Should().ContainSingle().Which.Should().Be("paper-key");
+        capturedRequest.Headers.GetValues("APCA-API-SECRET-KEY").Should().ContainSingle().Which.Should().Be("paper-secret");
+    }
+
+    [Fact]
+    public async Task ConnectAsync_LiveEnvironmentVariable_UsesLiveAccountEndpoint()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        Environment.SetEnvironmentVariable(AlpacaCredentialEnvironment.TradingEnvironmentName, "live");
+        HttpRequestMessage? capturedRequest = null;
+        var sut = new AlpacaBrokerageGateway(
+            new StubHttpClientFactory(new CapturingStubHandler(
+                request => capturedRequest = request,
+                _ => BuildAccountResponse())),
+            new AlpacaOptions(KeyId: "live-key", SecretKey: "live-secret"),
+            NullLogger<AlpacaBrokerageGateway>.Instance);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        await sut.ConnectAsync(cts.Token);
+
+        capturedRequest.Should().NotBeNull();
+        capturedRequest!.RequestUri!.ToString().Should().Be("https://api.alpaca.markets/v2/account");
     }
 
     // ── SubmitOrderAsync: equity orders ───────────────────────────────────
@@ -625,5 +667,45 @@ public sealed class AlpacaBrokerageGatewayTests
 
         public HttpClient CreateClient(string name) =>
             new HttpClient(_handler, disposeHandler: false);
+    }
+
+    private sealed class AlpacaEnvScope : IDisposable
+    {
+        private static readonly string[] Names =
+        [
+            AlpacaCredentialEnvironment.KeyIdName,
+            AlpacaCredentialEnvironment.SecretKeyName,
+            AlpacaCredentialEnvironment.TradingEnvironmentName,
+            "APCA_API_KEY_ID",
+            "APCA_API_SECRET_KEY",
+            "ALPACA__KEYID",
+            "ALPACA__SECRETKEY"
+        ];
+
+        private readonly Dictionary<string, string?> _values;
+
+        private AlpacaEnvScope()
+        {
+            _values = Names.ToDictionary(name => name, Environment.GetEnvironmentVariable);
+        }
+
+        public static AlpacaEnvScope Clear()
+        {
+            var scope = new AlpacaEnvScope();
+            foreach (var name in Names)
+            {
+                Environment.SetEnvironmentVariable(name, null);
+            }
+
+            return scope;
+        }
+
+        public void Dispose()
+        {
+            foreach (var (name, value) in _values)
+            {
+                Environment.SetEnvironmentVariable(name, value);
+            }
+        }
     }
 }

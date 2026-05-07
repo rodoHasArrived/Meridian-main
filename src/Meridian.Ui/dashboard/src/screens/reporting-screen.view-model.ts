@@ -69,6 +69,41 @@ export interface ReportingChipViewModel {
   value: string;
 }
 
+export interface ReportingWorkflowProfileRow {
+  id: string;
+  name: string;
+  summary: string;
+  readinessLabel: string;
+  readinessTone: "success" | "warning" | "muted";
+  isSelected: boolean;
+  selectAriaLabel: string;
+}
+
+export interface ReportingWorkflowBackendLink {
+  id: string;
+  method: "GET" | "POST";
+  label: string;
+  href: string;
+  ariaLabel: string;
+}
+
+export interface ReportingWorkflowTaskPanel {
+  regionLabel: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "muted";
+  chips: ReportingChipViewModel[];
+  targetsLabel: string;
+  targets: ReportingPackTargetRow[];
+  profileListLabel: string;
+  profiles: ReportingWorkflowProfileRow[];
+  selectedSummary: string;
+  backendLinksLabel: string;
+  backendLinks: ReportingWorkflowBackendLink[];
+}
+
 export interface ReportingScreenViewModel {
   title: string;
   description: string;
@@ -92,6 +127,7 @@ export interface ReportingScreenViewModel {
   hasPackTargets: boolean;
   packTargetsSummary: string;
   packTargetsListLabel: string;
+  workflowTaskPanel: ReportingWorkflowTaskPanel | null;
   loadingTitle: string;
   loadingDetail: string;
   exportStatus: ReportingExportStatusState | null;
@@ -106,7 +142,8 @@ const defaultReportingExportServices: ReportingExportServices = {
 
 export function useReportingScreenViewModel(
   reporting: GovernanceReportingSummary | null,
-  services: ReportingExportServices = defaultReportingExportServices
+  services: ReportingExportServices = defaultReportingExportServices,
+  pathname = "/reporting"
 ): ReportingScreenViewModel {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [runningProfileId, setRunningProfileId] = useState<string | null>(null);
@@ -153,6 +190,7 @@ export function useReportingScreenViewModel(
       hasPackTargets: false,
       packTargetsSummary: "No report-pack targets configured.",
       packTargetsListLabel: "Report-pack targets",
+      workflowTaskPanel: null,
       loadingTitle: "Loading Reporting",
       loadingDetail: "Waiting for governed report-pack and export evidence.",
       exportStatus,
@@ -221,6 +259,13 @@ export function useReportingScreenViewModel(
     label: target,
     ariaLabel: `${target} report-pack target`
   }));
+  const workflowTaskPanel = buildWorkflowTaskPanel({
+    reporting,
+    rows,
+    packTargets,
+    selectedProfile: selectedProfileData,
+    pathname
+  });
 
   return {
     title: "Report packs",
@@ -253,6 +298,7 @@ export function useReportingScreenViewModel(
         ? `${packCount} report-pack target${packCount === 1 ? "" : "s"} configured.`
         : "No report-pack targets configured.",
     packTargetsListLabel: "Report-pack targets",
+    workflowTaskPanel,
     loadingTitle: "Loading Reporting",
     loadingDetail: "Waiting for governed report-pack and export evidence.",
     exportStatus,
@@ -297,6 +343,114 @@ function buildPackTargetChips(
     { label: "Visible", value: packTargetCountLabel },
     { label: "Inspector", value: statusTitle }
   ];
+}
+
+function buildWorkflowTaskPanel({
+  reporting,
+  rows,
+  packTargets,
+  selectedProfile,
+  pathname
+}: {
+  reporting: GovernanceReportingSummary;
+  rows: ReportingProfileRow[];
+  packTargets: ReportingPackTargetRow[];
+  selectedProfile: GovernanceReportingProfile | null;
+  pathname: string;
+}): ReportingWorkflowTaskPanel | null {
+  if (!isReportPackRoute(pathname)) {
+    return null;
+  }
+
+  const readyProfiles = reporting.profiles.filter((profile) => profile.loaderScript && profile.dataDictionary).length;
+  const statusTone: ReportingWorkflowTaskPanel["statusTone"] =
+    packTargets.length === 0 ? "warning" : readyProfiles > 0 ? "success" : "muted";
+  const statusLabel =
+    packTargets.length === 0
+      ? "Targets missing"
+      : readyProfiles > 0
+        ? "Approval-ready"
+        : "Evidence review";
+
+  return {
+    regionLabel: "Report-pack approval task",
+    eyebrow: "Workflow task",
+    title: "Report-pack approval",
+    description:
+      "Review loaded report-pack targets, pick the export profile that carries the packet evidence, then preview or run the backend export before approval.",
+    statusLabel,
+    statusTone,
+    chips: [
+      { label: "Targets", value: String(packTargets.length) },
+      { label: "Profiles", value: String(reporting.profiles.length) },
+      { label: "Ready profiles", value: String(readyProfiles) },
+      { label: "Backend", value: "/api/fund-structure/report-packs" }
+    ],
+    targetsLabel: "Report-pack approval targets",
+    targets: packTargets,
+    profileListLabel: "Report-pack export profiles",
+    profiles: rows.map((row) => {
+      const profile = reporting.profiles.find((item) => item.id === row.id);
+      const loaderReady = profile?.loaderScript === true;
+      const dictionaryReady = profile?.dataDictionary === true;
+      const readinessTone: ReportingWorkflowProfileRow["readinessTone"] =
+        loaderReady && dictionaryReady ? "success" : loaderReady || dictionaryReady ? "warning" : "muted";
+      const readinessLabel =
+        loaderReady && dictionaryReady
+          ? "Packet evidence ready"
+          : loaderReady
+            ? "Loader only"
+            : dictionaryReady
+              ? "Dictionary only"
+              : "Evidence missing";
+
+      return {
+        id: row.id,
+        name: row.name,
+        summary: `${row.formatLabel} for ${row.targetLabel}`,
+        readinessLabel,
+        readinessTone,
+        isSelected: row.isSelected,
+        selectAriaLabel: `Select ${row.name} for report-pack approval`
+      };
+    }),
+    selectedSummary: selectedProfile
+      ? `${selectedProfile.name} is selected for report-pack approval using ${selectedProfile.format} output to ${selectedProfile.targetTool}.`
+      : "Select a profile to enable packet preview and export actions.",
+    backendLinksLabel: "Report-pack backend endpoints",
+    backendLinks: [
+      {
+        id: "report-pack-catalog",
+        method: "GET",
+        label: "Report-pack catalog",
+        href: "/api/fund-structure/report-packs",
+        ariaLabel: "Open report-pack catalog backend endpoint"
+      },
+      {
+        id: "export-preview",
+        method: "GET",
+        label: "Export preview",
+        href: selectedProfile ? `/api/export/preview?profile=${encodeURIComponent(selectedProfile.id)}` : "/api/export/preview",
+        ariaLabel: selectedProfile
+          ? `Preview ${selectedProfile.name} export payload`
+          : "Open export preview backend endpoint"
+      },
+      {
+        id: "export-run",
+        method: "POST",
+        label: "Run export",
+        href: "/api/export/analysis",
+        ariaLabel: selectedProfile
+          ? `Run ${selectedProfile.name} export analysis`
+          : "Run export analysis backend endpoint"
+      }
+    ]
+  };
+}
+
+function isReportPackRoute(pathname: string): boolean {
+  const normalized = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/reporting";
+  return normalized === "/reporting/report-packs";
 }
 
 function buildProfileReadinessSummary(profile: GovernanceReportingProfile): string {
