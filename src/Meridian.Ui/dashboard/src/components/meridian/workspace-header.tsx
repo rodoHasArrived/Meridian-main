@@ -75,35 +75,21 @@ export function WorkspaceHeader({
           <span className="text-xs leading-5 opacity-80">{viewModel.liveBanner.detail}</span>
         </div>
       ) : null}
-      <div className="workspace-header-shell px-4 py-4 lg:px-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
+      <div className="workspace-header-shell px-4 py-3 lg:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 flex-col gap-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="eyebrow-label">{viewModel.eyebrow}</div>
               {viewModel.badges.map((badge) => (
                 <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
                   {badge.label}
                 </Badge>
               ))}
             </div>
-            <div className="space-y-2">
-              <div className="eyebrow-label">{viewModel.eyebrow}</div>
-              <h1 className="font-display text-[2rem] font-semibold leading-tight text-foreground">{viewModel.title}</h1>
-              <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{viewModel.description}</p>
-            </div>
+            <h1 className="font-display text-xl font-semibold leading-snug text-foreground">{viewModel.title}</h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div
-              className="toolbar-chip"
-              aria-label={viewModel.sessionPillAriaLabel}
-            >
-              <span className="font-mono">
-                {viewModel.sessionLabel}
-                {viewModel.sessionRoleLabel ? (
-                  <span className="ml-2 text-muted-foreground">{viewModel.sessionRoleLabel}</span>
-                ) : null}
-              </span>
-            </div>
+          <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
             {viewModel.refreshAction && onRefresh ? (
               <Button
                 variant="ghost"
@@ -114,11 +100,11 @@ export function WorkspaceHeader({
                 disabled={viewModel.refreshAction.disabled}
               >
                 <RefreshCcw className={`size-4 ${viewModel.refreshAction.disabled ? "animate-spin" : ""}`} />
-                {viewModel.refreshAction.label}
               </Button>
             ) : null}
             <Button
               variant="secondary"
+              size="sm"
               onClick={onOpenCommandPalette}
               title={viewModel.commandAction.title}
               aria-label={viewModel.commandAction.ariaLabel}
@@ -127,15 +113,6 @@ export function WorkspaceHeader({
               {viewModel.commandAction.label}
             </Button>
           </div>
-        </div>
-
-        <div className="workspace-header-grid mt-4" aria-label="Workspace shell context">
-          {viewModel.metaItems.map((item) => (
-            <div key={item.id} className="workspace-header-card" aria-label={item.ariaLabel}>
-              <div className="eyebrow-label">{item.label}</div>
-              <div className="workspace-header-card-value">{item.value}</div>
-            </div>
-          ))}
         </div>
       </div>
       <span className="sr-only" aria-live="polite">{viewModel.liveAnnouncement}</span>
