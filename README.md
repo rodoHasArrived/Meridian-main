@@ -759,7 +759,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── components-nav.html
 │   │   ├── components-table.html
 │   │   ├── design-standards.html
+│   │   ├── index.html
 │   │   ├── institutional-workstation.html
+│   │   ├── preview-common.css
 │   │   ├── screen-recipes.html
 │   │   ├── spacing-radii.html
 │   │   ├── spacing-scale.html
@@ -5833,6 +5835,7 @@ Use these documents together when planning or implementing new work:
 │   │       └── WorkstationBootstrapDtos.cs
 │   ├── Meridian.Core
 │   │   ├── Config
+│   │   │   ├── AlpacaCredentialEnvironment.cs
 │   │   │   ├── AlpacaOptions.cs
 │   │   │   ├── AppConfig.cs
 │   │   │   ├── BackfillConfig.cs
@@ -6200,6 +6203,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── RobinhoodHistoricalDataProvider.cs
 │   │   │   │   ├── RobinhoodMarketDataClient.cs
 │   │   │   │   ├── RobinhoodOptionsChainProvider.cs
+│   │   │   │   ├── RobinhoodReadOnlyBrokerageSyncAdapter.cs
 │   │   │   │   ├── RobinhoodSymbolSearchModels.cs
 │   │   │   │   └── RobinhoodSymbolSearchProvider.cs
 │   │   │   ├── Stooq
@@ -6684,11 +6688,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── trading-screen.test.tsx
 │   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
-│   │   │   │   │   ├── trading-screen.view-model.ts
-│   │   │   │   │   ├── workspace-placeholder-screen.test.tsx
-│   │   │   │   │   ├── workspace-placeholder-screen.tsx
-│   │   │   │   │   ├── workspace-placeholder-screen.view-model.test.ts
-│   │   │   │   │   └── workspace-placeholder-screen.view-model.ts
+│   │   │   │   │   └── trading-screen.view-model.ts
 │   │   │   │   ├── styles
 │   │   │   │   │   └── index.css
 │   │   │   │   ├── test
@@ -6704,8 +6704,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-C3eEdy7w.css
-│   │           │   └── index-Dbu3ad81.js
+│   │           │   ├── index-CLwnO8Bf.css
+│   │           │   └── index-CtM50wiG.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -6843,6 +6843,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillEndpoints.cs
 │   │   │   ├── BackfillScheduleEndpoints.cs
 │   │   │   ├── BankingEndpoints.cs
+│   │   │   ├── BrokerageConnectionEndpoints.cs
 │   │   │   ├── CalendarEndpoints.cs
 │   │   │   ├── CanonicalizationEndpoints.cs
 │   │   │   ├── CatalogEndpoints.cs
@@ -6902,7 +6903,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Serialization
 │   │   │   └── DirectLendingJsonContext.cs
 │   │   ├── Services
+│   │   │   ├── AlpacaBrokerageConnectionService.cs
 │   │   │   ├── BackfillCoordinator.cs
+│   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
 │   │   │   ├── ConfigStore.cs
 │   │   │   ├── Dk1TrustGateReadinessService.cs
@@ -7033,6 +7036,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── QuantScriptExecutionHistoryModels.cs
 │       │   ├── QuantScriptModels.cs
 │       │   ├── ResearchWorkspaceShellPresentationModels.cs
+│       │   ├── SecurityMasterPresentationModels.cs
 │       │   ├── SettingsModels.cs
 │       │   ├── ShellNavigationCatalog.DataOperations.cs
 │       │   ├── ShellNavigationCatalog.Governance.cs
@@ -7797,6 +7801,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── RobinhoodBrokerageGatewayTests.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
 │   │   │   │   ├── RobinhoodMarketDataClientTests.cs
+│   │   │   │   ├── RobinhoodReadOnlyBrokerageSyncAdapterTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
 │   │   │   │   ├── SyntheticMarketDataProviderTests.cs
@@ -7958,6 +7963,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── MmfRebuildTests.cs
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   └── Ui
+│   │       ├── AlpacaBrokerageConnectionServiceTests.cs
+│   │       ├── BrokerageConnectionEndpointsTests.cs
 │   │       ├── BrokeragePortfolioSyncServiceTests.cs
 │   │       ├── DirectLendingEndpointsTests.cs
 │   │       ├── EdgarReferenceDataEndpointsTests.cs
@@ -8197,6 +8204,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-624 directories, 7398 files
+624 directories, 7405 files
 ```
 <!-- readme-tree end -->
