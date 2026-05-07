@@ -289,6 +289,14 @@ public static class WorkstationEndpoints
         })
         .WithName("GetWorkstationReporting");
 
+        group.MapGet("/portfolio", async (HttpContext context) =>
+        {
+            var payload = await BuildPortfolioPayloadAsync(context).ConfigureAwait(false);
+            return Results.Json(payload, jsonOptions);
+        })
+        .WithName("GetWorkstationPortfolio")
+        .Produces<WorkstationPortfolioPayload>(200);
+
         group.MapPost("/reconciliation/runs", async (ReconciliationRunRequest request, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationRunService>();
@@ -2368,6 +2376,127 @@ public static class WorkstationEndpoints
                     : "Critical";
 
     // PR-03: returns typed DTO instead of anonymous object
+    private static async Task<WorkstationPortfolioPayload> BuildPortfolioPayloadAsync(HttpContext context)
+    {
+        var readService = context.RequestServices.GetService<StrategyRunReadService>();
+        var portfolio = context.RequestServices.GetService<IPortfolioState>();
+        var oms = context.RequestServices.GetService<IOrderManager>();
+        var brokerageConfiguration = context.RequestServices.GetService<BrokerageConfiguration>();
+
+        // Resolve all runs for the run-linked equity panel
+        StrategyRunSummary[] allRuns = [];
+        if (readService is not null)
+        {
+            allRuns = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false))
+                .Take(12)
+                .ToArray();
+        }
+
+        // --- Metrics ---
+        var realisedPnl = portfolio?.RealisedPnl ?? allRuns.FirstOrDefault()?.NetPnl ?? 0m;
+        var unrealisedPnl = portfolio?.UnrealisedPnl ?? 0m;
+        var totalPnl = realisedPnl + unrealisedPnl;
+        var pnlTone = totalPnl >= 0m ? "success" : "warning";
+
+        var metrics = new WorkstationMetricCard[]
+        {
+            new("portfolio-net-pnl", "Net P&L", FormatCurrency(totalPnl), totalPnl >= 0m ? "+session" : "-session", pnlTone),
+            new("portfolio-cash", "Cash", portfolio is not null ? FormatCurrency(portfolio.Cash) : "—", "0%", "default"),
+            new("portfolio-value", "Portfolio Value", portfolio is not null ? FormatCurrency(portfolio.PortfolioValue) : "—", "0%", "default"),
+            new("portfolio-runs", "Linked Runs", allRuns.Length.ToString(CultureInfo.InvariantCulture), "0%", "default")
+        };
+
+        // --- Positions ---
+        WorkstationTradingPositionRow[] positions;
+        if (portfolio is not null && portfolio.Positions.Count > 0)
+        {
+            positions = portfolio.Positions.Values.Select(pos => new WorkstationTradingPositionRow(
+                Symbol: pos.Symbol,
+                Side: pos.Quantity >= 0 ? "Long" : "Short",
+                Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
+                MarkPrice: "—",
+                DayPnl: "—",
+                UnrealizedPnl: FormatCurrency(pos.UnrealizedPnl),
+                Exposure: "—")).ToArray();
+        }
+        else
+        {
+            positions = [];
+        }
+
+        // --- Risk state ---
+        var grossExposure = 0m;
+        var netExposureValue = 0m;
+        var riskState = "Healthy";
+        var riskSummary = "Portfolio exposure is within configured paper thresholds.";
+
+        if (portfolio is not null)
+        {
+            grossExposure = portfolio.Positions.Values.Sum(static pos => Math.Abs(pos.AverageCostBasis * pos.Quantity));
+            netExposureValue = portfolio.Positions.Values.Sum(pos => pos.AverageCostBasis * pos.Quantity);
+            var drawdownPct = portfolio.PortfolioValue > 0m ? totalPnl / portfolio.PortfolioValue : 0m;
+            if (drawdownPct < -0.05m)
+            {
+                riskState = "Constrained";
+                riskSummary = "Portfolio has breached the 5% drawdown threshold.";
+            }
+            else if (drawdownPct < -0.02m)
+            {
+                riskState = "Observe";
+                riskSummary = "Exposure nearing guardrail limits.";
+            }
+        }
+
+        var risk = new WorkstationTradingRiskState(
+            State: riskState,
+            Summary: riskSummary,
+            NetExposure: portfolio is not null ? FormatCurrency(netExposureValue) : "—",
+            GrossExposure: portfolio is not null ? FormatCurrency(grossExposure) : "—",
+            Var95: "—",
+            MaxDrawdown: portfolio is not null && portfolio.PortfolioValue > 0m
+                ? FormatPercent(totalPnl / portfolio.PortfolioValue)
+                : "—",
+            BuyingPowerUsed: "—",
+            ActiveGuardrails: []);
+
+        // --- Brokerage state ---
+        var brokerageValidation = BrokerageValidationEvaluator.Evaluate(brokerageConfiguration);
+        var latestRun = allRuns.FirstOrDefault(static r => r.Mode == StrategyRunMode.Paper) ?? allRuns.FirstOrDefault();
+        var brokerage = new WorkstationTradingBrokerageState(
+            Provider: brokerageValidation.GatewayDisplayName,
+            Account: latestRun is not null && !string.IsNullOrWhiteSpace(latestRun.PortfolioId) ? latestRun.PortfolioId : "—",
+            Environment: latestRun?.Mode == StrategyRunMode.Live ? "live" : "paper",
+            Connection: portfolio is not null ? "Connected" : "Disconnected",
+            LastHeartbeat: portfolio is not null ? "live" : "—",
+            OrderIngress: oms is not null ? "healthy" : "—",
+            FillFeed: portfolio is not null ? "healthy" : "—",
+            Notes: [BuildTradingBrokerageNotes(latestRun, portfolio is not null, brokerageConfiguration)]);
+
+        // --- Run-linked equity rows ---
+        var runs = allRuns.Select(static run => new WorkstationPortfolioRunRow(
+            RunId: run.RunId,
+            StrategyName: run.StrategyName,
+            Engine: run.Engine.ToString(),
+            Mode: run.Mode.ToString().ToLowerInvariant(),
+            Status: run.Status.ToString(),
+            Pnl: run.NetPnl.HasValue ? FormatCurrency(run.NetPnl.Value) : "—",
+            Sharpe: "—",
+            Dataset: run.DatasetReference ?? "—",
+            Window: run.StartedAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            LastUpdated: run.LastUpdatedAt.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
+            Notes: BuildRunNotes(run),
+            PromotionState: run.Promotion?.State.ToString())).ToArray();
+
+        return new WorkstationPortfolioPayload(
+            Metrics: metrics,
+            Positions: positions,
+            Risk: risk,
+            Brokerage: brokerage,
+            Runs: runs,
+            CashFlow: null);
+    }
+
     private static async Task<WorkstationGovernancePayload> BuildGovernancePayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
@@ -3477,10 +3606,10 @@ public static class WorkstationEndpoints
         return ledgerCash.Value - portfolioCash.Value;
     }
 
-    private static object BuildGovernanceReportingPayload()
+    private static WorkstationGovernanceReportingPayload BuildGovernanceReportingPayload()
     {
         var profiles = ExportProfile.GetBuiltInProfiles()
-            .Select(static profile => new GovernanceReportingProfilePayload(
+            .Select(static profile => new WorkstationGovernanceReportingProfilePayload(
                 Id: profile.Id,
                 Name: profile.Name,
                 TargetTool: profile.TargetTool,
@@ -3496,14 +3625,12 @@ public static class WorkstationEndpoints
             .Select(static profile => profile.Id)
             .ToArray();
 
-        return new
-        {
-            profileCount = profiles.Length,
-            recommendedProfiles = recommended,
-            profiles,
-            reportPackTargets = new[] { "board", "investor", "compliance", "fund-ops" },
-            summary = $"{profiles.Length} export/reporting profiles are available for governance workflows."
-        };
+        return new WorkstationGovernanceReportingPayload(
+            ProfileCount: profiles.Length,
+            RecommendedProfiles: recommended,
+            Profiles: profiles,
+            ReportPackTargets: ["board", "investor", "compliance", "fund-ops"],
+            Summary: $"{profiles.Length} export/reporting profiles are available for governance workflows.");
     }
 
     private static string BuildDisplayName(StrategyRunSummary? latest)
@@ -4167,14 +4294,6 @@ public static class WorkstationEndpoints
         string? AccountName,
         string Reason);
 
-    private sealed record GovernanceReportingProfilePayload(
-        string Id,
-        string Name,
-        string TargetTool,
-        string Format,
-        string Description,
-        bool LoaderScript,
-        bool DataDictionary);
 
     private sealed record ProviderTrustRationalePayload(
         string Status,

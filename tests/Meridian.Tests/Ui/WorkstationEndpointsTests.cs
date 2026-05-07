@@ -2753,6 +2753,115 @@ public sealed class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    [Fact]
+    public async Task MapWorkstationEndpoints_PortfolioWorkspace_ShouldReturnTypedPayloadWithRunsAndPositions()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "portfolio-run-backtest",
+            strategyId: "strat-portfolio",
+            strategyName: "Portfolio Test Strategy",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 4, 1, 9, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities"));
+        await store.RecordRunAsync(BuildRun(
+            runId: "portfolio-run-paper",
+            strategyId: "strat-portfolio",
+            strategyName: "Portfolio Test Strategy",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 4, 2, 9, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities"));
+
+        var client = app.GetTestClient();
+
+        using var portfolio = await ReadJsonAsync(client, "/api/workstation/portfolio");
+
+        // Metrics are present and non-empty
+        var metrics = portfolio.RootElement.GetProperty("metrics");
+        metrics.GetArrayLength().Should().Be(4);
+        metrics.EnumerateArray().Should().Contain(m =>
+            m.GetProperty("id").GetString() == "portfolio-runs" &&
+            m.GetProperty("value").GetString() == "2");
+
+        // Positions array exists (empty when no live portfolio)
+        portfolio.RootElement.GetProperty("positions").GetArrayLength().Should().BeGreaterThanOrEqualTo(0);
+
+        // Risk state is present
+        var risk = portfolio.RootElement.GetProperty("risk");
+        risk.GetProperty("state").GetString().Should().NotBeNullOrEmpty();
+        risk.GetProperty("summary").GetString().Should().NotBeNullOrEmpty();
+
+        // Brokerage state is present
+        var brokerage = portfolio.RootElement.GetProperty("brokerage");
+        brokerage.GetProperty("provider").GetString().Should().NotBeNullOrEmpty();
+        brokerage.GetProperty("connection").GetString().Should().NotBeNullOrEmpty();
+
+        // Run-linked equity panel has both runs
+        var runs = portfolio.RootElement.GetProperty("runs");
+        runs.GetArrayLength().Should().Be(2);
+        runs.EnumerateArray()
+            .Select(r => r.GetProperty("runId").GetString())
+            .Should().BeEquivalentTo("portfolio-run-paper", "portfolio-run-backtest");
+        runs.EnumerateArray().Should().AllSatisfy(r =>
+        {
+            r.GetProperty("strategyName").GetString().Should().Be("Portfolio Test Strategy");
+            r.GetProperty("mode").GetString().Should().BeOneOf("paper", "backtest");
+            r.GetProperty("notes").GetString().Should().NotBeNull();
+        });
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_PortfolioWorkspace_WithoutRunReadService_ShouldReturnEmptyRunsAndStableShape()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        using var portfolio = await ReadJsonAsync(client, "/api/workstation/portfolio");
+
+        portfolio.RootElement.GetProperty("metrics").GetArrayLength().Should().Be(4);
+        portfolio.RootElement.GetProperty("positions").GetArrayLength().Should().Be(0);
+        portfolio.RootElement.GetProperty("runs").GetArrayLength().Should().Be(0);
+        portfolio.RootElement.GetProperty("risk").GetProperty("state").GetString().Should().Be("Healthy");
+        portfolio.RootElement.GetProperty("brokerage").GetProperty("connection").GetString().Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReportingWorkspace_ShouldReturnTypedReportingPayloadWithProfiles()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        using var reporting = await ReadJsonAsync(client, "/api/workstation/reporting");
+
+        var reportingSection = reporting.RootElement.GetProperty("reporting");
+        reportingSection.GetProperty("profileCount").GetInt32().Should().BeGreaterThan(0);
+        reportingSection.GetProperty("summary").GetString().Should().Contain("profiles are available");
+        reportingSection.GetProperty("reportPackTargets").EnumerateArray()
+            .Select(t => t.GetString())
+            .Should().Contain("board").And.Contain("investor").And.Contain("compliance");
+
+        var profiles = reportingSection.GetProperty("profiles").EnumerateArray().ToArray();
+        profiles.Should().NotBeEmpty();
+        profiles.Should().AllSatisfy(profile =>
+        {
+            profile.GetProperty("id").GetString().Should().NotBeNullOrEmpty();
+            profile.GetProperty("name").GetString().Should().NotBeNullOrEmpty();
+            profile.GetProperty("format").GetString().Should().NotBeNullOrEmpty();
+        });
+
+        var recommended = reportingSection.GetProperty("recommendedProfiles").EnumerateArray()
+            .Select(r => r.GetString())
+            .ToArray();
+        recommended.Should().Contain("excel").Or.Contain("python-pandas");
+    }
+
     private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
