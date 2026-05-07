@@ -124,7 +124,7 @@ public sealed class RobinhoodReadOnlyBrokerageSyncAdapterTests
     public async Task Scenario_MissingOAuthToken_ReadOnlyAggregatorFailsWithoutCallingEndpoint()
     {
         var adapter = CreateAdapter(
-            responses: [],
+            responses: new Dictionary<string, string>(),
             accessToken: "");
 
         var act = async () => await adapter.GetAccountsAsync();
