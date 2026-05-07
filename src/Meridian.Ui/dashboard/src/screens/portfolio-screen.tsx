@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from "react";
 import { BriefcaseBusiness, LineChart, Wallet } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,39 @@ const cashFlowBorderClass = {
   warning: "border-warning/30",
   danger: "border-danger/30"
 } as const;
+
+function handleBrokerageAccountFilterKeyDown(
+  event: KeyboardEvent<HTMLDivElement>,
+  selectAdjacentBrokerageAccount: (direction: "next" | "previous" | "first" | "last") => void
+) {
+  const direction = accountFilterKeyDirection(event.key);
+  if (!direction) {
+    return;
+  }
+
+  event.preventDefault();
+  selectAdjacentBrokerageAccount(direction);
+}
+
+function accountFilterKeyDirection(key: string): "next" | "previous" | "first" | "last" | null {
+  if (key === "ArrowRight" || key === "ArrowDown") {
+    return "next";
+  }
+
+  if (key === "ArrowLeft" || key === "ArrowUp") {
+    return "previous";
+  }
+
+  if (key === "Home") {
+    return "first";
+  }
+
+  if (key === "End") {
+    return "last";
+  }
+
+  return null;
+}
 
 export function PortfolioScreen({
   trading,
@@ -163,7 +197,12 @@ export function PortfolioScreen({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label={vm.brokerageAccountFilterLabel}>
+          <div
+            className="flex flex-wrap items-center gap-2"
+            role="group"
+            aria-label={vm.brokerageAccountFilterLabel}
+            onKeyDown={(event) => handleBrokerageAccountFilterKeyDown(event, vm.selectAdjacentBrokerageAccount)}
+          >
             {vm.brokerageAccountOptions.map((option) => (
               <Button
                 key={option.key}
@@ -179,9 +218,21 @@ export function PortfolioScreen({
             ))}
           </div>
 
-          {vm.brokerageConnectionWarnings.length > 0 ? (
-            <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-              {vm.brokerageConnectionWarnings[0]}
+          {vm.brokerageWarningRows.length > 0 ? (
+            <div
+              role="status"
+              aria-label={vm.brokerageWarningCountLabel}
+              className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning"
+            >
+              <div className="font-semibold text-warning">{vm.brokerageWarningCountLabel}</div>
+              <ul className="mt-2 grid gap-2">
+                {vm.brokerageWarningRows.map((warning) => (
+                  <li key={warning.id} aria-label={warning.ariaLabel} className="grid gap-1 sm:grid-cols-[10rem_1fr]">
+                    <span className="font-medium text-warning">{warning.label}</span>
+                    <span className="text-warning/90">{warning.detail}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           ) : null}
 
@@ -212,6 +263,11 @@ export function PortfolioScreen({
                       <dd className="font-mono text-foreground">{account.syncedAt}</dd>
                     </div>
                   </dl>
+                  {account.hasWarning ? (
+                    <div role="status" className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning">
+                      {account.warningText}
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>

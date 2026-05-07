@@ -20,15 +20,15 @@ public partial class MainPage
         host.PaneDropRequested -= OnSplitPanePaneDropRequested;
         host.PaneDropRequested += OnSplitPanePaneDropRequested;
 
-        if (string.IsNullOrWhiteSpace(_viewModel.SplitPane.GetAssignedPageTag(0)))
+        if (string.IsNullOrWhiteSpace(_viewModel.PaneHost.GetAssignedPageTag(0)))
         {
-            _viewModel.SplitPane.AssignPageToPane(_viewModel.CurrentPageTag, 0);
+            _viewModel.PaneHost.AssignPageToPane(_viewModel.CurrentPageTag, 0);
         }
 
         if (!_splitPaneEventsHooked)
         {
-            _viewModel.SplitPane.LayoutChanged += OnSplitPaneLayoutChanged;
-            _viewModel.SplitPane.ActivePaneChanged += OnSplitPaneActivePaneChanged;
+            _viewModel.PaneHost.LayoutChanged += OnSplitPaneLayoutChanged;
+            _viewModel.PaneHost.ActivePaneChanged += OnSplitPaneActivePaneChanged;
             _splitPaneEventsHooked = true;
         }
 
@@ -37,16 +37,20 @@ public partial class MainPage
 
     private void OnSplitPanePaneDropRequested(object? sender, PaneDropEventArgs e)
     {
-        var activePaneIndex = _viewModel.SplitPane.ApplyPaneDrop(e.PageTag, e.TargetPaneIndex, e.Action);
+        var result = _shellNavigationCoordinator.ApplyPaneDrop(
+            _viewModel.PaneHost,
+            e.PageTag,
+            e.TargetPaneIndex,
+            e.Action);
         SyncSplitPaneContent();
 
-        var activePane = _splitPaneHost?.GetPaneFrame(activePaneIndex);
+        var activePane = _splitPaneHost?.GetPaneFrame(result.ActivePaneIndex);
         if (activePane is not null)
         {
-            _navigationService.Initialize(activePane);
+            _shellNavigationCoordinator.InitializeNavigationFrame(activePane);
         }
 
-        _viewModel.NavigateToPageCommand.Execute(e.PageTag);
+        _viewModel.NavigateToPageCommand.Execute(result.PageTag);
     }
 
     private void OnSplitPaneLayoutChanged(object? sender, PaneLayout layout)
@@ -66,27 +70,21 @@ public partial class MainPage
             return;
         }
 
-        for (var paneIndex = 0; paneIndex < _viewModel.SplitPane.SelectedLayout.PaneCount; paneIndex++)
+        foreach (var state in _shellNavigationCoordinator.GetVisiblePaneContentStates(_viewModel.PaneHost))
         {
-            var frame = _splitPaneHost.GetPaneFrame(paneIndex);
+            var frame = _splitPaneHost.GetPaneFrame(state.PaneIndex);
             if (frame is null)
             {
                 continue;
             }
 
-            var pageTag = _viewModel.SplitPane.GetAssignedPageTag(paneIndex);
-            if (string.IsNullOrWhiteSpace(pageTag))
-            {
-                continue;
-            }
-
-            frame.Content = _navigationService.CreatePageContent(pageTag);
+            frame.Content = _shellNavigationCoordinator.CreatePaneContent(state);
         }
 
-        var activePane = _splitPaneHost.GetPaneFrame(_viewModel.SplitPane.ActivePaneIndex);
+        var activePane = _splitPaneHost.GetPaneFrame(_viewModel.PaneHost.ActivePaneIndex);
         if (activePane is not null)
         {
-            _navigationService.Initialize(activePane);
+            _shellNavigationCoordinator.InitializeNavigationFrame(activePane);
         }
     }
 }

@@ -8,6 +8,8 @@ using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Workflows;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Shell.Services;
+using Meridian.Wpf.Shell.ViewModels;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -89,7 +91,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         WorkstationWorkflowSummaryService? workflowSummaryService = null,
         IWorkstationOperatorInboxApiClient? operatorInboxApiClient = null,
         SettingsConfigurationService? settingsConfigurationService = null,
-        IWorkflowActionCatalog? workflowActionCatalog = null)
+        IWorkflowActionCatalog? workflowActionCatalog = null,
+        IShellRouteRegistry? shellRouteRegistry = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
@@ -102,7 +105,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _settingsConfigurationService = settingsConfigurationService ?? SettingsConfigurationService.Instance;
         _shellDensityMode = _settingsConfigurationService.GetShellDensityMode();
 
-        SplitPane = new SplitPaneViewModel();
+        SplitPane = new SplitPaneViewModel(shellRouteRegistry);
+        PaneHost = SplitPane;
         CommandPalettePages = new ReadOnlyObservableCollection<ShellCommandPaletteEntry>(_commandPalettePages);
         PrimaryNavigationItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_primaryNavigationItems);
         SecondaryNavigationItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_secondaryNavigationItems);
@@ -158,6 +162,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     public INavigationService NavigationService => _navigationService;
+
+    public PaneHostViewModel PaneHost { get; }
 
     public SplitPaneViewModel SplitPane { get; }
 

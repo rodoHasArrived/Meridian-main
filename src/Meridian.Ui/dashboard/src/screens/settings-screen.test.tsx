@@ -127,6 +127,12 @@ describe("SettingsScreen", () => {
     expect(screen.getByText("PA123")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /connect \/ test/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /clear/i })).toBeEnabled();
+    expect(screen.getByLabelText(/Key ID/)).toHaveAccessibleDescription("Stored values remain masked after refresh.");
+    expect(screen.getByLabelText(/Secret key/)).toHaveAccessibleDescription("Secret key is never displayed after submit.");
+    expect(screen.getByRole("button", { name: /connect \/ test/i })).toHaveAttribute(
+      "title",
+      "Enter an Alpaca key ID before testing the connection."
+    );
   });
 
   it("renders backend capability groups with mapped API links", () => {

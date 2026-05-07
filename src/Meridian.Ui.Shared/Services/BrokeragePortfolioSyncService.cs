@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Application.Accounts;
 using Meridian.Application.FundAccounts;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
@@ -305,10 +306,7 @@ public sealed class BrokeragePortfolioSyncService
         ct.ThrowIfCancellationRequested();
 
         var projection = await LoadProjectionAsync(fundAccountId, ct).ConfigureAwait(false);
-        var query = _services.GetService<IFundAccountService>();
-        IReadOnlyList<AccountBalanceSnapshotDto> timeline = query is null
-            ? []
-            : await query.GetBalanceHistoryAsync(fundAccountId, from, to, ct).ConfigureAwait(false);
+        var timeline = await GetBalanceHistoryAsync(fundAccountId, from, to, ct).ConfigureAwait(false);
         var cashEntries = FilterCashTransactions(projection, from, to)
             .Select(ToCashFlowEntry)
             .ToArray();
@@ -646,8 +644,7 @@ public sealed class BrokeragePortfolioSyncService
         WorkstationBrokerageSyncViewDto projection,
         CancellationToken ct)
     {
-        var fundAccountService = _services.GetService<IFundAccountService>();
-        if (fundAccountService is null || projection.Balance is null)
+        if (projection.Balance is null)
         {
             return;
         }
@@ -655,7 +652,7 @@ public sealed class BrokeragePortfolioSyncService
         var asOfDate = DateOnly.FromDateTime(attemptedAt.UtcDateTime);
         var source = $"brokerage-sync:{projection.Link.ProviderId}";
         var externalReference = projection.Link.ExternalAccountId;
-        var latestSnapshot = await fundAccountService.GetLatestBalanceSnapshotAsync(fundAccountId, ct).ConfigureAwait(false);
+        var latestSnapshot = await GetLatestBalanceSnapshotAsync(fundAccountId, ct).ConfigureAwait(false);
         var isDuplicateSnapshot = latestSnapshot is not null
             && latestSnapshot.AsOfDate == asOfDate
             && string.Equals(latestSnapshot.Source, source, StringComparison.OrdinalIgnoreCase)
@@ -669,7 +666,7 @@ public sealed class BrokeragePortfolioSyncService
             return;
         }
 
-        await fundAccountService.RecordBalanceSnapshotAsync(
+        var snapshotRecorded = await RecordBalanceSnapshotAsync(
             new RecordAccountBalanceSnapshotRequest(
                 AccountId: fundAccountId,
                 AsOfDate: asOfDate,
@@ -683,7 +680,12 @@ public sealed class BrokeragePortfolioSyncService
                 ExternalReference: externalReference),
             ct).ConfigureAwait(false);
 
-        await fundAccountService.ReconcileAccountAsync(
+        if (!snapshotRecorded)
+        {
+            return;
+        }
+
+        await ReconcileAccountAsync(
             new ReconcileAccountRequest(
                 fundAccountId,
                 DateOnly.FromDateTime(attemptedAt.UtcDateTime),
@@ -888,15 +890,84 @@ public sealed class BrokeragePortfolioSyncService
             AccountKind: request?.AccountKind ?? BrokerageAccountKindDto.Unknown);
     }
 
-    private async Task<AccountSummaryDto?> ResolveFundAccountAsync(Guid fundAccountId, CancellationToken ct)
+    private async Task<IReadOnlyList<AccountBalanceSnapshotDto>> GetBalanceHistoryAsync(
+        Guid fundAccountId,
+        DateOnly? from,
+        DateOnly? to,
+        CancellationToken ct)
     {
-        var fundAccountService = _services.GetService(typeof(IFundAccountService)) as IFundAccountService;
-        if (fundAccountService is null)
+        if (_services.GetService<IAccountQueryService>() is { } query)
         {
-            return null;
+            return await query.GetBalanceTimelineAsync(fundAccountId, from, to, ct).ConfigureAwait(false);
         }
 
-        return await fundAccountService.GetAccountAsync(fundAccountId, ct).ConfigureAwait(false);
+        if (_services.GetService<IFundAccountService>() is { } fundAccountService)
+        {
+            return await fundAccountService.GetBalanceHistoryAsync(fundAccountId, from, to, ct).ConfigureAwait(false);
+        }
+
+        return [];
+    }
+
+    private async Task<AccountBalanceSnapshotDto?> GetLatestBalanceSnapshotAsync(Guid fundAccountId, CancellationToken ct)
+    {
+        if (_services.GetService<IAccountQueryService>() is { } query)
+        {
+            return await query.GetLatestBalanceSnapshotAsync(fundAccountId, ct).ConfigureAwait(false);
+        }
+
+        if (_services.GetService<IFundAccountService>() is { } fundAccountService)
+        {
+            return await fundAccountService.GetLatestBalanceSnapshotAsync(fundAccountId, ct).ConfigureAwait(false);
+        }
+
+        return null;
+    }
+
+    private async Task<bool> RecordBalanceSnapshotAsync(RecordAccountBalanceSnapshotRequest request, CancellationToken ct)
+    {
+        if (_services.GetService<IAccountManagementService>() is { } management)
+        {
+            await management.RecordBalanceSnapshotAsync(request, ct).ConfigureAwait(false);
+            return true;
+        }
+
+        if (_services.GetService<IFundAccountService>() is { } fundAccountService)
+        {
+            await fundAccountService.RecordBalanceSnapshotAsync(request, ct).ConfigureAwait(false);
+            return true;
+        }
+
+        return false;
+    }
+
+    private async Task ReconcileAccountAsync(ReconcileAccountRequest request, CancellationToken ct)
+    {
+        if (_services.GetService<IAccountManagementService>() is { } management)
+        {
+            await management.ReconcileAccountAsync(request, ct).ConfigureAwait(false);
+            return;
+        }
+
+        if (_services.GetService<IFundAccountService>() is { } fundAccountService)
+        {
+            await fundAccountService.ReconcileAccountAsync(request, ct).ConfigureAwait(false);
+        }
+    }
+
+    private async Task<AccountSummaryDto?> ResolveFundAccountAsync(Guid fundAccountId, CancellationToken ct)
+    {
+        if (_services.GetService<IAccountQueryService>() is { } query)
+        {
+            return await query.GetAccountAsync(fundAccountId, ct).ConfigureAwait(false);
+        }
+
+        if (_services.GetService<IFundAccountService>() is { } fundAccountService)
+        {
+            return await fundAccountService.GetAccountAsync(fundAccountId, ct).ConfigureAwait(false);
+        }
+
+        return null;
     }
 
     private async Task<WorkstationSecurityReference?> ResolveSecurityAsync(string symbol, CancellationToken ct)

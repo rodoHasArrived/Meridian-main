@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Application.Accounts;
 using Meridian.Application.FundAccounts;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
@@ -544,6 +545,142 @@ public sealed class BrokeragePortfolioSyncServiceTests
         }
     }
 
+    [Fact]
+    public async Task Scenario_CashOnlyBalanceHistory_BrokeragePerformanceIncludesHistoryWithoutSecuritiesValue()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("robinhood"),
+                new FixedActivityAdapter("robinhood"),
+                includeSecurityLookup: true);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountService = serviceProvider.GetRequiredService<IFundAccountService>();
+
+            await fundAccountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "RH-CASHONLY",
+                    "Robinhood Cash History",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-30),
+                    "tests"),
+                cts.Token);
+            await service.LinkAccountAsync(
+                fundAccountId,
+                new BrokerageAccountLinkRequestDto("robinhood", "RH-CASHONLY", "Robinhood Cash History", "ops-review", BrokerageAccountKindDto.TaxableBrokerage),
+                cts.Token);
+            await fundAccountService.RecordBalanceSnapshotAsync(
+                new RecordAccountBalanceSnapshotRequest(
+                    fundAccountId,
+                    new DateOnly(2026, 1, 1),
+                    "USD",
+                    CashBalance: 10000m,
+                    Source: "manual-opening-balance",
+                    RecordedBy: "tests"),
+                cts.Token);
+            await fundAccountService.RecordBalanceSnapshotAsync(
+                new RecordAccountBalanceSnapshotRequest(
+                    fundAccountId,
+                    new DateOnly(2026, 2, 1),
+                    "USD",
+                    CashBalance: 11000m,
+                    SecuritiesMarketValue: 14000m,
+                    Source: "brokerage-sync:robinhood",
+                    RecordedBy: "tests",
+                    ExternalReference: "RH-CASHONLY"),
+                cts.Token);
+
+            var performance = await service.GetPerformanceAsync(
+                fundAccountId,
+                new DateOnly(2026, 1, 1),
+                new DateOnly(2026, 2, 1),
+                cts.Token);
+
+            performance.HasSufficientHistory.Should().BeTrue();
+            performance.Points.Should().HaveCount(2);
+            performance.Points[0].Equity.Should().Be(10000m, "cash-only history snapshots should still contribute usable beginning equity");
+            performance.Points[1].Equity.Should().Be(25000m);
+            performance.BeginningEquity.Should().Be(10000m);
+            performance.EndingEquity.Should().Be(25000m);
+            performance.CashAdjustedReturn.Should().Be(15000m);
+            performance.Warnings.Should().BeEmpty();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_AccountReadModelContracts_BrokerageSyncUsesSplitQueryAndManagementContracts()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var accountService = new InMemoryFundAccountService();
+            var services = new ServiceCollection();
+            services.AddSingleton<IAccountQueryService>(accountService);
+            services.AddSingleton<IAccountManagementService>(accountService);
+            services.AddSingleton<ISecurityReferenceLookup>(new StaticSecurityReferenceLookup());
+            await using var serviceProvider = services.BuildServiceProvider();
+            var service = new BrokeragePortfolioSyncService(
+                new BrokeragePortfolioSyncOptions(root, TimeSpan.FromMinutes(30), "robinhood"),
+                catalogs: [],
+                portfolioAdapters: [new FixedPortfolioAdapter("robinhood")],
+                activityAdapters: [new FixedActivityAdapter("robinhood")],
+                services: serviceProvider,
+                logger: NullLogger<BrokeragePortfolioSyncService>.Instance);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+            await accountService.CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "RH-QRY",
+                    "Robinhood query-only account",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-30),
+                    "tests"),
+                cts.Token);
+            await accountService.RecordBalanceSnapshotAsync(
+                new RecordAccountBalanceSnapshotRequest(
+                    fundAccountId,
+                    DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)),
+                    "USD",
+                    CashBalance: 100000m,
+                    Source: "import:cash-only",
+                    RecordedBy: "tests"),
+                cts.Token);
+
+            var link = await service.LinkAccountAsync(
+                fundAccountId,
+                new BrokerageAccountLinkRequestDto("robinhood", "RH-QRY", "Robinhood query-only account", "ops-review", BrokerageAccountKindDto.TaxableBrokerage),
+                cts.Token);
+            var status = await service.RunSyncAsync(fundAccountId, request: null, cts.Token);
+            var latestSnapshot = await accountService.GetLatestBalanceSnapshotAsync(fundAccountId, cts.Token);
+            var performance = await service.GetPerformanceAsync(fundAccountId, null, null, cts.Token);
+            var reconciliationRuns = await accountService.GetReconciliationRunsAsync(fundAccountId, cts.Token);
+
+            link.Should().NotBeNull("brokerage links should resolve accounts through the query contract");
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Healthy);
+            latestSnapshot.Should().NotBeNull("brokerage sync should record account snapshots through the management contract");
+            latestSnapshot!.SecuritiesMarketValue.Should().Be(75000m);
+            performance.HasSufficientHistory.Should().BeTrue("performance should read balance history from the query contract");
+            performance.BeginningEquity.Should().Be(100000m, "cash-only history must treat missing securities value as zero");
+            performance.EndingEquity.Should().Be(125000m);
+            reconciliationRuns.Should().ContainSingle("snapshot enrichment should still trigger account reconciliation through the management contract");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
     private static (BrokeragePortfolioSyncService Service, ServiceProvider Provider) CreateService(
         string root,
         IBrokeragePortfolioSync portfolioAdapter,

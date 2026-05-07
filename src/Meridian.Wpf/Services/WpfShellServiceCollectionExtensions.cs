@@ -1,4 +1,6 @@
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Shell.Services;
+using Meridian.Wpf.Shell.ViewModels;
 using Meridian.Ui.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +13,10 @@ public static class WpfShellServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.AddSingleton<IShellRouteRegistry, ShellRouteRegistry>();
+        services.AddTransient<IPageContentFactory, PageContentFactory>();
+        services.AddTransient<IShellNavigationCoordinator, ShellNavigationCoordinator>();
+        services.AddTransient<PaneHostViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
         services.AddTransient<Meridian.Wpf.Views.MainPage>();
         services.AddTransient(sp => new ResearchWorkspaceShellPresentationService(

@@ -559,7 +559,9 @@ migration notes in `docs/status/contract-compatibility-matrix.md`.
 Run `scripts/generate_contract_review_packet.py` before weekly shared-interop reviews when scoped
 contracts change; attach the JSON/Markdown packet and record the owner decision.
 `scripts/dev/cleanup-generated.ps1` previews generated build/test output cleanup by default; add
-`-Execute` only after reviewing the listed untracked directories.
+`-Execute` only after reviewing the listed untracked directories. Add `-IncludeNodeModules` when
+you explicitly want to include repo-local dependency installs such as
+`src/Meridian.Ui/dashboard/node_modules`; the default build-output scan skips dependency trees.
 
 TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet
 implemented and only delegates to `buildctl doctor`. Do not advertise it as a fix workflow until

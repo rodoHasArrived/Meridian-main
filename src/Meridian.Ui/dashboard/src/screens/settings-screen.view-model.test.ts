@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildSettingsScreenViewModel } from "@/screens/settings-screen.view-model";
+import { buildAlpacaConnectionCommandState, buildSettingsScreenViewModel } from "@/screens/settings-screen.view-model";
 import type { BrokerageConnectionStatus, SessionInfo, SystemOverviewResponse } from "@/types";
 
 const session: SessionInfo = {
@@ -228,6 +228,51 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.alpacaConnectionPanel.stateLabel).toBe("Verification failed");
     expect(vm.alpacaConnectionPanel.statusTone).toBe("danger");
     expect(vm.alpacaConnectionPanel.statusDetail).toContain("401");
+  });
+
+  it("derives Alpaca credential command disabled and validation state", () => {
+    const emptyState = buildAlpacaConnectionCommandState({
+      canClear: false,
+      form: {
+        keyId: "",
+        secretKey: "",
+        environment: "paper",
+        busyAction: null,
+        submitted: true,
+        actionMessage: null,
+        actionTone: "default"
+      }
+    });
+
+    expect(emptyState).toMatchObject({
+      canSubmit: false,
+      canEdit: true,
+      keyIdError: true,
+      secretKeyError: true,
+      clearDisabledReason: "No stored Alpaca credentials are available to clear."
+    });
+    expect(emptyState.submitDisabledReason).toContain("key ID");
+
+    const busyState = buildAlpacaConnectionCommandState({
+      canClear: true,
+      form: {
+        keyId: "AK123",
+        secretKey: "secret",
+        environment: "live",
+        busyAction: "connect",
+        submitted: true,
+        actionMessage: null,
+        actionTone: "default"
+      }
+    });
+
+    expect(busyState).toMatchObject({
+      canSubmit: false,
+      canEdit: false,
+      submitBusy: true,
+      clearBusy: false
+    });
+    expect(busyState.submitDisabledReason).toContain("already running");
   });
 
   it("surfaces canonical backend capability groups with browser routes and mapped endpoints", () => {

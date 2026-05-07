@@ -204,6 +204,11 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         }
     }
 
+    /// <summary>
+    /// Returns aggregate open positions across all accounts for legacy single-account callers.
+    /// </summary>
+    public IReadOnlyList<IPosition> GetPositions() => Positions.Values.ToArray();
+
     /// <inheritdoc />
     public MultiAccountPortfolioSnapshot GetAggregateSnapshot()
     {

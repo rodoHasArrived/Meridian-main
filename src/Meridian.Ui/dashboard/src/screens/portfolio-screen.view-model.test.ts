@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { buildPortfolioScreenViewModel } from "@/screens/portfolio-screen.view-model";
 import type {
   BrokerageConnectionStatus,
@@ -413,5 +413,67 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.brokeragePositionRows[0].symbol).toBe("AAPL");
     expect(vm.brokeragePositionRows[0].accountKind).toBe("Roth IRA");
     expect(vm.headerChips[0]).toEqual({ label: "Alpaca paper equity", value: "$375,000" });
+  });
+
+  it("keeps connected brokerage portfolios in warning posture when sync warnings exist", () => {
+    const warningPortfolio: BrokerageHouseholdPortfolio = {
+      ...brokeragePortfolio,
+      warnings: ["Portfolio sync is stale."],
+      accounts: [
+        { ...brokeragePortfolio.accounts[0], warnings: ["Roth IRA account sync stale."] },
+        brokeragePortfolio.accounts[1]
+      ]
+    };
+
+    const vm = buildPortfolioScreenViewModel({
+      trading,
+      research,
+      governance,
+      brokerageConnection,
+      brokeragePortfolio: warningPortfolio
+    });
+
+    expect(vm.brokerageConnectionLabel).toBe("Connected");
+    expect(vm.brokerageConnectionTone).toBe("warning");
+    expect(vm.brokerageWarningCountLabel).toBe("2 brokerage warnings");
+    expect(vm.brokerageWarningRows).toEqual([
+      expect.objectContaining({
+        label: "Alpaca paper portfolio",
+        detail: "Portfolio sync is stale."
+      }),
+      expect.objectContaining({
+        label: "Roth IRA account",
+        detail: "Roth IRA account sync stale."
+      })
+    ]);
+    expect(vm.brokerageAccountRows[0]).toMatchObject({
+      hasWarning: true,
+      warningText: "Roth IRA account sync stale."
+    });
+  });
+
+  it("keeps adjacent brokerage account selector transitions in the view model", () => {
+    const selectBrokerageAccount = vi.fn();
+    const vm = buildPortfolioScreenViewModel({
+      trading,
+      research,
+      governance,
+      brokerageConnection,
+      brokeragePortfolio,
+      selectedBrokerageAccountKey: "fund-roth",
+      selectBrokerageAccount
+    });
+
+    vm.selectAdjacentBrokerageAccount("next");
+    expect(selectBrokerageAccount).toHaveBeenLastCalledWith("fund-taxable");
+
+    vm.selectAdjacentBrokerageAccount("previous");
+    expect(selectBrokerageAccount).toHaveBeenLastCalledWith("all");
+
+    vm.selectAdjacentBrokerageAccount("first");
+    expect(selectBrokerageAccount).toHaveBeenLastCalledWith("all");
+
+    vm.selectAdjacentBrokerageAccount("last");
+    expect(selectBrokerageAccount).toHaveBeenLastCalledWith("fund-taxable");
   });
 });

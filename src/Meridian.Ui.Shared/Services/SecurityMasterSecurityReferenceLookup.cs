@@ -123,13 +123,24 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
             return true;
         }
 
-        return detail.Identifiers.Any(
-            identifier =>
-                (!string.IsNullOrWhiteSpace(requestedSymbol)
-                 && string.Equals(identifier.Value, requestedSymbol, StringComparison.OrdinalIgnoreCase))
-                || (!string.IsNullOrWhiteSpace(requestedIdentifier)
-                    && string.Equals(identifier.Value, requestedIdentifier, StringComparison.OrdinalIgnoreCase)));
+        return detail.Identifiers.Any(identifier =>
+            MatchesIdentifier(identifier, requestedSymbol, requestedIdentifier)
+            && MatchesVenue(identifier, request.Venue));
     }
+
+    private static bool MatchesIdentifier(
+        SecurityIdentifierDto identifier,
+        string? requestedSymbol,
+        string? requestedIdentifier)
+        => (!string.IsNullOrWhiteSpace(requestedSymbol)
+            && string.Equals(identifier.Value, requestedSymbol, StringComparison.OrdinalIgnoreCase))
+           || (!string.IsNullOrWhiteSpace(requestedIdentifier)
+               && string.Equals(identifier.Value, requestedIdentifier, StringComparison.OrdinalIgnoreCase));
+
+    private static bool MatchesVenue(SecurityIdentifierDto identifier, string? requestedVenue)
+        => string.IsNullOrWhiteSpace(requestedVenue)
+           || string.IsNullOrWhiteSpace(identifier.Provider)
+           || string.Equals(identifier.Provider, requestedVenue, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Attempts to read a string property from a <see cref="System.Text.Json.JsonElement"/>

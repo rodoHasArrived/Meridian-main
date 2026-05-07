@@ -1,4 +1,7 @@
+import { useState, type FormEvent } from "react";
+import { connectAlpacaConnection, revokeAlpacaConnection } from "@/lib/api";
 import type {
+  AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
@@ -8,6 +11,196 @@ import type {
   TradingWorkspaceResponse,
   WorkspaceKey
 } from "@/types";
+
+type AlpacaEnvironment = AlpacaBrokerageConnectionRequest["environment"];
+
+export interface SettingsAlpacaConnectionFormState {
+  keyId: string;
+  secretKey: string;
+  environment: AlpacaEnvironment;
+  busyAction: "connect" | "clear" | null;
+  submitted: boolean;
+  actionMessage: string | null;
+  actionTone: "default" | "success" | "danger";
+}
+
+export interface SettingsAlpacaConnectionCommandState {
+  keyIdError: boolean;
+  secretKeyError: boolean;
+  canSubmit: boolean;
+  canEdit: boolean;
+  submitBusy: boolean;
+  clearBusy: boolean;
+  submitDisabledReason: string | null;
+  clearDisabledReason: string | null;
+  statusRole: "status" | "alert";
+  statusClassName: string;
+  keyIdHelpText: string;
+  secretKeyHelpText: string;
+}
+
+export interface SettingsAlpacaConnectionFormViewModel extends SettingsAlpacaConnectionFormState, SettingsAlpacaConnectionCommandState {
+  setKeyId: (value: string) => void;
+  setSecretKey: (value: string) => void;
+  setEnvironment: (value: AlpacaEnvironment) => void;
+  connect: (event: FormEvent<HTMLFormElement>) => Promise<void>;
+  clear: () => Promise<void>;
+}
+
+interface SettingsAlpacaConnectionDependencies {
+  connectConnection?: (request: AlpacaBrokerageConnectionRequest) => Promise<BrokerageConnectionStatus>;
+  revokeConnection?: () => Promise<BrokerageConnectionStatus>;
+}
+
+const emptyAlpacaConnectionForm: SettingsAlpacaConnectionFormState = {
+  keyId: "",
+  secretKey: "",
+  environment: "paper",
+  busyAction: null,
+  submitted: false,
+  actionMessage: null,
+  actionTone: "default"
+};
+
+export function buildAlpacaConnectionCommandState({
+  form,
+  canClear
+}: {
+  form: SettingsAlpacaConnectionFormState;
+  canClear: boolean;
+}): SettingsAlpacaConnectionCommandState {
+  const keyIdMissing = form.keyId.trim().length === 0;
+  const secretKeyMissing = form.secretKey.trim().length === 0;
+  const hasValidationErrors = keyIdMissing || secretKeyMissing;
+  const busy = form.busyAction !== null;
+  const keyIdError = form.submitted && keyIdMissing;
+  const secretKeyError = form.submitted && secretKeyMissing;
+
+  return {
+    keyIdError,
+    secretKeyError,
+    canSubmit: !busy && !hasValidationErrors,
+    canEdit: !busy,
+    submitBusy: form.busyAction === "connect",
+    clearBusy: form.busyAction === "clear",
+    submitDisabledReason: busy
+      ? "Alpaca credential request is already running."
+      : keyIdMissing
+        ? "Enter an Alpaca key ID before testing the connection."
+        : secretKeyMissing
+          ? "Enter an Alpaca secret key before testing the connection."
+          : null,
+    clearDisabledReason: busy
+      ? "Alpaca credential request is already running."
+      : canClear
+        ? null
+        : "No stored Alpaca credentials are available to clear.",
+    statusRole: form.actionTone === "danger" ? "alert" : "status",
+    statusClassName: form.actionTone === "danger" ? "text-sm text-danger" : "text-sm text-muted-foreground",
+    keyIdHelpText: keyIdError ? "Key ID is required before Meridian can test the Alpaca account." : "Stored values remain masked after refresh.",
+    secretKeyHelpText: secretKeyError ? "Secret key is required and is cleared after a connection test." : "Secret key is never displayed after submit."
+  };
+}
+
+export function useAlpacaConnectionFormViewModel({
+  onRefresh,
+  canClear,
+  connectConnection = connectAlpacaConnection,
+  revokeConnection = revokeAlpacaConnection
+}: {
+  onRefresh?: () => Promise<void> | void;
+  canClear: boolean;
+} & SettingsAlpacaConnectionDependencies): SettingsAlpacaConnectionFormViewModel {
+  const [form, setForm] = useState<SettingsAlpacaConnectionFormState>(emptyAlpacaConnectionForm);
+  const command = buildAlpacaConnectionCommandState({ form, canClear });
+
+  const setKeyId = (keyId: string) => {
+    setForm((current) => ({ ...current, keyId, actionMessage: null, actionTone: "default" }));
+  };
+
+  const setSecretKey = (secretKey: string) => {
+    setForm((current) => ({ ...current, secretKey, actionMessage: null, actionTone: "default" }));
+  };
+
+  const setEnvironment = (environment: AlpacaEnvironment) => {
+    setForm((current) => ({ ...current, environment, actionMessage: null, actionTone: "default" }));
+  };
+
+  const connect = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const submittedForm = { ...form, submitted: true, actionMessage: null, actionTone: "default" as const };
+    const submittedCommand = buildAlpacaConnectionCommandState({ form: submittedForm, canClear });
+    if (!submittedCommand.canSubmit) {
+      setForm(submittedForm);
+      return;
+    }
+
+    setForm({ ...submittedForm, busyAction: "connect" });
+
+    try {
+      const status = await connectConnection({
+        keyId: form.keyId.trim(),
+        secretKey: form.secretKey.trim(),
+        environment: form.environment
+      });
+      await onRefresh?.();
+      setForm((current) => ({
+        ...current,
+        secretKey: "",
+        busyAction: null,
+        submitted: false,
+        actionMessage: status.isConnected
+          ? "Alpaca account verified."
+          : status.lastError ?? status.warnings[0] ?? "Alpaca connection updated.",
+        actionTone: status.isConnected ? "success" : "danger"
+      }));
+    } catch (err) {
+      setForm((current) => ({
+        ...current,
+        busyAction: null,
+        actionMessage: err instanceof Error ? err.message : "Alpaca connection request failed.",
+        actionTone: "danger"
+      }));
+    }
+  };
+
+  const clear = async () => {
+    const currentCommand = buildAlpacaConnectionCommandState({ form, canClear });
+    if (currentCommand.clearDisabledReason) {
+      return;
+    }
+
+    setForm((current) => ({ ...current, busyAction: "clear", actionMessage: null, actionTone: "default" }));
+
+    try {
+      await revokeConnection();
+      await onRefresh?.();
+      setForm({
+        ...emptyAlpacaConnectionForm,
+        actionMessage: "Alpaca credentials cleared.",
+        actionTone: "success"
+      });
+    } catch (err) {
+      setForm((current) => ({
+        ...current,
+        busyAction: null,
+        actionMessage: err instanceof Error ? err.message : "Alpaca clear request failed.",
+        actionTone: "danger"
+      }));
+    }
+  };
+
+  return {
+    ...form,
+    ...command,
+    setKeyId,
+    setSecretKey,
+    setEnvironment,
+    connect,
+    clear
+  };
+}
 
 export interface SettingsSessionItem {
   label: string;

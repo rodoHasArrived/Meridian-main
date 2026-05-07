@@ -90,6 +90,12 @@ generated publish directories older than 14 days or beyond the latest 5 runs bef
 Tune that with `-OutputRetentionDays <days>` and `-OutputRetainLatest <count>`, or set both to `0`
 to skip publish-output retention for a run.
 
+`scripts/dev/cleanup-generated.ps1` previews untracked generated `bin`, `obj`, `TestResults`, and
+BenchmarkDotNet output by default. The scan skips Node dependency trees so package `bin` folders are
+not treated as .NET build output. Add `-IncludeNodeModules` only when you explicitly want to include
+repo-local dependency installs such as `src/Meridian.Ui/dashboard/node_modules` in the preview or
+execution pass.
+
 ## Event Schema
 
 Each event follows the schema below, stored in `build-events.jsonl`:

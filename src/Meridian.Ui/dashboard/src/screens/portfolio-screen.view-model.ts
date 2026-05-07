@@ -71,6 +71,7 @@ export interface PortfolioBrokerageAccountRow {
   cash: string;
   buyingPower: string;
   syncedAt: string;
+  hasWarning: boolean;
   warningText: string;
 }
 
@@ -94,6 +95,13 @@ export interface PortfolioDetailField {
   label: string;
   value: string;
   tone: "default" | "success" | "warning" | "danger" | "muted";
+}
+
+export interface PortfolioBrokerageWarningRow {
+  id: string;
+  label: string;
+  detail: string;
+  ariaLabel: string;
 }
 
 export interface PortfolioBackendLink {
@@ -153,11 +161,14 @@ export interface PortfolioScreenViewModel {
   brokerageConnectionTone: "default" | "success" | "warning" | "danger";
   brokerageConnectionDetail: string;
   brokerageConnectionWarnings: string[];
+  brokerageWarningRows: PortfolioBrokerageWarningRow[];
+  brokerageWarningCountLabel: string;
   brokerageAccountFilterLabel: string;
   brokeragePositionsTableLabel: string;
   brokerageAccountOptions: PortfolioBrokerageAccountOption[];
   selectedBrokerageAccountKey: string;
   selectBrokerageAccount: (key: string) => void;
+  selectAdjacentBrokerageAccount: (direction: "next" | "previous" | "first" | "last") => void;
   hasBrokerageAccounts: boolean;
   brokerageAccountRows: PortfolioBrokerageAccountRow[];
   hasBrokeragePositions: boolean;
@@ -222,6 +233,12 @@ export function buildPortfolioScreenViewModel({
     ? selectedBrokerageAccountKey
     : "all";
   const brokerageAccountOptions = buildBrokerageAccountOptions(brokerageAccounts, selectedBrokerageKey, providerLabel);
+  const selectAdjacentBrokerageAccount = (direction: "next" | "previous" | "first" | "last") => {
+    const nextKey = nextBrokerageAccountKey(brokerageAccountOptions, selectedBrokerageKey, direction);
+    if (nextKey !== selectedBrokerageKey) {
+      selectBrokerageAccount(nextKey);
+    }
+  };
   const brokeragePositions = (brokeragePortfolio?.positions ?? [])
     .filter((position) => selectedBrokerageKey === "all" || position.fundAccountId === selectedBrokerageKey);
   const brokerageConnectionState = brokerageConnection?.state ?? "NotConfigured";
@@ -229,6 +246,7 @@ export function buildPortfolioScreenViewModel({
     ...(brokerageConnection?.warnings ?? []),
     ...(brokeragePortfolio?.warnings ?? [])
   ];
+  const brokerageWarningRows = buildBrokerageWarningRows(brokerageConnection, brokeragePortfolio, providerLabel);
   const selectedId =
     positions.find((p, index) => positionId(p.symbol, p.side, index) === selectedPositionId) !== undefined
       ? selectedPositionId
@@ -338,14 +356,17 @@ export function buildPortfolioScreenViewModel({
     brokerageProviderLabel: providerLabel,
     brokeragePanelEyebrow: `${providerLabel} read-only`,
     brokerageConnectionLabel: brokerageConnectionLabel(brokerageConnectionState),
-    brokerageConnectionTone: brokerageConnectionTone(brokerageConnectionState, brokeragePortfolio),
+    brokerageConnectionTone: brokerageConnectionTone(brokerageConnectionState, brokerageConnection, brokeragePortfolio),
     brokerageConnectionDetail: brokerageConnectionDetail(brokerageConnection, brokeragePortfolio, providerLabel),
     brokerageConnectionWarnings,
+    brokerageWarningRows,
+    brokerageWarningCountLabel: `${brokerageWarningRows.length} brokerage warning${brokerageWarningRows.length === 1 ? "" : "s"}`,
     brokerageAccountFilterLabel: `${providerLabel} account filter`,
     brokeragePositionsTableLabel: `${providerLabel} current positions`,
     brokerageAccountOptions,
     selectedBrokerageAccountKey: selectedBrokerageKey,
     selectBrokerageAccount,
+    selectAdjacentBrokerageAccount,
     hasBrokerageAccounts: brokerageAccounts.length > 0,
     brokerageAccountRows: brokerageAccounts.map(toBrokerageAccountRow),
     hasBrokeragePositions: brokeragePositions.length > 0,
@@ -479,6 +500,29 @@ function buildBrokerageAccountOptions(
   return options;
 }
 
+function nextBrokerageAccountKey(
+  options: PortfolioBrokerageAccountOption[],
+  selectedKey: string,
+  direction: "next" | "previous" | "first" | "last"
+): string {
+  if (options.length === 0) {
+    return selectedKey;
+  }
+
+  if (direction === "first") {
+    return options[0].key;
+  }
+
+  if (direction === "last") {
+    return options[options.length - 1].key;
+  }
+
+  const selectedIndex = Math.max(0, options.findIndex((option) => option.key === selectedKey));
+  const offset = direction === "next" ? 1 : -1;
+  const nextIndex = (selectedIndex + offset + options.length) % options.length;
+  return options[nextIndex].key;
+}
+
 function toBrokerageAccountRow(account: BrokerageHouseholdAccount): PortfolioBrokerageAccountRow {
   return {
     id: account.fundAccountId,
@@ -489,6 +533,7 @@ function toBrokerageAccountRow(account: BrokerageHouseholdAccount): PortfolioBro
     cash: formatCurrency(account.cash),
     buyingPower: formatCurrency(account.buyingPower),
     syncedAt: formatDateTime(account.syncedAt),
+    hasWarning: account.warnings.length > 0,
     warningText: account.warnings.length > 0 ? account.warnings.join(" ") : "No account sync warnings."
   };
 }
@@ -535,12 +580,65 @@ function brokerageConnectionLabel(state: BrokerageConnectionStatus["state"]): st
 
 function brokerageConnectionTone(
   state: BrokerageConnectionStatus["state"],
+  connection: BrokerageConnectionStatus | null | undefined,
   portfolio: BrokerageHouseholdPortfolio | null | undefined
 ): PortfolioScreenViewModel["brokerageConnectionTone"] {
-  if (state === "Connected" && portfolio && portfolio.accounts.length > 0) return "success";
   if (state === "Degraded" || state === "ReauthorizationRequired") return "danger";
-  if (state === "AuthorizationPending" || state === "Disconnected" || portfolio?.warnings.length) return "warning";
+  if (hasBrokerageWarnings(connection, portfolio)) return "warning";
+  if (state === "Connected" && portfolio && portfolio.accounts.length > 0) return "success";
+  if (state === "AuthorizationPending" || state === "Disconnected") return "warning";
   return "default";
+}
+
+function hasBrokerageWarnings(
+  connection: BrokerageConnectionStatus | null | undefined,
+  portfolio: BrokerageHouseholdPortfolio | null | undefined
+): boolean {
+  return Boolean(
+    connection?.warnings.length ||
+      portfolio?.warnings.length ||
+      portfolio?.accounts.some((account) => account.warnings.length > 0)
+  );
+}
+
+function buildBrokerageWarningRows(
+  connection: BrokerageConnectionStatus | null | undefined,
+  portfolio: BrokerageHouseholdPortfolio | null | undefined,
+  providerLabel: string
+): PortfolioBrokerageWarningRow[] {
+  const rows: PortfolioBrokerageWarningRow[] = [];
+
+  for (const [index, warning] of (connection?.warnings ?? []).entries()) {
+    rows.push({
+      id: `connection-${index}`,
+      label: `${providerLabel} connection`,
+      detail: warning,
+      ariaLabel: `${providerLabel} connection warning: ${warning}`
+    });
+  }
+
+  for (const [index, warning] of (portfolio?.warnings ?? []).entries()) {
+    rows.push({
+      id: `portfolio-${index}`,
+      label: `${providerLabel} portfolio`,
+      detail: warning,
+      ariaLabel: `${providerLabel} portfolio warning: ${warning}`
+    });
+  }
+
+  for (const account of portfolio?.accounts ?? []) {
+    for (const [index, warning] of account.warnings.entries()) {
+      const accountLabel = accountKindLabel(account.accountKind);
+      rows.push({
+        id: `${account.fundAccountId}-${index}`,
+        label: `${accountLabel} account`,
+        detail: warning,
+        ariaLabel: `${providerLabel} ${accountLabel} account warning: ${warning}`
+      });
+    }
+  }
+
+  return rows;
 }
 
 function brokerageConnectionDetail(

@@ -1,15 +1,12 @@
-import { useState, type FormEvent } from "react";
 import { Activity, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, ShieldCheck, Trash2, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { connectAlpacaConnection, revokeAlpacaConnection } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { buildSettingsScreenViewModel } from "@/screens/settings-screen.view-model";
+import { buildSettingsScreenViewModel, useAlpacaConnectionFormViewModel } from "@/screens/settings-screen.view-model";
 import type {
-  AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
@@ -90,50 +87,10 @@ export function SettingsScreen({
     error,
     workspaceErrors
   });
-  const [alpacaKeyId, setAlpacaKeyId] = useState("");
-  const [alpacaSecretKey, setAlpacaSecretKey] = useState("");
-  const [alpacaEnvironment, setAlpacaEnvironment] = useState<AlpacaBrokerageConnectionRequest["environment"]>("paper");
-  const [alpacaBusy, setAlpacaBusy] = useState<"connect" | "clear" | null>(null);
-  const [alpacaActionMessage, setAlpacaActionMessage] = useState<string | null>(null);
-
-  const handleAlpacaConnect = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setAlpacaBusy("connect");
-    setAlpacaActionMessage(null);
-
-    try {
-      const status = await connectAlpacaConnection({
-        keyId: alpacaKeyId,
-        secretKey: alpacaSecretKey,
-        environment: alpacaEnvironment
-      });
-      setAlpacaSecretKey("");
-      setAlpacaActionMessage(status.isConnected ? "Alpaca account verified." : status.lastError ?? status.warnings[0] ?? "Alpaca connection updated.");
-      await onRefresh?.();
-    } catch (err) {
-      setAlpacaActionMessage(err instanceof Error ? err.message : "Alpaca connection request failed.");
-    } finally {
-      setAlpacaBusy(null);
-    }
-  };
-
-  const handleAlpacaClear = async () => {
-    setAlpacaBusy("clear");
-    setAlpacaActionMessage(null);
-
-    try {
-      await revokeAlpacaConnection();
-      setAlpacaKeyId("");
-      setAlpacaSecretKey("");
-      setAlpacaEnvironment("paper");
-      setAlpacaActionMessage("Alpaca credentials cleared.");
-      await onRefresh?.();
-    } catch (err) {
-      setAlpacaActionMessage(err instanceof Error ? err.message : "Alpaca clear request failed.");
-    } finally {
-      setAlpacaBusy(null);
-    }
-  };
+  const alpacaForm = useAlpacaConnectionFormViewModel({
+    onRefresh,
+    canClear: vm.alpacaConnectionPanel.canClear
+  });
 
   return (
     <div className="space-y-8">
@@ -254,37 +211,50 @@ export function SettingsScreen({
           </div>
         </CardHeader>
         <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
-          <form className="grid gap-3" onSubmit={handleAlpacaConnect}>
+          <form className="grid gap-3" onSubmit={alpacaForm.connect} noValidate>
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem]">
-              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+              <label htmlFor="alpaca-key-id" className="grid gap-1 text-xs font-medium text-muted-foreground">
                 Key ID
                 <Input
-                  value={alpacaKeyId}
-                  onChange={(event) => setAlpacaKeyId(event.target.value)}
+                  id="alpaca-key-id"
+                  value={alpacaForm.keyId}
+                  onChange={(event) => alpacaForm.setKeyId(event.target.value)}
                   autoComplete="off"
                   placeholder="ALPACA_KEY_ID"
                   leadingIcon={<KeyRound className="h-4 w-4" />}
-                  disabled={alpacaBusy !== null}
+                  disabled={!alpacaForm.canEdit}
+                  error={alpacaForm.keyIdError}
+                  aria-describedby="alpaca-key-id-help"
                 />
+                <span id="alpaca-key-id-help" className={cn("text-[11px] leading-4", alpacaForm.keyIdError ? "text-danger" : "text-muted-foreground")}>
+                  {alpacaForm.keyIdHelpText}
+                </span>
               </label>
-              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+              <label htmlFor="alpaca-secret-key" className="grid gap-1 text-xs font-medium text-muted-foreground">
                 Secret key
                 <Input
+                  id="alpaca-secret-key"
                   type="password"
-                  value={alpacaSecretKey}
-                  onChange={(event) => setAlpacaSecretKey(event.target.value)}
+                  value={alpacaForm.secretKey}
+                  onChange={(event) => alpacaForm.setSecretKey(event.target.value)}
                   autoComplete="off"
                   placeholder="ALPACA_SECRET_KEY"
                   leadingIcon={<ShieldCheck className="h-4 w-4" />}
-                  disabled={alpacaBusy !== null}
+                  disabled={!alpacaForm.canEdit}
+                  error={alpacaForm.secretKeyError}
+                  aria-describedby="alpaca-secret-key-help"
                 />
+                <span id="alpaca-secret-key-help" className={cn("text-[11px] leading-4", alpacaForm.secretKeyError ? "text-danger" : "text-muted-foreground")}>
+                  {alpacaForm.secretKeyHelpText}
+                </span>
               </label>
-              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+              <label htmlFor="alpaca-environment" className="grid gap-1 text-xs font-medium text-muted-foreground">
                 Environment
                 <Select
-                  value={alpacaEnvironment}
-                  onChange={(event) => setAlpacaEnvironment(event.target.value === "live" ? "live" : "paper")}
-                  disabled={alpacaBusy !== null}
+                  id="alpaca-environment"
+                  value={alpacaForm.environment}
+                  onChange={(event) => alpacaForm.setEnvironment(event.target.value === "live" ? "live" : "paper")}
+                  disabled={!alpacaForm.canEdit}
                   aria-label="Alpaca trading environment"
                 >
                   <option value="paper">Paper</option>
@@ -296,23 +266,29 @@ export function SettingsScreen({
               <Button
                 type="submit"
                 size="sm"
-                disabled={alpacaBusy !== null || alpacaKeyId.trim().length === 0 || alpacaSecretKey.trim().length === 0}
+                disabled={!alpacaForm.canSubmit}
+                busy={alpacaForm.submitBusy}
+                busyLabel="Testing Alpaca"
+                disabledReason={alpacaForm.submitDisabledReason}
               >
-                {alpacaBusy === "connect" ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <ShieldCheck className="h-4 w-4" aria-hidden="true" />}
+                <ShieldCheck className="h-4 w-4" aria-hidden="true" />
                 Connect / Test
               </Button>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={handleAlpacaClear}
-                disabled={alpacaBusy !== null || !vm.alpacaConnectionPanel.canClear}
+                onClick={alpacaForm.clear}
+                disabled={alpacaForm.clearDisabledReason !== null}
+                busy={alpacaForm.clearBusy}
+                busyLabel="Clearing Alpaca"
+                disabledReason={alpacaForm.clearDisabledReason}
               >
-                {alpacaBusy === "clear" ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Trash2 className="h-4 w-4" aria-hidden="true" />}
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
                 Clear
               </Button>
-              {alpacaActionMessage ? (
-                <span role="status" className="text-sm text-muted-foreground">{alpacaActionMessage}</span>
+              {alpacaForm.actionMessage ? (
+                <span role={alpacaForm.statusRole} className={alpacaForm.statusClassName}>{alpacaForm.actionMessage}</span>
               ) : null}
             </div>
           </form>

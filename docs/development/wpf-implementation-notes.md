@@ -4,7 +4,7 @@
 
 ## Overview
 
-Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the sole native Windows desktop surface for the platform. It exposes the full Meridian capability set through a workspace-based shell with a command palette, four canonical workspaces (Research, Trading, Data Operations, Governance), and deep drill-in pages for strategy runs, portfolios, and ledger governance.
+Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the retained native Windows desktop surface for the platform. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
 
 ## Architecture
 
@@ -55,6 +55,8 @@ Content Frame
 ```
 
 **Workspace-aware navigation** — `ResolveWorkspaceIdForPage()` maps a page tag to its home workspace so that clicking a sidebar item or executing a command palette entry also activates the correct workspace session state. `WorkspacePrimaryNavList`, `WorkspaceSecondaryNavList`, `WorkspaceOverflowNavList`, and `RelatedWorkflowNavList` all dispatch through the same `NavigateToPageCommand` contract when the operator changes selection.
+
+**Desktop shell MVVM seam** — shell-owned route and pane orchestration now lives under `src/Meridian.Wpf/Shell/`. `IShellRouteRegistry` projects `ShellNavigationCatalog` into route metadata, `IPageContentFactory` preserves existing `NavigationService.CreatePageContent()` behavior for docked pages, `IShellNavigationCoordinator` bridges explicit route/pane state back to the retained frame navigation service, and `PaneHostViewModel` owns pane layout, active-pane, and dropped-page assignments. `MainPage` remains the compatibility shell while its split-pane code-behind is limited to frame/content wiring.
 
 **Canonical sidebar buckets** — the shell now standardizes the left-rail group labels as `Home`, `Active Work`, `Review / Alerts`, and `Admin / Support`. The workspace selector tiles expose the same grouping model in their hover help so operators can see the shell structure before they switch workspaces.
 
@@ -439,6 +441,7 @@ The WPF shell now projects seven root workspace capabilities: Trading, Portfolio
 
 Shell implementation now shares descriptor-driven infrastructure:
 
+- `src/Meridian.Wpf/Shell/` owns route registry, page-content factory, shell navigation coordinator, and pane-host view-model seams for the retained desktop shell
 - `WorkspaceShellPageBase<TStateProvider, TViewModel>` owns dock restore/save, fallback content, and pane opening
 - `WorkspaceShellViewModelBase` carries shell command state
 - `IWorkspaceShellStateProvider` and `WorkspaceShellState` translate active run, operating-context, and preset state into declarative default panes

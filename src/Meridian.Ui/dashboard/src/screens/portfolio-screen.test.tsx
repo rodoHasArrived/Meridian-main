@@ -134,6 +134,22 @@ const brokeragePortfolio: BrokerageHouseholdPortfolio = {
       positionCount: 1,
       cashTransactionCount: 1,
       warnings: []
+    },
+    {
+      fundAccountId: "fund-taxable",
+      providerId: "alpaca",
+      externalAccountId: "alpaca-taxable",
+      displayName: "Alpaca Brokerage",
+      accountKind: "TaxableBrokerage",
+      health: "Healthy",
+      cash: 100000,
+      equity: 250000,
+      buyingPower: 100000,
+      currency: "USD",
+      syncedAt: "2026-05-07T12:00:00Z",
+      positionCount: 1,
+      cashTransactionCount: 1,
+      warnings: []
     }
   ],
   positions: [
@@ -152,6 +168,23 @@ const brokeragePortfolio: BrokerageHouseholdPortfolio = {
       security: null,
       description: "Apple Inc.",
       positionId: "pos-aapl",
+      currency: "USD"
+    },
+    {
+      fundAccountId: "fund-taxable",
+      providerId: "alpaca",
+      externalAccountId: "alpaca-taxable",
+      accountKind: "TaxableBrokerage",
+      symbol: "MSFT",
+      quantity: 5,
+      averageEntryPrice: 300,
+      marketPrice: 350,
+      marketValue: 1750,
+      unrealizedPnl: 250,
+      assetClass: "equity",
+      security: null,
+      description: "Microsoft Corporation",
+      positionId: "pos-msft",
       currency: "USD"
     }
   ]
@@ -207,6 +240,68 @@ describe("PortfolioScreen", () => {
     expect(screen.getByRole("table", { name: /alpaca paper current positions/i })).toBeDefined();
     expect(screen.getAllByText(/alpaca roth ira/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText("AAPL").length).toBeGreaterThan(0);
+  });
+
+  it("renders portfolio and account sync warnings in the live brokerage panel", () => {
+    const warningPortfolio: BrokerageHouseholdPortfolio = {
+      ...brokeragePortfolio,
+      warnings: ["Portfolio sync is stale."],
+      accounts: [
+        { ...brokeragePortfolio.accounts[0], warnings: ["Roth IRA account sync stale."] },
+        brokeragePortfolio.accounts[1]
+      ]
+    };
+
+    renderWithRouter(
+      <PortfolioScreen
+        trading={trading}
+        research={research}
+        governance={governance}
+        brokerageConnection={brokerageConnection}
+        brokeragePortfolio={warningPortfolio}
+      />
+    );
+
+    const warningSummary = screen.getByRole("status", { name: "2 brokerage warnings" });
+    expect(within(warningSummary).getByText("Portfolio sync is stale.")).toBeInTheDocument();
+    expect(within(warningSummary).getByText("Roth IRA account sync stale.")).toBeInTheDocument();
+    expect(screen.getAllByText("Roth IRA account sync stale.").length).toBeGreaterThan(1);
+  });
+
+  it("renders the brokerage account filter as a keyboard-operable button group", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(
+      <PortfolioScreen
+        trading={trading}
+        research={research}
+        governance={governance}
+        brokerageConnection={brokerageConnection}
+        brokeragePortfolio={brokeragePortfolio}
+      />
+    );
+
+    expect(screen.queryByRole("tablist", { name: /alpaca paper account filter/i })).toBeNull();
+    const filter = screen.getByRole("group", { name: /alpaca paper account filter/i });
+    const allButton = within(filter).getByRole("button", { name: /show all alpaca paper accounts/i });
+    const rothButton = within(filter).getByRole("button", { name: /show alpaca paper roth ira account/i });
+    const brokerageButton = within(filter).getByRole("button", { name: /show alpaca paper brokerage account/i });
+
+    allButton.focus();
+    expect(allButton).toHaveFocus();
+    expect(allButton).toHaveAttribute("aria-pressed", "true");
+
+    await user.keyboard("{ArrowRight}");
+    expect(rothButton).toHaveAttribute("aria-pressed", "true");
+    let brokerageTable = screen.getByRole("table", { name: /alpaca paper current positions/i });
+    expect(within(brokerageTable).getByText("AAPL")).toBeDefined();
+    expect(within(brokerageTable).queryByText("MSFT")).toBeNull();
+
+    rothButton.focus();
+    await user.keyboard("{End}");
+    expect(brokerageButton).toHaveAttribute("aria-pressed", "true");
+    brokerageTable = screen.getByRole("table", { name: /alpaca paper current positions/i });
+    expect(within(brokerageTable).getByText("MSFT")).toBeDefined();
+    expect(within(brokerageTable).queryByText("AAPL")).toBeNull();
   });
 
   it("renders a dedicated brokerage-sync workflow panel on the route", () => {
