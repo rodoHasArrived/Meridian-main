@@ -308,7 +308,7 @@ public sealed class BrokeragePortfolioSyncService
         var query = _services.GetService<IFundAccountService>();
         IReadOnlyList<AccountBalanceSnapshotDto> timeline = query is null
             ? []
-            : await query.GetBalanceTimelineAsync(fundAccountId, from, to, ct).ConfigureAwait(false);
+            : await query.GetBalanceHistoryAsync(fundAccountId, from, to, ct).ConfigureAwait(false);
         var cashEntries = FilterCashTransactions(projection, from, to)
             .Select(ToCashFlowEntry)
             .ToArray();
@@ -319,7 +319,7 @@ public sealed class BrokeragePortfolioSyncService
             .OrderBy(static snapshot => snapshot.AsOfDate)
             .Select(snapshot => new BrokeragePortfolioPerformancePointDto(
                 snapshot.AsOfDate,
-                snapshot.CashBalance + snapshot.SecuritiesMarketValue,
+                snapshot.CashBalance + (snapshot.SecuritiesMarketValue ?? 0m),
                 snapshot.CashBalance,
                 cashByDate.GetValueOrDefault(snapshot.AsOfDate)))
             .ToArray();
