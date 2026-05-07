@@ -4,6 +4,7 @@ import {
   getDataWorkspace,
   getGovernanceWorkspace,
   getAlpacaConnectionStatus,
+  getPortfolioWorkspace,
   getReportingWorkspace,
   getSession,
   getStrategyWorkspace,
@@ -17,6 +18,7 @@ import type {
   BrokerageHouseholdPortfolio,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
+  PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -33,6 +35,7 @@ interface WorkstationDataState {
   overview: SystemOverviewResponse | null;
   research: ResearchWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
+  portfolio: PortfolioWorkspaceResponse | null;
   dataOperations: DataOperationsWorkspaceResponse | null;
   governance: GovernanceWorkspaceResponse | null;
   reporting: GovernanceWorkspaceResponse | null;
@@ -51,6 +54,7 @@ const initialState: WorkstationDataState = {
   overview: null,
   research: null,
   trading: null,
+  portfolio: null,
   dataOperations: null,
   governance: null,
   reporting: null,
@@ -75,6 +79,7 @@ export function useWorkstationData() {
       overview,
       research,
       trading,
+      portfolio,
       dataOperations,
       governance,
       reporting,
@@ -87,6 +92,7 @@ export function useWorkstationData() {
       getSystemStatus(),
       getStrategyWorkspace(),
       getTradingWorkspace(),
+      getPortfolioWorkspace(),
       getDataWorkspace(),
       getGovernanceWorkspace(),
       getReportingWorkspace(),
@@ -134,6 +140,7 @@ export function useWorkstationData() {
       overview: readBootstrap(overview),
       research: readWorkspace(["strategy"], research),
       trading: readWorkspace(["trading"], trading),
+      portfolio: readWorkspace(["portfolio"], portfolio),
       dataOperations: readWorkspace(["data"], dataOperations),
       governance: readWorkspace(["accounting"], governance),
       reporting: readWorkspace(["reporting"], reporting),

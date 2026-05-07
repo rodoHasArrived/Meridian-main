@@ -210,9 +210,34 @@ public sealed record WorkstationGovernanceWorkspaceSummary(
     int SecurityIssues);
 
 /// <summary>
+/// A single export/reporting profile shown in the Reporting workspace.
+/// Matches <c>GovernanceReportingProfile</c> in the frontend types.
+/// </summary>
+public sealed record WorkstationGovernanceReportingProfilePayload(
+    string Id,
+    string Name,
+    string TargetTool,
+    string Format,
+    string Description,
+    bool LoaderScript,
+    bool DataDictionary);
+
+/// <summary>
+/// Typed reporting summary embedded inside <see cref="WorkstationGovernancePayload"/>.
+/// Replaces the anonymous-object placeholder introduced in the initial governance
+/// payload commit (PR-03 follow-on).
+/// </summary>
+public sealed record WorkstationGovernanceReportingPayload(
+    int ProfileCount,
+    IReadOnlyList<string> RecommendedProfiles,
+    IReadOnlyList<WorkstationGovernanceReportingProfilePayload> Profiles,
+    IReadOnlyList<string> ReportPackTargets,
+    string Summary);
+
+/// <summary>
 /// Typed payload returned by <c>GET /api/workstation/accounting</c> and
 /// <c>GET /api/workstation/reporting</c>.
-/// <c>ReconciliationQueue</c>, <c>BreakQueue</c>, <c>CashFlow</c>, <c>Reporting</c>, and
+/// <c>ReconciliationQueue</c>, <c>BreakQueue</c>, <c>CashFlow</c>, and
 /// <c>KernelObservability</c> are kept as <c>object</c> / <c>IReadOnlyList&lt;object&gt;</c>
 /// pending their own DTO evolution in a follow-on PR.
 /// </summary>
@@ -222,5 +247,40 @@ public sealed record WorkstationGovernancePayload(
     IReadOnlyList<object> BreakQueue,
     WorkstationGovernanceWorkspaceSummary Workspace,
     object CashFlow,
-    object Reporting,
+    WorkstationGovernanceReportingPayload Reporting,
     object KernelObservability);
+
+// ---------------------------------------------------------------------------
+// /api/workstation/portfolio
+// ---------------------------------------------------------------------------
+
+/// <summary>
+/// A single run linked to the portfolio view — lightweight digest for
+/// the portfolio run-linked equity panel.
+/// </summary>
+public sealed record WorkstationPortfolioRunRow(
+    string RunId,
+    string StrategyName,
+    string Engine,
+    string Mode,
+    string Status,
+    string Pnl,
+    string Sharpe,
+    string Dataset,
+    string Window,
+    string LastUpdated,
+    string Notes,
+    string? PromotionState);
+
+/// <summary>
+/// Unified payload returned by <c>GET /api/workstation/portfolio</c>.
+/// Aggregates paper positions, brokerage wiring state, run-linked equity,
+/// and cash-flow summary so the Portfolio workspace needs a single request.
+/// </summary>
+public sealed record WorkstationPortfolioPayload(
+    IReadOnlyList<WorkstationMetricCard> Metrics,
+    IReadOnlyList<WorkstationTradingPositionRow> Positions,
+    WorkstationTradingRiskState Risk,
+    WorkstationTradingBrokerageState Brokerage,
+    IReadOnlyList<WorkstationPortfolioRunRow> Runs,
+    object? CashFlow);

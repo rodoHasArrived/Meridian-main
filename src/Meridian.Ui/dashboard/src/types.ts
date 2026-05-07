@@ -699,6 +699,30 @@ export interface TradingWorkspaceResponse {
   readiness?: TradingOperatorReadiness | null;
 }
 
+export interface PortfolioRunRow {
+  runId: string;
+  strategyName: string;
+  engine: string;
+  mode: string;
+  status: string;
+  pnl: string;
+  sharpe: string;
+  dataset: string;
+  window: string;
+  lastUpdated: string;
+  notes: string;
+  promotionState: string | null;
+}
+
+export interface PortfolioWorkspaceResponse {
+  metrics: MetricSnapshot[];
+  positions: TradingPosition[];
+  risk: TradingRiskState;
+  brokerage: BrokerageWiringStatus;
+  runs: PortfolioRunRow[];
+  cashFlow: GovernanceCashFlowSummary | null;
+}
+
 export interface GovernanceReconciliationRecord {
   runId: string;
   strategyName: string;

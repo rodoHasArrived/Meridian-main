@@ -686,6 +686,10 @@ export function revokeRobinhoodConnection() {
   return deleteJson<BrokerageConnectionStatus>("/api/brokerage-connections/robinhood");
 }
 
+export function getPortfolioWorkspace() {
+  return getJson<import("@/types").PortfolioWorkspaceResponse>("/api/workstation/portfolio");
+}
+
 export function getAlpacaConnectionStatus() {
   return getJson<BrokerageConnectionStatus>("/api/brokerage-connections/alpaca/status");
 }
