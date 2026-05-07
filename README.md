@@ -6612,6 +6612,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── metric-card.tsx
 │   │   │   │   │   │   ├── metric-card.view-model.test.ts
 │   │   │   │   │   │   ├── metric-card.view-model.ts
+│   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
 │   │   │   │   │   │   ├── workspace-header.view-model.test.ts
@@ -6703,11 +6704,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-B-ZOQBU5.js
-│   │           │   ├── index-Bt1jnUdW.js
-│   │           │   ├── index-C-UoWgmp.css
-│   │           │   ├── index-D9leyTuV.css
-│   │           │   └── index-HZREMjYN.js
+│   │           │   ├── index-8590u0QL.js
+│   │           │   └── index-BWGYJbCW.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -7596,6 +7594,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
+│   │   │   ├── Logging
+│   │   │   │   └── LoggingSetupTests.cs
 │   │   │   ├── Monitoring
 │   │   │   │   ├── AlertDispatcherTests.cs
 │   │   │   │   ├── BackpressureAlertServiceTests.cs
@@ -8197,6 +8197,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-623 directories, 7399 files
+624 directories, 7398 files
 ```
 <!-- readme-tree end -->
