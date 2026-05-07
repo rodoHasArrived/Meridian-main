@@ -133,6 +133,7 @@
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                    TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding SearchDeckDetailText}"
                                    Margin="0,8,0,0"
                                    Style="{StaticResource CardDescriptionStyle}"
                                    TextWrapping="Wrap" />

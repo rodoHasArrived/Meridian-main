@@ -32,7 +32,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// - Supports US equities and fixed income (US Treasuries, corporate bonds)
 /// - Rate limit: 200 req/min
 /// </remarks>
-[DataSource("alpaca-brokerage", "Alpaca Brokerage", DataSourceType.Realtime, DataSourceCategory.Broker,
+[DataSource("alpaca-brokerage", "Alpaca Brokerage", Meridian.Infrastructure.DataSources.DataSourceType.Realtime, DataSourceCategory.Broker,
     Priority = 10, Description = "Alpaca Markets order execution gateway")]
 [ImplementsAdr("ADR-001", "Alpaca brokerage provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
