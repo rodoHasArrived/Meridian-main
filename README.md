@@ -6704,8 +6704,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-CLwnO8Bf.css
-│   │           │   └── index-CtM50wiG.js
+│   │           │   ├── index-D7dqDaVH.js
+│   │           │   └── index-DHZRPsjE.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -7133,6 +7133,20 @@ Use these documents together when planning or implementing new work:
 │       │   ├── WorkstationResearchBriefingService.cs
 │       │   ├── WorkstationSecurityMasterApiClient.cs
 │       │   └── WpfShellServiceCollectionExtensions.cs
+│       ├── Shell
+│       │   ├── Models
+│       │   │   ├── PaneContentState.cs
+│       │   │   ├── PaneDropResult.cs
+│       │   │   └── ShellRoute.cs
+│       │   ├── Services
+│       │   │   ├── IPageContentFactory.cs
+│       │   │   ├── IShellNavigationCoordinator.cs
+│       │   │   ├── IShellRouteRegistry.cs
+│       │   │   ├── PageContentFactory.cs
+│       │   │   ├── ShellNavigationCoordinator.cs
+│       │   │   └── ShellRouteRegistry.cs
+│       │   └── ViewModels
+│       │       └── PaneHostViewModel.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
 │       │   ├── AppStyles.xaml
@@ -8082,6 +8096,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── WorkspaceShellContextServiceTests.cs
 │   │   │   ├── WorkstationOperatingContextServiceTests.cs
 │   │   │   └── WorkstationWorkflowSummaryServiceTests.cs
+│   │   ├── Shell
+│   │   │   ├── PageContentFactoryTests.cs
+│   │   │   ├── PaneHostViewModelTests.cs
+│   │   │   ├── ShellNavigationCoordinatorTests.cs
+│   │   │   └── ShellRouteRegistryTests.cs
 │   │   ├── Support
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
@@ -8204,6 +8223,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-624 directories, 7405 files
+629 directories, 7419 files
 ```
 <!-- readme-tree end -->
