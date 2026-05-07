@@ -5,6 +5,9 @@ import type {
   OperatorInbox,
   ReconciliationCalibrationSummary,
   ResearchWorkspaceResponse,
+  SecurityIdentityDrillIn,
+  SecurityMasterConflict,
+  SecurityMasterEntry,
   SessionInfo,
   SystemOverviewResponse,
   TradingOperatorReadiness,
@@ -36,15 +39,7 @@ const fixtureSystemOverview: SystemOverviewResponse = {
     { id: "positions", label: "Open Positions", value: "5", delta: "+2", tone: "default" },
     { id: "backfills", label: "Active Backfills", value: "1", delta: "review", tone: "warning" }
   ],
-  recentEvents: [
-    {
-      id: "evt-dev-1",
-      type: "warning",
-      message: "Dashboard is using local development fixture data because the Meridian API did not respond.",
-      source: "dashboard-dev",
-      timestamp: "2026-04-28T18:15:00Z"
-    }
-  ]
+  recentEvents: []
 };
 
 const fixtureResearchWorkspace: ResearchWorkspaceResponse = {
@@ -553,6 +548,202 @@ const fixtureCorporateActions: CorporateAction[] = [
   }
 ];
 
+const fixtureSecurityMasterEntries: SecurityMasterEntry[] = [
+  {
+    securityId: "sec-dev-001",
+    displayName: "Apple Inc.",
+    status: "Active",
+    classification: {
+      assetClass: "Equity",
+      subType: "Common Stock",
+      primaryIdentifierKind: "Ticker",
+      primaryIdentifierValue: "AAPL",
+      matchedIdentifierKind: "Ticker",
+      matchedIdentifierValue: "AAPL",
+      matchedProvider: "Bloomberg"
+    },
+    economicDefinition: {
+      currency: "USD",
+      version: 3,
+      effectiveFrom: "2024-01-01",
+      effectiveTo: null,
+      subType: "Common Stock",
+      assetFamily: "Equities",
+      issuerType: "Corporate"
+    }
+  },
+  {
+    securityId: "sec-dev-002",
+    displayName: "PG&E Corporation",
+    status: "Active",
+    classification: {
+      assetClass: "Equity",
+      subType: "Common Stock",
+      primaryIdentifierKind: "Ticker",
+      primaryIdentifierValue: "PCG",
+      matchedIdentifierKind: "Ticker",
+      matchedIdentifierValue: "PCG",
+      matchedProvider: "Interactive Brokers"
+    },
+    economicDefinition: {
+      currency: "USD",
+      version: 2,
+      effectiveFrom: "2023-07-01",
+      effectiveTo: null,
+      subType: "Common Stock",
+      assetFamily: "Utilities",
+      issuerType: "Corporate"
+    }
+  },
+  {
+    securityId: "sec-dev-003",
+    displayName: "Microsoft Corporation",
+    status: "Active",
+    classification: {
+      assetClass: "Equity",
+      subType: "Common Stock",
+      primaryIdentifierKind: "Ticker",
+      primaryIdentifierValue: "MSFT",
+      matchedIdentifierKind: "Ticker",
+      matchedIdentifierValue: "MSFT",
+      matchedProvider: "Nasdaq"
+    },
+    economicDefinition: {
+      currency: "USD",
+      version: 4,
+      effectiveFrom: "2024-01-01",
+      effectiveTo: null,
+      subType: "Common Stock",
+      assetFamily: "Software",
+      issuerType: "Corporate"
+    }
+  }
+];
+
+const fixtureSecurityIdentities: Record<string, SecurityIdentityDrillIn> = {
+  "sec-dev-001": {
+    securityId: "sec-dev-001",
+    displayName: "Apple Inc.",
+    assetClass: "Equity",
+    status: "Active",
+    version: 3,
+    effectiveFrom: "2024-01-01",
+    effectiveTo: null,
+    identifiers: [
+      {
+        kind: "Ticker",
+        value: "AAPL",
+        isPrimary: true,
+        validFrom: "2024-01-01",
+        validTo: null,
+        provider: "Bloomberg"
+      },
+      {
+        kind: "ISIN",
+        value: "US0378331005",
+        isPrimary: false,
+        validFrom: "2024-01-01",
+        validTo: null,
+        provider: "Refinitiv"
+      }
+    ],
+    aliases: [
+      {
+        aliasId: "alias-dev-001",
+        securityId: "sec-dev-001",
+        aliasKind: "ProviderSymbol",
+        aliasValue: "AAPL.OQ",
+        provider: "Nasdaq",
+        scope: "Collector",
+        reason: "Market data source mapping",
+        createdBy: "dashboard-dev",
+        createdAt: "2026-04-28T18:15:00Z",
+        validFrom: "2024-01-01",
+        validTo: null,
+        isEnabled: true
+      }
+    ]
+  },
+  "sec-dev-002": {
+    securityId: "sec-dev-002",
+    displayName: "PG&E Corporation",
+    assetClass: "Equity",
+    status: "Active",
+    version: 2,
+    effectiveFrom: "2023-07-01",
+    effectiveTo: null,
+    identifiers: [
+      {
+        kind: "Ticker",
+        value: "PCG",
+        isPrimary: true,
+        validFrom: "2023-07-01",
+        validTo: null,
+        provider: "Interactive Brokers"
+      },
+      {
+        kind: "CUSIP",
+        value: "69331C108",
+        isPrimary: false,
+        validFrom: "2023-07-01",
+        validTo: null,
+        provider: "Bloomberg"
+      }
+    ],
+    aliases: [
+      {
+        aliasId: "alias-dev-002",
+        securityId: "sec-dev-002",
+        aliasKind: "ProviderSymbol",
+        aliasValue: "PCG.N",
+        provider: "NYSE",
+        scope: "Collector",
+        reason: "Primary venue symbol",
+        createdBy: "dashboard-dev",
+        createdAt: "2026-04-28T18:15:00Z",
+        validFrom: "2023-07-01",
+        validTo: null,
+        isEnabled: true
+      }
+    ]
+  },
+  "sec-dev-003": {
+    securityId: "sec-dev-003",
+    displayName: "Microsoft Corporation",
+    assetClass: "Equity",
+    status: "Active",
+    version: 4,
+    effectiveFrom: "2024-01-01",
+    effectiveTo: null,
+    identifiers: [
+      {
+        kind: "Ticker",
+        value: "MSFT",
+        isPrimary: true,
+        validFrom: "2024-01-01",
+        validTo: null,
+        provider: "Nasdaq"
+      }
+    ],
+    aliases: []
+  }
+};
+
+const fixtureSecurityConflicts: SecurityMasterConflict[] = [
+  {
+    conflictId: "conflict-dev-001",
+    securityId: "sec-dev-002",
+    conflictKind: "IdentifierCollision",
+    fieldPath: "identifiers.CUSIP",
+    providerA: "Bloomberg",
+    valueA: "69331C108",
+    providerB: "Refinitiv",
+    valueB: "69331C116",
+    detectedAt: "2026-04-28T17:45:00Z",
+    status: "Open"
+  }
+];
+
 const fixtureTradingParameters: TradingParameters = {
   securityId: "sec-dev-001",
   lotSize: 1,
@@ -567,18 +758,22 @@ const fixtureTradingParameters: TradingParameters = {
 const fixtures = {
   "/api/status": fixtureSystemOverview,
   "/api/workstation/session": fixtureSession,
+  "/api/workstation/strategy": fixtureResearchWorkspace,
   "/api/workstation/research": fixtureResearchWorkspace,
   "/api/workstation/trading": fixtureTradingWorkspace,
   "/api/workstation/trading/readiness": fixtureTradingReadiness,
   "/api/workstation/operator/inbox": fixtureOperatorInbox,
+  "/api/workstation/data": fixtureDataOperationsWorkspace,
   "/api/workstation/data-operations": fixtureDataOperationsWorkspace,
   "/api/workstation/accounting": fixtureGovernanceWorkspace,
   "/api/workstation/reporting": fixtureGovernanceWorkspace,
   "/api/workstation/governance": fixtureGovernanceWorkspace,
-  "/api/workstation/reconciliation/calibration-summary": fixtureCalibrationSummary
+  "/api/workstation/reconciliation/calibration-summary": fixtureCalibrationSummary,
+  "/api/security-master/conflicts": fixtureSecurityConflicts
 } satisfies Record<string, unknown>;
 
 const dynamicFixturePatterns: Array<{ pattern: RegExp; fixture: unknown }> = [
+  { pattern: /^\/api\/workstation\/security-master\/securities\/[^/]+\/identity$/, fixture: null },
   { pattern: /^\/api\/security-master\/[^/]+\/corporate-actions$/, fixture: fixtureCorporateActions },
   { pattern: /^\/api\/security-master\/[^/]+\/trading-parameters$/, fixture: fixtureTradingParameters }
 ];
@@ -592,11 +787,47 @@ export function resolveDevFixture<T>(path: string): T | undefined {
 
   for (const { pattern, fixture } of dynamicFixturePatterns) {
     if (pattern.test(cleanPath)) {
+      if (cleanPath.includes("/identity")) {
+        const securityId = cleanPath.split("/").at(-2);
+        if (securityId && fixtureSecurityIdentities[securityId]) {
+          return cloneFixture(fixtureSecurityIdentities[securityId] as T);
+        }
+      }
       return cloneFixture(fixture as T);
     }
   }
 
   return undefined;
+}
+
+export function searchDevSecurityMasterEntries(query: string, take = 25, activeOnly = true): SecurityMasterEntry[] {
+  const trimmed = query.trim().toLowerCase();
+  if (!trimmed) {
+    return [];
+  }
+
+  return fixtureSecurityMasterEntries
+    .filter((entry) => !activeOnly || entry.status === "Active")
+    .filter((entry) => {
+      const fields = [
+        entry.displayName,
+        entry.classification.assetClass,
+        entry.classification.subType ?? "",
+        entry.classification.primaryIdentifierKind ?? "",
+        entry.classification.primaryIdentifierValue ?? "",
+        entry.classification.matchedIdentifierKind ?? "",
+        entry.classification.matchedIdentifierValue ?? "",
+        entry.classification.matchedProvider ?? "",
+        entry.economicDefinition.assetFamily ?? "",
+        entry.economicDefinition.issuerType ?? "",
+        fixtureSecurityIdentities[entry.securityId]?.identifiers.map((identifier) => `${identifier.kind} ${identifier.value}`).join(" ") ?? "",
+        fixtureSecurityIdentities[entry.securityId]?.aliases.map((alias) => alias.aliasValue).join(" ") ?? ""
+      ];
+
+      return fields.some((field) => field.toLowerCase().includes(trimmed));
+    })
+    .slice(0, take)
+    .map((entry) => cloneFixture(entry));
 }
 
 function cloneFixture<T>(fixture: T): T {

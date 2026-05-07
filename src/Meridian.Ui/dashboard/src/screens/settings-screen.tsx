@@ -78,10 +78,6 @@ export function SettingsScreen({
     error,
     workspaceErrors
   });
-  const recentEventCount = vm.recentEventsSection.rows.length;
-  const loadedDiagnostics = vm.diagnosticLinks.filter((link) => link.tone === "success").length;
-  const failedDiagnostics = vm.diagnosticLinks.filter((link) => link.tone === "danger").length;
-  const checkingDiagnostics = vm.diagnosticLinks.filter((link) => link.isLoading).length;
 
   return (
     <div className="space-y-8">
@@ -204,7 +200,7 @@ export function SettingsScreen({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap gap-2">
-              <SettingsChip label="Count" value={String(recentEventCount)} />
+              <SettingsChip label="Count" value={vm.recentEventsSection.countLabel} />
               <SettingsChip label="Heartbeat" value={overview?.lastHeartbeatUtc ?? "—"} />
               <SettingsChip label="Stream" value={vm.recentEventsSection.state} />
             </div>
@@ -266,9 +262,9 @@ export function SettingsScreen({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap gap-2">
-              <SettingsChip label="Loaded" value={String(loadedDiagnostics)} />
-              <SettingsChip label="Failed" value={String(failedDiagnostics)} />
-              <SettingsChip label="Checking" value={String(checkingDiagnostics)} />
+              <SettingsChip label="Loaded" value={vm.diagnosticCounts.loadedLabel} />
+              <SettingsChip label="Failed" value={vm.diagnosticCounts.failedLabel} />
+              <SettingsChip label="Checking" value={vm.diagnosticCounts.checkingLabel} />
             </div>
             <div className="grid gap-3 md:grid-cols-2" role="list" aria-label={vm.diagnosticListLabel}>
               {vm.diagnosticLinks.map((link) => (

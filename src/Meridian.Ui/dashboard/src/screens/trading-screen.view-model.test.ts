@@ -5,6 +5,7 @@ import {
   buildSessionReplayControlsState,
   buildStrategyLifecycleControlsState,
   buildTradingConfirmDialogState,
+  buildTradingBlotterViewModel,
   buildOrderSubmitRequest,
   buildOrderTicketState,
   buildPromotionApprovalRequest,
@@ -24,7 +25,7 @@ import {
   validatePromotionApproval,
   validatePromotionRejection
 } from "@/screens/trading-screen.view-model";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingOperatorReadiness } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 const eligibleEvaluation: PromotionEvaluationResult = {
   runId: "run-1",
@@ -237,6 +238,142 @@ const executionControlsSnapshot: ExecutionControlSnapshot = {
   ],
   asOf: "2026-01-01T00:20:00Z"
 };
+
+const tradingWorkspace: TradingWorkspaceResponse = {
+  metrics: [],
+  positions: [
+    {
+      symbol: "AAPL",
+      side: "Long",
+      quantity: "100",
+      averagePrice: "188.10",
+      markPrice: "189.00",
+      dayPnl: "+$90",
+      unrealizedPnl: "+$90",
+      exposure: "$18,900"
+    },
+    {
+      symbol: "TSLA",
+      side: "Short",
+      quantity: "25",
+      averagePrice: "250.00",
+      markPrice: "254.00",
+      dayPnl: "-$100",
+      unrealizedPnl: "-$100",
+      exposure: "$6,350"
+    }
+  ],
+  openOrders: [
+    {
+      orderId: "PO-1",
+      symbol: "MSFT",
+      side: "Buy",
+      type: "Limit",
+      quantity: "20",
+      limitPrice: "414.20",
+      status: "Working",
+      submittedAt: "09:42:00 ET"
+    }
+  ],
+  fills: [
+    {
+      fillId: "FL-1",
+      orderId: "PO-0",
+      symbol: "NVDA",
+      side: "Sell",
+      quantity: "10",
+      price: "948.20",
+      venue: "NASDAQ",
+      timestamp: "09:40:10 ET"
+    }
+  ],
+  risk: {
+    state: "Observe",
+    summary: "Guardrails are active.",
+    netExposure: "$120,000",
+    grossExposure: "$150,000",
+    var95: "$9,000",
+    maxDrawdown: "-1.1%",
+    buyingPowerUsed: "58%",
+    activeGuardrails: ["Cap per single-name", "Throttle at 70%"]
+  },
+  brokerage: {
+    provider: "Interactive Brokers",
+    account: "DU1009034",
+    environment: "paper",
+    connection: "Connected",
+    lastHeartbeat: "2s ago",
+    orderIngress: "healthy",
+    fillFeed: "healthy",
+    notes: "Adapter is wired."
+  }
+};
+
+describe("trading blotter view model", () => {
+  it("derives selected evidence rows, tones, empty flags, and detail panels", () => {
+    const state = buildTradingBlotterViewModel({
+      data: tradingWorkspace,
+      selectedPositionId: "tsla-short-1",
+      selectedOrderId: "po-1-0"
+    });
+
+    expect(state.hasPositions).toBe(true);
+    expect(state.hasOpenOrders).toBe(true);
+    expect(state.hasFills).toBe(true);
+    expect(state.cancelAllDisabled).toBe(false);
+    expect(state.cancelAllAriaLabel).toBe("Cancel all 1 open orders");
+    expect(state.positionRows[1]).toMatchObject({
+      id: "tsla-short-1",
+      isSelected: true,
+      dayPnlTone: "danger",
+      unrealizedPnlTone: "danger",
+      selectAriaLabel: "Inspect TSLA short position"
+    });
+    expect(state.orderRows[0]).toMatchObject({
+      id: "po-1-0",
+      isSelected: true,
+      statusTone: "success",
+      cancelAriaLabel: "Cancel order PO-1"
+    });
+    expect(state.selectedPosition).toEqual(expect.objectContaining({
+      title: "TSLA",
+      statusLabel: "Observe",
+      statusTone: "warning",
+      ariaLabel: "Position detail for TSLA"
+    }));
+    expect(state.selectedPosition?.fields).toContainEqual({ label: "Guardrails", value: "2 active", tone: "warning" });
+    expect(state.selectedOrder).toEqual(expect.objectContaining({
+      title: "PO-1",
+      statusLabel: "Working",
+      statusTone: "success",
+      ariaLabel: "Order detail for PO-1"
+    }));
+    expect(state.fillRows[0].cells).toEqual(["FL-1", "PO-0", "NVDA", "Sell", "10", "948.20", "NASDAQ", "09:40:10 ET"]);
+  });
+
+  it("keeps unavailable and empty states in the view model", () => {
+    const unavailable = buildTradingBlotterViewModel({ data: null });
+
+    expect(unavailable.hasPositions).toBe(false);
+    expect(unavailable.hasOpenOrders).toBe(false);
+    expect(unavailable.hasFills).toBe(false);
+    expect(unavailable.selectedPosition).toBeNull();
+    expect(unavailable.selectedOrder).toBeNull();
+    expect(unavailable.cancelAllDisabled).toBe(true);
+    expect(unavailable.positionEmptyText).toBe("Trading workspace data unavailable.");
+    expect(unavailable.orderEmptyText).toBe("Trading workspace data unavailable.");
+    expect(unavailable.fillEmptyText).toBe("Trading workspace data unavailable.");
+
+    const empty = buildTradingBlotterViewModel({
+      data: { ...tradingWorkspace, positions: [], openOrders: [], fills: [] }
+    });
+
+    expect(empty.positionEmptyText).toBe("No live positions in the active paper session.");
+    expect(empty.orderEmptyText).toBe("No open orders require operator action.");
+    expect(empty.fillEmptyText).toBe("No recent fills have been reported for this session.");
+    expect(empty.cancelAllAriaLabel).toBe("No open orders to cancel");
+  });
+});
 
 describe("execution evidence view model", () => {
   it("derives controls summary rows and accessible audit rows", () => {

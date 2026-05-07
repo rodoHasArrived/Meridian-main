@@ -2,6 +2,7 @@ import { AlertCircle, BookCheck, CheckCircle2, Landmark, Search, ShieldCheck, Ta
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,6 +66,30 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const reporting = useGovernanceReportingViewModel(data?.reporting ?? null);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
   const identity = securityMaster.identityView;
+  const identifierColumns: DenseDataTableColumn<NonNullable<typeof identity>["identifiers"][number]>[] = [
+    { id: "kind", label: "Kind", render: (identifier) => <span className="font-mono">{identifier.kind}</span> },
+    { id: "value", label: "Value", render: (identifier) => <span className="font-mono text-foreground">{identifier.value}</span> },
+    { id: "provider", label: "Provider", render: (identifier) => identifier.providerLabel },
+    { id: "state", label: "State", render: (identifier) => <Badge variant={identifier.primaryBadgeVariant}>{identifier.primaryLabel}</Badge> },
+    { id: "range", label: "Valid range", render: (identifier) => <span className="font-mono text-muted-foreground">{identifier.validRangeLabel}</span> }
+  ];
+  const aliasColumns: DenseDataTableColumn<NonNullable<typeof identity>["aliases"][number]>[] = [
+    { id: "kind", label: "Kind", render: (alias) => <span className="font-mono">{alias.aliasKind}</span> },
+    {
+      id: "alias",
+      label: "Alias",
+      render: (alias) => (
+        <div>
+          <div className="font-mono text-foreground">{alias.aliasValue}</div>
+          <div className="mt-1 text-xs text-muted-foreground">{alias.reasonText}</div>
+        </div>
+      )
+    },
+    { id: "provider", label: "Provider", render: (alias) => alias.providerLabel },
+    { id: "scope", label: "Scope", render: (alias) => alias.scope },
+    { id: "state", label: "State", render: (alias) => <Badge variant={alias.enabledBadgeVariant}>{alias.enabledLabel}</Badge> },
+    { id: "range", label: "Valid range", render: (alias) => <span className="font-mono text-muted-foreground">{alias.validRangeLabel}</span> }
+  ];
 
   if (!data) {
     return (
@@ -595,29 +620,24 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                 </div>
               )}
               {identity && (
-                <div
-                  role="region"
-                  aria-label={identity.ariaLabel}
-                  className="space-y-4 rounded-lg border border-border/70 bg-secondary/20 p-4"
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <h4 className="font-semibold text-foreground">{identity.title}</h4>
-                      <p className="mt-1 font-mono text-xs text-muted-foreground">{identity.subtitle}</p>
-                      <p className="mt-2 text-sm text-muted-foreground">{identity.description}</p>
-                    </div>
-                    <Badge variant={identity.statusBadgeVariant} dot>{identity.statusLabel}</Badge>
-                  </div>
-
-                  <dl className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                    {identity.summaryFields.map((field) => (
-                      <div key={field.label} className="rounded-md border border-border/60 bg-background/40 px-3 py-2">
-                        <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                        <dd className="mt-1 break-words font-mono text-xs text-foreground">{field.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-
+                <div className="space-y-4">
+                  <EntitySummary
+                    eyebrow="Identity drill-in"
+                    title={identity.title}
+                    subtitle={identity.subtitle}
+                    description={identity.description}
+                    status={<Badge variant={identity.statusBadgeVariant} dot>{identity.statusLabel}</Badge>}
+                    fields={identity.summaryFields}
+                    ariaLabel={identity.ariaLabel}
+                  />
+                  <ToolbarStrip
+                    ariaLabel="Security identity detail context"
+                    items={[
+                      { id: "identifiers", label: "Identifiers", value: String(identity.identifiers.length), active: true },
+                      { id: "aliases", label: "Aliases", value: String(identity.aliases.length) },
+                      { id: "status", label: "Status", value: identity.statusLabel }
+                    ]}
+                  />
                   <div>
                     <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{identity.identifiersTitle}</div>
                     {identity.identifiers.length === 0 ? (
@@ -625,27 +645,15 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                         {identity.identifierEmptyText}
                       </p>
                     ) : (
-                      <div className="overflow-x-auto rounded-lg border border-border/60">
-                        <table aria-label={identity.identifiersTableLabel} className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
-                          <caption className="sr-only">{identity.identifiersTableLabel}</caption>
-                          <thead className="bg-secondary/30">
-                            <tr>{["Kind", "Value", "Provider", "State", "Valid range"].map((col) => <th key={col} className="px-3 py-2">{col}</th>)}</tr>
-                          </thead>
-                          <tbody className="divide-y divide-border/40">
-                            {identity.identifiers.map((identifier) => (
-                              <tr key={identifier.rowId} aria-label={identifier.ariaLabel}>
-                                <td className="px-3 py-2 font-mono">{identifier.kind}</td>
-                                <td className="px-3 py-2 font-mono text-foreground">{identifier.value}</td>
-                                <td className="px-3 py-2">{identifier.providerLabel}</td>
-                                <td className="px-3 py-2">
-                                  <Badge variant={identifier.primaryBadgeVariant}>{identifier.primaryLabel}</Badge>
-                                </td>
-                                <td className="px-3 py-2 font-mono text-muted-foreground">{identifier.validRangeLabel}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                      <DenseDataTable
+                        columns={identifierColumns}
+                        rows={identity.identifiers}
+                        getRowId={(identifier) => identifier.rowId}
+                        getRowAriaLabel={(identifier) => identifier.ariaLabel}
+                        emptyText={identity.identifierEmptyText}
+                        ariaLabel={identity.identifiersTableLabel}
+                        caption={identity.identifiersTableLabel}
+                      />
                     )}
                   </div>
 
@@ -656,31 +664,15 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                         {identity.aliasEmptyText}
                       </p>
                     ) : (
-                      <div className="overflow-x-auto rounded-lg border border-border/60">
-                        <table aria-label={identity.aliasesTableLabel} className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
-                          <caption className="sr-only">{identity.aliasesTableLabel}</caption>
-                          <thead className="bg-secondary/30">
-                            <tr>{["Kind", "Alias", "Provider", "Scope", "State", "Valid range"].map((col) => <th key={col} className="px-3 py-2">{col}</th>)}</tr>
-                          </thead>
-                          <tbody className="divide-y divide-border/40">
-                            {identity.aliases.map((alias) => (
-                              <tr key={alias.rowId} aria-label={alias.ariaLabel}>
-                                <td className="px-3 py-2 font-mono">{alias.aliasKind}</td>
-                                <td className="px-3 py-2">
-                                  <div className="font-mono text-foreground">{alias.aliasValue}</div>
-                                  <div className="mt-1 text-xs text-muted-foreground">{alias.reasonText}</div>
-                                </td>
-                                <td className="px-3 py-2">{alias.providerLabel}</td>
-                                <td className="px-3 py-2">{alias.scope}</td>
-                                <td className="px-3 py-2">
-                                  <Badge variant={alias.enabledBadgeVariant}>{alias.enabledLabel}</Badge>
-                                </td>
-                                <td className="px-3 py-2 font-mono text-muted-foreground">{alias.validRangeLabel}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                      <DenseDataTable
+                        columns={aliasColumns}
+                        rows={identity.aliases}
+                        getRowId={(alias) => alias.rowId}
+                        getRowAriaLabel={(alias) => alias.ariaLabel}
+                        emptyText={identity.aliasEmptyText}
+                        ariaLabel={identity.aliasesTableLabel}
+                        caption={identity.aliasesTableLabel}
+                      />
                     )}
                   </div>
                 </div>

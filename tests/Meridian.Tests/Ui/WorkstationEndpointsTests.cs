@@ -77,7 +77,7 @@ public sealed class WorkstationEndpointsTests
         session.RootElement.GetProperty("displayName").GetString().Should().Be("Carry Pair Desk");
         session.RootElement.GetProperty("role").GetString().Should().Be("Research Lead");
         session.RootElement.GetProperty("environment").GetString().Should().Be("paper");
-        session.RootElement.GetProperty("activeWorkspace").GetString().Should().Be("operations");
+        session.RootElement.GetProperty("activeWorkspace").GetString().Should().Be("trading");
         session.RootElement.GetProperty("latestRun").GetProperty("runId").GetString().Should().Be("run-latest");
         session.RootElement.GetProperty("workspaceSummary").GetProperty("totalRuns").GetInt32().Should().Be(2);
         session.RootElement.GetProperty("workspaceSummary").GetProperty("ledgerCoverage").GetInt32().Should().Be(2);
@@ -111,6 +111,10 @@ public sealed class WorkstationEndpointsTests
             .Should()
             .Contain(metric => metric.GetProperty("id").GetString() == "active-runs" &&
                                metric.GetProperty("value").GetString() == "0");
+
+        using var strategy = await ReadJsonAsync(client, "/api/workstation/strategy");
+        strategy.RootElement.GetProperty("workspace").GetProperty("totalRuns").GetInt32().Should().Be(2);
+        strategy.RootElement.GetProperty("runs")[0].GetProperty("id").GetString().Should().Be("run-latest");
     }
 
     [Fact]
@@ -123,7 +127,7 @@ public sealed class WorkstationEndpointsTests
         session.RootElement.GetProperty("displayName").GetString().Should().Be("Meridian Operator");
         session.RootElement.GetProperty("role").GetString().Should().Be("Research Lead");
         session.RootElement.GetProperty("environment").GetString().Should().Be("paper");
-        session.RootElement.GetProperty("activeWorkspace").GetString().Should().Be("research");
+        session.RootElement.GetProperty("activeWorkspace").GetString().Should().Be("strategy");
         session.RootElement.GetProperty("commandCount").GetInt32().Should().Be(6);
 
         using var research = await ReadJsonAsync(client, "/api/workstation/research");
@@ -149,6 +153,9 @@ public sealed class WorkstationEndpointsTests
         runs.GetArrayLength().Should().Be(1);
         runs[0].GetProperty("id").GetString().Should().Be("run-research-001");
         runs[0].GetProperty("strategyName").GetString().Should().Be("Mean Reversion FX");
+
+        using var strategy = await ReadJsonAsync(client, "/api/workstation/strategy");
+        strategy.RootElement.GetProperty("runs")[0].GetProperty("id").GetString().Should().Be("run-research-001");
     }
 
     [Fact]
@@ -228,6 +235,9 @@ public sealed class WorkstationEndpointsTests
         degraded.GetProperty("reasonCode").GetString().Should().Be("PROVIDER_STREAM_DEGRADED");
         degraded.GetProperty("recommendedAction").GetString().Should().Contain("Verify provider connectivity");
         degraded.GetProperty("gateImpact").GetString().Should().Be("Critical");
+
+        using var data = await ReadJsonAsync(client, "/api/workstation/data");
+        data.RootElement.GetProperty("providers").GetArrayLength().Should().Be(2);
     }
 
     [Fact]

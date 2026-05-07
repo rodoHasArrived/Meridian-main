@@ -61,15 +61,25 @@ export interface ReportingPackTargetRow {
   ariaLabel: string;
 }
 
+export interface ReportingChipViewModel {
+  label: string;
+  value: string;
+}
+
 export interface ReportingScreenViewModel {
   title: string;
   description: string;
   countLabel: string;
+  recommendedCountLabel: string;
+  packTargetCountLabel: string;
   hasRows: boolean;
   rows: ReportingProfileRow[];
   emptyText: string;
   listLabel: string;
   visibleCountLabel: string;
+  workbenchChips: ReportingChipViewModel[];
+  queueChips: ReportingChipViewModel[];
+  packTargetChips: ReportingChipViewModel[];
   detailId: string;
   statusTitle: string;
   statusDetail: string;
@@ -121,11 +131,16 @@ export function useReportingScreenViewModel(
       title: "Report packs",
       description: "No reporting data is available.",
       countLabel: "0 profiles",
+      recommendedCountLabel: "0",
+      packTargetCountLabel: "0",
       hasRows: false,
       rows: [],
       emptyText: "No export or reporting profiles are configured for this workspace.",
       listLabel: "Export profiles",
       visibleCountLabel: "0 visible",
+      workbenchChips: buildWorkbenchChips("0 profiles", "0", "0"),
+      queueChips: buildQueueChips("0 visible", "0", "0", "Export profiles"),
+      packTargetChips: buildPackTargetChips("0", "No profile selected"),
       detailId: "reporting-profile-detail",
       statusTitle: "No profile selected",
       statusDetail: "Reporting data is unavailable. Check the Governance workspace or API connection.",
@@ -193,6 +208,11 @@ export function useReportingScreenViewModel(
 
   const countLabel = `${profiles.length} profile${profiles.length === 1 ? "" : "s"}`;
   const packCount = reporting.reportPackTargets.length;
+  const packTargetCountLabel = String(packCount);
+  const recommendedCountLabel = String(reporting.recommendedProfiles.length);
+  const visibleCountLabel = `${rows.length} of ${profiles.length}`;
+  const statusTitle = selectedProfileData ? `${selectedProfileData.name} selected` : "No profile selected";
+  const listLabel = "Export profiles";
   const packTargets: ReportingPackTargetRow[] = reporting.reportPackTargets.map((target) => ({
     id: target,
     label: target,
@@ -203,23 +223,28 @@ export function useReportingScreenViewModel(
     title: "Report packs",
     description: reporting.summary,
     countLabel,
+    recommendedCountLabel,
+    packTargetCountLabel,
     hasRows: rows.length > 0,
-      rows,
-      emptyText:
+    rows,
+    emptyText:
       "No export profiles are configured. Add a governed profile to restore reporting evidence.",
-      listLabel: "Export profiles",
-      visibleCountLabel: `${rows.length} of ${profiles.length}`,
-      detailId: "reporting-profile-detail",
-      statusTitle: selectedProfileData ? `${selectedProfileData.name} selected` : "No profile selected",
-      statusDetail: selectedProfileData
+    listLabel,
+    visibleCountLabel,
+    workbenchChips: buildWorkbenchChips(countLabel, packTargetCountLabel, recommendedCountLabel),
+    queueChips: buildQueueChips(visibleCountLabel, recommendedCountLabel, packTargetCountLabel, listLabel),
+    packTargetChips: buildPackTargetChips(packTargetCountLabel, statusTitle),
+    detailId: "reporting-profile-detail",
+    statusTitle,
+    statusDetail: selectedProfileData
       ? `${selectedProfileData.name} routes ${selectedProfileData.format} output to ${selectedProfileData.targetTool}.`
       : "Select a profile to inspect export evidence and ready-state.",
-      nextAction: selectedProfileData
+    nextAction: selectedProfileData
       ? `POST /api/export/analysis · GET /api/export/preview?profile=${selectedProfileData.id}`
       : `${profiles.length} profile${profiles.length === 1 ? "" : "s"} on desk. Select one to inspect export evidence.`,
-      selectedProfile: detail,
-      packTargets,
-      hasPackTargets: packCount > 0,
+    selectedProfile: detail,
+    packTargets,
+    hasPackTargets: packCount > 0,
     packTargetsSummary:
       packCount > 0
         ? `${packCount} report-pack target${packCount === 1 ? "" : "s"} configured.`
@@ -232,6 +257,43 @@ export function useReportingScreenViewModel(
     runExport: runExportCommand,
     selectProfile
   };
+}
+
+function buildWorkbenchChips(
+  countLabel: string,
+  packTargetCountLabel: string,
+  recommendedCountLabel: string
+): ReportingChipViewModel[] {
+  return [
+    { label: "Profiles", value: countLabel },
+    { label: "Pack targets", value: packTargetCountLabel },
+    { label: "Recommended", value: recommendedCountLabel },
+    { label: "Export route", value: "/api/export/analysis" }
+  ];
+}
+
+function buildQueueChips(
+  visibleCountLabel: string,
+  recommendedCountLabel: string,
+  packTargetCountLabel: string,
+  listLabel: string
+): ReportingChipViewModel[] {
+  return [
+    { label: "Visible", value: visibleCountLabel },
+    { label: "Recommended", value: recommendedCountLabel },
+    { label: "Targets", value: packTargetCountLabel },
+    { label: "List", value: listLabel }
+  ];
+}
+
+function buildPackTargetChips(
+  packTargetCountLabel: string,
+  statusTitle: string
+): ReportingChipViewModel[] {
+  return [
+    { label: "Visible", value: packTargetCountLabel },
+    { label: "Inspector", value: statusTitle }
+  ];
 }
 
 function buildProfileReadinessSummary(profile: GovernanceReportingProfile): string {

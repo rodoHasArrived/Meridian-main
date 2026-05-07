@@ -615,6 +615,195 @@
   .command-palette-command {
     box-shadow: var(--shadow-panel);
   }
+
+  .meridian-toolbar-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0.75rem 0.875rem;
+    border: 1px solid rgba(31, 52, 76, 0.95);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, rgba(11, 21, 32, 0.96) 0%, rgba(8, 16, 26, 0.92) 100%);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .meridian-toolbar-strip-items {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .meridian-toolbar-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-height: 1.625rem;
+    padding: 0 0.625rem;
+    border: 1px solid rgba(31, 52, 76, 0.95);
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.92);
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .meridian-toolbar-chip b {
+    color: #f6fbff;
+    font-weight: 500;
+  }
+
+  .meridian-toolbar-chip.active {
+    border-color: rgba(42, 178, 212, 0.35);
+    background: rgba(42, 178, 212, 0.10);
+    color: var(--cyan-primary);
+  }
+
+  .meridian-toolbar-right {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .dense-data-table-wrap {
+    overflow-x: auto;
+    border: 1px solid rgba(31, 52, 76, 0.9);
+    border-radius: var(--radius-lg);
+    background: rgba(8, 16, 26, 0.55);
+  }
+
+  .dense-data-table {
+    width: 100%;
+    min-width: 100%;
+    border-collapse: collapse;
+  }
+
+  .dense-data-table thead {
+    background: rgba(22, 35, 52, 0.62);
+  }
+
+  .dense-data-table th {
+    padding: 0.625rem 0.75rem;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    white-space: nowrap;
+  }
+
+  .dense-data-table td {
+    padding: 0.75rem;
+    border-top: 1px solid rgba(31, 52, 76, 0.66);
+    vertical-align: top;
+    font-size: 0.75rem;
+  }
+
+  .dense-data-table tbody tr {
+    background: rgba(8, 16, 26, 0.24);
+  }
+
+  .dense-data-table tbody tr.selected {
+    background: rgba(42, 178, 212, 0.10);
+  }
+
+  .dense-data-table-empty {
+    text-align: center;
+    color: var(--fg-muted);
+  }
+
+  .entity-summary {
+    border: 1px solid rgba(31, 52, 76, 0.95);
+    border-radius: var(--radius-xl);
+    background:
+      linear-gradient(180deg, rgba(246, 251, 255, 0.03), rgba(246, 251, 255, 0)),
+      rgba(13, 23, 34, 0.9);
+    padding: 1rem;
+    box-shadow: var(--shadow-panel);
+  }
+
+  .entity-summary-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .entity-summary-title {
+    margin-top: 0.625rem;
+    color: #f6fbff;
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .entity-summary-subtitle {
+    margin-top: 0.375rem;
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.75rem;
+  }
+
+  .entity-summary-description {
+    margin-top: 0.75rem;
+    max-width: 52rem;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .entity-summary-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .entity-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .entity-summary-field {
+    min-width: 0;
+    padding: 0.75rem 0.875rem;
+    border: 1px solid rgba(31, 52, 76, 0.9);
+    border-radius: var(--radius-lg);
+    background: rgba(8, 16, 26, 0.62);
+  }
+
+  .entity-summary-field dt {
+    color: var(--fg-muted);
+    font-size: 0.6875rem;
+    line-height: 1.4;
+  }
+
+  .entity-summary-field dd {
+    margin-top: 0.5rem;
+    word-break: break-word;
+    color: #f6fbff;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .plottool-overlay-list li {
+    box-shadow: var(--shadow-panel);
+  }
 }
 
 @media (max-width: 980px) {

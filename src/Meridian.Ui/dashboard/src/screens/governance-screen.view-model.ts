@@ -779,9 +779,9 @@ export function useGovernanceReconciliationViewModel(
   const resolveBreak = useCallback(async (
     breakId: string,
     status: ResolveReconciliationBreakRequest["status"],
-    operatorRationale: string
+    operatorRationale: string | null | undefined
   ) => {
-    const trimmedRationale = operatorRationale.trim();
+    const trimmedRationale = (operatorRationale ?? "").trim();
     if (!trimmedRationale) {
       setBreakActionError("Operator rationale is required.");
       return;

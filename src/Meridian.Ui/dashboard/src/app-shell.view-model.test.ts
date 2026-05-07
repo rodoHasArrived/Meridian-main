@@ -57,6 +57,7 @@ describe("app shell view model", () => {
       tone: "loading",
       role: "status",
       title: "Booting workstation shell",
+      detail: "Loading session state, operator workspaces, and the initial workstation evidence slices.",
       itemListLabel: "Workspace bootstrap status",
       actionLabel: null
     });

@@ -10,6 +10,7 @@ import {
   buildExportSection,
   buildProviderRow,
   buildProviderSection,
+  buildProviderSetupDialogState,
   buildSecurityMasterWorkspaceState,
   buildSelectedBackfillDetail,
   resolveDataOperationsWorkstream,
@@ -164,6 +165,7 @@ describe("data-operations-screen view model", () => {
 
   it("derives backfill dialog field, focus, and action semantics", () => {
     const dialog = buildBackfillDialogState({
+      form: { provider: "polygon", symbols: "", from: "", to: "" },
       busy: false,
       phase: "idle",
       validationError: "Enter at least one symbol before previewing a backfill.",
@@ -175,9 +177,15 @@ describe("data-operations-screen view model", () => {
     expect(dialog.formLabel).toBe("Backfill request form");
     expect(dialog.closeButtonLabel).toBe("Close backfill dialog");
     expect(dialog.closeButtonDisabledReason).toBeNull();
+    expect(dialog.summaryItems).toEqual([
+      { id: "provider", label: "Provider", value: "polygon", tone: "default" },
+      { id: "symbols", label: "Symbols", value: "None yet", tone: "warning" },
+      { id: "range", label: "Range", value: "Full available history", tone: "default" }
+    ]);
     expect(dialog.symbolsField).toMatchObject({
       id: "backfill-symbols",
       ariaLabel: "Backfill symbols",
+      placeholder: "Type symbols, e.g. AAPL, MSFT, SPY",
       describedBy: "backfill-symbols-help backfill-form-status backfill-form-feedback",
       autoFocus: true
     });
@@ -191,6 +199,7 @@ describe("data-operations-screen view model", () => {
     expect(dialog.runAction.ariaLabel).toBe("Run backfill unavailable until preview completes");
     expect(dialog.runAction.disabledReason).toBe("Enter at least one symbol before previewing a backfill.");
     expect(dialog.formStatusLabel).toBe("Enter at least one symbol before previewing a backfill.");
+    expect(dialog.formStatusTone).toBe("warning");
   });
 
   it("derives backfill preview and completion result cards", () => {
@@ -264,6 +273,40 @@ describe("data-operations-screen view model", () => {
     expect(exportSection.rows[0].actionText).toContain("Attach export");
     expect(exportSection.rows[0].ariaLabel).toContain("Next action Attach export");
     expect(buildExportSection([]).emptyState.title).toBe("No exports available");
+  });
+
+  it("derives provider setup fields from the selected provider kind", () => {
+    const alpacaDialog = buildProviderSetupDialogState("idle", {
+      kind: "alpaca",
+      displayName: "Alpaca",
+      apiKey: "",
+      apiSecret: "",
+      endpoint: "",
+      capabilities: ["streaming", "brokerage"]
+    });
+
+    expect(alpacaDialog.providerKindField.options.map((option) => option.value)).toContain("alpaca");
+    expect(alpacaDialog.providerKindField.description).toContain("paper trading");
+    expect(alpacaDialog.displayNameField).toMatchObject({
+      id: "provider-setup-name",
+      field: "displayName",
+      value: "Alpaca"
+    });
+    expect(alpacaDialog.credentialFields.map((field) => field.field)).toEqual(["apiKey", "apiSecret"]);
+    expect(alpacaDialog.capabilityOptions.find((option) => option.id === "brokerage")?.selected).toBe(true);
+    expect(alpacaDialog.submitAction.disabledReason).toBe("An API key is required for Alpaca.");
+
+    const yahooDialog = buildProviderSetupDialogState("idle", {
+      kind: "yahoo",
+      displayName: "Yahoo Finance",
+      apiKey: "",
+      apiSecret: "",
+      endpoint: "",
+      capabilities: ["backfill"]
+    });
+
+    expect(yahooDialog.credentialFields).toHaveLength(0);
+    expect(yahooDialog.submitAction.disabled).toBe(false);
   });
 
   it("maps export row status into semantic tones and next actions", () => {

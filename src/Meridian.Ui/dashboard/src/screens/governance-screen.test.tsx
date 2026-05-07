@@ -350,7 +350,6 @@ describe("GovernanceScreen", () => {
     expect(screen.getByRole("row", {
       name: "Ticker AAPL, Primary, provider Bloomberg, valid 2024-01-01 -> active"
     })).toBeInTheDocument();
-    expect(screen.getByText("Aliases")).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Aliases for Apple Inc." })).toBeInTheDocument();
     expect(screen.getByText("AAPL.OQ")).toBeInTheDocument();
     expect(screen.getByText("Collector")).toBeInTheDocument();
@@ -427,6 +426,7 @@ describe("GovernanceScreen", () => {
 
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
     vi.mocked(api.resolveReconciliationBreak).mockRejectedValueOnce(new Error("Ledger write rejected"));
+    vi.spyOn(window, "prompt").mockReturnValueOnce("Reviewed cash mismatch");
 
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 

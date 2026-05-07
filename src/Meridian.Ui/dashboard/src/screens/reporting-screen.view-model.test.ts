@@ -60,6 +60,29 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.packTargets[0].ariaLabel).toBe("board report-pack target");
   });
 
+  it("derives report queue summary chips in the view model", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(reporting));
+
+    expect(result.current.recommendedCountLabel).toBe("1");
+    expect(result.current.packTargetCountLabel).toBe("2");
+    expect(result.current.workbenchChips).toEqual([
+      { label: "Profiles", value: "2 profiles" },
+      { label: "Pack targets", value: "2" },
+      { label: "Recommended", value: "1" },
+      { label: "Export route", value: "/api/export/analysis" }
+    ]);
+    expect(result.current.queueChips).toEqual([
+      { label: "Visible", value: "2 of 2" },
+      { label: "Recommended", value: "1" },
+      { label: "Targets", value: "2" },
+      { label: "List", value: "Export profiles" }
+    ]);
+    expect(result.current.packTargetChips).toEqual([
+      { label: "Visible", value: "2" },
+      { label: "Inspector", value: "No profile selected" }
+    ]);
+  });
+
   it("shows no profile selected state initially", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
     expect(result.current.selectedProfile).toBeNull();
@@ -207,6 +230,8 @@ describe("useReportingScreenViewModel", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(null));
     expect(result.current.hasRows).toBe(false);
     expect(result.current.statusDetail).toContain("unavailable");
+    expect(result.current.queueChips.find((chip) => chip.label === "Recommended")?.value).toBe("0");
+    expect(result.current.packTargetChips.find((chip) => chip.label === "Visible")?.value).toBe("0");
   });
 
   it("count label reflects profile count", () => {

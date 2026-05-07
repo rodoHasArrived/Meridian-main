@@ -50,8 +50,16 @@ export interface BackfillDialogFieldState {
   id: string;
   label: string;
   ariaLabel: string;
+  placeholder?: string;
   describedBy?: string;
   autoFocus?: boolean;
+}
+
+export interface BackfillDialogSummaryItemState {
+  id: string;
+  label: string;
+  value: string;
+  tone: "default" | "warning";
 }
 
 export interface BackfillDialogActionState {
@@ -69,6 +77,7 @@ export interface BackfillDialogState {
   formLabel: string;
   closeButtonLabel: string;
   closeButtonDisabledReason: string | null;
+  summaryItems: BackfillDialogSummaryItemState[];
   providerField: BackfillDialogFieldState;
   symbolsField: BackfillDialogFieldState;
   fromField: BackfillDialogFieldState;
@@ -76,6 +85,7 @@ export interface BackfillDialogState {
   previewAction: BackfillDialogActionState;
   runAction: BackfillDialogActionState;
   formStatusLabel: string;
+  formStatusTone: "default" | "warning" | "danger" | "success";
 }
 
 export type BackfillResultCardTone = "warning" | "success" | "danger";
@@ -208,6 +218,10 @@ export interface ProviderSetupDialogState {
   titleId: string;
   descriptionId: string;
   formLabel: string;
+  providerKindField: ProviderSetupSelectFieldState;
+  displayNameField: ProviderSetupTextFieldState;
+  credentialFields: ProviderSetupCredentialFieldState[];
+  capabilityOptions: ProviderSetupCapabilityOptionState[];
   closeButtonLabel: string;
   closeButtonDisabledReason: string | null;
   submitAction: {
@@ -219,6 +233,44 @@ export interface ProviderSetupDialogState {
     busyLabel: string;
   };
   statusLabel: string;
+}
+
+export interface ProviderSetupKindOptionState {
+  value: string;
+  label: string;
+}
+
+export interface ProviderSetupSelectFieldState {
+  id: string;
+  label: string;
+  ariaLabel: string;
+  description: string;
+  options: ProviderSetupKindOptionState[];
+}
+
+export interface ProviderSetupTextFieldState {
+  id: string;
+  label: string;
+  ariaLabel: string;
+  field: "displayName";
+  value: string;
+}
+
+export interface ProviderSetupCredentialFieldState {
+  id: string;
+  label: string;
+  ariaLabel: string;
+  field: "apiKey" | "apiSecret" | "endpoint";
+  type: "password" | "url";
+  value: string;
+  placeholder: string | null;
+}
+
+export interface ProviderSetupCapabilityOptionState {
+  id: string;
+  label: string;
+  description: string;
+  selected: boolean;
 }
 
 export const PROVIDER_KIND_CATALOG: ProviderKindMeta[] = [
@@ -858,11 +910,12 @@ export function buildBackfillTriggerState({
           : "Run previewed backfill request",
     symbolsHelpText: "Separate symbols with spaces or commas. At least one symbol is required.",
     statusAnnouncement: buildBackfillStatusAnnouncement({ phase, error, preview, result }),
-    dialogState: buildBackfillDialogState({ busy, phase, validationError, preview, error, result })
+    dialogState: buildBackfillDialogState({ form, busy, phase, validationError, preview, error, result })
   };
 }
 
 export function buildBackfillDialogState({
+  form,
   busy,
   phase,
   validationError,
@@ -870,6 +923,7 @@ export function buildBackfillDialogState({
   error = null,
   result = null
 }: {
+  form: BackfillFormState;
   busy: boolean;
   phase: BackfillPhase;
   validationError: string | null;
@@ -886,15 +940,18 @@ export function buildBackfillDialogState({
     formLabel: "Backfill request form",
     closeButtonLabel: "Close backfill dialog",
     closeButtonDisabledReason: busy ? "Backfill request is running; wait for the current request to finish before closing." : null,
+    summaryItems: buildBackfillDialogSummaryItems(form),
     providerField: {
       id: "backfill-provider",
       label: "Provider",
-      ariaLabel: "Backfill provider"
+      ariaLabel: "Backfill provider",
+      placeholder: "Default provider"
     },
     symbolsField: {
       id: "backfill-symbols",
       label: "Symbols",
       ariaLabel: "Backfill symbols",
+      placeholder: "Type symbols, e.g. AAPL, MSFT, SPY",
       describedBy: "backfill-symbols-help backfill-form-status backfill-form-feedback",
       autoFocus: true
     },
@@ -934,8 +991,26 @@ export function buildBackfillDialogState({
       busy: phase === "running",
       busyLabel: "Running..."
     },
-    formStatusLabel: buildBackfillFormStatusLabel({ busy, phase, validationError, preview, error, result })
+    formStatusLabel: buildBackfillFormStatusLabel({ busy, phase, validationError, preview, error, result }),
+    formStatusTone: resolveBackfillFormStatusTone({ phase, validationError, error, preview, result })
   };
+}
+
+export function buildBackfillDialogSummaryItems(form: BackfillFormState): BackfillDialogSummaryItemState[] {
+  const provider = form.provider.trim() || "Default provider";
+  const symbols = parseSymbols(form.symbols);
+  const range = formatBackfillRange(form.from.trim() || null, form.to.trim() || null);
+
+  return [
+    { id: "provider", label: "Provider", value: provider, tone: "default" },
+    {
+      id: "symbols",
+      label: "Symbols",
+      value: symbols.length > 0 ? `${symbols.length} selected` : "None yet",
+      tone: symbols.length > 0 ? "default" : "warning"
+    },
+    { id: "range", label: "Range", value: range, tone: "default" }
+  ];
 }
 
 export function resolveBackfillPreviewDisabledReason({
@@ -1036,6 +1111,34 @@ export function buildBackfillFormStatusLabel({
   }
 
   return "Backfill request is ready to preview.";
+}
+
+function resolveBackfillFormStatusTone({
+  phase,
+  validationError,
+  error,
+  preview,
+  result
+}: {
+  phase: BackfillPhase;
+  validationError: string | null;
+  error: string | null;
+  preview: BackfillTriggerResult | null;
+  result: BackfillTriggerResult | null;
+}): BackfillDialogState["formStatusTone"] {
+  if (error || (result && !result.success)) {
+    return "danger";
+  }
+
+  if (result?.success) {
+    return "success";
+  }
+
+  if (phase === "previewing" || phase === "running" || preview || validationError) {
+    return "warning";
+  }
+
+  return "default";
 }
 
 export function buildBackfillResultCardState(
@@ -1287,11 +1390,34 @@ export function buildProviderSetupDialogState(
 ): ProviderSetupDialogState {
   const submitting = phase === "submitting";
   const validationError = phase === "submitting" ? null : validateProviderSetupForm(form);
+  const providerMeta = resolveProviderKindMeta(form.kind);
 
   return {
     titleId: "provider-setup-dialog-title",
     descriptionId: "provider-setup-dialog-description",
     formLabel: "Provider setup form",
+    providerKindField: {
+      id: "provider-setup-kind",
+      label: "Provider type",
+      ariaLabel: "Select provider type",
+      description: providerMeta?.description ?? "Custom provider type selected.",
+      options: PROVIDER_KIND_CATALOG.map((provider) => ({
+        value: provider.kind,
+        label: provider.label
+      }))
+    },
+    displayNameField: {
+      id: "provider-setup-name",
+      label: "Display name",
+      ariaLabel: "Provider display name",
+      field: "displayName",
+      value: form.displayName
+    },
+    credentialFields: buildProviderCredentialFields(form, providerMeta),
+    capabilityOptions: ALL_CAPABILITIES.map((capability) => ({
+      ...capability,
+      selected: form.capabilities.includes(capability.id)
+    })),
     closeButtonLabel: "Close provider setup",
     closeButtonDisabledReason: submitting ? "Provider setup is in progress; wait before closing." : null,
     submitAction: {
@@ -1316,4 +1442,53 @@ function buildProviderSetupStatusLabel(phase: ProviderSetupPhase, validationErro
   if (phase === "error") return "Provider setup encountered an error.";
   if (validationError) return validationError;
   return "Fill in provider details and click Configure provider.";
+}
+
+function resolveProviderKindMeta(kind: ProviderSetupFormState["kind"]): ProviderKindMeta | undefined {
+  return PROVIDER_KIND_CATALOG.find((provider) => provider.kind === kind);
+}
+
+function buildProviderCredentialFields(
+  form: ProviderSetupFormState,
+  meta: ProviderKindMeta | undefined
+): ProviderSetupCredentialFieldState[] {
+  const fields: ProviderSetupCredentialFieldState[] = [];
+
+  if (meta?.needsApiKey !== false) {
+    fields.push({
+      id: "provider-setup-apikey",
+      label: "API key",
+      ariaLabel: "Provider API key",
+      field: "apiKey",
+      type: "password",
+      value: form.apiKey,
+      placeholder: "Stored server-side; never sent to the browser after save"
+    });
+  }
+
+  if (meta?.needsApiSecret) {
+    fields.push({
+      id: "provider-setup-apisecret",
+      label: "API secret",
+      ariaLabel: "Provider API secret",
+      field: "apiSecret",
+      type: "password",
+      value: form.apiSecret,
+      placeholder: null
+    });
+  }
+
+  if (meta?.needsEndpoint) {
+    fields.push({
+      id: "provider-setup-endpoint",
+      label: "Endpoint URL",
+      ariaLabel: "Provider endpoint URL",
+      field: "endpoint",
+      type: "url",
+      value: form.endpoint,
+      placeholder: "https://localhost:7497 or https://api.yourprovider.com"
+    });
+  }
+
+  return fields;
 }

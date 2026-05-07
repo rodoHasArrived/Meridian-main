@@ -13,7 +13,7 @@ export interface SessionInfo {
   displayName: string;
   role: string;
   environment: "paper" | "live" | "research";
-  activeWorkspace: WorkspaceKey | LegacyWorkspaceKey;
+  activeWorkspace: WorkspaceKey;
   commandCount: number;
 }
 

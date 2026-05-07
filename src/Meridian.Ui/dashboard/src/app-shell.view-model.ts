@@ -110,7 +110,7 @@ function buildShellStatusPanel({
       detailId: "workstation-shell-status-loading-detail",
       tone: "loading",
       title: "Booting workstation shell",
-      detail: "Loading session state, workspace summaries, and the initial research slice.",
+      detail: "Loading session state, operator workspaces, and the initial workstation evidence slices.",
       role: "status",
       ariaLive: "polite",
       actionLabel: null,

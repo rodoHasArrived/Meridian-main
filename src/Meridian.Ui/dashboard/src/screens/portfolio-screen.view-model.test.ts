@@ -145,6 +145,28 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.fallbackStats.find((s) => s.label === "Open positions")?.value).toBe("1");
   });
 
+  it("derives named header chips without relying on fallback stat positions", () => {
+    const vm = buildPortfolioScreenViewModel({ trading, research, governance });
+
+    expect(vm.headerChips).toEqual([
+      { label: "Open positions", value: "1" },
+      { label: "Exposure", value: "$18,900" },
+      { label: "Unrealized P&L", value: "+$90" },
+      { label: "Cash variance", value: "$500" }
+    ]);
+  });
+
+  it("uses stable placeholder header chips when trading data is unavailable", () => {
+    const vm = buildPortfolioScreenViewModel({ trading: null, research, governance });
+
+    expect(vm.headerChips).toEqual([
+      { label: "Open positions", value: "0" },
+      { label: "Exposure", value: "—" },
+      { label: "Unrealized P&L", value: "—" },
+      { label: "Cash variance", value: "$500" }
+    ]);
+  });
+
   it("keeps selected holding state in the view model", () => {
     const tradingWithTwoPositions: TradingWorkspaceResponse = {
       ...trading,

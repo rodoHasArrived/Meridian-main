@@ -284,6 +284,21 @@ async function renderTradingScreen(
   return result;
 }
 
+async function openPromotionGate(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole("button", { name: /open promotion gate/i }));
+  return screen.getByRole("dialog", { name: /backtest.*paper promotion gate/i });
+}
+
+async function openSessionReplayControls(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole("button", { name: /open session replay controls/i }));
+  return screen.getByRole("dialog", { name: /session replay controls/i });
+}
+
+async function openStrategyControls(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole("button", { name: /open strategy controls/i }));
+  return screen.getByRole("dialog", { name: /strategy lifecycle/i });
+}
+
 describe("TradingScreen", () => {
   it("renders cockpit tables and wiring state", async () => {
     await renderTradingScreen();
@@ -395,14 +410,15 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(api.getPromotionHistory).toHaveBeenCalledTimes(1));
     vi.mocked(api.getPromotionHistory).mockClear();
-    await user.type(screen.getByLabelText("Run id"), "run-1");
-    await user.type(screen.getByLabelText("Operator id"), "operator-7");
-    await user.type(screen.getByLabelText("Approval reason"), "Meets risk constraints");
-    await user.type(screen.getByLabelText("Review notes"), "Checked replay consistency");
-    await user.type(screen.getByLabelText("Manual override id"), "override-9");
-    await user.click(screen.getByRole("button", { name: /evaluate gate checks/i }));
+    const promotionGate = await openPromotionGate(user);
+    await user.type(within(promotionGate).getByLabelText("Run id"), "run-1");
+    await user.type(within(promotionGate).getByLabelText("Operator id"), "operator-7");
+    await user.type(within(promotionGate).getByLabelText("Approval reason"), "Meets risk constraints");
+    await user.type(within(promotionGate).getByLabelText("Review notes"), "Checked replay consistency");
+    await user.type(within(promotionGate).getByLabelText("Manual override id"), "override-9");
+    await user.click(within(promotionGate).getByRole("button", { name: /evaluate gate checks/i }));
     await screen.findByText(/Eligible: Yes/i);
-    await user.click(screen.getByRole("button", { name: /confirm promote/i }));
+    await user.click(within(promotionGate).getByRole("button", { name: /confirm promote/i }));
     await screen.findByText(/Promoted\. Promotion ID: promo-1/i);
     expect(api.approvePromotion).toHaveBeenCalledWith({
       runId: "run-1",
@@ -457,15 +473,17 @@ describe("TradingScreen", () => {
     vi.mocked(api.evaluatePromotion).mockRejectedValueOnce(new Error("eval failed"));
     const user = userEvent.setup();
     await renderTradingScreen();
-    await user.type(screen.getByLabelText("Run id"), "run-bad");
-    await user.click(screen.getByRole("button", { name: /evaluate gate checks/i }));
+    const promotionGate = await openPromotionGate(user);
+    await user.type(within(promotionGate).getByLabelText("Run id"), "run-bad");
+    await user.click(within(promotionGate).getByRole("button", { name: /evaluate gate checks/i }));
     await screen.findByText("eval failed");
   });
 
   it("supports rejecting a promotion with a required rationale", async () => {
     const user = userEvent.setup();
     await renderTradingScreen();
-    await screen.findByText(/reason: Meets risk constraints/i);
+    const promotionGate = await openPromotionGate(user);
+    await within(promotionGate).findByText(/reason: Meets risk constraints/i);
     vi.mocked(api.getPromotionHistory).mockClear();
     vi.mocked(api.getPromotionHistory).mockResolvedValueOnce([{
       promotionId: "promo-reject-1",
@@ -488,10 +506,10 @@ describe("TradingScreen", () => {
       promotedAt: "2026-01-01T01:00:00Z"
     }]);
 
-    await user.type(screen.getByLabelText("Run id"), "run-1");
-    await user.type(screen.getByLabelText("Operator id"), "operator-7");
-    await user.type(screen.getByLabelText("Rejection reason"), "Risk review failed on drawdown stability.");
-    await user.click(screen.getByRole("button", { name: /reject promotion/i }));
+    await user.type(within(promotionGate).getByLabelText("Run id"), "run-1");
+    await user.type(within(promotionGate).getByLabelText("Operator id"), "operator-7");
+    await user.type(within(promotionGate).getByLabelText("Rejection reason"), "Risk review failed on drawdown stability.");
+    await user.click(within(promotionGate).getByRole("button", { name: /reject promotion/i }));
 
     const rejectionStatus = await screen.findByText(/Promotion rejected: Run breached risk gate\./i);
     expect(rejectionStatus).toHaveClass("text-warning");
@@ -506,7 +524,7 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getPromotionHistory).toHaveBeenCalledTimes(1));
     await screen.findByText(/reason: Risk review failed on drawdown stability\./i);
     await screen.findByText(/audit: audit-reject-1/i);
-    expect(screen.getByLabelText("Rejection reason")).toHaveValue("");
+    expect(within(promotionGate).getByLabelText("Rejection reason")).toHaveValue("");
   });
 
   it("renders unsuccessful rejection responses as errors", async () => {
@@ -518,26 +536,27 @@ describe("TradingScreen", () => {
     });
     const user = userEvent.setup();
     await renderTradingScreen();
-    await screen.findByText(/reason: Meets risk constraints/i);
     vi.mocked(api.getPromotionHistory).mockClear();
+    const promotionGate = await openPromotionGate(user);
+    await within(promotionGate).findByText(/reason: Meets risk constraints/i);
 
-    await user.type(screen.getByLabelText("Run id"), "missing-run");
-    await user.type(screen.getByLabelText("Operator id"), "operator-7");
-    await user.type(screen.getByLabelText("Rejection reason"), "Risk review failed on drawdown stability.");
-    await user.click(screen.getByRole("button", { name: /reject promotion/i }));
+    await user.type(within(promotionGate).getByLabelText("Run id"), "missing-run");
+    await user.type(within(promotionGate).getByLabelText("Operator id"), "operator-7");
+    await user.type(within(promotionGate).getByLabelText("Rejection reason"), "Risk review failed on drawdown stability.");
+    await user.click(within(promotionGate).getByRole("button", { name: /reject promotion/i }));
 
     const rejectionStatus = await screen.findByText(/Run not found or has no metrics available for rejection trace\./i);
-    expect(rejectionStatus).toHaveClass("text-destructive");
+    expect(rejectionStatus).toHaveClass("text-danger");
     expect(rejectionStatus).not.toHaveClass("text-success");
     await waitFor(() => expect(api.getPromotionHistory).toHaveBeenCalledTimes(1));
-    expect(screen.getByLabelText("Rejection reason")).toHaveValue("Risk review failed on drawdown stability.");
+    expect(within(promotionGate).getByLabelText("Rejection reason")).toHaveValue("Risk review failed on drawdown stability.");
   });
 
   it("supports replay start and restore session for reconnect/resume workflows", async () => {
     const user = userEvent.setup();
     await renderTradingScreen();
 
-    const replayControls = screen.getByRole("region", { name: /session replay controls/i });
+    const replayControls = await openSessionReplayControls(user);
     expect(replayControls).toHaveAccessibleDescription("Start and control replay for reconnect/resume validation.");
     expect(within(replayControls).getByLabelText("Replay file")).toHaveAccessibleDescription(/Ready to replay replay\.jsonl/i);
     expect(within(replayControls).getByLabelText("Replay speed multiplier")).toHaveAccessibleDescription(/Multiplier greater than 0/i);
@@ -581,7 +600,7 @@ describe("TradingScreen", () => {
     const user = userEvent.setup();
     await renderTradingScreen();
 
-    const lifecycle = screen.getByRole("region", { name: /strategy lifecycle/i });
+    const lifecycle = await openStrategyControls(user);
     const strategyInput = within(lifecycle).getByLabelText("Strategy ID");
     expect(within(lifecycle).getByRole("button", { name: /enter a strategy id before pausing a strategy/i })).toBeDisabled();
     expect(within(lifecycle).getByRole("button", { name: /enter a strategy id before stopping a strategy/i })).toBeDisabled();

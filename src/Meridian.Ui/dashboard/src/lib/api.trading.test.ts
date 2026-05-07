@@ -10,14 +10,16 @@ import {
   getPaperSessionDetail,
   getReportingWorkspace,
   getReplayStatus,
-  getResearchWorkspace,
+  getSecurityIdentity,
   getSession,
   getSystemStatus,
+  getStrategyWorkspace,
   getTradingReadiness,
   getTradingWorkspace,
   pauseReplay,
   runAnalysisExport,
   resumeReplay,
+  searchSecurities,
   seekReplay,
   setReplaySpeed,
   startReplay,
@@ -105,14 +107,41 @@ describe("trading endpoint wiring", () => {
     fetchMock.mockResolvedValue({ ok: false, status: 404, json: async () => ({}), text: async () => "" });
 
     await expect(getSession()).resolves.toMatchObject({ displayName: "Ops Desk" });
-    await expect(getSystemStatus()).resolves.toMatchObject({ providersTotal: 4 });
-    await expect(getResearchWorkspace()).resolves.toMatchObject({ runs: expect.any(Array) });
+    await expect(getSystemStatus()).resolves.toMatchObject({ providersTotal: 4, recentEvents: [] });
+    await expect(getStrategyWorkspace()).resolves.toMatchObject({ runs: expect.any(Array) });
     await expect(getTradingWorkspace()).resolves.toMatchObject({ openOrders: expect.any(Array) });
     await expect(getDataOperationsWorkspace()).resolves.toMatchObject({ backfills: expect.any(Array) });
     await expect(getGovernanceWorkspace()).resolves.toMatchObject({ reconciliationQueue: expect.any(Array) });
     await expect(getReportingWorkspace()).resolves.toMatchObject({ reporting: expect.any(Object) });
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/strategy", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/data", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/accounting", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reporting", expect.anything());
+  });
+
+  it("uses dev security fixtures when the search endpoint responds with an empty set", async () => {
+    fetchMock.mockResolvedValue({ ok: true, status: 200, json: async () => [], text: async () => "[]" });
+
+    await expect(searchSecurities("pcg")).resolves.toMatchObject([
+      expect.objectContaining({
+        securityId: "sec-dev-002",
+        displayName: "PG&E Corporation"
+      })
+    ]);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/security-master/securities?query=pcg&take=25&activeOnly=true",
+      expect.anything()
+    );
+  });
+
+  it("uses dev security identity fixtures when the drill-in endpoint is missing", async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 404, json: async () => ({}), text: async () => "" });
+
+    await expect(getSecurityIdentity("sec-dev-002")).resolves.toMatchObject({
+      securityId: "sec-dev-002",
+      displayName: "PG&E Corporation",
+      identifiers: expect.any(Array)
+    });
   });
 
   it("does not use dev fixtures for order mutations", async () => {

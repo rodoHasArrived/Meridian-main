@@ -72,6 +72,8 @@ public sealed record WorkstationSessionWorkspaceSummary(
 
 /// <summary>
 /// Typed payload returned by <c>GET /api/workstation/session</c>.
+/// <c>ActiveWorkspace</c> uses the canonical browser shell roots:
+/// trading, portfolio, accounting, reporting, strategy, data, or settings.
 /// </summary>
 public sealed record WorkstationSessionPayload(
     string DisplayName,
@@ -83,7 +85,7 @@ public sealed record WorkstationSessionPayload(
     WorkstationSessionWorkspaceSummary WorkspaceSummary);
 
 // ---------------------------------------------------------------------------
-// /api/workstation/research
+// /api/workstation/strategy (legacy alias: /api/workstation/research)
 // ---------------------------------------------------------------------------
 
 /// <summary>
@@ -98,7 +100,7 @@ public sealed record WorkstationResearchWorkspaceSummary(
     int PromotionCandidates);
 
 /// <summary>
-/// Typed payload returned by <c>GET /api/workstation/research</c>.
+/// Typed payload returned by <c>GET /api/workstation/strategy</c>.
 /// Run cards and comparisons retain <c>object</c> pending their own DTO evolution.
 /// </summary>
 public sealed record WorkstationResearchPayload(
@@ -194,7 +196,7 @@ public sealed record WorkstationTradingPayload(
     object? DrillIn);
 
 // ---------------------------------------------------------------------------
-// /api/workstation/governance
+// /api/workstation/accounting and /api/workstation/reporting (legacy alias: /api/workstation/governance)
 // ---------------------------------------------------------------------------
 
 /// <summary>
@@ -208,7 +210,8 @@ public sealed record WorkstationGovernanceWorkspaceSummary(
     int SecurityIssues);
 
 /// <summary>
-/// Typed payload returned by <c>GET /api/workstation/governance</c>.
+/// Typed payload returned by <c>GET /api/workstation/accounting</c> and
+/// <c>GET /api/workstation/reporting</c>.
 /// <c>ReconciliationQueue</c>, <c>BreakQueue</c>, <c>CashFlow</c>, <c>Reporting</c>, and
 /// <c>KernelObservability</c> are kept as <c>object</c> / <c>IReadOnlyList&lt;object&gt;</c>
 /// pending their own DTO evolution in a follow-on PR.

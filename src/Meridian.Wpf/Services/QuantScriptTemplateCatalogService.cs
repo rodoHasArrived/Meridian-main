@@ -32,9 +32,9 @@ public sealed class QuantScriptTemplateCatalogService
                 return Array.Empty<QuantScriptTemplateDefinition>();
 
             var json = File.ReadAllText(_catalogPath);
-            var manifest = JsonSerializer.Deserialize(
+            var manifest = JsonSerializer.Deserialize<QuantScriptTemplateCatalogManifest>(
                 json,
-                TemplateCatalogStorageJsonContext.Default.QuantScriptTemplateCatalogManifest);
+                StorageJsonOptions);
 
             return manifest?.Templates
                 ?.OrderBy(static template => template.Category, StringComparer.OrdinalIgnoreCase)
@@ -67,7 +67,9 @@ public sealed class QuantScriptTemplateCatalogService
         return new QuantScriptTemplateDocument(template, source, contentPath);
     }
 
-    [JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
-    [JsonSerializable(typeof(QuantScriptTemplateCatalogManifest))]
-    private sealed partial class TemplateCatalogStorageJsonContext : JsonSerializerContext;
+    private static readonly JsonSerializerOptions StorageJsonOptions = new()
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
 }

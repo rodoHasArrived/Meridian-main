@@ -87,6 +87,8 @@ After gates pass, create a paper session and monitor for one trading day.
 
 - Inspect rate-limit settings under `Backfill` and provider priorities.
 - Check `data/_logs/` for throttling and transport errors.
+- Runtime logs roll daily, retain the latest 30 files, and start a new file at 16 MB to keep
+  noisy debug sessions from filling the data root.
 
 ### Workstation page does not load
 

@@ -101,12 +101,25 @@ async function postJson<T>(path: string, body?: unknown): Promise<T> {
   return (text ? JSON.parse(text) : null) as T;
 }
 
+async function getDevelopmentSearchFallback(query: string, take: number, activeOnly: boolean) {
+  if (!import.meta.env.DEV) {
+    return undefined;
+  }
+
+  const { searchDevSecurityMasterEntries } = await import("@/lib/dev-fixtures");
+  return searchDevSecurityMasterEntries(query, take, activeOnly);
+}
+
 export function getSession() {
   return getJson<SessionInfo>("/api/workstation/session");
 }
 
+export function getStrategyWorkspace() {
+  return getJson<ResearchWorkspaceResponse>("/api/workstation/strategy");
+}
+
 export function getResearchWorkspace() {
-  return getJson<ResearchWorkspaceResponse>("/api/workstation/research");
+  return getStrategyWorkspace();
 }
 
 export function getTradingWorkspace() {
@@ -122,8 +135,12 @@ export function getOperatorInbox(fundAccountId?: string) {
   return getJson<OperatorInbox>(`/api/workstation/operator/inbox${params}`);
 }
 
+export function getDataWorkspace() {
+  return getJson<DataOperationsWorkspaceResponse>("/api/workstation/data");
+}
+
 export function getDataOperationsWorkspace() {
-  return getJson<DataOperationsWorkspaceResponse>("/api/workstation/data-operations");
+  return getDataWorkspace();
 }
 
 export function getGovernanceWorkspace() {
@@ -327,13 +344,23 @@ export function getRunTrialBalance(runId: string, accountType?: string) {
 
 // --- Security Master search ---
 
-export function searchSecurities(query: string, take = 25, activeOnly = true) {
+export async function searchSecurities(query: string, take = 25, activeOnly = true) {
   const params = new URLSearchParams({
     query,
     take: String(take),
     activeOnly: String(activeOnly)
   });
-  return getJson<SecurityMasterEntry[]>(`/api/workstation/security-master/securities?${params.toString()}`);
+  const path = `/api/workstation/security-master/securities?${params.toString()}`;
+  const results = await getJson<SecurityMasterEntry[]>(path);
+
+  if (import.meta.env.DEV && results.length === 0) {
+    const fixtureResults = await getDevelopmentSearchFallback(query, take, activeOnly);
+    if (fixtureResults && fixtureResults.length > 0) {
+      return fixtureResults;
+    }
+  }
+
+  return results;
 }
 
 export function getSecurityDetail(securityId: string) {

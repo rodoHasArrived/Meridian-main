@@ -26,11 +26,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
-import {
-  ALL_CAPABILITIES,
-  PROVIDER_KIND_CATALOG,
-  useDataOperationsViewModel
-} from "@/screens/data-operations-screen.view-model";
+import { useDataOperationsViewModel } from "@/screens/data-operations-screen.view-model";
 import type { DataOperationsWorkspaceResponse } from "@/types";
 import type {
   BackfillResultCardState,
@@ -315,89 +311,58 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             <>
               <div className="mt-5 grid gap-4" role="group" aria-label={vm.providerSetupDialogState.formLabel}>
                 <label htmlFor="provider-setup-kind" className="grid gap-1 text-sm">
-                  Provider type
+                  {vm.providerSetupDialogState.providerKindField.label}
                   <select
-                    id="provider-setup-kind"
+                    id={vm.providerSetupDialogState.providerKindField.id}
                     className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     value={vm.providerForm.kind}
-                    aria-label="Select provider type"
+                    aria-label={vm.providerSetupDialogState.providerKindField.ariaLabel}
                     onChange={(e) => vm.updateProviderForm("kind", e.target.value)}
                   >
-                    {PROVIDER_KIND_CATALOG.map((p) => (
-                      <option key={p.kind} value={p.kind}>{p.label}</option>
+                    {vm.providerSetupDialogState.providerKindField.options.map((p) => (
+                      <option key={p.value} value={p.value}>{p.label}</option>
                     ))}
                   </select>
-                  {(() => {
-                    const meta = PROVIDER_KIND_CATALOG.find((p) => p.kind === vm.providerForm.kind);
-                    return meta ? (
-                      <span className="text-xs text-muted-foreground">{meta.description}</span>
-                    ) : null;
-                  })()}
+                  <span className="text-xs text-muted-foreground">
+                    {vm.providerSetupDialogState.providerKindField.description}
+                  </span>
                 </label>
 
-                <label htmlFor="provider-setup-name" className="grid gap-1 text-sm">
-                  Display name
+                <label htmlFor={vm.providerSetupDialogState.displayNameField.id} className="grid gap-1 text-sm">
+                  {vm.providerSetupDialogState.displayNameField.label}
                   <input
-                    id="provider-setup-name"
+                    id={vm.providerSetupDialogState.displayNameField.id}
                     className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    value={vm.providerForm.displayName}
-                    aria-label="Provider display name"
-                    onChange={(e) => vm.updateProviderForm("displayName", e.target.value)}
+                    value={vm.providerSetupDialogState.displayNameField.value}
+                    aria-label={vm.providerSetupDialogState.displayNameField.ariaLabel}
+                    onChange={(e) => vm.updateProviderForm(vm.providerSetupDialogState.displayNameField.field, e.target.value)}
                   />
                 </label>
 
-                {PROVIDER_KIND_CATALOG.find((p) => p.kind === vm.providerForm.kind)?.needsApiKey !== false && (
-                  <label htmlFor="provider-setup-apikey" className="grid gap-1 text-sm">
-                    API key
+                {vm.providerSetupDialogState.credentialFields.map((field) => (
+                  <label key={field.id} htmlFor={field.id} className="grid gap-1 text-sm">
+                    {field.label}
                     <input
-                      id="provider-setup-apikey"
-                      type="password"
+                      id={field.id}
+                      type={field.type}
                       className="rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                      value={vm.providerForm.apiKey}
-                      aria-label="Provider API key"
-                      placeholder="Stored server-side; never sent to the browser after save"
-                      onChange={(e) => vm.updateProviderForm("apiKey", e.target.value)}
+                      value={field.value}
+                      aria-label={field.ariaLabel}
+                      placeholder={field.placeholder ?? undefined}
+                      onChange={(e) => vm.updateProviderForm(field.field, e.target.value)}
                     />
                   </label>
-                )}
-
-                {PROVIDER_KIND_CATALOG.find((p) => p.kind === vm.providerForm.kind)?.needsApiSecret && (
-                  <label htmlFor="provider-setup-apisecret" className="grid gap-1 text-sm">
-                    API secret
-                    <input
-                      id="provider-setup-apisecret"
-                      type="password"
-                      className="rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                      value={vm.providerForm.apiSecret}
-                      aria-label="Provider API secret"
-                      onChange={(e) => vm.updateProviderForm("apiSecret", e.target.value)}
-                    />
-                  </label>
-                )}
-
-                {PROVIDER_KIND_CATALOG.find((p) => p.kind === vm.providerForm.kind)?.needsEndpoint && (
-                  <label htmlFor="provider-setup-endpoint" className="grid gap-1 text-sm">
-                    Endpoint URL
-                    <input
-                      id="provider-setup-endpoint"
-                      className="rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                      value={vm.providerForm.endpoint}
-                      aria-label="Provider endpoint URL"
-                      placeholder="https://localhost:7497 or https://api.yourprovider.com"
-                      onChange={(e) => vm.updateProviderForm("endpoint", e.target.value)}
-                    />
-                  </label>
-                )}
+                ))}
 
                 <fieldset>
                   <legend className="mb-2 text-sm">Capabilities</legend>
                   <div className="grid gap-2 sm:grid-cols-2">
-                    {ALL_CAPABILITIES.map((cap) => (
+                    {vm.providerSetupDialogState.capabilityOptions.map((cap) => (
                       <label
                         key={cap.id}
                         className={cn(
                           "flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2.5 transition-colors",
-                          vm.providerForm.capabilities.includes(cap.id)
+                          cap.selected
                             ? "border-primary/40 bg-primary/8"
                             : "border-border/70 bg-secondary/20 hover:bg-secondary/35"
                         )}
@@ -405,7 +370,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
                         <input
                           type="checkbox"
                           className="mt-0.5 shrink-0 accent-[hsl(var(--primary))]"
-                          checked={vm.providerForm.capabilities.includes(cap.id)}
+                          checked={cap.selected}
                           onChange={() => vm.toggleProviderCapability(cap.id)}
                           aria-label={cap.label}
                         />
@@ -456,7 +421,11 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
       </Dialog>
 
       <Dialog open={vm.dialogOpen} onOpenChange={(open) => { if (!open) vm.closeBackfillDialog(); }}>
-        <DialogContent aria-labelledby={vm.dialogState.titleId} aria-describedby={vm.dialogState.descriptionId}>
+        <DialogContent
+          aria-labelledby={vm.dialogState.titleId}
+          aria-describedby={vm.dialogState.descriptionId}
+          className="max-w-xl p-6"
+        >
           <div className="flex items-start justify-between gap-4">
             <DialogHeader className="mb-0">
               <div className="eyebrow-label">Backfill</div>
@@ -473,14 +442,31 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             />
           </div>
 
-          <div className="mt-5 grid gap-3" role="group" aria-label={vm.dialogState.formLabel}>
+          <dl className="mt-5 grid gap-2 rounded-lg border border-border/80 bg-secondary/20 p-3 sm:grid-cols-3">
+            {vm.dialogState.summaryItems.map((item) => (
+              <div key={item.id} className="min-w-0">
+                <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{item.label}</dt>
+                <dd
+                  className={cn(
+                    "mt-1 truncate font-mono text-xs",
+                    item.tone === "warning" ? "text-warning" : "text-foreground"
+                  )}
+                >
+                  {item.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="mt-5 grid gap-4" role="group" aria-label={vm.dialogState.formLabel}>
             <label htmlFor={vm.dialogState.providerField.id} className="grid gap-1 text-sm">
               {vm.dialogState.providerField.label}
               <input
                 id={vm.dialogState.providerField.id}
-                className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 value={vm.form.provider}
                 aria-label={vm.dialogState.providerField.ariaLabel}
+                placeholder={vm.dialogState.providerField.placeholder}
                 onChange={(event) => vm.updateBackfillForm("provider", event.target.value)}
               />
             </label>
@@ -488,8 +474,8 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
               {vm.dialogState.symbolsField.label}
               <input
                 id={vm.dialogState.symbolsField.id}
-                className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                placeholder="AAPL MSFT SPY"
+                className="min-h-12 rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                placeholder={vm.dialogState.symbolsField.placeholder}
                 value={vm.form.symbols}
                 aria-label={vm.dialogState.symbolsField.ariaLabel}
                 aria-describedby={vm.dialogState.symbolsField.describedBy}
@@ -505,7 +491,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
                 <input
                   id={vm.dialogState.fromField.id}
                   type="date"
-                  className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   value={vm.form.from}
                   aria-label={vm.dialogState.fromField.ariaLabel}
                   onChange={(event) => vm.updateBackfillForm("from", event.target.value)}
@@ -516,7 +502,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
                 <input
                   id={vm.dialogState.toField.id}
                   type="date"
-                  className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   value={vm.form.to}
                   aria-label={vm.dialogState.toField.ariaLabel}
                   onChange={(event) => vm.updateBackfillForm("to", event.target.value)}
@@ -529,7 +515,16 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             id="backfill-form-status"
             role="status"
             aria-live="polite"
-            className="mt-4 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-xs leading-5 text-muted-foreground"
+            className={cn(
+              "mt-4 rounded-md border px-3 py-2 text-xs leading-5",
+              vm.dialogState.formStatusTone === "danger"
+                ? "border-danger/40 bg-danger/10 text-danger"
+                : vm.dialogState.formStatusTone === "success"
+                  ? "border-success/35 bg-success/10 text-success"
+                  : vm.dialogState.formStatusTone === "warning"
+                    ? "border-warning/35 bg-warning/10 text-warning"
+                    : "border-border/70 bg-secondary/25 text-muted-foreground"
+            )}
           >
             {vm.dialogState.formStatusLabel}
           </div>

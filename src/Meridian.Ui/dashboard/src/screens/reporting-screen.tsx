@@ -25,8 +25,6 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
     );
   }
 
-  const recommendedCount = data.reporting.recommendedProfiles.length;
-
   return (
     <div className="space-y-8">
       <section
@@ -45,10 +43,9 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <ReportingChip label="Profiles" value={vm.countLabel} />
-          <ReportingChip label="Pack targets" value={String(vm.packTargets.length)} />
-          <ReportingChip label="Recommended" value={String(recommendedCount)} />
-          <ReportingChip label="Export route" value="/api/export/analysis" />
+          {vm.workbenchChips.map((chip) => (
+            <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
+          ))}
         </div>
       </section>
 
@@ -94,8 +91,9 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-slate-200">
             <div className="flex flex-wrap gap-2">
-              <ReportingChip label="Visible" value={String(vm.packTargets.length)} />
-              <ReportingChip label="Inspector" value={vm.statusTitle} />
+              {vm.packTargetChips.map((chip) => (
+                <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
+              ))}
             </div>
             {vm.hasPackTargets ? (
               <div
@@ -141,10 +139,9 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
-              <ReportingChip label="Visible" value={vm.visibleCountLabel} />
-              <ReportingChip label="Recommended" value={String(recommendedCount)} />
-              <ReportingChip label="Targets" value={String(vm.packTargets.length)} />
-              <ReportingChip label="List" value={vm.listLabel} />
+              {vm.queueChips.map((chip) => (
+                <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
+              ))}
             </div>
             <div role="list" aria-label={vm.listLabel} className="space-y-2">
               {vm.hasRows ? (

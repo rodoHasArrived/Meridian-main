@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  getDataOperationsWorkspace,
+  getDataWorkspace,
   getGovernanceWorkspace,
   getReportingWorkspace,
-  getResearchWorkspace,
   getSession,
+  getStrategyWorkspace,
   getSystemStatus,
   getTradingWorkspace
 } from "@/lib/api";
@@ -63,9 +63,9 @@ export function useWorkstationData() {
     ] = await Promise.allSettled([
       getSession(),
       getSystemStatus(),
-      getResearchWorkspace(),
+      getStrategyWorkspace(),
       getTradingWorkspace(),
-      getDataOperationsWorkspace(),
+      getDataWorkspace(),
       getGovernanceWorkspace(),
       getReportingWorkspace()
     ]);

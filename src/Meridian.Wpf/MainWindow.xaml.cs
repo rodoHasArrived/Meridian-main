@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -756,7 +755,7 @@ public partial class MainWindow : Window
                 Directory.CreateDirectory(dir);
             }
 
-            var json = JsonSerializer.Serialize(state, WindowStateJsonContext.Default.PersistedWindowState);
+            var json = JsonSerializer.Serialize(state, WindowStateJsonOptions);
 
             await File.WriteAllTextAsync(WindowStateFilePath, json).ConfigureAwait(false);
         }
@@ -777,7 +776,7 @@ public partial class MainWindow : Window
                 return;
 
             var json = File.ReadAllText(WindowStateFilePath);
-            var state = JsonSerializer.Deserialize(json, WindowStateJsonContext.Default.PersistedWindowState);
+            var state = JsonSerializer.Deserialize<PersistedWindowState>(json, WindowStateJsonOptions);
             if (state == null)
                 return;
 
@@ -1021,13 +1020,10 @@ public partial class MainWindow : Window
         public DateTime SavedAt { get; set; }
     }
 
-    /// <summary>
-    /// Source-generated JSON context for window state persistence (ADR-014).
-    /// Avoids reflection-based serialization overhead.
-    /// </summary>
-    [JsonSourceGenerationOptions(WriteIndented = true)]
-    [JsonSerializable(typeof(PersistedWindowState))]
-    private sealed partial class WindowStateJsonContext : JsonSerializerContext;
+    private static readonly JsonSerializerOptions WindowStateJsonOptions = new()
+    {
+        WriteIndented = true
+    };
 
 
 

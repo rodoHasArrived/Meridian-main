@@ -38,6 +38,11 @@ export interface PortfolioMetricStat {
   value: string;
 }
 
+export interface PortfolioHeaderChip {
+  label: string;
+  value: string;
+}
+
 export interface PortfolioDetailField {
   label: string;
   value: string;
@@ -59,6 +64,7 @@ export interface PortfolioScreenViewModel {
   metricsFromTrading: boolean;
   metricCards: TradingWorkspaceResponse["metrics"];
   fallbackStats: PortfolioMetricStat[];
+  headerChips: PortfolioHeaderChip[];
   hasPositions: boolean;
   positionRows: PortfolioPositionRow[];
   positionListLabel: string;
@@ -153,11 +159,19 @@ export function buildPortfolioScreenViewModel({
     { label: "Cash", value: "—" },
     { label: "Open positions", value: String(positions.length) }
   ];
+  const cashVarianceLabel = cashFlow !== null ? formatCurrency(cashFlow.netVariance) : null;
 
   return {
     metricsFromTrading: trading !== null,
     metricCards: trading?.metrics ?? [],
     fallbackStats,
+    headerChips: buildPortfolioHeaderChips({
+      openPositionCount: positions.length,
+      totalExposure,
+      totalUnrealizedPnl,
+      hasPositions: positions.length > 0,
+      cashVarianceLabel
+    }),
     hasPositions: positionRows.length > 0,
     positionRows,
     positionListLabel: "Open positions",
@@ -174,10 +188,41 @@ export function buildPortfolioScreenViewModel({
       ? "No runs available. Create a strategy run in the Strategy workspace."
       : "Strategy workspace data unavailable.",
     cashFlowSummary: cashFlow?.summary ?? null,
-    cashVarianceLabel: cashFlow !== null ? formatCurrency(cashFlow.netVariance) : null,
+    cashVarianceLabel,
     cashFlowTone: cashFlow?.tone ?? "default",
     openPositionCount: positions.length
   };
+}
+
+function buildPortfolioHeaderChips({
+  openPositionCount,
+  totalExposure,
+  totalUnrealizedPnl,
+  hasPositions,
+  cashVarianceLabel
+}: {
+  openPositionCount: number;
+  totalExposure: number;
+  totalUnrealizedPnl: number;
+  hasPositions: boolean;
+  cashVarianceLabel: string | null;
+}): PortfolioHeaderChip[] {
+  const chips: PortfolioHeaderChip[] = [
+    { label: "Open positions", value: String(openPositionCount) },
+    { label: "Exposure", value: hasPositions ? formatCurrency(totalExposure) : "—" },
+    {
+      label: "Unrealized P&L",
+      value: hasPositions
+        ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatCurrency(totalUnrealizedPnl)
+        : "—"
+    }
+  ];
+
+  if (cashVarianceLabel) {
+    chips.push({ label: "Cash variance", value: cashVarianceLabel });
+  }
+
+  return chips;
 }
 
 export function usePortfolioScreenViewModel({

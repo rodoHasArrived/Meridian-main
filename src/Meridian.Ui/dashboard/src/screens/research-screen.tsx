@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Sigma, Sparkles } from "lucide-react";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseDataTable, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -410,6 +411,34 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
 }
 
 function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceState; studies: ResearchPlotStudyItem[] }) {
+  const studyColumns: DenseDataTableColumn<ResearchPlotStudyItem>[] = [
+    {
+      id: "study",
+      label: "Study",
+      render: (study) => (
+        <div className="min-w-0">
+          <div className="truncate font-semibold text-foreground">{study.title}</div>
+          <div className="mt-1 text-xs text-muted-foreground">{study.subtitle}</div>
+        </div>
+      )
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (study) => <Badge variant={study.statusBadgeVariant}>{study.statusBadgeLabel}</Badge>
+    },
+    {
+      id: "metric",
+      label: "Metric",
+      render: (study) => <span className="font-mono text-xs text-foreground">{study.metricText}</span>
+    },
+    {
+      id: "note",
+      label: "Operator note",
+      render: (study) => <span className="text-xs leading-5 text-muted-foreground">{study.noteText}</span>
+    }
+  ];
+
   return (
     <section
       id="plottool-workspace-panel"
@@ -427,28 +456,24 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
             <CardDescription>Retained runs stay docked beside PlotTool instead of leaving the Strategy route.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {studies.map((study) => (
-              <div
-                key={study.id}
-                className={cn(
-                  "rounded-lg border px-3 py-3",
-                  study.isActive ? "border-primary/40 bg-primary/10" : "border-border/70 bg-secondary/20"
-                )}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold text-foreground">{study.title}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">{study.subtitle}</div>
-                  </div>
-                  <Badge variant={study.statusBadgeVariant}>{study.statusBadgeLabel}</Badge>
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <Badge variant="outline">{study.statusText}</Badge>
-                  <span className="font-mono">{study.metricText}</span>
-                </div>
-                <p className="mt-3 text-xs leading-5 text-muted-foreground">{study.noteText}</p>
-              </div>
-            ))}
+            <ToolbarStrip
+              ariaLabel="Strategy notebook filters"
+              items={[
+                { id: "count", label: "Notebook set", value: `${studies.length} retained`, active: true },
+                { id: "active", label: "Primary", value: studies.find((study) => study.isActive)?.title ?? "None" },
+                { id: "lane", label: "Lane", value: "Strategy" }
+              ]}
+            />
+            <DenseDataTable
+              columns={studyColumns}
+              rows={studies}
+              getRowId={(study) => study.id}
+              getRowAriaLabel={(study) => `${study.title}, ${study.statusText}, ${study.metricText}`}
+              selectedRowId={studies.find((study) => study.isActive)?.id ?? null}
+              emptyText="No retained PlotTool studies are available."
+              ariaLabel="Strategy notebooks"
+              caption="Retained strategy notebooks aligned to the active PlotTool workspace."
+            />
           </CardContent>
         </Card>
 
@@ -470,9 +495,15 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
 
       <Card className="border-border/70 bg-background/35">
         <CardHeader className="pb-3">
-          <div className="flex flex-wrap items-center gap-2">
-            {vm.toolbarPills.map((pill) => <Badge key={pill} variant="outline">{pill}</Badge>)}
-          </div>
+          <ToolbarStrip
+            ariaLabel="PlotTool workspace controls"
+            items={vm.toolbarPills.map((pill, index) => ({
+              id: `plot-pill-${index}`,
+              label: index === 0 ? "Window" : index === 1 ? "Sampling" : index === 2 ? "Overlay" : "Drift",
+              value: pill,
+              active: index === 0
+            }))}
+          />
           <div className="space-y-2">
             <div className="eyebrow-label">Scatter / residual view</div>
             <CardTitle>{vm.title}</CardTitle>
@@ -517,7 +548,7 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-3 text-sm text-muted-foreground">
+            <ul className="plottool-overlay-list space-y-3 text-sm text-muted-foreground">
               {vm.overlayItems.map((item) => (
                 <li key={item} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 leading-6">
                   {item}

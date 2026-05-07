@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Meridian.Application.EnvironmentDesign;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.EnvironmentDesign;
@@ -808,7 +807,7 @@ public sealed partial class WorkstationOperatingContextService
         try
         {
             var json = await File.ReadAllTextAsync(_storagePath, ct).ConfigureAwait(false);
-            var model = JsonSerializer.Deserialize(json, OperatingContextStorageJsonContext.Default.WorkstationOperatingContextStorageModel);
+            var model = JsonSerializer.Deserialize<WorkstationOperatingContextStorageModel>(json, StorageJsonOptions);
             if (model is null)
             {
                 return;
@@ -843,7 +842,7 @@ public sealed partial class WorkstationOperatingContextService
                     WindowMode = CurrentWindowMode,
                     CurrentLayoutPresetId = CurrentLayoutPresetId
                 },
-                OperatingContextStorageJsonContext.Default.WorkstationOperatingContextStorageModel);
+                StorageJsonOptions);
 
             await File.WriteAllTextAsync(_storagePath, json, ct).ConfigureAwait(false);
         }
@@ -907,7 +906,8 @@ public sealed partial class WorkstationOperatingContextService
         public string? CurrentLayoutPresetId { get; set; }
     }
 
-    [JsonSourceGenerationOptions(WriteIndented = true)]
-    [JsonSerializable(typeof(WorkstationOperatingContextStorageModel))]
-    private sealed partial class OperatingContextStorageJsonContext : JsonSerializerContext;
+    private static readonly JsonSerializerOptions StorageJsonOptions = new()
+    {
+        WriteIndented = true
+    };
 }

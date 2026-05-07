@@ -58,10 +58,9 @@ export function PortfolioScreen({ trading, research, governance }: PortfolioScre
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <PortfolioChip label="Open positions" value={String(vm.openPositionCount)} />
-          <PortfolioChip label="Exposure" value={vm.fallbackStats[0]?.value ?? "—"} />
-          <PortfolioChip label="Unrealized P&L" value={vm.fallbackStats[1]?.value ?? "—"} />
-          {vm.cashVarianceLabel ? <PortfolioChip label="Cash variance" value={vm.cashVarianceLabel} /> : null}
+          {vm.headerChips.map((chip) => (
+            <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
+          ))}
         </div>
       </section>
 

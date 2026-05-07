@@ -49,12 +49,26 @@ public static class WorkstationEndpoints
         })
         .WithName("GetWorkstationResearch");
 
+        group.MapGet("/strategy", async (HttpContext context) =>
+        {
+            return await BuildResearchPayloadAsync(context).ConfigureAwait(false);
+        })
+        .WithName("GetWorkstationStrategy");
+
         group.MapGet("/research/briefing", async (HttpContext context) =>
         {
             var briefing = await BuildResearchBriefingAsync(context).ConfigureAwait(false);
             return Results.Json(briefing, jsonOptions);
         })
         .WithName("GetWorkstationResearchBriefing")
+        .Produces<ResearchBriefingDto>(200);
+
+        group.MapGet("/strategy/briefing", async (HttpContext context) =>
+        {
+            var briefing = await BuildResearchBriefingAsync(context).ConfigureAwait(false);
+            return Results.Json(briefing, jsonOptions);
+        })
+        .WithName("GetWorkstationStrategyBriefing")
         .Produces<ResearchBriefingDto>(200);
 
         group.MapGet("/workflow-summary", async (
@@ -250,6 +264,12 @@ public static class WorkstationEndpoints
             return await BuildDataOperationsPayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationDataOperations");
+
+        group.MapGet("/data", async (HttpContext context) =>
+        {
+            return await BuildDataOperationsPayloadAsync(context).ConfigureAwait(false);
+        })
+        .WithName("GetWorkstationData");
 
         group.MapGet("/governance", async (HttpContext context) =>
         {
@@ -1169,7 +1189,7 @@ public static class WorkstationEndpoints
                 DisplayName: "Meridian Operator",
                 Role: "Research Lead",
                 Environment: "paper",
-                ActiveWorkspace: "research",
+                ActiveWorkspace: "strategy",
                 CommandCount: 6,
                 LatestRun: null,
                 WorkspaceSummary: new WorkstationSessionWorkspaceSummary(0, 0, 0, 0, 0));
@@ -3508,10 +3528,10 @@ public static class WorkstationEndpoints
     private static string MapWorkspace(StrategyRunSummary? latest)
         => latest?.Promotion?.State switch
         {
-            StrategyRunPromotionState.LiveManaged => "governance",
-            StrategyRunPromotionState.CandidateForLive => "operations",
-            StrategyRunPromotionState.CandidateForPaper => "research",
-            _ => latest?.Mode == StrategyRunMode.Live ? "operations" : "research"
+            StrategyRunPromotionState.LiveManaged => "accounting",
+            StrategyRunPromotionState.CandidateForLive => "trading",
+            StrategyRunPromotionState.CandidateForPaper => "strategy",
+            _ => latest?.Mode == StrategyRunMode.Live ? "trading" : "strategy"
         };
 
     private static string BuildRunNotes(StrategyRunSummary run)

@@ -17,11 +17,98 @@ import type {
   ReplayStatus,
   TradingActionResult,
   TradingAcceptanceGateStatus,
+  TradingFill,
   TradingOperatorReadiness,
+  TradingOrder,
+  TradingPosition,
+  TradingRiskState,
+  TradingWorkspaceResponse,
   WorkstationBrokerageSyncStatus
 } from "@/types";
 
 export type AcceptanceLevel = "ready" | "review" | "atRisk";
+export type TradingDataTone = "default" | "success" | "warning" | "danger" | "muted";
+
+export interface TradingBlotterField {
+  label: string;
+  value: string;
+  tone: TradingDataTone;
+}
+
+export interface TradingPositionRow {
+  id: string;
+  symbol: string;
+  side: string;
+  quantity: string;
+  averagePrice: string;
+  markPrice: string;
+  dayPnl: string;
+  unrealizedPnl: string;
+  exposure: string;
+  dayPnlTone: TradingDataTone;
+  unrealizedPnlTone: TradingDataTone;
+  isSelected: boolean;
+  selectAriaLabel: string;
+  closeAriaLabel: string;
+  ariaLabel: string;
+}
+
+export interface TradingOrderRow {
+  id: string;
+  orderId: string;
+  symbol: string;
+  side: string;
+  type: string;
+  quantity: string;
+  limitPrice: string;
+  status: string;
+  submittedAt: string;
+  statusTone: TradingDataTone;
+  isSelected: boolean;
+  selectAriaLabel: string;
+  cancelAriaLabel: string;
+  ariaLabel: string;
+}
+
+export interface TradingFillRow {
+  id: string;
+  cells: string[];
+  ariaLabel: string;
+}
+
+export interface TradingBlotterDetail {
+  id: string;
+  title: string;
+  subtitle: string;
+  statusLabel: string;
+  statusTone: TradingDataTone;
+  ariaLabel: string;
+  detail: string;
+  fields: TradingBlotterField[];
+}
+
+export interface TradingBlotterViewModel {
+  positionRows: TradingPositionRow[];
+  orderRows: TradingOrderRow[];
+  fillRows: TradingFillRow[];
+  selectedPosition: TradingBlotterDetail | null;
+  selectedOrder: TradingBlotterDetail | null;
+  hasPositions: boolean;
+  hasOpenOrders: boolean;
+  hasFills: boolean;
+  positionsTableLabel: string;
+  ordersTableLabel: string;
+  fillsTableLabel: string;
+  positionDetailId: string;
+  orderDetailId: string;
+  positionEmptyText: string;
+  orderEmptyText: string;
+  fillEmptyText: string;
+  cancelAllDisabled: boolean;
+  cancelAllAriaLabel: string;
+  selectPosition: (id: string) => void;
+  selectOrder: (id: string) => void;
+}
 
 export interface TradingReadinessSummaryRow {
   id: string;
@@ -61,6 +148,71 @@ export interface BuildTradingReadinessStateOptions {
 const defaultTradingReadinessServices: TradingReadinessServices = {
   getTradingReadiness: () => workstationApi.getTradingReadiness()
 };
+
+export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null): TradingBlotterViewModel {
+  const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+
+  return useMemo(
+    () => buildTradingBlotterViewModel({
+      data,
+      selectedPositionId,
+      selectedOrderId,
+      selectPosition: setSelectedPositionId,
+      selectOrder: setSelectedOrderId
+    }),
+    [data, selectedOrderId, selectedPositionId]
+  );
+}
+
+export function buildTradingBlotterViewModel({
+  data,
+  selectedPositionId = null,
+  selectedOrderId = null,
+  selectPosition = () => {},
+  selectOrder = () => {}
+}: {
+  data: TradingWorkspaceResponse | null;
+  selectedPositionId?: string | null;
+  selectedOrderId?: string | null;
+  selectPosition?: (id: string) => void;
+  selectOrder?: (id: string) => void;
+}): TradingBlotterViewModel {
+  const positions = data?.positions ?? [];
+  const orders = data?.openOrders ?? [];
+  const fills = data?.fills ?? [];
+  const effectivePositionId = resolveSelectedId(positions, selectedPositionId, positionRowId);
+  const effectiveOrderId = resolveSelectedId(orders, selectedOrderId, orderRowId);
+
+  const positionRows = positions.map((position, index) => buildPositionRow(position, index, effectivePositionId));
+  const orderRows = orders.map((order, index) => buildOrderRow(order, index, effectiveOrderId));
+  const fillRows = fills.map(buildFillRow);
+  const selectedPositionRow = positionRows.find((row) => row.id === effectivePositionId) ?? null;
+  const selectedOrderRow = orderRows.find((row) => row.id === effectiveOrderId) ?? null;
+
+  return {
+    positionRows,
+    orderRows,
+    fillRows,
+    selectedPosition: selectedPositionRow ? buildPositionDetail(selectedPositionRow, data?.risk ?? null) : null,
+    selectedOrder: selectedOrderRow ? buildOrderDetail(selectedOrderRow, data?.brokerage.provider ?? null) : null,
+    hasPositions: positionRows.length > 0,
+    hasOpenOrders: orderRows.length > 0,
+    hasFills: fillRows.length > 0,
+    positionsTableLabel: "Live positions evidence",
+    ordersTableLabel: "Open orders evidence",
+    fillsTableLabel: "Recent fills evidence",
+    positionDetailId: "trading-position-detail",
+    orderDetailId: "trading-order-detail",
+    positionEmptyText: data ? "No live positions in the active paper session." : "Trading workspace data unavailable.",
+    orderEmptyText: data ? "No open orders require operator action." : "Trading workspace data unavailable.",
+    fillEmptyText: data ? "No recent fills have been reported for this session." : "Trading workspace data unavailable.",
+    cancelAllDisabled: orderRows.length === 0,
+    cancelAllAriaLabel: orderRows.length === 0 ? "No open orders to cancel" : `Cancel all ${orderRows.length} open orders`,
+    selectPosition,
+    selectOrder
+  };
+}
 
 export function useTradingReadinessViewModel({
   initialReadiness,
@@ -217,6 +369,174 @@ function buildTradingReadinessAnnouncement({
   }
 
   return "";
+}
+
+function resolveSelectedId<T>(
+  rows: T[],
+  requestedId: string | null,
+  getId: (row: T, index: number) => string
+): string | null {
+  if (requestedId && rows.some((row, index) => getId(row, index) === requestedId)) {
+    return requestedId;
+  }
+
+  return rows.length > 0 ? getId(rows[0], 0) : null;
+}
+
+function buildPositionRow(
+  position: TradingPosition,
+  index: number,
+  selectedId: string | null
+): TradingPositionRow {
+  const id = positionRowId(position, index);
+
+  return {
+    id,
+    symbol: position.symbol,
+    side: position.side,
+    quantity: position.quantity,
+    averagePrice: position.averagePrice,
+    markPrice: position.markPrice,
+    dayPnl: position.dayPnl,
+    unrealizedPnl: position.unrealizedPnl,
+    exposure: position.exposure,
+    dayPnlTone: pnlTextTone(position.dayPnl),
+    unrealizedPnlTone: pnlTextTone(position.unrealizedPnl),
+    isSelected: id === selectedId,
+    selectAriaLabel: `Inspect ${position.symbol} ${position.side.toLowerCase()} position`,
+    closeAriaLabel: `Close ${position.symbol} position`,
+    ariaLabel: `${position.symbol} ${position.side} position, ${position.quantity} quantity, ${position.exposure} exposure, ${position.unrealizedPnl} unrealized P&L`
+  };
+}
+
+function buildOrderRow(
+  order: TradingOrder,
+  index: number,
+  selectedId: string | null
+): TradingOrderRow {
+  const id = orderRowId(order, index);
+
+  return {
+    id,
+    orderId: order.orderId,
+    symbol: order.symbol,
+    side: order.side,
+    type: order.type,
+    quantity: order.quantity,
+    limitPrice: order.limitPrice,
+    status: order.status,
+    submittedAt: order.submittedAt,
+    statusTone: orderStatusTone(order.status),
+    isSelected: id === selectedId,
+    selectAriaLabel: `Inspect order ${order.orderId}`,
+    cancelAriaLabel: `Cancel order ${order.orderId}`,
+    ariaLabel: `${order.orderId}, ${order.side} ${order.quantity} ${order.symbol} ${order.type}, ${order.status}, submitted ${order.submittedAt}`
+  };
+}
+
+function buildFillRow(fill: TradingFill): TradingFillRow {
+  return {
+    id: fill.fillId,
+    cells: [
+      fill.fillId,
+      fill.orderId,
+      fill.symbol,
+      fill.side,
+      fill.quantity,
+      fill.price,
+      fill.venue,
+      fill.timestamp
+    ],
+    ariaLabel: `${fill.fillId}, ${fill.side} ${fill.quantity} ${fill.symbol} at ${fill.price} on ${fill.venue}, ${fill.timestamp}`
+  };
+}
+
+function buildPositionDetail(
+  row: TradingPositionRow,
+  risk: TradingRiskState | null
+): TradingBlotterDetail {
+  const guardrailCount = risk?.activeGuardrails.length ?? 0;
+  const riskText = risk ? `${risk.state}: ${risk.summary}` : "Risk context unavailable.";
+
+  return {
+    id: "selected-position",
+    title: row.symbol,
+    subtitle: `${row.side} · ${row.quantity} shares`,
+    statusLabel: risk?.state ?? "Position",
+    statusTone: riskStateTone(risk?.state, row.unrealizedPnlTone),
+    ariaLabel: `Position detail for ${row.symbol}`,
+    detail: `${row.exposure} exposure with ${row.unrealizedPnl} unrealized P&L. ${riskText}`,
+    fields: [
+      { label: "Side", value: row.side, tone: "default" },
+      { label: "Quantity", value: row.quantity, tone: "default" },
+      { label: "Average price", value: row.averagePrice, tone: "muted" },
+      { label: "Mark price", value: row.markPrice, tone: "muted" },
+      { label: "Day P&L", value: row.dayPnl, tone: row.dayPnlTone },
+      { label: "Unrealized P&L", value: row.unrealizedPnl, tone: row.unrealizedPnlTone },
+      { label: "Exposure", value: row.exposure, tone: "default" },
+      { label: "Risk", value: risk?.state ?? "Unavailable", tone: riskFieldTone(risk?.state) },
+      { label: "Guardrails", value: guardrailCount > 0 ? `${guardrailCount} active` : "None active", tone: guardrailCount > 0 ? "warning" : "success" }
+    ]
+  };
+}
+
+function buildOrderDetail(row: TradingOrderRow, provider: string | null): TradingBlotterDetail {
+  return {
+    id: "selected-order",
+    title: row.orderId,
+    subtitle: `${row.side} ${row.quantity} ${row.symbol}`,
+    statusLabel: row.status,
+    statusTone: row.statusTone,
+    ariaLabel: `Order detail for ${row.orderId}`,
+    detail: `${row.type} order submitted ${row.submittedAt}. ${provider ? `${provider} is the active execution adapter.` : "Execution adapter context unavailable."}`,
+    fields: [
+      { label: "Symbol", value: row.symbol, tone: "default" },
+      { label: "Side", value: row.side, tone: "default" },
+      { label: "Type", value: row.type, tone: "default" },
+      { label: "Quantity", value: row.quantity, tone: "default" },
+      { label: "Limit", value: row.limitPrice || "Market", tone: "muted" },
+      { label: "Status", value: row.status, tone: row.statusTone },
+      { label: "Submitted", value: row.submittedAt, tone: "muted" },
+      { label: "Provider", value: provider ?? "Unavailable", tone: "muted" }
+    ]
+  };
+}
+
+function positionRowId(position: TradingPosition, index: number): string {
+  return `${position.symbol.toLowerCase()}-${position.side.toLowerCase()}-${index}`;
+}
+
+function orderRowId(order: TradingOrder, index: number): string {
+  return `${order.orderId.toLowerCase()}-${index}`;
+}
+
+function pnlTextTone(value: string): TradingDataTone {
+  if (value.trim().startsWith("+")) return "success";
+  if (value.trim().startsWith("-")) return "danger";
+  return "default";
+}
+
+function orderStatusTone(status: TradingOrder["status"]): TradingDataTone {
+  if (status === "Working") return "success";
+  if (status === "Partially Filled") return "warning";
+  return "muted";
+}
+
+function riskFieldTone(state: TradingRiskState["state"] | undefined): TradingDataTone {
+  if (state === "Healthy") return "success";
+  if (state === "Observe") return "warning";
+  if (state === "Constrained") return "danger";
+  return "muted";
+}
+
+function riskStateTone(
+  state: TradingRiskState["state"] | undefined,
+  fallback: TradingDataTone
+): TradingDataTone {
+  if (state === "Constrained") return "danger";
+  if (state === "Observe") return "warning";
+  if (state === "Healthy") return "success";
+  return fallback;
 }
 
 export type ExecutionEvidenceTone = "success" | "warning" | "danger";

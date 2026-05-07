@@ -77,6 +77,7 @@ describe("buildSettingsScreenViewModel", () => {
     const vm = buildSettingsScreenViewModel(null, overview);
     expect(vm.recentEventsSection.state).toBe("ready");
     expect(vm.recentEventsSection.listLabel).toBe("1 recent system event");
+    expect(vm.recentEventsSection.countLabel).toBe("1");
     expect(vm.recentEventsSection.rows).toHaveLength(1);
     expect(vm.recentEventsSection.rows[0]).toMatchObject({
       message: "Backfill completed.",
@@ -91,13 +92,26 @@ describe("buildSettingsScreenViewModel", () => {
     const vm = buildSettingsScreenViewModel(null, noEvents);
     expect(vm.recentEventsSection.state).toBe("empty");
     expect(vm.recentEventsSection.statusLabel).toBe("No recent events");
+    expect(vm.recentEventsSection.countLabel).toBe("0");
     expect(vm.recentEventsSection.rows).toHaveLength(0);
+  });
+
+  it("treats missing recent events from runtime payloads as an empty event stream", () => {
+    const partialOverview = { ...overview };
+    delete (partialOverview as Partial<SystemOverviewResponse>).recentEvents;
+
+    const vm = buildSettingsScreenViewModel(null, partialOverview as SystemOverviewResponse);
+
+    expect(vm.recentEventsSection.state).toBe("empty");
+    expect(vm.recentEventsSection.countLabel).toBe("0");
+    expect(vm.recentEventsSection.statusLabel).toBe("No recent events");
   });
 
   it("returns unavailable recent-event state when overview is null", () => {
     const vm = buildSettingsScreenViewModel(null, null);
     expect(vm.recentEventsSection.state).toBe("unavailable");
     expect(vm.recentEventsSection.statusLabel).toBe("Event stream unavailable");
+    expect(vm.recentEventsSection.countLabel).toBe("0");
     expect(vm.recentEventsSection.statusDetail).toContain("Reconnect");
   });
 
@@ -149,6 +163,14 @@ describe("buildSettingsScreenViewModel", () => {
 
     expect(vm.diagnosticStatusLabel).toBe("All reachable");
     expect(vm.diagnosticStatusVariant).toBe("success");
+    expect(vm.diagnosticCounts).toMatchObject({
+      loaded: 7,
+      failed: 0,
+      checking: 0,
+      loadedLabel: "7",
+      failedLabel: "0",
+      checkingLabel: "0"
+    });
     expect(vm.diagnosticLinks.every((link) => link.statusLabel === "Loaded")).toBe(true);
   });
 
@@ -173,6 +195,7 @@ describe("buildSettingsScreenViewModel", () => {
     const reportingLink = vm.diagnosticLinks.find((link) => link.label === "Reporting workspace");
 
     expect(vm.diagnosticStatusVariant).toBe("danger");
+    expect(vm.diagnosticCounts.failed).toBeGreaterThan(0);
     expect(tradingLink).toMatchObject({
       href: "/api/workstation/trading",
       statusLabel: "Failed",
@@ -194,6 +217,25 @@ describe("buildSettingsScreenViewModel", () => {
   it("points system overview diagnostics at the mapped status endpoint", () => {
     const vm = buildSettingsScreenViewModel(session, overview);
     expect(vm.diagnosticLinks.find((link) => link.label === "System overview")?.href).toBe("/api/status");
+  });
+
+  it("derives diagnostic chip counts while loading", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      loading: true
+    });
+
+    expect(vm.diagnosticStatusLabel).toBe("7 checking");
+    expect(vm.diagnosticCounts).toMatchObject({
+      loaded: 0,
+      failed: 0,
+      checking: 7,
+      loadedLabel: "0",
+      failedLabel: "0",
+      checkingLabel: "7"
+    });
+    expect(vm.diagnosticSummary).toContain("Checking 7 diagnostic endpoints");
   });
 
   it("handles null overview gracefully", () => {

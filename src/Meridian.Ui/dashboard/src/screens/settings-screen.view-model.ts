@@ -48,10 +48,20 @@ export interface SettingsRecentEventsSection {
   title: string;
   description: string;
   listLabel: string;
+  countLabel: string;
   statusLabel: string;
   statusDetail: string;
   state: "ready" | "empty" | "unavailable";
   rows: SettingsEventRow[];
+}
+
+export interface SettingsDiagnosticCounts {
+  loadedLabel: string;
+  failedLabel: string;
+  checkingLabel: string;
+  loaded: number;
+  failed: number;
+  checking: number;
 }
 
 export interface SettingsScreenViewModel {
@@ -65,6 +75,7 @@ export interface SettingsScreenViewModel {
   hasOverview: boolean;
   recentEventsSection: SettingsRecentEventsSection;
   diagnosticLinks: SettingsDiagnosticLink[];
+  diagnosticCounts: SettingsDiagnosticCounts;
   diagnosticSummary: string;
   diagnosticListLabel: string;
   diagnosticStatusLabel: string;
@@ -204,6 +215,7 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
       title: "Recent events",
       description: "System events from the active session. Check source subsystems for detail.",
       listLabel: "Recent system events unavailable",
+      countLabel: "0",
       statusLabel: "Event stream unavailable",
       statusDetail: "System overview is unavailable. Reconnect to the Meridian API before reviewing event posture.",
       state: "unavailable",
@@ -211,7 +223,8 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
     };
   }
 
-  const rows = overview.recentEvents.map((event) => {
+  const events = overview.recentEvents ?? [];
+  const rows = events.map((event) => {
     const source = event.source.trim() || "Unknown source";
     const timestamp = event.timestamp.trim() || "Timestamp unavailable";
     const statusCode = eventStatusCode(event.type);
@@ -234,6 +247,7 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
       title: "Recent events",
       description: "System events from the active session. Check source subsystems for detail.",
       listLabel: "No recent system events",
+      countLabel: "0",
       statusLabel: "No recent events",
       statusDetail: "No system events reported for the active session. Diagnostic endpoints remain available below.",
       state: "empty",
@@ -245,6 +259,7 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
     title: "Recent events",
     description: "System events from the active session. Check source subsystems for detail.",
     listLabel: rows.length === 1 ? "1 recent system event" : `${rows.length} recent system events`,
+    countLabel: String(rows.length),
     statusLabel: rows.length === 1 ? "1 event reported" : `${rows.length} events reported`,
     statusDetail: "Latest workstation events remain visible with source and timestamp evidence.",
     state: "ready",
@@ -317,28 +332,43 @@ function isSettingsScreenPayload(value: SettingsScreenPayload | SessionInfo | nu
 function buildDiagnosticEndpointSection(payload: SettingsScreenPayload): Pick<
   SettingsScreenViewModel,
   "diagnosticLinks" | "diagnosticSummary" | "diagnosticListLabel" | "diagnosticStatusLabel" | "diagnosticStatusVariant"
+  | "diagnosticCounts"
 > {
   const diagnosticLinks = DIAGNOSTIC_ENDPOINTS.map((endpoint) => buildDiagnosticLink(endpoint, payload));
-  const unavailable = diagnosticLinks.filter((link) => link.tone === "danger").length;
-  const loading = diagnosticLinks.filter((link) => link.isLoading).length;
-  const ready = diagnosticLinks.filter((link) => link.tone === "success").length;
+  const counts = buildDiagnosticCounts(diagnosticLinks);
 
-  const diagnosticStatusLabel = loading > 0
-    ? `${loading} checking`
-    : unavailable > 0
-      ? `${unavailable} unavailable`
+  const diagnosticStatusLabel = counts.checking > 0
+    ? `${counts.checking} checking`
+    : counts.failed > 0
+      ? `${counts.failed} unavailable`
       : "All reachable";
 
   return {
     diagnosticLinks,
-    diagnosticSummary: loading > 0
-      ? `Checking ${loading} diagnostic endpoint${loading === 1 ? "" : "s"}; ${ready} already loaded.`
-      : unavailable > 0
-        ? `${unavailable} diagnostic endpoint${unavailable === 1 ? "" : "s"} failed to load in the workstation bootstrap. Open the endpoint card for raw API evidence.`
+    diagnosticCounts: counts,
+    diagnosticSummary: counts.checking > 0
+      ? `Checking ${counts.checking} diagnostic endpoint${counts.checking === 1 ? "" : "s"}; ${counts.loaded} already loaded.`
+      : counts.failed > 0
+        ? `${counts.failed} diagnostic endpoint${counts.failed === 1 ? "" : "s"} failed to load in the workstation bootstrap. Open the endpoint card for raw API evidence.`
         : "All diagnostic endpoint payloads represented on this page are loaded.",
     diagnosticListLabel: "Diagnostic endpoint availability",
     diagnosticStatusLabel,
-    diagnosticStatusVariant: loading > 0 ? "warning" : unavailable > 0 ? "danger" : "success"
+    diagnosticStatusVariant: counts.checking > 0 ? "warning" : counts.failed > 0 ? "danger" : "success"
+  };
+}
+
+function buildDiagnosticCounts(links: SettingsDiagnosticLink[]): SettingsDiagnosticCounts {
+  const loaded = links.filter((link) => link.tone === "success").length;
+  const failed = links.filter((link) => link.tone === "danger").length;
+  const checking = links.filter((link) => link.isLoading).length;
+
+  return {
+    loaded,
+    failed,
+    checking,
+    loadedLabel: String(loaded),
+    failedLabel: String(failed),
+    checkingLabel: String(checking)
   };
 }
 
