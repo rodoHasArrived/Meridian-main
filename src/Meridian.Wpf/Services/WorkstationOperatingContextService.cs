@@ -54,6 +54,8 @@ public sealed partial class WorkstationOperatingContextService
 
     public Task LoadAsync(CancellationToken ct = default)
     {
+        TaskCompletionSource? loadCompletion = null;
+        Task loadTask;
         lock (_loadGate)
         {
             if (_loaded)
@@ -61,35 +63,65 @@ public sealed partial class WorkstationOperatingContextService
                 return Task.CompletedTask;
             }
 
-            _loadTask ??= LoadCoreAsync(ct);
-            return _loadTask;
+            if (_loadTask is null)
+            {
+                loadCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                _loadTask = loadCompletion.Task;
+            }
+
+            loadTask = _loadTask;
+        }
+
+        if (loadCompletion is not null)
+        {
+            _ = CompleteLoadAsync(loadCompletion, ct);
+        }
+
+        return loadTask;
+    }
+
+    private async Task CompleteLoadAsync(TaskCompletionSource loadCompletion, CancellationToken ct)
+    {
+        try
+        {
+            await LoadCoreAsync(ct).ConfigureAwait(false);
+            loadCompletion.TrySetResult();
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            ResetLoadTask(loadCompletion.Task);
+            loadCompletion.TrySetCanceled(ct);
+        }
+        catch (Exception ex)
+        {
+            ResetLoadTask(loadCompletion.Task);
+            loadCompletion.TrySetException(ex);
         }
     }
 
     private async Task LoadCoreAsync(CancellationToken ct)
     {
-        try
+        await _fundContextService.LoadAsync(ct).ConfigureAwait(false);
+        await LoadSettingsAsync(ct).ConfigureAwait(false);
+        await RefreshContextsAsync(ct).ConfigureAwait(false);
+
+        var targetKey = LastSelectedOperatingContextKey;
+        if (CurrentContext is null && !string.IsNullOrWhiteSpace(targetKey))
         {
-            await _fundContextService.LoadAsync(ct).ConfigureAwait(false);
-            await LoadSettingsAsync(ct).ConfigureAwait(false);
-            await RefreshContextsAsync(ct).ConfigureAwait(false);
-
-            var targetKey = LastSelectedOperatingContextKey;
-            if (CurrentContext is null && !string.IsNullOrWhiteSpace(targetKey))
-            {
-                await SelectLoadedContextAsync(targetKey, raiseChanging: false, raiseChanged: false, ct: ct).ConfigureAwait(false);
-            }
-
-            MarkLoaded();
+            await SelectLoadedContextAsync(targetKey, raiseChanging: false, raiseChanged: false, ct: ct).ConfigureAwait(false);
         }
-        catch
+
+        MarkLoaded();
+    }
+
+    private void ResetLoadTask(Task loadTask)
+    {
+        lock (_loadGate)
         {
-            lock (_loadGate)
+            if (ReferenceEquals(_loadTask, loadTask))
             {
                 _loadTask = null;
             }
-
-            throw;
         }
     }
 

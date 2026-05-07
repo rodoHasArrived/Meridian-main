@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import {
   buildSecurityMasterWorkspaceState,
+  resolveSecurityMasterTabKeyCommand,
   SECURITY_MASTER_DEFAULT_QUERY
 } from "@/screens/data-operations-screen.security-master";
 import type {
@@ -193,6 +194,7 @@ export interface DataOperationsPresentationState {
 
 export {
   buildSecurityMasterWorkspaceState,
+  resolveSecurityMasterTabKeyCommand,
   SECURITY_MASTER_DEFAULT_QUERY
 } from "@/screens/data-operations-screen.security-master";
 export type {

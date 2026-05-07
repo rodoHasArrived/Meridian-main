@@ -17,7 +17,7 @@ import {
   XCircle
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +26,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
-import { useDataOperationsViewModel } from "@/screens/data-operations-screen.view-model";
+import {
+  resolveSecurityMasterTabKeyCommand,
+  useDataOperationsViewModel
+} from "@/screens/data-operations-screen.view-model";
 import type { DataOperationsWorkspaceResponse } from "@/types";
 import type {
   BackfillResultCardState,
@@ -851,6 +854,18 @@ function SecurityMasterDetailCard({
   const selected = state.selectedSecurity;
   const activeTab = state.tabs.find((tab) => tab.selected)?.id ?? "overview";
   const packetStatus = selected?.printPacketState ?? null;
+  const handleTabKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const nextTab = resolveSecurityMasterTabKeyCommand(state.tabs, activeTab, event.key);
+    if (!nextTab) {
+      return;
+    }
+
+    event.preventDefault();
+    onSelectTab(nextTab);
+    window.requestAnimationFrame(() => {
+      document.getElementById(`security-master-tab-${nextTab}`)?.focus();
+    });
+  };
 
   return (
     <Card className="overflow-hidden">
@@ -912,7 +927,12 @@ function SecurityMasterDetailCard({
             </div>
 
             <div className="border-b border-border/70 bg-secondary/20">
-              <div role="tablist" aria-label="Security master detail views" className="flex flex-wrap gap-1 px-4 py-2">
+              <div
+                role="tablist"
+                aria-label="Security master detail views"
+                className="flex flex-wrap gap-1 px-4 py-2"
+                onKeyDown={handleTabKeyDown}
+              >
                 {state.tabs.map((tab) => (
                   <button
                     key={tab.id}
@@ -921,6 +941,8 @@ function SecurityMasterDetailCard({
                     role="tab"
                     aria-selected={tab.selected}
                     aria-controls={tab.panelId}
+                    aria-label={tab.selectAriaLabel}
+                    tabIndex={tab.tabIndex}
                     className={cn(
                       "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                       tab.selected ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"

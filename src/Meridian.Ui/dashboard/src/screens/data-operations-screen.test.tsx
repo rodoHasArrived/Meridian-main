@@ -130,6 +130,33 @@ describe("DataOperationsScreen", () => {
     expect(screen.getAllByText("SM-PACKET-2026-05-31-GS").length).toBeGreaterThan(0);
   });
 
+  it("supports roving keyboard navigation for security master detail tabs", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+
+    const overviewTab = screen.getByRole("tab", { name: /show overview/i });
+    expect(overviewTab).toHaveAttribute("tabindex", "0");
+
+    overviewTab.focus();
+    await user.keyboard("{ArrowRight}");
+
+    const companyTab = screen.getByRole("tab", { name: /show company/i });
+    await waitFor(() => expect(companyTab).toHaveAttribute("aria-selected", "true"));
+    expect(companyTab).toHaveAttribute("tabindex", "0");
+    expect(overviewTab).toHaveAttribute("tabindex", "-1");
+    await waitFor(() => expect(companyTab).toHaveFocus());
+
+    await user.keyboard("{End}");
+    const printTab = screen.getByRole("tab", { name: /show print \/ export/i });
+    await waitFor(() => expect(printTab).toHaveAttribute("aria-selected", "true"));
+    expect(screen.getByText("Packet contents")).toBeInTheDocument();
+
+    await user.keyboard("{Home}");
+    await waitFor(() => expect(overviewTab).toHaveAttribute("aria-selected", "true"));
+    expect(screen.getByText("Identifier groups")).toBeInTheDocument();
+  });
+
   it("reveals pending and inactive matches when the status filter is expanded", async () => {
     const user = userEvent.setup();
 

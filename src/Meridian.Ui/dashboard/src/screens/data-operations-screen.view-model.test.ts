@@ -13,6 +13,7 @@ import {
   buildProviderSetupDialogState,
   buildSecurityMasterWorkspaceState,
   buildSelectedBackfillDetail,
+  resolveSecurityMasterTabKeyCommand,
   resolveDataOperationsWorkstream,
   resolveSelectedBackfill,
   validateBackfillForm
@@ -428,6 +429,16 @@ describe("data-operations-screen view model", () => {
     ]);
     expect(securityMaster.results.some((row) => row.selected && row.securityId === "gs-bond-de")).toBe(true);
     expect(securityMaster.tabs.find((tab) => tab.id === "corporate-actions")?.selected).toBe(true);
+    expect(securityMaster.tabs.find((tab) => tab.id === "corporate-actions")).toMatchObject({
+      tabIndex: 0,
+      selectAriaLabel: "Show Corporate actions for Goldman Sachs Group Inc"
+    });
+    expect(securityMaster.tabs.find((tab) => tab.id === "overview")?.tabIndex).toBe(-1);
+    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "ArrowRight")).toBe("print");
+    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "ArrowLeft")).toBe("company");
+    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "Home")).toBe("overview");
+    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "End")).toBe("print");
+    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "Enter")).toBeNull();
     expect(securityMaster.selectedSecurity?.titleCode).toBe("GOS 3.625 10/30");
     expect(securityMaster.selectedSecurity?.corporateActions[0].description).toContain("Semi-annual coupon");
     expect(securityMaster.selectedSecurity?.printPacketId).toBe("SM-PACKET-2026-06-09-GOS");

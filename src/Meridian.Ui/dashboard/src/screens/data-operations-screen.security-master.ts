@@ -199,6 +199,8 @@ export interface SecurityMasterTabState {
   badge: string | null;
   panelId: string;
   selected: boolean;
+  tabIndex: 0 | -1;
+  selectAriaLabel: string;
 }
 
 export interface SecurityMasterSelectedState {
@@ -928,12 +930,53 @@ function buildTabState(activeTab: SecurityMasterTab, record: SecurityMasterRecor
     return [];
   }
 
-  return [
-    { id: "overview", label: "Overview", badge: `${record.identifierSections.length}`, panelId: "security-master-panel-overview", selected: activeTab === "overview" },
-    { id: "company", label: "Company", badge: `${record.companySections.length}`, panelId: "security-master-panel-company", selected: activeTab === "company" },
-    { id: "corporate-actions", label: "Corporate actions", badge: `${record.corporateActions.length}`, panelId: "security-master-panel-corporate-actions", selected: activeTab === "corporate-actions" },
-    { id: "print", label: "Print / export", badge: `${record.printSections.length}`, panelId: "security-master-panel-print", selected: activeTab === "print" }
+  const tabs: Array<Pick<SecurityMasterTabState, "id" | "label" | "badge" | "panelId">> = [
+    { id: "overview", label: "Overview", badge: `${record.identifierSections.length}`, panelId: "security-master-panel-overview" },
+    { id: "company", label: "Company", badge: `${record.companySections.length}`, panelId: "security-master-panel-company" },
+    { id: "corporate-actions", label: "Corporate actions", badge: `${record.corporateActions.length}`, panelId: "security-master-panel-corporate-actions" },
+    { id: "print", label: "Print / export", badge: `${record.printSections.length}`, panelId: "security-master-panel-print" }
   ];
+
+  return tabs.map((tab) => {
+    const selected = tab.id === activeTab;
+
+    return {
+      ...tab,
+      selected,
+      tabIndex: selected ? 0 : -1,
+      selectAriaLabel: `Show ${tab.label} for ${record.displayName}`
+    };
+  });
+}
+
+export function resolveSecurityMasterTabKeyCommand(
+  tabs: SecurityMasterTabState[],
+  currentTabId: SecurityMasterTab,
+  key: string
+): SecurityMasterTab | null {
+  if (tabs.length === 0) {
+    return null;
+  }
+
+  const currentIndex = Math.max(0, tabs.findIndex((tab) => tab.id === currentTabId));
+
+  if (key === "Home") {
+    return tabs[0].id;
+  }
+
+  if (key === "End") {
+    return tabs[tabs.length - 1].id;
+  }
+
+  if (key === "ArrowRight" || key === "ArrowDown") {
+    return tabs[(currentIndex + 1) % tabs.length].id;
+  }
+
+  if (key === "ArrowLeft" || key === "ArrowUp") {
+    return tabs[(currentIndex - 1 + tabs.length) % tabs.length].id;
+  }
+
+  return null;
 }
 
 function buildSelectedSecurityState(record: SecurityMasterRecord): SecurityMasterSelectedState {

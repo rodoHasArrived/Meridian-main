@@ -159,8 +159,8 @@ public sealed class MainShellViewModelTests
             vm.CurrentWorkspace.Should().Be("accounting");
             vm.CurrentPageTag.Should().Be("AccountingShell");
             vm.PrimaryNavigationItems.Select(item => item.PageTag).Should().Contain(["AccountingShell", "FundLedger", "FundReconciliation"]);
-            vm.OverflowNavigationItems.Select(item => item.PageTag).Should().Contain("Settings");
-            vm.RelatedWorkflowItems.Select(item => item.PageTag).Should().Contain(["FundLedger", "FundReconciliation", "SecurityMaster"]);
+            vm.OverflowNavigationItems.Should().BeEmpty();
+            vm.RelatedWorkflowItems.Select(item => item.PageTag).Should().Contain(["FundLedger", "FundReconciliation", "FundTrialBalance", "FundAuditTrail"]);
         });
     }
 
@@ -188,7 +188,7 @@ public sealed class MainShellViewModelTests
             vm.ActivateShell();
             vm.NavigateToPageCommand.Execute("Backtest");
             vm.NavigateToPageCommand.Execute("AccountingShell");
-            vm.NavigateToPageCommand.Execute("SecurityMaster");
+            vm.NavigateToPageCommand.Execute("FundLedger");
 
             vm.CurrentWorkspace.Should().Be("accounting");
             vm.RecentPages.Select(page => page.PageTag).Should().Equal("AccountingShell");
@@ -335,7 +335,7 @@ public sealed class MainShellViewModelTests
 
             vm.HandleLaunchArgs(["--page", "DataOperationsShell"]);
 
-            NavigationService.Instance.GetCurrentPageTag().Should().Be("DataOperationsShell");
+            NavigationService.Instance.GetCurrentPageTag().Should().Be("DataShell");
         });
     }
 
@@ -592,10 +592,11 @@ public sealed class MainShellViewModelTests
         WpfTestThread.Run(async () =>
         {
             using var vm = CreateMainPageViewModel();
+            var expectedSecondaryCount = ShellNavigationCatalog.Workspaces.Count - 1;
 
             await WaitForConditionAsync(() =>
                 vm.PrimaryWorkflowSummary is not null &&
-                vm.SecondaryWorkflowSummaries.Count == 3);
+                vm.SecondaryWorkflowSummaries.Count == expectedSecondaryCount);
 
             vm.PrimaryWorkflowSummary.Should().NotBeNull();
             vm.PrimaryWorkflowSummary!.WorkspaceId.Should().Be("strategy");
@@ -606,7 +607,7 @@ public sealed class MainShellViewModelTests
             await WaitForConditionAsync(() => vm.PrimaryWorkflowSummary?.WorkspaceId == "trading");
 
             vm.PrimaryWorkflowSummary!.WorkspaceId.Should().Be("trading");
-            vm.SecondaryWorkflowSummaries.Should().HaveCount(3);
+            vm.SecondaryWorkflowSummaries.Should().HaveCount(expectedSecondaryCount);
             vm.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("trading");
             vm.PrimaryWorkflowTargetText.Should().NotBe("Target page: -");
         });
