@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
 using Xunit;

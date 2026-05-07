@@ -2859,7 +2859,7 @@ public sealed class WorkstationEndpointsTests
         var recommended = reportingSection.GetProperty("recommendedProfiles").EnumerateArray()
             .Select(r => r.GetString())
             .ToArray();
-        recommended.Should().Contain("excel").Or.Contain("python-pandas");
+        recommended.Should().Contain(value => value == "excel" || value == "python-pandas");
     }
 
     private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)

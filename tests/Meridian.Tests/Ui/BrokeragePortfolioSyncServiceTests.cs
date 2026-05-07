@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Accounts;
 using Meridian.Application.FundAccounts;
