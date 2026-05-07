@@ -719,7 +719,7 @@ function Send-WindowKeys {
 function Add-StageStatus {
     param(
         [Parameter(Mandatory = $true)]
-        [System.Collections.Generic.List[object]]$StageStatus,
+        [System.Collections.IList]$StageStatus,
 
         [Parameter(Mandatory = $true)]
         [string]$Stage,
