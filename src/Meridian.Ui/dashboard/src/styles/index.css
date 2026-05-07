@@ -217,17 +217,17 @@
   .workstation-frame {
     min-height: 100vh;
     display: grid;
-    grid-template-rows: 52px minmax(0, 1fr);
+    grid-template-rows: 48px minmax(0, 1fr);
     background: hsl(var(--background));
     color: hsl(var(--foreground));
   }
 
   .workstation-masthead {
     display: grid;
-    grid-template-columns: minmax(220px, 280px) minmax(240px, 1fr) auto;
-    gap: 1rem;
+    grid-template-columns: 192px minmax(240px, 1fr) auto;
+    gap: 0.75rem;
     align-items: center;
-    padding: 0 1.125rem;
+    padding: 0 1rem;
     background: var(--surface-topbar);
     border-bottom: 1px solid var(--border-color);
     box-shadow: var(--shadow-panel);
@@ -236,13 +236,13 @@
   .workstation-brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.625rem;
+    gap: 0.5rem;
     min-width: 0;
   }
 
   .workstation-brand img {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     flex: 0 0 auto;
   }
 
@@ -264,63 +264,38 @@
   .workstation-brand-copy {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .workstation-brand-eyebrow {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 9px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgba(124, 138, 155, 0.92);
+    gap: 0.125rem;
   }
 
   .workstation-search {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
+    gap: 0.5rem;
     min-width: 0;
-    max-width: 680px;
-    min-height: 42px;
-    padding: 0.625rem 0.875rem;
+    max-width: 600px;
+    height: 34px;
+    padding: 0 0.75rem;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0) 100%),
-      var(--surface-input);
+    background: var(--surface-input);
     color: var(--fg-muted);
     text-align: left;
     box-shadow: var(--shadow-panel);
+    transition: border-color 150ms ease;
   }
 
-  .workstation-search b {
-    color: #fff;
-    font-weight: 500;
+  .workstation-search:hover {
+    border-color: var(--border-hi);
   }
 
-  .workstation-search-copy {
-    display: flex;
-    min-width: 0;
+  .workstation-search-placeholder {
     flex: 1 1 auto;
-    flex-direction: column;
-    gap: 0.125rem;
-  }
-
-  .workstation-search-title {
-    color: #f6fbff;
-    font-size: 0.75rem;
-    font-weight: 600;
-    line-height: 1.2;
-  }
-
-  .workstation-search-detail {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 0.75rem;
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 0.6875rem;
   }
 
   .workstation-search-kbd,
@@ -347,28 +322,33 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    gap: 0.625rem;
     min-width: 0;
     color: var(--fg-muted);
   }
 
   .workstation-session-card {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    justify-content: flex-end;
-    gap: 0.5rem 0.75rem;
+    gap: 0.5rem;
     min-width: 0;
-    padding: 0.5rem 0.75rem;
+    padding: 0.375rem 0.625rem;
     border: 1px solid rgba(31, 52, 76, 0.95);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     background: rgba(8, 16, 26, 0.74);
-    box-shadow: var(--shadow-panel);
     font-family: "IBM Plex Mono", ui-monospace, monospace;
     font-size: 0.6875rem;
   }
 
-  .workstation-session-primary,
-  .workstation-session-meta,
+  .workstation-session-name {
+    color: #f6fbff;
+    white-space: nowrap;
+  }
+
+  .workstation-session-role {
+    white-space: nowrap;
+  }
+
   .operator-rail-meta,
   .command-palette-summary {
     display: flex;
@@ -377,83 +357,93 @@
     gap: 0.5rem;
   }
 
-  .workstation-session-name {
-    color: #f6fbff;
-  }
-
-  .workstation-active-pill {
-    display: inline-flex;
-    align-items: center;
-    min-height: 1.25rem;
-    padding: 0 0.5rem;
-    border: 1px solid rgba(42, 178, 212, 0.25);
-    border-radius: 999px;
-    background: rgba(42, 178, 212, 0.12);
-    color: #f6fbff;
-  }
-
   .workstation-shell {
     min-height: 0;
     display: grid;
-    grid-template-columns: 248px minmax(0, 1fr);
+    grid-template-columns: 192px minmax(0, 1fr);
   }
 
   .operator-rail {
     min-height: 0;
     overflow: auto;
-    padding: 0.875rem 0.75rem;
-    background:
-      linear-gradient(180deg, rgba(19, 33, 49, 0.88) 0%, rgba(12, 22, 34, 0.96) 38%, rgba(8, 19, 31, 1) 100%);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    background: rgba(6, 13, 22, 0.98);
     border-right: 1px solid var(--border-color);
   }
 
-  .operator-rail-header {
-    margin: 0 0.375rem 0.75rem;
-    padding: 0.75rem;
-    border: 1px solid rgba(42, 178, 212, 0.18);
-    border-radius: var(--radius-lg);
-    background: linear-gradient(180deg, rgba(42, 178, 212, 0.12) 0%, rgba(42, 178, 212, 0.04) 100%);
-    box-shadow: var(--shadow-panel);
-  }
-
-  .operator-rail-brand {
-    display: grid;
-    grid-template-columns: 2rem minmax(0, 1fr);
+  .operator-rail-brand-bar {
+    display: flex;
     align-items: center;
-    gap: 0.625rem;
+    gap: 0.5rem;
+    padding: 0.875rem 0.875rem 0.75rem;
+    border-bottom: 1px solid rgba(31, 52, 76, 0.7);
   }
 
   .operator-rail-mark {
     display: inline-grid;
-    width: 2rem;
-    height: 2rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex: 0 0 auto;
     place-items: center;
-    border: 1px solid rgba(96, 199, 231, 0.38);
-    border-radius: var(--radius-md);
-    background: linear-gradient(135deg, rgba(96, 199, 231, 0.25), rgba(246, 251, 255, 0.08));
+    border: 1px solid rgba(96, 199, 231, 0.30);
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, rgba(96, 199, 231, 0.20), rgba(246, 251, 255, 0.06));
     color: #f6fbff;
     font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 700;
     line-height: 1;
-    box-shadow: inset 0 1px 0 rgba(246, 251, 255, 0.18);
   }
 
   .operator-rail-title {
     font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: #f6fbff;
     line-height: 1.2;
   }
 
   .operator-rail-subtitle {
-    margin-top: 0.375rem;
     font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 0.625rem;
+    font-size: 9px;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    color: rgba(96, 199, 231, 0.95);
+    color: rgba(96, 199, 231, 0.85);
+  }
+
+  .operator-rail-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0.625rem 0.625rem;
+    flex: 1 1 auto;
+  }
+
+  .operator-nav-item {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr) max-content;
+    gap: 0.5rem;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 0.625rem;
+    border-radius: var(--radius-md);
+    color: var(--fg-muted);
+    font-size: 0.8125rem;
+    text-decoration: none;
+    transition: background-color 140ms ease, color 140ms ease;
+  }
+
+  .operator-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e0eaf4;
+  }
+
+  .operator-nav-item.active {
+    background: rgba(42, 178, 212, 0.12);
+    color: #fff;
+    box-shadow: inset 3px 0 0 var(--cyan-primary);
   }
 
   .operator-rail-section {
@@ -463,62 +453,6 @@
     text-transform: uppercase;
     letter-spacing: 0.14em;
     color: var(--fg-muted);
-  }
-
-  .operator-rail-card {
-    margin: 0 0.375rem 0.75rem;
-    border: 1px solid rgba(31, 52, 76, 0.95);
-    border-radius: var(--radius-lg);
-    background: linear-gradient(180deg, rgba(13, 24, 36, 0.95), rgba(10, 19, 29, 0.98));
-    padding: 0.75rem;
-    box-shadow: var(--shadow-panel);
-  }
-
-  .operator-rail-current {
-    margin: 0 0.375rem 0.875rem;
-    border: 1px solid rgba(96, 199, 231, 0.18);
-    border-radius: var(--radius-lg);
-    background:
-      linear-gradient(180deg, rgba(246, 251, 255, 0.055), rgba(246, 251, 255, 0.025)),
-      rgba(8, 16, 26, 0.74);
-    padding: 0.75rem;
-    box-shadow: inset 3px 0 0 rgba(96, 199, 231, 0.55);
-  }
-
-  .operator-rail-current-title {
-    min-width: 0;
-    color: #f6fbff;
-    font-size: 0.875rem;
-    font-weight: 650;
-    line-height: 1.2;
-  }
-
-  .operator-nav-item {
-    display: grid;
-    grid-template-columns: 16px minmax(0, 1fr) max-content;
-    gap: 0.5625rem;
-    align-items: center;
-    min-height: 34px;
-    padding: 0.4375rem 0.625rem;
-    border: 1px solid rgba(31, 52, 76, 0.2);
-    border-radius: var(--radius-md);
-    color: var(--fg-muted);
-    font-size: 0.75rem;
-    transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
-  }
-
-  .operator-nav-item:hover {
-    background: rgba(42, 178, 212, 0.08);
-    border-color: rgba(42, 178, 212, 0.2);
-    color: #fff;
-    transform: translateY(-1px);
-  }
-
-  .operator-nav-item.active {
-    background: linear-gradient(90deg, rgba(42, 178, 212, 0.18) 0%, rgba(42, 178, 212, 0.1) 100%);
-    border-color: rgba(42, 178, 212, 0.35);
-    box-shadow: inset 3px 0 0 var(--cyan-primary);
-    color: #fff;
   }
 
   .operator-nav-status {
@@ -572,15 +506,6 @@
     color: #a9b7c7;
   }
 
-  .operator-rail-callout {
-    margin: 1rem 0.375rem 0.5rem;
-    border: 1px solid rgba(31, 52, 76, 0.95);
-    border-radius: var(--radius-lg);
-    background: linear-gradient(180deg, rgba(20, 34, 49, 0.9) 0%, rgba(15, 28, 41, 0.95) 100%);
-    padding: 0.75rem;
-    box-shadow: var(--shadow-panel);
-  }
-
   .workbench {
     min-width: 0;
     min-height: 0;
@@ -596,17 +521,7 @@
   }
 
   .workspace-header-shell {
-    display: grid;
-    gap: 1rem;
-    background:
-      linear-gradient(180deg, rgba(246, 251, 255, 0.03), rgba(246, 251, 255, 0)),
-      linear-gradient(180deg, rgba(8, 16, 26, 0.92), rgba(8, 16, 26, 0.74));
-  }
-
-  .workspace-header-grid {
-    display: grid;
-    gap: 0.75rem;
-    grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+    background: var(--surface-topbar);
   }
 
   .workspace-header-card {
@@ -1077,9 +992,11 @@
   }
 
   .workstation-masthead {
-    min-height: 104px;
-    grid-template-rows: auto auto;
-    padding: 0.75rem 1rem;
+    height: auto;
+    min-height: 52px;
+    grid-template-rows: auto;
+    padding: 0.625rem 1rem;
+    gap: 0.5rem;
   }
 
   .workstation-actions {
@@ -1091,7 +1008,34 @@
   }
 
   .operator-rail {
+    flex-direction: row;
     border-right: 0;
     border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .operator-rail-brand-bar {
+    display: none;
+  }
+
+  .operator-rail-nav {
+    flex-direction: row;
+    padding: 0.5rem;
+  }
+
+  .operator-nav-item {
+    flex-direction: column;
+    grid-template-columns: unset;
+    min-width: 64px;
+    min-height: 52px;
+    justify-items: center;
+    text-align: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .operator-nav-status {
+    display: none;
   }
 }
