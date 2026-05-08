@@ -187,6 +187,31 @@ Use these documents together when planning or implementing new work:
 │   │   ├── meridian-repo-navigation.md
 │   │   ├── meridian-roadmap-strategist.md
 │   │   └── meridian-user-panel.md
+│   ├── plugins
+│   │   └── csharp-dotnet-development
+│   │       ├── .github
+│   │       │   └── plugin
+│   │       │       └── plugin.json
+│   │       ├── README.md
+│   │       ├── agents
+│   │       │   └── expert-dotnet-software-engineer.md
+│   │       └── skills
+│   │           ├── aspnet-minimal-api-openapi
+│   │           │   └── SKILL.md
+│   │           ├── csharp-async
+│   │           │   └── SKILL.md
+│   │           ├── csharp-mstest
+│   │           │   └── SKILL.md
+│   │           ├── csharp-nunit
+│   │           │   └── SKILL.md
+│   │           ├── csharp-tunit
+│   │           │   └── SKILL.md
+│   │           ├── csharp-xunit
+│   │           │   └── SKILL.md
+│   │           ├── dotnet-best-practices
+│   │           │   └── SKILL.md
+│   │           └── dotnet-upgrade
+│   │               └── SKILL.md
 │   ├── settings.json
 │   ├── settings.local.json
 │   └── skills
@@ -5141,31 +5166,6 @@ Use these documents together when planning or implementing new work:
 │           └── main.cpp
 ├── package-lock.json
 ├── package.json
-├── plugins
-│   └── csharp-dotnet-development
-│       ├── .github
-│       │   └── plugin
-│       │       └── plugin.json
-│       ├── README.md
-│       ├── agents
-│       │   └── expert-dotnet-software-engineer.md
-│       └── skills
-│           ├── aspnet-minimal-api-openapi
-│           │   └── SKILL.md
-│           ├── csharp-async
-│           │   └── SKILL.md
-│           ├── csharp-mstest
-│           │   └── SKILL.md
-│           ├── csharp-nunit
-│           │   └── SKILL.md
-│           ├── csharp-tunit
-│           │   └── SKILL.md
-│           ├── csharp-xunit
-│           │   └── SKILL.md
-│           ├── dotnet-best-practices
-│           │   └── SKILL.md
-│           └── dotnet-upgrade
-│               └── SKILL.md
 ├── scripts
 │   ├── ai
 │   │   ├── cleanup.sh
