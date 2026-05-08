@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-05-04 04:22:04 UTC. Do not edit manually.
+> Auto-generated on 2026-05-08 16:35:37 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -16,6 +16,31 @@ Meridian-main
 │   │   ├── meridian-repo-navigation.md
 │   │   ├── meridian-roadmap-strategist.md
 │   │   └── meridian-user-panel.md
+│   ├── plugins
+│   │   └── csharp-dotnet-development
+│   │       ├── .github
+│   │       │   └── plugin
+│   │       │       └── plugin.json
+│   │       ├── agents
+│   │       │   └── expert-dotnet-software-engineer.md
+│   │       ├── skills
+│   │       │   ├── aspnet-minimal-api-openapi
+│   │       │   │   └── SKILL.md
+│   │       │   ├── csharp-async
+│   │       │   │   └── SKILL.md
+│   │       │   ├── csharp-mstest
+│   │       │   │   └── SKILL.md
+│   │       │   ├── csharp-nunit
+│   │       │   │   └── SKILL.md
+│   │       │   ├── csharp-tunit
+│   │       │   │   └── SKILL.md
+│   │       │   ├── csharp-xunit
+│   │       │   │   └── SKILL.md
+│   │       │   ├── dotnet-best-practices
+│   │       │   │   └── SKILL.md
+│   │       │   └── dotnet-upgrade
+│   │       │       └── SKILL.md
+│   │       └── README.md
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
@@ -4678,6 +4703,40 @@ Meridian-main
 │   │   ├── reconciliation-break-taxonomy.md
 │   │   ├── research-briefing-workflow.md
 │   │   └── strategy-promotion-history.md
+│   ├── screenshots
+│   │   └── desktop
+│   │       └── manuals
+│   │           ├── manual-data-operations
+│   │           │   ├── 01-data-operations-shell.png
+│   │           │   ├── 02-providers.png
+│   │           │   ├── 03-provider-health.png
+│   │           │   ├── 04-backfill.png
+│   │           │   ├── 05-data-sources.png
+│   │           │   ├── 06-storage.png
+│   │           │   └── 07-data-quality.png
+│   │           ├── manual-governance
+│   │           │   ├── 01-governance-shell.png
+│   │           │   ├── 02-fund-ledger.png
+│   │           │   ├── 03-fund-reconciliation.png
+│   │           │   ├── 04-fund-report-pack.png
+│   │           │   ├── 05-security-master.png
+│   │           │   └── 06-settings.png
+│   │           ├── manual-overview
+│   │           │   ├── 01-research-workspace.png
+│   │           │   ├── 02-workspace-layouts.png
+│   │           │   ├── 03-research-workspace.png
+│   │           │   ├── 04-trading-workspace.png
+│   │           │   ├── 05-data-operations-workspace.png
+│   │           │   ├── 06-governance-workspace.png
+│   │           │   └── 07-help.png
+│   │           └── manual-research-and-trading
+│   │               ├── 01-research-shell.png
+│   │               ├── 02-backtest.png
+│   │               ├── 03-strategy-runs.png
+│   │               ├── 04-quant-script.png
+│   │               ├── 05-trading-shell.png
+│   │               ├── 06-position-blotter.png
+│   │               └── 07-run-risk.png
 │   ├── security
 │   │   ├── known-vulnerabilities.md
 │   │   └── README.md
@@ -4719,6 +4778,9 @@ Meridian-main
 │   │   ├── workflow-drift-report.md
 │   │   ├── workflow-manifest.json
 │   │   └── workflow-validation-summary.json
+│   ├── testing
+│   │   ├── WAVE2_ACCEPTANCE_GATE_CHECKLIST.md
+│   │   └── WAVE2_ACCEPTANCE_TESTS.md
 │   ├── ui
 │   │   └── components.md
 │   ├── DEPENDENCIES.md
@@ -4818,7 +4880,9 @@ Meridian-main
 │   │   ├── components-nav.html
 │   │   ├── components-table.html
 │   │   ├── design-standards.html
+│   │   ├── index.html
 │   │   ├── institutional-workstation.html
+│   │   ├── preview-common.css
 │   │   ├── screen-recipes.html
 │   │   ├── spacing-radii.html
 │   │   ├── spacing-scale.html
@@ -4855,31 +4919,6 @@ Meridian-main
 │       ├── src
 │       │   └── main.cpp
 │       ├── CMakeLists.txt
-│       └── README.md
-├── plugins
-│   └── csharp-dotnet-development
-│       ├── .github
-│       │   └── plugin
-│       │       └── plugin.json
-│       ├── agents
-│       │   └── expert-dotnet-software-engineer.md
-│       ├── skills
-│       │   ├── aspnet-minimal-api-openapi
-│       │   │   └── SKILL.md
-│       │   ├── csharp-async
-│       │   │   └── SKILL.md
-│       │   ├── csharp-mstest
-│       │   │   └── SKILL.md
-│       │   ├── csharp-nunit
-│       │   │   └── SKILL.md
-│       │   ├── csharp-tunit
-│       │   │   └── SKILL.md
-│       │   ├── csharp-xunit
-│       │   │   └── SKILL.md
-│       │   ├── dotnet-best-practices
-│       │   │   └── SKILL.md
-│       │   └── dotnet-upgrade
-│       │       └── SKILL.md
 │       └── README.md
 ├── scripts
 │   ├── ai
@@ -4930,6 +4969,7 @@ Meridian-main
 │   │   ├── validate-position-blotter-route.ps1
 │   │   ├── validate-screenshot-contract.py
 │   │   ├── validate-workflow-profile.ps1
+│   │   ├── web-screenshot-fixtures.json
 │   │   └── web-screenshot-routes.json
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
@@ -5588,6 +5628,7 @@ Meridian-main
 │   │   └── Meridian.Contracts.csproj
 │   ├── Meridian.Core
 │   │   ├── Config
+│   │   │   ├── AlpacaCredentialEnvironment.cs
 │   │   │   ├── AlpacaOptions.cs
 │   │   │   ├── AppConfig.cs
 │   │   │   ├── BackfillConfig.cs
@@ -5955,6 +5996,7 @@ Meridian-main
 │   │   │   │   ├── RobinhoodHistoricalDataProvider.cs
 │   │   │   │   ├── RobinhoodMarketDataClient.cs
 │   │   │   │   ├── RobinhoodOptionsChainProvider.cs
+│   │   │   │   ├── RobinhoodReadOnlyBrokerageSyncAdapter.cs
 │   │   │   │   ├── RobinhoodSymbolSearchModels.cs
 │   │   │   │   └── RobinhoodSymbolSearchProvider.cs
 │   │   │   ├── Stooq
@@ -6356,10 +6398,13 @@ Meridian-main
 │   │   │   │   │   │   ├── command-palette.tsx
 │   │   │   │   │   │   ├── command-palette.view-model.test.ts
 │   │   │   │   │   │   ├── command-palette.view-model.ts
+│   │   │   │   │   │   ├── mega-menu.tsx
+│   │   │   │   │   │   ├── mega-menu.view-model.ts
 │   │   │   │   │   │   ├── metric-card.test.tsx
 │   │   │   │   │   │   ├── metric-card.tsx
 │   │   │   │   │   │   ├── metric-card.view-model.test.ts
 │   │   │   │   │   │   ├── metric-card.view-model.ts
+│   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
 │   │   │   │   │   │   ├── workspace-header.view-model.test.ts
@@ -6393,6 +6438,7 @@ Meridian-main
 │   │   │   │   │   ├── workspace.test.ts
 │   │   │   │   │   └── workspace.ts
 │   │   │   │   ├── screens
+│   │   │   │   │   ├── data-operations-screen.security-master.ts
 │   │   │   │   │   ├── data-operations-screen.test.tsx
 │   │   │   │   │   ├── data-operations-screen.tsx
 │   │   │   │   │   ├── data-operations-screen.view-model.test.ts
@@ -6428,10 +6474,7 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.test.tsx
 │   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
-│   │   │   │   │   ├── trading-screen.view-model.ts
-│   │   │   │   │   ├── workspace-placeholder-screen.tsx
-│   │   │   │   │   ├── workspace-placeholder-screen.view-model.test.ts
-│   │   │   │   │   └── workspace-placeholder-screen.view-model.ts
+│   │   │   │   │   └── trading-screen.view-model.ts
 │   │   │   │   ├── styles
 │   │   │   │   │   └── index.css
 │   │   │   │   ├── test
@@ -6456,9 +6499,8 @@ Meridian-main
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-Bt1jnUdW.js
-│   │           │   ├── index-C-UoWgmp.css
-│   │           │   └── index-HZREMjYN.js
+│   │           │   ├── index-B_Q4tm_q.js
+│   │           │   └── index-BoPcEBD_.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -6595,6 +6637,7 @@ Meridian-main
 │   │   │   ├── BackfillEndpoints.cs
 │   │   │   ├── BackfillScheduleEndpoints.cs
 │   │   │   ├── BankingEndpoints.cs
+│   │   │   ├── BrokerageConnectionEndpoints.cs
 │   │   │   ├── CalendarEndpoints.cs
 │   │   │   ├── CanonicalizationEndpoints.cs
 │   │   │   ├── CatalogEndpoints.cs
@@ -6644,7 +6687,9 @@ Meridian-main
 │   │   ├── Serialization
 │   │   │   └── DirectLendingJsonContext.cs
 │   │   ├── Services
+│   │   │   ├── AlpacaBrokerageConnectionService.cs
 │   │   │   ├── BackfillCoordinator.cs
+│   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
 │   │   │   ├── ConfigStore.cs
 │   │   │   ├── Dk1TrustGateReadinessService.cs
@@ -6779,6 +6824,7 @@ Meridian-main
 │       │   ├── QuantScriptExecutionHistoryModels.cs
 │       │   ├── QuantScriptModels.cs
 │       │   ├── ResearchWorkspaceShellPresentationModels.cs
+│       │   ├── SecurityMasterPresentationModels.cs
 │       │   ├── SettingsModels.cs
 │       │   ├── ShellNavigationCatalog.cs
 │       │   ├── ShellNavigationCatalog.DataOperations.cs
@@ -6842,7 +6888,6 @@ Meridian-main
 │       │   ├── PendingOperationsQueueService.cs
 │       │   ├── QuantScriptExecutionHistoryService.cs
 │       │   ├── QuantScriptLayoutService.cs
-│       │   ├── QuantScriptStorageJsonContext.cs
 │       │   ├── QuantScriptTemplateCatalogService.cs
 │       │   ├── ReconciliationReadService.cs
 │       │   ├── ResearchWorkspaceShellPresentationService.cs
@@ -6875,6 +6920,20 @@ Meridian-main
 │       │   ├── WorkstationResearchBriefingService.cs
 │       │   ├── WorkstationSecurityMasterApiClient.cs
 │       │   └── WpfShellServiceCollectionExtensions.cs
+│       ├── Shell
+│       │   ├── Models
+│       │   │   ├── PaneContentState.cs
+│       │   │   ├── PaneDropResult.cs
+│       │   │   └── ShellRoute.cs
+│       │   ├── Services
+│       │   │   ├── IPageContentFactory.cs
+│       │   │   ├── IShellNavigationCoordinator.cs
+│       │   │   ├── IShellRouteRegistry.cs
+│       │   │   ├── PageContentFactory.cs
+│       │   │   ├── ShellNavigationCoordinator.cs
+│       │   │   └── ShellRouteRegistry.cs
+│       │   └── ViewModels
+│       │       └── PaneHostViewModel.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
 │       │   ├── AppStyles.xaml
@@ -7345,6 +7404,8 @@ Meridian-main
 │   │   │   │   └── LedgerGroupingRulesTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
+│   │   │   ├── Logging
+│   │   │   │   └── LoggingSetupTests.cs
 │   │   │   ├── Monitoring
 │   │   │   │   ├── DataQuality
 │   │   │   │   │   ├── DataFreshnessSlaMonitorTests.cs
@@ -7547,6 +7608,7 @@ Meridian-main
 │   │   │   │   ├── RobinhoodBrokerageGatewayTests.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
 │   │   │   │   ├── RobinhoodMarketDataClientTests.cs
+│   │   │   │   ├── RobinhoodReadOnlyBrokerageSyncAdapterTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
 │   │   │   │   ├── SyntheticMarketDataProviderTests.cs
@@ -7705,6 +7767,8 @@ Meridian-main
 │   │   │   ├── MmfRebuildTests.cs
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   ├── Ui
+│   │   │   ├── AlpacaBrokerageConnectionServiceTests.cs
+│   │   │   ├── BrokerageConnectionEndpointsTests.cs
 │   │   │   ├── BrokeragePortfolioSyncServiceTests.cs
 │   │   │   ├── DirectLendingEndpointsTests.cs
 │   │   │   ├── EdgarReferenceDataEndpointsTests.cs
@@ -7715,6 +7779,8 @@ Meridian-main
 │   │   │   ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │   │   ├── TradingOperatorReadinessServiceTests.cs
+│   │   │   ├── Wave2OperatorInboxAcceptanceTests.cs
+│   │   │   ├── Wave2PaperTradingCockpitAcceptanceTests.cs
 │   │   │   ├── WorkflowLibraryEndpointTests.cs
 │   │   │   └── WorkstationEndpointsTests.cs
 │   │   ├── GlobalUsings.cs
@@ -7824,6 +7890,11 @@ Meridian-main
 │   │   │   ├── WorkspaceShellContextServiceTests.cs
 │   │   │   ├── WorkstationOperatingContextServiceTests.cs
 │   │   │   └── WorkstationWorkflowSummaryServiceTests.cs
+│   │   ├── Shell
+│   │   │   ├── PageContentFactoryTests.cs
+│   │   │   ├── PaneHostViewModelTests.cs
+│   │   │   ├── ShellNavigationCoordinatorTests.cs
+│   │   │   └── ShellRouteRegistryTests.cs
 │   │   ├── Support
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
@@ -7968,5 +8039,6 @@ Meridian-main
 ├── NuGet.Config
 ├── package-lock.json
 ├── package.json
-└── README.md
+├── README.md
+└── WAVE2_IMPLEMENTATION_SUMMARY.md
 ```
