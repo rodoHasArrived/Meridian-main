@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertTriangle, LoaderCircle, Search } from "lucide-react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
@@ -44,6 +44,25 @@ export function App() {
     refresh
   } = useWorkstationData();
   const handleWorkflowPresetUsed = (presetId: string) => markWorkflowPresetUsed(presetId).then(() => undefined);
+
+  useEffect(() => {
+    const handleCommandShortcut = (event: KeyboardEvent) => {
+      if (!isCommandPaletteShortcut(event)) {
+        return;
+      }
+
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+
+      event.preventDefault();
+      setCommandOpen((current) => !current);
+    };
+
+    window.addEventListener("keydown", handleCommandShortcut);
+    return () => window.removeEventListener("keydown", handleCommandShortcut);
+  }, [setCommandOpen]);
+
   const shell = buildAppShellViewState({
     pathname,
     loading,
@@ -235,4 +254,28 @@ function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () 
       </CardContent>
     </Card>
   );
+}
+
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  const element = target instanceof Element ? target : null;
+  if (!element) {
+    return false;
+  }
+
+  if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+    return true;
+  }
+
+  const editableContainer = element.closest("[contenteditable]");
+  if (!editableContainer) {
+    return false;
+  }
+
+  return editableContainer.getAttribute("contenteditable") !== "false";
+}
+
+
+function isCommandPaletteShortcut(event: KeyboardEvent): boolean {
+  return (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "k";
 }
