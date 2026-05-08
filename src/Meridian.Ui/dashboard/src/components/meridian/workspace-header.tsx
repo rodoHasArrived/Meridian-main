@@ -76,42 +76,61 @@ export function WorkspaceHeader({
         </div>
       ) : null}
       <div className="workspace-header-shell px-4 py-3 lg:px-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex min-w-0 flex-col gap-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="eyebrow-label">{viewModel.eyebrow}</div>
-              {viewModel.badges.map((badge) => (
-                <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
-                  {badge.label}
-                </Badge>
-              ))}
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="eyebrow-label">{viewModel.eyebrow}</div>
+                {viewModel.badges.map((badge) => (
+                  <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
+                    {badge.label}
+                  </Badge>
+                ))}
+              </div>
+              <h1 className="font-display text-xl font-semibold leading-snug text-foreground">{viewModel.title}</h1>
+              <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{viewModel.description}</p>
             </div>
-            <h1 className="font-display text-xl font-semibold leading-snug text-foreground">{viewModel.title}</h1>
+
+            <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
+              {viewModel.refreshAction && onRefresh ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onRefresh}
+                  title={viewModel.refreshAction.title}
+                  aria-label={viewModel.refreshAction.ariaLabel}
+                  disabled={viewModel.refreshAction.disabled}
+                >
+                  <RefreshCcw className={`size-4 ${viewModel.refreshAction.disabled ? "animate-spin" : ""}`} />
+                </Button>
+              ) : null}
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onOpenCommandPalette}
+                title={viewModel.commandAction.title}
+                aria-label={viewModel.commandAction.ariaLabel}
+                disabled={viewModel.commandAction.disabled}
+              >
+                {viewModel.commandAction.label}
+              </Button>
+            </div>
           </div>
 
-          <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
-            {viewModel.refreshAction && onRefresh ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onRefresh}
-                title={viewModel.refreshAction.title}
-                aria-label={viewModel.refreshAction.ariaLabel}
-                disabled={viewModel.refreshAction.disabled}
-              >
-                <RefreshCcw className={`size-4 ${viewModel.refreshAction.disabled ? "animate-spin" : ""}`} />
-              </Button>
-            ) : null}
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onOpenCommandPalette}
-              title={viewModel.commandAction.title}
-              aria-label={viewModel.commandAction.ariaLabel}
-              disabled={viewModel.commandAction.disabled}
-            >
-              {viewModel.commandAction.label}
-            </Button>
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,1.2fr)_repeat(3,minmax(0,1fr))]">
+            <div className="workspace-header-card" aria-label={viewModel.sessionPillAriaLabel}>
+              <div className="eyebrow-label">Session lane</div>
+              <div className="workspace-header-card-value">{viewModel.sessionLabel}</div>
+              {viewModel.sessionRoleLabel ? (
+                <div className="mt-1 text-xs text-muted-foreground">{viewModel.sessionRoleLabel}</div>
+              ) : null}
+            </div>
+            {viewModel.metaItems.map((item) => (
+              <div key={item.id} className="workspace-header-card" aria-label={item.ariaLabel}>
+                <div className="eyebrow-label">{item.label}</div>
+                <div className="workspace-header-card-value">{item.value}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
