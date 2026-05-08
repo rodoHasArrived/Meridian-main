@@ -7,6 +7,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -1550,6 +1551,8 @@ public static class WorkstationEndpoints
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
         var oms = context.RequestServices.GetService<IOrderManager>();
         var brokerageConfiguration = context.RequestServices.GetService<BrokerageConfiguration>();
+        var quoteCollector = context.RequestServices.GetService<QuoteCollector>();
+        var tradeCollector = context.RequestServices.GetService<TradeDataCollector>();
 
         // When neither execution layer nor strategy run service is active, use fixture data
         if (portfolio is null && oms is null && readService is null)
@@ -1575,18 +1578,29 @@ public static class WorkstationEndpoints
         var pnlTone = totalPnl >= 0m ? "success" : "warning";
 
         // --- Positions (live execution layer when available) — PR-03: typed rows ---
+        // Live marks (BBO mid → last trade → cost basis) drive MarkPrice, UnrealizedPnl,
+        // and Exposure so operators see real-time PnL as quotes update.
         WorkstationTradingPositionRow[] positions;
         if (portfolio is not null && portfolio.Positions.Count > 0)
         {
-            positions = portfolio.Positions.Values.Select(pos => new WorkstationTradingPositionRow(
-                Symbol: pos.Symbol,
-                Side: pos.Quantity >= 0 ? "Long" : "Short",
-                Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
-                AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
-                MarkPrice: "—",
-                DayPnl: "—",
-                UnrealizedPnl: FormatCurrency(pos.UnrealizedPnl),
-                Exposure: "—")).ToArray();
+            positions = portfolio.Positions.Values.Select(pos =>
+            {
+                var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
+                var hasMark = mark.HasValue && mark.Value > 0m;
+                var effectiveMark = hasMark ? mark!.Value : pos.AverageCostBasis;
+                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.Quantity;
+                var liveExposure = Math.Abs(pos.Quantity * effectiveMark);
+
+                return new WorkstationTradingPositionRow(
+                    Symbol: pos.Symbol,
+                    Side: pos.Quantity >= 0 ? "Long" : "Short",
+                    Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                    AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
+                    MarkPrice: hasMark ? effectiveMark.ToString("F2", CultureInfo.InvariantCulture) : "—",
+                    DayPnl: "—",
+                    UnrealizedPnl: FormatCurrency(hasMark ? liveUnrealized : pos.UnrealizedPnl),
+                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—");
+            }).ToArray();
         }
         else
         {
@@ -1624,8 +1638,13 @@ public static class WorkstationEndpoints
 
         if (portfolio is not null)
         {
-            grossExposure = portfolio.Positions.Values.Sum(static pos => Math.Abs(pos.AverageCostBasis * pos.Quantity));
-            netExposureValue = portfolio.Positions.Values.Sum(pos => pos.AverageCostBasis * pos.Quantity);
+            foreach (var pos in portfolio.Positions.Values)
+            {
+                var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
+                var px = mark.HasValue && mark.Value > 0m ? mark.Value : pos.AverageCostBasis;
+                grossExposure += Math.Abs(pos.Quantity * px);
+                netExposureValue += pos.Quantity * px;
+            }
             var drawdownPct = portfolio.PortfolioValue > 0m
                 ? totalPnl / portfolio.PortfolioValue
                 : 0m;
@@ -2382,6 +2401,8 @@ public static class WorkstationEndpoints
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
         var oms = context.RequestServices.GetService<IOrderManager>();
         var brokerageConfiguration = context.RequestServices.GetService<BrokerageConfiguration>();
+        var quoteCollector = context.RequestServices.GetService<QuoteCollector>();
+        var tradeCollector = context.RequestServices.GetService<TradeDataCollector>();
 
         // Resolve all runs for the run-linked equity panel
         StrategyRunSummary[] allRuns = [];
@@ -2406,19 +2427,28 @@ public static class WorkstationEndpoints
             new("portfolio-runs", "Linked Runs", allRuns.Length.ToString(CultureInfo.InvariantCulture), "0%", "default")
         };
 
-        // --- Positions ---
+        // --- Positions (live mark drives MarkPrice / UnrealizedPnl / Exposure) ---
         WorkstationTradingPositionRow[] positions;
         if (portfolio is not null && portfolio.Positions.Count > 0)
         {
-            positions = portfolio.Positions.Values.Select(pos => new WorkstationTradingPositionRow(
-                Symbol: pos.Symbol,
-                Side: pos.Quantity >= 0 ? "Long" : "Short",
-                Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
-                AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
-                MarkPrice: "—",
-                DayPnl: "—",
-                UnrealizedPnl: FormatCurrency(pos.UnrealizedPnl),
-                Exposure: "—")).ToArray();
+            positions = portfolio.Positions.Values.Select(pos =>
+            {
+                var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
+                var hasMark = mark.HasValue && mark.Value > 0m;
+                var effectiveMark = hasMark ? mark!.Value : pos.AverageCostBasis;
+                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.Quantity;
+                var liveExposure = Math.Abs(pos.Quantity * effectiveMark);
+
+                return new WorkstationTradingPositionRow(
+                    Symbol: pos.Symbol,
+                    Side: pos.Quantity >= 0 ? "Long" : "Short",
+                    Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                    AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
+                    MarkPrice: hasMark ? effectiveMark.ToString("F2", CultureInfo.InvariantCulture) : "—",
+                    DayPnl: "—",
+                    UnrealizedPnl: FormatCurrency(hasMark ? liveUnrealized : pos.UnrealizedPnl),
+                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—");
+            }).ToArray();
         }
         else
         {
@@ -2433,8 +2463,13 @@ public static class WorkstationEndpoints
 
         if (portfolio is not null)
         {
-            grossExposure = portfolio.Positions.Values.Sum(static pos => Math.Abs(pos.AverageCostBasis * pos.Quantity));
-            netExposureValue = portfolio.Positions.Values.Sum(pos => pos.AverageCostBasis * pos.Quantity);
+            foreach (var pos in portfolio.Positions.Values)
+            {
+                var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
+                var px = mark.HasValue && mark.Value > 0m ? mark.Value : pos.AverageCostBasis;
+                grossExposure += Math.Abs(pos.Quantity * px);
+                netExposureValue += pos.Quantity * px;
+            }
             var drawdownPct = portfolio.PortfolioValue > 0m ? totalPnl / portfolio.PortfolioValue : 0m;
             if (drawdownPct < -0.05m)
             {
@@ -3772,6 +3807,47 @@ public static class WorkstationEndpoints
         }
 
         return proxy.ToString("0.00", CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// Resolves the freshest available mark price for a symbol so that workstation
+    /// position rows can display live unrealized P&amp;L and exposure instead of placeholders.
+    /// Priority: BBO mid (or far-touch when one side is missing) → most recent trade
+    /// price → null (caller falls back to cost basis).
+    /// </summary>
+    internal static decimal? ResolveLiveMark(string symbol, QuoteCollector? quotes, TradeDataCollector? trades)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return null;
+        }
+
+        if (quotes is not null && quotes.TryGet(symbol, out var bbo) && bbo is not null)
+        {
+            if (bbo.MidPrice is { } mid && mid > 0m)
+            {
+                return mid;
+            }
+            if (bbo.AskPrice > 0m)
+            {
+                return bbo.AskPrice;
+            }
+            if (bbo.BidPrice > 0m)
+            {
+                return bbo.BidPrice;
+            }
+        }
+
+        if (trades is not null)
+        {
+            var recent = trades.GetRecentTrades(symbol, 1);
+            if (recent.Count > 0 && recent[0].Price > 0m)
+            {
+                return recent[0].Price;
+            }
+        }
+
+        return null;
     }
 
     private static string FormatPercent(decimal value)
