@@ -26,7 +26,7 @@ import {
   validatePromotionApproval,
   validatePromotionRejection
 } from "@/screens/trading-screen.view-model";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionPortfolioSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 const eligibleEvaluation: PromotionEvaluationResult = {
   runId: "run-1",
@@ -1038,19 +1038,33 @@ describe("trading promotion gate view model", () => {
       // and that one operator can: create session, close it, replay it, evaluate promotion, approve promotion
       // with both execution and promotion evidence visible in returned contracts
 
+      const replayPortfolio: ExecutionPortfolioSnapshot = {
+        cash: 45000,
+        portfolioValue: 155000,
+        unrealisedPnl: 10000,
+        realisedPnl: 0,
+        positions: [],
+        asOf: "2026-04-27T14:30:00Z"
+      };
       const replayVerification: PaperSessionReplayVerification = {
         summary: {
           sessionId: "session-001",
           strategyId: "strat-test",
+          strategyName: null,
           initialCash: 100000,
+          createdAt: "2026-04-27T14:00:00Z",
+          closedAt: "2026-04-27T14:30:00Z",
           isActive: false
         },
+        symbols: ["AAPL", "MSFT"],
         replaySource: "DurableFillLog",
         isConsistent: true,
         comparedFillCount: 42,
         comparedOrderCount: 18,
         comparedLedgerEntryCount: 18,
         mismatchReasons: [],
+        currentPortfolio: replayPortfolio,
+        replayPortfolio,
         verificationAuditId: "audit-replay-001",
         lastPersistedFillAt: "2026-04-27T14:32:15Z",
         lastPersistedOrderUpdateAt: "2026-04-27T14:31:58Z",
@@ -1061,26 +1075,35 @@ describe("trading promotion gate view model", () => {
         summary: {
           sessionId: "session-001",
           strategyId: "strat-test",
+          strategyName: null,
           initialCash: 100000,
+          createdAt: "2026-04-27T14:00:00Z",
+          closedAt: "2026-04-27T14:30:00Z",
           isActive: false
         },
         symbols: ["AAPL", "MSFT"],
         portfolio: {
           cash: 45000,
           portfolioValue: 155000,
+          unrealisedPnl: 10000,
+          realisedPnl: 0,
           positions: [
-            { symbol: "AAPL", quantity: 100, avgCost: 150, currentPrice: 155 },
-            { symbol: "MSFT", quantity: 50, avgCost: 300, currentPrice: 310 }
-          ]
+            { symbol: "AAPL", quantity: 100, averageCostBasis: 150, currentPrice: 155, marketValue: 15500, unrealisedPnl: 500, realisedPnl: 0 },
+            { symbol: "MSFT", quantity: 50, averageCostBasis: 300, currentPrice: 310, marketValue: 15500, unrealisedPnl: 500, realisedPnl: 0 }
+          ],
+          asOf: "2026-04-27T14:30:00Z"
         },
         orderHistory: Array(18).fill(null).map((_, i) => ({
           orderId: `order-${i}`,
           symbol: i % 2 === 0 ? "AAPL" : "MSFT",
-          side: i % 3 === 0 ? "buy" : "sell",
+          side: i % 3 === 0 ? "Buy" : "Sell",
+          type: "Market",
           quantity: 10 + i,
-          price: 150 + (i % 10),
-          status: "filled",
-          filledAt: new Date(2026, 3, 27, 14, 15 + i).toISOString()
+          filledQuantity: 10 + i,
+          averageFillPrice: 150 + (i % 10),
+          status: "Filled",
+          createdAt: new Date(2026, 3, 27, 14, 15 + i).toISOString(),
+          updatedAt: new Date(2026, 3, 27, 14, 15 + i).toISOString()
         }))
       };
 
@@ -1127,9 +1150,15 @@ describe("trading promotion gate view model", () => {
         summary: {
           sessionId: "session-002",
           strategyId: "strat-test",
+          strategyName: null,
           initialCash: 100000,
+          createdAt: "2026-04-27T14:00:00Z",
+          closedAt: "2026-04-27T14:30:00Z",
           isActive: false
         },
+        symbols: ["AAPL", "MSFT"],
+        currentPortfolio: null,
+        replayPortfolio: { cash: 45000, portfolioValue: 155000, unrealisedPnl: 10000, realisedPnl: 0, positions: [], asOf: "2026-04-27T14:30:00Z" },
         replaySource: "DurableFillLog",
         isConsistent: false,
         comparedFillCount: 40,
