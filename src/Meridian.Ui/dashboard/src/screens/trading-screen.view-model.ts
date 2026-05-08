@@ -2773,6 +2773,7 @@ export interface PromotionGateState {
   rejectionRequirementText: string;
   historyEmptyText: string;
   statusAnnouncement: string;
+  approvalChecklist: PromotionApprovalChecklistItem[];
 }
 
 export interface BuildPromotionGateStateOptions {
@@ -2971,7 +2972,8 @@ export function buildPromotionGateState({
     approvalRequirementText: buildApprovalRequirementText(trimmedForm, evaluation),
     rejectionRequirementText: buildRejectionRequirementText(trimmedForm),
     historyEmptyText: "No promotion decisions recorded.",
-    statusAnnouncement: buildPromotionStatusAnnouncement({ phase, errorText, outcome, evaluation, history })
+    statusAnnouncement: buildPromotionStatusAnnouncement({ phase, errorText, outcome, evaluation, history }),
+    approvalChecklist: buildPromotionApprovalChecklist(evaluation)
   };
 }
 
@@ -3170,6 +3172,47 @@ function buildPromotionStatusAnnouncement({
   }
 
   return "";
+}
+
+export interface PromotionApprovalChecklistItem {
+  label: string;
+  status: "ready" | "review" | "blocked";
+  description: string | null;
+}
+
+export function buildPromotionApprovalChecklist(
+  evaluation: PromotionEvaluationResult | null
+): PromotionApprovalChecklistItem[] {
+  return [
+    {
+      label: "DK1 data trust",
+      status: evaluation && evaluation.sourceMode === "paper" ? "ready" : "review",
+      description: evaluation && evaluation.sourceMode === "paper"
+        ? "Paper-session data source validated"
+        : "Requires backtest source from validated data"
+    },
+    {
+      label: "Run lineage",
+      status: evaluation && evaluation.found ? "ready" : "review",
+      description: evaluation && evaluation.found
+        ? `Strategy: ${evaluation.strategyName ?? evaluation.strategyId}`
+        : "Run must be found in strategy history"
+    },
+    {
+      label: "Risk metrics",
+      status: evaluation ? (evaluation.isEligible ? "ready" : "blocked") : "review",
+      description: evaluation
+        ? `Sharpe: ${evaluation.sharpeRatio.toFixed(2)} · Max DD: ${evaluation.maxDrawdownPercent.toFixed(1)}% · Return: ${evaluation.totalReturn.toFixed(1)}%`
+        : "Metrics calculated after evaluation"
+    },
+    {
+      label: "Portfolio/Ledger continuity",
+      status: evaluation && evaluation.ready ? "ready" : "review",
+      description: evaluation && evaluation.ready
+        ? "Run portfolio and ledger state verified"
+        : "Awaiting run state verification"
+    }
+  ];
 }
 
 function toErrorMessage(err: unknown, fallback: string): string {
