@@ -146,7 +146,11 @@ public sealed class QuantScriptExecutionHistoryServiceTests
         File.Exists(exportPath).Should().BeTrue();
         var exported = JsonSerializer.Deserialize<QuantScriptExecutionRecord>(
             await File.ReadAllTextAsync(exportPath),
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
         exported.Should().NotBeNull();
         exported!.ExecutionId.Should().Be(record.ExecutionId);
     }

@@ -790,14 +790,15 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private void DuplicateSelectedCell()
     {
-        if (SelectedCell is null)
+        var selectedCell = SelectedCell;
+        if (selectedCell is null)
             return;
 
-        var index = NotebookCells.IndexOf(SelectedCell);
+        var index = NotebookCells.IndexOf(selectedCell);
         if (index < 0)
             return;
 
-        var cloned = new NotebookCellViewModel(Guid.NewGuid().ToString("N"), SelectedCell.Source, SelectedCell.Collapsed);
+        var cloned = new NotebookCellViewModel(Guid.NewGuid().ToString("N"), selectedCell.Source, selectedCell.Collapsed);
         AttachCell(cloned);
         NotebookCells.Insert(index + 1, cloned);
         SelectedCell = cloned;
