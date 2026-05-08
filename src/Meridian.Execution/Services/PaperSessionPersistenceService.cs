@@ -291,11 +291,11 @@ public sealed class PaperSessionPersistenceService
     /// </summary>
     public async Task<PaperSessionReplayVerificationDto?> VerifyReplayAsync(
         string sessionId,
-        int? expectedFillCount = null,
-        int? expectedOrderCount = null,
+        int? expectedFillCount,
+        int? expectedOrderCount,
         CancellationToken ct = default)
     {
-        var result = await VerifyReplayAsync(sessionId, ct).ConfigureAwait(false);
+        var result = await VerifyReplayInternalAsync(sessionId, ct).ConfigureAwait(false);
         if (result is null)
             return null;
 
@@ -430,6 +430,11 @@ public sealed class PaperSessionPersistenceService
     /// expected to survive restarts and replay cleanly from durable fills.
     /// </summary>
     public async Task<PaperSessionReplayVerificationDto?> VerifyReplayAsync(
+        string sessionId,
+        CancellationToken ct = default)
+        => await VerifyReplayInternalAsync(sessionId, ct).ConfigureAwait(false);
+
+    private async Task<PaperSessionReplayVerificationDto?> VerifyReplayInternalAsync(
         string sessionId,
         CancellationToken ct = default)
     {

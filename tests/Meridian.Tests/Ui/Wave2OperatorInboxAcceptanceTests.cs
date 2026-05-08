@@ -262,7 +262,8 @@ public sealed class Wave2OperatorInboxAcceptanceTests
 
         var replay = await sessionService.VerifyReplayAsync(
             session.SessionId,
-            expectedFillCount: 1);
+            expectedFillCount: 1,
+            expectedOrderCount: null);
 
         await using var provider = new ServiceCollection()
             .AddSingleton(sessionService)
@@ -409,7 +410,10 @@ public sealed class Wave2OperatorInboxAcceptanceTests
         };
         await sessionService.RecordPaperFillAsync(session.SessionId, fill);
 
-        var replay = await sessionService.VerifyReplayAsync(session.SessionId, expectedFillCount: 1);
+        var replay = await sessionService.VerifyReplayAsync(
+            session.SessionId,
+            expectedFillCount: 1,
+            expectedOrderCount: null);
 
         await using var provider = new ServiceCollection()
             .AddSingleton(sessionService)

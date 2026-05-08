@@ -3,6 +3,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Ledger;
 using Meridian.Strategies.Promotions;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -158,7 +159,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
             Type = OrderType.Limit,
             Quantity = 100,
             LimitPrice = 150.00m,
-            Status = OrderStatus.Filled,
+            Status = Meridian.Execution.Sdk.OrderStatus.Filled,
             CreatedAt = DateTimeOffset.UtcNow
         };
         await sessionService.RecordOrderUpdateAsync(originalSession.SessionId, orderRecord);
@@ -256,7 +257,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
 
         // Act: Verify ledger entries exist and can be reconstructed
         var ledger = sessionService.GetLedger(session.SessionId);
-        var ledgerEntries = ledger?.GetEntries() ?? [];
+        var ledgerEntries = ledger?.GetEntries(LedgerAccounts.Cash) ?? [];
 
         // Assert: Ledger can be reconstructed
         ledgerEntries.Should().NotBeEmpty("ledger should have entries after fill");
@@ -491,9 +492,9 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
 
         // Act: Step 2 - Create paper session
         var sessionDto = new CreatePaperSessionDto(
-            strategyId: backtestRunId.ToString(),
-            strategyName: "Backtest-Promoted-Strategy",
-            initialCash: 50_000m)
+            backtestRunId.ToString(),
+            "Backtest-Promoted-Strategy",
+            50_000m)
         {
             Symbols = ["AAPL", "MSFT"]
         };
@@ -573,7 +574,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
         replay.VerifiedFilledCount.Should().Be(1, "actual fill count");
         replay.VerifiedOrderCount.Should().Be(0, "actual order count");
         replay.MismatchReasons.Should().NotBeEmpty("operator must understand why replay failed");
-        replay.MismatchReasons.First().Should().Contain("fill", StringComparison.OrdinalIgnoreCase);
+        replay.MismatchReasons.First().Should().Contain("fill");
     }
 
     // ---- HELPERS ----
