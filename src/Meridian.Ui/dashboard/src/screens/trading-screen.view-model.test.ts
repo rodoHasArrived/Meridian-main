@@ -1042,15 +1042,28 @@ describe("trading promotion gate view model", () => {
         summary: {
           sessionId: "session-001",
           strategyId: "strat-test",
+          strategyName: "Test Strategy",
           initialCash: 100000,
+          createdAt: "2026-04-27T10:00:00Z",
+          closedAt: "2026-04-27T14:30:00Z",
           isActive: false
         },
+        symbols: ["AAPL", "MSFT"],
         replaySource: "DurableFillLog",
         isConsistent: true,
         comparedFillCount: 42,
         comparedOrderCount: 18,
         comparedLedgerEntryCount: 18,
         mismatchReasons: [],
+        currentPortfolio: null,
+        replayPortfolio: {
+          cash: 45000,
+          portfolioValue: 155000,
+          unrealisedPnl: 5000,
+          realisedPnl: 0,
+          positions: [],
+          asOf: "2026-04-27T14:32:00Z"
+        },
         verificationAuditId: "audit-replay-001",
         lastPersistedFillAt: "2026-04-27T14:32:15Z",
         lastPersistedOrderUpdateAt: "2026-04-27T14:31:58Z",
@@ -1061,26 +1074,35 @@ describe("trading promotion gate view model", () => {
         summary: {
           sessionId: "session-001",
           strategyId: "strat-test",
+          strategyName: "Test Strategy",
           initialCash: 100000,
+          createdAt: "2026-04-27T10:00:00Z",
+          closedAt: "2026-04-27T14:30:00Z",
           isActive: false
         },
         symbols: ["AAPL", "MSFT"],
         portfolio: {
           cash: 45000,
           portfolioValue: 155000,
+          unrealisedPnl: 5000,
+          realisedPnl: 0,
+          asOf: "2026-04-27T14:30:00Z",
           positions: [
-            { symbol: "AAPL", quantity: 100, avgCost: 150, currentPrice: 155 },
-            { symbol: "MSFT", quantity: 50, avgCost: 300, currentPrice: 310 }
+            { symbol: "AAPL", quantity: 100, averageCostBasis: 150, currentPrice: 155, marketValue: 15500, unrealisedPnl: 500, realisedPnl: 0 },
+            { symbol: "MSFT", quantity: 50, averageCostBasis: 300, currentPrice: 310, marketValue: 15500, unrealisedPnl: 500, realisedPnl: 0 }
           ]
         },
         orderHistory: Array(18).fill(null).map((_, i) => ({
           orderId: `order-${i}`,
           symbol: i % 2 === 0 ? "AAPL" : "MSFT",
           side: i % 3 === 0 ? "buy" : "sell",
+          type: "market",
           quantity: 10 + i,
-          price: 150 + (i % 10),
+          filledQuantity: 10 + i,
+          averageFillPrice: 150 + (i % 10),
           status: "filled",
-          filledAt: new Date(2026, 3, 27, 14, 15 + i).toISOString()
+          createdAt: new Date(2026, 3, 27, 14, 15 + i).toISOString(),
+          updatedAt: new Date(2026, 3, 27, 14, 15 + i).toISOString()
         }))
       };
 
@@ -1127,9 +1149,13 @@ describe("trading promotion gate view model", () => {
         summary: {
           sessionId: "session-002",
           strategyId: "strat-test",
+          strategyName: "Test Strategy",
           initialCash: 100000,
+          createdAt: "2026-04-27T10:00:00Z",
+          closedAt: "2026-04-27T14:30:00Z",
           isActive: false
         },
+        symbols: ["AAPL", "MSFT"],
         replaySource: "DurableFillLog",
         isConsistent: false,
         comparedFillCount: 40,
@@ -1139,6 +1165,15 @@ describe("trading promotion gate view model", () => {
           "Ledger entry count mismatch: 18 in durable log vs 15 in current state",
           "Last persisted ledger entry at 2026-04-27T14:30:00Z is before session close"
         ],
+        currentPortfolio: null,
+        replayPortfolio: {
+          cash: 50000,
+          portfolioValue: 150000,
+          unrealisedPnl: 0,
+          realisedPnl: 0,
+          positions: [],
+          asOf: "2026-04-27T14:30:00Z"
+        },
         verificationAuditId: "audit-replay-002",
         lastPersistedFillAt: "2026-04-27T14:30:00Z",
         lastPersistedOrderUpdateAt: "2026-04-27T14:29:45Z",
