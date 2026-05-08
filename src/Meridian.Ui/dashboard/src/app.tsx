@@ -25,6 +25,7 @@ import { legacyWorkspaceRedirect } from "@/lib/workspace";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
 import { GovernanceScreen } from "@/screens/governance-screen";
 import { OperatorReadinessConsole } from "@/screens/operator-readiness-console";
+import { OverviewScreen } from "@/screens/overview-screen";
 import { PortfolioScreen } from "@/screens/portfolio-screen";
 import { ReportingScreen } from "@/screens/reporting-screen";
 import { ResearchScreen } from "@/screens/research-screen";
@@ -153,7 +154,7 @@ export function App() {
             {shell.statusPanel ? <ShellStatus panel={shell.statusPanel} onRetry={refresh} /> : null}
             {shell.canRenderRoutes ? (
               <Routes>
-                <Route path="/" element={<Navigate to="/trading" replace />} />
+                <Route path="/" element={<OverviewScreen data={overview} session={session} />} />
                 <Route path="/trading/readiness" element={(
                   <OperatorReadinessConsole
                     research={research}

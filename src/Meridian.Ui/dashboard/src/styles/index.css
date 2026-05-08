@@ -308,11 +308,17 @@
     color: var(--fg-muted);
     text-align: left;
     box-shadow: var(--shadow-panel);
-    transition: border-color 150ms ease;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
   }
 
   .workstation-search:hover {
     border-color: var(--border-hi);
+  }
+
+  .workstation-search:focus-visible {
+    outline: none;
+    border-color: var(--cyan-primary);
+    box-shadow: 0 0 0 2px rgba(42, 178, 212, 0.20), var(--shadow-panel);
   }
 
   .workstation-search-placeholder {
@@ -504,9 +510,10 @@
   }
 
   .operator-nav-item.active {
-    background: rgba(42, 178, 212, 0.12);
+    background: rgba(42, 178, 212, 0.14);
     color: #fff;
     box-shadow: inset 3px 0 0 var(--cyan-primary);
+    border-left: 3px solid transparent;
   }
 
   .operator-rail-section {
@@ -626,6 +633,13 @@
     border-radius: var(--radius-lg);
     background: var(--card-bg);
     box-shadow: var(--shadow-panel);
+    transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+  }
+
+  .metric-tile:hover {
+    border-color: var(--border-hi);
+    background: var(--surface-raise-bg);
+    box-shadow: var(--shadow-workstation);
   }
 
   .command-palette-shell {
@@ -742,6 +756,11 @@
 
   .dense-data-table tbody tr {
     background: rgba(8, 16, 26, 0.24);
+    transition: background 100ms ease;
+  }
+
+  .dense-data-table tbody tr:hover {
+    background: rgba(42, 178, 212, 0.06);
   }
 
   .dense-data-table tbody tr.selected {
