@@ -217,7 +217,7 @@ jobs:
           cache-suffix: desktop-screenshots
 
       - name: Download WPF build binaries
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: wpf-build-binaries
           path: src
@@ -398,7 +398,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download all screenshot artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           path: _artifacts
 
@@ -1081,7 +1081,7 @@ jobs:
 
     steps:
       - name: Download timing artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           pattern: screenshot-runtime-*
           path: _runtime
