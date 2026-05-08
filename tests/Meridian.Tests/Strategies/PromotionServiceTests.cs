@@ -489,10 +489,14 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store);
 
         // Create a run with high-risk metrics
-        var highRiskMetrics = BuildPassingResult() with
+        var passingResult = BuildPassingResult();
+        var highRiskMetrics = passingResult with
         {
-            MaxDrawdownPercent = 0.45m, // 45% - exceeds 30% threshold
-            SharpeRatio = 0.5d // Below 0.8 minimum
+            Metrics = passingResult.Metrics with
+            {
+                MaxDrawdownPercent = 0.45m, // 45% - exceeds 30% threshold
+                SharpeRatio = 0.5d // Below 0.8 minimum
+            }
         };
 
         var run = StrategyRunEntry.Start("strat-high-risk", "High Risk Strategy", RunType.Backtest) with
@@ -532,14 +536,21 @@ public sealed class PromotionServiceTests
         checklist.Should().NotBeNull("Checklist should exist for Paper mode");
         checklist.Should().NotBeEmpty("Checklist should contain items");
 
-        // Verify required items are present (implementation-specific, adjust as needed)
-        // The checklist should cover:
-        // 1. Data source (DK1 trust validation)
-        // 2. Run identity and lineage
-        // 3. Risk metrics validation
-        // 4. Portfolio and ledger continuity
+        // Verify the specific Wave 2 required checklist items are present
+        checklist.Should().Contain(PromotionApprovalChecklist.Dk1TrustPacketReviewed,
+            "DK1 data trust packet review is required for Wave 2");
+        checklist.Should().Contain(PromotionApprovalChecklist.RunLineageReviewed,
+            "Run lineage review is required for Wave 2");
+        checklist.Should().Contain(PromotionApprovalChecklist.RiskControlsReviewed,
+            "Risk controls review is required for Wave 2");
+        checklist.Should().Contain(PromotionApprovalChecklist.PortfolioLedgerContinuityReviewed,
+            "Portfolio/ledger continuity review is required for Wave 2");
 
-        // Test passes if the checklist structure is sound
-        checklist.Count.Should().BeGreaterThan(0, "At least one checklist item should be required");
+        // Live mode should also require the live override review item
+        var liveChecklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Live);
+        liveChecklist.Should().Contain(PromotionApprovalChecklist.LiveOverrideReviewed,
+            "Live override review is additionally required for Live mode");
+
+        checklist.Length.Should().BeGreaterThan(0, "At least one checklist item should be required");
     }
 }
