@@ -308,6 +308,10 @@ public static class UiEndpoints
         // Strategy lifecycle control endpoints (pause/stop/status)
         app.MapStrategyLifecycleEndpoints(jsonOptions);
 
+        // Quant Lab (gated by host configuration "QuantLab:Enabled" — endpoints respond
+        // 503 when the engine is not registered, so it is safe to map unconditionally).
+        app.MapQuantLabEndpoints(jsonOptions);
+
         return app;
     }
 
@@ -427,6 +431,10 @@ public static class UiEndpoints
 
         // Strategy lifecycle control endpoints (pause/stop/status)
         app.MapStrategyLifecycleEndpoints(jsonOptions);
+
+        // Quant Lab (gated by host configuration "QuantLab:Enabled" — endpoints respond
+        // 503 when the engine is not registered, so it is safe to map unconditionally).
+        app.MapQuantLabEndpoints(jsonOptions);
 
         return app;
     }

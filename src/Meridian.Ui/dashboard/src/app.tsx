@@ -29,6 +29,7 @@ import { GovernanceScreen } from "@/screens/governance-screen";
 import { OperatorReadinessConsole } from "@/screens/operator-readiness-console";
 import { OverviewScreen } from "@/screens/overview-screen";
 import { PortfolioScreen } from "@/screens/portfolio-screen";
+import { QuantLabScreen } from "@/screens/quant-lab-screen";
 import { ReportingScreen } from "@/screens/reporting-screen";
 import { ResearchScreen } from "@/screens/research-screen";
 import { SettingsScreen } from "@/screens/settings-screen";
@@ -178,6 +179,7 @@ export function App() {
                 )} />
                 <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />
                 <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
+                <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                 <Route path="/strategy/*" element={<ResearchScreen data={research} />} />
                 <Route path="/data/quotes" element={<LiveQuotesScreen />} />
                 <Route path="/data/watchlist" element={<WatchlistScreen />} />

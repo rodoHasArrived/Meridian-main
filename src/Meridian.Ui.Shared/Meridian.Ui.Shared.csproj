@@ -34,6 +34,7 @@
     <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
     <ProjectReference Include="..\Meridian.Execution\Meridian.Execution.csproj" />
     <ProjectReference Include="..\Meridian.Infrastructure.CppTrader\Meridian.Infrastructure.CppTrader.csproj" />
+    <ProjectReference Include="..\Meridian.QuantScript\Meridian.QuantScript.csproj" />
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
     <ProjectReference Include="..\Meridian.Strategies\Meridian.Strategies.csproj" />
   </ItemGroup>

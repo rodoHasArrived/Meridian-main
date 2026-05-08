@@ -731,3 +731,17 @@ export function getLiveTrades(symbol: string, limit = 25) {
 export function getLiveOrderbook(symbol: string, levels = 10) {
   return getJson<import("@/types").OrderBookResponse>(`/api/data/orderbook/${encodeURIComponent(symbol)}?levels=${levels}`);
 }
+
+// --- Quant Lab ---
+
+export function getQuantTemplates() {
+  return getJson<import("@/types").QuantTemplatesResponse>("/api/quant/templates");
+}
+
+export function extractQuantParameters(source: string) {
+  return postJson<import("@/types").QuantParametersResponse>("/api/quant/parameters", { source });
+}
+
+export function runQuantScript(request: import("@/types").QuantRunRequest) {
+  return postJson<import("@/types").QuantRunResponse>("/api/quant/run", request);
+}

@@ -1456,3 +1456,111 @@ export interface OrderBookResponse {
   streamId: string | null;
   venue: string | null;
 }
+
+// --- Quant Lab ---
+
+export type QuantPlotKind =
+  | "Line"
+  | "MultiLine"
+  | "CumulativeReturn"
+  | "Drawdown"
+  | "Heatmap"
+  | "Candlestick"
+  | "Bar"
+  | "Scatter"
+  | "Histogram";
+
+export interface QuantPlotPoint {
+  date: string;
+  value: number;
+}
+
+export interface QuantPlotSeries {
+  label: string;
+  values: QuantPlotPoint[];
+}
+
+export interface QuantPlotBar {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface QuantPlot {
+  title: string;
+  type: QuantPlotKind;
+  series: QuantPlotPoint[] | null;
+  multiSeries: QuantPlotSeries[] | null;
+  candlestick: QuantPlotBar[] | null;
+  heatmapData: number[][] | null;
+  heatmapLabels: string[] | null;
+}
+
+export interface QuantDiagnostic {
+  severity: string;
+  message: string;
+  line: number;
+  column: number;
+}
+
+export interface QuantMetric {
+  label: string;
+  value: string;
+}
+
+export interface QuantTrade {
+  timestamp: string;
+  symbol: string;
+  side: string;
+  quantity: number;
+  price: number;
+  commission: number;
+}
+
+export interface QuantParameter {
+  name: string;
+  label: string;
+  typeName: string;
+  defaultValue: string | null;
+  min: number | null;
+  max: number | null;
+  description: string | null;
+}
+
+export interface QuantRunResponse {
+  success: boolean;
+  elapsedMs: number;
+  compileTimeMs: number;
+  peakMemoryBytes: number;
+  runtimeError: string | null;
+  consoleOutput: string;
+  compilationErrors: QuantDiagnostic[];
+  runtimeDiagnostics: QuantDiagnostic[];
+  metrics: QuantMetric[];
+  plots: QuantPlot[];
+  trades: QuantTrade[];
+  runtimeParameters: QuantParameter[];
+}
+
+export interface QuantParametersResponse {
+  parameters: QuantParameter[];
+}
+
+export interface QuantTemplate {
+  id: string;
+  title: string;
+  description: string;
+  source: string;
+}
+
+export interface QuantTemplatesResponse {
+  templates: QuantTemplate[];
+}
+
+export interface QuantRunRequest {
+  source: string;
+  parameters: Record<string, string | number | boolean | null>;
+}
