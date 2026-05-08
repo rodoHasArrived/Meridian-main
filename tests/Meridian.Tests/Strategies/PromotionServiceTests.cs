@@ -545,12 +545,20 @@ public sealed class PromotionServiceTests
             "Risk controls review is required for Wave 2");
         checklist.Should().Contain(PromotionApprovalChecklist.PortfolioLedgerContinuityReviewed,
             "Portfolio/ledger continuity review is required for Wave 2");
+    }
 
-        // Live mode should also require the live override review item
+    [Fact]
+    public async Task Wave2_Scenario_PromotionApprovalChecklistValidation_LiveModeRequiresOverrideReview()
+    {
+        // Live mode requires an additional live-override review item beyond the Paper baseline
+
         var liveChecklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Live);
+
         liveChecklist.Should().Contain(PromotionApprovalChecklist.LiveOverrideReviewed,
             "Live override review is additionally required for Live mode");
-
-        checklist.Length.Should().BeGreaterThan(0, "At least one checklist item should be required");
+        liveChecklist.Should().Contain(PromotionApprovalChecklist.Dk1TrustPacketReviewed,
+            "DK1 trust packet review remains required in Live mode");
+        liveChecklist.Should().Contain(PromotionApprovalChecklist.RiskControlsReviewed,
+            "Risk controls review remains required in Live mode");
     }
 }
