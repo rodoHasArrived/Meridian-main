@@ -420,6 +420,9 @@ function Ensure-EnteredOperatingContext {
         [System.Diagnostics.Process]$Process
     )
 
+    # Delay between invoking Switch Context and probing Enter Workstation on FundProfileSelection.
+    $contextSwitchTransitionDelayMs = 800
+
     $shell = Wait-ForElement -Attempts 4 -DelayMilliseconds 250 -Finder {
         if ($null -ne $Process -and $Process.HasExited) {
             throw "Meridian desktop exited before operating context could be confirmed."
@@ -431,6 +434,13 @@ function Ensure-EnteredOperatingContext {
         }
 
         if (Test-ShellAutomationReady -Window $currentWindow) {
+            $contextSelectionHint = Find-AutomationElementById -Window $currentWindow -AutomationId 'ContextSelectionHint'
+            if ($null -ne $contextSelectionHint) {
+                # Returning $null forces the workflow into the context-selection automation branch below.
+                # Wait-ForElement bounds retries so this recovery path fails fast instead of hanging indefinitely.
+                return $null
+            }
+
             return $currentWindow
         }
 
@@ -452,6 +462,49 @@ function Ensure-EnteredOperatingContext {
         }
 
         return Get-OperatingContextEnterButton -Window $currentWindow
+    }
+
+    if (-not $enterButton) {
+        $switchContextButton = Wait-ForElement -Attempts 6 -DelayMilliseconds 250 -Finder {
+            if ($null -ne $Process -and $Process.HasExited) {
+                throw "Meridian desktop exited before context switch could be requested."
+            }
+
+            $currentWindow = Find-MeridianWindow -Process $Process
+            if ($null -eq $currentWindow) {
+                return $null
+            }
+
+            $contextSelectionHintButton = Find-AutomationElementById -Window $currentWindow -AutomationId 'ContextSelectionHintButton'
+            if ($null -ne $contextSelectionHintButton) {
+                # Preferred shell hint when no operating context is active.
+                return $contextSelectionHintButton
+            }
+
+            $fallbackSwitchButton = Find-AutomationElementById -Window $currentWindow -AutomationId 'SwitchContextButton'
+            if ($null -ne $fallbackSwitchButton) {
+                # Fallback command-strip action for shells where the hint card is not rendered.
+                return $fallbackSwitchButton
+            }
+
+            return $null
+        }
+
+        if ($switchContextButton -and (Test-AutomationElementEnabled -Element $switchContextButton)) {
+            Activate-MeridianWindow | Out-Null
+            if (Invoke-AutomationButton -Button $switchContextButton -Description 'switch context') {
+                # Allow the FundProfileSelection page transition to complete before probing for Enter Workstation.
+                Start-Sleep -Milliseconds $contextSwitchTransitionDelayMs
+                $enterButton = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
+                    $currentWindow = Find-MeridianWindow -Process $Process
+                    if ($null -eq $currentWindow) {
+                        return $null
+                    }
+
+                    return Get-OperatingContextEnterButton -Window $currentWindow
+                }
+            }
+        }
     }
 
     if ($enterButton -and -not (Test-AutomationElementEnabled -Element $enterButton)) {
