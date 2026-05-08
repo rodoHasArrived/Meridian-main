@@ -28,7 +28,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("name: wpf-build-binaries", self.workflow)
         self.assertIn("path: src", self.workflow)
 
-    def test_desktop_workflow_script_requests_context_selection_when_shell_requires_context(self) -> None:
+    def test_desktop_workflow_script_contains_context_selection_automation_elements(self) -> None:
         self.assertIn("ContextSelectionHintButton", self.run_desktop_workflow_script)
         self.assertIn("SwitchContextButton", self.run_desktop_workflow_script)
         self.assertIn("Invoke-AutomationButton -Button $switchContextButton -Description 'switch context'", self.run_desktop_workflow_script)

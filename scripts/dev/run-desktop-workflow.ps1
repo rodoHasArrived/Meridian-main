@@ -434,6 +434,8 @@ function Ensure-EnteredOperatingContext {
         [System.Diagnostics.Process]$Process
     )
 
+    $contextSwitchTransitionDelayMs = 800
+
     $shell = Wait-ForElement -Attempts 4 -DelayMilliseconds 250 -Finder {
         if ($null -ne $Process -and $Process.HasExited) {
             throw "Meridian desktop exited before operating context could be confirmed."
@@ -448,6 +450,7 @@ function Ensure-EnteredOperatingContext {
             $contextSelectionHintButton = Find-AutomationElementById -Window $currentWindow -AutomationId 'ContextSelectionHintButton'
             if ($null -ne $contextSelectionHintButton -and (Test-AutomationElementVisible -Element $contextSelectionHintButton)) {
                 # Returning $null keeps the workflow in context-selection mode until a context is explicitly entered.
+                # Wait-ForElement bounds retries so the workflow fails fast instead of hanging indefinitely.
                 return $null
             }
 
@@ -502,7 +505,7 @@ function Ensure-EnteredOperatingContext {
             Activate-MeridianWindow | Out-Null
             if (Invoke-AutomationButton -Button $switchContextButton -Description 'switch context') {
                 # Allow the FundProfileSelection page transition to complete before probing for Enter Workstation.
-                Start-Sleep -Milliseconds 800
+                Start-Sleep -Milliseconds $contextSwitchTransitionDelayMs
                 $enterButton = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
                     $currentWindow = Find-MeridianWindow -Process $Process
                     if ($null -eq $currentWindow) {
