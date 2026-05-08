@@ -6686,6 +6686,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── src
 │   │   │   │   ├── app-shell.view-model.test.ts
 │   │   │   │   ├── app-shell.view-model.ts
+│   │   │   │   ├── app.test.tsx
 │   │   │   │   ├── app.tsx
 │   │   │   │   ├── assets
 │   │   │   │   │   └── brand
@@ -6790,8 +6791,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-B_Q4tm_q.js
-│   │           │   └── index-BoPcEBD_.css
+│   │           │   ├── index-BoPcEBD_.css
+│   │           │   └── index-DwThFFF5.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8311,6 +8312,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-660 directories, 7476 files
+660 directories, 7477 files
 ```
 <!-- readme-tree end -->
