@@ -6765,6 +6765,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── governance-screen.tsx
 │   │   │   │   │   ├── governance-screen.view-model.test.ts
 │   │   │   │   │   ├── governance-screen.view-model.ts
+│   │   │   │   │   ├── live-quotes-screen.tsx
 │   │   │   │   │   ├── operator-readiness-console.test.tsx
 │   │   │   │   │   ├── operator-readiness-console.tsx
 │   │   │   │   │   ├── operator-readiness-console.view-model.test.ts
@@ -6792,7 +6793,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── trading-screen.test.tsx
 │   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
-│   │   │   │   │   └── trading-screen.view-model.ts
+│   │   │   │   │   ├── trading-screen.view-model.ts
+│   │   │   │   │   └── watchlist-screen.tsx
 │   │   │   │   ├── styles
 │   │   │   │   │   └── index.css
 │   │   │   │   ├── test
@@ -8329,6 +8331,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-667 directories, 7487 files
+667 directories, 7489 files
 ```
 <!-- readme-tree end -->
