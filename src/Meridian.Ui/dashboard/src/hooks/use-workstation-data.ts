@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   getBrokerageHouseholdPortfolio,
   getDataWorkspace,
@@ -161,5 +161,26 @@ export function useWorkstationData() {
     void refresh();
   }, [refresh]);
 
-  return { ...state, refresh };
+  // Keep the trading cockpit fresh without re-fetching every workspace.
+  // Positions, orders, fills, and readiness status change as trading runs.
+  const refreshingTrading = useRef(false);
+  const refreshTrading = useCallback(async () => {
+    if (refreshingTrading.current) return;
+    refreshingTrading.current = true;
+    try {
+      const result = await getTradingWorkspace();
+      setState((current) => ({ ...current, trading: result }));
+    } catch {
+      // keep stale data; full refresh() is always available
+    } finally {
+      refreshingTrading.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => { void refreshTrading(); }, 30_000);
+    return () => clearInterval(id);
+  }, [refreshTrading]);
+
+  return { ...state, refresh, refreshTrading };
 }
