@@ -138,11 +138,19 @@
 
 @layer components {
   .panel-surface {
-    @apply rounded-xl border border-border/80 bg-card shadow-workstation;
+    @apply rounded-xl border border-border/80 bg-card shadow-workstation transition-[border-color] duration-150;
+  }
+
+  .panel-surface:hover {
+    @apply border-border/90;
   }
 
   .panel-surface-strong {
-    @apply rounded-xl border border-border bg-[hsl(var(--panel-strong)/0.96)] shadow-workstation;
+    @apply rounded-xl border border-border bg-[hsl(var(--panel-strong)/0.96)] shadow-workstation transition-[border-color] duration-150;
+  }
+
+  .panel-surface-strong:hover {
+    @apply border-border;
   }
 
   .data-grid-surface {
@@ -473,6 +481,7 @@
     gap: 0.625rem;
     padding: 0.75rem;
     border: 1px solid rgba(31, 52, 76, 0.85);
+    border-top: 2px solid rgba(42, 178, 212, 0.45);
     border-radius: var(--radius-lg);
     background: rgba(8, 16, 26, 0.74);
     box-shadow: var(--shadow-panel);
@@ -601,6 +610,13 @@
     border-radius: var(--radius-lg);
     background: rgba(8, 16, 26, 0.62);
     box-shadow: var(--shadow-panel);
+    transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+  }
+
+  .workspace-header-card:hover {
+    border-color: var(--border-hi);
+    background: var(--surface-raise-bg);
+    box-shadow: var(--shadow-workstation);
   }
 
   .workspace-header-card-value {
@@ -833,6 +849,13 @@
     border: 1px solid rgba(31, 52, 76, 0.9);
     border-radius: var(--radius-lg);
     background: rgba(8, 16, 26, 0.62);
+    transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+  }
+
+  .entity-summary-field:hover {
+    border-color: var(--border-hi);
+    background: var(--surface-raise-bg);
+    box-shadow: var(--shadow-panel);
   }
 
   .entity-summary-field dt {
@@ -873,6 +896,12 @@
     border: 1px solid rgba(31, 52, 76, 0.9);
     border-radius: var(--radius-lg);
     background: rgba(8, 16, 26, 0.55);
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+
+  .plottool-legend-card:hover {
+    border-color: var(--border-hi);
+    background: rgba(27, 42, 60, 0.65);
   }
 
   .plottool-overlay-list li {
@@ -943,6 +972,10 @@
     padding: 0.625rem 0.75rem;
     border-radius: var(--radius-md);
     transition: background 100ms ease;
+  }
+
+  .mega-menu-section:not(.active):hover {
+    background: rgba(255, 255, 255, 0.03);
   }
 
   .mega-menu-section.active {
@@ -1064,6 +1097,42 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     white-space: nowrap;
+  }
+
+  /* ── Entrance animations ───────────────────────────────── */
+
+  @keyframes sheetSlideRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+
+  @keyframes sheetSlideLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to   { transform: translateX(0);     opacity: 1; }
+  }
+
+  @keyframes cmdPanelIn {
+    from { opacity: 0; transform: translateY(-10px) scale(0.985); }
+    to   { opacity: 1; transform: translateY(0)     scale(1); }
+  }
+
+  .sheet-slide-right {
+    animation: sheetSlideRight 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .sheet-slide-left {
+    animation: sheetSlideLeft 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .command-palette-shell {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    background:
+      linear-gradient(180deg, rgba(246, 251, 255, 0.03), rgba(246, 251, 255, 0)),
+      rgba(13, 23, 34, 0.98);
+    padding: 1rem;
+    box-shadow: var(--shadow-float);
+    animation: cmdPanelIn 160ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 }
 
