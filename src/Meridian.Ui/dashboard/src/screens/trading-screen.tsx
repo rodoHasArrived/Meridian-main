@@ -1239,21 +1239,44 @@ export function TradingScreen({ data }: TradingScreenProps) {
               </Button>
             </div>
             {promotionGate.evaluation && (
-              <div className="rounded-lg border border-border/60 p-3 text-xs">
-                <p>Eligible: {promotionGate.evaluation.isEligible ? "Yes" : "No"}</p>
-                <p>Sharpe: {promotionGate.evaluation.sharpeRatio} · Max DD: {promotionGate.evaluation.maxDrawdownPercent}% · Return: {promotionGate.evaluation.totalReturn}%</p>
-                <p>{promotionGate.evaluation.reason}</p>
-                {promotionGate.evaluation.requiresHumanApproval && <p>Human approval required</p>}
-                {promotionGate.evaluation.requiresManualOverride && (
-                  <p>Manual override required{promotionGate.evaluation.requiredManualOverrideKind ? `: ${promotionGate.evaluation.requiredManualOverrideKind}` : ""}</p>
-                )}
-                {promotionGate.evaluation.blockingReasons && promotionGate.evaluation.blockingReasons.length > 0 && (
-                  <ul className="mt-2 list-disc space-y-1 pl-4">
-                    {promotionGate.evaluation.blockingReasons.map((reason) => (
-                      <li key={reason}>{reason}</li>
+              <div className="space-y-3">
+                <div className="rounded-lg border border-border/60 p-3 text-xs">
+                  <p className="font-semibold">Evaluation results</p>
+                  <p className="mt-1">Eligible: <span className={promotionGate.evaluation.isEligible ? "text-success" : "text-warning"}>{promotionGate.evaluation.isEligible ? "Yes" : "No"}</span></p>
+                  <p>Sharpe: {promotionGate.evaluation.sharpeRatio.toFixed(2)} · Max DD: {promotionGate.evaluation.maxDrawdownPercent.toFixed(1)}% · Return: {promotionGate.evaluation.totalReturn.toFixed(1)}%</p>
+                  {promotionGate.evaluation.reason && <p className="mt-1 text-muted-foreground">{promotionGate.evaluation.reason}</p>}
+                  {promotionGate.evaluation.requiresHumanApproval && <p className="mt-1 text-warning">⚠ Human approval required</p>}
+                  {promotionGate.evaluation.requiresManualOverride && (
+                    <p className="mt-1 text-warning">⚠ Manual override required{promotionGate.evaluation.requiredManualOverrideKind ? `: ${promotionGate.evaluation.requiredManualOverrideKind}` : ""}</p>
+                  )}
+                  {promotionGate.evaluation.blockingReasons && promotionGate.evaluation.blockingReasons.length > 0 && (
+                    <div className="mt-2 rounded border border-danger/30 bg-danger/10 p-2">
+                      <p className="font-semibold text-danger">Blocking reasons:</p>
+                      <ul className="mt-1 list-disc space-y-1 pl-4 text-danger">
+                        {promotionGate.evaluation.blockingReasons.map((reason) => (
+                          <li key={reason}>{reason}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-lg border border-border/60 p-3 text-xs">
+                  <p className="font-semibold">Approval checklist</p>
+                  <ul className="mt-2 space-y-2">
+                    {promotionGate.approvalChecklist.map((item) => (
+                      <li key={item.label} className="flex items-start gap-2">
+                        <span className={cn(
+                          "mt-0.5 inline-block h-2 w-2 rounded-full flex-shrink-0",
+                          item.status === "ready" ? "bg-success" : item.status === "blocked" ? "bg-danger" : "bg-warning"
+                        )} />
+                        <div>
+                          <p className="font-medium">{item.label}</p>
+                          {item.description && <p className="text-muted-foreground">{item.description}</p>}
+                        </div>
+                      </li>
                     ))}
                   </ul>
-                )}
+                </div>
               </div>
             )}
             {promotionGate.outcome && (
