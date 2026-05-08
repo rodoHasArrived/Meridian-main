@@ -104,6 +104,7 @@ env:
   WEB_SCREENSHOT_PORT: 5173
   SCREENSHOT_TIMING_BASELINE_MINUTES: 25
   SCREENSHOT_TIMING_REGRESSION_PERCENT: 20
+  WPF_ARTIFACT_RETRY_DELAY_SECONDS: 15
 
 jobs:
   build-wpf:
@@ -225,7 +226,7 @@ jobs:
 
       - name: Retry WPF build binary download
         if: steps.download_wpf_build_binaries.outcome == 'failure'
-        run: Start-Sleep -Seconds 15
+        run: Start-Sleep -Seconds ${{ env.WPF_ARTIFACT_RETRY_DELAY_SECONDS }}
 
       - name: Download WPF build binaries (retry)
         if: steps.download_wpf_build_binaries.outcome == 'failure'
