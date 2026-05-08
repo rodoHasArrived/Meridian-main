@@ -4999,6 +4999,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── governance-fund-ops-blueprint.md
 │   │   ├── kernel-parity-migration-blueprint.md
 │   │   ├── l3-inference-implementation-plan.md
+│   │   ├── ledger.md
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-analytics-productization-blueprint.md
 │   │   ├── meridian-database-blueprint.md
@@ -6170,6 +6171,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── LedgerReadModels.fs
 │   │   ├── LedgerTypes.fs
 │   │   ├── Meridian.FSharp.Ledger.fsproj
+│   │   ├── PeriodManagement.fs
 │   │   ├── Posting.fs
 │   │   ├── Reconciliation.fs
 │   │   ├── ReconciliationClassification.fs
@@ -8315,6 +8317,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-660 directories, 7480 files
+660 directories, 7482 files
 ```
 <!-- readme-tree end -->
