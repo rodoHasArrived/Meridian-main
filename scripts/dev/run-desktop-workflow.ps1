@@ -1107,7 +1107,12 @@ foreach ($uiaAssembly in @('UIAutomationClient', 'UIAutomationTypes')) {
     }
     catch {
         # Fallback for environments where the assembly must be loaded by partial name.
-        [void][System.Reflection.Assembly]::LoadWithPartialName($uiaAssembly)
+        try {
+            [void][System.Reflection.Assembly]::LoadWithPartialName($uiaAssembly)
+        }
+        catch {
+            throw "Required UI Automation assembly '$uiaAssembly' could not be loaded. Desktop workflow automation requires Windows UIAutomation assemblies. Error: $($_.Exception.Message)"
+        }
     }
 }
 
