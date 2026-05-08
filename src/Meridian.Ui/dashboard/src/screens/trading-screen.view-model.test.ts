@@ -6,6 +6,7 @@ import {
   buildStrategyLifecycleControlsState,
   buildTradingConfirmDialogState,
   buildTradingBlotterViewModel,
+  buildOrderPreview,
   buildOrderSubmitRequest,
   buildOrderTicketState,
   buildPromotionApprovalRequest,
@@ -26,7 +27,7 @@ import {
   validatePromotionApproval,
   validatePromotionRejection
 } from "@/screens/trading-screen.view-model";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionPortfolioSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionPortfolioSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingOperatorReadiness, TradingPosition, TradingRiskState, TradingWorkspaceResponse } from "@/types";
 
 const eligibleEvaluation: PromotionEvaluationResult = {
   runId: "run-1",
@@ -915,6 +916,122 @@ describe("trading order ticket view model", () => {
 
     expect(submitted.successText).toBe("Order submitted - ord-42.");
     expect(submitted.statusAnnouncement).toBe("Order submitted with id ord-42.");
+  });
+});
+
+describe("buildOrderPreview", () => {
+  const longAaplPosition: TradingPosition = {
+    symbol: "AAPL",
+    side: "Long",
+    quantity: "100",
+    averagePrice: "188.10",
+    markPrice: "189.00",
+    dayPnl: "+$90",
+    unrealizedPnl: "+$90",
+    exposure: "$18,900"
+  };
+
+  const healthyRisk: TradingRiskState = {
+    state: "Healthy",
+    summary: "All clear.",
+    netExposure: "$0",
+    grossExposure: "$0",
+    var95: "$0",
+    maxDrawdown: "0%",
+    buyingPowerUsed: "12%",
+    activeGuardrails: []
+  };
+
+  it("returns an unavailable preview when symbol or quantity is missing", () => {
+    const preview = buildOrderPreview({
+      form: { ...emptyOrderTicketForm },
+      positions: [],
+      risk: null
+    });
+
+    expect(preview.available).toBe(false);
+    expect(preview.notional).toBeNull();
+    expect(preview.notionalLabel).toBe("—");
+    expect(preview.priceSource).toBe("none");
+    expect(preview.warnings).toEqual([]);
+    expect(preview.summaryLine).toMatch(/Order preview will appear/);
+  });
+
+  it("uses the limit price as the reference and computes notional for limit orders", () => {
+    const preview = buildOrderPreview({
+      form: { symbol: "MSFT", side: "Buy", type: "Limit", quantity: 10, limitPrice: 414.20 },
+      positions: [],
+      risk: healthyRisk
+    });
+
+    expect(preview.available).toBe(true);
+    expect(preview.priceSource).toBe("limit");
+    expect(preview.referencePrice).toBe(414.20);
+    expect(preview.notional).toBeCloseTo(4142, 2);
+    expect(preview.notionalLabel).toBe("$4,142.00");
+    expect(preview.effect).toBe("open-long");
+    expect(preview.effectLabel).toBe("Opens new long position");
+    expect(preview.resultingPositionLabel).toBe("Long 10 MSFT");
+    expect(preview.warnings).toEqual([]);
+    expect(preview.riskNote).toBe("Risk Healthy • Buying power used 12%");
+  });
+
+  it("derives reduce vs close vs flip effects against an existing long", () => {
+    const reduce = buildOrderPreview({
+      form: { symbol: "AAPL", side: "Sell", type: "Market", quantity: 25, limitPrice: null },
+      positions: [longAaplPosition],
+      risk: null
+    });
+    expect(reduce.effect).toBe("reduce-long");
+    expect(reduce.resultingPositionLabel).toBe("Long 75 AAPL");
+    expect(reduce.priceSource).toBe("mark");
+    expect(reduce.referencePrice).toBe(189);
+    expect(reduce.notionalLabel).toBe("$4,725.00");
+
+    const close = buildOrderPreview({
+      form: { symbol: "AAPL", side: "Sell", type: "Market", quantity: 100, limitPrice: null },
+      positions: [longAaplPosition],
+      risk: null
+    });
+    expect(close.effect).toBe("close-long");
+    expect(close.resultingPositionLabel).toBe("Flat AAPL");
+
+    const flip = buildOrderPreview({
+      form: { symbol: "AAPL", side: "Sell", type: "Market", quantity: 150, limitPrice: null },
+      positions: [longAaplPosition],
+      risk: null
+    });
+    expect(flip.effect).toBe("flip-to-short");
+    expect(flip.resultingPositionLabel).toBe("Short 50 AAPL");
+    expect(flip.warnings.find((w) => w.id === "position-flip")?.level).toBe("danger");
+  });
+
+  it("surfaces a warning when a market order has no reference price", () => {
+    const preview = buildOrderPreview({
+      form: { symbol: "ZZZ", side: "Buy", type: "Market", quantity: 5, limitPrice: null },
+      positions: [],
+      risk: null
+    });
+
+    expect(preview.priceSource).toBe("none");
+    expect(preview.notionalLabel).toBe("—");
+    expect(preview.warnings.find((w) => w.id === "no-reference-price")).toBeDefined();
+  });
+
+  it("emits a danger-level risk warning when the risk state is Constrained", () => {
+    const preview = buildOrderPreview({
+      form: { symbol: "AAPL", side: "Buy", type: "Limit", quantity: 5, limitPrice: 190 },
+      positions: [longAaplPosition],
+      risk: {
+        ...healthyRisk,
+        state: "Constrained",
+        summary: "Drawdown breach"
+      }
+    });
+
+    const warning = preview.warnings.find((w) => w.id === "risk-constrained");
+    expect(warning?.level).toBe("danger");
+    expect(warning?.message).toMatch(/Drawdown breach/);
   });
 });
 
