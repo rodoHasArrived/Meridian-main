@@ -226,6 +226,7 @@ jobs:
 
       - name: Retry WPF build binary download
         if: steps.download_wpf_build_binaries.outcome == 'failure'
+        shell: pwsh
         run: Start-Sleep -Seconds ${{ env.WPF_ARTIFACT_RETRY_DELAY_SECONDS }}
 
       - name: Download WPF build binaries (retry)
