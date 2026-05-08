@@ -35,6 +35,7 @@ env:
 jobs:
   copilot-setup-steps:
     runs-on: ubuntu-latest
+    environment: copilot
     # Cold-cache runs (restore + build + Node + Playwright) can take ~22 min;
     # give a little extra headroom.
     timeout-minutes: 30
