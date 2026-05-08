@@ -137,6 +137,7 @@ public sealed partial class QuantScriptExecutionHistoryService
         ArgumentNullException.ThrowIfNull(record);
 
         var config = await _configService.LoadConfigAsync().ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
         var dataRoot = _configService.ResolveDataRoot(config);
         var exportDirectory = Path.Combine(dataRoot, "_quantscript", "exports");
         Directory.CreateDirectory(exportDirectory);

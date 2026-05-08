@@ -893,7 +893,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
                 AutoCompare: !string.IsNullOrWhiteSpace(comparisonRunId)));
     }
 
-    private async Task ExportSelectedRunHistoryAsync()
+    private async Task ExportSelectedRunHistoryAsync(CancellationToken ct)
     {
         if (SelectedExecutionRecord is null)
             return;
@@ -901,7 +901,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         try
         {
             var path = await _executionHistoryService
-                .ExportExecutionRecordAsync(SelectedExecutionRecord)
+                .ExportExecutionRecordAsync(SelectedExecutionRecord, ct)
                 .ConfigureAwait(true);
 
             StatusText = $"Exported run history: {Path.GetFileName(path)}";
