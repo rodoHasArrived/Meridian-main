@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Meridian.Backtesting.Sdk;
 using Meridian.QuantScript.Documents;
 using Meridian.Storage.Archival;
+using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Microsoft.Extensions.Logging;
 
@@ -54,9 +54,9 @@ public sealed class QuantScriptExecutionHistoryService
             try
             {
                 await using var stream = File.OpenRead(path);
-                var record = await JsonSerializer.DeserializeAsync(
+                var record = await JsonSerializer.DeserializeAsync<QuantScriptExecutionRecord>(
                     stream,
-                    QuantScriptExecutionHistoryJsonContext.Default.QuantScriptExecutionRecord,
+                    DesktopJsonOptions.PrettyPrint,
                     ct).ConfigureAwait(false);
 
                 if (record is not null)
@@ -124,7 +124,7 @@ public sealed class QuantScriptExecutionHistoryService
 
         var historyDirectory = await ResolveHistoryDirectoryAsync().ConfigureAwait(false);
         var path = Path.Combine(historyDirectory, $"{record.ExecutionId}.json");
-        var json = JsonSerializer.Serialize(record, QuantScriptExecutionHistoryJsonContext.Default.QuantScriptExecutionRecord);
+        var json = JsonSerializer.Serialize(record, DesktopJsonOptions.PrettyPrint);
         await AtomicFileWriter.WriteAsync(path, json, ct).ConfigureAwait(false);
 
         return record;
@@ -143,7 +143,7 @@ public sealed class QuantScriptExecutionHistoryService
         Directory.CreateDirectory(exportDirectory);
 
         var path = Path.Combine(exportDirectory, $"{record.ExecutionId}.json");
-        var json = JsonSerializer.Serialize(record, QuantScriptExecutionHistoryJsonContext.Default.QuantScriptExecutionRecord);
+        var json = JsonSerializer.Serialize(record, DesktopJsonOptions.PrettyPrint);
         await AtomicFileWriter.WriteAsync(path, json, ct).ConfigureAwait(false);
         return path;
     }
@@ -170,10 +170,3 @@ public sealed class QuantScriptExecutionHistoryService
         };
     }
 }
-
-[JsonSourceGenerationOptions(
-    WriteIndented = true,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
-[JsonSerializable(typeof(QuantScriptExecutionRecord))]
-internal sealed partial class QuantScriptExecutionHistoryJsonContext : JsonSerializerContext;
