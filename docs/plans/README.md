@@ -23,6 +23,7 @@ These are the plan documents that directly support the current path to the core 
 | [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | Historical WPF-first migration blueprint; re-scope open items to web-first workstation delivery |
 | [meridian-analytics-productization-blueprint.md](meridian-analytics-productization-blueprint.md) | Research -> Trading -> Governance analytics productization blueprint for notebooks, comparison, exports, handoff, and governed artifacts |
 | [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md) | Governance, reconciliation, and reporting blueprint on top of shared seams |
+| [ledger.md](ledger.md) | Phased ledger implementation plan: period management, PostgreSQL persistence, multi-ledger model, accruals, and governed reporting |
 | [fund-management-pr-sequenced-roadmap.md](fund-management-pr-sequenced-roadmap.md) | PR-sequenced Wave 4 governance and fund-operations slices |
 | [security-master-productization-roadmap.md](security-master-productization-roadmap.md) | Delivered Security Master baseline plus Wave 4 follow-ons |
 | [ufl-direct-lending-implementation-roadmap.md](ufl-direct-lending-implementation-roadmap.md) | Direct-lending delivery path on top of the UFL target state |
