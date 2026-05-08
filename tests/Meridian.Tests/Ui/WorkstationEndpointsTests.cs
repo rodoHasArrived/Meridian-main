@@ -2862,6 +2862,192 @@ public sealed class WorkstationEndpointsTests
         recommended.Should().Contain(value => value == "excel" || value == "python-pandas");
     }
 
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingPayload_WithLiveQuote_ReplacesPlaceholderMarkAndComputesUnrealizedPnl()
+    {
+        var publisher = new Meridian.Tests.TestHelpers.TestMarketEventPublisher();
+        var quotes = new Meridian.Domain.Collectors.QuoteCollector(publisher);
+        quotes.OnQuote(new Meridian.Contracts.Domain.Models.MarketQuoteUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: "AAPL",
+            BidPrice: 199.90m,
+            BidSize: 100,
+            AskPrice: 200.10m,
+            AskSize: 100,
+            StreamId: "TEST",
+            Venue: "TEST"));
+
+        var position = new Meridian.Execution.Models.ExecutionPosition(
+            Symbol: "AAPL",
+            Quantity: 100,
+            AverageCostBasis: 150m,
+            UnrealisedPnl: 0m,
+            RealisedPnl: 0m);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<Meridian.Execution.Models.IPortfolioState>(new LiveMarkTestPortfolioState(position));
+            services.AddSingleton(quotes);
+        });
+
+        var client = app.GetTestClient();
+        using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
+
+        var rows = trading.RootElement.GetProperty("positions").EnumerateArray().ToArray();
+        rows.Should().NotBeEmpty();
+        var row = rows[0];
+        row.GetProperty("symbol").GetString().Should().Be("AAPL");
+
+        // Mid of (199.90, 200.10) = 200.00
+        row.GetProperty("markPrice").GetString().Should().Be("200.00");
+
+        // (200 - 150) * 100 = +5,000 → FormatCurrency renders "+$5K"
+        var unrealized = row.GetProperty("unrealizedPnl").GetString();
+        unrealized.Should().NotBe("—");
+        unrealized.Should().Be("+$5K");
+
+        // |100 * 200| = 20,000 → "+$20K"
+        var exposure = row.GetProperty("exposure").GetString();
+        exposure.Should().NotBe("—");
+        exposure.Should().Be("+$20K");
+
+        // Risk panel net/gross exposure should also reflect live mark, not cost basis
+        // (cost-basis exposure would have been |100 * 150| = 15,000 → "+$15K")
+        var risk = trading.RootElement.GetProperty("risk");
+        risk.GetProperty("netExposure").GetString().Should().Be("+$20K");
+        risk.GetProperty("grossExposure").GetString().Should().Be("+$20K");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingPayload_WithoutQuote_FallsBackToLastTradePrice()
+    {
+        var publisher = new Meridian.Tests.TestHelpers.TestMarketEventPublisher();
+        var quotes = new Meridian.Domain.Collectors.QuoteCollector(publisher);
+        var trades = new Meridian.Domain.Collectors.TradeDataCollector(publisher, quotes);
+        trades.OnTrade(new Meridian.Domain.Models.MarketTradeUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: "AAPL",
+            Price: 175m,
+            Size: 50,
+            Aggressor: Meridian.Contracts.Domain.Enums.AggressorSide.Buy,
+            SequenceNumber: 1,
+            StreamId: "TEST",
+            Venue: "TEST"));
+
+        var position = new Meridian.Execution.Models.ExecutionPosition(
+            Symbol: "AAPL",
+            Quantity: 100,
+            AverageCostBasis: 150m,
+            UnrealisedPnl: 0m,
+            RealisedPnl: 0m);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<Meridian.Execution.Models.IPortfolioState>(new LiveMarkTestPortfolioState(position));
+            services.AddSingleton(quotes);
+            services.AddSingleton(trades);
+        });
+
+        var client = app.GetTestClient();
+        using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
+
+        var row = trading.RootElement.GetProperty("positions").EnumerateArray().First();
+        row.GetProperty("markPrice").GetString().Should().Be("175.00");
+        // (175 - 150) * 100 = +2,500 → "+$2.5K"
+        row.GetProperty("unrealizedPnl").GetString().Should().Be("+$2.5K");
+        // |100 * 175| = 17,500 → "+$17.5K"
+        row.GetProperty("exposure").GetString().Should().Be("+$17.5K");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingPayload_WithoutAnyMarketData_RetainsPlaceholderMark()
+    {
+        var position = new Meridian.Execution.Models.ExecutionPosition(
+            Symbol: "AAPL",
+            Quantity: 100,
+            AverageCostBasis: 150m,
+            UnrealisedPnl: 0m,
+            RealisedPnl: 0m);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<Meridian.Execution.Models.IPortfolioState>(new LiveMarkTestPortfolioState(position));
+        });
+
+        var client = app.GetTestClient();
+        using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
+
+        var row = trading.RootElement.GetProperty("positions").EnumerateArray().First();
+        row.GetProperty("markPrice").GetString().Should().Be("—");
+        row.GetProperty("exposure").GetString().Should().Be("—");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_PortfolioPayload_WithLiveQuote_SurfacesLiveMarkAndExposure()
+    {
+        var publisher = new Meridian.Tests.TestHelpers.TestMarketEventPublisher();
+        var quotes = new Meridian.Domain.Collectors.QuoteCollector(publisher);
+        quotes.OnQuote(new Meridian.Contracts.Domain.Models.MarketQuoteUpdate(
+            Timestamp: DateTimeOffset.UtcNow,
+            Symbol: "MSFT",
+            BidPrice: 419.50m,
+            BidSize: 200,
+            AskPrice: 420.50m,
+            AskSize: 200,
+            StreamId: "TEST",
+            Venue: "TEST"));
+
+        var position = new Meridian.Execution.Models.ExecutionPosition(
+            Symbol: "MSFT",
+            Quantity: 50,
+            AverageCostBasis: 400m,
+            UnrealisedPnl: 0m,
+            RealisedPnl: 0m);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<Meridian.Execution.Models.IPortfolioState>(new LiveMarkTestPortfolioState(position));
+            services.AddSingleton(quotes);
+        });
+
+        var client = app.GetTestClient();
+        using var portfolio = await ReadJsonAsync(client, "/api/workstation/portfolio");
+
+        var row = portfolio.RootElement.GetProperty("positions").EnumerateArray().First();
+        // Mid of (419.50, 420.50) = 420.00
+        row.GetProperty("markPrice").GetString().Should().Be("420.00");
+        // (420 - 400) * 50 = +1,000 → "+$1K"
+        row.GetProperty("unrealizedPnl").GetString().Should().Be("+$1K");
+        // |50 * 420| = 21,000 → "+$21K"
+        row.GetProperty("exposure").GetString().Should().Be("+$21K");
+
+        var risk = portfolio.RootElement.GetProperty("risk");
+        risk.GetProperty("grossExposure").GetString().Should().Be("+$21K");
+    }
+
+    private sealed class LiveMarkTestPortfolioState : Meridian.Execution.Models.IPortfolioState
+    {
+        public LiveMarkTestPortfolioState(params Meridian.Execution.Models.ExecutionPosition[] positions)
+        {
+            Positions = positions.ToDictionary(
+                position => position.Symbol,
+                position => (Meridian.Execution.Sdk.IPosition)position,
+                StringComparer.OrdinalIgnoreCase);
+            UnrealisedPnl = positions.Sum(static p => p.UnrealisedPnl);
+            RealisedPnl = positions.Sum(static p => p.RealisedPnl);
+        }
+
+        public decimal Cash => 100_000m;
+        public decimal PortfolioValue => 250_000m;
+        public decimal UnrealisedPnl { get; }
+        public decimal RealisedPnl { get; }
+        public IReadOnlyDictionary<string, Meridian.Execution.Sdk.IPosition> Positions { get; }
+    }
+
     private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
