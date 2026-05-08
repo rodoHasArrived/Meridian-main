@@ -216,7 +216,8 @@ public sealed class PaperSessionPersistenceService
             LastFillAt: session.FillHistory.Count > 0
                 ? session.FillHistory.Max(static fill => fill.Timestamp)
                 : null,
-            LastOrderUpdatedAt: ResolveLastOrderUpdatedAt(session.OrderHistory));
+            LastOrderUpdatedAt: ResolveLastOrderUpdatedAt(session.OrderHistory),
+            FillHistory: session.FillHistory.ToArray());
     }
 
     /// <summary>Returns the portfolio state for a live session, or null.</summary>
@@ -239,6 +240,99 @@ public sealed class PaperSessionPersistenceService
 
         // For active sessions return the live ledger; for closed sessions the reconstructed one.
         return session.Portfolio?.Ledger ?? session.ReconstructedLedger;
+    }
+
+    /// <summary>
+    /// Returns the live mutable <see cref="PaperTradingPortfolio"/> for <paramref name="sessionId"/>.
+    /// Intended for test-harness use-cases that need to inject fills directly.
+    /// Prefer <see cref="RecordPaperFillAsync"/> for production fill recording.
+    /// Returns <see langword="null"/> when the session does not exist or is closed.
+    /// </summary>
+    public PaperTradingPortfolio? GetLivePortfolio(string sessionId)
+    {
+        if (!_sessions.TryGetValue(sessionId, out var session) || !session.IsActive)
+            return null;
+
+        return session.Portfolio;
+    }
+
+    /// <summary>
+    /// Converts a lightweight <see cref="ExecutionFill"/> into an <see cref="ExecutionReport"/>
+    /// and records it against the session via <see cref="RecordFillAsync"/>.
+    /// </summary>
+    public async Task RecordPaperFillAsync(
+        string sessionId,
+        ExecutionFill fill,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(fill);
+
+        var report = new ExecutionReport
+        {
+            OrderId = $"paper-{Guid.NewGuid():N}",
+            ReportType = ExecutionReportType.Fill,
+            Symbol = fill.Symbol,
+            Side = fill.Quantity >= 0m ? OrderSide.Buy : OrderSide.Sell,
+            OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
+            OrderQuantity = Math.Abs(fill.Quantity),
+            FilledQuantity = Math.Abs(fill.Quantity),
+            FillPrice = fill.FillPrice,
+            Timestamp = fill.FilledAt
+        };
+
+        await RecordFillAsync(sessionId, report, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Verifies that the current session portfolio matches the replayed fill-log state,
+    /// optionally asserting that at least <paramref name="expectedFillCount"/> fills and
+    /// <paramref name="expectedOrderCount"/> orders were persisted.
+    /// When the counts do not match a mismatch reason is added to the result.
+    /// </summary>
+    public async Task<PaperSessionReplayVerificationDto?> VerifyReplayAsync(
+        string sessionId,
+        int? expectedFillCount = null,
+        int? expectedOrderCount = null,
+        CancellationToken ct = default)
+    {
+        var result = await VerifyReplayAsync(sessionId, ct).ConfigureAwait(false);
+        if (result is null)
+            return null;
+
+        // If the caller specified expected counts we do an additional assertion pass.
+        if (expectedFillCount.HasValue && result.ComparedFillCount < expectedFillCount.Value)
+        {
+            var reasons = result.MismatchReasons is IList<string> mutable
+                ? mutable
+                : result.MismatchReasons.ToList();
+
+            reasons.Add(
+                $"fill-count-mismatch: expected>={expectedFillCount.Value}, actual={result.ComparedFillCount}");
+
+            result = result with
+            {
+                IsConsistent = false,
+                MismatchReasons = (IReadOnlyList<string>)reasons
+            };
+        }
+
+        if (expectedOrderCount.HasValue && result.ComparedOrderCount < expectedOrderCount.Value)
+        {
+            var reasons = result.MismatchReasons is IList<string> mutable2
+                ? mutable2
+                : result.MismatchReasons.ToList();
+
+            reasons.Add(
+                $"order-count-mismatch: expected>={expectedOrderCount.Value}, actual={result.ComparedOrderCount}");
+
+            result = result with
+            {
+                IsConsistent = false,
+                MismatchReasons = (IReadOnlyList<string>)reasons
+            };
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -872,7 +966,8 @@ public sealed record PaperSessionDetailDto(
     int FillCount,
     int LedgerEntryCount,
     DateTimeOffset? LastFillAt,
-    DateTimeOffset? LastOrderUpdatedAt);
+    DateTimeOffset? LastOrderUpdatedAt,
+    IReadOnlyList<ExecutionReport>? FillHistory = null);
 
 /// <summary>Portfolio snapshot DTO for session detail.</summary>
 public sealed record ExecutionPortfolioSnapshotDto(
@@ -881,7 +976,11 @@ public sealed record ExecutionPortfolioSnapshotDto(
     decimal UnrealisedPnl,
     decimal RealisedPnl,
     IReadOnlyList<ExecutionPosition> Positions,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf)
+{
+    /// <summary>Alias for <see cref="Cash"/> using the naming used in operator-facing surfaces.</summary>
+    public decimal CashBalance => Cash;
+}
 
 /// <summary>
 /// Result of replaying a paper session and comparing the replayed state to the
@@ -901,4 +1000,17 @@ public sealed record PaperSessionReplayVerificationDto(
     int ComparedLedgerEntryCount,
     DateTimeOffset? LastPersistedFillAt,
     DateTimeOffset? LastPersistedOrderUpdateAt,
-    string? VerificationAuditId);
+    string? VerificationAuditId)
+{
+    /// <summary>Alias for <see cref="ComparedFillCount"/> using the paper-cockpit acceptance naming.</summary>
+    public int VerifiedFilledCount => ComparedFillCount;
+
+    /// <summary>Alias for <see cref="ComparedOrderCount"/> using the paper-cockpit acceptance naming.</summary>
+    public int VerifiedOrderCount => ComparedOrderCount;
+
+    /// <summary>Alias for <see cref="ComparedLedgerEntryCount"/> using the paper-cockpit acceptance naming.</summary>
+    public int VerifiedLedgerEntriesCount => ComparedLedgerEntryCount;
+
+    /// <summary>Alias for <see cref="VerifiedAt"/> using the paper-cockpit acceptance naming.</summary>
+    public DateTimeOffset LastVerifiedAt => VerifiedAt;
+}

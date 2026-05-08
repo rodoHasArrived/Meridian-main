@@ -21,7 +21,7 @@ public sealed class Wave2OperatorInboxAcceptanceTests
     public async Task OperatorInbox_AggregatesReadinessWorkItems()
     {
         // Arrange: Create readiness service
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .BuildServiceProvider();
         var readinessService = new TradingOperatorReadinessService(
             provider,
@@ -45,7 +45,7 @@ public sealed class Wave2OperatorInboxAcceptanceTests
     public async Task OperatorInbox_PaperSessionMissingIsBlockingWorkItem()
     {
         // Arrange
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .BuildServiceProvider();
         var readinessService = new TradingOperatorReadinessService(
             provider,
@@ -65,8 +65,8 @@ public sealed class Wave2OperatorInboxAcceptanceTests
     public async Task OperatorInbox_ReplayVerificationRequiredShowsAsWarning()
     {
         // Arrange: Session exists but replay not verified
-        using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_ReplayVerificationRequiredShowsAsWarning));
-        using var provider = new ServiceCollection()
+        await using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_ReplayVerificationRequiredShowsAsWarning));
+        await using var provider = new ServiceCollection()
             .AddSingleton(new PaperSessionPersistenceService(
                 NullLogger<PaperSessionPersistenceService>.Instance,
                 auditTrail: auditTrail))
@@ -96,10 +96,10 @@ public sealed class Wave2OperatorInboxAcceptanceTests
     public async Task OperatorInbox_ExecutionControlWorkItemsHaveAuditReferences()
     {
         // Arrange: Create readiness with audit trail
-        using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_ExecutionControlWorkItemsHaveAuditReferences));
+        await using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_ExecutionControlWorkItemsHaveAuditReferences));
         var controlService = new ExecutionOperatorControlService();
 
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .AddSingleton(auditTrail)
             .AddSingleton(controlService)
             .BuildServiceProvider();
@@ -134,8 +134,8 @@ public sealed class Wave2OperatorInboxAcceptanceTests
     public async Task OperatorInbox_WorkItemsHaveNavigationHints()
     {
         // Arrange
-        using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_WorkItemsHaveNavigationHints));
-        using var provider = new ServiceCollection()
+        await using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_WorkItemsHaveNavigationHints));
+        await using var provider = new ServiceCollection()
             .AddSingleton(new PaperSessionPersistenceService(
                 NullLogger<PaperSessionPersistenceService>.Instance,
                 auditTrail: auditTrail))
@@ -168,7 +168,7 @@ public sealed class Wave2OperatorInboxAcceptanceTests
         // Arrange: Create readiness with fund account context
         var fundAccountId = Guid.NewGuid();
 
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .BuildServiceProvider();
         var readinessService = new TradingOperatorReadinessService(
             provider,
@@ -187,7 +187,7 @@ public sealed class Wave2OperatorInboxAcceptanceTests
     public async Task OperatorInbox_OverallStatusReflectsBlockingGates()
     {
         // Arrange: No sessions or verification
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .BuildServiceProvider();
         var readinessService = new TradingOperatorReadinessService(
             provider,
@@ -209,8 +209,8 @@ public sealed class Wave2OperatorInboxAcceptanceTests
     public async Task OperatorInbox_OverallStatusReviewWhenWarningsExist()
     {
         // Arrange: Session exists but unverified (warning state)
-        using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_OverallStatusReviewWhenWarningsExist));
-        using var provider = new ServiceCollection()
+        await using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_OverallStatusReviewWhenWarningsExist));
+        await using var provider = new ServiceCollection()
             .AddSingleton(new PaperSessionPersistenceService(
                 NullLogger<PaperSessionPersistenceService>.Instance,
                 auditTrail: auditTrail))
@@ -240,7 +240,7 @@ public sealed class Wave2OperatorInboxAcceptanceTests
     public async Task OperatorInbox_ReadyStatusWhenAllGatesPassed()
     {
         // Arrange: Session with verified replay
-        using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_ReadyStatusWhenAllGatesPassed));
+        await using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_ReadyStatusWhenAllGatesPassed));
         var sessionService = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
@@ -258,14 +258,13 @@ public sealed class Wave2OperatorInboxAcceptanceTests
             FilledAt = DateTimeOffset.UtcNow,
             FillType = FillType.Trade
         };
-        var sessionDetail = sessionService.GetSession(session.SessionId);
-        sessionDetail?.Portfolio.ApplyFill(fill);
+        await sessionService.RecordPaperFillAsync(session.SessionId, fill);
 
         var replay = await sessionService.VerifyReplayAsync(
             session.SessionId,
             expectedFillCount: 1);
 
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .AddSingleton(sessionService)
             .AddSingleton(auditTrail)
             .BuildServiceProvider();
@@ -288,7 +287,7 @@ public sealed class Wave2OperatorInboxAcceptanceTests
     public async Task OperatorInbox_EvidenceCompletenessScoreAvailable()
     {
         // Arrange
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .BuildServiceProvider();
         var readinessService = new TradingOperatorReadinessService(
             provider,
@@ -308,7 +307,7 @@ public sealed class Wave2OperatorInboxAcceptanceTests
     public async Task OperatorInbox_AcceptanceGatesAreDocumented()
     {
         // Arrange
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .BuildServiceProvider();
         var readinessService = new TradingOperatorReadinessService(
             provider,
@@ -330,7 +329,7 @@ public sealed class Wave2OperatorInboxAcceptanceTests
     public async Task OperatorInbox_WorkItemIDsAreStableAcrossCalls()
     {
         // Arrange
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .BuildServiceProvider();
         var readinessService = new TradingOperatorReadinessService(
             provider,
@@ -355,7 +354,7 @@ public sealed class Wave2OperatorInboxAcceptanceTests
     public async Task OperatorInbox_NoRandomIDChurn()
     {
         // Arrange: Session that should produce same work item IDs
-        using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_NoRandomIDChurn));
+        await using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_NoRandomIDChurn));
         var sessionService = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
@@ -363,7 +362,7 @@ public sealed class Wave2OperatorInboxAcceptanceTests
         var session = await sessionService.CreateSessionAsync(
             new CreatePaperSessionDto("strat-churn", "Churn Test", 100_000m));
 
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .AddSingleton(sessionService)
             .AddSingleton(auditTrail)
             .BuildServiceProvider();
@@ -391,7 +390,7 @@ public sealed class Wave2OperatorInboxAcceptanceTests
     public async Task OperatorInbox_BoundedToActionableItems()
     {
         // Arrange: Ready session (should not appear in inbox)
-        using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_BoundedToActionableItems));
+        await using var auditTrail = CreateAuditTrail(nameof(OperatorInbox_BoundedToActionableItems));
         var sessionService = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
@@ -408,11 +407,11 @@ public sealed class Wave2OperatorInboxAcceptanceTests
             FilledAt = DateTimeOffset.UtcNow,
             FillType = FillType.Trade
         };
-        sessionService.GetSession(session.SessionId)?.Portfolio.ApplyFill(fill);
+        await sessionService.RecordPaperFillAsync(session.SessionId, fill);
 
         var replay = await sessionService.VerifyReplayAsync(session.SessionId, expectedFillCount: 1);
 
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .AddSingleton(sessionService)
             .AddSingleton(auditTrail)
             .BuildServiceProvider();
@@ -426,7 +425,7 @@ public sealed class Wave2OperatorInboxAcceptanceTests
         // Assert: Only actionable items in queue (not every status)
         // Ready items should not generate work items
         readiness.WorkItems.Should().AllSatisfy(item =>
-            item.Tone.Should().NotBe(OperatorWorkItemToneDto.Ready,
+            item.Tone.Should().NotBe(OperatorWorkItemToneDto.Info,
                 "only blocking/warning items should be work items"));
     }
 
