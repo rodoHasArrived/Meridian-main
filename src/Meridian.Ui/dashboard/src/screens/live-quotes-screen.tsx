@@ -1,13 +1,27 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowDown, ArrowUp, ListPlus, LineChart, RefreshCw, Search } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowDown,
+  ArrowUp,
+  CheckCircle2,
+  ListPlus,
+  LineChart,
+  RefreshCw,
+  Search,
+  Send,
+  TrendingUp
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getLiveOrderbook, getLiveQuote, getLiveTrades } from "@/lib/api";
+import { Select } from "@/components/ui/select";
+import { getLiveOrderbook, getLiveQuote, getLiveTrades, submitOrder } from "@/lib/api";
 import type {
   OrderBookResponse,
+  OrderResult,
+  OrderSubmitRequest,
   QuotesResponse,
   TradeDataResponse,
   TradesResponse
@@ -54,6 +68,7 @@ export function LiveQuotesScreen() {
   const [orderbook, setOrderbook] = useState<LoadState<OrderBookResponse>>({ data: null, error: null });
   const [refreshing, setRefreshing] = useState(false);
   const inFlightRef = useRef(false);
+  const [ticket, setTicket] = useState<QuickTicketState>(initialQuickTicketState);
 
   const fetchAll = useCallback(async (symbol: string) => {
     if (inFlightRef.current) return;
@@ -95,8 +110,76 @@ export function LiveQuotesScreen() {
     setTrades({ data: null, error: null });
     setOrderbook({ data: null, error: null });
     setActiveSymbol(next);
+    setTicket(initialQuickTicketState);
     setSearchParams({ symbol: next }, { replace: true });
   };
+
+  const seedTicket = useCallback((side: "Buy" | "Sell", price: number) => {
+    setTicket((current) => ({
+      ...current,
+      side,
+      type: "Limit",
+      limitPrice: formatTicketPrice(price),
+      phase: "idle",
+      message: null,
+      orderId: null
+    }));
+  }, []);
+
+  const updateTicketField = useCallback(<K extends keyof QuickTicketForm>(field: K, value: QuickTicketForm[K]) => {
+    setTicket((current) => ({
+      ...current,
+      [field]: value,
+      phase: current.phase === "submitted" ? "idle" : current.phase,
+      message: current.phase === "error" ? null : current.message
+    }));
+  }, []);
+
+  const submitTicket = useCallback(async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!activeSymbol) return;
+
+    const validation = validateQuickTicket(ticket);
+    if (validation) {
+      setTicket((current) => ({ ...current, phase: "error", message: validation, orderId: null }));
+      return;
+    }
+
+    const request: OrderSubmitRequest = {
+      symbol: activeSymbol,
+      side: ticket.side,
+      type: ticket.type,
+      quantity: Number(ticket.quantity),
+      limitPrice: ticket.type === "Market" ? null : Number(ticket.limitPrice)
+    };
+
+    setTicket((current) => ({ ...current, phase: "submitting", message: null, orderId: null }));
+    try {
+      const result: OrderResult = await submitOrder(request);
+      if (result.success) {
+        setTicket((current) => ({
+          ...current,
+          phase: "submitted",
+          message: result.orderId ? `Order ${result.orderId} accepted.` : "Order accepted.",
+          orderId: result.orderId
+        }));
+      } else {
+        setTicket((current) => ({
+          ...current,
+          phase: "error",
+          message: result.reason ?? "Order rejected.",
+          orderId: null
+        }));
+      }
+    } catch (err) {
+      setTicket((current) => ({
+        ...current,
+        phase: "error",
+        message: (err as Error)?.message ?? "Order submission failed.",
+        orderId: null
+      }));
+    }
+  }, [activeSymbol, ticket]);
 
   const quoteRow = quote.data?.quote;
   const stale = orderbook.data?.isStale === true;
@@ -173,7 +256,7 @@ export function LiveQuotesScreen() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Best bid / offer</CardTitle>
-              <CardDescription>Top-of-book quote and spread</CardDescription>
+              <CardDescription>Click bid or ask to seed the trade ticket</CardDescription>
             </CardHeader>
             <CardContent>
               {quote.error && !quote.data ? (
@@ -188,6 +271,8 @@ export function LiveQuotesScreen() {
                     size={quoteRow.bidSize}
                     tone="positive"
                     icon={<ArrowDown className="h-4 w-4" aria-hidden="true" />}
+                    onSeed={() => seedTicket("Sell", quoteRow.bidPrice)}
+                    seedLabel={`Sell ${activeSymbol} at bid ${formatPrice(quoteRow.bidPrice)}`}
                   />
                   <BboPanel
                     label="Ask"
@@ -195,6 +280,8 @@ export function LiveQuotesScreen() {
                     size={quoteRow.askSize}
                     tone="negative"
                     icon={<ArrowUp className="h-4 w-4" aria-hidden="true" />}
+                    onSeed={() => seedTicket("Buy", quoteRow.askPrice)}
+                    seedLabel={`Buy ${activeSymbol} at ask ${formatPrice(quoteRow.askPrice)}`}
                   />
                   <MetricRow label="Mid" value={formatPrice(quoteRow.midPrice)} />
                   <MetricRow label="Spread" value={formatPrice(quoteRow.spread)} />
@@ -204,6 +291,13 @@ export function LiveQuotesScreen() {
               )}
             </CardContent>
           </Card>
+
+          <QuickTradeCard
+            symbol={activeSymbol}
+            ticket={ticket}
+            onFieldChange={updateTicketField}
+            onSubmit={submitTicket}
+          />
 
           <Card>
             <CardHeader>
@@ -216,12 +310,17 @@ export function LiveQuotesScreen() {
               ) : !orderbook.data || (orderbook.data.bids.length === 0 && orderbook.data.asks.length === 0) ? (
                 <p className="text-sm text-muted-foreground">No depth data available for {activeSymbol}.</p>
               ) : (
-                <DepthLadder data={orderbook.data} />
+                <DepthLadder
+                  data={orderbook.data}
+                  onSeedBuy={(price) => seedTicket("Buy", price)}
+                  onSeedSell={(price) => seedTicket("Sell", price)}
+                  symbol={activeSymbol}
+                />
               )}
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-2">
+          <Card>
             <CardHeader>
               <CardTitle className="text-base">Recent trades</CardTitle>
               <CardDescription>Last {tradeRows.length} prints</CardDescription>
@@ -257,25 +356,57 @@ interface BboPanelProps {
   size: number;
   tone: "positive" | "negative";
   icon: React.ReactNode;
+  onSeed?: () => void;
+  seedLabel?: string;
 }
 
-function BboPanel({ label, price, size, tone, icon }: BboPanelProps) {
+function BboPanel({ label, price, size, tone, icon, onSeed, seedLabel }: BboPanelProps) {
   const toneClass = tone === "positive"
     ? "border-positive/30 bg-positive/5 text-positive"
     : "border-danger/30 bg-danger/5 text-danger";
+  const interactive = typeof onSeed === "function" && Number.isFinite(price) && price > 0;
+  const interactiveClass = interactive
+    ? "cursor-pointer hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    : "";
+
+  if (!interactive) {
+    return (
+      <div className={`rounded-md border px-3 py-3 text-left ${toneClass}`}>
+        <div className="flex items-center gap-1.5 text-xs uppercase tracking-wide">
+          {icon}
+          <span>{label}</span>
+        </div>
+        <div className="mt-2 font-mono text-2xl text-foreground">{formatPrice(price)}</div>
+        <div className="mt-1 text-xs text-muted-foreground">{formatSize(size)} shares</div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`rounded-md border px-3 py-3 ${toneClass}`}>
+    <button
+      type="button"
+      onClick={onSeed}
+      aria-label={seedLabel ?? `${label} ${formatPrice(price)}`}
+      className={`rounded-md border px-3 py-3 text-left transition-colors ${toneClass} ${interactiveClass}`}
+    >
       <div className="flex items-center gap-1.5 text-xs uppercase tracking-wide">
         {icon}
         <span>{label}</span>
       </div>
       <div className="mt-2 font-mono text-2xl text-foreground">{formatPrice(price)}</div>
       <div className="mt-1 text-xs text-muted-foreground">{formatSize(size)} shares</div>
-    </div>
+    </button>
   );
 }
 
-function DepthLadder({ data }: { data: OrderBookResponse }) {
+interface DepthLadderProps {
+  data: OrderBookResponse;
+  onSeedBuy?: (price: number) => void;
+  onSeedSell?: (price: number) => void;
+  symbol?: string;
+}
+
+function DepthLadder({ data, onSeedBuy, onSeedSell, symbol }: DepthLadderProps) {
   const maxSize = Math.max(
     1,
     ...data.bids.map((l) => l.size),
@@ -289,7 +420,13 @@ function DepthLadder({ data }: { data: OrderBookResponse }) {
           <span>Price</span>
         </div>
         {data.bids.map((level) => (
-          <div key={`bid-${level.level}`} className="relative flex justify-between rounded-sm px-2 py-1">
+          <button
+            type="button"
+            key={`bid-${level.level}`}
+            onClick={() => onSeedSell?.(level.price)}
+            aria-label={symbol ? `Sell ${symbol} at ${formatPrice(level.price)}` : `Sell at ${formatPrice(level.price)}`}
+            className="relative flex w-full justify-between rounded-sm px-2 py-1 text-left transition-colors hover:bg-positive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          >
             <span
               aria-hidden="true"
               className="absolute inset-y-0 right-0 rounded-sm bg-positive/15"
@@ -297,7 +434,7 @@ function DepthLadder({ data }: { data: OrderBookResponse }) {
             />
             <span className="relative">{formatSize(level.size)}</span>
             <span className="relative text-positive">{formatPrice(level.price)}</span>
-          </div>
+          </button>
         ))}
       </div>
       <div>
@@ -306,7 +443,13 @@ function DepthLadder({ data }: { data: OrderBookResponse }) {
           <span>Ask size</span>
         </div>
         {data.asks.map((level) => (
-          <div key={`ask-${level.level}`} className="relative flex justify-between rounded-sm px-2 py-1">
+          <button
+            type="button"
+            key={`ask-${level.level}`}
+            onClick={() => onSeedBuy?.(level.price)}
+            aria-label={symbol ? `Buy ${symbol} at ${formatPrice(level.price)}` : `Buy at ${formatPrice(level.price)}`}
+            className="relative flex w-full justify-between rounded-sm px-2 py-1 text-left transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          >
             <span
               aria-hidden="true"
               className="absolute inset-y-0 left-0 rounded-sm bg-danger/15"
@@ -314,10 +457,192 @@ function DepthLadder({ data }: { data: OrderBookResponse }) {
             />
             <span className="relative text-danger">{formatPrice(level.price)}</span>
             <span className="relative">{formatSize(level.size)}</span>
-          </div>
+          </button>
         ))}
       </div>
     </div>
+  );
+}
+
+type QuickTicketPhase = "idle" | "submitting" | "submitted" | "error";
+
+interface QuickTicketForm {
+  side: "Buy" | "Sell";
+  type: "Market" | "Limit";
+  quantity: string;
+  limitPrice: string;
+}
+
+interface QuickTicketState extends QuickTicketForm {
+  phase: QuickTicketPhase;
+  message: string | null;
+  orderId: string | null;
+}
+
+const initialQuickTicketState: QuickTicketState = {
+  side: "Buy",
+  type: "Limit",
+  quantity: "",
+  limitPrice: "",
+  phase: "idle",
+  message: null,
+  orderId: null
+};
+
+function formatTicketPrice(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return "";
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+    useGrouping: false
+  });
+}
+
+export function validateQuickTicket(state: QuickTicketForm): string | null {
+  const qty = Number(state.quantity);
+  if (!state.quantity || !Number.isFinite(qty) || qty <= 0) {
+    return "Enter a quantity greater than zero.";
+  }
+  if (!Number.isInteger(qty)) {
+    return "Quantity must be a whole number of shares.";
+  }
+  if (state.type === "Limit") {
+    const price = Number(state.limitPrice);
+    if (!state.limitPrice || !Number.isFinite(price) || price <= 0) {
+      return "Enter a limit price greater than zero.";
+    }
+  }
+  return null;
+}
+
+interface QuickTradeCardProps {
+  symbol: string;
+  ticket: QuickTicketState;
+  onFieldChange: <K extends keyof QuickTicketForm>(field: K, value: QuickTicketForm[K]) => void;
+  onSubmit: (event: React.FormEvent) => void;
+}
+
+function QuickTradeCard({ symbol, ticket, onFieldChange, onSubmit }: QuickTradeCardProps) {
+  const submitting = ticket.phase === "submitting";
+  const submitted = ticket.phase === "submitted";
+  const errored = ticket.phase === "error";
+  const sideTone = ticket.side === "Buy"
+    ? "bg-positive/10 text-positive border-positive/30"
+    : "bg-danger/10 text-danger border-danger/30";
+  const submitLabel = submitting
+    ? "Submitting…"
+    : `${ticket.side} ${symbol}${ticket.type === "Limit" && ticket.limitPrice ? ` @ ${ticket.limitPrice}` : ""}`;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <TrendingUp className="h-4 w-4 text-primary" aria-hidden="true" />
+          Quick trade
+        </CardTitle>
+        <CardDescription>
+          Submit a paper or live order for {symbol}. Click the bid or ask above to seed the price.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={onSubmit} className="space-y-3" aria-describedby="quick-ticket-status">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="quick-ticket-side" className="text-xs uppercase tracking-wide text-muted-foreground">Side</label>
+              <Select
+                id="quick-ticket-side"
+                value={ticket.side}
+                onChange={(event) => onFieldChange("side", event.target.value as "Buy" | "Sell")}
+                className={sideTone}
+                aria-label="Order side"
+              >
+                <option value="Buy">Buy</option>
+                <option value="Sell">Sell</option>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="quick-ticket-type" className="text-xs uppercase tracking-wide text-muted-foreground">Type</label>
+              <Select
+                id="quick-ticket-type"
+                value={ticket.type}
+                onChange={(event) => onFieldChange("type", event.target.value as "Market" | "Limit")}
+                aria-label="Order type"
+              >
+                <option value="Limit">Limit</option>
+                <option value="Market">Market</option>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="quick-ticket-quantity" className="text-xs uppercase tracking-wide text-muted-foreground">Quantity</label>
+              <Input
+                id="quick-ticket-quantity"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                step={1}
+                placeholder="100"
+                value={ticket.quantity}
+                onChange={(event) => onFieldChange("quantity", event.target.value)}
+                autoComplete="off"
+                spellCheck={false}
+                aria-label="Order quantity in shares"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="quick-ticket-price" className="text-xs uppercase tracking-wide text-muted-foreground">
+                {ticket.type === "Market" ? "Price (market)" : "Limit price"}
+              </label>
+              <Input
+                id="quick-ticket-price"
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step="0.01"
+                placeholder={ticket.type === "Market" ? "Best available" : "0.00"}
+                value={ticket.type === "Market" ? "" : ticket.limitPrice}
+                onChange={(event) => onFieldChange("limitPrice", event.target.value)}
+                disabled={ticket.type === "Market"}
+                autoComplete="off"
+                spellCheck={false}
+                aria-label="Limit price"
+              />
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            variant={ticket.side === "Buy" ? "default" : "destructive"}
+            className="w-full"
+            disabled={submitting}
+            aria-label={`Submit ${ticket.side.toLowerCase()} order for ${symbol}`}
+          >
+            <Send className="h-4 w-4" aria-hidden="true" />
+            <span className="ml-1.5">{submitLabel}</span>
+          </Button>
+
+          <div id="quick-ticket-status" aria-live="polite" className="min-h-[1.25rem] text-xs">
+            {submitted && ticket.message ? (
+              <span className="flex items-center gap-1.5 text-positive">
+                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                {ticket.message}
+              </span>
+            ) : errored && ticket.message ? (
+              <span className="flex items-center gap-1.5 text-danger">
+                <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                {ticket.message}
+              </span>
+            ) : (
+              <span className="text-muted-foreground">
+                Orders route through Meridian's pre-trade risk and execution controls.
+              </span>
+            )}
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 

@@ -12,6 +12,7 @@ using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Infrastructure.Contracts;
+using Meridian.QuantScript;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
@@ -22,6 +23,7 @@ using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
@@ -168,6 +170,14 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(
                 sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>()));
+
+        // Quant Lab — opt-in via configuration "QuantLab:Enabled". Off by default because the
+        // engine compiles and executes arbitrary C# in-process; enable only on a trusted host.
+        var quantLabEnabled = builder.Configuration.GetValue<bool>("QuantLab:Enabled");
+        if (quantLabEnabled)
+        {
+            builder.Services.AddMeridianQuantScript();
+        }
 
         // Register OpenAPI/Swagger services
         builder.Services.AddEndpointsApiExplorer();

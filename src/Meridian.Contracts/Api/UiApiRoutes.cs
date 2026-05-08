@@ -528,4 +528,9 @@ public static class UiApiRoutes
     public const string Credentials = "/api/credentials";
     public const string CredentialByProvider = "/api/credentials/{provider}";
     public const string CredentialTest = "/api/credentials/{provider}/test";
+
+    // Quant Lab endpoints (gated behind QuantLab:Enabled host configuration)
+    public const string QuantRun = "/api/quant/run";
+    public const string QuantParameters = "/api/quant/parameters";
+    public const string QuantTemplates = "/api/quant/templates";
 }

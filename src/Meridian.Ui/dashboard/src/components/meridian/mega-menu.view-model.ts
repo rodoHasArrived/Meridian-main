@@ -71,7 +71,8 @@ const MENU_SECTIONS: MegaMenuSection[] = [
     links: [
       { label: "Backtest Runs", route: "/strategy", description: "Strategy backtest results" },
       { label: "Promotions", route: "/strategy/promotions", description: "Paper-to-live promotions" },
-      { label: "Research", route: "/strategy/research", description: "Signal research workspace" }
+      { label: "Research", route: "/strategy/research", description: "Signal research workspace" },
+      { label: "Quant Lab", route: "/strategy/quant-lab", description: "Run C# scripts with plots and metrics" }
     ]
   },
   {
