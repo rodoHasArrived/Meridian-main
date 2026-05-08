@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, LineChart, RefreshCw, Search } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { ArrowDown, ArrowUp, ListPlus, LineChart, RefreshCw, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,8 +45,10 @@ function formatTimestamp(iso: string | null | undefined): string {
 }
 
 export function LiveQuotesScreen() {
-  const [symbolInput, setSymbolInput] = useState("");
-  const [activeSymbol, setActiveSymbol] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialSymbol = (searchParams.get("symbol") ?? "").trim().toUpperCase();
+  const [symbolInput, setSymbolInput] = useState(initialSymbol);
+  const [activeSymbol, setActiveSymbol] = useState<string | null>(initialSymbol || null);
   const [quote, setQuote] = useState<LoadState<QuotesResponse>>({ data: null, error: null });
   const [trades, setTrades] = useState<LoadState<TradesResponse>>({ data: null, error: null });
   const [orderbook, setOrderbook] = useState<LoadState<OrderBookResponse>>({ data: null, error: null });
@@ -92,6 +95,7 @@ export function LiveQuotesScreen() {
     setTrades({ data: null, error: null });
     setOrderbook({ data: null, error: null });
     setActiveSymbol(next);
+    setSearchParams({ symbol: next }, { replace: true });
   };
 
   const quoteRow = quote.data?.quote;
@@ -127,6 +131,12 @@ export function LiveQuotesScreen() {
             />
             <div className="flex items-center gap-2">
               <Button type="submit" variant="default">View quote</Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/data/watchlist" aria-label="Open symbol watchlist">
+                  <ListPlus className="h-4 w-4" aria-hidden="true" />
+                  <span className="ml-1.5">Watchlist</span>
+                </Link>
+              </Button>
               {activeSymbol ? (
                 <Button
                   type="button"

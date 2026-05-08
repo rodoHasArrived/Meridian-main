@@ -87,6 +87,12 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
               <span className="ml-1.5">Live quotes</span>
             </Link>
           </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/data/watchlist" aria-label="Open symbol watchlist">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              <span className="ml-1.5">Watchlist</span>
+            </Link>
+          </Button>
         </div>
       </section>
 
