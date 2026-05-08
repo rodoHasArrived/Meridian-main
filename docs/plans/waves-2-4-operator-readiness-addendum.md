@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, Execution, Governance, and Platform contributors
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-05-08
 **Status:** Active addendum - converts the canonical Waves 2-4 roadmap into concrete workstreams with ownership lanes, dependency rules, and exit criteria
 
 ---
@@ -116,7 +116,7 @@ It should be read with:
 ## Cross-Wave Dependency Rules
 
 1. Wave 1 trust-gate evidence stays green before any Wave 2-4 readiness claim is promoted.
-2. Wave 2 durable promotion traceability is a prerequisite for Wave 3 continuity and Wave 4 governance handoff.
+2. Wave 2 durable promotion traceability is a prerequisite for **Wave 3 exit claims** and Wave 4 governance handoff; limited Wave 3 pre-work may proceed in parallel when it stays release-neutral and does not bypass DK2 entry/exit criteria.
 3. Wave 3 shared run continuity must become the system of record before any client-specific shell work is allowed to widen; new operator UI scope belongs in the browser dashboard while WPF remains retained support.
 4. Brokerage and custodian sync must land through execution and fund-account seams before governance can claim account-freshness or external-state continuity.
 5. Governance casework must move out of endpoint-local or in-memory storage before report publishing and exception-SLA claims are treated as durable.
@@ -125,6 +125,8 @@ It should be read with:
 8. Fallback and fixture payloads may remain for local development, but they are not acceptable as the operator path for wave exit criteria.
 9. Desktop workflow automation must use canonical workspace tags, confirmed page-readiness markers, deterministic restore/build inputs, local single-instance behavior, diagnostic artifacts, and single-commit screenshot publication so screenshot/manual evidence does not drift from the shell routes operators actually use.
 10. Operator-inbox run review-packet aggregation must stay bounded to actionable warning/critical latest-run blockers so the queue remains a triage surface, not a second run browser.
+11. This addendum is a technical dependency plan, not an owner-sprint assignment artifact; scheduling can vary by lane while dependency and gate constraints remain fixed.
+12. Detailed W3/W4 pre-work definition is mandatory even during Wave 2/DK2 execution windows so downstream work can start without contract drift.
 
 ---
 
@@ -405,9 +407,17 @@ These records establish the minimum acceptance payload for Wave 4 readiness proo
 11. W4-C Fund-Operations Workspace Consolidation
 12. W4-D Operator Inbox v2 and Remediation Playbooks
 
+### Controlled parallel pre-work allowance
+
+Limited parallel W3 pre-work is allowed before DK2 is fully green when all constraints below hold:
+
+- scope is restricted to contract-first shaping, projection extraction, read-only continuity seams, and deterministic scenario harnesses
+- work items are explicitly tagged as `release-neutral pre-work` and cannot be used for Wave 3/Wave 4 completion claims
+- no pre-work item may change DK2 gate definitions, bypass reconciliation calibration/sign-off requirements, or weaken promotion/export parity checks
+- each parallel item must keep rollback-safe boundaries and document unresolved DK2 dependencies in the PR description
+
 This ordering keeps the work honest:
 
 - Wave 2 proves the operator lane.
 - Wave 3 turns that lane into the shared system of record.
 - Wave 4 builds durable governance workflows on top of the same seams.
-
