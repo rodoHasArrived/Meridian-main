@@ -6808,8 +6808,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-BJk9nKRs.js
-│   │           │   └── index-D-jXLu6u.css
+│   │           │   ├── index-B7xOj4yj.css
+│   │           │   └── index-D2Up1lP4.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
