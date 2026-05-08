@@ -31,6 +31,7 @@ on:
       - 'scripts/dev/capture-desktop-screenshots.ps1'
       - 'scripts/dev/capture-web-screenshots.mjs'
       - 'scripts/dev/web-screenshot-routes.json'
+      - 'scripts/dev/web-screenshot-fixtures.json'
       - 'src/Meridian.Ui/dashboard/**'
       - 'src/Meridian.Ui/wwwroot/workstation/**'
       - 'src/Meridian.Ui.Services/**'
