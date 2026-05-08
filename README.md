@@ -188,29 +188,42 @@ Use these documents together when planning or implementing new work:
 │   │   ├── meridian-roadmap-strategist.md
 │   │   └── meridian-user-panel.md
 │   ├── plugins
-│   │   └── csharp-dotnet-development
+│   │   ├── csharp-dotnet-development
+│   │   │   ├── .github
+│   │   │   │   └── plugin
+│   │   │   │       └── plugin.json
+│   │   │   ├── README.md
+│   │   │   ├── agents
+│   │   │   │   └── expert-dotnet-software-engineer.md
+│   │   │   └── skills
+│   │   │       ├── aspnet-minimal-api-openapi
+│   │   │       │   └── SKILL.md
+│   │   │       ├── csharp-async
+│   │   │       │   └── SKILL.md
+│   │   │       ├── csharp-mstest
+│   │   │       │   └── SKILL.md
+│   │   │       ├── csharp-nunit
+│   │   │       │   └── SKILL.md
+│   │   │       ├── csharp-tunit
+│   │   │       │   └── SKILL.md
+│   │   │       ├── csharp-xunit
+│   │   │       │   └── SKILL.md
+│   │   │       ├── dotnet-best-practices
+│   │   │       │   └── SKILL.md
+│   │   │       └── dotnet-upgrade
+│   │   │           └── SKILL.md
+│   │   └── frontend-web-dev
 │   │       ├── .github
 │   │       │   └── plugin
 │   │       │       └── plugin.json
 │   │       ├── README.md
 │   │       ├── agents
-│   │       │   └── expert-dotnet-software-engineer.md
+│   │       │   ├── electron-angular-native.md
+│   │       │   └── expert-react-frontend-engineer.md
 │   │       └── skills
-│   │           ├── aspnet-minimal-api-openapi
+│   │           ├── playwright-explore-website
 │   │           │   └── SKILL.md
-│   │           ├── csharp-async
-│   │           │   └── SKILL.md
-│   │           ├── csharp-mstest
-│   │           │   └── SKILL.md
-│   │           ├── csharp-nunit
-│   │           │   └── SKILL.md
-│   │           ├── csharp-tunit
-│   │           │   └── SKILL.md
-│   │           ├── csharp-xunit
-│   │           │   └── SKILL.md
-│   │           ├── dotnet-best-practices
-│   │           │   └── SKILL.md
-│   │           └── dotnet-upgrade
+│   │           └── playwright-generate-test
 │   │               └── SKILL.md
 │   ├── settings.json
 │   ├── settings.local.json
@@ -6795,9 +6808,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-BoPcEBD_.css
-│   │           │   ├── index-DnDfcsKl.js
-│   │           │   └── index-DwThFFF5.js
+│   │           │   ├── index-BJk9nKRs.js
+│   │           │   └── index-D-jXLu6u.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8317,6 +8329,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-660 directories, 7482 files
+667 directories, 7487 files
 ```
 <!-- readme-tree end -->
