@@ -29,7 +29,9 @@ public enum TradingAcceptanceGateStatusDto
 {
     Ready = 0,
     ReviewRequired = 1,
-    Blocked = 2
+    Blocked = 2,
+    /// <summary>Gate status has not yet been evaluated.</summary>
+    Unknown = 99
 }
 
 public sealed record OperatorWorkItemDto(
@@ -44,7 +46,15 @@ public sealed record OperatorWorkItemDto(
     string? AuditReference = null,
     string? Workspace = null,
     string? TargetRoute = null,
-    string? TargetPageTag = null);
+    string? TargetPageTag = null,
+    string? Scope = null)
+{
+    /// <summary>Alias for <see cref="Label"/> to satisfy operator-triage surface naming.</summary>
+    public string Title => Label;
+
+    /// <summary>Alias for <see cref="Detail"/> to satisfy operator-triage surface naming.</summary>
+    public string Description => Detail;
+}
 
 public sealed record OperatorInboxDto(
     DateTimeOffset AsOf,
@@ -72,7 +82,8 @@ public sealed record EvidenceCompletenessSummaryDto(
     int ScorePercent,
     IReadOnlyList<string> BlockingGateIds,
     IReadOnlyList<string> ReviewGateIds,
-    IReadOnlyList<string> MissingEvidenceIds);
+    IReadOnlyList<string> MissingEvidenceIds,
+    IReadOnlyList<string>? ReadyGateIds = null);
 
 public sealed record TradingPaperSessionReadinessDto(
     string SessionId,

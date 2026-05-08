@@ -3,8 +3,8 @@ using Meridian.Contracts.Workstation;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Ledger;
 using Meridian.Strategies.Promotions;
-using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -27,7 +27,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
     public async Task ReplayConfidenceGate_OperatorCanVerifySessionWithExplicitEvidence()
     {
         // Arrange: Create a paper session with orders and fills
-        using var auditTrail = CreateAuditTrail(nameof(ReplayConfidenceGate_OperatorCanVerifySessionWithExplicitEvidence));
+        await using var auditTrail = CreateAuditTrail(nameof(ReplayConfidenceGate_OperatorCanVerifySessionWithExplicitEvidence));
         var sessionService = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
@@ -54,8 +54,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
             FillType = FillType.Trade,
             FilledAt = DateTimeOffset.UtcNow
         };
-        var sessionDetail = sessionService.GetSession(session.SessionId);
-        sessionDetail?.Portfolio.ApplyFill(fill);
+        await sessionService.RecordPaperFillAsync(session.SessionId, fill);
 
         // Act: Verify replay with explicit evidence
         var verification = await sessionService.VerifyReplayAsync(
@@ -78,7 +77,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
     public async Task ReplayConfidenceGate_ShowsExplicitMismatchReasonsWhenReplayFails()
     {
         // Arrange
-        using var auditTrail = CreateAuditTrail(nameof(ReplayConfidenceGate_ShowsExplicitMismatchReasonsWhenReplayFails));
+        await using var auditTrail = CreateAuditTrail(nameof(ReplayConfidenceGate_ShowsExplicitMismatchReasonsWhenReplayFails));
         var sessionService = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
@@ -96,8 +95,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
             FillType = FillType.Trade,
             FilledAt = DateTimeOffset.UtcNow
         };
-        var sessionDetail = sessionService.GetSession(session.SessionId);
-        sessionDetail?.Portfolio.ApplyFill(fill);
+        await sessionService.RecordPaperFillAsync(session.SessionId, fill);
 
         // Act: Verify with mismatched expected counts
         var verification = await sessionService.VerifyReplayAsync(
@@ -120,7 +118,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
     public async Task ReplayConfidenceGate_OperatorReadinessShowsReplayAsBlockingGateWhenMissing()
     {
         // Arrange: Create session but don't verify replay
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .BuildServiceProvider();
         var readinessService = new TradingOperatorReadinessService(
             provider,
@@ -141,7 +139,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
     public async Task SessionPersistenceGate_SessionSurvivesRestartWithFullHistory()
     {
         // Arrange: Create session with history
-        using var auditTrail = CreateAuditTrail(nameof(SessionPersistenceGate_SessionSurvivesRestartWithFullHistory));
+        await using var auditTrail = CreateAuditTrail(nameof(SessionPersistenceGate_SessionSurvivesRestartWithFullHistory));
         var sessionService = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
@@ -153,18 +151,18 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
         var originalSession = await sessionService.CreateSessionAsync(sessionDto);
 
         // Add order to history
-        var orderRecord = new ExecutionOrder
+        var orderRecord = new OrderState
         {
             OrderId = "order-persist-1",
             Symbol = "AAPL",
             Side = OrderSide.Buy,
+            Type = OrderType.Limit,
             Quantity = 100,
             LimitPrice = 150.00m,
-            SubmittedAt = DateTimeOffset.UtcNow,
-            Status = OrderStatus.Filled
+            Status = Meridian.Execution.Sdk.OrderStatus.Filled,
+            CreatedAt = DateTimeOffset.UtcNow
         };
-        var sessionDetail = sessionService.GetSession(originalSession.SessionId);
-        sessionDetail?.OrderHistory.Add(orderRecord);
+        await sessionService.RecordOrderUpdateAsync(originalSession.SessionId, orderRecord);
 
         // Add fill to history
         var fill = new ExecutionFill
@@ -176,26 +174,27 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
             FillType = FillType.Trade,
             FilledAt = DateTimeOffset.UtcNow
         };
-        sessionDetail?.FillHistory.Add(fill);
+        await sessionService.RecordPaperFillAsync(originalSession.SessionId, fill);
 
         // Act: Simulate restart by getting all sessions
         var allSessions = sessionService.GetSessions();
-        var restoredSession = allSessions.FirstOrDefault(s => s.SessionId == originalSession.SessionId);
+        var restoredSummary = allSessions.FirstOrDefault(s => s.SessionId == originalSession.SessionId);
+        var restoredSession = restoredSummary is null ? null : sessionService.GetSession(restoredSummary.SessionId);
 
         // Assert: Session persisted with intact history
         restoredSession.Should().NotBeNull("session should be restored after restart");
-        restoredSession!.StrategyId.Should().Be("strat-persist");
-        restoredSession.InitialCash.Should().Be(50_000m);
+        restoredSession!.Summary.StrategyId.Should().Be("strat-persist");
+        restoredSession.Summary.InitialCash.Should().Be(50_000m);
         restoredSession.Symbols.Should().Equal(["AAPL", "MSFT", "GOOG"]);
         restoredSession.OrderHistory.Should().Contain(o => o.OrderId == "order-persist-1");
-        restoredSession.FillHistory.Should().Contain(f => f.Symbol == "AAPL" && f.Quantity == 100);
+        restoredSession.FillHistory.Should().Contain(f => f.Symbol == "AAPL" && f.FilledQuantity == 100);
     }
 
     [Fact]
     public async Task SessionPersistenceGate_PortfolioStateConsistentAfterRestart()
     {
         // Arrange
-        using var auditTrail = CreateAuditTrail(nameof(SessionPersistenceGate_PortfolioStateConsistentAfterRestart));
+        await using var auditTrail = CreateAuditTrail(nameof(SessionPersistenceGate_PortfolioStateConsistentAfterRestart));
         var sessionService = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
@@ -211,19 +210,16 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
             new ExecutionFill { SessionId = session.SessionId, Symbol = "MSFT", Quantity = 20, FillPrice = 300m, FilledAt = DateTimeOffset.UtcNow, FillType = FillType.Trade }
         };
 
-        var sessionDetail = sessionService.GetSession(session.SessionId);
         foreach (var fill in fills)
         {
-            sessionDetail?.Portfolio.ApplyFill(fill);
-            sessionDetail?.FillHistory.Add(fill);
+            await sessionService.RecordPaperFillAsync(session.SessionId, fill);
         }
 
         // Act: Get portfolio snapshot before restart
-        var originalPortfolio = sessionDetail?.Portfolio.GetSnapshot();
+        var originalPortfolio = sessionService.GetSession(session.SessionId)?.Portfolio;
 
         // Simulate restart
-        var restoredSession = sessionService.GetSession(session.SessionId);
-        var restoredPortfolio = restoredSession?.Portfolio.GetSnapshot();
+        var restoredPortfolio = sessionService.GetSession(session.SessionId)?.Portfolio;
 
         // Assert: Portfolio matches after restart
         restoredPortfolio.Should().NotBeNull();
@@ -239,7 +235,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
     public async Task SessionPersistenceGate_LedgerContinuityAfterRestart()
     {
         // Arrange: Create session with ledger entries
-        using var auditTrail = CreateAuditTrail(nameof(SessionPersistenceGate_LedgerContinuityAfterRestart));
+        await using var auditTrail = CreateAuditTrail(nameof(SessionPersistenceGate_LedgerContinuityAfterRestart));
         var sessionService = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
@@ -248,7 +244,6 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
             new CreatePaperSessionDto("strat-ledger", "Ledger Test", 100_000m));
 
         // Simulate ledger entries
-        var sessionDetail = sessionService.GetSession(session.SessionId);
         var fill = new ExecutionFill
         {
             SessionId = session.SessionId,
@@ -258,12 +253,11 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
             FilledAt = DateTimeOffset.UtcNow,
             FillType = FillType.Trade
         };
-        sessionDetail?.Portfolio.ApplyFill(fill);
-        sessionDetail?.FillHistory.Add(fill);
+        await sessionService.RecordPaperFillAsync(session.SessionId, fill);
 
         // Act: Verify ledger entries exist and can be reconstructed
-        var restoredSession = sessionService.GetSession(session.SessionId);
-        var ledgerEntries = restoredSession?.ReconstructedLedger?.GetEntries() ?? [];
+        var ledger = sessionService.GetLedger(session.SessionId);
+        var ledgerEntries = ledger?.GetEntries(LedgerAccounts.Cash) ?? [];
 
         // Assert: Ledger can be reconstructed
         ledgerEntries.Should().NotBeEmpty("ledger should have entries after fill");
@@ -275,7 +269,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
     public async Task RiskAuditabilityGate_ControlOutcomeExplainableFromCockpit()
     {
         // Arrange: Create audit trail with order rejection
-        using var auditTrail = CreateAuditTrail(nameof(RiskAuditabilityGate_ControlOutcomeExplainableFromCockpit));
+        await using var auditTrail = CreateAuditTrail(nameof(RiskAuditabilityGate_ControlOutcomeExplainableFromCockpit));
         var controlService = new ExecutionOperatorControlService();
 
         var auditEntry = await auditTrail.RecordAsync(
@@ -304,7 +298,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
     public async Task RiskAuditabilityGate_ManualOverrideIncludesActor()
     {
         // Arrange
-        using var auditTrail = CreateAuditTrail(nameof(RiskAuditabilityGate_ManualOverrideIncludesActor));
+        await using var auditTrail = CreateAuditTrail(nameof(RiskAuditabilityGate_ManualOverrideIncludesActor));
 
         var overrideEntry = await auditTrail.RecordAsync(
             category: "Override",
@@ -318,15 +312,15 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
         // Act & Assert: Override has actor and reason
         overrideEntry.Actor.Should().Be("fund-manager");
         overrideEntry.Reason.Should().Be("client-request");
-        overrideEntry.Timestamp.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
+        overrideEntry.OccurredAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
     }
 
     [Fact]
     public async Task RiskAuditabilityGate_ReadinessExposesAuditControlState()
     {
         // Arrange: Create readiness service with audit trail
-        using var auditTrail = CreateAuditTrail(nameof(RiskAuditabilityGate_ReadinessExposesAuditControlState));
-        using var provider = new ServiceCollection()
+        await using var auditTrail = CreateAuditTrail(nameof(RiskAuditabilityGate_ReadinessExposesAuditControlState));
+        await using var provider = new ServiceCollection()
             .AddSingleton(auditTrail)
             .AddSingleton<ExecutionOperatorControlService>()
             .BuildServiceProvider();
@@ -362,9 +356,9 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
     public async Task PromotionTraceabilityGate_ApprovalHasCompleteAuditChain()
     {
         // Arrange
-        using var auditTrail = CreateAuditTrail(nameof(PromotionTraceabilityGate_ApprovalHasCompleteAuditChain));
-        var promotionService = new PromotionService(
-            NullLogger<PromotionService>.Instance);
+        await using var auditTrail = CreateAuditTrail(nameof(PromotionTraceabilityGate_ApprovalHasCompleteAuditChain));
+        var promotionService = new PromotionRecordService(
+            NullLogger<PromotionRecordService>.Instance);
 
         var runId = Guid.NewGuid();
         var operatorId = "trader-001";
@@ -392,8 +386,8 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
     public async Task PromotionTraceabilityGate_RejectionIncludesRationale()
     {
         // Arrange
-        var promotionService = new PromotionService(
-            NullLogger<PromotionService>.Instance);
+        var promotionService = new PromotionRecordService(
+            NullLogger<PromotionRecordService>.Instance);
 
         var runId = Guid.NewGuid();
         var operatorId = "controller";
@@ -418,8 +412,8 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
     public async Task PromotionTraceabilityGate_HistoryIsRecoverable()
     {
         // Arrange
-        var promotionService = new PromotionService(
-            NullLogger<PromotionService>.Instance);
+        var promotionService = new PromotionRecordService(
+            NullLogger<PromotionRecordService>.Instance);
 
         var runId = Guid.NewGuid();
 
@@ -452,7 +446,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
     public async Task PromotionTraceabilityGate_ReadinessRequiresCompleteDecisionChain()
     {
         // Arrange: Create readiness service
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .BuildServiceProvider();
         var readinessService = new TradingOperatorReadinessService(
             provider,
@@ -472,14 +466,14 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
     public async Task EndToEndScenario_BacktestToPaperWorkflow()
     {
         // Arrange: Full workflow from backtest to paper trading
-        using var auditTrail = CreateAuditTrail(nameof(EndToEndScenario_BacktestToPaperWorkflow));
+        await using var auditTrail = CreateAuditTrail(nameof(EndToEndScenario_BacktestToPaperWorkflow));
         var sessionService = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
-        var promotionService = new PromotionService(
-            NullLogger<PromotionService>.Instance);
+        var promotionService = new PromotionRecordService(
+            NullLogger<PromotionRecordService>.Instance);
 
-        using var provider = new ServiceCollection()
+        await using var provider = new ServiceCollection()
             .AddSingleton(sessionService)
             .AddSingleton(auditTrail)
             .AddSingleton<ExecutionOperatorControlService>()
@@ -498,9 +492,9 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
 
         // Act: Step 2 - Create paper session
         var sessionDto = new CreatePaperSessionDto(
-            strategyId: backtestRunId.ToString(),
-            strategyName: "Backtest-Promoted-Strategy",
-            initialCash: 50_000m)
+            backtestRunId.ToString(),
+            "Backtest-Promoted-Strategy",
+            50_000m)
         {
             Symbols = ["AAPL", "MSFT"]
         };
@@ -516,9 +510,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
             FilledAt = DateTimeOffset.UtcNow,
             FillType = FillType.Trade
         };
-        var sessionDetail = sessionService.GetSession(session.SessionId);
-        sessionDetail?.Portfolio.ApplyFill(fill1);
-        sessionDetail?.FillHistory.Add(fill1);
+        await sessionService.RecordPaperFillAsync(session.SessionId, fill1);
 
         await auditTrail.RecordAsync(
             category: "Trade",
@@ -540,6 +532,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
         // Assert: Full workflow is traceable
         approval.Decision.Should().Be(PromotionDecision.Approved);
         session.IsActive.Should().BeTrue();
+        var sessionDetail = sessionService.GetSession(session.SessionId);
         sessionDetail?.FillHistory.Should().HaveCount(1);
         replay?.IsConsistent.Should().BeTrue("replay should verify");
         readiness.OverallStatus.Should().NotBe(TradingAcceptanceGateStatusDto.Blocked);
@@ -549,7 +542,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
     public async Task EndToEndScenario_OperatorCanDiagnoseReplayFailure()
     {
         // Arrange: Session with replay failure
-        using var auditTrail = CreateAuditTrail(nameof(EndToEndScenario_OperatorCanDiagnoseReplayFailure));
+        await using var auditTrail = CreateAuditTrail(nameof(EndToEndScenario_OperatorCanDiagnoseReplayFailure));
         var sessionService = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
@@ -567,8 +560,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
             FilledAt = DateTimeOffset.UtcNow,
             FillType = FillType.Trade
         };
-        var sessionDetail = sessionService.GetSession(session.SessionId);
-        sessionDetail?.Portfolio.ApplyFill(fill);
+        await sessionService.RecordPaperFillAsync(session.SessionId, fill);
 
         // Act: Verify with wrong counts
         var replay = await sessionService.VerifyReplayAsync(
@@ -582,7 +574,7 @@ public sealed class Wave2PaperTradingCockpitAcceptanceTests
         replay.VerifiedFilledCount.Should().Be(1, "actual fill count");
         replay.VerifiedOrderCount.Should().Be(0, "actual order count");
         replay.MismatchReasons.Should().NotBeEmpty("operator must understand why replay failed");
-        replay.MismatchReasons.First().Should().Contain("fill", StringComparison.OrdinalIgnoreCase);
+        replay.MismatchReasons.First().Should().Contain("fill");
     }
 
     // ---- HELPERS ----

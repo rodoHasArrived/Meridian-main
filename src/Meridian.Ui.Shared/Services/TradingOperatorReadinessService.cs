@@ -615,6 +615,12 @@ public sealed class TradingOperatorReadinessService
 
     private static string? ResolveEvidenceScope(ExecutionAuditEntry entry)
     {
+        // Prefer the explicit Scope field first.
+        if (!string.IsNullOrWhiteSpace(entry.Scope))
+        {
+            return entry.Scope.Trim();
+        }
+
         if (!string.IsNullOrWhiteSpace(entry.RunId) && !string.IsNullOrWhiteSpace(entry.Symbol))
         {
             return $"run:{entry.RunId}/symbol:{entry.Symbol}";
@@ -661,6 +667,12 @@ public sealed class TradingOperatorReadinessService
 
     private static string? ResolveEvidenceReason(ExecutionAuditEntry entry)
     {
+        // Prefer the explicit Reason field first.
+        if (!string.IsNullOrWhiteSpace(entry.Reason))
+        {
+            return entry.Reason.Trim();
+        }
+
         if (!string.IsNullOrWhiteSpace(entry.Message))
         {
             return entry.Message.Trim();
@@ -1214,6 +1226,10 @@ public sealed class TradingOperatorReadinessService
                 .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
                 .Select(static item => item.AuditReference ?? item.RunId ?? item.WorkItemId)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            ReadyGateIds: gates
+                .Where(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
+                .Select(static gate => gate.GateId)
                 .ToArray());
     }
 
@@ -1272,7 +1288,8 @@ public sealed class TradingOperatorReadinessService
         string? runId = null,
         Guid? fundAccountId = null,
         string? auditReference = null,
-        string? workItemId = null)
+        string? workItemId = null,
+        string? scope = null)
     {
         var navigation = ResolveWorkItemNavigation(kind, fundAccountId);
         workItems.Add(new OperatorWorkItemDto(
@@ -1287,7 +1304,8 @@ public sealed class TradingOperatorReadinessService
             AuditReference: auditReference,
             Workspace: navigation.Workspace,
             TargetRoute: navigation.TargetRoute,
-            TargetPageTag: navigation.TargetPageTag));
+            TargetPageTag: navigation.TargetPageTag,
+            Scope: scope));
     }
 
     private static (string Workspace, string TargetRoute, string TargetPageTag) ResolveWorkItemNavigation(
