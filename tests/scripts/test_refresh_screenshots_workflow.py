@@ -29,6 +29,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("path: src", self.workflow)
 
     def test_desktop_workflow_script_contains_context_selection_automation_elements(self) -> None:
+        self.assertIn("ContextSelectionHint", self.run_desktop_workflow_script)
         self.assertIn("ContextSelectionHintButton", self.run_desktop_workflow_script)
         self.assertIn("SwitchContextButton", self.run_desktop_workflow_script)
         self.assertIn("Invoke-AutomationButton -Button $switchContextButton -Description 'switch context'", self.run_desktop_workflow_script)
