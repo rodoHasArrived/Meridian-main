@@ -3200,7 +3200,7 @@ export function buildPromotionApprovalChecklist(
     },
     {
       label: "Risk metrics",
-      status: evaluation ? "ready" : "review",
+      status: evaluation ? (evaluation.isEligible ? "ready" : "blocked") : "review",
       description: evaluation
         ? `Sharpe: ${evaluation.sharpeRatio.toFixed(2)} · Max DD: ${evaluation.maxDrawdownPercent.toFixed(1)}% · Return: ${evaluation.totalReturn.toFixed(1)}%`
         : "Metrics calculated after evaluation"
