@@ -385,6 +385,20 @@ function Test-AutomationElementEnabled {
     }
 }
 
+function Test-AutomationElementVisible {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Automation.AutomationElement]$Element
+    )
+
+    try {
+        return -not $Element.Current.IsOffscreen
+    }
+    catch {
+        return $false
+    }
+}
+
 function Test-ShellAutomationReady {
     param(
         [Parameter(Mandatory = $true)]
@@ -431,6 +445,11 @@ function Ensure-EnteredOperatingContext {
         }
 
         if (Test-ShellAutomationReady -Window $currentWindow) {
+            $contextSelectionHintButton = Find-AutomationElementById -Window $currentWindow -AutomationId 'ContextSelectionHintButton'
+            if ($null -ne $contextSelectionHintButton -and (Test-AutomationElementVisible -Element $contextSelectionHintButton)) {
+                return $null
+            }
+
             return $currentWindow
         }
 
@@ -452,6 +471,46 @@ function Ensure-EnteredOperatingContext {
         }
 
         return Get-OperatingContextEnterButton -Window $currentWindow
+    }
+
+    if (-not $enterButton) {
+        $switchContextButton = Wait-ForElement -Attempts 6 -DelayMilliseconds 250 -Finder {
+            if ($null -ne $Process -and $Process.HasExited) {
+                throw "Meridian desktop exited before context switch could be requested."
+            }
+
+            $currentWindow = Find-MeridianWindow -Process $Process
+            if ($null -eq $currentWindow) {
+                return $null
+            }
+
+            $contextSelectionHintButton = Find-AutomationElementById -Window $currentWindow -AutomationId 'ContextSelectionHintButton'
+            if ($null -ne $contextSelectionHintButton -and (Test-AutomationElementVisible -Element $contextSelectionHintButton)) {
+                return $contextSelectionHintButton
+            }
+
+            $fallbackSwitchButton = Find-AutomationElementById -Window $currentWindow -AutomationId 'SwitchContextButton'
+            if ($null -ne $fallbackSwitchButton -and (Test-AutomationElementVisible -Element $fallbackSwitchButton)) {
+                return $fallbackSwitchButton
+            }
+
+            return $null
+        }
+
+        if ($switchContextButton -and (Test-AutomationElementEnabled -Element $switchContextButton)) {
+            Activate-MeridianWindow | Out-Null
+            if (Invoke-AutomationButton -Button $switchContextButton -Description 'switch context') {
+                Start-Sleep -Milliseconds 800
+                $enterButton = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
+                    $currentWindow = Find-MeridianWindow -Process $Process
+                    if ($null -eq $currentWindow) {
+                        return $null
+                    }
+
+                    return Get-OperatingContextEnterButton -Window $currentWindow
+                }
+            }
+        }
     }
 
     if ($enterButton -and -not (Test-AutomationElementEnabled -Element $enterButton)) {
