@@ -47,7 +47,7 @@ export function App() {
 
   useEffect(() => {
     const handleCommandShortcut = (event: KeyboardEvent) => {
-      if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey || event.key.toLowerCase() !== "k") {
+      if (!isCommandPaletteShortcut(event)) {
         return;
       }
 
@@ -61,7 +61,7 @@ export function App() {
 
     window.addEventListener("keydown", handleCommandShortcut);
     return () => window.removeEventListener("keydown", handleCommandShortcut);
-  }, []);
+  }, [setCommandOpen]);
 
   const shell = buildAppShellViewState({
     pathname,
@@ -267,5 +267,15 @@ function isEditableTarget(target: EventTarget | null): boolean {
     return true;
   }
 
-  return Boolean(element.closest('[contenteditable="true"]'));
+  const editableContainer = element.closest("[contenteditable]");
+  if (!editableContainer) {
+    return false;
+  }
+
+  return editableContainer.getAttribute("contenteditable") !== "false";
+}
+
+
+function isCommandPaletteShortcut(event: KeyboardEvent): boolean {
+  return (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "k";
 }
