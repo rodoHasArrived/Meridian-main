@@ -104,6 +104,7 @@ env:
   WEB_SCREENSHOT_PORT: 5173
   SCREENSHOT_TIMING_BASELINE_MINUTES: 25
   SCREENSHOT_TIMING_REGRESSION_PERCENT: 20
+  WPF_ARTIFACT_RETRY_DELAY_SECONDS: 15
 
 jobs:
   build-wpf:
@@ -151,9 +152,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: wpf-build-binaries
-          path: |
-            src/Meridian.Wpf/bin/${{ env.WPF_CONFIGURATION }}/${{ env.WPF_FRAMEWORK }}/**
-            src/Meridian/bin/${{ env.WPF_CONFIGURATION }}/**
+          path: src/Meridian.Wpf/bin/${{ env.WPF_CONFIGURATION }}/${{ env.WPF_FRAMEWORK }}/
           if-no-files-found: error
           retention-days: 2
 
@@ -218,10 +217,24 @@ jobs:
           cache-suffix: desktop-screenshots
 
       - name: Download WPF build binaries
+        id: download_wpf_build_binaries
+        continue-on-error: true
         uses: actions/download-artifact@v8
         with:
           name: wpf-build-binaries
-          path: src
+          path: src/Meridian.Wpf/bin/${{ env.WPF_CONFIGURATION }}/${{ env.WPF_FRAMEWORK }}/
+
+      - name: Retry WPF build binary download
+        if: steps.download_wpf_build_binaries.outcome == 'failure'
+        shell: pwsh
+        run: Start-Sleep -Seconds ${{ env.WPF_ARTIFACT_RETRY_DELAY_SECONDS }}
+
+      - name: Download WPF build binaries (retry)
+        if: steps.download_wpf_build_binaries.outcome == 'failure'
+        uses: actions/download-artifact@v8
+        with:
+          name: wpf-build-binaries
+          path: src/Meridian.Wpf/bin/${{ env.WPF_CONFIGURATION }}/${{ env.WPF_FRAMEWORK }}/
 
       - name: Copy sample config
         run: Copy-Item config\appsettings.sample.json config\appsettings.json -Force
