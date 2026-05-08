@@ -9,7 +9,8 @@ import { buildButtonCommandViewModel } from "@/components/ui/button.view-model";
  * **Variants:** `"default"` (cyan primary), `"secondary"` (muted surface),
  * `"outline"` (transparent with border), `"ghost"` (text-only), `"destructive"` (danger-toned).
  *
- * **Sizes:** `"sm"` (32 px), `"default"` (36 px), `"lg"` (44 px, for hero/full-width CTAs).
+ * **Sizes:** `"sm"` (32 px), `"default"` (36 px), `"lg"` (44 px, for hero/full-width CTAs),
+ * `"icon"` (36×36 px square, no horizontal padding — use for icon-only buttons).
  *
  * **Busy state:** pass `busy` to replace the label with a spinner and set `aria-busy`.
  * Pair with `busyLabel` to provide an accessible announcement (e.g. `"Saving…"`).
@@ -28,8 +29,8 @@ import { buildButtonCommandViewModel } from "@/components/ui/button.view-model";
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
   variant?: "default" | "secondary" | "outline" | "ghost" | "destructive";
-  /** `"sm"` — compact (32 px min-height). `"default"` — standard (36 px). `"lg"` — full-width CTA or hero action (44 px). */
-  size?: "sm" | "default" | "lg";
+  /** `"sm"` — compact (32 px min-height). `"default"` — standard (36 px). `"lg"` — full-width CTA or hero action (44 px). `"icon"` — square 36×36 px, no padding, for icon-only buttons. */
+  size?: "sm" | "default" | "lg" | "icon";
   busy?: boolean;
   busyLabel?: string | null;
   disabledReason?: string | null;
@@ -46,7 +47,8 @@ const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
 const sizeClasses: Record<NonNullable<ButtonProps["size"]>, string> = {
   sm: "min-h-8 px-3 py-1.5 text-xs",
   default: "min-h-9 px-4 py-2 text-sm",
-  lg: "min-h-11 px-6 py-3 text-base"
+  lg: "min-h-11 px-6 py-3 text-base",
+  icon: "h-9 w-9 p-0 text-sm"
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

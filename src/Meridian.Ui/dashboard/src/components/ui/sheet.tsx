@@ -82,7 +82,7 @@ export function SheetContent({ className, side = "right", ...props }: SheetConte
       tabIndex={-1}
       className={cn(
         "relative flex h-full w-full max-w-2xl flex-col overflow-y-auto border-border bg-card shadow-float focus:outline-none",
-        side === "left" ? "border-r" : "border-l",
+        side === "left" ? "border-r sheet-slide-left" : "border-l sheet-slide-right",
         className
       )}
       {...props}
