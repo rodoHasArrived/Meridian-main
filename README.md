@@ -6516,6 +6516,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PlotRequest.cs
 │   │   │   └── PlotType.cs
 │   │   ├── QuantScriptOptions.cs
+│   │   ├── QuantScriptServiceCollectionExtensions.cs
 │   │   └── ScriptContext.cs
 │   ├── Meridian.Risk
 │   │   ├── CompositeRiskValidator.cs
@@ -6720,6 +6721,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── metric-card.tsx
 │   │   │   │   │   │   ├── metric-card.view-model.test.ts
 │   │   │   │   │   │   ├── metric-card.view-model.ts
+│   │   │   │   │   │   ├── quant-plot.test.tsx
+│   │   │   │   │   │   ├── quant-plot.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
@@ -6765,6 +6768,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── governance-screen.tsx
 │   │   │   │   │   ├── governance-screen.view-model.test.ts
 │   │   │   │   │   ├── governance-screen.view-model.ts
+│   │   │   │   │   ├── live-quotes-screen.test.tsx
 │   │   │   │   │   ├── live-quotes-screen.tsx
 │   │   │   │   │   ├── operator-readiness-console.test.tsx
 │   │   │   │   │   ├── operator-readiness-console.tsx
@@ -6778,6 +6782,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── portfolio-screen.tsx
 │   │   │   │   │   ├── portfolio-screen.view-model.test.ts
 │   │   │   │   │   ├── portfolio-screen.view-model.ts
+│   │   │   │   │   ├── quant-lab-screen.test.tsx
+│   │   │   │   │   ├── quant-lab-screen.tsx
 │   │   │   │   │   ├── reporting-screen.test.tsx
 │   │   │   │   │   ├── reporting-screen.tsx
 │   │   │   │   │   ├── reporting-screen.view-model.test.ts
@@ -6810,8 +6816,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-B7xOj4yj.css
-│   │           │   └── index-D2Up1lP4.js
+│   │           │   ├── index-Dpp_InbW.js
+│   │           │   └── index-vqlNsJUc.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -6983,6 +6989,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PromotionEndpoints.cs
 │   │   │   ├── ProviderEndpoints.cs
 │   │   │   ├── ProviderExtendedEndpoints.cs
+│   │   │   ├── QuantLabEndpoints.cs
 │   │   │   ├── ReplayEndpoints.cs
 │   │   │   ├── ResilienceEndpoints.cs
 │   │   │   ├── SamplingEndpoints.cs
@@ -8331,6 +8338,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-667 directories, 7489 files
+667 directories, 7496 files
 ```
 <!-- readme-tree end -->
