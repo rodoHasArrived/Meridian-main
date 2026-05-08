@@ -787,6 +787,7 @@ Use these documents together when planning or implementing new work:
 ├── Meridian.sln
 ├── NuGet.Config
 ├── README.md
+├── WAVE2_IMPLEMENTATION_SUMMARY.md
 ├── archive
 │   └── docs
 │       ├── INDEX.md
@@ -5116,6 +5117,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── workflow-drift-report.md
 │   │   ├── workflow-manifest.json
 │   │   └── workflow-validation-summary.json
+│   ├── testing
+│   │   ├── WAVE2_ACCEPTANCE_GATE_CHECKLIST.md
+│   │   └── WAVE2_ACCEPTANCE_TESTS.md
 │   ├── toc.yml
 │   └── ui
 │       └── components.md
@@ -8026,6 +8030,8 @@ Use these documents together when planning or implementing new work:
 │   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │       ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │       ├── TradingOperatorReadinessServiceTests.cs
+│   │       ├── Wave2OperatorInboxAcceptanceTests.cs
+│   │       ├── Wave2PaperTradingCockpitAcceptanceTests.cs
 │   │       ├── WorkflowLibraryEndpointTests.cs
 │   │       └── WorkstationEndpointsTests.cs
 │   ├── Meridian.Ui.Tests
@@ -8260,6 +8266,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-636 directories, 7449 files
+637 directories, 7454 files
 ```
 <!-- readme-tree end -->
