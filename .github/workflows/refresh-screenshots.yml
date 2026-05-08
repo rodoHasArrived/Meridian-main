@@ -436,7 +436,7 @@ jobs:
           foreach ($png in $pngs) {
             $artifactRoot = (Resolve-Path _artifacts).Path
             $rel = $png.FullName.Substring($artifactRoot.Length).TrimStart('\','/')
-            $relNormalized = $rel.Replace('\\','/')
+            $relNormalized = $rel.Replace('\','/')
 
             # Each artifact is stored as: _artifacts/<artifact-name>/<original-path>/.../*.png
             # Find the first occurrence of the output root inside that path and copy from there.
@@ -622,7 +622,7 @@ jobs:
           $repoRoot = (Get-Location).Path
           $toRelativePath = {
             param([string]$absolutePath, [string]$basePath)
-            return [System.IO.Path]::GetRelativePath($basePath, $absolutePath).Replace('\\','/')
+            return [System.IO.Path]::GetRelativePath($basePath, $absolutePath).Replace('\','/')
           }
 
           $candidateRelative = @($candidates | ForEach-Object { & $toRelativePath $_ $repoRoot })
