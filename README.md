@@ -6706,10 +6706,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-BC6N3HVB.js
-│   │           │   ├── index-BoPcEBD_.css
-│   │           │   ├── index-D-_4vOiE.js
-│   │           │   └── index-DKH2vl4K.css
+│   │           │   ├── index-B_Q4tm_q.js
+│   │           │   └── index-BoPcEBD_.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8227,6 +8225,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-629 directories, 7423 files
+629 directories, 7421 files
 ```
 <!-- readme-tree end -->
