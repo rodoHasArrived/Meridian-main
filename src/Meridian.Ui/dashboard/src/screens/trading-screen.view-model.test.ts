@@ -1157,8 +1157,6 @@ describe("trading promotion gate view model", () => {
           isActive: false
         },
         symbols: ["AAPL", "MSFT"],
-        currentPortfolio: null,
-        replayPortfolio: { cash: 45000, portfolioValue: 155000, unrealisedPnl: 10000, realisedPnl: 0, positions: [], asOf: "2026-04-27T14:30:00Z" },
         replaySource: "DurableFillLog",
         isConsistent: false,
         comparedFillCount: 40,
@@ -1168,6 +1166,15 @@ describe("trading promotion gate view model", () => {
           "Ledger entry count mismatch: 18 in durable log vs 15 in current state",
           "Last persisted ledger entry at 2026-04-27T14:30:00Z is before session close"
         ],
+        currentPortfolio: null,
+        replayPortfolio: {
+          cash: 50000,
+          portfolioValue: 150000,
+          unrealisedPnl: 0,
+          realisedPnl: 0,
+          positions: [],
+          asOf: "2026-04-27T14:30:00Z"
+        },
         verificationAuditId: "audit-replay-002",
         lastPersistedFillAt: "2026-04-27T14:30:00Z",
         lastPersistedOrderUpdateAt: "2026-04-27T14:29:45Z",
