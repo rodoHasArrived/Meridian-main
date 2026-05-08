@@ -139,6 +139,30 @@ type BreakRecordClassificationDto = {
     Notes: string
 }
 
+[<CLIMutable>]
+type AccountingPeriodDto = {
+    PeriodId   : Guid
+    FiscalYear : int
+    PeriodNo   : int
+    Label      : string
+    StartDate  : DateOnly
+    EndDate    : DateOnly
+    Status     : string
+    OpenedAt   : DateTimeOffset
+    ClosedAt   : DateTimeOffset option
+}
+
+[<CLIMutable>]
+type PeriodCloseEventDto = {
+    EventId     : Guid
+    PeriodId    : Guid
+    PriorStatus : string
+    NewStatus   : string
+    ClosedBy    : string
+    Notes       : string
+    RecordedAt  : DateTimeOffset
+}
+
 [<Sealed; Extension>]
 type LedgerInterop private () =
 
@@ -318,3 +342,109 @@ type LedgerInterop private () =
                 Notes = record.Notes
             })
         |> Seq.toArray
+
+    // ── Period management ────────────────────────────────────────────────────
+
+    static member private ToPeriodDto (period: AccountingPeriod) : AccountingPeriodDto =
+        { PeriodId   = period.PeriodId
+          FiscalYear = period.FiscalYear
+          PeriodNo   = period.PeriodNo
+          Label      = period.Label
+          StartDate  = period.StartDate
+          EndDate    = period.EndDate
+          Status     = PeriodStatus.asString period.Status
+          OpenedAt   = period.OpenedAt
+          ClosedAt   = period.ClosedAt }
+
+    static member private ToCloseEventDto (event: PeriodCloseEvent) : PeriodCloseEventDto =
+        { EventId     = event.EventId
+          PeriodId    = event.PeriodId
+          PriorStatus = PeriodStatus.asString event.PriorStatus
+          NewStatus   = PeriodStatus.asString event.NewStatus
+          ClosedBy    = event.ClosedBy
+          Notes       = event.Notes
+          RecordedAt  = event.RecordedAt }
+
+    /// <summary>Generate calendar-month accounting periods for a fiscal year.</summary>
+    static member GenerateCalendarMonthPeriods(fiscalYear: int, now: DateTimeOffset) : AccountingPeriodDto array =
+        PeriodManagement.generateCalendarMonthPeriods fiscalYear now
+        |> List.map LedgerInterop.ToPeriodDto
+        |> List.toArray
+
+    /// <summary>Check whether a posting at the given date is permitted.</summary>
+    /// <param name="date">Date of the posting being validated.</param>
+    /// <param name="isAdjustment">True when this is an approved adjustment entry rather than an originating posting.</param>
+    /// <param name="periods">Active period list.</param>
+    /// <returns>
+    ///   <c>"Allowed"</c> when the posting can proceed, <c>"PeriodNotFound"</c> when no period covers the date,
+    ///   or <c>"Denied: &lt;reason&gt;"</c> when the period rejects the posting.
+    /// </returns>
+    static member CheckPostingDate(date: DateOnly, isAdjustment: bool, periods: seq<AccountingPeriodDto>) : string =
+        let domainPeriods =
+            periods
+            |> Seq.choose (fun dto ->
+                PeriodStatus.fromString dto.Status
+                |> Option.map (fun status ->
+                    ({ PeriodId   = dto.PeriodId
+                       FiscalYear = dto.FiscalYear
+                       PeriodNo   = dto.PeriodNo
+                       Label      = dto.Label
+                       StartDate  = dto.StartDate
+                       EndDate    = dto.EndDate
+                       Status     = status
+                       OpenedAt   = dto.OpenedAt
+                       ClosedAt   = dto.ClosedAt } : AccountingPeriod)))
+            |> Seq.toList
+
+        match PeriodManagement.checkPostingDate date isAdjustment domainPeriods with
+        | Allowed          -> "Allowed"
+        | PeriodNotFound   -> "PeriodNotFound"
+        | Denied reason    -> sprintf "Denied: %s" reason
+
+    /// <summary>Attempt to soft-close or hard-close a period.</summary>
+    /// <param name="period">The period to close.</param>
+    /// <param name="newStatus">Target status: "SoftClosed" or "HardClosed".</param>
+    /// <param name="closedBy">Identifier of the operator requesting the close.</param>
+    /// <param name="notes">Optional close notes.</param>
+    /// <param name="now">Wall-clock time to stamp the close event.</param>
+    /// <param name="error">Populated with a failure message when the operation cannot proceed; otherwise null.</param>
+    /// <returns>
+    ///   The <see cref="PeriodCloseEventDto"/> on success, or default when the period is already closed
+    ///   or the transition is invalid.
+    /// </returns>
+    static member TryClosePeriod(
+            period: AccountingPeriodDto,
+            newStatus: string,
+            closedBy: string,
+            notes: string,
+            now: DateTimeOffset,
+            [<System.Runtime.InteropServices.Out>] error: string byref) : PeriodCloseEventDto =
+        error <- null
+        match PeriodStatus.fromString newStatus, PeriodStatus.fromString period.Status with
+        | None, _ ->
+            error <- sprintf "Unknown target period status '%s'." newStatus
+            Unchecked.defaultof<PeriodCloseEventDto>
+        | _, None ->
+            error <- sprintf "Unknown existing period status '%s'." period.Status
+            Unchecked.defaultof<PeriodCloseEventDto>
+        | Some targetStatus, Some priorStatus ->
+            let domainPeriod : AccountingPeriod =
+                { PeriodId   = period.PeriodId
+                  FiscalYear = period.FiscalYear
+                  PeriodNo   = period.PeriodNo
+                  Label      = period.Label
+                  StartDate  = period.StartDate
+                  EndDate    = period.EndDate
+                  Status     = priorStatus
+                  OpenedAt   = period.OpenedAt
+                  ClosedAt   = period.ClosedAt }
+            match PeriodManagement.close domainPeriod targetStatus closedBy notes now with
+            | CloseAccepted event -> LedgerInterop.ToCloseEventDto event
+            | AlreadyClosed ->
+                error <- sprintf "Period '%s' is already hard-closed." period.Label
+                Unchecked.defaultof<PeriodCloseEventDto>
+            | InvalidTransition reason ->
+                error <- reason
+                Unchecked.defaultof<PeriodCloseEventDto>
+
+
