@@ -178,6 +178,44 @@ async function stopProcess(child) {
   await waitForExit(2000);
 }
 
+/**
+ * Register Playwright API route mocks for all entries in the fixtures map.
+ * Intercepts /api/** requests in the browser so screenshots never depend on a
+ * running Meridian backend. Must be called before the first page.goto().
+ *
+ * @param {import('playwright').Page} page
+ * @param {Record<string, unknown>} fixtureRoutes  Path → JSON body map from web-screenshot-fixtures.json
+ */
+async function setupApiMocking(page, fixtureRoutes) {
+  await page.route("/api/**", (route) => {
+    const url = new URL(route.request().url());
+    const pathname = url.pathname;
+
+    // Exact-path match first (strips query string for lookup).
+    if (Object.prototype.hasOwnProperty.call(fixtureRoutes, pathname)) {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(fixtureRoutes[pathname])
+      });
+    }
+
+    // Prefix match for parameterised routes (e.g. /api/portfolio/household?provider=alpaca).
+    const prefixEntry = Object.entries(fixtureRoutes).find(([key]) => pathname.startsWith(key));
+    if (prefixEntry) {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(prefixEntry[1])
+      });
+    }
+
+    // Unregistered endpoints return empty 404 so the dev-fixture fallback can
+    // still handle them inside the browser if needed.
+    return route.fulfill({ status: 404, contentType: "application/json", body: "{}" });
+  });
+}
+
 async function captureRoute(page, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs) {
   const viewport = {
     width: Number(capture.viewport?.width ?? defaults.width ?? 1440),
@@ -195,7 +233,7 @@ async function captureRoute(page, capture, outputDir, baseUrl, defaults, minByte
   if (capture.waitForText) {
     await page.getByText(capture.waitForText, { exact: false }).first().waitFor({ timeout: timeoutMs });
   }
-  await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);
+  await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => undefined);
 
   const textLength = await page.evaluate(() => document.body.innerText.trim().length);
   if (textLength < minTextLength) {
@@ -251,6 +289,10 @@ async function main() {
 
   const outputDir = resolveRepoPath(repoRoot, values.get("output-dir") ?? routeConfig.outputRoot ?? "docs/screenshots/web");
   const manifestPath = resolveRepoPath(repoRoot, values.get("manifest") ?? "artifacts/web-screenshots/manifest.json");
+  const fixturesPath = resolveRepoPath(
+    repoRoot,
+    values.get("fixtures") ?? routeConfig.fixturesPath ?? "scripts/dev/web-screenshot-fixtures.json"
+  );
   const host = values.get("host") ?? "127.0.0.1";
   const port = Number(values.get("port") ?? "5173");
   const timeoutMs = Number(values.get("timeout-ms") ?? "30000");
@@ -283,10 +325,18 @@ async function main() {
       await waitForServer(`${normalizeBaseUrl(baseUrl)}/`, timeoutMs);
     }
 
+    // Load fixture API responses and mock all /api/** requests so screenshots
+    // never depend on a running Meridian backend.
+    const fixtureConfig = await readJson(fixturesPath);
+    const fixtureRoutes = (fixtureConfig && typeof fixtureConfig.routes === "object")
+      ? fixtureConfig.routes
+      : {};
+
     const dashboardRequire = createRequire(path.join(dashboardDir, "package.json"));
     const { chromium } = dashboardRequire("playwright");
     browser = await chromium.launch();
     const page = await browser.newPage();
+    await setupApiMocking(page, fixtureRoutes);
 
     for (const capture of captures) {
       try {

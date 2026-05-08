@@ -11,8 +11,22 @@
       "id": "W01",
       "name": "web-trading-workspace",
       "path": "/trading",
-      "docLabel": "Trading",
-      "waitForText": "Trading"
+      "docLabel": "Trading — Orders blotter",
+      "waitForText": "Trading lane"
+    },
+    {
+      "id": "W01B",
+      "name": "web-trading-positions",
+      "path": "/trading/positions",
+      "docLabel": "Trading — Position book",
+      "waitForText": "Trading lane"
+    },
+    {
+      "id": "W01C",
+      "name": "web-trading-risk",
+      "path": "/trading/risk",
+      "docLabel": "Trading — Risk guardrails",
+      "waitForText": "Trading lane"
     },
     {
       "id": "W01A",
@@ -26,42 +40,56 @@
       "name": "web-portfolio-workspace",
       "path": "/portfolio",
       "docLabel": "Portfolio",
-      "waitForText": "Portfolio"
+      "waitForText": "Portfolio lane"
     },
     {
       "id": "W03",
       "name": "web-accounting-workspace",
       "path": "/accounting",
-      "docLabel": "Accounting",
-      "waitForText": "Accounting"
+      "docLabel": "Accounting — Ledger",
+      "waitForText": "Accounting lane"
+    },
+    {
+      "id": "W03A",
+      "name": "web-accounting-reconciliation",
+      "path": "/accounting/reconciliation",
+      "docLabel": "Accounting — Reconciliation",
+      "waitForText": "Accounting lane"
+    },
+    {
+      "id": "W03B",
+      "name": "web-accounting-security-master",
+      "path": "/accounting/security-master",
+      "docLabel": "Accounting — Security Master",
+      "waitForText": "Accounting lane"
     },
     {
       "id": "W04",
       "name": "web-reporting-workspace",
       "path": "/reporting",
       "docLabel": "Reporting",
-      "waitForText": "Reporting"
+      "waitForText": "Reporting lane"
     },
     {
       "id": "W05",
       "name": "web-strategy-workspace",
       "path": "/strategy",
       "docLabel": "Strategy",
-      "waitForText": "Strategy"
+      "waitForText": "Strategy Lane"
     },
     {
       "id": "W06",
       "name": "web-data-workspace",
       "path": "/data",
       "docLabel": "Data",
-      "waitForText": "Data"
+      "waitForText": "Data Lane"
     },
     {
       "id": "W07",
       "name": "web-settings-workspace",
       "path": "/settings",
       "docLabel": "Settings",
-      "waitForText": "Settings"
+      "waitForText": "Settings lane"
     }
   ]
 }
