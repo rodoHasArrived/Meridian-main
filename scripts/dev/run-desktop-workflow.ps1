@@ -447,6 +447,7 @@ function Ensure-EnteredOperatingContext {
         if (Test-ShellAutomationReady -Window $currentWindow) {
             $contextSelectionHintButton = Find-AutomationElementById -Window $currentWindow -AutomationId 'ContextSelectionHintButton'
             if ($null -ne $contextSelectionHintButton -and (Test-AutomationElementVisible -Element $contextSelectionHintButton)) {
+                # Returning $null keeps the workflow in context-selection mode until a context is explicitly entered.
                 return $null
             }
 
@@ -500,6 +501,7 @@ function Ensure-EnteredOperatingContext {
         if ($switchContextButton -and (Test-AutomationElementEnabled -Element $switchContextButton)) {
             Activate-MeridianWindow | Out-Null
             if (Invoke-AutomationButton -Button $switchContextButton -Description 'switch context') {
+                # Allow the FundProfileSelection page transition to complete before probing for Enter Workstation.
                 Start-Sleep -Milliseconds 800
                 $enterButton = Wait-ForElement -Attempts 10 -DelayMilliseconds 300 -Finder {
                     $currentWindow = Find-MeridianWindow -Process $Process
