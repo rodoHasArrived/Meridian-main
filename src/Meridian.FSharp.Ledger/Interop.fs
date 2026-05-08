@@ -365,6 +365,17 @@ type LedgerInterop private () =
           Notes       = event.Notes
           RecordedAt  = event.RecordedAt }
 
+    static member private FromPeriodDto (dto: AccountingPeriodDto) (status: PeriodStatus) : AccountingPeriod =
+        { PeriodId   = dto.PeriodId
+          FiscalYear = dto.FiscalYear
+          PeriodNo   = dto.PeriodNo
+          Label      = dto.Label
+          StartDate  = dto.StartDate
+          EndDate    = dto.EndDate
+          Status     = status
+          OpenedAt   = dto.OpenedAt
+          ClosedAt   = dto.ClosedAt }
+
     /// <summary>Generate calendar-month accounting periods for a fiscal year.</summary>
     static member GenerateCalendarMonthPeriods(fiscalYear: int, now: DateTimeOffset) : AccountingPeriodDto array =
         PeriodManagement.generateCalendarMonthPeriods fiscalYear now
@@ -384,16 +395,7 @@ type LedgerInterop private () =
             periods
             |> Seq.choose (fun dto ->
                 PeriodStatus.fromString dto.Status
-                |> Option.map (fun status ->
-                    ({ PeriodId   = dto.PeriodId
-                       FiscalYear = dto.FiscalYear
-                       PeriodNo   = dto.PeriodNo
-                       Label      = dto.Label
-                       StartDate  = dto.StartDate
-                       EndDate    = dto.EndDate
-                       Status     = status
-                       OpenedAt   = dto.OpenedAt
-                       ClosedAt   = dto.ClosedAt } : AccountingPeriod)))
+                |> Option.map (LedgerInterop.FromPeriodDto dto))
             |> Seq.toList
 
         match PeriodManagement.checkPostingDate date isAdjustment domainPeriods with
@@ -419,7 +421,6 @@ type LedgerInterop private () =
             notes: string,
             now: DateTimeOffset,
             [<System.Runtime.InteropServices.Out>] error: string byref) : PeriodCloseEventDto =
-        error <- null
         match PeriodStatus.fromString newStatus, PeriodStatus.fromString period.Status with
         | None, _ ->
             error <- sprintf "Unknown target period status '%s'." newStatus
@@ -428,18 +429,11 @@ type LedgerInterop private () =
             error <- sprintf "Unknown existing period status '%s'." period.Status
             Unchecked.defaultof<PeriodCloseEventDto>
         | Some targetStatus, Some priorStatus ->
-            let domainPeriod : AccountingPeriod =
-                { PeriodId   = period.PeriodId
-                  FiscalYear = period.FiscalYear
-                  PeriodNo   = period.PeriodNo
-                  Label      = period.Label
-                  StartDate  = period.StartDate
-                  EndDate    = period.EndDate
-                  Status     = priorStatus
-                  OpenedAt   = period.OpenedAt
-                  ClosedAt   = period.ClosedAt }
+            let domainPeriod = LedgerInterop.FromPeriodDto period priorStatus
             match PeriodManagement.close domainPeriod targetStatus closedBy notes now with
-            | CloseAccepted event -> LedgerInterop.ToCloseEventDto event
+            | CloseAccepted event ->
+                error <- null
+                LedgerInterop.ToCloseEventDto event
             | AlreadyClosed ->
                 error <- sprintf "Period '%s' is already hard-closed." period.Label
                 Unchecked.defaultof<PeriodCloseEventDto>

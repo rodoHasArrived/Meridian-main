@@ -63,11 +63,16 @@ module PeriodStatus =
         | "HardClosed" -> Some HardClosed
         | _            -> None
 
+    /// Returns true when the period accepts ordinary new originating postings.
+    /// Soft-closed and hard-closed periods reject ordinary postings; only approved
+    /// adjustment entries are allowed through the soft-close guard (see <c>isAdjustable</c>).
     let isPostable = function
         | Open       -> true
-        | SoftClosed -> false   // only approved adjustments pass the soft-close guard
+        | SoftClosed -> false
         | HardClosed -> false
 
+    /// Returns true when the period accepts approved adjustment entries.
+    /// Hard-closed periods reject all postings, including adjustments.
     let isAdjustable = function
         | Open | SoftClosed -> true
         | HardClosed        -> false
@@ -132,13 +137,15 @@ module PeriodManagement =
         | from when not (PeriodStatus.isValidTransition from newStatus) ->
             InvalidTransition (sprintf "Cannot transition from %s to %s." (PeriodStatus.asString from) (PeriodStatus.asString newStatus))
         | _ ->
+            // Normalise null/whitespace notes to empty string so downstream storage is consistent.
+            let normalisedNotes = if String.IsNullOrWhiteSpace notes then "" else notes
             let event : PeriodCloseEvent =
                 { EventId     = Guid.NewGuid()
                   PeriodId    = period.PeriodId
                   PriorStatus = period.Status
                   NewStatus   = newStatus
                   ClosedBy    = closedBy
-                  Notes       = if String.IsNullOrWhiteSpace notes then "" else notes
+                  Notes       = normalisedNotes
                   RecordedAt  = now }
             CloseAccepted event
 
