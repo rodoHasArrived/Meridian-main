@@ -471,6 +471,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── provider-builder-agent.md
 │   │   ├── repo-navigation-agent.md
 │   │   ├── simulated-user-panel-agent.md
+│   │   ├── software-engineer-agent-v1.agent.md
 │   │   └── test-writer-agent.md
 │   ├── copilot-instructions.md
 │   ├── dependabot.yml
@@ -5166,6 +5167,50 @@ Use these documents together when planning or implementing new work:
 │           └── main.cpp
 ├── package-lock.json
 ├── package.json
+├── plugins
+│   ├── README.md
+│   ├── frontend-web-dev
+│   │   ├── .github
+│   │   │   └── plugin
+│   │   │       └── plugin.json
+│   │   ├── README.md
+│   │   ├── agents
+│   │   │   ├── electron-angular-native.md
+│   │   │   └── expert-react-frontend-engineer.md
+│   │   └── skills
+│   │       ├── playwright-explore-website
+│   │       │   └── SKILL.md
+│   │       └── playwright-generate-test
+│   │           └── SKILL.md
+│   ├── security-best-practices
+│   │   ├── .github
+│   │   │   └── plugin
+│   │   │       └── plugin.json
+│   │   ├── README.md
+│   │   └── skills
+│   │       └── ai-prompt-engineering-safety-review
+│   │           └── SKILL.md
+│   └── testing-automation
+│       ├── .github
+│       │   └── plugin
+│       │       └── plugin.json
+│       ├── README.md
+│       ├── agents
+│       │   ├── playwright-tester.md
+│       │   ├── tdd-green.md
+│       │   ├── tdd-red.md
+│       │   └── tdd-refactor.md
+│       └── skills
+│           ├── ai-prompt-engineering-safety-review
+│           │   └── SKILL.md
+│           ├── csharp-nunit
+│           │   └── SKILL.md
+│           ├── java-junit
+│           │   └── SKILL.md
+│           ├── playwright-explore-website
+│           │   └── SKILL.md
+│           └── playwright-generate-test
+│               └── SKILL.md
 ├── scripts
 │   ├── ai
 │   │   ├── cleanup.sh
@@ -8266,6 +8311,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-637 directories, 7454 files
+660 directories, 7476 files
 ```
 <!-- readme-tree end -->
