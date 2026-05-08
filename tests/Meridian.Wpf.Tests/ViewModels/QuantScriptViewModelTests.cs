@@ -236,6 +236,42 @@ public sealed class QuantScriptViewModelTests
         vm.ScriptSource.Should().Contain("Data.PricesAsync");
     }
 
+    [Fact]
+    public void DuplicateCellCommand_Execute_AddsCellCopyAfterSelection()
+    {
+        var vm = CreateVm();
+        vm.NewNotebookCommand.Execute(null);
+        vm.NotebookCells[0].Source = "Print(\"hello\");";
+        vm.SelectedCell = vm.NotebookCells[0];
+
+        vm.DuplicateCellCommand.Execute(null);
+
+        vm.NotebookCells.Should().HaveCount(2);
+        vm.NotebookCells[1].Source.Should().Be("Print(\"hello\");");
+        vm.SelectedCell.Should().BeSameAs(vm.NotebookCells[1]);
+    }
+
+    [Fact]
+    public void MoveCellCommands_ReorderNotebookCells_WhenSelectionMoves()
+    {
+        var vm = CreateVm();
+        vm.NewNotebookCommand.Execute(null);
+        vm.NotebookCells[0].Source = "Print(\"first\");";
+        vm.AddCellCommand.Execute(null);
+        vm.NotebookCells[1].Source = "Print(\"second\");";
+        vm.SelectedCell = vm.NotebookCells[1];
+
+        vm.MoveCellUpCommand.Execute(null);
+
+        vm.NotebookCells[0].Source.Should().Be("Print(\"second\");");
+        vm.SelectedCell.Should().BeSameAs(vm.NotebookCells[0]);
+
+        vm.MoveCellDownCommand.Execute(null);
+
+        vm.NotebookCells[1].Source.Should().Be("Print(\"second\");");
+        vm.SelectedCell.Should().BeSameAs(vm.NotebookCells[1]);
+    }
+
     // ── Dispose ───────────────────────────────────────────────────────────────
 
     [Fact]

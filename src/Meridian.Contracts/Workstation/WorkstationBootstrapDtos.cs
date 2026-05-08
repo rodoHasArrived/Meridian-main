@@ -100,6 +100,29 @@ public sealed record WorkstationResearchWorkspaceSummary(
     int PromotionCandidates);
 
 /// <summary>
+/// PlotTool tab strip state attached to the strategy/research payload.
+/// </summary>
+public sealed record WorkstationPlotToolTabState(
+    string Id,
+    string Label,
+    string TabId,
+    string PanelId,
+    bool Selected,
+    string ButtonVariant,
+    int TabIndex,
+    string AriaLabel);
+
+/// <summary>
+/// PlotTool workspace/statistics payload embedded in research responses.
+/// </summary>
+public sealed record WorkstationPlotToolPayload(
+    object Workspace,
+    object Statistics,
+    IReadOnlyList<object> Studies,
+    IReadOnlyList<WorkstationPlotToolTabState> Tabs,
+    string ActiveView = "workspace");
+
+/// <summary>
 /// Typed payload returned by <c>GET /api/workstation/strategy</c>.
 /// Run cards and comparisons retain <c>object</c> pending their own DTO evolution.
 /// </summary>
@@ -108,7 +131,8 @@ public sealed record WorkstationResearchPayload(
     IReadOnlyList<object> Runs,
     IReadOnlyList<WorkstationModeComparisonGroup> Comparisons,
     IReadOnlyList<WorkstationTimelineCard> Timeline,
-    WorkstationResearchWorkspaceSummary Workspace);
+    WorkstationResearchWorkspaceSummary Workspace,
+    WorkstationPlotToolPayload? PlotTool = null);
 
 // ---------------------------------------------------------------------------
 // /api/workstation/trading
