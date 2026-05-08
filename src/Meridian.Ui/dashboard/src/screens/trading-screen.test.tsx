@@ -469,6 +469,23 @@ describe("TradingScreen", () => {
     expect(screen.getByLabelText("Limit order price")).toBeInTheDocument();
   });
 
+  it("renders the order impact preview with notional, position effect, and warnings", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    await user.click(screen.getByRole("button", { name: /new order/i }));
+    const preview = await screen.findByTestId("order-preview");
+
+    await user.type(within(preview.parentElement as HTMLElement).getByLabelText("Order symbol"), "AAPL");
+    await user.type(within(preview.parentElement as HTMLElement).getByLabelText("Order quantity"), "150");
+    await user.selectOptions(within(preview.parentElement as HTMLElement).getByRole("combobox", { name: "Order side" }), "Sell");
+
+    expect(within(preview).getByTestId("order-preview-effect")).toHaveTextContent(/Flips long position to short/i);
+    expect(within(preview).getByTestId("order-preview-detail")).toHaveTextContent(/100 AAPL long → 50 AAPL short/i);
+    expect(within(preview).getAllByText(/\$28,350\.00/).length).toBeGreaterThan(0);
+    expect(within(preview).getByTestId("order-preview-warnings")).toHaveTextContent(/exceeds open position/i);
+  });
+
   it("shows error path when promotion evaluation fails", async () => {
     vi.mocked(api.evaluatePromotion).mockRejectedValueOnce(new Error("eval failed"));
     const user = userEvent.setup();

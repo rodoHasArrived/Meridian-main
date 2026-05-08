@@ -2374,10 +2374,14 @@ const defaultOrderTicketServices: OrderTicketServices = {
 
 export function useOrderTicketViewModel({
   services = defaultOrderTicketServices,
-  onOrderAccepted
+  onOrderAccepted,
+  positions = [],
+  risk = null
 }: {
   services?: OrderTicketServices;
   onOrderAccepted?: () => Promise<void> | void;
+  positions?: TradingPosition[];
+  risk?: TradingRiskState | null;
 } = {}) {
   const [form, setForm] = useState<OrderSubmitRequest>(emptyOrderTicketForm);
   const [open, setOpen] = useState(false);
@@ -2388,6 +2392,11 @@ export function useOrderTicketViewModel({
   const state = useMemo(
     () => buildOrderTicketState({ form, open, phase, orderId, errorText }),
     [errorText, form, open, orderId, phase]
+  );
+
+  const preview = useMemo(
+    () => buildOrderPreview({ form, positions, risk }),
+    [form, positions, risk]
   );
 
   const openTicket = useCallback(() => {
@@ -2470,6 +2479,7 @@ export function useOrderTicketViewModel({
 
   return {
     ...state,
+    preview,
     openTicket,
     closeTicket,
     toggleTicket,
@@ -2719,6 +2729,392 @@ function orderTypeRequiresPrice(type: OrderSubmitRequest["type"]): boolean {
 function parsePositiveNumber(value: string): number | null {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+export type OrderPreviewLevel = "info" | "warning" | "danger";
+export type OrderPreviewPriceSource = "limit" | "stop" | "mark" | "average" | "none";
+export type OrderPreviewEffect =
+  | "open-long"
+  | "open-short"
+  | "add-long"
+  | "add-short"
+  | "reduce-long"
+  | "reduce-short"
+  | "close-long"
+  | "close-short"
+  | "flip-to-short"
+  | "flip-to-long";
+
+export interface OrderPreviewWarning {
+  id: string;
+  level: OrderPreviewLevel;
+  message: string;
+}
+
+export interface OrderPreviewExistingPosition {
+  symbol: string;
+  side: TradingPosition["side"];
+  signedQuantity: number;
+  averagePrice: number | null;
+  markPrice: number | null;
+}
+
+export interface OrderPreview {
+  available: boolean;
+  symbol: string;
+  side: OrderSubmitRequest["side"];
+  type: OrderSubmitRequest["type"];
+  quantity: number;
+  referencePrice: number | null;
+  referencePriceLabel: string;
+  priceSource: OrderPreviewPriceSource;
+  priceSourceLabel: string;
+  notional: number | null;
+  notionalLabel: string;
+  existing: OrderPreviewExistingPosition | null;
+  effect: OrderPreviewEffect | null;
+  effectLabel: string;
+  effectDetail: string;
+  resultingSignedQuantity: number;
+  resultingPositionLabel: string;
+  warnings: OrderPreviewWarning[];
+  riskNote: string | null;
+  summaryLine: string;
+  ariaSummary: string;
+}
+
+export interface BuildOrderPreviewOptions {
+  form: OrderSubmitRequest;
+  positions: TradingPosition[];
+  risk: TradingRiskState | null;
+}
+
+export function buildOrderPreview({ form, positions, risk }: BuildOrderPreviewOptions): OrderPreview {
+  const symbol = normalizeOrderSymbol(form.symbol);
+  const quantity = Number.isFinite(form.quantity) && form.quantity > 0 ? form.quantity : 0;
+  const existing = symbol ? findExistingPosition(positions, symbol) : null;
+  const referencePriceInfo = pickReferencePrice(form, existing);
+  const referencePrice = referencePriceInfo.price;
+  const priceSource = referencePriceInfo.source;
+  const notional = referencePrice !== null && quantity > 0 ? referencePrice * quantity : null;
+  const available = symbol.length > 0 && quantity > 0;
+
+  const signedDelta = form.side === "Buy" ? quantity : -quantity;
+  const existingSigned = existing?.signedQuantity ?? 0;
+  const resultingSignedQuantity = available ? existingSigned + signedDelta : existingSigned;
+  const effect = available ? deriveOrderEffect(existingSigned, signedDelta) : null;
+  const effectLabel = effect ? describeOrderEffectLabel(effect) : "Awaiting symbol and quantity";
+  const effectDetail = available
+    ? describeOrderEffectDetail(effect, existingSigned, signedDelta, resultingSignedQuantity, symbol)
+    : "Enter a symbol and quantity to preview the position impact.";
+
+  const warnings = available
+    ? collectOrderPreviewWarnings({ form, quantity, referencePrice, priceSource, existing, effect, risk })
+    : [];
+
+  const riskNote = buildOrderPreviewRiskNote(risk);
+  const referencePriceLabel = referencePrice === null ? "—" : formatPrice(referencePrice);
+  const notionalLabel = notional === null ? "—" : formatMoney(notional);
+  const resultingPositionLabel = available
+    ? describeResultingPosition(resultingSignedQuantity, symbol)
+    : "—";
+  const summaryLine = available
+    ? buildOrderPreviewSummary({ symbol, side: form.side, type: form.type, quantity, referencePrice, priceSource })
+    : "Order preview will appear once a symbol and quantity are entered.";
+  const ariaSummary = available
+    ? `${summaryLine}. ${effectLabel}.${warnings.length > 0 ? ` ${warnings.length} warning${warnings.length === 1 ? "" : "s"}.` : ""}`
+    : summaryLine;
+
+  return {
+    available,
+    symbol,
+    side: form.side,
+    type: form.type,
+    quantity,
+    referencePrice,
+    referencePriceLabel,
+    priceSource,
+    priceSourceLabel: describePriceSourceLabel(priceSource),
+    notional,
+    notionalLabel,
+    existing,
+    effect,
+    effectLabel,
+    effectDetail,
+    resultingSignedQuantity,
+    resultingPositionLabel,
+    warnings,
+    riskNote,
+    summaryLine,
+    ariaSummary
+  };
+}
+
+function findExistingPosition(positions: TradingPosition[], symbol: string): OrderPreviewExistingPosition | null {
+  const match = positions.find((position) => normalizeOrderSymbol(position.symbol) === symbol);
+  if (!match) {
+    return null;
+  }
+
+  const magnitude = parseLooseNumber(match.quantity) ?? 0;
+  const signedQuantity = match.side === "Short" ? -magnitude : magnitude;
+  return {
+    symbol: match.symbol,
+    side: match.side,
+    signedQuantity,
+    averagePrice: parseLooseNumber(match.averagePrice),
+    markPrice: parseLooseNumber(match.markPrice)
+  };
+}
+
+function pickReferencePrice(
+  form: OrderSubmitRequest,
+  existing: OrderPreviewExistingPosition | null
+): { price: number | null; source: OrderPreviewPriceSource } {
+  if (form.type === "Limit" && form.limitPrice && form.limitPrice > 0) {
+    return { price: form.limitPrice, source: "limit" };
+  }
+
+  if (form.type === "Stop" && form.limitPrice && form.limitPrice > 0) {
+    return { price: form.limitPrice, source: "stop" };
+  }
+
+  if (existing?.markPrice && existing.markPrice > 0) {
+    return { price: existing.markPrice, source: "mark" };
+  }
+
+  if (existing?.averagePrice && existing.averagePrice > 0) {
+    return { price: existing.averagePrice, source: "average" };
+  }
+
+  return { price: null, source: "none" };
+}
+
+function deriveOrderEffect(existingSigned: number, delta: number): OrderPreviewEffect {
+  if (existingSigned === 0) {
+    return delta > 0 ? "open-long" : "open-short";
+  }
+
+  const target = existingSigned + delta;
+  if (target === 0) {
+    return existingSigned > 0 ? "close-long" : "close-short";
+  }
+
+  const sameSign = (existingSigned > 0 && target > 0) || (existingSigned < 0 && target < 0);
+  if (sameSign) {
+    const grew = Math.abs(target) > Math.abs(existingSigned);
+    if (existingSigned > 0) {
+      return grew ? "add-long" : "reduce-long";
+    }
+    return grew ? "add-short" : "reduce-short";
+  }
+
+  return existingSigned > 0 ? "flip-to-short" : "flip-to-long";
+}
+
+function describeOrderEffectLabel(effect: OrderPreviewEffect): string {
+  switch (effect) {
+    case "open-long":
+      return "Opens new long position";
+    case "open-short":
+      return "Opens new short position";
+    case "add-long":
+      return "Adds to existing long position";
+    case "add-short":
+      return "Adds to existing short position";
+    case "reduce-long":
+      return "Reduces existing long position";
+    case "reduce-short":
+      return "Reduces existing short position";
+    case "close-long":
+      return "Closes existing long position";
+    case "close-short":
+      return "Closes existing short position";
+    case "flip-to-short":
+      return "Flips long position to short";
+    case "flip-to-long":
+      return "Flips short position to long";
+  }
+}
+
+function describeOrderEffectDetail(
+  effect: OrderPreviewEffect | null,
+  existingSigned: number,
+  delta: number,
+  resultingSigned: number,
+  symbol: string
+): string {
+  if (!effect) {
+    return "";
+  }
+
+  const before = describePositionLine(existingSigned, symbol);
+  const after = describePositionLine(resultingSigned, symbol);
+  const deltaLabel = `${delta > 0 ? "+" : ""}${formatQuantity(delta)} shares`;
+  return `${before} → ${after} (${deltaLabel}).`;
+}
+
+function describePositionLine(signedQuantity: number, symbol: string): string {
+  if (signedQuantity === 0) {
+    return `flat ${symbol}`;
+  }
+  const direction = signedQuantity > 0 ? "long" : "short";
+  return `${formatQuantity(Math.abs(signedQuantity))} ${symbol} ${direction}`;
+}
+
+function describeResultingPosition(signedQuantity: number, symbol: string): string {
+  if (signedQuantity === 0) {
+    return `Flat ${symbol}`;
+  }
+  const direction = signedQuantity > 0 ? "Long" : "Short";
+  return `${direction} ${formatQuantity(Math.abs(signedQuantity))} ${symbol}`;
+}
+
+function describePriceSourceLabel(source: OrderPreviewPriceSource): string {
+  switch (source) {
+    case "limit":
+      return "Limit price";
+    case "stop":
+      return "Stop trigger";
+    case "mark":
+      return "Last mark";
+    case "average":
+      return "Position avg";
+    case "none":
+      return "No reference price";
+  }
+}
+
+function collectOrderPreviewWarnings({
+  form,
+  quantity,
+  referencePrice,
+  priceSource,
+  existing,
+  effect,
+  risk
+}: {
+  form: OrderSubmitRequest;
+  quantity: number;
+  referencePrice: number | null;
+  priceSource: OrderPreviewPriceSource;
+  existing: OrderPreviewExistingPosition | null;
+  effect: OrderPreviewEffect | null;
+  risk: TradingRiskState | null;
+}): OrderPreviewWarning[] {
+  const warnings: OrderPreviewWarning[] = [];
+
+  if (form.type === "Market" && referencePrice === null) {
+    warnings.push({
+      id: "no-reference-price",
+      level: "warning",
+      message: "No mark or limit price available — notional cannot be estimated before fills."
+    });
+  }
+
+  if (priceSource === "average" && form.type === "Market") {
+    warnings.push({
+      id: "stale-reference-price",
+      level: "info",
+      message: "Reference price is the position average; live mark is not available."
+    });
+  }
+
+  if (effect && effect.startsWith("flip-")) {
+    const existingMagnitude = existing ? Math.abs(existing.signedQuantity) : 0;
+    const overshoot = quantity - existingMagnitude;
+    warnings.push({
+      id: "position-flip",
+      level: "danger",
+      message: existingMagnitude > 0
+        ? `Quantity exceeds open position by ${formatQuantity(overshoot)} — this order will reverse the position.`
+        : "Order will open a new opposite-side position."
+    });
+  }
+
+  if (effect === "open-short" || effect === "add-short") {
+    warnings.push({
+      id: "short-exposure",
+      level: "info",
+      message: "Order increases short exposure — confirm the strategy permits short selling."
+    });
+  }
+
+  if (risk?.state === "Constrained") {
+    warnings.push({
+      id: "risk-constrained",
+      level: "danger",
+      message: `Risk state is Constrained: ${risk.summary || "guardrails are blocking new exposure"}.`
+    });
+  } else if (risk?.state === "Observe") {
+    warnings.push({
+      id: "risk-observe",
+      level: "warning",
+      message: `Risk state is Observe: ${risk.summary || "review guardrails before submitting"}.`
+    });
+  }
+
+  return warnings;
+}
+
+function buildOrderPreviewRiskNote(risk: TradingRiskState | null): string | null {
+  if (!risk) {
+    return null;
+  }
+  const buyingPower = risk.buyingPowerUsed ? `Buying power used ${risk.buyingPowerUsed}` : null;
+  const state = `Risk ${risk.state}`;
+  return [state, buyingPower].filter(Boolean).join(" • ");
+}
+
+function buildOrderPreviewSummary({
+  symbol,
+  side,
+  type,
+  quantity,
+  referencePrice,
+  priceSource
+}: {
+  symbol: string;
+  side: OrderSubmitRequest["side"];
+  type: OrderSubmitRequest["type"];
+  quantity: number;
+  referencePrice: number | null;
+  priceSource: OrderPreviewPriceSource;
+}): string {
+  const qtyText = formatQuantity(quantity);
+  const priceText = referencePrice !== null
+    ? ` ≈ ${formatMoney(referencePrice * quantity)} @ ${formatPrice(referencePrice)}${priceSource === "limit" || priceSource === "stop" ? "" : " (" + describePriceSourceLabel(priceSource).toLowerCase() + ")"}`
+    : "";
+  return `${side} ${qtyText} ${symbol} ${type.toLowerCase()}${priceText}`;
+}
+
+function parseLooseNumber(value: string | null | undefined): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  const stripped = String(value).replace(/[\s,$%]/g, "");
+  if (!stripped || stripped === "—" || stripped === "-") {
+    return null;
+  }
+  const parsed = Number(stripped);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatPrice(value: number): string {
+  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function formatMoney(value: number): string {
+  const sign = value < 0 ? "-" : "";
+  const absolute = Math.abs(value);
+  return `${sign}$${absolute.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function formatQuantity(value: number): string {
+  if (!Number.isFinite(value)) {
+    return "0";
+  }
+  return Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 4 });
 }
 
 export type PromotionGateField =
