@@ -6054,6 +6054,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Meridian.Execution.csproj
 │   │   ├── Models
 │   │   │   ├── AccountKind.cs
+│   │   │   ├── ExecutionFill.cs
 │   │   │   ├── ExecutionMode.cs
 │   │   │   ├── ExecutionPosition.cs
 │   │   │   ├── IMultiAccountPortfolioState.cs
@@ -6649,7 +6650,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── StrategyStatus.cs
 │   │   ├── Promotions
 │   │   │   ├── BacktestToLivePromoter.cs
-│   │   │   └── PromotionApprovalChecklist.cs
+│   │   │   ├── PromotionApprovalChecklist.cs
+│   │   │   └── PromotionRecordService.cs
 │   │   ├── Serialization
 │   │   │   ├── FSharpInteropJsonContext.cs
 │   │   │   └── PromotionRecordJsonContext.cs
@@ -8313,6 +8315,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-660 directories, 7478 files
+660 directories, 7480 files
 ```
 <!-- readme-tree end -->
