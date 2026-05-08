@@ -216,6 +216,19 @@ jobs:
           cache-suffix: desktop-screenshots
 
       - name: Download WPF build binaries
+        id: download_wpf_build_binaries
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: wpf-build-binaries
+          path: src/Meridian.Wpf/bin/${{ env.WPF_CONFIGURATION }}/${{ env.WPF_FRAMEWORK }}/
+
+      - name: Retry WPF build binary download
+        if: steps.download_wpf_build_binaries.outcome == 'failure'
+        run: Start-Sleep -Seconds 15
+
+      - name: Download WPF build binaries (retry)
+        if: steps.download_wpf_build_binaries.outcome == 'failure'
         uses: actions/download-artifact@v8
         with:
           name: wpf-build-binaries
