@@ -106,6 +106,10 @@ public sealed class WorkstationEndpointsTests
             .Should()
             .Contain(mode => mode.GetProperty("drillIn").GetProperty("attribution").GetString() != null);
         research.RootElement.GetProperty("timeline").GetArrayLength().Should().Be(2);
+        research.RootElement.GetProperty("plotTool").GetProperty("workspace").GetProperty("title").GetString()
+            .Should()
+            .Contain("workstation");
+        research.RootElement.GetProperty("plotTool").GetProperty("tabs").GetArrayLength().Should().Be(2);
 
         research.RootElement.GetProperty("metrics").EnumerateArray()
             .Should()
@@ -153,6 +157,9 @@ public sealed class WorkstationEndpointsTests
         runs.GetArrayLength().Should().Be(1);
         runs[0].GetProperty("id").GetString().Should().Be("run-research-001");
         runs[0].GetProperty("strategyName").GetString().Should().Be("Mean Reversion FX");
+        research.RootElement.GetProperty("plotTool").GetProperty("workspace").GetProperty("title").GetString()
+            .Should()
+            .Contain("Mean Reversion FX");
 
         using var strategy = await ReadJsonAsync(client, "/api/workstation/strategy");
         strategy.RootElement.GetProperty("runs")[0].GetProperty("id").GetString().Should().Be("run-research-001");

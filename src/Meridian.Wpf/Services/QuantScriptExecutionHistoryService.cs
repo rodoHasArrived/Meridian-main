@@ -21,7 +21,7 @@ public sealed record QuantScriptExecutionRecordRequest(
     List<string> PlotTitles,
     IReadOnlyList<BacktestResult> CapturedBacktests);
 
-public sealed class QuantScriptExecutionHistoryService
+public sealed partial class QuantScriptExecutionHistoryService
 {
     private readonly ConfigService _configService;
     private readonly StrategyRunWorkspaceService _strategyRunWorkspaceService;
@@ -54,9 +54,9 @@ public sealed class QuantScriptExecutionHistoryService
             try
             {
                 await using var stream = File.OpenRead(path);
-                var record = await JsonSerializer.DeserializeAsync<QuantScriptExecutionRecord>(
+                var record = await JsonSerializer.DeserializeAsync(
                     stream,
-                    StorageJsonOptions,
+                    QuantScriptExecutionHistoryJsonContext.Default.QuantScriptExecutionRecord,
                     ct).ConfigureAwait(false);
 
                 if (record is not null)
@@ -124,10 +124,28 @@ public sealed class QuantScriptExecutionHistoryService
 
         var historyDirectory = await ResolveHistoryDirectoryAsync().ConfigureAwait(false);
         var path = Path.Combine(historyDirectory, $"{record.ExecutionId}.json");
-        var json = JsonSerializer.Serialize(record, StorageJsonOptions);
+        var json = JsonSerializer.Serialize(record, QuantScriptExecutionHistoryJsonContext.Default.QuantScriptExecutionRecord);
         await AtomicFileWriter.WriteAsync(path, json, ct).ConfigureAwait(false);
 
         return record;
+    }
+
+    public async Task<string> ExportExecutionRecordAsync(
+        QuantScriptExecutionRecord record,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+
+        var config = await _configService.LoadConfigAsync().ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
+        var dataRoot = _configService.ResolveDataRoot(config);
+        var exportDirectory = Path.Combine(dataRoot, "_quantscript", "exports");
+        Directory.CreateDirectory(exportDirectory);
+
+        var path = Path.Combine(exportDirectory, $"{record.ExecutionId}.json");
+        var json = JsonSerializer.Serialize(record, QuantScriptExecutionHistoryJsonContext.Default.QuantScriptExecutionRecord);
+        await AtomicFileWriter.WriteAsync(path, json, ct).ConfigureAwait(false);
+        return path;
     }
 
     private async Task<string> ResolveHistoryDirectoryAsync()
@@ -152,9 +170,10 @@ public sealed class QuantScriptExecutionHistoryService
         };
     }
 
-    private static readonly JsonSerializerOptions StorageJsonOptions = new()
-    {
+    [JsonSourceGenerationOptions(
         WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+    [JsonSerializable(typeof(QuantScriptExecutionRecord))]
+    internal sealed partial class QuantScriptExecutionHistoryJsonContext : JsonSerializerContext;
 }

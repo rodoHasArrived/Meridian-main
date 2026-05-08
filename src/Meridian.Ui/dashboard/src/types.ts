@@ -594,6 +594,26 @@ export interface OrderResult {
 export interface ResearchWorkspaceResponse {
   metrics: MetricSnapshot[];
   runs: ResearchRunRecord[];
+  plotTool?: ResearchPlotToolPayload | null;
+}
+
+export interface ResearchPlotToolTabPayload {
+  id: string;
+  label: string;
+  tabId: string;
+  panelId: string;
+  selected: boolean;
+  buttonVariant: "secondary" | "ghost";
+  tabIndex: number;
+  ariaLabel: string;
+}
+
+export interface ResearchPlotToolPayload {
+  workspace: unknown;
+  statistics: unknown;
+  studies: unknown[];
+  tabs: ResearchPlotToolTabPayload[];
+  activeView?: "workspace" | "statistics";
 }
 
 export interface DataOperationsProviderRecord {

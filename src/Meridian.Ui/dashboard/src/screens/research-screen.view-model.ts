@@ -9,6 +9,7 @@ import type {
   PromotionEvaluationResult,
   PromotionRecord,
   ResearchRunRecord,
+  ResearchPlotToolPayload,
   ResearchWorkspaceResponse,
   RunComparisonRow,
   RunDiff
@@ -369,6 +370,7 @@ export function useResearchRunLibraryViewModel(
     () => buildResearchRunLibraryState({
       metrics,
       runs,
+      plotToolFromApi: data?.plotTool ?? null,
       selectedIds,
       selectedRun,
       comparison,
@@ -395,6 +397,7 @@ export function useResearchRunLibraryViewModel(
       runDiff,
       runDiffLoaded,
       metrics,
+      data?.plotTool,
       runs,
       selectedIds,
       selectedRun,
@@ -556,6 +559,7 @@ export function useResearchRunLibraryViewModel(
 export function buildResearchRunLibraryState({
   metrics = [],
   runs,
+  plotToolFromApi = null,
   selectedIds,
   selectedRun,
   comparison,
@@ -574,6 +578,7 @@ export function buildResearchRunLibraryState({
 }: {
   metrics?: MetricSnapshot[];
   runs: ResearchRunRecord[];
+  plotToolFromApi?: ResearchPlotToolPayload | null;
   selectedIds: string[];
   selectedRun: ResearchRunRecord | null;
   comparison: RunComparisonRow[];
@@ -603,13 +608,16 @@ export function buildResearchRunLibraryState({
   const comparisonTable = buildComparisonTable(comparison);
   const diffPanel = buildDiffPanel(runDiff);
   const promotionHistoryTable = buildPromotionHistoryTable(promotionHistory);
-  const plotTool = buildPlotToolState({
-    metrics,
-    runs,
-    selectedRuns,
-    comparison,
-    runDiff
-  });
+  const plotTool = buildPlotToolStateFromApiOrFallback(
+    plotToolFromApi,
+    {
+      metrics,
+      runs,
+      selectedRuns,
+      comparison,
+      runDiff
+    }
+  );
 
   return {
     runs,
@@ -742,6 +750,27 @@ export function buildRunTable(runs: ResearchRunRecord[]): ResearchResultTableSta
     caption: "Strategy runs available for compare, diff, and detail review.",
     emptyText: "No strategy runs available. Start a backtest or paper session, then refresh Strategy."
   };
+}
+
+function buildPlotToolStateFromApiOrFallback(
+  plotToolFromApi: ResearchPlotToolPayload | null | undefined,
+  fallbackArgs: {
+    metrics: MetricSnapshot[];
+    runs: ResearchRunRecord[];
+    selectedRuns: ResearchRunRecord[];
+    comparison: RunComparisonRow[];
+    runDiff: RunDiff | null;
+  }
+): ResearchPlotToolState {
+  if (plotToolFromApi?.workspace && plotToolFromApi.statistics) {
+    return {
+      studies: (plotToolFromApi.studies as ResearchPlotStudyItem[]) ?? [],
+      workspace: plotToolFromApi.workspace as ResearchPlotWorkspaceState,
+      statistics: plotToolFromApi.statistics as ResearchPlotStatisticsState
+    };
+  }
+
+  return buildPlotToolState(fallbackArgs);
 }
 
 export function buildPlotToolState({

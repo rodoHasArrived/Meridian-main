@@ -1256,7 +1256,8 @@ public static class WorkstationEndpoints
                 Runs: Array.Empty<object>(),
                 Comparisons: Array.Empty<WorkstationModeComparisonGroup>(),
                 Timeline: Array.Empty<WorkstationTimelineCard>(),
-                Workspace: new WorkstationResearchWorkspaceSummary(0, null, null, false, false, 0));
+                Workspace: new WorkstationResearchWorkspaceSummary(0, null, null, false, false, 0),
+                PlotTool: BuildResearchPlotToolPayload(Array.Empty<StrategyRunSummary>(), selectedRunIds: Array.Empty<string>()));
         }
 
         var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
@@ -1285,7 +1286,8 @@ public static class WorkstationEndpoints
                 LatestStrategyName: latestRun.StrategyName,
                 HasLedgerCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
                 HasPortfolioCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.PortfolioId)),
-                PromotionCandidates: queuedPromotions));
+                PromotionCandidates: queuedPromotions),
+            PlotTool: BuildResearchPlotToolPayload(runs, selectedRunIds: Array.Empty<string>()));
     }
 
     private static async Task<ResearchBriefingDto> BuildResearchBriefingAsync(HttpContext context)
@@ -1541,7 +1543,8 @@ public static class WorkstationEndpoints
             ],
             Comparisons: Array.Empty<WorkstationModeComparisonGroup>(),
             Timeline: Array.Empty<WorkstationTimelineCard>(),
-            Workspace: new WorkstationResearchWorkspaceSummary(1, "run-research-001", "Mean Reversion FX", false, false, 0));
+            Workspace: new WorkstationResearchWorkspaceSummary(1, "run-research-001", "Mean Reversion FX", false, false, 0),
+            PlotTool: BuildResearchFallbackPlotToolPayload());
     }
 
     // PR-03: returns typed DTO instead of anonymous object
@@ -2807,6 +2810,234 @@ public static class WorkstationEndpoints
             HasPortfolio: !string.IsNullOrWhiteSpace(run.PortfolioId),
             SecurityCoverage: BuildSecurityCoverage(detail));
     }
+
+    private static WorkstationPlotToolPayload BuildResearchPlotToolPayload(
+        IReadOnlyList<StrategyRunSummary> runs,
+        IReadOnlyList<string> selectedRunIds)
+    {
+        var activeRun = selectedRunIds.Count > 0
+            ? runs.FirstOrDefault(run => string.Equals(run.RunId, selectedRunIds[0], StringComparison.OrdinalIgnoreCase)) ?? runs.FirstOrDefault()
+            : runs.FirstOrDefault();
+        var companionRun = selectedRunIds.Count > 1
+            ? runs.FirstOrDefault(run => string.Equals(run.RunId, selectedRunIds[1], StringComparison.OrdinalIgnoreCase))
+            : runs.Skip(1).FirstOrDefault();
+        var activeStrategy = activeRun?.StrategyName ?? "Meridian PlotTool";
+        var companionStrategy = companionRun?.StrategyName;
+        var chartTitle = companionStrategy is null ? activeStrategy : $"{activeStrategy} vs {companionStrategy}";
+        var queuedCount = runs.Count(static run => run.Status == StrategyRunStatus.Pending);
+        var reviewCount = runs.Count(static run =>
+            run.Promotion?.RequiresReview == true ||
+            run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled);
+        var points = BuildPlotToolScatterPoints().ToArray();
+        var focusPoint = points.LastOrDefault(static point => point.Emphasis);
+
+        var workspace = new
+        {
+            eyebrow = "Strategy Lane · PlotTool",
+            title = $"{chartTitle} workstation",
+            description = "API-backed PlotTool workspace state from workstation strategy payload.",
+            statusBadgeLabel = (activeRun?.Mode.ToString() ?? "research").ToUpperInvariant(),
+            statusBadgeVariant = ResolveModeVariant(activeRun?.Mode),
+            expression = $"{SlugifyForExpression(activeStrategy)}.spread() vs {(companionStrategy is null ? SlugifyForExpression(activeStrategy) : SlugifyForExpression(companionStrategy))}.implied_volatility(3m, forward, 100)",
+            toolbarPills = new[] { "MAX", "Daily (MAX)", companionStrategy is null ? "Single study" : "Pair overlay", "0d lag" },
+            metaItems = new[]
+            {
+                activeRun?.DatasetReference ?? activeRun?.FeedReference ?? "Cross-asset sandbox",
+                $"{(2184 + (runs.Count * 9)).ToString(CultureInfo.InvariantCulture)} obs",
+                "β 0.48",
+                "R² 0.71",
+                "ρ 0.84"
+            },
+            xAxisLabel = "Spread (bps)",
+            yAxisLabel = "3m implied vol",
+            xTicks = new[]
+            {
+                new { value = 40, label = "20" }, new { value = 120, label = "40" }, new { value = 200, label = "60" },
+                new { value = 280, label = "80" }, new { value = 360, label = "100" }, new { value = 440, label = "140" },
+                new { value = 520, label = "180" }, new { value = 600, label = "200" }
+            },
+            yTicks = new[]
+            {
+                new { value = 44, label = "120" }, new { value = 98, label = "100" }, new { value = 152, label = "80" },
+                new { value = 206, label = "60" }, new { value = 260, label = "40" }
+            },
+            points = points.Select(static point => new { x = point.X, y = point.Y, emphasis = point.Emphasis }).ToArray(),
+            studySummary = new[]
+            {
+                new { id = "primary", label = "Primary notebook", value = activeStrategy },
+                new { id = "companion", label = "Pair target", value = companionStrategy ?? "Select a second run" },
+                new { id = "queued", label = "Queued studies", value = queuedCount.ToString(CultureInfo.InvariantCulture) },
+                new { id = "review", label = "Review queue", value = reviewCount.ToString(CultureInfo.InvariantCulture) }
+            },
+            legendItems = new[]
+            {
+                new { id = "history", label = "History", detail = $"{(2184 + (runs.Count * 9)).ToString(CultureInfo.InvariantCulture)} observations", tone = "history" },
+                new { id = "current", label = "Current", detail = "88.40 / 73.80", tone = "current" },
+                new { id = "trend", label = "OLS fit", detail = "y = 0.48x + 39.31", tone = "trend" },
+                new { id = "refresh", label = "Refresh", detail = FormatRelativeTime(activeRun?.LastUpdatedAt ?? DateTimeOffset.UtcNow), tone = "muted" }
+            },
+            focusPoint = new
+            {
+                label = "Current marker",
+                xValueText = "88.40",
+                yValueText = "73.80",
+                detail = $"Highlighted at x {focusPoint.X}, y {focusPoint.Y}."
+            },
+            signalCards = new[]
+            {
+                new { id = "correlation", label = "Correlation", value = "0.84", detail = "Pearson correlation", tone = "success" },
+                new { id = "regression", label = "Regression beta", value = "0.48", detail = "OLS slope", tone = "default" },
+                new { id = "queued", label = "Queued studies", value = queuedCount.ToString(CultureInfo.InvariantCulture), detail = "Run-library backlog", tone = queuedCount > 0 ? "warning" : "default" },
+                new { id = "review", label = "Review queue", value = reviewCount.ToString(CultureInfo.InvariantCulture), detail = "Promotion review queue", tone = reviewCount > 0 ? "warning" : "success" }
+            },
+            consoleTitle = "Expression editor",
+            consoleBody = companionStrategy is null
+                ? "Select a second run to activate pair-study overlays."
+                : $"Pair analysis is active for {activeStrategy} versus {companionStrategy}.",
+            overlayTitle = "Meridian overlays",
+            overlayItems = new[]
+            {
+                $"Notebook coverage: {runs.Count} retained {(runs.Count == 1 ? "study" : "studies")} in Strategy.",
+                $"Queued studies: {queuedCount}.",
+                $"Runs requiring review: {reviewCount}."
+            }
+        };
+
+        var statistics = new
+        {
+            eyebrow = "Statistics view",
+            title = $"{chartTitle} analysis",
+            description = $"{activeRun?.DatasetReference ?? activeRun?.FeedReference ?? "Cross-asset sandbox"} · refreshed {FormatRelativeTime(activeRun?.LastUpdatedAt ?? DateTimeOffset.UtcNow)}",
+            summaryTiles = new[]
+            {
+                new { id = "observations", label = "N obs", value = (2184 + (runs.Count * 9)).ToString(CultureInfo.InvariantCulture), detail = "99.7% complete", tone = "default" },
+                new { id = "correlation", label = "Correlation", value = "0.84", detail = "Pearson ρ", tone = "success" },
+                new { id = "r-squared", label = "R²", value = "0.71", detail = "OLS fit", tone = "success" },
+                new { id = "beta", label = "β (slope)", value = "0.48", detail = "SE 0.014", tone = "success" },
+                new { id = "sharpe", label = "Sharpe (5d)", value = activeRun is null ? "N/A" : FormatSharpeProxy(activeRun), detail = "Run-linked", tone = "success" }
+            },
+            distributionBars = new[] { 2, 6, 11, 18, 24, 31, 34, 29, 20, 11, 5, 2 },
+            distributionSummary = $"{(2184 + (runs.Count * 9)).ToString(CultureInfo.InvariantCulture)} samples centered on spread 66.84 and IV 71.42.",
+            distributionFootnote = $"Latest observation {DateTimeOffset.UtcNow:yyyy-MM-dd} · refreshed {FormatRelativeTime(activeRun?.LastUpdatedAt ?? DateTimeOffset.UtcNow)}.",
+            moments = new[]
+            {
+                new { id = "net-pnl", label = "Net P&L", value = FormatCurrency(activeRun?.NetPnl ?? 0m), benchmark = "Pair summary" },
+                new { id = "return", label = "Total return", value = FormatReturn(activeRun?.TotalReturn, activeRun?.NetPnl), benchmark = "Run linked" },
+                new { id = "promotion", label = "Promotion state", value = activeRun?.Promotion?.State.ToString() ?? "Unavailable", benchmark = "Strategy posture" }
+            },
+            regression = new
+            {
+                equation = "y = 0.48x + 39.31",
+                detailItems = new[]
+                {
+                    $"{chartTitle} remains linked to workstation strategy evidence.",
+                    $"Queued studies: {queuedCount}.",
+                    $"Review queue: {reviewCount}."
+                }
+            },
+            sampleRows = new[]
+            {
+                new { id = "sample-1", timestamp = DateTimeOffset.UtcNow.AddMinutes(-2).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), spreadText = "88.40", impliedVolText = "73.80", zScoreText = "1.42", signalText = "Crowded vol", tone = "warning" },
+                new { id = "sample-2", timestamp = DateTimeOffset.UtcNow.AddMinutes(-6).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture), spreadText = "80.20", impliedVolText = "70.10", zScoreText = "0.82", signalText = "Neutral", tone = "default" }
+            }
+        };
+
+        var studies = runs.Select(run => (object)new
+        {
+            id = run.RunId,
+            title = run.StrategyName,
+            subtitle = $"{run.DatasetReference ?? run.FeedReference ?? "Unassigned"} · {FormatWindow(run.StartedAt, run.CompletedAt)} · {run.Engine}",
+            statusText = run.Status.ToString(),
+            statusBadgeLabel = run.Mode.ToString().ToUpperInvariant(),
+            statusBadgeVariant = ResolveModeVariant(run.Mode),
+            metricText = $"{FormatReturn(run.TotalReturn, run.NetPnl)} · Sharpe {FormatSharpeProxy(run)}",
+            noteText = BuildRunNotes(run),
+            isActive = activeRun is not null && string.Equals(run.RunId, activeRun.RunId, StringComparison.OrdinalIgnoreCase)
+        }).ToArray();
+
+        return new WorkstationPlotToolPayload(
+            Workspace: workspace,
+            Statistics: statistics,
+            Studies: studies,
+            Tabs:
+            [
+                new WorkstationPlotToolTabState("workspace", "Workstation", "plottool-workspace-tab", "plottool-workspace-panel", true, "secondary", 0, "Workstation"),
+                new WorkstationPlotToolTabState("statistics", "Statistics", "plottool-statistics-tab", "plottool-statistics-panel", false, "ghost", -1, "Statistics")
+            ],
+            ActiveView: "workspace");
+    }
+
+    private static WorkstationPlotToolPayload BuildResearchFallbackPlotToolPayload()
+    {
+        var fallbackRun = new StrategyRunSummary(
+            RunId: "run-research-001",
+            StrategyId: "mean-reversion-fx",
+            StrategyName: "Mean Reversion FX",
+            Mode: StrategyRunMode.Paper,
+            Engine: StrategyRunEngine.MeridianNative,
+            Status: StrategyRunStatus.Running,
+            StartedAt: DateTimeOffset.UtcNow.AddMinutes(-20),
+            CompletedAt: null,
+            DatasetReference: "FX Majors",
+            FeedReference: "synthetic:fx",
+            PortfolioId: null,
+            LedgerReference: null,
+            NetPnl: 4200m,
+            TotalReturn: 0.042m,
+            FinalEquity: 104200m,
+            FillCount: 12,
+            LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-2),
+            AuditReference: null,
+            Identity: null,
+            Execution: null,
+            Promotion: null,
+            Governance: null,
+            FundProfileId: null,
+            FundDisplayName: null,
+            ParentRunId: null,
+            SweepId: null,
+            SweepDefinitionHash: null,
+            SweepObjective: null,
+            LiveStatus: null,
+            PaperStatus: null);
+
+        return BuildResearchPlotToolPayload([fallbackRun], selectedRunIds: Array.Empty<string>());
+    }
+
+    private static IEnumerable<(int X, int Y, bool Emphasis)> BuildPlotToolScatterPoints()
+    {
+        const int startX = 90;
+        const int startY = 250;
+        for (var index = 0; index < 36; index++)
+        {
+            var x = startX + (index * 14);
+            var y = startY - (index * 5);
+            yield return (x, y, index == 35);
+        }
+    }
+
+    private static string SlugifyForExpression(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "plottool";
+
+        Span<char> buffer = stackalloc char[value.Length];
+        var cursor = 0;
+        foreach (var character in value.ToLowerInvariant())
+        {
+            buffer[cursor++] = char.IsLetterOrDigit(character) ? character : '_';
+        }
+
+        return new string(buffer[..cursor]).Trim('_');
+    }
+
+    private static string ResolveModeVariant(StrategyRunMode? mode)
+        => mode switch
+        {
+            StrategyRunMode.Paper => "paper",
+            StrategyRunMode.Live => "live",
+            _ => "research"
+        };
 
     private static object BuildResearchRunCard(StrategyRunSummary run, StrategyRunDetail? detail)
     {

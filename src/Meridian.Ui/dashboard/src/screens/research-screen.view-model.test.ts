@@ -12,7 +12,7 @@ import {
   shouldCloseRunDetailForKey,
   toggleRunSelection
 } from "@/screens/research-screen.view-model";
-import type { MetricSnapshot, PromotionRecord, ResearchRunRecord, RunComparisonRow, RunDiff } from "@/types";
+import type { MetricSnapshot, PromotionRecord, ResearchPlotToolPayload, ResearchRunRecord, RunComparisonRow, RunDiff } from "@/types";
 
 const runs: ResearchRunRecord[] = [
   {
@@ -414,5 +414,64 @@ describe("research-screen view model", () => {
     expect(state.selectedRuns.map((run) => run.id)).toEqual(["run-1", "run-2"]);
     expect(state.selectionText).toBe("Mean Reversion FX vs Index Momentum");
     expect(state.statusAnnouncement).toBe("No comparison rows returned for the selected pair.");
+  });
+
+  it("prefers API-backed PlotTool payload when provided", () => {
+    const apiPlotTool: ResearchPlotToolPayload = {
+      activeView: "workspace",
+      tabs: [],
+      studies: [],
+      workspace: {
+        eyebrow: "API",
+        title: "API workspace",
+        description: "From backend",
+        statusBadgeLabel: "PAPER",
+        statusBadgeVariant: "paper",
+        expression: "api.expr()",
+        toolbarPills: [],
+        metaItems: [],
+        xAxisLabel: "X",
+        yAxisLabel: "Y",
+        xTicks: [],
+        yTicks: [],
+        points: [],
+        studySummary: [],
+        legendItems: [],
+        focusPoint: { label: "focus", xValueText: "1", yValueText: "2", detail: "api" },
+        signalCards: [],
+        consoleTitle: "console",
+        consoleBody: "body",
+        overlayTitle: "overlay",
+        overlayItems: []
+      },
+      statistics: {
+        eyebrow: "API",
+        title: "API stats",
+        description: "From backend",
+        summaryTiles: [],
+        distributionBars: [],
+        distributionSummary: "summary",
+        distributionFootnote: "footnote",
+        moments: [],
+        regression: { equation: "y=x", detailItems: [] },
+        sampleRows: []
+      }
+    };
+
+    const state = buildResearchRunLibraryState({
+      runs,
+      metrics,
+      plotToolFromApi: apiPlotTool,
+      selectedIds: [],
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(state.plotTool.workspace.title).toBe("API workspace");
+    expect(state.plotTool.statistics.title).toBe("API stats");
   });
 });
