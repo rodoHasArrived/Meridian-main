@@ -1,4 +1,5 @@
 import { AlertCircle, BookCheck, CheckCircle2, Landmark, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -58,6 +59,8 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const workstream = resolveGovernanceWorkstream(pathname);
   const workspace = workspaceForPath(pathname);
   const reconciliation = useGovernanceReconciliationViewModel(data, workstream);
+  const [resolveDialog, setResolveDialog] = useState<{ breakId: string; status: "Resolved" | "Dismissed" } | null>(null);
+  const [resolveRationale, setResolveRationale] = useState("");
   const selectedReconciliation = reconciliation.selectedReconciliation;
   const cashFlow = useGovernanceCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useGovernanceReportingViewModel(data?.reporting ?? null);
@@ -827,36 +830,55 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                     <Button
                       size="sm"
                       variant="outline"
-                      disabled={!item.canResolve}
+                      disabled={!item.canResolve || resolveDialog?.breakId === item.breakId}
                       aria-label={item.resolveAriaLabel}
-                      onClick={() => {
-                        const operatorRationale = window.prompt("Enter operator rationale for resolving this break:", "");
-                        if (operatorRationale === null) {
-                          return;
-                        }
-
-                        void reconciliation.resolveBreak(item.breakId, "Resolved", operatorRationale);
-                      }}
+                      onClick={() => { setResolveDialog({ breakId: item.breakId, status: "Resolved" }); setResolveRationale(""); }}
                     >
                       {item.resolveLabel}
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      disabled={!item.canDismiss}
+                      disabled={!item.canDismiss || resolveDialog?.breakId === item.breakId}
                       aria-label={item.dismissAriaLabel}
-                      onClick={() => {
-                        const operatorRationale = window.prompt("Enter operator rationale for dismissing this break:", "");
-                        if (operatorRationale === null) {
-                          return;
-                        }
-
-                        void reconciliation.resolveBreak(item.breakId, "Dismissed", operatorRationale);
-                      }}
+                      onClick={() => { setResolveDialog({ breakId: item.breakId, status: "Dismissed" }); setResolveRationale(""); }}
                     >
                       {item.dismissLabel}
                     </Button>
                   </div>
+                  {resolveDialog?.breakId === item.breakId && (
+                    <form
+                      className="mt-3 space-y-2 rounded-lg border border-border/50 bg-secondary/20 p-3"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void reconciliation.resolveBreak(item.breakId, resolveDialog.status, resolveRationale);
+                        setResolveDialog(null);
+                        setResolveRationale("");
+                      }}
+                    >
+                      <label htmlFor={`rationale-${item.breakId}`} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                        {resolveDialog.status === "Resolved" ? "Resolve rationale" : "Dismiss rationale"}
+                      </label>
+                      <input
+                        id={`rationale-${item.breakId}`}
+                        type="text"
+                        required
+                        autoFocus
+                        placeholder="Describe why this break is being resolved…"
+                        value={resolveRationale}
+                        onChange={(e) => setResolveRationale(e.target.value)}
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                      />
+                      <div className="flex gap-2">
+                        <Button type="submit" size="sm" disabled={!resolveRationale.trim()}>
+                          Confirm {resolveDialog.status === "Resolved" ? "resolve" : "dismiss"}
+                        </Button>
+                        <Button type="button" size="sm" variant="ghost" onClick={() => { setResolveDialog(null); setResolveRationale(""); }}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               ))}
             </CardContent>

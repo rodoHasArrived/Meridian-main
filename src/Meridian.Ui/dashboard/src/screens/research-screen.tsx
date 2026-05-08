@@ -1,4 +1,6 @@
 import { BarChart3, BookOpenText, ChartScatter, Sigma, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +58,8 @@ const sampleToneBadgeVariant = {
 
 export function ResearchScreen({ data }: ResearchScreenProps) {
   const vm = useResearchRunLibraryViewModel(data);
+  const navigate = useNavigate();
+  const [promoteInitialCash, setPromoteInitialCash] = useState(100_000);
 
   if (!data) {
     return (
@@ -131,6 +135,13 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
               <Button variant="outline" onClick={() => void vm.diffSelectedRuns()} disabled={!vm.canDiff}>
                 {vm.diffButtonLabel}
               </Button>
+              <Button
+                variant="default"
+                onClick={() => void vm.promoteSelectedRun()}
+                disabled={!vm.canPromote}
+              >
+                {vm.promoteButtonLabel}
+              </Button>
             </div>
           </div>
 
@@ -138,6 +149,77 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
           {vm.actionError && (
             <div role="alert" className="rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
               {vm.actionError}
+            </div>
+          )}
+
+          {vm.showPromotePanel && (
+            <div className="rounded-lg border border-border/70 bg-secondary/15 p-4 space-y-3">
+              <div className="eyebrow-label">Promotion evaluation</div>
+              {vm.promoteError && (
+                <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                  {vm.promoteError}
+                </div>
+              )}
+              {vm.promotionEval && (
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className={`font-semibold ${vm.promotionEval.isEligible ? "text-success" : "text-danger"}`}>
+                      {vm.promotionEval.isEligible ? "Eligible for paper trading" : "Not eligible"}
+                    </span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-muted-foreground">{vm.promotionEval.reason}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-4 font-mono text-xs text-muted-foreground">
+                    <span>Sharpe {vm.promotionEval.sharpeRatio.toFixed(2)}</span>
+                    <span>Max DD {(vm.promotionEval.maxDrawdownPercent * 100).toFixed(1)}%</span>
+                    <span>Return {(vm.promotionEval.totalReturn * 100).toFixed(1)}%</span>
+                  </div>
+                  {vm.promotionEval.blockingReasons && vm.promotionEval.blockingReasons.length > 0 && (
+                    <ul className="list-inside list-disc text-xs text-danger space-y-1">
+                      {vm.promotionEval.blockingReasons.map((r) => <li key={r}>{r}</li>)}
+                    </ul>
+                  )}
+                </div>
+              )}
+              {vm.promoteState === "done" && vm.promotionSession && (
+                <div className="space-y-2">
+                  <div className="text-sm text-success font-semibold">
+                    Paper session created — session {vm.promotionSession.sessionId}
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => { navigate("/trading"); }}
+                  >
+                    Go to Trading cockpit
+                  </Button>
+                </div>
+              )}
+              {vm.promoteState === "evaluated" && vm.promotionEval?.isEligible && (
+                <form
+                  className="flex items-end gap-3"
+                  onSubmit={(e) => { e.preventDefault(); void vm.confirmPromotion(promoteInitialCash); }}
+                >
+                  <div className="space-y-1">
+                    <label htmlFor="promote-initial-cash" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      Initial cash ($)
+                    </label>
+                    <input
+                      id="promote-initial-cash"
+                      type="number"
+                      min={1000}
+                      step={1000}
+                      value={promoteInitialCash}
+                      onChange={(e) => setPromoteInitialCash(Number(e.target.value))}
+                      className="w-40 rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    />
+                  </div>
+                  <Button type="submit" size="sm">Start paper session</Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={vm.cancelPromotion}>Cancel</Button>
+                </form>
+              )}
+              {vm.promoteState === "evaluated" && !vm.promotionEval?.isEligible && (
+                <Button size="sm" variant="ghost" onClick={vm.cancelPromotion}>Dismiss</Button>
+              )}
             </div>
           )}
 

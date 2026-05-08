@@ -427,11 +427,15 @@ describe("GovernanceScreen", () => {
 
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
     vi.mocked(api.resolveReconciliationBreak).mockRejectedValueOnce(new Error("Ledger write rejected"));
-    vi.spyOn(window, "prompt").mockReturnValueOnce("Reviewed cash mismatch");
 
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
     await user.click(await screen.findByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
+
+    // The inline rationale form appears; fill in the rationale and submit
+    const rationaleInput = await screen.findByLabelText(/resolve rationale/i);
+    await user.type(rationaleInput, "Reviewed cash mismatch");
+    await user.click(screen.getByRole("button", { name: /confirm resolve/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Break action failed: Ledger write rejected");
   });

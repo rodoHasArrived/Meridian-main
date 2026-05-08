@@ -1,8 +1,9 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ResearchScreen } from "@/screens/research-screen";
 import * as api from "@/lib/api";
 import { afterEach } from "vitest";
+import { renderWithRouter } from "@/test/render";
 import type { PromotionRecord, ResearchWorkspaceResponse, RunComparisonRow, RunDiff } from "@/types";
 
 const twoRuns: ResearchWorkspaceResponse = {
@@ -51,7 +52,7 @@ describe("ResearchScreen", () => {
 
   it("opens a detail dialog with run notes when the Open button is clicked", async () => {
     const user = userEvent.setup();
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     await user.click(screen.getAllByRole("button", { name: /open/i })[0]);
 
@@ -65,7 +66,7 @@ describe("ResearchScreen", () => {
 
   it("closes the run detail dialog with Escape", async () => {
     const user = userEvent.setup();
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     await user.click(screen.getAllByRole("button", { name: /open/i })[0]);
 
@@ -77,13 +78,13 @@ describe("ResearchScreen", () => {
   });
 
   it("shows paper mode badge", () => {
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     expect(screen.getAllByText("PAPER").length).toBeGreaterThan(0);
   });
 
   it("renders the PlotTool workstation view inside the Strategy lane by default", () => {
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool study brief")).toBeInTheDocument();
@@ -96,7 +97,7 @@ describe("ResearchScreen", () => {
 
   it("switches to the PlotTool statistics view", async () => {
     const user = userEvent.setup();
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     await user.click(screen.getByRole("tab", { name: "Statistics" }));
 
@@ -108,7 +109,7 @@ describe("ResearchScreen", () => {
 
   it("switches PlotTool tabs from keyboard navigation", async () => {
     const user = userEvent.setup();
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     screen.getByRole("tab", { name: "Workstation" }).focus();
     await user.keyboard("{ArrowRight}");
@@ -118,7 +119,7 @@ describe("ResearchScreen", () => {
   });
 
   it("renders an empty run-library row when no strategy runs are available", () => {
-    render(<ResearchScreen data={{ ...twoRuns, runs: [] }} />);
+    renderWithRouter(<ResearchScreen data={{ ...twoRuns, runs: [] }} />);
 
     expect(screen.getByText("No strategy runs available. Start a backtest or paper session, then refresh Strategy."))
       .toBeInTheDocument();
@@ -127,7 +128,7 @@ describe("ResearchScreen", () => {
 
   it("keeps compare and diff disabled until two runs are checked", async () => {
     const user = userEvent.setup();
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     expect(screen.getByRole("button", { name: /compare 2 runs/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /diff 2 runs/i })).toBeDisabled();
@@ -165,7 +166,7 @@ describe("ResearchScreen", () => {
     vi.spyOn(api, "compareRuns").mockResolvedValue(comparisonRows);
 
     const user = userEvent.setup();
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[0]);
@@ -189,7 +190,7 @@ describe("ResearchScreen", () => {
     vi.spyOn(api, "compareRuns").mockResolvedValue([]);
 
     const user = userEvent.setup();
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[0]);
@@ -224,7 +225,7 @@ describe("ResearchScreen", () => {
     vi.spyOn(api, "compareRuns").mockResolvedValue(comparisonRows);
 
     const user = userEvent.setup();
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[0]);
@@ -240,7 +241,7 @@ describe("ResearchScreen", () => {
     vi.spyOn(api, "compareRuns").mockRejectedValue(new Error("Compare service unavailable"));
 
     const user = userEvent.setup();
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[0]);
@@ -277,7 +278,7 @@ describe("ResearchScreen", () => {
     vi.spyOn(api, "diffRuns").mockResolvedValue(diff);
 
     const user = userEvent.setup();
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[0]);
@@ -322,7 +323,7 @@ describe("ResearchScreen", () => {
     vi.spyOn(api, "diffRuns").mockResolvedValue(diff);
 
     const user = userEvent.setup();
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[0]);
@@ -353,7 +354,7 @@ describe("ResearchScreen", () => {
     vi.spyOn(api, "getPromotionHistory").mockResolvedValue(history);
 
     const user = userEvent.setup();
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     await user.click(screen.getByRole("button", { name: /promotion history/i }));
 
@@ -368,7 +369,7 @@ describe("ResearchScreen", () => {
     vi.spyOn(api, "getPromotionHistory").mockResolvedValue([]);
 
     const user = userEvent.setup();
-    render(<ResearchScreen data={twoRuns} />);
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
 
     await user.click(screen.getByRole("button", { name: /promotion history/i }));
 

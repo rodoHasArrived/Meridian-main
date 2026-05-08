@@ -66,8 +66,8 @@ $summary = @(
     '# Desktop Workflow Bundle Summary'
     ''
     "- Generated (UTC): $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'))"
-    "- Bundle path: `$resolvedBundlePath`"
-    "- Manifest path: `$resolvedManifestPath`"
+    "- Bundle path: $resolvedBundlePath"
+    "- Manifest path: $resolvedManifestPath"
     ''
     '## Outcome'
     "- Status: $($manifest.run.status)"

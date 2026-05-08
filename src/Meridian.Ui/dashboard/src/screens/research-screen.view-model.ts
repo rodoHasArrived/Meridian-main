@@ -3,8 +3,10 @@ import * as workstationApi from "@/lib/api";
 import type {
   MetricSnapshot,
   MetricsDiff,
+  PaperSessionSummary,
   ParameterDiff,
   PositionDiffEntry,
+  PromotionEvaluationResult,
   PromotionRecord,
   ResearchRunRecord,
   ResearchWorkspaceResponse,
@@ -19,7 +21,11 @@ export interface ResearchRunLibraryServices {
   compareRuns: (runIds: string[]) => Promise<RunComparisonRow[]>;
   diffRuns: (baseRunId: string, targetRunId: string) => Promise<RunDiff>;
   getPromotionHistory: () => Promise<PromotionRecord[]>;
+  evaluatePromotion: (runId: string) => Promise<PromotionEvaluationResult>;
+  createPaperSession: (strategyId: string, strategyName: string | null, initialCash: number) => Promise<PaperSessionSummary>;
 }
+
+export type PromoteState = "idle" | "evaluating" | "evaluated" | "creating" | "done";
 
 export interface ResearchRunLibraryState {
   runs: ResearchRunRecord[];
@@ -45,11 +51,18 @@ export interface ResearchRunLibraryState {
   canCompare: boolean;
   canDiff: boolean;
   canLoadPromotionHistory: boolean;
+  canPromote: boolean;
+  promoteState: PromoteState;
+  promotionEval: PromotionEvaluationResult | null;
+  promotionSession: PaperSessionSummary | null;
+  showPromotePanel: boolean;
+  promoteError: string | null;
   selectionText: string;
   selectionDetail: string;
   compareButtonLabel: string;
   diffButtonLabel: string;
   promotionHistoryButtonLabel: string;
+  promoteButtonLabel: string;
   statusAnnouncement: string;
 }
 
@@ -318,7 +331,9 @@ export interface ResearchPlotSampleRow {
 const defaultResearchServices: ResearchRunLibraryServices = {
   compareRuns: (runIds) => workstationApi.compareRuns(runIds),
   diffRuns: (baseRunId, targetRunId) => workstationApi.diffRuns(baseRunId, targetRunId),
-  getPromotionHistory: () => workstationApi.getPromotionHistory()
+  getPromotionHistory: () => workstationApi.getPromotionHistory(),
+  evaluatePromotion: (runId) => workstationApi.evaluatePromotion(runId),
+  createPaperSession: (strategyId, strategyName, initialCash) => workstationApi.createPaperSession(strategyId, strategyName, initialCash)
 };
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -342,6 +357,10 @@ export function useResearchRunLibraryViewModel(
   const [activeCommand, setActiveCommand] = useState<ResearchCommand | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [activePlotToolView, setActivePlotToolView] = useState<ResearchPlotToolView>("workspace");
+  const [promoteState, setPromoteState] = useState<PromoteState>("idle");
+  const [promotionEval, setPromotionEval] = useState<PromotionEvaluationResult | null>(null);
+  const [promotionSession, setPromotionSession] = useState<PaperSessionSummary | null>(null);
+  const [promoteError, setPromoteError] = useState<string | null>(null);
 
   const metrics = data?.metrics ?? [];
   const runs = data?.runs ?? [];
@@ -360,7 +379,11 @@ export function useResearchRunLibraryViewModel(
       promotionHistoryLoaded,
       activeCommand,
       actionError,
-      activePlotToolView
+      activePlotToolView,
+      promoteState,
+      promotionEval,
+      promotionSession,
+      promoteError
     }),
     [
       actionError,
@@ -375,7 +398,11 @@ export function useResearchRunLibraryViewModel(
       runs,
       selectedIds,
       selectedRun,
-      activePlotToolView
+      activePlotToolView,
+      promoteState,
+      promotionEval,
+      promotionSession,
+      promoteError
     ]
   );
 
@@ -470,6 +497,45 @@ export function useResearchRunLibraryViewModel(
     }
   }, [selectedIds, services]);
 
+  const promoteSelectedRun = useCallback(async () => {
+    const run = state.selectedRuns[0];
+    if (!run) return;
+    setPromoteState("evaluating");
+    setPromoteError(null);
+    setPromotionEval(null);
+    setPromotionSession(null);
+    try {
+      const result = await services.evaluatePromotion(run.id);
+      setPromotionEval(result);
+      setPromoteState("evaluated");
+    } catch (err) {
+      setPromoteError(err instanceof Error ? err.message : "Promotion evaluation failed.");
+      setPromoteState("idle");
+    }
+  }, [services, state.selectedRuns]);
+
+  const confirmPromotion = useCallback(async (initialCash: number) => {
+    const run = state.selectedRuns[0];
+    if (!run || !promotionEval?.isEligible) return;
+    setPromoteState("creating");
+    setPromoteError(null);
+    try {
+      const session = await services.createPaperSession(run.id, run.strategyName, initialCash);
+      setPromotionSession(session);
+      setPromoteState("done");
+    } catch (err) {
+      setPromoteError(err instanceof Error ? err.message : "Paper session creation failed.");
+      setPromoteState("evaluated");
+    }
+  }, [services, state.selectedRuns, promotionEval]);
+
+  const cancelPromotion = useCallback(() => {
+    setPromoteState("idle");
+    setPromotionEval(null);
+    setPromotionSession(null);
+    setPromoteError(null);
+  }, []);
+
   return {
     ...state,
     toggleRun,
@@ -480,7 +546,10 @@ export function useResearchRunLibraryViewModel(
     selectPlotToolViewForKey,
     loadPromotionHistory,
     compareSelectedRuns,
-    diffSelectedRuns
+    diffSelectedRuns,
+    promoteSelectedRun,
+    confirmPromotion,
+    cancelPromotion
   };
 }
 
@@ -497,7 +566,11 @@ export function buildResearchRunLibraryState({
   promotionHistoryLoaded = false,
   activeCommand,
   actionError,
-  activePlotToolView = "workspace"
+  activePlotToolView = "workspace",
+  promoteState = "idle",
+  promotionEval = null,
+  promotionSession = null,
+  promoteError = null
 }: {
   metrics?: MetricSnapshot[];
   runs: ResearchRunRecord[];
@@ -512,12 +585,20 @@ export function buildResearchRunLibraryState({
   activeCommand: ResearchCommand | null;
   actionError: string | null;
   activePlotToolView?: ResearchPlotToolView;
+  promoteState?: PromoteState;
+  promotionEval?: PromotionEvaluationResult | null;
+  promotionSession?: PaperSessionSummary | null;
+  promoteError?: string | null;
 }): ResearchRunLibraryState {
   const selectedRuns = selectedIds
     .map((id) => runs.find((run) => run.id === id))
     .filter((run): run is ResearchRunRecord => run !== undefined);
   const hasTwoRuns = selectedIds.length === 2;
+  const hasOneBacktestRun = selectedIds.length === 1 &&
+    selectedRuns[0]?.mode === "backtest" &&
+    selectedRuns[0]?.status === "Completed";
   const busy = activeCommand !== null;
+  const promoteBusy = promoteState === "evaluating" || promoteState === "creating";
   const runTable = buildRunTable(runs);
   const comparisonTable = buildComparisonTable(comparison);
   const diffPanel = buildDiffPanel(runDiff);
@@ -554,13 +635,28 @@ export function buildResearchRunLibraryState({
     canCompare: hasTwoRuns && !busy,
     canDiff: hasTwoRuns && !busy,
     canLoadPromotionHistory: !busy,
+    canPromote: hasOneBacktestRun && !busy && !promoteBusy && promoteState !== "done",
+    promoteState,
+    promotionEval,
+    promotionSession,
+    showPromotePanel: promoteState !== "idle",
+    promoteError,
     selectionText: buildSelectionText(selectedRuns),
     selectionDetail: hasTwoRuns
       ? "Ready to compare or diff the selected run pair."
-      : "Select two runs to enable compare and diff commands.",
+      : hasOneBacktestRun
+        ? "Select Promote to Paper to evaluate this run for paper trading."
+        : "Select two runs to enable compare and diff commands.",
     compareButtonLabel: activeCommand === "compare" ? "Comparing..." : "Compare 2 runs",
     diffButtonLabel: activeCommand === "diff" ? "Diffing..." : "Diff 2 runs",
     promotionHistoryButtonLabel: activeCommand === "history" ? "Loading history..." : "Promotion history",
+    promoteButtonLabel: promoteState === "evaluating"
+      ? "Evaluating…"
+      : promoteState === "creating"
+        ? "Creating session…"
+        : promoteState === "done"
+          ? "Session created"
+          : "Promote to Paper",
     statusAnnouncement: buildResearchStatusAnnouncement({
       activeCommand,
       actionError,

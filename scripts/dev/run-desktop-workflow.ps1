@@ -1526,7 +1526,11 @@ try {
                 New-Item -ItemType Directory -Force -Path $publishDirectory | Out-Null
                 foreach ($step in @($manifest.steps | Where-Object { $_.status -eq 'ok' -and $_.capturePath })) {
                     $destination = Join-Path $publishDirectory ([System.IO.Path]::GetFileName([string]$step.capturePath))
-                    Copy-Item -LiteralPath $step.capturePath -Destination $destination -Force
+                    $resolvedSource = [System.IO.Path]::GetFullPath([string]$step.capturePath)
+                    $resolvedDest = [System.IO.Path]::GetFullPath($destination)
+                    if ($resolvedSource -ne $resolvedDest) {
+                        Copy-Item -LiteralPath $step.capturePath -Destination $destination -Force
+                    }
                     $publishedFiles += $destination
                 }
             }
