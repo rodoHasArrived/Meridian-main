@@ -5041,6 +5041,40 @@ Use these documents together when planning or implementing new work:
 │   │   ├── reconciliation-break-taxonomy.md
 │   │   ├── research-briefing-workflow.md
 │   │   └── strategy-promotion-history.md
+│   ├── screenshots
+│   │   └── desktop
+│   │       └── manuals
+│   │           ├── manual-data-operations
+│   │           │   ├── 01-data-operations-shell.png
+│   │           │   ├── 02-providers.png
+│   │           │   ├── 03-provider-health.png
+│   │           │   ├── 04-backfill.png
+│   │           │   ├── 05-data-sources.png
+│   │           │   ├── 06-storage.png
+│   │           │   └── 07-data-quality.png
+│   │           ├── manual-governance
+│   │           │   ├── 01-governance-shell.png
+│   │           │   ├── 02-fund-ledger.png
+│   │           │   ├── 03-fund-reconciliation.png
+│   │           │   ├── 04-fund-report-pack.png
+│   │           │   ├── 05-security-master.png
+│   │           │   └── 06-settings.png
+│   │           ├── manual-overview
+│   │           │   ├── 01-research-workspace.png
+│   │           │   ├── 02-workspace-layouts.png
+│   │           │   ├── 03-research-workspace.png
+│   │           │   ├── 04-trading-workspace.png
+│   │           │   ├── 05-data-operations-workspace.png
+│   │           │   ├── 06-governance-workspace.png
+│   │           │   └── 07-help.png
+│   │           └── manual-research-and-trading
+│   │               ├── 01-research-shell.png
+│   │               ├── 02-backtest.png
+│   │               ├── 03-strategy-runs.png
+│   │               ├── 04-quant-script.png
+│   │               ├── 05-trading-shell.png
+│   │               ├── 06-position-blotter.png
+│   │               └── 07-run-risk.png
 │   ├── security
 │   │   ├── README.md
 │   │   └── known-vulnerabilities.md
@@ -5175,6 +5209,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── validate-position-blotter-route.ps1
 │   │   ├── validate-screenshot-contract.py
 │   │   ├── validate-workflow-profile.ps1
+│   │   ├── web-screenshot-fixtures.json
 │   │   ├── web-screenshot-routes.json
 │   │   └── workflow-profiles
 │   │       ├── debug-startup.json
@@ -8225,6 +8260,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-629 directories, 7421 files
+636 directories, 7449 files
 ```
 <!-- readme-tree end -->
