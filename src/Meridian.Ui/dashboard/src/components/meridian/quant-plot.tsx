@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { QuantPlot, QuantPlotPoint, QuantPlotSeries } from "@/types";
+import type { QuantPlot, QuantPlotBar, QuantPlotPoint, QuantPlotSeries } from "@/types";
 
 const WIDTH = 480;
 const HEIGHT = 220;
@@ -118,6 +118,14 @@ export function QuantPlotChart({ plot }: QuantPlotChartProps) {
     return <ScatterChart plot={plot} points={renderable.points} bounds={renderable.bounds} />;
   }
 
+  if (renderable.kind === "candlestick") {
+    return <CandlestickChart plot={plot} bars={renderable.bars} bounds={renderable.bounds} />;
+  }
+
+  if (renderable.kind === "heatmap") {
+    return <HeatmapChart plot={plot} data={renderable.data} labels={renderable.labels} bounds={renderable.bounds} />;
+  }
+
   return <LineChart plot={plot} series={renderable.series} bounds={renderable.bounds} fillBaselineZero={renderable.fillBaseline} />;
 }
 
@@ -147,11 +155,26 @@ interface PreparedHistogram {
   bounds: Bounds;
 }
 
+interface PreparedCandlestick {
+  kind: "candlestick";
+  bars: QuantPlotBar[];
+  bounds: Bounds;
+}
+
+interface PreparedHeatmap {
+  kind: "heatmap";
+  data: number[][];
+  labels: string[];
+  bounds: Bounds;
+}
+
 type PreparedPlot =
   | PreparedLine
   | PreparedBar
   | PreparedScatter
   | PreparedHistogram
+  | PreparedCandlestick
+  | PreparedHeatmap
   | { kind: "unsupported" };
 
 export function prepareSeries(plot: QuantPlot): PreparedPlot {
@@ -207,6 +230,19 @@ export function prepareSeries(plot: QuantPlot): PreparedPlot {
         domain: safeBounds(values),
         bounds: safeBounds(bins.map((b) => b.count))
       };
+    }
+    case "Candlestick": {
+      const bars = plot.candlestick ?? [];
+      if (bars.length === 0) return { kind: "unsupported" };
+      const prices = bars.flatMap((b) => [b.open, b.high, b.low, b.close]).filter(Number.isFinite);
+      return { kind: "candlestick", bars, bounds: safeBounds(prices) };
+    }
+    case "Heatmap": {
+      const data = plot.heatmapData ?? [];
+      if (data.length === 0) return { kind: "unsupported" };
+      const labels = plot.heatmapLabels ?? [];
+      const allValues = data.flat().filter(Number.isFinite);
+      return { kind: "heatmap", data, labels, bounds: safeBounds(allValues) };
     }
     default:
       return { kind: "unsupported" };
@@ -398,6 +434,134 @@ function HistogramChart({
           </g>
         );
       })}
+    </ChartFrame>
+  );
+}
+
+function CandlestickChart({ plot, bars, bounds }: { plot: QuantPlot; bars: QuantPlotBar[]; bounds: Bounds }) {
+  const n = bars.length;
+  const slotW = n > 0 ? PLOT_WIDTH / n : PLOT_WIDTH;
+  const bodyW = Math.max(2, slotW * 0.6);
+
+  return (
+    <ChartFrame title={plot.title}>
+      <YAxis bounds={bounds} />
+      {bars.map((bar, i) => {
+        const cx = chartXFor(i, n);
+        const highY = chartYFor(bar.high, bounds);
+        const lowY = chartYFor(bar.low, bounds);
+        const openY = chartYFor(bar.open, bounds);
+        const closeY = chartYFor(bar.close, bounds);
+        const bullish = bar.close >= bar.open;
+        const color = bullish ? "#34d399" : "#f87171";
+        const bodyTop = Math.min(openY, closeY);
+        const bodyHeight = Math.max(1, Math.abs(closeY - openY));
+        return (
+          <g key={`${bar.date}-${i}`}>
+            <title>{`${bar.date}  O ${bar.open.toFixed(2)}  H ${bar.high.toFixed(2)}  L ${bar.low.toFixed(2)}  C ${bar.close.toFixed(2)}`}</title>
+            <line x1={cx} y1={highY} x2={cx} y2={lowY} stroke={color} strokeWidth={1} opacity={0.7} />
+            <rect
+              x={cx - bodyW / 2}
+              y={bodyTop}
+              width={bodyW}
+              height={bodyHeight}
+              fill={color}
+              fillOpacity={bullish ? 0.85 : 0.75}
+              stroke={color}
+              strokeWidth={0.5}
+            />
+          </g>
+        );
+      })}
+    </ChartFrame>
+  );
+}
+
+function lerp(a: number, b: number, t: number): number {
+  return Math.round(a + (b - a) * t);
+}
+
+function heatmapColor(normalized: number): string {
+  const t = Math.max(0, Math.min(1, normalized));
+  // blue-500 → slate-50 → red-500 (diverging)
+  if (t <= 0.5) {
+    const s = t * 2;
+    return `rgb(${lerp(59, 248, s)},${lerp(130, 250, s)},${lerp(246, 252, s)})`;
+  }
+  const s = (t - 0.5) * 2;
+  return `rgb(${lerp(248, 239, s)},${lerp(250, 68, s)},${lerp(252, 68, s)})`;
+}
+
+function HeatmapChart({ plot, data, labels, bounds }: { plot: QuantPlot; data: number[][]; labels: string[]; bounds: Bounds }) {
+  const rows = data.length;
+  const cols = data[0]?.length ?? 0;
+  if (rows === 0 || cols === 0) return null;
+
+  const cellW = PLOT_WIDTH / cols;
+  const cellH = PLOT_HEIGHT / rows;
+  const range = bounds.max - bounds.min;
+
+  const xLabels = labels.length === cols ? labels : null;
+  const yLabels = labels.length === rows ? labels : null;
+
+  return (
+    <ChartFrame title={plot.title}>
+      {data.flatMap((row, ri) =>
+        row.map((val, ci) => {
+          const t = range === 0 ? 0.5 : (val - bounds.min) / range;
+          return (
+            <rect
+              key={`${ri}-${ci}`}
+              x={PADDING_LEFT + ci * cellW}
+              y={PADDING_TOP + ri * cellH}
+              width={Math.max(1, cellW - 0.5)}
+              height={Math.max(1, cellH - 0.5)}
+              fill={heatmapColor(t)}
+            >
+              <title>{val.toFixed(4)}</title>
+            </rect>
+          );
+        })
+      )}
+      {xLabels?.map((label, ci) => (
+        <text
+          key={`xl-${ci}`}
+          x={PADDING_LEFT + ci * cellW + cellW / 2}
+          y={HEIGHT - 6}
+          fontSize={9}
+          fill="rgba(148,163,184,0.85)"
+          textAnchor="middle"
+        >
+          {label.length > 6 ? `${label.slice(0, 5)}…` : label}
+        </text>
+      ))}
+      {yLabels?.map((label, ri) => (
+        <text
+          key={`yl-${ri}`}
+          x={PADDING_LEFT - 4}
+          y={PADDING_TOP + ri * cellH + cellH / 2 + 3}
+          fontSize={9}
+          fill="rgba(148,163,184,0.85)"
+          textAnchor="end"
+        >
+          {label.length > 6 ? `${label.slice(0, 5)}…` : label}
+        </text>
+      ))}
+      <defs>
+        <linearGradient id={`heatmap-scale-${plot.title.replace(/\s+/g, "-")}`} x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%" stopColor="rgb(59,130,246)" />
+          <stop offset="50%" stopColor="rgb(248,250,252)" />
+          <stop offset="100%" stopColor="rgb(239,68,68)" />
+        </linearGradient>
+      </defs>
+      <rect
+        x={PADDING_LEFT}
+        y={HEIGHT - 5}
+        width={PLOT_WIDTH}
+        height={3}
+        fill={`url(#heatmap-scale-${plot.title.replace(/\s+/g, "-")})`}
+        rx={1}
+      />
     </ChartFrame>
   );
 }
