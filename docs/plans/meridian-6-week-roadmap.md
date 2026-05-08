@@ -1,12 +1,18 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-05-07
+**Last Updated:** 2026-05-08
 **Horizon:** Next 6 weeks
 **Status:** Short-horizon execution slice derived from the canonical roadmap and current DK readiness dashboard
 
 This document is the six-week execution slice of [`ROADMAP.md`](../status/ROADMAP.md). It is intentionally narrower than the canonical roadmap and advances the active Wave 2-4 core operator-readiness path while keeping the closed Wave 1 trust gate synchronized.
 
 Use this with [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) when assigning owners, sequencing dependencies, or checking workstream-level exit criteria inside the active Waves 2-4 path.
+
+Implementation stance for this plan:
+
+- keep this artifact as a **technical dependency plan**, not owner-assigned sprint slices
+- include detailed W3/W4 pre-work even when the execution horizon is six weeks
+- allow limited parallel W3 pre-work before DK2 is fully green, while keeping DK2 entry and exit criteria as the release-claim gate
 
 ---
 
@@ -86,6 +92,30 @@ This plan starts from the current repo state:
 - **Wave 5:** Backtest Studio unification across native and Lean
 - **Wave 6:** live integration readiness, except where Wave 1-2 work clarifies prerequisites
 - optional advanced research / scale tracks
+
+### Detailed pre-work beyond this six-week window (required planning depth)
+
+The six-week horizon remains the execution target, but detailed pre-work is required now for W3/W4 so follow-on implementation can start without architectural drift.
+
+#### W3 pre-work package (dependency-first)
+
+- define shared run-lineage and continuity-warning payload contracts as the single cross-workspace source
+- finish service-backed projection boundaries that separate operator payload builders from fixture/fallback builders
+- lock brokerage/custodian raw-snapshot versus normalized-projection persistence boundaries and freshness/divergence semantics
+- pre-validate operating-context propagation rules for fund/entity/sleeve/vehicle/account routing across deep links and shell handoffs
+
+#### W4 pre-work package (dependency-first)
+
+- define durable governance casework state model (assign/review/resolve/dismiss/reopen + SLA + audit fields)
+- lock governed report-pack lifecycle states and approval/rejection/provenance transitions before wider UI expansion
+- define one fund-operations projection contract that joins account posture, reconciliation posture, and report readiness
+- define inbox-v2 remediation-playbook contract fields (owner, severity, route, next action, evidence link) before multi-surface rollout
+
+#### Parallelism policy for W3 during DK2 entry
+
+- allowed: contract shaping, projection extraction, deterministic scenario harnesses, and read-only continuity seams
+- not allowed: Wave 3 completion claims, governance handoff claims, or UI flows that depend on unresolved DK2 parity/calibration outcomes
+- required: every parallel W3 item must declare its dependency on pending DK2 gates and remain release-neutral until DK2 is green
 
 ---
 
