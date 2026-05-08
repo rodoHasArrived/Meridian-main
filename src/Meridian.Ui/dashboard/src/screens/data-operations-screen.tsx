@@ -33,6 +33,7 @@ import {
 import type { DataOperationsWorkspaceResponse } from "@/types";
 import type {
   BackfillResultCardState,
+  DataOperationsBackfillDetailState,
   DataOperationsEmptyState
 } from "@/screens/data-operations-screen.view-model";
 import type {
@@ -155,30 +156,22 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
               <div
                 key={provider.provider}
                 role="group"
-                className={cn(
-                  "rounded-lg border p-3",
-                  provider.statusTone === "danger"
-                    ? "border-danger/35 bg-danger/5"
-                    : provider.statusTone === "warning"
-                      ? "border-warning/35 bg-warning/5"
-                      : "border-border/70 bg-secondary/20"
-                )}
+                className={cn("rounded-lg border p-3", providerToneClass[provider.statusTone])}
                 aria-label={provider.ariaLabel}
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-semibold">{provider.provider}</span>
-                  <span
-                    className={cn(
-                      "font-mono text-xs",
-                      provider.statusTone === "danger"
-                        ? "text-danger"
-                        : provider.statusTone === "warning"
-                          ? "text-warning"
-                          : "text-success"
-                    )}
-                  >
-                    {provider.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={provider.statusTone === "danger" ? "danger" : provider.statusTone === "warning" ? "warning" : "success"}
+                      dot
+                    >
+                      {provider.status}
+                    </Badge>
+                    <span className={cn("font-mono text-xs", providerStatusTextClass[provider.statusTone])}>
+                      {provider.latencyText}
+                    </span>
+                  </div>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">{provider.capability}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{provider.note}</p>
@@ -229,9 +222,19 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-mono font-semibold">{backfill.jobId}</span>
-                  <span>{backfill.progress}</span>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={backfill.status === "Review" ? "warning" : backfill.status === "Running" ? "default" : "outline"}
+                    >
+                      {backfill.status}
+                    </Badge>
+                    <span className="font-mono text-xs text-muted-foreground">{backfill.progress}</span>
+                  </div>
                 </div>
                 <p className="mt-1 text-muted-foreground">{backfill.scope}</p>
+                <div className="mt-2 h-1 rounded-full bg-border/70">
+                  <div className="h-1 rounded-full bg-primary transition-all" style={{ width: backfill.progress }} />
+                </div>
                 <span id={`${backfill.rowId}-detail`} className="sr-only">{backfill.detailDescription}</span>
               </button>
             )) : (
@@ -277,308 +280,314 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
         </Card>
       </section>
 
-      <Dialog open={vm.providerSetupOpen} onOpenChange={(open) => { if (!open) vm.closeProviderSetup(); }}>
-        <DialogContent aria-labelledby={vm.providerSetupDialogState.titleId} aria-describedby={vm.providerSetupDialogState.descriptionId}>
-          <div className="flex items-start justify-between gap-4">
-            <DialogHeader className="mb-0">
-              <div className="eyebrow-label">Data providers</div>
-              <DialogTitle id={vm.providerSetupDialogState.titleId}>Configure provider</DialogTitle>
-              <DialogDescription id={vm.providerSetupDialogState.descriptionId}>
-                Register a data or brokerage provider with Meridian. The backend will verify credentials on save.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogCloseButton
-              label={vm.providerSetupDialogState.closeButtonLabel}
-              disabled={vm.providerPhase === "submitting"}
-              disabledReason={vm.providerSetupDialogState.closeButtonDisabledReason}
-              onClick={vm.closeProviderSetup}
-            />
-          </div>
+      <ProviderSetupDialog vm={vm} />
+      <BackfillTriggerDialog vm={vm} />
+    </div>
+  );
+}
 
-          {vm.providerPhase === "success" && vm.providerSetupResult ? (
-            <div className="mt-5">
-              <div className="flex items-center gap-3 rounded-lg border border-success/35 bg-success/10 px-4 py-4">
-                <CheckCircle2 className="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
-                <div>
-                  <div className="font-semibold text-success">{vm.providerSetupResult.providerName} configured</div>
-                  <p className="mt-1 text-sm text-muted-foreground">{vm.providerSetupResult.message}</p>
-                </div>
-              </div>
-              <div className="mt-5 flex justify-end gap-2">
-                <Button variant="outline" onClick={vm.closeProviderSetup}>Done</Button>
-                <Button onClick={vm.openProviderSetup}>
-                  Configure another
-                </Button>
+type DataOperationsVm = ReturnType<typeof useDataOperationsViewModel>;
+
+function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
+  return (
+    <Dialog open={vm.providerSetupOpen} onOpenChange={(open) => { if (!open) vm.closeProviderSetup(); }}>
+      <DialogContent aria-labelledby={vm.providerSetupDialogState.titleId} aria-describedby={vm.providerSetupDialogState.descriptionId}>
+        <div className="flex items-start justify-between gap-4">
+          <DialogHeader className="mb-0">
+            <div className="eyebrow-label">Data providers</div>
+            <DialogTitle id={vm.providerSetupDialogState.titleId}>Configure provider</DialogTitle>
+            <DialogDescription id={vm.providerSetupDialogState.descriptionId}>
+              Register a data or brokerage provider with Meridian. The backend will verify credentials on save.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogCloseButton
+            label={vm.providerSetupDialogState.closeButtonLabel}
+            disabled={vm.providerPhase === "submitting"}
+            disabledReason={vm.providerSetupDialogState.closeButtonDisabledReason}
+            onClick={vm.closeProviderSetup}
+          />
+        </div>
+
+        {vm.providerPhase === "success" && vm.providerSetupResult ? (
+          <div className="mt-5">
+            <div className="flex items-center gap-3 rounded-lg border border-success/35 bg-success/10 px-4 py-4">
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-success" aria-hidden="true" />
+              <div>
+                <div className="font-semibold text-success">{vm.providerSetupResult.providerName} configured</div>
+                <p className="mt-1 text-sm text-muted-foreground">{vm.providerSetupResult.message}</p>
               </div>
             </div>
-          ) : (
-            <>
-              <div className="mt-5 grid gap-4" role="group" aria-label={vm.providerSetupDialogState.formLabel}>
-                <label htmlFor="provider-setup-kind" className="grid gap-1 text-sm">
-                  {vm.providerSetupDialogState.providerKindField.label}
-                  <select
-                    id={vm.providerSetupDialogState.providerKindField.id}
-                    className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    value={vm.providerForm.kind}
-                    aria-label={vm.providerSetupDialogState.providerKindField.ariaLabel}
-                    onChange={(e) => vm.updateProviderForm("kind", e.target.value)}
-                  >
-                    {vm.providerSetupDialogState.providerKindField.options.map((p) => (
-                      <option key={p.value} value={p.value}>{p.label}</option>
-                    ))}
-                  </select>
-                  <span className="text-xs text-muted-foreground">
-                    {vm.providerSetupDialogState.providerKindField.description}
-                  </span>
-                </label>
+            <div className="mt-5 flex justify-end gap-2">
+              <Button variant="outline" onClick={vm.closeProviderSetup}>Done</Button>
+              <Button onClick={vm.openProviderSetup}>Configure another</Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="mt-5 grid gap-4" role="group" aria-label={vm.providerSetupDialogState.formLabel}>
+              <label htmlFor="provider-setup-kind" className="grid gap-1 text-sm">
+                {vm.providerSetupDialogState.providerKindField.label}
+                <select
+                  id={vm.providerSetupDialogState.providerKindField.id}
+                  className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  value={vm.providerForm.kind}
+                  aria-label={vm.providerSetupDialogState.providerKindField.ariaLabel}
+                  onChange={(e) => vm.updateProviderForm("kind", e.target.value)}
+                >
+                  {vm.providerSetupDialogState.providerKindField.options.map((p) => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </select>
+                <span className="text-xs text-muted-foreground">
+                  {vm.providerSetupDialogState.providerKindField.description}
+                </span>
+              </label>
 
-                <label htmlFor={vm.providerSetupDialogState.displayNameField.id} className="grid gap-1 text-sm">
-                  {vm.providerSetupDialogState.displayNameField.label}
+              <label htmlFor={vm.providerSetupDialogState.displayNameField.id} className="grid gap-1 text-sm">
+                {vm.providerSetupDialogState.displayNameField.label}
+                <input
+                  id={vm.providerSetupDialogState.displayNameField.id}
+                  className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  value={vm.providerSetupDialogState.displayNameField.value}
+                  aria-label={vm.providerSetupDialogState.displayNameField.ariaLabel}
+                  onChange={(e) => vm.updateProviderForm(vm.providerSetupDialogState.displayNameField.field, e.target.value)}
+                />
+              </label>
+
+              {vm.providerSetupDialogState.credentialFields.map((field) => (
+                <label key={field.id} htmlFor={field.id} className="grid gap-1 text-sm">
+                  {field.label}
                   <input
-                    id={vm.providerSetupDialogState.displayNameField.id}
-                    className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    value={vm.providerSetupDialogState.displayNameField.value}
-                    aria-label={vm.providerSetupDialogState.displayNameField.ariaLabel}
-                    onChange={(e) => vm.updateProviderForm(vm.providerSetupDialogState.displayNameField.field, e.target.value)}
+                    id={field.id}
+                    type={field.type}
+                    className="rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    value={field.value}
+                    aria-label={field.ariaLabel}
+                    placeholder={field.placeholder ?? undefined}
+                    onChange={(e) => vm.updateProviderForm(field.field, e.target.value)}
                   />
                 </label>
+              ))}
 
-                {vm.providerSetupDialogState.credentialFields.map((field) => (
-                  <label key={field.id} htmlFor={field.id} className="grid gap-1 text-sm">
-                    {field.label}
-                    <input
-                      id={field.id}
-                      type={field.type}
-                      className="rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                      value={field.value}
-                      aria-label={field.ariaLabel}
-                      placeholder={field.placeholder ?? undefined}
-                      onChange={(e) => vm.updateProviderForm(field.field, e.target.value)}
-                    />
-                  </label>
-                ))}
-
-                <fieldset>
-                  <legend className="mb-2 text-sm">Capabilities</legend>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {vm.providerSetupDialogState.capabilityOptions.map((cap) => (
-                      <label
-                        key={cap.id}
-                        className={cn(
-                          "flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2.5 transition-colors",
-                          cap.selected
-                            ? "border-primary/40 bg-primary/8"
-                            : "border-border/70 bg-secondary/20 hover:bg-secondary/35"
-                        )}
-                      >
-                        <input
-                          type="checkbox"
-                          className="mt-0.5 shrink-0 accent-[hsl(var(--primary))]"
-                          checked={cap.selected}
-                          onChange={() => vm.toggleProviderCapability(cap.id)}
-                          aria-label={cap.label}
-                        />
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium">{cap.label}</div>
-                          <div className="text-xs text-muted-foreground">{cap.description}</div>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-              </div>
-
-              <div
-                id="provider-setup-status"
-                role="status"
-                aria-live="polite"
-                className="mt-4 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-xs leading-5 text-muted-foreground"
-              >
-                {vm.providerSetupDialogState.statusLabel}
-              </div>
-
-              {vm.providerSetupError && (
-                <div role="alert" className="mt-3 flex items-start gap-2 rounded-lg border border-danger/35 bg-danger/10 px-3 py-2.5 text-sm text-danger">
-                  <XCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span>{vm.providerSetupError}</span>
+              <fieldset>
+                <legend className="mb-2 text-sm">Capabilities</legend>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {vm.providerSetupDialogState.capabilityOptions.map((cap) => (
+                    <label
+                      key={cap.id}
+                      className={cn(
+                        "flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2.5 transition-colors",
+                        cap.selected
+                          ? "border-primary/40 bg-primary/8"
+                          : "border-border/70 bg-secondary/20 hover:bg-secondary/35"
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 shrink-0 accent-[hsl(var(--primary))]"
+                        checked={cap.selected}
+                        onChange={() => vm.toggleProviderCapability(cap.id)}
+                        aria-label={cap.label}
+                      />
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium">{cap.label}</div>
+                        <div className="text-xs text-muted-foreground">{cap.description}</div>
+                      </div>
+                    </label>
+                  ))}
                 </div>
-              )}
-
-              <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <Button variant="outline" onClick={vm.closeProviderSetup} disabled={vm.providerPhase === "submitting"}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => void vm.submitProviderSetup()}
-                  disabled={vm.providerSetupDialogState.submitAction.disabled}
-                  disabledReason={vm.providerSetupDialogState.submitAction.disabledReason}
-                  busy={vm.providerSetupDialogState.submitAction.busy}
-                  busyLabel={vm.providerSetupDialogState.submitAction.busyLabel}
-                  aria-label={vm.providerSetupDialogState.submitAction.ariaLabel}
-                >
-                  {vm.providerSetupDialogState.submitAction.label}
-                </Button>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={vm.dialogOpen} onOpenChange={(open) => { if (!open) vm.closeBackfillDialog(); }}>
-        <DialogContent
-          aria-labelledby={vm.dialogState.titleId}
-          aria-describedby={vm.dialogState.descriptionId}
-          className="max-w-xl p-6"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <DialogHeader className="mb-0">
-              <div className="eyebrow-label">Backfill</div>
-              <DialogTitle id={vm.dialogState.titleId}>Trigger backfill</DialogTitle>
-              <DialogDescription id={vm.dialogState.descriptionId}>
-                Preview the request before writing historical bars.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogCloseButton
-              label={vm.dialogState.closeButtonLabel}
-              disabled={vm.busy}
-              disabledReason={vm.dialogState.closeButtonDisabledReason}
-              onClick={vm.closeBackfillDialog}
-            />
-          </div>
-
-          <dl className="mt-5 grid gap-2 rounded-lg border border-border/80 bg-secondary/20 p-3 sm:grid-cols-3">
-            {vm.dialogState.summaryItems.map((item) => (
-              <div key={item.id} className="min-w-0">
-                <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{item.label}</dt>
-                <dd
-                  className={cn(
-                    "mt-1 truncate font-mono text-xs",
-                    item.tone === "warning" ? "text-warning" : "text-foreground"
-                  )}
-                >
-                  {item.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-
-          <div className="mt-5 grid gap-4" role="group" aria-label={vm.dialogState.formLabel}>
-            <label htmlFor={vm.dialogState.providerField.id} className="grid gap-1 text-sm">
-              {vm.dialogState.providerField.label}
-              <input
-                id={vm.dialogState.providerField.id}
-                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                value={vm.form.provider}
-                aria-label={vm.dialogState.providerField.ariaLabel}
-                placeholder={vm.dialogState.providerField.placeholder}
-                onChange={(event) => vm.updateBackfillForm("provider", event.target.value)}
-              />
-            </label>
-            <label htmlFor={vm.dialogState.symbolsField.id} className="grid gap-1 text-sm">
-              {vm.dialogState.symbolsField.label}
-              <input
-                id={vm.dialogState.symbolsField.id}
-                className="min-h-12 rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                placeholder={vm.dialogState.symbolsField.placeholder}
-                value={vm.form.symbols}
-                aria-label={vm.dialogState.symbolsField.ariaLabel}
-                aria-describedby={vm.dialogState.symbolsField.describedBy}
-                aria-invalid={vm.validationError !== null}
-                data-dialog-autofocus={vm.dialogState.symbolsField.autoFocus ? "" : undefined}
-                onChange={(event) => vm.updateBackfillForm("symbols", event.target.value)}
-              />
-              <span id="backfill-symbols-help" className="text-xs text-muted-foreground">{vm.symbolsHelpText}</span>
-            </label>
-            <div className="grid gap-3 md:grid-cols-2">
-              <label htmlFor={vm.dialogState.fromField.id} className="grid gap-1 text-sm">
-                {vm.dialogState.fromField.label}
-                <input
-                  id={vm.dialogState.fromField.id}
-                  type="date"
-                  className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  value={vm.form.from}
-                  aria-label={vm.dialogState.fromField.ariaLabel}
-                  onChange={(event) => vm.updateBackfillForm("from", event.target.value)}
-                />
-              </label>
-              <label htmlFor={vm.dialogState.toField.id} className="grid gap-1 text-sm">
-                {vm.dialogState.toField.label}
-                <input
-                  id={vm.dialogState.toField.id}
-                  type="date"
-                  className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  value={vm.form.to}
-                  aria-label={vm.dialogState.toField.ariaLabel}
-                  onChange={(event) => vm.updateBackfillForm("to", event.target.value)}
-                />
-              </label>
+              </fieldset>
             </div>
-          </div>
 
+            <div
+              id="provider-setup-status"
+              role="status"
+              aria-live="polite"
+              className="mt-4 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-xs leading-5 text-muted-foreground"
+            >
+              {vm.providerSetupDialogState.statusLabel}
+            </div>
+
+            {vm.providerSetupError && (
+              <div role="alert" className="mt-3 flex items-start gap-2 rounded-lg border border-danger/35 bg-danger/10 px-3 py-2.5 text-sm text-danger">
+                <XCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>{vm.providerSetupError}</span>
+              </div>
+            )}
+
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button variant="outline" onClick={vm.closeProviderSetup} disabled={vm.providerPhase === "submitting"}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => void vm.submitProviderSetup()}
+                disabled={vm.providerSetupDialogState.submitAction.disabled}
+                disabledReason={vm.providerSetupDialogState.submitAction.disabledReason}
+                busy={vm.providerSetupDialogState.submitAction.busy}
+                busyLabel={vm.providerSetupDialogState.submitAction.busyLabel}
+                aria-label={vm.providerSetupDialogState.submitAction.ariaLabel}
+              >
+                {vm.providerSetupDialogState.submitAction.label}
+              </Button>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
+  return (
+    <Dialog open={vm.dialogOpen} onOpenChange={(open) => { if (!open) vm.closeBackfillDialog(); }}>
+      <DialogContent
+        aria-labelledby={vm.dialogState.titleId}
+        aria-describedby={vm.dialogState.descriptionId}
+        className="max-w-xl p-6"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <DialogHeader className="mb-0">
+            <div className="eyebrow-label">Backfill</div>
+            <DialogTitle id={vm.dialogState.titleId}>Trigger backfill</DialogTitle>
+            <DialogDescription id={vm.dialogState.descriptionId}>
+              Preview the request before writing historical bars.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogCloseButton
+            label={vm.dialogState.closeButtonLabel}
+            disabled={vm.busy}
+            disabledReason={vm.dialogState.closeButtonDisabledReason}
+            onClick={vm.closeBackfillDialog}
+          />
+        </div>
+
+        <dl className="mt-5 grid gap-2 rounded-lg border border-border/80 bg-secondary/20 p-3 sm:grid-cols-3">
+          {vm.dialogState.summaryItems.map((item) => (
+            <div key={item.id} className="min-w-0">
+              <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{item.label}</dt>
+              <dd className={cn("mt-1 truncate font-mono text-xs", item.tone === "warning" ? "text-warning" : "text-foreground")}>
+                {item.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <div className="mt-5 grid gap-4" role="group" aria-label={vm.dialogState.formLabel}>
+          <label htmlFor={vm.dialogState.providerField.id} className="grid gap-1 text-sm">
+            {vm.dialogState.providerField.label}
+            <input
+              id={vm.dialogState.providerField.id}
+              className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              value={vm.form.provider}
+              aria-label={vm.dialogState.providerField.ariaLabel}
+              placeholder={vm.dialogState.providerField.placeholder}
+              onChange={(event) => vm.updateBackfillForm("provider", event.target.value)}
+            />
+          </label>
+          <label htmlFor={vm.dialogState.symbolsField.id} className="grid gap-1 text-sm">
+            {vm.dialogState.symbolsField.label}
+            <input
+              id={vm.dialogState.symbolsField.id}
+              className="min-h-12 rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              placeholder={vm.dialogState.symbolsField.placeholder}
+              value={vm.form.symbols}
+              aria-label={vm.dialogState.symbolsField.ariaLabel}
+              aria-describedby={vm.dialogState.symbolsField.describedBy}
+              aria-invalid={vm.validationError !== null}
+              data-dialog-autofocus={vm.dialogState.symbolsField.autoFocus ? "" : undefined}
+              onChange={(event) => vm.updateBackfillForm("symbols", event.target.value)}
+            />
+            <span id="backfill-symbols-help" className="text-xs text-muted-foreground">{vm.symbolsHelpText}</span>
+          </label>
+          <div className="grid gap-3 md:grid-cols-2">
+            <label htmlFor={vm.dialogState.fromField.id} className="grid gap-1 text-sm">
+              {vm.dialogState.fromField.label}
+              <input
+                id={vm.dialogState.fromField.id}
+                type="date"
+                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                value={vm.form.from}
+                aria-label={vm.dialogState.fromField.ariaLabel}
+                onChange={(event) => vm.updateBackfillForm("from", event.target.value)}
+              />
+            </label>
+            <label htmlFor={vm.dialogState.toField.id} className="grid gap-1 text-sm">
+              {vm.dialogState.toField.label}
+              <input
+                id={vm.dialogState.toField.id}
+                type="date"
+                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                value={vm.form.to}
+                aria-label={vm.dialogState.toField.ariaLabel}
+                onChange={(event) => vm.updateBackfillForm("to", event.target.value)}
+              />
+            </label>
+          </div>
+        </div>
+
+        <div
+          id="backfill-form-status"
+          role="status"
+          aria-live="polite"
+          className={cn(
+            "mt-4 rounded-md border px-3 py-2 text-xs leading-5",
+            vm.dialogState.formStatusTone === "danger"
+              ? "border-danger/40 bg-danger/10 text-danger"
+              : vm.dialogState.formStatusTone === "success"
+                ? "border-success/35 bg-success/10 text-success"
+                : vm.dialogState.formStatusTone === "warning"
+                  ? "border-warning/35 bg-warning/10 text-warning"
+                  : "border-border/70 bg-secondary/25 text-muted-foreground"
+          )}
+        >
+          {vm.dialogState.formStatusLabel}
+        </div>
+
+        {vm.feedbackText && (
           <div
-            id="backfill-form-status"
-            role="status"
-            aria-live="polite"
+            id="backfill-form-feedback"
+            role="alert"
             className={cn(
-              "mt-4 rounded-md border px-3 py-2 text-xs leading-5",
-              vm.dialogState.formStatusTone === "danger"
-                ? "border-danger/40 bg-danger/10 text-danger"
-                : vm.dialogState.formStatusTone === "success"
-                  ? "border-success/35 bg-success/10 text-success"
-                  : vm.dialogState.formStatusTone === "warning"
-                    ? "border-warning/35 bg-warning/10 text-warning"
-                    : "border-border/70 bg-secondary/25 text-muted-foreground"
+              "mt-4 rounded-lg border px-3 py-2 text-sm",
+              vm.feedbackTone === "warning"
+                ? "border-warning/40 bg-warning/10 text-warning"
+                : "border-danger/40 bg-danger/10 text-danger"
             )}
           >
-            {vm.dialogState.formStatusLabel}
+            {vm.feedbackText}
           </div>
+        )}
+        <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
+        {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
+        {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
 
-          {vm.feedbackText && (
-            <div
-              id="backfill-form-feedback"
-              role="alert"
-              className={cn(
-                "mt-4 rounded-lg border px-3 py-2 text-sm",
-                vm.feedbackTone === "warning"
-                  ? "border-warning/40 bg-warning/10 text-warning"
-                  : "border-danger/40 bg-danger/10 text-danger"
-              )}
-            >
-              {vm.feedbackText}
-            </div>
-          )}
-          <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
-          {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
-          {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
-
-          <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            variant="outline"
+            onClick={() => void vm.previewBackfill()}
+            disabled={vm.dialogState.previewAction.disabled}
+            disabledReason={vm.dialogState.previewAction.disabledReason}
+            busy={vm.dialogState.previewAction.busy}
+            busyLabel={vm.dialogState.previewAction.busyLabel}
+            aria-label={vm.dialogState.previewAction.ariaLabel}
+          >
+            {vm.dialogState.previewAction.label}
+          </Button>
+          {vm.preview && (
             <Button
-              variant="outline"
-              onClick={() => void vm.previewBackfill()}
-              disabled={vm.dialogState.previewAction.disabled}
-              disabledReason={vm.dialogState.previewAction.disabledReason}
-              busy={vm.dialogState.previewAction.busy}
-              busyLabel={vm.dialogState.previewAction.busyLabel}
-              aria-label={vm.dialogState.previewAction.ariaLabel}
+              onClick={() => void vm.runBackfill()}
+              disabled={vm.dialogState.runAction.disabled}
+              disabledReason={vm.dialogState.runAction.disabledReason}
+              busy={vm.dialogState.runAction.busy}
+              busyLabel={vm.dialogState.runAction.busyLabel}
+              aria-label={vm.dialogState.runAction.ariaLabel}
             >
-              {vm.dialogState.previewAction.label}
+              {vm.dialogState.runAction.label}
             </Button>
-            {vm.preview && (
-              <Button
-                onClick={() => void vm.runBackfill()}
-                disabled={vm.dialogState.runAction.disabled}
-                disabledReason={vm.dialogState.runAction.disabledReason}
-                busy={vm.dialogState.runAction.busy}
-                busyLabel={vm.dialogState.runAction.busyLabel}
-                aria-label={vm.dialogState.runAction.ariaLabel}
-              >
-                {vm.dialogState.runAction.label}
-              </Button>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -590,7 +599,7 @@ function RouteFocusCard({
   openPrintPacket
 }: {
   workstream: "overview" | "backfills";
-  selectedBackfillDetail: { id: string; title: string; description: string; ariaLabel: string; rows: Array<{ id: string; label: string; value: string }> } | null;
+  selectedBackfillDetail: DataOperationsBackfillDetailState | null;
   backfillDetailEmptyState: DataOperationsEmptyState | null;
   selectedSecurity: SecurityMasterSelectedState | null;
   openPrintPacket: () => void;
@@ -738,9 +747,9 @@ function SecurityMasterSearchPanel({
           <Button size="sm" variant="outline" onClick={onToggleStatusFilter}>
             {state.statusChipLabel}
           </Button>
-          <Badge variant="outline">Sort · Search score desc</Badge>
-          <Badge variant="outline">Coverage · venues + packets</Badge>
-          <Badge variant="outline">Detail link · selected row drives panel</Badge>
+          <span className="text-xs text-muted-foreground">
+            Sorted by search score · coverage and packet posture visible in detail panel
+          </span>
         </div>
 
         {state.hasResults ? (
@@ -956,11 +965,11 @@ function SecurityMasterDetailCard({
               </div>
             </div>
 
-            {state.tabs.find((tab) => tab.selected)?.id === "overview" ? (
+            {activeTab === "overview" ? (
               <SecurityOverviewPanel selected={selected} />
-            ) : state.tabs.find((tab) => tab.selected)?.id === "company" ? (
+            ) : activeTab === "company" ? (
               <SecurityCompanyPanel selected={selected} />
-            ) : state.tabs.find((tab) => tab.selected)?.id === "corporate-actions" ? (
+            ) : activeTab === "corporate-actions" ? (
               <SecurityCorporateActionsPanel selected={selected} />
             ) : (
               <SecurityPrintPanel selected={selected} />
@@ -1414,9 +1423,8 @@ function TimelineStep({ event }: { event: SecurityMasterTimelineEvent }) {
 function CorporateActionRow({ row }: { row: SecurityMasterCorporateActionRow }) {
   return (
     <div className="grid gap-3 px-4 py-4 text-sm sm:grid-cols-[120px_1.3fr_110px_110px_100px_90px]">
-      <div className="space-y-1">
+      <div>
         <div className="font-mono text-xs text-primary">{row.type}</div>
-        <div className="text-xs text-muted-foreground">{row.note}</div>
       </div>
       <div>
         <div className="font-semibold text-foreground">{row.description}</div>
@@ -1552,6 +1560,18 @@ function FieldTile({ field }: { field: { id: string; label: string; value: strin
   );
 }
 
+const providerToneClass: Record<"success" | "warning" | "danger", string> = {
+  success: "border-border/70 bg-secondary/20",
+  warning: "border-warning/35 bg-warning/5",
+  danger: "border-danger/35 bg-danger/5",
+};
+
+const providerStatusTextClass: Record<"success" | "warning" | "danger", string> = {
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger",
+};
+
 const resultToneClass: Record<BackfillResultCardState["tone"], string> = {
   warning: "border-warning/35 bg-warning/10 text-warning",
   success: "border-success/35 bg-success/10 text-success",
@@ -1572,7 +1592,7 @@ function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
       className={cn("mt-4 rounded-md border p-3 text-sm", resultToneClass[state.tone])}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="font-semibold text-foreground">{state.title}</div>
+        <div className="font-semibold">{state.title}</div>
         <div className="font-mono text-xs">{state.statusLabel}</div>
       </div>
       <dl className="mt-3 grid gap-2 sm:grid-cols-2">
