@@ -21,7 +21,7 @@ public sealed record QuantScriptExecutionRecordRequest(
     List<string> PlotTitles,
     IReadOnlyList<BacktestResult> CapturedBacktests);
 
-public sealed partial class QuantScriptExecutionHistoryService
+public sealed class QuantScriptExecutionHistoryService
 {
     private readonly ConfigService _configService;
     private readonly StrategyRunWorkspaceService _strategyRunWorkspaceService;
@@ -169,11 +169,11 @@ public sealed partial class QuantScriptExecutionHistoryService
             _ => value.ToString() ?? string.Empty
         };
     }
-
-    [JsonSourceGenerationOptions(
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
-    [JsonSerializable(typeof(QuantScriptExecutionRecord))]
-    internal sealed partial class QuantScriptExecutionHistoryJsonContext : JsonSerializerContext;
 }
+
+[JsonSourceGenerationOptions(
+    WriteIndented = true,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(QuantScriptExecutionRecord))]
+internal sealed partial class QuantScriptExecutionHistoryJsonContext : JsonSerializerContext;
