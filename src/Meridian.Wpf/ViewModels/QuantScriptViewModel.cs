@@ -19,6 +19,8 @@ namespace Meridian.Wpf.ViewModels;
 
 public sealed class QuantScriptViewModel : BindableBase, IDisposable
 {
+    private const int ChartsTabIndex = 0;
+    private const int MetricsTabIndex = 1;
     private const int LocalDataTabIndex = 3;
     private const int BacktestOutputTabIndex = 4;
     private const int RunHistoryTabIndex = 5;
@@ -557,10 +559,18 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         if (result.CapturedBacktests.Count > 0)
             ApplyCapturedBacktests(result.CapturedBacktests);
 
-        if (Metrics.Count > 0 && Charts.Count == 0 && Trades.Count == 0)
-            ActiveResultsTab = 1;
-        else if (Trades.Count > 0 && Charts.Count == 0)
-            ActiveResultsTab = BacktestOutputTabIndex;
+        foreach (var trade in result.Trades.OrderBy(static item => item.Timestamp))
+        {
+            Trades.Add(new TradeEntry(
+                trade.Timestamp,
+                trade.Symbol,
+                trade.Quantity,
+                trade.Price,
+                trade.Commission,
+                trade.Side));
+        }
+
+        ActiveResultsTab = ResolvePreferredResultsTab();
 
         Diagnostics.Add(new DiagnosticEntry("Wall clock", $"{result.Elapsed.TotalSeconds:F2}s"));
         Diagnostics.Add(new DiagnosticEntry("Compile time", $"{result.CompileTime.TotalMilliseconds:F0}ms"));
@@ -583,18 +593,21 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             AddOrUpdateMetric("Sharpe Ratio", backtest.Metrics.SharpeRatio.ToString("F3"), category, "Captured");
             AddOrUpdateMetric("Max Drawdown", backtest.Metrics.MaxDrawdownPercent.ToString("P2"), category, "Captured");
             AddOrUpdateMetric("Total Trades", backtest.Metrics.TotalTrades.ToString("N0"), category, "Captured");
-
-            foreach (var fill in backtest.Fills.OrderBy(static item => item.FilledAt))
-            {
-                Trades.Add(new TradeEntry(
-                    fill.FilledAt,
-                    fill.Symbol,
-                    Math.Abs(fill.FilledQuantity),
-                    fill.FillPrice,
-                    fill.Commission,
-                    fill.FilledQuantity >= 0 ? "Buy" : "Sell"));
-            }
         }
+    }
+
+    private int ResolvePreferredResultsTab()
+    {
+        if (Trades.Count > 0)
+            return BacktestOutputTabIndex;
+
+        if (Metrics.Count > 0 && Charts.Count == 0)
+            return MetricsTabIndex;
+
+        if (Charts.Count > 0)
+            return ChartsTabIndex;
+
+        return ChartsTabIndex;
     }
 
     private void StopRunning()
