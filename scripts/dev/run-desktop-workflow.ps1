@@ -395,6 +395,7 @@ function Test-AutomationElementVisible {
         return -not $Element.Current.IsOffscreen
     }
     catch {
+        Write-Verbose "Unable to read automation visibility for an element: $($_.Exception.Message)"
         return $false
     }
 }
@@ -434,6 +435,7 @@ function Ensure-EnteredOperatingContext {
         [System.Diagnostics.Process]$Process
     )
 
+    # Delay between invoking Switch Context and probing Enter Workstation on FundProfileSelection.
     $contextSwitchTransitionDelayMs = 800
 
     $shell = Wait-ForElement -Attempts 4 -DelayMilliseconds 250 -Finder {
@@ -449,8 +451,8 @@ function Ensure-EnteredOperatingContext {
         if (Test-ShellAutomationReady -Window $currentWindow) {
             $contextSelectionHintButton = Find-AutomationElementById -Window $currentWindow -AutomationId 'ContextSelectionHintButton'
             if ($null -ne $contextSelectionHintButton -and (Test-AutomationElementVisible -Element $contextSelectionHintButton)) {
-                # Returning $null keeps the workflow in context-selection mode until a context is explicitly entered.
-                # Wait-ForElement bounds retries so the workflow fails fast instead of hanging indefinitely.
+                # Returning $null forces the workflow into the context-selection automation branch below.
+                # Wait-ForElement bounds retries so this recovery path fails fast instead of hanging indefinitely.
                 return $null
             }
 
@@ -490,11 +492,13 @@ function Ensure-EnteredOperatingContext {
 
             $contextSelectionHintButton = Find-AutomationElementById -Window $currentWindow -AutomationId 'ContextSelectionHintButton'
             if ($null -ne $contextSelectionHintButton -and (Test-AutomationElementVisible -Element $contextSelectionHintButton)) {
+                # Preferred shell hint when no operating context is active.
                 return $contextSelectionHintButton
             }
 
             $fallbackSwitchButton = Find-AutomationElementById -Window $currentWindow -AutomationId 'SwitchContextButton'
             if ($null -ne $fallbackSwitchButton -and (Test-AutomationElementVisible -Element $fallbackSwitchButton)) {
+                # Fallback command-strip action for shells where the hint card is not rendered.
                 return $fallbackSwitchButton
             }
 
