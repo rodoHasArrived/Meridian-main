@@ -187,7 +187,7 @@ async function stopProcess(child) {
  * @param {Record<string, unknown>} fixtureRoutes  Path → JSON body map from web-screenshot-fixtures.json
  */
 async function setupApiMocking(page, fixtureRoutes) {
-  await page.route("/api/**", (route) => {
+  await page.route("**/api/**", (route) => {
     const url = new URL(route.request().url());
     const pathname = url.pathname;
 
@@ -365,6 +365,13 @@ async function main() {
         results.push(failed);
         throw error;
       }
+    }
+
+    const proxyErrors = logs.filter((line) => /http proxy error:\s*\/api\//i.test(line));
+    if (proxyErrors.length > 0) {
+      throw new Error(
+        `Detected ${proxyErrors.length} Vite proxy API error log(s) during screenshot capture.`
+      );
     }
 
     manifest.status = "passed";
