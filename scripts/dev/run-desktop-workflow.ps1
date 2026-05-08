@@ -34,6 +34,18 @@ Set-Location $repoRoot
 . (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')
 . (Join-Path $PSScriptRoot 'shared/retry.ps1')
 
+# Script-level constants for all hardcoded automation identifiers, process/window names,
+# and timing values. Centralising these here means a single-line change adapts the entire
+# script when the binary name or named-pipe identifier changes.
+$script:DesktopProcessName = 'Meridian.Desktop'
+$script:DesktopWindowTitle = 'Meridian'
+$script:SingleInstancePipeName = 'Meridian.Desktop.SingleInstance.Pipe'
+$script:MinCaptureWidth = 200
+$script:MinCaptureHeight = 200
+$script:WindowActivationDelayMs = 400
+$script:KeySendDelayMs = 250
+$script:DefaultCaptureRetryAttempts = 6
+
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" -ForegroundColor Gray }
 function Write-Ok([string]$Message) { Write-Host "[ OK ] $Message" -ForegroundColor Green }
 function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
@@ -155,7 +167,7 @@ function Find-MeridianWindow {
         return $processWindow
     }
 
-    foreach ($candidateProcess in @(Get-Process -Name 'Meridian.Desktop' -ErrorAction SilentlyContinue)) {
+    foreach ($candidateProcess in @(Get-Process -Name $script:DesktopProcessName -ErrorAction SilentlyContinue)) {
         $processWindow = Get-MeridianWindowFromProcess -Process $candidateProcess
         if ($null -ne $processWindow) {
             return $processWindow
@@ -166,7 +178,7 @@ function Find-MeridianWindow {
         $root = [System.Windows.Automation.AutomationElement]::RootElement
         $nameCondition = New-Object System.Windows.Automation.PropertyCondition(
             [System.Windows.Automation.AutomationElement]::NameProperty,
-            'Meridian')
+            $script:DesktopWindowTitle)
 
         return $root.FindFirst([System.Windows.Automation.TreeScope]::Children, $nameCondition)
     }
@@ -183,8 +195,8 @@ function Activate-MeridianWindow {
             $wshShell = $script:WshShell
         }
 
-        [void]$wshShell.AppActivate('Meridian')
-        Start-Sleep -Milliseconds 400
+        [void]$wshShell.AppActivate($script:DesktopWindowTitle)
+        Start-Sleep -Milliseconds $script:WindowActivationDelayMs
         return $true
     }
     catch {
@@ -225,7 +237,8 @@ function Wait-MeridianWindow {
         [System.Diagnostics.Process]$Process
     )
 
-    for ($attempt = 0; $attempt -lt ($TimeoutSec * 2); $attempt++) {
+    $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    while ((Get-Date) -lt $deadline) {
         Start-Sleep -Milliseconds 500
 
         if ($null -ne $Process -and $Process.HasExited) {
@@ -422,6 +435,10 @@ function Ensure-EnteredOperatingContext {
 
     # Delay between invoking Switch Context and probing Enter Workstation on FundProfileSelection.
     $contextSwitchTransitionDelayMs = 800
+    # Settle time after Seed Sample Contexts completes before re-probing Enter Workstation.
+    $contextSeedSettleSeconds = 2
+    # Settle time after entering the workstation before the capture loop starts.
+    $contextEnterSettleSeconds = 1
 
     $shell = Wait-ForElement -Attempts 4 -DelayMilliseconds 250 -Finder {
         if ($null -ne $Process -and $Process.HasExited) {
@@ -519,7 +536,7 @@ function Ensure-EnteredOperatingContext {
 
         if ($seedButton) {
             if (Invoke-AutomationButton -Button $seedButton -Description 'seed sample contexts') {
-                Start-Sleep -Seconds 2
+                Start-Sleep -Seconds $contextSeedSettleSeconds
             }
         }
 
@@ -570,7 +587,7 @@ function Ensure-EnteredOperatingContext {
         return $false
     }
 
-    Start-Sleep -Seconds 1
+    Start-Sleep -Seconds $contextEnterSettleSeconds
     return $true
 }
 
@@ -665,7 +682,7 @@ function Save-WindowCapture {
     )
 
     $rect = $Window.Current.BoundingRectangle
-    if ($rect.Width -lt 200 -or $rect.Height -lt 200) {
+    if ($rect.Width -lt $script:MinCaptureWidth -or $rect.Height -lt $script:MinCaptureHeight) {
         throw "Window bounds are too small to capture ($($rect.Width)x$($rect.Height))."
     }
 
@@ -734,7 +751,7 @@ function Send-ForwardedLaunchArgs {
         try {
             $pipe = [System.IO.Pipes.NamedPipeClientStream]::new(
                 '.',
-                'Meridian.Desktop.SingleInstance.Pipe',
+                $script:SingleInstancePipeName,
                 [System.IO.Pipes.PipeDirection]::Out,
                 [System.IO.Pipes.PipeOptions]::None)
             try {
@@ -765,7 +782,7 @@ function Send-WindowKeys {
     )
 
     $Window.SetFocus()
-    Start-Sleep -Milliseconds 250
+    Start-Sleep -Milliseconds $script:KeySendDelayMs
     [System.Windows.Forms.SendKeys]::SendWait($Keys)
 }
 
@@ -1082,11 +1099,17 @@ if ($preflight.status -eq 'blocked') {
 Add-StageStatus -StageStatus $stageStatusEntries -Stage 'preflight' -Status 'ok' -Message 'Desktop workflow preflight checks completed.'
 
 $retryTelemetry = New-Object System.Collections.ArrayList
-$originalFixtureEnv = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
-[void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationClient')
-[void][System.Reflection.Assembly]::LoadWithPartialName('UIAutomationTypes')
+foreach ($uiaAssembly in @('UIAutomationClient', 'UIAutomationTypes')) {
+    try {
+        Add-Type -AssemblyName $uiaAssembly -ErrorAction Stop
+    }
+    catch {
+        # Fallback for environments where the assembly must be loaded by partial name.
+        [void][System.Reflection.Assembly]::LoadWithPartialName($uiaAssembly)
+    }
+}
 
 try {
     if (-not (Test-Path -LiteralPath 'config/appsettings.json') -and (Test-Path -LiteralPath 'config/appsettings.sample.json')) {
@@ -1217,7 +1240,7 @@ try {
             fixtureMode = $useFixture
         }
         try {
-            $existingProcesses = @(Get-Process -Name 'Meridian.Desktop' -ErrorAction SilentlyContinue)
+            $existingProcesses = @(Get-Process -Name $script:DesktopProcessName -ErrorAction SilentlyContinue)
             if ($existingProcesses.Count -gt 0) {
                 if (-not $ReuseExistingApp) {
                     throw "Meridian.Desktop is already running. Close it or rerun with -ReuseExistingApp."
@@ -1336,8 +1359,21 @@ try {
 
         $stepWaitMs = [int](Get-ConfigValue -Table $step -Key 'waitMs' -Fallback $settleMs)
         $shouldCapture = Get-ConfigBool -Table $step -Key 'capture' -Fallback $true
+        $stepMaxRetryAttempts = [int](Get-ConfigValue -Table $step -Key 'retryAttempts' -Fallback $script:DefaultCaptureRetryAttempts)
         $captureName = [string](Get-ConfigValue -Table $step -Key 'captureName' -Fallback ('{0:D2}-{1}' -f $stepIndex, ($title -replace '[^A-Za-z0-9]+', '-').Trim('-').ToLowerInvariant()))
         $capturePath = if ($shouldCapture) { Join-Path $screenshotDirectory "$captureName.png" } else { $null }
+        # Collect step-level additional accepted page tags and resolve each alias.
+        $stepAdditionalPageTags = @()
+        if ($step.Contains('additionalPageTags')) {
+            $stepAdditionalPageTags = @(
+                $step.additionalPageTags |
+                    Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } |
+                    ForEach-Object { Resolve-WorkflowPageTag -PageTag ([string]$_) }
+            )
+        }
+        if ($shouldCapture -and [string]::IsNullOrWhiteSpace($pageTag)) {
+            Write-Warn ("Step {0} '{1}': capture is enabled but no pageTag is set — screenshot will use whatever page is currently active." -f $stepIndex, $title)
+        }
 
         $stepResult = [ordered]@{
             index = $stepIndex
@@ -1389,7 +1425,7 @@ try {
 
             $captureRetry = Invoke-MeridianRetry `
                 -Name ("{0}/step-{1:D2}/{2}" -f $Workflow, $stepIndex, $captureName) `
-                -MaxAttempts 6 `
+                -MaxAttempts $stepMaxRetryAttempts `
                 -BaseDelayMs ([Math]::Max(250, [int]($stepWaitMs / 3))) `
                 -MaxDelayMs ([Math]::Max(1200, $stepWaitMs * 2)) `
                 -JitterMs 180 `
@@ -1428,6 +1464,7 @@ try {
 
                     $expectedTags = @()
                     if (-not [string]::IsNullOrWhiteSpace($expectedPageTag)) { $expectedTags += $expectedPageTag }
+                    if ($stepAdditionalPageTags.Count -gt 0) { $expectedTags += $stepAdditionalPageTags }
                     $expectedTags = @($expectedTags | Select-Object -Unique)
 
                     if ($expectedTags.Count -gt 0 -and -not ($expectedTags -contains $shellState.PageTag)) {
