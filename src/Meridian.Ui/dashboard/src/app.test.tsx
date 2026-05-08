@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/app";
@@ -77,5 +77,20 @@ describe("App", () => {
     await user.keyboard("{Control>}k{/Control}");
 
     expect(screen.queryByRole("dialog", { name: "Open workspace" })).not.toBeInTheDocument();
+  });
+
+  it("opens and closes the mobile workspace navigation drawer", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    expect(screen.queryByRole("dialog", { name: "Workspace navigation" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Open workspace navigation" }));
+    const navigationDialog = screen.getByRole("dialog", { name: "Workspace navigation" });
+    expect(navigationDialog).toBeInTheDocument();
+    expect(within(navigationDialog).getByLabelText("Current workspace: Trading, Review posture")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Close workspace navigation" }));
+    expect(screen.queryByRole("dialog", { name: "Workspace navigation" })).not.toBeInTheDocument();
   });
 });

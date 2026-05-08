@@ -26,8 +26,8 @@ const icons: Record<WorkspaceKey, typeof RadioTower> = {
  * Left-rail operator navigation sidebar. Renders as a fixed-width `<aside>` inside the
  * `.workstation-shell` grid and uses `.operator-rail` CSS from the Track B surface system.
  *
- * **No props** — all data is derived from `useLocation()` via `buildWorkspaceNavViewModel`.
- * The active workspace link is determined by `location.pathname` prefix matching.
+ * All data is derived from `useLocation()` via `buildWorkspaceNavViewModel`. Optional props allow
+ * host surfaces such as drawers to add wrapper classes and close after navigation.
  *
  * **Sections:**
  * - Brand header with the Meridian mark and subtitle.
@@ -42,15 +42,20 @@ const icons: Record<WorkspaceKey, typeof RadioTower> = {
  * matching `.operator-nav-status-*` CSS modifier.
  *
  * @example
- * // Mount inside the .workstation-shell grid, no props needed:
+ * // Mount inside the .workstation-shell grid:
  * <WorkspaceNav />
  */
-export function WorkspaceNav() {
+interface WorkspaceNavProps {
+  className?: string;
+  onNavigate?: () => void;
+}
+
+export function WorkspaceNav({ className, onNavigate }: WorkspaceNavProps) {
   const location = useLocation();
   const viewModel = buildWorkspaceNavViewModel(location.pathname);
 
   return (
-    <aside className="operator-rail" aria-label={`${viewModel.brandTitle} navigation`}>
+    <aside className={cn("operator-rail", className)} aria-label={`${viewModel.brandTitle} navigation`}>
       <div className="operator-rail-brand-bar">
         <span className="operator-rail-mark" aria-hidden="true">M</span>
         <span>
@@ -58,6 +63,28 @@ export function WorkspaceNav() {
           <p className="operator-rail-subtitle">{viewModel.brandSubtitle}</p>
         </span>
       </div>
+
+      <section className="operator-rail-current" aria-label={viewModel.currentWorkspace.ariaLabel}>
+        <div className="operator-rail-section">{viewModel.navEyebrow}</div>
+        <div className="operator-rail-current-card">
+          <div className="flex items-center justify-between gap-2">
+            <div className="operator-rail-current-title">{viewModel.currentWorkspace.label}</div>
+            <span className={`operator-nav-status operator-nav-status-${viewModel.currentWorkspace.statusTone}`}>
+              <span className="operator-nav-status-dot" aria-hidden="true" />
+              {viewModel.currentWorkspace.statusLabel}
+            </span>
+          </div>
+          <p className="operator-rail-current-description">{viewModel.currentWorkspace.description}</p>
+          <div className="operator-rail-meta">
+            <span className="operator-rail-route" aria-label={viewModel.currentWorkspace.routeAriaLabel}>
+              {viewModel.currentWorkspace.route}
+            </span>
+            <span className="operator-rail-shortcut" aria-label={viewModel.deliveryShortcutAriaLabel}>
+              {viewModel.deliveryShortcutLabel}
+            </span>
+          </div>
+        </div>
+      </section>
 
       <nav className="operator-rail-nav" aria-label="Workspaces">
         {viewModel.items.map((item) => {
@@ -72,6 +99,7 @@ export function WorkspaceNav() {
                 "operator-nav-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                 item.active ? "active" : ""
               )}
+              onClick={onNavigate}
             >
               <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span className="truncate font-medium">{item.label}</span>

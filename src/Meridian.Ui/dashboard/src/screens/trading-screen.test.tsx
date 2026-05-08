@@ -417,7 +417,9 @@ describe("TradingScreen", () => {
     await user.type(within(promotionGate).getByLabelText("Review notes"), "Checked replay consistency");
     await user.type(within(promotionGate).getByLabelText("Manual override id"), "override-9");
     await user.click(within(promotionGate).getByRole("button", { name: /evaluate gate checks/i }));
-    await screen.findByText(/Eligible: Yes/i);
+    await waitFor(() => {
+      expect(within(promotionGate).getByText("Evaluation results").parentElement).toHaveTextContent("Eligible: Yes");
+    });
     await user.click(within(promotionGate).getByRole("button", { name: /confirm promote/i }));
     await screen.findByText(/Promoted\. Promotion ID: promo-1/i);
     expect(api.approvePromotion).toHaveBeenCalledWith({
