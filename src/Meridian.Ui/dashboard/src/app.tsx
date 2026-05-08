@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertTriangle, LoaderCircle, Search } from "lucide-react";
+import { AlertTriangle, LoaderCircle, Menu, Search } from "lucide-react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
 import { buildAppShellViewState, type ShellStatusPanel } from "@/app-shell.view-model";
@@ -10,6 +10,15 @@ import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Sheet,
+  SheetBody,
+  SheetCloseButton,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle
+} from "@/components/ui/sheet";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { markWorkflowPresetUsed } from "@/lib/api";
 import { legacyWorkspaceRedirect } from "@/lib/workspace";
@@ -24,6 +33,7 @@ import { TradingScreen } from "@/screens/trading-screen";
 
 export function App() {
   const [commandOpen, setCommandOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const { pathname } = useLocation();
   const {
     session,
@@ -82,11 +92,23 @@ export function App() {
   return (
     <div className="workstation-frame">
       <header className="workstation-masthead">
-        <div className="workstation-brand">
-          <img src={meridianMarkUrl} alt="" aria-hidden="true" />
-          <div className="workstation-brand-copy min-w-0">
-            <div className="name">Meridian</div>
-            <div className="sub">Operator workstation</div>
+        <div className="workstation-brand-group">
+          <button
+            type="button"
+            className="workstation-nav-toggle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            aria-label="Open workspace navigation"
+            aria-expanded={navOpen}
+            aria-haspopup="dialog"
+            onClick={() => setNavOpen(true)}
+          >
+            <Menu className="h-4 w-4" aria-hidden="true" />
+          </button>
+          <div className="workstation-brand">
+            <img src={meridianMarkUrl} alt="" aria-hidden="true" />
+            <div className="workstation-brand-copy min-w-0">
+              <div className="name">Meridian</div>
+              <div className="sub">Operator workstation</div>
+            </div>
           </div>
         </div>
 
@@ -116,7 +138,7 @@ export function App() {
       </header>
 
       <div className="workstation-shell">
-        <WorkspaceNav />
+        <WorkspaceNav className="workstation-rail-desktop" />
 
         <main className="workbench grid grid-rows-[auto_minmax(0,1fr)]">
           <WorkspaceHeader
@@ -190,6 +212,25 @@ export function App() {
         workflowError={workflowError}
         onPresetUsed={handleWorkflowPresetUsed}
       />
+      <Sheet open={navOpen} onOpenChange={setNavOpen} side="left">
+        <SheetContent
+          side="left"
+          aria-labelledby="workspace-navigation-title"
+          aria-describedby="workspace-navigation-description"
+          className="workstation-nav-sheet-dialog"
+        >
+          <SheetHeader>
+            <SheetTitle id="workspace-navigation-title">Workspace navigation</SheetTitle>
+            <SheetDescription id="workspace-navigation-description">
+              Move between the seven operator workspaces without losing your current cockpit context.
+            </SheetDescription>
+            <SheetCloseButton onClick={() => setNavOpen(false)} label="Close workspace navigation" />
+          </SheetHeader>
+          <SheetBody className="p-0">
+            <WorkspaceNav className="workstation-nav-sheet" onNavigate={() => setNavOpen(false)} />
+          </SheetBody>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
