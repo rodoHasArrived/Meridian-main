@@ -151,9 +151,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: wpf-build-binaries
-          path: |
-            src/Meridian.Wpf/bin/${{ env.WPF_CONFIGURATION }}/${{ env.WPF_FRAMEWORK }}/**
-            src/Meridian/bin/${{ env.WPF_CONFIGURATION }}/**
+          path: src/Meridian.Wpf/bin/${{ env.WPF_CONFIGURATION }}/${{ env.WPF_FRAMEWORK }}/
           if-no-files-found: error
           retention-days: 2
 
@@ -221,7 +219,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: wpf-build-binaries
-          path: src
+          path: src/Meridian.Wpf/bin/${{ env.WPF_CONFIGURATION }}/${{ env.WPF_FRAMEWORK }}/
 
       - name: Copy sample config
         run: Copy-Item config\appsettings.sample.json config\appsettings.json -Force
