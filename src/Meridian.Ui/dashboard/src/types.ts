@@ -1396,3 +1396,63 @@ export interface TradingParameters {
   circuitBreakerThresholdPct: number | null;
   asOf: string;
 }
+
+export interface QuoteDataResponse {
+  symbol: string;
+  timestamp: string;
+  bidPrice: number;
+  bidSize: number;
+  askPrice: number;
+  askSize: number;
+  midPrice: number | null;
+  spread: number | null;
+  sequenceNumber: number;
+  streamId: string | null;
+  venue: string | null;
+}
+
+export interface QuotesResponse {
+  symbol: string;
+  quote: QuoteDataResponse | null;
+  timestamp: string;
+}
+
+export interface TradeDataResponse {
+  symbol: string;
+  timestamp: string;
+  price: number;
+  size: number;
+  aggressor: string;
+  sequenceNumber: number;
+  streamId: string | null;
+  venue: string | null;
+}
+
+export interface TradesResponse {
+  symbol: string;
+  trades: TradeDataResponse[];
+  count: number;
+  timestamp: string;
+}
+
+export interface OrderBookLevelDto {
+  side: string;
+  level: number;
+  price: number;
+  size: number;
+  marketMaker: string | null;
+}
+
+export interface OrderBookResponse {
+  symbol: string;
+  timestamp: string;
+  bids: OrderBookLevelDto[];
+  asks: OrderBookLevelDto[];
+  midPrice: number | null;
+  imbalance: number | null;
+  marketState: string;
+  sequenceNumber: number;
+  isStale: boolean;
+  streamId: string | null;
+  venue: string | null;
+}

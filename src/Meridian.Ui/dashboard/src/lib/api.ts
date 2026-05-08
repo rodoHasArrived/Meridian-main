@@ -717,3 +717,17 @@ export function getPortfolioExposure() {
 export function getPortfolioSymbolExposure(symbol: string) {
   return getJson<unknown>(`/api/portfolio/symbols/${encodeURIComponent(symbol)}/exposure`);
 }
+
+// --- Live market data ---
+
+export function getLiveQuote(symbol: string) {
+  return getJson<import("@/types").QuotesResponse>(`/api/data/quotes/${encodeURIComponent(symbol)}`);
+}
+
+export function getLiveTrades(symbol: string, limit = 25) {
+  return getJson<import("@/types").TradesResponse>(`/api/data/trades/${encodeURIComponent(symbol)}?limit=${limit}`);
+}
+
+export function getLiveOrderbook(symbol: string, levels = 10) {
+  return getJson<import("@/types").OrderBookResponse>(`/api/data/orderbook/${encodeURIComponent(symbol)}?levels=${levels}`);
+}

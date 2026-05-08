@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { KeyboardEvent, ReactNode } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -79,6 +79,23 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
 
   return (
     <div className="space-y-8">
+      <section className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link to="/data/quotes" aria-label="Open live quotes and order book viewer">
+              <RadioTower className="h-4 w-4" aria-hidden="true" />
+              <span className="ml-1.5">Live quotes</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/data/watchlist" aria-label="Open symbol watchlist">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              <span className="ml-1.5">Watchlist</span>
+            </Link>
+          </Button>
+        </div>
+      </section>
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => <MetricCard key={metric.id} {...metric} />)}
       </section>
