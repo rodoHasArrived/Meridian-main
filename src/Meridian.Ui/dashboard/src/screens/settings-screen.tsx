@@ -60,6 +60,19 @@ const diagnosticToneClass = {
   danger: "border-danger/35 bg-danger/10"
 } as const;
 
+const formReadinessTextClass = {
+  default: "text-muted-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger"
+} as const;
+
+const requirementToneClass = {
+  success: "border-success/30 bg-success/10 text-success",
+  warning: "border-warning/35 bg-warning/10 text-warning",
+  muted: "border-border/70 bg-secondary/25 text-muted-foreground"
+} as const;
+
 export function SettingsScreen({
   session,
   overview,
@@ -211,7 +224,7 @@ export function SettingsScreen({
           </div>
         </CardHeader>
         <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
-          <form className="grid gap-3" onSubmit={alpacaForm.connect} noValidate>
+          <form className="grid gap-3" onSubmit={alpacaForm.connect} noValidate aria-describedby={alpacaForm.formPanelId}>
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem]">
               <label htmlFor="alpaca-key-id" className="grid gap-1 text-xs font-medium text-muted-foreground">
                 Key ID
@@ -224,9 +237,9 @@ export function SettingsScreen({
                   leadingIcon={<KeyRound className="h-4 w-4" />}
                   disabled={!alpacaForm.canEdit}
                   error={alpacaForm.keyIdError}
-                  aria-describedby="alpaca-key-id-help"
+                  aria-describedby={`${alpacaForm.fieldHelpIds.keyId} ${alpacaForm.formPanelId}`}
                 />
-                <span id="alpaca-key-id-help" className={cn("text-[11px] leading-4", alpacaForm.keyIdError ? "text-danger" : "text-muted-foreground")}>
+                <span id={alpacaForm.fieldHelpIds.keyId} className={cn("text-[11px] leading-4", alpacaForm.keyIdError ? "text-danger" : "text-muted-foreground")}>
                   {alpacaForm.keyIdHelpText}
                 </span>
               </label>
@@ -242,9 +255,9 @@ export function SettingsScreen({
                   leadingIcon={<ShieldCheck className="h-4 w-4" />}
                   disabled={!alpacaForm.canEdit}
                   error={alpacaForm.secretKeyError}
-                  aria-describedby="alpaca-secret-key-help"
+                  aria-describedby={`${alpacaForm.fieldHelpIds.secretKey} ${alpacaForm.formPanelId}`}
                 />
-                <span id="alpaca-secret-key-help" className={cn("text-[11px] leading-4", alpacaForm.secretKeyError ? "text-danger" : "text-muted-foreground")}>
+                <span id={alpacaForm.fieldHelpIds.secretKey} className={cn("text-[11px] leading-4", alpacaForm.secretKeyError ? "text-danger" : "text-muted-foreground")}>
                   {alpacaForm.secretKeyHelpText}
                 </span>
               </label>
@@ -256,11 +269,41 @@ export function SettingsScreen({
                   onChange={(event) => alpacaForm.setEnvironment(event.target.value === "live" ? "live" : "paper")}
                   disabled={!alpacaForm.canEdit}
                   aria-label="Alpaca trading environment"
+                  aria-describedby={`${alpacaForm.fieldHelpIds.environment} ${alpacaForm.formPanelId}`}
                 >
                   <option value="paper">Paper</option>
                   <option value="live">Live</option>
                 </Select>
+                <span id={alpacaForm.fieldHelpIds.environment} className="text-[11px] leading-4 text-muted-foreground">
+                  {alpacaForm.environmentHelpText}
+                </span>
               </label>
+            </div>
+            <div
+              id={alpacaForm.formPanelId}
+              role={alpacaForm.formPanelRole}
+              aria-live={alpacaForm.formPanelAriaLive}
+              className={cn("rounded-md border px-3 py-3", diagnosticToneClass[alpacaForm.formPanelTone])}
+            >
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0">
+                  <div className={cn("text-sm font-semibold", formReadinessTextClass[alpacaForm.formPanelTone])}>
+                    {alpacaForm.formPanelTitle}
+                  </div>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{alpacaForm.formPanelDetail}</p>
+                </div>
+                <div className="flex flex-wrap gap-2" aria-label="Alpaca credential requirements">
+                  {alpacaForm.requirements.map((requirement) => (
+                    <span
+                      key={requirement.id}
+                      className={cn("inline-flex items-center gap-2 rounded-sm border px-2 py-1 text-[11px] font-medium", requirementToneClass[requirement.tone])}
+                    >
+                      <span className="text-muted-foreground">{requirement.label}</span>
+                      <span className="font-mono">{requirement.value}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Button
@@ -272,7 +315,7 @@ export function SettingsScreen({
                 disabledReason={alpacaForm.submitDisabledReason}
               >
                 <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                Connect / Test
+                {alpacaForm.submitLabel}
               </Button>
               <Button
                 type="button"
@@ -285,7 +328,7 @@ export function SettingsScreen({
                 disabledReason={alpacaForm.clearDisabledReason}
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
-                Clear
+                {alpacaForm.clearLabel}
               </Button>
               {alpacaForm.actionMessage ? (
                 <span role={alpacaForm.statusRole} className={alpacaForm.statusClassName}>{alpacaForm.actionMessage}</span>

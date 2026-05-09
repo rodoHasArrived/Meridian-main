@@ -24,13 +24,16 @@ import {
   computeIntradayMetrics,
   useQuickTradeTicket,
   type IntradayMetrics,
+  type LiveQuotesBboPanelViewModel,
+  type LiveQuotesDepthLadderViewModel,
   type LiveQuotesPanelState,
+  type LiveQuotesPriceChartViewModel,
+  type LiveQuotesTradeRowViewModel,
   type QuickTradeTicketViewModel
 } from "@/screens/live-quotes-screen.view-model";
 import type {
   OrderBookResponse,
   QuotesResponse,
-  TradeDataResponse,
   TradesResponse
 } from "@/types";
 
@@ -43,30 +46,6 @@ const TRADE_TABLE_LIMIT = 25;
 interface LoadState<T> {
   data: T | null;
   error: string | null;
-}
-
-function formatPrice(value: number | null | undefined, fractionDigits = 4): string {
-  if (value === null || value === undefined || Number.isNaN(value)) {
-    return "—";
-  }
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: fractionDigits
-  });
-}
-
-function formatSize(value: number | null | undefined): string {
-  if (value === null || value === undefined || Number.isNaN(value)) {
-    return "—";
-  }
-  return value.toLocaleString();
-}
-
-function formatTimestamp(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleTimeString(undefined, { hour12: false }) + "." + String(date.getMilliseconds()).padStart(3, "0");
 }
 
 function mergeLoadState<T>(
@@ -168,7 +147,6 @@ export function LiveQuotesScreen() {
     refreshing,
     tradeTableLimit: TRADE_TABLE_LIMIT
   }), [activeSymbol, orderbook, quote, refreshing, trades]);
-  const quoteRow = marketVm.quoteRow;
 
   return (
     <div className="space-y-6">
@@ -238,10 +216,8 @@ export function LiveQuotesScreen() {
         <>
         <HistoricalChartCard symbol={activeSymbol} />
         <PriceChartCard
-          symbol={activeSymbol}
           metrics={marketVm.intraday}
-          loading={marketVm.tradesState.status === "loading"}
-          error={marketVm.tradesState.status === "error" ? marketVm.tradesState.message : null}
+          viewModel={marketVm.priceChart}
         />
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
           <Card>
@@ -250,34 +226,23 @@ export function LiveQuotesScreen() {
               <CardDescription>Click bid or ask to seed the trade ticket</CardDescription>
             </CardHeader>
             <CardContent>
-              {!marketVm.quoteState.showData || !quoteRow ? (
+              {!marketVm.quoteState.showData || marketVm.bboPanels.length === 0 ? (
                 <PanelStateMessage state={marketVm.quoteState} />
               ) : (
                 <div className="space-y-3">
                   <PanelStateMessage state={marketVm.quoteState} />
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <BboPanel
-                      label="Bid"
-                      price={quoteRow.bidPrice}
-                      size={quoteRow.bidSize}
-                      tone="positive"
-                      icon={<ArrowDown className="h-4 w-4" aria-hidden="true" />}
-                      onSeed={() => quickTrade.seedTicket("Sell", quoteRow.bidPrice)}
-                      seedLabel={`Sell ${activeSymbol} at bid ${formatPrice(quoteRow.bidPrice)}`}
-                    />
-                    <BboPanel
-                      label="Ask"
-                      price={quoteRow.askPrice}
-                      size={quoteRow.askSize}
-                      tone="negative"
-                      icon={<ArrowUp className="h-4 w-4" aria-hidden="true" />}
-                      onSeed={() => quickTrade.seedTicket("Buy", quoteRow.askPrice)}
-                      seedLabel={`Buy ${activeSymbol} at ask ${formatPrice(quoteRow.askPrice)}`}
-                    />
-                    <MetricRow label="Mid" value={formatPrice(quoteRow.midPrice)} />
-                    <MetricRow label="Spread" value={formatPrice(quoteRow.spread)} />
-                    <MetricRow label="Sequence" value={quoteRow.sequenceNumber.toLocaleString()} />
-                    <MetricRow label="Stream" value={quoteRow.streamId ?? "—"} />
+                    {marketVm.bboPanels.map((panel) => (
+                      <BboPanel
+                        key={panel.id}
+                        panel={panel}
+                        icon={panel.id === "bid" ? <ArrowDown className="h-4 w-4" aria-hidden="true" /> : <ArrowUp className="h-4 w-4" aria-hidden="true" />}
+                        onSeed={() => quickTrade.seedTicket(panel.seedSide, panel.price)}
+                      />
+                    ))}
+                    {marketVm.quoteMetrics.map((metric) => (
+                      <MetricRow key={metric.id} label={metric.label} value={metric.value} />
+                    ))}
                   </div>
                 </div>
               )}
@@ -301,10 +266,9 @@ export function LiveQuotesScreen() {
                 <div className="space-y-3">
                   <PanelStateMessage state={marketVm.orderbookState} />
                   <DepthLadder
-                    data={marketVm.orderbook}
+                    ladder={marketVm.depthLadder}
                     onSeedBuy={(price) => quickTrade.seedTicket("Buy", price)}
                     onSeedSell={(price) => quickTrade.seedTicket("Sell", price)}
-                    symbol={activeSymbol}
                   />
                 </div>
               )}
@@ -322,7 +286,7 @@ export function LiveQuotesScreen() {
               ) : (
                 <div className="space-y-3">
                   <PanelStateMessage state={marketVm.tradesState} />
-                  <TradesTable trades={marketVm.tradeRows} />
+                  <TradesTable trades={marketVm.tradeDisplayRows} />
                 </div>
               )}
             </CardContent>
@@ -360,20 +324,16 @@ function PanelStateMessage({ state }: { state: LiveQuotesPanelState }) {
 }
 
 interface BboPanelProps {
-  label: string;
-  price: number;
-  size: number;
-  tone: "positive" | "negative";
+  panel: LiveQuotesBboPanelViewModel;
   icon: React.ReactNode;
   onSeed?: () => void;
-  seedLabel?: string;
 }
 
-function BboPanel({ label, price, size, tone, icon, onSeed, seedLabel }: BboPanelProps) {
-  const toneClass = tone === "positive"
+function BboPanel({ panel, icon, onSeed }: BboPanelProps) {
+  const toneClass = panel.tone === "positive"
     ? "border-positive/30 bg-positive/5 text-positive"
     : "border-danger/30 bg-danger/5 text-danger";
-  const interactive = typeof onSeed === "function" && Number.isFinite(price) && price > 0;
+  const interactive = typeof onSeed === "function" && Number.isFinite(panel.price) && panel.price > 0;
   const interactiveClass = interactive
     ? "cursor-pointer hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
     : "";
@@ -383,10 +343,10 @@ function BboPanel({ label, price, size, tone, icon, onSeed, seedLabel }: BboPane
       <div className={`rounded-md border px-3 py-3 text-left ${toneClass}`}>
         <div className="flex items-center gap-1.5 text-xs uppercase tracking-wide">
           {icon}
-          <span>{label}</span>
+          <span>{panel.label}</span>
         </div>
-        <div className="mt-2 font-mono text-2xl text-foreground">{formatPrice(price)}</div>
-        <div className="mt-1 text-xs text-muted-foreground">{formatSize(size)} shares</div>
+        <div className="mt-2 font-mono text-2xl text-foreground">{panel.priceLabel}</div>
+        <div className="mt-1 text-xs text-muted-foreground">{panel.sizeLabel}</div>
       </div>
     );
   }
@@ -395,32 +355,26 @@ function BboPanel({ label, price, size, tone, icon, onSeed, seedLabel }: BboPane
     <button
       type="button"
       onClick={onSeed}
-      aria-label={seedLabel ?? `${label} ${formatPrice(price)}`}
+      aria-label={panel.seedLabel}
       className={`rounded-md border px-3 py-3 text-left transition-colors ${toneClass} ${interactiveClass}`}
     >
       <div className="flex items-center gap-1.5 text-xs uppercase tracking-wide">
         {icon}
-        <span>{label}</span>
+        <span>{panel.label}</span>
       </div>
-      <div className="mt-2 font-mono text-2xl text-foreground">{formatPrice(price)}</div>
-      <div className="mt-1 text-xs text-muted-foreground">{formatSize(size)} shares</div>
+      <div className="mt-2 font-mono text-2xl text-foreground">{panel.priceLabel}</div>
+      <div className="mt-1 text-xs text-muted-foreground">{panel.sizeLabel}</div>
     </button>
   );
 }
 
 interface DepthLadderProps {
-  data: OrderBookResponse;
+  ladder: LiveQuotesDepthLadderViewModel;
   onSeedBuy?: (price: number) => void;
   onSeedSell?: (price: number) => void;
-  symbol?: string;
 }
 
-function DepthLadder({ data, onSeedBuy, onSeedSell, symbol }: DepthLadderProps) {
-  const maxSize = Math.max(
-    1,
-    ...data.bids.map((l) => l.size),
-    ...data.asks.map((l) => l.size)
-  );
+function DepthLadder({ ladder, onSeedBuy, onSeedSell }: DepthLadderProps) {
   return (
     <div className="grid grid-cols-2 gap-2 font-mono text-xs">
       <div>
@@ -428,21 +382,21 @@ function DepthLadder({ data, onSeedBuy, onSeedSell, symbol }: DepthLadderProps) 
           <span>Bid size</span>
           <span>Price</span>
         </div>
-        {data.bids.map((level) => (
+        {ladder.bids.map((level) => (
           <button
             type="button"
-            key={`bid-${level.level}`}
+            key={level.id}
             onClick={() => onSeedSell?.(level.price)}
-            aria-label={symbol ? `Sell ${symbol} at ${formatPrice(level.price)}` : `Sell at ${formatPrice(level.price)}`}
+            aria-label={level.seedLabel}
             className="relative flex w-full justify-between rounded-sm px-2 py-1 text-left transition-colors hover:bg-positive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             <span
               aria-hidden="true"
               className="absolute inset-y-0 right-0 rounded-sm bg-positive/15"
-              style={{ width: `${(level.size / maxSize) * 100}%` }}
+              style={{ width: level.barWidth }}
             />
-            <span className="relative">{formatSize(level.size)}</span>
-            <span className="relative text-positive">{formatPrice(level.price)}</span>
+            <span className="relative">{level.sizeLabel}</span>
+            <span className="relative text-positive">{level.priceLabel}</span>
           </button>
         ))}
       </div>
@@ -451,21 +405,21 @@ function DepthLadder({ data, onSeedBuy, onSeedSell, symbol }: DepthLadderProps) 
           <span>Price</span>
           <span>Ask size</span>
         </div>
-        {data.asks.map((level) => (
+        {ladder.asks.map((level) => (
           <button
             type="button"
-            key={`ask-${level.level}`}
+            key={level.id}
             onClick={() => onSeedBuy?.(level.price)}
-            aria-label={symbol ? `Buy ${symbol} at ${formatPrice(level.price)}` : `Buy at ${formatPrice(level.price)}`}
+            aria-label={level.seedLabel}
             className="relative flex w-full justify-between rounded-sm px-2 py-1 text-left transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             <span
               aria-hidden="true"
               className="absolute inset-y-0 left-0 rounded-sm bg-danger/15"
-              style={{ width: `${(level.size / maxSize) * 100}%` }}
+              style={{ width: level.barWidth }}
             />
-            <span className="relative text-danger">{formatPrice(level.price)}</span>
-            <span className="relative">{formatSize(level.size)}</span>
+            <span className="relative text-danger">{level.priceLabel}</span>
+            <span className="relative">{level.sizeLabel}</span>
           </button>
         ))}
       </div>
@@ -600,7 +554,7 @@ const quickTicketStatusClass = {
   danger: "text-danger"
 } as const;
 
-function TradesTable({ trades }: { trades: TradeDataResponse[] }) {
+function TradesTable({ trades }: { trades: LiveQuotesTradeRowViewModel[] }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
@@ -614,83 +568,35 @@ function TradesTable({ trades }: { trades: TradeDataResponse[] }) {
           </tr>
         </thead>
         <tbody className="font-mono">
-          {trades.map((t) => {
-            const aggressor = t.aggressor?.toLowerCase();
-            const aggressorClass = aggressor === "buy"
-              ? "text-positive"
-              : aggressor === "sell"
-                ? "text-danger"
-                : "text-muted-foreground";
-            return (
-              <tr key={`${t.sequenceNumber}-${t.timestamp}`} className="border-b border-border/30">
-                <td className="px-2 py-1.5">{formatTimestamp(t.timestamp)}</td>
-                <td className="px-2 py-1.5 text-right">{formatPrice(t.price)}</td>
-                <td className="px-2 py-1.5 text-right">{formatSize(t.size)}</td>
-                <td className={`px-2 py-1.5 ${aggressorClass}`}>{t.aggressor}</td>
-                <td className="px-2 py-1.5 text-muted-foreground">{t.venue ?? "—"}</td>
+          {trades.map((trade) => (
+              <tr key={trade.id} className="border-b border-border/30">
+                <td className="px-2 py-1.5">{trade.timeLabel}</td>
+                <td className="px-2 py-1.5 text-right">{trade.priceLabel}</td>
+                <td className="px-2 py-1.5 text-right">{trade.sizeLabel}</td>
+                <td className={`px-2 py-1.5 ${tradeAggressorClass[trade.aggressorTone]}`}>{trade.aggressorLabel}</td>
+                <td className="px-2 py-1.5 text-muted-foreground">{trade.venueLabel}</td>
               </tr>
-            );
-          })}
+          ))}
         </tbody>
       </table>
     </div>
   );
 }
 
-function formatChange(value: number | null): string {
-  if (value === null || !Number.isFinite(value)) return "—";
-  const sign = value > 0 ? "+" : value < 0 ? "" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
-}
-
-function formatChangePct(value: number | null): string {
-  if (value === null || !Number.isFinite(value)) return "—";
-  const sign = value > 0 ? "+" : value < 0 ? "" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
-}
-
-function formatVolume(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "—";
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-  return value.toLocaleString();
-}
-
-function formatWindowSpan(startIso: string | null, endIso: string | null): string {
-  if (!startIso || !endIso) return "Waiting for prints";
-  const start = new Date(startIso).getTime();
-  const end = new Date(endIso).getTime();
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return "Waiting for prints";
-  const seconds = Math.max(1, Math.round((end - start) / 1000));
-  if (seconds < 60) return `over ${seconds}s`;
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `over ${minutes}m`;
-  const hours = Math.round(minutes / 60);
-  return `over ${hours}h`;
-}
+const tradeAggressorClass = {
+  positive: "text-positive",
+  negative: "text-danger",
+  muted: "text-muted-foreground"
+} as const;
 
 interface PriceChartCardProps {
-  symbol: string;
   metrics: IntradayMetrics;
-  loading: boolean;
-  error: string | null;
+  viewModel: LiveQuotesPriceChartViewModel;
 }
 
-function PriceChartCard({ symbol, metrics, loading, error }: PriceChartCardProps) {
-  const tone = metrics.change === null
-    ? "text-foreground"
-    : metrics.change > 0
-      ? "text-positive"
-      : metrics.change < 0
-        ? "text-danger"
-        : "text-foreground";
-  const stroke = metrics.change === null
-    ? "var(--meridian-chart-stroke, #94a3b8)"
-    : metrics.change > 0
-      ? "var(--meridian-chart-positive, #10b981)"
-      : metrics.change < 0
-        ? "var(--meridian-chart-danger, #ef4444)"
-        : "var(--meridian-chart-stroke, #94a3b8)";
+function PriceChartCard({ metrics, viewModel }: PriceChartCardProps) {
+  const toneClass = chartChangeToneClass[viewModel.changeTone];
+  const stroke = chartStrokeToken[viewModel.strokeTone];
 
   return (
     <Card>
@@ -700,26 +606,26 @@ function PriceChartCard({ symbol, metrics, loading, error }: PriceChartCardProps
             <div className="eyebrow-label">Recent price action</div>
             <CardTitle className="flex items-center gap-2 text-base">
               <LineChart className="h-4 w-4 text-primary" aria-hidden="true" />
-              {symbol} prints {formatWindowSpan(metrics.windowStart, metrics.windowEnd)}
+              {viewModel.title}
             </CardTitle>
             <CardDescription>
-              Last {metrics.count} trades streamed from the live pipeline. Chart shows trade-by-trade price; not a fixed-interval candle.
+              {viewModel.description}
             </CardDescription>
           </div>
           <div className="flex flex-col items-start gap-0.5 sm:items-end" aria-live="polite">
-            <span className="font-mono text-2xl text-foreground">{formatPrice(metrics.last)}</span>
-            <span className={`font-mono text-xs ${tone}`}>
-              {formatChange(metrics.change)} ({formatChangePct(metrics.changePct)})
-            </span>
+            <span className="font-mono text-2xl text-foreground">{viewModel.lastPriceLabel}</span>
+            <span className={`font-mono text-xs ${toneClass}`}>{viewModel.changeLabel}</span>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        {error && metrics.count === 0 ? (
-          <p className="text-sm text-danger">{error}</p>
-        ) : metrics.count === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {loading ? `Waiting for prints from ${symbol}…` : `No recent prints available for ${symbol}.`}
+        {viewModel.statusMessage ? (
+          <p
+            role={viewModel.statusRole}
+            aria-live={viewModel.statusRole === "status" ? "polite" : undefined}
+            className={viewModel.statusRole === "alert" ? "text-sm text-danger" : "text-sm text-muted-foreground"}
+          >
+            {viewModel.statusMessage}
           </p>
         ) : (
           <div className="space-y-3">
@@ -728,14 +634,14 @@ function PriceChartCard({ symbol, metrics, loading, error }: PriceChartCardProps
               stroke={stroke}
               high={metrics.high}
               low={metrics.low}
-              symbol={symbol}
+              highLabel={viewModel.stats.find((stat) => stat.id === "high")?.value ?? ""}
+              lowLabel={viewModel.stats.find((stat) => stat.id === "low")?.value ?? ""}
+              ariaLabel={viewModel.ariaLabel}
             />
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-              <ChartStat label="Open" value={formatPrice(metrics.open)} />
-              <ChartStat label="High" value={formatPrice(metrics.high)} />
-              <ChartStat label="Low" value={formatPrice(metrics.low)} />
-              <ChartStat label="VWAP" value={formatPrice(metrics.vwap)} />
-              <ChartStat label="Volume" value={formatVolume(metrics.volume)} />
+              {viewModel.stats.map((stat) => (
+                <ChartStat key={stat.id} label={stat.label} value={stat.value} />
+              ))}
             </div>
           </div>
         )}
@@ -743,6 +649,18 @@ function PriceChartCard({ symbol, metrics, loading, error }: PriceChartCardProps
     </Card>
   );
 }
+
+const chartChangeToneClass = {
+  positive: "text-positive",
+  negative: "text-danger",
+  default: "text-foreground"
+} as const;
+
+const chartStrokeToken = {
+  positive: "var(--meridian-chart-positive, #10b981)",
+  negative: "var(--meridian-chart-danger, #ef4444)",
+  default: "var(--meridian-chart-stroke, #94a3b8)"
+} as const;
 
 function ChartStat({ label, value }: { label: string; value: string }) {
   return (
@@ -758,10 +676,12 @@ interface PriceSparklineProps {
   stroke: string;
   high: number | null;
   low: number | null;
-  symbol: string;
+  highLabel: string;
+  lowLabel: string;
+  ariaLabel: string;
 }
 
-function PriceSparkline({ series, stroke, high, low, symbol }: PriceSparklineProps) {
+function PriceSparkline({ series, stroke, high, low, highLabel, lowLabel, ariaLabel }: PriceSparklineProps) {
   const width = 800;
   const height = 180;
   const padX = 8;
@@ -796,7 +716,7 @@ function PriceSparkline({ series, stroke, high, low, symbol }: PriceSparklinePro
       preserveAspectRatio="none"
       className="block h-44 w-full overflow-visible"
       role="img"
-      aria-label={`Recent ${symbol} trade prices, ranging from ${formatPrice(low)} to ${formatPrice(high)}.`}
+      aria-label={ariaLabel}
     >
       <line
         x1={padX}
@@ -835,7 +755,7 @@ function PriceSparkline({ series, stroke, high, low, symbol }: PriceSparklinePro
         fill="currentColor"
         fillOpacity="0.55"
       >
-        {formatPrice(high)}
+        {highLabel}
       </text>
       <text
         x={width - padX}
@@ -846,7 +766,7 @@ function PriceSparkline({ series, stroke, high, low, symbol }: PriceSparklinePro
         fill="currentColor"
         fillOpacity="0.55"
       >
-        {formatPrice(low)}
+        {lowLabel}
       </text>
     </svg>
   );

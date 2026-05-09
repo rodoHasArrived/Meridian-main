@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState, type FormEvent } from "react";
 import type {
+  OrderBookLevelDto,
   OrderBookResponse,
   OrderResult,
   OrderSubmitRequest,
@@ -91,13 +92,73 @@ export interface IntradayMetrics {
   series: { ts: number; price: number }[];
 }
 
+export interface LiveQuotesMetricRowViewModel {
+  id: string;
+  label: string;
+  value: string;
+}
+
+export interface LiveQuotesBboPanelViewModel {
+  id: "bid" | "ask";
+  label: string;
+  price: number;
+  priceLabel: string;
+  sizeLabel: string;
+  seedSide: "Buy" | "Sell";
+  seedLabel: string;
+  tone: "positive" | "negative";
+}
+
+export interface LiveQuotesDepthLevelViewModel {
+  id: string;
+  level: number;
+  price: number;
+  priceLabel: string;
+  sizeLabel: string;
+  barWidth: string;
+  seedLabel: string;
+}
+
+export interface LiveQuotesDepthLadderViewModel {
+  bids: LiveQuotesDepthLevelViewModel[];
+  asks: LiveQuotesDepthLevelViewModel[];
+}
+
+export interface LiveQuotesTradeRowViewModel {
+  id: string;
+  timeLabel: string;
+  priceLabel: string;
+  sizeLabel: string;
+  aggressorLabel: string;
+  aggressorTone: "positive" | "negative" | "muted";
+  venueLabel: string;
+}
+
+export interface LiveQuotesPriceChartViewModel {
+  title: string;
+  description: string;
+  lastPriceLabel: string;
+  changeLabel: string;
+  changeTone: "positive" | "negative" | "default";
+  strokeTone: "positive" | "negative" | "default";
+  statusMessage: string | null;
+  statusRole: "status" | "alert";
+  stats: LiveQuotesMetricRowViewModel[];
+  ariaLabel: string;
+}
+
 export interface LiveQuotesMarketDataViewModel {
   activeSymbol: string | null;
   quoteRow: QuotesResponse["quote"] | null;
   orderbook: OrderBookResponse | null;
   tradeHistory: TradeDataResponse[];
   tradeRows: TradeDataResponse[];
+  tradeDisplayRows: LiveQuotesTradeRowViewModel[];
   intraday: IntradayMetrics;
+  bboPanels: LiveQuotesBboPanelViewModel[];
+  quoteMetrics: LiveQuotesMetricRowViewModel[];
+  depthLadder: LiveQuotesDepthLadderViewModel;
+  priceChart: LiveQuotesPriceChartViewModel;
   venueLabel: string | null;
   stale: boolean;
   lastUpdateLabel: string;
@@ -139,6 +200,11 @@ export function buildLiveQuotesMarketViewModel({
   const intraday = computeIntradayMetrics(tradeHistory);
   const hasOrderbookRows = (orderbook.data?.bids.length ?? 0) > 0 || (orderbook.data?.asks.length ?? 0) > 0;
   const symbol = activeSymbol ?? "selected symbol";
+  const maxDepthSize = Math.max(
+    1,
+    ...(orderbook.data?.bids.map((level) => level.size) ?? []),
+    ...(orderbook.data?.asks.map((level) => level.size) ?? [])
+  );
 
   return {
     activeSymbol,
@@ -146,7 +212,15 @@ export function buildLiveQuotesMarketViewModel({
     orderbook: orderbook.data,
     tradeHistory,
     tradeRows,
+    tradeDisplayRows: tradeRows.map(buildTradeRow),
     intraday,
+    bboPanels: buildBboPanels(symbol, quoteRow),
+    quoteMetrics: buildQuoteMetrics(quoteRow),
+    depthLadder: {
+      bids: (orderbook.data?.bids ?? []).map((level) => buildDepthLevel(level, maxDepthSize, symbol, "Sell")),
+      asks: (orderbook.data?.asks ?? []).map((level) => buildDepthLevel(level, maxDepthSize, symbol, "Buy"))
+    },
+    priceChart: buildPriceChartViewModel(symbol, intraday, refreshing, trades.error),
     venueLabel: quoteRow?.venue ?? orderbook.data?.venue ?? null,
     stale: orderbook.data?.isStale === true,
     lastUpdateLabel: formatMarketTimestamp(quoteRow?.timestamp ?? orderbook.data?.timestamp ?? null),
@@ -413,6 +487,144 @@ export function formatTicketPrice(value: number): string {
   });
 }
 
+export function formatMarketPrice(value: number | null | undefined, fractionDigits = 4): string {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return "-";
+  }
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: fractionDigits
+  });
+}
+
+export function formatMarketSize(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return "-";
+  }
+  return value.toLocaleString();
+}
+
+export function formatMarketTime(iso: string | null | undefined): string {
+  if (!iso) return "-";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleTimeString(undefined, { hour12: false }) + "." + String(date.getMilliseconds()).padStart(3, "0");
+}
+
+function buildBboPanels(symbol: string, quoteRow: QuotesResponse["quote"] | null): LiveQuotesBboPanelViewModel[] {
+  if (!quoteRow) {
+    return [];
+  }
+
+  return [
+    {
+      id: "bid",
+      label: "Bid",
+      price: quoteRow.bidPrice,
+      priceLabel: formatMarketPrice(quoteRow.bidPrice),
+      sizeLabel: `${formatMarketSize(quoteRow.bidSize)} shares`,
+      seedSide: "Sell",
+      seedLabel: `Sell ${symbol} at bid ${formatMarketPrice(quoteRow.bidPrice)}`,
+      tone: "positive"
+    },
+    {
+      id: "ask",
+      label: "Ask",
+      price: quoteRow.askPrice,
+      priceLabel: formatMarketPrice(quoteRow.askPrice),
+      sizeLabel: `${formatMarketSize(quoteRow.askSize)} shares`,
+      seedSide: "Buy",
+      seedLabel: `Buy ${symbol} at ask ${formatMarketPrice(quoteRow.askPrice)}`,
+      tone: "negative"
+    }
+  ];
+}
+
+function buildQuoteMetrics(quoteRow: QuotesResponse["quote"] | null): LiveQuotesMetricRowViewModel[] {
+  if (!quoteRow) {
+    return [];
+  }
+
+  return [
+    { id: "mid", label: "Mid", value: formatMarketPrice(quoteRow.midPrice) },
+    { id: "spread", label: "Spread", value: formatMarketPrice(quoteRow.spread) },
+    { id: "sequence", label: "Sequence", value: formatMarketSize(quoteRow.sequenceNumber) },
+    { id: "stream", label: "Stream", value: quoteRow.streamId ?? "-" }
+  ];
+}
+
+function buildDepthLevel(
+  level: OrderBookLevelDto,
+  maxSize: number,
+  symbol: string,
+  seedSide: "Buy" | "Sell"
+): LiveQuotesDepthLevelViewModel {
+  const priceLabel = formatMarketPrice(level.price);
+  return {
+    id: `${level.side.toLowerCase()}-${level.level}`,
+    level: level.level,
+    price: level.price,
+    priceLabel,
+    sizeLabel: formatMarketSize(level.size),
+    barWidth: `${(level.size / maxSize) * 100}%`,
+    seedLabel: `${seedSide} ${symbol} at ${priceLabel}`
+  };
+}
+
+function buildTradeRow(trade: TradeDataResponse): LiveQuotesTradeRowViewModel {
+  const aggressor = trade.aggressor?.toLowerCase();
+  return {
+    id: `${trade.sequenceNumber}-${trade.timestamp}`,
+    timeLabel: formatMarketTime(trade.timestamp),
+    priceLabel: formatMarketPrice(trade.price),
+    sizeLabel: formatMarketSize(trade.size),
+    aggressorLabel: trade.aggressor || "-",
+    aggressorTone: aggressor === "buy" ? "positive" : aggressor === "sell" ? "negative" : "muted",
+    venueLabel: trade.venue ?? "-"
+  };
+}
+
+function buildPriceChartViewModel(
+  symbol: string,
+  metrics: IntradayMetrics,
+  loading: boolean,
+  error: string | null
+): LiveQuotesPriceChartViewModel {
+  const changeTone: LiveQuotesPriceChartViewModel["changeTone"] = metrics.change === null
+    ? "default"
+    : metrics.change > 0
+      ? "positive"
+      : metrics.change < 0
+        ? "negative"
+        : "default";
+  const statusMessage = error && metrics.count === 0
+    ? error
+    : metrics.count === 0
+      ? loading
+        ? `Waiting for prints from ${symbol}...`
+        : `No recent prints available for ${symbol}.`
+      : null;
+
+  return {
+    title: `${symbol} prints ${formatWindowSpan(metrics.windowStart, metrics.windowEnd)}`,
+    description: `Last ${metrics.count} trades streamed from the live pipeline. Chart shows trade-by-trade price; not a fixed-interval candle.`,
+    lastPriceLabel: formatMarketPrice(metrics.last),
+    changeLabel: `${formatChange(metrics.change)} (${formatChangePct(metrics.changePct)})`,
+    changeTone,
+    strokeTone: changeTone,
+    statusMessage,
+    statusRole: error && metrics.count === 0 ? "alert" : "status",
+    stats: [
+      { id: "open", label: "Open", value: formatMarketPrice(metrics.open) },
+      { id: "high", label: "High", value: formatMarketPrice(metrics.high) },
+      { id: "low", label: "Low", value: formatMarketPrice(metrics.low) },
+      { id: "vwap", label: "VWAP", value: formatMarketPrice(metrics.vwap) },
+      { id: "volume", label: "Volume", value: formatVolume(metrics.volume) }
+    ],
+    ariaLabel: `Recent ${symbol} trade prices, ranging from ${formatMarketPrice(metrics.low)} to ${formatMarketPrice(metrics.high)}.`
+  };
+}
+
 function buildPanelState({
   loading,
   error,
@@ -480,6 +692,38 @@ function formatMarketTimestamp(iso: string | null | undefined): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "Unavailable";
   return date.toLocaleTimeString(undefined, { hour12: false }) + "." + String(date.getMilliseconds()).padStart(3, "0");
+}
+
+function formatChange(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) return "-";
+  const sign = value > 0 ? "+" : value < 0 ? "" : "";
+  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
+}
+
+function formatChangePct(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) return "-";
+  const sign = value > 0 ? "+" : value < 0 ? "" : "";
+  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+}
+
+function formatVolume(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return "-";
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  return value.toLocaleString();
+}
+
+function formatWindowSpan(startIso: string | null, endIso: string | null): string {
+  if (!startIso || !endIso) return "Waiting for prints";
+  const start = new Date(startIso).getTime();
+  const end = new Date(endIso).getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return "Waiting for prints";
+  const seconds = Math.max(1, Math.round((end - start) / 1000));
+  if (seconds < 60) return `over ${seconds}s`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `over ${minutes}m`;
+  const hours = Math.round(minutes / 60);
+  return `over ${hours}h`;
 }
 
 function buildSubmitLabel(ticket: QuickTicketState, symbol: string): string {

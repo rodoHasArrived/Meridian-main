@@ -93,6 +93,28 @@ export function WatchlistScreen() {
           <p id="add-symbol-help" className="mt-2 text-xs text-muted-foreground">
             {vm.inputHelpText}
           </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Watchlist starter packs">
+            <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">Quick add</span>
+            {vm.starterPacks.map((pack) => (
+              <Button
+                key={pack.id}
+                type="button"
+                variant="outline"
+                size="sm"
+                className="max-w-full flex-wrap justify-start"
+                onClick={() => void vm.applyStarterPack(pack.id)}
+                disabled={pack.disabled}
+                disabledReason={pack.disabledReason}
+                busy={pack.busy}
+                busyLabel="Adding..."
+                aria-label={pack.ariaLabel}
+              >
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>{pack.label}</span>
+                <span className="break-all text-left font-mono text-[11px] font-normal text-muted-foreground">{pack.symbolsLabel}</span>
+              </Button>
+            ))}
+          </div>
           {vm.submitFeedback ? (
             <p
               id="add-symbol-feedback"

@@ -48,6 +48,11 @@ const plotLegendToneClass = {
   muted: "bg-muted-foreground/70"
 } as const;
 
+const promotionTitleToneClass = {
+  success: "text-success",
+  danger: "text-danger"
+} as const;
+
 const sampleToneBadgeVariant = {
   default: "outline",
   success: "success",
@@ -151,48 +156,58 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
           )}
 
           {vm.showPromotePanel && (
-            <div className="rounded-lg border border-border/70 bg-secondary/15 p-4 space-y-3">
-              <div className="eyebrow-label">Promotion evaluation</div>
+            <div
+              role={vm.promotionPanel.statusRole}
+              aria-live={vm.promotionPanel.statusLive}
+              aria-label={vm.promotionPanel.panelLabel}
+              className="space-y-3 rounded-lg border border-border/70 bg-secondary/15 p-4"
+            >
+              <div className="eyebrow-label">{vm.promotionPanel.panelLabel}</div>
               {vm.promoteError && (
                 <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
                   {vm.promoteError}
                 </div>
               )}
-              {vm.promotionEval && (
+              {vm.promotionPanel.evaluation && (
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
-                    <span className={`font-semibold ${vm.promotionEval.isEligible ? "text-success" : "text-danger"}`}>
-                      {vm.promotionEval.isEligible ? "Eligible for paper trading" : "Not eligible"}
+                    <span className={cn("font-semibold", promotionTitleToneClass[vm.promotionPanel.evaluation.titleTone])}>
+                      {vm.promotionPanel.evaluation.title}
                     </span>
                     <span className="text-muted-foreground">·</span>
-                    <span className="text-muted-foreground">{vm.promotionEval.reason}</span>
+                    <span className="text-muted-foreground">{vm.promotionPanel.evaluation.reason}</span>
                   </div>
                   <div className="flex flex-wrap gap-4 font-mono text-xs text-muted-foreground">
-                    <span>Sharpe {vm.promotionEval.sharpeRatio.toFixed(2)}</span>
-                    <span>Max DD {(vm.promotionEval.maxDrawdownPercent * 100).toFixed(1)}%</span>
-                    <span>Return {(vm.promotionEval.totalReturn * 100).toFixed(1)}%</span>
+                    {vm.promotionPanel.evaluation.metricRows.map((metric) => (
+                      <span key={metric.id}>{metric.label} {metric.value}</span>
+                    ))}
                   </div>
-                  {vm.promotionEval.blockingReasons && vm.promotionEval.blockingReasons.length > 0 && (
-                    <ul className="list-inside list-disc text-xs text-danger space-y-1">
-                      {vm.promotionEval.blockingReasons.map((r) => <li key={r}>{r}</li>)}
+                  {vm.promotionPanel.evaluation.hasBlockingReasons && (
+                    <ul
+                      aria-label={vm.promotionPanel.evaluation.blockingListLabel}
+                      className="list-inside list-disc space-y-1 text-xs text-danger"
+                    >
+                      {vm.promotionPanel.evaluation.blockingReasons.map((reason) => (
+                        <li key={reason.id}>{reason.text}</li>
+                      ))}
                     </ul>
                   )}
                 </div>
               )}
-              {vm.promoteState === "done" && vm.promotionSession && (
+              {vm.promotionPanel.sessionCreated && (
                 <div className="space-y-2">
-                  <div className="text-sm text-success font-semibold">
-                    Paper session created — session {vm.promotionSession.sessionId}
-                  </div>
+                  <div className="text-sm font-semibold text-success">{vm.promotionPanel.sessionCreated.title}</div>
+                  <p className="font-mono text-xs text-muted-foreground">{vm.promotionPanel.sessionCreated.detail}</p>
                   <Button
                     size="sm"
+                    aria-label={vm.promotionPanel.sessionCreated.actionAriaLabel}
                     onClick={() => { navigate("/trading"); }}
                   >
-                    Go to Trading cockpit
+                    {vm.promotionPanel.sessionCreated.actionLabel}
                   </Button>
                 </div>
               )}
-              {vm.promoteState === "evaluated" && vm.promotionEval?.isEligible && (
+              {vm.promotionPanel.showCashForm && (
                 <form
                   className="flex flex-wrap items-end gap-3"
                   onSubmit={(e) => { e.preventDefault(); void vm.confirmPromotion(); }}
@@ -238,7 +253,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                   <Button type="button" size="sm" variant="ghost" onClick={vm.cancelPromotion}>Cancel</Button>
                 </form>
               )}
-              {vm.promoteState === "evaluated" && !vm.promotionEval?.isEligible && (
+              {vm.promotionPanel.showIneligibleDismiss && (
                 <Button size="sm" variant="ghost" onClick={vm.cancelPromotion}>Dismiss</Button>
               )}
             </div>

@@ -180,6 +180,32 @@ describe("WatchlistScreen", () => {
     expect(api.getSymbols).toHaveBeenCalledTimes(2);
   });
 
+  it("quick-adds a starter pack through the bulk endpoint", async () => {
+    vi.mocked(api.bulkAddSymbols).mockResolvedValueOnce({ added: 4, skipped: 0, errors: [] });
+    const user = userEvent.setup();
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
+
+    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await user.click(screen.getByRole("button", { name: /Add US core starter pack: SPY, QQQ, AAPL, MSFT/i }));
+
+    await waitFor(() => expect(api.bulkAddSymbols).toHaveBeenCalledWith(["SPY", "QQQ", "AAPL", "MSFT"]));
+    expect(await screen.findByText("US core: added 4 of 4 symbols.")).toBeInTheDocument();
+    expect(api.getSymbols).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps starter pack symbols visible when quick-add fails", async () => {
+    vi.mocked(api.bulkAddSymbols).mockRejectedValueOnce(new Error("Provider offline"));
+    const user = userEvent.setup();
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
+
+    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await user.click(screen.getByRole("button", { name: /Add Risk pulse starter pack: TLT, GLD, USO, VIXY/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Provider offline");
+    expect(screen.getByLabelText("Add symbol")).toHaveValue("TLT, GLD, USO, VIXY");
+    expect(api.getSymbols).toHaveBeenCalledTimes(1);
+  });
+
   it("keeps the visible rows and reports remove failures", async () => {
     vi.mocked(api.removeSymbol).mockRejectedValueOnce(new Error("Symbol remove failed"));
     const user = userEvent.setup();

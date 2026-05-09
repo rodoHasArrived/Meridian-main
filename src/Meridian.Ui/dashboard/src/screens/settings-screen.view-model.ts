@@ -27,6 +27,19 @@ export interface SettingsAlpacaConnectionFormState {
 export interface SettingsAlpacaConnectionCommandState {
   keyIdError: boolean;
   secretKeyError: boolean;
+  formPanelId: string;
+  formPanelTitle: string;
+  formPanelDetail: string;
+  formPanelTone: "default" | "success" | "warning" | "danger";
+  formPanelRole: "status" | "alert";
+  formPanelAriaLive: "polite" | "assertive";
+  fieldHelpIds: {
+    keyId: string;
+    secretKey: string;
+    environment: string;
+  };
+  submitLabel: string;
+  clearLabel: string;
   canSubmit: boolean;
   canEdit: boolean;
   submitBusy: boolean;
@@ -37,6 +50,16 @@ export interface SettingsAlpacaConnectionCommandState {
   statusClassName: string;
   keyIdHelpText: string;
   secretKeyHelpText: string;
+  environmentHelpText: string;
+  requirements: SettingsAlpacaRequirementRow[];
+}
+
+export interface SettingsAlpacaRequirementRow {
+  id: string;
+  label: string;
+  value: string;
+  met: boolean;
+  tone: "success" | "warning" | "muted";
 }
 
 export interface SettingsAlpacaConnectionFormViewModel extends SettingsAlpacaConnectionFormState, SettingsAlpacaConnectionCommandState {
@@ -75,10 +98,73 @@ export function buildAlpacaConnectionCommandState({
   const busy = form.busyAction !== null;
   const keyIdError = form.submitted && keyIdMissing;
   const secretKeyError = form.submitted && secretKeyMissing;
+  const requirements: SettingsAlpacaRequirementRow[] = [
+    {
+      id: "alpaca-key-id-requirement",
+      label: "Key ID",
+      value: keyIdMissing ? "Required" : "Ready",
+      met: !keyIdMissing,
+      tone: keyIdMissing ? "warning" : "success"
+    },
+    {
+      id: "alpaca-secret-key-requirement",
+      label: "Secret key",
+      value: secretKeyMissing ? "Required" : "Ready",
+      met: !secretKeyMissing,
+      tone: secretKeyMissing ? "warning" : "success"
+    },
+    {
+      id: "alpaca-environment-requirement",
+      label: "Environment",
+      value: form.environment === "live" ? "LIVE" : "PAPER",
+      met: true,
+      tone: form.environment === "live" ? "warning" : "success"
+    }
+  ];
+  const formPanelTone: SettingsAlpacaConnectionCommandState["formPanelTone"] = busy
+    ? "warning"
+    : form.actionTone === "danger"
+      ? "danger"
+      : form.actionTone === "success"
+        ? "success"
+        : hasValidationErrors
+          ? "warning"
+          : "success";
+  const formPanelTitle = busy
+    ? form.busyAction === "clear"
+      ? "Clearing Alpaca credentials"
+      : "Testing Alpaca credentials"
+    : form.actionMessage
+      ? form.actionMessage
+      : hasValidationErrors
+        ? "Credentials incomplete"
+        : "Credentials ready for test";
+  const formPanelDetail = busy
+    ? "Meridian is waiting on the brokerage connection request."
+    : form.actionMessage
+      ? hasValidationErrors
+        ? "Review the required fields before the next connection test."
+        : "Credential readiness has been recalculated from the current form state."
+      : hasValidationErrors
+        ? "Enter the required Alpaca API values before Meridian can call /v2/account."
+        : "Submitting will test the account and clear the secret key from the form after the response.";
 
   return {
     keyIdError,
     secretKeyError,
+    formPanelId: "alpaca-credential-readiness",
+    formPanelTitle,
+    formPanelDetail,
+    formPanelTone,
+    formPanelRole: formPanelTone === "danger" ? "alert" : "status",
+    formPanelAriaLive: formPanelTone === "danger" ? "assertive" : "polite",
+    fieldHelpIds: {
+      keyId: "alpaca-key-id-help",
+      secretKey: "alpaca-secret-key-help",
+      environment: "alpaca-environment-help"
+    },
+    submitLabel: "Connect and test",
+    clearLabel: "Clear",
     canSubmit: !busy && !hasValidationErrors,
     canEdit: !busy,
     submitBusy: form.busyAction === "connect",
@@ -98,7 +184,11 @@ export function buildAlpacaConnectionCommandState({
     statusRole: form.actionTone === "danger" ? "alert" : "status",
     statusClassName: form.actionTone === "danger" ? "text-sm text-danger" : "text-sm text-muted-foreground",
     keyIdHelpText: keyIdError ? "Key ID is required before Meridian can test the Alpaca account." : "Stored values remain masked after refresh.",
-    secretKeyHelpText: secretKeyError ? "Secret key is required and is cleared after a connection test." : "Secret key is never displayed after submit."
+    secretKeyHelpText: secretKeyError ? "Secret key is required and is cleared after a connection test." : "Secret key is never displayed after submit.",
+    environmentHelpText: form.environment === "live"
+      ? "Live endpoint selected. Paper remains the default workstation path."
+      : "Paper endpoint selected for workstation validation.",
+    requirements
   };
 }
 

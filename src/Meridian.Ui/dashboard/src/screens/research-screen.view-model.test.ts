@@ -5,6 +5,7 @@ import {
   buildPlotToolState,
   buildPlotToolTabs,
   buildPromotionCashForm,
+  buildPromotionPanelState,
   buildPromotionHistoryTable,
   buildResearchRunLibraryState,
   buildRunDetail,
@@ -14,7 +15,7 @@ import {
   shouldCloseRunDetailForKey,
   toggleRunSelection
 } from "@/screens/research-screen.view-model";
-import type { MetricSnapshot, PromotionRecord, ResearchPlotToolPayload, ResearchRunRecord, RunComparisonRow, RunDiff } from "@/types";
+import type { MetricSnapshot, PromotionEvaluationResult, PromotionRecord, ResearchPlotToolPayload, ResearchRunRecord, RunDiff, RunComparisonRow } from "@/types";
 
 const runs: ResearchRunRecord[] = [
   {
@@ -111,6 +112,22 @@ const history: PromotionRecord[] = [
     promotedAt: "2026-03-25T12:00:00Z"
   }
 ];
+
+const promotionEvaluation: PromotionEvaluationResult = {
+  runId: "run-2",
+  strategyId: "strat-2",
+  strategyName: "Index Momentum",
+  sourceMode: "backtest",
+  targetMode: "paper",
+  isEligible: false,
+  sharpeRatio: 0.91,
+  maxDrawdownPercent: -0.124,
+  totalReturn: 0.019,
+  reason: "Risk review failed.",
+  found: true,
+  ready: false,
+  blockingReasons: ["Sharpe ratio below promotion threshold.", "Drawdown exceeds paper gate."]
+};
 
 const metrics: MetricSnapshot[] = [
   { id: "runs", label: "Runs", value: "24", delta: "+8%", tone: "success" },
@@ -408,6 +425,67 @@ describe("research-screen view model", () => {
 
     expect(creating.canSubmit).toBe(false);
     expect(creating.submitLabel).toBe("Starting paper session...");
+  });
+
+  it("derives paper-promotion evaluation panel state outside the view", () => {
+    const blocked = buildPromotionPanelState({
+      promoteState: "evaluated",
+      promotionEval: promotionEvaluation,
+      promotionSession: null
+    });
+
+    expect(blocked.statusRole).toBe("alert");
+    expect(blocked.statusLive).toBe("assertive");
+    expect(blocked.evaluation).toMatchObject({
+      title: "Not eligible",
+      titleTone: "danger",
+      reason: "Risk review failed.",
+      hasBlockingReasons: true,
+      blockingListLabel: "Not eligible blocking reasons"
+    });
+    expect(blocked.evaluation?.metricRows).toEqual([
+      { id: "sharpe", label: "Sharpe", value: "0.91" },
+      { id: "drawdown", label: "Max DD", value: "-12.4%" },
+      { id: "return", label: "Return", value: "1.9%" }
+    ]);
+    expect(blocked.evaluation?.blockingReasons[0]).toEqual({
+      id: "run-2-blocker-0",
+      text: "Sharpe ratio below promotion threshold."
+    });
+    expect(blocked.showCashForm).toBe(false);
+    expect(blocked.showIneligibleDismiss).toBe(true);
+
+    const eligible = buildPromotionPanelState({
+      promoteState: "evaluated",
+      promotionEval: { ...promotionEvaluation, isEligible: true, reason: "", blockingReasons: [] },
+      promotionSession: null
+    });
+
+    expect(eligible.statusRole).toBe("status");
+    expect(eligible.evaluation?.title).toBe("Eligible for paper trading");
+    expect(eligible.evaluation?.reason).toBe("Promotion evaluation returned no reason.");
+    expect(eligible.showCashForm).toBe(true);
+    expect(eligible.showIneligibleDismiss).toBe(false);
+
+    const done = buildPromotionPanelState({
+      promoteState: "done",
+      promotionEval: eligible.evaluation ? { ...promotionEvaluation, isEligible: true } : null,
+      promotionSession: {
+        sessionId: "sess-123",
+        strategyId: "strat-2",
+        strategyName: "Index Momentum",
+        initialCash: 100000,
+        createdAt: "2026-05-09T00:00:00Z",
+        closedAt: null,
+        isActive: true
+      }
+    });
+
+    expect(done.sessionCreated).toMatchObject({
+      title: "Paper session created - session sess-123",
+      detail: "Index Momentum is active with $100,000 paper capital.",
+      actionAriaLabel: "Go to Trading cockpit for paper session sess-123"
+    });
   });
 
   it("preserves canonical run-pair ordering across toggle churn for compare continuity", () => {

@@ -369,6 +369,13 @@ describe("operator readiness console view model", () => {
     expect(new Set(detailIds).size).toBe(detailIds.length);
     expect(state.workItemsRegionLabel).toBe("Operator inbox review work items");
     expect(state.workItemsListLabel).toBe("Prioritized operator work items");
+    expect(state.nextAction).toEqual(expect.objectContaining({
+      title: "Index Momentum",
+      label: "Open break queue",
+      route: "/accounting/reconciliation",
+      level: "blocked",
+      actionAriaLabel: "Open break queue: Index Momentum"
+    }));
     expect(state.workItems.find((item) => item.id === "promotion-review-run-1")?.action).toEqual({
       label: "Open promotion review",
       route: "/trading/readiness",
@@ -458,6 +465,12 @@ describe("operator readiness console view model", () => {
       ariaLabel: "Open Security Master: Security coverage open",
       variant: "secondary"
     });
+    expect(state.nextAction).toEqual(expect.objectContaining({
+      title: "Security coverage open",
+      label: "Open Security Master",
+      route: "/accounting/security-master",
+      level: "blocked"
+    }));
     expect(state.workItems[1].action).toEqual({
       label: "Open provider trust",
       route: "/data/providers",
@@ -541,6 +554,12 @@ describe("operator readiness console view model", () => {
     expect(state.workItems.map((item) => item.label)).not.toContain("Info item");
     expect(state.workItemsSummary).toBe("Showing 6 of 8 operator work items; 1 critical item, 6 warnings, 1 info item. Critical items sort first.");
     expect(state.workItemsOverflowText).toBe("2 additional work items hidden from this view after priority sorting.");
+    expect(state.nextAction).toEqual(expect.objectContaining({
+      title: "Critical security coverage gap",
+      label: "Open Security Master",
+      route: "/accounting/security-master",
+      level: "blocked"
+    }));
   });
 
   it("surfaces operator inbox failures while keeping payload fallbacks visible", () => {
@@ -602,6 +621,12 @@ describe("operator readiness console view model", () => {
     expect(loadingState.overallLabel).toBe("Review pending");
     expect(readyState.overallLevel).toBe("ready");
     expect(readyState.overallLabel).toBe("Ready");
+    expect(readyState.nextAction).toEqual(expect.objectContaining({
+      title: "No blocking review items",
+      label: "Open Trading cockpit",
+      route: "/trading",
+      level: "ready"
+    }));
   });
 
   it("keeps the headline in review when governed report-pack readiness is missing", () => {

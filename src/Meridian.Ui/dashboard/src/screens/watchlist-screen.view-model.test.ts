@@ -3,6 +3,8 @@ import {
   buildBulkAddFeedback,
   buildQuoteRefreshCommand,
   buildQuoteStatus,
+  buildStarterPackCommands,
+  buildStarterPackFeedback,
   buildWatchlistRows,
   buildWatchlistStats,
   formatRelative,
@@ -143,6 +145,31 @@ describe("watchlist-screen view model", () => {
     expect(buildBulkAddFeedback({ added: 0, skipped: 0, errors: ["Provider offline"] }, 2)).toEqual({
       tone: "danger",
       message: "Added 0 of 2 symbols; Provider offline."
+    });
+  });
+
+  it("builds starter pack commands and pack-specific feedback", () => {
+    expect(buildStarterPackCommands(false, null)[0]).toEqual({
+      id: "us-core",
+      label: "US core",
+      symbols: ["SPY", "QQQ", "AAPL", "MSFT"],
+      symbolsLabel: "SPY, QQQ, AAPL, MSFT",
+      ariaLabel: "Add US core starter pack: SPY, QQQ, AAPL, MSFT",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
+
+    expect(buildStarterPackCommands(true, "us-core")[0]).toMatchObject({
+      ariaLabel: "Adding US core starter pack",
+      disabled: true,
+      disabledReason: "Wait for the current symbol add request to finish.",
+      busy: true
+    });
+
+    expect(buildStarterPackFeedback("US core", { added: 3, skipped: 1, errors: ["MSFT already exists"] }, 4)).toEqual({
+      tone: "warning",
+      message: "US core: added 3 of 4 symbols; 1 skipped; MSFT already exists."
     });
   });
 

@@ -52,6 +52,18 @@ import type {
   ExecutionManualOverride
 } from "@/types";
 
+export const developmentFixtureHeader = "x-meridian-dev-fixture";
+
+let developmentFixtureUsage = false;
+
+export function resetDevelopmentFixtureUsage() {
+  developmentFixtureUsage = false;
+}
+
+export function hasDevelopmentFixtureUsage() {
+  return developmentFixtureUsage;
+}
+
 async function getJson<T>(path: string): Promise<T> {
   const response = await fetch(path, {
     headers: {
@@ -62,10 +74,15 @@ async function getJson<T>(path: string): Promise<T> {
   if (!response.ok) {
     const fixture = await getDevelopmentFallback<T>(path, response.status);
     if (fixture !== undefined) {
+      markDevelopmentFixtureUsage();
       return fixture;
     }
 
     throw new Error(`Request failed for ${path} (${response.status})`);
+  }
+
+  if (response.headers?.get?.(developmentFixtureHeader) === "true") {
+    markDevelopmentFixtureUsage();
   }
 
   return response.json() as Promise<T>;
@@ -80,6 +97,10 @@ async function getDevelopmentFallback<T>(path: string, status: number): Promise<
 
   const { resolveDevFixture } = await import("@/lib/dev-fixtures");
   return resolveDevFixture<T>(path);
+}
+
+function markDevelopmentFixtureUsage() {
+  developmentFixtureUsage = true;
 }
 
 async function postJson<T>(path: string, body?: unknown): Promise<T> {

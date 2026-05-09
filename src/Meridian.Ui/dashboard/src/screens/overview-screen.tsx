@@ -2,13 +2,11 @@ import {
   Activity,
   AlertCircle,
   ArrowRight,
-  BarChart3,
   BriefcaseBusiness,
   CheckCircle2,
   Database,
   FileText,
   FlaskConical,
-  Globe,
   LineChart,
   Radio,
   RefreshCcw,
@@ -28,8 +26,7 @@ import {
   useOverviewStatusViewModel,
   type OverviewActivityRow,
   type OverviewBriefingBadgeVariant,
-  type OverviewBriefingTone,
-  type OverviewFallbackStatId
+  type OverviewBriefingTone
 } from "@/screens/overview-screen.view-model";
 import type { SessionInfo, SystemOverviewResponse, WorkspaceKey } from "@/types";
 
@@ -88,13 +85,6 @@ const workspaceIconConfig: Record<WorkspaceKey, { icon: ElementType; accent: str
   strategy: { icon: FlaskConical, accent: "text-primary" },
   data: { icon: Database, accent: "text-live" },
   settings: { icon: Settings, accent: "text-muted-foreground" }
-};
-
-const fallbackStatIcons: Record<OverviewFallbackStatId, ElementType> = {
-  providers: Globe,
-  runs: LineChart,
-  symbols: BarChart3,
-  backfills: Activity
 };
 
 export function OverviewScreen({ data, session }: OverviewScreenProps) {
@@ -223,13 +213,7 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
       ) : (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {vm.fallbackStats.map((stat) => (
-            <StatCard
-              key={stat.id}
-              icon={fallbackStatIcons[stat.id]}
-              label={stat.label}
-              value={stat.value}
-              tone={stat.tone}
-            />
+            <MetricCard key={stat.id} {...stat} />
           ))}
         </div>
       )}
@@ -297,33 +281,12 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
 
 // --- Sub-components ---
 
-interface StatCardProps {
-  icon: ElementType;
-  label: string;
-  value: string;
-  tone: "default" | "success" | "warning" | "danger";
-}
-
-const toneClass: Record<StatCardProps["tone"], string> = {
+const toneClass: Record<OverviewBriefingTone, string> = {
   default: "text-foreground",
   success: "text-success",
   warning: "text-warning",
   danger: "text-danger"
 };
-
-function StatCard({ icon: Icon, label, value, tone }: StatCardProps) {
-  return (
-    <Card>
-      <CardContent className="pt-5 pb-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Icon className="size-4 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">{label}</span>
-        </div>
-        <p className={cn("text-2xl font-semibold tabular-nums", toneClass[tone])}>{value}</p>
-      </CardContent>
-    </Card>
-  );
-}
 
 interface BriefingTileProps {
   label: string;

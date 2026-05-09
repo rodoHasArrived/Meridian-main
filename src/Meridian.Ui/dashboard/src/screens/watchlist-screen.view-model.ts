@@ -57,6 +57,17 @@ export interface WatchlistQuoteRefreshCommandState {
   busy: boolean;
 }
 
+export interface WatchlistStarterPackCommandState {
+  id: string;
+  label: string;
+  symbols: string[];
+  symbolsLabel: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
+}
+
 export interface WatchlistScreenViewModel {
   pendingSymbol: string;
   setPendingSymbol: (value: string) => void;
@@ -86,11 +97,19 @@ export interface WatchlistScreenViewModel {
   quoteStatusLabel: string;
   quoteStatusTone: WatchlistQuoteStatusTone;
   quoteRefreshCommand: WatchlistQuoteRefreshCommandState;
+  starterPacks: WatchlistStarterPackCommandState[];
   refresh: () => Promise<void>;
   refreshQuotes: () => Promise<void>;
   addPendingSymbol: (event?: { preventDefault: () => void }) => Promise<void>;
+  applyStarterPack: (id: string) => Promise<void>;
   removeSymbol: (symbol: string) => Promise<void>;
 }
+
+export const WATCHLIST_STARTER_PACKS: Array<{ id: string; label: string; symbols: string[] }> = [
+  { id: "us-core", label: "US core", symbols: ["SPY", "QQQ", "AAPL", "MSFT"] },
+  { id: "risk-pulse", label: "Risk pulse", symbols: ["TLT", "GLD", "USO", "VIXY"] },
+  { id: "income", label: "Income", symbols: ["HYG", "LQD", "VNQ", "SCHD"] }
+];
 
 export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenViewModel {
   const [symbols, setSymbols] = useState<SymbolRecord[] | null>(null);
@@ -105,6 +124,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [quoteFetchedAt, setQuoteFetchedAt] = useState<number | null>(null);
   const [quoteRefreshing, setQuoteRefreshing] = useState(false);
+  const [activeStarterPackId, setActiveStarterPackId] = useState<string | null>(null);
   const previousMidRef = useRef<Record<string, number>>({});
   const quoteInFlightRef = useRef(false);
 
@@ -174,6 +194,37 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
       setSubmitting(false);
     }
   }, [api.addSymbol, api.bulkAddSymbols, pendingSymbol, refresh, submitting]);
+
+  const applyStarterPack = useCallback(async (id: string) => {
+    const pack = WATCHLIST_STARTER_PACKS.find((candidate) => candidate.id === id);
+    if (!pack || submitting) {
+      return;
+    }
+
+    setSubmitting(true);
+    setActiveStarterPackId(id);
+    setSubmitFeedback(null);
+    setPendingSymbol(pack.symbols.join(", "));
+    try {
+      const result = await api.bulkAddSymbols(pack.symbols);
+      setSubmitFeedback(buildStarterPackFeedback(pack.label, result, pack.symbols.length));
+      if (result.added > 0 || result.errors.length === 0) {
+        setPendingSymbol("");
+      }
+
+      if (result.added > 0) {
+        await refresh();
+      }
+    } catch (error) {
+      setSubmitFeedback({
+        tone: "danger",
+        message: messageFromError(error, `Failed to add ${pack.label} starter pack.`)
+      });
+    } finally {
+      setActiveStarterPackId(null);
+      setSubmitting(false);
+    }
+  }, [api.bulkAddSymbols, refresh, submitting]);
 
   const removeSymbol = useCallback(async (symbol: string) => {
     setRemoving((current) => ({ ...current, [symbol]: true }));
@@ -301,9 +352,11 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     quoteStatusLabel: quoteStatus.label,
     quoteStatusTone: quoteStatus.tone,
     quoteRefreshCommand: buildQuoteRefreshCommand(listState, rows.length, quoteRefreshing),
+    starterPacks: buildStarterPackCommands(submitting, activeStarterPackId),
     refresh,
     refreshQuotes,
     addPendingSymbol,
+    applyStarterPack,
     removeSymbol
   };
 }
@@ -430,6 +483,47 @@ export function buildBulkAddFeedback(
   }
 
   return { tone: "success", message: `${base}.` };
+}
+
+export function buildStarterPackFeedback(
+  label: string,
+  result: { added: number; skipped: number; errors: string[] },
+  requestedCount: number
+): WatchlistSubmitFeedback {
+  const base = `${label}: added ${formatCount(result.added)} of ${formatCount(requestedCount)} symbols`;
+  const skipped = result.skipped > 0 ? `; ${formatCount(result.skipped)} skipped` : "";
+  const errors = result.errors.length > 0 ? `; ${result.errors.join("; ")}` : "";
+
+  if (result.errors.length > 0 && result.added === 0) {
+    return { tone: "danger", message: `${base}${skipped}${errors}.` };
+  }
+
+  if (result.errors.length > 0 || result.skipped > 0) {
+    return { tone: "warning", message: `${base}${skipped}${errors}.` };
+  }
+
+  return { tone: "success", message: `${base}.` };
+}
+
+export function buildStarterPackCommands(
+  submitting: boolean,
+  activeStarterPackId: string | null
+): WatchlistStarterPackCommandState[] {
+  return WATCHLIST_STARTER_PACKS.map((pack) => {
+    const busy = submitting && activeStarterPackId === pack.id;
+    return {
+      id: pack.id,
+      label: pack.label,
+      symbols: pack.symbols,
+      symbolsLabel: pack.symbols.join(", "),
+      ariaLabel: busy
+        ? `Adding ${pack.label} starter pack`
+        : `Add ${pack.label} starter pack: ${pack.symbols.join(", ")}`,
+      disabled: submitting,
+      disabledReason: submitting ? "Wait for the current symbol add request to finish." : null,
+      busy
+    };
+  });
 }
 
 function buildStat(

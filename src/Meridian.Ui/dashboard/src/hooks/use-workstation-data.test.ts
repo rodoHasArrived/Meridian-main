@@ -22,8 +22,10 @@ vi.mock("@/lib/api", () => ({
   getDataWorkspace: vi.fn(),
   getGovernanceWorkspace: vi.fn(),
   getAlpacaConnectionStatus: vi.fn(),
+  hasDevelopmentFixtureUsage: vi.fn(() => false),
   getPortfolioWorkspace: vi.fn(),
   getReportingWorkspace: vi.fn(),
+  resetDevelopmentFixtureUsage: vi.fn(),
   getSession: vi.fn(),
   getStrategyWorkspace: vi.fn(),
   getSystemStatus: vi.fn(),
@@ -72,6 +74,7 @@ describe("useWorkstationData", () => {
     vi.mocked(api.getBrokerageHouseholdPortfolio).mockImplementation(() => track<BrokerageHouseholdPortfolio>("brokeragePortfolio"));
     vi.mocked(api.getWorkflowLibrary).mockImplementation(() => track<WorkflowLibrary>("workflowLibrary"));
     vi.mocked(api.getWorkflowPresets).mockImplementation(() => track<WorkflowPresetLibrary>("workflowPresets"));
+    vi.mocked(api.hasDevelopmentFixtureUsage).mockReturnValue(false);
   });
 
   it("ignores an older full refresh that resolves after a newer refresh", async () => {
@@ -134,6 +137,21 @@ describe("useWorkstationData", () => {
     });
 
     expect(result.current.session?.displayName).toBe("strict-active session");
+  });
+
+  it("surfaces development fixture usage after bootstrap", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    vi.mocked(api.hasDevelopmentFixtureUsage).mockReturnValue(true);
+
+    await act(async () => {
+      resolveRefreshBatch(0, "fixture");
+      await flushAsync();
+    });
+
+    expect(api.resetDevelopmentFixtureUsage).toHaveBeenCalled();
+    expect(result.current.usingDevelopmentFixtures).toBe(true);
   });
 });
 

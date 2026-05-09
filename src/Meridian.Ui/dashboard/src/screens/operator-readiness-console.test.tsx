@@ -156,11 +156,12 @@ describe("OperatorReadinessConsole", () => {
       { initialEntries: ["/trading/readiness"] }
     );
 
-    const action = await screen.findByRole("link", {
+    const actions = await screen.findAllByRole("link", {
       name: "Open promotion review: Promotion checklist incomplete"
     });
 
-    expect(action).toHaveAttribute("href", "/trading/readiness");
+    expect(actions[0]).toHaveAttribute("href", "/trading/readiness");
+    expect(screen.getByRole("group", { name: /Primary next action: Promotion checklist incomplete/i })).toBeInTheDocument();
     expect(screen.getAllByText("Promotion checklist incomplete").length).toBeGreaterThan(0);
     expect(screen.getByRole("region", { name: "Readiness control strip" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Shared readiness API sources" })).toBeInTheDocument();
@@ -210,11 +211,12 @@ describe("OperatorReadinessConsole", () => {
       { initialEntries: ["/trading/readiness"] }
     );
 
-    const criticalAction = await screen.findByRole("link", {
+    const criticalActions = await screen.findAllByRole("link", {
       name: "Open Security Master: Critical security coverage gap"
     });
 
-    expect(criticalAction).toHaveAttribute("href", "/accounting/security-master");
+    expect(criticalActions[0]).toHaveAttribute("href", "/accounting/security-master");
+    expect(screen.getByRole("group", { name: /Primary next action: Critical security coverage gap/i })).toBeInTheDocument();
     expect(screen.getByText("Showing 6 of 7 operator work items; 1 critical item, 6 warnings. Critical items sort first.")).toBeInTheDocument();
     expect(screen.getByText("1 additional work item hidden from this view after priority sorting.")).toBeInTheDocument();
   });

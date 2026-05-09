@@ -55,6 +55,7 @@ export interface ResearchRunLibraryState {
   canPromote: boolean;
   promoteState: PromoteState;
   promotionEval: PromotionEvaluationResult | null;
+  promotionPanel: ResearchPromotionPanelState;
   promotionSession: PaperSessionSummary | null;
   showPromotePanel: boolean;
   promoteError: string | null;
@@ -66,6 +67,45 @@ export interface ResearchRunLibraryState {
   promotionHistoryButtonLabel: string;
   promoteButtonLabel: string;
   statusAnnouncement: string;
+}
+
+export interface ResearchPromotionPanelState {
+  panelLabel: string;
+  statusRole: "status" | "alert";
+  statusLive: "polite" | "assertive";
+  evaluation: ResearchPromotionEvaluationState | null;
+  sessionCreated: ResearchPromotionSessionState | null;
+  showCashForm: boolean;
+  showIneligibleDismiss: boolean;
+}
+
+export interface ResearchPromotionEvaluationState {
+  title: string;
+  titleTone: "success" | "danger";
+  reason: string;
+  metricRows: ResearchPromotionMetricRow[];
+  blockingReasons: ResearchPromotionBlockingReason[];
+  hasBlockingReasons: boolean;
+  blockingListLabel: string;
+}
+
+export interface ResearchPromotionMetricRow {
+  id: string;
+  label: string;
+  value: string;
+}
+
+export interface ResearchPromotionBlockingReason {
+  id: string;
+  text: string;
+}
+
+export interface ResearchPromotionSessionState {
+  title: string;
+  sessionId: string;
+  detail: string;
+  actionLabel: string;
+  actionAriaLabel: string;
 }
 
 export interface ResearchPromotionCashFormState {
@@ -699,6 +739,11 @@ export function buildResearchRunLibraryState({
     eligible: promotionEval?.isEligible === true,
     promoteState
   });
+  const promotionPanel = buildPromotionPanelState({
+    promoteState,
+    promotionEval,
+    promotionSession
+  });
   const runTable = buildRunTable(runs);
   const comparisonTable = buildComparisonTable(comparison);
   const diffPanel = buildDiffPanel(runDiff);
@@ -741,6 +786,7 @@ export function buildResearchRunLibraryState({
     canPromote: hasOneBacktestRun && !busy && !promoteBusy && promoteState !== "done",
     promoteState,
     promotionEval,
+    promotionPanel,
     promotionSession,
     showPromotePanel: promoteState !== "idle",
     promoteError,
@@ -771,6 +817,79 @@ export function buildResearchRunLibraryState({
       runDiffLoaded,
       promotionHistoryLoaded
     })
+  };
+}
+
+export function buildPromotionPanelState({
+  promoteState,
+  promotionEval,
+  promotionSession
+}: {
+  promoteState: PromoteState;
+  promotionEval: PromotionEvaluationResult | null;
+  promotionSession: PaperSessionSummary | null;
+}): ResearchPromotionPanelState {
+  const evaluation = promotionEval ? buildPromotionEvaluationState(promotionEval) : null;
+  const sessionCreated = promoteState === "done" && promotionSession
+    ? {
+      title: `Paper session created - session ${promotionSession.sessionId}`,
+      sessionId: promotionSession.sessionId,
+      detail: `${promotionSession.strategyName ?? "Selected strategy"} is active with ${formatMoney(promotionSession.initialCash)} paper capital.`,
+      actionLabel: "Go to Trading cockpit",
+      actionAriaLabel: `Go to Trading cockpit for paper session ${promotionSession.sessionId}`
+    }
+    : null;
+
+  return {
+    panelLabel: "Promotion evaluation",
+    statusRole: evaluation?.titleTone === "danger" ? "alert" : "status",
+    statusLive: evaluation?.titleTone === "danger" ? "assertive" : "polite",
+    evaluation,
+    sessionCreated,
+    showCashForm: promoteState === "evaluated" && promotionEval?.isEligible === true,
+    showIneligibleDismiss: promoteState === "evaluated" && promotionEval?.isEligible === false
+  };
+}
+
+function formatDecimal(value: number | null | undefined, digits: number): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "Unavailable";
+  }
+
+  return value.toFixed(digits);
+}
+
+function formatPercent(value: number | null | undefined, digits: number): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "Unavailable";
+  }
+
+  return `${(value * 100).toFixed(digits)}%`;
+}
+
+export function buildPromotionEvaluationState(
+  promotionEval: PromotionEvaluationResult
+): ResearchPromotionEvaluationState {
+  const title = promotionEval.isEligible ? "Eligible for paper trading" : "Not eligible";
+  const blockingReasons = (promotionEval.blockingReasons ?? [])
+    .filter((reason) => reason.trim().length > 0)
+    .map((reason, index) => ({
+      id: `${promotionEval.runId}-blocker-${index}`,
+      text: reason
+    }));
+
+  return {
+    title,
+    titleTone: promotionEval.isEligible ? "success" : "danger",
+    reason: promotionEval.reason.trim() || "Promotion evaluation returned no reason.",
+    metricRows: [
+      { id: "sharpe", label: "Sharpe", value: formatDecimal(promotionEval.sharpeRatio, 2) },
+      { id: "drawdown", label: "Max DD", value: formatPercent(promotionEval.maxDrawdownPercent, 1) },
+      { id: "return", label: "Return", value: formatPercent(promotionEval.totalReturn, 1) }
+    ],
+    blockingReasons,
+    hasBlockingReasons: blockingReasons.length > 0,
+    blockingListLabel: `${title} blocking reasons`
   };
 }
 

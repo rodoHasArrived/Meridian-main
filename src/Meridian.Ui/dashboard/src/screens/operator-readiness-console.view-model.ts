@@ -50,6 +50,17 @@ export interface ReadinessConsoleRow {
   action?: ReadinessConsoleRowAction | null;
 }
 
+export interface ReadinessConsoleNextAction {
+  title: string;
+  detail: string;
+  meta: string;
+  label: string;
+  route: string;
+  level: ReadinessConsoleLevel;
+  ariaLabel: string;
+  actionAriaLabel: string;
+}
+
 type ReadinessConsoleMetricBase = Omit<ReadinessConsoleMetric, "ariaLabel" | "statusAriaLabel" | "delta" | "tone" | "detailId">;
 type ReadinessConsoleApiSourceBase = Omit<ReadinessConsoleApiSource, "ariaLabel" | "statusAriaLabel">;
 type ReadinessConsoleRowBase = Omit<ReadinessConsoleRow, "ariaLabel" | "statusAriaLabel" | "detailId">;
@@ -89,6 +100,7 @@ export interface ReadinessConsoleState {
   inboxSummary: string;
   inboxLoadingLabel: string | null;
   inboxErrorText: string | null;
+  nextAction: ReadinessConsoleNextAction;
   metrics: ReadinessConsoleMetric[];
   metricsLabel: string;
   apiSources: ReadinessConsoleApiSource[];
@@ -197,6 +209,14 @@ export function buildOperatorReadinessConsoleState({
   const prioritizedWorkItems = prioritizeWorkItems(workItems);
   const reportPackFacts = withRowPresentation(buildReportPackFacts(reporting ?? governance), "report-pack");
   const workItemRows = withRowPresentation(buildWorkItemRows(prioritizedWorkItems), "work-items");
+  const nextAction = buildNextAction({
+    workItemRows,
+    activeSessionFacts,
+    providerTrustRows,
+    reconciliationRows,
+    promotionRows,
+    reportPackFacts
+  });
   const metrics = withMetricPresentation(buildMetrics({
     latestRuns,
     readiness,
@@ -239,6 +259,7 @@ export function buildOperatorReadinessConsoleState({
     inboxSummary: operatorInbox?.summary ?? "Operator inbox not loaded; using workstation payload fallbacks where available.",
     inboxLoadingLabel: inboxLoading ? "Loading operator inbox..." : null,
     inboxErrorText: inboxError,
+    nextAction,
     metrics,
     metricsLabel: "Operator readiness metrics",
     apiSources: withApiSourcePresentation(buildApiSources({
@@ -730,6 +751,135 @@ function buildWorkItemsOverflowText(totalCount: number, visibleCount: number): s
   return `${formatCount(hiddenCount, "additional work item")} hidden from this view after priority sorting.`;
 }
 
+interface NextActionCandidate {
+  title: string;
+  detail: string;
+  meta: string;
+  label: string;
+  route: string;
+  level: ReadinessConsoleLevel;
+  sourcePriority: number;
+  index: number;
+}
+
+function buildNextAction({
+  workItemRows,
+  activeSessionFacts,
+  providerTrustRows,
+  reconciliationRows,
+  promotionRows,
+  reportPackFacts
+}: {
+  workItemRows: ReadinessConsoleRow[];
+  activeSessionFacts: ReadinessConsoleRow[];
+  providerTrustRows: ReadinessConsoleRow[];
+  reconciliationRows: ReadinessConsoleRow[];
+  promotionRows: ReadinessConsoleRow[];
+  reportPackFacts: ReadinessConsoleRow[];
+}): ReadinessConsoleNextAction {
+  const candidates = [
+    ...workItemRows
+      .filter((row) => row.level === "blocked" || row.level === "review")
+      .map((row, index) => nextActionCandidateFromRow(row, {
+        label: row.action?.label ?? "Review item",
+        route: row.action?.route ?? "/trading/readiness",
+        sourcePriority: 0,
+        index
+      })),
+    ...reconciliationRows.map((row, index) => nextActionCandidateFromRow(row, {
+      label: "Open break queue",
+      route: "/accounting/reconciliation",
+      sourcePriority: 1,
+      index
+    })),
+    ...promotionRows.map((row, index) => nextActionCandidateFromRow(row, {
+      label: "Open promotion review",
+      route: "/trading/readiness",
+      sourcePriority: 2,
+      index
+    })),
+    ...providerTrustRows
+      .filter((row) => row.level === "blocked" || row.level === "review")
+      .map((row, index) => nextActionCandidateFromRow(row, {
+        label: "Open provider trust",
+        route: "/data",
+        sourcePriority: 3,
+        index
+      })),
+    ...reportPackFacts
+      .filter((row) => row.level === "blocked" || row.level === "review")
+      .map((row, index) => nextActionCandidateFromRow(row, {
+        label: "Open report packs",
+        route: "/reporting",
+        sourcePriority: 4,
+        index
+      })),
+    ...activeSessionFacts
+      .filter((row) => row.level === "blocked" || row.level === "review")
+      .map((row, index) => nextActionCandidateFromRow(row, {
+        label: "Open Trading cockpit",
+        route: "/trading",
+        sourcePriority: 5,
+        index
+      }))
+  ].sort((left, right) => {
+    const levelDelta = levelPriority(left.level) - levelPriority(right.level);
+    if (levelDelta !== 0) {
+      return levelDelta;
+    }
+
+    const sourceDelta = left.sourcePriority - right.sourcePriority;
+    if (sourceDelta !== 0) {
+      return sourceDelta;
+    }
+
+    return left.index - right.index;
+  });
+
+  const candidate = candidates[0] ?? {
+    title: "No blocking review items",
+    detail: "The visible readiness queue is settled. Continue monitoring the paper cockpit and latest workstation evidence.",
+    meta: "Operator inbox and readiness evidence are clear",
+    label: "Open Trading cockpit",
+    route: "/trading",
+    level: "ready" as ReadinessConsoleLevel,
+    sourcePriority: 99,
+    index: 0
+  };
+
+  return {
+    title: candidate.title,
+    detail: candidate.detail,
+    meta: candidate.meta,
+    label: candidate.label,
+    route: candidate.route,
+    level: candidate.level,
+    ariaLabel: `Primary next action: ${candidate.title}. ${candidate.detail} ${candidate.meta}`,
+    actionAriaLabel: `${candidate.label}: ${candidate.title}`
+  };
+}
+
+function nextActionCandidateFromRow(
+  row: ReadinessConsoleRow,
+  options: {
+    label: string;
+    route: string;
+    sourcePriority: number;
+    index: number;
+  }
+): NextActionCandidate {
+  return {
+    title: row.label,
+    detail: row.detail,
+    meta: row.meta,
+    label: options.label,
+    route: options.route,
+    level: row.level,
+    sourcePriority: options.sourcePriority,
+    index: options.index
+  };
+}
+
 function countWorkItemTones(workItems: OperatorWorkItem[]): Record<OperatorWorkItem["tone"], number> {
   return workItems.reduce<Record<OperatorWorkItem["tone"], number>>((counts, item) => {
     counts[item.tone] += 1;
@@ -740,6 +890,19 @@ function countWorkItemTones(workItems: OperatorWorkItem[]): Record<OperatorWorkI
     Info: 0,
     Success: 0
   });
+}
+
+function levelPriority(level: ReadinessConsoleLevel): number {
+  switch (level) {
+    case "blocked":
+      return 0;
+    case "review":
+      return 1;
+    case "neutral":
+      return 2;
+    case "ready":
+      return 3;
+  }
 }
 
 function tonePriority(tone: OperatorWorkItem["tone"]): number {

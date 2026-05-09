@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, LoaderCircle, Menu, Search } from "lucide-react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { AlertTriangle, Database, LineChart, LoaderCircle, Menu, Search, ShieldCheck } from "lucide-react";
+import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
 import { buildAppShellViewState, type ShellStatusPanel } from "@/app-shell.view-model";
 import { CommandPalette } from "@/components/meridian/command-palette";
@@ -56,6 +56,7 @@ export function App() {
     workflowLibrary,
     workflowPresets,
     workflowError,
+    usingDevelopmentFixtures,
     loading,
     error,
     workspaceErrors,
@@ -190,6 +191,7 @@ export function App() {
           />
 
           <div className="workbench-scroll px-4 py-4 lg:px-6 lg:py-5">
+            {usingDevelopmentFixtures ? <DevelopmentFixtureNotice /> : null}
             {shell.statusPanel ? <ShellStatus panel={shell.statusPanel} onRetry={refresh} /> : null}
             {shell.canRenderRoutes ? (
               <Routes>
@@ -283,6 +285,60 @@ function LegacyWorkspaceRedirect() {
   const location = useLocation();
   return <Navigate to={legacyWorkspaceRedirect(location.pathname, location.search, location.hash) ?? "/trading"} replace />;
 }
+
+function DevelopmentFixtureNotice() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="mb-4 flex flex-col gap-3 rounded-lg border border-warning/35 bg-warning/10 px-3 py-3 text-sm text-foreground lg:flex-row lg:items-center lg:justify-between"
+    >
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <span className="font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-warning">
+          Demo data
+        </span>
+        <span className="text-foreground/80">
+          Showing local fixture responses because the Meridian API host is unavailable.
+        </span>
+      </div>
+      <nav aria-label="Demo workflow" className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">Sample flow</span>
+        {developmentFixtureDemoLinks.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Button key={item.href} asChild variant="outline" size="sm" className="bg-background/40">
+              <Link to={item.href} aria-label={item.ariaLabel}>
+                <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>{item.label}</span>
+              </Link>
+            </Button>
+          );
+        })}
+      </nav>
+    </div>
+  );
+}
+
+const developmentFixtureDemoLinks = [
+  {
+    href: "/data/watchlist",
+    label: "Watchlist",
+    ariaLabel: "Open sample watchlist demo lane",
+    icon: Database
+  },
+  {
+    href: "/data/quotes",
+    label: "Quotes",
+    ariaLabel: "Open sample live quotes demo lane",
+    icon: LineChart
+  },
+  {
+    href: "/trading/readiness",
+    label: "Readiness",
+    ariaLabel: "Open sample readiness console",
+    icon: ShieldCheck
+  }
+] as const;
 
 function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () => void }) {
   const toneClass =

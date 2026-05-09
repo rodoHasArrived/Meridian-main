@@ -546,6 +546,7 @@ describe("session replay controls view model", () => {
     expect(ready.statusText).toBe("Ready to replay replay.jsonl.");
     expect(ready.canStart).toBe(true);
     expect(ready.canPause).toBe(false);
+    expect(ready.pauseDisabledReason).toBe("Start a replay before using this control.");
     expect(ready.sectionTitle).toBe("Session replay controls");
     expect(ready.fileSelectLabel).toBe("Replay file");
     expect(ready.fileSelectDescribedBy).toBe("session-replay-status");
@@ -553,6 +554,12 @@ describe("session replay controls view model", () => {
     expect(ready.speedDescribedBy).toBe("session-replay-status session-replay-speed-help");
     expect(ready.seekLabel).toBe("Seek position");
     expect(ready.seekDescribedBy).toBe("session-replay-status session-replay-seek-help");
+    expect(ready.statusPanel).toEqual(expect.objectContaining({
+      role: "status",
+      tone: "success",
+      title: "Replay file selected",
+      detail: "Ready to replay replay.jsonl."
+    }));
     expect(ready.statusAnnouncement).toBe("Replay file replay.jsonl selected.");
 
     const running = buildSessionReplayControlsState({
@@ -566,6 +573,12 @@ describe("session replay controls view model", () => {
     expect(running.canPause).toBe(true);
     expect(running.canSeek).toBe(true);
     expect(running.canApplySpeed).toBe(true);
+    expect(running.statusPanel).toEqual(expect.objectContaining({
+      role: "status",
+      tone: "success",
+      title: "Replay running",
+      detail: "Processed 3/10 events at 30%."
+    }));
     expect(running.statusAnnouncement).toBe("Replay running for rep-1 at 30 percent.");
   });
 
@@ -583,11 +596,22 @@ describe("session replay controls view model", () => {
 
     expect(invalid.speedValidationText).toBe("Enter a replay speed greater than 0.");
     expect(invalid.seekValidationText).toBe("Enter a seek position of 0 ms or greater.");
+    expect(invalid.fileSelectDescribedBy).toBe("session-replay-status session-replay-error");
     expect(invalid.speedDescribedBy).toBe("session-replay-status session-replay-speed-help session-replay-error");
     expect(invalid.seekDescribedBy).toBe("session-replay-status session-replay-seek-help session-replay-error");
     expect(invalid.canStart).toBe(false);
     expect(invalid.canSeek).toBe(false);
     expect(invalid.canApplySpeed).toBe(false);
+    expect(invalid.activeErrorText).toBe("Replay service unavailable.");
+    expect(invalid.statusPanel).toEqual(expect.objectContaining({
+      role: "alert",
+      ariaLive: "assertive",
+      tone: "danger",
+      title: "Replay blocked",
+      detail: "Replay service unavailable."
+    }));
+    expect(invalid.startDisabledReason).toBe("Enter a replay speed greater than 0.");
+    expect(invalid.seekDisabledReason).toBe("Enter a seek position of 0 ms or greater.");
     expect(invalid.statusAnnouncement).toBe("Session replay failed: Replay service unavailable.");
 
     const starting = buildSessionReplayControlsState({

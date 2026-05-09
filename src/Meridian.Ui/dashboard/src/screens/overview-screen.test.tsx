@@ -89,4 +89,13 @@ describe("OverviewScreen", () => {
     expect(screen.getByText("Open reporting lane")).toBeInTheDocument();
     expect(priorityCard).not.toBeNull();
   });
+
+  it("routes an empty symbol universe to the watchlist starter packs", () => {
+    renderWithRouter(<OverviewScreen data={{ ...overview, symbolsMonitored: 0 }} session={session} />);
+
+    const watchlistLink = screen.getByRole("link", { name: "Open Data watchlist starter packs" });
+    expect(watchlistLink).toHaveAttribute("href", "/data/watchlist");
+    expect(screen.getByText("Seed a working watchlist")).toBeInTheDocument();
+    expect(screen.getByText(/No monitored symbols are loaded yet/i)).toBeInTheDocument();
+  });
 });

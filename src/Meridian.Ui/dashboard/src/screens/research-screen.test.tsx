@@ -473,7 +473,7 @@ describe("ResearchScreen", () => {
     await waitFor(() => {
       expect(api.createPaperSession).toHaveBeenCalledWith("run-2", "Index Momentum", 125000);
     });
-    expect(screen.getByText("Paper session created — session session-1")).toBeInTheDocument();
+    expect(screen.getByText("Paper session created - session session-1")).toBeInTheDocument();
   });
 
   it("discards pending promotion evaluation when the selected run changes", async () => {

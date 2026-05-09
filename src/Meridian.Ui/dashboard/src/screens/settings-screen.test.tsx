@@ -73,7 +73,7 @@ describe("SettingsScreen", () => {
     renderWithRouter(<SettingsScreen session={session} overview={{ ...overview, recentEvents: [] }} />);
 
     expect(screen.getAllByText("No recent events")).toHaveLength(2);
-    expect(screen.getByRole("status")).toHaveTextContent("No system events reported");
+    expect(screen.getByText("No system events reported for the active session. Diagnostic endpoints remain available below.")).toBeInTheDocument();
   });
 
   it("renders an alert state when overview data is unavailable", () => {
@@ -123,13 +123,17 @@ describe("SettingsScreen", () => {
 
     expect(screen.getByText("Alpaca paper API keys")).toBeInTheDocument();
     expect(screen.getByLabelText("Alpaca trading environment")).toHaveValue("paper");
+    expect(screen.getByText("Credentials incomplete")).toBeInTheDocument();
+    expect(screen.getAllByText("Key ID").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Required").length).toBeGreaterThan(0);
     expect(screen.getByText("********1234")).toBeInTheDocument();
     expect(screen.getByText("PA123")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /connect \/ test/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /connect and test/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /clear/i })).toBeEnabled();
-    expect(screen.getByLabelText(/Key ID/)).toHaveAccessibleDescription("Stored values remain masked after refresh.");
-    expect(screen.getByLabelText(/Secret key/)).toHaveAccessibleDescription("Secret key is never displayed after submit.");
-    expect(screen.getByRole("button", { name: /connect \/ test/i })).toHaveAttribute(
+    expect(screen.getByLabelText(/Key ID/)).toHaveAccessibleDescription(/Stored values remain masked after refresh\..*Credentials incomplete/s);
+    expect(screen.getByLabelText(/Secret key/)).toHaveAccessibleDescription(/Secret key is never displayed after submit\..*Credentials incomplete/s);
+    expect(screen.getByLabelText("Alpaca trading environment")).toHaveAccessibleDescription(/Paper endpoint selected/);
+    expect(screen.getByRole("button", { name: /connect and test/i })).toHaveAttribute(
       "title",
       "Enter an Alpaca key ID before testing the connection."
     );

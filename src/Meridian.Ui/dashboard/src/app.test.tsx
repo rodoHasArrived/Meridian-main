@@ -81,6 +81,7 @@ describe("App", () => {
       workflowLibrary: null,
       workflowPresets: null,
       workflowError: null,
+      usingDevelopmentFixtures: false,
       loading: true,
       error: null,
       workspaceErrors: {},
@@ -162,6 +163,45 @@ describe("App", () => {
     expect(screen.queryByRole("dialog", { name: "Workspace navigation" })).not.toBeInTheDocument();
   });
 
+  it("labels fixture-backed bootstrap data as demo data", () => {
+    mockedUseWorkstationData.mockReturnValue({
+      session: {
+        displayName: "Ops Desk",
+        role: "Operator",
+        environment: "paper",
+        activeWorkspace: "settings",
+        commandCount: 7
+      },
+      overview: null,
+      research: null,
+      trading: null,
+      portfolio: null,
+      dataOperations: null,
+      governance: null,
+      reporting: null,
+      brokerageConnection: null,
+      brokeragePortfolio: null,
+      workflowLibrary: null,
+      workflowPresets: null,
+      workflowError: null,
+      usingDevelopmentFixtures: true,
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      refresh: vi.fn(),
+      refreshTrading: vi.fn()
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/settings"] });
+
+    expect(screen.getByText("Demo data")).toBeInTheDocument();
+    expect(screen.getByText("Showing local fixture responses because the Meridian API host is unavailable.")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Demo workflow" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open sample watchlist demo lane" })).toHaveAttribute("href", "/data/watchlist");
+    expect(screen.getByRole("link", { name: "Open sample live quotes demo lane" })).toHaveAttribute("href", "/data/quotes");
+    expect(screen.getByRole("link", { name: "Open sample readiness console" })).toHaveAttribute("href", "/trading/readiness");
+  });
+
   it("renders the Portfolio route from the fetched portfolio workspace payload", () => {
     mockedUseWorkstationData.mockReturnValue({
       session: {
@@ -183,6 +223,7 @@ describe("App", () => {
       workflowLibrary: null,
       workflowPresets: null,
       workflowError: null,
+      usingDevelopmentFixtures: false,
       loading: false,
       error: null,
       workspaceErrors: {},

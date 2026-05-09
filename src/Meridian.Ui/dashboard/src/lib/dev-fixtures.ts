@@ -5,6 +5,7 @@ import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
   OperatorInbox,
+  PortfolioWorkspaceResponse,
   ReconciliationCalibrationSummary,
   ResearchWorkspaceResponse,
   SecurityIdentityDrillIn,
@@ -969,6 +970,35 @@ const fixtureSecurityIdentities: Record<string, SecurityIdentityDrillIn> = {
   }
 };
 
+const fixturePortfolioWorkspace: PortfolioWorkspaceResponse = {
+  metrics: [
+    { id: "portfolio-equity", label: "Portfolio equity", value: "$312,400", delta: "+1.2%", tone: "success" },
+    { id: "portfolio-cash", label: "Cash", value: "$87,500", delta: "28% reserve", tone: "default" },
+    { id: "portfolio-exposure", label: "Exposure", value: "$54,347", delta: "3 positions", tone: "default" },
+    { id: "portfolio-sync", label: "Brokerage sync", value: "Stale", delta: "review", tone: "warning" }
+  ],
+  positions: fixtureTradingWorkspace.positions,
+  risk: fixtureTradingWorkspace.risk,
+  brokerage: fixtureTradingWorkspace.brokerage,
+  runs: [
+    {
+      runId: "portfolio-run-dev-1",
+      strategyName: "Mean Reversion FX",
+      engine: "Meridian Native",
+      mode: "paper",
+      status: "Running",
+      pnl: "+4.2%",
+      sharpe: "1.41",
+      dataset: "FX Majors",
+      window: "90d",
+      lastUpdated: "2m ago",
+      notes: "Primary paper candidate reflected in the portfolio fixture.",
+      promotionState: "ReviewRequired"
+    }
+  ],
+  cashFlow: fixtureGovernanceWorkspace.cashFlow
+};
+
 const fixtureSecurityConflicts: SecurityMasterConflict[] = [
   {
     conflictId: "conflict-dev-001",
@@ -1001,6 +1031,7 @@ const fixtures = {
   "/api/workstation/strategy": fixtureResearchWorkspace,
   "/api/workstation/research": fixtureResearchWorkspace,
   "/api/workstation/trading": fixtureTradingWorkspace,
+  "/api/workstation/portfolio": fixturePortfolioWorkspace,
   "/api/workstation/trading/readiness": fixtureTradingReadiness,
   "/api/workstation/operator/inbox": fixtureOperatorInbox,
   "/api/workstation/workflows": fixtureWorkflowLibrary,

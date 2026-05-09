@@ -1429,6 +1429,15 @@ export interface SessionReplayFileOption {
   metadataText: string;
 }
 
+export interface SessionReplayStatusPanel {
+  role: "status" | "alert";
+  ariaLive: "polite" | "assertive";
+  ariaLabel: string;
+  tone: "default" | "warning" | "danger" | "success";
+  title: string;
+  detail: string;
+}
+
 export interface SessionReplayControlsState {
   files: ReplayFileRecord[];
   fileOptions: SessionReplayFileOption[];
@@ -1465,12 +1474,20 @@ export interface SessionReplayControlsState {
   errorId: string;
   speedValidationText: string | null;
   seekValidationText: string | null;
+  activeErrorText: string | null;
+  statusPanel: SessionReplayStatusPanel;
   canStart: boolean;
   canPause: boolean;
   canResume: boolean;
   canStop: boolean;
   canSeek: boolean;
   canApplySpeed: boolean;
+  startDisabledReason: string | null;
+  pauseDisabledReason: string | null;
+  resumeDisabledReason: string | null;
+  stopDisabledReason: string | null;
+  seekDisabledReason: string | null;
+  applySpeedDisabledReason: string | null;
   startButtonLabel: string;
   pauseButtonLabel: string;
   resumeButtonLabel: string;
@@ -1735,12 +1752,32 @@ export function buildSessionReplayControlsState({
   const errorId = "session-replay-error";
   const speedHelpId = "session-replay-speed-help";
   const seekHelpId = "session-replay-seek-help";
-  const speedDescribedBy = [statusId, speedHelpId, speedValidationText ? errorId : null]
+  const activeErrorText = errorText ?? speedValidationText ?? seekValidationText;
+  const fileSelectDescribedBy = [statusId, activeErrorText ? errorId : null].filter(Boolean).join(" ");
+  const speedDescribedBy = [statusId, speedHelpId, activeErrorText ? errorId : null]
     .filter(Boolean)
     .join(" ");
-  const seekDescribedBy = [statusId, seekHelpId, seekValidationText ? errorId : null]
+  const seekDescribedBy = [statusId, seekHelpId, activeErrorText ? errorId : null]
     .filter(Boolean)
     .join(" ");
+  const selectedFileName = files.find((file) => file.path === selectedFilePath)?.name ?? null;
+  const statusPanel = buildSessionReplayStatusPanel({
+    files,
+    selectedFilePath,
+    selectedFileName,
+    replayStatus,
+    loadingFiles,
+    activeCommand,
+    activeErrorText
+  });
+  const baseDisabledReason = buildSessionReplayBaseDisabledReason({
+    loadingFiles,
+    activeCommand,
+    hasReplayStatus,
+    selectedFilePath,
+    speedValidationText,
+    seekValidationText
+  });
 
   return {
     files,
@@ -1760,7 +1797,7 @@ export function buildSessionReplayControlsState({
     fileSelectId: "session-replay-file",
     fileSelectLabel: "Replay file",
     fileSelectAriaLabel: loadingFiles ? "Replay file, loading files" : "Replay file",
-    fileSelectDescribedBy: statusId,
+    fileSelectDescribedBy,
     fileEmptyOptionText: loadingFiles ? "Loading replay files..." : "No replay files available",
     speedInputId: "session-replay-speed",
     speedLabel: "Replay speed",
@@ -1778,12 +1815,24 @@ export function buildSessionReplayControlsState({
     errorId,
     speedValidationText,
     seekValidationText,
+    activeErrorText,
+    statusPanel,
     canStart: !isBusy && selectedFilePath.trim().length > 0 && speedValidationText === null,
     canPause: !isBusy && hasReplayStatus,
     canResume: !isBusy && hasReplayStatus,
     canStop: !isBusy && hasReplayStatus,
     canSeek: !isBusy && hasReplayStatus && seekValidationText === null,
     canApplySpeed: !isBusy && hasReplayStatus && speedValidationText === null,
+    startDisabledReason: !isBusy && selectedFilePath.trim().length === 0
+      ? "Select a replay file before starting replay."
+      : !isBusy && speedValidationText
+        ? speedValidationText
+        : baseDisabledReason,
+    pauseDisabledReason: baseDisabledReason,
+    resumeDisabledReason: baseDisabledReason,
+    stopDisabledReason: baseDisabledReason,
+    seekDisabledReason: !isBusy && seekValidationText ? seekValidationText : baseDisabledReason,
+    applySpeedDisabledReason: !isBusy && speedValidationText ? speedValidationText : baseDisabledReason,
     startButtonLabel: activeCommand === "starting" ? "Starting..." : "Start",
     pauseButtonLabel: activeCommand === "pausing" ? "Pausing..." : "Pause",
     resumeButtonLabel: activeCommand === "resuming" ? "Resuming..." : "Resume",
@@ -3142,6 +3191,41 @@ export interface PromotionOutcome {
   message: string;
 }
 
+export interface PromotionGateCommandState {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
+  busyLabel: string | null;
+}
+
+export interface PromotionEvaluationMetricRow {
+  id: string;
+  label: string;
+  value: string;
+}
+
+export interface PromotionEvaluationWarningRow {
+  id: string;
+  text: string;
+}
+
+export interface PromotionEvaluationPanelState {
+  ariaLabel: string;
+  role: "status" | "alert";
+  ariaLive: "polite" | "assertive";
+  tone: "success" | "warning" | "danger";
+  title: string;
+  eligibleLabel: string;
+  eligibleTone: "success" | "warning";
+  metrics: PromotionEvaluationMetricRow[];
+  reason: string | null;
+  warnings: PromotionEvaluationWarningRow[];
+  blockingReasons: PromotionEvaluationWarningRow[];
+  blockingListLabel: string | null;
+}
+
 export interface PromotionGateServices {
   evaluatePromotion: (runId: string) => Promise<PromotionEvaluationResult>;
   approvePromotion: (request: ApprovePromotionRequest) => Promise<PromotionDecisionResult>;
@@ -3164,12 +3248,17 @@ export interface PromotionGateState {
   evaluateButtonLabel: string;
   promoteButtonLabel: string;
   rejectButtonLabel: string;
+  evaluateCommand: PromotionGateCommandState;
+  promoteCommand: PromotionGateCommandState;
+  rejectCommand: PromotionGateCommandState;
   nextActionText: string;
   approvalRequirementText: string;
   rejectionRequirementText: string;
   historyEmptyText: string;
   statusAnnouncement: string;
   approvalChecklist: PromotionApprovalChecklistItem[];
+  evaluationPanel: PromotionEvaluationPanelState | null;
+  historyRows: PromotionHistoryRow[];
 }
 
 export interface BuildPromotionGateStateOptions {
@@ -3403,6 +3492,12 @@ export function buildPromotionGateState({
   const canEvaluate = !busy && Boolean(trimmedForm.runId);
   const canPromote = !busy && validatePromotionApproval(trimmedForm, effectiveEvaluation) === null;
   const canReject = !busy && validatePromotionRejection(trimmedForm) === null;
+  const evaluationPanel = buildPromotionEvaluationPanel(effectiveEvaluation);
+  const approvalRequirementText = buildApprovalRequirementText(trimmedForm, effectiveEvaluation);
+  const rejectionRequirementText = buildRejectionRequirementText(trimmedForm);
+  const evaluateButtonLabel = phase === "evaluating" ? "Evaluating..." : "Evaluate gate checks";
+  const promoteButtonLabel = phase === "approving" ? "Promoting..." : "Confirm promote";
+  const rejectButtonLabel = phase === "rejecting" ? "Rejecting..." : "Reject promotion";
 
   return {
     form,
@@ -3416,16 +3511,264 @@ export function buildPromotionGateState({
     canEvaluate,
     canPromote,
     canReject,
-    evaluateButtonLabel: phase === "evaluating" ? "Evaluating..." : "Evaluate gate checks",
-    promoteButtonLabel: phase === "approving" ? "Promoting..." : "Confirm promote",
-    rejectButtonLabel: phase === "rejecting" ? "Rejecting..." : "Reject promotion",
+    evaluateButtonLabel,
+    promoteButtonLabel,
+    rejectButtonLabel,
+    evaluateCommand: {
+      label: evaluateButtonLabel,
+      ariaLabel: phase === "evaluating" ? "Evaluating gate checks" : "Evaluate gate checks",
+      disabled: !canEvaluate,
+      disabledReason: buildEvaluateDisabledReason(trimmedForm, busy, phase),
+      busy: phase === "evaluating",
+      busyLabel: "Evaluating..."
+    },
+    promoteCommand: {
+      label: promoteButtonLabel,
+      ariaLabel: phase === "approving" ? "Writing promotion decision" : "Confirm promote",
+      disabled: !canPromote,
+      disabledReason: canPromote ? null : validatePromotionApproval(trimmedForm, effectiveEvaluation),
+      busy: phase === "approving",
+      busyLabel: "Promoting..."
+    },
+    rejectCommand: {
+      label: rejectButtonLabel,
+      ariaLabel: phase === "rejecting" ? "Writing promotion rejection" : "Reject promotion",
+      disabled: !canReject,
+      disabledReason: canReject ? null : validatePromotionRejection(trimmedForm),
+      busy: phase === "rejecting",
+      busyLabel: "Rejecting..."
+    },
     nextActionText: buildNextActionText({ trimmedForm, evaluation: effectiveEvaluation, busy, phase }),
-    approvalRequirementText: buildApprovalRequirementText(trimmedForm, effectiveEvaluation),
-    rejectionRequirementText: buildRejectionRequirementText(trimmedForm),
+    approvalRequirementText,
+    rejectionRequirementText,
     historyEmptyText: "No promotion decisions recorded.",
     statusAnnouncement: buildPromotionStatusAnnouncement({ phase, errorText, outcome, evaluation: effectiveEvaluation, history }),
-    approvalChecklist: buildPromotionApprovalChecklist(effectiveEvaluation)
+    approvalChecklist: buildPromotionApprovalChecklist(effectiveEvaluation),
+    evaluationPanel,
+    historyRows: buildPromotionHistoryRows(history)
   };
+}
+
+function buildSessionReplayStatusPanel({
+  files,
+  selectedFilePath,
+  selectedFileName,
+  replayStatus,
+  loadingFiles,
+  activeCommand,
+  activeErrorText
+}: {
+  files: ReplayFileRecord[];
+  selectedFilePath: string;
+  selectedFileName: string | null;
+  replayStatus: ReplayStatus | null;
+  loadingFiles: boolean;
+  activeCommand: SessionReplayCommandKind | null;
+  activeErrorText: string | null;
+}): SessionReplayStatusPanel {
+  if (activeErrorText) {
+    return {
+      role: "alert",
+      ariaLive: "assertive",
+      ariaLabel: `Session replay error: ${activeErrorText}`,
+      tone: "danger",
+      title: "Replay blocked",
+      detail: activeErrorText
+    };
+  }
+
+  if (activeCommand) {
+    return {
+      role: "status",
+      ariaLive: "polite",
+      ariaLabel: formatSessionReplayCommandAnnouncement(activeCommand),
+      tone: "warning",
+      title: "Replay command running",
+      detail: formatSessionReplayCommandAnnouncement(activeCommand)
+    };
+  }
+
+  if (replayStatus) {
+    return {
+      role: "status",
+      ariaLive: "polite",
+      ariaLabel: `Replay ${replayStatus.status} for ${replayStatus.sessionId}`,
+      tone: "success",
+      title: `Replay ${replayStatus.status}`,
+      detail: `Processed ${replayStatus.eventsProcessed}/${replayStatus.totalEvents} events at ${replayStatus.progressPercent}%.`
+    };
+  }
+
+  if (loadingFiles) {
+    return {
+      role: "status",
+      ariaLive: "polite",
+      ariaLabel: "Loading replay files",
+      tone: "warning",
+      title: "Loading replay files",
+      detail: "Fetching available JSONL replay files."
+    };
+  }
+
+  if (files.length === 0) {
+    return {
+      role: "status",
+      ariaLive: "polite",
+      ariaLabel: "No replay files available",
+      tone: "default",
+      title: "No replay files available",
+      detail: "Generate or import replay evidence before starting session replay."
+    };
+  }
+
+  return {
+    role: "status",
+    ariaLive: "polite",
+    ariaLabel: `Ready to replay ${selectedFileName ?? "selected file"}`,
+    tone: selectedFilePath.trim().length > 0 ? "success" : "default",
+    title: selectedFilePath.trim().length > 0 ? "Replay file selected" : "Select replay file",
+    detail: selectedFilePath.trim().length > 0
+      ? `Ready to replay ${selectedFileName ?? "selected file"}.`
+      : "Select a replay file to enable replay controls."
+  };
+}
+
+function buildSessionReplayBaseDisabledReason({
+  loadingFiles,
+  activeCommand,
+  hasReplayStatus,
+  selectedFilePath,
+  speedValidationText,
+  seekValidationText
+}: {
+  loadingFiles: boolean;
+  activeCommand: SessionReplayCommandKind | null;
+  hasReplayStatus: boolean;
+  selectedFilePath: string;
+  speedValidationText: string | null;
+  seekValidationText: string | null;
+}): string | null {
+  if (loadingFiles) {
+    return "Replay files are still loading.";
+  }
+
+  if (activeCommand) {
+    return formatSessionReplayCommandAnnouncement(activeCommand);
+  }
+
+  if (selectedFilePath.trim().length === 0) {
+    return "Select a replay file before using replay controls.";
+  }
+
+  if (speedValidationText) {
+    return speedValidationText;
+  }
+
+  if (seekValidationText) {
+    return seekValidationText;
+  }
+
+  if (!hasReplayStatus) {
+    return "Start a replay before using this control.";
+  }
+
+  return null;
+}
+
+function buildEvaluateDisabledReason(
+  trimmedForm: PromotionGateForm,
+  busy: boolean,
+  phase: PromotionGatePhase
+): string | null {
+  if (phase === "evaluating") {
+    return "Promotion gate checks are already evaluating.";
+  }
+
+  if (busy) {
+    return "Wait for the current promotion command to finish.";
+  }
+
+  if (!trimmedForm.runId) {
+    return "Enter a backtest run id before evaluating gate checks.";
+  }
+
+  return null;
+}
+
+function buildPromotionEvaluationPanel(
+  evaluation: PromotionEvaluationResult | null
+): PromotionEvaluationPanelState | null {
+  if (!evaluation) {
+    return null;
+  }
+
+  const warnings: PromotionEvaluationWarningRow[] = [];
+  if (evaluation.requiresHumanApproval) {
+    warnings.push({
+      id: "human-approval",
+      text: "Human approval required"
+    });
+  }
+
+  if (evaluation.requiresManualOverride) {
+    warnings.push({
+      id: "manual-override",
+      text: `Manual override required${evaluation.requiredManualOverrideKind ? `: ${evaluation.requiredManualOverrideKind}` : ""}`
+    });
+  }
+
+  const blockingReasons = (evaluation.blockingReasons ?? [])
+    .filter((reason) => reason.trim().length > 0)
+    .map((reason, index) => ({
+      id: `blocking-${index}`,
+      text: reason
+    }));
+
+  return {
+    ariaLabel: evaluation.isEligible ? "Promotion evaluation eligible" : "Promotion evaluation blocked",
+    role: evaluation.isEligible ? "status" : "alert",
+    ariaLive: evaluation.isEligible ? "polite" : "assertive",
+    tone: evaluation.isEligible ? "success" : blockingReasons.length > 0 ? "danger" : "warning",
+    title: "Evaluation results",
+    eligibleLabel: evaluation.isEligible ? "Eligible: Yes" : "Eligible: No",
+    eligibleTone: evaluation.isEligible ? "success" : "warning",
+    metrics: [
+      { id: "sharpe", label: "Sharpe", value: evaluation.sharpeRatio.toFixed(2) },
+      { id: "max-drawdown", label: "Max DD", value: `${evaluation.maxDrawdownPercent.toFixed(1)}%` },
+      { id: "total-return", label: "Return", value: `${evaluation.totalReturn.toFixed(1)}%` }
+    ],
+    reason: evaluation.reason?.trim() ? evaluation.reason : null,
+    warnings,
+    blockingReasons,
+    blockingListLabel: blockingReasons.length > 0 ? "Promotion blocking reasons" : null
+  };
+}
+
+function buildPromotionHistoryRows(history: PromotionRecord[]): PromotionHistoryRow[] {
+  return history.slice(0, 4).map((record) => {
+    const parts = [
+      record.promotedAt,
+      record.strategyId,
+      `${record.sourceRunType}->${record.targetRunType}`
+    ];
+
+    if (record.decision) parts.push(record.decision);
+    if (record.sourceRunId) parts.push(`source: ${record.sourceRunId}`);
+    else if (record.runId) parts.push(`source: ${record.runId}`);
+    if (record.targetRunId) parts.push(`target: ${record.targetRunId}`);
+    if (record.approvedBy) parts.push(`by ${record.approvedBy}`);
+    if (record.approvalReason) parts.push(`reason: ${record.approvalReason}`);
+    if (record.auditReference) parts.push(`audit: ${record.auditReference}`);
+    if (record.manualOverrideId) parts.push(`override: ${record.manualOverrideId}`);
+    if (record.reviewNotes) parts.push(`notes: ${record.reviewNotes}`);
+
+    const label = parts.join(" | ");
+    return {
+      id: record.promotionId,
+      label,
+      ariaLabel: `Promotion ${record.promotionId}: ${label}`
+    };
+  });
 }
 
 export function validatePromotionApproval(
@@ -3652,16 +3995,25 @@ function buildPromotionStatusAnnouncement({
 }
 
 export interface PromotionApprovalChecklistItem {
+  id: string;
   label: string;
   status: "ready" | "review" | "blocked";
   description: string | null;
+  ariaLabel: string;
+}
+
+export interface PromotionHistoryRow {
+  id: string;
+  label: string;
+  ariaLabel: string;
 }
 
 export function buildPromotionApprovalChecklist(
   evaluation: PromotionEvaluationResult | null
 ): PromotionApprovalChecklistItem[] {
-  return [
+  const items = [
     {
+      id: "dk1-data-trust",
       label: "DK1 data trust",
       status: evaluation && evaluation.sourceMode === "paper" ? "ready" : "review",
       description: evaluation && evaluation.sourceMode === "paper"
@@ -3669,6 +4021,7 @@ export function buildPromotionApprovalChecklist(
         : "Requires backtest source from validated data"
     },
     {
+      id: "run-lineage",
       label: "Run lineage",
       status: evaluation && evaluation.found ? "ready" : "review",
       description: evaluation && evaluation.found
@@ -3676,6 +4029,7 @@ export function buildPromotionApprovalChecklist(
         : "Run must be found in strategy history"
     },
     {
+      id: "risk-metrics",
       label: "Risk metrics",
       status: evaluation ? (evaluation.isEligible ? "ready" : "blocked") : "review",
       description: evaluation
@@ -3683,13 +4037,19 @@ export function buildPromotionApprovalChecklist(
         : "Metrics calculated after evaluation"
     },
     {
+      id: "portfolio-ledger-continuity",
       label: "Portfolio/Ledger continuity",
       status: evaluation && evaluation.ready ? "ready" : "review",
       description: evaluation && evaluation.ready
         ? "Run portfolio and ledger state verified"
         : "Awaiting run state verification"
     }
-  ];
+  ] satisfies Array<Omit<PromotionApprovalChecklistItem, "ariaLabel">>;
+
+  return items.map((item) => ({
+    ...item,
+    ariaLabel: `${item.label}: ${item.status}${item.description ? `. ${item.description}` : ""}`
+  }));
 }
 
 function toErrorMessage(err: unknown, fallback: string): string {

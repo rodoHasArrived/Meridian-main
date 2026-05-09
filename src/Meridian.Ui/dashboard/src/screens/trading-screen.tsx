@@ -97,6 +97,23 @@ const promotionOutcomeTone: Record<PromotionOutcomeLevel, string> = {
   danger: "text-danger"
 };
 
+const promotionEvaluationPanelTone = {
+  success: "border-success/30 bg-success/10 text-success",
+  warning: "border-warning/30 bg-warning/10 text-warning",
+  danger: "border-danger/30 bg-danger/10 text-danger"
+} as const;
+
+const promotionEvaluationTextTone = {
+  success: "text-success",
+  warning: "text-warning"
+} as const;
+
+const promotionChecklistDotTone = {
+  ready: "bg-success",
+  blocked: "bg-danger",
+  review: "bg-warning"
+} as const;
+
 const acceptanceTone: Record<AcceptanceLevel, string> = {
   ready: "border-success/30 bg-success/10 text-success",
   review: "border-warning/30 bg-warning/10 text-warning",
@@ -131,6 +148,13 @@ const dataTonePanelClass: Record<TradingDataTone, string> = {
   danger: "border-danger/35 bg-danger/10",
   muted: "border-border/70 bg-secondary/20"
 };
+
+const sessionReplayStatusPanelClass = {
+  default: "border-border/70 bg-secondary/25 text-muted-foreground",
+  success: "border-success/30 bg-success/10 text-success",
+  warning: "border-warning/30 bg-warning/10 text-warning",
+  danger: "border-danger/30 bg-danger/10 text-danger"
+} as const;
 
 export function TradingScreen({ data }: TradingScreenProps) {
   const { pathname } = useLocation();
@@ -1075,18 +1099,41 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 </span>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <Button size="sm" onClick={sessionReplay.startReplay} disabled={!sessionReplay.canStart}>
+                <Button
+                  size="sm"
+                  onClick={sessionReplay.startReplay}
+                  disabled={!sessionReplay.canStart}
+                  disabledReason={sessionReplay.startDisabledReason}
+                >
                   {sessionReplay.startButtonLabel}
                 </Button>
-                <Button size="sm" variant="outline" onClick={sessionReplay.pauseReplay} disabled={!sessionReplay.canPause}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.pauseReplay}
+                  disabled={!sessionReplay.canPause}
+                  disabledReason={sessionReplay.pauseDisabledReason}
+                >
                   <PauseCircle className="mr-2 h-4 w-4" />
                   {sessionReplay.pauseButtonLabel}
                 </Button>
-                <Button size="sm" variant="outline" onClick={sessionReplay.resumeReplay} disabled={!sessionReplay.canResume}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.resumeReplay}
+                  disabled={!sessionReplay.canResume}
+                  disabledReason={sessionReplay.resumeDisabledReason}
+                >
                   <PlayCircle className="mr-2 h-4 w-4" />
                   {sessionReplay.resumeButtonLabel}
                 </Button>
-                <Button size="sm" variant="outline" onClick={sessionReplay.stopReplay} disabled={!sessionReplay.canStop}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.stopReplay}
+                  disabled={!sessionReplay.canStop}
+                  disabledReason={sessionReplay.stopDisabledReason}
+                >
                   <StopCircle className="mr-2 h-4 w-4" />
                   {sessionReplay.stopButtonLabel}
                 </Button>
@@ -1112,22 +1159,44 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 </span>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <Button size="sm" variant="outline" onClick={sessionReplay.seekReplay} disabled={!sessionReplay.canSeek}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.seekReplay}
+                  disabled={!sessionReplay.canSeek}
+                  disabledReason={sessionReplay.seekDisabledReason}
+                >
                   {sessionReplay.seekButtonLabel}
                 </Button>
-                <Button size="sm" variant="outline" onClick={sessionReplay.applyReplaySpeed} disabled={!sessionReplay.canApplySpeed}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.applyReplaySpeed}
+                  disabled={!sessionReplay.canApplySpeed}
+                  disabledReason={sessionReplay.applySpeedDisabledReason}
+                >
                   <FastForward className="mr-2 h-4 w-4" />
                   {sessionReplay.applySpeedButtonLabel}
                 </Button>
               </div>
             </div>
 
-            <div id={sessionReplay.statusId} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-xs text-muted-foreground">
-              {sessionReplay.statusText}
+            <div
+              id={sessionReplay.statusId}
+              role={sessionReplay.statusPanel.role}
+              aria-live={sessionReplay.statusPanel.ariaLive}
+              aria-label={sessionReplay.statusPanel.ariaLabel}
+              className={cn(
+                "rounded-lg border px-3 py-2 text-xs",
+                sessionReplayStatusPanelClass[sessionReplay.statusPanel.tone]
+              )}
+            >
+              <div className="font-semibold">{sessionReplay.statusPanel.title}</div>
+              <div className="mt-1">{sessionReplay.statusPanel.detail}</div>
             </div>
-            {(sessionReplay.errorText || sessionReplay.speedValidationText || sessionReplay.seekValidationText) && (
-              <p id={sessionReplay.errorId} className="text-xs text-danger">
-                {sessionReplay.errorText ?? sessionReplay.speedValidationText ?? sessionReplay.seekValidationText}
+            {sessionReplay.activeErrorText && (
+              <p id={sessionReplay.errorId} className="sr-only">
+                {sessionReplay.activeErrorText}
               </p>
             )}
             <span className="sr-only" aria-live="polite">{sessionReplay.statusAnnouncement}</span>
@@ -1242,33 +1311,79 @@ export function TradingScreen({ data }: TradingScreenProps) {
               </label>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={() => void promotionGate.evaluateGateChecks()} disabled={!promotionGate.canEvaluate}>
-                {promotionGate.evaluateButtonLabel}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => void promotionGate.evaluateGateChecks()}
+                disabled={promotionGate.evaluateCommand.disabled}
+                disabledReason={promotionGate.evaluateCommand.disabledReason}
+                busy={promotionGate.evaluateCommand.busy}
+                busyLabel={promotionGate.evaluateCommand.busyLabel}
+                aria-label={promotionGate.evaluateCommand.ariaLabel}
+              >
+                {promotionGate.evaluateCommand.label}
               </Button>
-              <Button size="sm" onClick={() => void promotionGate.promoteToPaper()} disabled={!promotionGate.canPromote}>
-                {promotionGate.promoteButtonLabel}
+              <Button
+                size="sm"
+                onClick={() => void promotionGate.promoteToPaper()}
+                disabled={promotionGate.promoteCommand.disabled}
+                disabledReason={promotionGate.promoteCommand.disabledReason}
+                busy={promotionGate.promoteCommand.busy}
+                busyLabel={promotionGate.promoteCommand.busyLabel}
+                aria-label={promotionGate.promoteCommand.ariaLabel}
+              >
+                {promotionGate.promoteCommand.label}
               </Button>
-              <Button size="sm" variant="destructive" onClick={() => void promotionGate.rejectPromotion()} disabled={!promotionGate.canReject}>
-                {promotionGate.rejectButtonLabel}
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => void promotionGate.rejectPromotion()}
+                disabled={promotionGate.rejectCommand.disabled}
+                disabledReason={promotionGate.rejectCommand.disabledReason}
+                busy={promotionGate.rejectCommand.busy}
+                busyLabel={promotionGate.rejectCommand.busyLabel}
+                aria-label={promotionGate.rejectCommand.ariaLabel}
+              >
+                {promotionGate.rejectCommand.label}
               </Button>
             </div>
-            {promotionGate.evaluation && (
+            {promotionGate.evaluationPanel && (
               <div className="space-y-3">
-                <div className="rounded-lg border border-border/60 p-3 text-xs">
-                  <p className="font-semibold">Evaluation results</p>
-                  <p className="mt-1">Eligible: <span className={promotionGate.evaluation.isEligible ? "text-success" : "text-warning"}>{promotionGate.evaluation.isEligible ? "Yes" : "No"}</span></p>
-                  <p>Sharpe: {promotionGate.evaluation.sharpeRatio.toFixed(2)} · Max DD: {promotionGate.evaluation.maxDrawdownPercent.toFixed(1)}% · Return: {promotionGate.evaluation.totalReturn.toFixed(1)}%</p>
-                  {promotionGate.evaluation.reason && <p className="mt-1 text-muted-foreground">{promotionGate.evaluation.reason}</p>}
-                  {promotionGate.evaluation.requiresHumanApproval && <p className="mt-1 text-warning">⚠ Human approval required</p>}
-                  {promotionGate.evaluation.requiresManualOverride && (
-                    <p className="mt-1 text-warning">⚠ Manual override required{promotionGate.evaluation.requiredManualOverrideKind ? `: ${promotionGate.evaluation.requiredManualOverrideKind}` : ""}</p>
+                <div
+                  role={promotionGate.evaluationPanel.role}
+                  aria-live={promotionGate.evaluationPanel.ariaLive}
+                  aria-label={promotionGate.evaluationPanel.ariaLabel}
+                  className={cn(
+                    "rounded-lg border p-3 text-xs",
+                    promotionEvaluationPanelTone[promotionGate.evaluationPanel.tone]
                   )}
-                  {promotionGate.evaluation.blockingReasons && promotionGate.evaluation.blockingReasons.length > 0 && (
+                >
+                  <p className="font-semibold">{promotionGate.evaluationPanel.title}</p>
+                  <p className="mt-1">
+                    <span className={promotionEvaluationTextTone[promotionGate.evaluationPanel.eligibleTone]}>
+                      {promotionGate.evaluationPanel.eligibleLabel}
+                    </span>
+                  </p>
+                  <dl className="mt-2 grid gap-2 sm:grid-cols-3">
+                    {promotionGate.evaluationPanel.metrics.map((metric) => (
+                      <div key={metric.id}>
+                        <dt className="font-mono text-[10px] uppercase tracking-[0.14em] opacity-75">{metric.label}</dt>
+                        <dd className="font-mono text-xs">{metric.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  {promotionGate.evaluationPanel.reason && (
+                    <p className="mt-2 text-muted-foreground">{promotionGate.evaluationPanel.reason}</p>
+                  )}
+                  {promotionGate.evaluationPanel.warnings.map((warning) => (
+                    <p key={warning.id} className="mt-1 text-warning">{warning.text}</p>
+                  ))}
+                  {promotionGate.evaluationPanel.blockingReasons.length > 0 && (
                     <div className="mt-2 rounded border border-danger/30 bg-danger/10 p-2">
                       <p className="font-semibold text-danger">Blocking reasons:</p>
-                      <ul className="mt-1 list-disc space-y-1 pl-4 text-danger">
-                        {promotionGate.evaluation.blockingReasons.map((reason) => (
-                          <li key={reason}>{reason}</li>
+                      <ul aria-label={promotionGate.evaluationPanel.blockingListLabel ?? undefined} className="mt-1 list-disc space-y-1 pl-4 text-danger">
+                        {promotionGate.evaluationPanel.blockingReasons.map((reason) => (
+                          <li key={reason.id}>{reason.text}</li>
                         ))}
                       </ul>
                     </div>
@@ -1278,10 +1393,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   <p className="font-semibold">Approval checklist</p>
                   <ul className="mt-2 space-y-2">
                     {promotionGate.approvalChecklist.map((item) => (
-                      <li key={item.label} className="flex items-start gap-2">
+                      <li key={item.id} className="flex items-start gap-2" aria-label={item.ariaLabel}>
                         <span className={cn(
                           "mt-0.5 inline-block h-2 w-2 rounded-full flex-shrink-0",
-                          item.status === "ready" ? "bg-success" : item.status === "blocked" ? "bg-danger" : "bg-warning"
+                          promotionChecklistDotTone[item.status]
                         )} />
                         <div>
                           <p className="font-medium">{item.label}</p>
@@ -1302,20 +1417,12 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <div className="rounded-lg border border-border/60 p-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Audit trail</p>
               <ul className="space-y-1 text-xs">
-                {promotionGate.history.length === 0 && (
+                {promotionGate.historyRows.length === 0 && (
                   <li className="text-muted-foreground">{promotionGate.historyEmptyText}</li>
                 )}
-                {promotionGate.history.slice(0, 4).map((record) => (
-                  <li key={record.promotionId} className="font-mono">
-                    {record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType}
-                    {record.decision ? ` · ${record.decision}` : ""}
-                    {record.sourceRunId ? ` · source: ${record.sourceRunId}` : record.runId ? ` · source: ${record.runId}` : ""}
-                    {record.targetRunId ? ` · target: ${record.targetRunId}` : ""}
-                    {record.approvedBy ? ` · by ${record.approvedBy}` : ""}
-                    {record.approvalReason ? ` · reason: ${record.approvalReason}` : ""}
-                    {record.auditReference ? ` · audit: ${record.auditReference}` : ""}
-                    {record.manualOverrideId ? ` · override: ${record.manualOverrideId}` : ""}
-                    {record.reviewNotes ? ` · notes: ${record.reviewNotes}` : ""}
+                {promotionGate.historyRows.map((record) => (
+                  <li key={record.id} className="font-mono" aria-label={record.ariaLabel}>
+                    {record.label}
                   </li>
                 ))}
               </ul>

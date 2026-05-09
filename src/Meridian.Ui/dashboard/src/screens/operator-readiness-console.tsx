@@ -1,4 +1,4 @@
-import { Activity, ClipboardList, FileCheck2, RadioTower, ShieldCheck, TrendingUp } from "lucide-react";
+import { Activity, ArrowRight, ClipboardList, FileCheck2, RadioTower, ShieldCheck, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import {
   useOperatorReadinessConsoleViewModel,
   type ReadinessConsolePanel,
   type ReadinessConsoleLevel,
+  type ReadinessConsoleNextAction,
   type ReadinessConsoleRow
 } from "@/screens/operator-readiness-console.view-model";
 import type {
@@ -110,6 +111,7 @@ export function OperatorReadinessConsole({
               <ConsoleChip label="Snapshot" value={vm.asOf} />
               <ConsoleChip label="Operator inbox" value={vm.inboxSummary} />
             </div>
+            <PrimaryNextAction action={vm.nextAction} />
             {vm.inboxLoadingLabel ? (
               <p role="status" className="text-sm text-muted-foreground">{vm.inboxLoadingLabel}</p>
             ) : null}
@@ -218,6 +220,36 @@ export function OperatorReadinessConsole({
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function PrimaryNextAction({ action }: { action: ReadinessConsoleNextAction }) {
+  return (
+    <div
+      role="group"
+      aria-label={action.ariaLabel}
+      className={cn("rounded-lg border px-3 py-3", levelPanel[action.level])}
+    >
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0">
+          <div className="eyebrow-label">Primary next action</div>
+          <div className="mt-1 text-sm font-semibold text-foreground">{action.title}</div>
+          <p className="mt-1 text-xs leading-5 text-foreground/80">{action.detail}</p>
+          <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{action.meta}</p>
+        </div>
+        <Button
+          asChild
+          variant={action.level === "blocked" ? "secondary" : "outline"}
+          size="sm"
+          className="shrink-0"
+        >
+          <Link to={action.route} aria-label={action.actionAriaLabel}>
+            {action.label}
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }

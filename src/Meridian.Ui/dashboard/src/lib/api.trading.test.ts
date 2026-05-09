@@ -10,9 +10,11 @@ import {
   getAlpacaConnectionStatus,
   getBrokerageHouseholdPortfolio,
   getDataOperationsWorkspace,
+  developmentFixtureHeader,
   getExecutionControls,
   getGovernanceWorkspace,
   getPaperSessionDetail,
+  getPortfolioWorkspace,
   getPortfolioAggregate,
   getPortfolioExposure,
   getPortfolioSymbolExposure,
@@ -40,11 +42,13 @@ import {
   getWorkflowLibrary,
   getWorkflowPresets,
   getWorkstationWorkflowSummary,
+  hasDevelopmentFixtureUsage,
   markWorkflowPresetUsed,
   pinWorkflowPreset,
   pauseReplay,
   runReconciliation,
   runAnalysisExport,
+  resetDevelopmentFixtureUsage,
   resumeReplay,
   revokeAlpacaConnection,
   saveWorkflowPreset,
@@ -64,6 +68,7 @@ describe("trading endpoint wiring", () => {
     fetchMock.mockReset();
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({}), text: async () => "{}" });
     vi.stubGlobal("fetch", fetchMock);
+    resetDevelopmentFixtureUsage();
   });
 
   it("wires promotion endpoints", async () => {
@@ -140,13 +145,35 @@ describe("trading endpoint wiring", () => {
     await expect(getSystemStatus()).resolves.toMatchObject({ providersTotal: 4, recentEvents: [] });
     await expect(getStrategyWorkspace()).resolves.toMatchObject({ runs: expect.any(Array) });
     await expect(getTradingWorkspace()).resolves.toMatchObject({ openOrders: expect.any(Array) });
+    await expect(getPortfolioWorkspace()).resolves.toMatchObject({ positions: expect.any(Array) });
     await expect(getDataOperationsWorkspace()).resolves.toMatchObject({ backfills: expect.any(Array) });
     await expect(getGovernanceWorkspace()).resolves.toMatchObject({ reconciliationQueue: expect.any(Array) });
     await expect(getReportingWorkspace()).resolves.toMatchObject({ reporting: expect.any(Object) });
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/strategy", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/portfolio", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/data", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/accounting", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reporting", expect.anything());
+    expect(hasDevelopmentFixtureUsage()).toBe(true);
+  });
+
+  it("tracks proxy-served development fixtures from the response header", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      headers: { get: (name: string) => (name === developmentFixtureHeader ? "true" : null) },
+      json: async () => ({
+        activeWorkspace: "trading",
+        commandCount: 1,
+        displayName: "Demo Desk",
+        environment: "paper",
+        role: "Operator"
+      }),
+      text: async () => "{}"
+    });
+
+    expect(hasDevelopmentFixtureUsage()).toBe(false);
+    await expect(getSession()).resolves.toMatchObject({ displayName: "Demo Desk" });
+    expect(hasDevelopmentFixtureUsage()).toBe(true);
   });
 
   it("wires Alpaca brokerage connection endpoints", async () => {

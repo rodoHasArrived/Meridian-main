@@ -5,15 +5,6 @@ import type { MetricSnapshot, SessionInfo, SystemEventRecord, SystemOverviewResp
 
 export type OverviewRefreshFetcher = () => Promise<SystemOverviewResponse>;
 
-export type OverviewFallbackStatId = "providers" | "runs" | "symbols" | "backfills";
-
-export interface OverviewFallbackStat {
-  id: OverviewFallbackStatId;
-  label: string;
-  value: string;
-  tone: "default" | "success" | "warning" | "danger";
-}
-
 export interface OverviewWorkspaceLink {
   id: WorkspaceKey;
   label: string;
@@ -54,7 +45,7 @@ export interface OverviewBriefingItem {
 }
 
 export interface OverviewPriorityRoute {
-  id: "trading" | "accounting" | "reporting";
+  id: "trading" | "accounting" | "reporting" | "data" | "settings";
   eyebrow: string;
   title: string;
   detail: string;
@@ -83,7 +74,7 @@ export interface OverviewStatusState {
   activityRows: OverviewActivityRow[];
   briefingItems: OverviewBriefingItem[];
   priorityRoutes: OverviewPriorityRoute[];
-  fallbackStats: OverviewFallbackStat[];
+  fallbackStats: MetricSnapshot[];
   workspaceLinks: OverviewWorkspaceLink[];
   workspaceSummary: string;
   hasMetrics: boolean;
@@ -142,7 +133,7 @@ export function buildOverviewStatusState({
       lastHeartbeatLabel,
       refreshErrorText
     }),
-    priorityRoutes: buildOverviewPriorityRoutes(workspaceLinks),
+    priorityRoutes: buildOverviewPriorityRoutes(workspaceLinks, current),
     fallbackStats: buildFallbackStats(current),
     workspaceLinks,
     workspaceSummary: "7 canonical operator routes. Legacy routes redirect to their canonical workspaces.",
@@ -245,20 +236,46 @@ export function buildOverviewWorkspaceLinks(): OverviewWorkspaceLink[] {
   }));
 }
 
-export function buildOverviewPriorityRoutes(workspaces: OverviewWorkspaceLink[]): OverviewPriorityRoute[] {
-  return workspaces
-    .filter((workspace): workspace is OverviewWorkspaceLink & { id: OverviewPriorityRoute["id"] } => (
-      workspace.id === "trading" || workspace.id === "accounting" || workspace.id === "reporting"
-    ))
-    .map((workspace) => ({
-      id: workspace.id,
-      ...priorityRouteCopy[workspace.id],
-      href: workspace.href,
-      status: workspace.status,
-      badgeVariant: workspace.badgeVariant,
-      description: workspace.description,
-      ariaLabel: workspace.ariaLabel
-    }));
+export function buildOverviewPriorityRoutes(
+  workspaces: OverviewWorkspaceLink[],
+  current: SystemOverviewResponse | null = null
+): OverviewPriorityRoute[] {
+  const workspaceById = new Map(workspaces.map((workspace) => [workspace.id, workspace]));
+  const priorityIds: OverviewPriorityRoute["id"][] = [];
+
+  if (current && (current.providersTotal === 0 || current.providersOnline === 0)) {
+    priorityIds.push("settings");
+  }
+
+  if (current && current.symbolsMonitored === 0) {
+    priorityIds.push("data");
+  }
+
+  priorityIds.push("trading", "accounting", "reporting");
+
+  return distinctPriorityIds(priorityIds)
+    .map((id) => {
+      const workspace = workspaceById.get(id);
+      if (!workspace) {
+        return null;
+      }
+
+      const copy = priorityRouteCopy[id];
+      return {
+        id,
+        eyebrow: copy.eyebrow,
+        title: copy.title,
+        detail: priorityRouteDetail(id, current, copy.detail),
+        buttonLabel: copy.buttonLabel,
+        href: copy.href ?? workspace.href,
+        status: workspace.status,
+        badgeVariant: workspace.badgeVariant,
+        description: workspace.description,
+        ariaLabel: copy.ariaLabel ?? workspace.ariaLabel
+      };
+    })
+    .filter((route): route is OverviewPriorityRoute => route !== null)
+    .slice(0, 3);
 }
 
 export function buildOverviewBriefingItems({
@@ -410,7 +427,10 @@ const activityTypeState: Record<SystemEventRecord["type"], Pick<OverviewActivity
   }
 };
 
-const priorityRouteCopy: Record<OverviewPriorityRoute["id"], Pick<OverviewPriorityRoute, "eyebrow" | "title" | "detail" | "buttonLabel">> = {
+const priorityRouteCopy: Record<
+  OverviewPriorityRoute["id"],
+  Pick<OverviewPriorityRoute, "eyebrow" | "title" | "detail" | "buttonLabel"> & Pick<Partial<OverviewPriorityRoute>, "href" | "ariaLabel">
+> = {
   trading: {
     eyebrow: "Execution posture",
     title: "Keep the active session ready",
@@ -428,15 +448,60 @@ const priorityRouteCopy: Record<OverviewPriorityRoute["id"], Pick<OverviewPriori
     title: "Prepare distribution-ready reporting",
     detail: "Check report-pack posture, approvals, and export readiness before circulating governed output.",
     buttonLabel: "Open reporting lane"
+  },
+  data: {
+    eyebrow: "First-run data setup",
+    title: "Seed a working watchlist",
+    detail: "No monitored symbols are loaded yet. Add a starter pack before validating quotes, backfills, or paper orders.",
+    buttonLabel: "Open watchlist",
+    href: "/data/watchlist",
+    ariaLabel: "Open Data watchlist starter packs"
+  },
+  settings: {
+    eyebrow: "Integration setup",
+    title: "Connect provider baseline",
+    detail: "Provider setup is blocking useful validation. Verify workstation setup before expecting quotes or readiness checks.",
+    buttonLabel: "Open setup checks",
+    href: "/settings",
+    ariaLabel: "Open Settings setup checks"
   }
 };
 
-function buildFallbackStats(current: SystemOverviewResponse | null): OverviewFallbackStat[] {
+function distinctPriorityIds(ids: OverviewPriorityRoute["id"][]): OverviewPriorityRoute["id"][] {
+  return ids.filter((id, index) => ids.indexOf(id) === index);
+}
+
+function priorityRouteDetail(
+  id: OverviewPriorityRoute["id"],
+  current: SystemOverviewResponse | null,
+  fallback: string
+): string {
+  if (!current) {
+    return fallback;
+  }
+
+  if (id === "settings") {
+    if (current.providersTotal === 0) {
+      return "No providers are configured yet. Verify setup before expecting quotes, backfills, or cockpit readiness.";
+    }
+
+    return `0 of ${current.providersTotal} providers are online. Restore provider connectivity before running operator validation.`;
+  }
+
+  if (id === "data") {
+    return "No monitored symbols are loaded yet. Add a starter pack before validating quotes, backfills, or paper orders.";
+  }
+
+  return fallback;
+}
+
+function buildFallbackStats(current: SystemOverviewResponse | null): MetricSnapshot[] {
   return [
     {
       id: "providers",
       label: "Providers Online",
       value: current ? `${current.providersOnline} / ${current.providersTotal}` : "-",
+      delta: current ? providerFallbackDelta(current) : "Awaiting API",
       tone: !current
         ? "default"
         : current.providersOnline === current.providersTotal
@@ -449,21 +514,41 @@ function buildFallbackStats(current: SystemOverviewResponse | null): OverviewFal
       id: "runs",
       label: "Active Runs",
       value: current ? String(current.activeRuns) : "-",
+      delta: current ? activeCountDelta(current.activeRuns, "run", "runs") : "Awaiting API",
       tone: current && current.activeRuns > 0 ? "success" : "default"
     },
     {
       id: "symbols",
       label: "Monitored Symbols",
       value: current ? String(current.symbolsMonitored) : "-",
+      delta: current ? activeCountDelta(current.symbolsMonitored, "symbol", "symbols") : "Awaiting API",
       tone: "default"
     },
     {
       id: "backfills",
       label: "Active Backfills",
       value: current ? String(current.activeBackfills) : "-",
+      delta: current ? activeCountDelta(current.activeBackfills, "backfill", "backfills") : "Awaiting API",
       tone: current && current.activeBackfills > 0 ? "warning" : "default"
     }
   ];
+}
+
+function providerFallbackDelta(current: SystemOverviewResponse): string {
+  const offline = Math.max(current.providersTotal - current.providersOnline, 0);
+  if (current.providersTotal === 0) {
+    return "No providers configured";
+  }
+
+  return offline === 0 ? "All online" : `${offline} offline`;
+}
+
+function activeCountDelta(count: number, singular: string, plural: string): string {
+  if (count === 0) {
+    return `No active ${plural}`;
+  }
+
+  return count === 1 ? `1 active ${singular}` : `${count} active ${plural}`;
 }
 
 function badgeVariantForWorkspaceStatus(status: string): OverviewWorkspaceLink["badgeVariant"] {

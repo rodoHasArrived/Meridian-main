@@ -249,9 +249,17 @@ describe("buildSettingsScreenViewModel", () => {
       canEdit: true,
       keyIdError: true,
       secretKeyError: true,
+      formPanelTitle: "Credentials incomplete",
+      formPanelTone: "warning",
+      submitLabel: "Connect and test",
       clearDisabledReason: "No stored Alpaca credentials are available to clear."
     });
     expect(emptyState.submitDisabledReason).toContain("key ID");
+    expect(emptyState.requirements).toEqual([
+      expect.objectContaining({ id: "alpaca-key-id-requirement", value: "Required", met: false, tone: "warning" }),
+      expect.objectContaining({ id: "alpaca-secret-key-requirement", value: "Required", met: false, tone: "warning" }),
+      expect.objectContaining({ id: "alpaca-environment-requirement", value: "PAPER", met: true, tone: "success" })
+    ]);
 
     const busyState = buildAlpacaConnectionCommandState({
       canClear: true,
@@ -272,6 +280,7 @@ describe("buildSettingsScreenViewModel", () => {
       submitBusy: true,
       clearBusy: false
     });
+    expect(busyState.formPanelTitle).toBe("Testing Alpaca credentials");
     expect(busyState.submitDisabledReason).toContain("already running");
   });
 

@@ -4,8 +4,10 @@ import {
   getDataWorkspace,
   getGovernanceWorkspace,
   getAlpacaConnectionStatus,
+  hasDevelopmentFixtureUsage,
   getPortfolioWorkspace,
   getReportingWorkspace,
+  resetDevelopmentFixtureUsage,
   getSession,
   getStrategyWorkspace,
   getSystemStatus,
@@ -44,6 +46,7 @@ interface WorkstationDataState {
   workflowLibrary: WorkflowLibrary | null;
   workflowPresets: WorkflowPresetLibrary | null;
   workflowError: string | null;
+  usingDevelopmentFixtures: boolean;
   loading: boolean;
   error: string | null;
   workspaceErrors: WorkspaceErrorMap;
@@ -63,6 +66,7 @@ const initialState: WorkstationDataState = {
   workflowLibrary: null,
   workflowPresets: null,
   workflowError: null,
+  usingDevelopmentFixtures: false,
   loading: true,
   error: null,
   workspaceErrors: {}
@@ -89,6 +93,7 @@ export function useWorkstationData() {
 
     const revision = refreshRevisionRef.current + 1;
     refreshRevisionRef.current = revision;
+    resetDevelopmentFixtureUsage();
     setState((current) => ({ ...current, loading: true, error: null, workflowError: null, workspaceErrors: {} }));
 
     const [
@@ -166,6 +171,7 @@ export function useWorkstationData() {
       workflowLibrary: readWorkflow(workflowLibrary),
       workflowPresets: readWorkflow(workflowPresets),
       workflowError: workflowErrors[0] ?? null,
+      usingDevelopmentFixtures: hasDevelopmentFixtureUsage(),
       loading: false,
       error: Object.values(workspaceErrors)[0] ?? bootstrapErrors[0] ?? null,
       workspaceErrors
@@ -193,7 +199,11 @@ export function useWorkstationData() {
       if (!mountedRef.current) {
         return;
       }
-      setState((current) => ({ ...current, trading: result }));
+      setState((current) => ({
+        ...current,
+        trading: result,
+        usingDevelopmentFixtures: current.usingDevelopmentFixtures || hasDevelopmentFixtureUsage()
+      }));
     } catch {
       // keep stale data; full refresh() is always available
     } finally {

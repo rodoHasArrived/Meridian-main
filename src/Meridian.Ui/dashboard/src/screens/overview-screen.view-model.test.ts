@@ -61,12 +61,14 @@ describe("overview-screen view model", () => {
       id: "providers",
       label: "Providers Online",
       value: "2 / 4",
+      delta: "2 offline",
       tone: "warning"
     });
     expect(state.fallbackStats).toContainEqual({
       id: "backfills",
       label: "Active Backfills",
       value: "1",
+      delta: "1 active backfill",
       tone: "warning"
     });
     expect(state.workspaceSummary).toBe("7 canonical operator routes. Legacy routes redirect to their canonical workspaces.");
@@ -187,6 +189,42 @@ describe("overview-screen view model", () => {
       buttonLabel: "Open reporting lane",
       href: "/reporting"
     });
+  });
+
+  it("moves first-run symbol setup ahead of default priority routes", () => {
+    const routes = buildOverviewPriorityRoutes(buildOverviewWorkspaceLinks(), {
+      ...overview,
+      symbolsMonitored: 0
+    });
+
+    expect(routes.map((route) => route.id)).toEqual(["data", "trading", "accounting"]);
+    expect(routes[0]).toMatchObject({
+      eyebrow: "First-run data setup",
+      title: "Seed a working watchlist",
+      buttonLabel: "Open watchlist",
+      href: "/data/watchlist",
+      ariaLabel: "Open Data watchlist starter packs"
+    });
+    expect(routes[0].detail).toContain("No monitored symbols are loaded yet");
+  });
+
+  it("moves provider setup ahead of data setup when no provider baseline is available", () => {
+    const routes = buildOverviewPriorityRoutes(buildOverviewWorkspaceLinks(), {
+      ...overview,
+      providersOnline: 0,
+      providersTotal: 0,
+      symbolsMonitored: 0
+    });
+
+    expect(routes.map((route) => route.id)).toEqual(["settings", "data", "trading"]);
+    expect(routes[0]).toMatchObject({
+      eyebrow: "Integration setup",
+      title: "Connect provider baseline",
+      buttonLabel: "Open setup checks",
+      href: "/settings",
+      ariaLabel: "Open Settings setup checks"
+    });
+    expect(routes[0].detail).toContain("No providers are configured yet");
   });
 
   it("derives activity row status, fallback timestamps, and accessible summaries", () => {

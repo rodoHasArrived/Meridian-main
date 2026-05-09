@@ -289,8 +289,77 @@ describe("buildLiveQuotesMarketViewModel", () => {
     expect(vm.orderbookState.status).toBe("ready");
     expect(vm.tradesState.status).toBe("ready");
     expect(vm.tradeRows).toHaveLength(1);
+    expect(vm.tradeDisplayRows[0]).toMatchObject({
+      priceLabel: "188.07",
+      sizeLabel: "100",
+      aggressorTone: "positive",
+      venueLabel: "NASDAQ"
+    });
     expect(vm.venueLabel).toBe("NASDAQ");
     expect(vm.lastUpdateLabel).not.toBe("Unavailable");
+  });
+
+  it("derives BBO, depth, quote metrics, and chart labels for the view", () => {
+    const trade = {
+      symbol: "AAPL",
+      timestamp: "2026-05-08T15:00:00.000Z",
+      price: 188.07,
+      size: 100,
+      aggressor: "Sell",
+      sequenceNumber: 1,
+      streamId: null,
+      venue: "NASDAQ"
+    };
+
+    const vm = buildLiveQuotesMarketViewModel({
+      activeSymbol: "AAPL",
+      quote: { data: quoteFixture, error: null },
+      trades: { data: { ...tradesFixture, trades: [trade] }, error: null },
+      orderbook: { data: orderbookFixture, error: null },
+      refreshing: false,
+      tradeTableLimit: 25
+    });
+
+    expect(vm.bboPanels).toEqual([
+      expect.objectContaining({
+        id: "bid",
+        priceLabel: "188.05",
+        sizeLabel: "200 shares",
+        seedSide: "Sell",
+        seedLabel: "Sell AAPL at bid 188.05"
+      }),
+      expect.objectContaining({
+        id: "ask",
+        priceLabel: "188.07",
+        sizeLabel: "150 shares",
+        seedSide: "Buy",
+        seedLabel: "Buy AAPL at ask 188.07"
+      })
+    ]);
+    expect(vm.quoteMetrics.map((metric) => [metric.label, metric.value])).toEqual([
+      ["Mid", "188.06"],
+      ["Spread", "0.02"],
+      ["Sequence", "42"],
+      ["Stream", "stream-1"]
+    ]);
+    expect(vm.depthLadder.bids[0]).toMatchObject({
+      priceLabel: "188.05",
+      sizeLabel: "200",
+      barWidth: "100%",
+      seedLabel: "Sell AAPL at 188.05"
+    });
+    expect(vm.tradeDisplayRows[0]).toMatchObject({
+      aggressorLabel: "Sell",
+      aggressorTone: "negative",
+      timeLabel: expect.stringMatching(/^\d{2}:\d{2}:\d{2}\.000$/)
+    });
+    expect(vm.priceChart).toMatchObject({
+      title: "AAPL prints over 1s",
+      lastPriceLabel: "188.07",
+      changeLabel: "0.00 (0.00%)",
+      changeTone: "default",
+      statusMessage: null
+    });
   });
 
   it("keeps stale market data usable while surfacing refresh errors", () => {

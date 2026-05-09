@@ -584,7 +584,8 @@ describe("TradingScreen", () => {
     const startButton = await screen.findByRole("button", { name: "Start" });
     await waitFor(() => expect(startButton).toBeEnabled());
     await user.click(startButton);
-    await screen.findByText("Replay running · 3/10 (30%)");
+    await screen.findByRole("status", { name: /Replay running for rep-1/i });
+    expect(screen.getByText("Processed 3/10 events at 30%.")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /restore paper session sess-1/i }));
     await waitFor(() => expect(api.getPaperSessionDetail).toHaveBeenCalledWith("sess-1"));
