@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildCalibrationSummaryViewState,
   buildGovernanceCashFlowViewState,
   buildGovernanceReportingViewState,
   buildGovernanceTrialBalanceViewState,
@@ -20,6 +21,7 @@ import type {
   GovernanceCashFlowSummary,
   GovernanceWorkspaceResponse,
   LedgerTrialBalanceLine,
+  ReconciliationCalibrationSummary,
   ReconciliationBreakQueueItem,
   SecurityMasterConflict,
   SecurityMasterEntry,
@@ -246,6 +248,61 @@ describe("governance-screen view model", () => {
       rows: [],
       statusAnnouncement: "Cash-flow evidence is loading."
     });
+  });
+
+  it("derives calibration summary status presentation and KPI rows", () => {
+    const summary: ReconciliationCalibrationSummary = {
+      status: "ReviewRequired",
+      summary: "Two routes need operator review before sign-off.",
+      asOf: "2026-05-09T14:30:00Z",
+      totalBreakCount: 8,
+      activeBreakCount: 5,
+      openBreakCount: 2,
+      inReviewBreakCount: 3,
+      resolvedBreakCount: 6,
+      dismissedBreakCount: 0,
+      criticalOpenBreakCount: 1,
+      pendingSignoffCount: 3,
+      signedOffCount: 4,
+      missingCalibrationMetadataCount: 1,
+      profiles: [
+        {
+          toleranceProfileId: "profile-cash",
+          exceptionRoute: "cash",
+          highestSeverity: "Critical",
+          maxToleranceBand: 250,
+          totalBreakCount: 8,
+          openBreakCount: 2,
+          inReviewBreakCount: 3,
+          resolvedBreakCount: 6,
+          dismissedBreakCount: 0,
+          pendingSignoffCount: 3,
+          signedOffCount: 4,
+          lastUpdatedAt: "2026-05-09T14:00:00Z"
+        }
+      ]
+    };
+
+    const state = buildCalibrationSummaryViewState(summary, false, null);
+
+    expect(state).toMatchObject({
+      statusLabel: "Review required",
+      statusTone: "warning",
+      statusIcon: "alert",
+      statusTextClassName: "text-warning",
+      statusBannerClassName: "border-warning/30 bg-warning/5",
+      profilesLabel: "1 tolerance profile",
+      hasProfiles: true
+    });
+    expect(state.metricRows).toEqual([
+      expect.objectContaining({ id: "total", label: "Total breaks", value: 8, tone: "default", ariaLabel: "Total breaks: 8" }),
+      expect.objectContaining({ id: "open", label: "Open", value: 2, tone: "warning", ariaLabel: "Open: 2" }),
+      expect.objectContaining({ id: "critical-open", label: "Critical open", value: 1, tone: "warning" }),
+      expect.objectContaining({ id: "pending-signoff", label: "Pending sign-off", value: 3, tone: "warning" }),
+      expect.objectContaining({ id: "signed-off", label: "Signed off", value: 4, tone: "default" }),
+      expect.objectContaining({ id: "missing-metadata", label: "Missing metadata", value: 1, tone: "warning" })
+    ]);
+    expect(state.profileRows[0].ariaLabel).toContain("profile-cash");
   });
 
   it("derives trial-balance table rows, labels, and status announcements", () => {

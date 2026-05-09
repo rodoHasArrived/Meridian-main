@@ -165,6 +165,10 @@ describe("App", () => {
     const alpacaSetup = document.getElementById("alpaca-provider-setup");
     expect(alpacaSetup).not.toBeNull();
     expect(await screen.findByText("Settings Workstation loaded. Jumping to alpaca provider setup.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Alpaca paper provider setup" })).toHaveAttribute(
+      "aria-current",
+      "step"
+    );
     await waitFor(() => expect(alpacaSetup).toHaveFocus());
   });
 
@@ -234,6 +238,7 @@ describe("App", () => {
     expect(screen.getByText("Demo data")).toBeInTheDocument();
     expect(screen.getByText("Showing local fixture responses because the Meridian API host is unavailable.")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Demo workflow" })).toBeInTheDocument();
+    expect(screen.getByText("Evidence path")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open sample watchlist demo lane" })).toHaveAttribute("href", "/data/watchlist");
     expect(screen.getByRole("link", { name: "Open sample live quotes for AAPL" })).toHaveAttribute("href", "/data/quotes?symbol=AAPL");
     expect(screen.getByRole("link", { name: "Open sample readiness console" })).toHaveAttribute("href", "/trading/readiness");

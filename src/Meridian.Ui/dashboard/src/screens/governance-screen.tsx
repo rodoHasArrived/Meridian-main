@@ -914,9 +914,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
 }
 
 function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewState }) {
-  const StatusIcon = view.statusTone === "success" ? CheckCircle2 : view.statusTone === "danger" ? AlertCircle : AlertCircle;
-  const statusClass = view.statusTone === "success" ? "text-success" : view.statusTone === "danger" ? "text-danger" : "text-warning";
-  const bannerClass = view.statusTone === "success" ? "border-success/30 bg-success/5" : view.statusTone === "danger" ? "border-danger/30 bg-danger/5" : "border-warning/30 bg-warning/5";
+  const StatusIcon = view.statusIcon === "check" ? CheckCircle2 : AlertCircle;
 
   return (
           <Card className="panel-surface">
@@ -937,27 +935,25 @@ function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewState }
         )}
         {!view.loadingText && !view.errorText && (
           <>
-            <div className={cn("flex items-center gap-3 rounded-lg border px-4 py-3", bannerClass)}>
-              <StatusIcon aria-hidden="true" className={cn("size-4 shrink-0", statusClass)} />
+            <div className={cn("flex items-center gap-3 rounded-lg border px-4 py-3", view.statusBannerClassName)}>
+              <StatusIcon aria-hidden="true" className={cn("size-4 shrink-0", view.statusTextClassName)} />
               <div className="flex-1 min-w-0">
-                <span className={cn("text-sm font-semibold", statusClass)}>{view.statusLabel}</span>
+                <span className={cn("text-sm font-semibold", view.statusTextClassName)}>{view.statusLabel}</span>
                 {view.summary && <p className="mt-0.5 text-xs text-muted-foreground">{view.summary}</p>}
               </div>
               <span className="shrink-0 font-mono text-xs text-muted-foreground">as of {view.asOfLabel}</span>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-              {[
-                { label: "Total breaks", value: view.totalBreakCount },
-                { label: "Open", value: view.openBreakCount, warn: view.openBreakCount > 0 },
-                { label: "Critical open", value: view.criticalOpenBreakCount, warn: view.criticalOpenBreakCount > 0 },
-                { label: "Pending sign-off", value: view.pendingSignoffCount, warn: view.pendingSignoffCount > 0 },
-                { label: "Signed off", value: view.signedOffCount },
-                { label: "Missing metadata", value: view.missingMetadataCount, warn: view.missingMetadataCount > 0 }
-              ].map(({ label, value, warn }) => (
-                <div key={label} className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2 text-center">
-                  <div className="text-xs text-muted-foreground">{label}</div>
-                  <div className={cn("mt-1 font-mono text-lg font-semibold tabular-nums", warn ? "text-warning" : "text-foreground")}>
-                    {value}
+              {view.metricRows.map((metric) => (
+                <div
+                  key={metric.id}
+                  role="group"
+                  aria-label={metric.ariaLabel}
+                  className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2 text-center"
+                >
+                  <div className="text-xs text-muted-foreground">{metric.label}</div>
+                  <div className={cn("mt-1 font-mono text-lg font-semibold tabular-nums", metric.tone === "warning" ? "text-warning" : "text-foreground")}>
+                    {metric.value}
                   </div>
                 </div>
               ))}

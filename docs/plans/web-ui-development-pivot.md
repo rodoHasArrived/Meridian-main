@@ -69,8 +69,8 @@ assets from `src/Meridian.Ui/wwwroot/workstation/`. Both commands proxy `/api` t
 `MERIDIAN_API_BASE_URL` or `http://localhost:8080`. When `/healthz` is unavailable in local dev or
 preview, the proxy serves typed fixtures for known bootstrap GETs before forwarding so no-host demos
 do not show failed-resource noise. The shell surfaces a `Demo data` banner when fixture-backed
-responses are used, with sample-flow links to the watchlist, seeded `AAPL` live quotes, readiness
-console, and Alpaca paper provider setup, so operators can distinguish no-host demo data from live
+responses are used, with a route-aware evidence path linking to the watchlist, seeded `AAPL` live
+quotes, readiness console, and Alpaca paper provider setup, so operators can distinguish no-host demo data from live
 workstation state, review the same read-only evidence flow without credentials first, and then move
 directly to the live-data handoff. The quote demo path must include fixture-backed quote, trade,
 depth, and historical-bar responses so `/data/quotes?symbol=AAPL` opens as a populated workbench

@@ -311,6 +311,8 @@ function LegacyWorkspaceRedirect() {
 }
 
 function DevelopmentFixtureNotice() {
+  const location = useLocation();
+
   return (
     <div
       role="status"
@@ -326,12 +328,27 @@ function DevelopmentFixtureNotice() {
         </span>
       </div>
       <nav aria-label="Demo workflow" className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">Sample flow</span>
+        <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">Evidence path</span>
         {developmentFixtureDemoLinks.map((item) => {
           const Icon = item.icon;
+          const isCurrent = isCurrentDevelopmentFixtureDemoStep(item, location.pathname, location.hash);
           return (
-            <Button key={item.href} asChild variant="outline" size="sm" className="bg-background/40">
-              <Link to={item.href} aria-label={item.ariaLabel}>
+            <Button
+              key={item.href}
+              asChild
+              variant={isCurrent ? "default" : "outline"}
+              size="sm"
+              className={isCurrent ? "" : "bg-background/40"}
+            >
+              <Link to={item.href} aria-label={item.ariaLabel} aria-current={isCurrent ? "step" : undefined}>
+                <span
+                  aria-hidden="true"
+                  className={isCurrent
+                    ? "font-mono text-[0.6875rem] text-primary-foreground/80"
+                    : "font-mono text-[0.6875rem] text-muted-foreground"}
+                >
+                  {item.step}
+                </span>
                 <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>{item.label}</span>
               </Link>
@@ -370,30 +387,51 @@ function focusElementById(targetElementId: string, fallbackElement: HTMLElement 
 
 const developmentFixtureDemoLinks = [
   {
+    step: "1",
     href: "/data/watchlist",
+    matchPath: "/data/watchlist",
     label: "Watchlist",
     ariaLabel: "Open sample watchlist demo lane",
     icon: Database
   },
   {
+    step: "2",
     href: "/data/quotes?symbol=AAPL",
+    matchPath: "/data/quotes",
     label: "Quotes",
     ariaLabel: "Open sample live quotes for AAPL",
     icon: LineChart
   },
   {
+    step: "3",
     href: "/trading/readiness",
+    matchPath: "/trading/readiness",
     label: "Readiness",
     ariaLabel: "Open sample readiness console",
     icon: ShieldCheck
   },
   {
+    step: "4",
     href: "/settings#alpaca-provider-setup",
+    matchPath: "/settings",
+    matchHash: "#alpaca-provider-setup",
     label: "Connect",
     ariaLabel: "Open Alpaca paper provider setup",
     icon: KeyRound
   }
 ] as const;
+
+function isCurrentDevelopmentFixtureDemoStep(
+  item: (typeof developmentFixtureDemoLinks)[number],
+  pathname: string,
+  hash: string
+) {
+  if (item.matchPath !== pathname) {
+    return false;
+  }
+
+  return !("matchHash" in item) || item.matchHash === hash;
+}
 
 function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () => void }) {
   const toneClass =

@@ -469,6 +469,12 @@ public static class UiApiRoutes
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
     public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
     public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
+    public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
+    public const string WorkstationEvidenceSubjectPacket = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet";
+    public const string WorkstationEvidenceSubjectGraph = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/graph";
+    public const string WorkstationEvidenceSubjectValidate = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/validate";
+    public const string WorkstationEvidenceSubjectExportManifest = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/export-manifest";
+    public const string WorkstationEvidenceTemplates = "/api/workstation/evidence/templates";
     public const string RunsCompare = "/api/workstation/runs/compare";
     public const string RunsDiff = "/api/workstation/runs/diff";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";

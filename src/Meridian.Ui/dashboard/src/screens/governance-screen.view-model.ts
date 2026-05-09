@@ -61,6 +61,15 @@ export interface GovernanceReportingServices {
 }
 
 export type CalibrationStatusTone = "success" | "warning" | "danger";
+export type CalibrationStatusIcon = "check" | "alert";
+
+export interface CalibrationSummaryMetricViewModel {
+  id: string;
+  label: string;
+  value: number;
+  tone: "default" | "warning";
+  ariaLabel: string;
+}
 
 export interface CalibrationProfileRowViewModel {
   toleranceProfileId: string;
@@ -77,6 +86,9 @@ export interface CalibrationSummaryViewState {
   status: ReconciliationCalibrationStatus;
   statusLabel: string;
   statusTone: CalibrationStatusTone;
+  statusIcon: CalibrationStatusIcon;
+  statusTextClassName: string;
+  statusBannerClassName: string;
   summary: string;
   asOfLabel: string;
   totalBreakCount: number;
@@ -85,6 +97,7 @@ export interface CalibrationSummaryViewState {
   pendingSignoffCount: number;
   signedOffCount: number;
   missingMetadataCount: number;
+  metricRows: CalibrationSummaryMetricViewModel[];
   profileRows: CalibrationProfileRowViewModel[];
   hasProfiles: boolean;
   profilesLabel: string;
@@ -1886,11 +1899,15 @@ export function buildCalibrationSummaryViewState(
 ): CalibrationSummaryViewState {
   const statusTone = calibrationStatusTone(summary?.status ?? null);
   const profileRows = (summary?.profiles ?? []).map(buildCalibrationProfileRow);
+  const metricRows = buildCalibrationSummaryMetrics(summary);
 
   return {
     status: summary?.status ?? "Ready",
     statusLabel: calibrationStatusLabel(summary?.status ?? null, loading),
     statusTone,
+    statusIcon: statusTone === "success" ? "check" : "alert",
+    statusTextClassName: calibrationStatusTextClass(statusTone),
+    statusBannerClassName: calibrationStatusBannerClass(statusTone),
     summary: summary?.summary ?? "",
     asOfLabel: summary?.asOf ? formatSecurityDate(summary.asOf) : "—",
     totalBreakCount: summary?.totalBreakCount ?? 0,
@@ -1899,6 +1916,7 @@ export function buildCalibrationSummaryViewState(
     pendingSignoffCount: summary?.pendingSignoffCount ?? 0,
     signedOffCount: summary?.signedOffCount ?? 0,
     missingMetadataCount: summary?.missingCalibrationMetadataCount ?? 0,
+    metricRows,
     profileRows,
     hasProfiles: profileRows.length > 0,
     profilesLabel: profileRows.length === 1 ? "1 tolerance profile" : `${profileRows.length} tolerance profiles`,
@@ -1911,6 +1929,41 @@ export function buildCalibrationSummaryViewState(
         : summary
           ? `Calibration status: ${calibrationStatusLabel(summary.status, false)}. ${summary.summary}`
           : ""
+  };
+}
+
+function buildCalibrationSummaryMetrics(
+  summary: ReconciliationCalibrationSummary | null
+): CalibrationSummaryMetricViewModel[] {
+  const totalBreakCount = summary?.totalBreakCount ?? 0;
+  const openBreakCount = summary?.openBreakCount ?? 0;
+  const criticalOpenBreakCount = summary?.criticalOpenBreakCount ?? 0;
+  const pendingSignoffCount = summary?.pendingSignoffCount ?? 0;
+  const signedOffCount = summary?.signedOffCount ?? 0;
+  const missingMetadataCount = summary?.missingCalibrationMetadataCount ?? 0;
+
+  return [
+    buildCalibrationSummaryMetric("total", "Total breaks", totalBreakCount, false),
+    buildCalibrationSummaryMetric("open", "Open", openBreakCount, openBreakCount > 0),
+    buildCalibrationSummaryMetric("critical-open", "Critical open", criticalOpenBreakCount, criticalOpenBreakCount > 0),
+    buildCalibrationSummaryMetric("pending-signoff", "Pending sign-off", pendingSignoffCount, pendingSignoffCount > 0),
+    buildCalibrationSummaryMetric("signed-off", "Signed off", signedOffCount, false),
+    buildCalibrationSummaryMetric("missing-metadata", "Missing metadata", missingMetadataCount, missingMetadataCount > 0)
+  ];
+}
+
+function buildCalibrationSummaryMetric(
+  id: string,
+  label: string,
+  value: number,
+  warn: boolean
+): CalibrationSummaryMetricViewModel {
+  return {
+    id,
+    label,
+    value,
+    tone: warn ? "warning" : "default",
+    ariaLabel: `${label}: ${value}`
   };
 }
 
@@ -1939,6 +1992,30 @@ function calibrationStatusTone(status: ReconciliationCalibrationStatus | null): 
   }
 
   return "warning";
+}
+
+function calibrationStatusTextClass(tone: CalibrationStatusTone): string {
+  if (tone === "success") {
+    return "text-success";
+  }
+
+  if (tone === "danger") {
+    return "text-danger";
+  }
+
+  return "text-warning";
+}
+
+function calibrationStatusBannerClass(tone: CalibrationStatusTone): string {
+  if (tone === "success") {
+    return "border-success/30 bg-success/5";
+  }
+
+  if (tone === "danger") {
+    return "border-danger/30 bg-danger/5";
+  }
+
+  return "border-warning/30 bg-warning/5";
 }
 
 function calibrationStatusLabel(status: ReconciliationCalibrationStatus | null, loading: boolean): string {
