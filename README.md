@@ -5917,6 +5917,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   └── Workstation
 │   │       ├── BrokerageSyncDtos.cs
+│   │       ├── EvidenceWorkflowDtos.cs
 │   │       ├── FundLedgerDtos.cs
 │   │       ├── FundOperationsDtos.cs
 │   │       ├── FundOperationsWorkspaceDtos.cs
@@ -6828,8 +6829,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-B8hAlVBX.css
-│   │           │   └── index-_nDW1guS.js
+│   │           │   ├── index-DSnkjShj.js
+│   │           │   └── index-GVE8iaeq.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -6981,6 +6982,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── EdgarReferenceDataEndpoints.cs
 │   │   │   ├── EndpointHelpers.cs
 │   │   │   ├── EnvironmentDesignerEndpoints.cs
+│   │   │   ├── EvidenceEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExportEndpoints.cs
 │   │   │   ├── FailoverEndpoints.cs
@@ -7015,6 +7017,14 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SymbolMappingEndpoints.cs
 │   │   │   ├── UiEndpoints.cs
 │   │   │   └── WorkstationEndpoints.cs
+│   │   ├── Evidence
+│   │   │   ├── EvidenceContribution.cs
+│   │   │   ├── EvidenceContributors.cs
+│   │   │   ├── EvidenceGraphService.cs
+│   │   │   ├── EvidenceSubjectResolver.cs
+│   │   │   ├── EvidenceTemplateRegistry.cs
+│   │   │   ├── EvidenceWorkflowServiceCollectionExtensions.cs
+│   │   │   └── FileEvidenceArtifactStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── HtmlTemplateGenerator.Login.cs
 │   │   ├── HtmlTemplateGenerator.Scripts.cs
@@ -8374,6 +8384,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-673 directories, 7526 files
+674 directories, 7535 files
 ```
 <!-- readme-tree end -->
