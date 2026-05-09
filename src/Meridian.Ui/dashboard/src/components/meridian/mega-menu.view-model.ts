@@ -1,9 +1,13 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { WorkspaceKey } from "@/types";
 
 export interface MegaMenuLink {
   label: string;
   route: string;
   description: string;
+  active: boolean;
+  ariaCurrent: "page" | undefined;
+  ariaLabel: string;
 }
 
 export interface MegaMenuSection {
@@ -11,18 +15,37 @@ export interface MegaMenuSection {
   label: string;
   eyebrow: string;
   links: MegaMenuLink[];
+  active: boolean;
+  ariaCurrent: "page" | undefined;
 }
 
 export interface MegaMenuViewModel {
+  open: boolean;
   sections: MegaMenuSection[];
   triggerAriaLabel: string;
+  triggerControlsId: string;
+  triggerExpanded: boolean;
   panelAriaLabel: string;
+  panelId: string;
   closeAriaLabel: string;
   footerLabel: string;
   footerShortcut: string;
+  openMenu: () => void;
+  closeMenu: () => void;
+  toggleMenu: () => void;
 }
 
-const MENU_SECTIONS: MegaMenuSection[] = [
+export type MegaMenuFocusBoundary = "outside" | "first" | "middle" | "last" | "none";
+export type MegaMenuKeyCommand = "close" | "focus-first" | "focus-last" | null;
+
+type StaticMegaMenuLink = Omit<MegaMenuLink, "active" | "ariaCurrent" | "ariaLabel">;
+type StaticMegaMenuSection = Omit<MegaMenuSection, "active" | "ariaCurrent" | "links"> & {
+  links: StaticMegaMenuLink[];
+};
+
+const MEGA_MENU_PANEL_ID = "workspace-mega-menu-panel";
+
+const MENU_SECTIONS: StaticMegaMenuSection[] = [
   {
     key: "trading",
     label: "Trading",
@@ -60,7 +83,7 @@ const MENU_SECTIONS: MegaMenuSection[] = [
     label: "Reporting",
     eyebrow: "Reports & exports",
     links: [
-      { label: "Report Packs", route: "/reporting", description: "Scheduled report packs" },
+      { label: "Report packs", route: "/reporting", description: "Scheduled report packs" },
       { label: "Exports", route: "/reporting/exports", description: "Data export queue" }
     ]
   },
@@ -69,7 +92,7 @@ const MENU_SECTIONS: MegaMenuSection[] = [
     label: "Strategy",
     eyebrow: "Research & backtesting",
     links: [
-      { label: "Backtest Runs", route: "/strategy", description: "Strategy backtest results" },
+      { label: "Backtest runs", route: "/strategy", description: "Strategy backtest results" },
       { label: "Promotions", route: "/strategy/promotions", description: "Paper-to-live promotions" },
       { label: "Research", route: "/strategy/research", description: "Signal research workspace" },
       { label: "Quant Lab", route: "/strategy/quant-lab", description: "Run C# scripts with plots and metrics" }
@@ -80,9 +103,9 @@ const MENU_SECTIONS: MegaMenuSection[] = [
     label: "Data",
     eyebrow: "Providers & feeds",
     links: [
-      { label: "Provider Posture", route: "/data", description: "Data provider health" },
-      { label: "Backfill Queues", route: "/data/backfill", description: "Historical data backfill" },
-      { label: "Feed Monitor", route: "/data/feeds", description: "Live feed status" }
+      { label: "Provider posture", route: "/data", description: "Data provider health" },
+      { label: "Backfill queues", route: "/data/backfill", description: "Historical data backfill" },
+      { label: "Feed monitor", route: "/data/feeds", description: "Live feed status" }
     ]
   },
   {
@@ -97,13 +120,122 @@ const MENU_SECTIONS: MegaMenuSection[] = [
   }
 ];
 
-export function buildMegaMenuViewModel(): MegaMenuViewModel {
+export function useMegaMenuViewModel(pathname: string): MegaMenuViewModel {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  const openMenu = useCallback(() => setOpen(true), []);
+  const closeMenu = useCallback(() => setOpen(false), []);
+  const toggleMenu = useCallback(() => setOpen((current) => !current), []);
+
+  return useMemo(
+    () => buildMegaMenuViewModel({
+      pathname,
+      open,
+      openMenu,
+      closeMenu,
+      toggleMenu
+    }),
+    [closeMenu, open, openMenu, pathname, toggleMenu]
+  );
+}
+
+export function buildMegaMenuViewModel({
+  pathname,
+  open,
+  openMenu,
+  closeMenu,
+  toggleMenu
+}: {
+  pathname: string;
+  open: boolean;
+  openMenu: () => void;
+  closeMenu: () => void;
+  toggleMenu: () => void;
+}): MegaMenuViewModel {
   return {
-    sections: MENU_SECTIONS,
-    triggerAriaLabel: "Open workspace navigation menu",
+    open,
+    sections: buildMegaMenuSections(pathname),
+    triggerAriaLabel: open ? "Close workspace navigation menu" : "Open workspace navigation menu",
+    triggerControlsId: MEGA_MENU_PANEL_ID,
+    triggerExpanded: open,
     panelAriaLabel: "Workspace navigation",
+    panelId: MEGA_MENU_PANEL_ID,
     closeAriaLabel: "Close navigation menu",
-    footerLabel: "All workspaces · Palette-first routing",
-    footerShortcut: "Ctrl K"
+    footerLabel: "All workspaces / Palette-first routing",
+    footerShortcut: "Ctrl K",
+    openMenu,
+    closeMenu,
+    toggleMenu
   };
+}
+
+export function resolveMegaMenuKeyCommand({
+  key,
+  shiftKey,
+  focusBoundary
+}: {
+  key: string;
+  shiftKey: boolean;
+  focusBoundary: MegaMenuFocusBoundary;
+}): MegaMenuKeyCommand {
+  if (key === "Escape") {
+    return "close";
+  }
+
+  if (key !== "Tab") {
+    return null;
+  }
+
+  if (focusBoundary === "none") {
+    return "focus-first";
+  }
+
+  if (shiftKey && (focusBoundary === "first" || focusBoundary === "outside")) {
+    return "focus-last";
+  }
+
+  if (!shiftKey && (focusBoundary === "last" || focusBoundary === "outside")) {
+    return "focus-first";
+  }
+
+  return null;
+}
+
+function buildMegaMenuSections(pathname: string): MegaMenuSection[] {
+  return MENU_SECTIONS.map((section) => {
+    const sectionActive = isWorkspaceSectionActive(pathname, section.key);
+    return {
+      ...section,
+      active: sectionActive,
+      ariaCurrent: sectionActive ? "page" : undefined,
+      links: section.links.map((link) => {
+        const active = isRouteActive(pathname, link.route);
+        return {
+          ...link,
+          active,
+          ariaCurrent: active ? "page" : undefined,
+          ariaLabel: active
+            ? `${link.label}, current route, ${section.label} workspace`
+            : `Open ${link.label}, ${section.label} workspace`
+        };
+      })
+    };
+  });
+}
+
+function isWorkspaceSectionActive(pathname: string, key: WorkspaceKey): boolean {
+  return pathname === `/${key}` || pathname.startsWith(`/${key}/`);
+}
+
+function isRouteActive(pathname: string, route: string): boolean {
+  const routeSegments = route.split("/").filter(Boolean);
+  if (routeSegments.length <= 1) {
+    return pathname === route;
+  }
+
+  return pathname === route || pathname.startsWith(`${route}/`);
 }

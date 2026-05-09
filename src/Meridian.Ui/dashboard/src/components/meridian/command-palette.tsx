@@ -1,7 +1,11 @@
 import { useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
-import { buildCommandPaletteViewModel } from "@/components/meridian/command-palette.view-model";
+import {
+  buildCommandPaletteViewModel,
+  resolveCommandPaletteKeyCommand,
+  type CommandPaletteFocusBoundary
+} from "@/components/meridian/command-palette.view-model";
 import { cn } from "@/lib/utils";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
 
@@ -11,8 +15,8 @@ import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
  * Opened and closed by the parent via `open` / `onOpenChange`. The current workspace
  * item (matched from `useLocation`) is highlighted and receives initial focus on open.
  *
- * **Keyboard:** Escape closes the palette and returns focus to the trigger. The item list
- * supports standard Tab/Shift-Tab navigation.
+ * **Keyboard:** Escape closes the palette. Tab and Shift-Tab are contained inside
+ * the modal command surface while it is open.
  *
  * **Backdrop:** clicking outside the panel card calls `onOpenChange(false)`.
  *
@@ -43,6 +47,7 @@ export function CommandPalette({
   const { pathname } = useLocation();
   const dialogRef = useRef<HTMLDivElement>(null);
   const initialCommandRef = useRef<HTMLAnchorElement | null>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
   const viewModel = buildCommandPaletteViewModel(pathname, undefined, {
     workflowLibrary,
     workflowPresets,
@@ -54,18 +59,36 @@ export function CommandPalette({
       return;
     }
 
+    restoreFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     (initialCommandRef.current ?? dialogRef.current)?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      const command = resolveCommandPaletteKeyCommand({
+        key: event.key,
+        shiftKey: event.shiftKey,
+        focusBoundary: getCommandPaletteFocusBoundary(dialogRef.current, document.activeElement)
+      });
+
+      if (command === "close") {
         event.preventDefault();
-        onOpenChange(false);
+        closePalette();
+        return;
+      }
+
+      if (command === "focus-first" || command === "focus-last") {
+        event.preventDefault();
+        focusCommandPaletteBoundary(dialogRef.current, command);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onOpenChange, open]);
+
+  const closePalette = () => {
+    onOpenChange(false);
+    restoreFocusRef.current?.focus();
+  };
 
   if (!open) {
     return null;
@@ -77,7 +100,7 @@ export function CommandPalette({
       data-testid="command-palette-backdrop"
       onClick={(event) => {
         if (event.target === event.currentTarget) {
-          onOpenChange(false);
+          closePalette();
         }
       }}
     >
@@ -102,8 +125,8 @@ export function CommandPalette({
           </div>
           <button
             type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
-            onClick={() => onOpenChange(false)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            onClick={closePalette}
             aria-label="Close command palette"
           >
             <X className="h-4 w-4" />
@@ -144,7 +167,7 @@ export function CommandPalette({
                   void Promise.resolve(onPresetUsed(item.presetId)).catch(() => undefined);
                 }
 
-                onOpenChange(false);
+                closePalette();
               }}
             >
               <span className="flex items-start justify-between gap-3">
@@ -167,4 +190,53 @@ export function CommandPalette({
       </div>
     </div>
   );
+}
+
+const commandPaletteFocusableSelector = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])"
+].join(",");
+
+function getCommandPaletteFocusableElements(dialog: HTMLDivElement | null): HTMLElement[] {
+  if (!dialog) {
+    return [];
+  }
+
+  return Array.from(dialog.querySelectorAll<HTMLElement>(commandPaletteFocusableSelector)).filter(
+    (element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true"
+  );
+}
+
+function getCommandPaletteFocusBoundary(
+  dialog: HTMLDivElement | null,
+  activeElement: Element | null
+): CommandPaletteFocusBoundary {
+  const focusable = getCommandPaletteFocusableElements(dialog);
+  if (focusable.length === 0) {
+    return "none";
+  }
+
+  if (!dialog || !activeElement || !dialog.contains(activeElement)) {
+    return "outside";
+  }
+
+  if (activeElement === focusable[0]) {
+    return "first";
+  }
+
+  if (activeElement === focusable[focusable.length - 1]) {
+    return "last";
+  }
+
+  return "middle";
+}
+
+function focusCommandPaletteBoundary(dialog: HTMLDivElement | null, command: "focus-first" | "focus-last") {
+  const focusable = getCommandPaletteFocusableElements(dialog);
+  const target = command === "focus-first" ? focusable[0] : focusable[focusable.length - 1];
+  (target ?? dialog)?.focus();
 }

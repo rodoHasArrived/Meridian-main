@@ -162,6 +162,8 @@ Content Frame
 
 **Admin Maintenance schedule readiness** — `AdminMaintenancePage` now renders a schedule readiness strip and binds Save Schedule through `AdminMaintenanceViewModel`. The view model owns selected-operation summary, frequency copy, validation, and save command enablement so an enabled schedule cannot be saved without at least one maintenance operation.
 
+**Retention Assurance cleanup readiness** — `RetentionAssurancePage` now renders a cleanup readiness card and inline confirmation panel bound through `RetentionAssuranceViewModel`. The view model owns guardrail inputs, retention-policy parsing, validation result rows, dry-run result copy, destructive-action gating, busy/error status, and cleanup reset behavior, while the page keeps legal-hold and audit-list rendering in WPF. No new polling, timers, or persistence behavior is added beyond the existing retention service calls.
+
 **Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.
 
 **Security Master search recovery** — `SecurityMasterPage` now exposes a bound `SearchCommand` for the search button and `Enter` key plus a bound `Clear Search` action in the search strip and in the results empty-state card. `SecurityMasterViewModel` tracks attempted searches, unavailable-runtime recovery, result count, query scope, and search-command availability locally so operators can run or reset a search without code-behind workflow logic.

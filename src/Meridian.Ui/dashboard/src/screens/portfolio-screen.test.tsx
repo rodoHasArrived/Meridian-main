@@ -7,6 +7,7 @@ import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   GovernanceWorkspaceResponse,
+  PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
   TradingWorkspaceResponse
 } from "@/types";
@@ -190,6 +191,51 @@ const brokeragePortfolio: BrokerageHouseholdPortfolio = {
   ]
 };
 
+const portfolio: PortfolioWorkspaceResponse = {
+  metrics: [],
+  positions: [
+    {
+      symbol: "NVDA",
+      side: "Long",
+      quantity: "12",
+      averagePrice: "840.00",
+      markPrice: "850.00",
+      dayPnl: "+$120",
+      unrealizedPnl: "+$120",
+      exposure: "$10,200"
+    }
+  ],
+  risk: {
+    ...trading.risk,
+    summary: "Portfolio endpoint risk posture.",
+    buyingPowerUsed: "22%"
+  },
+  brokerage: {
+    ...trading.brokerage,
+    account: "PF-ENDPOINT"
+  },
+  runs: [
+    {
+      runId: "portfolio-run-1",
+      strategyName: "Portfolio Endpoint Run",
+      engine: "Native",
+      mode: "paper",
+      status: "Completed",
+      pnl: "+2.1%",
+      sharpe: "1.10",
+      dataset: "Live portfolio",
+      window: "30d",
+      lastUpdated: "1m ago",
+      notes: "Sourced from portfolio workspace.",
+      promotionState: "Promoted"
+    }
+  ],
+  cashFlow: {
+    ...governance.cashFlow,
+    summary: "Portfolio endpoint cash posture."
+  }
+};
+
 describe("PortfolioScreen", () => {
   it("renders position table with trading data", () => {
     renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
@@ -198,6 +244,19 @@ describe("PortfolioScreen", () => {
     expect(screen.getByRole("button", { name: /inspect aapl long holding/i })).toBeDefined();
     expect(screen.getByRole("complementary", { name: /aapl holding detail/i })).toBeDefined();
     expect(screen.getByText(/\$18,900 exposure with \+\$90 unrealized p&l/i)).toBeDefined();
+  });
+
+  it("renders positions and runs from the Portfolio workspace payload when available", () => {
+    renderWithRouter(
+      <PortfolioScreen portfolio={portfolio} trading={trading} research={research} governance={governance} />
+    );
+
+    const positionsTable = screen.getByRole("table", { name: /open positions/i });
+    expect(within(positionsTable).getByText("NVDA")).toBeDefined();
+    expect(within(positionsTable).queryByText("AAPL")).toBeNull();
+    expect(screen.getByText("Portfolio workspace")).toBeDefined();
+    expect(screen.getByRole("button", { name: /inspect portfolio endpoint run run evidence/i })).toBeDefined();
+    expect(screen.getByText(/portfolio endpoint cash posture/i)).toBeDefined();
   });
 
   it("renders run-linked equity table with research data", () => {
@@ -210,7 +269,7 @@ describe("PortfolioScreen", () => {
 
   it("shows empty text when trading is null", () => {
     renderWithRouter(<PortfolioScreen trading={null} research={research} governance={governance} />);
-    expect(screen.getAllByText(/trading workspace data unavailable/i)).toHaveLength(2);
+    expect(screen.getAllByText(/portfolio workspace data unavailable/i)).toHaveLength(2);
     expect(screen.getByText(/no holding selected/i)).toBeDefined();
   });
 
@@ -289,16 +348,24 @@ describe("PortfolioScreen", () => {
     allButton.focus();
     expect(allButton).toHaveFocus();
     expect(allButton).toHaveAttribute("aria-pressed", "true");
+    expect(allButton).toHaveAttribute("tabindex", "0");
+    expect(rothButton).toHaveAttribute("tabindex", "-1");
 
     await user.keyboard("{ArrowRight}");
+    expect(rothButton).toHaveFocus();
     expect(rothButton).toHaveAttribute("aria-pressed", "true");
+    expect(allButton).toHaveAttribute("tabindex", "-1");
+    expect(rothButton).toHaveAttribute("tabindex", "0");
     let brokerageTable = screen.getByRole("table", { name: /alpaca paper current positions/i });
     expect(within(brokerageTable).getByText("AAPL")).toBeDefined();
     expect(within(brokerageTable).queryByText("MSFT")).toBeNull();
 
     rothButton.focus();
     await user.keyboard("{End}");
+    expect(brokerageButton).toHaveFocus();
     expect(brokerageButton).toHaveAttribute("aria-pressed", "true");
+    expect(rothButton).toHaveAttribute("tabindex", "-1");
+    expect(brokerageButton).toHaveAttribute("tabindex", "0");
     brokerageTable = screen.getByRole("table", { name: /alpaca paper current positions/i });
     expect(within(brokerageTable).getByText("MSFT")).toBeDefined();
     expect(within(brokerageTable).queryByText("AAPL")).toBeNull();

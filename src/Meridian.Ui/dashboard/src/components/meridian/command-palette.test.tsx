@@ -29,6 +29,23 @@ describe("CommandPalette", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it("keeps Tab focus inside the modal command surface", () => {
+    const onOpenChange = vi.fn();
+
+    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/settings"] });
+
+    const closeButton = screen.getByRole("button", { name: "Close command palette" });
+    const lastCommand = screen.getByLabelText("Settings, current workspace");
+
+    lastCommand.focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(closeButton).toHaveFocus();
+
+    fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+    expect(lastCommand).toHaveFocus();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
   it("closes when a workspace command is selected", async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();

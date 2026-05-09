@@ -1,9 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildPortfolioScreenViewModel } from "@/screens/portfolio-screen.view-model";
+import {
+  buildPortfolioScreenViewModel,
+  resolveBrokerageAccountFilterKeyCommand
+} from "@/screens/portfolio-screen.view-model";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   GovernanceWorkspaceResponse,
+  PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
   TradingWorkspaceResponse
 } from "@/types";
@@ -187,6 +191,60 @@ const brokeragePortfolio: BrokerageHouseholdPortfolio = {
   ]
 };
 
+const portfolio: PortfolioWorkspaceResponse = {
+  metrics: [
+    {
+      id: "portfolio-equity",
+      label: "Portfolio equity",
+      value: "$625,000",
+      delta: "+1.4%",
+      tone: "success"
+    }
+  ],
+  positions: [
+    {
+      symbol: "NVDA",
+      side: "Long",
+      quantity: "12",
+      averagePrice: "840.00",
+      markPrice: "850.00",
+      dayPnl: "+$120",
+      unrealizedPnl: "+$120",
+      exposure: "$10,200"
+    }
+  ],
+  risk: {
+    ...trading.risk,
+    summary: "Portfolio endpoint risk posture.",
+    buyingPowerUsed: "22%"
+  },
+  brokerage: {
+    ...trading.brokerage,
+    account: "PF-ENDPOINT"
+  },
+  runs: [
+    {
+      runId: "portfolio-run-1",
+      strategyName: "Portfolio Endpoint Run",
+      engine: "Native",
+      mode: "paper",
+      status: "Completed",
+      pnl: "+2.1%",
+      sharpe: "1.10",
+      dataset: "Live portfolio",
+      window: "30d",
+      lastUpdated: "1m ago",
+      notes: "Sourced from portfolio workspace.",
+      promotionState: "Promoted"
+    }
+  ],
+  cashFlow: {
+    ...governance.cashFlow,
+    netVariance: -125,
+    summary: "Portfolio endpoint cash posture."
+  }
+};
+
 describe("buildPortfolioScreenViewModel", () => {
   it("returns position rows from trading data", () => {
     const vm = buildPortfolioScreenViewModel({ trading, research, governance });
@@ -296,7 +354,30 @@ describe("buildPortfolioScreenViewModel", () => {
     ]);
   });
 
-  it("marks the brokerage-sync panel as blocked when trading data is unavailable", () => {
+  it("uses the Portfolio workspace payload as the primary portfolio read model", () => {
+    const vm = buildPortfolioScreenViewModel({
+      portfolio,
+      trading,
+      research,
+      governance,
+      pathname: "/portfolio/brokerage-sync"
+    });
+
+    expect(vm.metricCards).toEqual(portfolio.metrics);
+    expect(vm.positionSourceLabel).toBe("Portfolio workspace");
+    expect(vm.positionRows).toHaveLength(1);
+    expect(vm.positionRows[0].symbol).toBe("NVDA");
+    expect(vm.selectedPosition?.statusDetail).toContain("Portfolio endpoint risk posture.");
+    expect(vm.selectedPosition?.fields.find((field) => field.label === "Buying power")?.value).toBe("22%");
+    expect(vm.runRows).toHaveLength(1);
+    expect(vm.runRows[0].id).toBe("portfolio-run-1");
+    expect(vm.selectedRun?.title).toBe("Portfolio Endpoint Run");
+    expect(vm.cashFlowSummary).toBe("Portfolio endpoint cash posture.");
+    expect(vm.cashVarianceLabel).toBe("-$125");
+    expect(vm.workflowTaskPanel?.selectedSummary).toContain("Alpaca / paper account PF-ENDPOINT");
+  });
+
+  it("marks the brokerage-sync panel as blocked when portfolio posture is unavailable", () => {
     const vm = buildPortfolioScreenViewModel({
       trading: null,
       research,
@@ -304,9 +385,9 @@ describe("buildPortfolioScreenViewModel", () => {
       pathname: "/portfolio/brokerage-sync"
     });
 
-    expect(vm.workflowTaskPanel?.statusLabel).toBe("Trading unavailable");
+    expect(vm.workflowTaskPanel?.statusLabel).toBe("Portfolio unavailable");
     expect(vm.workflowTaskPanel?.statusTone).toBe("danger");
-    expect(vm.workflowTaskPanel?.selectedSummary).toContain("Trading workspace data is unavailable");
+    expect(vm.workflowTaskPanel?.selectedSummary).toContain("Portfolio workspace data is unavailable");
   });
 
   it("uses stable placeholder header chips when trading data is unavailable", () => {
@@ -408,6 +489,7 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.brokerageAccountFilterLabel).toBe("Alpaca paper account filter");
     expect(vm.brokerageAccountOptions.map((option) => option.label)).toEqual(["All", "Roth IRA", "Brokerage"]);
     expect(vm.brokerageAccountOptions.find((option) => option.key === "fund-roth")?.isSelected).toBe(true);
+    expect(vm.brokerageAccountOptions.map((option) => option.tabIndex)).toEqual([-1, 0, -1]);
     expect(vm.brokerageAccountRows).toHaveLength(2);
     expect(vm.brokeragePositionRows).toHaveLength(1);
     expect(vm.brokeragePositionRows[0].symbol).toBe("AAPL");
@@ -475,5 +557,15 @@ describe("buildPortfolioScreenViewModel", () => {
 
     vm.selectAdjacentBrokerageAccount("last");
     expect(selectBrokerageAccount).toHaveBeenLastCalledWith("fund-taxable");
+  });
+
+  it("keeps brokerage account selector keyboard commands in the view model", () => {
+    expect(resolveBrokerageAccountFilterKeyCommand("ArrowRight")).toBe("next");
+    expect(resolveBrokerageAccountFilterKeyCommand("ArrowDown")).toBe("next");
+    expect(resolveBrokerageAccountFilterKeyCommand("ArrowLeft")).toBe("previous");
+    expect(resolveBrokerageAccountFilterKeyCommand("ArrowUp")).toBe("previous");
+    expect(resolveBrokerageAccountFilterKeyCommand("Home")).toBe("first");
+    expect(resolveBrokerageAccountFilterKeyCommand("End")).toBe("last");
+    expect(resolveBrokerageAccountFilterKeyCommand("Tab")).toBeNull();
   });
 });

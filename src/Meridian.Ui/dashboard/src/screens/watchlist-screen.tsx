@@ -1,17 +1,26 @@
+<<<<<<< Updated upstream
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+=======
+>>>>>>> Stashed changes
 import { Link } from "react-router-dom";
-import { Activity, AlertCircle, LineChart, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Activity, AlertCircle, CheckCircle2, LineChart, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { DenseDataTable, type DenseDataTableColumn, ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import {
   addSymbol as addSymbolApi,
+<<<<<<< Updated upstream
   getLiveQuotesSnapshot,
+=======
+  bulkAddSymbols,
+>>>>>>> Stashed changes
   getSymbols,
   getSymbolsStatistics,
   removeSymbol as removeSymbolApi
 } from "@/lib/api";
+<<<<<<< Updated upstream
 import type { QuotesSnapshotItem, SymbolRecord, SymbolStatistics } from "@/types";
 
 const QUOTE_POLL_INTERVAL_MS = 2000;
@@ -183,6 +192,19 @@ export function WatchlistScreen() {
     if (!symbols) return null;
     return [...symbols].sort((a, b) => a.symbol.localeCompare(b.symbol));
   }, [symbols]);
+=======
+import { useWatchlistScreenViewModel, type WatchlistRowViewModel } from "@/screens/watchlist-screen.view-model";
+
+export function WatchlistScreen() {
+  const vm = useWatchlistScreenViewModel({
+    getSymbols,
+    getSymbolsStatistics,
+    addSymbol: addSymbolApi,
+    bulkAddSymbols,
+    removeSymbol: removeSymbolApi
+  });
+  const FeedbackIcon = vm.submitFeedback?.tone === "success" ? CheckCircle2 : AlertCircle;
+>>>>>>> Stashed changes
 
   return (
     <div className="space-y-6">
@@ -194,42 +216,70 @@ export function WatchlistScreen() {
             Symbol watchlist
           </CardTitle>
           <CardDescription>
-            Add, remove, and monitor symbols subscribed to the live data pipeline. Click a symbol to view live quotes.
+            Add, remove, and monitor symbols subscribed to the live data pipeline. Open a symbol to view live quotes.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard label="Total" value={stats?.totalSymbols} />
-            <StatCard label="Monitored" value={stats?.monitoredSymbols} />
-            <StatCard label="Archived" value={stats?.archivedSymbols} />
-            <StatCard label="Errors" value={stats?.symbolsWithErrors} tone={stats && stats.symbolsWithErrors > 0 ? "danger" : "default"} />
+            {vm.stats.map((stat) => (
+              <StatCard key={stat.id} label={stat.label} value={stat.value} tone={stat.tone} ariaLabel={stat.ariaLabel} />
+            ))}
           </div>
 
-          <form onSubmit={handleAdd} className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
-            <label htmlFor="add-symbol-input" className="sr-only">Add symbol</label>
+          <form
+            onSubmit={(event) => void vm.addPendingSymbol(event)}
+            className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center"
+            aria-label={vm.formLabel}
+          >
+            <label htmlFor={vm.inputId} className="sr-only">Add symbol</label>
             <Input
-              id="add-symbol-input"
-              placeholder="Add a symbol (e.g. MSFT)"
-              value={pendingSymbol}
-              onChange={(event) => setPendingSymbol(event.target.value)}
+              id={vm.inputId}
+              placeholder="Add symbols (e.g. MSFT, SPY)"
+              value={vm.pendingSymbol}
+              onChange={(event) => vm.setPendingSymbol(event.target.value)}
               autoComplete="off"
               spellCheck={false}
-              error={submitError !== null}
-              aria-describedby={submitError ? "add-symbol-error" : undefined}
+              error={vm.submitFeedback?.tone === "danger"}
+              disabled={vm.submitting}
+              aria-describedby={vm.inputHelpId}
             />
-            <Button type="submit" variant="default" disabled={submitting || pendingSymbol.trim().length === 0}>
+            <Button
+              type="submit"
+              variant="default"
+              disabled={vm.addDisabled}
+              disabledReason={vm.addDisabledReason}
+              busy={vm.submitting}
+              busyLabel="Adding..."
+              aria-label={vm.addButtonAriaLabel}
+            >
               <Plus className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">{submitting ? "Adding…" : "Add"}</span>
+              <span className="ml-1.5">{vm.addButtonLabel}</span>
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => void refresh()} aria-label="Refresh watchlist">
-              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
-              <span className="ml-1.5">Refresh</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void vm.refresh()}
+              aria-label={vm.refreshButtonAriaLabel}
+              disabled={vm.refreshDisabled}
+              busy={vm.refreshing}
+              busyLabel="Refreshing..."
+            >
+              <RefreshCw className={`h-4 w-4 ${vm.refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
+              <span className="ml-1.5">{vm.refreshButtonLabel}</span>
             </Button>
           </form>
-          {submitError ? (
-            <p id="add-symbol-error" className="mt-2 flex items-center gap-1.5 text-xs text-danger">
-              <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
-              {submitError}
+          <p id="add-symbol-help" className="mt-2 text-xs text-muted-foreground">
+            {vm.inputHelpText}
+          </p>
+          {vm.submitFeedback ? (
+            <p
+              id="add-symbol-feedback"
+              role={vm.submitFeedback.tone === "success" ? "status" : "alert"}
+              className={`mt-2 flex items-center gap-1.5 text-xs ${feedbackTextClass[vm.submitFeedback.tone]}`}
+            >
+              <FeedbackIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              {vm.submitFeedback.message}
             </p>
           ) : null}
         </CardContent>
@@ -239,18 +289,22 @@ export function WatchlistScreen() {
         <CardHeader>
           <CardTitle className="text-base">Subscribed symbols</CardTitle>
           <CardDescription>
-            {sortedSymbols ? `${sortedSymbols.length} symbol${sortedSymbols.length === 1 ? "" : "s"} configured.` : "Loading…"}
+            {vm.listDescription}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          {loadError && !sortedSymbols ? (
-            <p className="text-sm text-danger">{loadError}</p>
-          ) : !sortedSymbols ? (
-            <p className="text-sm text-muted-foreground">Loading symbols…</p>
-          ) : sortedSymbols.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No symbols configured. Add one above to start collecting live data.</p>
+        <CardContent className="space-y-3">
+          <ToolbarStrip items={vm.toolbarItems} ariaLabel="Symbol watchlist status" />
+          {vm.listState === "error" ? (
+            <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+              {vm.listDescription}
+            </p>
+          ) : vm.listState === "loading" ? (
+            <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-4 py-3 text-sm text-muted-foreground">
+              {vm.listDescription}
+            </p>
           ) : (
             <>
+<<<<<<< Updated upstream
               <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground" data-testid="watchlist-quote-status">
                 <span aria-live="polite">
                   {quoteFetchedAt
@@ -359,6 +413,22 @@ export function WatchlistScreen() {
                   </tbody>
                 </table>
               </div>
+=======
+              {vm.loadError ? (
+                <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                  {vm.loadError}
+                </p>
+              ) : null}
+              <DenseDataTable
+                columns={buildColumns(vm.removeSymbol)}
+                rows={vm.rows}
+                getRowId={(row) => row.symbol}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                emptyText={vm.listDescription}
+                ariaLabel={vm.tableLabel}
+                caption={vm.tableCaption}
+              />
+>>>>>>> Stashed changes
             </>
           )}
         </CardContent>
@@ -367,13 +437,87 @@ export function WatchlistScreen() {
   );
 }
 
-function StatCard({ label, value, tone = "default" }: { label: string; value: number | undefined; tone?: "default" | "danger" }) {
+const feedbackTextClass = {
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger"
+} as const;
+
+function buildColumns(removeSymbol: (symbol: string) => Promise<void>): DenseDataTableColumn<WatchlistRowViewModel>[] {
+  return [
+    {
+      id: "symbol",
+      label: "Symbol",
+      className: "font-mono font-semibold text-foreground",
+      render: (row) => row.symbol
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => <Badge variant={row.statusVariant} dot>{row.status}</Badge>
+    },
+    {
+      id: "provider",
+      label: "Provider",
+      className: "text-muted-foreground",
+      render: (row) => row.providerLabel
+    },
+    {
+      id: "last-event",
+      label: "Last event",
+      className: "text-muted-foreground",
+      render: (row) => row.lastEventLabel
+    },
+    {
+      id: "events",
+      label: "Events",
+      align: "right",
+      className: "font-mono",
+      render: (row) => row.eventCountLabel
+    },
+    {
+      id: "history",
+      label: "History",
+      className: "text-muted-foreground",
+      render: (row) => row.hasHistoricalData ? <span className="text-success">Available</span> : row.historyLabel
+    },
+    {
+      id: "actions",
+      label: "Actions",
+      align: "right",
+      render: (row) => (
+        <div className="flex justify-end gap-1.5">
+          <Button asChild variant="outline" size="sm">
+            <Link to={row.quoteHref} aria-label={row.quoteAriaLabel}>
+              <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="ml-1">Quote</span>
+            </Link>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={row.isRemoving}
+            disabledReason={row.removeDisabledReason}
+            onClick={() => void removeSymbol(row.symbol)}
+            aria-label={row.removeAriaLabel}
+          >
+            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="ml-1">{row.removeLabel}</span>
+          </Button>
+        </div>
+      )
+    }
+  ];
+}
+
+function StatCard({ label, value, tone = "default", ariaLabel }: { label: string; value: string; tone?: "default" | "danger"; ariaLabel: string }) {
   const toneClass = tone === "danger" ? "text-danger" : "text-foreground";
   return (
-    <div className="rounded-md border border-border/60 bg-secondary/25 px-3 py-3">
+    <div className="rounded-md border border-border/60 bg-secondary/25 px-3 py-3" role="group" aria-label={ariaLabel}>
       <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
       <div className={`mt-1 font-mono text-2xl ${toneClass}`}>
-        {value === undefined ? "—" : value.toLocaleString()}
+        {value}
       </div>
     </div>
   );

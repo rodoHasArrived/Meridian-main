@@ -1,4 +1,5 @@
 import type { KeyboardEvent } from "react";
+import { useEffect, useRef } from "react";
 import { BriefcaseBusiness, LineChart, Wallet } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -6,16 +7,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { cn } from "@/lib/utils";
-import { usePortfolioScreenViewModel } from "@/screens/portfolio-screen.view-model";
+import {
+  resolveBrokerageAccountFilterKeyCommand,
+  usePortfolioScreenViewModel
+} from "@/screens/portfolio-screen.view-model";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   GovernanceWorkspaceResponse,
+  PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
   TradingWorkspaceResponse
 } from "@/types";
 
 interface PortfolioScreenProps {
+  portfolio?: PortfolioWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
   research: ResearchWorkspaceResponse | null;
   governance: GovernanceWorkspaceResponse | null;
@@ -44,40 +50,8 @@ const cashFlowBorderClass = {
   danger: "border-danger/30"
 } as const;
 
-function handleBrokerageAccountFilterKeyDown(
-  event: KeyboardEvent<HTMLDivElement>,
-  selectAdjacentBrokerageAccount: (direction: "next" | "previous" | "first" | "last") => void
-) {
-  const direction = accountFilterKeyDirection(event.key);
-  if (!direction) {
-    return;
-  }
-
-  event.preventDefault();
-  selectAdjacentBrokerageAccount(direction);
-}
-
-function accountFilterKeyDirection(key: string): "next" | "previous" | "first" | "last" | null {
-  if (key === "ArrowRight" || key === "ArrowDown") {
-    return "next";
-  }
-
-  if (key === "ArrowLeft" || key === "ArrowUp") {
-    return "previous";
-  }
-
-  if (key === "Home") {
-    return "first";
-  }
-
-  if (key === "End") {
-    return "last";
-  }
-
-  return null;
-}
-
 export function PortfolioScreen({
+  portfolio,
   trading,
   research,
   governance,
@@ -85,7 +59,10 @@ export function PortfolioScreen({
   brokeragePortfolio
 }: PortfolioScreenProps) {
   const location = useLocation();
+  const brokerageAccountButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const shouldFocusBrokerageAccount = useRef(false);
   const vm = usePortfolioScreenViewModel({
+    portfolio,
     trading,
     research,
     governance,
@@ -93,6 +70,26 @@ export function PortfolioScreen({
     brokeragePortfolio,
     pathname: location.pathname
   });
+
+  useEffect(() => {
+    if (!shouldFocusBrokerageAccount.current) {
+      return;
+    }
+
+    shouldFocusBrokerageAccount.current = false;
+    brokerageAccountButtonRefs.current[vm.selectedBrokerageAccountKey]?.focus();
+  }, [vm.selectedBrokerageAccountKey]);
+
+  function handleBrokerageAccountFilterKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const command = resolveBrokerageAccountFilterKeyCommand(event.key);
+    if (!command) {
+      return;
+    }
+
+    event.preventDefault();
+    shouldFocusBrokerageAccount.current = true;
+    vm.selectAdjacentBrokerageAccount(command);
+  }
 
   return (
     <div className="space-y-8">
@@ -201,16 +198,20 @@ export function PortfolioScreen({
             className="flex flex-wrap items-center gap-2"
             role="group"
             aria-label={vm.brokerageAccountFilterLabel}
-            onKeyDown={(event) => handleBrokerageAccountFilterKeyDown(event, vm.selectAdjacentBrokerageAccount)}
+            onKeyDown={handleBrokerageAccountFilterKeyDown}
           >
             {vm.brokerageAccountOptions.map((option) => (
               <Button
                 key={option.key}
+                ref={(node) => {
+                  brokerageAccountButtonRefs.current[option.key] = node;
+                }}
                 type="button"
                 size="sm"
                 variant={option.isSelected ? "secondary" : "outline"}
                 aria-pressed={option.isSelected}
                 aria-label={option.ariaLabel}
+                tabIndex={option.tabIndex}
                 onClick={() => vm.selectBrokerageAccount(option.key)}
               >
                 {option.label}
@@ -362,7 +363,7 @@ export function PortfolioScreen({
           <CardContent>
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <PortfolioChip label="Selected detail" value={vm.selectedPosition?.title ?? "None"} />
-              <PortfolioChip label="Execution source" value={trading ? "Trading workspace" : "Unavailable"} />
+              <PortfolioChip label="Execution source" value={vm.positionSourceLabel} />
               <PortfolioChip label="Run evidence" value={vm.hasRuns ? `${vm.runRows.length} linked run${vm.runRows.length === 1 ? "" : "s"}` : "No linked runs"} />
             </div>
             {vm.hasPositions ? (

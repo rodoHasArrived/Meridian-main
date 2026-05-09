@@ -44,6 +44,7 @@ export function App() {
     overview,
     research,
     trading,
+    portfolio,
     dataOperations,
     governance,
     reporting,
@@ -87,6 +88,7 @@ export function App() {
       overview,
       research,
       trading,
+      portfolio,
       dataOperations,
       governance,
       reporting
@@ -170,6 +172,7 @@ export function App() {
                 <Route path="/trading/*" element={<TradingScreen data={trading} />} />
                 <Route path="/portfolio/*" element={(
                   <PortfolioScreen
+                    portfolio={portfolio}
                     trading={trading}
                     research={research}
                     governance={governance}

@@ -7,6 +7,7 @@ const emptyPayload: AppShellWorkspacePayload = {
   overview: null,
   research: null,
   trading: null,
+  portfolio: null,
   dataOperations: null,
   governance: null,
   reporting: null

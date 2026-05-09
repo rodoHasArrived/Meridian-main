@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/app";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { renderWithRouter } from "@/test/render";
+import type { PortfolioWorkspaceResponse } from "@/types";
 
 vi.mock("@/hooks/use-workstation-data", () => ({
   useWorkstationData: vi.fn()
@@ -18,6 +19,44 @@ vi.mock("@/lib/api", async () => {
 });
 
 const mockedUseWorkstationData = vi.mocked(useWorkstationData);
+
+const portfolio: PortfolioWorkspaceResponse = {
+  metrics: [],
+  positions: [
+    {
+      symbol: "NVDA",
+      side: "Long",
+      quantity: "12",
+      averagePrice: "840.00",
+      markPrice: "850.00",
+      dayPnl: "+$120",
+      unrealizedPnl: "+$120",
+      exposure: "$10,200"
+    }
+  ],
+  risk: {
+    state: "Healthy",
+    summary: "Portfolio endpoint risk posture.",
+    netExposure: "$10,200",
+    grossExposure: "$10,200",
+    var95: "$500",
+    maxDrawdown: "0%",
+    buyingPowerUsed: "22%",
+    activeGuardrails: []
+  },
+  brokerage: {
+    provider: "Alpaca",
+    account: "PF-ENDPOINT",
+    environment: "paper",
+    connection: "Connected",
+    lastHeartbeat: "1s ago",
+    orderIngress: "healthy",
+    fillFeed: "healthy",
+    notes: ""
+  },
+  runs: [],
+  cashFlow: null
+};
 
 describe("App", () => {
   beforeEach(() => {
@@ -92,5 +131,40 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: "Close workspace navigation" }));
     expect(screen.queryByRole("dialog", { name: "Workspace navigation" })).not.toBeInTheDocument();
+  });
+
+  it("renders the Portfolio route from the fetched portfolio workspace payload", () => {
+    mockedUseWorkstationData.mockReturnValue({
+      session: {
+        displayName: "Ops Desk",
+        role: "Operator",
+        environment: "paper",
+        activeWorkspace: "portfolio",
+        commandCount: 7
+      },
+      overview: null,
+      research: null,
+      trading: null,
+      portfolio,
+      dataOperations: null,
+      governance: null,
+      reporting: null,
+      brokerageConnection: null,
+      brokeragePortfolio: null,
+      workflowLibrary: null,
+      workflowPresets: null,
+      workflowError: null,
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      refresh: vi.fn(),
+      refreshTrading: vi.fn()
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/portfolio"] });
+
+    const positionsTable = screen.getByRole("table", { name: /open positions/i });
+    expect(within(positionsTable).getByText("NVDA")).toBeInTheDocument();
+    expect(screen.getByText("Portfolio workspace")).toBeInTheDocument();
   });
 });

@@ -10,6 +10,8 @@ import type {
 } from "@/types";
 
 export type CommandPaletteItemKind = "workspace" | "workflow" | "preset";
+export type CommandPaletteFocusBoundary = "first" | "last" | "middle" | "outside" | "none";
+export type CommandPaletteKeyCommand = "close" | "focus-first" | "focus-last" | null;
 
 export interface CommandPaletteItem {
   id: string;
@@ -49,6 +51,12 @@ export interface CommandPaletteViewModel {
   initialFocusItemId: string | null;
   items: CommandPaletteItem[];
   emptyState: CommandPaletteEmptyState | null;
+}
+
+export interface CommandPaletteKeyboardState {
+  key: string;
+  shiftKey?: boolean;
+  focusBoundary: CommandPaletteFocusBoundary;
 }
 
 const PAGE_TAG_ROUTES: Record<string, string> = {
@@ -117,6 +125,34 @@ export function buildCommandPaletteViewModel(
           }
         : null
   };
+}
+
+export function resolveCommandPaletteKeyCommand({
+  key,
+  shiftKey = false,
+  focusBoundary
+}: CommandPaletteKeyboardState): CommandPaletteKeyCommand {
+  if (key === "Escape") {
+    return "close";
+  }
+
+  if (key !== "Tab") {
+    return null;
+  }
+
+  if (focusBoundary === "none") {
+    return null;
+  }
+
+  if (shiftKey && (focusBoundary === "first" || focusBoundary === "outside")) {
+    return "focus-last";
+  }
+
+  if (!shiftKey && (focusBoundary === "last" || focusBoundary === "outside")) {
+    return "focus-first";
+  }
+
+  return null;
 }
 
 function buildWorkspaceItems(workspaces: WorkspaceSummary[], activeKey: WorkspaceKey): CommandPaletteItem[] {

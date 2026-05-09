@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildCommandPaletteViewModel } from "@/components/meridian/command-palette.view-model";
+import {
+  buildCommandPaletteViewModel,
+  resolveCommandPaletteKeyCommand
+} from "@/components/meridian/command-palette.view-model";
 
 describe("command palette view model", () => {
   it("marks the current workspace from the active route", () => {
@@ -211,5 +214,16 @@ describe("command palette view model", () => {
     expect(model.routeSummary).toBe(
       "Route through shared backend workflow commands. Current: Settings. Workflow library unavailable; workspace commands remain available."
     );
+  });
+
+  it("keeps command palette keyboard commands in the view model", () => {
+    expect(resolveCommandPaletteKeyCommand({ key: "Escape", focusBoundary: "middle" })).toBe("close");
+    expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "last" })).toBe("focus-first");
+    expect(resolveCommandPaletteKeyCommand({ key: "Tab", shiftKey: true, focusBoundary: "first" })).toBe("focus-last");
+    expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "outside" })).toBe("focus-first");
+    expect(resolveCommandPaletteKeyCommand({ key: "Tab", shiftKey: true, focusBoundary: "outside" })).toBe("focus-last");
+    expect(resolveCommandPaletteKeyCommand({ key: "ArrowDown", focusBoundary: "middle" })).toBeNull();
+    expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "middle" })).toBeNull();
+    expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "none" })).toBeNull();
   });
 });

@@ -285,7 +285,7 @@ retained for desktop compatibility, shared-contract regression checks, and suppo
 
 | Feature | Status | Notes |
 | --------- | -------- | ------- |
-| Web workstation dashboard | ⚠️ | React/Vite source in `src/Meridian.Ui/dashboard/` with built workstation assets in `src/Meridian.Ui/wwwroot/workstation/`; current screens cover overview, strategy, trading, portfolio, data, accounting, reporting, settings, and retained legacy paths, and `buildAppShellViewState` centralizes active workspace resolution plus loading, partial-degradation, retry, and bootstrap-failure status panels. Canonical seven-workspace navigation is present, the command palette now consumes shared workflow library/preset payloads, and placeholder routes are being replaced by dedicated task panels, while full cockpit/governance acceptance remains open |
+| Web workstation dashboard | ⚠️ | React/Vite source in `src/Meridian.Ui/dashboard/` with built workstation assets in `src/Meridian.Ui/wwwroot/workstation/`; current screens cover overview, strategy, trading, portfolio, data, accounting, reporting, settings, and retained legacy paths, and `buildAppShellViewState` centralizes active workspace resolution plus loading, partial-degradation, retry, and bootstrap-failure status panels. Canonical seven-workspace navigation is present, the command palette now consumes shared workflow library/preset payloads, Data includes live quotes plus single/bulk symbol watchlist management, and placeholder routes are being replaced by dedicated task panels, while full cockpit/governance acceptance remains open |
 | Operator Readiness Console | ⚠️ | Browser-first read-only console at `/trading/readiness` aggregates latest runs, active paper session, DK1/provider trust, reconciliation breaks, promotion blockers, governance report-pack readiness, and operator-inbox work items from `/api/workstation/*` payloads; it is the first API-first web readiness surface, not a WPF replacement |
 | Browser Portfolio brokerage support | ⚠️ | Portfolio screen/view-model support now projects brokerage connection state, household account rows, account-kind filters, brokerage positions, selected-run evidence, and backend links from shared API payloads. It is read-only portfolio/accounting continuity evidence, not live trading readiness |
 | Browser Reporting task panel | ⚠️ | Reporting screen/view-model support now exposes report-pack workflow task state, approval-profile selection, target readiness, and backend endpoint links. Governed report-pack generation, approval, restatement, and publication lifecycle remain open |
@@ -295,7 +295,7 @@ retained for desktop compatibility, shared-contract regression checks, and suppo
 | Server-Sent Events stream | ✅ | `/api/events/stream`; 2-second push cycle |
 | Configuration wizard UI | ✅ | Interactive provider setup, credential entry, symbol config |
 | Backfill controls | ✅ | Provider select, symbol list, date range, run/preview |
-| Symbol management | ✅ | Add/remove symbols, status per symbol |
+| Symbol management | ✅ | Add/remove symbols, status per symbol, and browser watchlist action-error alerts |
 | Provider comparison table | ✅ | Feature matrix across all providers |
 | Options chain display | ✅ | Derivatives configuration and data display |
 

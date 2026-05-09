@@ -1047,6 +1047,11 @@
     background: rgba(255, 255, 255, 0.05);
   }
 
+  .mega-menu-link.active {
+    background: rgba(42, 178, 212, 0.10);
+    box-shadow: inset 2px 0 0 var(--cyan-primary);
+  }
+
   .mega-menu-link-label {
     font-size: 0.75rem;
     font-weight: 500;
@@ -1056,6 +1061,10 @@
   }
 
   .mega-menu-link:hover .mega-menu-link-label {
+    color: #f6fbff;
+  }
+
+  .mega-menu-link.active .mega-menu-link-label {
     color: #f6fbff;
   }
 

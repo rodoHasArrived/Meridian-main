@@ -2,6 +2,7 @@ import { normalizeWorkspacePath, WORKSPACES, workspaceForPath } from "@/lib/work
 import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
+  PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -45,6 +46,7 @@ export interface AppShellWorkspacePayload {
   overview: SystemOverviewResponse | null;
   research: ResearchWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
+  portfolio: PortfolioWorkspaceResponse | null;
   dataOperations: DataOperationsWorkspaceResponse | null;
   governance: GovernanceWorkspaceResponse | null;
   reporting: GovernanceWorkspaceResponse | null;
