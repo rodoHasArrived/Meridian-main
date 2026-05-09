@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Compression;
 using System.Text.Json;
 using Meridian.Application.Logging;
@@ -164,6 +165,332 @@ public sealed class HistoricalDataQueryService
             LatestDate = latest,
             FileCount = files.Count
         };
+    }
+
+    /// <summary>
+    /// Aggregates stored trade events into OHLCV bars at the requested interval.
+    /// Reads historical jsonl files for the symbol, extracts trade payloads, and buckets
+    /// them by <paramref name="intervalMinutes"/> minute windows aligned to UTC.
+    /// </summary>
+    public async Task<HistoricalBarsResult> GetBarsAsync(
+        HistoricalBarsQuery query,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(query.Symbol))
+        {
+            throw new ArgumentException("Symbol is required", nameof(query));
+        }
+
+        if (query.IntervalMinutes <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(query), query.IntervalMinutes, "Interval minutes must be positive");
+        }
+
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        var fileQuery = new HistoricalDataQuery(
+            Symbol: query.Symbol,
+            From: query.From,
+            To: query.To,
+            DataType: query.DataType);
+
+        var files = FindDataFiles(fileQuery);
+        var bars = new SortedDictionary<DateTimeOffset, BarAccumulator>();
+        var filesProcessed = 0;
+        var maxBars = query.MaxBars ?? 5000;
+        var bucketTicks = TimeSpan.FromMinutes(query.IntervalMinutes).Ticks;
+        var fromBoundary = query.From.HasValue
+            ? new DateTimeOffset(query.From.Value.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)
+            : (DateTimeOffset?)null;
+        var toBoundary = query.To.HasValue
+            ? new DateTimeOffset(query.To.Value.ToDateTime(TimeOnly.MinValue).AddDays(1), TimeSpan.Zero)
+            : (DateTimeOffset?)null;
+
+        foreach (var file in files)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            try
+            {
+                await AggregateTradesFromFileAsync(
+                    file,
+                    bars,
+                    bucketTicks,
+                    fromBoundary,
+                    toBoundary,
+                    query.Symbol,
+                    ct).ConfigureAwait(false);
+                filesProcessed++;
+            }
+            catch (Exception ex)
+            {
+                _log.Warning(ex, "Failed to aggregate bars from file {File}", file);
+            }
+        }
+
+        stopwatch.Stop();
+
+        var orderedBars = bars
+            .Take(maxBars)
+            .Select(kvp => kvp.Value.ToPoint())
+            .ToList();
+
+        return new HistoricalBarsResult
+        {
+            Success = true,
+            Symbol = query.Symbol,
+            IntervalMinutes = query.IntervalMinutes,
+            From = query.From,
+            To = query.To,
+            Bars = orderedBars,
+            TotalBars = orderedBars.Count,
+            FilesProcessed = filesProcessed,
+            TotalFiles = files.Count,
+            QueryTimeMs = stopwatch.ElapsedMilliseconds,
+            Message = $"Aggregated {orderedBars.Count} bars from {filesProcessed} file(s)"
+        };
+    }
+
+    private static async Task AggregateTradesFromFileAsync(
+        string filePath,
+        SortedDictionary<DateTimeOffset, BarAccumulator> bars,
+        long bucketTicks,
+        DateTimeOffset? fromBoundary,
+        DateTimeOffset? toBoundary,
+        string symbol,
+        CancellationToken ct)
+    {
+        Stream? stream = null;
+        try
+        {
+            stream = File.OpenRead(filePath);
+            if (filePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
+            {
+                stream = new GZipStream(stream, CompressionMode.Decompress);
+            }
+
+            using var reader = new StreamReader(stream);
+            string? line;
+            while ((line = await reader.ReadLineAsync(ct).ConfigureAwait(false)) != null)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                if (!TryExtractTrade(line, symbol, out var ts, out var price, out var size))
+                {
+                    continue;
+                }
+
+                if (fromBoundary is { } fromTs && ts < fromTs) continue;
+                if (toBoundary is { } toTs && ts >= toTs) continue;
+
+                var bucketStartTicks = ts.UtcTicks - (ts.UtcTicks % bucketTicks);
+                var bucketStart = new DateTimeOffset(bucketStartTicks, TimeSpan.Zero);
+
+                if (!bars.TryGetValue(bucketStart, out var accumulator))
+                {
+                    accumulator = new BarAccumulator(bucketStart);
+                    bars[bucketStart] = accumulator;
+                }
+
+                accumulator.Add(price, size);
+            }
+        }
+        finally
+        {
+            stream?.Dispose();
+        }
+    }
+
+    private static bool TryExtractTrade(
+        string line,
+        string symbol,
+        out DateTimeOffset timestamp,
+        out decimal price,
+        out long size)
+    {
+        timestamp = default;
+        price = 0m;
+        size = 0L;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(line);
+            var root = doc.RootElement;
+
+            if (!IsTradeEvent(root))
+            {
+                return false;
+            }
+
+            if (!root.TryGetProperty("symbol", out var symbolEl) || symbolEl.ValueKind != JsonValueKind.String)
+            {
+                return false;
+            }
+
+            var lineSymbol = symbolEl.GetString();
+            if (lineSymbol is null || !string.Equals(lineSymbol, symbol, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (!payload.TryGetProperty("price", out var priceEl) || !TryReadDecimal(priceEl, out price) || price <= 0m)
+            {
+                return false;
+            }
+
+            if (!payload.TryGetProperty("size", out var sizeEl) || !TryReadInt64(sizeEl, out size) || size < 0)
+            {
+                return false;
+            }
+
+            // Prefer payload timestamp (event time) if present; fall back to top-level timestamp.
+            if (payload.TryGetProperty("timestamp", out var payloadTs) && TryReadTimestamp(payloadTs, out timestamp))
+            {
+                return true;
+            }
+
+            if (root.TryGetProperty("timestamp", out var topTs) && TryReadTimestamp(topTs, out timestamp))
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static bool IsTradeEvent(JsonElement root)
+    {
+        if (root.TryGetProperty("type", out var typeEl))
+        {
+            switch (typeEl.ValueKind)
+            {
+                case JsonValueKind.Number:
+                    if (typeEl.TryGetInt32(out var typeNum) && typeNum == 3) return true;
+                    break;
+                case JsonValueKind.String:
+                    if (string.Equals(typeEl.GetString(), "Trade", StringComparison.OrdinalIgnoreCase)) return true;
+                    break;
+            }
+        }
+
+        if (root.TryGetProperty("payload", out var payload) && payload.ValueKind == JsonValueKind.Object)
+        {
+            if (payload.TryGetProperty("kind", out var kindEl) && kindEl.ValueKind == JsonValueKind.String)
+            {
+                return string.Equals(kindEl.GetString(), "trade", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryReadDecimal(JsonElement element, out decimal value)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Number:
+                return element.TryGetDecimal(out value);
+            case JsonValueKind.String:
+                return decimal.TryParse(element.GetString(), NumberStyles.Number, CultureInfo.InvariantCulture, out value);
+            default:
+                value = 0m;
+                return false;
+        }
+    }
+
+    private static bool TryReadInt64(JsonElement element, out long value)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Number:
+                return element.TryGetInt64(out value);
+            case JsonValueKind.String:
+                return long.TryParse(element.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
+            default:
+                value = 0L;
+                return false;
+        }
+    }
+
+    private static bool TryReadTimestamp(JsonElement element, out DateTimeOffset value)
+    {
+        if (element.ValueKind == JsonValueKind.String && element.TryGetDateTimeOffset(out value))
+        {
+            return true;
+        }
+
+        if (element.ValueKind == JsonValueKind.Number && element.TryGetInt64(out var unixMs))
+        {
+            // Heuristic: > ~1e12 looks like ms, otherwise treat as seconds.
+            value = unixMs > 1_000_000_000_000L
+                ? DateTimeOffset.FromUnixTimeMilliseconds(unixMs)
+                : DateTimeOffset.FromUnixTimeSeconds(unixMs);
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+
+    private sealed class BarAccumulator
+    {
+        private decimal _open;
+        private decimal _high;
+        private decimal _low;
+        private decimal _close;
+        private long _volume;
+        private decimal _pxVolume;
+        private int _tradeCount;
+        private bool _initialized;
+
+        public BarAccumulator(DateTimeOffset start)
+        {
+            Start = start;
+        }
+
+        public DateTimeOffset Start { get; }
+
+        public void Add(decimal price, long size)
+        {
+            if (!_initialized)
+            {
+                _open = price;
+                _high = price;
+                _low = price;
+                _initialized = true;
+            }
+            else
+            {
+                if (price > _high) _high = price;
+                if (price < _low) _low = price;
+            }
+
+            _close = price;
+            if (size > 0)
+            {
+                _volume += size;
+                _pxVolume += price * size;
+            }
+            _tradeCount++;
+        }
+
+        public HistoricalBarPoint ToPoint()
+        {
+            var vwap = _volume > 0 ? _pxVolume / _volume : _close;
+            return new HistoricalBarPoint(Start, _open, _high, _low, _close, _volume, vwap, _tradeCount);
+        }
     }
 
     private List<string> FindDataFiles(HistoricalDataQuery query)
@@ -415,4 +742,48 @@ public sealed class HistoricalDataDateRange
     public DateOnly? EarliestDate { get; set; }
     public DateOnly? LatestDate { get; set; }
     public int FileCount { get; set; }
+}
+
+/// <summary>
+/// Query parameters for aggregated OHLCV bars.
+/// </summary>
+public sealed record HistoricalBarsQuery(
+    string Symbol,
+    int IntervalMinutes,
+    DateOnly? From = null,
+    DateOnly? To = null,
+    string? DataType = null,
+    int? MaxBars = null
+);
+
+/// <summary>
+/// A single OHLCV bar.
+/// </summary>
+public sealed record HistoricalBarPoint(
+    DateTimeOffset Start,
+    decimal Open,
+    decimal High,
+    decimal Low,
+    decimal Close,
+    long Volume,
+    decimal Vwap,
+    int TradeCount
+);
+
+/// <summary>
+/// Result of a historical bars aggregation query.
+/// </summary>
+public sealed class HistoricalBarsResult
+{
+    public bool Success { get; set; }
+    public string? Message { get; set; }
+    public string? Symbol { get; set; }
+    public int IntervalMinutes { get; set; }
+    public DateOnly? From { get; set; }
+    public DateOnly? To { get; set; }
+    public int TotalBars { get; set; }
+    public int FilesProcessed { get; set; }
+    public int TotalFiles { get; set; }
+    public long QueryTimeMs { get; set; }
+    public List<HistoricalBarPoint> Bars { get; set; } = new();
 }

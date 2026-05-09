@@ -133,6 +133,19 @@ describe("LiveQuotesScreen quick trade", () => {
     vi.spyOn(api, "getLiveQuote").mockResolvedValue(quoteFixture);
     vi.spyOn(api, "getLiveTrades").mockResolvedValue(tradesFixture);
     vi.spyOn(api, "getLiveOrderbook").mockResolvedValue(orderbookFixture);
+    vi.spyOn(api, "getHistoricalBars").mockResolvedValue({
+      success: true,
+      message: null,
+      symbol: "AAPL",
+      intervalMinutes: 5,
+      from: null,
+      to: null,
+      totalBars: 0,
+      filesProcessed: 0,
+      totalFiles: 0,
+      queryTimeMs: 0,
+      bars: []
+    });
   });
 
   afterEach(() => {

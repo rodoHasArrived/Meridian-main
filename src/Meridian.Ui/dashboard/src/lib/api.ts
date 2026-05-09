@@ -738,6 +738,24 @@ export function getLiveQuotesSnapshot(symbols?: readonly string[]) {
   return getJson<import("@/types").QuotesSnapshotResponse>(`/api/data/quotes-snapshot${query}`);
 }
 
+export interface HistoricalBarsRequest {
+  intervalMinutes: number;
+  from?: string;
+  to?: string;
+  maxBars?: number;
+}
+
+export function getHistoricalBars(symbol: string, request: HistoricalBarsRequest) {
+  const params = new URLSearchParams();
+  params.set("intervalMinutes", String(request.intervalMinutes));
+  if (request.from) params.set("from", request.from);
+  if (request.to) params.set("to", request.to);
+  if (request.maxBars !== undefined) params.set("maxBars", String(request.maxBars));
+  return getJson<import("@/types").HistoricalBarsResponse>(
+    `/api/historical/${encodeURIComponent(symbol)}/bars?${params.toString()}`
+  );
+}
+
 // --- Quant Lab ---
 
 export function getQuantTemplates() {
