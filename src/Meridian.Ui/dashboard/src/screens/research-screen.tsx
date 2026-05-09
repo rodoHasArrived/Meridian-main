@@ -1,5 +1,5 @@
-import { BarChart3, BookOpenText, ChartScatter, Sigma, Sparkles } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
@@ -75,6 +75,8 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
     );
   }
 
+  const evidenceRunId = vm.runTable.rows.find((run) => vm.selectedIds.includes(run.id))?.id ?? vm.runTable.rows[0]?.id ?? null;
+
   return (
     <div className="space-y-8">
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -92,32 +94,34 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
               </CardTitle>
               <CardDescription>{vm.plotTool.workspace.description}</CardDescription>
             </div>
-            <div
-              role="tablist"
-              aria-label="PlotTool views"
-              className="inline-flex rounded-md border border-border/70 bg-secondary/25 p-1"
-              onKeyDown={(event) => {
-                if (vm.selectPlotToolViewForKey(event.key)) {
-                  event.preventDefault();
-                }
-              }}
-            >
-              {vm.plotToolTabs.map((tab) => (
-                <Button
-                  key={tab.id}
-                  type="button"
-                  variant={tab.buttonVariant}
-                  role="tab"
-                  aria-selected={tab.selected}
-                  aria-controls={tab.panelId}
-                  aria-label={tab.ariaLabel}
-                  tabIndex={tab.tabIndex}
-                  id={tab.tabId}
-                  onClick={() => vm.selectPlotToolView(tab.id)}
-                >
-                  {tab.label}
-                </Button>
-              ))}
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <div
+                role="tablist"
+                aria-label="PlotTool views"
+                className="inline-flex rounded-md border border-border/70 bg-secondary/25 p-1"
+                onKeyDown={(event) => {
+                  if (vm.selectPlotToolViewForKey(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
+              >
+                {vm.plotToolTabs.map((tab) => (
+                  <Button
+                    key={tab.id}
+                    type="button"
+                    variant={tab.buttonVariant}
+                    role="tab"
+                    aria-selected={tab.selected}
+                    aria-controls={tab.panelId}
+                    aria-label={tab.ariaLabel}
+                    tabIndex={tab.tabIndex}
+                    id={tab.tabId}
+                    onClick={() => vm.selectPlotToolView(tab.id)}
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -129,6 +133,14 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
               <p className="mt-1 text-xs text-muted-foreground">{vm.selectionDetail}</p>
             </div>
             <div className="flex flex-wrap gap-2">
+              {evidenceRunId ? (
+                <Button asChild variant="outline">
+                  <Link to={`/reporting/evidence?subjectKind=strategy-run&subjectId=${encodeURIComponent(evidenceRunId)}`}>
+                    <Network className="h-4 w-4" />
+                    Evidence packet
+                  </Link>
+                </Button>
+              ) : null}
               <Button variant="secondary" onClick={() => void vm.loadPromotionHistory()} disabled={!vm.canLoadPromotionHistory}>
                 {vm.promotionHistoryButtonLabel}
               </Button>

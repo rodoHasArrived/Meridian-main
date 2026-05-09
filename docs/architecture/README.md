@@ -51,6 +51,7 @@ This directory contains documentation about the system's design, architectural d
 | [WPF Shell MVVM](wpf-shell-mvvm.md) | Shell composition and MVVM direction for the desktop client |
 | [WPF Workstation Shell UX](wpf-workstation-shell-ux.md) | Shared workstation-shell UX pattern for WPF research, trading, data operations, and governance |
 | [Workflow Library](workflow-library.md) | Reusable workstation workflow and action registry architecture |
+| [Evidence Workflow Fabric](evidence-workflow-fabric.md) | Cross-workflow evidence packets, lineage, validation, and manifest-only export architecture |
 | [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md) | Target run model, workspace IA, and migration phases |
 | [Evidence-Backed Investment Operations Plan](../plans/evidence-backed-investment-operations-plan.md) | Current product-category filter and documentation archive rule |
 | [MCP Server](layer-boundaries.md#dependency-graph) | MCP tool server — dependency position and boundary rules |

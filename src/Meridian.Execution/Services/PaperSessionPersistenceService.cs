@@ -623,7 +623,21 @@ public sealed class PaperSessionPersistenceService
         }
 
         var dtos = SerializeLedgerJournal(ledger, session.SessionId);
-        await _store.SaveLedgerJournalAsync(session.SessionId, dtos, ct).ConfigureAwait(false);
+        try
+        {
+            await _store.SaveLedgerJournalAsync(session.SessionId, dtos, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to persist ledger journal snapshot for paper session {SessionId}; continuing with in-memory ledger state",
+                session.SessionId);
+        }
     }
 
     private static Meridian.Ledger.Ledger? ReconstructLedger(IReadOnlyList<PersistedJournalEntryDto> dtos)

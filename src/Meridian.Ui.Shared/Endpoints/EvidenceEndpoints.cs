@@ -138,7 +138,7 @@ public static class EvidenceEndpoints
 
     private static async Task<EvidencePacketExportRequest> ReadExportRequestAsync(HttpContext context)
     {
-        if (context.Request.ContentLength is null or 0)
+        if (context.Request.ContentLength == 0)
         {
             return new EvidencePacketExportRequest(null, null);
         }

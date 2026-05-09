@@ -1,5 +1,5 @@
-import { AlertCircle, BookCheck, CheckCircle2, Landmark, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { AlertCircle, BookCheck, CheckCircle2, Landmark, Network, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
@@ -253,6 +253,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               <GovernanceValue label="Last updated" value={selectedReconciliation.lastUpdated} />
               <div className="rounded-lg border border-border/70 bg-background/70 p-4 text-slate-200">
                 {buildReconciliationNarrative(selectedReconciliation)}
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Button asChild variant="secondary">
+                  <Link to={`/reporting/evidence?subjectKind=reconciliation-review&subjectId=${encodeURIComponent(selectedReconciliation.runId)}`}>
+                    <Network className="h-4 w-4" />
+                    Evidence packet
+                  </Link>
+                </Button>
               </div>
               {reconciliation.detailActions ? (
                 <div className="flex flex-wrap gap-3">

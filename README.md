@@ -59,11 +59,14 @@ The primary runnable project. Supports multiple modes via `--mode <mode>`:
 | `--symbols` / `--symbols-add` / `--symbols-remove` | Symbol management commands |
 | `--dry-run` | Validate configuration and connectivity without side effects |
 | `--quickstart` | Interactive first-run bootstrap wizard |
+| `ledger -f <journal-file> <report>` | Read a Ledger-compatible journal and print balance/register/accounts reports |
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --help
+dotnet run --project src/Meridian/Meridian.csproj -- --help ledger
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2024-01-01 --backfill-to 2024-12-31
+dotnet run --project src/Meridian/Meridian.csproj -- ledger -f ledger.dat balance
 ```
 
 When you launch the desktop-local API host from the repository root, Meridian binds to `http://localhost:8080` by default, so you do not need to `cd` into `src/Meridian` first.
@@ -89,6 +92,11 @@ npm run build
 set, or `http://localhost:8080` by default. When the local API host is not running, development
 builds fall back to typed fixture data for the initial dashboard bootstrap GETs only; command and
 mutation workflows still require the Meridian API.
+
+Current web evidence support includes the `/reporting/evidence` workbench plus shared evidence
+APIs for subjects, packet/graph inspection, validation, and manifest export. Treat that as
+browser-visible support for run, readiness, reconciliation, report-pack, provider-trust, and export
+evidence, not as completion of the full Evidence Vault or report-line provenance roadmap.
 
 ### MCP server (minimal) — `src/Meridian.Mcp`
 

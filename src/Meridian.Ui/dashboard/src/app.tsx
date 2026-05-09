@@ -25,6 +25,7 @@ import { legacyWorkspaceRedirect } from "@/lib/workspace";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
 import { LiveQuotesScreen } from "@/screens/live-quotes-screen";
 import { WatchlistScreen } from "@/screens/watchlist-screen";
+import { EvidenceWorkbenchScreen } from "@/screens/evidence-workbench-screen";
 import { GovernanceScreen } from "@/screens/governance-screen";
 import { OperatorReadinessConsole } from "@/screens/operator-readiness-console";
 import { OverviewScreen } from "@/screens/overview-screen";
@@ -241,6 +242,7 @@ export function App() {
                   />
                 )} />
                 <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />
+                <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
                 <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
                 <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                 <Route path="/strategy/*" element={<ResearchScreen data={research} />} />

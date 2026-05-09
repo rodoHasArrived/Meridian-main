@@ -8,10 +8,18 @@ import type {
   CorporateAction,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
+  EvidenceCompleteness,
+  EvidenceGraph,
+  EvidencePacket,
+  EvidencePacketExportRequest,
+  EvidencePacketExportResponse,
+  EvidenceSubject,
+  EvidenceTemplate,
   ExportAnalysisResult,
   ExecutionControlSnapshot,
   ExecutionAuditEntry,
   GovernanceWorkspaceResponse,
+  LedgerJournalLine,
   LedgerSummary,
   LedgerTrialBalanceLine,
   MetricSnapshot,
@@ -227,6 +235,43 @@ export function getWorkflowLibrary() {
 
 export function getWorkflowPresets() {
   return getJson<WorkflowPresetLibrary>("/api/workstation/workflows/presets");
+}
+
+export function getEvidenceSubjects() {
+  return getJson<EvidenceSubject[]>("/api/workstation/evidence/subjects");
+}
+
+export function getEvidencePacket(subjectKind: string, subjectId: string) {
+  return getJson<EvidencePacket>(
+    `/api/workstation/evidence/subjects/${encodeURIComponent(subjectKind)}/${encodeURIComponent(subjectId)}/packet`
+  );
+}
+
+export function getEvidenceGraph(subjectKind: string, subjectId: string) {
+  return getJson<EvidenceGraph>(
+    `/api/workstation/evidence/subjects/${encodeURIComponent(subjectKind)}/${encodeURIComponent(subjectId)}/graph`
+  );
+}
+
+export function validateEvidencePacket(subjectKind: string, subjectId: string) {
+  return postJson<EvidenceCompleteness>(
+    `/api/workstation/evidence/subjects/${encodeURIComponent(subjectKind)}/${encodeURIComponent(subjectId)}/validate`
+  );
+}
+
+export function exportEvidenceManifest(
+  subjectKind: string,
+  subjectId: string,
+  request: EvidencePacketExportRequest = { includeWarnings: true }
+) {
+  return postJson<EvidencePacketExportResponse>(
+    `/api/workstation/evidence/subjects/${encodeURIComponent(subjectKind)}/${encodeURIComponent(subjectId)}/export-manifest`,
+    request
+  );
+}
+
+export function getEvidenceTemplates() {
+  return getJson<EvidenceTemplate[]>("/api/workstation/evidence/templates");
 }
 
 export function saveWorkflowPreset(request: WorkflowPresetSaveRequest) {
@@ -458,7 +503,7 @@ export function getRunTrialBalance(runId: string, accountType?: string) {
 
 export function getRunLedgerJournal(runId: string, options: { from?: string; to?: string } = {}) {
   const params = queryString(options);
-  return getJson<unknown>(`/api/workstation/runs/${encodeURIComponent(runId)}/ledger/journal${params}`);
+  return getJson<LedgerJournalLine[]>(`/api/workstation/runs/${encodeURIComponent(runId)}/ledger/journal${params}`);
 }
 
 export function getRunContinuity(runId: string) {

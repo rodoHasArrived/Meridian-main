@@ -1,4 +1,4 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, Network, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -1660,6 +1660,12 @@ function AcceptanceStatusCard({
           <div className="flex flex-wrap items-center gap-2">
             <Button asChild size="sm" variant="secondary">
               <Link to="/trading/readiness">Open console</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/reporting/evidence?subjectKind=paper-readiness&subjectId=current">
+                <Network className="h-4 w-4" />
+                Evidence
+              </Link>
             </Button>
             <Button
               size="sm"

@@ -1,7 +1,7 @@
 import type { KeyboardEvent } from "react";
 import { useEffect, useRef } from "react";
-import { BriefcaseBusiness, LineChart, Wallet } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { BriefcaseBusiness, LineChart, Network, Wallet } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -592,6 +592,14 @@ export function PortfolioScreen({
                       <Badge variant={vm.selectedRun.statusBadgeVariant}>{vm.selectedRun.statusBadgeLabel}</Badge>
                     </div>
                     <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.selectedRun.statusDetail}</p>
+                    <div className="mt-4">
+                      <Button asChild size="sm" variant="outline">
+                        <Link to={`/reporting/evidence?subjectKind=strategy-run&subjectId=${encodeURIComponent(vm.selectedRun.id)}`}>
+                          <Network className="h-4 w-4" />
+                          Open evidence packet
+                        </Link>
+                      </Button>
+                    </div>
                     <dl className="mt-4 grid gap-2">
                       {vm.selectedRun.fields.map((field) => (
                         <div

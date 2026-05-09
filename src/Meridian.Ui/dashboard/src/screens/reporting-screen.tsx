@@ -1,5 +1,5 @@
-import { FileText, Landmark } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { FileText, Landmark, Network } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,6 +45,12 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link to="/reporting/evidence?subjectKind=report-pack&subjectId=current">
+              <Network className="h-4 w-4" aria-hidden="true" />
+              Evidence
+            </Link>
+          </Button>
           {vm.workbenchChips.map((chip) => (
             <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
           ))}

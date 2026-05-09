@@ -313,6 +313,111 @@ export interface WorkflowPresetSaveRequest {
   isPinned: boolean;
 }
 
+export type EvidenceStatus = "Unknown" | "Ready" | "ReviewRequired" | "Blocked" | "Stale" | "Missing";
+
+export interface EvidenceSubject {
+  subjectId: string;
+  subjectKind: string;
+  label: string;
+  workspace: string;
+  route: string | null;
+  pageTag: string;
+}
+
+export interface EvidenceFreshness {
+  asOf: string | null;
+  isStale: boolean;
+  reason: string | null;
+}
+
+export interface EvidenceArtifactRef {
+  artifactId: string;
+  kind: string;
+  path: string | null;
+  route: string | null;
+  generatedAt: string;
+  hash: string | null;
+  retained: boolean;
+}
+
+export interface EvidenceNode {
+  evidenceId: string;
+  subject: EvidenceSubject;
+  kind: string;
+  status: EvidenceStatus;
+  freshness: EvidenceFreshness;
+  sourceSystem: string;
+  summary: string;
+  artifactRefs: EvidenceArtifactRef[];
+  relatedWorkItemIds: string[];
+}
+
+export interface EvidenceEdge {
+  fromId: string;
+  toId: string;
+  relationship: string;
+  reason: string;
+}
+
+export interface EvidenceCompleteness {
+  score: number;
+  status: EvidenceStatus;
+  requiredIds: string[];
+  readyIds: string[];
+  missingIds: string[];
+  staleIds: string[];
+  blockingWorkItemIds: string[];
+}
+
+export interface EvidencePacket {
+  subject: EvidenceSubject;
+  generatedAt: string;
+  nodes: EvidenceNode[];
+  edges: EvidenceEdge[];
+  completeness: EvidenceCompleteness;
+  actions: WorkflowAction[];
+  warnings: string[];
+}
+
+export interface EvidenceGraph {
+  subject: EvidenceSubject;
+  generatedAt: string;
+  nodes: EvidenceNode[];
+  edges: EvidenceEdge[];
+  warnings: string[];
+}
+
+export interface EvidenceTemplateExportSettings {
+  schemaVersion: number;
+  manifestOnly: boolean;
+  defaultFormat: string;
+}
+
+export interface EvidenceTemplate {
+  workflowId: string;
+  requiredEvidenceKinds: string[];
+  optionalEvidenceKinds: string[];
+  noOrphanRule: boolean;
+  exportSettings: EvidenceTemplateExportSettings;
+}
+
+export interface EvidencePacketExportRequest {
+  requestedBy?: string | null;
+  reason?: string | null;
+  includeWarnings?: boolean;
+}
+
+export interface EvidencePacketExportResponse {
+  subjectKind: string;
+  subjectId: string;
+  generatedAt: string;
+  manifestPath: string;
+  manifestRoute: string;
+  evidenceCount: number;
+  warningCount: number;
+  retained: boolean;
+}
+
 export interface TradingAcceptanceGate {
   gateId: string;
   label: string;
