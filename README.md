@@ -6717,7 +6717,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── command-palette.view-model.ts
 │   │   │   │   │   │   ├── historical-chart.test.tsx
 │   │   │   │   │   │   ├── historical-chart.tsx
+│   │   │   │   │   │   ├── mega-menu.test.tsx
 │   │   │   │   │   │   ├── mega-menu.tsx
+│   │   │   │   │   │   ├── mega-menu.view-model.test.ts
 │   │   │   │   │   │   ├── mega-menu.view-model.ts
 │   │   │   │   │   │   ├── metric-card.test.tsx
 │   │   │   │   │   │   ├── metric-card.tsx
@@ -6786,6 +6788,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── portfolio-screen.view-model.ts
 │   │   │   │   │   ├── quant-lab-screen.test.tsx
 │   │   │   │   │   ├── quant-lab-screen.tsx
+│   │   │   │   │   ├── quant-lab-screen.view-model.test.ts
+│   │   │   │   │   ├── quant-lab-screen.view-model.ts
 │   │   │   │   │   ├── reporting-screen.test.tsx
 │   │   │   │   │   ├── reporting-screen.tsx
 │   │   │   │   │   ├── reporting-screen.view-model.test.ts
@@ -6803,7 +6807,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
 │   │   │   │   │   ├── trading-screen.view-model.ts
 │   │   │   │   │   ├── watchlist-screen.test.tsx
-│   │   │   │   │   └── watchlist-screen.tsx
+│   │   │   │   │   ├── watchlist-screen.tsx
+│   │   │   │   │   ├── watchlist-screen.view-model.test.ts
+│   │   │   │   │   └── watchlist-screen.view-model.ts
 │   │   │   │   ├── styles
 │   │   │   │   │   └── index.css
 │   │   │   │   ├── test
@@ -6819,7 +6825,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-DbBLfYyJ.css
+│   │           │   ├── index-BpfhB5aD.css
+│   │           │   ├── index-Clb77-XQ.js
 │   │           │   └── index-hpE42RgI.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
@@ -7336,6 +7343,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── QuantScriptViewModel.cs
 │       │   ├── QuoteFloatViewModel.cs
 │       │   ├── ResearchWorkspaceShellViewModel.cs
+│       │   ├── RetentionAssuranceViewModel.cs
 │       │   ├── RunMatViewModel.cs
 │       │   ├── RunRiskViewModel.cs
 │       │   ├── ScatterAnalysisViewModel.cs
@@ -8264,6 +8272,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ProviderHealthViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── ResearchWorkspaceShellViewModelTests.cs
+│   │   │   ├── RetentionAssuranceViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   ├── ScheduleManagerViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
@@ -8342,6 +8351,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-667 directories, 7500 files
+667 directories, 7509 files
 ```
 <!-- readme-tree end -->
