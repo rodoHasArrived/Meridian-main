@@ -6753,6 +6753,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │       └── tooltip.tsx
 │   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── hooks
+│   │   │   │   │   ├── use-workstation-data.test.ts
 │   │   │   │   │   └── use-workstation-data.ts
 │   │   │   │   ├── lib
 │   │   │   │   │   ├── api.trading.test.ts
@@ -6774,6 +6775,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── governance-screen.view-model.ts
 │   │   │   │   │   ├── live-quotes-screen.test.tsx
 │   │   │   │   │   ├── live-quotes-screen.tsx
+│   │   │   │   │   ├── live-quotes-screen.view-model.ts
 │   │   │   │   │   ├── operator-readiness-console.test.tsx
 │   │   │   │   │   ├── operator-readiness-console.tsx
 │   │   │   │   │   ├── operator-readiness-console.view-model.test.ts
@@ -6826,8 +6828,7 @@ Use these documents together when planning or implementing new work:
 │   │       └── workstation
 │   │           ├── assets
 │   │           │   ├── index-BpfhB5aD.css
-│   │           │   ├── index-Clb77-XQ.js
-│   │           │   └── index-hpE42RgI.js
+│   │           │   └── index-DeAE2zbq.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8351,6 +8352,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-667 directories, 7509 files
+667 directories, 7510 files
 ```
 <!-- readme-tree end -->
