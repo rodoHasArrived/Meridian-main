@@ -6800,6 +6800,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
 │   │   │   │   │   ├── trading-screen.view-model.ts
+│   │   │   │   │   ├── watchlist-screen.test.tsx
 │   │   │   │   │   └── watchlist-screen.tsx
 │   │   │   │   ├── styles
 │   │   │   │   │   └── index.css
@@ -6816,8 +6817,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-Dpp_InbW.js
-│   │           │   └── index-vqlNsJUc.css
+│   │           │   ├── index-Cz7c8Bnx.css
+│   │           │   └── index-D4iZk4Pt.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8338,6 +8339,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-667 directories, 7496 files
+667 directories, 7497 files
 ```
 <!-- readme-tree end -->
