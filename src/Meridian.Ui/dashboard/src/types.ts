@@ -1417,6 +1417,29 @@ export interface QuotesResponse {
   timestamp: string;
 }
 
+export interface QuotesSnapshotItem {
+  symbol: string;
+  timestamp: string;
+  bidPrice: number;
+  bidSize: number;
+  askPrice: number;
+  askSize: number;
+  midPrice: number | null;
+  spread: number | null;
+  lastPrice: number | null;
+  lastSize: number | null;
+  lastTradeTimestamp: string | null;
+  sequenceNumber: number;
+  streamId: string | null;
+  venue: string | null;
+}
+
+export interface QuotesSnapshotResponse {
+  timestamp: string;
+  count: number;
+  quotes: QuotesSnapshotItem[];
+}
+
 export interface TradeDataResponse {
   symbol: string;
   timestamp: string;

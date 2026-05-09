@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Activity, AlertCircle, LineChart, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -7,11 +7,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import {
   addSymbol as addSymbolApi,
+  getLiveQuotesSnapshot,
   getSymbols,
   getSymbolsStatistics,
   removeSymbol as removeSymbolApi
 } from "@/lib/api";
-import type { SymbolRecord, SymbolStatistics } from "@/types";
+import type { QuotesSnapshotItem, SymbolRecord, SymbolStatistics } from "@/types";
+
+const QUOTE_POLL_INTERVAL_MS = 2000;
+const QUOTE_STALE_THRESHOLD_MS = 15_000;
+
+function formatPrice(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) return "—";
+  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+}
+
+function formatSize(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) return "—";
+  return value.toLocaleString();
+}
+
+function formatSpread(spread: number | null | undefined, mid: number | null | undefined): string {
+  if (spread === null || spread === undefined || Number.isNaN(spread)) return "—";
+  if (mid && mid > 0) {
+    const bps = (spread / mid) * 10_000;
+    return `${spread.toFixed(2)} (${bps.toFixed(1)} bps)`;
+  }
+  return spread.toFixed(2);
+}
 
 function formatRelative(iso: string | null): string {
   if (!iso) return "Never";
@@ -53,6 +76,11 @@ export function WatchlistScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [removing, setRemoving] = useState<Record<string, boolean>>({});
+  const [quotes, setQuotes] = useState<Record<string, QuotesSnapshotItem>>({});
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [quoteFetchedAt, setQuoteFetchedAt] = useState<number | null>(null);
+  const previousMidRef = useRef<Record<string, number>>({});
+  const inFlightRef = useRef(false);
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
@@ -75,6 +103,45 @@ export function WatchlistScreen() {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  const fetchQuotes = useCallback(async (subscribed: readonly string[]) => {
+    if (inFlightRef.current || subscribed.length === 0) return;
+    inFlightRef.current = true;
+    try {
+      const response = await getLiveQuotesSnapshot(subscribed);
+      const next: Record<string, QuotesSnapshotItem> = {};
+      for (const q of response.quotes) next[q.symbol.toUpperCase()] = q;
+      setQuotes((current) => {
+        const prev: Record<string, number> = {};
+        for (const [sym, q] of Object.entries(current)) {
+          if (q.midPrice !== null && q.midPrice !== undefined) prev[sym] = q.midPrice;
+        }
+        previousMidRef.current = prev;
+        return next;
+      });
+      setQuoteFetchedAt(Date.now());
+      setQuoteError(null);
+    } catch (err) {
+      setQuoteError((err as Error)?.message ?? "Failed to load live quotes");
+    } finally {
+      inFlightRef.current = false;
+    }
+  }, []);
+
+  const subscribedSymbols = useMemo(() => {
+    if (!symbols) return [] as string[];
+    return symbols.map((s) => s.symbol);
+  }, [symbols]);
+
+  useEffect(() => {
+    if (subscribedSymbols.length === 0) {
+      setQuotes({});
+      return;
+    }
+    void fetchQuotes(subscribedSymbols);
+    const id = window.setInterval(() => void fetchQuotes(subscribedSymbols), QUOTE_POLL_INTERVAL_MS);
+    return () => window.clearInterval(id);
+  }, [fetchQuotes, subscribedSymbols]);
 
   const handleAdd = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -183,64 +250,116 @@ export function WatchlistScreen() {
           ) : sortedSymbols.length === 0 ? (
             <p className="text-sm text-muted-foreground">No symbols configured. Add one above to start collecting live data.</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
-                    <th className="px-2 py-2 font-medium">Symbol</th>
-                    <th className="px-2 py-2 font-medium">Status</th>
-                    <th className="px-2 py-2 font-medium">Provider</th>
-                    <th className="px-2 py-2 font-medium">Last event</th>
-                    <th className="px-2 py-2 font-medium text-right">Events</th>
-                    <th className="px-2 py-2 font-medium">History</th>
-                    <th className="px-2 py-2" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedSymbols.map((row) => {
-                    const isRemoving = removing[row.symbol] === true;
-                    return (
-                      <tr key={row.symbol} className="border-b border-border/30">
-                        <td className="px-2 py-1.5 font-mono font-semibold">{row.symbol}</td>
-                        <td className="px-2 py-1.5">
-                          <Badge variant={statusVariant(row.status)} dot>{row.status}</Badge>
-                        </td>
-                        <td className="px-2 py-1.5 text-muted-foreground">{row.provider ?? "—"}</td>
-                        <td className="px-2 py-1.5 text-muted-foreground">{formatRelative(row.lastEventAt)}</td>
-                        <td className="px-2 py-1.5 text-right font-mono">{row.eventCount.toLocaleString()}</td>
-                        <td className="px-2 py-1.5 text-muted-foreground">
-                          {row.hasHistoricalData ? <span className="text-positive">Yes</span> : "—"}
-                        </td>
-                        <td className="px-2 py-1.5 text-right">
-                          <div className="flex justify-end gap-1.5">
-                            <Button asChild variant="outline" size="sm">
-                              <Link
-                                to={`/data/quotes?symbol=${encodeURIComponent(row.symbol)}`}
-                                aria-label={`View live quotes for ${row.symbol}`}
+            <>
+              <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground" data-testid="watchlist-quote-status">
+                <span aria-live="polite">
+                  {quoteFetchedAt
+                    ? `Live prices · updated ${formatRelative(new Date(quoteFetchedAt).toISOString())}`
+                    : quoteError
+                      ? "Live prices unavailable"
+                      : "Live prices · waiting for first tick…"}
+                </span>
+                {quoteError ? (
+                  <span className="flex items-center gap-1 text-warning">
+                    <AlertCircle className="h-3 w-3" aria-hidden="true" />
+                    {quoteError}
+                  </span>
+                ) : null}
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                      <th className="px-2 py-2 font-medium">Symbol</th>
+                      <th className="px-2 py-2 font-medium">Status</th>
+                      <th className="px-2 py-2 font-medium text-right">Bid × Size</th>
+                      <th className="px-2 py-2 font-medium text-right">Ask × Size</th>
+                      <th className="px-2 py-2 font-medium text-right">Last</th>
+                      <th className="px-2 py-2 font-medium text-right">Spread</th>
+                      <th className="px-2 py-2 font-medium">Quote age</th>
+                      <th className="px-2 py-2" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedSymbols.map((row) => {
+                      const isRemoving = removing[row.symbol] === true;
+                      const quote = quotes[row.symbol.toUpperCase()];
+                      const previousMid = previousMidRef.current[row.symbol.toUpperCase()];
+                      const lastTone = quote && quote.lastPrice !== null && previousMid !== undefined
+                        ? quote.lastPrice > previousMid
+                          ? "text-positive"
+                          : quote.lastPrice < previousMid
+                            ? "text-danger"
+                            : "text-foreground"
+                        : "text-foreground";
+                      const quoteAgeMs = quote ? Date.now() - new Date(quote.timestamp).getTime() : null;
+                      const isStale = quoteAgeMs !== null && quoteAgeMs > QUOTE_STALE_THRESHOLD_MS;
+                      return (
+                        <tr key={row.symbol} className="border-b border-border/30">
+                          <td className="px-2 py-1.5 font-mono font-semibold">{row.symbol}</td>
+                          <td className="px-2 py-1.5">
+                            <Badge variant={statusVariant(row.status)} dot>{row.status}</Badge>
+                          </td>
+                          <td className="px-2 py-1.5 text-right font-mono">
+                            {quote ? (
+                              <span className="text-foreground">
+                                {formatPrice(quote.bidPrice)}
+                                <span className="ml-1 text-xs text-muted-foreground">× {formatSize(quote.bidSize)}</span>
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </td>
+                          <td className="px-2 py-1.5 text-right font-mono">
+                            {quote ? (
+                              <span className="text-foreground">
+                                {formatPrice(quote.askPrice)}
+                                <span className="ml-1 text-xs text-muted-foreground">× {formatSize(quote.askSize)}</span>
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </td>
+                          <td className={`px-2 py-1.5 text-right font-mono ${lastTone}`}>
+                            {quote ? formatPrice(quote.lastPrice) : <span className="text-muted-foreground">—</span>}
+                          </td>
+                          <td className="px-2 py-1.5 text-right font-mono text-muted-foreground">
+                            {quote ? formatSpread(quote.spread, quote.midPrice) : "—"}
+                          </td>
+                          <td className={`px-2 py-1.5 ${isStale ? "text-warning" : "text-muted-foreground"}`}>
+                            {quote ? formatRelative(quote.timestamp) : "Never"}
+                          </td>
+                          <td className="px-2 py-1.5 text-right">
+                            <div className="flex justify-end gap-1.5">
+                              <Button asChild variant="outline" size="sm">
+                                <Link
+                                  to={`/data/quotes?symbol=${encodeURIComponent(row.symbol)}`}
+                                  aria-label={`View live quotes for ${row.symbol}`}
+                                >
+                                  <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+                                  <span className="ml-1">Quote</span>
+                                </Link>
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={isRemoving}
+                                onClick={() => void handleRemove(row.symbol)}
+                                aria-label={`Remove ${row.symbol} from watchlist`}
                               >
-                                <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
-                                <span className="ml-1">Quote</span>
-                              </Link>
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              disabled={isRemoving}
-                              onClick={() => void handleRemove(row.symbol)}
-                              aria-label={`Remove ${row.symbol} from watchlist`}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                              <span className="ml-1">{isRemoving ? "Removing…" : "Remove"}</span>
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span className="ml-1">{isRemoving ? "Removing…" : "Remove"}</span>
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

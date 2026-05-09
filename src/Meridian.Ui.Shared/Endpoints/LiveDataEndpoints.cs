@@ -101,6 +101,83 @@ public static class LiveDataEndpoints
         .Produces(200)
         .Produces(503);
 
+        // GET /api/data/quotes-snapshot — latest BBO (and last trade) for every tracked symbol
+        // in a single request. Optional ?symbols=AAPL,MSFT filters the result.
+        group.MapGet(UiApiRoutes.DataQuotesSnapshot, (HttpContext ctx, string? symbols) =>
+        {
+            var quoteCollector = ctx.RequestServices.GetService<QuoteCollector>();
+            if (quoteCollector is null)
+            {
+                return Results.Json(
+                    new { error = "Quote collector not available" },
+                    jsonOptions,
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var tradeCollector = ctx.RequestServices.GetService<TradeDataCollector>();
+            var snapshot = quoteCollector.Snapshot();
+
+            HashSet<string>? filter = null;
+            if (!string.IsNullOrWhiteSpace(symbols))
+            {
+                filter = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var part in symbols.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    if (part.Length > 0) filter.Add(part);
+                }
+            }
+
+            var items = new List<QuotesSnapshotItem>(snapshot.Count);
+            foreach (var (symbol, bbo) in snapshot)
+            {
+                if (filter is not null && !filter.Contains(symbol))
+                    continue;
+
+                decimal? lastPrice = null;
+                long? lastSize = null;
+                DateTimeOffset? lastTs = null;
+                if (tradeCollector is not null)
+                {
+                    var recent = tradeCollector.GetRecentTrades(symbol, limit: 1);
+                    if (recent.Count > 0)
+                    {
+                        var last = recent[0];
+                        lastPrice = last.Price;
+                        lastSize = last.Size;
+                        lastTs = last.Timestamp;
+                    }
+                }
+
+                items.Add(new QuotesSnapshotItem(
+                    Symbol: bbo.Symbol,
+                    Timestamp: bbo.Timestamp,
+                    BidPrice: bbo.BidPrice,
+                    BidSize: bbo.BidSize,
+                    AskPrice: bbo.AskPrice,
+                    AskSize: bbo.AskSize,
+                    MidPrice: bbo.MidPrice,
+                    Spread: bbo.Spread,
+                    LastPrice: lastPrice,
+                    LastSize: lastSize,
+                    LastTradeTimestamp: lastTs,
+                    SequenceNumber: bbo.SequenceNumber,
+                    StreamId: bbo.StreamId,
+                    Venue: bbo.Venue));
+            }
+
+            items.Sort(static (a, b) => string.Compare(a.Symbol, b.Symbol, StringComparison.OrdinalIgnoreCase));
+
+            var response = new QuotesSnapshotResponse(
+                Timestamp: DateTimeOffset.UtcNow,
+                Count: items.Count,
+                Quotes: items);
+
+            return Results.Json(response, jsonOptions);
+        })
+        .WithName("GetQuotesSnapshot")
+        .Produces(200)
+        .Produces(503);
+
         // GET /api/data/orderbook/{symbol} — full order book snapshot
         group.MapGet(UiApiRoutes.DataOrderbook, (string symbol, int? levels, HttpContext ctx) =>
         {

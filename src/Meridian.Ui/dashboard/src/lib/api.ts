@@ -732,6 +732,12 @@ export function getLiveOrderbook(symbol: string, levels = 10) {
   return getJson<import("@/types").OrderBookResponse>(`/api/data/orderbook/${encodeURIComponent(symbol)}?levels=${levels}`);
 }
 
+export function getLiveQuotesSnapshot(symbols?: readonly string[]) {
+  const trimmed = symbols?.map((s) => s.trim()).filter((s) => s.length > 0) ?? [];
+  const query = trimmed.length > 0 ? `?symbols=${encodeURIComponent(trimmed.join(","))}` : "";
+  return getJson<import("@/types").QuotesSnapshotResponse>(`/api/data/quotes-snapshot${query}`);
+}
+
 // --- Quant Lab ---
 
 export function getQuantTemplates() {
