@@ -13,9 +13,10 @@ describe("CommandPalette", () => {
     expect(screen.getByText("Route to a canonical operator workspace. Current: Portfolio.")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "7 workspace commands" })).toBeInTheDocument();
     expect(screen.getByText("Esc to close")).toBeInTheDocument();
+    expect(screen.getByRole("searchbox", { name: "Search command palette" })).toHaveFocus();
+    expect(screen.getByText("7 commands available")).toBeInTheDocument();
     expect(screen.getByLabelText("Route /portfolio")).toBeInTheDocument();
     expect(screen.getByLabelText("Portfolio, current workspace")).toHaveAttribute("aria-current", "page");
-    expect(screen.getByLabelText("Portfolio, current workspace")).toHaveFocus();
   });
 
   it("closes when Escape is pressed", async () => {
@@ -55,6 +56,29 @@ describe("CommandPalette", () => {
     await user.click(screen.getByLabelText("Open Settings workspace"));
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("filters command results from the search field", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, { initialEntries: ["/trading"] });
+
+    await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "settings");
+
+    expect(screen.getByText("1 of 7 commands match")).toBeInTheDocument();
+    expect(screen.getByLabelText("Open Settings workspace")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Trading, current workspace")).not.toBeInTheDocument();
+  });
+
+  it("shows an empty state when command filtering has no matches", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, { initialEntries: ["/trading"] });
+
+    await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "missing command");
+
+    expect(screen.getByText("0 of 7 commands match")).toBeInTheDocument();
+    expect(screen.getByText("No matching commands")).toBeInTheDocument();
   });
 
   it("closes when the backdrop is selected", () => {

@@ -3,6 +3,7 @@ import {
   getCorporateActions,
   getReconciliationBreakQueue,
   getReconciliationCalibrationSummary,
+  getRunReviewPacketPath,
   getRunTrialBalance,
   getSecurityConflicts,
   getSecurityIdentity,
@@ -37,6 +38,7 @@ import type {
 
 export type GovernanceWorkstream = "ledger" | "reconciliation" | "security-master" | "reporting";
 export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
+export type ReconciliationBreakResolutionStatus = ResolveReconciliationBreakRequest["status"];
 export type SecurityConflictResolution = ResolveConflictRequest["resolution"];
 
 export interface SecurityMasterServices {
@@ -216,6 +218,41 @@ export interface ReconciliationBreakQueueState {
   errorText: string | null;
   actionErrorText: string | null;
   statusAnnouncement: string;
+}
+
+export interface ReconciliationResolveDialogState {
+  breakId: string;
+  status: ReconciliationBreakResolutionStatus;
+  rationale: string;
+  inputId: string;
+  helpId: string;
+  formAriaLabel: string;
+  label: string;
+  placeholder: string;
+  helpText: string;
+  submitLabel: string;
+  submitAriaLabel: string;
+  cancelAriaLabel: string;
+  isSubmitDisabled: boolean;
+}
+
+export interface ReconciliationResolveDialogViewModel {
+  active: ReconciliationResolveDialogState | null;
+  open: (breakId: string, status: ReconciliationBreakResolutionStatus) => void;
+  close: () => void;
+  updateRationale: (value: string) => void;
+  submit: () => Promise<void>;
+  isOpenFor: (breakId: string) => boolean;
+}
+
+export interface ReconciliationDetailActionsViewModel {
+  breakChecklistTargetId: string;
+  breakChecklistHref: string;
+  breakChecklistLabel: string;
+  breakChecklistAriaLabel: string;
+  auditPacketHref: string;
+  auditPacketLabel: string;
+  auditPacketAriaLabel: string;
 }
 
 export type CashFlowEvidenceTone = "default" | "success" | "warning" | "danger";
@@ -892,12 +929,17 @@ export function useGovernanceReconciliationViewModel(
     () => buildCalibrationSummaryViewState(calibrationSummary, calibrationLoading, calibrationError),
     [calibrationSummary, calibrationLoading, calibrationError]
   );
+  const detailActions = useMemo(
+    () => selectedReconciliation ? buildReconciliationDetailActions(selectedReconciliation) : null,
+    [selectedReconciliation]
+  );
 
   return {
     reconciliationQueue,
     selectedRunId,
     selectedReconciliation,
     selectRun: setSelectedRunId,
+    detailActions,
     trialBalance,
     trialBalanceLoading,
     trialBalanceErrorText: trialBalanceError,
@@ -910,6 +952,52 @@ export function useGovernanceReconciliationViewModel(
     calibrationErrorText: calibrationError,
     calibrationView,
     ...breakQueueState
+  };
+}
+
+export function useReconciliationResolveDialogViewModel(
+  resolveBreak: (
+    breakId: string,
+    status: ReconciliationBreakResolutionStatus,
+    operatorRationale: string
+  ) => Promise<void>
+): ReconciliationResolveDialogViewModel {
+  const [dialog, setDialog] = useState<{ breakId: string; status: ReconciliationBreakResolutionStatus } | null>(null);
+  const [rationale, setRationale] = useState("");
+
+  const close = useCallback(() => {
+    setDialog(null);
+    setRationale("");
+  }, []);
+
+  const open = useCallback((breakId: string, status: ReconciliationBreakResolutionStatus) => {
+    setDialog({ breakId, status });
+    setRationale("");
+  }, []);
+
+  const submit = useCallback(async () => {
+    if (!dialog || !rationale.trim()) {
+      return;
+    }
+
+    await resolveBreak(dialog.breakId, dialog.status, rationale);
+    close();
+  }, [close, dialog, rationale, resolveBreak]);
+
+  const active = useMemo(
+    () => (dialog ? buildReconciliationResolveDialogState(dialog.breakId, dialog.status, rationale) : null),
+    [dialog, rationale]
+  );
+
+  const isOpenFor = useCallback((breakId: string) => dialog?.breakId === breakId, [dialog]);
+
+  return {
+    active,
+    open,
+    close,
+    updateRationale: setRationale,
+    submit,
+    isOpenFor
   };
 }
 
@@ -934,6 +1022,22 @@ export function resolveSelectedReconciliation(
   selectedRunId: string | null
 ) {
   return queue.find((item) => item.runId === selectedRunId) ?? queue[0] ?? null;
+}
+
+export function buildReconciliationDetailActions(
+  item: GovernanceWorkspaceResponse["reconciliationQueue"][number]
+): ReconciliationDetailActionsViewModel {
+  const openBreakLabel = `${item.openBreakCount} open break${item.openBreakCount === 1 ? "" : "s"}`;
+
+  return {
+    breakChecklistTargetId: "reconciliation-break-queue",
+    breakChecklistHref: "#reconciliation-break-queue",
+    breakChecklistLabel: "Open break checklist",
+    breakChecklistAriaLabel: `Open break checklist for ${item.strategyName}; ${openBreakLabel}`,
+    auditPacketHref: getRunReviewPacketPath(item.runId),
+    auditPacketLabel: "Review audit packet",
+    auditPacketAriaLabel: `Review audit packet for ${item.strategyName}`
+  };
 }
 
 export function buildSecuritySearchState({
@@ -1106,6 +1210,33 @@ export function buildReconciliationBreakQueueState({
       actionError: actionErrorText,
       breakCount: rows.length
     })
+  };
+}
+
+export function buildReconciliationResolveDialogState(
+  breakId: string,
+  status: ReconciliationBreakResolutionStatus,
+  rationale: string
+): ReconciliationResolveDialogState {
+  const command = status === "Resolved" ? "resolve" : "dismiss";
+  const commandLabel = status === "Resolved" ? "Resolve" : "Dismiss";
+  const inputId = `rationale-${breakId}`;
+  const helpId = `rationale-help-${breakId}`;
+
+  return {
+    breakId,
+    status,
+    rationale,
+    inputId,
+    helpId,
+    formAriaLabel: `${commandLabel} reconciliation break ${breakId}`,
+    label: `${commandLabel} rationale`,
+    placeholder: `Describe why this break is being ${command === "resolve" ? "resolved" : "dismissed"}...`,
+    helpText: "A rationale is required before this queue action can be submitted.",
+    submitLabel: `Confirm ${command}`,
+    submitAriaLabel: `Confirm ${command} for reconciliation break ${breakId}`,
+    cancelAriaLabel: `Cancel ${command} for reconciliation break ${breakId}`,
+    isSubmitDisabled: !rationale.trim()
   };
 }
 

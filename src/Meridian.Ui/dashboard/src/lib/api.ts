@@ -432,8 +432,8 @@ export function getRunTrialBalance(runId: string, accountType?: string) {
   return getJson<LedgerTrialBalanceLine[]>(`/api/workstation/runs/${encodeURIComponent(runId)}/ledger/trial-balance${params}`);
 }
 
-export function getRunLedgerJournal(runId: string, take?: number) {
-  const params = queryString({ take });
+export function getRunLedgerJournal(runId: string, options: { from?: string; to?: string } = {}) {
+  const params = queryString(options);
   return getJson<unknown>(`/api/workstation/runs/${encodeURIComponent(runId)}/ledger/journal${params}`);
 }
 
@@ -441,9 +441,12 @@ export function getRunContinuity(runId: string) {
   return getJson<unknown>(`/api/workstation/runs/${encodeURIComponent(runId)}/continuity`);
 }
 
+export function getRunReviewPacketPath(runId: string, fundAccountId?: string) {
+  return `/api/workstation/runs/${encodeURIComponent(runId)}/review-packet${queryString({ fundAccountId })}`;
+}
+
 export function getRunReviewPacket(runId: string, fundAccountId?: string) {
-  const params = queryString({ fundAccountId });
-  return getJson<unknown>(`/api/workstation/runs/${encodeURIComponent(runId)}/review-packet${params}`);
+  return getJson<unknown>(getRunReviewPacketPath(runId, fundAccountId));
 }
 
 export function getRunReconciliation(runId: string) {
@@ -458,7 +461,7 @@ export function getRunHistory(options: { mode?: string; status?: string; limit?:
   return getJson<unknown>(`/api/workstation/runs/history${queryString(options)}`);
 }
 
-export function getRunTimeline(options: { runId?: string; strategyId?: string; limit?: number } = {}) {
+export function getRunTimeline(options: { mode?: string; status?: string; strategyId?: string; limit?: number } = {}) {
   return getJson<unknown>(`/api/workstation/runs/timeline${queryString(options)}`);
 }
 

@@ -1207,8 +1207,8 @@ export function validateBackfillForm(form: BackfillFormState): string | null {
     return "Use YYYY-MM-DD for the To date.";
   }
 
-  const fromTime = form.from.trim() ? Date.parse(form.from) : null;
-  const toTime = form.to.trim() ? Date.parse(form.to) : null;
+  const fromTime = form.from.trim() ? parseStrictDateInput(form.from) : null;
+  const toTime = form.to.trim() ? parseStrictDateInput(form.to) : null;
   if (fromTime !== null && toTime !== null && fromTime > toTime) {
     return "From date must be before or equal to To date.";
   }
@@ -1236,8 +1236,30 @@ function parseSymbols(value: string): string[] {
 }
 
 function isValidDateInput(value: string): boolean {
+  return parseStrictDateInput(value) !== null;
+}
+
+function parseStrictDateInput(value: string): number | null {
   const trimmed = value.trim();
-  return /^\d{4}-\d{2}-\d{2}$/.test(trimmed) && !Number.isNaN(Date.parse(trimmed));
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+  if (!match) {
+    return null;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return date.getTime();
 }
 
 function formatProviderValue(value: string | null | undefined, fallback: string): string {
@@ -1379,6 +1401,10 @@ export function validateProviderSetupForm(form: ProviderSetupFormState): string 
     return `An endpoint URL is required for ${meta.label ?? "this provider"}.`;
   }
 
+  if (meta?.needsEndpoint && !isValidEndpointUrl(form.endpoint)) {
+    return `Enter a valid http or https endpoint URL for ${meta.label ?? "this provider"}.`;
+  }
+
   if (form.capabilities.length === 0) {
     return "Select at least one capability for this provider.";
   }
@@ -1444,6 +1470,15 @@ function buildProviderSetupStatusLabel(phase: ProviderSetupPhase, validationErro
   if (phase === "error") return "Provider setup encountered an error.";
   if (validationError) return validationError;
   return "Fill in provider details and click Configure provider.";
+}
+
+function isValidEndpointUrl(value: string): boolean {
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 function resolveProviderKindMeta(kind: ProviderSetupFormState["kind"]): ProviderKindMeta | undefined {

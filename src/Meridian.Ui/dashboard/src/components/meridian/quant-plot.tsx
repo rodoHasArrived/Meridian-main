@@ -277,6 +277,11 @@ interface ChartFrameProps {
 }
 
 function ChartFrame({ title, legend, children }: ChartFrameProps) {
+  const descriptionId = `quant-plot-${toPlotDomId(title)}-summary`;
+  const legendText = legend && legend.length > 0
+    ? ` Series: ${legend.map((entry) => entry.label).join(", ")}.`
+    : "";
+
   return (
     <figure className="rounded-md border border-border/60 bg-secondary/15 p-3">
       <figcaption className="mb-2 flex flex-wrap items-baseline justify-between gap-2 text-xs">
@@ -295,14 +300,23 @@ function ChartFrame({ title, legend, children }: ChartFrameProps) {
       <svg
         role="img"
         aria-label={title}
+        aria-describedby={descriptionId}
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         className="h-auto w-full"
         preserveAspectRatio="xMidYMid meet"
       >
         {children}
       </svg>
+      <p id={descriptionId} className="sr-only">
+        {title} chart rendered from Meridian run data.{legendText}
+      </p>
     </figure>
   );
+}
+
+function toPlotDomId(value: string): string {
+  const normalized = value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return normalized || "chart";
 }
 
 function YAxis({ bounds, format = formatTickValue, ticks = 4 }: { bounds: Bounds; format?: (v: number) => string; ticks?: number }) {

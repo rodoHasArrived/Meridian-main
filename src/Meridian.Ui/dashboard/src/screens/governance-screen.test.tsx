@@ -391,6 +391,12 @@ describe("GovernanceScreen", () => {
 
     expect(screen.getByText("Reconciliation Detail")).toBeInTheDocument();
     expect(screen.getByText(/Open reconciliation breaks remain on this run/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open break checklist for Paper Index Mean Reversion; 1 open break" }))
+      .toHaveAttribute("href", "#reconciliation-break-queue");
+    expect(screen.getByRole("link", { name: "Review audit packet for Paper Index Mean Reversion" }))
+      .toHaveAttribute("href", "/api/workstation/runs/run-42/review-packet");
+    expect(screen.getByRole("region", { name: "Reconciliation break checklist" }))
+      .toHaveAttribute("id", "reconciliation-break-queue");
 
     await user.click(screen.getByRole("button", { name: /Intraday Vol Carry/i }));
 

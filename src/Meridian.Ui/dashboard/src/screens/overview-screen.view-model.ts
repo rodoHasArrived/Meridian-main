@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSystemStatus } from "@/lib/api";
 import { WORKSPACES, workspacePath } from "@/lib/workspace";
 import type { MetricSnapshot, SessionInfo, SystemEventRecord, SystemOverviewResponse, WorkspaceKey } from "@/types";
@@ -176,6 +176,8 @@ export function useOverviewStatusViewModel(
   session: SessionInfo | null,
   fetchSystemStatus: OverviewRefreshFetcher = getSystemStatus
 ) {
+  const mountedRef = useRef(false);
+  const refreshRevisionRef = useRef(0);
   const [refreshing, setRefreshing] = useState(false);
   const [liveData, setLiveData] = useState<SystemOverviewResponse | null>(initialData);
   const [refreshError, setRefreshError] = useState<string | null>(null);
@@ -183,18 +185,39 @@ export function useOverviewStatusViewModel(
 
   const current = liveData ?? initialData;
 
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      refreshRevisionRef.current += 1;
+    };
+  }, []);
+
   const refresh = useCallback(async () => {
+    const revision = refreshRevisionRef.current + 1;
+    refreshRevisionRef.current = revision;
     setRefreshing(true);
     setRefreshError(null);
 
     try {
       const fresh = await fetchSystemStatus();
+      if (!mountedRef.current || refreshRevisionRef.current !== revision) {
+        return;
+      }
+
       setLiveData(fresh);
       setRefreshedAt(new Date());
     } catch (err) {
+      if (!mountedRef.current || refreshRevisionRef.current !== revision) {
+        return;
+      }
+
       setRefreshError(err instanceof Error ? err.message : "Unable to refresh system status.");
     } finally {
-      setRefreshing(false);
+      if (mountedRef.current && refreshRevisionRef.current === revision) {
+        setRefreshing(false);
+      }
     }
   }, [fetchSystemStatus]);
 

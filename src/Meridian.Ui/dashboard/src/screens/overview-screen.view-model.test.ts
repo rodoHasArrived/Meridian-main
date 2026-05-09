@@ -1,11 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildOverviewActivityRows,
   buildOverviewBriefingItems,
   buildOverviewPriorityRoutes,
   buildOverviewStatusBanner,
   buildOverviewStatusState,
-  buildOverviewWorkspaceLinks
+  buildOverviewWorkspaceLinks,
+  useOverviewStatusViewModel,
+  type OverviewRefreshFetcher
 } from "@/screens/overview-screen.view-model";
 import type { SessionInfo, SystemOverviewResponse } from "@/types";
 
@@ -238,4 +241,83 @@ describe("overview-screen view model", () => {
     expect(healthy.detailText).toBe("4 of 4 providers online. Storage Healthy. Last heartbeat 10:15 AM.");
     expect(healthy.ariaLabel).toContain("All Systems Healthy");
   });
+
+  it("ignores an older manual refresh that resolves after a newer refresh", async () => {
+    const olderRefresh = createDeferred<SystemOverviewResponse>();
+    const newerRefresh = createDeferred<SystemOverviewResponse>();
+    const fetchSystemStatus = vi.fn<OverviewRefreshFetcher>()
+      .mockReturnValueOnce(olderRefresh.promise)
+      .mockReturnValueOnce(newerRefresh.promise);
+
+    const { result } = renderHook(() => useOverviewStatusViewModel(overview, session, fetchSystemStatus));
+
+    let olderCommand!: Promise<void>;
+    let newerCommand!: Promise<void>;
+    act(() => {
+      olderCommand = result.current.refresh();
+      newerCommand = result.current.refresh();
+    });
+    await waitFor(() => expect(fetchSystemStatus).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      newerRefresh.resolve({ ...overview, systemStatus: "Healthy", providersOnline: 4, providersTotal: 4 });
+      await newerCommand;
+    });
+
+    expect(result.current.statusLabel).toBe("All Systems Healthy");
+    expect(result.current.refreshing).toBe(false);
+
+    await act(async () => {
+      olderRefresh.resolve({ ...overview, systemStatus: "Offline", providersOnline: 0 });
+      await olderCommand;
+      await flushAsync();
+    });
+
+    expect(result.current.statusLabel).toBe("All Systems Healthy");
+    expect(result.current.providerSummary).toBe("4 of 4 providers online");
+  });
+
+  it("does not publish a manual refresh after the overview unmounts", async () => {
+    const pendingRefresh = createDeferred<SystemOverviewResponse>();
+    const fetchSystemStatus = vi.fn<OverviewRefreshFetcher>().mockReturnValueOnce(pendingRefresh.promise);
+    const { result, unmount } = renderHook(() => useOverviewStatusViewModel(overview, session, fetchSystemStatus));
+
+    let refreshCommand!: Promise<void>;
+    act(() => {
+      refreshCommand = result.current.refresh();
+    });
+    await waitFor(() => expect(fetchSystemStatus).toHaveBeenCalledTimes(1));
+
+    unmount();
+    await act(async () => {
+      pendingRefresh.resolve({ ...overview, systemStatus: "Offline", providersOnline: 0 });
+      await refreshCommand;
+      await flushAsync();
+    });
+
+    expect(result.current.statusLabel).toBe("System Degraded");
+    expect(result.current.providerSummary).toBe("2 of 4 providers online");
+  });
 });
+
+interface Deferred<T> {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (reason?: unknown) => void;
+}
+
+function createDeferred<T>(): Deferred<T> {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}
+
+async function flushAsync() {
+  await Promise.resolve();
+  await Promise.resolve();
+}

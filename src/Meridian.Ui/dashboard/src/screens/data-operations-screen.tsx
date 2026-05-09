@@ -395,7 +395,7 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                       className={cn(
                         "flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2.5 transition-colors",
                         cap.selected
-                          ? "border-primary/40 bg-primary/8"
+                          ? "border-primary/40 bg-primary/[0.08]"
                           : "border-border/70 bg-secondary/20 hover:bg-secondary/35"
                       )}
                     >
@@ -792,7 +792,7 @@ function SecurityMasterSearchPanel({
                   className={cn(
                     "w-full rounded-xl border px-4 py-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                     result.selected
-                      ? "border-primary/50 bg-primary/8 shadow-[inset_3px_0_0_hsl(var(--primary)),0_0_0_1px_rgba(42,178,212,0.08)]"
+                      ? "border-primary/50 bg-primary/[0.08] shadow-[inset_3px_0_0_hsl(var(--primary)),0_0_0_1px_rgba(42,178,212,0.08)]"
                       : "border-border/70 bg-secondary/20 hover:bg-secondary/35"
                   )}
                   onClick={() => onSelect(result.securityId)}
@@ -1143,8 +1143,8 @@ function SecurityCorporateActionsPanel({ selected }: { selected: SecurityMasterS
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-xl border border-border/70 bg-background/80">
-          <div className="grid gap-3 border-b border-border/70 bg-secondary/20 px-4 py-3 text-xs uppercase tracking-[0.14em] text-muted-foreground sm:grid-cols-[120px_1.3fr_110px_110px_100px_90px]">
+        <div className="overflow-x-auto rounded-xl border border-border/70 bg-background/80">
+          <div className="grid gap-3 border-b border-border/70 bg-secondary/20 px-4 py-3 text-xs uppercase tracking-[0.14em] text-muted-foreground sm:min-w-[830px] sm:grid-cols-[120px_1.3fr_110px_110px_100px_90px]">
             <span>Type</span>
             <span>Event</span>
             <span>Announced</span>
@@ -1439,7 +1439,7 @@ function TimelineStep({ event }: { event: SecurityMasterTimelineEvent }) {
 
 function CorporateActionRow({ row }: { row: SecurityMasterCorporateActionRow }) {
   return (
-    <div className="grid gap-3 px-4 py-4 text-sm sm:grid-cols-[120px_1.3fr_110px_110px_100px_90px]">
+    <div className="grid gap-3 px-4 py-4 text-sm sm:min-w-[830px] sm:grid-cols-[120px_1.3fr_110px_110px_100px_90px]">
       <div>
         <div className="font-mono text-xs text-primary">{row.type}</div>
       </div>

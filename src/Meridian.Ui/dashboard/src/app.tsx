@@ -97,6 +97,7 @@ export function App() {
 
   return (
     <div className="workstation-frame">
+      <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <header className="workstation-masthead">
         <div className="workstation-brand-group">
           <button
@@ -146,7 +147,7 @@ export function App() {
       <div className="workstation-shell">
         <WorkspaceNav className="workstation-rail-desktop" />
 
-        <main className="workbench grid grid-rows-[auto_minmax(0,1fr)]">
+        <main id="workbench-content" className="workbench grid grid-rows-[auto_minmax(0,1fr)]" tabIndex={-1}>
           <WorkspaceHeader
             workspace={shell.activeWorkspace}
             session={session}

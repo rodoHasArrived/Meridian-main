@@ -285,13 +285,13 @@ describe("trading endpoint wiring", () => {
   });
 
   it("wires run continuity, reconciliation, security, and portfolio workstation endpoints", async () => {
-    await getRunLedgerJournal("run-1", 10);
+    await getRunLedgerJournal("run-1", { from: "2026-01-01", to: "2026-01-31" });
     await getRunContinuity("run-1");
     await getRunReviewPacket("run-1", "fund-1");
     await getRunReconciliation("run-1");
     await getRunReconciliationHistory("run-1");
     await getRunHistory({ mode: "paper", limit: 25 });
-    await getRunTimeline({ strategyId: "strategy-1", limit: 5 });
+    await getRunTimeline({ mode: "paper", status: "Completed", strategyId: "strategy-1", limit: 5 });
     await getRunSweeps(3);
     await getSecurityHistory("00000000-0000-0000-0000-000000000001");
     await getSecurityEconomicDefinition("00000000-0000-0000-0000-000000000001");
@@ -304,13 +304,13 @@ describe("trading endpoint wiring", () => {
     await getPortfolioExposure();
     await getPortfolioSymbolExposure("AAPL");
 
-    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/ledger/journal?take=10", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/ledger/journal?from=2026-01-01&to=2026-01-31", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/continuity", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/review-packet?fundAccountId=fund-1", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/reconciliation", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/reconciliation/history", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/history?mode=paper&limit=25", expect.anything());
-    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/timeline?strategyId=strategy-1&limit=5", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/timeline?mode=paper&status=Completed&strategyId=strategy-1&limit=5", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/sweeps?limit=3", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/workstation/security-master/securities/00000000-0000-0000-0000-000000000001/history",

@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -15,6 +13,8 @@ using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Shell.Root;
+using Meridian.Wpf.Shell.Session;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
@@ -36,9 +36,13 @@ public partial class MainWindow : Window
     private readonly WpfServices.NotificationService _notificationService;
     private readonly OnboardingTourService _tourService;
     private readonly AlertService _alertService;
-    private readonly WpfServices.WorkspaceService _workspaceService;
     private readonly WpfServices.FundContextService _fundContextService;
     private readonly WpfServices.WorkstationOperatingContextService _operatingContextService;
+    private readonly DesktopShellCoordinator _shellCoordinator;
+    private readonly DesktopShellSessionService _sessionService;
+    private readonly DesktopLaunchRouter _launchRouter;
+    private readonly FileDropRouter _fileDropRouter;
+    private readonly IWindowStateStore _windowStateStore;
     private readonly DispatcherTimer _startupRecoveryTimer;
 
     private Rect? _restoredWindowBounds;
@@ -48,18 +52,18 @@ public partial class MainWindow : Window
     private const double DefaultWindowHeight = 900;
     private const int StartupRecoveryMaxAttempts = 20;
 
-    private static readonly string WindowStateFilePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Meridian",
-        "window-state.json");
-
     public MainWindow(
         MainWindowViewModel viewModel,
         WpfServices.NavigationService navigationService,
         WpfServices.KeyboardShortcutService keyboardShortcutService,
         WpfServices.NotificationService notificationService,
         WpfServices.FundContextService fundContextService,
-        WpfServices.WorkstationOperatingContextService operatingContextService)
+        WpfServices.WorkstationOperatingContextService operatingContextService,
+        DesktopShellCoordinator shellCoordinator,
+        DesktopShellSessionService sessionService,
+        DesktopLaunchRouter launchRouter,
+        FileDropRouter fileDropRouter,
+        IWindowStateStore windowStateStore)
     {
         InitializeComponent();
 
@@ -69,9 +73,13 @@ public partial class MainWindow : Window
         _notificationService = notificationService;
         _tourService = OnboardingTourService.Instance;
         _alertService = AlertService.Instance;
-        _workspaceService = WpfServices.WorkspaceService.Instance;
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _operatingContextService = operatingContextService ?? throw new ArgumentNullException(nameof(operatingContextService));
+        _shellCoordinator = shellCoordinator ?? throw new ArgumentNullException(nameof(shellCoordinator));
+        _sessionService = sessionService ?? throw new ArgumentNullException(nameof(sessionService));
+        _launchRouter = launchRouter ?? throw new ArgumentNullException(nameof(launchRouter));
+        _fileDropRouter = fileDropRouter ?? throw new ArgumentNullException(nameof(fileDropRouter));
+        _windowStateStore = windowStateStore ?? throw new ArgumentNullException(nameof(windowStateStore));
         DataContext = _viewModel;
 
         // Subscribe to keyboard shortcuts
@@ -142,12 +150,12 @@ public partial class MainWindow : Window
         GlobalHotkeyService.Instance.Initialize(hwnd);
 
         var launchArgs = App.GetLaunchArgs();
-        var launchRequest = DesktopLaunchArguments.Parse(launchArgs);
+        var launchRequest = _launchRouter.Parse(launchArgs);
 
-        await _workspaceService.LoadWorkspacesAsync();
+        await _sessionService.LoadWorkspacesAsync();
         await _fundContextService.LoadAsync();
         await _operatingContextService.LoadAsync();
-        await SynchronizeLastSelectedFundAsync();
+        await _sessionService.SynchronizeLastSelectedFundAsync();
 
         if (_operatingContextService.CurrentContext is not null)
         {
@@ -482,47 +490,31 @@ public partial class MainWindow : Window
     /// </summary>
     private async Task RestoreWorkspaceSessionForContextAsync(WorkstationOperatingContext context, CancellationToken ct = default)
     {
-        try
+        var restorePlan = await _sessionService
+            .BuildRestorePlanForContextAsync(context, ResolveDefaultPageTag, ct)
+            .ConfigureAwait(true);
+
+        ApplyRestorePlan(restorePlan);
+    }
+
+    private void ApplyRestorePlan(DesktopShellSessionRestorePlan? restorePlan)
+    {
+        if (restorePlan is null)
         {
-            await _workspaceService.LoadWorkspacesAsync();
-
-            var session = _workspaceService.GetLastSessionStateForContext(context.ContextKey);
-            var targetWorkspaceId = !string.IsNullOrWhiteSpace(session?.ActiveWorkspaceId)
-                ? session!.ActiveWorkspaceId
-                : context.DefaultWorkspaceId;
-
-            if (!string.IsNullOrWhiteSpace(targetWorkspaceId))
-            {
-                // Restore active workspace
-                if (!string.IsNullOrEmpty(session?.ActiveWorkspaceId))
-                {
-                    await _workspaceService.ActivateWorkspaceAsync(session.ActiveWorkspaceId);
-                }
-
-                // Restore last active page after MainPage loads
-                if (!string.IsNullOrEmpty(session?.ActivePageTag) && session.ActivePageTag != "Dashboard")
-                {
-                    // Defer navigation until MainPage is fully loaded
-                    _ = Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () =>
-                    {
-                        _ = _navigationService.NavigateTo(session.ActivePageTag);
-                    });
-                }
-            }
-
-            var targetPageTag = !string.IsNullOrWhiteSpace(session?.ActivePageTag)
-                ? session!.ActivePageTag
-                : context.DefaultLandingPageTag;
-
-            if (string.IsNullOrWhiteSpace(targetPageTag))
-            {
-                targetPageTag = ResolveDefaultPageTag(targetWorkspaceId);
-            }
-
-            _navigationService.NavigateTo(targetPageTag);
+            return;
         }
-        catch (Exception)
+
+        if (!string.IsNullOrWhiteSpace(restorePlan.DeferredPageTag))
         {
+            _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+            {
+                _ = _navigationService.NavigateTo(restorePlan.DeferredPageTag);
+            });
+        }
+
+        if (!string.IsNullOrWhiteSpace(restorePlan.TargetPageTag))
+        {
+            _navigationService.NavigateTo(restorePlan.TargetPageTag);
         }
     }
 
@@ -532,91 +524,16 @@ public partial class MainWindow : Window
     /// </summary>
     private void SaveWorkspaceSession()
     {
-        try
-        {
-            if (_operatingContextService.CurrentContext is null &&
-                _fundContextService.CurrentFundProfile is null &&
-                RootFrame.Content is not MainPage)
-            {
-                return;
-            }
-
-            var operatingContextKey = _operatingContextService.CurrentContext?.ContextKey
-                ?? _fundContextService.CurrentFundProfile?.FundProfileId;
-            var currentPage = _navigationService.GetCurrentPageTag();
-            var activeWorkspace = _workspaceService.ActiveWorkspace;
-
-            // Preserve per-page filter state and open-pages list that were accumulated
-            // during the session by the individual pages via UpdatePageFilterState().
-            var existing = _workspaceService.GetLastSessionStateForContext(operatingContextKey);
-
-            var session = new Ui.Services.SessionState
-            {
-                ActivePageTag = currentPage ?? "Dashboard",
-                ActiveWorkspaceId = activeWorkspace?.Id,
-                ActiveFilters = existing?.ActiveFilters ?? new System.Collections.Generic.Dictionary<string, string>(),
-                OpenPages = existing?.OpenPages ?? new System.Collections.Generic.List<Ui.Services.WorkspacePage>(),
-                WindowBounds = new Ui.Services.WindowBounds
-                {
-                    X = RestoreBounds.Left,
-                    Y = RestoreBounds.Top,
-                    Width = RestoreBounds.Width,
-                    Height = RestoreBounds.Height,
-                    IsMaximized = WindowState == WindowState.Maximized
-                }
-            };
-
-            // Fire-and-forget since we're closing
-            _ = _workspaceService.SaveSessionStateAsync(session, operatingContextKey);
-        }
-        catch (Exception)
-        {
-        }
+        _sessionService.SaveWorkspaceSession(CaptureDesktopWindowBounds(), RootFrame.Content is MainPage);
     }
 
-    private async Task SynchronizeLastSelectedFundAsync(CancellationToken ct = default)
-    {
-        var workspaceContextKey = _workspaceService.LastSelectedOperatingContextKey;
-        var compatibilityFundProfileId = _operatingContextService.CurrentContext?.CompatibilityFundProfileId;
-        if (string.IsNullOrWhiteSpace(compatibilityFundProfileId) &&
-            _operatingContextService.CurrentContext?.ScopeKind == OperatingContextScopeKind.Fund)
-        {
-            compatibilityFundProfileId = _operatingContextService.CurrentContext.ScopeId;
-        }
-
-        if (string.IsNullOrWhiteSpace(compatibilityFundProfileId) &&
-            WorkstationOperatingContext.TryGetFundScopeId(workspaceContextKey, out var workspaceFundScopeId))
-        {
-            compatibilityFundProfileId = workspaceFundScopeId;
-        }
-
-        if (string.IsNullOrWhiteSpace(_fundContextService.LastSelectedFundProfileId) &&
-            !string.IsNullOrWhiteSpace(compatibilityFundProfileId))
-        {
-            await _fundContextService.SetLastSelectedFundProfileIdAsync(compatibilityFundProfileId, ct);
-        }
-
-        var targetContextKey = _operatingContextService.CurrentContext?.ContextKey;
-        if (string.IsNullOrWhiteSpace(targetContextKey))
-        {
-            if (WorkstationOperatingContext.TryParseContextKey(workspaceContextKey, out _, out _))
-            {
-                targetContextKey = workspaceContextKey;
-            }
-            else if (!string.IsNullOrWhiteSpace(_fundContextService.LastSelectedFundProfileId))
-            {
-                targetContextKey = WorkstationOperatingContext.CreateContextKey(
-                    OperatingContextScopeKind.Fund,
-                    _fundContextService.LastSelectedFundProfileId!);
-            }
-        }
-
-        if (!string.IsNullOrWhiteSpace(targetContextKey) &&
-            !string.Equals(_workspaceService.LastSelectedOperatingContextKey, targetContextKey, StringComparison.OrdinalIgnoreCase))
-        {
-            await _workspaceService.SetLastSelectedOperatingContextKeyAsync(targetContextKey, ct);
-        }
-    }
+    private DesktopWindowBounds CaptureDesktopWindowBounds()
+        => new(
+            RestoreBounds.Left,
+            RestoreBounds.Top,
+            RestoreBounds.Width,
+            RestoreBounds.Height,
+            WindowState == WindowState.Maximized);
 
     private void OnActiveContextChanging(object? sender, WorkstationOperatingContextChangingEventArgs e)
     {
@@ -664,15 +581,17 @@ public partial class MainWindow : Window
 
     private async Task EnterOperatingContextAsync(WorkstationOperatingContext context, CancellationToken ct = default)
     {
-        await _workspaceService.SetLastSelectedOperatingContextKeyAsync(context.ContextKey, ct);
+        var restorePlan = await _shellCoordinator
+            .PrepareOperatingContextAsync(context, ResolveDefaultPageTag, ct)
+            .ConfigureAwait(true);
         await EnsureMainPageShellReadyAsync(ct);
-        await RestoreWorkspaceSessionForContextAsync(context, ct);
+        ApplyRestorePlan(restorePlan);
         EnsureShellVisibleOnStartup();
     }
 
     private async Task HandleLaunchArgsAsync(string[] args, CancellationToken ct = default)
     {
-        var request = DesktopLaunchArguments.Parse(args);
+        var request = _launchRouter.Parse(args);
         if (!request.HasActions)
         {
             return;
@@ -683,7 +602,7 @@ public partial class MainWindow : Window
             await EnsureMainPageShellReadyAsync(ct);
         }
 
-        _viewModel.HandleLaunchArgs(args);
+        _launchRouter.Apply(args, _viewModel);
         EnsureShellVisibleOnStartup();
     }
 
@@ -711,21 +630,24 @@ public partial class MainWindow : Window
             SaveWorkspaceSession();
         }
 
-        await _workspaceService.LoadWorkspacesAsync(ct);
+        await _sessionService.LoadWorkspacesAsync(ct);
         RootFrame.Navigate(App.Services.GetRequiredService<FundProfileSelectionPage>());
         EnsureShellVisibleOnStartup();
     }
 
-    private static string ResolveDefaultPageTag(string? workspaceId) => NormalizeWorkspaceId(workspaceId) switch
-    {
-        "trading" => "TradingShell",
-        "data-operations" => "DataOperationsShell",
-        "governance" => "GovernanceShell",
-        _ => "ResearchShell"
-    };
+    private static string ResolveDefaultPageTag(string? workspaceId)
+        => ShellNavigationCatalog.GetWorkspace(NormalizeWorkspaceId(workspaceId))?.HomePageTag
+           ?? ShellNavigationCatalog.GetDefaultWorkspace().HomePageTag;
 
     private static string NormalizeWorkspaceId(string? workspaceId)
-        => string.IsNullOrWhiteSpace(workspaceId) ? "research" : workspaceId.Trim();
+        => workspaceId?.Trim().ToLowerInvariant() switch
+        {
+            "research" => "strategy",
+            "data-operations" => "data",
+            "governance" => "accounting",
+            null or "" => "strategy",
+            var normalized => normalized
+        };
 
 
 
@@ -739,25 +661,14 @@ public partial class MainWindow : Window
     {
         try
         {
-            var state = new PersistedWindowState
-            {
-                Left = RestoreBounds.Left,
-                Top = RestoreBounds.Top,
-                Width = RestoreBounds.Width,
-                Height = RestoreBounds.Height,
-                IsMaximized = WindowState == WindowState.Maximized,
-                SavedAt = DateTime.UtcNow
-            };
-
-            var dir = Path.GetDirectoryName(WindowStateFilePath);
-            if (!string.IsNullOrEmpty(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-
-            var json = JsonSerializer.Serialize(state, WindowStateJsonOptions);
-
-            await File.WriteAllTextAsync(WindowStateFilePath, json).ConfigureAwait(false);
+            var state = new DesktopWindowState(
+                RestoreBounds.Left,
+                RestoreBounds.Top,
+                RestoreBounds.Width,
+                RestoreBounds.Height,
+                WindowState == WindowState.Maximized,
+                DateTime.UtcNow);
+            await _windowStateStore.SaveAsync(state, ct).ConfigureAwait(false);
         }
         catch (Exception)
         {
@@ -772,11 +683,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            if (!File.Exists(WindowStateFilePath))
-                return;
-
-            var json = File.ReadAllText(WindowStateFilePath);
-            var state = JsonSerializer.Deserialize<PersistedWindowState>(json, WindowStateJsonOptions);
+            var state = _windowStateStore.Load();
             if (state == null)
                 return;
 
@@ -1007,26 +914,6 @@ public partial class MainWindow : Window
                intersection.Height >= minVisibleSize;
     }
 
-    /// <summary>
-    /// Persisted window state for save/restore across sessions.
-    /// </summary>
-    private sealed class PersistedWindowState
-    {
-        public double Left { get; set; }
-        public double Top { get; set; }
-        public double Width { get; set; }
-        public double Height { get; set; }
-        public bool IsMaximized { get; set; }
-        public DateTime SavedAt { get; set; }
-    }
-
-    private static readonly JsonSerializerOptions WindowStateJsonOptions = new()
-    {
-        WriteIndented = true
-    };
-
-
-
     private void OnRootFrameDragEnter(object sender, DragEventArgs e)
     {
         if (!e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -1081,9 +968,7 @@ public partial class MainWindow : Window
         if (e.Data.GetData(DataFormats.FileDrop) is not string[] files || files.Length == 0)
             return;
 
-        var fileType = DropImportService.Instance.DetectFileType(files[0]);
-        var label = DropImportService.Instance.GetTypeFriendlyName(fileType);
-        DropOverlaySubtitle.Text = label;
+        DropOverlaySubtitle.Text = _fileDropRouter.GetFriendlyFileType(files[0]);
     }
 
     /// <summary>
@@ -1094,10 +979,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            var fileType = DropImportService.Instance.DetectFileType(filePath);
-            var pageKey = DropImportService.Instance.GetTargetPageKey(fileType);
-
-            _navigationService.NavigateTo(pageKey, filePath);
+            _fileDropRouter.RouteFile(filePath);
         }
         catch (Exception)
         {

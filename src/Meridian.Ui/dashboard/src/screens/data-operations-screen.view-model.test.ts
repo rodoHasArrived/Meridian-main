@@ -16,7 +16,8 @@ import {
   resolveSecurityMasterTabKeyCommand,
   resolveDataOperationsWorkstream,
   resolveSelectedBackfill,
-  validateBackfillForm
+  validateBackfillForm,
+  validateProviderSetupForm
 } from "@/screens/data-operations-screen.view-model";
 import type {
   BackfillTriggerResult,
@@ -110,6 +111,8 @@ describe("data-operations-screen view model", () => {
 
     expect(validateBackfillForm({ provider: "polygon", symbols: "", from: "", to: "" }))
       .toBe("Enter at least one symbol before previewing a backfill.");
+    expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "2024-02-31", to: "" }))
+      .toBe("Use YYYY-MM-DD for the From date.");
     expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "2024-02-01", to: "2024-01-01" }))
       .toBe("From date must be before or equal to To date.");
   });
@@ -308,6 +311,26 @@ describe("data-operations-screen view model", () => {
 
     expect(yahooDialog.credentialFields).toHaveLength(0);
     expect(yahooDialog.submitAction.disabled).toBe(false);
+  });
+
+  it("validates endpoint provider URLs before submit", () => {
+    expect(validateProviderSetupForm({
+      kind: "interactivebrokers",
+      displayName: "IBKR",
+      apiKey: "",
+      apiSecret: "",
+      endpoint: "not-a-url",
+      capabilities: ["streaming"]
+    })).toBe("Enter a valid http or https endpoint URL for Interactive Brokers.");
+
+    expect(validateProviderSetupForm({
+      kind: "interactivebrokers",
+      displayName: "IBKR",
+      apiKey: "",
+      apiSecret: "",
+      endpoint: "https://localhost:7497",
+      capabilities: ["streaming"]
+    })).toBeNull();
   });
 
   it("keeps non-active security records hidden until the filter is expanded", () => {

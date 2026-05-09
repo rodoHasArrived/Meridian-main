@@ -101,6 +101,13 @@ describe("App", () => {
     expect(screen.queryByRole("dialog", { name: "Open workspace" })).not.toBeInTheDocument();
   });
 
+  it("provides a skip link into the workbench content", () => {
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    expect(screen.getByRole("link", { name: "Skip to workbench" })).toHaveAttribute("href", "#workbench-content");
+    expect(screen.getByRole("main")).toHaveAttribute("id", "workbench-content");
+  });
+
   it("does not open the command palette shortcut while typing in an input", async () => {
     const user = userEvent.setup();
     renderWithRouter(

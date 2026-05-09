@@ -161,12 +161,12 @@ export function HistoricalChartCard({ symbol, className }: HistoricalChartCardPr
       </CardHeader>
       <CardContent>
         {state.status === "loading" ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             Loading {activeTimeframe.label} bars for {symbol}…
           </div>
         ) : state.status === "error" ? (
-          <div className="flex items-start gap-2 rounded-md border border-danger/40 bg-danger/5 px-3 py-2 text-sm text-danger">
+          <div role="alert" className="flex items-start gap-2 rounded-md border border-danger/40 bg-danger/5 px-3 py-2 text-sm text-danger">
             <AlertCircle className="mt-0.5 h-4 w-4" aria-hidden="true" />
             <span>{state.errorMessage}</span>
           </div>

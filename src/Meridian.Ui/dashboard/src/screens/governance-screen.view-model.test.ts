@@ -6,7 +6,9 @@ import {
   formatReportingExportResult,
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
+  buildReconciliationDetailActions,
   buildReconciliationNarrative,
+  buildReconciliationResolveDialogState,
   buildSecurityConflictRows,
   buildSecurityIdentityDrillInState,
   buildSecuritySearchState,
@@ -513,9 +515,47 @@ describe("governance-screen view model", () => {
     expect(failed.statusAnnouncement).toBe("Break action failed: Review endpoint rejected");
   });
 
+  it("derives reconciliation resolve dialog labels and validation state", () => {
+    const blankResolve = buildReconciliationResolveDialogState("run-42:cash", "Resolved", "  ");
+
+    expect(blankResolve).toMatchObject({
+      breakId: "run-42:cash",
+      status: "Resolved",
+      inputId: "rationale-run-42:cash",
+      helpId: "rationale-help-run-42:cash",
+      formAriaLabel: "Resolve reconciliation break run-42:cash",
+      label: "Resolve rationale",
+      submitLabel: "Confirm resolve",
+      submitAriaLabel: "Confirm resolve for reconciliation break run-42:cash",
+      cancelAriaLabel: "Cancel resolve for reconciliation break run-42:cash",
+      isSubmitDisabled: true
+    });
+
+    const dismiss = buildReconciliationResolveDialogState("run-42:cash", "Dismissed", "Reviewed duplicate break");
+
+    expect(dismiss).toMatchObject({
+      label: "Dismiss rationale",
+      placeholder: "Describe why this break is being dismissed...",
+      submitLabel: "Confirm dismiss",
+      isSubmitDisabled: false
+    });
+  });
+
   it("keeps reconciliation narratives in the view model", () => {
     expect(buildReconciliationNarrative(reconciliationQueue[0])).toContain("Open reconciliation breaks remain");
     expect(buildReconciliationNarrative({ ...reconciliationQueue[0], reconciliationStatus: "Balanced" })).toContain("currently balanced");
+  });
+
+  it("derives reconciliation detail actions from the selected run", () => {
+    expect(buildReconciliationDetailActions(reconciliationQueue[0])).toEqual({
+      breakChecklistTargetId: "reconciliation-break-queue",
+      breakChecklistHref: "#reconciliation-break-queue",
+      breakChecklistLabel: "Open break checklist",
+      breakChecklistAriaLabel: "Open break checklist for Paper Index Mean Reversion; 1 open break",
+      auditPacketHref: "/api/workstation/runs/run-42/review-packet",
+      auditPacketLabel: "Review audit packet",
+      auditPacketAriaLabel: "Review audit packet for Paper Index Mean Reversion"
+    });
   });
 
   it("derives reporting profile selector rows and detail state", () => {

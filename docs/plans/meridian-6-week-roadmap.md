@@ -1,6 +1,6 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-05-08
+**Last Updated:** 2026-05-09
 **Horizon:** Next 6 weeks
 **Status:** Short-horizon execution slice derived from the canonical roadmap and current DK readiness dashboard
 
@@ -36,7 +36,7 @@ Explicit non-goals in this window:
 
 - Wave 5 Backtest Studio unification
 - broader Wave 6 live integration readiness expansion beyond clarifying prerequisites
-- optional advanced research / scale tracks such as deeper QuantScript expansion beyond the delivered local run-history handoff slice, L3 inference, multi-instance coordination, preferred-equity follow-ons, and Phase 16 performance work
+- optional advanced research / scale tracks such as deeper QuantScript expansion beyond the delivered local run-history handoff and gated browser Quant Lab support slices, L3 inference, multi-instance coordination, preferred-equity follow-ons, and Phase 16 performance work
 - broad cleanup or parallel UX programs that do not directly move Waves 1-4
 
 ---
@@ -46,10 +46,10 @@ Explicit non-goals in this window:
 This plan starts from the current repo state:
 
 - the web dashboard in `src/Meridian.Ui/dashboard/` is now the active operator UI lane, with built assets served from `src/Meridian.Ui/wwwroot/workstation/`; the retained WPF shell remains support evidence for compatibility and shared-contract regression checks
-- current browser workstation support now includes shared workflow library/preset commands in the command palette, dedicated Portfolio brokerage-sync evidence, Reporting report-pack task state, Settings backend capability coverage plus Alpaca paper-key verification, Data Security Master print-packet readiness, and shared API clients for portfolio aggregate/exposure. Treat these as Wave 2-4 support evidence, not as completed cockpit, reporting, or live-readiness claims
+- current browser workstation support now includes shared workflow library/preset commands in the command palette, dedicated Portfolio brokerage-sync evidence with account-filter focus restoration, Reporting report-pack task state, Settings backend capability coverage plus Alpaca paper-key verification, Data Security Master print-packet readiness, live quote/order-book/watchlist workflows with multi-symbol quote snapshots, click-to-trade order-ticket staging, intraday and historical price charts, a gated `/strategy/quant-lab` browser surface backed by `/api/quant/run`, `/api/quant/parameters`, and `/api/quant/templates`, hardened command-palette/mega-menu focus handling, and shared API clients for portfolio aggregate/exposure. Treat these as Wave 2-4 support evidence, not as completed cockpit, reporting, Backtest Studio, or live-readiness claims
 - current brokerage/account-sync support includes fund-account brokerage links, positions/activity reads, cash-adjusted performance, cash-flow summaries, household portfolio rollups, Alpaca paper connection verification/revocation, and a read-only Robinhood aggregation adapter. Use it to strengthen Wave 3/Wave 4 continuity while keeping external-statement acceptance, reconciliation casework, and controlled live-readiness open
 - buyer-facing demo paths, role-based views, readiness dashboards, close workflow previews, and evidence packet actions should be planned for the web dashboard after shared contracts exist; retained WPF coverage should stay limited to support and regression validation
-- the web Research run library already has a support slice for retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, component/view-model coverage, and refreshed built assets; canonical seven-workspace web navigation, strategy-aware launch/preflight, persisted sweep grouping, and Backtest Studio unification remain open
+- the web Research run library already has a support slice for retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, component/view-model coverage, and refreshed built assets; the gated Quant Lab browser surface adds execution/parameter/template and plot-rendering support evidence, but canonical seven-workspace web navigation, strategy-aware launch/preflight, persisted sweep grouping, and Backtest Studio unification remain open
 - the retained WPF workstation shell is already organized around compatibility workspace groupings
   such as `Research`, `Trading`, `Data Operations`, and `Governance`; the visible product shell is
   now the seven-workspace browser model (`Data`, `Strategy`, `Trading`, `Portfolio`,

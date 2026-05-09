@@ -10,6 +10,7 @@ describe("command palette view model", () => {
 
     expect(model.itemCountLabel).toBe("7 workspaces");
     expect(model.commandListLabel).toBe("7 workspace commands");
+    expect(model.filteredItemCountLabel).toBe("7 commands available");
     expect(model.activeWorkspaceLabel).toBe("Current: Settings");
     expect(model.routeSummary).toBe("Route to a canonical operator workspace. Current: Settings.");
     expect(model.shortcutHint).toBe("Esc to close");
@@ -27,6 +28,27 @@ describe("command palette view model", () => {
       statusLabel: "Review",
       commandLabel: "Open Trading",
       active: false
+    });
+    expect(model.filteredItems).toHaveLength(7);
+  });
+
+  it("filters commands by workspace, route, status, and description text", () => {
+    const model = buildCommandPaletteViewModel("/settings", undefined, {}, "preview portfolio");
+
+    expect(model.filteredItemCountLabel).toBe("1 of 7 commands match");
+    expect(model.filteredItems.map((item) => item.id)).toEqual(["portfolio"]);
+    expect(model.initialFocusItemId).toBe("portfolio");
+  });
+
+  it("exposes a searchable empty state when commands do not match", () => {
+    const model = buildCommandPaletteViewModel("/settings", undefined, {}, "not-a-command");
+
+    expect(model.items).toHaveLength(7);
+    expect(model.filteredItems).toEqual([]);
+    expect(model.filteredItemCountLabel).toBe("0 of 7 commands match");
+    expect(model.emptyState).toEqual({
+      title: "No matching commands",
+      detail: "Try a workspace name, workflow title, route, or status label."
     });
   });
 

@@ -1,5 +1,4 @@
 import { AlertCircle, BookCheck, CheckCircle2, Landmark, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
-import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -14,6 +13,7 @@ import {
   useGovernanceCashFlowViewModel,
   useGovernanceReconciliationViewModel,
   useGovernanceReportingViewModel,
+  useReconciliationResolveDialogViewModel,
   useSecurityMasterViewModel
 } from "@/screens/governance-screen.view-model";
 import type {
@@ -59,8 +59,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const workstream = resolveGovernanceWorkstream(pathname);
   const workspace = workspaceForPath(pathname);
   const reconciliation = useGovernanceReconciliationViewModel(data, workstream);
-  const [resolveDialog, setResolveDialog] = useState<{ breakId: string; status: "Resolved" | "Dismissed" } | null>(null);
-  const [resolveRationale, setResolveRationale] = useState("");
+  const resolveDialog = useReconciliationResolveDialogViewModel(reconciliation.resolveBreak);
   const selectedReconciliation = reconciliation.selectedReconciliation;
   const cashFlow = useGovernanceCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useGovernanceReportingViewModel(data?.reporting ?? null);
@@ -255,12 +254,28 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               <div className="rounded-lg border border-border/70 bg-background/70 p-4 text-slate-200">
                 {buildReconciliationNarrative(selectedReconciliation)}
               </div>
-              <div className="flex gap-3">
-                <Button variant="secondary">Open break checklist</Button>
-                <Button variant="outline" className="border-border/70 bg-transparent text-foreground hover:bg-secondary/60">
-                  Review audit packet
-                </Button>
-              </div>
+              {reconciliation.detailActions ? (
+                <div className="flex flex-wrap gap-3">
+                  <Button asChild variant="secondary">
+                    <a
+                      href={reconciliation.detailActions.breakChecklistHref}
+                      aria-label={reconciliation.detailActions.breakChecklistAriaLabel}
+                    >
+                      {reconciliation.detailActions.breakChecklistLabel}
+                    </a>
+                  </Button>
+                  <Button asChild variant="outline" className="border-border/70 bg-transparent text-foreground hover:bg-secondary/60">
+                    <a
+                      href={reconciliation.detailActions.auditPacketHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={reconciliation.detailActions.auditPacketAriaLabel}
+                    >
+                      {reconciliation.detailActions.auditPacketLabel}
+                    </a>
+                  </Button>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         </section>
@@ -782,7 +797,11 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
       )}
 
       {workstream === "reconciliation" && (
-        <section className="space-y-4">
+        <section
+          id={reconciliation.detailActions?.breakChecklistTargetId ?? "reconciliation-break-queue"}
+          aria-label="Reconciliation break checklist"
+          className="space-y-4"
+        >
           <Card className="panel-surface">
             <CardHeader>
               <CardTitle>Reconciliation break queue</CardTitle>
@@ -830,50 +849,53 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                     <Button
                       size="sm"
                       variant="outline"
-                      disabled={!item.canResolve || resolveDialog?.breakId === item.breakId}
+                      disabled={!item.canResolve || resolveDialog.isOpenFor(item.breakId)}
                       aria-label={item.resolveAriaLabel}
-                      onClick={() => { setResolveDialog({ breakId: item.breakId, status: "Resolved" }); setResolveRationale(""); }}
+                      onClick={() => resolveDialog.open(item.breakId, "Resolved")}
                     >
                       {item.resolveLabel}
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      disabled={!item.canDismiss || resolveDialog?.breakId === item.breakId}
+                      disabled={!item.canDismiss || resolveDialog.isOpenFor(item.breakId)}
                       aria-label={item.dismissAriaLabel}
-                      onClick={() => { setResolveDialog({ breakId: item.breakId, status: "Dismissed" }); setResolveRationale(""); }}
+                      onClick={() => resolveDialog.open(item.breakId, "Dismissed")}
                     >
                       {item.dismissLabel}
                     </Button>
                   </div>
-                  {resolveDialog?.breakId === item.breakId && (
+                  {resolveDialog.active?.breakId === item.breakId && (
                     <form
                       className="mt-3 space-y-2 rounded-lg border border-border/50 bg-secondary/20 p-3"
+                      aria-label={resolveDialog.active.formAriaLabel}
                       onSubmit={(e) => {
                         e.preventDefault();
-                        void reconciliation.resolveBreak(item.breakId, resolveDialog.status, resolveRationale);
-                        setResolveDialog(null);
-                        setResolveRationale("");
+                        void resolveDialog.submit();
                       }}
                     >
-                      <label htmlFor={`rationale-${item.breakId}`} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                        {resolveDialog.status === "Resolved" ? "Resolve rationale" : "Dismiss rationale"}
+                      <label htmlFor={resolveDialog.active.inputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                        {resolveDialog.active.label}
                       </label>
                       <input
-                        id={`rationale-${item.breakId}`}
+                        id={resolveDialog.active.inputId}
                         type="text"
                         required
                         autoFocus
-                        placeholder="Describe why this break is being resolved…"
-                        value={resolveRationale}
-                        onChange={(e) => setResolveRationale(e.target.value)}
-                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        aria-describedby={resolveDialog.active.helpId}
+                        placeholder={resolveDialog.active.placeholder}
+                        value={resolveDialog.active.rationale}
+                        onChange={(e) => resolveDialog.updateRationale(e.target.value)}
+                        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                       />
+                      <p id={resolveDialog.active.helpId} className="text-xs text-muted-foreground">
+                        {resolveDialog.active.helpText}
+                      </p>
                       <div className="flex gap-2">
-                        <Button type="submit" size="sm" disabled={!resolveRationale.trim()}>
-                          Confirm {resolveDialog.status === "Resolved" ? "resolve" : "dismiss"}
+                        <Button type="submit" size="sm" disabled={resolveDialog.active.isSubmitDisabled} aria-label={resolveDialog.active.submitAriaLabel}>
+                          {resolveDialog.active.submitLabel}
                         </Button>
-                        <Button type="button" size="sm" variant="ghost" onClick={() => { setResolveDialog(null); setResolveRationale(""); }}>
+                        <Button type="button" size="sm" variant="ghost" aria-label={resolveDialog.active.cancelAriaLabel} onClick={resolveDialog.close}>
                           Cancel
                         </Button>
                       </div>

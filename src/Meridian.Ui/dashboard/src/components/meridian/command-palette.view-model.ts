@@ -50,6 +50,11 @@ export interface CommandPaletteViewModel {
   activeWorkspaceLabel: string;
   initialFocusItemId: string | null;
   items: CommandPaletteItem[];
+  query: string;
+  searchInputLabel: string;
+  searchPlaceholder: string;
+  filteredItems: CommandPaletteItem[];
+  filteredItemCountLabel: string;
   emptyState: CommandPaletteEmptyState | null;
 }
 
@@ -83,13 +88,16 @@ const PAGE_TAG_ROUTES: Record<string, string> = {
 export function buildCommandPaletteViewModel(
   pathname: string,
   workspaces: WorkspaceSummary[] = WORKSPACES,
-  workflowData: CommandPaletteWorkflowData = {}
+  workflowData: CommandPaletteWorkflowData = {},
+  query = ""
 ): CommandPaletteViewModel {
   const activeKey = normalizeWorkspacePath(pathname);
   const workspaceItems = buildWorkspaceItems(workspaces, activeKey);
   const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname);
   const workflowItems = buildWorkflowItems(workflowData.workflowLibrary?.workflows ?? [], pathname);
   const items = [...workspaceItems, ...presetItems, ...workflowItems];
+  const normalizedQuery = query.trim();
+  const filteredItems = filterCommandItems(items, normalizedQuery);
 
   const activeWorkspace = workspaceItems.find((item) => item.active);
   const activeWorkspaceLabel = activeWorkspace ? `Current: ${activeWorkspace.label}` : "No active workspace";
@@ -113,8 +121,16 @@ export function buildCommandPaletteViewModel(
       ? buildItemCountLabel(workspaceItems.length, presetItems.length, workflowItems.length)
       : `${items.length} workspace${items.length === 1 ? "" : "s"}`,
     activeWorkspaceLabel,
-    initialFocusItemId: activeWorkspace?.id ?? items[0]?.id ?? null,
+    initialFocusItemId:
+      filteredItems.find((item) => item.id === activeWorkspace?.id)?.id ?? filteredItems[0]?.id ?? null,
     items,
+    query,
+    searchInputLabel: "Search command palette",
+    searchPlaceholder: hasWorkflowBackend
+      ? "Search workflows, presets, or workspaces"
+      : "Search workspaces",
+    filteredItems,
+    filteredItemCountLabel: buildFilteredItemCountLabel(filteredItems.length, items.length, normalizedQuery),
     emptyState:
       items.length === 0
         ? {
@@ -123,6 +139,11 @@ export function buildCommandPaletteViewModel(
               ? "Workflow and workspace metadata did not load; retry the shell bootstrap before navigating."
               : "Workspace metadata did not load; retry the shell bootstrap before navigating."
           }
+        : normalizedQuery && filteredItems.length === 0
+          ? {
+              title: "No matching commands",
+              detail: "Try a workspace name, workflow title, route, or status label."
+            }
         : null
   };
 }
@@ -261,6 +282,40 @@ function buildBackendStatusLabel(
 
 function buildItemCountLabel(workspaceCount: number, presetCount: number, workflowActionCount: number) {
   return `${workspaceCount} workspace${workspaceCount === 1 ? "" : "s"} - ${presetCount} preset${presetCount === 1 ? "" : "s"} - ${workflowActionCount} workflow action${workflowActionCount === 1 ? "" : "s"}`;
+}
+
+function buildFilteredItemCountLabel(filteredCount: number, totalCount: number, query: string) {
+  if (!query) {
+    return `${totalCount} command${totalCount === 1 ? "" : "s"} available`;
+  }
+
+  return `${filteredCount} of ${totalCount} command${totalCount === 1 ? "" : "s"} match`;
+}
+
+function filterCommandItems(items: CommandPaletteItem[], query: string) {
+  if (!query) {
+    return items;
+  }
+
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (terms.length === 0) {
+    return items;
+  }
+
+  return items.filter((item) => {
+    const haystack = [
+      item.kind,
+      item.label,
+      item.commandLabel,
+      item.description,
+      item.route,
+      item.routeLabel,
+      item.statusLabel,
+      item.ariaLabel
+    ].join(" ").toLowerCase();
+
+    return terms.every((term) => haystack.includes(term));
+  });
 }
 
 function routeForWorkflowTarget(targetPageTag: string | null | undefined, workspaceId: string | null | undefined) {

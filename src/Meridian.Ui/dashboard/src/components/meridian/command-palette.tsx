@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 import {
@@ -45,14 +45,21 @@ export function CommandPalette({
   onPresetUsed
 }: CommandPaletteProps) {
   const { pathname } = useLocation();
+  const [query, setQuery] = useState("");
   const dialogRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const initialCommandRef = useRef<HTMLAnchorElement | null>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
-  const viewModel = buildCommandPaletteViewModel(pathname, undefined, {
-    workflowLibrary,
-    workflowPresets,
-    workflowError
-  });
+  const viewModel = buildCommandPaletteViewModel(
+    pathname,
+    undefined,
+    {
+      workflowLibrary,
+      workflowPresets,
+      workflowError
+    },
+    query
+  );
 
   useEffect(() => {
     if (!open) {
@@ -60,7 +67,7 @@ export function CommandPalette({
     }
 
     restoreFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    (initialCommandRef.current ?? dialogRef.current)?.focus();
+    searchInputRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
       const command = resolveCommandPaletteKeyCommand({
@@ -87,6 +94,7 @@ export function CommandPalette({
 
   const closePalette = () => {
     onOpenChange(false);
+    setQuery("");
     restoreFocusRef.current?.focus();
   };
 
@@ -139,15 +147,34 @@ export function CommandPalette({
             <span className="command-palette-chip">{viewModel.backendStatusLabel}</span>
           ) : null}
         </div>
-        <nav className="mt-3 grid max-h-[68vh] gap-2 overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
+        <label htmlFor="command-palette-search" className="sr-only">
+          {viewModel.searchInputLabel}
+        </label>
+        <input
+          ref={searchInputRef}
+          id="command-palette-search"
+          type="search"
+          value={query}
+          autoComplete="off"
+          spellCheck={false}
+          placeholder={viewModel.searchPlaceholder}
+          aria-label={viewModel.searchInputLabel}
+          aria-describedby="command-palette-filter-count"
+          className="mt-3 h-10 w-full rounded-md border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/35"
+          onChange={(event) => setQuery(event.target.value)}
+        />
+        <nav className="mt-3 grid max-h-[62vh] gap-2 overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
           <div className="eyebrow-label">{viewModel.itemCountLabel}</div>
+          <div id="command-palette-filter-count" className="text-xs text-muted-foreground" aria-live="polite">
+            {viewModel.filteredItemCountLabel}
+          </div>
           {viewModel.emptyState ? (
             <div className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm">
               <div className="font-semibold">{viewModel.emptyState.title}</div>
               <div className="mt-1 text-muted-foreground">{viewModel.emptyState.detail}</div>
             </div>
           ) : null}
-          {viewModel.items.map((item) => (
+          {viewModel.filteredItems.map((item) => (
             <Link
               key={item.id}
               ref={item.id === viewModel.initialFocusItemId ? initialCommandRef : undefined}

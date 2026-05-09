@@ -6,6 +6,10 @@ function readDashboardStyles() {
   return readFileSync(resolve(process.cwd(), "src/styles/index.css"), "utf8");
 }
 
+function readTailwindConfig() {
+  return readFileSync(resolve(process.cwd(), "tailwind.config.ts"), "utf8");
+}
+
 describe("dashboard design-system contract", () => {
   it("keeps the cockpit color tokens aligned with the design-system source", () => {
     const styles = readDashboardStyles();
@@ -25,6 +29,13 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--radius-md: 0.375rem");
     expect(styles).toContain("--shadow-workstation:");
     expect(styles).toContain("0 1px 2px rgba(0, 0, 0, 0.30)");
+  });
+
+  it("keeps positive state utilities wired to the success trust token", () => {
+    const tailwindConfig = readTailwindConfig();
+
+    expect(tailwindConfig).toContain("success: \"hsl(var(--success) / <alpha-value>)\"");
+    expect(tailwindConfig).toContain("positive: \"hsl(var(--success) / <alpha-value>)\"");
   });
 
   it("uses the restrained ambient cockpit background from the design-system documentation", () => {

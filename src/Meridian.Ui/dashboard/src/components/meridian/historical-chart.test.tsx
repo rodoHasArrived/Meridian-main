@@ -95,6 +95,8 @@ describe("HistoricalChartCard", () => {
   it("renders all timeframe options", async () => {
     render(<HistoricalChartCard symbol="AAPL" />);
 
+    expect(screen.getByRole("status")).toHaveTextContent(/Loading 1D bars for AAPL/);
+
     for (const tf of HISTORICAL_CHART_TIMEFRAMES) {
       const button = await screen.findByTestId(`historical-chart-timeframe-${tf.id}`);
       expect(button).toBeInTheDocument();
@@ -159,7 +161,7 @@ describe("HistoricalChartCard", () => {
     render(<HistoricalChartCard symbol="AAPL" />);
 
     await waitFor(() => {
-      expect(screen.getByText(/boom/)).toBeInTheDocument();
+      expect(screen.getByRole("alert")).toHaveTextContent(/boom/);
     });
   });
 });
