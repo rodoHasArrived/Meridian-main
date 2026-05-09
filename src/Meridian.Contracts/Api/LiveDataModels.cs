@@ -53,6 +53,38 @@ public sealed record QuotesResponse(
 );
 
 /// <summary>
+/// One row in the multi-symbol quotes snapshot — the latest BBO plus the last trade
+/// (if any) so a watchlist can render bid / ask / last / spread for every symbol from
+/// a single request.
+/// </summary>
+public sealed record QuotesSnapshotItem(
+    string Symbol,
+    DateTimeOffset Timestamp,
+    decimal BidPrice,
+    long BidSize,
+    decimal AskPrice,
+    long AskSize,
+    decimal? MidPrice,
+    decimal? Spread,
+    decimal? LastPrice,
+    long? LastSize,
+    DateTimeOffset? LastTradeTimestamp,
+    long SequenceNumber,
+    string? StreamId,
+    string? Venue
+);
+
+/// <summary>
+/// Multi-symbol quotes snapshot response. Used by the watchlist screen to refresh prices for
+/// every subscribed symbol from a single endpoint.
+/// </summary>
+public sealed record QuotesSnapshotResponse(
+    DateTimeOffset Timestamp,
+    int Count,
+    IReadOnlyList<QuotesSnapshotItem> Quotes
+);
+
+/// <summary>
 /// Response DTO for an order book level.
 /// </summary>
 public sealed record OrderBookLevelDto(

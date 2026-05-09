@@ -342,6 +342,7 @@ public static class UiApiRoutes
     // Live data endpoints
     public const string DataTrades = "/api/data/trades/{symbol}";
     public const string DataQuotes = "/api/data/quotes/{symbol}";
+    public const string DataQuotesSnapshot = "/api/data/quotes-snapshot";
     public const string DataOrderbook = "/api/data/orderbook/{symbol}";
     public const string DataL3Orderbook = "/api/data/l3-orderbook/{symbol}";
     public const string DataBbo = "/api/data/bbo/{symbol}";
