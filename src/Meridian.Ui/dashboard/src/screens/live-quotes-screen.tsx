@@ -28,6 +28,8 @@ import type {
 } from "@/types";
 
 const POLL_INTERVAL_MS = 2000;
+const TRADE_HISTORY_LIMIT = 200;
+const TRADE_TABLE_LIMIT = 25;
 
 interface LoadState<T> {
   data: T | null;
@@ -77,7 +79,7 @@ export function LiveQuotesScreen() {
     try {
       const [q, t, ob] = await Promise.allSettled([
         getLiveQuote(symbol),
-        getLiveTrades(symbol, 25),
+        getLiveTrades(symbol, TRADE_HISTORY_LIMIT),
         getLiveOrderbook(symbol, 10)
       ]);
       setQuote(q.status === "fulfilled"
@@ -185,7 +187,9 @@ export function LiveQuotesScreen() {
   const stale = orderbook.data?.isStale === true;
   const venueLabel = quoteRow?.venue ?? orderbook.data?.venue ?? null;
 
-  const tradeRows = useMemo(() => trades.data?.trades?.slice(0, 25) ?? [], [trades.data]);
+  const tradeHistory = useMemo<TradeDataResponse[]>(() => trades.data?.trades ?? [], [trades.data]);
+  const tradeRows = useMemo(() => tradeHistory.slice(0, TRADE_TABLE_LIMIT), [tradeHistory]);
+  const intraday = useMemo(() => computeIntradayMetrics(tradeHistory), [tradeHistory]);
 
   return (
     <div className="space-y-6">
@@ -252,6 +256,13 @@ export function LiveQuotesScreen() {
           </CardContent>
         </Card>
       ) : (
+        <>
+        <PriceChartCard
+          symbol={activeSymbol}
+          metrics={intraday}
+          loading={refreshing && tradeHistory.length === 0}
+          error={trades.error}
+        />
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
           <Card>
             <CardHeader>
@@ -336,6 +347,7 @@ export function LiveQuotesScreen() {
             </CardContent>
           </Card>
         </div>
+        </>
       )}
     </div>
   );
@@ -680,5 +692,298 @@ function TradesTable({ trades }: { trades: TradeDataResponse[] }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+interface IntradayMetrics {
+  count: number;
+  open: number | null;
+  last: number | null;
+  high: number | null;
+  low: number | null;
+  vwap: number | null;
+  volume: number;
+  change: number | null;
+  changePct: number | null;
+  windowStart: string | null;
+  windowEnd: string | null;
+  series: { ts: number; price: number }[];
+}
+
+export function computeIntradayMetrics(trades: readonly TradeDataResponse[]): IntradayMetrics {
+  if (trades.length === 0) {
+    return {
+      count: 0,
+      open: null,
+      last: null,
+      high: null,
+      low: null,
+      vwap: null,
+      volume: 0,
+      change: null,
+      changePct: null,
+      windowStart: null,
+      windowEnd: null,
+      series: []
+    };
+  }
+
+  // The API returns most-recent trades first; chronological is needed for charts.
+  const chronological = [...trades].reverse();
+  const series: { ts: number; price: number }[] = [];
+  let high = -Infinity;
+  let low = Infinity;
+  let volume = 0;
+  let pxVolume = 0;
+  for (const trade of chronological) {
+    const price = Number(trade.price);
+    const size = Number(trade.size);
+    if (!Number.isFinite(price) || price <= 0) continue;
+    const ts = new Date(trade.timestamp).getTime();
+    if (Number.isFinite(ts)) {
+      series.push({ ts, price });
+    }
+    if (price > high) high = price;
+    if (price < low) low = price;
+    if (Number.isFinite(size) && size > 0) {
+      volume += size;
+      pxVolume += size * price;
+    }
+  }
+
+  const open = series[0]?.price ?? null;
+  const last = series[series.length - 1]?.price ?? null;
+  const change = open !== null && last !== null ? last - open : null;
+  const changePct = change !== null && open !== null && open !== 0 ? (change / open) * 100 : null;
+  const vwap = volume > 0 ? pxVolume / volume : null;
+
+  return {
+    count: chronological.length,
+    open,
+    last,
+    high: Number.isFinite(high) ? high : null,
+    low: Number.isFinite(low) ? low : null,
+    vwap,
+    volume,
+    change,
+    changePct,
+    windowStart: chronological[0]?.timestamp ?? null,
+    windowEnd: chronological[chronological.length - 1]?.timestamp ?? null,
+    series
+  };
+}
+
+function formatChange(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) return "—";
+  const sign = value > 0 ? "+" : value < 0 ? "" : "";
+  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
+}
+
+function formatChangePct(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) return "—";
+  const sign = value > 0 ? "+" : value < 0 ? "" : "";
+  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+}
+
+function formatVolume(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return "—";
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  return value.toLocaleString();
+}
+
+function formatWindowSpan(startIso: string | null, endIso: string | null): string {
+  if (!startIso || !endIso) return "Waiting for prints";
+  const start = new Date(startIso).getTime();
+  const end = new Date(endIso).getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return "Waiting for prints";
+  const seconds = Math.max(1, Math.round((end - start) / 1000));
+  if (seconds < 60) return `over ${seconds}s`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `over ${minutes}m`;
+  const hours = Math.round(minutes / 60);
+  return `over ${hours}h`;
+}
+
+interface PriceChartCardProps {
+  symbol: string;
+  metrics: IntradayMetrics;
+  loading: boolean;
+  error: string | null;
+}
+
+function PriceChartCard({ symbol, metrics, loading, error }: PriceChartCardProps) {
+  const tone = metrics.change === null
+    ? "text-foreground"
+    : metrics.change > 0
+      ? "text-positive"
+      : metrics.change < 0
+        ? "text-danger"
+        : "text-foreground";
+  const stroke = metrics.change === null
+    ? "var(--meridian-chart-stroke, #94a3b8)"
+    : metrics.change > 0
+      ? "var(--meridian-chart-positive, #10b981)"
+      : metrics.change < 0
+        ? "var(--meridian-chart-danger, #ef4444)"
+        : "var(--meridian-chart-stroke, #94a3b8)";
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="eyebrow-label">Recent price action</div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <LineChart className="h-4 w-4 text-primary" aria-hidden="true" />
+              {symbol} prints {formatWindowSpan(metrics.windowStart, metrics.windowEnd)}
+            </CardTitle>
+            <CardDescription>
+              Last {metrics.count} trades streamed from the live pipeline. Chart shows trade-by-trade price; not a fixed-interval candle.
+            </CardDescription>
+          </div>
+          <div className="flex flex-col items-start gap-0.5 sm:items-end" aria-live="polite">
+            <span className="font-mono text-2xl text-foreground">{formatPrice(metrics.last)}</span>
+            <span className={`font-mono text-xs ${tone}`}>
+              {formatChange(metrics.change)} ({formatChangePct(metrics.changePct)})
+            </span>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {error && metrics.count === 0 ? (
+          <p className="text-sm text-danger">{error}</p>
+        ) : metrics.count === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {loading ? `Waiting for prints from ${symbol}…` : `No recent prints available for ${symbol}.`}
+          </p>
+        ) : (
+          <div className="space-y-3">
+            <PriceSparkline
+              series={metrics.series}
+              stroke={stroke}
+              high={metrics.high}
+              low={metrics.low}
+              symbol={symbol}
+            />
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+              <ChartStat label="Open" value={formatPrice(metrics.open)} />
+              <ChartStat label="High" value={formatPrice(metrics.high)} />
+              <ChartStat label="Low" value={formatPrice(metrics.low)} />
+              <ChartStat label="VWAP" value={formatPrice(metrics.vwap)} />
+              <ChartStat label="Volume" value={formatVolume(metrics.volume)} />
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ChartStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-border/60 bg-secondary/25 px-2.5 py-1.5">
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="mt-0.5 font-mono text-sm text-foreground">{value}</div>
+    </div>
+  );
+}
+
+interface PriceSparklineProps {
+  series: { ts: number; price: number }[];
+  stroke: string;
+  high: number | null;
+  low: number | null;
+  symbol: string;
+}
+
+function PriceSparkline({ series, stroke, high, low, symbol }: PriceSparklineProps) {
+  const width = 800;
+  const height = 180;
+  const padX = 8;
+  const padY = 14;
+
+  if (series.length === 0 || high === null || low === null) {
+    return null;
+  }
+
+  const minTs = series[0]!.ts;
+  const maxTs = series[series.length - 1]!.ts;
+  const tsSpan = Math.max(1, maxTs - minTs);
+  const priceSpan = Math.max(high - low, Math.max(high * 0.0005, 0.01));
+  const xFor = (ts: number) => padX + ((ts - minTs) / tsSpan) * (width - padX * 2);
+  const yFor = (price: number) => padY + (1 - (price - low) / priceSpan) * (height - padY * 2);
+
+  const pointsAttr = series.map((p) => `${xFor(p.ts).toFixed(2)},${yFor(p.price).toFixed(2)}`).join(" ");
+  const lastPoint = series[series.length - 1]!;
+  const lastX = xFor(lastPoint.ts);
+  const lastY = yFor(lastPoint.price);
+  const baseY = (height - padY).toFixed(2);
+  const areaSegments = [`M ${xFor(series[0]!.ts).toFixed(2)} ${baseY}`];
+  for (const point of series) {
+    areaSegments.push(`L ${xFor(point.ts).toFixed(2)} ${yFor(point.price).toFixed(2)}`);
+  }
+  areaSegments.push(`L ${lastX.toFixed(2)} ${baseY} Z`);
+  const areaPath = areaSegments.join(" ");
+
+  return (
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="none"
+      className="block h-44 w-full overflow-visible"
+      role="img"
+      aria-label={`Recent ${symbol} trade prices, ranging from ${formatPrice(low)} to ${formatPrice(high)}.`}
+    >
+      <line
+        x1={padX}
+        x2={width - padX}
+        y1={yFor(high)}
+        y2={yFor(high)}
+        stroke="currentColor"
+        strokeOpacity="0.15"
+        strokeDasharray="4 4"
+      />
+      <line
+        x1={padX}
+        x2={width - padX}
+        y1={yFor(low)}
+        y2={yFor(low)}
+        stroke="currentColor"
+        strokeOpacity="0.15"
+        strokeDasharray="4 4"
+      />
+      <path d={areaPath} fill={stroke} fillOpacity="0.12" stroke="none" />
+      <polyline
+        fill="none"
+        stroke={stroke}
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        points={pointsAttr}
+      />
+      <circle cx={lastX} cy={lastY} r="3.25" fill={stroke} stroke="currentColor" strokeOpacity="0.4" strokeWidth="1" />
+      <text
+        x={width - padX}
+        y={Math.max(yFor(high) - 4, 12)}
+        textAnchor="end"
+        fontFamily="IBM Plex Mono, ui-monospace"
+        fontSize="10"
+        fill="currentColor"
+        fillOpacity="0.55"
+      >
+        {formatPrice(high)}
+      </text>
+      <text
+        x={width - padX}
+        y={Math.min(yFor(low) + 12, height - 4)}
+        textAnchor="end"
+        fontFamily="IBM Plex Mono, ui-monospace"
+        fontSize="10"
+        fill="currentColor"
+        fillOpacity="0.55"
+      >
+        {formatPrice(low)}
+      </text>
+    </svg>
   );
 }
