@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
   FlaskConical,
-  Loader2,
   Play,
   Settings2,
   Sparkles
@@ -12,175 +10,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuantPlotChart } from "@/components/meridian/quant-plot";
-import { extractQuantParameters, getQuantTemplates, runQuantScript } from "@/lib/api";
-import type {
-  QuantDiagnostic,
-  QuantParameter,
-  QuantRunResponse,
-  QuantTemplate
-} from "@/types";
-
-const DEFAULT_SOURCE = `// Welcome to the Meridian Quant Lab.
-// Press Run to compile and execute this C# script in-process.
-Print("Hello from the Quant Lab.");
-PrintMetric("answer", 42);
-`;
-
-interface RunState {
-  phase: "idle" | "running" | "ready" | "error";
-  result: QuantRunResponse | null;
-  error: string | null;
-}
-
-const initialRunState: RunState = { phase: "idle", result: null, error: null };
-
-function mergeParams(existing: QuantParameter[], incoming: QuantParameter[]): QuantParameter[] {
-  const map = new Map(existing.map((p) => [p.name, p]));
-  for (const p of incoming) map.set(p.name, p);
-  return [...map.values()];
-}
-
-function initNewParamValues(
-  existing: Record<string, string>,
-  params: QuantParameter[]
-): Record<string, string> {
-  const next = { ...existing };
-  let changed = false;
-  for (const p of params) {
-    if (!(p.name in next) && p.defaultValue !== null) {
-      next[p.name] = String(p.defaultValue);
-      changed = true;
-    }
-  }
-  return changed ? next : existing;
-}
-
-function buildParameters(
-  params: QuantParameter[],
-  values: Record<string, string>
-): Record<string, string | number | boolean | null> {
-  const result: Record<string, string | number | boolean | null> = {};
-  for (const p of params) {
-    const raw = values[p.name];
-    if (raw === undefined || raw === "") {
-      result[p.name] = null;
-      continue;
-    }
-    switch (p.typeName) {
-      case "bool":
-        result[p.name] = raw === "true";
-        break;
-      case "int":
-      case "long":
-      case "double":
-      case "float":
-      case "decimal": {
-        const n = Number(raw);
-        result[p.name] = Number.isFinite(n) ? n : null;
-        break;
-      }
-      default:
-        result[p.name] = raw;
-    }
-  }
-  return result;
-}
+import { ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
+import {
+  useQuantLabScreenViewModel,
+  type QuantParameterRow,
+  type QuantRunState,
+  type QuantTemplatePanelState
+} from "@/screens/quant-lab-screen.view-model";
+import type { QuantDiagnostic, QuantTemplate } from "@/types";
 
 export function QuantLabScreen() {
-  const [source, setSource] = useState(DEFAULT_SOURCE);
-  const [templates, setTemplates] = useState<QuantTemplate[]>([]);
-  const [templatesError, setTemplatesError] = useState<string | null>(null);
-  const [run, setRun] = useState<RunState>(initialRunState);
-  const [detectedParams, setDetectedParams] = useState<QuantParameter[]>([]);
-  const [paramValues, setParamValues] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    let cancelled = false;
-    getQuantTemplates()
-      .then((response) => {
-        if (cancelled) return;
-        setTemplates(response.templates);
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        setTemplatesError((err as Error)?.message ?? "Failed to load templates.");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Debounced parameter extraction from source
-  useEffect(() => {
-    if (!source.trim()) {
-      setDetectedParams([]);
-      return;
-    }
-    const timer = setTimeout(() => {
-      extractQuantParameters(source)
-        .then((r) => {
-          setDetectedParams((prev) => mergeParams(prev, r.parameters));
-          setParamValues((prev) => initNewParamValues(prev, r.parameters));
-        })
-        .catch(() => {/* non-critical — QuantLab may be disabled */});
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [source]);
-
-  // Merge runtime parameters discovered during a run
-  useEffect(() => {
-    const rp = run.result?.runtimeParameters;
-    if (!rp || rp.length === 0) return;
-    setDetectedParams((prev) => mergeParams(prev, rp));
-    setParamValues((prev) => initNewParamValues(prev, rp));
-  }, [run.result]);
-
-  const handleRun = useCallback(async () => {
-    if (!source.trim()) {
-      setRun({ phase: "error", result: null, error: "Enter some script source first." });
-      return;
-    }
-    setRun({ phase: "running", result: null, error: null });
-    try {
-      const parameters = buildParameters(detectedParams, paramValues);
-      const result = await runQuantScript({ source, parameters });
-      setRun({ phase: "ready", result, error: null });
-    } catch (err) {
-      setRun({
-        phase: "error",
-        result: null,
-        error: (err as Error)?.message ?? "Failed to run script."
-      });
-    }
-  }, [source, detectedParams, paramValues]);
-
-  const loadTemplate = useCallback((template: QuantTemplate) => {
-    setSource(template.source);
-    setRun(initialRunState);
-    setDetectedParams([]);
-    setParamValues({});
-  }, []);
-
-  const handleParamChange = useCallback((name: string, value: string) => {
-    setParamValues((prev) => ({ ...prev, [name]: value }));
-  }, []);
-
-  const handleParamReset = useCallback((param: QuantParameter) => {
-    setParamValues((prev) => ({
-      ...prev,
-      [param.name]: param.defaultValue !== null ? String(param.defaultValue) : ""
-    }));
-  }, []);
-
-  const consoleLines = useMemo(() => {
-    if (!run.result) return [] as string[];
-    return run.result.consoleOutput.split("\n");
-  }, [run.result]);
-
-  const summaryTone = run.result?.success ? "success" : run.phase === "error" || (run.result && !run.result.success) ? "danger" : "default";
+  const vm = useQuantLabScreenViewModel();
 
   return (
     <div className="space-y-6">
+      <span className="sr-only" aria-live="polite">{vm.runStatusAnnouncement}</span>
       <Card>
         <CardHeader>
           <div className="eyebrow-label">Strategy Lane</div>
@@ -193,49 +37,62 @@ export function QuantLabScreen() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="default"
-              onClick={() => void handleRun()}
-              disabled={run.phase === "running"}
-              aria-label="Run script"
-            >
-              {run.phase === "running" ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              ) : (
+          <ToolbarStrip
+            ariaLabel="Quant Lab status"
+            items={vm.toolbarItems}
+            right={
+              <Button
+                type="button"
+                variant="default"
+                onClick={() => void vm.runScript()}
+                disabled={vm.runCommand.disabled}
+                disabledReason={vm.runCommand.disabledReason}
+                busy={vm.runCommand.busy}
+                busyLabel={vm.runCommand.label}
+                aria-label={vm.runCommand.ariaLabel}
+              >
                 <Play className="h-4 w-4" aria-hidden="true" />
-              )}
-              <span className="ml-1.5">{run.phase === "running" ? "Running…" : "Run"}</span>
-            </Button>
-            {run.result ? (
+                <span className="ml-1.5">{vm.runCommand.label}</span>
+              </Button>
+            }
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            {vm.run.result ? (
               <span className="text-xs text-muted-foreground">
-                Compiled in {run.result.compileTimeMs.toFixed(0)} ms · executed in {run.result.elapsedMs.toFixed(0)} ms · peak {(run.result.peakMemoryBytes / 1024).toFixed(0)} KB
+                Compiled in {vm.run.result.compileTimeMs.toFixed(0)} ms · executed in {vm.run.result.elapsedMs.toFixed(0)} ms · peak {(vm.run.result.peakMemoryBytes / 1024).toFixed(0)} KB
               </span>
-            ) : null}
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                Run state, parameters, and template availability are tracked before execution.
+              </span>
+            )}
           </div>
           <label htmlFor="quant-lab-source" className="sr-only">Script source</label>
           <textarea
             id="quant-lab-source"
             spellCheck={false}
-            value={source}
-            onChange={(event) => setSource(event.target.value)}
+            value={vm.source}
+            onChange={(event) => vm.setSource(event.target.value)}
             className="w-full min-h-[16rem] resize-y rounded-md border border-border/70 bg-background/60 p-3 font-mono text-xs leading-5 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             aria-label="Script source"
+            aria-describedby="quant-lab-source-help"
           />
+          <p id="quant-lab-source-help" className="text-xs text-muted-foreground">
+            Source is scanned for runtime parameters after edits settle.
+          </p>
         </CardContent>
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-        <RunResultPanel run={run} consoleLines={consoleLines} tone={summaryTone} />
+        <RunResultPanel run={vm.run} consoleLines={vm.consoleLines} tone={vm.summaryTone} />
         <div className="space-y-4">
           <ParametersSidePanel
-            params={detectedParams}
-            values={paramValues}
-            onChange={handleParamChange}
-            onReset={handleParamReset}
+            rows={vm.parameterRows}
+            phase={vm.parameterPhase}
+            onChange={vm.updateParameter}
+            onReset={vm.resetParameter}
           />
-          <TemplatesPanel templates={templates} error={templatesError} onSelect={loadTemplate} />
+          <TemplatesPanel templates={vm.templates} state={vm.templatesPanel} onSelect={vm.loadTemplate} />
         </div>
       </div>
     </div>
@@ -243,7 +100,7 @@ export function QuantLabScreen() {
 }
 
 interface RunResultPanelProps {
-  run: RunState;
+  run: QuantRunState;
   consoleLines: string[];
   tone: "success" | "danger" | "default";
 }
@@ -262,8 +119,8 @@ function RunResultPanel({ run, consoleLines, tone }: RunResultPanelProps) {
   if (run.phase === "running") {
     return (
       <Card>
-        <CardContent className="flex items-center gap-2 py-10 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+        <CardContent className="flex items-center gap-2 py-10 text-sm text-muted-foreground" role="status" aria-live="polite">
+          <span className="h-4 w-4 animate-spin rounded-full border border-primary/30 border-t-primary" aria-hidden="true" />
           Compiling and running script…
         </CardContent>
       </Card>
@@ -381,34 +238,15 @@ function DiagnosticsBlock({
   );
 }
 
-function inputTypeFor(typeName: string): "number" | "checkbox" | "text" {
-  switch (typeName) {
-    case "int":
-    case "long":
-    case "double":
-    case "float":
-    case "decimal":
-      return "number";
-    case "bool":
-      return "checkbox";
-    default:
-      return "text";
-  }
-}
-
-function stepFor(typeName: string): string {
-  return typeName === "int" || typeName === "long" ? "1" : "any";
-}
-
 interface ParametersSidePanelProps {
-  params: QuantParameter[];
-  values: Record<string, string>;
+  rows: QuantParameterRow[];
+  phase: "idle" | "extracting" | "ready" | "unavailable";
   onChange: (name: string, value: string) => void;
-  onReset: (param: QuantParameter) => void;
+  onReset: (name: string) => void;
 }
 
-function ParametersSidePanel({ params, values, onChange, onReset }: ParametersSidePanelProps) {
-  if (params.length === 0) return null;
+function ParametersSidePanel({ rows, phase, onChange, onReset }: ParametersSidePanelProps) {
+  if (rows.length === 0 && phase !== "extracting" && phase !== "unavailable") return null;
 
   return (
     <Card className="self-start">
@@ -420,67 +258,70 @@ function ParametersSidePanel({ params, values, onChange, onReset }: ParametersSi
         <CardDescription>Override script parameters before running.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ul className="space-y-3" aria-label="Script parameters">
-          {params.map((p) => {
-            const inputType = inputTypeFor(p.typeName);
-            const currentValue = values[p.name] ?? (p.defaultValue !== null ? String(p.defaultValue) : "");
-            const isDefault = p.defaultValue !== null && currentValue === String(p.defaultValue);
-            return (
-              <li key={p.name} className="space-y-1">
+        {phase === "extracting" && rows.length === 0 ? (
+          <p role="status" className="text-sm text-muted-foreground">Scanning source for parameters...</p>
+        ) : phase === "unavailable" && rows.length === 0 ? (
+          <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+            Parameter extraction is unavailable. The script can still run with inline defaults.
+          </p>
+        ) : (
+          <ul className="space-y-3" aria-label="Script parameters">
+            {rows.map((row) => (
+              <li key={row.name} className="space-y-1">
                 <div className="flex items-center justify-between gap-1">
                   <label
-                    htmlFor={`param-${p.name}`}
+                    htmlFor={`param-${row.name}`}
                     className="text-xs font-medium text-foreground"
-                    title={p.description ?? undefined}
+                    title={row.description ?? undefined}
                   >
-                    {p.label}
+                    {row.label}
                   </label>
                   <span className="rounded bg-secondary/50 px-1 py-0.5 font-mono text-[10px] text-muted-foreground">
-                    {p.typeName}
+                    {row.typeName}
                   </span>
                 </div>
-                {inputType === "checkbox" ? (
+                {row.inputType === "checkbox" ? (
                   <div className="flex items-center gap-2">
                     <input
-                      id={`param-${p.name}`}
+                      id={`param-${row.name}`}
                       type="checkbox"
-                      checked={currentValue === "true"}
-                      onChange={(e) => onChange(p.name, e.target.checked ? "true" : "false")}
+                      checked={row.checked}
+                      onChange={(e) => onChange(row.name, e.target.checked ? "true" : "false")}
                       className="h-4 w-4 rounded border border-border accent-primary"
-                      aria-label={`${p.label} parameter`}
+                      aria-label={row.ariaLabel}
                     />
-                    <span className="text-xs text-muted-foreground">{currentValue === "true" ? "true" : "false"}</span>
+                    <span className="text-xs text-muted-foreground">{row.checked ? "true" : "false"}</span>
                   </div>
                 ) : (
                   <input
-                    id={`param-${p.name}`}
-                    type={inputType}
-                    value={currentValue}
-                    min={p.min !== null && p.min > Number.MIN_SAFE_INTEGER ? p.min : undefined}
-                    max={p.max !== null && p.max < Number.MAX_SAFE_INTEGER ? p.max : undefined}
-                    step={inputType === "number" ? stepFor(p.typeName) : undefined}
-                    onChange={(e) => onChange(p.name, e.target.value)}
+                    id={`param-${row.name}`}
+                    type={row.inputType}
+                    value={row.value}
+                    min={row.min}
+                    max={row.max}
+                    step={row.step}
+                    onChange={(e) => onChange(row.name, e.target.value)}
                     className="w-full rounded-md border border-border/70 bg-background/60 px-2 py-1.5 font-mono text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    aria-label={`${p.label} parameter`}
+                    aria-label={row.ariaLabel}
                   />
                 )}
-                {p.description ? (
-                  <p className="text-[10px] leading-4 text-muted-foreground">{p.description}</p>
+                {row.description ? (
+                  <p className="text-[10px] leading-4 text-muted-foreground">{row.description}</p>
                 ) : null}
-                {!isDefault && p.defaultValue !== null ? (
+                {row.resetLabel ? (
                   <button
                     type="button"
-                    onClick={() => onReset(p)}
+                    onClick={() => onReset(row.name)}
                     className="text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-                    aria-label={`Reset ${p.label} to default`}
+                    aria-label={row.resetLabel}
                   >
-                    Reset to {p.defaultValue}
+                    Reset to default
                   </button>
                 ) : null}
               </li>
-            );
-          })}
-        </ul>
+            ))}
+          </ul>
+        )}
       </CardContent>
     </Card>
   );
@@ -488,11 +329,11 @@ function ParametersSidePanel({ params, values, onChange, onReset }: ParametersSi
 
 interface TemplatesPanelProps {
   templates: QuantTemplate[];
-  error: string | null;
+  state: QuantTemplatePanelState;
   onSelect: (template: QuantTemplate) => void;
 }
 
-function TemplatesPanel({ templates, error, onSelect }: TemplatesPanelProps) {
+function TemplatesPanel({ templates, state, onSelect }: TemplatesPanelProps) {
   return (
     <Card className="self-start">
       <CardHeader>
@@ -503,10 +344,14 @@ function TemplatesPanel({ templates, error, onSelect }: TemplatesPanelProps) {
         <CardDescription>Load a working snippet to verify the lab end-to-end.</CardDescription>
       </CardHeader>
       <CardContent>
-        {error && templates.length === 0 ? (
-          <p className="text-sm text-danger">{error}</p>
-        ) : templates.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Loading templates…</p>
+        {state.phase !== "ready" ? (
+          <p
+            role={state.role}
+            aria-live={state.ariaLive}
+            className={state.phase === "error" ? "text-sm text-danger" : "text-sm text-muted-foreground"}
+          >
+            {state.message}
+          </p>
         ) : (
           <ul className="space-y-2">
             {templates.map((template) => (

@@ -1,35 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-<<<<<<< Updated upstream
-import { screen, waitFor, within } from "@testing-library/react";
-
-import { WatchlistScreen } from "@/screens/watchlist-screen";
-import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
-import * as api from "@/lib/api";
-import type { QuotesSnapshotResponse, SymbolRecord, SymbolStatistics } from "@/types";
-
-const symbols: SymbolRecord[] = [
-  {
-    symbol: "AAPL",
-    status: "Active",
-    provider: "alpaca",
-    lastEventAt: "2026-05-08T15:00:00.000Z",
-    eventCount: 1234,
-    hasHistoricalData: true
-  },
-  {
-    symbol: "MSFT",
-    status: "Monitored",
-    provider: "alpaca",
-    lastEventAt: "2026-05-08T14:59:00.000Z",
-    eventCount: 845,
-    hasHistoricalData: false
-=======
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { WatchlistScreen } from "@/screens/watchlist-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import * as api from "@/lib/api";
-import type { SymbolRecord, SymbolStatistics } from "@/types";
+import type { QuotesSnapshotResponse, SymbolRecord, SymbolStatistics } from "@/types";
 
 const symbols: SymbolRecord[] = [
   {
@@ -47,7 +22,6 @@ const symbols: SymbolRecord[] = [
     lastEventAt: "2026-05-09T01:00:00.000Z",
     eventCount: 1200,
     hasHistoricalData: true
->>>>>>> Stashed changes
   }
 ];
 
@@ -56,17 +30,16 @@ const stats: SymbolStatistics = {
   monitoredSymbols: 1,
   archivedSymbols: 0,
   symbolsWithErrors: 0,
-<<<<<<< Updated upstream
-  totalEventsLast24h: 2079
+  totalEventsLast24h: 1200
 };
 
 const snapshot: QuotesSnapshotResponse = {
-  timestamp: "2026-05-08T15:00:01.000Z",
+  timestamp: "2026-05-09T01:00:01.000Z",
   count: 2,
   quotes: [
     {
       symbol: "AAPL",
-      timestamp: "2026-05-08T15:00:00.000Z",
+      timestamp: "2026-05-09T01:00:00.000Z",
       bidPrice: 188.05,
       bidSize: 200,
       askPrice: 188.07,
@@ -75,15 +48,15 @@ const snapshot: QuotesSnapshotResponse = {
       spread: 0.02,
       lastPrice: 188.06,
       lastSize: 100,
-      lastTradeTimestamp: "2026-05-08T14:59:59.000Z",
+      lastTradeTimestamp: "2026-05-09T00:59:59.000Z",
       sequenceNumber: 42,
       streamId: "s1",
       venue: "NASDAQ"
     },
     {
       symbol: "MSFT",
-      timestamp: "2026-05-08T15:00:00.000Z",
-      bidPrice: 412.10,
+      timestamp: "2026-05-09T01:00:00.000Z",
+      bidPrice: 412.1,
       bidSize: 300,
       askPrice: 412.14,
       askSize: 250,
@@ -91,7 +64,7 @@ const snapshot: QuotesSnapshotResponse = {
       spread: 0.04,
       lastPrice: 412.13,
       lastSize: 50,
-      lastTradeTimestamp: "2026-05-08T14:59:58.000Z",
+      lastTradeTimestamp: "2026-05-09T00:59:58.000Z",
       sequenceNumber: 99,
       streamId: "s1",
       venue: "NASDAQ"
@@ -99,83 +72,85 @@ const snapshot: QuotesSnapshotResponse = {
   ]
 };
 
-describe("WatchlistScreen live prices", () => {
-  beforeEach(() => {
-    vi.spyOn(api, "getSymbols").mockResolvedValue(symbols);
-    vi.spyOn(api, "getSymbolsStatistics").mockResolvedValue(stats);
-    vi.spyOn(api, "getLiveQuotesSnapshot").mockResolvedValue(snapshot);
-=======
-  totalEventsLast24h: 1200
-};
-
 describe("WatchlistScreen", () => {
   beforeEach(() => {
     vi.spyOn(api, "getSymbols").mockResolvedValue(symbols);
     vi.spyOn(api, "getSymbolsStatistics").mockResolvedValue(stats);
+    vi.spyOn(api, "getLiveQuotesSnapshot").mockResolvedValue(snapshot);
     vi.spyOn(api, "addSymbol").mockResolvedValue({ success: true, symbol: "SPY" });
     vi.spyOn(api, "bulkAddSymbols").mockResolvedValue({ added: 2, skipped: 0, errors: [] });
     vi.spyOn(api, "removeSymbol").mockResolvedValue({ success: true, symbol: "MSFT" });
->>>>>>> Stashed changes
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-<<<<<<< Updated upstream
-  it("renders bid, ask, last and spread for each subscribed symbol", async () => {
-    renderWithRouter(<WatchlistScreen />);
+  it("renders sorted rows through the dense table with live quote labels", async () => {
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await waitForAsyncEffects();
+    const table = await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    const rows = within(table).getAllByRole("row");
 
-    const aaplRow = await screen.findByRole("row", { name: /AAPL/i });
-    const msftRow = await screen.findByRole("row", { name: /MSFT/i });
-
-    await waitFor(() => {
-      expect(within(aaplRow).getByText(/188\.05/)).toBeInTheDocument();
-      expect(within(aaplRow).getByText(/188\.07/)).toBeInTheDocument();
-      expect(within(aaplRow).getByText(/188\.06/)).toBeInTheDocument();
-      expect(within(msftRow).getByText(/412\.10/)).toBeInTheDocument();
-      expect(within(msftRow).getByText(/412\.14/)).toBeInTheDocument();
-    });
+    await waitFor(() => expect(within(rows[1]).getByText("188.05 x 200")).toBeInTheDocument());
+    expect(rows[1]).toHaveAccessibleName(/AAPL. Status Active/i);
+    expect(rows[2]).toHaveAccessibleName(/MSFT. Status Monitored/i);
+    expect(within(rows[1]).getByText("188.07 x 150")).toBeInTheDocument();
+    expect(within(rows[2]).getByText("412.10 x 300")).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Total: 2" })).toBeInTheDocument();
+    expect(screen.getByRole("toolbar", { name: /symbol watchlist status/i })).toHaveTextContent("24h events");
+    expect(screen.getByRole("link", { name: /View live quotes for AAPL/i })).toHaveAttribute("href", "/data/quotes?symbol=AAPL");
   });
 
   it("requests live quotes only for the subscribed symbols", async () => {
-    renderWithRouter(<WatchlistScreen />);
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
     await waitForAsyncEffects();
 
     await waitFor(() => {
       expect(api.getLiveQuotesSnapshot).toHaveBeenCalled();
     });
-    const args = (api.getLiveQuotesSnapshot as unknown as ReturnType<typeof vi.fn>).mock.calls[0]?.[0];
-    expect(args).toEqual(["AAPL", "MSFT"]);
+    expect(vi.mocked(api.getLiveQuotesSnapshot).mock.calls[0]?.[0]).toEqual(["MSFT", "AAPL"]);
+  });
+
+  it("lets operators manually refresh live quotes", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
+
+    await screen.findByText(/Live prices for 2 symbols/i);
+    vi.mocked(api.getLiveQuotesSnapshot).mockClear();
+
+    await user.click(screen.getByRole("button", { name: /Refresh live prices/i }));
+
+    await waitFor(() => {
+      expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["MSFT", "AAPL"]);
+    });
   });
 
   it("surfaces an inline warning when the live-quote feed errors", async () => {
-    (api.getLiveQuotesSnapshot as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-      new Error("collector offline")
-    );
+    vi.mocked(api.getLiveQuotesSnapshot).mockRejectedValueOnce(new Error("collector offline"));
 
-    renderWithRouter(<WatchlistScreen />);
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
     await waitForAsyncEffects();
 
     await waitFor(() => {
-      expect(screen.getByText(/collector offline/i)).toBeInTheDocument();
+      expect(screen.getByRole("alert")).toHaveTextContent(/collector offline/i);
     });
-=======
-  it("renders sorted rows through the dense table with derived labels", async () => {
+  });
+
+  it("warns when the live-quote snapshot only covers part of the watchlist", async () => {
+    vi.mocked(api.getLiveQuotesSnapshot).mockResolvedValueOnce({
+      ...snapshot,
+      count: 1,
+      quotes: [snapshot.quotes[0]]
+    });
+
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    const table = await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
-    const rows = within(table).getAllByRole("row");
-
-    expect(rows[1]).toHaveAccessibleName(/AAPL. Status Active/i);
-    expect(rows[2]).toHaveAccessibleName(/MSFT. Status Monitored/i);
-    expect(screen.getByRole("group", { name: "Total: 2" })).toBeInTheDocument();
-    expect(screen.getByRole("toolbar", { name: /symbol watchlist status/i })).toHaveTextContent("24h events");
-    expect(screen.getByRole("link", { name: /View live quotes for AAPL/i })).toHaveAttribute("href", "/data/quotes?symbol=AAPL");
+    expect(await screen.findByText(/Live prices for 1 of 2 symbols/i)).toBeInTheDocument();
+    expect(screen.getByText("188.05 x 200")).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toHaveTextContent("Never");
   });
 
   it("normalizes symbols before add and refreshes after success", async () => {
@@ -234,6 +209,5 @@ describe("WatchlistScreen", () => {
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
     await waitForAsyncEffects();
     expect(await screen.findByRole("alert")).toHaveTextContent("Symbol API offline");
->>>>>>> Stashed changes
   });
 });

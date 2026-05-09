@@ -4,11 +4,13 @@ import {
   buildDiffPanel,
   buildPlotToolState,
   buildPlotToolTabs,
+  buildPromotionCashForm,
   buildPromotionHistoryTable,
   buildResearchRunLibraryState,
   buildRunDetail,
   buildRunTable,
   nextPlotToolViewForKey,
+  parsePromotionInitialCashInput,
   shouldCloseRunDetailForKey,
   toggleRunSelection
 } from "@/screens/research-screen.view-model";
@@ -370,6 +372,42 @@ describe("research-screen view model", () => {
     expect(shouldCloseRunDetailForKey("Escape")).toBe(true);
     expect(shouldCloseRunDetailForKey("Esc")).toBe(true);
     expect(shouldCloseRunDetailForKey("Enter")).toBe(false);
+  });
+
+  it("derives paper-promotion cash validation and disabled command state", () => {
+    expect(parsePromotionInitialCashInput("100000")).toBe(100000);
+    expect(parsePromotionInitialCashInput("999")).toBeNull();
+    expect(parsePromotionInitialCashInput("1000.50")).toBeNull();
+    expect(parsePromotionInitialCashInput("")).toBeNull();
+
+    const valid = buildPromotionCashForm({
+      input: "100000",
+      eligible: true,
+      promoteState: "evaluated"
+    });
+
+    expect(valid.canSubmit).toBe(true);
+    expect(valid.errorText).toBeNull();
+    expect(valid.helpText).toBe("Minimum $1,000. Use whole-dollar paper capital.");
+    expect(valid.describedBy).toBe("promote-initial-cash-help");
+
+    const invalid = buildPromotionCashForm({
+      input: "500",
+      eligible: true,
+      promoteState: "evaluated"
+    });
+
+    expect(invalid.canSubmit).toBe(false);
+    expect(invalid.errorText).toBe("Enter at least $1,000 in whole dollars.");
+
+    const creating = buildPromotionCashForm({
+      input: "100000",
+      eligible: true,
+      promoteState: "creating"
+    });
+
+    expect(creating.canSubmit).toBe(false);
+    expect(creating.submitLabel).toBe("Starting paper session...");
   });
 
   it("preserves canonical run-pair ordering across toggle churn for compare continuity", () => {

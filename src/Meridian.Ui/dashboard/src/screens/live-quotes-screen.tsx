@@ -70,19 +70,29 @@ export function LiveQuotesScreen() {
   const [trades, setTrades] = useState<LoadState<TradesResponse>>({ data: null, error: null });
   const [orderbook, setOrderbook] = useState<LoadState<OrderBookResponse>>({ data: null, error: null });
   const [refreshing, setRefreshing] = useState(false);
-  const inFlightRef = useRef(false);
+  const requestIdRef = useRef(0);
+  const inFlightSymbolRef = useRef<string | null>(null);
   const [ticket, setTicket] = useState<QuickTicketState>(initialQuickTicketState);
 
   const fetchAll = useCallback(async (symbol: string) => {
-    if (inFlightRef.current) return;
-    inFlightRef.current = true;
+    const requestedSymbol = symbol.trim().toUpperCase();
+    if (!requestedSymbol || inFlightSymbolRef.current === requestedSymbol) return;
+
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    inFlightSymbolRef.current = requestedSymbol;
     setRefreshing(true);
     try {
       const [q, t, ob] = await Promise.allSettled([
-        getLiveQuote(symbol),
-        getLiveTrades(symbol, TRADE_HISTORY_LIMIT),
-        getLiveOrderbook(symbol, 10)
+        getLiveQuote(requestedSymbol),
+        getLiveTrades(requestedSymbol, TRADE_HISTORY_LIMIT),
+        getLiveOrderbook(requestedSymbol, 10)
       ]);
+
+      if (requestIdRef.current !== requestId) {
+        return;
+      }
+
       setQuote(q.status === "fulfilled"
         ? { data: q.value, error: null }
         : { data: null, error: (q.reason as Error)?.message ?? "Failed to load quote" });
@@ -93,8 +103,10 @@ export function LiveQuotesScreen() {
         ? { data: ob.value, error: null }
         : { data: null, error: (ob.reason as Error)?.message ?? "Failed to load order book" });
     } finally {
-      inFlightRef.current = false;
-      setRefreshing(false);
+      if (requestIdRef.current === requestId) {
+        inFlightSymbolRef.current = null;
+        setRefreshing(false);
+      }
     }
   }, []);
 

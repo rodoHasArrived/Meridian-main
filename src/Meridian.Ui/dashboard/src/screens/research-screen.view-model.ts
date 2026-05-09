@@ -58,6 +58,7 @@ export interface ResearchRunLibraryState {
   promotionSession: PaperSessionSummary | null;
   showPromotePanel: boolean;
   promoteError: string | null;
+  promotionCashForm: ResearchPromotionCashFormState;
   selectionText: string;
   selectionDetail: string;
   compareButtonLabel: string;
@@ -65,6 +66,20 @@ export interface ResearchRunLibraryState {
   promotionHistoryButtonLabel: string;
   promoteButtonLabel: string;
   statusAnnouncement: string;
+}
+
+export interface ResearchPromotionCashFormState {
+  inputId: string;
+  label: string;
+  value: string;
+  min: number;
+  step: number;
+  helpText: string;
+  errorText: string | null;
+  describedBy: string;
+  canSubmit: boolean;
+  submitLabel: string;
+  submitAriaLabel: string;
 }
 
 export interface ResearchPlotToolTab {
@@ -362,6 +377,7 @@ export function useResearchRunLibraryViewModel(
   const [promotionEval, setPromotionEval] = useState<PromotionEvaluationResult | null>(null);
   const [promotionSession, setPromotionSession] = useState<PaperSessionSummary | null>(null);
   const [promoteError, setPromoteError] = useState<string | null>(null);
+  const [promotionInitialCashInput, setPromotionInitialCashInput] = useState("100000");
 
   const metrics = data?.metrics ?? [];
   const runs = data?.runs ?? [];
@@ -385,7 +401,8 @@ export function useResearchRunLibraryViewModel(
       promoteState,
       promotionEval,
       promotionSession,
-      promoteError
+      promoteError,
+      promotionInitialCashInput
     }),
     [
       actionError,
@@ -405,7 +422,8 @@ export function useResearchRunLibraryViewModel(
       promoteState,
       promotionEval,
       promotionSession,
-      promoteError
+      promoteError,
+      promotionInitialCashInput
     ]
   );
 
@@ -507,6 +525,7 @@ export function useResearchRunLibraryViewModel(
     setPromoteError(null);
     setPromotionEval(null);
     setPromotionSession(null);
+    setPromotionInitialCashInput("100000");
     try {
       const result = await services.evaluatePromotion(run.id);
       setPromotionEval(result);
@@ -517,9 +536,15 @@ export function useResearchRunLibraryViewModel(
     }
   }, [services, state.selectedRuns]);
 
-  const confirmPromotion = useCallback(async (initialCash: number) => {
+  const confirmPromotion = useCallback(async () => {
     const run = state.selectedRuns[0];
     if (!run || !promotionEval?.isEligible) return;
+    const initialCash = parsePromotionInitialCashInput(promotionInitialCashInput);
+    if (initialCash === null) {
+      setPromoteError("Enter initial cash of at least $1,000 before starting a paper session.");
+      return;
+    }
+
     setPromoteState("creating");
     setPromoteError(null);
     try {
@@ -530,13 +555,14 @@ export function useResearchRunLibraryViewModel(
       setPromoteError(err instanceof Error ? err.message : "Paper session creation failed.");
       setPromoteState("evaluated");
     }
-  }, [services, state.selectedRuns, promotionEval]);
+  }, [services, state.selectedRuns, promotionEval, promotionInitialCashInput]);
 
   const cancelPromotion = useCallback(() => {
     setPromoteState("idle");
     setPromotionEval(null);
     setPromotionSession(null);
     setPromoteError(null);
+    setPromotionInitialCashInput("100000");
   }, []);
 
   return {
@@ -552,7 +578,8 @@ export function useResearchRunLibraryViewModel(
     diffSelectedRuns,
     promoteSelectedRun,
     confirmPromotion,
-    cancelPromotion
+    cancelPromotion,
+    setPromotionInitialCash: setPromotionInitialCashInput
   };
 }
 
@@ -574,7 +601,8 @@ export function buildResearchRunLibraryState({
   promoteState = "idle",
   promotionEval = null,
   promotionSession = null,
-  promoteError = null
+  promoteError = null,
+  promotionInitialCashInput = "100000"
 }: {
   metrics?: MetricSnapshot[];
   runs: ResearchRunRecord[];
@@ -594,6 +622,7 @@ export function buildResearchRunLibraryState({
   promotionEval?: PromotionEvaluationResult | null;
   promotionSession?: PaperSessionSummary | null;
   promoteError?: string | null;
+  promotionInitialCashInput?: string;
 }): ResearchRunLibraryState {
   const selectedRuns = selectedIds
     .map((id) => runs.find((run) => run.id === id))
@@ -604,6 +633,11 @@ export function buildResearchRunLibraryState({
     selectedRuns[0]?.status === "Completed";
   const busy = activeCommand !== null;
   const promoteBusy = promoteState === "evaluating" || promoteState === "creating";
+  const promotionCashForm = buildPromotionCashForm({
+    input: promotionInitialCashInput,
+    eligible: promotionEval?.isEligible === true,
+    promoteState
+  });
   const runTable = buildRunTable(runs);
   const comparisonTable = buildComparisonTable(comparison);
   const diffPanel = buildDiffPanel(runDiff);
@@ -649,6 +683,7 @@ export function buildResearchRunLibraryState({
     promotionSession,
     showPromotePanel: promoteState !== "idle",
     promoteError,
+    promotionCashForm,
     selectionText: buildSelectionText(selectedRuns),
     selectionDetail: hasTwoRuns
       ? "Ready to compare or diff the selected run pair."
@@ -676,6 +711,53 @@ export function buildResearchRunLibraryState({
       promotionHistoryLoaded
     })
   };
+}
+
+export function buildPromotionCashForm({
+  input,
+  eligible,
+  promoteState
+}: {
+  input: string;
+  eligible: boolean;
+  promoteState: PromoteState;
+}): ResearchPromotionCashFormState {
+  const normalizedInput = input.trim();
+  const parsed = parsePromotionInitialCashInput(input);
+  const isCreating = promoteState === "creating";
+  const shouldValidate = eligible && promoteState === "evaluated";
+  const errorText = shouldValidate && normalizedInput.length > 0 && parsed === null
+    ? "Enter at least $1,000 in whole dollars."
+    : null;
+  const helpText = errorText ?? "Minimum $1,000. Use whole-dollar paper capital.";
+
+  return {
+    inputId: "promote-initial-cash",
+    label: "Initial cash ($)",
+    value: input,
+    min: 1000,
+    step: 1000,
+    helpText,
+    errorText,
+    describedBy: "promote-initial-cash-help",
+    canSubmit: eligible && promoteState === "evaluated" && parsed !== null && !isCreating,
+    submitLabel: isCreating ? "Starting paper session..." : "Start paper session",
+    submitAriaLabel: "Start paper session from selected strategy run"
+  };
+}
+
+export function parsePromotionInitialCashInput(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed) || parsed < 1000 || !Number.isInteger(parsed)) {
+    return null;
+  }
+
+  return parsed;
 }
 
 export function buildPlotToolTabs(activeView: ResearchPlotToolView): ResearchPlotToolTab[] {

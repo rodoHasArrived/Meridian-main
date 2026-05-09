@@ -48,6 +48,8 @@ describe("ResearchScreen", () => {
     restoreApiSpy(api.compareRuns);
     restoreApiSpy(api.diffRuns);
     restoreApiSpy(api.getPromotionHistory);
+    restoreApiSpy(api.evaluatePromotion);
+    restoreApiSpy(api.createPaperSession);
   });
 
   it("opens a detail dialog with run notes when the Open button is clicked", async () => {
@@ -376,6 +378,58 @@ describe("ResearchScreen", () => {
     await waitFor(() => {
       expect(screen.getAllByText("No promotion history records returned.").length).toBeGreaterThanOrEqual(2);
     });
+  });
+
+  it("validates promotion initial cash before starting a paper session", async () => {
+    vi.spyOn(api, "evaluatePromotion").mockResolvedValue({
+      runId: "run-2",
+      strategyId: "run-2",
+      strategyName: "Index Momentum",
+      sourceMode: "backtest",
+      targetMode: "paper",
+      isEligible: true,
+      sharpeRatio: 1.25,
+      maxDrawdownPercent: -0.04,
+      totalReturn: 0.08,
+      reason: "Promotion gates passed.",
+      found: true,
+      ready: true
+    });
+    vi.spyOn(api, "createPaperSession").mockResolvedValue({
+      sessionId: "session-1",
+      strategyId: "run-2",
+      strategyName: "Index Momentum",
+      initialCash: 100000,
+      createdAt: "2026-05-09T00:00:00Z",
+      closedAt: null,
+      isActive: true
+    });
+
+    const user = userEvent.setup();
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
+
+    await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum" }));
+    await user.click(screen.getByRole("button", { name: /promote to paper/i }));
+
+    const cashInput = await screen.findByLabelText("Initial cash ($)");
+    const startButton = screen.getByRole("button", { name: "Start paper session from selected strategy run" });
+    expect(startButton).toBeEnabled();
+
+    await user.clear(cashInput);
+    await user.type(cashInput, "500");
+
+    expect(cashInput).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByText("Enter at least $1,000 in whole dollars.")).toBeInTheDocument();
+    expect(startButton).toBeDisabled();
+
+    await user.clear(cashInput);
+    await user.type(cashInput, "125000");
+    await user.click(startButton);
+
+    await waitFor(() => {
+      expect(api.createPaperSession).toHaveBeenCalledWith("run-2", "Index Momentum", 125000);
+    });
+    expect(screen.getByText("Paper session created — session session-1")).toBeInTheDocument();
   });
 });
 

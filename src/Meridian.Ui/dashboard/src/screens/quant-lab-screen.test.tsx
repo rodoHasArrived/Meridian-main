@@ -98,7 +98,7 @@ describe("QuantLabScreen", () => {
     await user.click(screen.getByRole("button", { name: /Run script/i }));
 
     await waitFor(() => expect(runSpy).toHaveBeenCalledTimes(1));
-    expect(await screen.findByText(/Run succeeded/i)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /Run succeeded/i })).toBeInTheDocument();
     expect(screen.getByText("answer")).toBeInTheDocument();
     expect(screen.getByText("42")).toBeInTheDocument();
     const consoleBlock = screen.getByText(/Hello from the Quant Lab\./, { selector: "pre" });
@@ -115,7 +115,7 @@ describe("QuantLabScreen", () => {
 
     await user.click(screen.getByRole("button", { name: /Run script/i }));
 
-    expect(await screen.findByText(/Run finished with errors/i)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /Run finished with errors/i })).toBeInTheDocument();
     expect(screen.getByText(/missing semicolon/i)).toBeInTheDocument();
   });
 
@@ -128,11 +128,11 @@ describe("QuantLabScreen", () => {
 
     await user.click(screen.getByRole("button", { name: /Run script/i }));
 
-    expect(await screen.findByText(/Run failed/i)).toBeInTheDocument();
-    expect(screen.getByText(/Quant Lab is not enabled/i)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /Run failed/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/Quant Lab is not enabled/i).length).toBeGreaterThan(0);
   });
 
-  it("blocks running an empty script", async () => {
+  it("disables running an empty script with a disabled reason", async () => {
     const runSpy = vi.spyOn(api, "runQuantScript");
 
     const user = userEvent.setup();
@@ -141,9 +141,10 @@ describe("QuantLabScreen", () => {
 
     const editor = screen.getByLabelText("Script source") as HTMLTextAreaElement;
     await user.clear(editor);
-    await user.click(screen.getByRole("button", { name: /Run script/i }));
+    const runButton = screen.getByRole("button", { name: /Run script/i });
 
+    expect(runButton).toBeDisabled();
+    expect(runButton).toHaveAttribute("title", "Enter some script source first.");
     expect(runSpy).not.toHaveBeenCalled();
-    expect(await screen.findByText(/Enter some script source first/i)).toBeInTheDocument();
   });
 });

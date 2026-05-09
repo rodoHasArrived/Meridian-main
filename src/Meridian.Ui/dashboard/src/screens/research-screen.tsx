@@ -1,5 +1,4 @@
 import { BarChart3, BookOpenText, ChartScatter, Sigma, Sparkles } from "lucide-react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -59,7 +58,6 @@ const sampleToneBadgeVariant = {
 export function ResearchScreen({ data }: ResearchScreenProps) {
   const vm = useResearchRunLibraryViewModel(data);
   const navigate = useNavigate();
-  const [promoteInitialCash, setPromoteInitialCash] = useState(100_000);
 
   if (!data) {
     return (
@@ -196,24 +194,47 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
               )}
               {vm.promoteState === "evaluated" && vm.promotionEval?.isEligible && (
                 <form
-                  className="flex items-end gap-3"
-                  onSubmit={(e) => { e.preventDefault(); void vm.confirmPromotion(promoteInitialCash); }}
+                  className="flex flex-wrap items-end gap-3"
+                  onSubmit={(e) => { e.preventDefault(); void vm.confirmPromotion(); }}
+                  aria-label="Paper promotion session setup"
+                  noValidate
                 >
                   <div className="space-y-1">
-                    <label htmlFor="promote-initial-cash" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                      Initial cash ($)
+                    <label htmlFor={vm.promotionCashForm.inputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      {vm.promotionCashForm.label}
                     </label>
                     <input
-                      id="promote-initial-cash"
+                      id={vm.promotionCashForm.inputId}
                       type="number"
-                      min={1000}
-                      step={1000}
-                      value={promoteInitialCash}
-                      onChange={(e) => setPromoteInitialCash(Number(e.target.value))}
-                      className="w-40 rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                      min={vm.promotionCashForm.min}
+                      step={vm.promotionCashForm.step}
+                      value={vm.promotionCashForm.value}
+                      onChange={(e) => vm.setPromotionInitialCash(e.target.value)}
+                      aria-invalid={vm.promotionCashForm.errorText ? "true" : "false"}
+                      aria-describedby={vm.promotionCashForm.describedBy}
+                      className={cn(
+                        "w-44 rounded-md border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                        vm.promotionCashForm.errorText ? "border-danger/50 text-danger" : "border-border text-foreground"
+                      )}
                     />
+                    <p
+                      id={vm.promotionCashForm.describedBy}
+                      className={cn(
+                        "max-w-56 text-[11px] leading-4",
+                        vm.promotionCashForm.errorText ? "text-danger" : "text-muted-foreground"
+                      )}
+                    >
+                      {vm.promotionCashForm.helpText}
+                    </p>
                   </div>
-                  <Button type="submit" size="sm">Start paper session</Button>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={!vm.promotionCashForm.canSubmit}
+                    aria-label={vm.promotionCashForm.submitAriaLabel}
+                  >
+                    {vm.promotionCashForm.submitLabel}
+                  </Button>
                   <Button type="button" size="sm" variant="ghost" onClick={vm.cancelPromotion}>Cancel</Button>
                 </form>
               )}

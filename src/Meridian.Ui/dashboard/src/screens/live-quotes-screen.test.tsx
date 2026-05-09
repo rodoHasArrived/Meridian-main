@@ -45,6 +45,52 @@ const orderbookFixture = {
   venue: "NASDAQ"
 };
 
+const msftQuoteFixture = {
+  ...quoteFixture,
+  symbol: "MSFT",
+  quote: {
+    ...quoteFixture.quote,
+    symbol: "MSFT",
+    bidPrice: 421.1,
+    bidSize: 300,
+    askPrice: 421.2,
+    askSize: 250,
+    midPrice: 421.15,
+    spread: 0.1,
+    sequenceNumber: 99,
+    streamId: "stream-2",
+    venue: "NYSE"
+  }
+};
+
+const msftTradesFixture = {
+  ...tradesFixture,
+  symbol: "MSFT"
+};
+
+const msftOrderbookFixture = {
+  ...orderbookFixture,
+  symbol: "MSFT",
+  bids: [{ side: "Bid", level: 1, price: 421.1, size: 300, marketMaker: null }],
+  asks: [{ side: "Ask", level: 1, price: 421.2, size: 250, marketMaker: null }],
+  midPrice: 421.15,
+  spread: 0.1,
+  sequenceNumber: 99,
+  streamId: "stream-2",
+  venue: "NYSE"
+};
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}
+
 describe("computeIntradayMetrics", () => {
   const trade = (overrides: Partial<{ price: number; size: number; timestamp: string; sequenceNumber: number }> = {}) => ({
     symbol: "AAPL",
@@ -221,6 +267,55 @@ describe("LiveQuotesScreen quick trade", () => {
 
     expect(submitSpy).not.toHaveBeenCalled();
     expect(await screen.findByText(/Enter a quantity greater than zero/i)).toBeInTheDocument();
+  });
+
+  it("ignores stale quote responses after switching symbols", async () => {
+    const aaplQuote = deferred<typeof quoteFixture>();
+    const aaplTrades = deferred<typeof tradesFixture>();
+    const aaplOrderbook = deferred<typeof orderbookFixture>();
+    const msftQuote = deferred<typeof msftQuoteFixture>();
+    const msftTrades = deferred<typeof msftTradesFixture>();
+    const msftOrderbook = deferred<typeof msftOrderbookFixture>();
+
+    vi.spyOn(api, "getLiveQuote").mockImplementation((symbol) => (
+      symbol === "AAPL" ? aaplQuote.promise : msftQuote.promise
+    ));
+    vi.spyOn(api, "getLiveTrades").mockImplementation((symbol) => (
+      symbol === "AAPL" ? aaplTrades.promise : msftTrades.promise
+    ));
+    vi.spyOn(api, "getLiveOrderbook").mockImplementation((symbol) => (
+      symbol === "AAPL" ? aaplOrderbook.promise : msftOrderbook.promise
+    ));
+
+    const user = userEvent.setup();
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
+
+    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("AAPL"));
+
+    await user.clear(screen.getByLabelText("Symbol"));
+    await user.type(screen.getByLabelText("Symbol"), "MSFT");
+    await user.click(screen.getByRole("button", { name: /View quote/i }));
+
+    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("MSFT"));
+
+    await act(async () => {
+      msftQuote.resolve(msftQuoteFixture);
+      msftTrades.resolve(msftTradesFixture);
+      msftOrderbook.resolve(msftOrderbookFixture);
+      await Promise.resolve();
+    });
+
+    expect(await screen.findByRole("button", { name: /Buy MSFT at ask 421\.20/i })).toBeInTheDocument();
+
+    await act(async () => {
+      aaplQuote.resolve(quoteFixture);
+      aaplTrades.resolve(tradesFixture);
+      aaplOrderbook.resolve(orderbookFixture);
+      await Promise.resolve();
+    });
+
+    expect(screen.getByRole("button", { name: /Buy MSFT at ask 421\.20/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Buy MSFT at ask 188\.07/i })).not.toBeInTheDocument();
   });
 
   it("clears the limit-price requirement when switching to a market order", async () => {
