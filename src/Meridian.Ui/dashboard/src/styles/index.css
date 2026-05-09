@@ -446,80 +446,12 @@
     border-right: 0;
   }
 
-  .operator-rail-brand-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.875rem 0.875rem 0.75rem;
-    border-bottom: 1px solid rgba(31, 52, 76, 0.7);
-  }
-
-  .operator-rail-mark {
-    display: inline-grid;
-    width: 1.75rem;
-    height: 1.75rem;
-    flex: 0 0 auto;
-    place-items: center;
-    border: 1px solid rgba(96, 199, 231, 0.30);
-    border-radius: var(--radius-sm);
-    background: linear-gradient(135deg, rgba(96, 199, 231, 0.20), rgba(246, 251, 255, 0.06));
-    color: #f6fbff;
-    font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
-    font-size: 0.75rem;
-    font-weight: 700;
-    line-height: 1;
-  }
-
-  .operator-rail-title {
-    font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: #f6fbff;
-    line-height: 1.2;
-  }
-
-  .operator-rail-subtitle {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: rgba(96, 199, 231, 0.85);
-  }
-
   .operator-rail-nav {
     display: flex;
     flex-direction: column;
     gap: 2px;
     padding: 0.625rem 0.625rem;
     flex: 1 1 auto;
-  }
-
-  .operator-rail-current {
-    padding: 0.625rem;
-    border-bottom: 1px solid rgba(31, 52, 76, 0.7);
-  }
-
-  .operator-rail-current-card {
-    display: grid;
-    gap: 0.625rem;
-    padding: 0.75rem;
-    border: 1px solid rgba(31, 52, 76, 0.85);
-    border-top: 2px solid rgba(42, 178, 212, 0.45);
-    border-radius: var(--radius-lg);
-    background: rgba(8, 16, 26, 0.74);
-    box-shadow: var(--shadow-panel);
-  }
-
-  .operator-rail-current-title {
-    color: #f6fbff;
-    font-size: 0.875rem;
-    font-weight: 600;
-  }
-
-  .operator-rail-current-description {
-    color: var(--fg-muted);
-    font-size: 0.75rem;
-    line-height: 1.5;
   }
 
   .operator-nav-item {
@@ -1215,14 +1147,6 @@
     flex-direction: column;
     border-bottom: 0;
     overflow: auto;
-  }
-
-  .workstation-nav-sheet .operator-rail-brand-bar {
-    display: flex;
-  }
-
-  .workstation-nav-sheet .operator-rail-current {
-    display: block;
   }
 
   .workstation-nav-sheet .operator-rail-nav {

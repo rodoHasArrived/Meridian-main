@@ -85,7 +85,7 @@ This plan starts from the current repo state:
 - keep desktop launch/deep-link routing, screenshot workflows, single-instance forwarding, UI-automation page-state markers, and fixture/demo-mode cues aligned to the four workspace shell routes so automation verifies the same surfaces operators use; screenshot-refresh CI should remain a validation evidence lane with diagnostic artifact retention and a single final commit step
 - keep validation and documentation synchronized with executable evidence, not summary language; the DK1 `pilotReplaySampleSet` is now part of that evidence contract
 - keep shared DTOs, read models, workflow services, and export seams as the integration boundary across active work
-- treat current web-dashboard workflow validation as open until the delivered shell/navigation baseline is clearly wired into run-centered workflows, with retained WPF validation limited to compatibility and shared-contract regression coverage
+- treat current web-dashboard workflow validation as open until the delivered shell/navigation baseline is clearly wired into run-centered workflows, with retained WPF validation limited to compatibility and shared-contract regression coverage; the simplified browser rail/header and seeded `/data/quotes?symbol=AAPL` demo fixtures improve demo and orientation quality, but do not satisfy cockpit, reporting, reconciliation, or live-readiness gates
 
 ### Explicitly deferred beyond this window
 

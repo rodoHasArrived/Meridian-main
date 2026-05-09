@@ -25,15 +25,15 @@ describe("WorkspaceHeader", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Trading Workstation" })).toBeInTheDocument();
-    expect(screen.getByLabelText("paper environment")).toHaveTextContent("PAPER");
+    expect(screen.queryByLabelText("paper environment")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Trading workspace status Review")).toHaveTextContent("Review");
     expect(screen.getByLabelText("Session Ops Desk, role Operator")).toHaveTextContent("Ops Desk");
     expect(screen.getByRole("button", { name: "Refreshing Trading workspace data" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Open workspace command palette" })).toHaveTextContent(
       "Open command palette"
     );
-    expect(screen.getByLabelText("Canonical route /trading")).toHaveTextContent("/trading");
-    expect(screen.getByLabelText("8 commands available in the command palette")).toHaveTextContent("8 commands · Ctrl K");
+    expect(screen.queryByLabelText("Canonical route /trading")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("8 commands available in the command palette")).not.toBeInTheDocument();
     expect(screen.getByText("Refreshing Trading workspace data.")).toHaveClass("sr-only");
   });
 });

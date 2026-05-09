@@ -194,7 +194,7 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Open workspace navigation" }));
     const navigationDialog = screen.getByRole("dialog", { name: "Workspace navigation" });
     expect(navigationDialog).toBeInTheDocument();
-    expect(within(navigationDialog).getByLabelText("Current workspace: Trading, Review posture")).toBeInTheDocument();
+    expect(within(navigationDialog).getByLabelText("Trading workspace, current route, Review")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Close workspace navigation" }));
     expect(screen.queryByRole("dialog", { name: "Workspace navigation" })).not.toBeInTheDocument();
@@ -235,7 +235,7 @@ describe("App", () => {
     expect(screen.getByText("Showing local fixture responses because the Meridian API host is unavailable.")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Demo workflow" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open sample watchlist demo lane" })).toHaveAttribute("href", "/data/watchlist");
-    expect(screen.getByRole("link", { name: "Open sample live quotes demo lane" })).toHaveAttribute("href", "/data/quotes");
+    expect(screen.getByRole("link", { name: "Open sample live quotes for AAPL" })).toHaveAttribute("href", "/data/quotes?symbol=AAPL");
     expect(screen.getByRole("link", { name: "Open sample readiness console" })).toHaveAttribute("href", "/trading/readiness");
     expect(screen.getByRole("link", { name: "Open Alpaca paper provider setup" })).toHaveAttribute(
       "href",

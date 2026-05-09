@@ -66,6 +66,66 @@ describe("Vite Meridian API proxy", () => {
     expect(JSON.parse(response.body)).toMatchObject({ displayName: "Ops Desk" });
   });
 
+  it("serves seeded market-data fixtures for the no-host quote demo path", async () => {
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
+      isAvailable: async () => false
+    });
+    const quoteResponse = new FakeResponse();
+    const historyResponse = new FakeResponse();
+    const symbolsResponse = new FakeResponse();
+    const snapshotResponse = new FakeResponse();
+
+    await bypass(
+      { method: "GET", url: "/api/data/quotes/AAPL", headers: { accept: "application/json" } } as IncomingMessage,
+      quoteResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: "/api/historical/AAPL/bars?intervalMinutes=5", headers: { accept: "application/json" } } as IncomingMessage,
+      historyResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: "/api/symbols", headers: { accept: "application/json" } } as IncomingMessage,
+      symbolsResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: "/api/data/quotes-snapshot?symbols=AAPL,MSFT", headers: { accept: "application/json" } } as IncomingMessage,
+      snapshotResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(quoteResponse.statusCode).toBe(200);
+    expect(quoteResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(quoteResponse.body)).toMatchObject({
+      symbol: "AAPL",
+      quote: {
+        bidPrice: 188.05,
+        askPrice: 188.07,
+        venue: "NASDAQ"
+      }
+    });
+    expect(JSON.parse(historyResponse.body)).toMatchObject({
+      symbol: "AAPL",
+      intervalMinutes: 5,
+      totalBars: 12
+    });
+    expect(JSON.parse(symbolsResponse.body)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ symbol: "AAPL", status: "Active" }),
+        expect.objectContaining({ symbol: "MSFT", status: "Active" })
+      ])
+    );
+    expect(JSON.parse(snapshotResponse.body)).toMatchObject({
+      count: 2,
+      quotes: [
+        expect.objectContaining({ symbol: "AAPL", lastPrice: 188.06 }),
+        expect.objectContaining({ symbol: "MSFT", lastPrice: 421.15 })
+      ]
+    });
+  });
+
   it("keeps live API proxying when the Meridian host is available", async () => {
     const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
       isAvailable: async () => true

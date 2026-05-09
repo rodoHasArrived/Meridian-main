@@ -70,29 +70,13 @@ export function buildWorkspaceHeaderViewModel({
   refreshing = false
 }: BuildWorkspaceHeaderViewModelOptions): WorkspaceHeaderViewModel {
   const isLiveEnvironment = session?.environment === "live";
-  const workspaceRoute = `/${workspace.key}`;
-  const environmentBadge = session
-    ? {
-        id: "environment",
-        label: session.environment.toUpperCase(),
-        variant: session.environment,
-        ariaLabel: `${session.environment} environment`
-      }
-    : null;
   const refreshLabel = refreshing ? "Refreshing" : "Refresh";
 
   return {
-    eyebrow: "Meridian workspace",
+    eyebrow: "Workspace",
     title: `${workspace.label} Workstation`,
     description: workspace.description,
     badges: [
-      {
-        id: "workspace",
-        label: workspace.label,
-        variant: "outline",
-        ariaLabel: `${workspace.label} workspace`
-      },
-      ...(environmentBadge ? [environmentBadge] : []),
       {
         id: "workspace-status",
         label: workspace.status,
@@ -100,38 +84,7 @@ export function buildWorkspaceHeaderViewModel({
         ariaLabel: `${workspace.label} workspace status ${workspace.status}`
       }
     ],
-    metaItems: [
-      {
-        id: "route",
-        label: "Canonical route",
-        value: workspaceRoute,
-        ariaLabel: `Canonical route ${workspaceRoute}`
-      },
-      {
-        id: "posture",
-        label: "Workspace posture",
-        value: `${workspace.status} lane`,
-        ariaLabel: `${workspace.label} workspace posture ${workspace.status} lane`
-      },
-      {
-        id: "session",
-        label: "Session lane",
-        value: session ? `${session.displayName} · ${session.role}` : "Loading context",
-        ariaLabel: session
-          ? `Session lane ${session.displayName}, role ${session.role}`
-          : "Session lane loading context"
-      },
-      {
-        id: "palette",
-        label: "Command palette",
-        value: session
-          ? `${session.commandCount} ${session.commandCount === 1 ? "command" : "commands"} · Ctrl K`
-          : "Ctrl K when ready",
-        ariaLabel: session
-          ? `${session.commandCount} ${session.commandCount === 1 ? "command" : "commands"} available in the command palette`
-          : "Command palette shortcut Control K when ready"
-      }
-    ],
+    metaItems: [],
     sessionLabel: session?.displayName ?? "Loading session",
     sessionRoleLabel: session?.role ?? null,
     sessionPillAriaLabel: session

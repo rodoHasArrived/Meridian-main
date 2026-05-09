@@ -376,9 +376,9 @@ const developmentFixtureDemoLinks = [
     icon: Database
   },
   {
-    href: "/data/quotes",
+    href: "/data/quotes?symbol=AAPL",
     label: "Quotes",
-    ariaLabel: "Open sample live quotes demo lane",
+    ariaLabel: "Open sample live quotes for AAPL",
     icon: LineChart
   },
   {

@@ -29,15 +29,10 @@ const icons: Record<WorkspaceKey, typeof RadioTower> = {
  * All data is derived from `useLocation()` via `buildWorkspaceNavViewModel`. Optional props allow
  * host surfaces such as drawers to add wrapper classes and close after navigation.
  *
- * **Sections:**
- * - Brand header with the Meridian mark and subtitle.
- * - Model description card (current AI/strategy model context).
- * - Current workspace panel — shows the active workspace label, status badge, and description.
- * - Workspace nav list — 7 links: Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings.
- *   Each link shows a status badge (`operator-nav-status-*`) colored by workspace posture.
- * - Delivery callout at the bottom.
+ * The rail intentionally avoids repeating the masthead brand or workspace header context. It keeps
+ * one scannable list of the seven root workspaces, with the active item carrying `aria-current`.
  *
- * **Status tones** for nav items and the current workspace panel are one of:
+ * **Status tones** for nav items are one of:
  * `"live"`, `"review"`, `"paper"`, `"preview"`, `"setup"`, or `"muted"` — each has a
  * matching `.operator-nav-status-*` CSS modifier.
  *
@@ -56,37 +51,8 @@ export function WorkspaceNav({ className, onNavigate }: WorkspaceNavProps) {
 
   return (
     <aside className={cn("operator-rail", className)} aria-label={`${viewModel.brandTitle} navigation`}>
-      <div className="operator-rail-brand-bar">
-        <span className="operator-rail-mark" aria-hidden="true">M</span>
-        <span>
-          <p className="operator-rail-title">{viewModel.brandTitle}</p>
-          <p className="operator-rail-subtitle">{viewModel.brandSubtitle}</p>
-        </span>
-      </div>
-
-      <section className="operator-rail-current" aria-label={viewModel.currentWorkspace.ariaLabel}>
-        <div className="operator-rail-section">{viewModel.navEyebrow}</div>
-        <div className="operator-rail-current-card">
-          <div className="flex items-center justify-between gap-2">
-            <div className="operator-rail-current-title">{viewModel.currentWorkspace.label}</div>
-            <span className={`operator-nav-status operator-nav-status-${viewModel.currentWorkspace.statusTone}`}>
-              <span className="operator-nav-status-dot" aria-hidden="true" />
-              {viewModel.currentWorkspace.statusLabel}
-            </span>
-          </div>
-          <p className="operator-rail-current-description">{viewModel.currentWorkspace.description}</p>
-          <div className="operator-rail-meta">
-            <span className="operator-rail-route" aria-label={viewModel.currentWorkspace.routeAriaLabel}>
-              {viewModel.currentWorkspace.route}
-            </span>
-            <span className="operator-rail-shortcut" aria-label={viewModel.deliveryShortcutAriaLabel}>
-              {viewModel.deliveryShortcutLabel}
-            </span>
-          </div>
-        </div>
-      </section>
-
       <nav className="operator-rail-nav" aria-label="Workspaces">
+        <div className="operator-rail-section">{viewModel.navEyebrow}</div>
         {viewModel.items.map((item) => {
           const Icon = icons[item.key];
           return (
