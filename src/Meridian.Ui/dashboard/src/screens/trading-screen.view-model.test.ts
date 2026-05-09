@@ -1,3 +1,4 @@
+import { act, renderHook, waitFor } from "@testing-library/react";
 import {
   buildExecutionEvidenceState,
   buildPaperSessionCreateRequest,
@@ -25,7 +26,8 @@ import {
   validatePaperSessionForm,
   validateOrderTicketForm,
   validatePromotionApproval,
-  validatePromotionRejection
+  validatePromotionRejection,
+  usePromotionGateViewModel
 } from "@/screens/trading-screen.view-model";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionPortfolioSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingOperatorReadiness, TradingPosition, TradingRiskState, TradingWorkspaceResponse } from "@/types";
 
@@ -43,6 +45,17 @@ const eligibleEvaluation: PromotionEvaluationResult = {
   found: true,
   ready: true
 };
+
+function createDeferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}
 
 const blockedReadiness: TradingOperatorReadiness = {
   asOf: "2026-04-26T16:05:00Z",
@@ -1122,6 +1135,72 @@ describe("trading promotion gate view model", () => {
     });
   });
 
+  it("does not authorize a selected run with stale promotion evaluation", () => {
+    const form = {
+      ...emptyPromotionGateForm,
+      runId: "run-2",
+      approvedBy: "operator-7",
+      approvalReason: "Meets risk constraints"
+    };
+
+    const staleState = buildPromotionGateState({
+      form,
+      busy: false,
+      phase: "idle",
+      errorText: null,
+      outcome: null,
+      evaluation: eligibleEvaluation,
+      history: []
+    });
+
+    expect(staleState.evaluation).toBeNull();
+    expect(staleState.canPromote).toBe(false);
+    expect(validatePromotionApproval(form, eligibleEvaluation)).toBe(
+      "Evaluate gate checks for run-2 before confirming promotion."
+    );
+  });
+
+  it("ignores stale promotion evaluation when the selected run changes before the response settles", async () => {
+    const deferred = createDeferred<PromotionEvaluationResult>();
+    const services = {
+      evaluatePromotion: vi.fn(() => deferred.promise),
+      approvePromotion: vi.fn(),
+      rejectPromotion: vi.fn(),
+      getPromotionHistory: vi.fn().mockResolvedValue([])
+    };
+
+    const { result } = renderHook(() => usePromotionGateViewModel(services));
+    await waitFor(() => expect(services.getPromotionHistory).toHaveBeenCalledTimes(1));
+
+    act(() => {
+      result.current.updateField("runId", "run-1");
+    });
+
+    let request: Promise<void> | undefined;
+    act(() => {
+      request = result.current.evaluateGateChecks();
+    });
+
+    expect(result.current.busy).toBe(true);
+    expect(result.current.evaluateButtonLabel).toBe("Evaluating...");
+
+    act(() => {
+      result.current.updateField("runId", "run-2");
+    });
+
+    expect(result.current.busy).toBe(false);
+    expect(result.current.form.runId).toBe("run-2");
+
+    await act(async () => {
+      deferred.resolve(eligibleEvaluation);
+      await request;
+    });
+
+    expect(result.current.evaluation).toBeNull();
+    expect(result.current.canPromote).toBe(false);
+    expect(result.current.nextActionText).toBe("Evaluate gate checks before approving or rejecting this run.");
+  });
+
   it("announces busy and error states for assistive technology", () => {
     const busy = buildPromotionGateState({
       form: { ...emptyPromotionGateForm, runId: "run-1" },
@@ -1250,7 +1329,7 @@ describe("trading promotion gate view model", () => {
         phase: "idle",
         errorText: null,
         outcome: null,
-        evaluation: eligibleEvaluation,
+        evaluation: { ...eligibleEvaluation, runId: "run-from-session-001" },
         history: []
       });
 

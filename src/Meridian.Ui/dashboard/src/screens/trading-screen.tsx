@@ -1168,6 +1168,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   value={promotionGate.form.runId}
                   onChange={(e) => promotionGate.updateField("runId", e.target.value)}
                   aria-describedby="promotion-run-help promotion-action-state"
+                  disabled={promotionGate.busy}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
                 <span id="promotion-run-help" className="text-xs text-muted-foreground">Evaluate this run before writing a promotion decision.</span>
@@ -1181,6 +1182,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   value={promotionGate.form.approvedBy}
                   onChange={(e) => promotionGate.updateField("approvedBy", e.target.value)}
                   aria-describedby="promotion-action-state"
+                  disabled={promotionGate.busy}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   required
                 />
@@ -1195,6 +1197,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 value={promotionGate.form.approvalReason}
                 onChange={(e) => promotionGate.updateField("approvalReason", e.target.value)}
                 aria-describedby="promotion-action-state"
+                disabled={promotionGate.busy}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 required
               />
@@ -1208,6 +1211,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 value={promotionGate.form.rejectionReason}
                 onChange={(e) => promotionGate.updateField("rejectionReason", e.target.value)}
                 aria-describedby="promotion-action-state"
+                disabled={promotionGate.busy}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               />
             </label>
@@ -1220,6 +1224,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   placeholder="optional review notes"
                   value={promotionGate.form.reviewNotes}
                   onChange={(e) => promotionGate.updateField("reviewNotes", e.target.value)}
+                  disabled={promotionGate.busy}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
               </label>
@@ -1231,6 +1236,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   placeholder="optional manual override id"
                   value={promotionGate.form.manualOverrideId}
                   onChange={(e) => promotionGate.updateField("manualOverrideId", e.target.value)}
+                  disabled={promotionGate.busy}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
               </label>

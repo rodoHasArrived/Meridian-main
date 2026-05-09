@@ -70,8 +70,25 @@ const initialState: WorkstationDataState = {
 
 export function useWorkstationData() {
   const [state, setState] = useState<WorkstationDataState>(initialState);
+  const mountedRef = useRef(true);
+  const refreshRevisionRef = useRef(0);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      refreshRevisionRef.current += 1;
+    };
+  }, []);
 
   const refresh = useCallback(async () => {
+    if (!mountedRef.current) {
+      return;
+    }
+
+    const revision = refreshRevisionRef.current + 1;
+    refreshRevisionRef.current = revision;
     setState((current) => ({ ...current, loading: true, error: null, workflowError: null, workspaceErrors: {} }));
 
     const [
@@ -154,6 +171,10 @@ export function useWorkstationData() {
       workspaceErrors
     };
 
+    if (!mountedRef.current || refreshRevisionRef.current !== revision) {
+      return;
+    }
+
     setState(nextState);
   }, []);
 
@@ -165,10 +186,13 @@ export function useWorkstationData() {
   // Positions, orders, fills, and readiness status change as trading runs.
   const refreshingTrading = useRef(false);
   const refreshTrading = useCallback(async () => {
-    if (refreshingTrading.current) return;
+    if (refreshingTrading.current || !mountedRef.current) return;
     refreshingTrading.current = true;
     try {
       const result = await getTradingWorkspace();
+      if (!mountedRef.current) {
+        return;
+      }
       setState((current) => ({ ...current, trading: result }));
     } catch {
       // keep stale data; full refresh() is always available

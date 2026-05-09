@@ -97,7 +97,7 @@ describe("WatchlistScreen", () => {
     expect(rows[2]).toHaveAccessibleName(/MSFT. Status Monitored/i);
     expect(within(rows[1]).getByText("188.07 x 150")).toBeInTheDocument();
     expect(within(rows[2]).getByText("412.10 x 300")).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "Total: 2" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Total metric\. 2\. Status neutral/i })).toBeInTheDocument();
     expect(screen.getByRole("toolbar", { name: /symbol watchlist status/i })).toHaveTextContent("24h events");
     expect(screen.getByRole("link", { name: /View live quotes for AAPL/i })).toHaveAttribute("href", "/data/quotes?symbol=AAPL");
   });

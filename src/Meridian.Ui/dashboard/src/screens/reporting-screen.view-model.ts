@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { runAnalysisExport } from "@/lib/api";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary } from "@/types";
 
@@ -148,21 +148,40 @@ export function useReportingScreenViewModel(
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [runningProfileId, setRunningProfileId] = useState<string | null>(null);
   const [exportStatus, setExportStatus] = useState<ReportingExportStatusState | null>(null);
+  const exportCommandRevisionRef = useRef(0);
 
-  const selectProfile = (id: string) =>
+  useEffect(() => () => {
+    exportCommandRevisionRef.current += 1;
+  }, []);
+
+  const selectProfile = (id: string) => {
+    exportCommandRevisionRef.current += 1;
     setSelectedId((prev) => (prev === id ? null : id));
+    setRunningProfileId(null);
+    setExportStatus(null);
+  };
 
   const runExportCommand = async (profileId: string, profileName: string) => {
+    const commandRevision = exportCommandRevisionRef.current + 1;
+    exportCommandRevisionRef.current = commandRevision;
     setRunningProfileId(profileId);
     setExportStatus(buildExportStatusStarting(profileName));
 
     try {
       const result = await services.runExport(profileId);
+      if (exportCommandRevisionRef.current !== commandRevision) {
+        return;
+      }
       setExportStatus(buildExportStatusResult(profileId, profileName, result));
     } catch (error) {
+      if (exportCommandRevisionRef.current !== commandRevision) {
+        return;
+      }
       setExportStatus(buildExportStatusFailure(profileName, error));
     } finally {
-      setRunningProfileId(null);
+      if (exportCommandRevisionRef.current === commandRevision) {
+        setRunningProfileId(null);
+      }
     }
   };
 

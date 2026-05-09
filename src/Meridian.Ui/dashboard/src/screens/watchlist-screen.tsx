@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, type DenseDataTableColumn, ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import {
   addSymbol as addSymbolApi,
@@ -42,7 +43,7 @@ export function WatchlistScreen() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {vm.stats.map((stat) => (
-              <StatCard key={stat.id} label={stat.label} value={stat.value} tone={stat.tone} ariaLabel={stat.ariaLabel} />
+              <MetricCard key={stat.id} {...stat} />
             ))}
           </div>
 
@@ -271,15 +272,3 @@ const lastToneClass = {
   danger: "text-danger",
   default: "text-foreground"
 } as const;
-
-function StatCard({ label, value, tone = "default", ariaLabel }: { label: string; value: string; tone?: "default" | "danger"; ariaLabel: string }) {
-  const toneClass = tone === "danger" ? "text-danger" : "text-foreground";
-  return (
-    <div className="rounded-md border border-border/60 bg-secondary/25 px-3 py-3" role="group" aria-label={ariaLabel}>
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={`mt-1 font-mono text-2xl ${toneClass}`}>
-        {value}
-      </div>
-    </div>
-  );
-}

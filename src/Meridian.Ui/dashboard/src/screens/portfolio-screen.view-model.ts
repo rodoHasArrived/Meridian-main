@@ -5,6 +5,7 @@ import type {
   BrokerageHouseholdPortfolio,
   BrokerageHouseholdPosition,
   GovernanceWorkspaceResponse,
+  MetricSnapshot,
   PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
   TradingWorkspaceResponse
@@ -61,11 +62,6 @@ export interface PortfolioRunRow {
   isSelected: boolean;
   selectAriaLabel: string;
   ariaLabel: string;
-}
-
-export interface PortfolioMetricStat {
-  label: string;
-  value: string;
 }
 
 export interface PortfolioHeaderChip {
@@ -172,7 +168,7 @@ export interface PortfolioScreenViewModel {
   metricsFromTrading: boolean;
   metricCards: TradingWorkspaceResponse["metrics"];
   positionSourceLabel: string;
-  fallbackStats: PortfolioMetricStat[];
+  fallbackStats: MetricSnapshot[];
   headerChips: PortfolioHeaderChip[];
   workflowTaskPanel: PortfolioWorkflowTaskPanel | null;
   brokerageProviderLabel: string;
@@ -342,20 +338,11 @@ export function buildPortfolioScreenViewModel({
     ? buildSelectedRunDetail(selectedRunRow)
     : null;
 
-  const fallbackStats: PortfolioMetricStat[] = [
-    {
-      label: "Total exposure",
-      value: positions.length > 0 ? formatCurrency(totalExposure) : "—"
-    },
-    {
-      label: "Unrealized P&L",
-      value: positions.length > 0
-        ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatCurrency(totalUnrealizedPnl)
-        : "—"
-    },
-    { label: "Cash", value: "—" },
-    { label: "Open positions", value: String(positions.length) }
-  ];
+  const fallbackStats = buildPortfolioFallbackMetrics({
+    openPositionCount: positions.length,
+    totalExposure,
+    totalUnrealizedPnl
+  });
   const cashVarianceLabel = cashFlow !== null ? formatCurrency(cashFlow.netVariance) : null;
 
   return {
@@ -431,6 +418,51 @@ export function buildPortfolioScreenViewModel({
     cashFlowTone: cashFlow?.tone ?? "default",
     openPositionCount: positions.length
   };
+}
+
+export function buildPortfolioFallbackMetrics({
+  openPositionCount,
+  totalExposure,
+  totalUnrealizedPnl
+}: {
+  openPositionCount: number;
+  totalExposure: number;
+  totalUnrealizedPnl: number;
+}): MetricSnapshot[] {
+  const hasPositions = openPositionCount > 0;
+
+  return [
+    {
+      id: "portfolio-total-exposure",
+      label: "Total exposure",
+      value: hasPositions ? formatCurrency(totalExposure) : "—",
+      delta: hasPositions ? "From open positions" : "No holdings",
+      tone: "default"
+    },
+    {
+      id: "portfolio-unrealized-pnl",
+      label: "Unrealized P&L",
+      value: hasPositions
+        ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatCurrency(totalUnrealizedPnl)
+        : "—",
+      delta: hasPositions ? "Open position mark" : "No holdings",
+      tone: hasPositions ? numericPnlTone(totalUnrealizedPnl) : "default"
+    },
+    {
+      id: "portfolio-cash",
+      label: "Cash",
+      value: "—",
+      delta: "Awaiting portfolio cash feed",
+      tone: "warning"
+    },
+    {
+      id: "portfolio-open-positions",
+      label: "Open positions",
+      value: String(openPositionCount),
+      delta: hasPositions ? "Selectable detail" : "No holdings",
+      tone: hasPositions ? "success" : "default"
+    }
+  ];
 }
 
 function buildPortfolioHeaderChips({
@@ -890,6 +922,12 @@ function positionId(symbol: string, side: string, index: number): string {
 function pnlTone(value: string): "success" | "danger" | "default" {
   if (value.startsWith("+")) return "success";
   if (value.startsWith("-")) return "danger";
+  return "default";
+}
+
+function numericPnlTone(value: number): "success" | "danger" | "default" {
+  if (value > 0) return "success";
+  if (value < 0) return "danger";
   return "default";
 }
 

@@ -14,6 +14,7 @@ import { ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import {
   useQuantLabScreenViewModel,
   type QuantParameterRow,
+  type QuantRunResultPanelState,
   type QuantRunState,
   type QuantTemplatePanelState
 } from "@/screens/quant-lab-screen.view-model";
@@ -57,15 +58,7 @@ export function QuantLabScreen() {
             }
           />
           <div className="flex flex-wrap items-center gap-2">
-            {vm.run.result ? (
-              <span className="text-xs text-muted-foreground">
-                Compiled in {vm.run.result.compileTimeMs.toFixed(0)} ms · executed in {vm.run.result.elapsedMs.toFixed(0)} ms · peak {(vm.run.result.peakMemoryBytes / 1024).toFixed(0)} KB
-              </span>
-            ) : (
-              <span className="text-xs text-muted-foreground">
-                Run state, parameters, and template availability are tracked before execution.
-              </span>
-            )}
+            <span className="text-xs text-muted-foreground">{vm.resultPanel.runtimeSummary}</span>
           </div>
           <label htmlFor="quant-lab-source" className="sr-only">Script source</label>
           <textarea
@@ -84,7 +77,7 @@ export function QuantLabScreen() {
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-        <RunResultPanel run={vm.run} consoleLines={vm.consoleLines} tone={vm.summaryTone} />
+        <RunResultPanel run={vm.run} panel={vm.resultPanel} consoleLines={vm.consoleLines} />
         <div className="space-y-4">
           <ParametersSidePanel
             rows={vm.parameterRows}
@@ -101,41 +94,41 @@ export function QuantLabScreen() {
 
 interface RunResultPanelProps {
   run: QuantRunState;
+  panel: QuantRunResultPanelState;
   consoleLines: string[];
-  tone: "success" | "danger" | "default";
 }
 
-function RunResultPanel({ run, consoleLines, tone }: RunResultPanelProps) {
-  if (run.phase === "idle") {
+function RunResultPanel({ run, panel, consoleLines }: RunResultPanelProps) {
+  if (panel.phase === "idle") {
     return (
       <Card>
-        <CardContent className="py-10 text-center text-sm text-muted-foreground">
-          Run a script to see console output, metrics, plots, and diagnostics here.
+        <CardContent className="py-10 text-center text-sm text-muted-foreground" role={panel.role} aria-live={panel.ariaLive}>
+          {panel.description}
         </CardContent>
       </Card>
     );
   }
 
-  if (run.phase === "running") {
+  if (panel.phase === "running") {
     return (
       <Card>
-        <CardContent className="flex items-center gap-2 py-10 text-sm text-muted-foreground" role="status" aria-live="polite">
+        <CardContent className="flex items-center gap-2 py-10 text-sm text-muted-foreground" role={panel.role} aria-live={panel.ariaLive}>
           <span className="h-4 w-4 animate-spin rounded-full border border-primary/30 border-t-primary" aria-hidden="true" />
-          Compiling and running script…
+          {panel.description}
         </CardContent>
       </Card>
     );
   }
 
-  if (run.phase === "error" || !run.result) {
+  if (!panel.hasResult || !run.result) {
     return (
-      <Card>
+      <Card role={panel.role} aria-live={panel.ariaLive}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base text-danger">
             <AlertCircle className="h-4 w-4" aria-hidden="true" />
-            Run failed
+            {panel.title}
           </CardTitle>
-          <CardDescription className="text-danger/80">{run.error ?? "Unknown error."}</CardDescription>
+          <CardDescription className="text-danger/80">{panel.description}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -144,7 +137,7 @@ function RunResultPanel({ run, consoleLines, tone }: RunResultPanelProps) {
   const result = run.result;
   return (
     <div className="space-y-4">
-      <Card>
+      <Card role={panel.role} aria-live={panel.ariaLive}>
         <CardHeader>
           <div className="flex items-center justify-between gap-2">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -153,20 +146,20 @@ function RunResultPanel({ run, consoleLines, tone }: RunResultPanelProps) {
               ) : (
                 <AlertCircle className="h-4 w-4 text-danger" aria-hidden="true" />
               )}
-              {result.success ? "Run succeeded" : "Run finished with errors"}
+              {panel.title}
             </CardTitle>
-            <Badge variant={tone === "success" ? "success" : tone === "danger" ? "danger" : "outline"} dot>
-              {result.success ? "OK" : "ERR"}
+            <Badge variant={panel.tone === "success" ? "success" : panel.tone === "danger" ? "danger" : "outline"} dot>
+              {panel.statusBadgeLabel}
             </Badge>
           </div>
           {result.runtimeError ? (
-            <CardDescription className="text-danger/80">{result.runtimeError}</CardDescription>
+            <CardDescription className="text-danger/80">{panel.description}</CardDescription>
           ) : null}
         </CardHeader>
         <CardContent className="space-y-3">
-          {result.metrics.length > 0 ? (
+          {panel.hasMetrics ? (
             <div>
-              <div className="eyebrow-label mb-1">Metrics</div>
+              <div className="eyebrow-label mb-1">{panel.metricsLabel}</div>
               <table className="w-full text-sm">
                 <tbody>
                   {result.metrics.map((m) => (
@@ -179,24 +172,25 @@ function RunResultPanel({ run, consoleLines, tone }: RunResultPanelProps) {
               </table>
             </div>
           ) : null}
-          {consoleLines.some((line) => line.length > 0) ? (
+          {panel.hasConsoleOutput ? (
             <div>
-              <div className="eyebrow-label mb-1">Console</div>
+              <div className="eyebrow-label mb-1">{panel.consoleLabel}</div>
               <pre className="max-h-48 overflow-auto rounded-md border border-border/60 bg-secondary/15 p-3 font-mono text-xs leading-5 text-foreground">
                 {consoleLines.map((line, idx) => `${line}${idx < consoleLines.length - 1 ? "\n" : ""}`).join("")}
               </pre>
             </div>
           ) : null}
-          <DiagnosticsBlock label="Compilation errors" entries={result.compilationErrors} tone="danger" />
-          <DiagnosticsBlock label="Runtime diagnostics" entries={result.runtimeDiagnostics} tone="warning" />
+          {panel.diagnosticSections.map((section) => (
+            <DiagnosticsBlock key={section.id} label={section.label} entries={section.entries} tone={section.tone} />
+          ))}
         </CardContent>
       </Card>
 
-      {result.plots.length > 0 ? (
+      {panel.hasPlots ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Plots</CardTitle>
-            <CardDescription>{result.plots.length} chart{result.plots.length === 1 ? "" : "s"} returned by this run.</CardDescription>
+            <CardTitle className="text-base">{panel.plotsLabel}</CardTitle>
+            <CardDescription>{panel.plotsDescription}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 lg:grid-cols-2">

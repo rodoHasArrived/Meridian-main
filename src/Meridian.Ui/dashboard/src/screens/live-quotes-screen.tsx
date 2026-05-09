@@ -19,10 +19,12 @@ import { HistoricalChartCard } from "@/components/meridian/historical-chart";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getLiveOrderbook, getLiveQuote, getLiveTrades, submitOrder } from "@/lib/api";
+import {
+  useQuickTradeTicket,
+  type QuickTradeTicketViewModel
+} from "@/screens/live-quotes-screen.view-model";
 import type {
   OrderBookResponse,
-  OrderResult,
-  OrderSubmitRequest,
   QuotesResponse,
   TradeDataResponse,
   TradesResponse
@@ -72,7 +74,7 @@ export function LiveQuotesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const requestIdRef = useRef(0);
   const inFlightSymbolRef = useRef<string | null>(null);
-  const [ticket, setTicket] = useState<QuickTicketState>(initialQuickTicketState);
+  const quickTrade = useQuickTradeTicket(activeSymbol, { submitOrder });
 
   const fetchAll = useCallback(async (symbol: string) => {
     const requestedSymbol = symbol.trim().toUpperCase();
@@ -125,76 +127,9 @@ export function LiveQuotesScreen() {
     setTrades({ data: null, error: null });
     setOrderbook({ data: null, error: null });
     setActiveSymbol(next);
-    setTicket(initialQuickTicketState);
+    quickTrade.resetTicket();
     setSearchParams({ symbol: next }, { replace: true });
   };
-
-  const seedTicket = useCallback((side: "Buy" | "Sell", price: number) => {
-    setTicket((current) => ({
-      ...current,
-      side,
-      type: "Limit",
-      limitPrice: formatTicketPrice(price),
-      phase: "idle",
-      message: null,
-      orderId: null
-    }));
-  }, []);
-
-  const updateTicketField = useCallback(<K extends keyof QuickTicketForm>(field: K, value: QuickTicketForm[K]) => {
-    setTicket((current) => ({
-      ...current,
-      [field]: value,
-      phase: current.phase === "submitted" ? "idle" : current.phase,
-      message: current.phase === "error" ? null : current.message
-    }));
-  }, []);
-
-  const submitTicket = useCallback(async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!activeSymbol) return;
-
-    const validation = validateQuickTicket(ticket);
-    if (validation) {
-      setTicket((current) => ({ ...current, phase: "error", message: validation, orderId: null }));
-      return;
-    }
-
-    const request: OrderSubmitRequest = {
-      symbol: activeSymbol,
-      side: ticket.side,
-      type: ticket.type,
-      quantity: Number(ticket.quantity),
-      limitPrice: ticket.type === "Market" ? null : Number(ticket.limitPrice)
-    };
-
-    setTicket((current) => ({ ...current, phase: "submitting", message: null, orderId: null }));
-    try {
-      const result: OrderResult = await submitOrder(request);
-      if (result.success) {
-        setTicket((current) => ({
-          ...current,
-          phase: "submitted",
-          message: result.orderId ? `Order ${result.orderId} accepted.` : "Order accepted.",
-          orderId: result.orderId
-        }));
-      } else {
-        setTicket((current) => ({
-          ...current,
-          phase: "error",
-          message: result.reason ?? "Order rejected.",
-          orderId: null
-        }));
-      }
-    } catch (err) {
-      setTicket((current) => ({
-        ...current,
-        phase: "error",
-        message: (err as Error)?.message ?? "Order submission failed.",
-        orderId: null
-      }));
-    }
-  }, [activeSymbol, ticket]);
 
   const quoteRow = quote.data?.quote;
   const stale = orderbook.data?.isStale === true;
@@ -296,7 +231,7 @@ export function LiveQuotesScreen() {
                     size={quoteRow.bidSize}
                     tone="positive"
                     icon={<ArrowDown className="h-4 w-4" aria-hidden="true" />}
-                    onSeed={() => seedTicket("Sell", quoteRow.bidPrice)}
+                    onSeed={() => quickTrade.seedTicket("Sell", quoteRow.bidPrice)}
                     seedLabel={`Sell ${activeSymbol} at bid ${formatPrice(quoteRow.bidPrice)}`}
                   />
                   <BboPanel
@@ -305,7 +240,7 @@ export function LiveQuotesScreen() {
                     size={quoteRow.askSize}
                     tone="negative"
                     icon={<ArrowUp className="h-4 w-4" aria-hidden="true" />}
-                    onSeed={() => seedTicket("Buy", quoteRow.askPrice)}
+                    onSeed={() => quickTrade.seedTicket("Buy", quoteRow.askPrice)}
                     seedLabel={`Buy ${activeSymbol} at ask ${formatPrice(quoteRow.askPrice)}`}
                   />
                   <MetricRow label="Mid" value={formatPrice(quoteRow.midPrice)} />
@@ -319,9 +254,7 @@ export function LiveQuotesScreen() {
 
           <QuickTradeCard
             symbol={activeSymbol}
-            ticket={ticket}
-            onFieldChange={updateTicketField}
-            onSubmit={submitTicket}
+            vm={quickTrade}
           />
 
           <Card>
@@ -337,8 +270,8 @@ export function LiveQuotesScreen() {
               ) : (
                 <DepthLadder
                   data={orderbook.data}
-                  onSeedBuy={(price) => seedTicket("Buy", price)}
-                  onSeedSell={(price) => seedTicket("Sell", price)}
+                  onSeedBuy={(price) => quickTrade.seedTicket("Buy", price)}
+                  onSeedSell={(price) => quickTrade.seedTicket("Sell", price)}
                   symbol={activeSymbol}
                 />
               )}
@@ -490,75 +423,14 @@ function DepthLadder({ data, onSeedBuy, onSeedSell, symbol }: DepthLadderProps) 
   );
 }
 
-type QuickTicketPhase = "idle" | "submitting" | "submitted" | "error";
-
-interface QuickTicketForm {
-  side: "Buy" | "Sell";
-  type: "Market" | "Limit";
-  quantity: string;
-  limitPrice: string;
-}
-
-interface QuickTicketState extends QuickTicketForm {
-  phase: QuickTicketPhase;
-  message: string | null;
-  orderId: string | null;
-}
-
-const initialQuickTicketState: QuickTicketState = {
-  side: "Buy",
-  type: "Limit",
-  quantity: "",
-  limitPrice: "",
-  phase: "idle",
-  message: null,
-  orderId: null
-};
-
-function formatTicketPrice(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "";
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
-    useGrouping: false
-  });
-}
-
-export function validateQuickTicket(state: QuickTicketForm): string | null {
-  const qty = Number(state.quantity);
-  if (!state.quantity || !Number.isFinite(qty) || qty <= 0) {
-    return "Enter a quantity greater than zero.";
-  }
-  if (!Number.isInteger(qty)) {
-    return "Quantity must be a whole number of shares.";
-  }
-  if (state.type === "Limit") {
-    const price = Number(state.limitPrice);
-    if (!state.limitPrice || !Number.isFinite(price) || price <= 0) {
-      return "Enter a limit price greater than zero.";
-    }
-  }
-  return null;
-}
-
 interface QuickTradeCardProps {
   symbol: string;
-  ticket: QuickTicketState;
-  onFieldChange: <K extends keyof QuickTicketForm>(field: K, value: QuickTicketForm[K]) => void;
-  onSubmit: (event: React.FormEvent) => void;
+  vm: QuickTradeTicketViewModel;
 }
 
-function QuickTradeCard({ symbol, ticket, onFieldChange, onSubmit }: QuickTradeCardProps) {
-  const submitting = ticket.phase === "submitting";
-  const submitted = ticket.phase === "submitted";
-  const errored = ticket.phase === "error";
-  const sideTone = ticket.side === "Buy"
-    ? "bg-positive/10 text-positive border-positive/30"
-    : "bg-danger/10 text-danger border-danger/30";
-  const submitLabel = submitting
-    ? "Submitting…"
-    : `${ticket.side} ${symbol}${ticket.type === "Limit" && ticket.limitPrice ? ` @ ${ticket.limitPrice}` : ""}`;
-
+function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
+  const { ticket, submitCommand, status } = vm;
+  const statusToneClass = quickTicketStatusClass[status.tone];
   return (
     <Card>
       <CardHeader>
@@ -571,15 +443,15 @@ function QuickTradeCard({ symbol, ticket, onFieldChange, onSubmit }: QuickTradeC
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={onSubmit} className="space-y-3" aria-describedby="quick-ticket-status">
+        <form onSubmit={vm.submitTicket} className="space-y-3" aria-describedby={status.id}>
           <div className="grid gap-2 sm:grid-cols-2">
             <div className="flex flex-col gap-1">
               <label htmlFor="quick-ticket-side" className="text-xs uppercase tracking-wide text-muted-foreground">Side</label>
               <Select
                 id="quick-ticket-side"
                 value={ticket.side}
-                onChange={(event) => onFieldChange("side", event.target.value as "Buy" | "Sell")}
-                className={sideTone}
+                onChange={(event) => vm.updateField("side", event.target.value as "Buy" | "Sell")}
+                className={vm.sideToneClass}
                 aria-label="Order side"
               >
                 <option value="Buy">Buy</option>
@@ -591,7 +463,7 @@ function QuickTradeCard({ symbol, ticket, onFieldChange, onSubmit }: QuickTradeC
               <Select
                 id="quick-ticket-type"
                 value={ticket.type}
-                onChange={(event) => onFieldChange("type", event.target.value as "Market" | "Limit")}
+                onChange={(event) => vm.updateField("type", event.target.value as "Market" | "Limit")}
                 aria-label="Order type"
               >
                 <option value="Limit">Limit</option>
@@ -611,10 +483,12 @@ function QuickTradeCard({ symbol, ticket, onFieldChange, onSubmit }: QuickTradeC
                 step={1}
                 placeholder="100"
                 value={ticket.quantity}
-                onChange={(event) => onFieldChange("quantity", event.target.value)}
+                onChange={(event) => vm.updateField("quantity", event.target.value)}
                 autoComplete="off"
                 spellCheck={false}
+                error={vm.quantityInvalid}
                 aria-label="Order quantity in shares"
+                aria-describedby={status.id}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -629,48 +503,52 @@ function QuickTradeCard({ symbol, ticket, onFieldChange, onSubmit }: QuickTradeC
                 step="0.01"
                 placeholder={ticket.type === "Market" ? "Best available" : "0.00"}
                 value={ticket.type === "Market" ? "" : ticket.limitPrice}
-                onChange={(event) => onFieldChange("limitPrice", event.target.value)}
-                disabled={ticket.type === "Market"}
+                onChange={(event) => vm.updateField("limitPrice", event.target.value)}
+                disabled={vm.priceDisabled}
                 autoComplete="off"
                 spellCheck={false}
+                error={vm.priceInvalid}
                 aria-label="Limit price"
+                aria-describedby={status.id}
               />
             </div>
           </div>
 
           <Button
             type="submit"
-            variant={ticket.side === "Buy" ? "default" : "destructive"}
+            variant={submitCommand.variant}
             className="w-full"
-            disabled={submitting}
-            aria-label={`Submit ${ticket.side.toLowerCase()} order for ${symbol}`}
+            disabled={submitCommand.disabled}
+            disabledReason={submitCommand.disabledReason}
+            busy={submitCommand.busy}
+            busyLabel={submitCommand.busyLabel}
+            aria-label={submitCommand.ariaLabel}
           >
             <Send className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">{submitLabel}</span>
+            <span className="ml-1.5">{submitCommand.label}</span>
           </Button>
 
-          <div id="quick-ticket-status" aria-live="polite" className="min-h-[1.25rem] text-xs">
-            {submitted && ticket.message ? (
-              <span className="flex items-center gap-1.5 text-positive">
-                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-                {ticket.message}
-              </span>
-            ) : errored && ticket.message ? (
-              <span className="flex items-center gap-1.5 text-danger">
-                <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                {ticket.message}
-              </span>
-            ) : (
-              <span className="text-muted-foreground">
-                Orders route through Meridian's pre-trade risk and execution controls.
-              </span>
-            )}
+          <div
+            id={status.id}
+            role={status.role}
+            aria-live="polite"
+            className={`flex min-h-[1.25rem] items-center gap-1.5 text-xs ${statusToneClass}`}
+          >
+            {status.showSuccessIcon ? <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+            {status.showErrorIcon ? <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+            <span>{status.message}</span>
           </div>
         </form>
       </CardContent>
     </Card>
   );
 }
+
+const quickTicketStatusClass = {
+  default: "text-muted-foreground",
+  success: "text-positive",
+  danger: "text-danger"
+} as const;
 
 function TradesTable({ trades }: { trades: TradeDataResponse[] }) {
   return (

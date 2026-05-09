@@ -266,6 +266,61 @@ describe("useReportingScreenViewModel", () => {
     });
   });
 
+  it("ignores stale export results after the operator selects another profile", async () => {
+    let releaseExport!: (value: ExportAnalysisResult) => void;
+    const calls: string[] = [];
+    const runExport = (profileId: string) => {
+      calls.push(profileId);
+      return new Promise<ExportAnalysisResult>((resolve) => {
+        releaseExport = resolve;
+      });
+    };
+    const { result } = renderHook(() => useReportingScreenViewModel(reporting, { runExport }));
+
+    act(() => { result.current.selectProfile("excel"); });
+
+    let exportPromise: Promise<void> = Promise.resolve();
+    act(() => {
+      exportPromise = result.current.runExport("excel", "Excel");
+    });
+
+    await waitFor(() => {
+      expect(result.current.runningProfileId).toBe("excel");
+      expect(result.current.exportStatus?.text).toBe("Starting Excel export…");
+    });
+
+    act(() => { result.current.selectProfile("csv"); });
+
+    expect(result.current.selectedProfile?.title).toBe("CSV");
+    expect(result.current.runningProfileId).toBeNull();
+    expect(result.current.exportStatus).toBeNull();
+
+    await act(async () => {
+      releaseExport({
+        jobId: "export-stale",
+        success: true,
+        status: "completed",
+        profileId: "excel",
+        symbols: [],
+        filesGenerated: 1,
+        totalRecords: 20,
+        totalBytes: 1200,
+        outputDirectory: "exports",
+        durationSeconds: 1,
+        error: null,
+        warnings: [],
+        files: [],
+        timestamp: "2026-05-01T00:00:00Z"
+      });
+      await exportPromise;
+    });
+
+    expect(calls).toEqual(["excel"]);
+    expect(result.current.selectedProfile?.title).toBe("CSV");
+    expect(result.current.runningProfileId).toBeNull();
+    expect(result.current.exportStatus).toBeNull();
+  });
+
   it("warns when the export service resolves a different profile id", async () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting, {
       runExport: async () => ({

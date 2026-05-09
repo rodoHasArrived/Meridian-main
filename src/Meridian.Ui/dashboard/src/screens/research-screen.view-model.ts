@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import type {
   MetricSnapshot,
@@ -378,6 +378,8 @@ export function useResearchRunLibraryViewModel(
   const [promotionSession, setPromotionSession] = useState<PaperSessionSummary | null>(null);
   const [promoteError, setPromoteError] = useState<string | null>(null);
   const [promotionInitialCashInput, setPromotionInitialCashInput] = useState("100000");
+  const runScopedCommandRequestId = useRef(0);
+  const promotionRequestId = useRef(0);
 
   const metrics = data?.metrics ?? [];
   const runs = data?.runs ?? [];
@@ -428,8 +430,20 @@ export function useResearchRunLibraryViewModel(
   );
 
   const toggleRun = useCallback((runId: string) => {
+    runScopedCommandRequestId.current += 1;
+    promotionRequestId.current += 1;
     setSelectedIds((current) => toggleRunSelection(current, runId));
+    setComparison([]);
+    setRunDiff(null);
+    setComparisonLoaded(false);
+    setRunDiffLoaded(false);
+    setPromoteState("idle");
+    setPromotionEval(null);
+    setPromotionSession(null);
+    setPromoteError(null);
+    setPromotionInitialCashInput("100000");
     setActionError(null);
+    setActiveCommand((current) => current === "history" ? current : null);
   }, []);
 
   const openRunDetail = useCallback((run: ResearchRunRecord) => {
@@ -480,19 +494,32 @@ export function useResearchRunLibraryViewModel(
       return;
     }
 
+    const requestId = runScopedCommandRequestId.current + 1;
+    runScopedCommandRequestId.current = requestId;
+    const requestedRunIds = [...selectedIds];
     setActiveCommand("compare");
     setActionError(null);
 
     try {
-      const rows = await services.compareRuns(selectedIds);
+      const rows = await services.compareRuns(requestedRunIds);
+      if (runScopedCommandRequestId.current !== requestId) {
+        return;
+      }
+
       setComparison(rows);
       setRunDiff(null);
       setComparisonLoaded(true);
       setRunDiffLoaded(false);
     } catch (err) {
+      if (runScopedCommandRequestId.current !== requestId) {
+        return;
+      }
+
       setActionError(err instanceof Error ? err.message : "Run comparison failed.");
     } finally {
-      setActiveCommand(null);
+      if (runScopedCommandRequestId.current === requestId) {
+        setActiveCommand(null);
+      }
     }
   }, [selectedIds, services]);
 
@@ -502,25 +529,40 @@ export function useResearchRunLibraryViewModel(
       return;
     }
 
+    const requestId = runScopedCommandRequestId.current + 1;
+    runScopedCommandRequestId.current = requestId;
+    const requestedRunIds = [...selectedIds];
     setActiveCommand("diff");
     setActionError(null);
 
     try {
-      const result = await services.diffRuns(selectedIds[0], selectedIds[1]);
+      const result = await services.diffRuns(requestedRunIds[0], requestedRunIds[1]);
+      if (runScopedCommandRequestId.current !== requestId) {
+        return;
+      }
+
       setRunDiff(result);
       setComparison([]);
       setRunDiffLoaded(true);
       setComparisonLoaded(false);
     } catch (err) {
+      if (runScopedCommandRequestId.current !== requestId) {
+        return;
+      }
+
       setActionError(err instanceof Error ? err.message : "Run diff failed.");
     } finally {
-      setActiveCommand(null);
+      if (runScopedCommandRequestId.current === requestId) {
+        setActiveCommand(null);
+      }
     }
   }, [selectedIds, services]);
 
   const promoteSelectedRun = useCallback(async () => {
     const run = state.selectedRuns[0];
     if (!run) return;
+    const requestId = promotionRequestId.current + 1;
+    promotionRequestId.current = requestId;
     setPromoteState("evaluating");
     setPromoteError(null);
     setPromotionEval(null);
@@ -528,9 +570,17 @@ export function useResearchRunLibraryViewModel(
     setPromotionInitialCashInput("100000");
     try {
       const result = await services.evaluatePromotion(run.id);
+      if (promotionRequestId.current !== requestId) {
+        return;
+      }
+
       setPromotionEval(result);
       setPromoteState("evaluated");
     } catch (err) {
+      if (promotionRequestId.current !== requestId) {
+        return;
+      }
+
       setPromoteError(err instanceof Error ? err.message : "Promotion evaluation failed.");
       setPromoteState("idle");
     }
@@ -545,19 +595,30 @@ export function useResearchRunLibraryViewModel(
       return;
     }
 
+    const requestId = promotionRequestId.current + 1;
+    promotionRequestId.current = requestId;
     setPromoteState("creating");
     setPromoteError(null);
     try {
       const session = await services.createPaperSession(run.id, run.strategyName, initialCash);
+      if (promotionRequestId.current !== requestId) {
+        return;
+      }
+
       setPromotionSession(session);
       setPromoteState("done");
     } catch (err) {
+      if (promotionRequestId.current !== requestId) {
+        return;
+      }
+
       setPromoteError(err instanceof Error ? err.message : "Paper session creation failed.");
       setPromoteState("evaluated");
     }
   }, [services, state.selectedRuns, promotionEval, promotionInitialCashInput]);
 
   const cancelPromotion = useCallback(() => {
+    promotionRequestId.current += 1;
     setPromoteState("idle");
     setPromotionEval(null);
     setPromotionSession(null);

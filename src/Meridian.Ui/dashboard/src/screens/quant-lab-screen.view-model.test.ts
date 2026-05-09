@@ -3,6 +3,7 @@ import {
   buildParameterRow,
   buildQuantParameters,
   buildRunCommandState,
+  buildRunResultPanelState,
   buildTemplatePanelState,
   buildToolbarItems,
   initializeNewParameterValues,
@@ -30,6 +31,35 @@ const boolParameter: QuantParameter = {
   description: null,
   min: null,
   max: null
+};
+
+const successfulRunState: QuantRunState = {
+  phase: "ready",
+  error: null,
+  result: {
+    success: true,
+    elapsedMs: 12.4,
+    compileTimeMs: 30.2,
+    peakMemoryBytes: 1024 * 16,
+    runtimeError: null,
+    consoleOutput: "Hello from Quant Lab.\n",
+    compilationErrors: [],
+    runtimeDiagnostics: [],
+    metrics: [{ label: "answer", value: "42" }],
+    plots: [
+      {
+        title: "Sine",
+        type: "Line",
+        series: [],
+        multiSeries: null,
+        candlestick: null,
+        heatmapData: null,
+        heatmapLabels: null
+      }
+    ],
+    trades: [],
+    runtimeParameters: []
+  }
 };
 
 describe("Quant Lab view model helpers", () => {
@@ -109,5 +139,42 @@ describe("Quant Lab view model helpers", () => {
       { id: "params", label: "Params", value: "1", active: true },
       { id: "run", label: "Run", value: "running", active: true }
     ]);
+  });
+
+  it("projects run result states into stable panel copy and visibility flags", () => {
+    expect(buildRunResultPanelState({ phase: "idle", result: null, error: null })).toMatchObject({
+      role: "status",
+      title: "Run workspace idle",
+      runtimeSummary: "Run state, parameters, and template availability are tracked before execution.",
+      hasResult: false,
+      hasMetrics: false,
+      hasConsoleOutput: false,
+      hasPlots: false
+    });
+
+    expect(buildRunResultPanelState(successfulRunState)).toMatchObject({
+      role: "region",
+      title: "Run succeeded",
+      statusBadgeLabel: "OK",
+      runtimeSummary: "Compiled in 30 ms · executed in 12 ms · peak 16 KB",
+      metricsLabel: "Metrics · 1",
+      consoleLabel: "Console output",
+      plotsDescription: "1 chart returned by this run.",
+      hasResult: true,
+      hasMetrics: true,
+      hasConsoleOutput: true,
+      hasPlots: true
+    });
+
+    expect(buildRunResultPanelState({
+      phase: "error",
+      result: null,
+      error: "503 Quant Lab disabled"
+    })).toMatchObject({
+      role: "alert",
+      ariaLive: "assertive",
+      title: "Run failed",
+      description: "503 Quant Lab disabled"
+    });
   });
 });

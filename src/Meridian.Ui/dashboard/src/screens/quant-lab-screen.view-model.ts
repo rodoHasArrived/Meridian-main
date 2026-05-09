@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as api from "@/lib/api";
 import type {
+  QuantDiagnostic,
   QuantParameter,
   QuantRunResponse,
   QuantTemplate
@@ -59,10 +60,39 @@ export interface QuantLabToolbarItem {
   active?: boolean;
 }
 
+export interface QuantDiagnosticSectionState {
+  id: string;
+  label: string;
+  entries: QuantDiagnostic[];
+  tone: "danger" | "warning";
+}
+
+export interface QuantRunResultPanelState {
+  phase: QuantRunState["phase"];
+  tone: "success" | "danger" | "default";
+  role: "status" | "alert" | "region";
+  ariaLive: "polite" | "assertive";
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusBadgeLabel: string;
+  runtimeSummary: string;
+  metricsLabel: string;
+  consoleLabel: string;
+  plotsLabel: string;
+  plotsDescription: string;
+  hasResult: boolean;
+  hasMetrics: boolean;
+  hasConsoleOutput: boolean;
+  hasPlots: boolean;
+  diagnosticSections: QuantDiagnosticSectionState[];
+}
+
 export interface QuantLabScreenViewModel {
   source: string;
   setSource: (source: string) => void;
   run: QuantRunState;
+  resultPanel: QuantRunResultPanelState;
   consoleLines: string[];
   summaryTone: "success" | "danger" | "default";
   templates: QuantTemplate[];
@@ -215,6 +245,7 @@ export function useQuantLabScreenViewModel(
     source,
     setSource,
     run,
+    resultPanel: buildRunResultPanelState(run),
     consoleLines,
     summaryTone: buildSummaryTone(run),
     templates,
@@ -394,6 +425,109 @@ export function buildRunStatusAnnouncement(run: QuantRunState): string {
   return "Quant Lab is ready.";
 }
 
+export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPanelState {
+  const tone = buildSummaryTone(run);
+  const result = run.result;
+
+  if (run.phase === "idle") {
+    return {
+      phase: run.phase,
+      tone,
+      role: "status",
+      ariaLive: "polite",
+      title: "Run workspace idle",
+      description: "Run a script to see console output, metrics, plots, and diagnostics here.",
+      statusLabel: "Ready",
+      statusBadgeLabel: "IDLE",
+      runtimeSummary: "Run state, parameters, and template availability are tracked before execution.",
+      metricsLabel: "Metrics",
+      consoleLabel: "Console",
+      plotsLabel: "Plots",
+      plotsDescription: "No plots returned yet.",
+      hasResult: false,
+      hasMetrics: false,
+      hasConsoleOutput: false,
+      hasPlots: false,
+      diagnosticSections: []
+    };
+  }
+
+  if (run.phase === "running") {
+    return {
+      phase: run.phase,
+      tone,
+      role: "status",
+      ariaLive: "polite",
+      title: "Running script",
+      description: "Compiling and running script...",
+      statusLabel: "Running",
+      statusBadgeLabel: "RUN",
+      runtimeSummary: "Quant Lab is compiling the current script and waiting for runtime evidence.",
+      metricsLabel: "Metrics",
+      consoleLabel: "Console",
+      plotsLabel: "Plots",
+      plotsDescription: "Plots will render after the run completes.",
+      hasResult: false,
+      hasMetrics: false,
+      hasConsoleOutput: false,
+      hasPlots: false,
+      diagnosticSections: []
+    };
+  }
+
+  if (run.phase === "error" || !result) {
+    return {
+      phase: run.phase,
+      tone: "danger",
+      role: "alert",
+      ariaLive: "assertive",
+      title: "Run failed",
+      description: run.error ?? "Unknown error.",
+      statusLabel: "Failed",
+      statusBadgeLabel: "ERR",
+      runtimeSummary: "Quant Lab could not complete the script run.",
+      metricsLabel: "Metrics",
+      consoleLabel: "Console",
+      plotsLabel: "Plots",
+      plotsDescription: "No plots returned because the run failed.",
+      hasResult: false,
+      hasMetrics: false,
+      hasConsoleOutput: false,
+      hasPlots: false,
+      diagnosticSections: []
+    };
+  }
+
+  const hasMetrics = result.metrics.length > 0;
+  const consoleLines = result.consoleOutput.split("\n");
+  const hasConsoleOutput = consoleLines.some((line) => line.length > 0);
+  const plotCount = result.plots.length;
+
+  return {
+    phase: run.phase,
+    tone,
+    role: result.success ? "region" : "alert",
+    ariaLive: result.success ? "polite" : "assertive",
+    title: result.success ? "Run succeeded" : "Run finished with errors",
+    description: result.runtimeError ?? "Runtime evidence returned by this run.",
+    statusLabel: result.success ? "Completed successfully" : "Completed with errors",
+    statusBadgeLabel: result.success ? "OK" : "ERR",
+    runtimeSummary: `Compiled in ${formatWholeNumber(result.compileTimeMs)} ms · executed in ${formatWholeNumber(result.elapsedMs)} ms · peak ${formatWholeNumber(result.peakMemoryBytes / 1024)} KB`,
+    metricsLabel: hasMetrics ? `Metrics · ${result.metrics.length}` : "Metrics",
+    consoleLabel: hasConsoleOutput ? "Console output" : "Console",
+    plotsLabel: "Plots",
+    plotsDescription: `${plotCount} chart${plotCount === 1 ? "" : "s"} returned by this run.`,
+    hasResult: true,
+    hasMetrics,
+    hasConsoleOutput,
+    hasPlots: plotCount > 0,
+    diagnosticSections: [
+      { id: "compilation", label: "Compilation errors", entries: result.compilationErrors, tone: "danger" as const },
+      { id: "runtime", label: "Runtime diagnostics", entries: result.runtimeDiagnostics, tone: "warning" as const }
+    ].filter((section) => section.entries.length > 0)
+  };
+}
+
 export function buildToolbarItems(
   source: string,
   templateCount: number,
@@ -426,4 +560,8 @@ export function buildToolbarItems(
       active: run.phase === "running"
     }
   ];
+}
+
+function formatWholeNumber(value: number): string {
+  return Number.isFinite(value) ? value.toFixed(0) : "0";
 }

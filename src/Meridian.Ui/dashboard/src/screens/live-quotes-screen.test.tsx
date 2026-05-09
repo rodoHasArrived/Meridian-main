@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import { computeIntradayMetrics, LiveQuotesScreen, validateQuickTicket } from "@/screens/live-quotes-screen";
+import { computeIntradayMetrics, LiveQuotesScreen } from "@/screens/live-quotes-screen";
+import { buildOrderRequest, validateQuickTicket } from "@/screens/live-quotes-screen.view-model";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import * as api from "@/lib/api";
 
@@ -172,6 +173,23 @@ describe("validateQuickTicket", () => {
   it("accepts a valid limit ticket", () => {
     expect(validateQuickTicket({ side: "Sell", type: "Limit", quantity: "10", limitPrice: "188.05" })).toBeNull();
   });
+
+  it("builds market and limit order requests from ticket state", () => {
+    expect(buildOrderRequest("AAPL", { side: "Buy", type: "Market", quantity: "5", limitPrice: "" })).toEqual({
+      symbol: "AAPL",
+      side: "Buy",
+      type: "Market",
+      quantity: 5,
+      limitPrice: null
+    });
+    expect(buildOrderRequest("AAPL", { side: "Sell", type: "Limit", quantity: "10", limitPrice: "188.05" })).toEqual({
+      symbol: "AAPL",
+      side: "Sell",
+      type: "Limit",
+      quantity: 10,
+      limitPrice: 188.05
+    });
+  });
 });
 
 describe("LiveQuotesScreen quick trade", () => {
@@ -254,7 +272,7 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(await screen.findByText(/Insufficient buying power/i)).toBeInTheDocument();
   });
 
-  it("blocks submission with an invalid quantity", async () => {
+  it("blocks submission with an invalid quantity before the order command runs", async () => {
     const submitSpy = vi.spyOn(api, "submitOrder");
 
     const user = userEvent.setup();
@@ -263,8 +281,10 @@ describe("LiveQuotesScreen quick trade", () => {
     await waitForAsyncEffects();
 
     await user.click(await screen.findByRole("button", { name: /Buy AAPL at ask/i }));
-    await user.click(screen.getByRole("button", { name: /Submit buy order for AAPL/i }));
+    const submitButton = screen.getByRole("button", { name: /Submit buy order for AAPL/i });
 
+    expect(submitButton).toBeDisabled();
+    expect(submitButton).toHaveAttribute("title", "Enter a quantity greater than zero.");
     expect(submitSpy).not.toHaveBeenCalled();
     expect(await screen.findByText(/Enter a quantity greater than zero/i)).toBeInTheDocument();
   });
@@ -319,6 +339,12 @@ describe("LiveQuotesScreen quick trade", () => {
   });
 
   it("clears the limit-price requirement when switching to a market order", async () => {
+    const submitSpy = vi.spyOn(api, "submitOrder").mockResolvedValue({
+      success: true,
+      orderId: "ORD-2",
+      reason: null
+    });
+
     const user = userEvent.setup();
     renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
 
@@ -332,12 +358,6 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(priceInput.disabled).toBe(true);
 
     await user.type(screen.getByLabelText("Order quantity in shares"), "5");
-
-    const submitSpy = vi.spyOn(api, "submitOrder").mockResolvedValue({
-      success: true,
-      orderId: "ORD-2",
-      reason: null
-    });
 
     await user.click(screen.getByRole("button", { name: /Submit buy order for AAPL/i }));
 

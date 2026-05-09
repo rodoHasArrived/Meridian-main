@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   buildPortfolioScreenViewModel,
+  buildPortfolioFallbackMetrics,
   resolveBrokerageAccountFilterKeyCommand
 } from "@/screens/portfolio-screen.view-model";
 import type {
@@ -305,7 +306,62 @@ describe("buildPortfolioScreenViewModel", () => {
   it("provides fallback stats when trading is available", () => {
     const vm = buildPortfolioScreenViewModel({ trading, research, governance });
     expect(vm.fallbackStats).toHaveLength(4);
-    expect(vm.fallbackStats.find((s) => s.label === "Open positions")?.value).toBe("1");
+    expect(vm.fallbackStats.find((s) => s.id === "portfolio-open-positions")).toMatchObject({
+      label: "Open positions",
+      value: "1",
+      delta: "Selectable detail",
+      tone: "success"
+    });
+    expect(vm.fallbackStats.find((s) => s.id === "portfolio-unrealized-pnl")).toMatchObject({
+      value: "+$90",
+      tone: "success"
+    });
+  });
+
+  it("builds fallback portfolio metrics as shared MetricSnapshot view state", () => {
+    expect(buildPortfolioFallbackMetrics({
+      openPositionCount: 0,
+      totalExposure: 0,
+      totalUnrealizedPnl: 0
+    })).toEqual([
+      {
+        id: "portfolio-total-exposure",
+        label: "Total exposure",
+        value: "—",
+        delta: "No holdings",
+        tone: "default"
+      },
+      {
+        id: "portfolio-unrealized-pnl",
+        label: "Unrealized P&L",
+        value: "—",
+        delta: "No holdings",
+        tone: "default"
+      },
+      {
+        id: "portfolio-cash",
+        label: "Cash",
+        value: "—",
+        delta: "Awaiting portfolio cash feed",
+        tone: "warning"
+      },
+      {
+        id: "portfolio-open-positions",
+        label: "Open positions",
+        value: "0",
+        delta: "No holdings",
+        tone: "default"
+      }
+    ]);
+
+    expect(buildPortfolioFallbackMetrics({
+      openPositionCount: 2,
+      totalExposure: 1000,
+      totalUnrealizedPnl: -25
+    }).find((metric) => metric.id === "portfolio-unrealized-pnl")).toMatchObject({
+      value: "-$25",
+      tone: "danger"
+    });
   });
 
   it("derives named header chips without relying on fallback stat positions", () => {

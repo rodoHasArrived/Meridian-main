@@ -112,10 +112,10 @@ describe("watchlist-screen view model", () => {
     };
 
     expect(buildWatchlistStats(stats)).toEqual([
-      { id: "total", label: "Total", value: "3", tone: "default", ariaLabel: "Total: 3" },
-      { id: "monitored", label: "Monitored", value: "2", tone: "default", ariaLabel: "Monitored: 2" },
-      { id: "archived", label: "Archived", value: "1", tone: "default", ariaLabel: "Archived: 1" },
-      { id: "errors", label: "Errors", value: "1", tone: "danger", ariaLabel: "Errors: 1" }
+      { id: "total", label: "Total", value: "3", delta: "", tone: "default" },
+      { id: "monitored", label: "Monitored", value: "2", delta: "", tone: "default" },
+      { id: "archived", label: "Archived", value: "1", delta: "", tone: "default" },
+      { id: "errors", label: "Errors", value: "1", delta: "", tone: "danger" }
     ]);
   });
 

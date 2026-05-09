@@ -333,10 +333,7 @@ export function PortfolioScreen({
       ) : (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {vm.fallbackStats.map((stat) => (
-            <div key={stat.label} className="metric-tile">
-              <div className="text-xs text-muted-foreground mb-2 font-mono uppercase tracking-[0.14em]">{stat.label}</div>
-              <p className="text-2xl font-semibold tabular-nums font-mono text-foreground">{stat.value}</p>
-            </div>
+            <MetricCard key={stat.id} {...stat} />
           ))}
         </section>
       )}

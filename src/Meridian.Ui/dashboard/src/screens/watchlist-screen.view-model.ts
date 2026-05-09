@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { QuotesSnapshotItem, SymbolRecord, SymbolStatistics } from "@/types";
+import type { MetricSnapshot, QuotesSnapshotItem, SymbolRecord, SymbolStatistics } from "@/types";
 
 export type WatchlistBadgeVariant = "default" | "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research";
-export type WatchlistStatTone = "default" | "danger";
 export type WatchlistListState = "loading" | "error" | "empty" | "ready";
 export type WatchlistPriceTone = "default" | "success" | "danger";
 export type WatchlistQuoteStatusTone = "default" | "warning" | "danger";
@@ -22,14 +21,6 @@ export interface WatchlistApi {
 export interface WatchlistSubmitFeedback {
   tone: "success" | "warning" | "danger";
   message: string;
-}
-
-export interface WatchlistStatCard {
-  id: string;
-  label: string;
-  value: string;
-  tone: WatchlistStatTone;
-  ariaLabel: string;
 }
 
 export interface WatchlistRowViewModel {
@@ -74,7 +65,7 @@ export interface WatchlistScreenViewModel {
   submitError: string | null;
   submitFeedback: WatchlistSubmitFeedback | null;
   loadError: string | null;
-  stats: WatchlistStatCard[];
+  stats: MetricSnapshot[];
   rows: WatchlistRowViewModel[];
   listState: WatchlistListState;
   listDescription: string;
@@ -366,7 +357,7 @@ export function buildWatchlistRows(
     });
 }
 
-export function buildWatchlistStats(stats: SymbolStatistics | null): WatchlistStatCard[] {
+export function buildWatchlistStats(stats: SymbolStatistics | null): MetricSnapshot[] {
   return [
     buildStat("total", "Total", stats?.totalSymbols),
     buildStat("monitored", "Monitored", stats?.monitoredSymbols),
@@ -445,15 +436,15 @@ function buildStat(
   id: string,
   label: string,
   value: number | undefined,
-  tone: WatchlistStatTone = "default"
-): WatchlistStatCard {
+  tone: MetricSnapshot["tone"] = "default"
+): MetricSnapshot {
   const displayValue = value === undefined ? "-" : formatCount(value);
   return {
     id,
     label,
     value: displayValue,
-    tone,
-    ariaLabel: `${label}: ${displayValue}`
+    delta: "",
+    tone
   };
 }
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import type { ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import type {
@@ -3208,6 +3208,17 @@ export function usePromotionGateViewModel(
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<PromotionGatePhase>("idle");
   const [outcome, setOutcome] = useState<PromotionOutcome | null>(null);
+  const commandRevisionRef = useRef(0);
+  const mountedRef = useRef(true);
+
+  const nextCommandRevision = useCallback(() => {
+    commandRevisionRef.current += 1;
+    return commandRevisionRef.current;
+  }, []);
+
+  const isCurrentCommandRevision = useCallback((revision: number) => (
+    mountedRef.current && commandRevisionRef.current === revision
+  ), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -3229,20 +3240,30 @@ export function usePromotionGateViewModel(
     };
   }, [services]);
 
+  useEffect(() => () => {
+    mountedRef.current = false;
+    commandRevisionRef.current += 1;
+  }, []);
+
   const state = useMemo(
     () => buildPromotionGateState({ form, busy, phase, errorText, outcome, evaluation, history }),
     [busy, errorText, evaluation, form, history, outcome, phase]
   );
 
-  const refreshHistory = useCallback(async () => {
+  const refreshHistory = useCallback(async (commandRevision?: number) => {
     const rows = await services.getPromotionHistory();
-    setHistory(rows);
-  }, [services]);
+    if (commandRevision === undefined || isCurrentCommandRevision(commandRevision)) {
+      setHistory(rows);
+    }
+  }, [isCurrentCommandRevision, services]);
 
   const updateField = useCallback((field: PromotionGateField, value: string) => {
+    commandRevisionRef.current += 1;
     setForm((current) => ({ ...current, [field]: value }));
     setErrorText(null);
     setOutcome(null);
+    setBusy(false);
+    setPhase("idle");
 
     if (field === "runId") {
       setEvaluation(null);
@@ -3256,6 +3277,7 @@ export function usePromotionGateViewModel(
       return;
     }
 
+    const commandRevision = nextCommandRevision();
     setBusy(true);
     setPhase("evaluating");
     setErrorText(null);
@@ -3263,14 +3285,28 @@ export function usePromotionGateViewModel(
 
     try {
       const result = await services.evaluatePromotion(runId);
+      if (!isCurrentCommandRevision(commandRevision)) {
+        return;
+      }
+
+      if (!isPromotionEvaluationForRun(result, runId)) {
+        setEvaluation(null);
+        setErrorText(`Promotion evaluation returned results for ${result.runId || "another run"} while ${runId} is selected. Evaluate the selected run again.`);
+        return;
+      }
+
       setEvaluation(result);
     } catch (err) {
-      setErrorText(toErrorMessage(err, "Evaluation failed."));
+      if (isCurrentCommandRevision(commandRevision)) {
+        setErrorText(toErrorMessage(err, "Evaluation failed."));
+      }
     } finally {
-      setBusy(false);
-      setPhase("idle");
+      if (isCurrentCommandRevision(commandRevision)) {
+        setBusy(false);
+        setPhase("idle");
+      }
     }
-  }, [form.runId, services]);
+  }, [form.runId, isCurrentCommandRevision, nextCommandRevision, services]);
 
   const promoteToPaper = useCallback(async () => {
     const validationError = validatePromotionApproval(form, evaluation);
@@ -3280,6 +3316,7 @@ export function usePromotionGateViewModel(
       return;
     }
 
+    const commandRevision = nextCommandRevision();
     setBusy(true);
     setPhase("approving");
     setErrorText(null);
@@ -3287,15 +3324,23 @@ export function usePromotionGateViewModel(
 
     try {
       const result = await services.approvePromotion(buildPromotionApprovalRequest(form));
+      if (!isCurrentCommandRevision(commandRevision)) {
+        return;
+      }
+
       setOutcome(buildApprovalOutcome(result));
-      await refreshHistory();
+      await refreshHistory(commandRevision);
     } catch (err) {
-      setErrorText(toErrorMessage(err, "Promotion approval failed."));
+      if (isCurrentCommandRevision(commandRevision)) {
+        setErrorText(toErrorMessage(err, "Promotion approval failed."));
+      }
     } finally {
-      setBusy(false);
-      setPhase("idle");
+      if (isCurrentCommandRevision(commandRevision)) {
+        setBusy(false);
+        setPhase("idle");
+      }
     }
-  }, [evaluation, form, refreshHistory, services]);
+  }, [evaluation, form, isCurrentCommandRevision, nextCommandRevision, refreshHistory, services]);
 
   const rejectPromotionDecision = useCallback(async () => {
     const validationError = validatePromotionRejection(form);
@@ -3305,6 +3350,7 @@ export function usePromotionGateViewModel(
       return;
     }
 
+    const commandRevision = nextCommandRevision();
     setBusy(true);
     setPhase("rejecting");
     setErrorText(null);
@@ -3312,19 +3358,27 @@ export function usePromotionGateViewModel(
 
     try {
       const result = await services.rejectPromotion(buildPromotionRejectionRequest(form));
-      setOutcome(buildRejectionOutcome(result));
-      await refreshHistory();
+      if (!isCurrentCommandRevision(commandRevision)) {
+        return;
+      }
 
-      if (result.success) {
+      setOutcome(buildRejectionOutcome(result));
+      await refreshHistory(commandRevision);
+
+      if (result.success && isCurrentCommandRevision(commandRevision)) {
         setForm((current) => ({ ...current, rejectionReason: "" }));
       }
     } catch (err) {
-      setErrorText(toErrorMessage(err, "Promotion rejection failed."));
+      if (isCurrentCommandRevision(commandRevision)) {
+        setErrorText(toErrorMessage(err, "Promotion rejection failed."));
+      }
     } finally {
-      setBusy(false);
-      setPhase("idle");
+      if (isCurrentCommandRevision(commandRevision)) {
+        setBusy(false);
+        setPhase("idle");
+      }
     }
-  }, [form, refreshHistory, services]);
+  }, [form, isCurrentCommandRevision, nextCommandRevision, refreshHistory, services]);
 
   return {
     ...state,
@@ -3345,14 +3399,15 @@ export function buildPromotionGateState({
   history
 }: BuildPromotionGateStateOptions): PromotionGateState {
   const trimmedForm = trimPromotionGateForm(form);
+  const effectiveEvaluation = selectPromotionEvaluationForRun(evaluation, trimmedForm.runId);
   const canEvaluate = !busy && Boolean(trimmedForm.runId);
-  const canPromote = !busy && validatePromotionApproval(trimmedForm, evaluation) === null;
+  const canPromote = !busy && validatePromotionApproval(trimmedForm, effectiveEvaluation) === null;
   const canReject = !busy && validatePromotionRejection(trimmedForm) === null;
 
   return {
     form,
     trimmedForm,
-    evaluation,
+    evaluation: effectiveEvaluation,
     history,
     busy,
     phase,
@@ -3364,12 +3419,12 @@ export function buildPromotionGateState({
     evaluateButtonLabel: phase === "evaluating" ? "Evaluating..." : "Evaluate gate checks",
     promoteButtonLabel: phase === "approving" ? "Promoting..." : "Confirm promote",
     rejectButtonLabel: phase === "rejecting" ? "Rejecting..." : "Reject promotion",
-    nextActionText: buildNextActionText({ trimmedForm, evaluation, busy, phase }),
-    approvalRequirementText: buildApprovalRequirementText(trimmedForm, evaluation),
+    nextActionText: buildNextActionText({ trimmedForm, evaluation: effectiveEvaluation, busy, phase }),
+    approvalRequirementText: buildApprovalRequirementText(trimmedForm, effectiveEvaluation),
     rejectionRequirementText: buildRejectionRequirementText(trimmedForm),
     historyEmptyText: "No promotion decisions recorded.",
-    statusAnnouncement: buildPromotionStatusAnnouncement({ phase, errorText, outcome, evaluation, history }),
-    approvalChecklist: buildPromotionApprovalChecklist(evaluation)
+    statusAnnouncement: buildPromotionStatusAnnouncement({ phase, errorText, outcome, evaluation: effectiveEvaluation, history }),
+    approvalChecklist: buildPromotionApprovalChecklist(effectiveEvaluation)
   };
 }
 
@@ -3379,8 +3434,16 @@ export function validatePromotionApproval(
 ): string | null {
   const trimmedForm = trimPromotionGateForm(form);
 
+  if (!trimmedForm.runId) {
+    return "Run id, operator, and approval reason are required.";
+  }
+
   if (!evaluation) {
     return "Evaluate gate checks before confirming promotion.";
+  }
+
+  if (!isPromotionEvaluationForRun(evaluation, trimmedForm.runId)) {
+    return `Evaluate gate checks for ${trimmedForm.runId} before confirming promotion.`;
   }
 
   if (!evaluation.isEligible) {
@@ -3435,6 +3498,24 @@ function trimPromotionGateForm(form: PromotionGateForm): PromotionGateForm {
     reviewNotes: form.reviewNotes.trim(),
     manualOverrideId: form.manualOverrideId.trim()
   };
+}
+
+function selectPromotionEvaluationForRun(
+  evaluation: PromotionEvaluationResult | null,
+  runId: string
+): PromotionEvaluationResult | null {
+  if (!evaluation || !isPromotionEvaluationForRun(evaluation, runId)) {
+    return null;
+  }
+
+  return evaluation;
+}
+
+function isPromotionEvaluationForRun(
+  evaluation: PromotionEvaluationResult,
+  runId: string
+): boolean {
+  return Boolean(runId) && evaluation.runId === runId;
 }
 
 function buildApprovalOutcome(result: PromotionDecisionResult): PromotionOutcome {
