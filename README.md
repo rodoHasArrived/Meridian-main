@@ -1125,6 +1125,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── deterministic-canonicalization.md
 │   │   ├── domains.md
 │   │   ├── environment-designer-runtime-projection-and-wpf-admin-surface.md
+│   │   ├── evidence-workflow-fabric.md
 │   │   ├── layer-boundaries.md
 │   │   ├── ledger-architecture.md
 │   │   ├── overview.md
@@ -5360,6 +5361,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── GenerateLoaderCommand.cs
 │   │   │   ├── HelpCommand.cs
 │   │   │   ├── ICliCommand.cs
+│   │   │   ├── LedgerCliCommand.cs
 │   │   │   ├── PackageCommands.cs
 │   │   │   ├── ProviderCalibrationCommand.cs
 │   │   │   ├── QueryCommand.cs
@@ -5498,6 +5500,14 @@ Use these documents together when planning or implementing new work:
 │   │   │       └── StatusEndpointHandlers.cs
 │   │   ├── Indicators
 │   │   │   └── TechnicalIndicatorService.cs
+│   │   ├── Ledger
+│   │   │   └── TextJournal
+│   │   │       ├── LedgerTextJournalDocument.cs
+│   │   │       ├── LedgerTextJournalException.cs
+│   │   │       ├── LedgerTextJournalParser.cs
+│   │   │       ├── LedgerTextReportOptions.cs
+│   │   │       ├── LedgerTextReportRenderer.cs
+│   │   │       └── LedgerTextTransaction.cs
 │   │   ├── Meridian.Application.csproj
 │   │   ├── Monitoring
 │   │   │   ├── BackpressureAlertService.cs
@@ -6779,6 +6789,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── data-operations-screen.tsx
 │   │   │   │   │   ├── data-operations-screen.view-model.test.ts
 │   │   │   │   │   ├── data-operations-screen.view-model.ts
+│   │   │   │   │   ├── evidence-workbench-screen.tsx
+│   │   │   │   │   ├── evidence-workbench-screen.view-model.test.tsx
+│   │   │   │   │   ├── evidence-workbench-screen.view-model.ts
 │   │   │   │   │   ├── governance-screen.test.tsx
 │   │   │   │   │   ├── governance-screen.tsx
 │   │   │   │   │   ├── governance-screen.view-model.test.ts
@@ -6837,8 +6850,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-DSnkjShj.js
-│   │           │   └── index-GVE8iaeq.css
+│   │           │   ├── index-BFzDDbOY.css
+│   │           │   └── index-CFwIomDp.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -7723,6 +7736,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── DryRunCommandTests.cs
 │   │   │   │   ├── EtlCommandsTests.cs
 │   │   │   │   ├── HelpCommandTests.cs
+│   │   │   │   ├── LedgerCliCommandTests.cs
 │   │   │   │   ├── PackageCommandsTests.cs
 │   │   │   │   ├── SecurityMasterCommandsEdgarTests.cs
 │   │   │   │   ├── SelfTestCommandTests.cs
@@ -8141,6 +8155,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── BrokeragePortfolioSyncServiceTests.cs
 │   │       ├── DirectLendingEndpointsTests.cs
 │   │       ├── EdgarReferenceDataEndpointsTests.cs
+│   │       ├── EvidenceWorkflowFabricTests.cs
 │   │       ├── ExecutionGovernanceEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
 │   │       ├── ExportEndpointsTests.cs
@@ -8392,6 +8407,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-674 directories, 7535 files
+676 directories, 7548 files
 ```
 <!-- readme-tree end -->
