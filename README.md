@@ -887,15 +887,6 @@ Use these documents together when planning or implementing new work:
 │           ├── STRUCTURAL_IMPROVEMENTS_2026-02.md
 │           ├── TEST_MATRIX_FIX_SUMMARY.md
 │           └── desktop-improvements-executive-summary.md
-├── artifacts
-│   └── provider-validation
-│       └── _automation
-│           └── 2026-04-27
-│               ├── dk1-operator-signoff.json
-│               ├── dk1-pilot-parity-packet.json
-│               ├── dk1-pilot-parity-packet.md
-│               ├── wave1-validation-summary.json
-│               └── wave1-validation-summary.md
 ├── benchmarks
 │   ├── BOTTLENECK_REPORT.md
 │   ├── Meridian.Benchmarks
@@ -6851,7 +6842,7 @@ Use these documents together when planning or implementing new work:
 │   │       └── workstation
 │   │           ├── assets
 │   │           │   ├── index-BFzDDbOY.css
-│   │           │   └── index-CFwIomDp.js
+│   │           │   └── index-CsL00uT3.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8407,6 +8398,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-676 directories, 7548 files
+672 directories, 7543 files
 ```
 <!-- readme-tree end -->
