@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
-using Meridian.Ui.Shared.Workflows;
+using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.ViewModels;
 

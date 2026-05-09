@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Meridian.Ui.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Shell.Session;
 
 namespace Meridian.Wpf.Shell.Root;

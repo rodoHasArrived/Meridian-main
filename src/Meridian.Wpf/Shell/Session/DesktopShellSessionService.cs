@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Shell.Session;
@@ -17,14 +18,14 @@ public sealed class DesktopShellSessionService
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService _operatingContextService;
     private readonly NavigationService _navigationService;
-    private readonly LoggingService _loggingService;
+    private readonly Meridian.Wpf.Services.LoggingService _loggingService;
 
     public DesktopShellSessionService(
         WorkspaceService workspaceService,
         FundContextService fundContextService,
         WorkstationOperatingContextService operatingContextService,
         NavigationService navigationService,
-        LoggingService loggingService)
+        Meridian.Wpf.Services.LoggingService loggingService)
     {
         _workspaceService = workspaceService ?? throw new ArgumentNullException(nameof(workspaceService));
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));

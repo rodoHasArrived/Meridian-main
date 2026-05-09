@@ -495,10 +495,12 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
             {vm.dialogState.providerField.label}
             <input
               id={vm.dialogState.providerField.id}
-              className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
               value={vm.form.provider}
               aria-label={vm.dialogState.providerField.ariaLabel}
               placeholder={vm.dialogState.providerField.placeholder}
+              disabled={vm.dialogState.providerField.disabled}
+              title={vm.dialogState.providerField.disabledReason ?? undefined}
               onChange={(event) => vm.updateBackfillForm("provider", event.target.value)}
             />
           </label>
@@ -506,12 +508,14 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
             {vm.dialogState.symbolsField.label}
             <input
               id={vm.dialogState.symbolsField.id}
-              className="min-h-12 rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="min-h-12 rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
               placeholder={vm.dialogState.symbolsField.placeholder}
               value={vm.form.symbols}
               aria-label={vm.dialogState.symbolsField.ariaLabel}
               aria-describedby={vm.dialogState.symbolsField.describedBy}
               aria-invalid={vm.validationError !== null}
+              disabled={vm.dialogState.symbolsField.disabled}
+              title={vm.dialogState.symbolsField.disabledReason ?? undefined}
               data-dialog-autofocus={vm.dialogState.symbolsField.autoFocus ? "" : undefined}
               onChange={(event) => vm.updateBackfillForm("symbols", event.target.value)}
             />
@@ -523,9 +527,11 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
               <input
                 id={vm.dialogState.fromField.id}
                 type="date"
-                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
                 value={vm.form.from}
                 aria-label={vm.dialogState.fromField.ariaLabel}
+                disabled={vm.dialogState.fromField.disabled}
+                title={vm.dialogState.fromField.disabledReason ?? undefined}
                 onChange={(event) => vm.updateBackfillForm("from", event.target.value)}
               />
             </label>
@@ -534,9 +540,11 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
               <input
                 id={vm.dialogState.toField.id}
                 type="date"
-                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
                 value={vm.form.to}
                 aria-label={vm.dialogState.toField.ariaLabel}
+                disabled={vm.dialogState.toField.disabled}
+                title={vm.dialogState.toField.disabledReason ?? undefined}
                 onChange={(event) => vm.updateBackfillForm("to", event.target.value)}
               />
             </label>

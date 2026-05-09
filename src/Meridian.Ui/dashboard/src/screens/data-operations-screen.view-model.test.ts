@@ -1,3 +1,4 @@
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import {
   buildBackfillSection,
@@ -17,10 +18,13 @@ import {
   resolveSecurityMasterTabKeyCommand,
   resolveDataOperationsWorkstream,
   resolveSelectedBackfill,
+  useDataOperationsViewModel,
   validateBackfillForm,
   validateProviderSetupForm
 } from "@/screens/data-operations-screen.view-model";
 import type {
+  BackfillProgressResponse,
+  BackfillTriggerRequest,
   BackfillTriggerResult,
   DataOperationsBackfillRecord,
   DataOperationsExportRecord,
@@ -165,6 +169,8 @@ describe("data-operations-screen view model", () => {
     });
     expect(running.dialogState.runAction.busy).toBe(true);
     expect(running.dialogState.closeButtonDisabledReason).toContain("wait for the current request");
+    expect(running.dialogState.symbolsField.disabled).toBe(true);
+    expect(running.dialogState.symbolsField.disabledReason).toContain("wait for the current request");
     expect(running.statusAnnouncement).toBe("Running backfill request.");
   });
 
@@ -205,6 +211,59 @@ describe("data-operations-screen view model", () => {
     expect(dialog.runAction.disabledReason).toBe("Enter at least one symbol before previewing a backfill.");
     expect(dialog.formStatusLabel).toBe("Enter at least one symbol before previewing a backfill.");
     expect(dialog.formStatusTone).toBe("warning");
+  });
+
+  it("ignores stale backfill preview responses after a newer preview settles", async () => {
+    const previewRequests: Array<{
+      request: BackfillTriggerRequest;
+      resolve: (value: BackfillTriggerResult) => void;
+    }> = [];
+    const idleProgress: BackfillProgressResponse = {
+      active: false,
+      provider: null,
+      symbols: [],
+      message: null
+    };
+    const services = {
+      preview: (request: BackfillTriggerRequest) => new Promise<BackfillTriggerResult>((resolve) => {
+        previewRequests.push({ request, resolve });
+      }),
+      run: async (request: BackfillTriggerRequest) => ({ ...preview, symbols: request.symbols }),
+      getProgress: async () => idleProgress
+    };
+
+    const { result } = renderHook(() => useDataOperationsViewModel(null, "/data/backfills", services));
+
+    act(() => {
+      result.current.updateBackfillForm("symbols", "AAPL MSFT");
+    });
+
+    let firstPreview!: Promise<void>;
+    let secondPreview!: Promise<void>;
+    act(() => {
+      firstPreview = result.current.previewBackfill();
+      secondPreview = result.current.previewBackfill();
+    });
+
+    await waitFor(() => expect(previewRequests).toHaveLength(2));
+
+    await act(async () => {
+      previewRequests[1].resolve({ ...preview, symbols: ["MSFT"], barsWritten: 25 });
+      await secondPreview;
+    });
+
+    expect(result.current.preview?.symbols).toEqual(["MSFT"]);
+    expect(result.current.preview?.barsWritten).toBe(25);
+
+    await act(async () => {
+      previewRequests[0].resolve({ ...preview, symbols: ["AAPL"], barsWritten: 1000 });
+      await firstPreview;
+    });
+
+    expect(result.current.preview?.symbols).toEqual(["MSFT"]);
+    expect(result.current.preview?.barsWritten).toBe(25);
+    expect(result.current.phase).toBe("idle");
+    expect(result.current.busy).toBe(false);
   });
 
   it("derives backfill preview and completion result cards", () => {

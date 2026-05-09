@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import * as api from "@/lib/api";
@@ -312,6 +312,47 @@ describe("DataOperationsScreen", () => {
       expect(previewStatus).toHaveTextContent("2024-01-01 to 2024-01-31");
     });
     expect(screen.getByText("Preview is ready. Review the summary before running.")).toBeInTheDocument();
+  });
+
+  it("locks backfill request fields while preview is pending", async () => {
+    const user = userEvent.setup();
+
+    const mockPreview: BackfillTriggerResult = {
+      success: true,
+      provider: "polygon",
+      symbols: ["AAPL"],
+      from: "2024-01-01",
+      to: "2024-01-31",
+      barsWritten: 2100,
+      startedUtc: "2024-01-31T10:00:00Z",
+      completedUtc: "2024-01-31T10:00:05Z",
+      error: null
+    };
+    let resolvePreview!: (value: BackfillTriggerResult) => void;
+
+    vi.spyOn(api, "previewBackfill").mockReturnValueOnce(new Promise<BackfillTriggerResult>((resolve) => {
+      resolvePreview = resolve;
+    }));
+
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+
+    await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
+    await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "AAPL");
+    await user.click(screen.getByRole("button", { name: "Preview backfill request" }));
+
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Backfill symbols" })).toBeDisabled());
+    expect(screen.getByRole("textbox", { name: "Backfill provider" })).toBeDisabled();
+    expect(screen.getByLabelText("Backfill start date")).toBeDisabled();
+    expect(screen.getByLabelText("Backfill end date")).toBeDisabled();
+    expect(screen.getByRole("textbox", { name: "Backfill symbols" }))
+      .toHaveAttribute("title", "Backfill request is running; wait for the current request to finish before editing.");
+
+    await act(async () => {
+      resolvePreview(mockPreview);
+    });
+
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Backfill symbols" })).toBeEnabled());
+    expect(screen.getByRole("status", { name: /preview ready — polygon/i })).toHaveTextContent("Preview only");
   });
 
   it("calls triggerBackfill after preview and shows success result", async () => {

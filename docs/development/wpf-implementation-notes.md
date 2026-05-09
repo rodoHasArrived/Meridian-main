@@ -1,6 +1,6 @@
 # WPF Desktop Application — Implementation Notes
 
-**Version**: 1.7.x | **Last updated**: 2026-04-27 | **Status**: Authored / Included in solution build
+**Version**: 1.7.x | **Last updated**: 2026-05-09 | **Status**: Authored / Included in solution build
 
 ## Overview
 
@@ -57,6 +57,7 @@ Content Frame
 **Workspace-aware navigation** — `ResolveWorkspaceIdForPage()` maps a page tag to its home workspace so that clicking a sidebar item or executing a command palette entry also activates the correct workspace session state. `WorkspacePrimaryNavList`, `WorkspaceSecondaryNavList`, `WorkspaceOverflowNavList`, and `RelatedWorkflowNavList` all dispatch through the same `NavigateToPageCommand` contract when the operator changes selection.
 
 **Desktop shell MVVM seam** — shell-owned route and pane orchestration now lives under `src/Meridian.Wpf/Shell/`. `IShellRouteRegistry` projects `ShellNavigationCatalog` into route metadata, `IPageContentFactory` preserves existing `NavigationService.CreatePageContent()` behavior for docked pages, `IShellNavigationCoordinator` bridges explicit route/pane state back to the retained frame navigation service, and `PaneHostViewModel` owns pane layout, active-pane, and dropped-page assignments. `MainPage` remains the compatibility shell while its split-pane code-behind is limited to frame/content wiring.
+`Shell/Root` owns launch/deep-link and drop routing, `Shell/Session` owns workspace/window restore and persistence, `Shell/Refresh` owns cancellable shell context refresh scheduling, and `Shell/ViewModels` owns command-palette, operator-inbox, and workflow-summary presentation state. `MainWindow` should compose these services and forward WPF lifecycle events; it should not own JSON persistence, workspace-session decisions, file-drop routing, or launch-argument workflow logic directly.
 
 **Canonical sidebar buckets** — the shell now standardizes the left-rail group labels as `Home`, `Active Work`, `Review / Alerts`, and `Admin / Support`. The workspace selector tiles expose the same grouping model in their hover help so operators can see the shell structure before they switch workspaces.
 

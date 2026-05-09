@@ -4,7 +4,11 @@ import userEvent from "@testing-library/user-event";
 import { useNavigate } from "react-router-dom";
 
 import { computeIntradayMetrics, LiveQuotesScreen } from "@/screens/live-quotes-screen";
-import { buildOrderRequest, validateQuickTicket } from "@/screens/live-quotes-screen.view-model";
+import {
+  buildLiveQuotesMarketViewModel,
+  buildOrderRequest,
+  validateQuickTicket
+} from "@/screens/live-quotes-screen.view-model";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import * as api from "@/lib/api";
 
@@ -31,6 +35,23 @@ const tradesFixture = {
   trades: [],
   count: 0,
   timestamp: "2026-05-08T15:00:00.000Z"
+};
+
+const tradesWithPrintsFixture = {
+  ...tradesFixture,
+  trades: [
+    {
+      symbol: "AAPL",
+      timestamp: "2026-05-08T15:00:00.000Z",
+      price: 188.06,
+      size: 75,
+      aggressor: "Buy",
+      sequenceNumber: 10,
+      streamId: "stream-1",
+      venue: "NASDAQ"
+    }
+  ],
+  count: 1
 };
 
 const orderbookFixture = {
@@ -193,6 +214,116 @@ describe("validateQuickTicket", () => {
   });
 });
 
+describe("buildLiveQuotesMarketViewModel", () => {
+  it("separates initial loading from empty quote, depth, and trades states", () => {
+    const vm = buildLiveQuotesMarketViewModel({
+      activeSymbol: "AAPL",
+      quote: { data: null, error: null },
+      trades: { data: null, error: null },
+      orderbook: { data: null, error: null },
+      refreshing: true,
+      tradeTableLimit: 25
+    });
+
+    expect(vm.quoteState).toMatchObject({
+      status: "loading",
+      role: "status",
+      message: "Loading quote data for AAPL...",
+      showData: false
+    });
+    expect(vm.orderbookState).toMatchObject({
+      status: "loading",
+      role: "status",
+      message: "Loading depth for AAPL...",
+      showData: false
+    });
+    expect(vm.tradesState).toMatchObject({
+      status: "loading",
+      role: "status",
+      message: "Loading recent trades for AAPL...",
+      showData: false
+    });
+  });
+
+  it("models empty market-data panels after a completed fetch returns no rows", () => {
+    const vm = buildLiveQuotesMarketViewModel({
+      activeSymbol: "AAPL",
+      quote: { data: null, error: null },
+      trades: { data: tradesFixture, error: null },
+      orderbook: { data: { ...orderbookFixture, bids: [], asks: [] }, error: null },
+      refreshing: false,
+      tradeTableLimit: 25
+    });
+
+    expect(vm.quoteState.status).toBe("empty");
+    expect(vm.quoteState.message).toBe("No quote data available for AAPL.");
+    expect(vm.quoteState.showData).toBe(false);
+    expect(vm.orderbookState.status).toBe("empty");
+    expect(vm.tradesState.status).toBe("empty");
+    expect(vm.tradesDescription).toBe("Recent prints");
+  });
+
+  it("models ready quote, depth, and trades evidence with bounded trade rows", () => {
+    const trade = {
+      symbol: "AAPL",
+      timestamp: "2026-05-08T15:00:00.000Z",
+      price: 188.07,
+      size: 100,
+      aggressor: "Buy",
+      sequenceNumber: 1,
+      streamId: null,
+      venue: "NASDAQ"
+    };
+
+    const vm = buildLiveQuotesMarketViewModel({
+      activeSymbol: "AAPL",
+      quote: { data: quoteFixture, error: null },
+      trades: { data: { ...tradesFixture, trades: [trade, { ...trade, sequenceNumber: 2 }] }, error: null },
+      orderbook: { data: orderbookFixture, error: null },
+      refreshing: false,
+      tradeTableLimit: 1
+    });
+
+    expect(vm.quoteState.status).toBe("ready");
+    expect(vm.quoteState.showData).toBe(true);
+    expect(vm.orderbookState.status).toBe("ready");
+    expect(vm.tradesState.status).toBe("ready");
+    expect(vm.tradeRows).toHaveLength(1);
+    expect(vm.venueLabel).toBe("NASDAQ");
+    expect(vm.lastUpdateLabel).not.toBe("Unavailable");
+  });
+
+  it("keeps stale market data usable while surfacing refresh errors", () => {
+    const vm = buildLiveQuotesMarketViewModel({
+      activeSymbol: "AAPL",
+      quote: { data: quoteFixture, error: "quote feed offline" },
+      trades: { data: tradesWithPrintsFixture, error: "trade tape offline" },
+      orderbook: { data: orderbookFixture, error: "depth feed offline" },
+      refreshing: false,
+      tradeTableLimit: 25
+    });
+
+    expect(vm.quoteState).toMatchObject({
+      status: "warning",
+      role: "alert",
+      message: "quote feed offline",
+      showData: true
+    });
+    expect(vm.orderbookState).toMatchObject({
+      status: "warning",
+      role: "alert",
+      message: "depth feed offline",
+      showData: true
+    });
+    expect(vm.tradesState).toMatchObject({
+      status: "warning",
+      role: "alert",
+      message: "trade tape offline",
+      showData: true
+    });
+  });
+});
+
 describe("LiveQuotesScreen quick trade", () => {
   beforeEach(() => {
     vi.spyOn(api, "getLiveQuote").mockResolvedValue(quoteFixture);
@@ -311,6 +442,58 @@ describe("LiveQuotesScreen quick trade", () => {
 
     await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("MSFT"));
     expect(screen.getByDisplayValue("MSFT")).toBeInTheDocument();
+  });
+
+  it("renders loading states while initial market data is pending", async () => {
+    const quote = deferred<typeof quoteFixture>();
+    const trades = deferred<typeof tradesFixture>();
+    const orderbook = deferred<typeof orderbookFixture>();
+
+    vi.spyOn(api, "getLiveQuote").mockReturnValue(quote.promise);
+    vi.spyOn(api, "getLiveTrades").mockReturnValue(trades.promise);
+    vi.spyOn(api, "getLiveOrderbook").mockReturnValue(orderbook.promise);
+
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
+
+    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("AAPL"));
+
+    expect(screen.getByText(/Loading quote data for AAPL/i)).toBeInTheDocument();
+    expect(screen.getByText(/Loading depth for AAPL/i)).toBeInTheDocument();
+    expect(screen.getByText(/Loading recent trades for AAPL/i)).toBeInTheDocument();
+
+    await act(async () => {
+      quote.resolve(quoteFixture);
+      trades.resolve(tradesFixture);
+      orderbook.resolve(orderbookFixture);
+      await Promise.resolve();
+    });
+  });
+
+  it("keeps the last market snapshot visible when a manual refresh fails", async () => {
+    vi.mocked(api.getLiveQuote)
+      .mockResolvedValueOnce(quoteFixture)
+      .mockRejectedValueOnce(new Error("quote feed offline"));
+    vi.mocked(api.getLiveTrades)
+      .mockResolvedValueOnce(tradesWithPrintsFixture)
+      .mockRejectedValueOnce(new Error("trade tape offline"));
+    vi.mocked(api.getLiveOrderbook)
+      .mockResolvedValueOnce(orderbookFixture)
+      .mockRejectedValueOnce(new Error("depth feed offline"));
+
+    const user = userEvent.setup();
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
+
+    expect(await screen.findByRole("button", { name: /Buy AAPL at ask 188\.07/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Sell AAPL at 188\.05/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Refresh live data now" }));
+
+    expect(await screen.findByText("quote feed offline")).toBeInTheDocument();
+    expect(screen.getByText("trade tape offline")).toBeInTheDocument();
+    expect(screen.getByText("depth feed offline")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Buy AAPL at ask 188\.07/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Sell AAPL at 188\.05/i })).toBeInTheDocument();
+    expect(screen.getAllByText("188.06").length).toBeGreaterThan(0);
   });
 
   it("ignores stale quote responses after switching symbols", async () => {

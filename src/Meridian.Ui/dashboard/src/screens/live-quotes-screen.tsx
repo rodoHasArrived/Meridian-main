@@ -20,7 +20,11 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getLiveOrderbook, getLiveQuote, getLiveTrades, submitOrder } from "@/lib/api";
 import {
+  buildLiveQuotesMarketViewModel,
+  computeIntradayMetrics,
   useQuickTradeTicket,
+  type IntradayMetrics,
+  type LiveQuotesPanelState,
   type QuickTradeTicketViewModel
 } from "@/screens/live-quotes-screen.view-model";
 import type {
@@ -29,6 +33,8 @@ import type {
   TradeDataResponse,
   TradesResponse
 } from "@/types";
+
+export { computeIntradayMetrics };
 
 const POLL_INTERVAL_MS = 2000;
 const TRADE_HISTORY_LIMIT = 200;
@@ -63,6 +69,21 @@ function formatTimestamp(iso: string | null | undefined): string {
   return date.toLocaleTimeString(undefined, { hour12: false }) + "." + String(date.getMilliseconds()).padStart(3, "0");
 }
 
+function mergeLoadState<T>(
+  result: PromiseSettledResult<T>,
+  current: LoadState<T>,
+  fallbackMessage: string
+): LoadState<T> {
+  if (result.status === "fulfilled") {
+    return { data: result.value, error: null };
+  }
+
+  const message = result.reason instanceof Error && result.reason.message
+    ? result.reason.message
+    : fallbackMessage;
+  return { data: current.data, error: message };
+}
+
 export function LiveQuotesScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSymbol = (searchParams.get("symbol") ?? "").trim().toUpperCase();
@@ -95,15 +116,9 @@ export function LiveQuotesScreen() {
         return;
       }
 
-      setQuote(q.status === "fulfilled"
-        ? { data: q.value, error: null }
-        : { data: null, error: (q.reason as Error)?.message ?? "Failed to load quote" });
-      setTrades(t.status === "fulfilled"
-        ? { data: t.value, error: null }
-        : { data: null, error: (t.reason as Error)?.message ?? "Failed to load trades" });
-      setOrderbook(ob.status === "fulfilled"
-        ? { data: ob.value, error: null }
-        : { data: null, error: (ob.reason as Error)?.message ?? "Failed to load order book" });
+      setQuote((current) => mergeLoadState(q, current, "Failed to load quote"));
+      setTrades((current) => mergeLoadState(t, current, "Failed to load trades"));
+      setOrderbook((current) => mergeLoadState(ob, current, "Failed to load order book"));
     } finally {
       if (requestIdRef.current === requestId) {
         inFlightSymbolRef.current = null;
@@ -145,13 +160,15 @@ export function LiveQuotesScreen() {
     setSearchParams({ symbol: next }, { replace: true });
   };
 
-  const quoteRow = quote.data?.quote;
-  const stale = orderbook.data?.isStale === true;
-  const venueLabel = quoteRow?.venue ?? orderbook.data?.venue ?? null;
-
-  const tradeHistory = useMemo<TradeDataResponse[]>(() => trades.data?.trades ?? [], [trades.data]);
-  const tradeRows = useMemo(() => tradeHistory.slice(0, TRADE_TABLE_LIMIT), [tradeHistory]);
-  const intraday = useMemo(() => computeIntradayMetrics(tradeHistory), [tradeHistory]);
+  const marketVm = useMemo(() => buildLiveQuotesMarketViewModel({
+    activeSymbol,
+    quote,
+    trades,
+    orderbook,
+    refreshing,
+    tradeTableLimit: TRADE_TABLE_LIMIT
+  }), [activeSymbol, orderbook, quote, refreshing, trades]);
+  const quoteRow = marketVm.quoteRow;
 
   return (
     <div className="space-y-6">
@@ -203,9 +220,9 @@ export function LiveQuotesScreen() {
           {activeSymbol ? (
             <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span className="font-semibold text-foreground">{activeSymbol}</span>
-              {venueLabel ? <Badge variant="outline">{venueLabel}</Badge> : null}
-              {stale ? <Badge variant="warning">Stale</Badge> : null}
-              <span>Last update {formatTimestamp(quoteRow?.timestamp ?? orderbook.data?.timestamp ?? null)}</span>
+              {marketVm.venueLabel ? <Badge variant="outline">{marketVm.venueLabel}</Badge> : null}
+              {marketVm.stale ? <Badge variant="warning">Stale</Badge> : null}
+              <span>Last update {marketVm.lastUpdateLabel}</span>
             </div>
           ) : null}
         </CardContent>
@@ -222,9 +239,9 @@ export function LiveQuotesScreen() {
         <HistoricalChartCard symbol={activeSymbol} />
         <PriceChartCard
           symbol={activeSymbol}
-          metrics={intraday}
-          loading={refreshing && tradeHistory.length === 0}
-          error={trades.error}
+          metrics={marketVm.intraday}
+          loading={marketVm.tradesState.status === "loading"}
+          error={marketVm.tradesState.status === "error" ? marketVm.tradesState.message : null}
         />
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
           <Card>
@@ -233,34 +250,35 @@ export function LiveQuotesScreen() {
               <CardDescription>Click bid or ask to seed the trade ticket</CardDescription>
             </CardHeader>
             <CardContent>
-              {quote.error && !quote.data ? (
-                <p className="text-sm text-danger">{quote.error}</p>
-              ) : !quoteRow ? (
-                <p className="text-sm text-muted-foreground">No quote data available for {activeSymbol}.</p>
+              {!marketVm.quoteState.showData || !quoteRow ? (
+                <PanelStateMessage state={marketVm.quoteState} />
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <BboPanel
-                    label="Bid"
-                    price={quoteRow.bidPrice}
-                    size={quoteRow.bidSize}
-                    tone="positive"
-                    icon={<ArrowDown className="h-4 w-4" aria-hidden="true" />}
-                    onSeed={() => quickTrade.seedTicket("Sell", quoteRow.bidPrice)}
-                    seedLabel={`Sell ${activeSymbol} at bid ${formatPrice(quoteRow.bidPrice)}`}
-                  />
-                  <BboPanel
-                    label="Ask"
-                    price={quoteRow.askPrice}
-                    size={quoteRow.askSize}
-                    tone="negative"
-                    icon={<ArrowUp className="h-4 w-4" aria-hidden="true" />}
-                    onSeed={() => quickTrade.seedTicket("Buy", quoteRow.askPrice)}
-                    seedLabel={`Buy ${activeSymbol} at ask ${formatPrice(quoteRow.askPrice)}`}
-                  />
-                  <MetricRow label="Mid" value={formatPrice(quoteRow.midPrice)} />
-                  <MetricRow label="Spread" value={formatPrice(quoteRow.spread)} />
-                  <MetricRow label="Sequence" value={quoteRow.sequenceNumber.toLocaleString()} />
-                  <MetricRow label="Stream" value={quoteRow.streamId ?? "—"} />
+                <div className="space-y-3">
+                  <PanelStateMessage state={marketVm.quoteState} />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <BboPanel
+                      label="Bid"
+                      price={quoteRow.bidPrice}
+                      size={quoteRow.bidSize}
+                      tone="positive"
+                      icon={<ArrowDown className="h-4 w-4" aria-hidden="true" />}
+                      onSeed={() => quickTrade.seedTicket("Sell", quoteRow.bidPrice)}
+                      seedLabel={`Sell ${activeSymbol} at bid ${formatPrice(quoteRow.bidPrice)}`}
+                    />
+                    <BboPanel
+                      label="Ask"
+                      price={quoteRow.askPrice}
+                      size={quoteRow.askSize}
+                      tone="negative"
+                      icon={<ArrowUp className="h-4 w-4" aria-hidden="true" />}
+                      onSeed={() => quickTrade.seedTicket("Buy", quoteRow.askPrice)}
+                      seedLabel={`Buy ${activeSymbol} at ask ${formatPrice(quoteRow.askPrice)}`}
+                    />
+                    <MetricRow label="Mid" value={formatPrice(quoteRow.midPrice)} />
+                    <MetricRow label="Spread" value={formatPrice(quoteRow.spread)} />
+                    <MetricRow label="Sequence" value={quoteRow.sequenceNumber.toLocaleString()} />
+                    <MetricRow label="Stream" value={quoteRow.streamId ?? "—"} />
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -274,20 +292,21 @@ export function LiveQuotesScreen() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Order book (L2)</CardTitle>
-              <CardDescription>Top {orderbook.data?.bids.length ?? 0} bids / {orderbook.data?.asks.length ?? 0} asks</CardDescription>
+              <CardDescription>{marketVm.orderbookDescription}</CardDescription>
             </CardHeader>
             <CardContent>
-              {orderbook.error && !orderbook.data ? (
-                <p className="text-sm text-danger">{orderbook.error}</p>
-              ) : !orderbook.data || (orderbook.data.bids.length === 0 && orderbook.data.asks.length === 0) ? (
-                <p className="text-sm text-muted-foreground">No depth data available for {activeSymbol}.</p>
+              {!marketVm.orderbookState.showData || !marketVm.orderbook ? (
+                <PanelStateMessage state={marketVm.orderbookState} />
               ) : (
-                <DepthLadder
-                  data={orderbook.data}
-                  onSeedBuy={(price) => quickTrade.seedTicket("Buy", price)}
-                  onSeedSell={(price) => quickTrade.seedTicket("Sell", price)}
-                  symbol={activeSymbol}
-                />
+                <div className="space-y-3">
+                  <PanelStateMessage state={marketVm.orderbookState} />
+                  <DepthLadder
+                    data={marketVm.orderbook}
+                    onSeedBuy={(price) => quickTrade.seedTicket("Buy", price)}
+                    onSeedSell={(price) => quickTrade.seedTicket("Sell", price)}
+                    symbol={activeSymbol}
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -295,15 +314,16 @@ export function LiveQuotesScreen() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Recent trades</CardTitle>
-              <CardDescription>Last {tradeRows.length} prints</CardDescription>
+              <CardDescription>{marketVm.tradesDescription}</CardDescription>
             </CardHeader>
             <CardContent>
-              {trades.error && !trades.data ? (
-                <p className="text-sm text-danger">{trades.error}</p>
-              ) : tradeRows.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No recent trades for {activeSymbol}.</p>
+              {!marketVm.tradesState.showData ? (
+                <PanelStateMessage state={marketVm.tradesState} />
               ) : (
-                <TradesTable trades={tradeRows} />
+                <div className="space-y-3">
+                  <PanelStateMessage state={marketVm.tradesState} />
+                  <TradesTable trades={marketVm.tradeRows} />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -320,6 +340,22 @@ function MetricRow({ label, value }: { label: string; value: string }) {
       <span className="text-muted-foreground">{label}</span>
       <span className="font-mono text-foreground">{value}</span>
     </div>
+  );
+}
+
+function PanelStateMessage({ state }: { state: LiveQuotesPanelState }) {
+  if (!state.message) {
+    return null;
+  }
+
+  return (
+    <p
+      role={state.role}
+      aria-live={state.role === "status" ? "polite" : undefined}
+      className={`rounded-md border px-3 py-2 text-sm ${state.toneClass}`}
+    >
+      {state.message}
+    </p>
   );
 }
 
@@ -599,84 +635,6 @@ function TradesTable({ trades }: { trades: TradeDataResponse[] }) {
       </table>
     </div>
   );
-}
-
-interface IntradayMetrics {
-  count: number;
-  open: number | null;
-  last: number | null;
-  high: number | null;
-  low: number | null;
-  vwap: number | null;
-  volume: number;
-  change: number | null;
-  changePct: number | null;
-  windowStart: string | null;
-  windowEnd: string | null;
-  series: { ts: number; price: number }[];
-}
-
-export function computeIntradayMetrics(trades: readonly TradeDataResponse[]): IntradayMetrics {
-  if (trades.length === 0) {
-    return {
-      count: 0,
-      open: null,
-      last: null,
-      high: null,
-      low: null,
-      vwap: null,
-      volume: 0,
-      change: null,
-      changePct: null,
-      windowStart: null,
-      windowEnd: null,
-      series: []
-    };
-  }
-
-  // The API returns most-recent trades first; chronological is needed for charts.
-  const chronological = [...trades].reverse();
-  const series: { ts: number; price: number }[] = [];
-  let high = -Infinity;
-  let low = Infinity;
-  let volume = 0;
-  let pxVolume = 0;
-  for (const trade of chronological) {
-    const price = Number(trade.price);
-    const size = Number(trade.size);
-    if (!Number.isFinite(price) || price <= 0) continue;
-    const ts = new Date(trade.timestamp).getTime();
-    if (Number.isFinite(ts)) {
-      series.push({ ts, price });
-    }
-    if (price > high) high = price;
-    if (price < low) low = price;
-    if (Number.isFinite(size) && size > 0) {
-      volume += size;
-      pxVolume += size * price;
-    }
-  }
-
-  const open = series[0]?.price ?? null;
-  const last = series[series.length - 1]?.price ?? null;
-  const change = open !== null && last !== null ? last - open : null;
-  const changePct = change !== null && open !== null && open !== 0 ? (change / open) * 100 : null;
-  const vwap = volume > 0 ? pxVolume / volume : null;
-
-  return {
-    count: chronological.length,
-    open,
-    last,
-    high: Number.isFinite(high) ? high : null,
-    low: Number.isFinite(low) ? low : null,
-    vwap,
-    volume,
-    change,
-    changePct,
-    windowStart: chronological[0]?.timestamp ?? null,
-    windowEnd: chronological[chronological.length - 1]?.timestamp ?? null,
-    series
-  };
 }
 
 function formatChange(value: number | null): string {

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import {
   buildSecurityMasterWorkspaceState,
@@ -54,6 +54,8 @@ export interface BackfillDialogFieldState {
   placeholder?: string;
   describedBy?: string;
   autoFocus?: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
 }
 
 export interface BackfillDialogSummaryItemState {
@@ -377,6 +379,7 @@ export function useDataOperationsViewModel(
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
+  const backfillCommandRevisionRef = useRef(0);
   const [securityMasterQuery, setSecurityMasterQuery] = useState(SECURITY_MASTER_DEFAULT_QUERY);
   const [selectedSecurityMasterId, setSelectedSecurityMasterId] = useState<string | null>(null);
   const [securityMasterTab, setSecurityMasterTab] = useState<SecurityMasterTab>("overview");
@@ -388,6 +391,20 @@ export function useDataOperationsViewModel(
   const [providerPhase, setProviderPhase] = useState<ProviderSetupPhase>("idle");
   const [providerSetupResult, setProviderSetupResult] = useState<ProviderSetupResult | null>(null);
   const [providerSetupError, setProviderSetupError] = useState<string | null>(null);
+
+  const nextBackfillCommandRevision = useCallback(() => {
+    const revision = backfillCommandRevisionRef.current + 1;
+    backfillCommandRevisionRef.current = revision;
+    return revision;
+  }, []);
+
+  const isCurrentBackfillCommand = useCallback((revision: number) => (
+    backfillCommandRevisionRef.current === revision
+  ), []);
+
+  useEffect(() => () => {
+    backfillCommandRevisionRef.current += 1;
+  }, []);
 
   const workstream = useMemo(() => resolveDataOperationsWorkstream(pathname), [pathname]);
   const selectedBackfill = useMemo(
@@ -422,12 +439,14 @@ export function useDataOperationsViewModel(
   );
 
   const openBackfillDialog = useCallback(() => {
+    nextBackfillCommandRevision();
     setDialogOpen(true);
     setPreview(null);
     setResult(null);
     setError(null);
+    setBusy(false);
     setPhase("idle");
-  }, []);
+  }, [nextBackfillCommandRevision]);
 
   const closeBackfillDialog = useCallback(() => {
     if (busy) {
@@ -451,6 +470,7 @@ export function useDataOperationsViewModel(
       return;
     }
 
+    const commandRevision = nextBackfillCommandRevision();
     setBusy(true);
     setPhase("previewing");
     setError(null);
@@ -458,15 +478,23 @@ export function useDataOperationsViewModel(
 
     try {
       const nextPreview = await services.preview(buildBackfillRequest(form));
+      if (!isCurrentBackfillCommand(commandRevision)) {
+        return;
+      }
       setPreview(nextPreview);
     } catch (err) {
+      if (!isCurrentBackfillCommand(commandRevision)) {
+        return;
+      }
       setPreview(null);
       setError(err instanceof Error ? err.message : "Backfill preview failed.");
     } finally {
-      setBusy(false);
-      setPhase("idle");
+      if (isCurrentBackfillCommand(commandRevision)) {
+        setBusy(false);
+        setPhase("idle");
+      }
     }
-  }, [form, services]);
+  }, [form, isCurrentBackfillCommand, nextBackfillCommandRevision, services]);
 
   const runBackfill = useCallback(async () => {
     const validationError = validateBackfillForm(form);
@@ -480,21 +508,30 @@ export function useDataOperationsViewModel(
       return;
     }
 
+    const commandRevision = nextBackfillCommandRevision();
     setBusy(true);
     setPhase("running");
     setError(null);
 
     try {
       const nextResult = await services.run(buildBackfillRequest(form));
+      if (!isCurrentBackfillCommand(commandRevision)) {
+        return;
+      }
       setResult(nextResult);
       await services.getProgress().catch(() => null);
     } catch (err) {
+      if (!isCurrentBackfillCommand(commandRevision)) {
+        return;
+      }
       setError(err instanceof Error ? err.message : "Backfill run failed.");
     } finally {
-      setBusy(false);
-      setPhase("idle");
+      if (isCurrentBackfillCommand(commandRevision)) {
+        setBusy(false);
+        setPhase("idle");
+      }
     }
-  }, [form, preview, services]);
+  }, [form, isCurrentBackfillCommand, nextBackfillCommandRevision, preview, services]);
 
   const openProviderSetup = useCallback(() => {
     setProviderSetupOpen(true);
@@ -943,6 +980,9 @@ export function buildBackfillDialogState({
 }): BackfillDialogState {
   const previewDisabledReason = resolveBackfillPreviewDisabledReason({ busy, phase, validationError });
   const runDisabledReason = resolveBackfillRunDisabledReason({ busy, phase, validationError, preview });
+  const fieldDisabledReason = busy
+    ? "Backfill request is running; wait for the current request to finish before editing."
+    : null;
 
   return {
     titleId: "backfill-dialog-title",
@@ -955,7 +995,9 @@ export function buildBackfillDialogState({
       id: "backfill-provider",
       label: "Provider",
       ariaLabel: "Backfill provider",
-      placeholder: "Default provider"
+      placeholder: "Default provider",
+      disabled: busy,
+      disabledReason: fieldDisabledReason
     },
     symbolsField: {
       id: "backfill-symbols",
@@ -963,17 +1005,23 @@ export function buildBackfillDialogState({
       ariaLabel: "Backfill symbols",
       placeholder: "Type symbols, e.g. AAPL, MSFT, SPY",
       describedBy: "backfill-symbols-help backfill-form-status backfill-form-feedback",
-      autoFocus: true
+      autoFocus: true,
+      disabled: busy,
+      disabledReason: fieldDisabledReason
     },
     fromField: {
       id: "backfill-from",
       label: "From",
-      ariaLabel: "Backfill start date"
+      ariaLabel: "Backfill start date",
+      disabled: busy,
+      disabledReason: fieldDisabledReason
     },
     toField: {
       id: "backfill-to",
       label: "To",
-      ariaLabel: "Backfill end date"
+      ariaLabel: "Backfill end date",
+      disabled: busy,
+      disabledReason: fieldDisabledReason
     },
     previewAction: {
       label: phase === "previewing" ? "Previewing..." : "Preview",

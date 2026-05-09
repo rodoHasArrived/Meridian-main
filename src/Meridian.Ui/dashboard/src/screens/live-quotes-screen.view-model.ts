@@ -1,5 +1,12 @@
 import { useCallback, useMemo, useState, type FormEvent } from "react";
-import type { OrderResult, OrderSubmitRequest } from "@/types";
+import type {
+  OrderBookResponse,
+  OrderResult,
+  OrderSubmitRequest,
+  QuotesResponse,
+  TradeDataResponse,
+  TradesResponse
+} from "@/types";
 
 export type QuickTicketPhase = "idle" | "submitting" | "submitted" | "error";
 
@@ -54,6 +61,53 @@ export interface QuickTradeTicketApi {
   submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
 }
 
+export interface LiveQuotesLoadState<T> {
+  data: T | null;
+  error: string | null;
+}
+
+export type LiveQuotesPanelStatus = "loading" | "error" | "empty" | "ready" | "warning";
+
+export interface LiveQuotesPanelState {
+  status: LiveQuotesPanelStatus;
+  message: string | null;
+  role: "status" | "alert";
+  toneClass: string;
+  showData: boolean;
+}
+
+export interface IntradayMetrics {
+  count: number;
+  open: number | null;
+  last: number | null;
+  high: number | null;
+  low: number | null;
+  vwap: number | null;
+  volume: number;
+  change: number | null;
+  changePct: number | null;
+  windowStart: string | null;
+  windowEnd: string | null;
+  series: { ts: number; price: number }[];
+}
+
+export interface LiveQuotesMarketDataViewModel {
+  activeSymbol: string | null;
+  quoteRow: QuotesResponse["quote"] | null;
+  orderbook: OrderBookResponse | null;
+  tradeHistory: TradeDataResponse[];
+  tradeRows: TradeDataResponse[];
+  intraday: IntradayMetrics;
+  venueLabel: string | null;
+  stale: boolean;
+  lastUpdateLabel: string;
+  quoteState: LiveQuotesPanelState;
+  orderbookState: LiveQuotesPanelState;
+  tradesState: LiveQuotesPanelState;
+  orderbookDescription: string;
+  tradesDescription: string;
+}
+
 export const initialQuickTicketState: QuickTicketState = {
   side: "Buy",
   type: "Limit",
@@ -63,6 +117,64 @@ export const initialQuickTicketState: QuickTicketState = {
   message: null,
   orderId: null
 };
+
+export function buildLiveQuotesMarketViewModel({
+  activeSymbol,
+  quote,
+  trades,
+  orderbook,
+  refreshing,
+  tradeTableLimit
+}: {
+  activeSymbol: string | null;
+  quote: LiveQuotesLoadState<QuotesResponse>;
+  trades: LiveQuotesLoadState<TradesResponse>;
+  orderbook: LiveQuotesLoadState<OrderBookResponse>;
+  refreshing: boolean;
+  tradeTableLimit: number;
+}): LiveQuotesMarketDataViewModel {
+  const quoteRow = quote.data?.quote ?? null;
+  const tradeHistory = trades.data?.trades ?? [];
+  const tradeRows = tradeHistory.slice(0, tradeTableLimit);
+  const intraday = computeIntradayMetrics(tradeHistory);
+  const hasOrderbookRows = (orderbook.data?.bids.length ?? 0) > 0 || (orderbook.data?.asks.length ?? 0) > 0;
+  const symbol = activeSymbol ?? "selected symbol";
+
+  return {
+    activeSymbol,
+    quoteRow,
+    orderbook: orderbook.data,
+    tradeHistory,
+    tradeRows,
+    intraday,
+    venueLabel: quoteRow?.venue ?? orderbook.data?.venue ?? null,
+    stale: orderbook.data?.isStale === true,
+    lastUpdateLabel: formatMarketTimestamp(quoteRow?.timestamp ?? orderbook.data?.timestamp ?? null),
+    quoteState: buildPanelState({
+      loading: refreshing && !quote.data && !quote.error,
+      error: quote.error,
+      ready: quoteRow !== null,
+      emptyMessage: `No quote data available for ${symbol}.`,
+      loadingMessage: `Loading quote data for ${symbol}...`
+    }),
+    orderbookState: buildPanelState({
+      loading: refreshing && !orderbook.data && !orderbook.error,
+      error: orderbook.error,
+      ready: hasOrderbookRows,
+      emptyMessage: `No depth data available for ${symbol}.`,
+      loadingMessage: `Loading depth for ${symbol}...`
+    }),
+    tradesState: buildPanelState({
+      loading: refreshing && !trades.data && !trades.error,
+      error: trades.error,
+      ready: tradeRows.length > 0,
+      emptyMessage: `No recent trades for ${symbol}.`,
+      loadingMessage: `Loading recent trades for ${symbol}...`
+    }),
+    orderbookDescription: `Top ${orderbook.data?.bids.length ?? 0} bids / ${orderbook.data?.asks.length ?? 0} asks`,
+    tradesDescription: tradeRows.length > 0 ? `Last ${tradeRows.length} prints` : "Recent prints"
+  };
+}
 
 export function useQuickTradeTicket(
   activeSymbol: string | null,
@@ -230,6 +342,68 @@ export function buildOrderRequest(symbol: string, ticket: QuickTicketForm): Orde
   };
 }
 
+export function computeIntradayMetrics(trades: readonly TradeDataResponse[]): IntradayMetrics {
+  if (trades.length === 0) {
+    return {
+      count: 0,
+      open: null,
+      last: null,
+      high: null,
+      low: null,
+      vwap: null,
+      volume: 0,
+      change: null,
+      changePct: null,
+      windowStart: null,
+      windowEnd: null,
+      series: []
+    };
+  }
+
+  const chronological = [...trades].reverse();
+  const series: { ts: number; price: number }[] = [];
+  let high = -Infinity;
+  let low = Infinity;
+  let volume = 0;
+  let pxVolume = 0;
+  for (const trade of chronological) {
+    const price = Number(trade.price);
+    const size = Number(trade.size);
+    if (!Number.isFinite(price) || price <= 0) continue;
+    const ts = new Date(trade.timestamp).getTime();
+    if (Number.isFinite(ts)) {
+      series.push({ ts, price });
+    }
+    if (price > high) high = price;
+    if (price < low) low = price;
+    if (Number.isFinite(size) && size > 0) {
+      volume += size;
+      pxVolume += size * price;
+    }
+  }
+
+  const open = series[0]?.price ?? null;
+  const last = series[series.length - 1]?.price ?? null;
+  const change = open !== null && last !== null ? last - open : null;
+  const changePct = change !== null && open !== null && open !== 0 ? (change / open) * 100 : null;
+  const vwap = volume > 0 ? pxVolume / volume : null;
+
+  return {
+    count: chronological.length,
+    open,
+    last,
+    high: Number.isFinite(high) ? high : null,
+    low: Number.isFinite(low) ? low : null,
+    vwap,
+    volume,
+    change,
+    changePct,
+    windowStart: chronological[0]?.timestamp ?? null,
+    windowEnd: chronological[chronological.length - 1]?.timestamp ?? null,
+    series
+  };
+}
+
 export function formatTicketPrice(value: number): string {
   if (!Number.isFinite(value) || value <= 0) return "";
   return value.toLocaleString(undefined, {
@@ -237,6 +411,75 @@ export function formatTicketPrice(value: number): string {
     maximumFractionDigits: 4,
     useGrouping: false
   });
+}
+
+function buildPanelState({
+  loading,
+  error,
+  ready,
+  emptyMessage,
+  loadingMessage
+}: {
+  loading: boolean;
+  error: string | null;
+  ready: boolean;
+  emptyMessage: string;
+  loadingMessage: string;
+}): LiveQuotesPanelState {
+  if (loading && !ready) {
+    return {
+      status: "loading",
+      message: loadingMessage,
+      role: "status",
+      toneClass: "border-primary/25 bg-primary/10 text-primary",
+      showData: false
+    };
+  }
+
+  if (error && ready) {
+    return {
+      status: "warning",
+      message: error,
+      role: "alert",
+      toneClass: "border-warning/35 bg-warning/10 text-warning",
+      showData: true
+    };
+  }
+
+  if (error) {
+    return {
+      status: "error",
+      message: error,
+      role: "alert",
+      toneClass: "border-danger/30 bg-danger/10 text-danger",
+      showData: false
+    };
+  }
+
+  if (!ready) {
+    return {
+      status: "empty",
+      message: emptyMessage,
+      role: "status",
+      toneClass: "border-border/70 bg-secondary/25 text-muted-foreground",
+      showData: false
+    };
+  }
+
+  return {
+    status: "ready",
+    message: null,
+    role: "status",
+    toneClass: "border-success/30 bg-success/10 text-success",
+    showData: true
+  };
+}
+
+function formatMarketTimestamp(iso: string | null | undefined): string {
+  if (!iso) return "Unavailable";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "Unavailable";
+  return date.toLocaleTimeString(undefined, { hour12: false }) + "." + String(date.getMilliseconds()).padStart(3, "0");
 }
 
 function buildSubmitLabel(ticket: QuickTicketState, symbol: string): string {
