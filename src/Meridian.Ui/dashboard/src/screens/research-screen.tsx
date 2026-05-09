@@ -75,8 +75,6 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
     );
   }
 
-  const evidenceRunId = vm.runTable.rows.find((run) => vm.selectedIds.includes(run.id))?.id ?? vm.runTable.rows[0]?.id ?? null;
-
   return (
     <div className="space-y-8">
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -133,11 +131,11 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
               <p className="mt-1 text-xs text-muted-foreground">{vm.selectionDetail}</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              {evidenceRunId ? (
+              {vm.evidenceAction ? (
                 <Button asChild variant="outline">
-                  <Link to={`/reporting/evidence?subjectKind=strategy-run&subjectId=${encodeURIComponent(evidenceRunId)}`}>
+                  <Link to={vm.evidenceAction.href} aria-label={vm.evidenceAction.ariaLabel}>
                     <Network className="h-4 w-4" />
-                    Evidence packet
+                    {vm.evidenceAction.label}
                   </Link>
                 </Button>
               ) : null}

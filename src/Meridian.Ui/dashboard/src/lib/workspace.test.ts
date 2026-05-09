@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  evidenceWorkbenchPath,
   legacyWorkspaceRedirect,
   normalizeWorkspacePath,
   WORKSPACES,
@@ -53,5 +54,14 @@ describe("workspace metadata", () => {
       label: "Reporting",
       status: "Review"
     });
+  });
+
+  it("builds encoded Evidence Workbench subject routes", () => {
+    expect(evidenceWorkbenchPath("strategy-run", "run 1/A")).toBe(
+      "/reporting/evidence?subjectKind=strategy-run&subjectId=run%201%2FA"
+    );
+    expect(evidenceWorkbenchPath("report pack", "current")).toBe(
+      "/reporting/evidence?subjectKind=report%20pack&subjectId=current"
+    );
   });
 });

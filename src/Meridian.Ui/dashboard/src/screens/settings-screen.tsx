@@ -1,4 +1,5 @@
-import { Activity, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, ShieldCheck, Trash2, User } from "lucide-react";
+import { Activity, ArrowRight, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, ShieldCheck, Trash2, User } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,6 +74,13 @@ const requirementToneClass = {
   muted: "border-border/70 bg-secondary/25 text-muted-foreground"
 } as const;
 
+const setupStepToneClass = {
+  success: "border-success/30 bg-success/10",
+  warning: "border-warning/35 bg-warning/10",
+  danger: "border-danger/35 bg-danger/10",
+  muted: "border-border/70 bg-secondary/25"
+} as const;
+
 export function SettingsScreen({
   session,
   overview,
@@ -123,10 +131,9 @@ export function SettingsScreen({
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <SettingsChip label="Environment" value={session ? session.environment.toUpperCase() : "—"} />
-          <SettingsChip label="Workspace" value={session?.activeWorkspace ?? "—"} />
-          <SettingsChip label="Diagnostics" value={vm.diagnosticStatusLabel} />
-          <SettingsChip label="Heartbeat" value={overview?.lastHeartbeatUtc ?? "—"} />
+          {vm.headerChips.map((chip) => (
+            <SettingsChip key={chip.label} label={chip.label} value={chip.value} />
+          ))}
         </div>
       </section>
 
@@ -354,6 +361,45 @@ export function SettingsScreen({
                 {vm.alpacaConnectionPanel.warnings[0]}
               </div>
             ) : null}
+            <div
+              role="list"
+              aria-label={vm.alpacaConnectionPanel.setupChecklistAriaLabel}
+              className="grid gap-2"
+            >
+              <div className="min-w-0">
+                <h3 className="text-xs font-semibold uppercase text-muted-foreground">
+                  {vm.alpacaConnectionPanel.setupChecklistTitle}
+                </h3>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  {vm.alpacaConnectionPanel.setupChecklistDetail}
+                </p>
+              </div>
+              {vm.alpacaConnectionPanel.setupChecklist.map((step) => (
+                <div
+                  key={step.id}
+                  role="listitem"
+                  className={cn("rounded-md border px-3 py-2", setupStepToneClass[step.tone])}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-foreground">{step.label}</div>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
+                    </div>
+                    <Badge variant={step.badgeVariant} className="shrink-0">
+                      {step.statusLabel}
+                    </Badge>
+                  </div>
+                  {step.actionHref && step.actionLabel ? (
+                    <Button asChild variant="outline" size="sm" className="mt-3">
+                      <Link to={step.actionHref} aria-label={step.actionAriaLabel ?? step.actionLabel}>
+                        {step.actionLabel}
+                        <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                      </Link>
+                    </Button>
+                  ) : null}
+                </div>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>

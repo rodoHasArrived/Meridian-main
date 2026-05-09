@@ -609,6 +609,9 @@ describe("governance-screen view model", () => {
       breakChecklistHref: "#reconciliation-break-queue",
       breakChecklistLabel: "Open break checklist",
       breakChecklistAriaLabel: "Open break checklist for Paper Index Mean Reversion; 1 open break",
+      evidencePacketHref: "/reporting/evidence?subjectKind=reconciliation-review&subjectId=run-42",
+      evidencePacketLabel: "Evidence packet",
+      evidencePacketAriaLabel: "Open reconciliation evidence packet for Paper Index Mean Reversion",
       auditPacketHref: "/api/workstation/runs/run-42/review-packet",
       auditPacketLabel: "Review audit packet",
       auditPacketAriaLabel: "Review audit packet for Paper Index Mean Reversion"

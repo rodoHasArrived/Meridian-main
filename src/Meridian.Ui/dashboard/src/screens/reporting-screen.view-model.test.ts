@@ -117,6 +117,14 @@ describe("useReportingScreenViewModel", () => {
       { label: "Visible", value: "2" },
       { label: "Inspector", value: "No profile selected" }
     ]);
+    expect(result.current.workbenchActions).toEqual([
+      {
+        id: "evidence",
+        label: "Evidence",
+        href: "/reporting/evidence?subjectKind=report-pack&subjectId=current",
+        ariaLabel: "Open current report-pack evidence"
+      }
+    ]);
   });
 
   it("shows no profile selected state initially", () => {
@@ -153,6 +161,14 @@ describe("useReportingScreenViewModel", () => {
       variant: "default"
     });
     expect(result.current.rows.find((r) => r.id === "excel")?.isSelected).toBe(true);
+    expect(result.current.workbenchActions).toEqual([
+      {
+        id: "evidence",
+        label: "Profile evidence",
+        href: "/reporting/evidence?subjectKind=report-pack&subjectId=excel",
+        ariaLabel: "Open Excel report-pack evidence"
+      }
+    ]);
   });
 
   it("derives loader and dictionary readiness for fully wired profiles", () => {

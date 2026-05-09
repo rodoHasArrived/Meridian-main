@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
+import { evidenceWorkbenchPath } from "@/lib/workspace";
 import type {
   MetricSnapshot,
   MetricsDiff,
@@ -62,6 +63,7 @@ export interface ResearchRunLibraryState {
   promotionCashForm: ResearchPromotionCashFormState;
   selectionText: string;
   selectionDetail: string;
+  evidenceAction: ResearchEvidenceAction | null;
   compareButtonLabel: string;
   diffButtonLabel: string;
   promotionHistoryButtonLabel: string;
@@ -77,6 +79,12 @@ export interface ResearchPromotionPanelState {
   sessionCreated: ResearchPromotionSessionState | null;
   showCashForm: boolean;
   showIneligibleDismiss: boolean;
+}
+
+export interface ResearchEvidenceAction {
+  label: string;
+  href: string;
+  ariaLabel: string;
 }
 
 export interface ResearchPromotionEvaluationState {
@@ -797,6 +805,7 @@ export function buildResearchRunLibraryState({
       : hasOneBacktestRun
         ? "Select Promote to Paper to evaluate this run for paper trading."
         : "Select two runs to enable compare and diff commands.",
+    evidenceAction: buildResearchEvidenceAction(selectedRuns[0] ?? runs[0] ?? null),
     compareButtonLabel: activeCommand === "compare" ? "Comparing..." : "Compare 2 runs",
     diffButtonLabel: activeCommand === "diff" ? "Diffing..." : "Diff 2 runs",
     promotionHistoryButtonLabel: activeCommand === "history" ? "Loading history..." : "Promotion history",
@@ -1477,6 +1486,18 @@ export function buildRunDetail(run: ResearchRunRecord): ResearchRunDetailState {
     notesText: formatOptionalNotes(run.notes),
     closeButtonLabel: "Close",
     closeButtonAriaLabel: `Close ${title} run detail`
+  };
+}
+
+function buildResearchEvidenceAction(run: ResearchRunRecord | null): ResearchEvidenceAction | null {
+  if (!run) {
+    return null;
+  }
+
+  return {
+    label: "Evidence packet",
+    href: evidenceWorkbenchPath("strategy-run", run.id),
+    ariaLabel: `Open ${run.strategyName} evidence packet`
   };
 }
 

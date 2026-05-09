@@ -1662,9 +1662,9 @@ function AcceptanceStatusCard({
               <Link to="/trading/readiness">Open console</Link>
             </Button>
             <Button asChild size="sm" variant="outline">
-              <Link to="/reporting/evidence?subjectKind=paper-readiness&subjectId=current">
+              <Link to={readinessVm.evidenceAction.href} aria-label={readinessVm.evidenceAction.ariaLabel}>
                 <Network className="h-4 w-4" />
-                Evidence
+                {readinessVm.evidenceAction.label}
               </Link>
             </Button>
             <Button

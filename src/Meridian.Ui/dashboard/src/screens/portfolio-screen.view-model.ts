@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { evidenceWorkbenchPath } from "@/lib/workspace";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdAccount,
@@ -156,12 +157,19 @@ export interface PortfolioRunDetail {
   title: string;
   subtitle: string;
   ariaLabel: string;
+  evidenceAction: PortfolioRunEvidenceAction;
   statusTitle: string;
   statusDetail: string;
   statusTone: "default" | "success" | "warning" | "danger";
   statusBadgeLabel: string;
   statusBadgeVariant: "outline" | "success" | "warning" | "danger";
   fields: PortfolioDetailField[];
+}
+
+export interface PortfolioRunEvidenceAction {
+  label: string;
+  href: string;
+  ariaLabel: string;
 }
 
 export interface PortfolioScreenViewModel {
@@ -981,6 +989,11 @@ function buildSelectedRunDetail(run: PortfolioRunRow): PortfolioRunDetail {
     title: run.strategyName,
     subtitle: `${run.mode} - ${run.engine} - ${run.id}`,
     ariaLabel: `${run.strategyName} run detail`,
+    evidenceAction: {
+      label: "Open evidence packet",
+      href: evidenceWorkbenchPath("strategy-run", run.id),
+      ariaLabel: `Open ${run.strategyName} evidence packet`
+    },
     statusTitle: `${run.strategyName} selected`,
     statusDetail: `${run.status} ${run.mode} run with ${run.pnl} P&L and ${run.sharpe} Sharpe. ${run.notes || "No operator notes attached."}`,
     statusTone,

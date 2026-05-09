@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { runAnalysisExport } from "@/lib/api";
+import { evidenceWorkbenchPath } from "@/lib/workspace";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
@@ -88,6 +89,13 @@ export interface ReportingChipViewModel {
   value: string;
 }
 
+export interface ReportingWorkbenchAction {
+  id: "evidence";
+  label: string;
+  href: string;
+  ariaLabel: string;
+}
+
 export interface ReportingWorkflowProfileRow {
   id: string;
   name: string;
@@ -136,6 +144,7 @@ export interface ReportingScreenViewModel {
   emptyText: string;
   listLabel: string;
   visibleCountLabel: string;
+  workbenchActions: ReportingWorkbenchAction[];
   workbenchChips: ReportingChipViewModel[];
   queueChips: ReportingChipViewModel[];
   packTargetChips: ReportingChipViewModel[];
@@ -218,6 +227,7 @@ export function useReportingScreenViewModel(
       emptyText: "No export or reporting profiles are configured for this workspace.",
       listLabel: "Export profiles",
       visibleCountLabel: "0 visible",
+      workbenchActions: buildWorkbenchActions(null),
       workbenchChips: buildWorkbenchChips("0 profiles", "0", "0"),
       queueChips: buildQueueChips("0 visible", "0", "0", "Export profiles"),
       packTargetChips: buildPackTargetChips("0", "No profile selected"),
@@ -319,6 +329,7 @@ export function useReportingScreenViewModel(
       "No export profiles are configured. Add a governed profile to restore reporting evidence.",
     listLabel,
     visibleCountLabel,
+    workbenchActions: buildWorkbenchActions(selectedProfileData),
     workbenchChips: buildWorkbenchChips(countLabel, packTargetCountLabel, recommendedCountLabel),
     queueChips: buildQueueChips(visibleCountLabel, recommendedCountLabel, packTargetCountLabel, listLabel),
     packTargetChips: buildPackTargetChips(packTargetCountLabel, statusTitle),
@@ -346,6 +357,22 @@ export function useReportingScreenViewModel(
     runExport: runExportCommand,
     selectProfile
   };
+}
+
+function buildWorkbenchActions(selectedProfile: GovernanceReportingProfile | null): ReportingWorkbenchAction[] {
+  const subjectId = selectedProfile?.id ?? "current";
+  const label = selectedProfile ? "Profile evidence" : "Evidence";
+
+  return [
+    {
+      id: "evidence",
+      label,
+      href: evidenceWorkbenchPath("report-pack", subjectId),
+      ariaLabel: selectedProfile
+        ? `Open ${selectedProfile.name} report-pack evidence`
+        : "Open current report-pack evidence"
+    }
+  ];
 }
 
 function buildWorkbenchChips(

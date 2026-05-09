@@ -128,6 +128,12 @@ describe("SettingsScreen", () => {
     expect(screen.getAllByText("Required").length).toBeGreaterThan(0);
     expect(screen.getByText("********1234")).toBeInTheDocument();
     expect(screen.getByText("PA123")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Alpaca provider setup checklist" })).toBeInTheDocument();
+    expect(screen.getByText("Move from demo data to a verified paper connection before relying on readiness evidence.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Trading readiness after Alpaca account verification" })).toHaveAttribute(
+      "href",
+      "/trading/readiness"
+    );
     expect(screen.getByRole("button", { name: /connect and test/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /clear/i })).toBeEnabled();
     expect(screen.getByLabelText(/Key ID/)).toHaveAccessibleDescription(/Stored values remain masked after refresh\..*Credentials incomplete/s);

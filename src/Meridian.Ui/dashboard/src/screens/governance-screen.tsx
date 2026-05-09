@@ -254,16 +254,17 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               <div className="rounded-lg border border-border/70 bg-background/70 p-4 text-slate-200">
                 {buildReconciliationNarrative(selectedReconciliation)}
               </div>
-              <div className="flex flex-wrap gap-3">
-                <Button asChild variant="secondary">
-                  <Link to={`/reporting/evidence?subjectKind=reconciliation-review&subjectId=${encodeURIComponent(selectedReconciliation.runId)}`}>
-                    <Network className="h-4 w-4" />
-                    Evidence packet
-                  </Link>
-                </Button>
-              </div>
               {reconciliation.detailActions ? (
                 <div className="flex flex-wrap gap-3">
+                  <Button asChild variant="secondary">
+                    <Link
+                      to={reconciliation.detailActions.evidencePacketHref}
+                      aria-label={reconciliation.detailActions.evidencePacketAriaLabel}
+                    >
+                      <Network className="h-4 w-4" />
+                      {reconciliation.detailActions.evidencePacketLabel}
+                    </Link>
+                  </Button>
                   <Button asChild variant="secondary">
                     <a
                       href={reconciliation.detailActions.breakChecklistHref}

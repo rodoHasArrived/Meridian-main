@@ -594,9 +594,9 @@ export function PortfolioScreen({
                     <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.selectedRun.statusDetail}</p>
                     <div className="mt-4">
                       <Button asChild size="sm" variant="outline">
-                        <Link to={`/reporting/evidence?subjectKind=strategy-run&subjectId=${encodeURIComponent(vm.selectedRun.id)}`}>
+                        <Link to={vm.selectedRun.evidenceAction.href} aria-label={vm.selectedRun.evidenceAction.ariaLabel}>
                           <Network className="h-4 w-4" />
-                          Open evidence packet
+                          {vm.selectedRun.evidenceAction.label}
                         </Link>
                       </Button>
                     </div>

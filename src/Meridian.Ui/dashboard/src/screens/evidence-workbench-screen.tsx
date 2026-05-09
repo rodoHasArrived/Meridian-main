@@ -24,10 +24,10 @@ export function EvidenceWorkbenchScreen() {
 
   if (vm.loading) {
     return (
-      <Card className="panel-surface">
+      <Card className="panel-surface" role="status" aria-busy="true" aria-live="polite">
         <CardHeader>
           <CardTitle>Loading evidence</CardTitle>
-          <CardDescription>Collecting workflow subjects and packet lineage.</CardDescription>
+          <CardDescription>{vm.loadingLabel}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -63,28 +63,51 @@ export function EvidenceWorkbenchScreen() {
       {!vm.hasSelection ? (
         <Card className="panel-surface">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Network className="h-5 w-5 text-primary" aria-hidden="true" />
-              Evidence subjects
-            </CardTitle>
-            <CardDescription>Select a subject to inspect completeness, stale evidence, and lineage.</CardDescription>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Network className="h-5 w-5 text-primary" aria-hidden="true" />
+                  Evidence subjects
+                </CardTitle>
+                <CardDescription>Select a subject to inspect completeness, stale evidence, and lineage.</CardDescription>
+              </div>
+              <Badge variant="outline">{vm.subjectsSummaryLabel}</Badge>
+            </div>
           </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {vm.subjects.map((subject) => (
-              <Link
-                key={`${subject.subjectKind}:${subject.subjectId}`}
-                to={vm.openSubjectHref(subject)}
-                className="rounded-md border border-border/70 bg-secondary/25 px-4 py-3 transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+          <CardContent>
+            {vm.hasSubjects ? (
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="list" aria-label={vm.subjectsRegionLabel}>
+                {vm.subjects.map((subject) => (
+                  <div key={`${subject.subjectKind}:${subject.subjectId}`} role="listitem">
+                    <Link
+                      to={vm.openSubjectHref(subject)}
+                      className="block rounded-md border border-border/70 bg-secondary/25 px-4 py-3 transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    >
+                      <span className="block font-semibold text-foreground">{subject.label}</span>
+                      <span className="mt-1 block font-mono text-xs text-muted-foreground">
+                        {subject.subjectKind}/{subject.subjectId}
+                      </span>
+                      <span className="mt-3 inline-flex">
+                        <Badge variant="outline">{subject.workspace}</Badge>
+                      </span>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                role="status"
+                className="rounded-md border border-dashed border-border/80 bg-secondary/20 px-4 py-4 text-sm text-muted-foreground"
               >
-                <span className="block font-semibold text-foreground">{subject.label}</span>
-                <span className="mt-1 block font-mono text-xs text-muted-foreground">
-                  {subject.subjectKind}/{subject.subjectId}
-                </span>
-                <span className="mt-3 inline-flex">
-                  <Badge variant="outline">{subject.workspace}</Badge>
-                </span>
-              </Link>
-            ))}
+                <div className="font-semibold text-foreground">{vm.subjectEmptyTitle}</div>
+                <p className="mt-1 max-w-2xl leading-6">{vm.subjectEmptyDetail}</p>
+                <Button asChild variant="outline" size="sm" className="mt-3">
+                  <Link to={vm.subjectEmptyActionHref} aria-label={vm.subjectEmptyActionAriaLabel}>
+                    {vm.subjectEmptyActionLabel}
+                  </Link>
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       ) : null}

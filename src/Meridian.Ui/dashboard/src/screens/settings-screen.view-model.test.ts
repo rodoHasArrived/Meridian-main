@@ -51,6 +51,12 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.sessionItems.some((i) => i.label === "Display name" && i.value === "Andrew Rowden")).toBe(true);
     expect(vm.sessionItems.some((i) => i.label === "Environment" && i.value === "paper")).toBe(true);
     expect(vm.sessionItems.some((i) => i.label === "Commands issued" && i.value === "42")).toBe(true);
+    expect(vm.headerChips).toEqual([
+      { label: "Environment", value: "PAPER" },
+      { label: "Workspace", value: "settings" },
+      { label: "Diagnostics", value: "6 unavailable" },
+      { label: "Heartbeat", value: "—" }
+    ]);
   });
 
   it("marks live environment with warning tone", () => {
@@ -181,6 +187,12 @@ describe("buildSettingsScreenViewModel", () => {
 
     expect(vm.diagnosticStatusLabel).toBe("All reachable");
     expect(vm.diagnosticStatusVariant).toBe("success");
+    expect(vm.headerChips).toEqual([
+      { label: "Environment", value: "PAPER" },
+      { label: "Workspace", value: "settings" },
+      { label: "Diagnostics", value: "All reachable" },
+      { label: "Heartbeat", value: "2026-05-01T00:00:00Z" }
+    ]);
     expect(vm.diagnosticCounts).toMatchObject({
       loaded: 7,
       failed: 0,
@@ -210,6 +222,17 @@ describe("buildSettingsScreenViewModel", () => {
     });
     expect(vm.alpacaConnectionPanel.statusDetail).toContain("PA123");
     expect(vm.alpacaConnectionPanel.statusDetail).not.toContain("secret");
+    expect(vm.alpacaConnectionPanel.setupChecklist.map((step) => [step.id, step.statusLabel, step.tone])).toEqual([
+      ["alpaca-paper-environment", "Ready", "success"],
+      ["alpaca-api-keys", "Stored", "success"],
+      ["alpaca-account-verification", "Verified", "success"],
+      ["alpaca-readiness-handoff", "Ready", "success"]
+    ]);
+    expect(vm.alpacaConnectionPanel.setupChecklist[vm.alpacaConnectionPanel.setupChecklist.length - 1]).toMatchObject({
+      actionLabel: "Open readiness",
+      actionHref: "/trading/readiness",
+      actionAriaLabel: "Open Trading readiness after Alpaca account verification"
+    });
   });
 
   it("marks invalid Alpaca credentials as a degraded connection state", () => {
@@ -228,6 +251,15 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.alpacaConnectionPanel.stateLabel).toBe("Verification failed");
     expect(vm.alpacaConnectionPanel.statusTone).toBe("danger");
     expect(vm.alpacaConnectionPanel.statusDetail).toContain("401");
+    expect(vm.alpacaConnectionPanel.setupChecklist.find((step) => step.id === "alpaca-account-verification")).toMatchObject({
+      statusLabel: "Failed",
+      tone: "danger",
+      detail: "Alpaca /v2/account verification failed: status 401"
+    });
+    expect(vm.alpacaConnectionPanel.setupChecklist.find((step) => step.id === "alpaca-readiness-handoff")).toMatchObject({
+      statusLabel: "Blocked",
+      actionHref: null
+    });
   });
 
   it("derives Alpaca credential command disabled and validation state", () => {

@@ -14,6 +14,7 @@ import {
   reviewReconciliationBreak,
   searchSecurities
 } from "@/lib/api";
+import { evidenceWorkbenchPath } from "@/lib/workspace";
 import type {
   CorporateAction,
   ExportAnalysisResult,
@@ -263,6 +264,9 @@ export interface ReconciliationDetailActionsViewModel {
   breakChecklistHref: string;
   breakChecklistLabel: string;
   breakChecklistAriaLabel: string;
+  evidencePacketHref: string;
+  evidencePacketLabel: string;
+  evidencePacketAriaLabel: string;
   auditPacketHref: string;
   auditPacketLabel: string;
   auditPacketAriaLabel: string;
@@ -1047,6 +1051,9 @@ export function buildReconciliationDetailActions(
     breakChecklistHref: "#reconciliation-break-queue",
     breakChecklistLabel: "Open break checklist",
     breakChecklistAriaLabel: `Open break checklist for ${item.strategyName}; ${openBreakLabel}`,
+    evidencePacketHref: evidenceWorkbenchPath("reconciliation-review", item.runId),
+    evidencePacketLabel: "Evidence packet",
+    evidencePacketAriaLabel: `Open reconciliation evidence packet for ${item.strategyName}`,
     auditPacketHref: getRunReviewPacketPath(item.runId),
     auditPacketLabel: "Review audit packet",
     auditPacketAriaLabel: `Review audit packet for ${item.strategyName}`

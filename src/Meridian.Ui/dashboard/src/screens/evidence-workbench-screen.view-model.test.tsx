@@ -149,6 +149,11 @@ describe("Evidence Workbench view model", () => {
 
     expect(loading.loading).toBe(true);
     expect(loading.hasSelection).toBe(false);
+    expect(loading.hasSubjects).toBe(false);
+    expect(loading.loadingLabel).toBe("Loading evidence subjects.");
+    expect(loading.subjectsSummaryLabel).toBe("0 subjects");
+    expect(loading.subjectEmptyTitle).toBe("No evidence subjects returned");
+    expect(loading.subjectEmptyActionHref).toBe("/trading/readiness");
     expect(loading.title).toBe("Evidence Workbench");
     expect(loading.openSubjectHref(subject)).toBe("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
   });
@@ -213,6 +218,20 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(await screen.findByRole("link", { name: /Momentum strategy run/i })).toHaveAttribute(
       "href",
       "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1"
+    );
+    await waitFor(() => expect(getEvidencePacket).not.toHaveBeenCalled());
+  });
+
+  it("renders recoverable empty subject guidance when no subjects are available", async () => {
+    vi.mocked(getEvidenceSubjects).mockResolvedValue([]);
+    vi.mocked(getEvidencePacket).mockResolvedValue(packet);
+
+    renderEvidenceRoute("/reporting/evidence");
+
+    expect(await screen.findByText("No evidence subjects returned")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /open readiness console/i })).toHaveAttribute(
+      "href",
+      "/trading/readiness"
     );
     await waitFor(() => expect(getEvidencePacket).not.toHaveBeenCalled());
   });

@@ -159,6 +159,11 @@ describe("research-screen view model", () => {
     expect(state.canDiff).toBe(true);
     expect(state.selectionText).toBe("Mean Reversion FX vs Index Momentum");
     expect(state.selectionDetail).toBe("Ready to compare or diff the selected run pair.");
+    expect(state.evidenceAction).toEqual({
+      label: "Evidence packet",
+      href: "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1",
+      ariaLabel: "Open Mean Reversion FX evidence packet"
+    });
     expect(state.runTable.rows[0].selectAriaLabel).toBe("Select Mean Reversion FX");
   });
 

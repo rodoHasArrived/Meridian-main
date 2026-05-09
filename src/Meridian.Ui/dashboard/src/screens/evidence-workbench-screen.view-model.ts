@@ -5,6 +5,7 @@ import {
   getEvidenceSubjects,
   validateEvidencePacket
 } from "@/lib/api";
+import { evidenceWorkbenchPath } from "@/lib/workspace";
 import type {
   EvidenceCompleteness,
   EvidenceNode,
@@ -38,6 +39,15 @@ export interface EvidenceWorkbenchViewModel {
   error: string | null;
   hasSelection: boolean;
   hasPacket: boolean;
+  hasSubjects: boolean;
+  loadingLabel: string;
+  subjectsRegionLabel: string;
+  subjectsSummaryLabel: string;
+  subjectEmptyTitle: string;
+  subjectEmptyDetail: string;
+  subjectEmptyActionLabel: string;
+  subjectEmptyActionHref: string;
+  subjectEmptyActionAriaLabel: string;
   subjects: EvidenceSubject[];
   packet: EvidencePacket | null;
   scoreLabel: string;
@@ -200,6 +210,17 @@ export function buildEvidenceWorkbenchViewModel(input: {
     error: input.error,
     hasSelection,
     hasPacket: input.packet !== null,
+    hasSubjects: input.subjects.length > 0,
+    loadingLabel: hasSelection
+      ? `Loading evidence packet for ${input.selectedSubjectKind}/${input.selectedSubjectId}.`
+      : "Loading evidence subjects.",
+    subjectsRegionLabel: "Evidence subjects available for packet inspection",
+    subjectsSummaryLabel: input.subjects.length === 1 ? "1 subject" : `${input.subjects.length} subjects`,
+    subjectEmptyTitle: "No evidence subjects returned",
+    subjectEmptyDetail: "Readiness, reconciliation, report-pack, and provider evidence will appear here after the workstation APIs publish packet subjects.",
+    subjectEmptyActionLabel: "Open readiness console",
+    subjectEmptyActionHref: "/trading/readiness",
+    subjectEmptyActionAriaLabel: "Open readiness console to review upstream evidence sources",
     subjects: input.subjects,
     packet: input.packet,
     scoreLabel: completeness ? `${completeness.score}% complete` : "No score",
@@ -217,7 +238,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     validateBusy: input.validateBusy,
     validationResult: input.validationResult,
     openSubjectHref: (subject) =>
-      `/reporting/evidence?subjectKind=${encodeURIComponent(subject.subjectKind)}&subjectId=${encodeURIComponent(subject.subjectId)}`,
+      evidenceWorkbenchPath(subject.subjectKind, subject.subjectId),
     exportManifest: input.exportManifest,
     validatePacket: input.validatePacket
   };

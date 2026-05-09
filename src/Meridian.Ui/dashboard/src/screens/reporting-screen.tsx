@@ -45,12 +45,14 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/reporting/evidence?subjectKind=report-pack&subjectId=current">
-              <Network className="h-4 w-4" aria-hidden="true" />
-              Evidence
-            </Link>
-          </Button>
+          {vm.workbenchActions.map((action) => (
+            <Button key={action.id} asChild variant="outline" size="sm">
+              <Link to={action.href} aria-label={action.ariaLabel}>
+                <Network className="h-4 w-4" aria-hidden="true" />
+                {action.label}
+              </Link>
+            </Button>
+          ))}
           {vm.workbenchChips.map((chip) => (
             <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
           ))}

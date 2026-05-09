@@ -56,6 +56,10 @@ export function workspacePath(key: WorkspaceKey) {
   return `/${key}`;
 }
 
+export function evidenceWorkbenchPath(subjectKind: string, subjectId: string) {
+  return `/reporting/evidence?subjectKind=${encodeURIComponent(subjectKind)}&subjectId=${encodeURIComponent(subjectId)}`;
+}
+
 export function workspaceForKey(key: WorkspaceKey): WorkspaceSummary {
   return WORKSPACES.find((workspace) => workspace.key === key) ?? WORKSPACES[0];
 }

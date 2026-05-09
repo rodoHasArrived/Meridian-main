@@ -648,6 +648,11 @@ describe("trading readiness view model", () => {
     expect(state.hasOperatorAttention).toBe(true);
     expect(state.workItemSummaryText).toBe("1 readiness item and 1 warning.");
     expect(state.primaryWorkItemKind).toBe("BrokerageSync");
+    expect(state.evidenceAction).toEqual({
+      label: "Evidence",
+      href: "/reporting/evidence?subjectKind=paper-readiness&subjectId=current",
+      ariaLabel: "Open paper cockpit readiness evidence"
+    });
     expect(state.visibleWorkItems).toEqual([
       expect.objectContaining({
         workItemId: "brokerage-sync-failed-fund-1",

@@ -527,6 +527,11 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.selectedRun?.statusBadgeVariant).toBe("warning");
     expect(vm.selectedRun?.statusDetail).toContain("Drawdown review required.");
     expect(vm.selectedRun?.fields.find((field) => field.label === "Promotion")?.value).toBe("Not promoted");
+    expect(vm.selectedRun?.evidenceAction).toEqual({
+      label: "Open evidence packet",
+      href: "/reporting/evidence?subjectKind=strategy-run&subjectId=run-2",
+      ariaLabel: "Open Volatility Carry evidence packet"
+    });
   });
 
   it("derives provider-aware account selector and filtered brokerage positions", () => {

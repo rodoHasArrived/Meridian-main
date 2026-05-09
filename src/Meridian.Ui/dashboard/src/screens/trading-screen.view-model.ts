@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import type { ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
+import { evidenceWorkbenchPath } from "@/lib/workspace";
 import type {
   ExecutionAuditEntry,
   ExecutionControlSnapshot,
@@ -134,6 +135,12 @@ export interface TradingReadinessWarningRow {
   ariaLabel: string;
 }
 
+export interface TradingReadinessEvidenceAction {
+  label: string;
+  href: string;
+  ariaLabel: string;
+}
+
 export interface TradingReadinessState {
   readiness: TradingOperatorReadiness | null;
   refreshing: boolean;
@@ -152,6 +159,7 @@ export interface TradingReadinessState {
   primaryWorkItemKind: string | null;
   workItemSummaryText: string;
   workItemListLabel: string;
+  evidenceAction: TradingReadinessEvidenceAction;
   refreshButtonLabel: string;
   refreshAriaLabel: string;
   statusAnnouncement: string;
@@ -318,6 +326,11 @@ export function buildTradingReadinessState({
     primaryWorkItemKind: workItems[0]?.kind ?? null,
     workItemSummaryText: `${workItems.length} readiness item${workItems.length === 1 ? "" : "s"} and ${warnings.length} warning${warnings.length === 1 ? "" : "s"}.`,
     workItemListLabel: "Trading readiness operator work items",
+    evidenceAction: {
+      label: "Evidence",
+      href: evidenceWorkbenchPath("paper-readiness", "current"),
+      ariaLabel: "Open paper cockpit readiness evidence"
+    },
     refreshButtonLabel: refreshing ? "Refreshing..." : "Refresh readiness",
     refreshAriaLabel: refreshing ? "Refreshing trading readiness" : "Refresh trading readiness",
     statusAnnouncement: buildTradingReadinessAnnouncement({ readiness, refreshing, errorText })

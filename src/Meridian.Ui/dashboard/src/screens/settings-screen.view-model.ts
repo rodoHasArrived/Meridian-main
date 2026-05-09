@@ -62,6 +62,18 @@ export interface SettingsAlpacaRequirementRow {
   tone: "success" | "warning" | "muted";
 }
 
+export interface SettingsAlpacaSetupStep {
+  id: string;
+  label: string;
+  statusLabel: string;
+  detail: string;
+  tone: "success" | "warning" | "danger" | "muted";
+  badgeVariant: "success" | "warning" | "danger" | "outline";
+  actionLabel: string | null;
+  actionHref: string | null;
+  actionAriaLabel: string | null;
+}
+
 export interface SettingsAlpacaConnectionFormViewModel extends SettingsAlpacaConnectionFormState, SettingsAlpacaConnectionCommandState {
   setKeyId: (value: string) => void;
   setSecretKey: (value: string) => void;
@@ -373,6 +385,10 @@ export interface SettingsAlpacaConnectionPanel {
   verifiedAtLabel: string;
   warnings: string[];
   canClear: boolean;
+  setupChecklistTitle: string;
+  setupChecklistDetail: string;
+  setupChecklistAriaLabel: string;
+  setupChecklist: SettingsAlpacaSetupStep[];
 }
 
 export interface SettingsDiagnosticCounts {
@@ -384,7 +400,13 @@ export interface SettingsDiagnosticCounts {
   checking: number;
 }
 
+export interface SettingsHeaderChip {
+  label: string;
+  value: string;
+}
+
 export interface SettingsScreenViewModel {
+  headerChips: SettingsHeaderChip[];
   sessionTitle: string;
   sessionItems: SettingsSessionItem[];
   hasSession: boolean;
@@ -765,8 +787,84 @@ function buildAlpacaConnectionPanel(connection: BrokerageConnectionStatus | null
     maskedKeyIdLabel: connection?.maskedKeyId?.trim() || "Not stored",
     verifiedAtLabel: connection?.verifiedAt?.trim() || "Not verified",
     warnings,
-    canClear: connection?.isConfigured === true
+    canClear: connection?.isConfigured === true,
+    setupChecklistTitle: "Provider setup checklist",
+    setupChecklistDetail: "Move from demo data to a verified paper connection before relying on readiness evidence.",
+    setupChecklistAriaLabel: "Alpaca provider setup checklist",
+    setupChecklist: buildAlpacaSetupChecklist(connection, isLive)
   };
+}
+
+function buildAlpacaSetupChecklist(
+  connection: BrokerageConnectionStatus | null,
+  isLive: boolean
+): SettingsAlpacaSetupStep[] {
+  const isConfigured = connection?.isConfigured === true;
+  const isConnected = connection?.isConnected === true;
+  const isFailed = connection?.state === "Degraded" || connection?.state === "ReauthorizationRequired";
+  const account = connection?.externalAccountId?.trim();
+  const lastError = connection?.lastError?.trim();
+
+  return [
+    {
+      id: "alpaca-paper-environment",
+      label: "Use paper endpoint",
+      statusLabel: isLive ? "Review" : "Ready",
+      detail: isLive
+        ? "Switch back to paper before rehearsing first-run readiness."
+        : "Paper mode keeps provider setup safe for onboarding and demos.",
+      tone: isLive ? "warning" : "success",
+      badgeVariant: isLive ? "warning" : "success",
+      actionLabel: null,
+      actionHref: null,
+      actionAriaLabel: null
+    },
+    {
+      id: "alpaca-api-keys",
+      label: "Store API keys",
+      statusLabel: isConfigured ? "Stored" : "Needed",
+      detail: isConfigured
+        ? "Key ID is masked and the secret is not displayed after submit."
+        : "Paste the paper key ID and secret, then test the account.",
+      tone: isConfigured ? "success" : "warning",
+      badgeVariant: isConfigured ? "success" : "warning",
+      actionLabel: null,
+      actionHref: null,
+      actionAriaLabel: null
+    },
+    {
+      id: "alpaca-account-verification",
+      label: "Verify account",
+      statusLabel: isConnected ? "Verified" : isFailed ? "Failed" : isConfigured ? "Test needed" : "Blocked",
+      detail: isConnected
+        ? account
+          ? `Alpaca /v2/account returned account ${account}.`
+          : "Alpaca /v2/account returned an account response."
+        : isFailed
+          ? lastError || "The last Alpaca verification attempt failed."
+          : isConfigured
+            ? "Run Connect and test to verify the stored paper account."
+            : "Store paper credentials before account verification can run.",
+      tone: isConnected ? "success" : isFailed ? "danger" : isConfigured ? "warning" : "muted",
+      badgeVariant: isConnected ? "success" : isFailed ? "danger" : isConfigured ? "warning" : "outline",
+      actionLabel: null,
+      actionHref: null,
+      actionAriaLabel: null
+    },
+    {
+      id: "alpaca-readiness-handoff",
+      label: "Check readiness",
+      statusLabel: isConnected ? "Ready" : "Blocked",
+      detail: isConnected
+        ? "Open Trading readiness to confirm brokerage-sync and execution-control evidence."
+        : "Readiness handoff unlocks after account verification succeeds.",
+      tone: isConnected ? "success" : "muted",
+      badgeVariant: isConnected ? "success" : "outline",
+      actionLabel: isConnected ? "Open readiness" : null,
+      actionHref: isConnected ? "/trading/readiness" : null,
+      actionAriaLabel: isConnected ? "Open Trading readiness after Alpaca account verification" : null
+    }
+  ];
 }
 
 function connectionStateLabel(state: BrokerageConnectionStatus["state"]): string {
@@ -848,8 +946,11 @@ export function buildSettingsScreenViewModel(
   const sysSummary = overview
     ? `${overview.systemStatus} · ${overview.providersOnline}/${overview.providersTotal} providers · ${overview.activeRuns} active run${overview.activeRuns === 1 ? "" : "s"}`
     : "System overview unavailable.";
+  const diagnosticSection = buildDiagnosticEndpointSection(payload);
+  const backendCapabilitySection = buildBackendCapabilitySection(payload);
 
   return {
+    headerChips: buildSettingsHeaderChips(session, overview, diagnosticSection.diagnosticStatusLabel),
     sessionTitle: session ? `Session - ${session.displayName}` : "Session",
     sessionItems,
     hasSession: session !== null,
@@ -860,8 +961,8 @@ export function buildSettingsScreenViewModel(
     hasOverview: overview !== null,
     recentEventsSection: buildRecentEventsSection(overview),
     alpacaConnectionPanel: buildAlpacaConnectionPanel(payload.brokerageConnection ?? null),
-    ...buildDiagnosticEndpointSection(payload),
-    ...buildBackendCapabilitySection(payload)
+    ...diagnosticSection,
+    ...backendCapabilitySection
   };
 }
 
@@ -895,6 +996,19 @@ function buildDiagnosticEndpointSection(payload: SettingsScreenPayload): Pick<
     diagnosticStatusLabel,
     diagnosticStatusVariant: counts.checking > 0 ? "warning" : counts.failed > 0 ? "danger" : "success"
   };
+}
+
+function buildSettingsHeaderChips(
+  session: SessionInfo | null,
+  overview: SystemOverviewResponse | null,
+  diagnosticStatusLabel: string
+): SettingsHeaderChip[] {
+  return [
+    { label: "Environment", value: session ? session.environment.toUpperCase() : "—" },
+    { label: "Workspace", value: session?.activeWorkspace ?? "—" },
+    { label: "Diagnostics", value: diagnosticStatusLabel },
+    { label: "Heartbeat", value: overview?.lastHeartbeatUtc ?? "—" }
+  ];
 }
 
 function buildBackendCapabilitySection(payload: SettingsScreenPayload): Pick<
