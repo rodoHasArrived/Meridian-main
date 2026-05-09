@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { HistoricalChartCard } from "@/components/meridian/historical-chart";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getLiveOrderbook, getLiveQuote, getLiveTrades, submitOrder } from "@/lib/api";
@@ -257,6 +258,7 @@ export function LiveQuotesScreen() {
         </Card>
       ) : (
         <>
+        <HistoricalChartCard symbol={activeSymbol} />
         <PriceChartCard
           symbol={activeSymbol}
           metrics={intraday}

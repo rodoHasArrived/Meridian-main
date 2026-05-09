@@ -1480,6 +1480,31 @@ export interface OrderBookResponse {
   venue: string | null;
 }
 
+export interface HistoricalBarPoint {
+  start: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  vwap: number;
+  tradeCount: number;
+}
+
+export interface HistoricalBarsResponse {
+  success: boolean;
+  message: string | null;
+  symbol: string;
+  intervalMinutes: number;
+  from: string | null;
+  to: string | null;
+  totalBars: number;
+  filesProcessed: number;
+  totalFiles: number;
+  queryTimeMs: number;
+  bars: HistoricalBarPoint[];
+}
+
 // --- Quant Lab ---
 
 export type QuantPlotKind =
