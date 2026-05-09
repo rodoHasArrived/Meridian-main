@@ -6749,6 +6749,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │       ├── dialog.view-model.ts
 │   │   │   │   │       ├── input.tsx
 │   │   │   │   │       ├── select.tsx
+│   │   │   │   │       ├── sheet.test.tsx
 │   │   │   │   │       ├── sheet.tsx
 │   │   │   │   │       └── tooltip.tsx
 │   │   │   │   ├── design-system-contract.test.ts
@@ -6827,8 +6828,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-BpfhB5aD.css
-│   │           │   └── index-DeAE2zbq.js
+│   │           │   ├── index-CBtYXONu.js
+│   │           │   └── index-Dj-ualKj.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -7262,6 +7263,12 @@ Use these documents together when planning or implementing new work:
 │       │   │   ├── PaneContentState.cs
 │       │   │   ├── PaneDropResult.cs
 │       │   │   └── ShellRoute.cs
+│       │   ├── Refresh
+│       │   │   └── ShellRefreshCoordinator.cs
+│       │   ├── Root
+│       │   │   ├── DesktopLaunchRouter.cs
+│       │   │   ├── DesktopShellCoordinator.cs
+│       │   │   └── FileDropRouter.cs
 │       │   ├── Services
 │       │   │   ├── IPageContentFactory.cs
 │       │   │   ├── IShellNavigationCoordinator.cs
@@ -7269,8 +7276,16 @@ Use these documents together when planning or implementing new work:
 │       │   │   ├── PageContentFactory.cs
 │       │   │   ├── ShellNavigationCoordinator.cs
 │       │   │   └── ShellRouteRegistry.cs
+│       │   ├── Session
+│       │   │   ├── DesktopShellSessionService.cs
+│       │   │   ├── DesktopWindowState.cs
+│       │   │   ├── IWindowStateStore.cs
+│       │   │   └── WindowStateStore.cs
 │       │   └── ViewModels
-│       │       └── PaneHostViewModel.cs
+│       │       ├── CommandPaletteViewModel.cs
+│       │       ├── OperatorInboxViewModel.cs
+│       │       ├── PaneHostViewModel.cs
+│       │       └── WorkflowSummaryStripViewModel.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
 │       │   ├── AppStyles.xaml
@@ -8277,6 +8292,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   ├── ScheduleManagerViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
+│   │   │   ├── ShellPresentationViewModelTests.cs
 │   │   │   ├── StatusBarViewModelTests.cs
 │   │   │   ├── StorageViewModelTests.cs
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
@@ -8352,6 +8368,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-667 directories, 7510 files
+670 directories, 7523 files
 ```
 <!-- readme-tree end -->
