@@ -6828,8 +6828,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-DMZQXbXp.css
-│   │           │   └── index-DplWwPAg.js
+│   │           │   ├── index-B6vmAcIy.js
+│   │           │   └── index-B6xPZbt9.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8366,8 +8366,14 @@ Use these documents together when planning or implementing new work:
 │   │   └── test_shared_build_retention.py
 │   ├── setup-script-tests.md
 │   └── xunit.runner.json
-└── tree.bak
+├── tree.bak
+└── wwwroot
+    └── workstation
+        ├── assets
+        │   ├── index-B6vmAcIy.js
+        │   └── index-B6xPZbt9.css
+        └── index.html
 
-670 directories, 7523 files
+673 directories, 7526 files
 ```
 <!-- readme-tree end -->
