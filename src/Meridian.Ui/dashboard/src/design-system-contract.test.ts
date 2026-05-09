@@ -38,6 +38,14 @@ describe("dashboard design-system contract", () => {
     expect(tailwindConfig).toContain("positive: \"hsl(var(--success) / <alpha-value>)\"");
   });
 
+  it("uses the high-contrast focus token for translucent primary focus rings", () => {
+    const styles = readDashboardStyles();
+
+    expect(styles).toContain("--cyan-focus: #20d3f7");
+    expect(styles).toContain(".focus-visible\\:ring-primary\\/40:focus-visible");
+    expect(styles).toContain("--tw-ring-color: var(--cyan-focus)");
+  });
+
   it("uses the restrained ambient cockpit background from the design-system documentation", () => {
     const styles = readDashboardStyles();
 

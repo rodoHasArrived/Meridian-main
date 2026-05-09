@@ -5,6 +5,7 @@ import type {
   DataOperationsProviderRecord,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
+  MetricSnapshot,
   OperatorInbox,
   OperatorWorkItem,
   ResearchRunRecord,
@@ -18,12 +19,10 @@ import type {
 
 export type ReadinessConsoleLevel = "ready" | "review" | "blocked" | "neutral";
 
-export interface ReadinessConsoleMetric {
-  id: string;
-  label: string;
-  value: string;
+export interface ReadinessConsoleMetric extends MetricSnapshot {
   detail: string;
   level: ReadinessConsoleLevel;
+  detailId: string;
   ariaLabel: string;
   statusAriaLabel: string;
 }
@@ -51,7 +50,7 @@ export interface ReadinessConsoleRow {
   action?: ReadinessConsoleRowAction | null;
 }
 
-type ReadinessConsoleMetricBase = Omit<ReadinessConsoleMetric, "ariaLabel" | "statusAriaLabel">;
+type ReadinessConsoleMetricBase = Omit<ReadinessConsoleMetric, "ariaLabel" | "statusAriaLabel" | "delta" | "tone" | "detailId">;
 type ReadinessConsoleApiSourceBase = Omit<ReadinessConsoleApiSource, "ariaLabel" | "statusAriaLabel">;
 type ReadinessConsoleRowBase = Omit<ReadinessConsoleRow, "ariaLabel" | "statusAriaLabel" | "detailId">;
 
@@ -278,6 +277,9 @@ export function buildOperatorReadinessConsoleState({
 function withMetricPresentation(metrics: ReadinessConsoleMetricBase[]): ReadinessConsoleMetric[] {
   return metrics.map((metric) => ({
     ...metric,
+    delta: formatLevelText(metric.level),
+    tone: metricTone(metric.level),
+    detailId: `readiness-metric-${slugifyId(metric.id)}-detail`,
     ariaLabel: `${metric.label}: ${metric.value}. ${metric.detail}`,
     statusAriaLabel: `${metric.label} status ${formatLevelText(metric.level)}`
   }));
@@ -1020,6 +1022,19 @@ function formatLevelText(level: ReadinessConsoleLevel): string {
       return "Blocked";
     case "neutral":
       return "Info";
+  }
+}
+
+function metricTone(level: ReadinessConsoleLevel): MetricSnapshot["tone"] {
+  switch (level) {
+    case "ready":
+      return "success";
+    case "review":
+      return "warning";
+    case "blocked":
+      return "danger";
+    case "neutral":
+      return "default";
   }
 }
 

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useNavigate } from "react-router-dom";
 
 import { computeIntradayMetrics, LiveQuotesScreen } from "@/screens/live-quotes-screen";
 import { buildOrderRequest, validateQuickTicket } from "@/screens/live-quotes-screen.view-model";
@@ -287,6 +288,29 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(submitButton).toHaveAttribute("title", "Enter a quantity greater than zero.");
     expect(submitSpy).not.toHaveBeenCalled();
     expect(await screen.findByText(/Enter a quantity greater than zero/i)).toBeInTheDocument();
+  });
+
+  it("syncs the active symbol when the symbol query parameter changes", async () => {
+    const user = userEvent.setup();
+
+    function Harness() {
+      const navigate = useNavigate();
+      return (
+        <>
+          <button type="button" onClick={() => navigate("/data/quotes?symbol=MSFT")}>Route to MSFT</button>
+          <LiveQuotesScreen />
+        </>
+      );
+    }
+
+    renderWithRouter(<Harness />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
+
+    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("AAPL"));
+
+    await user.click(screen.getByRole("button", { name: "Route to MSFT" }));
+
+    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("MSFT"));
+    expect(screen.getByDisplayValue("MSFT")).toBeInTheDocument();
   });
 
   it("ignores stale quote responses after switching symbols", async () => {

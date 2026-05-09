@@ -265,6 +265,7 @@ export interface ProviderSetupCredentialFieldState {
   field: "apiKey" | "apiSecret" | "endpoint";
   type: "password" | "url";
   value: string;
+  autoComplete: "new-password" | "off";
   placeholder: string | null;
 }
 
@@ -497,6 +498,7 @@ export function useDataOperationsViewModel(
 
   const openProviderSetup = useCallback(() => {
     setProviderSetupOpen(true);
+    setProviderForm(clearProviderSetupCredentials);
     setProviderSetupResult(null);
     setProviderSetupError(null);
     setProviderPhase("idle");
@@ -504,7 +506,11 @@ export function useDataOperationsViewModel(
 
   const closeProviderSetup = useCallback(() => {
     if (providerPhase === "submitting") return;
+    setProviderForm(clearProviderSetupCredentials);
     setProviderSetupOpen(false);
+    setProviderSetupResult(null);
+    setProviderSetupError(null);
+    setProviderPhase("idle");
   }, [providerPhase]);
 
   const updateProviderForm = useCallback((field: Exclude<keyof ProviderSetupFormState, "capabilities">, value: string) => {
@@ -564,6 +570,8 @@ export function useDataOperationsViewModel(
       const message = err instanceof Error ? err.message : "Provider setup failed.";
       setProviderSetupError(message);
       setProviderPhase("error");
+    } finally {
+      setProviderForm(clearProviderSetupCredentials);
     }
   }, [providerForm]);
 
@@ -1412,6 +1420,14 @@ export function validateProviderSetupForm(form: ProviderSetupFormState): string 
   return null;
 }
 
+export function clearProviderSetupCredentials(form: ProviderSetupFormState): ProviderSetupFormState {
+  return {
+    ...form,
+    apiKey: "",
+    apiSecret: ""
+  };
+}
+
 export function buildProviderSetupDialogState(
   phase: ProviderSetupPhase,
   form: ProviderSetupFormState
@@ -1499,6 +1515,7 @@ function buildProviderCredentialFields(
       field: "apiKey",
       type: "password",
       value: form.apiKey,
+      autoComplete: "new-password",
       placeholder: "Stored server-side; never sent to the browser after save"
     });
   }
@@ -1511,6 +1528,7 @@ function buildProviderCredentialFields(
       field: "apiSecret",
       type: "password",
       value: form.apiSecret,
+      autoComplete: "new-password",
       placeholder: null
     });
   }
@@ -1523,6 +1541,7 @@ function buildProviderCredentialFields(
       field: "endpoint",
       type: "url",
       value: form.endpoint,
+      autoComplete: "off",
       placeholder: "https://localhost:7497 or https://api.yourprovider.com"
     });
   }

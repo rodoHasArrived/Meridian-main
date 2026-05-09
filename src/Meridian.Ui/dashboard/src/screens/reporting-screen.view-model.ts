@@ -22,6 +22,8 @@ export interface ReportingProfileAction {
   href: string;
   variant: "default" | "outline";
   ariaLabel: string;
+  describedById: string;
+  statusText: string;
   isDisabled: boolean;
   disabledReason: string | null;
   method: "GET" | "POST";
@@ -502,6 +504,8 @@ function buildProfileActions(
       href: `/api/export/preview?${profileQuery}`,
       variant: "outline",
       ariaLabel: `Preview ${profile.name} export payload`,
+      describedById: `reporting-action-${profile.id}-preview-status`,
+      statusText: "Opens the current export payload preview in a new browser tab.",
       isDisabled: false,
       disabledReason: null,
       method: "GET",
@@ -514,6 +518,10 @@ function buildProfileActions(
       href: "/api/export/analysis",
       variant: "default",
       ariaLabel: `Run ${profile.name} export analysis`,
+      describedById: `reporting-action-${profile.id}-run-status`,
+      statusText: isRunningThisProfile
+        ? `${profile.name} export is running. Wait for the result before starting another export.`
+        : "Runs the governed export through the backend mutation and reports generated artifacts here.",
       isDisabled: isRunningThisProfile,
       disabledReason: isRunningThisProfile ? `${profile.name} export is already running.` : null,
       method: "POST",

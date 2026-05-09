@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { MetricCard } from "@/components/meridian/metric-card";
 import { cn } from "@/lib/utils";
 import {
   useOperatorReadinessConsoleViewModel,
@@ -37,13 +38,6 @@ const levelPanel: Record<ReadinessConsoleLevel, string> = {
   review: "border-warning/35 bg-warning/10",
   blocked: "border-danger/35 bg-danger/10",
   neutral: "border-border/70 bg-secondary/25"
-};
-
-const levelText: Record<ReadinessConsoleLevel, string> = {
-  ready: "Ready",
-  review: "Review",
-  blocked: "Blocked",
-  neutral: "Info"
 };
 
 const panelIcons: Record<ReadinessConsolePanel["id"], typeof ShieldCheck> = {
@@ -174,16 +168,16 @@ export function OperatorReadinessConsole({
             key={metric.id}
             role="group"
             aria-label={metric.ariaLabel}
-            className={cn("metric-tile border", levelPanel[metric.level])}
+            aria-describedby={metric.detailId}
+            className="grid gap-2"
           >
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="eyebrow-label">{metric.label}</p>
-                <p className="mt-2 break-words font-mono text-sm font-semibold text-foreground">{metric.value}</p>
-              </div>
-              <Badge variant={levelBadge[metric.level]} aria-label={metric.statusAriaLabel}>{levelText[metric.level]}</Badge>
-            </div>
-            <p className="mt-2 text-xs leading-5 text-foreground/75">{metric.detail}</p>
+            <MetricCard {...metric} />
+            <p
+              id={metric.detailId}
+              className={cn("rounded-md border px-2.5 py-2 text-xs leading-5 text-foreground/75", levelPanel[metric.level])}
+            >
+              {metric.detail}
+            </p>
           </div>
         ))}
       </section>

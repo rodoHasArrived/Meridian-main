@@ -1,9 +1,10 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/app";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { renderWithRouter } from "@/test/render";
+import { useNavigate } from "react-router-dom";
 import type { PortfolioWorkspaceResponse } from "@/types";
 
 vi.mock("@/hooks/use-workstation-data", () => ({
@@ -106,6 +107,27 @@ describe("App", () => {
 
     expect(screen.getByRole("link", { name: "Skip to workbench" })).toHaveAttribute("href", "#workbench-content");
     expect(screen.getByRole("main")).toHaveAttribute("id", "workbench-content");
+  });
+
+  it("announces route changes and moves focus to the workbench", async () => {
+    const user = userEvent.setup();
+
+    function Harness() {
+      const navigate = useNavigate();
+      return (
+        <>
+          <button type="button" onClick={() => navigate("/portfolio")}>Route to portfolio</button>
+          <App />
+        </>
+      );
+    }
+
+    renderWithRouter(<Harness />, { initialEntries: ["/trading"] });
+
+    await user.click(screen.getByRole("button", { name: "Route to portfolio" }));
+
+    expect(await screen.findByText("Portfolio Workstation loaded.")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("main")).toHaveFocus());
   });
 
   it("does not open the command palette shortcut while typing in an input", async () => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, LoaderCircle, Menu, Search } from "lucide-react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
@@ -38,6 +38,9 @@ import { TradingScreen } from "@/screens/trading-screen";
 export function App() {
   const [commandOpen, setCommandOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [routeAnnouncement, setRouteAnnouncement] = useState("");
+  const workbenchRef = useRef<HTMLElement | null>(null);
+  const previousPathnameRef = useRef<string | null>(null);
   const { pathname } = useLocation();
   const {
     session,
@@ -66,7 +69,7 @@ export function App() {
         return;
       }
 
-      if (isEditableTarget(event.target)) {
+      if (isEditableTarget(event.target) && !commandOpen) {
         return;
       }
 
@@ -76,7 +79,7 @@ export function App() {
 
     window.addEventListener("keydown", handleCommandShortcut);
     return () => window.removeEventListener("keydown", handleCommandShortcut);
-  }, [setCommandOpen]);
+  }, [commandOpen, setCommandOpen]);
 
   const shell = buildAppShellViewState({
     pathname,
@@ -95,9 +98,34 @@ export function App() {
     }
   });
 
+  useEffect(() => {
+    const previousPathname = previousPathnameRef.current;
+    previousPathnameRef.current = pathname;
+
+    if (previousPathname === null || previousPathname === pathname) {
+      return;
+    }
+
+    const workspaceTitle = `${shell.activeWorkspace.label} Workstation`;
+    setRouteAnnouncement(`${workspaceTitle} loaded.`);
+    document.title = `${workspaceTitle} - Meridian`;
+
+    const focusWorkbench = () => workbenchRef.current?.focus();
+    if (typeof window.requestAnimationFrame === "function") {
+      const frame = window.requestAnimationFrame(focusWorkbench);
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    const timeout = window.setTimeout(focusWorkbench, 0);
+    return () => window.clearTimeout(timeout);
+  }, [pathname, shell.activeWorkspace.label]);
+
   return (
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {routeAnnouncement}
+      </div>
       <header className="workstation-masthead">
         <div className="workstation-brand-group">
           <button
@@ -147,7 +175,12 @@ export function App() {
       <div className="workstation-shell">
         <WorkspaceNav className="workstation-rail-desktop" />
 
-        <main id="workbench-content" className="workbench grid grid-rows-[auto_minmax(0,1fr)]" tabIndex={-1}>
+        <main
+          ref={workbenchRef}
+          id="workbench-content"
+          className="workbench grid grid-rows-[auto_minmax(0,1fr)]"
+          tabIndex={-1}
+        >
           <WorkspaceHeader
             workspace={shell.activeWorkspace}
             session={session}

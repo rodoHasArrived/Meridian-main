@@ -104,7 +104,7 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     eyebrow: "Providers & feeds",
     links: [
       { label: "Provider posture", route: "/data", description: "Data provider health" },
-      { label: "Backfill queues", route: "/data/backfill", description: "Historical data backfill" },
+      { label: "Backfill queues", route: "/data/backfills", description: "Historical data backfill" },
       { label: "Feed monitor", route: "/data/feeds", description: "Live feed status" }
     ]
   },

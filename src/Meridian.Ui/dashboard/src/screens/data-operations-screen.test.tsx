@@ -98,6 +98,45 @@ describe("DataOperationsScreen", () => {
     expect(screen.getAllByRole("status").length).toBeGreaterThanOrEqual(3);
   });
 
+  it("clears provider credentials after setup and suppresses browser autocomplete", async () => {
+    const user = userEvent.setup();
+
+    vi.spyOn(api, "setupProvider").mockResolvedValueOnce({
+      success: true,
+      providerId: "provider-alpaca",
+      providerName: "Alpaca paper",
+      message: "Provider configured.",
+      error: null
+    });
+
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+
+    await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
+    await user.selectOptions(screen.getByLabelText("Select provider type"), "alpaca");
+
+    const apiKey = screen.getByLabelText("Provider API key");
+    const apiSecret = screen.getByLabelText("Provider API secret");
+    expect(apiKey).toHaveAttribute("autocomplete", "new-password");
+    expect(apiSecret).toHaveAttribute("autocomplete", "new-password");
+
+    await user.type(apiKey, "key-123");
+    await user.type(apiSecret, "secret-456");
+    await user.click(screen.getByRole("button", { name: /configure and register provider/i }));
+
+    await waitFor(() => expect(api.setupProvider).toHaveBeenCalledWith(expect.objectContaining({
+      kind: "alpaca",
+      apiKey: "key-123",
+      apiSecret: "secret-456"
+    })));
+
+    expect(await screen.findByText("Alpaca paper configured")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Configure another" }));
+
+    expect(screen.getByLabelText("Provider API key")).toHaveValue("");
+    expect(screen.getByLabelText("Provider API secret")).toHaveValue("");
+  });
+
   it("adapts the hero copy for deep-link routes", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data/backfills"] });
 

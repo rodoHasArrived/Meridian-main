@@ -11,6 +11,7 @@ import {
   buildProviderRow,
   buildProviderSection,
   buildProviderSetupDialogState,
+  clearProviderSetupCredentials,
   buildSecurityMasterWorkspaceState,
   buildSelectedBackfillDetail,
   resolveSecurityMasterTabKeyCommand,
@@ -297,6 +298,7 @@ describe("data-operations-screen view model", () => {
       value: "Alpaca"
     });
     expect(alpacaDialog.credentialFields.map((field) => field.field)).toEqual(["apiKey", "apiSecret"]);
+    expect(alpacaDialog.credentialFields.map((field) => field.autoComplete)).toEqual(["new-password", "new-password"]);
     expect(alpacaDialog.capabilityOptions.find((option) => option.id === "brokerage")?.selected).toBe(true);
     expect(alpacaDialog.submitAction.disabledReason).toBe("An API key is required for Alpaca.");
 
@@ -311,6 +313,24 @@ describe("data-operations-screen view model", () => {
 
     expect(yahooDialog.credentialFields).toHaveLength(0);
     expect(yahooDialog.submitAction.disabled).toBe(false);
+  });
+
+  it("clears provider setup secrets while preserving non-secret form context", () => {
+    expect(clearProviderSetupCredentials({
+      kind: "alpaca",
+      displayName: "Alpaca paper",
+      apiKey: "key-123",
+      apiSecret: "secret-456",
+      endpoint: "https://paper-api.alpaca.markets",
+      capabilities: ["streaming", "brokerage"]
+    })).toEqual({
+      kind: "alpaca",
+      displayName: "Alpaca paper",
+      apiKey: "",
+      apiSecret: "",
+      endpoint: "https://paper-api.alpaca.markets",
+      capabilities: ["streaming", "brokerage"]
+    });
   });
 
   it("validates endpoint provider URLs before submit", () => {

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { LayoutGrid, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -18,6 +18,11 @@ export function MegaMenu() {
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const { pathname } = useLocation();
   const vm = useMegaMenuViewModel(pathname);
+
+  const closeMenu = useCallback(() => {
+    vm.closeMenu();
+    restoreFocusRef.current?.focus();
+  }, [vm.closeMenu]);
 
   useEffect(() => {
     if (!vm.open) {
@@ -54,7 +59,7 @@ export function MegaMenu() {
 
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [vm.open, vm.closeMenu]);
+  }, [closeMenu, vm.open]);
 
   useEffect(() => {
     if (!vm.open) {
@@ -68,18 +73,13 @@ export function MegaMenu() {
         triggerRef.current &&
         !triggerRef.current.contains(event.target as Node)
       ) {
-        vm.closeMenu();
+        closeMenu();
       }
     };
 
     window.addEventListener("mousedown", handleClick);
     return () => window.removeEventListener("mousedown", handleClick);
-  }, [vm.open, vm.closeMenu]);
-
-  const closeMenu = () => {
-    vm.closeMenu();
-    restoreFocusRef.current?.focus();
-  };
+  }, [closeMenu, vm.open]);
 
   return (
     <div className="mega-menu-root">

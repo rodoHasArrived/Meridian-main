@@ -140,6 +140,8 @@ describe("useReportingScreenViewModel", () => {
       label: "Preview payload",
       href: "/api/export/preview?profile=excel",
       ariaLabel: "Preview Excel export payload",
+      describedById: "reporting-action-excel-preview-status",
+      statusText: "Opens the current export payload preview in a new browser tab.",
       isDisabled: false,
       variant: "outline",
       method: "GET",
@@ -210,7 +212,9 @@ describe("useReportingScreenViewModel", () => {
         label: "Running export…",
         isDisabled: true,
         isRunning: true,
-        disabledReason: "Excel export is already running."
+        disabledReason: "Excel export is already running.",
+        describedById: "reporting-action-excel-run-status",
+        statusText: "Excel export is running. Wait for the result before starting another export."
       });
     });
 

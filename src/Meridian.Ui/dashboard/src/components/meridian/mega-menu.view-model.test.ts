@@ -4,7 +4,7 @@ import { buildMegaMenuViewModel, resolveMegaMenuKeyCommand } from "@/components/
 describe("mega menu view model", () => {
   it("derives active section and route labels from the current path", () => {
     const model = buildMegaMenuViewModel({
-      pathname: "/data/backfill/queued",
+      pathname: "/data/backfills/queued",
       open: true,
       openMenu: vi.fn(),
       closeMenu: vi.fn(),
@@ -12,7 +12,7 @@ describe("mega menu view model", () => {
     });
 
     const dataSection = model.sections.find((section) => section.key === "data");
-    const backfillLink = dataSection?.links.find((link) => link.route === "/data/backfill");
+    const backfillLink = dataSection?.links.find((link) => link.route === "/data/backfills");
 
     expect(model.triggerAriaLabel).toBe("Close workspace navigation menu");
     expect(model.triggerExpanded).toBe(true);

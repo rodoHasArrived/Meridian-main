@@ -55,4 +55,26 @@ describe("MegaMenu", () => {
 
     expect(screen.queryByRole("dialog", { name: "Workspace navigation" })).not.toBeInTheDocument();
   });
+
+  it("restores focus when an outside click closes the menu", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(
+      <>
+        <button type="button">Outside target</button>
+        <MegaMenu />
+      </>,
+      { initialEntries: ["/portfolio"] }
+    );
+
+    const trigger = screen.getByRole("button", { name: "Open workspace navigation menu" });
+    trigger.focus();
+    await user.click(trigger);
+
+    expect(screen.getByRole("dialog", { name: "Workspace navigation" })).toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getByRole("button", { name: "Outside target" }));
+
+    expect(screen.queryByRole("dialog", { name: "Workspace navigation" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
 });

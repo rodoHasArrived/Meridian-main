@@ -344,7 +344,13 @@ describe("operator readiness console view model", () => {
     expect(state.apiSourcesLabel).toBe("Shared readiness API sources");
     expect(state.apiSources[0].ariaLabel).toContain("/api/workstation/trading/readiness");
     expect(state.metricsLabel).toBe("Operator readiness metrics");
-    expect(state.metrics[0].statusAriaLabel).toBe("Latest runs status Ready");
+    expect(state.metrics[0]).toMatchObject({
+      id: "latest-runs",
+      delta: "Ready",
+      tone: "success",
+      detailId: "readiness-metric-latest-runs-detail",
+      statusAriaLabel: "Latest runs status Ready"
+    });
     expect(state.latestRuns[0].ariaLabel).toContain("Index Momentum: Needs Review");
     expect(state.latestRuns[0].detailId).toBe("readiness-row-latest-runs-run-1-detail");
     expect(state.panels.map((panel) => panel.id)).toEqual([

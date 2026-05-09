@@ -404,34 +404,52 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                   </div>
                 ))}
               </dl>
-              <div className="flex gap-3 pt-2">
+              <div className="grid gap-2 pt-2" role="list" aria-label={`${vm.selectedProfile.title} export actions`}>
                 {vm.selectedProfile.actions.map((action) => (
-                  <Button
-                    key={action.href}
-                    asChild={action.method === "GET" && !action.isDisabled}
-                    disabled={action.isDisabled}
-                    busy={action.isRunning}
-                    busyLabel={action.isRunning ? "Running export…" : null}
-                    size="sm"
-                    variant={action.variant}
-                    aria-label={action.ariaLabel}
-                    title={action.disabledReason ?? undefined}
-                    onClick={
-                      action.method === "POST"
-                        ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
-                        : undefined
-                    }
+                  <div
+                    key={action.id}
+                    role="listitem"
+                    className="rounded-md border border-border/60 bg-secondary/20 px-3 py-2"
                   >
-                    {action.isDisabled ? (
-                      action.label
-                    ) : action.method === "POST" ? (
-                      action.label
-                    ) : (
-                      <a href={action.href} target="_blank" rel="noreferrer" aria-label={action.ariaLabel}>
-                        {action.label}
-                      </a>
-                    )}
-                  </Button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        asChild={action.method === "GET" && !action.isDisabled}
+                        disabled={action.isDisabled}
+                        busy={action.isRunning}
+                        busyLabel={action.isRunning ? "Running export…" : null}
+                        size="sm"
+                        variant={action.variant}
+                        aria-label={action.ariaLabel}
+                        aria-describedby={action.describedById}
+                        title={action.disabledReason ?? undefined}
+                        onClick={
+                          action.method === "POST"
+                            ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
+                            : undefined
+                        }
+                      >
+                        {action.isDisabled ? (
+                          action.label
+                        ) : action.method === "POST" ? (
+                          action.label
+                        ) : (
+                          <a href={action.href} target="_blank" rel="noreferrer" aria-label={action.ariaLabel}>
+                            {action.label}
+                          </a>
+                        )}
+                      </Button>
+                      {action.disabledReason ? (
+                        <Badge variant="warning">Disabled</Badge>
+                      ) : action.isRunning ? (
+                        <Badge variant="warning">Running</Badge>
+                      ) : (
+                        <Badge variant="outline">{action.method}</Badge>
+                      )}
+                    </div>
+                    <p id={action.describedById} className="mt-2 text-xs leading-5 text-muted-foreground">
+                      {action.disabledReason ?? action.statusText}
+                    </p>
+                  </div>
                 ))}
               </div>
             </div>

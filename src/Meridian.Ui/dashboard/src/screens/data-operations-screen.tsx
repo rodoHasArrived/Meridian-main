@@ -377,6 +377,7 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                   <input
                     id={field.id}
                     type={field.type}
+                    autoComplete={field.autoComplete}
                     className="rounded-md border border-border bg-background px-3 py-2 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     value={field.value}
                     aria-label={field.ariaLabel}

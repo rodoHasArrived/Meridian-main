@@ -63,6 +63,12 @@ export function CommandPalette({
 
   useEffect(() => {
     if (!open) {
+      setQuery("");
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
       return;
     }
 

@@ -119,6 +119,20 @@ export function LiveQuotesScreen() {
     return () => window.clearInterval(interval);
   }, [activeSymbol, fetchAll]);
 
+  useEffect(() => {
+    const nextSymbol = (searchParams.get("symbol") ?? "").trim().toUpperCase();
+    if (nextSymbol === (activeSymbol ?? "")) {
+      return;
+    }
+
+    setSymbolInput(nextSymbol);
+    setActiveSymbol(nextSymbol || null);
+    setQuote({ data: null, error: null });
+    setTrades({ data: null, error: null });
+    setOrderbook({ data: null, error: null });
+    quickTrade.resetTicket();
+  }, [activeSymbol, quickTrade, searchParams]);
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     const next = symbolInput.trim().toUpperCase();
