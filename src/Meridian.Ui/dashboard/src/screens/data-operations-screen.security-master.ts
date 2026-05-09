@@ -195,6 +195,7 @@ export interface SecurityMasterSearchSummaryBadge {
 
 export interface SecurityMasterTabState {
   id: SecurityMasterTab;
+  tabId: string;
   label: string;
   badge: string | null;
   panelId: string;
@@ -253,6 +254,9 @@ export interface SecurityMasterWorkspaceState {
   hasResults: boolean;
   emptyState: { title: string; description: string } | null;
   results: SecurityMasterSearchRowState[];
+  activeTab: SecurityMasterTab;
+  activeTabLabel: string;
+  detailEyebrowLabel: string | null;
   tabs: SecurityMasterTabState[];
   selectedSecurity: SecurityMasterSelectedState | null;
 }
@@ -850,6 +854,7 @@ export function buildSecurityMasterWorkspaceState({
 
   const selectedRecord = visibleRecords.find((record) => record.securityId === selectedSecurityId) ?? visibleRecords[0] ?? null;
   const resultCountLabel = `${visibleRecords.length} result${visibleRecords.length === 1 ? "" : "s"}`;
+  const activeTabLabel = formatSecurityMasterTabLabel(activeTab);
 
   return {
     searchValue: query,
@@ -866,6 +871,11 @@ export function buildSecurityMasterWorkspaceState({
         }
       : null,
     results: visibleRecords.map((record) => buildSearchRowState(record, selectedRecord?.securityId ?? null)),
+    activeTab,
+    activeTabLabel,
+    detailEyebrowLabel: selectedRecord
+      ? `Reference data / ${selectedRecord.assetType} / ${selectedRecord.subtitle} / ${activeTabLabel}`
+      : null,
     tabs: buildTabState(activeTab, selectedRecord),
     selectedSecurity: selectedRecord ? buildSelectedSecurityState(selectedRecord) : null
   };
@@ -942,11 +952,33 @@ function buildTabState(activeTab: SecurityMasterTab, record: SecurityMasterRecor
 
     return {
       ...tab,
+      tabId: `security-master-tab-${tab.id}`,
       selected,
       tabIndex: selected ? 0 : -1,
       selectAriaLabel: `Show ${tab.label} for ${record.displayName}`
     };
   });
+}
+
+function formatSecurityMasterTabLabel(tab: SecurityMasterTab): string {
+  if (tab === "corporate-actions") {
+    return "Corporate actions";
+  }
+
+  if (tab === "print") {
+    return "Print packet";
+  }
+
+  return tab === "company" ? "Company" : "Overview";
+}
+
+export function resolveSecurityMasterTabKeyTarget(
+  tabs: SecurityMasterTabState[],
+  currentTabId: SecurityMasterTab,
+  key: string
+): SecurityMasterTabState | null {
+  const nextTabId = resolveSecurityMasterTabKeyCommand(tabs, currentTabId, key);
+  return nextTabId ? tabs.find((tab) => tab.id === nextTabId) ?? null : null;
 }
 
 export function resolveSecurityMasterTabKeyCommand(

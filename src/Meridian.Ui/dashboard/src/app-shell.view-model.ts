@@ -39,6 +39,15 @@ export interface AppShellViewState {
   activeWorkspace: WorkspaceSummary;
   statusPanel: ShellStatusPanel | null;
   canRenderRoutes: boolean;
+  routeFocus: AppShellRouteFocusState;
+}
+
+export interface AppShellRouteFocusState {
+  routeKey: string;
+  announcement: string;
+  documentTitle: string;
+  targetElementId: string | null;
+  fallbackElementId: string;
 }
 
 export interface AppShellWorkspacePayload {
@@ -56,6 +65,7 @@ export type WorkspaceErrorMap = Partial<Record<WorkspaceKey, string>>;
 
 export interface BuildAppShellViewStateOptions {
   pathname: string;
+  hash?: string;
   loading: boolean;
   error: string | null;
   workspaceErrors: WorkspaceErrorMap;
@@ -64,6 +74,7 @@ export interface BuildAppShellViewStateOptions {
 
 export function buildAppShellViewState({
   pathname,
+  hash = "",
   loading,
   error,
   workspaceErrors,
@@ -82,7 +93,8 @@ export function buildAppShellViewState({
       failedItems,
       bootstrapFailed
     }),
-    canRenderRoutes: !loading && !bootstrapFailed
+    canRenderRoutes: !loading && !bootstrapFailed,
+    routeFocus: buildRouteFocusState(pathname, hash, activeWorkspace)
   };
 }
 
@@ -92,6 +104,26 @@ export function getWorkspaceForPath(pathname: string): WorkspaceSummary {
 
 export function normalizeWorkspace(pathname: string): WorkspaceKey {
   return normalizeWorkspacePath(pathname);
+}
+
+export function buildRouteFocusState(
+  pathname: string,
+  hash: string,
+  activeWorkspace: WorkspaceSummary
+): AppShellRouteFocusState {
+  const workspaceTitle = `${activeWorkspace.label} Workstation`;
+  const targetElementId = normalizeHashTarget(hash);
+  const targetLabel = targetElementId ? formatHashTargetLabel(targetElementId) : null;
+
+  return {
+    routeKey: `${pathname}${hash}`,
+    announcement: targetLabel
+      ? `${workspaceTitle} loaded. Jumping to ${targetLabel}.`
+      : `${workspaceTitle} loaded.`,
+    documentTitle: `${workspaceTitle} - Meridian`,
+    targetElementId,
+    fallbackElementId: "workbench-content"
+  };
 }
 
 function buildShellStatusPanel({
@@ -172,4 +204,24 @@ function buildWorkspaceFailureItems(workspaceErrors: WorkspaceErrorMap): ShellSt
       };
     })
     .sort((left, right) => left.label.localeCompare(right.label));
+}
+
+function normalizeHashTarget(hash: string): string | null {
+  if (!hash.startsWith("#") || hash.length <= 1) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(hash.slice(1));
+  } catch {
+    return hash.slice(1);
+  }
+}
+
+function formatHashTargetLabel(targetElementId: string): string {
+  return targetElementId
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
 }

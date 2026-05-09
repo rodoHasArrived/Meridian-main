@@ -72,7 +72,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                   {vm.workflowTaskPanel.description}
                 </p>
               </div>
-              <Badge variant={workflowStatusVariant(vm.workflowTaskPanel.statusTone)}>
+              <Badge variant={vm.workflowTaskPanel.statusVariant}>
                 {vm.workflowTaskPanel.statusLabel}
               </Badge>
             </div>
@@ -155,7 +155,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       <span className="block font-semibold text-foreground">{profile.name}</span>
                       <span className="mt-1 block text-xs text-muted-foreground">{profile.summary}</span>
                     </span>
-                    <Badge variant={workflowStatusVariant(profile.readinessTone)}>{profile.readinessLabel}</Badge>
+                    <Badge variant={profile.readinessVariant}>{profile.readinessLabel}</Badge>
                   </span>
                 </button>
               ))}
@@ -278,7 +278,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                            <div className="flex flex-wrap justify-end gap-2">
                              <Badge variant="outline">{profile.formatLabel}</Badge>
                              {profile.badges.map((badge) => (
-                               <Badge key={badge.label} variant={badgeVariant(badge.tone)}>
+                               <Badge key={badge.label} variant={badge.variant}>
                                  {badge.label}
                                </Badge>
                              ))}
@@ -334,7 +334,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
             <div
               role="status"
               aria-label={vm.exportStatus.ariaLabel}
-              className={cn("mt-3 space-y-3 rounded-md border px-3 py-2 text-sm leading-6", exportStatusToneClass(vm.exportStatus.tone))}
+              className={cn("mt-3 space-y-3 rounded-md border px-3 py-2 text-sm leading-6", vm.exportStatus.className)}
             >
               <p>{vm.exportStatus.text}</p>
               {vm.exportStatus.fields.length > 0 ? (
@@ -347,7 +347,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                         {field.label}
                       </dt>
-                      <dd className={cn("mt-1 break-words font-mono text-xs", fieldToneClass(field.tone))}>
+                      <dd className={cn("mt-1 break-words font-mono text-xs", field.className)}>
                         {field.value}
                       </dd>
                     </div>
@@ -371,7 +371,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                         {artifact.label}
                       </dt>
-                      <dd className={cn("break-words font-mono text-xs", fieldToneClass(artifact.tone))}>
+                      <dd className={cn("break-words font-mono text-xs", artifact.className)}>
                         {artifact.value}
                       </dd>
                     </div>
@@ -398,7 +398,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     className="grid grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
                   >
                     <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                    <dd className={cn("text-right font-mono text-xs", fieldToneClass(field.tone))}>
+                    <dd className={cn("text-right font-mono text-xs", field.className)}>
                       {field.value}
                     </dd>
                   </div>
@@ -487,28 +487,3 @@ function ReportingEvidenceField({ label, value }: { label: string; value: string
   );
 }
 
-function badgeVariant(tone: "primary" | "success" | "warning" | "muted"): "default" | "success" | "warning" | "outline" {
-  if (tone === "success") return "success";
-  if (tone === "warning") return "warning";
-  if (tone === "muted") return "outline";
-  return "default";
-}
-
-function workflowStatusVariant(tone: "success" | "warning" | "muted"): "success" | "warning" | "outline" {
-  if (tone === "success") return "success";
-  if (tone === "warning") return "warning";
-  return "outline";
-}
-
-function fieldToneClass(tone: "default" | "success" | "warning" | "muted") {
-  if (tone === "success") return "text-success";
-  if (tone === "warning") return "text-warning";
-  if (tone === "muted") return "text-muted-foreground";
-  return "text-foreground";
-}
-
-function exportStatusToneClass(tone: "default" | "success" | "danger") {
-  if (tone === "success") return "border-success/30 bg-success/10 text-success";
-  if (tone === "danger") return "border-danger/35 bg-danger/10 text-danger";
-  return "border-border/70 bg-secondary/25 text-muted-foreground";
-}

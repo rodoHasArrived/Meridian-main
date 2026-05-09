@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Activity, AlertCircle, CheckCircle2, LineChart, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Activity, AlertCircle, CheckCircle2, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -116,14 +116,24 @@ export function WatchlistScreen() {
             ))}
           </div>
           {vm.submitFeedback ? (
-            <p
+            <div
               id="add-symbol-feedback"
               role={vm.submitFeedback.tone === "success" ? "status" : "alert"}
-              className={`mt-2 flex items-center gap-1.5 text-xs ${feedbackTextClass[vm.submitFeedback.tone]}`}
+              className={`mt-2 flex flex-wrap items-center gap-2 text-xs ${feedbackTextClass[vm.submitFeedback.tone]}`}
             >
-              <FeedbackIcon className="h-3.5 w-3.5" aria-hidden="true" />
-              {vm.submitFeedback.message}
-            </p>
+              <span className="inline-flex min-w-0 items-center gap-1.5">
+                <FeedbackIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>{vm.submitFeedback.message}</span>
+              </span>
+              {vm.submitFeedback.providerSetupHandoff ? (
+                <Button asChild variant="outline" size="sm">
+                  <Link to={vm.submitFeedback.providerSetupHandoff.href} aria-label={vm.submitFeedback.providerSetupHandoff.ariaLabel}>
+                    <Settings className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>{vm.submitFeedback.providerSetupHandoff.label}</span>
+                  </Link>
+                </Button>
+              ) : null}
+            </div>
           ) : null}
         </CardContent>
       </Card>
@@ -171,12 +181,20 @@ export function WatchlistScreen() {
                   {vm.loadError}
                 </p>
               ) : null}
-              <p
+              <div
                 role={vm.quoteStatusTone === "danger" ? "alert" : "status"}
-                className={`rounded-md border px-4 py-3 text-sm ${quoteStatusClass[vm.quoteStatusTone]}`}
+                className={`flex flex-col gap-3 rounded-md border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between ${quoteStatusClass[vm.quoteStatusTone]}`}
               >
-                {vm.quoteStatusLabel}
-              </p>
+                <span>{vm.quoteStatusLabel}</span>
+                {vm.quoteProviderSetupHandoff ? (
+                  <Button asChild variant="outline" size="sm" className="w-fit bg-background/40">
+                    <Link to={vm.quoteProviderSetupHandoff.href} aria-label={vm.quoteProviderSetupHandoff.ariaLabel}>
+                      <Settings className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>{vm.quoteProviderSetupHandoff.label}</span>
+                    </Link>
+                  </Button>
+                ) : null}
+              </div>
               <DenseDataTable
                 columns={buildColumns(vm.removeSymbol)}
                 rows={vm.rows}

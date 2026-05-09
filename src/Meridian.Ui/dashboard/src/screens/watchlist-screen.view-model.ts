@@ -21,6 +21,14 @@ export interface WatchlistApi {
 export interface WatchlistSubmitFeedback {
   tone: "success" | "warning" | "danger";
   message: string;
+  providerSetupHandoff?: WatchlistProviderSetupHandoff;
+}
+
+export interface WatchlistProviderSetupHandoff {
+  href: string;
+  label: string;
+  ariaLabel: string;
+  detail: string;
 }
 
 export interface WatchlistRowViewModel {
@@ -96,6 +104,7 @@ export interface WatchlistScreenViewModel {
   toolbarItems: Array<{ id: string; label: string; value: string; active?: boolean }>;
   quoteStatusLabel: string;
   quoteStatusTone: WatchlistQuoteStatusTone;
+  quoteProviderSetupHandoff: WatchlistProviderSetupHandoff | null;
   quoteRefreshCommand: WatchlistQuoteRefreshCommandState;
   starterPacks: WatchlistStarterPackCommandState[];
   refresh: () => Promise<void>;
@@ -170,7 +179,11 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         const [next] = nextSymbols;
         const result = await api.addSymbol(next);
         if (!result.success) {
-          setSubmitFeedback({ tone: "danger", message: `Could not add ${next}.` });
+          setSubmitFeedback({
+            tone: "danger",
+            message: `Could not add ${next}.`,
+            providerSetupHandoff: buildProviderSetupHandoff("single-symbol-add")
+          });
           return;
         }
 
@@ -189,7 +202,11 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         }
       }
     } catch (error) {
-      setSubmitFeedback({ tone: "danger", message: messageFromError(error, "Failed to add symbol") });
+      setSubmitFeedback({
+        tone: "danger",
+        message: messageFromError(error, "Failed to add symbol"),
+        providerSetupHandoff: buildProviderSetupHandoff("symbol-add-exception")
+      });
     } finally {
       setSubmitting(false);
     }
@@ -218,7 +235,8 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     } catch (error) {
       setSubmitFeedback({
         tone: "danger",
-        message: messageFromError(error, `Failed to add ${pack.label} starter pack.`)
+        message: messageFromError(error, `Failed to add ${pack.label} starter pack.`),
+        providerSetupHandoff: buildProviderSetupHandoff("starter-pack-exception")
       });
     } finally {
       setActiveStarterPackId(null);
@@ -351,6 +369,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     toolbarItems: buildToolbarItems(stats, rows.length, listState),
     quoteStatusLabel: quoteStatus.label,
     quoteStatusTone: quoteStatus.tone,
+    quoteProviderSetupHandoff: quoteError ? buildProviderSetupHandoff("live-quotes") : null,
     quoteRefreshCommand: buildQuoteRefreshCommand(listState, rows.length, quoteRefreshing),
     starterPacks: buildStarterPackCommands(submitting, activeStarterPackId),
     refresh,
@@ -475,11 +494,19 @@ export function buildBulkAddFeedback(
   const errors = result.errors.length > 0 ? `; ${result.errors.join("; ")}` : "";
 
   if (result.errors.length > 0 && result.added === 0) {
-    return { tone: "danger", message: `${base}${skipped}${errors}.` };
+    return {
+      tone: "danger",
+      message: `${base}${skipped}${errors}.`,
+      providerSetupHandoff: buildProviderSetupHandoff("bulk-add-errors")
+    };
   }
 
   if (result.errors.length > 0 || result.skipped > 0) {
-    return { tone: "warning", message: `${base}${skipped}${errors}.` };
+    return {
+      tone: "warning",
+      message: `${base}${skipped}${errors}.`,
+      providerSetupHandoff: result.errors.length > 0 ? buildProviderSetupHandoff("bulk-add-partial") : undefined
+    };
   }
 
   return { tone: "success", message: `${base}.` };
@@ -495,14 +522,31 @@ export function buildStarterPackFeedback(
   const errors = result.errors.length > 0 ? `; ${result.errors.join("; ")}` : "";
 
   if (result.errors.length > 0 && result.added === 0) {
-    return { tone: "danger", message: `${base}${skipped}${errors}.` };
+    return {
+      tone: "danger",
+      message: `${base}${skipped}${errors}.`,
+      providerSetupHandoff: buildProviderSetupHandoff("starter-pack-errors")
+    };
   }
 
   if (result.errors.length > 0 || result.skipped > 0) {
-    return { tone: "warning", message: `${base}${skipped}${errors}.` };
+    return {
+      tone: "warning",
+      message: `${base}${skipped}${errors}.`,
+      providerSetupHandoff: result.errors.length > 0 ? buildProviderSetupHandoff("starter-pack-partial") : undefined
+    };
   }
 
   return { tone: "success", message: `${base}.` };
+}
+
+export function buildProviderSetupHandoff(reason: string): WatchlistProviderSetupHandoff {
+  return {
+    href: "/settings#alpaca-provider-setup",
+    label: "Fix provider setup",
+    ariaLabel: `Open provider setup from watchlist ${reason}`,
+    detail: "Review provider credentials and connection status in Settings."
+  };
 }
 
 export function buildStarterPackCommands(

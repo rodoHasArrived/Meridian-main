@@ -107,8 +107,8 @@ export function buildOverviewStatusState({
   refreshError,
   refreshedAt
 }: BuildOverviewStatusStateOptions): OverviewStatusState {
-  const metrics = current?.metrics ?? [];
-  const events = current?.recentEvents ?? [];
+  const metrics = Array.isArray(current?.metrics) ? current.metrics : [];
+  const events = Array.isArray(current?.recentEvents) ? current.recentEvents : [];
   const activityRows = buildOverviewActivityRows(events);
   const workspaceLinks = buildOverviewWorkspaceLinks();
   const refreshErrorText = refreshError
@@ -567,7 +567,11 @@ function badgeVariantForWorkspaceStatus(status: string): OverviewWorkspaceLink["
   return "outline";
 }
 
-function formatTime(value: string | Date): string {
+function formatTime(value: string | Date | null | undefined): string {
+  if (!value) {
+    return "Unavailable";
+  }
+
   const date = typeof value === "string" ? new Date(value) : value;
   return Number.isNaN(date.getTime()) ? "Unavailable" : date.toLocaleTimeString();
 }

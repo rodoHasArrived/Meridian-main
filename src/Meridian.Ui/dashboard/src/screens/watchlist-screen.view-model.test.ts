@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildBulkAddFeedback,
+  buildProviderSetupHandoff,
   buildQuoteRefreshCommand,
   buildQuoteStatus,
   buildStarterPackCommands,
@@ -139,12 +140,14 @@ describe("watchlist-screen view model", () => {
 
     expect(buildBulkAddFeedback({ added: 2, skipped: 1, errors: ["QQQ rejected"] }, 4)).toEqual({
       tone: "warning",
-      message: "Added 2 of 4 symbols; 1 skipped; QQQ rejected."
+      message: "Added 2 of 4 symbols; 1 skipped; QQQ rejected.",
+      providerSetupHandoff: buildProviderSetupHandoff("bulk-add-partial")
     });
 
     expect(buildBulkAddFeedback({ added: 0, skipped: 0, errors: ["Provider offline"] }, 2)).toEqual({
       tone: "danger",
-      message: "Added 0 of 2 symbols; Provider offline."
+      message: "Added 0 of 2 symbols; Provider offline.",
+      providerSetupHandoff: buildProviderSetupHandoff("bulk-add-errors")
     });
   });
 
@@ -169,7 +172,17 @@ describe("watchlist-screen view model", () => {
 
     expect(buildStarterPackFeedback("US core", { added: 3, skipped: 1, errors: ["MSFT already exists"] }, 4)).toEqual({
       tone: "warning",
-      message: "US core: added 3 of 4 symbols; 1 skipped; MSFT already exists."
+      message: "US core: added 3 of 4 symbols; 1 skipped; MSFT already exists.",
+      providerSetupHandoff: buildProviderSetupHandoff("starter-pack-partial")
+    });
+  });
+
+  it("builds a provider setup handoff for watchlist recovery paths", () => {
+    expect(buildProviderSetupHandoff("live-quotes")).toEqual({
+      href: "/settings#alpaca-provider-setup",
+      label: "Fix provider setup",
+      ariaLabel: "Open provider setup from watchlist live-quotes",
+      detail: "Review provider credentials and connection status in Settings."
     });
   });
 

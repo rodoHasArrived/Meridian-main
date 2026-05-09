@@ -121,7 +121,7 @@ describe("SettingsScreen", () => {
       />
     );
 
-    expect(screen.getByText("Alpaca paper API keys")).toBeInTheDocument();
+    expect(screen.getByText("Alpaca paper API keys").closest("#alpaca-provider-setup")).toBeInTheDocument();
     expect(screen.getByLabelText("Alpaca trading environment")).toHaveValue("paper");
     expect(screen.getByText("Credentials incomplete")).toBeInTheDocument();
     expect(screen.getAllByText("Key ID").length).toBeGreaterThan(0);

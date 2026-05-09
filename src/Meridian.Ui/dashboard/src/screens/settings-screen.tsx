@@ -207,7 +207,10 @@ export function SettingsScreen({
         </Card>
       </section>
 
-      <Card className={cn("panel-surface border", diagnosticToneClass[vm.alpacaConnectionPanel.statusTone])}>
+      <Card
+        id="alpaca-provider-setup"
+        className={cn("panel-surface scroll-mt-6 border", diagnosticToneClass[vm.alpacaConnectionPanel.statusTone])}
+      >
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div>

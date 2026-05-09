@@ -45,6 +45,7 @@ The browser workstation is the primary UI lane for proving the commercial story:
    - Shared brokerage portfolio sync now uses the split account query and account management contracts for link validation, balance-history reads, snapshot enrichment, and reconciliation triggers, so web Portfolio brokerage performance does not require the broad `IFundAccountService` registration when the narrower read/write account contracts are present.
 6. Move data and governance operator workflows next: provider posture, backfill preview/trigger, export/report-pack preview, Security Master print/export packet readiness, reconciliation, ledger review, close workflow previews, evidence packet actions, and report-line provenance previews. Export preview and analysis-export fallbacks should preserve the actual generated artifact names: symbol CSV files use stable hash suffixes to avoid collisions, and generated Notebook, Parquet, Excel, HDF5, ClickHouse, and Lean sidecars should point at those exact CSV filenames. The Settings workspace now carries a backend capability coverage panel that maps each canonical route to its workstation/API endpoints, including workflow library/presets, run history and continuity, reconciliation queues, portfolio aggregate/exposure, provider/backfill/Security Master, and report/export routes. Keep that panel current whenever new shared backend functionality is meant to be browser-accessible.
    - The Data watchlist now includes preset quick-add symbol packs backed by the same bulk symbol API as manual entry, so first-run operators can move from an empty table to live quote validation without guessing an initial universe.
+   - Watchlist live-quote and bulk-add failures hand off directly to the Settings provider setup anchor, so operators can repair credentials or connection posture from the failing data workflow instead of stopping at an inline error.
    - The Overview priority routes now use the live status snapshot to send zero-symbol installations to `/data/watchlist` and provider-baseline gaps to `/settings` before defaulting to trading/accounting/reporting triage.
 7. Treat Buyer Demo Mode and role-based demo views as browser-dashboard packaging on top of seeded shared evidence, not as separate fixture-only UI. The demo path should prove the same readiness, accounting, reconciliation, and report-pack contracts the operator workflow uses.
 8. Keep Evidence OS UX ideas such as confidence rails, lifecycle breadcrumbs, "why am I blocked" panels, and evidence-first empty states grounded in shared readiness/evidence payloads rather than page-local copy.
@@ -68,9 +69,10 @@ assets from `src/Meridian.Ui/wwwroot/workstation/`. Both commands proxy `/api` t
 `MERIDIAN_API_BASE_URL` or `http://localhost:8080`. When `/healthz` is unavailable in local dev or
 preview, the proxy serves typed fixtures for known bootstrap GETs before forwarding so no-host demos
 do not show failed-resource noise. The shell surfaces a `Demo data` banner when fixture-backed
-responses are used, with sample-flow links to the watchlist, live quotes, and readiness console, so
-operators can distinguish no-host demo data from live workstation state and move through the same
-read-only evidence flow without needing credentials first.
+responses are used, with sample-flow links to the watchlist, live quotes, readiness console, and
+Alpaca paper provider setup, so operators can distinguish no-host demo data from live workstation
+state, review the same read-only evidence flow without credentials first, and then move directly to
+the live-data handoff.
 Fixture fallback data must stay neutral; do not emit dashboard-dev fallback notices as
 operator-facing system events.
 

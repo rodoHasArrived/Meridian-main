@@ -530,8 +530,14 @@ describe("data-operations-screen view model", () => {
       }
     ]);
     expect(securityMaster.results.some((row) => row.selected && row.securityId === "gs-bond-de")).toBe(true);
+    expect(securityMaster.activeTab).toBe("corporate-actions");
+    expect(securityMaster.activeTabLabel).toBe("Corporate actions");
+    expect(securityMaster.detailEyebrowLabel).toBe(
+      "Reference data / Corporate bond / XETRA · Germany / Corporate actions"
+    );
     expect(securityMaster.tabs.find((tab) => tab.id === "corporate-actions")?.selected).toBe(true);
     expect(securityMaster.tabs.find((tab) => tab.id === "corporate-actions")).toMatchObject({
+      tabId: "security-master-tab-corporate-actions",
       tabIndex: 0,
       selectAriaLabel: "Show Corporate actions for Goldman Sachs Group Inc"
     });

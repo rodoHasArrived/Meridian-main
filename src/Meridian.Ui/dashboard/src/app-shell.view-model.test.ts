@@ -62,6 +62,32 @@ describe("app shell view model", () => {
       itemListLabel: "Workspace bootstrap status",
       actionLabel: null
     });
+    expect(state.routeFocus).toMatchObject({
+      routeKey: "/trading",
+      announcement: "Trading Workstation loaded.",
+      documentTitle: "Trading Workstation - Meridian",
+      targetElementId: null,
+      fallbackElementId: "workbench-content"
+    });
+  });
+
+  it("derives route focus state for hash-targeted workflow links", () => {
+    const state = buildAppShellViewState({
+      pathname: "/settings",
+      hash: "#alpaca-provider-setup",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(state.routeFocus).toEqual({
+      routeKey: "/settings#alpaca-provider-setup",
+      announcement: "Settings Workstation loaded. Jumping to alpaca provider setup.",
+      documentTitle: "Settings Workstation - Meridian",
+      targetElementId: "alpaca-provider-setup",
+      fallbackElementId: "workbench-content"
+    });
   });
 
   it("keeps available routes open when only some workspace slices fail", () => {

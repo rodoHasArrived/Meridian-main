@@ -218,9 +218,13 @@ public sealed class AlpacaBrokerageConnectionService
         {
             Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.User);
         }
-        catch (PlatformNotSupportedException)
+        catch (Exception ex) when (
+            ex is PlatformNotSupportedException
+            || ex is System.Security.SecurityException
+            || ex is UnauthorizedAccessException
+            || ex is System.IO.IOException)
         {
-            // Process-level storage is sufficient on platforms without user env support.
+            // Process-level storage is sufficient when durable user-profile storage is unavailable.
         }
     }
 

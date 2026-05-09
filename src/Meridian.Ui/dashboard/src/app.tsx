@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, Database, LineChart, LoaderCircle, Menu, Search, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Database, KeyRound, LineChart, LoaderCircle, Menu, Search, ShieldCheck } from "lucide-react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
 import { buildAppShellViewState, type ShellStatusPanel } from "@/app-shell.view-model";
@@ -40,8 +40,8 @@ export function App() {
   const [navOpen, setNavOpen] = useState(false);
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
   const workbenchRef = useRef<HTMLElement | null>(null);
-  const previousPathnameRef = useRef<string | null>(null);
-  const { pathname } = useLocation();
+  const previousRouteKeyRef = useRef<string | null>(null);
+  const { hash, pathname } = useLocation();
   const {
     session,
     overview,
@@ -84,6 +84,7 @@ export function App() {
 
   const shell = buildAppShellViewState({
     pathname,
+    hash,
     loading,
     error,
     workspaceErrors,
@@ -100,26 +101,49 @@ export function App() {
   });
 
   useEffect(() => {
-    const previousPathname = previousPathnameRef.current;
-    previousPathnameRef.current = pathname;
+    const previousRouteKey = previousRouteKeyRef.current;
+    previousRouteKeyRef.current = shell.routeFocus.routeKey;
+    const routeChanged = previousRouteKey !== shell.routeFocus.routeKey;
+    const canFocusRequestedTarget = !shell.routeFocus.targetElementId || shell.canRenderRoutes;
 
-    if (previousPathname === null || previousPathname === pathname) {
+    if (previousRouteKey === null && !shell.routeFocus.targetElementId) {
       return;
     }
 
-    const workspaceTitle = `${shell.activeWorkspace.label} Workstation`;
-    setRouteAnnouncement(`${workspaceTitle} loaded.`);
-    document.title = `${workspaceTitle} - Meridian`;
+    if (!routeChanged && !canFocusRequestedTarget) {
+      return;
+    }
 
-    const focusWorkbench = () => workbenchRef.current?.focus();
+    if (!routeChanged && !shell.routeFocus.targetElementId) {
+      return;
+    }
+
+    if (!canFocusRequestedTarget) {
+      return;
+    }
+
+    setRouteAnnouncement(shell.routeFocus.announcement);
+    document.title = shell.routeFocus.documentTitle;
+
+    const focusRouteTarget = () => {
+      focusElementById(shell.routeFocus.targetElementId ?? shell.routeFocus.fallbackElementId, workbenchRef.current);
+    };
+    focusRouteTarget();
     if (typeof window.requestAnimationFrame === "function") {
-      const frame = window.requestAnimationFrame(focusWorkbench);
+      const frame = window.requestAnimationFrame(focusRouteTarget);
       return () => window.cancelAnimationFrame(frame);
     }
 
-    const timeout = window.setTimeout(focusWorkbench, 0);
+    const timeout = window.setTimeout(focusRouteTarget, 0);
     return () => window.clearTimeout(timeout);
-  }, [pathname, shell.activeWorkspace.label]);
+  }, [
+    shell.canRenderRoutes,
+    shell.routeFocus.announcement,
+    shell.routeFocus.documentTitle,
+    shell.routeFocus.fallbackElementId,
+    shell.routeFocus.routeKey,
+    shell.routeFocus.targetElementId
+  ]);
 
   return (
     <div className="workstation-frame">
@@ -319,6 +343,31 @@ function DevelopmentFixtureNotice() {
   );
 }
 
+function focusElementById(targetElementId: string, fallbackElement: HTMLElement | null): void {
+  const target = document.getElementById(targetElementId) ?? fallbackElement;
+  if (!target) {
+    return;
+  }
+
+  const previousTabIndex = target.getAttribute("tabindex");
+  if (!target.hasAttribute("tabindex")) {
+    target.tabIndex = -1;
+  }
+
+  if (typeof target.scrollIntoView === "function") {
+    target.scrollIntoView({ block: "start", inline: "nearest" });
+  }
+  try {
+    target.focus({ preventScroll: true });
+  } catch {
+    target.focus();
+  }
+
+  if (previousTabIndex === null) {
+    target.addEventListener("blur", () => target.removeAttribute("tabindex"), { once: true });
+  }
+}
+
 const developmentFixtureDemoLinks = [
   {
     href: "/data/watchlist",
@@ -337,6 +386,12 @@ const developmentFixtureDemoLinks = [
     label: "Readiness",
     ariaLabel: "Open sample readiness console",
     icon: ShieldCheck
+  },
+  {
+    href: "/settings#alpaca-provider-setup",
+    label: "Connect",
+    ariaLabel: "Open Alpaca paper provider setup",
+    icon: KeyRound
   }
 ] as const;
 

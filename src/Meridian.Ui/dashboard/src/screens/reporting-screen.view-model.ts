@@ -3,6 +3,21 @@ import { runAnalysisExport } from "@/lib/api";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
+export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
+export type ReportingWorkflowTone = "success" | "warning" | "muted";
+export type ReportingDetailFieldTone = "default" | "success" | "warning" | "muted";
+export type ReportingExportStatusTone = "default" | "success" | "danger";
+export type ReportingFieldClassName = "text-foreground" | "text-success" | "text-warning" | "text-muted-foreground";
+export type ReportingExportStatusClassName =
+  | "border-border/70 bg-secondary/25 text-muted-foreground"
+  | "border-success/30 bg-success/10 text-success"
+  | "border-danger/35 bg-danger/10 text-danger";
+
+export interface ReportingProfileBadge {
+  label: string;
+  tone: ReportingProfileBadgeTone;
+  variant: ReportingBadgeVariant;
+}
 
 export interface ReportingProfileRow {
   id: string;
@@ -12,7 +27,7 @@ export interface ReportingProfileRow {
   description: string;
   isSelected: boolean;
   isRecommended: boolean;
-  badges: Array<{ label: string; tone: ReportingProfileBadgeTone }>;
+  badges: ReportingProfileBadge[];
   selectAriaLabel: string;
 }
 
@@ -34,7 +49,8 @@ export interface ReportingProfileAction {
 export interface ReportingDetailField {
   label: string;
   value: string;
-  tone: "default" | "success" | "warning" | "muted";
+  tone: ReportingDetailFieldTone;
+  className: ReportingFieldClassName;
 }
 
 export interface ReportingDetailViewModel {
@@ -49,7 +65,8 @@ export interface ReportingDetailViewModel {
 
 export interface ReportingExportStatusState {
   text: string;
-  tone: "default" | "success" | "danger";
+  tone: ReportingExportStatusTone;
+  className: ReportingExportStatusClassName;
   ariaLabel: string;
   fields: ReportingDetailField[];
   warnings: string[];
@@ -76,7 +93,8 @@ export interface ReportingWorkflowProfileRow {
   name: string;
   summary: string;
   readinessLabel: string;
-  readinessTone: "success" | "warning" | "muted";
+  readinessTone: ReportingWorkflowTone;
+  readinessVariant: Exclude<ReportingBadgeVariant, "default">;
   isSelected: boolean;
   selectAriaLabel: string;
 }
@@ -95,7 +113,8 @@ export interface ReportingWorkflowTaskPanel {
   title: string;
   description: string;
   statusLabel: string;
-  statusTone: "success" | "warning" | "muted";
+  statusTone: ReportingWorkflowTone;
+  statusVariant: Exclude<ReportingBadgeVariant, "default">;
   chips: ReportingChipViewModel[];
   targetsLabel: string;
   targets: ReportingPackTargetRow[];
@@ -236,9 +255,9 @@ export function useReportingScreenViewModel(
     isRecommended: recommended.has(p.id),
     selectAriaLabel: `Select ${p.name} export profile`,
     badges: [
-      ...(recommended.has(p.id) ? [{ label: "Recommended", tone: "primary" as const }] : []),
-      ...(p.loaderScript ? [{ label: "Loader", tone: "success" as const }] : []),
-      ...(p.dataDictionary ? [{ label: "Dictionary", tone: "success" as const }] : [])
+      ...(recommended.has(p.id) ? [buildReportingBadge("Recommended", "primary")] : []),
+      ...(p.loaderScript ? [buildReportingBadge("Loader", "success")] : []),
+      ...(p.dataDictionary ? [buildReportingBadge("Dictionary", "success")] : [])
     ]
   }));
 
@@ -249,19 +268,19 @@ export function useReportingScreenViewModel(
         subtitle: `${selectedProfileData.format} · ${selectedProfileData.targetTool}`,
         description: selectedProfileData.description,
         fields: [
-          { label: "Profile ID", value: selectedProfileData.id, tone: "default" },
-          { label: "Format", value: selectedProfileData.format, tone: "default" },
-          { label: "Target", value: selectedProfileData.targetTool, tone: "default" },
-          {
-            label: "Loader script",
-            value: selectedProfileData.loaderScript ? "Included" : "Not included",
-            tone: selectedProfileData.loaderScript ? "success" : "muted"
-          },
-          {
-            label: "Data dictionary",
-            value: selectedProfileData.dataDictionary ? "Included" : "Not included",
-            tone: selectedProfileData.dataDictionary ? "success" : "muted"
-          }
+          buildReportingDetailField("Profile ID", selectedProfileData.id, "default"),
+          buildReportingDetailField("Format", selectedProfileData.format, "default"),
+          buildReportingDetailField("Target", selectedProfileData.targetTool, "default"),
+          buildReportingDetailField(
+            "Loader script",
+            selectedProfileData.loaderScript ? "Included" : "Not included",
+            selectedProfileData.loaderScript ? "success" : "muted"
+          ),
+          buildReportingDetailField(
+            "Data dictionary",
+            selectedProfileData.dataDictionary ? "Included" : "Not included",
+            selectedProfileData.dataDictionary ? "success" : "muted"
+          )
         ],
         readinessSummary: buildProfileReadinessSummary(selectedProfileData),
         actions: buildProfileActions(selectedProfileData, runningProfileId)
@@ -401,6 +420,7 @@ function buildWorkflowTaskPanel({
       "Review loaded report-pack targets, pick the export profile that carries the packet evidence, then preview or run the backend export before approval.",
     statusLabel,
     statusTone,
+    statusVariant: workflowStatusVariant(statusTone),
     chips: [
       { label: "Targets", value: String(packTargets.length) },
       { label: "Profiles", value: String(reporting.profiles.length) },
@@ -431,6 +451,7 @@ function buildWorkflowTaskPanel({
         summary: `${row.formatLabel} for ${row.targetLabel}`,
         readinessLabel,
         readinessTone,
+        readinessVariant: workflowStatusVariant(readinessTone),
         isSelected: row.isSelected,
         selectAriaLabel: `Select ${row.name} for report-pack approval`
       };
@@ -535,10 +556,11 @@ export function buildExportStatusStarting(profileName: string): ReportingExportS
   return {
     text: `Starting ${profileName} export…`,
     tone: "default",
+    className: exportStatusToneClass("default"),
     ariaLabel: "Reporting export status",
     fields: [
-      { label: "Profile", value: profileName, tone: "default" },
-      { label: "State", value: "Running", tone: "warning" }
+      buildReportingDetailField("Profile", profileName, "default"),
+      buildReportingDetailField("State", "Running", "warning")
     ],
     warnings: [],
     artifacts: []
@@ -557,6 +579,7 @@ export function buildExportStatusResult(
   return {
     text,
     tone: result.success ? "success" : "danger",
+    className: exportStatusToneClass(result.success ? "success" : "danger"),
     ariaLabel: "Reporting export status",
     fields: buildExportResultFields(requestedProfileId, result),
     warnings: buildExportResultWarnings(requestedProfileId, result),
@@ -570,10 +593,11 @@ export function buildExportStatusFailure(profileName: string, error: unknown): R
   return {
     text: `${profileName} export failed. ${message}`,
     tone: "danger",
+    className: exportStatusToneClass("danger"),
     ariaLabel: "Reporting export status",
     fields: [
-      { label: "Profile", value: profileName, tone: "default" },
-      { label: "Failure", value: message, tone: "warning" }
+      buildReportingDetailField("Profile", profileName, "default"),
+      buildReportingDetailField("Failure", message, "warning")
     ],
     warnings: [],
     artifacts: []
@@ -586,17 +610,17 @@ function buildExportResultFields(requestedProfileId: string, result: ExportAnaly
   const symbolsLabel = result.symbols?.length ? result.symbols.join(", ") : "All configured symbols";
 
   return [
-    { label: "Job ID", value: result.jobId ?? "Unavailable", tone: result.jobId ? "default" : "muted" },
-    { label: "Status", value: result.status, tone: result.success ? "success" : "warning" },
-    { label: "Requested", value: requestedProfileId, tone: "default" },
-    { label: "Profile", value: result.profileId, tone: "default" },
-    { label: "Symbols", value: symbolsLabel, tone: result.symbols?.length ? "default" : "muted" },
-    { label: "Output", value: result.outputDirectory ?? "Unavailable", tone: result.outputDirectory ? "default" : "muted" },
-    { label: "Files", value: String(result.filesGenerated), tone: result.filesGenerated > 0 ? "success" : "warning" },
-    { label: "Records", value: result.totalRecords.toLocaleString(), tone: result.totalRecords > 0 ? "default" : "muted" },
-    { label: "Bytes", value: byteLabel, tone: result.totalBytes > 0 ? "default" : "muted" },
-    { label: "Duration", value: durationLabel, tone: "muted" },
-    { label: "Timestamp", value: result.timestamp, tone: "muted" }
+    buildReportingDetailField("Job ID", result.jobId ?? "Unavailable", result.jobId ? "default" : "muted"),
+    buildReportingDetailField("Status", result.status, result.success ? "success" : "warning"),
+    buildReportingDetailField("Requested", requestedProfileId, "default"),
+    buildReportingDetailField("Profile", result.profileId, "default"),
+    buildReportingDetailField("Symbols", symbolsLabel, result.symbols?.length ? "default" : "muted"),
+    buildReportingDetailField("Output", result.outputDirectory ?? "Unavailable", result.outputDirectory ? "default" : "muted"),
+    buildReportingDetailField("Files", String(result.filesGenerated), result.filesGenerated > 0 ? "success" : "warning"),
+    buildReportingDetailField("Records", result.totalRecords.toLocaleString(), result.totalRecords > 0 ? "default" : "muted"),
+    buildReportingDetailField("Bytes", byteLabel, result.totalBytes > 0 ? "default" : "muted"),
+    buildReportingDetailField("Duration", durationLabel, "muted"),
+    buildReportingDetailField("Timestamp", result.timestamp, "muted")
   ];
 }
 
@@ -610,11 +634,60 @@ function buildExportResultWarnings(requestedProfileId: string, result: ExportAna
 }
 
 function buildExportArtifactFields(result: ExportAnalysisResult): ReportingDetailField[] {
-  return (result.files ?? []).map((file) => ({
-    label: file.symbol ? `${file.symbol} ${file.format ?? "file"}` : file.format ?? "File",
-    value: `${file.path} · ${file.recordCount.toLocaleString()} records · ${formatBytes(file.sizeBytes)}`,
-    tone: file.recordCount > 0 ? "default" : "warning"
-  }));
+  return (result.files ?? []).map((file) =>
+    buildReportingDetailField(
+      file.symbol ? `${file.symbol} ${file.format ?? "file"}` : file.format ?? "File",
+      `${file.path} · ${file.recordCount.toLocaleString()} records · ${formatBytes(file.sizeBytes)}`,
+      file.recordCount > 0 ? "default" : "warning"
+    )
+  );
+}
+
+function buildReportingBadge(label: string, tone: ReportingProfileBadgeTone): ReportingProfileBadge {
+  return {
+    label,
+    tone,
+    variant: badgeVariant(tone)
+  };
+}
+
+function buildReportingDetailField(
+  label: string,
+  value: string,
+  tone: ReportingDetailFieldTone
+): ReportingDetailField {
+  return {
+    label,
+    value,
+    tone,
+    className: fieldToneClass(tone)
+  };
+}
+
+function badgeVariant(tone: ReportingProfileBadgeTone): ReportingBadgeVariant {
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  if (tone === "muted") return "outline";
+  return "default";
+}
+
+function workflowStatusVariant(tone: ReportingWorkflowTone): Exclude<ReportingBadgeVariant, "default"> {
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  return "outline";
+}
+
+function fieldToneClass(tone: ReportingDetailFieldTone): ReportingFieldClassName {
+  if (tone === "success") return "text-success";
+  if (tone === "warning") return "text-warning";
+  if (tone === "muted") return "text-muted-foreground";
+  return "text-foreground";
+}
+
+function exportStatusToneClass(tone: ReportingExportStatusTone): ReportingExportStatusClassName {
+  if (tone === "success") return "border-success/30 bg-success/10 text-success";
+  if (tone === "danger") return "border-danger/35 bg-danger/10 text-danger";
+  return "border-border/70 bg-secondary/25 text-muted-foreground";
 }
 
 function formatBytes(value: number): string {

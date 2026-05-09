@@ -176,6 +176,54 @@ describe("trading endpoint wiring", () => {
     expect(hasDevelopmentFixtureUsage()).toBe(true);
   });
 
+  it("normalizes the host status endpoint into the overview dashboard contract", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      headers: { get: () => null },
+      json: async () => ({
+        isConnected: true,
+        timestampUtc: "2026-05-09T17:35:53.0689515+00:00",
+        uptime: "00:08:28.1481500",
+        metrics: {
+          published: 9703,
+          dropped: 0,
+          historicalBars: 0,
+          eventsPerSecond: 19.158524,
+          dropRate: 0,
+          trades: 0,
+          depthUpdates: 0,
+          sourceProvider: null,
+          isStale: false
+        },
+        pipeline: {
+          currentQueueSize: 0,
+          queueCapacity: 50000,
+          queueUtilization: 0
+        }
+      }),
+      text: async () => "{}"
+    });
+
+    await expect(getSystemStatus()).resolves.toMatchObject({
+      systemStatus: "Healthy",
+      providersOnline: 1,
+      providersTotal: 1,
+      storageHealth: "Healthy",
+      lastHeartbeatUtc: "2026-05-09T17:35:53.0689515+00:00",
+      metrics: expect.arrayContaining([
+        expect.objectContaining({ id: "events", label: "Events Published" }),
+        expect.objectContaining({ id: "queue", label: "Pipeline Queue" })
+      ]),
+      recentEvents: [
+        expect.objectContaining({
+          id: "host-status",
+          type: "info",
+          source: "Meridian host"
+        })
+      ]
+    });
+  });
+
   it("wires Alpaca brokerage connection endpoints", async () => {
     await getAlpacaConnectionStatus();
     await connectAlpacaConnection({

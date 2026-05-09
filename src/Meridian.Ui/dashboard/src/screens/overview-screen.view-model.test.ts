@@ -100,6 +100,27 @@ describe("overview-screen view model", () => {
     expect(state.refreshButtonLabel).toBe("Refresh");
   });
 
+  it("does not crash when the host status payload omits optional overview collections", () => {
+    const state = buildOverviewStatusState({
+      current: {
+        ...overview,
+        lastHeartbeatUtc: undefined as unknown as string,
+        metrics: undefined as unknown as SystemOverviewResponse["metrics"],
+        recentEvents: undefined as unknown as SystemOverviewResponse["recentEvents"]
+      },
+      session: null,
+      refreshing: false,
+      refreshError: null,
+      refreshedAt: null
+    });
+
+    expect(state.lastHeartbeatLabel).toBe("Unavailable");
+    expect(state.hasMetrics).toBe(false);
+    expect(state.hasEvents).toBe(false);
+    expect(state.activityRows).toEqual([]);
+    expect(state.statusBanner.detailText).toContain("Last heartbeat Unavailable");
+  });
+
   it("announces active refresh state", () => {
     const state = buildOverviewStatusState({
       current: null,

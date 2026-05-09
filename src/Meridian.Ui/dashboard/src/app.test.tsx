@@ -131,6 +131,43 @@ describe("App", () => {
     await waitFor(() => expect(screen.getByRole("main")).toHaveFocus());
   });
 
+  it("announces and focuses hash-targeted workflow links", async () => {
+    mockedUseWorkstationData.mockReturnValue({
+      session: {
+        displayName: "Ops Desk",
+        role: "Operator",
+        environment: "paper",
+        activeWorkspace: "settings",
+        commandCount: 7
+      },
+      overview: null,
+      research: null,
+      trading: null,
+      portfolio: null,
+      dataOperations: null,
+      governance: null,
+      reporting: null,
+      brokerageConnection: null,
+      brokeragePortfolio: null,
+      workflowLibrary: null,
+      workflowPresets: null,
+      workflowError: null,
+      usingDevelopmentFixtures: true,
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      refresh: vi.fn(),
+      refreshTrading: vi.fn()
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/settings#alpaca-provider-setup"] });
+
+    const alpacaSetup = document.getElementById("alpaca-provider-setup");
+    expect(alpacaSetup).not.toBeNull();
+    expect(await screen.findByText("Settings Workstation loaded. Jumping to alpaca provider setup.")).toBeInTheDocument();
+    await waitFor(() => expect(alpacaSetup).toHaveFocus());
+  });
+
   it("does not open the command palette shortcut while typing in an input", async () => {
     const user = userEvent.setup();
     renderWithRouter(
@@ -200,6 +237,10 @@ describe("App", () => {
     expect(screen.getByRole("link", { name: "Open sample watchlist demo lane" })).toHaveAttribute("href", "/data/watchlist");
     expect(screen.getByRole("link", { name: "Open sample live quotes demo lane" })).toHaveAttribute("href", "/data/quotes");
     expect(screen.getByRole("link", { name: "Open sample readiness console" })).toHaveAttribute("href", "/trading/readiness");
+    expect(screen.getByRole("link", { name: "Open Alpaca paper provider setup" })).toHaveAttribute(
+      "href",
+      "/settings#alpaca-provider-setup"
+    );
   });
 
   it("renders the Portfolio route from the fetched portfolio workspace payload", () => {

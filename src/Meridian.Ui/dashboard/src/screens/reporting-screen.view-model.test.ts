@@ -204,8 +204,8 @@ describe("useReportingScreenViewModel", () => {
       expect(result.current.runningProfileId).toBe("excel");
       expect(result.current.exportStatus?.text).toBe("Starting Excel export…");
       expect(result.current.exportStatus?.fields).toEqual([
-        { label: "Profile", value: "Excel", tone: "default" },
-        { label: "State", value: "Running", tone: "warning" }
+        { label: "Profile", value: "Excel", tone: "default", className: "text-foreground" },
+        { label: "State", value: "Running", tone: "warning", className: "text-warning" }
       ]);
       expect(result.current.exportStatus?.artifacts).toEqual([]);
       expect(result.current.selectedProfile?.actions[1]).toMatchObject({
@@ -251,19 +251,21 @@ describe("useReportingScreenViewModel", () => {
         text: "Excel export completed — 1 file generated.",
         tone: "success",
         ariaLabel: "Reporting export status",
+        className: "border-success/30 bg-success/10 text-success",
         fields: expect.arrayContaining([
-          { label: "Job ID", value: "export-1", tone: "default" },
-          { label: "Requested", value: "excel", tone: "default" },
-          { label: "Output", value: "exports", tone: "default" },
-          { label: "Records", value: "20", tone: "default" },
-          { label: "Bytes", value: "1.17 KB", tone: "default" }
+          expect.objectContaining({ label: "Job ID", value: "export-1", tone: "default", className: "text-foreground" }),
+          expect.objectContaining({ label: "Requested", value: "excel", tone: "default", className: "text-foreground" }),
+          expect.objectContaining({ label: "Output", value: "exports", tone: "default", className: "text-foreground" }),
+          expect.objectContaining({ label: "Records", value: "20", tone: "default", className: "text-foreground" }),
+          expect.objectContaining({ label: "Bytes", value: "1.17 KB", tone: "default", className: "text-foreground" })
         ]),
         warnings: [],
         artifacts: [
           {
             label: "SPY xlsx",
             value: "excel/export-1.xlsx · 20 records · 1.17 KB",
-            tone: "default"
+            tone: "default",
+            className: "text-foreground"
           }
         ]
       });
@@ -354,9 +356,9 @@ describe("useReportingScreenViewModel", () => {
       "No source files matched the selected range."
     ]);
     expect(result.current.exportStatus?.fields).toEqual(expect.arrayContaining([
-      { label: "Requested", value: "excel", tone: "default" },
-      { label: "Profile", value: "python-pandas", tone: "default" },
-      { label: "Symbols", value: "All configured symbols", tone: "muted" }
+      expect.objectContaining({ label: "Requested", value: "excel", tone: "default", className: "text-foreground" }),
+      expect.objectContaining({ label: "Profile", value: "python-pandas", tone: "default", className: "text-foreground" }),
+      expect.objectContaining({ label: "Symbols", value: "All configured symbols", tone: "muted", className: "text-muted-foreground" })
     ]));
   });
 
@@ -375,9 +377,10 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.exportStatus).toMatchObject({
       text: "CSV export failed. Disk full",
       tone: "danger",
+      className: "border-danger/35 bg-danger/10 text-danger",
       fields: expect.arrayContaining([
-        { label: "Profile", value: "CSV", tone: "default" },
-        { label: "Failure", value: "Disk full", tone: "warning" }
+        expect.objectContaining({ label: "Profile", value: "CSV", tone: "default", className: "text-foreground" }),
+        expect.objectContaining({ label: "Failure", value: "Disk full", tone: "warning", className: "text-warning" })
       ]),
       artifacts: []
     });

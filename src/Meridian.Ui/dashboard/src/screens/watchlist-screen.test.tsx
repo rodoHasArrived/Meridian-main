@@ -137,6 +137,10 @@ describe("WatchlistScreen", () => {
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(/collector offline/i);
     });
+    expect(screen.getByRole("link", { name: /Open provider setup from watchlist live-quotes/i })).toHaveAttribute(
+      "href",
+      "/settings#alpaca-provider-setup"
+    );
   });
 
   it("warns when the live-quote snapshot only covers part of the watchlist", async () => {
@@ -177,6 +181,10 @@ describe("WatchlistScreen", () => {
     await waitFor(() => expect(api.bulkAddSymbols).toHaveBeenCalledWith(["SPY", "DIA", "QQQ"]));
     expect(api.addSymbol).not.toHaveBeenCalled();
     expect(await screen.findByRole("alert")).toHaveTextContent("Added 2 of 3 symbols; 1 skipped; QQQ rejected.");
+    expect(screen.getByRole("link", { name: /Open provider setup from watchlist bulk-add-partial/i })).toHaveAttribute(
+      "href",
+      "/settings#alpaca-provider-setup"
+    );
     expect(api.getSymbols).toHaveBeenCalledTimes(2);
   });
 
@@ -202,6 +210,10 @@ describe("WatchlistScreen", () => {
     await user.click(screen.getByRole("button", { name: /Add Risk pulse starter pack: TLT, GLD, USO, VIXY/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Provider offline");
+    expect(screen.getByRole("link", { name: /Open provider setup from watchlist starter-pack-exception/i })).toHaveAttribute(
+      "href",
+      "/settings#alpaca-provider-setup"
+    );
     expect(screen.getByLabelText("Add symbol")).toHaveValue("TLT, GLD, USO, VIXY");
     expect(api.getSymbols).toHaveBeenCalledTimes(1);
   });

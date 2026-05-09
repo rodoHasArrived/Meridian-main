@@ -27,7 +27,6 @@ import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHead
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import {
-  resolveSecurityMasterTabKeyCommand,
   useDataOperationsViewModel
 } from "@/screens/data-operations-screen.view-model";
 import type { DataOperationsWorkspaceResponse } from "@/types";
@@ -49,7 +48,10 @@ import type {
   SecurityMasterVenueRow,
   SecurityMasterWorkspaceState
 } from "@/screens/data-operations-screen.security-master";
-import { SECURITY_MASTER_DEFAULT_QUERY } from "@/screens/data-operations-screen.security-master";
+import {
+  SECURITY_MASTER_DEFAULT_QUERY,
+  resolveSecurityMasterTabKeyTarget
+} from "@/screens/data-operations-screen.security-master";
 
 interface DataOperationsScreenProps {
   data: DataOperationsWorkspaceResponse | null;
@@ -887,18 +889,17 @@ function SecurityMasterDetailCard({
   onSelectTab: (tab: "overview" | "company" | "corporate-actions" | "print") => void;
 }) {
   const selected = state.selectedSecurity;
-  const activeTab = state.tabs.find((tab) => tab.selected)?.id ?? "overview";
   const packetStatus = selected?.printPacketState ?? null;
   const handleTabKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const nextTab = resolveSecurityMasterTabKeyCommand(state.tabs, activeTab, event.key);
+    const nextTab = resolveSecurityMasterTabKeyTarget(state.tabs, state.activeTab, event.key);
     if (!nextTab) {
       return;
     }
 
     event.preventDefault();
-    onSelectTab(nextTab);
+    onSelectTab(nextTab.id);
     window.requestAnimationFrame(() => {
-      document.getElementById(`security-master-tab-${nextTab}`)?.focus();
+      document.getElementById(nextTab.tabId)?.focus();
     });
   };
 
@@ -909,9 +910,7 @@ function SecurityMasterDetailCard({
           <CardHeader className="border-b border-border/70 bg-secondary/20">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <div className="eyebrow-label">
-                  Reference data / {selected.assetType} / {selected.subtitle} / {activeTab.replace("-", " ")}
-                </div>
+                <div className="eyebrow-label">{state.detailEyebrowLabel}</div>
                 <div className="mt-2 flex flex-wrap items-center gap-3">
                   <CardTitle className="text-2xl">{selected.title}</CardTitle>
                   <span className="rounded-md bg-primary/10 px-2.5 py-1 font-mono text-sm text-primary">{selected.titleCode}</span>
@@ -971,7 +970,7 @@ function SecurityMasterDetailCard({
                 {state.tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    id={`security-master-tab-${tab.id}`}
+                    id={tab.tabId}
                     type="button"
                     role="tab"
                     aria-selected={tab.selected}
@@ -991,11 +990,11 @@ function SecurityMasterDetailCard({
               </div>
             </div>
 
-            {activeTab === "overview" ? (
+            {state.activeTab === "overview" ? (
               <SecurityOverviewPanel selected={selected} />
-            ) : activeTab === "company" ? (
+            ) : state.activeTab === "company" ? (
               <SecurityCompanyPanel selected={selected} />
-            ) : activeTab === "corporate-actions" ? (
+            ) : state.activeTab === "corporate-actions" ? (
               <SecurityCorporateActionsPanel selected={selected} />
             ) : (
               <SecurityPrintPanel selected={selected} />
