@@ -6828,8 +6828,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-CBtYXONu.js
-│   │           │   └── index-Dj-ualKj.css
+│   │           │   ├── index-Dj-ualKj.css
+│   │           │   └── index-FP0Ztktz.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
