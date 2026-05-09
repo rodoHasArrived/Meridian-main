@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { QuantLabScreen } from "@/screens/quant-lab-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import * as api from "@/lib/api";
-import type { QuantRunResponse, QuantTemplatesResponse } from "@/types";
+import type { QuantParametersResponse, QuantRunResponse, QuantTemplatesResponse } from "@/types";
 
 const templates: QuantTemplatesResponse = {
   templates: [
@@ -63,9 +63,12 @@ const failedRun: QuantRunResponse = {
   runtimeParameters: []
 };
 
+const emptyParameters: QuantParametersResponse = { parameters: [] };
+
 describe("QuantLabScreen", () => {
   beforeEach(() => {
     vi.spyOn(api, "getQuantTemplates").mockResolvedValue(templates);
+    vi.spyOn(api, "extractQuantParameters").mockResolvedValue(emptyParameters);
   });
 
   afterEach(() => {
