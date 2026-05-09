@@ -6715,6 +6715,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── command-palette.tsx
 │   │   │   │   │   │   ├── command-palette.view-model.test.ts
 │   │   │   │   │   │   ├── command-palette.view-model.ts
+│   │   │   │   │   │   ├── historical-chart.test.tsx
+│   │   │   │   │   │   ├── historical-chart.tsx
 │   │   │   │   │   │   ├── mega-menu.tsx
 │   │   │   │   │   │   ├── mega-menu.view-model.ts
 │   │   │   │   │   │   ├── metric-card.test.tsx
@@ -6817,8 +6819,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-CgS2L2Ah.js
-│   │           │   └── index-DbBLfYyJ.css
+│   │           │   ├── index-DbBLfYyJ.css
+│   │           │   └── index-hpE42RgI.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -7796,6 +7798,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── EventCanonicalizerTests.cs
 │   │   │   │   ├── FundOperationsWorkspaceReadServiceTests.cs
 │   │   │   │   ├── GracefulShutdownTests.cs
+│   │   │   │   ├── HistoricalDataQueryServiceBarsTests.cs
 │   │   │   │   ├── OperationalSchedulerTests.cs
 │   │   │   │   ├── OptionsChainServiceTests.cs
 │   │   │   │   ├── PreflightCheckerTests.cs
@@ -8339,6 +8342,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-667 directories, 7497 files
+667 directories, 7500 files
 ```
 <!-- readme-tree end -->
