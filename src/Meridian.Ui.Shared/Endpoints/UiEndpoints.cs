@@ -219,6 +219,12 @@ public static class UiEndpoints
         app.MapSymbolMappingEndpoints(jsonOptions);
         app.MapLiveDataEndpoints(jsonOptions);
         app.MapSymbolEndpoints(jsonOptions);
+
+        // Data ingestion and operator onboarding endpoints
+        app.MapDemoModeEndpoints(jsonOptions);
+        app.MapBackfillValidationEndpoints(jsonOptions);
+        app.MapProviderCredentialEndpoints(jsonOptions);
+
         app.MapStorageEndpoints(jsonOptions);
         app.MapStorageQualityEndpoints(jsonOptions);
         app.MapCatalogEndpoints(jsonOptions);
@@ -344,6 +350,12 @@ public static class UiEndpoints
         app.MapSymbolMappingEndpoints(jsonOptions);
         app.MapLiveDataEndpoints(jsonOptions);
         app.MapSymbolEndpoints(jsonOptions);
+
+        // Data ingestion and operator onboarding endpoints
+        app.MapDemoModeEndpoints(jsonOptions);
+        app.MapBackfillValidationEndpoints(jsonOptions);
+        app.MapProviderCredentialEndpoints(jsonOptions);
+
         app.MapStorageEndpoints(jsonOptions);
         app.MapStorageQualityEndpoints(jsonOptions);
         app.MapCatalogEndpoints(jsonOptions);

@@ -8,6 +8,7 @@ using Meridian.Storage.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -445,6 +446,116 @@ public static class SymbolEndpoints
         .WithName("BatchSymbolOperations")
         .Produces(200)
         .Produces(400)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        // POST /api/symbols/create — create a new symbol with full configuration
+        group.MapPost(UiApiRoutes.SymbolCreate, async (ConfigStore store, SymbolUniverseRequest req) =>
+        {
+            if (string.IsNullOrWhiteSpace(req.Symbol))
+                return Results.BadRequest(new { error = "Symbol is required" });
+
+            var upper = req.Symbol.Trim().ToUpperInvariant();
+            if (!s_symbolPattern.IsMatch(upper))
+                return Results.BadRequest(new { error = $"Invalid symbol format: {req.Symbol}" });
+
+            var cfg = store.Load();
+            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+
+            if (list.Any(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase)))
+                return Results.BadRequest(new { error = $"Symbol '{upper}' already configured" });
+
+            var symbolConfig = new SymbolConfig(
+                Symbol: upper,
+                SubscribeTrades: req.SubscribeTrades,
+                SubscribeDepth: req.SubscribeDepth,
+                DepthLevels: req.DepthLevels,
+                Exchange: req.Exchange ?? "SMART",
+                Currency: req.Currency ?? "USD"
+            );
+
+            list.Add(symbolConfig);
+            var next = cfg with { Symbols = list.ToArray() };
+            await store.SaveAsync(next);
+
+            return Results.Created($"/api/symbols/{upper}", new SymbolUniverseResponse(
+                Symbol: upper,
+                Configured: true,
+                Status: "Configured"
+            ));
+        })
+        .WithName("CreateSymbol")
+        .Produces<SymbolUniverseResponse>(201)
+        .Produces(400)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        // POST /api/symbols/{symbol}/update — update symbol configuration
+        group.MapPost(UiApiRoutes.SymbolUpdate, async (string symbol, ConfigStore store, SymbolUniverseRequest req) =>
+        {
+            var upper = symbol.Trim().ToUpperInvariant();
+            var cfg = store.Load();
+            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+            var idx = list.FindIndex(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase));
+
+            if (idx < 0)
+                return Results.NotFound(new { error = $"Symbol '{symbol}' not found" });
+
+            var existing = list[idx];
+            var updated = new SymbolConfig(
+                Symbol: upper,
+                SubscribeTrades: req.SubscribeTrades,
+                SubscribeDepth: req.SubscribeDepth,
+                DepthLevels: req.DepthLevels,
+                SecurityType: existing.SecurityType,
+                Exchange: req.Exchange ?? existing.Exchange,
+                Currency: req.Currency ?? existing.Currency,
+                PrimaryExchange: existing.PrimaryExchange,
+                LocalSymbol: existing.LocalSymbol,
+                TradingClass: existing.TradingClass,
+                ConId: existing.ConId,
+                InstrumentType: existing.InstrumentType,
+                LiquidityProfile: existing.LiquidityProfile,
+                UseRelaxedValidation: existing.UseRelaxedValidation,
+                Strike: existing.Strike,
+                Right: existing.Right,
+                LastTradeDateOrContractMonth: existing.LastTradeDateOrContractMonth,
+                OptionStyle: existing.OptionStyle,
+                Multiplier: existing.Multiplier,
+                UnderlyingSymbol: existing.UnderlyingSymbol
+            );
+
+            list[idx] = updated;
+            var next = cfg with { Symbols = list.ToArray() };
+            await store.SaveAsync(next);
+
+            return Results.Ok(new SymbolUniverseResponse(
+                Symbol: upper,
+                Configured: true,
+                Status: "Updated"
+            ));
+        })
+        .WithName("UpdateSymbol")
+        .Produces<SymbolUniverseResponse>(200)
+        .Produces(404)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        // DELETE /api/symbols/{symbol} — delete a symbol
+        group.MapDelete(UiApiRoutes.SymbolDelete, async (string symbol, ConfigStore store) =>
+        {
+            var upper = symbol.Trim().ToUpperInvariant();
+            var cfg = store.Load();
+            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+            var removed = list.RemoveAll(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase));
+
+            if (removed == 0)
+                return Results.NotFound(new { error = $"Symbol '{symbol}' not found" });
+
+            var next = cfg with { Symbols = list.ToArray() };
+            await store.SaveAsync(next);
+            return Results.Ok(new { deleted = upper, message = "Symbol removed from monitoring" });
+        })
+        .WithName("DeleteSymbol")
+        .Produces(200)
+        .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 

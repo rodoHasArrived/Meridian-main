@@ -713,6 +713,7 @@ Use these documents together when planning or implementing new work:
 ├── LICENSE
 ├── Makefile
 ├── Meridian Design System
+│   ├── BRAND_GUIDELINES.md
 │   ├── CONTENT_FUNDAMENTALS.md
 │   ├── ICONOGRAPHY.md
 │   ├── INSPIRATION_BRIEF.md
@@ -722,10 +723,15 @@ Use these documents together when planning or implementing new work:
 │   ├── assets
 │   │   ├── app.ico
 │   │   ├── brand
+│   │   │   ├── README.md
 │   │   │   ├── meridian-hero.svg
+│   │   │   ├── meridian-mark-light.svg
+│   │   │   ├── meridian-mark-monochrome.svg
 │   │   │   ├── meridian-mark.svg
+│   │   │   ├── meridian-symbol.svg
 │   │   │   ├── meridian-tile-256.png
 │   │   │   ├── meridian-tile.svg
+│   │   │   ├── meridian-wordmark-stacked.svg
 │   │   │   └── meridian-wordmark.svg
 │   │   └── icons
 │   │       ├── README.md
@@ -5772,6 +5778,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Api
 │   │   │   ├── BackfillApiModels.cs
 │   │   │   ├── ClientModels.cs
+│   │   │   ├── DataIngestionContracts.cs
 │   │   │   ├── ErrorResponse.cs
 │   │   │   ├── ExecutionApiModels.cs
 │   │   │   ├── LeanApiModels.cs
@@ -6720,6 +6727,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   └── brand
 │   │   │   │   │       └── meridian-mark.svg
 │   │   │   │   ├── components
+│   │   │   │   │   ├── data
+│   │   │   │   │   │   ├── backfill-validation-dashboard.tsx
+│   │   │   │   │   │   └── symbol-universe-manager.tsx
 │   │   │   │   │   ├── meridian
 │   │   │   │   │   │   ├── command-palette.test.tsx
 │   │   │   │   │   │   ├── command-palette.tsx
@@ -6746,6 +6756,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── workspace-nav.tsx
 │   │   │   │   │   │   ├── workspace-nav.view-model.test.ts
 │   │   │   │   │   │   └── workspace-nav.view-model.ts
+│   │   │   │   │   ├── settings
+│   │   │   │   │   │   └── provider-credential-setup.tsx
 │   │   │   │   │   └── ui
 │   │   │   │   │       ├── badge.tsx
 │   │   │   │   │       ├── button.test.tsx
@@ -6772,7 +6784,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── dev-fixtures.ts
 │   │   │   │   │   ├── utils.ts
 │   │   │   │   │   ├── workspace.test.ts
-│   │   │   │   │   └── workspace.ts
+│   │   │   │   │   ├── workspace.ts
+│   │   │   │   │   ├── workstation-endpoints.test.ts
+│   │   │   │   │   └── workstation-endpoints.ts
 │   │   │   │   ├── main.tsx
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── data-operations-screen.security-master.ts
@@ -6841,8 +6855,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-BFzDDbOY.css
-│   │           │   └── index-bfzie5tL.js
+│   │           │   ├── index-B91Yvz3c.js
+│   │           │   └── index-BgcRAU_T.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -6979,6 +6993,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AuthenticationMode.cs
 │   │   │   ├── BackfillEndpoints.cs
 │   │   │   ├── BackfillScheduleEndpoints.cs
+│   │   │   ├── BackfillValidationEndpoints.cs
 │   │   │   ├── BankingEndpoints.cs
 │   │   │   ├── BrokerageConnectionEndpoints.cs
 │   │   │   ├── CalendarEndpoints.cs
@@ -6989,6 +7004,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CppTraderEndpoints.cs
 │   │   │   ├── CredentialEndpoints.cs
 │   │   │   ├── CronEndpoints.cs
+│   │   │   ├── DemoModeEndpoints.cs
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
 │   │   │   ├── EdgarReferenceDataEndpoints.cs
@@ -7013,6 +7029,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── OptionsEndpoints.cs
 │   │   │   ├── PathValidation.cs
 │   │   │   ├── PromotionEndpoints.cs
+│   │   │   ├── ProviderCredentialEndpoints.cs
 │   │   │   ├── ProviderEndpoints.cs
 │   │   │   ├── ProviderExtendedEndpoints.cs
 │   │   │   ├── QuantLabEndpoints.cs
@@ -8398,6 +8415,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-672 directories, 7543 files
+674 directories, 7558 files
 ```
 <!-- readme-tree end -->

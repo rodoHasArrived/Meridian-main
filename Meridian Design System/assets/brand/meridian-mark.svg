@@ -1,19 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
   <title id="title">Meridian brand mark</title>
-  <desc id="desc">A meridian glyph: vertical axis bisecting a celestial circle, with a cyan latitude tick.</desc>
+  <desc id="desc">A meridian glyph: vertical axis bisecting a celestial circle, with an accent latitude tick at the cardinal point.</desc>
 
-  
-  <circle cx="128" cy="128" r="88" fill="none" stroke="#DEE6EF" stroke-width="10"></circle>
+  <circle cx="128" cy="128" r="84" fill="none" stroke="#D8DFE8" stroke-width="9" stroke-linecap="round"></circle>
 
-  
-  <line x1="40" y1="128" x2="216" y2="128" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"></line>
+  <line x1="44" y1="128" x2="212" y2="128" stroke="#D8DFE8" stroke-width="9" stroke-linecap="round"></line>
 
-  
-  <line x1="128" y1="28" x2="128" y2="228" stroke="#DEE6EF" stroke-width="10" stroke-linecap="square"></line>
+  <line x1="128" y1="44" x2="128" y2="212" stroke="#D8DFE8" stroke-width="9" stroke-linecap="round"></line>
 
-  
-  <line x1="96" y1="88" x2="160" y2="88" stroke="#2AB2D4" stroke-width="10" stroke-linecap="square"></line>
+  <line x1="94" y1="92" x2="162" y2="92" stroke="#00D9FF" stroke-width="11" stroke-linecap="round"></line>
 
-  
-  <circle cx="128" cy="128" r="8" fill="#2AB2D4"></circle>
+  <circle cx="128" cy="128" r="6" fill="#00D9FF"></circle>
 </svg>
