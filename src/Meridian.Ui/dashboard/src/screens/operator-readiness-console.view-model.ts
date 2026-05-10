@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getOperatorInbox } from "@/lib/api";
 import { legacyWorkspaceRedirect, WORKSPACES } from "@/lib/workspace";
+import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   DataOperationsProviderRecord,
   DataOperationsWorkspaceResponse,
@@ -154,6 +155,7 @@ export function useOperatorReadinessConsoleViewModel(
     let cancelled = false;
     setInboxLoading(true);
     setInboxError(null);
+    setOperatorInbox(null);
 
     Promise.resolve(services.getOperatorInbox(activeFundAccountId))
       .then((inbox) => {
@@ -658,7 +660,9 @@ function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): Readi
 }
 
 function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction | null {
-  const route = normalizeTargetRoute(item.targetRoute) ?? fallbackRouteForWorkItemKind(item.kind);
+  const route = item.kind === "SecurityMasterCoverage"
+    ? fallbackRouteForWorkItemKind(item.kind)
+    : normalizeTargetRoute(item.targetRoute) ?? fallbackRouteForWorkItemKind(item.kind);
   if (!route) {
     return null;
   }
@@ -695,7 +699,7 @@ function fallbackRouteForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
     case "ExecutionControl":
       return "/trading/readiness";
     case "SecurityMasterCoverage":
-      return "/accounting/security-master";
+      return "/data/security-master";
     case "ReconciliationBreak":
       return "/accounting/reconciliation";
     case "ReportPackApproval":
@@ -965,7 +969,13 @@ function buildMetrics({
       label: "Provider trust",
       value: `${providerTrustRows.filter((row) => row.level === "ready").length}/${providerTrustRows.length}`,
       detail: "Ready provider-trust rows versus all visible trust rows.",
-      level: providerTrustRows.some((row) => row.level === "blocked") ? "blocked" : providerTrustRows.length > 0 ? "review" : "neutral"
+      level: providerTrustRows.some((row) => row.level === "blocked")
+        ? "blocked"
+        : providerTrustRows.length > 0 && providerTrustRows.every((row) => row.level === "ready")
+          ? "ready"
+          : providerTrustRows.length > 0
+            ? "review"
+            : "neutral"
     },
     {
       id: "reconciliation-breaks",
@@ -1014,42 +1024,42 @@ function buildApiSources({
     {
       id: "trading-readiness",
       label: "Trading readiness",
-      endpoint: "/api/workstation/trading/readiness",
+      endpoint: WORKSTATION_API_ENDPOINTS.tradingReadiness,
       status: trading?.readiness ? formatReadinessStatusValue(trading.readiness.overallStatus) : "Unavailable",
       level: trading?.readiness ? levelFromReadiness(trading.readiness.overallStatus) : "review"
     },
     {
       id: "operator-inbox",
       label: "Operator inbox",
-      endpoint: "/api/workstation/operator/inbox",
+      endpoint: WORKSTATION_API_ENDPOINTS.operatorInbox,
       status: inboxLoading ? "Loading" : operatorInbox ? `${operatorInbox.reviewCount} review items` : inboxError ?? "Unavailable",
       level: inboxLoading ? "neutral" : operatorInbox ? (operatorInbox.criticalCount > 0 ? "blocked" : operatorInbox.warningCount > 0 ? "review" : "ready") : "review"
     },
     {
       id: "strategy-runs",
       label: "Strategy runs",
-      endpoint: "/api/workstation/research",
+      endpoint: WORKSTATION_API_ENDPOINTS.strategy,
       status: research ? `${research.runs.length} runs` : "Unavailable",
       level: research ? "ready" : "review"
     },
     {
       id: "data-confidence",
       label: "Provider posture",
-      endpoint: "/api/workstation/data-operations",
+      endpoint: WORKSTATION_API_ENDPOINTS.data,
       status: dataOperations ? `${dataOperations.providers.length} providers` : "Unavailable",
       level: dataOperations ? "ready" : "review"
     },
     {
       id: "governance",
       label: "Accounting",
-      endpoint: "/api/workstation/accounting",
+      endpoint: WORKSTATION_API_ENDPOINTS.accounting,
       status: governance ? `${governance.breakQueue.length} breaks` : "Unavailable",
       level: governance ? "ready" : "review"
     },
     {
       id: "reporting",
       label: "Reporting",
-      endpoint: "/api/workstation/reporting",
+      endpoint: WORKSTATION_API_ENDPOINTS.reporting,
       status: reporting ? `${reporting.reporting.profileCount} report profiles` : "Unavailable",
       level: reporting ? "ready" : "review"
     }

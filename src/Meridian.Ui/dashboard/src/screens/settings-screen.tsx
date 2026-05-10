@@ -4,13 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { buildSettingsScreenViewModel, useAlpacaConnectionFormViewModel } from "@/screens/settings-screen.view-model";
 import type {
   BrokerageConnectionStatus,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
+  PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -23,6 +23,7 @@ interface SettingsScreenProps {
   overview: SystemOverviewResponse | null;
   research?: ResearchWorkspaceResponse | null;
   trading?: TradingWorkspaceResponse | null;
+  portfolio?: PortfolioWorkspaceResponse | null;
   dataOperations?: DataOperationsWorkspaceResponse | null;
   governance?: GovernanceWorkspaceResponse | null;
   reporting?: GovernanceWorkspaceResponse | null;
@@ -74,6 +75,19 @@ const requirementToneClass = {
   muted: "border-border/70 bg-secondary/25 text-muted-foreground"
 } as const;
 
+const environmentOptionClass = {
+  paper: {
+    selected: "border-paper/40 bg-paper/10 text-paper",
+    idle: "border-border/70 bg-secondary/25 text-foreground hover:border-paper/35 hover:bg-paper/10",
+    badge: "border-paper/30 bg-paper/10 text-paper"
+  },
+  live: {
+    selected: "border-live-env/40 bg-live-env/10 text-live-env",
+    idle: "border-border/70 bg-secondary/25 text-foreground hover:border-live-env/35 hover:bg-live-env/10",
+    badge: "border-live-env/35 bg-live-env/10 text-live-env"
+  }
+} as const;
+
 const setupStepToneClass = {
   success: "border-success/30 bg-success/10",
   warning: "border-warning/35 bg-warning/10",
@@ -86,6 +100,7 @@ export function SettingsScreen({
   overview,
   research = null,
   trading = null,
+  portfolio = null,
   dataOperations = null,
   governance = null,
   reporting = null,
@@ -100,6 +115,7 @@ export function SettingsScreen({
     overview,
     research,
     trading,
+    portfolio,
     dataOperations,
     governance,
     reporting,
@@ -271,23 +287,51 @@ export function SettingsScreen({
                   {alpacaForm.secretKeyHelpText}
                 </span>
               </label>
-              <label htmlFor="alpaca-environment" className="grid gap-1 text-xs font-medium text-muted-foreground">
-                Environment
-                <Select
-                  id="alpaca-environment"
-                  value={alpacaForm.environment}
-                  onChange={(event) => alpacaForm.setEnvironment(event.target.value === "live" ? "live" : "paper")}
-                  disabled={!alpacaForm.canEdit}
-                  aria-label="Alpaca trading environment"
+              <fieldset className="grid gap-1 text-xs font-medium text-muted-foreground">
+                <legend>{alpacaForm.environmentLegend}</legend>
+                <div
+                  className="grid gap-2 sm:grid-cols-2"
+                  role="radiogroup"
+                  aria-label={alpacaForm.environmentLegend}
                   aria-describedby={`${alpacaForm.fieldHelpIds.environment} ${alpacaForm.formPanelId}`}
                 >
-                  <option value="paper">Paper</option>
-                  <option value="live">Live</option>
-                </Select>
+                  {alpacaForm.environmentOptions.map((option) => (
+                    <label
+                      key={option.id}
+                      className={cn(
+                        "relative grid min-h-[4.75rem] cursor-pointer gap-1 rounded-md border px-3 py-2 transition-colors",
+                        option.isSelected ? environmentOptionClass[option.tone].selected : environmentOptionClass[option.tone].idle,
+                        option.disabled && "cursor-not-allowed opacity-60"
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="alpaca-environment"
+                        value={option.value}
+                        checked={option.isSelected}
+                        disabled={option.disabled}
+                        onChange={() => alpacaForm.setEnvironment(option.value)}
+                        aria-label={option.ariaLabel}
+                        aria-describedby={`${option.descriptionId} ${alpacaForm.fieldHelpIds.environment} ${alpacaForm.formPanelId}`}
+                        className="peer sr-only"
+                      />
+                      <span className="pointer-events-none absolute inset-0 rounded-md peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40" aria-hidden="true" />
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-foreground">{option.label}</span>
+                        <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase", environmentOptionClass[option.tone].badge)}>
+                          {option.badgeLabel}
+                        </span>
+                      </span>
+                      <span id={option.descriptionId} className="text-[11px] font-normal leading-4 text-muted-foreground">
+                        {option.description}
+                      </span>
+                    </label>
+                  ))}
+                </div>
                 <span id={alpacaForm.fieldHelpIds.environment} className="text-[11px] leading-4 text-muted-foreground">
                   {alpacaForm.environmentHelpText}
                 </span>
-              </label>
+              </fieldset>
             </div>
             <div
               id={alpacaForm.formPanelId}
@@ -568,7 +612,7 @@ export function SettingsScreen({
                 </div>
                 <p className="mt-3 text-xs leading-5 text-foreground/75">{group.statusDetail}</p>
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  {group.endpoints.map((endpoint) => (
+                  {group.endpoints.map((endpoint) => endpoint.isBrowserNavigable ? (
                     <a
                       key={endpoint.id}
                       href={endpoint.href}
@@ -577,14 +621,17 @@ export function SettingsScreen({
                       aria-label={endpoint.ariaLabel}
                       className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-background/45 px-3 py-2 text-xs transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
-                      <Badge variant="outline" className="shrink-0">{endpoint.method}</Badge>
-                      <span className="min-w-0">
-                        <span className="block font-semibold text-foreground">{endpoint.label}</span>
-                        <span className="mt-1 block break-all font-mono text-[10px] leading-4 text-muted-foreground">
-                          {endpoint.href}
-                        </span>
-                      </span>
+                      <EndpointReference endpoint={endpoint} />
                     </a>
+                  ) : (
+                    <div
+                      key={endpoint.id}
+                      role="group"
+                      aria-label={endpoint.ariaLabel}
+                      className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-xs"
+                    >
+                      <EndpointReference endpoint={endpoint} />
+                    </div>
                   ))}
                 </div>
               </div>
@@ -593,6 +640,32 @@ export function SettingsScreen({
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function EndpointReference({
+  endpoint
+}: {
+  endpoint: {
+    method: string;
+    label: string;
+    href: string;
+    interactionLabel: string;
+  };
+}) {
+  return (
+    <>
+      <Badge variant="outline" className="shrink-0">{endpoint.method}</Badge>
+      <span className="min-w-0">
+        <span className="block font-semibold text-foreground">{endpoint.label}</span>
+        <span className="mt-1 block break-all font-mono text-[10px] leading-4 text-muted-foreground">
+          {endpoint.href}
+        </span>
+        <span className="mt-1 inline-flex rounded-sm border border-border/60 px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+          {endpoint.interactionLabel}
+        </span>
+      </span>
+    </>
   );
 }
 

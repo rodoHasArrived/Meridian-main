@@ -4,6 +4,7 @@ import {
   legacyWorkspaceRedirect,
   normalizeWorkspacePath,
   WORKSPACES,
+  workflowTargetPath,
   workspaceForKey,
   workspacePath
 } from "@/lib/workspace";
@@ -63,5 +64,13 @@ describe("workspace metadata", () => {
     expect(evidenceWorkbenchPath("report pack", "current")).toBe(
       "/reporting/evidence?subjectKind=report%20pack&subjectId=current"
     );
+  });
+
+  it("maps backend workflow targets to browser workstation routes", () => {
+    expect(workflowTargetPath("EvidenceWorkbench", "strategy")).toBe("/reporting/evidence");
+    expect(workflowTargetPath("FundReportPack", "reporting")).toBe("/reporting/report-packs");
+    expect(workflowTargetPath("ProviderTrust", "data")).toBe("/data/providers");
+    expect(workflowTargetPath("UnknownTag", "data")).toBe("/data");
+    expect(workflowTargetPath(null, null)).toBe("/trading");
   });
 });

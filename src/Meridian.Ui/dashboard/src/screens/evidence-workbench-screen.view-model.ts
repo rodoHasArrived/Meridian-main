@@ -5,14 +5,15 @@ import {
   getEvidenceSubjects,
   validateEvidencePacket
 } from "@/lib/api";
-import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { evidenceWorkbenchPath, workflowTargetPath } from "@/lib/workspace";
 import type {
   EvidenceCompleteness,
   EvidenceNode,
   EvidencePacket,
   EvidencePacketExportResponse,
   EvidenceStatus,
-  EvidenceSubject
+  EvidenceSubject,
+  WorkflowAction
 } from "@/types";
 
 export interface EvidenceWorkbenchServices {
@@ -30,6 +31,25 @@ export interface EvidenceNodeGroupViewModel {
   nodes: EvidenceNode[];
 }
 
+export type EvidencePacketActionControl = "link" | "validate" | "export";
+export type EvidencePacketActionTone = "primary" | "success" | "warning" | "danger" | "muted";
+
+export interface EvidencePacketActionViewModel {
+  id: string;
+  label: string;
+  detail: string;
+  targetLabel: string;
+  tone: EvidencePacketActionTone;
+  href: string;
+  control: EvidencePacketActionControl;
+  commandLabel: string;
+  ariaLabel: string;
+  busy: boolean;
+  busyLabel: string | null;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
 export interface EvidenceWorkbenchViewModel {
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
@@ -41,6 +61,9 @@ export interface EvidenceWorkbenchViewModel {
   hasPacket: boolean;
   hasSubjects: boolean;
   loadingLabel: string;
+  sourceWorkflowHref: string | null;
+  sourceWorkflowLabel: string | null;
+  sourceWorkflowAriaLabel: string | null;
   subjectsRegionLabel: string;
   subjectsSummaryLabel: string;
   subjectEmptyTitle: string;
@@ -55,6 +78,10 @@ export interface EvidenceWorkbenchViewModel {
   statusTone: EvidenceStatusTone;
   generatedLabel: string;
   nodeGroups: EvidenceNodeGroupViewModel[];
+  hasPacketActions: boolean;
+  packetActionsLabel: string;
+  packetActionsSummaryLabel: string;
+  packetActions: EvidencePacketActionViewModel[];
   missingEvidence: string[];
   staleEvidence: string[];
   relatedWorkItemIds: string[];
@@ -103,6 +130,8 @@ export function useEvidenceWorkbenchViewModel(
     setPacket(null);
     setExportResult(null);
     setValidationResult(null);
+    setExportBusy(false);
+    setValidateBusy(false);
 
     const load = async () => {
       try {
@@ -131,6 +160,10 @@ export function useEvidenceWorkbenchViewModel(
     };
 
     void load();
+
+    return () => {
+      requestRevisionRef.current += 1;
+    };
   }, [selectedSubjectId, selectedSubjectKind, services]);
 
   const exportCommand = async () => {
@@ -138,14 +171,22 @@ export function useEvidenceWorkbenchViewModel(
       return;
     }
 
+    const revision = requestRevisionRef.current;
     setExportBusy(true);
     setError(null);
     try {
-      setExportResult(await services.exportManifest(selectedSubjectKind, selectedSubjectId));
+      const result = await services.exportManifest(selectedSubjectKind, selectedSubjectId);
+      if (requestRevisionRef.current === revision) {
+        setExportResult(result);
+      }
     } catch (exportError) {
-      setError(exportError instanceof Error ? exportError.message : "Evidence manifest export failed.");
+      if (requestRevisionRef.current === revision) {
+        setError(exportError instanceof Error ? exportError.message : "Evidence manifest export failed.");
+      }
     } finally {
-      setExportBusy(false);
+      if (requestRevisionRef.current === revision) {
+        setExportBusy(false);
+      }
     }
   };
 
@@ -154,14 +195,22 @@ export function useEvidenceWorkbenchViewModel(
       return;
     }
 
+    const revision = requestRevisionRef.current;
     setValidateBusy(true);
     setError(null);
     try {
-      setValidationResult(await services.validatePacket(selectedSubjectKind, selectedSubjectId));
+      const result = await services.validatePacket(selectedSubjectKind, selectedSubjectId);
+      if (requestRevisionRef.current === revision) {
+        setValidationResult(result);
+      }
     } catch (validateError) {
-      setError(validateError instanceof Error ? validateError.message : "Evidence validation failed.");
+      if (requestRevisionRef.current === revision) {
+        setError(validateError instanceof Error ? validateError.message : "Evidence validation failed.");
+      }
     } finally {
-      setValidateBusy(false);
+      if (requestRevisionRef.current === revision) {
+        setValidateBusy(false);
+      }
     }
   };
 
@@ -197,6 +246,16 @@ export function buildEvidenceWorkbenchViewModel(input: {
 }): EvidenceWorkbenchViewModel {
   const completeness = input.validationResult ?? input.packet?.completeness ?? null;
   const hasSelection = Boolean(input.selectedSubjectKind && input.selectedSubjectId);
+  const subject = input.packet?.subject ?? null;
+  const sourceWorkflowHref = resolveSourceWorkflowHref(subject);
+  const packetActions = buildEvidencePacketActions({
+    actions: input.packet?.actions ?? [],
+    subject,
+    selectedSubjectKind: input.selectedSubjectKind,
+    selectedSubjectId: input.selectedSubjectId,
+    exportBusy: input.exportBusy,
+    validateBusy: input.validateBusy
+  });
   return {
     selectedSubjectKind: input.selectedSubjectKind,
     selectedSubjectId: input.selectedSubjectId,
@@ -214,6 +273,9 @@ export function buildEvidenceWorkbenchViewModel(input: {
     loadingLabel: hasSelection
       ? `Loading evidence packet for ${input.selectedSubjectKind}/${input.selectedSubjectId}.`
       : "Loading evidence subjects.",
+    sourceWorkflowHref,
+    sourceWorkflowLabel: sourceWorkflowHref && subject ? `Open ${subject.workspace} workflow` : null,
+    sourceWorkflowAriaLabel: sourceWorkflowHref && subject ? `Open source workflow for ${subject.label}` : null,
     subjectsRegionLabel: "Evidence subjects available for packet inspection",
     subjectsSummaryLabel: input.subjects.length === 1 ? "1 subject" : `${input.subjects.length} subjects`,
     subjectEmptyTitle: "No evidence subjects returned",
@@ -228,6 +290,10 @@ export function buildEvidenceWorkbenchViewModel(input: {
     statusTone: completeness ? mapStatusTone(completeness.status) : "muted",
     generatedLabel: input.packet ? formatDate(input.packet.generatedAt) : "Not generated",
     nodeGroups: groupNodes(input.packet?.nodes ?? []),
+    hasPacketActions: packetActions.length > 0,
+    packetActionsLabel: "Evidence packet actions",
+    packetActionsSummaryLabel: packetActions.length === 1 ? "1 workflow action" : `${packetActions.length} workflow actions`,
+    packetActions,
     missingEvidence: completeness?.missingIds ?? [],
     staleEvidence: completeness?.staleIds ?? [],
     relatedWorkItemIds: collectWorkItemIds(input.packet?.nodes ?? []),
@@ -258,6 +324,37 @@ export function groupNodes(nodes: EvidenceNode[]): EvidenceNodeGroupViewModel[] 
     reviewCount: groupNodesForId.filter((node) => node.status !== "Ready").length,
     nodes: groupNodesForId
   }));
+}
+
+export function buildEvidencePacketActions(input: {
+  actions: WorkflowAction[];
+  subject: EvidenceSubject | null;
+  selectedSubjectKind: string | null;
+  selectedSubjectId: string | null;
+  exportBusy: boolean;
+  validateBusy: boolean;
+}): EvidencePacketActionViewModel[] {
+  return input.actions.map((action) => {
+    const control = resolveActionControl(action.actionId);
+    const subjectKind = input.subject?.subjectKind ?? input.selectedSubjectKind;
+    const subjectId = input.subject?.subjectId ?? input.selectedSubjectId;
+    const href = action.targetPageTag === "EvidenceWorkbench" && subjectKind && subjectId
+      ? evidenceWorkbenchPath(subjectKind, subjectId)
+      : workflowTargetPath(action.targetPageTag, input.subject?.workspace);
+    const subjectLabel = input.subject?.label ?? "selected evidence subject";
+    const command = buildActionCommand(control, subjectLabel, input.exportBusy, input.validateBusy);
+
+    return {
+      id: action.actionId,
+      label: action.label,
+      detail: action.detail,
+      targetLabel: formatPageTag(action.targetPageTag),
+      tone: mapWorkflowActionTone(action.tone),
+      href,
+      control,
+      ...command
+    };
+  });
 }
 
 function collectWorkItemIds(nodes: EvidenceNode[]) {
@@ -302,11 +399,102 @@ export function formatStatus(status: EvidenceStatus) {
   return status.replace(/([a-z])([A-Z])/g, "$1 $2");
 }
 
+function resolveActionControl(actionId: string): EvidencePacketActionControl {
+  if (actionId.endsWith(".validate")) {
+    return "validate";
+  }
+  if (actionId.endsWith(".export-manifest")) {
+    return "export";
+  }
+  return "link";
+}
+
+function buildActionCommand(
+  control: EvidencePacketActionControl,
+  subjectLabel: string,
+  exportBusy: boolean,
+  validateBusy: boolean
+) {
+  switch (control) {
+    case "validate":
+      return {
+        commandLabel: "Validate",
+        ariaLabel: `Validate evidence for ${subjectLabel}`,
+        busy: validateBusy,
+        busyLabel: "Validating",
+        disabled: validateBusy,
+        disabledReason: validateBusy ? "Evidence validation is already running." : null
+      };
+    case "export":
+      return {
+        commandLabel: "Export",
+        ariaLabel: `Export evidence for ${subjectLabel}`,
+        busy: exportBusy,
+        busyLabel: "Exporting",
+        disabled: exportBusy,
+        disabledReason: exportBusy ? "Evidence export is already running." : null
+      };
+    default:
+      return {
+        commandLabel: "Open",
+        ariaLabel: `Open evidence packet for ${subjectLabel}`,
+        busy: false,
+        busyLabel: null,
+        disabled: false,
+        disabledReason: null
+      };
+  }
+}
+
+function mapWorkflowActionTone(tone: string): EvidencePacketActionTone {
+  switch (tone.trim().toLowerCase()) {
+    case "primary":
+      return "primary";
+    case "success":
+    case "ready":
+      return "success";
+    case "warning":
+    case "review":
+      return "warning";
+    case "danger":
+    case "critical":
+    case "error":
+    case "blocked":
+      return "danger";
+    default:
+      return "muted";
+  }
+}
+
 function formatKind(kind: string) {
   return kind
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function formatPageTag(value: string) {
+  return value.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
+function normalizeSubjectRoute(route: string | null | undefined) {
+  const trimmed = route?.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed.startsWith("/workstation/")
+    ? trimmed.slice("/workstation".length)
+    : trimmed;
+}
+
+function resolveSourceWorkflowHref(subject: EvidenceSubject | null) {
+  const directRoute = normalizeSubjectRoute(subject?.route);
+  if (directRoute) {
+    return directRoute;
+  }
+
+  return subject ? workflowTargetPath(subject.pageTag, subject.workspace) : null;
 }
 
 function formatDate(value: string) {

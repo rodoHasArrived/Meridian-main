@@ -7,6 +7,7 @@ import {
   buildPromotionCashForm,
   buildPromotionPanelState,
   buildPromotionHistoryTable,
+  buildResearchCommandStates,
   buildResearchRunLibraryState,
   buildRunDetail,
   buildRunTable,
@@ -157,6 +158,20 @@ describe("research-screen view model", () => {
 
     expect(state.canCompare).toBe(true);
     expect(state.canDiff).toBe(true);
+    expect(state.compareCommand).toMatchObject({
+      label: "Compare 2 runs",
+      ariaLabel: "Compare 2 runs: Mean Reversion FX and Index Momentum",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
+    expect(state.diffCommand).toMatchObject({
+      label: "Diff 2 runs",
+      ariaLabel: "Diff 2 runs: Mean Reversion FX and Index Momentum",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
     expect(state.selectionText).toBe("Mean Reversion FX vs Index Momentum");
     expect(state.selectionDetail).toBe("Ready to compare or diff the selected run pair.");
     expect(state.evidenceAction).toEqual({
@@ -181,6 +196,13 @@ describe("research-screen view model", () => {
 
     expect(busy.canCompare).toBe(false);
     expect(busy.compareButtonLabel).toBe("Comparing...");
+    expect(busy.compareCommand).toMatchObject({
+      label: "Comparing...",
+      disabled: true,
+      disabledReason: "Wait for the current Strategy command to finish.",
+      busy: true
+    });
+    expect(busy.diffCommand.disabledReason).toBe("Wait for the current Strategy command to finish.");
     expect(busy.statusAnnouncement).toBe("Comparing selected research runs.");
 
     const failed = buildResearchRunLibraryState({
@@ -430,6 +452,44 @@ describe("research-screen view model", () => {
 
     expect(creating.canSubmit).toBe(false);
     expect(creating.submitLabel).toBe("Starting paper session...");
+  });
+
+  it("derives disabled command reasons for incomplete selections", () => {
+    const noSelection = buildResearchCommandStates({
+      selectedRuns: [],
+      hasTwoRuns: false,
+      hasOneBacktestRun: false,
+      busy: false,
+      activeCommand: null,
+      promoteState: "idle",
+      promoteBusy: false
+    });
+
+    expect(noSelection.compare).toMatchObject({
+      label: "Compare 2 runs",
+      ariaLabel: "Compare 2 runs unavailable",
+      disabled: true,
+      disabledReason: "Select exactly two runs before using this command. 0 selected."
+    });
+    expect(noSelection.diff.disabledReason).toBe("Select exactly two runs before using this command. 0 selected.");
+    expect(noSelection.promote.disabledReason).toBe("Select one completed backtest run before promoting to paper. 0 selected.");
+
+    const oneCompletedBacktest = buildResearchCommandStates({
+      selectedRuns: [runs[1]],
+      hasTwoRuns: false,
+      hasOneBacktestRun: true,
+      busy: false,
+      activeCommand: null,
+      promoteState: "idle",
+      promoteBusy: false
+    });
+
+    expect(oneCompletedBacktest.promote).toMatchObject({
+      label: "Promote to Paper",
+      ariaLabel: "Promote to Paper: evaluate Index Momentum for paper trading",
+      disabled: false,
+      disabledReason: null
+    });
   });
 
   it("derives paper-promotion evaluation panel state outside the view", () => {

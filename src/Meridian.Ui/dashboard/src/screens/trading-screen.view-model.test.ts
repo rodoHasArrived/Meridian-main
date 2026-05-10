@@ -27,6 +27,7 @@ import {
   validateOrderTicketForm,
   validatePromotionApproval,
   validatePromotionRejection,
+  useTradingReadinessViewModel,
   usePromotionGateViewModel
 } from "@/screens/trading-screen.view-model";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionPortfolioSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingOperatorReadiness, TradingPosition, TradingRiskState, TradingWorkspaceResponse } from "@/types";
@@ -732,6 +733,45 @@ describe("trading readiness view model", () => {
 
     expect(failed.summaryRows).toEqual([]);
     expect(failed.statusAnnouncement).toBe("Trading readiness refresh failed: Network failed.");
+  });
+
+  it("ignores stale readiness refresh results after the initial payload changes", async () => {
+    const staleRefresh = createDeferred<TradingOperatorReadiness | null>();
+    const services = {
+      getTradingReadiness: vi.fn(() => staleRefresh.promise)
+    };
+    const nextReadiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      asOf: "2026-04-26T16:10:00Z",
+      overallStatus: "ReviewRequired"
+    };
+    const { result, rerender } = renderHook(
+      ({ initialReadiness }) => useTradingReadinessViewModel({ initialReadiness, services }),
+      { initialProps: { initialReadiness: blockedReadiness } }
+    );
+
+    await act(async () => {
+      void result.current.refresh();
+    });
+
+    expect(result.current.refreshing).toBe(true);
+
+    rerender({ initialReadiness: nextReadiness });
+
+    expect(result.current.refreshing).toBe(false);
+    expect(result.current.readiness?.asOf).toBe("2026-04-26T16:10:00Z");
+
+    await act(async () => {
+      staleRefresh.resolve({
+        ...blockedReadiness,
+        asOf: "2026-04-26T15:55:00Z",
+        overallStatus: "Blocked"
+      });
+      await staleRefresh.promise;
+    });
+
+    expect(result.current.readiness?.asOf).toBe("2026-04-26T16:10:00Z");
+    expect(result.current.statusAnnouncement).toBe("Trading readiness review required as of 2026-04-26T16:10:00Z.");
   });
 
   it("normalizes readiness and brokerage status levels", () => {

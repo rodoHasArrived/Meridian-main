@@ -52,12 +52,51 @@ export const LEGACY_WORKSPACE_ALIASES: Record<LegacyWorkspaceKey, WorkspaceKey> 
   governance: "accounting"
 };
 
+const PAGE_TAG_ROUTES: Record<string, string> = {
+  AccountPortfolio: "/portfolio/brokerage-sync",
+  AccountingShell: "/accounting",
+  Backfill: "/data/backfills",
+  BrokerageSync: "/portfolio/brokerage-sync",
+  DataShell: "/data",
+  EvidenceWorkbench: "/reporting/evidence",
+  FundAuditTrail: "/accounting",
+  FundReconciliation: "/accounting/reconciliation",
+  FundReportPack: "/reporting/report-packs",
+  FundTrialBalance: "/accounting",
+  PortfolioShell: "/portfolio",
+  ProviderHealth: "/data/providers",
+  ProviderTrust: "/data/providers",
+  ReportingShell: "/reporting",
+  ReportPackApproval: "/reporting/report-packs",
+  RunRisk: "/trading/readiness",
+  SecurityMaster: "/data/security-master",
+  SettingsShell: "/settings",
+  StrategyRuns: "/strategy",
+  StrategyShell: "/strategy",
+  TradingReadiness: "/trading/readiness",
+  TradingReadinessConsole: "/trading/readiness",
+  TradingShell: "/trading"
+};
+
 export function workspacePath(key: WorkspaceKey) {
   return `/${key}`;
 }
 
 export function evidenceWorkbenchPath(subjectKind: string, subjectId: string) {
   return `/reporting/evidence?subjectKind=${encodeURIComponent(subjectKind)}&subjectId=${encodeURIComponent(subjectId)}`;
+}
+
+export function workflowTargetPath(
+  targetPageTag: string | null | undefined,
+  workspaceId: string | null | undefined
+) {
+  const tagRoute = targetPageTag ? PAGE_TAG_ROUTES[targetPageTag] : undefined;
+  if (tagRoute) {
+    return tagRoute;
+  }
+
+  const workspaceKey = workspaceKeyFromId(workspaceId);
+  return workspaceKey ? workspacePath(workspaceKey) : "/trading";
 }
 
 export function workspaceForKey(key: WorkspaceKey): WorkspaceSummary {
@@ -109,4 +148,13 @@ function isWorkspaceKey(value: string): value is WorkspaceKey {
 
 function isLegacyWorkspaceKey(value: string): value is LegacyWorkspaceKey {
   return Object.prototype.hasOwnProperty.call(LEGACY_WORKSPACE_ALIASES, value);
+}
+
+function workspaceKeyFromId(workspaceId: string | null | undefined): WorkspaceKey | null {
+  const normalized = workspaceId?.trim().toLowerCase();
+  if (!normalized) {
+    return null;
+  }
+
+  return isWorkspaceKey(normalized) ? normalized : null;
 }

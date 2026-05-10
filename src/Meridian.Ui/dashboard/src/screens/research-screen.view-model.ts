@@ -54,6 +54,10 @@ export interface ResearchRunLibraryState {
   canDiff: boolean;
   canLoadPromotionHistory: boolean;
   canPromote: boolean;
+  promotionHistoryCommand: ResearchCommandState;
+  compareCommand: ResearchCommandState;
+  diffCommand: ResearchCommandState;
+  promoteCommand: ResearchCommandState;
   promoteState: PromoteState;
   promotionEval: PromotionEvaluationResult | null;
   promotionPanel: ResearchPromotionPanelState;
@@ -69,6 +73,14 @@ export interface ResearchRunLibraryState {
   promotionHistoryButtonLabel: string;
   promoteButtonLabel: string;
   statusAnnouncement: string;
+}
+
+export interface ResearchCommandState {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
 }
 
 export interface ResearchPromotionPanelState {
@@ -766,6 +778,15 @@ export function buildResearchRunLibraryState({
       runDiff
     }
   );
+  const commandStates = buildResearchCommandStates({
+    selectedRuns,
+    hasTwoRuns,
+    hasOneBacktestRun,
+    busy,
+    activeCommand,
+    promoteState,
+    promoteBusy
+  });
 
   return {
     runs,
@@ -792,6 +813,10 @@ export function buildResearchRunLibraryState({
     canDiff: hasTwoRuns && !busy,
     canLoadPromotionHistory: !busy,
     canPromote: hasOneBacktestRun && !busy && !promoteBusy && promoteState !== "done",
+    promotionHistoryCommand: commandStates.promotionHistory,
+    compareCommand: commandStates.compare,
+    diffCommand: commandStates.diff,
+    promoteCommand: commandStates.promote,
     promoteState,
     promotionEval,
     promotionPanel,
@@ -806,16 +831,10 @@ export function buildResearchRunLibraryState({
         ? "Select Promote to Paper to evaluate this run for paper trading."
         : "Select two runs to enable compare and diff commands.",
     evidenceAction: buildResearchEvidenceAction(selectedRuns[0] ?? runs[0] ?? null),
-    compareButtonLabel: activeCommand === "compare" ? "Comparing..." : "Compare 2 runs",
-    diffButtonLabel: activeCommand === "diff" ? "Diffing..." : "Diff 2 runs",
-    promotionHistoryButtonLabel: activeCommand === "history" ? "Loading history..." : "Promotion history",
-    promoteButtonLabel: promoteState === "evaluating"
-      ? "Evaluating…"
-      : promoteState === "creating"
-        ? "Creating session…"
-        : promoteState === "done"
-          ? "Session created"
-          : "Promote to Paper",
+    compareButtonLabel: commandStates.compare.label,
+    diffButtonLabel: commandStates.diff.label,
+    promotionHistoryButtonLabel: commandStates.promotionHistory.label,
+    promoteButtonLabel: commandStates.promote.label,
     statusAnnouncement: buildResearchStatusAnnouncement({
       activeCommand,
       actionError,
@@ -857,6 +876,98 @@ export function buildPromotionPanelState({
     sessionCreated,
     showCashForm: promoteState === "evaluated" && promotionEval?.isEligible === true,
     showIneligibleDismiss: promoteState === "evaluated" && promotionEval?.isEligible === false
+  };
+}
+
+export function buildResearchCommandStates({
+  selectedRuns,
+  hasTwoRuns,
+  hasOneBacktestRun,
+  busy,
+  activeCommand,
+  promoteState,
+  promoteBusy
+}: {
+  selectedRuns: ResearchRunRecord[];
+  hasTwoRuns: boolean;
+  hasOneBacktestRun: boolean;
+  busy: boolean;
+  activeCommand: ResearchCommand | null;
+  promoteState: PromoteState;
+  promoteBusy: boolean;
+}): {
+  promotionHistory: ResearchCommandState;
+  compare: ResearchCommandState;
+  diff: ResearchCommandState;
+  promote: ResearchCommandState;
+} {
+  const pairLabel = selectedRuns.length === 2
+    ? `${formatText(selectedRuns[0].strategyName)} and ${formatText(selectedRuns[1].strategyName)}`
+    : null;
+  const selectedRun = selectedRuns[0] ?? null;
+  const pairDisabledReason = busy
+    ? "Wait for the current Strategy command to finish."
+    : hasTwoRuns
+      ? null
+      : `Select exactly two runs before using this command. ${selectedRuns.length} selected.`;
+  const promoteLabel = promoteState === "evaluating"
+    ? "Evaluating..."
+    : promoteState === "creating"
+      ? "Creating session..."
+      : promoteState === "done"
+        ? "Session created"
+        : "Promote to Paper";
+  const promoteDisabledReason = busy
+    ? "Wait for the current Strategy command to finish."
+    : promoteBusy
+      ? "Paper-promotion workflow is already running."
+      : promoteState === "done"
+        ? "A paper session was already created for this promotion."
+        : hasOneBacktestRun
+          ? null
+          : selectedRuns.length === 1
+            ? "Select one completed backtest run before promoting to paper."
+            : `Select one completed backtest run before promoting to paper. ${selectedRuns.length} selected.`;
+
+  return {
+    promotionHistory: {
+      label: activeCommand === "history" ? "Loading history..." : "Promotion history",
+      ariaLabel: activeCommand === "history" ? "Promotion history: loading" : "Promotion history",
+      disabled: busy,
+      disabledReason: busy ? "Wait for the current Strategy command to finish." : null,
+      busy: activeCommand === "history"
+    },
+    compare: {
+      label: activeCommand === "compare" ? "Comparing..." : "Compare 2 runs",
+      ariaLabel: activeCommand === "compare"
+        ? `Comparing selected runs: ${pairLabel ?? "current selection"}`
+        : pairLabel
+          ? `Compare 2 runs: ${pairLabel}`
+          : "Compare 2 runs unavailable",
+      disabled: !hasTwoRuns || busy,
+      disabledReason: pairDisabledReason,
+      busy: activeCommand === "compare"
+    },
+    diff: {
+      label: activeCommand === "diff" ? "Diffing..." : "Diff 2 runs",
+      ariaLabel: activeCommand === "diff"
+        ? `Diffing selected runs: ${pairLabel ?? "current selection"}`
+        : pairLabel
+          ? `Diff 2 runs: ${pairLabel}`
+          : "Diff 2 runs unavailable",
+      disabled: !hasTwoRuns || busy,
+      disabledReason: pairDisabledReason,
+      busy: activeCommand === "diff"
+    },
+    promote: {
+      label: promoteLabel,
+      ariaLabel: selectedRun
+        ? `${promoteLabel}: evaluate ${formatText(selectedRun.strategyName)} for paper trading`
+        : `${promoteLabel} unavailable`,
+      disabled: !hasOneBacktestRun || busy || promoteBusy || promoteState === "done",
+      disabledReason: promoteDisabledReason,
+      busy: promoteBusy
+    }
   };
 }
 

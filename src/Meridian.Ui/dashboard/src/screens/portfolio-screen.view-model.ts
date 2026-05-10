@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdAccount,
@@ -890,14 +891,14 @@ function buildWorkflowTaskPanel({
         id: "workstation-trading",
         method: "GET",
         label: "Trading workspace",
-        href: "/api/workstation/trading",
+        href: WORKSTATION_API_ENDPOINTS.trading,
         ariaLabel: "Open GET /api/workstation/trading backend payload"
       },
       {
         id: "trading-readiness",
         method: "GET",
         label: "Trading readiness",
-        href: "/api/workstation/trading/readiness",
+        href: WORKSTATION_API_ENDPOINTS.tradingReadiness,
         ariaLabel: "Open GET /api/workstation/trading/readiness backend payload"
       },
       {

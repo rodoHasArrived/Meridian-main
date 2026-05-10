@@ -242,8 +242,8 @@ describe("overview-screen view model", () => {
       eyebrow: "Integration setup",
       title: "Connect provider baseline",
       buttonLabel: "Open setup checks",
-      href: "/settings",
-      ariaLabel: "Open Settings setup checks"
+      href: "/settings#alpaca-provider-setup",
+      ariaLabel: "Open Alpaca paper provider setup checklist"
     });
     expect(routes[0].detail).toContain("No providers are configured yet");
   });

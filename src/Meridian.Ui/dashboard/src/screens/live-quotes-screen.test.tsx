@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 
 import { computeIntradayMetrics, LiveQuotesScreen } from "@/screens/live-quotes-screen";
 import {
+  buildLiveQuoteRefreshCommand,
+  buildLiveQuoteSymbolLookupViewModel,
   buildLiveQuotesMarketViewModel,
   buildOrderRequest,
   validateQuickTicket
@@ -393,6 +395,66 @@ describe("buildLiveQuotesMarketViewModel", () => {
   });
 });
 
+describe("buildLiveQuoteSymbolLookupViewModel", () => {
+  it("normalizes symbol input and exposes a route-ready command", () => {
+    const vm = buildLiveQuoteSymbolLookupViewModel({
+      inputValue: " msft ",
+      activeSymbol: "AAPL",
+      submittedEmpty: false
+    });
+
+    expect(vm.normalizedSymbol).toBe("MSFT");
+    expect(vm.command).toMatchObject({
+      disabled: false,
+      disabledReason: null,
+      ariaLabel: "View live quote for MSFT"
+    });
+    expect(vm.status).toMatchObject({
+      role: "status",
+      message: "Ready to load MSFT."
+    });
+  });
+
+  it("models empty symbol input as a disabled lookup command", () => {
+    const vm = buildLiveQuoteSymbolLookupViewModel({
+      inputValue: " ",
+      activeSymbol: null,
+      submittedEmpty: true
+    });
+
+    expect(vm.normalizedSymbol).toBe("");
+    expect(vm.inputInvalid).toBe(true);
+    expect(vm.command).toMatchObject({
+      disabled: true,
+      disabledReason: "Enter a symbol before loading live market data."
+    });
+    expect(vm.status).toMatchObject({
+      role: "alert",
+      message: "Enter a symbol before loading live market data."
+    });
+  });
+});
+
+describe("buildLiveQuoteRefreshCommand", () => {
+  it("hides refresh until a symbol is active and disables during refresh", () => {
+    expect(buildLiveQuoteRefreshCommand(null, false)).toBeNull();
+    expect(buildLiveQuoteRefreshCommand("AAPL", false)).toMatchObject({
+      label: "Refresh",
+      ariaLabel: "Refresh live data for AAPL",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
+    expect(buildLiveQuoteRefreshCommand("AAPL", true)).toMatchObject({
+      label: "Refreshing",
+      ariaLabel: "Refreshing live data for AAPL",
+      disabled: true,
+      disabledReason: "Live market data refresh is already running.",
+      busy: true
+    });
+  });
+});
+
 describe("LiveQuotesScreen quick trade", () => {
   beforeEach(() => {
     vi.spyOn(api, "getLiveQuote").mockResolvedValue(quoteFixture);
@@ -513,6 +575,16 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(screen.getByDisplayValue("MSFT")).toBeInTheDocument();
   });
 
+  it("disables empty symbol lookup and describes the required input", () => {
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes"] });
+
+    const submitButton = screen.getByRole("button", { name: "View live quote" });
+    expect(submitButton).toBeDisabled();
+    expect(submitButton).toHaveAttribute("title", "Enter a symbol before loading live market data.");
+    expect(screen.getByText("Enter a symbol to load live BBO, recent trades, and L2 depth.")).toBeInTheDocument();
+    expect(api.getLiveQuote).not.toHaveBeenCalled();
+  });
+
   it("renders loading states while initial market data is pending", async () => {
     const quote = deferred<typeof quoteFixture>();
     const trades = deferred<typeof tradesFixture>();
@@ -555,7 +627,7 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(await screen.findByRole("button", { name: /Buy AAPL at ask 188\.07/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Sell AAPL at 188\.05/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Refresh live data now" }));
+    await user.click(screen.getByRole("button", { name: "Refresh live data for AAPL" }));
 
     expect(await screen.findByText("quote feed offline")).toBeInTheDocument();
     expect(screen.getByText("trade tape offline")).toBeInTheDocument();
@@ -590,7 +662,7 @@ describe("LiveQuotesScreen quick trade", () => {
 
     await user.clear(screen.getByLabelText("Symbol"));
     await user.type(screen.getByLabelText("Symbol"), "MSFT");
-    await user.click(screen.getByRole("button", { name: /View quote/i }));
+    await user.click(screen.getByRole("button", { name: /View live quote for MSFT/i }));
 
     await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("MSFT"));
 

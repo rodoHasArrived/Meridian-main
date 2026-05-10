@@ -185,6 +185,47 @@ describe("command palette view model", () => {
     });
   });
 
+  it("routes evidence workflow actions to the Evidence Workbench", () => {
+    const model = buildCommandPaletteViewModel("/strategy", undefined, {
+      workflowLibrary: {
+        generatedAt: "2026-01-01T00:00:00Z",
+        actions: [],
+        workflows: [
+          {
+            workflowId: "strategy-to-paper-review",
+            title: "Strategy to Paper Review",
+            summary: "Review strategy evidence before promotion.",
+            workspaceId: "strategy",
+            workspaceTitle: "Strategy",
+            entryPageTag: "StrategyShell",
+            tone: "Primary",
+            evidenceTags: ["run evidence"],
+            marketPatternTags: ["promotion review"],
+            actions: [
+              {
+                actionId: "workflow.evidence.open-packet",
+                label: "Open Evidence Packet",
+                detail: "Open the reusable evidence packet.",
+                targetPageTag: "EvidenceWorkbench",
+                tone: "Primary",
+                workItemKind: null,
+                routePrefixes: [],
+                routeContains: [],
+                aliases: []
+              }
+            ]
+          }
+        ]
+      }
+    });
+
+    expect(model.items.find((item) => item.id === "workflow:strategy-to-paper-review:workflow.evidence.open-packet")).toMatchObject({
+      kind: "workflow",
+      route: "/reporting/evidence",
+      routeLabel: "/reporting/evidence"
+    });
+  });
+
   it("routes account portfolio workflows to the dedicated brokerage-sync task panel", () => {
     const model = buildCommandPaletteViewModel("/portfolio", undefined, {
       workflowLibrary: {

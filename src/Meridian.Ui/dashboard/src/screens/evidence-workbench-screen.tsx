@@ -1,4 +1,4 @@
-import { AlertTriangle, Download, FileText, Network, RefreshCcw, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Download, ExternalLink, FileText, ListChecks, Network, RefreshCcw, ShieldCheck } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,11 +7,21 @@ import { cn } from "@/lib/utils";
 import {
   mapStatusTone,
   useEvidenceWorkbenchViewModel,
+  type EvidencePacketActionTone,
+  type EvidencePacketActionViewModel,
   type EvidenceStatusTone
 } from "@/screens/evidence-workbench-screen.view-model";
 import type { EvidenceNode } from "@/types";
 
 const badgeVariant: Record<EvidenceStatusTone, "success" | "warning" | "danger" | "outline"> = {
+  success: "success",
+  warning: "warning",
+  danger: "danger",
+  muted: "outline"
+};
+
+const actionBadgeVariant: Record<EvidencePacketActionTone, "success" | "warning" | "danger" | "outline"> = {
+  primary: "outline",
   success: "success",
   warning: "warning",
   danger: "danger",
@@ -57,6 +67,14 @@ export function EvidenceWorkbenchScreen() {
           <Badge variant={badgeVariant[vm.statusTone]} dot>{vm.statusLabel}</Badge>
           <Badge variant="outline">{vm.scoreLabel}</Badge>
           <Badge variant="outline">{vm.generatedLabel}</Badge>
+          {vm.sourceWorkflowHref && vm.sourceWorkflowLabel && vm.sourceWorkflowAriaLabel ? (
+            <Button asChild variant="outline" size="sm">
+              <Link to={vm.sourceWorkflowHref} aria-label={vm.sourceWorkflowAriaLabel}>
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                {vm.sourceWorkflowLabel}
+              </Link>
+            </Button>
+          ) : null}
         </div>
       </section>
 
@@ -221,6 +239,15 @@ export function EvidenceWorkbenchScreen() {
             </div>
 
             <aside className="space-y-4">
+              {vm.hasPacketActions ? (
+                <EvidenceActionPanel
+                  actions={vm.packetActions}
+                  label={vm.packetActionsLabel}
+                  summary={vm.packetActionsSummaryLabel}
+                  onValidate={vm.validatePacket}
+                  onExport={vm.exportManifest}
+                />
+              ) : null}
               <EvidenceList title="Missing evidence" items={vm.missingEvidence} tone="danger" />
               <EvidenceList title="Stale evidence" items={vm.staleEvidence} tone="warning" />
               <EvidenceList title="Related work items" items={vm.relatedWorkItemIds} tone="muted" />
@@ -287,6 +314,89 @@ function EvidenceNodeRow({ node }: { node: EvidenceNode }) {
   );
 }
 
+function EvidenceActionPanel({
+  actions,
+  label,
+  summary,
+  onValidate,
+  onExport
+}: {
+  actions: EvidencePacketActionViewModel[];
+  label: string;
+  summary: string;
+  onValidate: () => Promise<void>;
+  onExport: () => Promise<void>;
+}) {
+  return (
+    <Card className="panel-surface" role="region" aria-label={label}>
+      <CardHeader>
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ListChecks className="h-4 w-4 text-primary" aria-hidden="true" />
+            {label}
+          </CardTitle>
+          <Badge variant="outline">{summary}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <ul className="space-y-3">
+          {actions.map((action) => (
+            <li key={action.id} className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="font-semibold text-foreground">{action.label}</div>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{action.detail}</p>
+                </div>
+                <Badge variant={actionBadgeVariant[action.tone]}>{action.targetLabel}</Badge>
+              </div>
+              <div className="mt-3">
+                {action.control === "validate" ? (
+                  <Button
+                    type="button"
+                    variant={buttonVariantForAction(action.tone)}
+                    size="sm"
+                    onClick={() => void onValidate()}
+                    busy={action.busy}
+                    busyLabel={action.busyLabel}
+                    disabled={action.disabled}
+                    disabledReason={action.disabledReason}
+                    aria-label={action.ariaLabel}
+                  >
+                    <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+                    {action.commandLabel}
+                  </Button>
+                ) : action.control === "export" ? (
+                  <Button
+                    type="button"
+                    variant={buttonVariantForAction(action.tone)}
+                    size="sm"
+                    onClick={() => void onExport()}
+                    busy={action.busy}
+                    busyLabel={action.busyLabel}
+                    disabled={action.disabled}
+                    disabledReason={action.disabledReason}
+                    aria-label={action.ariaLabel}
+                  >
+                    <Download className="h-4 w-4" aria-hidden="true" />
+                    {action.commandLabel}
+                  </Button>
+                ) : (
+                  <Button asChild variant={buttonVariantForAction(action.tone)} size="sm">
+                    <Link to={action.href} aria-label={action.ariaLabel}>
+                      <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                      {action.commandLabel}
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}
+
 function EvidenceList({
   title,
   items,
@@ -327,3 +437,13 @@ const metricToneClass: Record<EvidenceStatusTone, string> = {
   danger: "text-danger",
   muted: "text-foreground"
 };
+
+function buttonVariantForAction(tone: EvidencePacketActionTone) {
+  if (tone === "primary" || tone === "success") {
+    return "default";
+  }
+  if (tone === "danger") {
+    return "destructive";
+  }
+  return "outline";
+}

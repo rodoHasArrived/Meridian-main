@@ -62,6 +62,41 @@ import type {
   CreateExecutionManualOverrideRequest,
   ExecutionManualOverride
 } from "@/types";
+import {
+  EXECUTION_API_ENDPOINTS,
+  PROMOTION_API_ENDPOINTS,
+  REPLAY_API_ENDPOINTS,
+  WORKSTATION_API_ENDPOINTS,
+  executionAuditEndpoint,
+  executionManualOverrideClearEndpoint,
+  executionOrderCancelEndpoint,
+  executionPositionCloseEndpoint,
+  executionSessionCloseEndpoint,
+  executionSessionEndpoint,
+  executionSessionReplayEndpoint,
+  portfolioHouseholdEndpoint,
+  promotionEvaluateEndpoint,
+  replayFilesEndpoint,
+  replaySessionActionEndpoint,
+  workstationEvidenceExportManifestEndpoint,
+  workstationEvidenceGraphEndpoint,
+  workstationEvidencePacketEndpoint,
+  workstationEvidenceValidateEndpoint,
+  workstationOperatorInboxEndpoint,
+  workstationRunContinuityEndpoint,
+  workstationRunHistoryEndpoint,
+  workstationRunLedgerEndpoint,
+  workstationRunLedgerJournalEndpoint,
+  workstationRunReconciliationEndpoint,
+  workstationRunReconciliationHistoryEndpoint,
+  workstationRunReviewPacketEndpoint,
+  workstationRunSweepsEndpoint,
+  workstationRunTimelineEndpoint,
+  workstationWorkflowSummaryEndpoint,
+  workstationWorkflowPresetEndpoint,
+  workstationWorkflowPresetPinEndpoint,
+  workstationWorkflowPresetUsedEndpoint
+} from "@/lib/workstation-endpoints";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
 
@@ -196,11 +231,11 @@ async function getDevelopmentSearchFallback(query: string, take: number, activeO
 }
 
 export function getSession() {
-  return getJson<SessionInfo>("/api/workstation/session");
+  return getJson<SessionInfo>(WORKSTATION_API_ENDPOINTS.session);
 }
 
 export function getStrategyWorkspace() {
-  return getJson<ResearchWorkspaceResponse>("/api/workstation/strategy");
+  return getJson<ResearchWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.strategy);
 }
 
 export function getResearchWorkspace() {
@@ -208,16 +243,15 @@ export function getResearchWorkspace() {
 }
 
 export function getTradingWorkspace() {
-  return getJson<TradingWorkspaceResponse>("/api/workstation/trading");
+  return getJson<TradingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.trading);
 }
 
 export function getTradingReadiness() {
-  return getJson<TradingOperatorReadiness>("/api/workstation/trading/readiness");
+  return getJson<TradingOperatorReadiness>(WORKSTATION_API_ENDPOINTS.tradingReadiness);
 }
 
 export function getOperatorInbox(fundAccountId?: string) {
-  const params = fundAccountId ? `?fundAccountId=${encodeURIComponent(fundAccountId)}` : "";
-  return getJson<OperatorInbox>(`/api/workstation/operator/inbox${params}`);
+  return getJson<OperatorInbox>(workstationOperatorInboxEndpoint(fundAccountId));
 }
 
 export function getWorkstationWorkflowSummary(options: {
@@ -226,37 +260,31 @@ export function getWorkstationWorkflowSummary(options: {
   fundProfileId?: string;
   fundDisplayName?: string;
 } = {}) {
-  return getJson<unknown>(`/api/workstation/workflow-summary${queryString(options)}`);
+  return getJson<unknown>(workstationWorkflowSummaryEndpoint(options));
 }
 
 export function getWorkflowLibrary() {
-  return getJson<WorkflowLibrary>("/api/workstation/workflows");
+  return getJson<WorkflowLibrary>(WORKSTATION_API_ENDPOINTS.workflowLibrary);
 }
 
 export function getWorkflowPresets() {
-  return getJson<WorkflowPresetLibrary>("/api/workstation/workflows/presets");
+  return getJson<WorkflowPresetLibrary>(WORKSTATION_API_ENDPOINTS.workflowPresets);
 }
 
 export function getEvidenceSubjects() {
-  return getJson<EvidenceSubject[]>("/api/workstation/evidence/subjects");
+  return getJson<EvidenceSubject[]>(WORKSTATION_API_ENDPOINTS.evidenceSubjects);
 }
 
 export function getEvidencePacket(subjectKind: string, subjectId: string) {
-  return getJson<EvidencePacket>(
-    `/api/workstation/evidence/subjects/${encodeURIComponent(subjectKind)}/${encodeURIComponent(subjectId)}/packet`
-  );
+  return getJson<EvidencePacket>(workstationEvidencePacketEndpoint(subjectKind, subjectId));
 }
 
 export function getEvidenceGraph(subjectKind: string, subjectId: string) {
-  return getJson<EvidenceGraph>(
-    `/api/workstation/evidence/subjects/${encodeURIComponent(subjectKind)}/${encodeURIComponent(subjectId)}/graph`
-  );
+  return getJson<EvidenceGraph>(workstationEvidenceGraphEndpoint(subjectKind, subjectId));
 }
 
 export function validateEvidencePacket(subjectKind: string, subjectId: string) {
-  return postJson<EvidenceCompleteness>(
-    `/api/workstation/evidence/subjects/${encodeURIComponent(subjectKind)}/${encodeURIComponent(subjectId)}/validate`
-  );
+  return postJson<EvidenceCompleteness>(workstationEvidenceValidateEndpoint(subjectKind, subjectId));
 }
 
 export function exportEvidenceManifest(
@@ -264,38 +292,35 @@ export function exportEvidenceManifest(
   subjectId: string,
   request: EvidencePacketExportRequest = { includeWarnings: true }
 ) {
-  return postJson<EvidencePacketExportResponse>(
-    `/api/workstation/evidence/subjects/${encodeURIComponent(subjectKind)}/${encodeURIComponent(subjectId)}/export-manifest`,
-    request
-  );
+  return postJson<EvidencePacketExportResponse>(workstationEvidenceExportManifestEndpoint(subjectKind, subjectId), request);
 }
 
 export function getEvidenceTemplates() {
-  return getJson<EvidenceTemplate[]>("/api/workstation/evidence/templates");
+  return getJson<EvidenceTemplate[]>(WORKSTATION_API_ENDPOINTS.evidenceTemplates);
 }
 
 export function saveWorkflowPreset(request: WorkflowPresetSaveRequest) {
-  return postJson<WorkflowPreset>("/api/workstation/workflows/presets", request);
+  return postJson<WorkflowPreset>(workstationWorkflowPresetEndpoint(), request);
 }
 
 export function updateWorkflowPreset(presetId: string, request: WorkflowPresetSaveRequest) {
-  return putJson<WorkflowPreset>(`/api/workstation/workflows/presets/${encodeURIComponent(presetId)}`, request);
+  return putJson<WorkflowPreset>(workstationWorkflowPresetEndpoint(presetId), request);
 }
 
 export function pinWorkflowPreset(presetId: string, isPinned: boolean) {
-  return postJson<WorkflowPreset>(`/api/workstation/workflows/presets/${encodeURIComponent(presetId)}/pin`, { isPinned });
+  return postJson<WorkflowPreset>(workstationWorkflowPresetPinEndpoint(presetId), { isPinned });
 }
 
 export function markWorkflowPresetUsed(presetId: string) {
-  return postJson<WorkflowPreset>(`/api/workstation/workflows/presets/${encodeURIComponent(presetId)}/used`);
+  return postJson<WorkflowPreset>(workstationWorkflowPresetUsedEndpoint(presetId));
 }
 
 export function deleteWorkflowPreset(presetId: string) {
-  return deleteJson<void>(`/api/workstation/workflows/presets/${encodeURIComponent(presetId)}`);
+  return deleteJson<void>(workstationWorkflowPresetEndpoint(presetId));
 }
 
 export function getDataWorkspace() {
-  return getJson<DataOperationsWorkspaceResponse>("/api/workstation/data");
+  return getJson<DataOperationsWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.data);
 }
 
 export function getDataOperationsWorkspace() {
@@ -303,11 +328,11 @@ export function getDataOperationsWorkspace() {
 }
 
 export function getGovernanceWorkspace() {
-  return getJson<GovernanceWorkspaceResponse>("/api/workstation/accounting");
+  return getJson<GovernanceWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.accounting);
 }
 
 export function getReportingWorkspace() {
-  return getJson<GovernanceWorkspaceResponse>("/api/workstation/reporting");
+  return getJson<GovernanceWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.reporting);
 }
 
 export function runAnalysisExport(profileId: string) {
@@ -317,7 +342,7 @@ export function runAnalysisExport(profileId: string) {
 // --- Promotion workflow ---
 
 export function evaluatePromotion(runId: string) {
-  return getJson<PromotionEvaluationResult>(`/api/promotion/evaluate/${encodeURIComponent(runId)}`);
+  return getJson<PromotionEvaluationResult>(promotionEvaluateEndpoint(runId));
 }
 
 export interface ApprovePromotionRequest {
@@ -329,7 +354,7 @@ export interface ApprovePromotionRequest {
 }
 
 export function approvePromotion(request: ApprovePromotionRequest) {
-  return postJson<PromotionDecisionResult>("/api/promotion/approve", request);
+  return postJson<PromotionDecisionResult>(PROMOTION_API_ENDPOINTS.approve, request);
 }
 
 export interface RejectPromotionRequest {
@@ -341,39 +366,39 @@ export interface RejectPromotionRequest {
 }
 
 export function rejectPromotion(request: RejectPromotionRequest) {
-  return postJson<PromotionDecisionResult>("/api/promotion/reject", request);
+  return postJson<PromotionDecisionResult>(PROMOTION_API_ENDPOINTS.reject, request);
 }
 
 export function getPromotionHistory() {
-  return getJson<PromotionRecord[]>("/api/promotion/history");
+  return getJson<PromotionRecord[]>(PROMOTION_API_ENDPOINTS.history);
 }
 
 // --- Order management ---
 
 export function submitOrder(request: OrderSubmitRequest) {
-  return postJson<OrderResult>("/api/execution/orders/submit", request);
+  return postJson<OrderResult>(EXECUTION_API_ENDPOINTS.ordersSubmit, request);
 }
 
 export function cancelOrder(orderId: string) {
-  return postJson<TradingActionResult>(`/api/execution/orders/${encodeURIComponent(orderId)}/cancel`);
+  return postJson<TradingActionResult>(executionOrderCancelEndpoint(orderId));
 }
 
 export function cancelAllOrders() {
-  return postJson<TradingActionResult>("/api/execution/orders/cancel-all");
+  return postJson<TradingActionResult>(EXECUTION_API_ENDPOINTS.ordersCancelAll);
 }
 
 export function closePosition(symbol: string) {
-  return postJson<TradingActionResult>(`/api/execution/positions/${encodeURIComponent(symbol)}/close`);
+  return postJson<TradingActionResult>(executionPositionCloseEndpoint(symbol));
 }
 
 // --- Paper session management ---
 
 export function getExecutionSessions() {
-  return getJson<PaperSessionSummary[]>("/api/execution/sessions");
+  return getJson<PaperSessionSummary[]>(EXECUTION_API_ENDPOINTS.sessions);
 }
 
 export function createPaperSession(strategyId: string, strategyName: string | null, initialCash: number) {
-  return postJson<PaperSessionSummary>("/api/execution/sessions/create", {
+  return postJson<PaperSessionSummary>(EXECUTION_API_ENDPOINTS.sessionsCreate, {
     strategyId,
     strategyName,
     initialCash
@@ -381,31 +406,31 @@ export function createPaperSession(strategyId: string, strategyName: string | nu
 }
 
 export function closePaperSession(sessionId: string) {
-  return postJson<TradingActionResult>(`/api/execution/sessions/${encodeURIComponent(sessionId)}/close`);
+  return postJson<TradingActionResult>(executionSessionCloseEndpoint(sessionId));
 }
 
 export function getPaperSessionDetail(sessionId: string) {
-  return getJson<PaperSessionDetail>(`/api/execution/sessions/${encodeURIComponent(sessionId)}`);
+  return getJson<PaperSessionDetail>(executionSessionEndpoint(sessionId));
 }
 
 export function getPaperSessionReplayVerification(sessionId: string) {
-  return getJson<PaperSessionReplayVerification>(`/api/execution/sessions/${encodeURIComponent(sessionId)}/replay`);
+  return getJson<PaperSessionReplayVerification>(executionSessionReplayEndpoint(sessionId));
 }
 
 export function getExecutionAudit(take = 20) {
-  return getJson<ExecutionAuditEntry[]>(`/api/execution/audit?take=${encodeURIComponent(String(take))}`);
+  return getJson<ExecutionAuditEntry[]>(executionAuditEndpoint(take));
 }
 
 export function getExecutionControls() {
-  return getJson<ExecutionControlSnapshot>("/api/execution/controls");
+  return getJson<ExecutionControlSnapshot>(EXECUTION_API_ENDPOINTS.controls);
 }
 
 export function createExecutionManualOverride(request: CreateExecutionManualOverrideRequest) {
-  return postJson<ExecutionManualOverride>("/api/execution/controls/manual-overrides", request);
+  return postJson<ExecutionManualOverride>(EXECUTION_API_ENDPOINTS.manualOverrides, request);
 }
 
 export function clearExecutionManualOverride(overrideId: string) {
-  return postJson<TradingActionResult>(`/api/execution/controls/manual-overrides/${encodeURIComponent(overrideId)}/clear`);
+  return postJson<TradingActionResult>(executionManualOverrideClearEndpoint(overrideId));
 }
 
 // --- Strategy lifecycle ---
@@ -425,39 +450,41 @@ export function stopStrategy(strategyId: string) {
 // --- Replay controls ---
 
 export function getReplayFiles(symbol?: string) {
-  const params = symbol ? `?symbol=${encodeURIComponent(symbol)}` : "";
-  return getJson<{ files: ReplayFileRecord[]; total: number; timestamp: string }>(`/api/replay/files${params}`);
+  return getJson<{ files: ReplayFileRecord[]; total: number; timestamp: string }>(replayFilesEndpoint(symbol));
 }
 
 export function startReplay(filePath: string, speedMultiplier = 1) {
   return postJson<{ sessionId: string; filePath: string; status: string; speedMultiplier: number }>(
-    "/api/replay/start",
+    REPLAY_API_ENDPOINTS.start,
     { filePath, speedMultiplier }
   );
 }
 
 export function pauseReplay(sessionId: string) {
-  return postJson<{ sessionId: string; status: string; eventsProcessed: number }>(`/api/replay/${encodeURIComponent(sessionId)}/pause`);
+  return postJson<{ sessionId: string; status: string; eventsProcessed: number }>(replaySessionActionEndpoint(sessionId, "pause"));
 }
 
 export function resumeReplay(sessionId: string) {
-  return postJson<{ sessionId: string; status: string; eventsProcessed: number }>(`/api/replay/${encodeURIComponent(sessionId)}/resume`);
+  return postJson<{ sessionId: string; status: string; eventsProcessed: number }>(replaySessionActionEndpoint(sessionId, "resume"));
 }
 
 export function stopReplay(sessionId: string) {
-  return postJson<{ sessionId: string; status: string; eventsProcessed: number }>(`/api/replay/${encodeURIComponent(sessionId)}/stop`);
+  return postJson<{ sessionId: string; status: string; eventsProcessed: number }>(replaySessionActionEndpoint(sessionId, "stop"));
 }
 
 export function seekReplay(sessionId: string, positionMs: number) {
-  return postJson<{ sessionId: string; positionMs: number; status: string }>(`/api/replay/${encodeURIComponent(sessionId)}/seek`, { positionMs });
+  return postJson<{ sessionId: string; positionMs: number; status: string }>(replaySessionActionEndpoint(sessionId, "seek"), { positionMs });
 }
 
 export function setReplaySpeed(sessionId: string, speedMultiplier: number) {
-  return postJson<{ sessionId: string; speedMultiplier: number; status: string }>(`/api/replay/${encodeURIComponent(sessionId)}/speed`, { speedMultiplier });
+  return postJson<{ sessionId: string; speedMultiplier: number; status: string }>(
+    replaySessionActionEndpoint(sessionId, "speed"),
+    { speedMultiplier }
+  );
 }
 
 export function getReplayStatus(sessionId: string) {
-  return getJson<ReplayStatus>(`/api/replay/${encodeURIComponent(sessionId)}/status`);
+  return getJson<ReplayStatus>(replaySessionActionEndpoint(sessionId, "status"));
 }
 
 // --- Strategy runs ---
@@ -493,7 +520,7 @@ export function getRunEquityCurve(runId: string) {
 }
 
 export function getRunLedger(runId: string) {
-  return getJson<LedgerSummary>(`/api/workstation/runs/${encodeURIComponent(runId)}/ledger`);
+  return getJson<LedgerSummary>(workstationRunLedgerEndpoint(runId));
 }
 
 export function getRunTrialBalance(runId: string, accountType?: string) {
@@ -503,15 +530,15 @@ export function getRunTrialBalance(runId: string, accountType?: string) {
 
 export function getRunLedgerJournal(runId: string, options: { from?: string; to?: string } = {}) {
   const params = queryString(options);
-  return getJson<LedgerJournalLine[]>(`/api/workstation/runs/${encodeURIComponent(runId)}/ledger/journal${params}`);
+  return getJson<LedgerJournalLine[]>(`${workstationRunLedgerJournalEndpoint(runId)}${params}`);
 }
 
 export function getRunContinuity(runId: string) {
-  return getJson<unknown>(`/api/workstation/runs/${encodeURIComponent(runId)}/continuity`);
+  return getJson<unknown>(workstationRunContinuityEndpoint(runId));
 }
 
 export function getRunReviewPacketPath(runId: string, fundAccountId?: string) {
-  return `/api/workstation/runs/${encodeURIComponent(runId)}/review-packet${queryString({ fundAccountId })}`;
+  return workstationRunReviewPacketEndpoint(runId, fundAccountId);
 }
 
 export function getRunReviewPacket(runId: string, fundAccountId?: string) {
@@ -519,23 +546,23 @@ export function getRunReviewPacket(runId: string, fundAccountId?: string) {
 }
 
 export function getRunReconciliation(runId: string) {
-  return getJson<unknown>(`/api/workstation/runs/${encodeURIComponent(runId)}/reconciliation`);
+  return getJson<unknown>(workstationRunReconciliationEndpoint(runId));
 }
 
 export function getRunReconciliationHistory(runId: string) {
-  return getJson<unknown>(`/api/workstation/runs/${encodeURIComponent(runId)}/reconciliation/history`);
+  return getJson<unknown>(workstationRunReconciliationHistoryEndpoint(runId));
 }
 
 export function getRunHistory(options: { mode?: string; status?: string; limit?: number } = {}) {
-  return getJson<unknown>(`/api/workstation/runs/history${queryString(options)}`);
+  return getJson<unknown>(workstationRunHistoryEndpoint(options));
 }
 
 export function getRunTimeline(options: { mode?: string; status?: string; strategyId?: string; limit?: number } = {}) {
-  return getJson<unknown>(`/api/workstation/runs/timeline${queryString(options)}`);
+  return getJson<unknown>(workstationRunTimelineEndpoint(options));
 }
 
 export function getRunSweeps(limit?: number) {
-  return getJson<unknown>(`/api/workstation/runs/sweeps${queryString({ limit })}`);
+  return getJson<unknown>(workstationRunSweepsEndpoint(limit));
 }
 
 // --- Security Master search ---
@@ -691,7 +718,7 @@ export function testProviderConnection(providerId: string) {
 // --- System overview ---
 
 export function getSystemStatus() {
-  return getJson<unknown>("/api/status").then(normalizeSystemOverviewResponse);
+  return getJson<unknown>(WORKSTATION_API_ENDPOINTS.systemStatus).then(normalizeSystemOverviewResponse);
 }
 
 function normalizeSystemOverviewResponse(payload: unknown): SystemOverviewResponse {
@@ -953,7 +980,7 @@ export function revokeRobinhoodConnection() {
 }
 
 export function getPortfolioWorkspace() {
-  return getJson<import("@/types").PortfolioWorkspaceResponse>("/api/workstation/portfolio");
+  return getJson<import("@/types").PortfolioWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.portfolio);
 }
 
 export function getAlpacaConnectionStatus() {
@@ -969,7 +996,7 @@ export function revokeAlpacaConnection() {
 }
 
 export function getBrokerageHouseholdPortfolio(provider = "alpaca") {
-  return getJson<BrokerageHouseholdPortfolio>(`/api/portfolio/household${queryString({ provider })}`);
+  return getJson<BrokerageHouseholdPortfolio>(portfolioHouseholdEndpoint(provider));
 }
 
 export function getPortfolioAggregate() {

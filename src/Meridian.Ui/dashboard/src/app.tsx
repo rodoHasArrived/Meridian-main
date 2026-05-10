@@ -255,6 +255,7 @@ export function App() {
                     overview={overview}
                     research={research}
                     trading={trading}
+                    portfolio={portfolio}
                     dataOperations={dataOperations}
                     governance={governance}
                     reporting={reporting}

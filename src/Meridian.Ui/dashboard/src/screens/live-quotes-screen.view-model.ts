@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type {
   OrderBookLevelDto,
   OrderBookResponse,
@@ -8,6 +8,10 @@ import type {
   TradeDataResponse,
   TradesResponse
 } from "@/types";
+
+export const LIVE_QUOTES_POLL_INTERVAL_MS = 2000;
+export const LIVE_QUOTES_TRADE_HISTORY_LIMIT = 200;
+export const LIVE_QUOTES_TRADE_TABLE_LIMIT = 25;
 
 export type QuickTicketPhase = "idle" | "submitting" | "submitted" | "error";
 
@@ -65,6 +69,32 @@ export interface QuickTradeTicketApi {
 export interface LiveQuotesLoadState<T> {
   data: T | null;
   error: string | null;
+}
+
+export interface LiveQuoteSymbolLookupCommandViewModel {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
+export interface LiveQuoteSymbolLookupStatusViewModel {
+  id: string;
+  role: "status" | "alert";
+  message: string;
+  toneClass: string;
+}
+
+export interface LiveQuoteSymbolLookupViewModel {
+  inputId: string;
+  statusId: string;
+  formLabel: string;
+  inputLabel: string;
+  inputPlaceholder: string;
+  normalizedSymbol: string;
+  inputInvalid: boolean;
+  command: LiveQuoteSymbolLookupCommandViewModel;
+  status: LiveQuoteSymbolLookupStatusViewModel;
 }
 
 export type LiveQuotesPanelStatus = "loading" | "error" | "empty" | "ready" | "warning";
@@ -169,6 +199,39 @@ export interface LiveQuotesMarketDataViewModel {
   tradesDescription: string;
 }
 
+export interface LiveQuotesApi {
+  getLiveQuote: (symbol: string) => Promise<QuotesResponse>;
+  getLiveTrades: (symbol: string, limit: number) => Promise<TradesResponse>;
+  getLiveOrderbook: (symbol: string, depth: number) => Promise<OrderBookResponse>;
+  submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
+}
+
+export interface LiveQuotesRouteBinding {
+  routeSymbol: string;
+  setRouteSymbol: (symbol: string) => void;
+}
+
+export interface LiveQuotesScreenViewModel {
+  symbolInput: string;
+  setSymbolInput: (value: string) => void;
+  activeSymbol: string | null;
+  lookup: LiveQuoteSymbolLookupViewModel;
+  market: LiveQuotesMarketDataViewModel;
+  quickTrade: QuickTradeTicketViewModel;
+  refreshCommand: LiveQuoteRefreshCommandViewModel | null;
+  pollIntervalSecondsLabel: string;
+  submitLookup: (event: FormEvent<HTMLFormElement>) => void;
+  refreshMarketData: () => Promise<void>;
+}
+
+export interface LiveQuoteRefreshCommandViewModel {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
+}
+
 export const initialQuickTicketState: QuickTicketState = {
   side: "Buy",
   type: "Limit",
@@ -178,6 +241,216 @@ export const initialQuickTicketState: QuickTicketState = {
   message: null,
   orderId: null
 };
+
+export function useLiveQuotesScreenViewModel(
+  api: LiveQuotesApi,
+  route: LiveQuotesRouteBinding
+): LiveQuotesScreenViewModel {
+  const initialSymbol = normalizeLiveQuoteSymbol(route.routeSymbol);
+  const [symbolInput, setSymbolInputState] = useState(initialSymbol);
+  const [activeSymbol, setActiveSymbol] = useState<string | null>(initialSymbol || null);
+  const [submittedEmptySymbol, setSubmittedEmptySymbol] = useState(false);
+  const [quote, setQuote] = useState<LiveQuotesLoadState<QuotesResponse>>({ data: null, error: null });
+  const [trades, setTrades] = useState<LiveQuotesLoadState<TradesResponse>>({ data: null, error: null });
+  const [orderbook, setOrderbook] = useState<LiveQuotesLoadState<OrderBookResponse>>({ data: null, error: null });
+  const [refreshing, setRefreshing] = useState(false);
+  const requestIdRef = useRef(0);
+  const inFlightSymbolRef = useRef<string | null>(null);
+  const quickTrade = useQuickTradeTicket(activeSymbol, { submitOrder: api.submitOrder });
+
+  const resetMarketState = useCallback(() => {
+    setQuote({ data: null, error: null });
+    setTrades({ data: null, error: null });
+    setOrderbook({ data: null, error: null });
+  }, []);
+
+  const fetchMarketData = useCallback(async (symbol: string) => {
+    const requestedSymbol = normalizeLiveQuoteSymbol(symbol);
+    if (!requestedSymbol || inFlightSymbolRef.current === requestedSymbol) {
+      return;
+    }
+
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    inFlightSymbolRef.current = requestedSymbol;
+    setRefreshing(true);
+
+    try {
+      const [quoteResult, tradesResult, orderbookResult] = await Promise.allSettled([
+        api.getLiveQuote(requestedSymbol),
+        api.getLiveTrades(requestedSymbol, LIVE_QUOTES_TRADE_HISTORY_LIMIT),
+        api.getLiveOrderbook(requestedSymbol, 10)
+      ]);
+
+      if (requestIdRef.current !== requestId) {
+        return;
+      }
+
+      setQuote((current) => mergeLiveQuotesLoadState(quoteResult, current, "Failed to load quote"));
+      setTrades((current) => mergeLiveQuotesLoadState(tradesResult, current, "Failed to load trades"));
+      setOrderbook((current) => mergeLiveQuotesLoadState(orderbookResult, current, "Failed to load order book"));
+    } finally {
+      if (requestIdRef.current === requestId) {
+        inFlightSymbolRef.current = null;
+        setRefreshing(false);
+      }
+    }
+  }, [api.getLiveOrderbook, api.getLiveQuote, api.getLiveTrades]);
+
+  useEffect(() => {
+    if (!activeSymbol) {
+      return;
+    }
+
+    void fetchMarketData(activeSymbol);
+    const interval = window.setInterval(() => void fetchMarketData(activeSymbol), LIVE_QUOTES_POLL_INTERVAL_MS);
+    return () => window.clearInterval(interval);
+  }, [activeSymbol, fetchMarketData]);
+
+  useEffect(() => {
+    const nextSymbol = normalizeLiveQuoteSymbol(route.routeSymbol);
+    if (nextSymbol === (activeSymbol ?? "")) {
+      return;
+    }
+
+    setSymbolInputState(nextSymbol);
+    setSubmittedEmptySymbol(false);
+    setActiveSymbol(nextSymbol || null);
+    resetMarketState();
+    quickTrade.resetTicket();
+  }, [activeSymbol, quickTrade, resetMarketState, route.routeSymbol]);
+
+  const setSymbolInput = useCallback((value: string) => {
+    setSymbolInputState(value);
+    setSubmittedEmptySymbol(false);
+  }, []);
+
+  const lookup = useMemo(() => buildLiveQuoteSymbolLookupViewModel({
+    inputValue: symbolInput,
+    activeSymbol,
+    submittedEmpty: submittedEmptySymbol
+  }), [activeSymbol, submittedEmptySymbol, symbolInput]);
+
+  const market = useMemo(() => buildLiveQuotesMarketViewModel({
+    activeSymbol,
+    quote,
+    trades,
+    orderbook,
+    refreshing,
+    tradeTableLimit: LIVE_QUOTES_TRADE_TABLE_LIMIT
+  }), [activeSymbol, orderbook, quote, refreshing, trades]);
+
+  const submitLookup = useCallback((event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const next = lookup.normalizedSymbol;
+    if (!next) {
+      setSubmittedEmptySymbol(true);
+      return;
+    }
+
+    setSubmittedEmptySymbol(false);
+    resetMarketState();
+    setActiveSymbol(next);
+    quickTrade.resetTicket();
+    route.setRouteSymbol(next);
+  }, [lookup.normalizedSymbol, quickTrade, resetMarketState, route]);
+
+  const refreshMarketData = useCallback(async () => {
+    if (!activeSymbol) {
+      return;
+    }
+
+    await fetchMarketData(activeSymbol);
+  }, [activeSymbol, fetchMarketData]);
+
+  return {
+    symbolInput,
+    setSymbolInput,
+    activeSymbol,
+    lookup,
+    market,
+    quickTrade,
+    refreshCommand: buildLiveQuoteRefreshCommand(activeSymbol, refreshing),
+    pollIntervalSecondsLabel: String(LIVE_QUOTES_POLL_INTERVAL_MS / 1000),
+    submitLookup,
+    refreshMarketData
+  };
+}
+
+export function normalizeLiveQuoteSymbol(value: string): string {
+  return value.trim().toUpperCase();
+}
+
+export function buildLiveQuoteSymbolLookupViewModel({
+  inputValue,
+  activeSymbol,
+  submittedEmpty
+}: {
+  inputValue: string;
+  activeSymbol: string | null;
+  submittedEmpty: boolean;
+}): LiveQuoteSymbolLookupViewModel {
+  const normalizedSymbol = normalizeLiveQuoteSymbol(inputValue);
+  const inputInvalid = submittedEmpty && normalizedSymbol.length === 0;
+  const disabledReason = normalizedSymbol.length === 0
+    ? "Enter a symbol before loading live market data."
+    : null;
+
+  return {
+    inputId: "live-quote-symbol",
+    statusId: "live-quote-symbol-status",
+    formLabel: "Live quote symbol lookup",
+    inputLabel: "Symbol",
+    inputPlaceholder: "Enter a symbol (e.g. AAPL)",
+    normalizedSymbol,
+    inputInvalid,
+    command: {
+      label: "View quote",
+      ariaLabel: normalizedSymbol
+        ? `View live quote for ${normalizedSymbol}`
+        : "View live quote",
+      disabled: disabledReason !== null,
+      disabledReason
+    },
+    status: buildLiveQuoteSymbolLookupStatus({
+      activeSymbol,
+      normalizedSymbol,
+      inputInvalid
+    })
+  };
+}
+
+export function mergeLiveQuotesLoadState<T>(
+  result: PromiseSettledResult<T>,
+  current: LiveQuotesLoadState<T>,
+  fallbackMessage: string
+): LiveQuotesLoadState<T> {
+  if (result.status === "fulfilled") {
+    return { data: result.value, error: null };
+  }
+
+  const message = result.reason instanceof Error && result.reason.message
+    ? result.reason.message
+    : fallbackMessage;
+  return { data: current.data, error: message };
+}
+
+export function buildLiveQuoteRefreshCommand(
+  activeSymbol: string | null,
+  refreshing: boolean
+): LiveQuoteRefreshCommandViewModel | null {
+  if (!activeSymbol) {
+    return null;
+  }
+
+  return {
+    label: refreshing ? "Refreshing" : "Refresh",
+    ariaLabel: refreshing ? `Refreshing live data for ${activeSymbol}` : `Refresh live data for ${activeSymbol}`,
+    disabled: refreshing,
+    disabledReason: refreshing ? "Live market data refresh is already running." : null,
+    busy: refreshing
+  };
+}
 
 export function buildLiveQuotesMarketViewModel({
   activeSymbol,
@@ -764,5 +1037,49 @@ function buildQuickTicketStatus(ticket: QuickTicketState, validation: string | n
     message: validation ?? "Orders route through Meridian's pre-trade risk and execution controls.",
     showSuccessIcon: false,
     showErrorIcon: validation !== null
+  };
+}
+
+function buildLiveQuoteSymbolLookupStatus({
+  activeSymbol,
+  normalizedSymbol,
+  inputInvalid
+}: {
+  activeSymbol: string | null;
+  normalizedSymbol: string;
+  inputInvalid: boolean;
+}): LiveQuoteSymbolLookupStatusViewModel {
+  if (inputInvalid) {
+    return {
+      id: "live-quote-symbol-status",
+      role: "alert",
+      message: "Enter a symbol before loading live market data.",
+      toneClass: "text-danger"
+    };
+  }
+
+  if (normalizedSymbol && normalizedSymbol !== activeSymbol) {
+    return {
+      id: "live-quote-symbol-status",
+      role: "status",
+      message: `Ready to load ${normalizedSymbol}.`,
+      toneClass: "text-muted-foreground"
+    };
+  }
+
+  if (activeSymbol) {
+    return {
+      id: "live-quote-symbol-status",
+      role: "status",
+      message: `${activeSymbol} live market panels are active.`,
+      toneClass: "text-muted-foreground"
+    };
+  }
+
+  return {
+    id: "live-quote-symbol-status",
+    role: "status",
+    message: "Enter a symbol to load live BBO, recent trades, and L2 depth.",
+    toneClass: "text-muted-foreground"
   };
 }

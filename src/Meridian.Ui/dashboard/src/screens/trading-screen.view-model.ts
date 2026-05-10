@@ -29,6 +29,236 @@ import type {
 
 export type AcceptanceLevel = "ready" | "review" | "atRisk";
 export type TradingDataTone = "default" | "success" | "warning" | "danger" | "muted";
+export type TradingRouteWorkstream = "orders" | "positions" | "risk";
+export type TradingWorkflowPanelId = "strategy" | "replay" | "promotion";
+
+export interface TradingScreenRouteState {
+  pathname: string;
+  workstream: TradingRouteWorkstream;
+  title: string;
+  description: string;
+}
+
+export interface TradingWorkflowCommandState {
+  id: TradingWorkflowPanelId;
+  label: string;
+  ariaLabel: string;
+  controlsId: string;
+  icon: "strategy" | "replay" | "promotion";
+  expanded: boolean;
+  active: boolean;
+}
+
+export interface TradingScreenChipState {
+  label: string;
+  value: string;
+}
+
+export interface TradingWorkflowStripState {
+  ariaLabel: string;
+  eyebrow: string;
+  statusId: string;
+  statusText: string;
+  chips: TradingScreenChipState[];
+  commands: TradingWorkflowCommandState[];
+}
+
+export interface TradingScreenShellViewModel {
+  route: TradingScreenRouteState;
+  headerChips: TradingScreenChipState[];
+  workflowStrip: TradingWorkflowStripState;
+  strategySheetOpen: boolean;
+  replaySheetOpen: boolean;
+  promotionSheetOpen: boolean;
+  openWorkflowPanel: (panel: TradingWorkflowPanelId) => void;
+  closeWorkflowPanel: (panel: TradingWorkflowPanelId) => void;
+  setWorkflowPanelOpen: (panel: TradingWorkflowPanelId, open: boolean) => void;
+}
+
+const tradingRouteCopy: Record<TradingRouteWorkstream, { title: string; description: string }> = {
+  orders: {
+    title: "Orders blotter",
+    description: "Working and partially filled orders remain visible in real time so you can cancel, replace, or monitor fill progress without leaving the cockpit."
+  },
+  positions: {
+    title: "Position book",
+    description: "Open positions with mark prices, exposure, and unrealized P&L are refreshed from the live execution layer each time the workspace loads."
+  },
+  risk: {
+    title: "Risk guardrails",
+    description: "Paper thresholds, drawdown limits, and buying-power constraints are evaluated on every order submission and displayed here for operator review."
+  }
+};
+
+export function useTradingScreenShellViewModel({
+  pathname,
+  data
+}: {
+  pathname: string;
+  data: TradingWorkspaceResponse | null;
+}): TradingScreenShellViewModel {
+  const [activeWorkflowPanel, setActiveWorkflowPanel] = useState<TradingWorkflowPanelId | null>(null);
+
+  const openWorkflowPanel = useCallback((panel: TradingWorkflowPanelId) => {
+    setActiveWorkflowPanel(panel);
+  }, []);
+
+  const closeWorkflowPanel = useCallback((panel: TradingWorkflowPanelId) => {
+    setActiveWorkflowPanel((current) => current === panel ? null : current);
+  }, []);
+
+  const setWorkflowPanelOpen = useCallback((panel: TradingWorkflowPanelId, open: boolean) => {
+    setActiveWorkflowPanel((current) => {
+      if (open) {
+        return panel;
+      }
+
+      return current === panel ? null : current;
+    });
+  }, []);
+
+  return useMemo(
+    () => buildTradingScreenShellViewModel({
+      pathname,
+      data,
+      activeWorkflowPanel,
+      openWorkflowPanel,
+      closeWorkflowPanel,
+      setWorkflowPanelOpen
+    }),
+    [activeWorkflowPanel, closeWorkflowPanel, data, openWorkflowPanel, pathname, setWorkflowPanelOpen]
+  );
+}
+
+export function buildTradingScreenShellViewModel({
+  pathname,
+  data,
+  activeWorkflowPanel,
+  openWorkflowPanel = () => {},
+  closeWorkflowPanel = () => {},
+  setWorkflowPanelOpen = () => {}
+}: {
+  pathname: string;
+  data: TradingWorkspaceResponse | null;
+  activeWorkflowPanel: TradingWorkflowPanelId | null;
+  openWorkflowPanel?: (panel: TradingWorkflowPanelId) => void;
+  closeWorkflowPanel?: (panel: TradingWorkflowPanelId) => void;
+  setWorkflowPanelOpen?: (panel: TradingWorkflowPanelId, open: boolean) => void;
+}): TradingScreenShellViewModel {
+  const workstream = resolveTradingWorkstream(pathname);
+  const routeCopy = tradingRouteCopy[workstream];
+  const positionCount = data?.positions.length ?? 0;
+  const openOrderCount = data?.openOrders.length ?? 0;
+  const fillCount = data?.fills.length ?? 0;
+  const connection = data?.brokerage.connection ?? "Unavailable";
+  const activeLabel = activeWorkflowPanel ? workflowPanelLabel(activeWorkflowPanel) : "None";
+
+  return {
+    route: {
+      pathname,
+      workstream,
+      title: routeCopy.title,
+      description: routeCopy.description
+    },
+    headerChips: [
+      { label: "Route", value: pathname },
+      { label: "Account", value: data?.brokerage.account ?? "-" },
+      { label: "Environment", value: data?.brokerage.environment.toUpperCase() ?? "-" },
+      { label: "Orders", value: String(openOrderCount) },
+      { label: "Fills", value: String(fillCount) }
+    ],
+    workflowStrip: {
+      ariaLabel: "Workflow control strip",
+      eyebrow: "Workflow tools",
+      statusId: "trading-workflow-panel-status",
+      statusText: activeWorkflowPanel
+        ? `${activeLabel} panel open. Press Escape or the close button to return to the trading cockpit.`
+        : "No workflow panel open.",
+      chips: [
+        { label: "Positions", value: String(positionCount) },
+        { label: "Connection", value: connection },
+        { label: "Panel", value: activeLabel }
+      ],
+      commands: [
+        buildWorkflowCommand("strategy", activeWorkflowPanel),
+        buildWorkflowCommand("replay", activeWorkflowPanel),
+        buildWorkflowCommand("promotion", activeWorkflowPanel)
+      ]
+    },
+    strategySheetOpen: activeWorkflowPanel === "strategy",
+    replaySheetOpen: activeWorkflowPanel === "replay",
+    promotionSheetOpen: activeWorkflowPanel === "promotion",
+    openWorkflowPanel,
+    closeWorkflowPanel,
+    setWorkflowPanelOpen
+  };
+}
+
+export function resolveTradingWorkstream(pathname: string): TradingRouteWorkstream {
+  if (pathname.includes("/positions")) {
+    return "positions";
+  }
+
+  if (pathname.includes("/risk")) {
+    return "risk";
+  }
+
+  return "orders";
+}
+
+function buildWorkflowCommand(
+  id: TradingWorkflowPanelId,
+  activeWorkflowPanel: TradingWorkflowPanelId | null
+): TradingWorkflowCommandState {
+  const label = workflowPanelLabel(id);
+  const expanded = activeWorkflowPanel === id;
+
+  return {
+    id,
+    label,
+    ariaLabel: expanded ? `${label} panel is open` : workflowPanelOpenAriaLabel(id),
+    controlsId: workflowPanelControlsId(id),
+    icon: id,
+    expanded,
+    active: expanded
+  };
+}
+
+function workflowPanelLabel(panel: TradingWorkflowPanelId): string {
+  if (panel === "strategy") {
+    return "Strategy controls";
+  }
+
+  if (panel === "replay") {
+    return "Session replay";
+  }
+
+  return "Promotion gate";
+}
+
+function workflowPanelOpenAriaLabel(panel: TradingWorkflowPanelId): string {
+  if (panel === "strategy") {
+    return "Open strategy controls panel";
+  }
+
+  if (panel === "replay") {
+    return "Open session replay controls panel";
+  }
+
+  return "Open promotion gate panel";
+}
+
+function workflowPanelControlsId(panel: TradingWorkflowPanelId): string {
+  if (panel === "strategy") {
+    return "strategy-lifecycle-panel";
+  }
+
+  if (panel === "replay") {
+    return "session-replay-panel";
+  }
+
+  return "promotion-gate-panel";
+}
 
 export interface TradingBlotterField {
   label: string;
@@ -261,22 +491,40 @@ export function useTradingReadinessViewModel({
   const [readiness, setReadiness] = useState<TradingOperatorReadiness | null>(initialReadiness);
   const [refreshing, setRefreshing] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const readinessRevisionRef = useRef(0);
 
   useEffect(() => {
+    return () => {
+      readinessRevisionRef.current += 1;
+    };
+  }, []);
+
+  useEffect(() => {
+    readinessRevisionRef.current += 1;
     setReadiness(initialReadiness);
     setErrorText(null);
+    setRefreshing(false);
   }, [initialReadiness]);
 
   const refresh = useCallback(async () => {
+    const revision = readinessRevisionRef.current + 1;
+    readinessRevisionRef.current = revision;
     setRefreshing(true);
     setErrorText(null);
 
     try {
-      setReadiness(await services.getTradingReadiness());
+      const nextReadiness = await services.getTradingReadiness();
+      if (readinessRevisionRef.current === revision) {
+        setReadiness(nextReadiness);
+      }
     } catch (err) {
-      setErrorText(toErrorMessage(err, "Failed to refresh trading readiness."));
+      if (readinessRevisionRef.current === revision) {
+        setErrorText(toErrorMessage(err, "Failed to refresh trading readiness."));
+      }
     } finally {
-      setRefreshing(false);
+      if (readinessRevisionRef.current === revision) {
+        setRefreshing(false);
+      }
     }
   }, [services]);
 

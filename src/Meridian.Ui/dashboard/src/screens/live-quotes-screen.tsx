@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
@@ -20,9 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getLiveOrderbook, getLiveQuote, getLiveTrades, submitOrder } from "@/lib/api";
 import {
-  buildLiveQuotesMarketViewModel,
   computeIntradayMetrics,
-  useQuickTradeTicket,
+  useLiveQuotesScreenViewModel,
   type IntradayMetrics,
   type LiveQuotesBboPanelViewModel,
   type LiveQuotesDepthLadderViewModel,
@@ -31,122 +29,19 @@ import {
   type LiveQuotesTradeRowViewModel,
   type QuickTradeTicketViewModel
 } from "@/screens/live-quotes-screen.view-model";
-import type {
-  OrderBookResponse,
-  QuotesResponse,
-  TradesResponse
-} from "@/types";
 
 export { computeIntradayMetrics };
 
-const POLL_INTERVAL_MS = 2000;
-const TRADE_HISTORY_LIMIT = 200;
-const TRADE_TABLE_LIMIT = 25;
-
-interface LoadState<T> {
-  data: T | null;
-  error: string | null;
-}
-
-function mergeLoadState<T>(
-  result: PromiseSettledResult<T>,
-  current: LoadState<T>,
-  fallbackMessage: string
-): LoadState<T> {
-  if (result.status === "fulfilled") {
-    return { data: result.value, error: null };
-  }
-
-  const message = result.reason instanceof Error && result.reason.message
-    ? result.reason.message
-    : fallbackMessage;
-  return { data: current.data, error: message };
-}
-
 export function LiveQuotesScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialSymbol = (searchParams.get("symbol") ?? "").trim().toUpperCase();
-  const [symbolInput, setSymbolInput] = useState(initialSymbol);
-  const [activeSymbol, setActiveSymbol] = useState<string | null>(initialSymbol || null);
-  const [quote, setQuote] = useState<LoadState<QuotesResponse>>({ data: null, error: null });
-  const [trades, setTrades] = useState<LoadState<TradesResponse>>({ data: null, error: null });
-  const [orderbook, setOrderbook] = useState<LoadState<OrderBookResponse>>({ data: null, error: null });
-  const [refreshing, setRefreshing] = useState(false);
-  const requestIdRef = useRef(0);
-  const inFlightSymbolRef = useRef<string | null>(null);
-  const quickTrade = useQuickTradeTicket(activeSymbol, { submitOrder });
-
-  const fetchAll = useCallback(async (symbol: string) => {
-    const requestedSymbol = symbol.trim().toUpperCase();
-    if (!requestedSymbol || inFlightSymbolRef.current === requestedSymbol) return;
-
-    const requestId = requestIdRef.current + 1;
-    requestIdRef.current = requestId;
-    inFlightSymbolRef.current = requestedSymbol;
-    setRefreshing(true);
-    try {
-      const [q, t, ob] = await Promise.allSettled([
-        getLiveQuote(requestedSymbol),
-        getLiveTrades(requestedSymbol, TRADE_HISTORY_LIMIT),
-        getLiveOrderbook(requestedSymbol, 10)
-      ]);
-
-      if (requestIdRef.current !== requestId) {
-        return;
-      }
-
-      setQuote((current) => mergeLoadState(q, current, "Failed to load quote"));
-      setTrades((current) => mergeLoadState(t, current, "Failed to load trades"));
-      setOrderbook((current) => mergeLoadState(ob, current, "Failed to load order book"));
-    } finally {
-      if (requestIdRef.current === requestId) {
-        inFlightSymbolRef.current = null;
-        setRefreshing(false);
-      }
+  const vm = useLiveQuotesScreenViewModel(
+    { getLiveQuote, getLiveTrades, getLiveOrderbook, submitOrder },
+    {
+      routeSymbol: searchParams.get("symbol") ?? "",
+      setRouteSymbol: (symbol) => setSearchParams({ symbol }, { replace: true })
     }
-  }, []);
-
-  useEffect(() => {
-    if (!activeSymbol) return;
-    void fetchAll(activeSymbol);
-    const interval = window.setInterval(() => void fetchAll(activeSymbol), POLL_INTERVAL_MS);
-    return () => window.clearInterval(interval);
-  }, [activeSymbol, fetchAll]);
-
-  useEffect(() => {
-    const nextSymbol = (searchParams.get("symbol") ?? "").trim().toUpperCase();
-    if (nextSymbol === (activeSymbol ?? "")) {
-      return;
-    }
-
-    setSymbolInput(nextSymbol);
-    setActiveSymbol(nextSymbol || null);
-    setQuote({ data: null, error: null });
-    setTrades({ data: null, error: null });
-    setOrderbook({ data: null, error: null });
-    quickTrade.resetTicket();
-  }, [activeSymbol, quickTrade, searchParams]);
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    const next = symbolInput.trim().toUpperCase();
-    if (!next) return;
-    setQuote({ data: null, error: null });
-    setTrades({ data: null, error: null });
-    setOrderbook({ data: null, error: null });
-    setActiveSymbol(next);
-    quickTrade.resetTicket();
-    setSearchParams({ symbol: next }, { replace: true });
-  };
-
-  const marketVm = useMemo(() => buildLiveQuotesMarketViewModel({
-    activeSymbol,
-    quote,
-    trades,
-    orderbook,
-    refreshing,
-    tradeTableLimit: TRADE_TABLE_LIMIT
-  }), [activeSymbol, orderbook, quote, refreshing, trades]);
+  );
+  const { activeSymbol, lookup: symbolLookupVm, market: marketVm, quickTrade } = vm;
 
   return (
     <div className="space-y-6">
@@ -158,43 +53,69 @@ export function LiveQuotesScreen() {
             Live quotes & order book
           </CardTitle>
           <CardDescription>
-            Look up live bid/ask, recent trades, and L2 depth for any subscribed symbol. Refreshes every {POLL_INTERVAL_MS / 1000}s.
+            Look up live bid/ask, recent trades, and L2 depth for any subscribed symbol. Refreshes every {vm.pollIntervalSecondsLabel}s.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <label htmlFor="live-quote-symbol" className="sr-only">Symbol</label>
+          <form
+            onSubmit={vm.submitLookup}
+            className="flex flex-col gap-3 sm:flex-row sm:items-center"
+            aria-label={symbolLookupVm.formLabel}
+          >
+            <label htmlFor={symbolLookupVm.inputId} className="sr-only">{symbolLookupVm.inputLabel}</label>
             <Input
-              id="live-quote-symbol"
-              placeholder="Enter a symbol (e.g. AAPL)"
-              value={symbolInput}
-              onChange={(event) => setSymbolInput(event.target.value)}
+              id={symbolLookupVm.inputId}
+              placeholder={symbolLookupVm.inputPlaceholder}
+              value={vm.symbolInput}
+              onChange={(event) => vm.setSymbolInput(event.target.value)}
               leadingIcon={<Search className="h-4 w-4" />}
               autoComplete="off"
               spellCheck={false}
+              error={symbolLookupVm.inputInvalid}
+              aria-describedby={symbolLookupVm.statusId}
             />
             <div className="flex items-center gap-2">
-              <Button type="submit" variant="default">View quote</Button>
+              <Button
+                type="submit"
+                variant="default"
+                disabled={symbolLookupVm.command.disabled}
+                disabledReason={symbolLookupVm.command.disabledReason}
+                aria-label={symbolLookupVm.command.ariaLabel}
+              >
+                {symbolLookupVm.command.label}
+              </Button>
               <Button asChild variant="outline" size="sm">
                 <Link to="/data/watchlist" aria-label="Open symbol watchlist">
                   <ListPlus className="h-4 w-4" aria-hidden="true" />
                   <span className="ml-1.5">Watchlist</span>
                 </Link>
               </Button>
-              {activeSymbol ? (
+              {vm.refreshCommand ? (
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => void fetchAll(activeSymbol)}
-                  aria-label="Refresh live data now"
+                  onClick={() => void vm.refreshMarketData()}
+                  aria-label={vm.refreshCommand.ariaLabel}
+                  disabled={vm.refreshCommand.disabled}
+                  disabledReason={vm.refreshCommand.disabledReason}
+                  busy={vm.refreshCommand.busy}
+                  busyLabel="Refreshing..."
                 >
-                  <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
-                  <span className="ml-1.5">Refresh</span>
+                  <RefreshCw className={`h-4 w-4 ${vm.refreshCommand.busy ? "animate-spin" : ""}`} aria-hidden="true" />
+                  <span className="ml-1.5">{vm.refreshCommand.label}</span>
                 </Button>
               ) : null}
             </div>
           </form>
+          <p
+            id={symbolLookupVm.statusId}
+            role={symbolLookupVm.status.role}
+            aria-live={symbolLookupVm.status.role === "status" ? "polite" : undefined}
+            className={`mt-2 text-xs ${symbolLookupVm.status.toneClass}`}
+          >
+            {symbolLookupVm.status.message}
+          </p>
           {activeSymbol ? (
             <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span className="font-semibold text-foreground">{activeSymbol}</span>

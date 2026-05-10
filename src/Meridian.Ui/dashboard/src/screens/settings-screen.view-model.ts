@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from "react";
 import { connectAlpacaConnection, revokeAlpacaConnection } from "@/lib/api";
+import { WORKSTATION_API_ENDPOINTS, WORKSTATION_API_ENDPOINT_TEMPLATES } from "@/lib/workstation-endpoints";
 import type {
   AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
+  PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -51,7 +53,22 @@ export interface SettingsAlpacaConnectionCommandState {
   keyIdHelpText: string;
   secretKeyHelpText: string;
   environmentHelpText: string;
+  environmentLegend: string;
+  environmentOptions: SettingsAlpacaEnvironmentOption[];
   requirements: SettingsAlpacaRequirementRow[];
+}
+
+export interface SettingsAlpacaEnvironmentOption {
+  id: string;
+  value: AlpacaEnvironment;
+  label: string;
+  badgeLabel: string;
+  description: string;
+  descriptionId: string;
+  isSelected: boolean;
+  disabled: boolean;
+  ariaLabel: string;
+  tone: "paper" | "live";
 }
 
 export interface SettingsAlpacaRequirementRow {
@@ -110,6 +127,32 @@ export function buildAlpacaConnectionCommandState({
   const busy = form.busyAction !== null;
   const keyIdError = form.submitted && keyIdMissing;
   const secretKeyError = form.submitted && secretKeyMissing;
+  const environmentOptions: SettingsAlpacaEnvironmentOption[] = [
+    {
+      id: "alpaca-environment-paper",
+      value: "paper",
+      label: "Paper",
+      badgeLabel: "Default",
+      description: "Paper endpoint for workstation validation and readiness rehearsal.",
+      descriptionId: "alpaca-environment-paper-description",
+      isSelected: form.environment === "paper",
+      disabled: busy,
+      ariaLabel: "Use Alpaca paper endpoint for workstation validation",
+      tone: "paper"
+    },
+    {
+      id: "alpaca-environment-live",
+      value: "live",
+      label: "Live",
+      badgeLabel: "Real money",
+      description: "Live endpoint for production brokerage verification.",
+      descriptionId: "alpaca-environment-live-description",
+      isSelected: form.environment === "live",
+      disabled: busy,
+      ariaLabel: "Use Alpaca live endpoint for production brokerage verification",
+      tone: "live"
+    }
+  ];
   const requirements: SettingsAlpacaRequirementRow[] = [
     {
       id: "alpaca-key-id-requirement",
@@ -200,6 +243,8 @@ export function buildAlpacaConnectionCommandState({
     environmentHelpText: form.environment === "live"
       ? "Live endpoint selected. Paper remains the default workstation path."
       : "Paper endpoint selected for workstation validation.",
+    environmentLegend: "Alpaca trading environment",
+    environmentOptions,
     requirements
   };
 }
@@ -334,6 +379,8 @@ export interface SettingsBackendCapabilityEndpoint {
   label: string;
   href: string;
   ariaLabel: string;
+  isBrowserNavigable: boolean;
+  interactionLabel: string;
 }
 
 export interface SettingsBackendCapabilityGroup {
@@ -435,6 +482,7 @@ export interface SettingsScreenPayload {
   overview: SystemOverviewResponse | null;
   research?: ResearchWorkspaceResponse | null;
   trading?: TradingWorkspaceResponse | null;
+  portfolio?: PortfolioWorkspaceResponse | null;
   dataOperations?: DataOperationsWorkspaceResponse | null;
   governance?: GovernanceWorkspaceResponse | null;
   reporting?: GovernanceWorkspaceResponse | null;
@@ -478,7 +526,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "system-overview",
     label: "System overview",
-    href: "/api/status",
+    href: WORKSTATION_API_ENDPOINTS.systemStatus,
     description: "System health, provider counts, and active run summary.",
     ariaLabel: "Open System overview diagnostic endpoint",
     isAvailable: (payload) => payload.overview !== null,
@@ -487,7 +535,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "session-info",
     label: "Session info",
-    href: "/api/workstation/session",
+    href: WORKSTATION_API_ENDPOINTS.session,
     description: "Current operator session context and environment.",
     ariaLabel: "Open Session info diagnostic endpoint",
     isAvailable: (payload) => payload.session !== null,
@@ -496,7 +544,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "data-workspace",
     label: "Data workspace",
-    href: "/api/workstation/data",
+    href: WORKSTATION_API_ENDPOINTS.data,
     description: "Provider posture, backfill queues, and export readiness.",
     ariaLabel: "Open Data workspace diagnostic endpoint",
     workspaceKey: "data",
@@ -506,7 +554,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "strategy-workspace",
     label: "Strategy workspace",
-    href: "/api/workstation/strategy",
+    href: WORKSTATION_API_ENDPOINTS.strategy,
     description: "Strategy run metrics and active run rows.",
     ariaLabel: "Open Strategy workspace diagnostic endpoint",
     workspaceKey: "strategy",
@@ -516,7 +564,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "trading-workspace",
     label: "Trading workspace",
-    href: "/api/workstation/trading",
+    href: WORKSTATION_API_ENDPOINTS.trading,
     description: "Live trading positions, orders, fills, and risk.",
     ariaLabel: "Open Trading workspace diagnostic endpoint",
     workspaceKey: "trading",
@@ -526,7 +574,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "accounting-workspace",
     label: "Accounting workspace",
-    href: "/api/workstation/accounting",
+    href: WORKSTATION_API_ENDPOINTS.accounting,
     description: "Reconciliation queue, cash flow, and accounting evidence.",
     ariaLabel: "Open Accounting workspace diagnostic endpoint",
     workspaceKey: "accounting",
@@ -536,7 +584,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "reporting-workspace",
     label: "Reporting workspace",
-    href: "/api/workstation/reporting",
+    href: WORKSTATION_API_ENDPOINTS.reporting,
     description: "Reporting profiles and governed report-pack targets.",
     ariaLabel: "Open Reporting workspace diagnostic endpoint",
     workspaceKey: "reporting",
@@ -556,9 +604,9 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     isAvailable: (payload) => payload.trading !== null && payload.trading !== undefined,
     unavailableDetail: "Trading cockpit payload has not loaded.",
     endpoints: [
-      { id: "trading-workspace", method: "GET", label: "Workspace", href: "/api/workstation/trading" },
-      { id: "trading-readiness", method: "GET", label: "Readiness", href: "/api/workstation/trading/readiness" },
-      { id: "operator-inbox", method: "GET", label: "Operator inbox", href: "/api/workstation/operator/inbox" },
+      { id: "trading-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.trading },
+      { id: "trading-readiness", method: "GET", label: "Readiness", href: WORKSTATION_API_ENDPOINTS.tradingReadiness },
+      { id: "operator-inbox", method: "GET", label: "Operator inbox", href: WORKSTATION_API_ENDPOINTS.operatorInbox },
       { id: "orders-submit", method: "POST", label: "Submit order", href: "/api/execution/orders/submit" },
       { id: "sessions", method: "GET", label: "Paper sessions", href: "/api/execution/sessions" },
       { id: "replay-files", method: "GET", label: "Replay files", href: "/api/replay/files" }
@@ -571,14 +619,15 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     route: "/portfolio",
     title: "Portfolio and run continuity",
     description: "Aggregate exposure, symbol exposure, run fills, ledger, attribution, continuity, and review packets.",
-    isAvailable: (payload) => payload.trading !== null && payload.trading !== undefined,
-    unavailableDetail: "Portfolio uses trading and run-continuity payloads; trading workspace data has not loaded.",
+    isAvailable: (payload) => payload.portfolio !== null && payload.portfolio !== undefined,
+    unavailableDetail: "Portfolio workspace payload has not loaded.",
     endpoints: [
+      { id: "portfolio-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.portfolio },
       { id: "portfolio-aggregate", method: "GET", label: "Portfolio aggregate", href: "/api/portfolio/aggregate" },
       { id: "portfolio-exposure", method: "GET", label: "Portfolio exposure", href: "/api/portfolio/exposure" },
-      { id: "run-ledger", method: "GET", label: "Run ledger", href: "/api/workstation/runs/{runId}/ledger" },
-      { id: "run-continuity", method: "GET", label: "Run continuity", href: "/api/workstation/runs/{runId}/continuity" },
-      { id: "run-review-packet", method: "GET", label: "Review packet", href: "/api/workstation/runs/{runId}/review-packet" }
+      { id: "run-ledger", method: "GET", label: "Run ledger", href: WORKSTATION_API_ENDPOINT_TEMPLATES.runLedger },
+      { id: "run-continuity", method: "GET", label: "Run continuity", href: WORKSTATION_API_ENDPOINT_TEMPLATES.runContinuity },
+      { id: "run-review-packet", method: "GET", label: "Review packet", href: WORKSTATION_API_ENDPOINT_TEMPLATES.runReviewPacket }
     ]
   },
   {
@@ -591,7 +640,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     isAvailable: (payload) => payload.governance !== null && payload.governance !== undefined,
     unavailableDetail: "Accounting workspace payload has not loaded.",
     endpoints: [
-      { id: "accounting-workspace", method: "GET", label: "Workspace", href: "/api/workstation/accounting" },
+      { id: "accounting-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.accounting },
       { id: "recon-runs", method: "POST", label: "Run reconciliation", href: "/api/workstation/reconciliation/runs" },
       { id: "break-queue", method: "GET", label: "Break queue", href: "/api/workstation/reconciliation/break-queue" },
       { id: "calibration", method: "GET", label: "Calibration", href: "/api/workstation/reconciliation/calibration-summary" },
@@ -608,7 +657,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
     unavailableDetail: "Reporting workspace payload has not loaded.",
     endpoints: [
-      { id: "reporting-workspace", method: "GET", label: "Workspace", href: "/api/workstation/reporting" },
+      { id: "reporting-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.reporting },
       { id: "analysis-export", method: "POST", label: "Analysis export", href: "/api/export/analysis" },
       { id: "fund-report-packs", method: "GET", label: "Report packs", href: "/api/fund-structure/report-packs" },
       { id: "export-formats", method: "GET", label: "Export formats", href: "/api/export/formats" }
@@ -624,7 +673,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     isAvailable: (payload) => payload.research !== null && payload.research !== undefined,
     unavailableDetail: "Strategy workspace payload has not loaded.",
     endpoints: [
-      { id: "strategy-workspace", method: "GET", label: "Workspace", href: "/api/workstation/strategy" },
+      { id: "strategy-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.strategy },
       { id: "run-history", method: "GET", label: "Run history", href: "/api/workstation/runs/history" },
       { id: "run-timeline", method: "GET", label: "Run timeline", href: "/api/workstation/runs/timeline" },
       { id: "run-sweeps", method: "GET", label: "Run sweeps", href: "/api/workstation/runs/sweeps" },
@@ -642,7 +691,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     isAvailable: (payload) => payload.dataOperations !== null && payload.dataOperations !== undefined,
     unavailableDetail: "Data workspace payload has not loaded.",
     endpoints: [
-      { id: "data-workspace", method: "GET", label: "Workspace", href: "/api/workstation/data" },
+      { id: "data-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.data },
       { id: "provider-status", method: "GET", label: "Provider status", href: "/api/providers/status" },
       { id: "backfill-run", method: "POST", label: "Backfill run", href: "/api/backfill/run" },
       { id: "security-master", method: "GET", label: "Security Master", href: "/api/workstation/security-master/securities" },
@@ -660,11 +709,11 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     isAvailable: (payload) => payload.session !== null && payload.overview !== null,
     unavailableDetail: "Session or system overview has not loaded.",
     endpoints: [
-      { id: "session", method: "GET", label: "Session", href: "/api/workstation/session" },
-      { id: "status", method: "GET", label: "System status", href: "/api/status" },
-      { id: "workflow-summary", method: "GET", label: "Workflow summary", href: "/api/workstation/workflow-summary" },
-      { id: "workflow-library", method: "GET", label: "Workflow library", href: "/api/workstation/workflows" },
-      { id: "workflow-presets", method: "GET", label: "Workflow presets", href: "/api/workstation/workflows/presets" },
+      { id: "session", method: "GET", label: "Session", href: WORKSTATION_API_ENDPOINTS.session },
+      { id: "status", method: "GET", label: "System status", href: WORKSTATION_API_ENDPOINTS.systemStatus },
+      { id: "workflow-summary", method: "GET", label: "Workflow summary", href: WORKSTATION_API_ENDPOINTS.workflowSummary },
+      { id: "workflow-library", method: "GET", label: "Workflow library", href: WORKSTATION_API_ENDPOINTS.workflowLibrary },
+      { id: "workflow-presets", method: "GET", label: "Workflow presets", href: WORKSTATION_API_ENDPOINTS.workflowPresets },
       { id: "config", method: "GET", label: "Config", href: "/api/config" }
     ]
   }
@@ -1047,7 +1096,11 @@ function buildBackendCapabilityGroup(
   const endpointCount = definition.endpoints.length;
   const endpoints = definition.endpoints.map((endpoint) => ({
     ...endpoint,
-    ariaLabel: `${endpoint.method} ${endpoint.href} for ${definition.workspaceLabel} ${endpoint.label}`
+    isBrowserNavigable: isBrowserNavigableEndpoint(endpoint),
+    interactionLabel: isBrowserNavigableEndpoint(endpoint) ? "Open" : "Reference",
+    ariaLabel: isBrowserNavigableEndpoint(endpoint)
+      ? `${endpoint.method} ${endpoint.href} for ${definition.workspaceLabel} ${endpoint.label}`
+      : `Reference-only ${endpoint.method} ${endpoint.href} for ${definition.workspaceLabel} ${endpoint.label}`
   }));
 
   if (isLoading) {
@@ -1080,7 +1133,7 @@ function buildBackendCapabilityGroup(
       endpointCountLabel: `${endpointCount} endpoint${endpointCount === 1 ? "" : "s"}`,
       loadedCountLabel: `${endpointCount} mapped`,
       statusLabel: "Surfaced",
-      statusDetail: `${definition.workspaceLabel} has a browser route and mapped backend endpoints.`,
+      statusDetail: `${definition.workspaceLabel} has a browser route and mapped backend endpoints. Concrete GET endpoints open directly; templates and mutating endpoints stay reference-only.`,
       statusVariant: "success",
       endpoints
     };
@@ -1095,6 +1148,10 @@ function buildBackendCapabilityGroup(
     statusVariant: "danger",
     endpoints
   };
+}
+
+function isBrowserNavigableEndpoint(endpoint: CapabilityEndpointDefinition): boolean {
+  return endpoint.method === "GET" && !endpoint.href.includes("{");
 }
 
 function buildDiagnosticCounts(links: SettingsDiagnosticLink[]): SettingsDiagnosticCounts {

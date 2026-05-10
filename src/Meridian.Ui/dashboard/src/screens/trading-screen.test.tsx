@@ -307,7 +307,24 @@ describe("TradingScreen", () => {
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /session replay/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /promotion gate/i })).toBeInTheDocument();
+    expect(within(workflowStrip).getByLabelText("Panel: None")).toBeInTheDocument();
+    expect(within(workflowStrip).getByRole("button", { name: /open strategy controls panel/i })).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByText("Live positions")).toBeInTheDocument();
+  });
+
+  it("announces active workflow side panels from the trading shell view model", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    const workflowStrip = screen.getByRole("region", { name: "Workflow control strip" });
+    const strategyButton = within(workflowStrip).getByRole("button", { name: /open strategy controls panel/i });
+    expect(strategyButton).toHaveAttribute("aria-controls", "strategy-lifecycle-panel");
+
+    await user.click(strategyButton);
+
+    expect(screen.getByRole("dialog", { name: /strategy lifecycle/i })).toHaveAttribute("id", "strategy-lifecycle-panel");
+    expect(within(workflowStrip).getByLabelText("Panel: Strategy controls")).toBeInTheDocument();
+    expect(within(workflowStrip).getByRole("button", { name: /strategy controls panel is open/i })).toHaveAttribute("aria-expanded", "true");
   });
 
   it("fetches and renders execution controls snapshot", async () => {

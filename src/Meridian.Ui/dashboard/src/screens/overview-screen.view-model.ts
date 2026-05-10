@@ -462,8 +462,8 @@ const priorityRouteCopy: Record<
     title: "Connect provider baseline",
     detail: "Provider setup is blocking useful validation. Verify workstation setup before expecting quotes or readiness checks.",
     buttonLabel: "Open setup checks",
-    href: "/settings",
-    ariaLabel: "Open Settings setup checks"
+    href: "/settings#alpaca-provider-setup",
+    ariaLabel: "Open Alpaca paper provider setup checklist"
   }
 };
 

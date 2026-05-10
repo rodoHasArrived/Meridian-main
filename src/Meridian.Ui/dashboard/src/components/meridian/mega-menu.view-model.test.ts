@@ -57,6 +57,45 @@ describe("mega menu view model", () => {
     });
   });
 
+  it("surfaces implemented high-frequency workflow routes", () => {
+    const model = buildMegaMenuViewModel({
+      pathname: "/reporting/evidence",
+      open: true,
+      openMenu: vi.fn(),
+      closeMenu: vi.fn(),
+      toggleMenu: vi.fn()
+    });
+
+    const portfolioSection = model.sections.find((section) => section.key === "portfolio");
+    const reportingSection = model.sections.find((section) => section.key === "reporting");
+    const dataSection = model.sections.find((section) => section.key === "data");
+
+    expect(portfolioSection?.links.map((link) => link.route)).toContain("/portfolio/brokerage-sync");
+    expect(reportingSection?.links.map((link) => link.route)).toEqual([
+      "/reporting",
+      "/reporting/report-packs",
+      "/reporting/evidence",
+      "/reporting/exports"
+    ]);
+    expect(dataSection?.links.map((link) => link.route)).toEqual([
+      "/data",
+      "/data/watchlist",
+      "/data/quotes",
+      "/data/backfills",
+      "/data/security-master"
+    ]);
+    expect(reportingSection?.links.find((link) => link.route === "/reporting/evidence")).toMatchObject({
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Evidence, current route, Reporting workspace"
+    });
+    expect(reportingSection?.links.find((link) => link.route === "/reporting/report-packs")).toMatchObject({
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Report packs, Reporting workspace"
+    });
+  });
+
   it("resolves close and focus-loop keyboard commands", () => {
     expect(resolveMegaMenuKeyCommand({ key: "Escape", shiftKey: false, focusBoundary: "middle" })).toBe("close");
     expect(resolveMegaMenuKeyCommand({ key: "Tab", shiftKey: false, focusBoundary: "last" })).toBe("focus-first");

@@ -1,5 +1,5 @@
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, Network, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +35,7 @@ import {
   useOrderTicketViewModel,
   usePromotionGateViewModel,
   useTradingReadinessViewModel,
+  useTradingScreenShellViewModel,
   type AcceptanceLevel,
   type OrderPreview,
   type OrderPreviewEffect,
@@ -45,6 +46,7 @@ import {
   type PromotionOutcomeLevel,
   type TradingBlotterDetail,
   type TradingDataTone,
+  type TradingWorkflowCommandState,
   type TradingConfirmViewModel,
   type TradingReadinessWorkItemRow,
   type TradingReadinessState,
@@ -67,21 +69,6 @@ const wiringTone: Record<TradingWorkspaceResponse["brokerage"]["connection"], st
   Connected: "text-success",
   Degraded: "text-warning",
   Disconnected: "text-danger"
-};
-
-const focusCopy: Record<string, { title: string; description: string }> = {
-  orders: {
-    title: "Orders blotter",
-    description: "Working and partially filled orders remain visible in real time so you can cancel, replace, or monitor fill progress without leaving the cockpit."
-  },
-  positions: {
-    title: "Position book",
-    description: "Open positions with mark prices, exposure, and unrealized P&L are refreshed from the live execution layer each time the workspace loads."
-  },
-  risk: {
-    title: "Risk guardrails",
-    description: "Paper thresholds, drawdown limits, and buying-power constraints are evaluated on every order submission and displayed here for operator review."
-  }
 };
 
 interface CockpitAcceptanceItem {
@@ -158,11 +145,7 @@ const sessionReplayStatusPanelClass = {
 
 export function TradingScreen({ data }: TradingScreenProps) {
   const { pathname } = useLocation();
-  const workstream = useMemo(() => {
-    if (pathname.includes("/positions")) return "positions";
-    if (pathname.includes("/risk")) return "risk";
-    return "orders";
-  }, [pathname]);
+  const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null });
   const executionEvidence = useExecutionEvidenceViewModel();
@@ -196,10 +179,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
   });
   const sessionReplay = useSessionReplayControlsViewModel();
   const promotionGate = usePromotionGateViewModel();
-
-  const [strategySheetOpen, setStrategySheetOpen] = useState(false);
-  const [replaySheetOpen, setReplaySheetOpen] = useState(false);
-  const [promotionSheetOpen, setPromotionSheetOpen] = useState(false);
 
   async function refreshSessionEvidence() {
     await Promise.all([
@@ -248,18 +227,16 @@ export function TradingScreen({ data }: TradingScreenProps) {
         <div className="min-w-0">
           <div className="eyebrow-label">Trading lane</div>
           <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
-            {focusCopy[workstream].title}
+            {shellVm.route.title}
           </h2>
           <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
-            {focusCopy[workstream].description}
+            {shellVm.route.description}
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <CockpitChip label="Route" value={pathname} />
-          <CockpitChip label="Account" value={data.brokerage.account} />
-          <CockpitChip label="Environment" value={data.brokerage.environment.toUpperCase()} />
-          <CockpitChip label="Orders" value={String(data.openOrders.length)} />
-          <CockpitChip label="Fills" value={String(data.fills.length)} />
+          {shellVm.headerChips.map((chip) => (
+            <CockpitChip key={chip.label} label={chip.label} value={chip.value} />
+          ))}
         </div>
       </section>
 
@@ -269,9 +246,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <div className="eyebrow-label">Trading Lane</div>
             <CardTitle className="flex items-center gap-2">
               <RadioTower className="h-5 w-5 text-primary" />
-              {focusCopy[workstream].title}
+              {shellVm.route.title}
             </CardTitle>
-            <CardDescription>{focusCopy[workstream].description}</CardDescription>
+            <CardDescription>{shellVm.route.description}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <TradingHighlight
@@ -298,7 +275,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <CardTitle>Current workstream</CardTitle>
             <CardDescription>
               Deep links under{" "}
-              <code className="rounded-sm bg-background/70 px-1 py-0.5 text-xs text-foreground">{pathname}</code>{" "}
+              <code className="rounded-sm bg-background/70 px-1 py-0.5 text-xs text-foreground">{shellVm.route.pathname}</code>{" "}
               reuse the same prefetched cockpit payload.
             </CardDescription>
           </CardHeader>
@@ -316,27 +293,27 @@ export function TradingScreen({ data }: TradingScreenProps) {
         readinessVm={tradingReadiness}
       />
 
-      {/* Workflow tools strip — triggered workflows live in side panels, not inline */}
       <div
         role="region"
-        aria-label="Workflow control strip"
+        aria-label={shellVm.workflowStrip.ariaLabel}
         className="panel-surface flex flex-wrap items-center gap-3 px-4 py-3"
       >
-        <span className="mr-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Workflow tools</span>
-        <CockpitChip label="Positions" value={String(data.positions.length)} />
-        <CockpitChip label="Connection" value={data.brokerage.connection} />
-        <Button size="sm" variant="outline" aria-label="Open strategy controls" onClick={() => setStrategySheetOpen(true)}>
-          <PlayCircle className="mr-2 h-4 w-4" />
-          Strategy controls
-        </Button>
-        <Button size="sm" variant="outline" aria-label="Open session replay controls" onClick={() => setReplaySheetOpen(true)}>
-          <RotateCcw className="mr-2 h-4 w-4" />
-          Session replay
-        </Button>
-        <Button size="sm" variant="outline" aria-label="Open promotion gate" onClick={() => setPromotionSheetOpen(true)}>
-          <FlaskConical className="mr-2 h-4 w-4" />
-          Promotion gate
-        </Button>
+        <span className="mr-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          {shellVm.workflowStrip.eyebrow}
+        </span>
+        {shellVm.workflowStrip.chips.map((chip) => (
+          <CockpitChip key={chip.label} label={chip.label} value={chip.value} />
+        ))}
+        <span id={shellVm.workflowStrip.statusId} className="sr-only" aria-live="polite">
+          {shellVm.workflowStrip.statusText}
+        </span>
+        {shellVm.workflowStrip.commands.map((command) => (
+          <WorkflowPanelButton
+            key={command.id}
+            command={command}
+            onOpen={() => shellVm.openWorkflowPanel(command.id)}
+          />
+        ))}
       </div>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -988,15 +965,15 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </section>
 
       {/* ---- Strategy Controls Sheet ---- */}
-      <Sheet open={strategySheetOpen} onOpenChange={setStrategySheetOpen}>
-        <SheetContent aria-labelledby="strategy-lifecycle-title" aria-describedby="strategy-lifecycle-description">
+      <Sheet open={shellVm.strategySheetOpen} onOpenChange={(open) => shellVm.setWorkflowPanelOpen("strategy", open)}>
+        <SheetContent id="strategy-lifecycle-panel" aria-labelledby="strategy-lifecycle-title" aria-describedby="strategy-lifecycle-description">
           <SheetHeader>
             <SheetTitle id="strategy-lifecycle-title">
               <PlayCircle className="h-4 w-4 text-primary" />
               {strategyLifecycle.title}
             </SheetTitle>
             <SheetDescription id="strategy-lifecycle-description">{strategyLifecycle.description}</SheetDescription>
-            <SheetCloseButton onClick={() => setStrategySheetOpen(false)} />
+            <SheetCloseButton onClick={() => shellVm.closeWorkflowPanel("strategy")} />
           </SheetHeader>
           <SheetBody>
             <div className="space-y-1">
@@ -1047,15 +1024,15 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </Sheet>
 
       {/* ---- Session Replay Sheet ---- */}
-      <Sheet open={replaySheetOpen} onOpenChange={setReplaySheetOpen}>
-        <SheetContent aria-labelledby={sessionReplay.sectionTitleId} aria-describedby={sessionReplay.sectionDescriptionId}>
+      <Sheet open={shellVm.replaySheetOpen} onOpenChange={(open) => shellVm.setWorkflowPanelOpen("replay", open)}>
+        <SheetContent id="session-replay-panel" aria-labelledby={sessionReplay.sectionTitleId} aria-describedby={sessionReplay.sectionDescriptionId}>
           <SheetHeader>
             <SheetTitle id={sessionReplay.sectionTitleId}>
               <RotateCcw className="h-4 w-4 text-primary" />
               {sessionReplay.sectionTitle}
             </SheetTitle>
             <SheetDescription id={sessionReplay.sectionDescriptionId}>{sessionReplay.sectionDescription}</SheetDescription>
-            <SheetCloseButton onClick={() => setReplaySheetOpen(false)} />
+            <SheetCloseButton onClick={() => shellVm.closeWorkflowPanel("replay")} />
           </SheetHeader>
           <SheetBody className="space-y-3">
             <div className="grid gap-2">
@@ -1205,15 +1182,15 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </Sheet>
 
       {/* ---- Promotion Gate Sheet ---- */}
-      <Sheet open={promotionSheetOpen} onOpenChange={setPromotionSheetOpen}>
-        <SheetContent aria-labelledby="promotion-gate-title" aria-describedby="promotion-gate-description">
+      <Sheet open={shellVm.promotionSheetOpen} onOpenChange={(open) => shellVm.setWorkflowPanelOpen("promotion", open)}>
+        <SheetContent id="promotion-gate-panel" aria-labelledby="promotion-gate-title" aria-describedby="promotion-gate-description">
           <SheetHeader>
             <SheetTitle id="promotion-gate-title">
               <FlaskConical className="h-4 w-4 text-primary" />
               Backtest → Paper promotion gate
             </SheetTitle>
             <SheetDescription id="promotion-gate-description">Requires eligibility check before confirmation and audit refresh.</SheetDescription>
-            <SheetCloseButton onClick={() => setPromotionSheetOpen(false)} />
+            <SheetCloseButton onClick={() => shellVm.closeWorkflowPanel("promotion")} />
           </SheetHeader>
           <SheetBody className="space-y-3">
             <div id="promotion-action-state" className="rounded-lg border border-border/70 bg-secondary/25 px-4 py-3">
@@ -2104,10 +2081,34 @@ function TradingHighlight({ icon: Icon, title, description }: { icon: React.Elem
 
 function CockpitChip({ label, value }: { label: string; value: string }) {
   return (
-    <span className="toolbar-chip">
+    <span className="toolbar-chip" aria-label={`${label}: ${value}`}>
       <span className="text-muted-foreground">{label}</span>
       <span className="font-mono text-foreground">{value}</span>
     </span>
+  );
+}
+
+function WorkflowPanelButton({
+  command,
+  onOpen
+}: {
+  command: TradingWorkflowCommandState;
+  onOpen: () => void;
+}) {
+  const Icon = command.icon === "strategy" ? PlayCircle : command.icon === "replay" ? RotateCcw : FlaskConical;
+
+  return (
+    <Button
+      size="sm"
+      variant={command.active ? "secondary" : "outline"}
+      aria-label={command.ariaLabel}
+      aria-expanded={command.expanded}
+      aria-controls={command.controlsId}
+      onClick={onOpen}
+    >
+      <Icon className="mr-2 h-4 w-4" aria-hidden="true" />
+      {command.label}
+    </Button>
   );
 }
 

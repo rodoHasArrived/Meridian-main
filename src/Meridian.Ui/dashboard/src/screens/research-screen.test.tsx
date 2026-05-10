@@ -132,16 +132,20 @@ describe("ResearchScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<ResearchScreen data={twoRuns} />);
 
-    expect(screen.getByRole("button", { name: /compare 2 runs/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /diff 2 runs/i })).toBeDisabled();
+    const disabledCompare = screen.getByRole("button", { name: /compare 2 runs unavailable/i });
+    const disabledDiff = screen.getByRole("button", { name: /diff 2 runs unavailable/i });
+    expect(disabledCompare).toBeDisabled();
+    expect(disabledCompare).toHaveAttribute("title", "Select exactly two runs before using this command. 0 selected.");
+    expect(disabledDiff).toBeDisabled();
+    expect(disabledDiff).toHaveAttribute("title", "Select exactly two runs before using this command. 0 selected.");
     expect(screen.getByText("No runs selected")).toBeInTheDocument();
 
     const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
 
-    expect(screen.getByRole("button", { name: /compare 2 runs/i })).toBeEnabled();
-    expect(screen.getByRole("button", { name: /diff 2 runs/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /compare 2 runs: mean reversion fx and index momentum/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /diff 2 runs: mean reversion fx and index momentum/i })).toBeEnabled();
     expect(screen.getByText("Mean Reversion FX vs Index Momentum")).toBeInTheDocument();
   });
 

@@ -98,4 +98,18 @@ describe("OverviewScreen", () => {
     expect(screen.getByText("Seed a working watchlist")).toBeInTheDocument();
     expect(screen.getByText(/No monitored symbols are loaded yet/i)).toBeInTheDocument();
   });
+
+  it("routes provider-baseline gaps directly to the Alpaca setup checklist", () => {
+    renderWithRouter(
+      <OverviewScreen
+        data={{ ...overview, providersOnline: 0, providersTotal: 0, symbolsMonitored: 0 }}
+        session={session}
+      />
+    );
+
+    const setupLink = screen.getByRole("link", { name: "Open Alpaca paper provider setup checklist" });
+    expect(setupLink).toHaveAttribute("href", "/settings#alpaca-provider-setup");
+    expect(screen.getByText("Connect provider baseline")).toBeInTheDocument();
+    expect(screen.getByText(/No providers are configured yet/i)).toBeInTheDocument();
+  });
 });

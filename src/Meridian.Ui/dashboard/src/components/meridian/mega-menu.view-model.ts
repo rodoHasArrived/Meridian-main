@@ -65,7 +65,7 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     links: [
       { label: "Exposure", route: "/portfolio", description: "Portfolio exposure overview" },
       { label: "Attribution", route: "/portfolio/attribution", description: "Performance attribution" },
-      { label: "Brokerage", route: "/portfolio/brokerage", description: "Brokerage account details" }
+      { label: "Brokerage sync", route: "/portfolio/brokerage-sync", description: "Brokerage account sync review" }
     ]
   },
   {
@@ -83,7 +83,9 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     label: "Reporting",
     eyebrow: "Reports & exports",
     links: [
-      { label: "Report packs", route: "/reporting", description: "Scheduled report packs" },
+      { label: "Profiles", route: "/reporting", description: "Governed export profiles" },
+      { label: "Report packs", route: "/reporting/report-packs", description: "Approval-ready report packet review" },
+      { label: "Evidence", route: "/reporting/evidence", description: "Packet completeness and lineage" },
       { label: "Exports", route: "/reporting/exports", description: "Data export queue" }
     ]
   },
@@ -104,8 +106,10 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     eyebrow: "Providers & feeds",
     links: [
       { label: "Provider posture", route: "/data", description: "Data provider health" },
+      { label: "Watchlist", route: "/data/watchlist", description: "Symbol subscription setup" },
+      { label: "Live quotes", route: "/data/quotes", description: "Quote, trade, and depth workbench" },
       { label: "Backfill queues", route: "/data/backfills", description: "Historical data backfill" },
-      { label: "Feed monitor", route: "/data/feeds", description: "Live feed status" }
+      { label: "Security Master", route: "/data/security-master", description: "Reference-data readiness" }
     ]
   },
   {

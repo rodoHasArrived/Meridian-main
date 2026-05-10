@@ -287,6 +287,25 @@ describe("buildSettingsScreenViewModel", () => {
       clearDisabledReason: "No stored Alpaca credentials are available to clear."
     });
     expect(emptyState.submitDisabledReason).toContain("key ID");
+    expect(emptyState.environmentLegend).toBe("Alpaca trading environment");
+    expect(emptyState.environmentOptions).toEqual([
+      expect.objectContaining({
+        id: "alpaca-environment-paper",
+        value: "paper",
+        badgeLabel: "Default",
+        isSelected: true,
+        disabled: false,
+        tone: "paper"
+      }),
+      expect.objectContaining({
+        id: "alpaca-environment-live",
+        value: "live",
+        badgeLabel: "Real money",
+        isSelected: false,
+        disabled: false,
+        tone: "live"
+      })
+    ]);
     expect(emptyState.requirements).toEqual([
       expect.objectContaining({ id: "alpaca-key-id-requirement", value: "Required", met: false, tone: "warning" }),
       expect.objectContaining({ id: "alpaca-secret-key-requirement", value: "Required", met: false, tone: "warning" }),
@@ -314,6 +333,10 @@ describe("buildSettingsScreenViewModel", () => {
     });
     expect(busyState.formPanelTitle).toBe("Testing Alpaca credentials");
     expect(busyState.submitDisabledReason).toContain("already running");
+    expect(busyState.environmentOptions).toEqual([
+      expect.objectContaining({ value: "paper", isSelected: false, disabled: true }),
+      expect.objectContaining({ value: "live", isSelected: true, disabled: true })
+    ]);
   });
 
   it("surfaces canonical backend capability groups with browser routes and mapped endpoints", () => {
@@ -322,6 +345,7 @@ describe("buildSettingsScreenViewModel", () => {
       overview,
       research: { metrics: [], runs: [] },
       trading: {} as never,
+      portfolio: {} as never,
       dataOperations: { metrics: [], providers: [], backfills: [], exports: [] },
       governance: {} as never,
       reporting: {} as never,
@@ -343,16 +367,57 @@ describe("buildSettingsScreenViewModel", () => {
     ]);
     expect(vm.backendCapabilityGroups.find((group) => group.id === "strategy")?.endpoints).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ href: "/api/workstation/runs/history", method: "GET" }),
-        expect.objectContaining({ href: "/api/workstation/runs/compare", method: "POST" })
+        expect.objectContaining({ href: "/api/workstation/runs/history", method: "GET", isBrowserNavigable: true }),
+        expect.objectContaining({
+          href: "/api/workstation/runs/compare",
+          method: "POST",
+          isBrowserNavigable: false,
+          interactionLabel: "Reference"
+        })
       ])
+    );
+    expect(vm.backendCapabilityGroups.find((group) => group.id === "portfolio")?.endpoints).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ href: "/api/workstation/portfolio", method: "GET", isBrowserNavigable: true }),
+        expect.objectContaining({
+          href: "/api/workstation/runs/{runId}/review-packet",
+          method: "GET",
+          isBrowserNavigable: false,
+          interactionLabel: "Reference"
+        })
+      ])
+    );
+    expect(vm.backendCapabilityGroups.find((group) => group.id === "accounting")?.statusDetail).toContain(
+      "templates and mutating endpoints stay reference-only"
     );
     expect(vm.backendCapabilityGroups.find((group) => group.id === "settings")?.endpoints).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ href: "/api/workstation/workflows" }),
-        expect.objectContaining({ href: "/api/workstation/workflows/presets" })
+        expect.objectContaining({ href: "/api/workstation/workflows", isBrowserNavigable: true }),
+        expect.objectContaining({ href: "/api/workstation/workflows/presets", isBrowserNavigable: true })
       ])
     );
+  });
+
+  it("does not mark Portfolio capability as surfaced from Trading alone", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      research: { metrics: [], runs: [] },
+      trading: {} as never,
+      portfolio: null,
+      dataOperations: { metrics: [], providers: [], backfills: [], exports: [] },
+      governance: {} as never,
+      reporting: {} as never,
+      loading: false,
+      error: null,
+      workspaceErrors: {}
+    });
+
+    expect(vm.backendCapabilityGroups.find((group) => group.id === "portfolio")).toMatchObject({
+      statusLabel: "Unavailable",
+      statusVariant: "danger",
+      statusDetail: "Portfolio workspace payload has not loaded."
+    });
   });
 
   it("surfaces workspace diagnostic failures without hiding endpoint links", () => {

@@ -139,21 +139,49 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                   </Link>
                 </Button>
               ) : null}
-              <Button variant="secondary" onClick={() => void vm.loadPromotionHistory()} disabled={!vm.canLoadPromotionHistory}>
-                {vm.promotionHistoryButtonLabel}
+              <Button
+                variant="secondary"
+                onClick={() => void vm.loadPromotionHistory()}
+                disabled={vm.promotionHistoryCommand.disabled}
+                disabledReason={vm.promotionHistoryCommand.disabledReason}
+                busy={vm.promotionHistoryCommand.busy}
+                busyLabel={vm.promotionHistoryCommand.label}
+                aria-label={vm.promotionHistoryCommand.ariaLabel}
+              >
+                {vm.promotionHistoryCommand.label}
               </Button>
-              <Button variant="outline" onClick={() => void vm.compareSelectedRuns()} disabled={!vm.canCompare}>
-                {vm.compareButtonLabel}
+              <Button
+                variant="outline"
+                onClick={() => void vm.compareSelectedRuns()}
+                disabled={vm.compareCommand.disabled}
+                disabledReason={vm.compareCommand.disabledReason}
+                busy={vm.compareCommand.busy}
+                busyLabel={vm.compareCommand.label}
+                aria-label={vm.compareCommand.ariaLabel}
+              >
+                {vm.compareCommand.label}
               </Button>
-              <Button variant="outline" onClick={() => void vm.diffSelectedRuns()} disabled={!vm.canDiff}>
-                {vm.diffButtonLabel}
+              <Button
+                variant="outline"
+                onClick={() => void vm.diffSelectedRuns()}
+                disabled={vm.diffCommand.disabled}
+                disabledReason={vm.diffCommand.disabledReason}
+                busy={vm.diffCommand.busy}
+                busyLabel={vm.diffCommand.label}
+                aria-label={vm.diffCommand.ariaLabel}
+              >
+                {vm.diffCommand.label}
               </Button>
               <Button
                 variant="default"
                 onClick={() => void vm.promoteSelectedRun()}
-                disabled={!vm.canPromote}
+                disabled={vm.promoteCommand.disabled}
+                disabledReason={vm.promoteCommand.disabledReason}
+                busy={vm.promoteCommand.busy}
+                busyLabel={vm.promoteCommand.label}
+                aria-label={vm.promoteCommand.ariaLabel}
               >
-                {vm.promoteButtonLabel}
+                {vm.promoteCommand.label}
               </Button>
             </div>
           </div>

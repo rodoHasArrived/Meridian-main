@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, renderHook, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -12,14 +12,16 @@ import { EvidenceWorkbenchScreen } from "@/screens/evidence-workbench-screen";
 import {
   buildEvidenceWorkbenchViewModel,
   groupNodes,
-  mapStatusTone
+  mapStatusTone,
+  useEvidenceWorkbenchViewModel
 } from "@/screens/evidence-workbench-screen.view-model";
 import type {
   EvidenceCompleteness,
   EvidenceNode,
   EvidencePacket,
   EvidencePacketExportResponse,
-  EvidenceSubject
+  EvidenceSubject,
+  WorkflowAction
 } from "@/types";
 
 vi.mock("@/lib/api", () => ({
@@ -92,6 +94,42 @@ const completeness: EvidenceCompleteness = {
   blockingWorkItemIds: ["provider-trust:sample-review"]
 };
 
+const evidenceActions: WorkflowAction[] = [
+  {
+    actionId: "workflow.evidence.open-packet",
+    label: "Open Evidence Packet",
+    detail: "Open the reusable evidence packet for the selected workflow subject.",
+    targetPageTag: "EvidenceWorkbench",
+    tone: "Primary",
+    workItemKind: null,
+    routePrefixes: ["/api/workstation/evidence"],
+    routeContains: [],
+    aliases: []
+  },
+  {
+    actionId: "workflow.evidence.validate",
+    label: "Validate Evidence",
+    detail: "Validate evidence completeness without mutating source workflows.",
+    targetPageTag: "EvidenceWorkbench",
+    tone: "Warning",
+    workItemKind: null,
+    routePrefixes: ["/api/workstation/evidence"],
+    routeContains: [],
+    aliases: []
+  },
+  {
+    actionId: "workflow.evidence.export-manifest",
+    label: "Export Evidence Manifest",
+    detail: "Write a manifest-only evidence export for audit review.",
+    targetPageTag: "EvidenceWorkbench",
+    tone: "Primary",
+    workItemKind: null,
+    routePrefixes: ["/api/workstation/evidence"],
+    routeContains: [],
+    aliases: []
+  }
+];
+
 const packet: EvidencePacket = {
   subject,
   generatedAt: "2026-05-09T12:30:00Z",
@@ -105,9 +143,20 @@ const packet: EvidencePacket = {
     }
   ],
   completeness,
-  actions: [],
+  actions: evidenceActions,
   warnings: ["DK1 sample review is pending."]
 };
+
+function createDeferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}
 
 describe("Evidence Workbench view model", () => {
   it("groups evidence by lifecycle stage and surfaces blocked packet gaps", () => {
@@ -133,6 +182,19 @@ describe("Evidence Workbench view model", () => {
     expect(vm.staleEvidence).toEqual([staleNode.evidenceId]);
     expect(vm.relatedWorkItemIds).toEqual(["provider-trust:sample-review"]);
     expect(vm.nodeGroups.map((group) => group.id)).toEqual(["run-lifecycle", "readiness", "provider-trust"]);
+    expect(vm.sourceWorkflowHref).toBe("/strategy?runId=run-1");
+    expect(vm.packetActionsSummaryLabel).toBe("3 workflow actions");
+    expect(vm.packetActions.map((action) => action.control)).toEqual(["link", "validate", "export"]);
+    expect(vm.packetActions[0]).toMatchObject({
+      href: "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1",
+      tone: "primary",
+      targetLabel: "Evidence Workbench"
+    });
+    expect(vm.packetActions[1]).toMatchObject({
+      commandLabel: "Validate",
+      ariaLabel: "Validate evidence for Momentum strategy run",
+      tone: "warning"
+    });
   });
 
   it("keeps loading and empty subject states explicit", () => {
@@ -162,6 +224,35 @@ describe("Evidence Workbench view model", () => {
     expect(loading.openSubjectHref(subject)).toBe("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
   });
 
+  it("falls back to page-tag routing when evidence subjects omit a direct route", () => {
+    const packetWithoutRoute: EvidencePacket = {
+      ...packet,
+      subject: {
+        ...subject,
+        route: null,
+        pageTag: "FundReportPack",
+        workspace: "Reporting"
+      }
+    };
+    const vm = buildEvidenceWorkbenchViewModel({
+      selectedSubjectKind: "report-pack",
+      selectedSubjectId: "close-pack",
+      loading: false,
+      error: null,
+      subjects: [packetWithoutRoute.subject],
+      packet: packetWithoutRoute,
+      exportBusy: false,
+      exportResult: null,
+      validateBusy: false,
+      validationResult: null,
+      exportManifest: vi.fn(),
+      validatePacket: vi.fn()
+    });
+
+    expect(vm.sourceWorkflowHref).toBe("/reporting/report-packs");
+    expect(vm.sourceWorkflowAriaLabel).toBe("Open source workflow for Momentum strategy run");
+  });
+
   it("maps ready, review, blocked, missing, stale, and unknown statuses to accessible tones", () => {
     expect(mapStatusTone("Ready")).toBe("success");
     expect(mapStatusTone("ReviewRequired")).toBe("warning");
@@ -178,6 +269,54 @@ describe("Evidence Workbench view model", () => {
       expect.objectContaining({ id: "run-lifecycle", readyCount: 1, reviewCount: 0 }),
       expect.objectContaining({ id: "provider-trust", readyCount: 0, reviewCount: 1 })
     ]);
+  });
+
+  it("ignores stale validation results after the selected subject changes", async () => {
+    const validation = createDeferred<EvidenceCompleteness>();
+    const nextSubject: EvidenceSubject = {
+      ...subject,
+      subjectId: "run-2",
+      label: "Rebalanced strategy run"
+    };
+    const nextPacket: EvidencePacket = {
+      ...packet,
+      subject: nextSubject,
+      completeness: { ...completeness, score: 80 }
+    };
+    const services = {
+      getSubjects: vi.fn().mockResolvedValue([subject, nextSubject]),
+      getPacket: vi.fn(async (_subjectKind: string, subjectId: string) => subjectId === "run-2" ? nextPacket : packet),
+      validatePacket: vi.fn(() => validation.promise),
+      exportManifest: vi.fn()
+    };
+    const { result, rerender } = renderHook(
+      ({ search }) => useEvidenceWorkbenchViewModel(search, services),
+      { initialProps: { search: "?subjectKind=strategy-run&subjectId=run-1" } }
+    );
+
+    await waitFor(() => expect(result.current.hasPacket).toBe(true));
+
+    await act(async () => {
+      void result.current.validatePacket();
+    });
+
+    expect(result.current.validateBusy).toBe(true);
+
+    rerender({ search: "?subjectKind=strategy-run&subjectId=run-2" });
+
+    await waitFor(() => expect(result.current.selectedSubjectId).toBe("run-2"));
+    await waitFor(() => expect(result.current.hasPacket).toBe(true));
+    expect(result.current.validateBusy).toBe(false);
+
+    await act(async () => {
+      validation.resolve({ ...completeness, score: 50 });
+      await validation.promise;
+    });
+
+    expect(result.current.selectedSubjectId).toBe("run-2");
+    expect(result.current.title).toBe("Rebalanced strategy run");
+    expect(result.current.validationResult).toBeNull();
+    expect(result.current.scoreLabel).toBe("80% complete");
   });
 });
 
@@ -204,11 +343,20 @@ describe("EvidenceWorkbenchScreen", () => {
 
     expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
     expect(screen.getByText("Missing evidence")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /open source workflow for momentum strategy run/i })).toHaveAttribute(
+      "href",
+      "/strategy?runId=run-1"
+    );
+    expect(screen.getByRole("region", { name: "Evidence packet actions" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /open evidence packet for momentum strategy run/i })).toHaveAttribute(
+      "href",
+      "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1"
+    );
 
-    await user.click(screen.getByRole("button", { name: /validate/i }));
+    await user.click(screen.getByRole("button", { name: /validate evidence for momentum strategy run/i }));
     expect(await screen.findByText(/Validation returned 50% completeness/i)).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /export manifest/i }));
+    await user.click(screen.getByRole("button", { name: /export evidence for momentum strategy run/i }));
     expect(await screen.findByText("Manifest retained")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/strategy-run/run-1/manifest.json")).toBeInTheDocument();
   });

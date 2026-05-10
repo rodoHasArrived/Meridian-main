@@ -1,4 +1,4 @@
-import { normalizeWorkspacePath, WORKSPACES, workspacePath } from "@/lib/workspace";
+import { normalizeWorkspacePath, WORKSPACES, workflowTargetPath, workspacePath } from "@/lib/workspace";
 import type {
   WorkflowAction,
   WorkflowDefinition,
@@ -63,27 +63,6 @@ export interface CommandPaletteKeyboardState {
   shiftKey?: boolean;
   focusBoundary: CommandPaletteFocusBoundary;
 }
-
-const PAGE_TAG_ROUTES: Record<string, string> = {
-  AccountPortfolio: "/portfolio/brokerage-sync",
-  AccountingShell: "/accounting",
-  Backfill: "/data/backfills",
-  DataShell: "/data",
-  FundAuditTrail: "/accounting",
-  FundReconciliation: "/accounting/reconciliation",
-  FundReportPack: "/reporting/report-packs",
-  FundTrialBalance: "/accounting",
-  PortfolioShell: "/portfolio",
-  ProviderHealth: "/data/providers",
-  ReportingShell: "/reporting",
-  RunRisk: "/trading/readiness",
-  SecurityMaster: "/data/security-master",
-  SettingsShell: "/settings",
-  StrategyRuns: "/strategy",
-  StrategyShell: "/strategy",
-  TradingReadinessConsole: "/trading/readiness",
-  TradingShell: "/trading"
-};
 
 export function buildCommandPaletteViewModel(
   pathname: string,
@@ -201,7 +180,7 @@ function buildPresetItems(presets: WorkflowPreset[], pathname: string): CommandP
   return [...presets]
     .sort(comparePresets)
     .map<CommandPaletteItem>((preset) => {
-      const route = routeForWorkflowTarget(preset.targetPageTag, preset.workspaceId);
+      const route = workflowTargetPath(preset.targetPageTag, preset.workspaceId);
       const current = isExactActivePath(pathname, route);
 
       return {
@@ -227,7 +206,7 @@ function buildWorkflowItems(workflows: WorkflowDefinition[], pathname: string): 
 }
 
 function buildWorkflowItem(workflow: WorkflowDefinition, action: WorkflowAction, pathname: string): CommandPaletteItem {
-  const route = routeForWorkflowTarget(action.targetPageTag || workflow.entryPageTag, workflow.workspaceId);
+  const route = workflowTargetPath(action.targetPageTag || workflow.entryPageTag, workflow.workspaceId);
   const current = isExactActivePath(pathname, route);
 
   return {
@@ -316,25 +295,6 @@ function filterCommandItems(items: CommandPaletteItem[], query: string) {
 
     return terms.every((term) => haystack.includes(term));
   });
-}
-
-function routeForWorkflowTarget(targetPageTag: string | null | undefined, workspaceId: string | null | undefined) {
-  const tagRoute = targetPageTag ? PAGE_TAG_ROUTES[targetPageTag] : undefined;
-  if (tagRoute) {
-    return tagRoute;
-  }
-
-  const workspaceKey = workspaceKeyFromId(workspaceId);
-  return workspaceKey ? workspacePath(workspaceKey) : "/trading";
-}
-
-function workspaceKeyFromId(workspaceId: string | null | undefined): WorkspaceKey | null {
-  const normalized = workspaceId?.trim().toLowerCase();
-  if (!normalized) {
-    return null;
-  }
-
-  return WORKSPACES.some((workspace) => workspace.key === normalized) ? (normalized as WorkspaceKey) : null;
 }
 
 function isExactActivePath(pathname: string, route: string) {

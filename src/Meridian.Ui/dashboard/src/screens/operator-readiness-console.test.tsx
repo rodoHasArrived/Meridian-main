@@ -215,7 +215,7 @@ describe("OperatorReadinessConsole", () => {
       name: "Open Security Master: Critical security coverage gap"
     });
 
-    expect(criticalActions[0]).toHaveAttribute("href", "/accounting/security-master");
+    expect(criticalActions[0]).toHaveAttribute("href", "/data/security-master");
     expect(screen.getByRole("group", { name: /Primary next action: Critical security coverage gap/i })).toBeInTheDocument();
     expect(screen.getByText("Showing 6 of 7 operator work items; 1 critical item, 6 warnings. Critical items sort first.")).toBeInTheDocument();
     expect(screen.getByText("1 additional work item hidden from this view after priority sorting.")).toBeInTheDocument();
