@@ -5502,6 +5502,7 @@ Use these documents together when planning or implementing new work:
 │   │   │       ├── LedgerTextJournalDocument.cs
 │   │   │       ├── LedgerTextJournalException.cs
 │   │   │       ├── LedgerTextJournalParser.cs
+│   │   │       ├── LedgerTextJournalReportService.cs
 │   │   │       ├── LedgerTextReportOptions.cs
 │   │   │       ├── LedgerTextReportRenderer.cs
 │   │   │       └── LedgerTextTransaction.cs
@@ -6855,8 +6856,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-B91Yvz3c.js
-│   │           │   └── index-BgcRAU_T.css
+│   │           │   ├── index-BgFEM7K2.css
+│   │           │   └── index-RZ4kitqa.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8415,6 +8416,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-674 directories, 7558 files
+674 directories, 7559 files
 ```
 <!-- readme-tree end -->
