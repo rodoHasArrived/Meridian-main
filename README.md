@@ -6748,6 +6748,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── metric-card.view-model.ts
 │   │   │   │   │   │   ├── quant-plot.test.tsx
 │   │   │   │   │   │   ├── quant-plot.tsx
+│   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
@@ -6771,6 +6772,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │       ├── dialog.view-model.test.ts
 │   │   │   │   │       ├── dialog.view-model.ts
 │   │   │   │   │       ├── input.tsx
+│   │   │   │   │       ├── label.tsx
+│   │   │   │   │       ├── progress.tsx
 │   │   │   │   │       ├── select.tsx
 │   │   │   │   │       ├── sheet.test.tsx
 │   │   │   │   │       ├── sheet.tsx
@@ -6856,8 +6859,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-BgFEM7K2.css
-│   │           │   └── index-RZ4kitqa.js
+│   │           │   ├── index-BQB0EwVK.css
+│   │           │   └── index-DZ6DOyBf.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8416,6 +8419,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-674 directories, 7559 files
+674 directories, 7562 files
 ```
 <!-- readme-tree end -->
