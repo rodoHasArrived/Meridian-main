@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   evidenceWorkbenchPath,
   legacyWorkspaceRedirect,
+  normalizeLocalWorkstationRoute,
   normalizeWorkspacePath,
   WORKSPACES,
   workflowTargetPath,
@@ -40,11 +41,15 @@ describe("workspace metadata", () => {
     expect(normalizeWorkspacePath("/research/run-library")).toBe("strategy");
     expect(normalizeWorkspacePath("/data-operations/backfills")).toBe("data");
     expect(normalizeWorkspacePath("/governance/security-master")).toBe("accounting");
+    expect(normalizeWorkspacePath("/data/security-master")).toBe("accounting");
   });
 
   it("preserves legacy suffix, query, and hash when building redirects", () => {
     expect(legacyWorkspaceRedirect("/data-operations/backfills", "?provider=alpaca", "#queue")).toBe(
       "/data/backfills?provider=alpaca#queue"
+    );
+    expect(legacyWorkspaceRedirect("/data/security-master/identity", "?query=GS", "#conflicts")).toBe(
+      "/accounting/security-master/identity?query=GS#conflicts"
     );
     expect(legacyWorkspaceRedirect("/governance/reconciliation")).toBe("/accounting/reconciliation");
     expect(legacyWorkspaceRedirect("/trading")).toBeNull();
@@ -67,10 +72,28 @@ describe("workspace metadata", () => {
   });
 
   it("maps backend workflow targets to browser workstation routes", () => {
+    expect(workflowTargetPath("Backtest", "strategy")).toBe("/strategy");
     expect(workflowTargetPath("EvidenceWorkbench", "strategy")).toBe("/reporting/evidence");
     expect(workflowTargetPath("FundReportPack", "reporting")).toBe("/reporting/report-packs");
     expect(workflowTargetPath("ProviderTrust", "data")).toBe("/data/providers");
+    expect(workflowTargetPath("SecurityMaster", "data")).toBe("/accounting/security-master");
+    expect(workflowTargetPath("UnknownTag", "research")).toBe("/strategy");
+    expect(workflowTargetPath("UnknownTag", "data-operations")).toBe("/data");
     expect(workflowTargetPath("UnknownTag", "data")).toBe("/data");
     expect(workflowTargetPath(null, null)).toBe("/trading");
+  });
+
+  it("normalizes only local workstation routes for cross-screen workflow links", () => {
+    expect(normalizeLocalWorkstationRoute("/workstation/governance/reconciliation?runId=run-1#cash")).toBe(
+      "/accounting/reconciliation?runId=run-1#cash"
+    );
+    expect(normalizeLocalWorkstationRoute("/workstation/data/security-master/identity?query=GS#conflicts")).toBe(
+      "/accounting/security-master/identity?query=GS#conflicts"
+    );
+    expect(normalizeLocalWorkstationRoute("/data/providers")).toBe("/data/providers");
+    expect(normalizeLocalWorkstationRoute("/api/workstation/operator/inbox")).toBeNull();
+    expect(normalizeLocalWorkstationRoute("//example.test/data")).toBeNull();
+    expect(normalizeLocalWorkstationRoute("https://example.test/data")).toBeNull();
+    expect(normalizeLocalWorkstationRoute("/unknown/path")).toBeNull();
   });
 });

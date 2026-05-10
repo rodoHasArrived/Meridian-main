@@ -9,12 +9,12 @@ describe("CommandPalette", () => {
   it("marks the route-aware current workspace", () => {
     renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, { initialEntries: ["/portfolio/positions"] });
 
-    expect(screen.getByRole("dialog", { name: "Open workspace" })).toBeInTheDocument();
-    expect(screen.getByText("Route to a canonical operator workspace. Current: Portfolio.")).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "7 workspace commands" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Open workstation command" })).toBeInTheDocument();
+    expect(screen.getByText("Route to common operator workflows and canonical workspaces. Current: Portfolio.")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "18 workstation commands" })).toBeInTheDocument();
     expect(screen.getByText("Esc to close")).toBeInTheDocument();
     expect(screen.getByRole("searchbox", { name: "Search command palette" })).toHaveFocus();
-    expect(screen.getByText("7 commands available")).toBeInTheDocument();
+    expect(screen.getByText("18 commands available")).toBeInTheDocument();
     expect(screen.getByLabelText("Route /portfolio")).toBeInTheDocument();
     expect(screen.getByLabelText("Portfolio, current workspace")).toHaveAttribute("aria-current", "page");
   });
@@ -36,7 +36,7 @@ describe("CommandPalette", () => {
     renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/settings"] });
 
     const closeButton = screen.getByRole("button", { name: "Close command palette" });
-    const lastCommand = screen.getByLabelText("Settings, current workspace");
+    const lastCommand = screen.getByLabelText("Open Provider integrations route");
 
     lastCommand.focus();
     fireEvent.keyDown(window, { key: "Tab" });
@@ -65,8 +65,9 @@ describe("CommandPalette", () => {
 
     await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "settings");
 
-    expect(screen.getByText("1 of 7 commands match")).toBeInTheDocument();
+    expect(screen.getByText("2 of 18 commands match")).toBeInTheDocument();
     expect(screen.getByLabelText("Open Settings workspace")).toBeInTheDocument();
+    expect(screen.getByLabelText("Open Provider integrations route")).toBeInTheDocument();
     expect(screen.queryByLabelText("Trading, current workspace")).not.toBeInTheDocument();
   });
 
@@ -119,7 +120,7 @@ describe("CommandPalette", () => {
 
     await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "missing command");
 
-    expect(screen.getByText("0 of 7 commands match")).toBeInTheDocument();
+    expect(screen.getByText("0 of 18 commands match")).toBeInTheDocument();
     expect(screen.getByText("No matching commands")).toBeInTheDocument();
   });
 
@@ -201,9 +202,9 @@ describe("CommandPalette", () => {
       { initialEntries: ["/trading"] }
     );
 
-    expect(screen.getByRole("navigation", { name: "9 commands" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "20 commands" })).toBeInTheDocument();
     expect(screen.getByText("1 workflow action - 1 preset")).toBeInTheDocument();
-    expect(screen.getByLabelText("Review Security Master, Data Provider Recovery")).toHaveAttribute("href", "/data/security-master");
+    expect(screen.getByLabelText("Review Security Master, Data Provider Recovery")).toHaveAttribute("href", "/accounting/security-master");
 
     await user.click(screen.getByLabelText("Open workflow preset Security open items"));
 

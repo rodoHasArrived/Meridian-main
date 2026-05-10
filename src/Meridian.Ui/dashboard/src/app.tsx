@@ -16,6 +16,8 @@ import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
 import {
   buildAppShellViewState,
   buildDevelopmentFixtureNoticeViewModel,
+  isAppShellEditableShortcutTarget,
+  resolveAppShellCommandPaletteShortcut,
   type DevelopmentFixtureNoticeStep,
   type ShellStatusPanel
 } from "@/app-shell.view-model";
@@ -87,11 +89,16 @@ export function App() {
 
   useEffect(() => {
     const handleCommandShortcut = (event: KeyboardEvent) => {
-      if (!isCommandPaletteShortcut(event)) {
-        return;
-      }
-
-      if (isEditableTarget(event.target) && !commandOpen) {
+      const command = resolveAppShellCommandPaletteShortcut({
+        key: event.key,
+        ctrlKey: event.ctrlKey,
+        metaKey: event.metaKey,
+        altKey: event.altKey,
+        shiftKey: event.shiftKey,
+        targetIsEditable: isAppShellEditableShortcutTarget(event.target),
+        commandPaletteOpen: commandOpen
+      });
+      if (command !== "toggle-command-palette") {
         return;
       }
 
@@ -106,6 +113,7 @@ export function App() {
   const shell = buildAppShellViewState({
     pathname,
     hash,
+    commandPaletteOpen: commandOpen,
     loading,
     error,
     workspaceErrors,
@@ -128,6 +136,7 @@ export function App() {
     const canFocusRequestedTarget = !shell.routeFocus.targetElementId || shell.canRenderRoutes;
 
     if (previousRouteKey === null && !shell.routeFocus.targetElementId) {
+      document.title = shell.routeFocus.documentTitle;
       return;
     }
 
@@ -197,11 +206,14 @@ export function App() {
           type="button"
           className="workstation-search focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           onClick={() => setCommandOpen(true)}
-          aria-label="Open workstation command palette (Ctrl K)"
+          aria-label={shell.commandPaletteTrigger.label}
+          aria-controls={shell.commandPaletteTrigger.controlsId}
+          aria-expanded={shell.commandPaletteTrigger.expanded}
+          aria-haspopup={shell.commandPaletteTrigger.hasPopup}
         >
           <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <span className="workstation-search-placeholder">Search workflows, presets, workspaces…</span>
-          <span className="workstation-search-kbd" aria-hidden="true">Ctrl K</span>
+          <span className="workstation-search-placeholder">{shell.commandPaletteTrigger.placeholder}</span>
+          <span className="workstation-search-kbd" aria-hidden="true">{shell.commandPaletteTrigger.shortcutLabel}</span>
         </button>
 
         <div className="workstation-actions">
@@ -268,6 +280,8 @@ export function App() {
                 <Route path="/strategy/*" element={<ResearchScreen data={research} />} />
                 <Route path="/data/quotes" element={<LiveQuotesScreen />} />
                 <Route path="/data/watchlist" element={<WatchlistScreen />} />
+                <Route path="/data/security-master" element={<LegacyWorkspaceRedirect />} />
+                <Route path="/data/security-master/*" element={<LegacyWorkspaceRedirect />} />
                 <Route path="/data/*" element={<DataOperationsScreen data={dataOperations} />} />
                 <Route path="/settings/*" element={(
                   <SettingsScreen
@@ -470,15 +484,26 @@ function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () 
             {panel.title}
           </CardTitle>
         </div>
-        {panel.actionLabel ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRetry}
-            aria-label={panel.actionAriaLabel ?? panel.actionLabel}
-          >
-            {panel.actionLabel}
-          </Button>
+        {panel.actionLabel || panel.secondaryActionHref ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {panel.secondaryActionHref && panel.secondaryActionLabel ? (
+              <Button asChild variant="outline" size="sm">
+                <Link to={panel.secondaryActionHref} aria-label={panel.secondaryActionAriaLabel ?? panel.secondaryActionLabel}>
+                  {panel.secondaryActionLabel}
+                </Link>
+              </Button>
+            ) : null}
+            {panel.actionLabel ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onRetry}
+                aria-label={panel.actionAriaLabel ?? panel.actionLabel}
+              >
+                {panel.actionLabel}
+              </Button>
+            ) : null}
+          </div>
         ) : null}
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
@@ -496,28 +521,4 @@ function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () 
       </CardContent>
     </Card>
   );
-}
-
-
-function isEditableTarget(target: EventTarget | null): boolean {
-  const element = target instanceof Element ? target : null;
-  if (!element) {
-    return false;
-  }
-
-  if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
-    return true;
-  }
-
-  const editableContainer = element.closest("[contenteditable]");
-  if (!editableContainer) {
-    return false;
-  }
-
-  return editableContainer.getAttribute("contenteditable") !== "false";
-}
-
-
-function isCommandPaletteShortcut(event: KeyboardEvent): boolean {
-  return (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "k";
 }

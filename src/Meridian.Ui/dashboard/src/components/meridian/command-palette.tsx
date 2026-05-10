@@ -7,6 +7,7 @@ import {
   type CommandPaletteFocusBoundary,
   type CommandPaletteFocusTarget
 } from "@/components/meridian/command-palette.view-model";
+import { COMMAND_PALETTE_DIALOG_ID } from "@/app-shell.view-model";
 import { cn } from "@/lib/utils";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
 
@@ -134,6 +135,7 @@ export function CommandPalette({
       }}
     >
       <div
+        id={COMMAND_PALETTE_DIALOG_ID}
         ref={dialogRef}
         role="dialog"
         aria-modal="true"

@@ -61,6 +61,7 @@ const portfolio: PortfolioWorkspaceResponse = {
 
 describe("App", () => {
   beforeEach(() => {
+    document.title = "Meridian";
     mockedUseWorkstationData.mockReturnValue({
       session: {
         displayName: "Ops Desk",
@@ -94,14 +95,22 @@ describe("App", () => {
   it("opens and closes the command palette with Control+K", async () => {
     const user = userEvent.setup();
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
+    const trigger = screen.getByRole("button", { name: "Open workstation command palette (Ctrl K)" });
 
-    expect(screen.queryByRole("dialog", { name: "Open workspace" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Open workstation command" })).not.toBeInTheDocument();
+    expect(trigger).toHaveAttribute("aria-controls", "command-palette-dialog");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
 
     await user.keyboard("{Control>}k{/Control}");
-    expect(screen.getByRole("dialog", { name: "Open workspace" })).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog", { name: "Open workstation command" });
+    expect(dialog).toHaveAttribute("id", "command-palette-dialog");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(trigger).toHaveAccessibleName("Close workstation command palette (Ctrl K)");
 
     await user.keyboard("{Control>}k{/Control}");
-    expect(screen.queryByRole("dialog", { name: "Open workspace" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Open workstation command" })).not.toBeInTheDocument();
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
   });
 
   it("provides a skip link into the workbench content", () => {
@@ -109,6 +118,50 @@ describe("App", () => {
 
     expect(screen.getByRole("link", { name: "Skip to workbench" })).toHaveAttribute("href", "#workbench-content");
     expect(screen.getByRole("main")).toHaveAttribute("id", "workbench-content");
+  });
+
+  it("sets the workstation document title on first direct route load without moving focus", async () => {
+    renderWithRouter(<App />, { initialEntries: ["/settings"] });
+
+    await waitFor(() => expect(document.title).toBe("Settings Workstation - Meridian"));
+    expect(screen.getByRole("main")).not.toHaveFocus();
+    expect(screen.queryByText("Settings Workstation loaded.")).not.toBeInTheDocument();
+  });
+
+  it("redirects the legacy Data Security Master route into Accounting", async () => {
+    mockedUseWorkstationData.mockReturnValue({
+      session: {
+        displayName: "Ops Desk",
+        role: "Operator",
+        environment: "paper",
+        activeWorkspace: "trading",
+        commandCount: 7
+      },
+      overview: null,
+      research: null,
+      trading: null,
+      portfolio: null,
+      dataOperations: null,
+      governance: null,
+      reporting: null,
+      brokerageConnection: null,
+      brokeragePortfolio: null,
+      workflowLibrary: null,
+      workflowPresets: null,
+      workflowError: null,
+      usingDevelopmentFixtures: false,
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      refresh: vi.fn(),
+      refreshTrading: vi.fn(),
+      upsertWorkflowPreset: vi.fn()
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/data/security-master"] });
+
+    await waitFor(() => expect(document.title).toBe("Accounting Workstation - Meridian"));
+    expect(screen.getByRole("heading", { name: "Loading Governance" })).toBeInTheDocument();
   });
 
   it("announces route changes and moves focus to the workbench", async () => {
@@ -188,7 +241,7 @@ describe("App", () => {
     await user.click(screen.getByLabelText("Scratch"));
     await user.keyboard("{Control>}k{/Control}");
 
-    expect(screen.queryByRole("dialog", { name: "Open workspace" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Open workstation command" })).not.toBeInTheDocument();
   });
 
   it("opens and closes the mobile workspace navigation drawer", async () => {
@@ -254,6 +307,56 @@ describe("App", () => {
     );
     await user.click(screen.getByRole("button", { name: "Retry Meridian API host and reload live workstation data" }));
     expect(refresh).toHaveBeenCalledOnce();
+  });
+
+  it("routes degraded bootstrap recovery to Settings capability diagnostics", async () => {
+    const user = userEvent.setup();
+    const refresh = vi.fn();
+
+    mockedUseWorkstationData.mockReturnValue({
+      session: {
+        displayName: "Ops Desk",
+        role: "Operator",
+        environment: "paper",
+        activeWorkspace: "trading",
+        commandCount: 7
+      },
+      overview: null,
+      research: null,
+      trading: null,
+      portfolio: null,
+      dataOperations: null,
+      governance: null,
+      reporting: null,
+      brokerageConnection: null,
+      brokeragePortfolio: null,
+      workflowLibrary: null,
+      workflowPresets: null,
+      workflowError: null,
+      usingDevelopmentFixtures: false,
+      loading: false,
+      error: "Data workspace unavailable",
+      workspaceErrors: {
+        data: "Backfill summary timed out."
+      },
+      refresh,
+      refreshTrading: vi.fn(),
+      upsertWorkflowPreset: vi.fn()
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    expect(screen.getByRole("status", { name: "Workstation bootstrap is partially degraded" })).toBeInTheDocument();
+    const diagnosticsLink = screen.getByRole("link", {
+      name: "Review Settings capability coverage for failed workstation slices"
+    });
+    expect(diagnosticsLink).toHaveAttribute("href", "/settings#backend-capability-coverage");
+
+    await user.click(diagnosticsLink);
+
+    const capabilityCoverage = document.getElementById("backend-capability-coverage");
+    expect(capabilityCoverage).not.toBeNull();
+    await waitFor(() => expect(capabilityCoverage).toHaveFocus());
   });
 
   it("renders the Portfolio route from the fetched portfolio workspace payload", () => {

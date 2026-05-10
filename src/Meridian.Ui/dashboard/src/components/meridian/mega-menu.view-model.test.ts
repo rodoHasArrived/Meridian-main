@@ -67,10 +67,12 @@ describe("mega menu view model", () => {
     });
 
     const portfolioSection = model.sections.find((section) => section.key === "portfolio");
+    const accountingSection = model.sections.find((section) => section.key === "accounting");
     const reportingSection = model.sections.find((section) => section.key === "reporting");
     const dataSection = model.sections.find((section) => section.key === "data");
 
     expect(portfolioSection?.links.map((link) => link.route)).toContain("/portfolio/brokerage-sync");
+    expect(accountingSection?.links.map((link) => link.route)).toContain("/accounting/security-master");
     expect(reportingSection?.links.map((link) => link.route)).toEqual([
       "/reporting",
       "/reporting/report-packs",
@@ -81,8 +83,7 @@ describe("mega menu view model", () => {
       "/data",
       "/data/watchlist",
       "/data/quotes",
-      "/data/backfills",
-      "/data/security-master"
+      "/data/backfills"
     ]);
     expect(reportingSection?.links.find((link) => link.route === "/reporting/evidence")).toMatchObject({
       active: true,

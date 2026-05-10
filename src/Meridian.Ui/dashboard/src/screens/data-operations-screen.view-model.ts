@@ -1,14 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
-import {
-  buildSecurityMasterWorkspaceState,
-  resolveSecurityMasterTabKeyCommand,
-  SECURITY_MASTER_DEFAULT_QUERY
-} from "@/screens/data-operations-screen.security-master";
-import type {
-  SecurityMasterStatusFilter,
-  SecurityMasterTab
-} from "@/screens/data-operations-screen.security-master";
 import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
@@ -119,6 +110,23 @@ export interface DataOperationsEmptyState {
   description: string;
 }
 
+export interface DataOperationsRouteFocusActionState {
+  label: string;
+  href: string;
+  ariaLabel: string;
+}
+
+export interface DataOperationsRouteFocusCardState {
+  id: string;
+  role: "region" | "status";
+  ariaLabel: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  rows: DataOperationsDetailField[];
+  action: DataOperationsRouteFocusActionState | null;
+}
+
 export interface DataOperationsSectionState<T> {
   rows: T[];
   hasRows: boolean;
@@ -192,18 +200,34 @@ export interface DataOperationsPresentationState {
   exportSection: DataOperationsSectionState<DataOperationsExportRow>;
   selectedBackfillDetail: DataOperationsBackfillDetailState | null;
   backfillDetailEmptyState: DataOperationsEmptyState | null;
+  routeFocusCard: DataOperationsRouteFocusCardState;
 }
 
-export {
-  buildSecurityMasterWorkspaceState,
-  resolveSecurityMasterTabKeyCommand,
-  SECURITY_MASTER_DEFAULT_QUERY
-} from "@/screens/data-operations-screen.security-master";
-export type {
-  SecurityMasterStatusFilter,
-  SecurityMasterTab,
-  SecurityMasterWorkspaceState
-} from "@/screens/data-operations-screen.security-master";
+export interface DataOperationsLoadingChipState {
+  label: string;
+  value: string;
+}
+
+export interface DataOperationsLoadingActionState {
+  id: string;
+  label: string;
+  href: string;
+  ariaLabel: string;
+  variant: "default" | "outline";
+}
+
+export interface DataOperationsLoadingState {
+  title: string;
+  description: string;
+  statusLabel: string;
+  detail: string;
+  regionLabel: string;
+  role: "status";
+  ariaLive: "polite";
+  ariaBusy: true;
+  chips: DataOperationsLoadingChipState[];
+  actions: DataOperationsLoadingActionState[];
+}
 
 // --- Provider setup types ---
 
@@ -380,10 +404,6 @@ export function useDataOperationsViewModel(
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
   const backfillCommandRevisionRef = useRef(0);
-  const [securityMasterQuery, setSecurityMasterQuery] = useState(SECURITY_MASTER_DEFAULT_QUERY);
-  const [selectedSecurityMasterId, setSelectedSecurityMasterId] = useState<string | null>(null);
-  const [securityMasterTab, setSecurityMasterTab] = useState<SecurityMasterTab>("overview");
-  const [securityMasterStatusFilter, setSecurityMasterStatusFilter] = useState<SecurityMasterStatusFilter>("active");
 
   // Provider setup state
   const [providerSetupOpen, setProviderSetupOpen] = useState(false);
@@ -415,14 +435,9 @@ export function useDataOperationsViewModel(
     () => buildDataOperationsPresentationState(data, selectedBackfill?.jobId ?? null, workstream),
     [data, selectedBackfill?.jobId, workstream]
   );
-  const securityMaster = useMemo(
-    () => buildSecurityMasterWorkspaceState({
-      query: securityMasterQuery,
-      selectedSecurityId: selectedSecurityMasterId,
-      activeTab: securityMasterTab,
-      statusFilter: securityMasterStatusFilter
-    }),
-    [securityMasterQuery, selectedSecurityMasterId, securityMasterStatusFilter, securityMasterTab]
+  const loadingState = useMemo(
+    () => buildDataOperationsLoadingState(workstream),
+    [workstream]
   );
 
   const triggerState = useMemo(
@@ -617,40 +632,9 @@ export function useDataOperationsViewModel(
     [providerPhase, providerForm]
   );
 
-  const updateSecurityMasterQuery = useCallback((value: string) => {
-    setSecurityMasterQuery(value);
-    setSelectedSecurityMasterId(null);
-  }, []);
-
-  const selectSecurityMaster = useCallback((securityId: string) => {
-    setSelectedSecurityMasterId(securityId);
-  }, []);
-
-  const selectSecurityMasterTab = useCallback((tab: SecurityMasterTab) => {
-    setSecurityMasterTab(tab);
-  }, []);
-
-  const selectSecurityMasterStatusFilter = useCallback((filter: SecurityMasterStatusFilter) => {
-    setSecurityMasterStatusFilter(filter);
-    setSelectedSecurityMasterId(null);
-  }, []);
-
-  const toggleSecurityMasterStatusFilter = useCallback(() => {
-    setSecurityMasterStatusFilter((current) => current === "active" ? "all" : "active");
-    setSelectedSecurityMasterId(null);
-  }, []);
-
   return {
     workstream,
-    securityMaster,
-    securityMasterQuery,
-    updateSecurityMasterQuery,
-    selectSecurityMaster,
-    securityMasterTab,
-    selectSecurityMasterTab,
-    securityMasterStatusFilter,
-    selectSecurityMasterStatusFilter,
-    toggleSecurityMasterStatusFilter,
+    loadingState,
     selectedBackfill,
     selectedBackfillId,
     selectBackfill: setSelectedBackfillId,
@@ -689,6 +673,48 @@ export function resolveDataOperationsWorkstream(pathname: string): "overview" | 
   return pathname.includes("/backfills") ? "backfills" : "overview";
 }
 
+export function buildDataOperationsLoadingState(
+  workstream: "overview" | "backfills" = "overview"
+): DataOperationsLoadingState {
+  const backfillFocus = workstream === "backfills";
+
+  return {
+    title: backfillFocus ? "Loading backfill queue" : "Loading Data workspace",
+    description: backfillFocus
+      ? "Waiting for historical repair jobs, provider pressure, and review-required backfills."
+      : "Waiting for provider posture, market data health, and export evidence.",
+    statusLabel: "Bootstrap pending",
+    detail: backfillFocus
+      ? "Queued and review-required jobs will appear here as soon as the workstation payload is available."
+      : "Provider health, data-quality handoffs, and export readiness will appear when the workstation payload is available.",
+    regionLabel: backfillFocus ? "Data backfill loading state" : "Data workspace loading state",
+    role: "status",
+    ariaLive: "polite",
+    ariaBusy: true,
+    chips: [
+      { label: "Providers", value: "Pending" },
+      { label: "Data quality", value: "Pending" },
+      { label: backfillFocus ? "Backfills" : "Exports", value: "Pending" }
+    ],
+    actions: [
+      {
+        id: "settings",
+        label: "Check provider setup",
+        href: "/settings",
+        ariaLabel: "Open Settings to check provider setup while Data workspace loads",
+        variant: "default"
+      },
+      {
+        id: "quotes",
+        label: "Open live quotes",
+        href: "/data/quotes",
+        ariaLabel: "Open live quotes while Data workspace loads",
+        variant: "outline"
+      }
+    ]
+  };
+}
+
 export function buildDataOperationsPresentationState(
   data: DataOperationsWorkspaceResponse | null,
   selectedBackfillId: string | null,
@@ -697,18 +723,82 @@ export function buildDataOperationsPresentationState(
   const providers = data?.providers ?? [];
   const backfills = data?.backfills ?? [];
   const exports = data?.exports ?? [];
+  const selectedBackfillDetail = buildSelectedBackfillDetail(backfills, selectedBackfillId);
+  const backfillDetailEmptyState = backfills.length === 0
+    ? {
+        title: "No backfill activity yet",
+        description: "Preview a historical repair or wait for queued jobs to appear before using this detail panel."
+      }
+    : null;
 
   return {
     providerSection: buildProviderSection(providers),
     backfillSection: buildBackfillSection(backfills, selectedBackfillId, workstream),
     exportSection: buildExportSection(exports),
-    selectedBackfillDetail: buildSelectedBackfillDetail(backfills, selectedBackfillId),
-    backfillDetailEmptyState: backfills.length === 0
-      ? {
-          title: "No backfill activity yet",
-          description: "Preview a historical repair or wait for queued jobs to appear before using this detail panel."
-        }
-      : null
+    selectedBackfillDetail,
+    backfillDetailEmptyState,
+    routeFocusCard: buildRouteFocusCardState({
+      workstream,
+      selectedBackfillDetail,
+      backfillDetailEmptyState
+    })
+  };
+}
+
+export function buildRouteFocusCardState({
+  workstream,
+  selectedBackfillDetail,
+  backfillDetailEmptyState
+}: {
+  workstream: "overview" | "backfills";
+  selectedBackfillDetail: DataOperationsBackfillDetailState | null;
+  backfillDetailEmptyState: DataOperationsEmptyState | null;
+}): DataOperationsRouteFocusCardState {
+  if (workstream === "backfills") {
+    if (selectedBackfillDetail) {
+      return {
+        id: selectedBackfillDetail.id,
+        role: "region",
+        ariaLabel: selectedBackfillDetail.ariaLabel,
+        eyebrow: "Backfill Detail",
+        title: "Backfill queue focus",
+        description: selectedBackfillDetail.description,
+        rows: selectedBackfillDetail.rows,
+        action: null
+      };
+    }
+
+    const title = backfillDetailEmptyState?.title ?? "Backfill queue focus";
+    const description = backfillDetailEmptyState?.description ?? "No backfill selected.";
+    return {
+      id: "data-backfill-empty-detail",
+      role: "status",
+      ariaLabel: "Backfill detail empty state",
+      eyebrow: "Backfill Detail",
+      title,
+      description,
+      rows: [],
+      action: null
+    };
+  }
+
+  return {
+    id: "data-route-focus-overview",
+    role: "region",
+    ariaLabel: "Data workspace route focus",
+    eyebrow: "Lane Evidence",
+    title: "Provider and export readiness",
+    description: "Keep provider recovery, backfill pressure, and export handoffs visible while Data prepares inputs for Accounting and Reporting.",
+    rows: [
+      { id: "primary-checks", label: "Primary checks", value: "Providers / backfills / exports" },
+      { id: "security-coverage", label: "Security coverage", value: "Accounting lane" },
+      { id: "operator-handoff", label: "Operator handoff", value: "Reporting export evidence" }
+    ],
+    action: {
+      label: "Open Security Master",
+      href: "/accounting/security-master",
+      ariaLabel: "Open Security Master in Accounting"
+    }
   };
 }
 
@@ -719,7 +809,7 @@ export function buildProviderSection(
     rows: providers.map(buildProviderRow),
     hasRows: providers.length > 0,
     emptyState: {
-      title: "No providers reported",
+      title: "No providers configured",
       description: "Check provider configuration or run provider detection before relying on live, backfill, or export data."
     }
   };

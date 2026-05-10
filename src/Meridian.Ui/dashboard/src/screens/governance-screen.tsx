@@ -610,43 +610,42 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                 </div>
               )}
 
-              {securityMaster.results && securityMaster.results.length > 0 && (
+              {securityMaster.hasResults && (
                 <div className="overflow-x-auto rounded-xl border border-border/70">
-                  <table id="security-master-results" aria-label="Security search results" className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
+                  <table id="security-master-results" aria-label={securityMaster.resultsTableLabel} className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
                     <caption className="sr-only">{securityMaster.searchStatusText}</caption>
                     <thead className="bg-secondary/30">
                       <tr>
-                        {["Name", "Asset Class", "Primary ID", "Currency", "Status"].map((col) => (
-                          <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">{col}</th>
+                        {securityMaster.resultColumns.map((col) => (
+                          <th key={col.id} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">{col.label}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/50">
-                      {securityMaster.results.map((s) => (
+                      {securityMaster.resultRows.map((s) => (
                         <tr
-                          key={s.securityId}
+                          key={s.rowId}
+                          aria-label={s.ariaLabel}
                           className={cn(
                             "bg-background/20 transition-colors hover:bg-secondary/30",
-                            securityMaster.selectedSecurityId === s.securityId ? "bg-primary/10" : ""
+                            s.isSelected ? "bg-primary/10" : ""
                           )}
                         >
                           <td className="px-3 py-2">
                             <button
                               type="button"
                               className="rounded-sm text-left font-semibold text-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-                              aria-pressed={securityMaster.selectedSecurityId === s.securityId}
-                              aria-label={`Open identity drill-in for ${s.displayName}`}
+                              aria-pressed={s.isSelected}
+                              aria-label={s.selectAriaLabel}
                               onClick={() => void securityMaster.selectSecurity(s.securityId)}
                             >
                               {s.displayName}
                             </button>
                           </td>
                           <td className="px-3 py-2 text-muted-foreground">{s.classification.assetClass}</td>
-                          <td className="px-3 py-2 font-mono text-muted-foreground">
-                            {s.classification.primaryIdentifierKind ? `${s.classification.primaryIdentifierKind}: ${s.classification.primaryIdentifierValue}` : "—"}
-                          </td>
+                          <td className="px-3 py-2 font-mono text-muted-foreground">{s.primaryIdentifierLabel}</td>
                           <td className="px-3 py-2 font-mono text-muted-foreground">{s.economicDefinition.currency}</td>
-                          <td className={cn("px-3 py-2 font-mono uppercase", s.status === "Active" ? "text-success" : "text-warning")}>{s.status}</td>
+                          <td className={cn("px-3 py-2 font-mono uppercase", s.statusTone === "success" ? "text-success" : "text-warning")}>{s.status}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -920,7 +919,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                           {resolveDialog.active.submitLabel}
                         </Button>
                         <Button type="button" size="sm" variant="ghost" aria-label={resolveDialog.active.cancelAriaLabel} onClick={resolveDialog.close}>
-                          Cancel
+                          {resolveDialog.active.cancelLabel}
                         </Button>
                       </div>
                     </form>

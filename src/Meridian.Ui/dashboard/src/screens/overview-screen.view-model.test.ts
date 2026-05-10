@@ -6,6 +6,7 @@ import {
   buildOverviewPriorityRoutes,
   buildOverviewStatusBanner,
   buildOverviewStatusState,
+  buildOverviewValueBlockers,
   buildOverviewWorkspaceLinks,
   useOverviewStatusViewModel,
   type OverviewRefreshFetcher
@@ -55,6 +56,14 @@ describe("overview-screen view model", () => {
     expect(state.storageLabel).toBe("Warning");
     expect(state.hasMetrics).toBe(false);
     expect(state.hasEvents).toBe(false);
+    expect(state.hasValueBlockers).toBe(true);
+    expect(state.valueBlockerRegionLabel).toBe("3 readiness blockers");
+    expect(state.valueBlockerSummary).toBe("3 blockers need attention before a confident operator handoff.");
+    expect(state.valueBlockers.map((blocker) => blocker.id)).toEqual([
+      "providers-degraded",
+      "storage-warning",
+      "backfills-active"
+    ]);
     expect(state.activityEmptyText).toBe("No recent events.");
     expect(state.activityRows).toEqual([]);
     expect(state.fallbackStats).toContainEqual({
@@ -246,6 +255,59 @@ describe("overview-screen view model", () => {
       ariaLabel: "Open Alpaca paper provider setup checklist"
     });
     expect(routes[0].detail).toContain("No providers are configured yet");
+  });
+
+  it("derives first-run blocker repair links from the live overview snapshot", () => {
+    const blockers = buildOverviewValueBlockers(
+      {
+        ...overview,
+        providersOnline: 0,
+        providersTotal: 0,
+        symbolsMonitored: 0,
+        storageHealth: "Critical",
+        activeBackfills: 0
+      },
+      null
+    );
+
+    expect(blockers.map((blocker) => blocker.id)).toEqual([
+      "providers-missing",
+      "symbols-empty",
+      "storage-critical"
+    ]);
+    expect(blockers[0]).toMatchObject({
+      href: "/settings#alpaca-provider-setup",
+      actionLabel: "Connect provider",
+      badgeVariant: "danger",
+      tone: "danger"
+    });
+    expect(blockers[1]).toMatchObject({
+      href: "/data/watchlist",
+      actionLabel: "Seed watchlist"
+    });
+    expect(blockers[2].detail).toContain("not safe to trust");
+  });
+
+  it("keeps the blocker panel clear when readiness prerequisites are healthy", () => {
+    const state = buildOverviewStatusState({
+      current: {
+        ...overview,
+        systemStatus: "Healthy",
+        providersOnline: 4,
+        providersTotal: 4,
+        activeBackfills: 0,
+        storageHealth: "Healthy"
+      },
+      session,
+      refreshing: false,
+      refreshError: null,
+      refreshedAt: null
+    });
+
+    expect(state.hasValueBlockers).toBe(false);
+    expect(state.valueBlockers).toEqual([]);
+    expect(state.valueBlockerRegionLabel).toBe("0 readiness blockers");
+    expect(state.valueBlockerSummary).toBe("No immediate readiness blockers detected. Continue with the priority routes below.");
   });
 
   it("derives activity row status, fallback timestamps, and accessible summaries", () => {

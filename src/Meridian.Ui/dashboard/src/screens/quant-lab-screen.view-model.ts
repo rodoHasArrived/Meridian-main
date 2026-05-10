@@ -32,6 +32,23 @@ export interface QuantTemplatePanelState {
   ariaLive: "polite" | "assertive";
 }
 
+export interface QuantSourceEditorState {
+  id: string;
+  label: string;
+  ariaLabel: string;
+  describedBy: string;
+  helpId: string;
+  helpText: string;
+}
+
+export interface QuantTemplateRow {
+  id: string;
+  title: string;
+  description: string;
+  source: string;
+  ariaLabel: string;
+}
+
 export interface QuantCommandState {
   label: string;
   ariaLabel: string;
@@ -102,6 +119,11 @@ export interface QuantRunResultPanelState {
   hasMetrics: boolean;
   hasConsoleOutput: boolean;
   hasPlots: boolean;
+  hasEvidence: boolean;
+  evidenceEmptyTitle: string;
+  evidenceEmptyDetail: string;
+  evidenceEmptyRole: "status" | "alert";
+  evidenceEmptyTone: "warning" | "danger";
   diagnosticSections: QuantDiagnosticSectionState[];
 }
 
@@ -113,7 +135,9 @@ export interface QuantLabScreenViewModel {
   consoleLines: string[];
   summaryTone: "success" | "danger" | "default";
   templates: QuantTemplate[];
+  templateRows: QuantTemplateRow[];
   templatesPanel: QuantTemplatePanelState;
+  sourceEditor: QuantSourceEditorState;
   parameterRows: QuantParameterRow[];
   parameterPanel: QuantParameterPanelState;
   parameterPhase: QuantParameterPhase;
@@ -274,7 +298,9 @@ export function useQuantLabScreenViewModel(
     consoleLines,
     summaryTone: buildSummaryTone(run),
     templates,
+    templateRows: buildTemplateRows(templates),
     templatesPanel,
+    sourceEditor: buildSourceEditorState(),
     parameterRows,
     parameterPanel,
     parameterPhase,
@@ -436,6 +462,27 @@ export function buildTemplateLoadAriaLabel(template: QuantTemplate): string {
   return `Load ${template.title} template`;
 }
 
+export function buildTemplateRows(templates: QuantTemplate[]): QuantTemplateRow[] {
+  return templates.map((template) => ({
+    id: template.id,
+    title: template.title,
+    description: template.description,
+    source: template.source,
+    ariaLabel: buildTemplateLoadAriaLabel(template)
+  }));
+}
+
+export function buildSourceEditorState(): QuantSourceEditorState {
+  return {
+    id: "quant-lab-source",
+    label: "Script source",
+    ariaLabel: "Script source",
+    describedBy: "quant-lab-source-help",
+    helpId: "quant-lab-source-help",
+    helpText: "Source is scanned for runtime parameters after edits settle."
+  };
+}
+
 export function buildParameterPanelState(
   phase: QuantParameterPhase,
   rowCount: number,
@@ -566,6 +613,11 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       hasMetrics: false,
       hasConsoleOutput: false,
       hasPlots: false,
+      hasEvidence: false,
+      evidenceEmptyTitle: "No runtime evidence yet",
+      evidenceEmptyDetail: "Run a script to see emitted metrics, console output, diagnostics, and plots.",
+      evidenceEmptyRole: "status",
+      evidenceEmptyTone: "warning",
       diagnosticSections: []
     };
   }
@@ -589,6 +641,11 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       hasMetrics: false,
       hasConsoleOutput: false,
       hasPlots: false,
+      hasEvidence: false,
+      evidenceEmptyTitle: "Waiting for runtime evidence",
+      evidenceEmptyDetail: "Runtime output will appear after the script finishes compiling and executing.",
+      evidenceEmptyRole: "status",
+      evidenceEmptyTone: "warning",
       diagnosticSections: []
     };
   }
@@ -612,6 +669,11 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       hasMetrics: false,
       hasConsoleOutput: false,
       hasPlots: false,
+      hasEvidence: false,
+      evidenceEmptyTitle: "No runtime evidence returned",
+      evidenceEmptyDetail: "The run failed before Meridian received metrics, console output, diagnostics, or plots.",
+      evidenceEmptyRole: "alert",
+      evidenceEmptyTone: "danger",
       diagnosticSections: []
     };
   }
@@ -620,6 +682,11 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
   const consoleLines = result.consoleOutput.split("\n");
   const hasConsoleOutput = consoleLines.some((line) => line.length > 0);
   const plotCount = result.plots.length;
+  const diagnosticSections = [
+    { id: "compilation", label: "Compilation errors", entries: result.compilationErrors, tone: "danger" as const },
+    { id: "runtime", label: "Runtime diagnostics", entries: result.runtimeDiagnostics, tone: "warning" as const }
+  ].filter((section) => section.entries.length > 0);
+  const hasEvidence = hasMetrics || hasConsoleOutput || plotCount > 0 || diagnosticSections.length > 0;
 
   return {
     phase: run.phase,
@@ -639,10 +706,14 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
     hasMetrics,
     hasConsoleOutput,
     hasPlots: plotCount > 0,
-    diagnosticSections: [
-      { id: "compilation", label: "Compilation errors", entries: result.compilationErrors, tone: "danger" as const },
-      { id: "runtime", label: "Runtime diagnostics", entries: result.runtimeDiagnostics, tone: "warning" as const }
-    ].filter((section) => section.entries.length > 0)
+    hasEvidence,
+    evidenceEmptyTitle: result.success ? "Run completed without runtime evidence" : "No runtime evidence returned",
+    evidenceEmptyDetail: result.success
+      ? "The script compiled and executed, but did not emit metrics, console output, diagnostics, or plots. Add Print, PrintMetric, or plot calls to produce inspectable evidence."
+      : "The run completed with errors before Meridian received metrics, console output, diagnostics, or plots. Review the script and run it again.",
+    evidenceEmptyRole: result.success ? "status" : "alert",
+    evidenceEmptyTone: result.success ? "warning" : "danger",
+    diagnosticSections
   };
 }
 

@@ -60,7 +60,7 @@ export function WatchlistScreen() {
             <label htmlFor={vm.inputId} className="sr-only">Add symbol</label>
             <Input
               id={vm.inputId}
-              placeholder="Add symbols (e.g. MSFT, SPY)"
+              placeholder={vm.inputPlaceholder}
               value={vm.pendingSymbol}
               onChange={(event) => vm.setPendingSymbol(event.target.value)}
               autoComplete="off"
@@ -98,8 +98,8 @@ export function WatchlistScreen() {
           <p id="add-symbol-help" className="mt-2 text-xs text-muted-foreground">
             {vm.inputHelpText}
           </p>
-          <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Watchlist starter packs">
-            <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">Quick add</span>
+          <div className="mt-4 flex flex-wrap items-center gap-2" aria-label={vm.starterPackGroupLabel}>
+            <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">{vm.starterPackEyebrow}</span>
             {vm.starterPacks.map((pack) => (
               <Button
                 key={pack.id}
@@ -206,7 +206,7 @@ export function WatchlistScreen() {
                   rows={vm.rows}
                   getRowId={(row) => row.symbol}
                   getRowAriaLabel={(row) => row.ariaLabel}
-                  getRowSelectAriaLabel={(row) => `Select ${row.symbol} watchlist row. ${row.ariaLabel}`}
+                  getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
                   onRowSelect={(row) => vm.selectSymbol(row.symbol)}
                   selectedRowId={vm.selectedRowId}
                   emptyText={vm.listDescription}
@@ -318,11 +318,11 @@ function buildColumns(
             size="sm"
             aria-pressed={selectedSymbol === row.symbol}
             aria-controls="watchlist-selected-symbol-detail"
-            aria-label={`Inspect ${row.symbol} watchlist detail`}
+            aria-label={row.inspectAriaLabel}
             onClick={() => selectSymbol(row.symbol)}
           >
             <Eye className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="ml-1">Inspect</span>
+            <span className="ml-1">{row.inspectLabel}</span>
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link to={row.quoteHref} aria-label={row.quoteAriaLabel}>

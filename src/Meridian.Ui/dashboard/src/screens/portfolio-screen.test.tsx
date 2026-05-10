@@ -283,7 +283,8 @@ describe("PortfolioScreen", () => {
     expect(screen.getByText(/1 run needs variance review/i)).toBeDefined();
   });
 
-  it("renders Alpaca account and current positions when brokerage sync data is available", () => {
+  it("renders Alpaca account and selectable current positions when brokerage sync data is available", async () => {
+    const user = userEvent.setup();
     renderWithRouter(
       <PortfolioScreen
         trading={trading}
@@ -299,6 +300,17 @@ describe("PortfolioScreen", () => {
     expect(screen.getByRole("table", { name: /alpaca paper current positions/i })).toBeDefined();
     expect(screen.getAllByText(/alpaca roth ira/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText("AAPL").length).toBeGreaterThan(0);
+
+    const defaultDetail = screen.getByRole("complementary", { name: /aapl brokerage position detail/i });
+    expect(within(defaultDetail).getByText(/brokerage position inspector/i)).toBeInTheDocument();
+    expect(within(defaultDetail).getAllByText(/security master missing/i).length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("button", { name: /inspect msft brokerage live position/i }));
+
+    const updatedDetail = screen.getByRole("complementary", { name: /msft brokerage position detail/i });
+    expect(within(updatedDetail).getByText(/alpaca paper \/ alpaca brokerage \/ equity/i)).toBeInTheDocument();
+    expect(within(updatedDetail).getByText("$1,750")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /inspect msft brokerage live position/i })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("offers a provider setup handoff when brokerage portfolio sync is unavailable", () => {

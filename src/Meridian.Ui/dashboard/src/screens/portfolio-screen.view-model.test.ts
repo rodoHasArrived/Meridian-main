@@ -578,8 +578,33 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.brokeragePositionRows).toHaveLength(1);
     expect(vm.brokeragePositionRows[0].symbol).toBe("AAPL");
     expect(vm.brokeragePositionRows[0].accountKind).toBe("Roth IRA");
+    expect(vm.brokeragePositionRows[0].isSelected).toBe(true);
+    expect(vm.selectedBrokeragePosition?.title).toBe("AAPL");
+    expect(vm.selectedBrokeragePosition?.fields.find((field) => field.label === "Security coverage")?.value).toBe("Security master missing");
     expect(vm.headerChips[0]).toEqual({ label: "Alpaca paper equity", value: "$375,000" });
     expect(vm.brokerageSetupAction).toBeNull();
+  });
+
+  it("keeps selected brokerage position state in the view model", () => {
+    const selectBrokeragePosition = vi.fn();
+    const vm = buildPortfolioScreenViewModel({
+      trading,
+      research,
+      governance,
+      brokerageConnection,
+      brokeragePortfolio,
+      selectedBrokeragePositionId: "fund-taxable-MSFT-pos-msft",
+      selectBrokeragePosition
+    });
+
+    expect(vm.brokeragePositionRows.map((row) => row.isSelected)).toEqual([false, true]);
+    expect(vm.brokeragePositionRows[1].selectAriaLabel).toBe("Inspect MSFT Brokerage live position");
+    expect(vm.selectedBrokeragePosition?.title).toBe("MSFT");
+    expect(vm.selectedBrokeragePosition?.statusDetail).toContain("$1,750 market value");
+    expect(vm.selectedBrokeragePosition?.fields.find((field) => field.label === "Position ID")?.value).toBe("pos-msft");
+
+    vm.selectBrokeragePosition("fund-roth-AAPL-pos-aapl");
+    expect(selectBrokeragePosition).toHaveBeenCalledWith("fund-roth-AAPL-pos-aapl");
   });
 
   it("routes missing brokerage portfolio state to Settings provider setup", () => {

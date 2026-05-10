@@ -7,15 +7,15 @@ import {
   buildBackfillRequest,
   buildBackfillResultCardState,
   buildBackfillTriggerState,
+  buildDataOperationsLoadingState,
   buildDataOperationsPresentationState,
   buildExportSection,
   buildProviderRow,
   buildProviderSection,
   buildProviderSetupDialogState,
+  buildRouteFocusCardState,
   clearProviderSetupCredentials,
-  buildSecurityMasterWorkspaceState,
   buildSelectedBackfillDetail,
-  resolveSecurityMasterTabKeyCommand,
   resolveDataOperationsWorkstream,
   resolveSelectedBackfill,
   useDataOperationsViewModel,
@@ -90,6 +90,31 @@ const exports: DataOperationsExportRecord[] = [
 ];
 
 describe("data-operations-screen view model", () => {
+  it("derives route-aware loading state with operator recovery actions", () => {
+    const overview = buildDataOperationsLoadingState("overview");
+    expect(overview).toMatchObject({
+      title: "Loading Data workspace",
+      statusLabel: "Bootstrap pending",
+      role: "status",
+      ariaLive: "polite",
+      ariaBusy: true,
+      regionLabel: "Data workspace loading state"
+    });
+    expect(overview.chips.map((chip) => chip.label)).toEqual(["Providers", "Data quality", "Exports"]);
+    expect(overview.actions).toContainEqual({
+      id: "settings",
+      label: "Check provider setup",
+      href: "/settings",
+      ariaLabel: "Open Settings to check provider setup while Data workspace loads",
+      variant: "default"
+    });
+
+    const backfills = buildDataOperationsLoadingState("backfills");
+    expect(backfills.title).toBe("Loading backfill queue");
+    expect(backfills.description).toContain("historical repair jobs");
+    expect(backfills.chips[2]).toEqual({ label: "Backfills", value: "Pending" });
+  });
+
   it("derives route focus, selected backfill, and detail narrative", () => {
     expect(resolveDataOperationsWorkstream("/data/backfills")).toBe("backfills");
     expect(resolveDataOperationsWorkstream("/data")).toBe("overview");
@@ -99,6 +124,33 @@ describe("data-operations-screen view model", () => {
     expect(resolveSelectedBackfill(backfills, "BF-1044")?.jobId).toBe("BF-1044");
     expect(resolveSelectedBackfill(backfills, null)?.jobId).toBe("BF-1042");
     expect(buildBackfillNarrative(backfills[1])).toContain("waiting on operator review");
+
+    const selectedDetail = buildSelectedBackfillDetail(backfills, "BF-1044");
+    const backfillFocus = buildRouteFocusCardState({
+      workstream: "backfills",
+      selectedBackfillDetail: selectedDetail,
+      backfillDetailEmptyState: null
+    });
+    expect(backfillFocus).toMatchObject({
+      id: "backfill-detail-bf-1044",
+      role: "region",
+      eyebrow: "Backfill Detail",
+      title: "Backfill queue focus",
+      action: null
+    });
+    expect(backfillFocus.rows).toContainEqual({ id: "updated", label: "Updated", value: "5m ago" });
+
+    const overviewFocus = buildRouteFocusCardState({
+      workstream: "overview",
+      selectedBackfillDetail: null,
+      backfillDetailEmptyState: null
+    });
+    expect(overviewFocus.ariaLabel).toBe("Data workspace route focus");
+    expect(overviewFocus.action).toEqual({
+      label: "Open Security Master",
+      href: "/accounting/security-master",
+      ariaLabel: "Open Security Master in Accounting"
+    });
   });
 
   it("normalizes request data and validates required symbols and date range", () => {
@@ -316,7 +368,7 @@ describe("data-operations-screen view model", () => {
       value: "98%"
     });
     expect(providerSection.rows[0].recommendedActionText).toBe("Keep provider active.");
-    expect(buildProviderSection([]).emptyState.title).toBe("No providers reported");
+    expect(buildProviderSection([]).emptyState.title).toBe("No providers configured");
 
     const backfillSection = buildBackfillSection(backfills, "BF-1044", "backfills");
     expect(backfillSection.rows[1].selected).toBe(true);
@@ -412,43 +464,6 @@ describe("data-operations-screen view model", () => {
     })).toBeNull();
   });
 
-  it("keeps non-active security records hidden until the filter is expanded", () => {
-    const activeState = buildSecurityMasterWorkspaceState({
-      query: "goldman",
-      selectedSecurityId: null,
-      activeTab: "overview",
-      statusFilter: "active"
-    });
-
-    const allState = buildSecurityMasterWorkspaceState({
-      query: "goldman",
-      selectedSecurityId: null,
-      activeTab: "overview",
-      statusFilter: "all"
-    });
-    const pendingState = buildSecurityMasterWorkspaceState({
-      query: "goldman",
-      selectedSecurityId: null,
-      activeTab: "overview",
-      statusFilter: "pending"
-    });
-    const inactiveState = buildSecurityMasterWorkspaceState({
-      query: "goldman",
-      selectedSecurityId: null,
-      activeTab: "overview",
-      statusFilter: "inactive"
-    });
-
-    expect(activeState.results).toHaveLength(5);
-    expect(allState.results).toHaveLength(7);
-    expect(pendingState.results).toHaveLength(1);
-    expect(inactiveState.results).toHaveLength(1);
-    expect(activeState.results.some((row) => row.status === "Pending")).toBe(false);
-    expect(allState.results.some((row) => row.status === "Pending")).toBe(true);
-    expect(allState.results.some((row) => row.status === "Inactive")).toBe(true);
-    expect(pendingState.results.every((row) => row.status === "Pending")).toBe(true);
-    expect(inactiveState.results.every((row) => row.status === "Inactive")).toBe(true);
-  });
 
   it("maps export row status into semantic tones and next actions", () => {
     const exportSection = buildExportSection([
@@ -515,127 +530,7 @@ describe("data-operations-screen view model", () => {
     expect(buildSelectedBackfillDetail([], null)).toBeNull();
   });
 
-  it("builds a security master workspace with search results, tab state, and packet detail", () => {
-    const securityMaster = buildSecurityMasterWorkspaceState({
-      query: "goldman",
-      selectedSecurityId: "gs-bond-de",
-      activeTab: "corporate-actions",
-      statusFilter: "active"
-    });
 
-    expect(securityMaster.resultCountLabel).toBe("5 results");
-    expect(securityMaster.statusChipLabel).toBe("Status: Active");
-    expect(securityMaster.statusFilterGroupLabel).toBe("Security Master status filter");
-    expect(securityMaster.statusFilterHelpText).toContain("2 pending or inactive records are hidden");
-    expect(securityMaster.statusFilterOptions).toEqual([
-      {
-        id: "active",
-        label: "Active",
-        countLabel: "5",
-        selected: true,
-        ariaLabel: "Show active securities only, 5 matches"
-      },
-      {
-        id: "pending",
-        label: "Pending",
-        countLabel: "1",
-        selected: false,
-        ariaLabel: "Show pending Security Master records, 1 match"
-      },
-      {
-        id: "inactive",
-        label: "Inactive",
-        countLabel: "1",
-        selected: false,
-        ariaLabel: "Show inactive Security Master records, 1 match"
-      },
-      {
-        id: "all",
-        label: "All statuses",
-        countLabel: "7",
-        selected: false,
-        ariaLabel: "Show all security statuses, 7 matches"
-      }
-    ]);
-    expect(securityMaster.clearSearchVisible).toBe(true);
-    expect(securityMaster.clearSearchAriaLabel).toBe('Clear Security Master search query "goldman"');
-    expect(securityMaster.resetSearchAriaLabel).toBe("Reset Security Master search to goldman");
-    expect(securityMaster.showAllStatusesVisible).toBe(true);
-    expect(securityMaster.showAllStatusesAriaLabel).toContain("2 pending or inactive records are currently hidden");
-    expect(securityMaster.resultSortLabel).toBe("Sorted by search score - coverage and packet posture visible in detail panel");
-    expect(securityMaster.searchSummaryBadges).toEqual([
-      {
-        id: "assets",
-        label: "Assets",
-        value: "3",
-        ariaLabel: "3 asset types in current security search results"
-      },
-      {
-        id: "countries",
-        label: "Countries",
-        value: "4",
-        ariaLabel: "4 countries in current security search results"
-      },
-      {
-        id: "packet-lanes",
-        label: "Packet lanes",
-        value: "5",
-        ariaLabel: "5 packet lanes in current security search results"
-      }
-    ]);
-    expect(securityMaster.results.some((row) => row.selected && row.securityId === "gs-bond-de")).toBe(true);
-    expect(securityMaster.activeTab).toBe("corporate-actions");
-    expect(securityMaster.activeTabLabel).toBe("Corporate actions");
-    expect(securityMaster.detailEyebrowLabel).toBe(
-      "Reference data / Corporate bond / XETRA · Germany / Corporate actions"
-    );
-    expect(securityMaster.tabs.find((tab) => tab.id === "corporate-actions")?.selected).toBe(true);
-    expect(securityMaster.tabs.find((tab) => tab.id === "corporate-actions")).toMatchObject({
-      tabId: "security-master-tab-corporate-actions",
-      tabIndex: 0,
-      selectAriaLabel: "Show Corporate actions for Goldman Sachs Group Inc"
-    });
-    expect(securityMaster.tabs.find((tab) => tab.id === "overview")?.tabIndex).toBe(-1);
-    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "ArrowRight")).toBe("print");
-    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "ArrowLeft")).toBe("company");
-    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "Home")).toBe("overview");
-    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "End")).toBe("print");
-    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "Enter")).toBeNull();
-    expect(securityMaster.selectedSecurity?.titleCode).toBe("GOS 3.625 10/30");
-    expect(securityMaster.selectedSecurity?.corporateActions[0].description).toContain("Semi-annual coupon");
-    expect(securityMaster.selectedSecurity?.printPacketId).toBe("SM-PACKET-2026-06-09-GOS");
-    expect(securityMaster.selectedSecurity?.printPacketState).toMatchObject({
-      statusLabel: "Review required",
-      statusVariant: "warning",
-      contentsLabel: "4 packet content sections",
-      checklistLabel: "3 sign-off checklist items",
-      exportLabel: "3 downstream export lanes"
-    });
-    expect(securityMaster.selectedSecurity?.printPacketState.previewFields.map((field) => field.label)).toEqual([
-      "Ticker",
-      "Primary venue",
-      "Country",
-      "ISIN"
-    ]);
-    expect(securityMaster.selectedSecurity?.printPacketState.readinessPills).toEqual([
-      { id: "ready", label: "Ready", value: "2", tone: "success" },
-      { id: "review", label: "Review", value: "1", tone: "warning" },
-      { id: "draft", label: "Draft", value: "0" }
-    ]);
-  });
-
-  it("derives a security master empty state when the query returns no matches", () => {
-    const securityMaster = buildSecurityMasterWorkspaceState({
-      query: "nonexistent issuer",
-      selectedSecurityId: null,
-      activeTab: "overview",
-      statusFilter: "active"
-    });
-
-    expect(securityMaster.hasResults).toBe(false);
-    expect(securityMaster.emptyState?.title).toBe("No matching securities");
-    expect(securityMaster.selectedSecurity).toBeNull();
-  });
 
   it("derives a data operations presentation state for empty workspace arrays", () => {
     const emptyData: DataOperationsWorkspaceResponse = {
@@ -652,5 +547,11 @@ describe("data-operations-screen view model", () => {
     expect(presentation.exportSection.hasRows).toBe(false);
     expect(presentation.selectedBackfillDetail).toBeNull();
     expect(presentation.backfillDetailEmptyState?.title).toBe("No backfill activity yet");
+    expect(presentation.routeFocusCard).toMatchObject({
+      role: "status",
+      ariaLabel: "Backfill detail empty state",
+      title: "No backfill activity yet",
+      rows: []
+    });
   });
 });

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   buildAppShellViewState,
+  buildCommandPaletteTriggerState,
   buildDevelopmentFixtureNoticeViewModel,
   normalizeWorkspace,
+  resolveAppShellCommandPaletteShortcut,
   type AppShellWorkspacePayload
 } from "@/app-shell.view-model";
 import type { SessionInfo } from "@/types";
@@ -117,6 +119,9 @@ describe("app shell view model", () => {
       title: "Workstation bootstrap is partially degraded",
       actionLabel: "Retry failed slices",
       actionAriaLabel: "Retry failed workstation slices",
+      secondaryActionLabel: "Review diagnostics",
+      secondaryActionAriaLabel: "Review Settings capability coverage for failed workstation slices",
+      secondaryActionHref: "/settings#backend-capability-coverage",
       itemListLabel: "Failed workspace slices"
     });
     expect(state.statusPanel?.items).toEqual([
@@ -185,6 +190,64 @@ describe("app shell view model", () => {
       ["readiness", false],
       ["connect", false]
     ]);
+  });
+
+  it("derives accessible command palette trigger state", () => {
+    expect(buildCommandPaletteTriggerState(false)).toEqual({
+      label: "Open workstation command palette (Ctrl K)",
+      placeholder: "Search workflows, routes, presets...",
+      shortcutLabel: "Ctrl K",
+      controlsId: "command-palette-dialog",
+      expanded: false,
+      hasPopup: "dialog"
+    });
+
+    const state = buildAppShellViewState({
+      pathname: "/trading",
+      commandPaletteOpen: true,
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(state.commandPaletteTrigger).toMatchObject({
+      label: "Close workstation command palette (Ctrl K)",
+      controlsId: "command-palette-dialog",
+      expanded: true,
+      hasPopup: "dialog"
+    });
+  });
+
+  it("keeps global command palette shortcuts out of editable fields until the palette is open", () => {
+    expect(resolveAppShellCommandPaletteShortcut({
+      key: "k",
+      ctrlKey: true,
+      targetIsEditable: false,
+      commandPaletteOpen: false
+    })).toBe("toggle-command-palette");
+
+    expect(resolveAppShellCommandPaletteShortcut({
+      key: "k",
+      ctrlKey: true,
+      targetIsEditable: true,
+      commandPaletteOpen: false
+    })).toBeNull();
+
+    expect(resolveAppShellCommandPaletteShortcut({
+      key: "k",
+      metaKey: true,
+      targetIsEditable: true,
+      commandPaletteOpen: true
+    })).toBe("toggle-command-palette");
+
+    expect(resolveAppShellCommandPaletteShortcut({
+      key: "k",
+      ctrlKey: true,
+      shiftKey: true,
+      targetIsEditable: false,
+      commandPaletteOpen: false
+    })).toBeNull();
   });
 
   it("marks the provider setup anchor as the current demo handoff", () => {

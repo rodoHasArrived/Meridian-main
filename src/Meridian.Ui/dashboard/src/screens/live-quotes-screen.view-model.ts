@@ -47,8 +47,24 @@ export interface QuickTicketCommandViewModel {
   variant: "default" | "destructive";
 }
 
+export type QuickTicketField = "side" | "type" | "quantity" | "limitPrice";
+
+export interface QuickTicketFieldViewModel {
+  field: QuickTicketField;
+  id: string;
+  label: string;
+  ariaLabel: string;
+  placeholder: string | null;
+  describedBy: string;
+  inputMode: "numeric" | "decimal" | null;
+  min: number | null;
+  step: number | string | null;
+}
+
 export interface QuickTradeTicketViewModel {
   ticket: QuickTicketState;
+  formLabel: string;
+  fields: Record<QuickTicketField, QuickTicketFieldViewModel>;
   submitting: boolean;
   priceDisabled: boolean;
   quantityInvalid: boolean;
@@ -664,6 +680,7 @@ export function buildQuickTradeTicketViewModel({
   const submitting = ticket.phase === "submitting";
   const symbolLabel = activeSymbol ?? "selected symbol";
   const submitLabel = buildSubmitLabel(ticket, symbolLabel);
+  const statusId = "quick-ticket-status";
   const disabledReason = submitting
     ? "Order submission is already running."
     : activeSymbol === null
@@ -672,6 +689,8 @@ export function buildQuickTradeTicketViewModel({
 
   return {
     ticket,
+    formLabel: `Quick trade ticket for ${symbolLabel}`,
+    fields: buildQuickTicketFields(ticket, statusId),
     submitting,
     priceDisabled: ticket.type === "Market",
     quantityInvalid: validation !== null && validation.toLowerCase().includes("quantity"),
@@ -695,6 +714,58 @@ export function buildQuickTradeTicketViewModel({
     updateField,
     submitTicket,
     resetTicket
+  };
+}
+
+export function buildQuickTicketFields(
+  ticket: QuickTicketForm,
+  statusId = "quick-ticket-status"
+): Record<QuickTicketField, QuickTicketFieldViewModel> {
+  return {
+    side: {
+      field: "side",
+      id: "quick-ticket-side",
+      label: "Side",
+      ariaLabel: "Order side",
+      placeholder: null,
+      describedBy: statusId,
+      inputMode: null,
+      min: null,
+      step: null
+    },
+    type: {
+      field: "type",
+      id: "quick-ticket-type",
+      label: "Type",
+      ariaLabel: "Order type",
+      placeholder: null,
+      describedBy: statusId,
+      inputMode: null,
+      min: null,
+      step: null
+    },
+    quantity: {
+      field: "quantity",
+      id: "quick-ticket-quantity",
+      label: "Quantity",
+      ariaLabel: "Order quantity in shares",
+      placeholder: "100",
+      describedBy: statusId,
+      inputMode: "numeric",
+      min: 1,
+      step: 1
+    },
+    limitPrice: {
+      field: "limitPrice",
+      id: "quick-ticket-price",
+      label: ticket.type === "Market" ? "Price (market)" : "Limit price",
+      ariaLabel: ticket.type === "Market" ? "Market order price" : "Limit price",
+      placeholder: ticket.type === "Market" ? "Best available" : "0.00",
+      describedBy: statusId,
+      inputMode: "decimal",
+      min: 0,
+      step: "0.01"
+    }
   };
 }
 

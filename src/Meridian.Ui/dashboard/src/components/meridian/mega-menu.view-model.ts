@@ -75,6 +75,7 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     links: [
       { label: "Ledger", route: "/accounting", description: "Fund ledger entries" },
       { label: "Reconciliation", route: "/accounting/reconciliation", description: "Position reconciliation" },
+      { label: "Security Master", route: "/accounting/security-master", description: "Reference-data readiness" },
       { label: "Approvals", route: "/accounting/approvals", description: "Pending approval queue" }
     ]
   },
@@ -108,8 +109,7 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
       { label: "Provider posture", route: "/data", description: "Data provider health" },
       { label: "Watchlist", route: "/data/watchlist", description: "Symbol subscription setup" },
       { label: "Live quotes", route: "/data/quotes", description: "Quote, trade, and depth workbench" },
-      { label: "Backfill queues", route: "/data/backfills", description: "Historical data backfill" },
-      { label: "Security Master", route: "/data/security-master", description: "Reference-data readiness" }
+      { label: "Backfill queues", route: "/data/backfills", description: "Historical data backfill" }
     ]
   },
   {

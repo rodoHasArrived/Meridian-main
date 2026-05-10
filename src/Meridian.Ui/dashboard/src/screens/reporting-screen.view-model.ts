@@ -145,6 +145,18 @@ export interface ReportingWorkflowTaskPanel {
   backendLinks: ReportingWorkflowBackendLink[];
 }
 
+export interface ReportingLoadingState {
+  role: "status";
+  ariaBusy: true;
+  ariaLive: "polite";
+  titleId: string;
+  detailId: string;
+  title: string;
+  detail: string;
+  badgeLabel: string;
+  routeLabel: string;
+}
+
 export interface ReportingScreenViewModel {
   title: string;
   description: string;
@@ -171,6 +183,7 @@ export interface ReportingScreenViewModel {
   packTargetsListLabel: string;
   packTargetsEmptyState: ReportingPackTargetsEmptyState;
   workflowTaskPanel: ReportingWorkflowTaskPanel | null;
+  loadingState: ReportingLoadingState;
   loadingTitle: string;
   loadingDetail: string;
   exportStatus: ReportingExportStatusState | null;
@@ -255,6 +268,7 @@ export function useReportingScreenViewModel(
       packTargetsListLabel: "Report-pack targets",
       packTargetsEmptyState: buildPackTargetsEmptyState(),
       workflowTaskPanel: null,
+      loadingState: buildLoadingState(pathname),
       loadingTitle: "Loading Reporting",
       loadingDetail: "Waiting for governed report-pack and export evidence.",
       exportStatus,
@@ -365,12 +379,29 @@ export function useReportingScreenViewModel(
     packTargetsListLabel: "Report-pack targets",
     packTargetsEmptyState: buildPackTargetsEmptyState(),
     workflowTaskPanel,
+    loadingState: buildLoadingState(pathname),
     loadingTitle: "Loading Reporting",
     loadingDetail: "Waiting for governed report-pack and export evidence.",
     exportStatus,
     runningProfileId,
     runExport: runExportCommand,
     selectProfile
+  };
+}
+
+function buildLoadingState(pathname: string): ReportingLoadingState {
+  const title = "Loading Reporting";
+
+  return {
+    role: "status",
+    ariaBusy: true,
+    ariaLive: "polite",
+    titleId: "reporting-loading-title",
+    detailId: "reporting-loading-detail",
+    title,
+    detail: "Waiting for governed report-pack and export evidence.",
+    badgeLabel: "Loading",
+    routeLabel: isReportPackRoute(pathname) ? "Report packs" : "Reporting"
   };
 }
 

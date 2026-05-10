@@ -3483,6 +3483,18 @@ export interface PromotionGateCommandState {
   busyLabel: string | null;
 }
 
+export interface PromotionGateFieldState {
+  field: PromotionGateField;
+  id: string;
+  label: string;
+  ariaLabel: string;
+  placeholder: string;
+  describedBy: string | null;
+  helpText: string | null;
+  helpId: string | null;
+  required: boolean;
+}
+
 export interface PromotionEvaluationMetricRow {
   id: string;
   label: string;
@@ -3534,6 +3546,7 @@ export interface PromotionGateState {
   evaluateCommand: PromotionGateCommandState;
   promoteCommand: PromotionGateCommandState;
   rejectCommand: PromotionGateCommandState;
+  fields: Record<PromotionGateField, PromotionGateFieldState>;
   nextActionText: string;
   approvalRequirementText: string;
   rejectionRequirementText: string;
@@ -3821,6 +3834,7 @@ export function buildPromotionGateState({
       busy: phase === "rejecting",
       busyLabel: "Rejecting..."
     },
+    fields: buildPromotionGateFields(),
     nextActionText: buildNextActionText({ trimmedForm, evaluation: effectiveEvaluation, busy, phase }),
     approvalRequirementText,
     rejectionRequirementText,
@@ -3913,6 +3927,77 @@ function buildSessionReplayStatusPanel({
     detail: selectedFilePath.trim().length > 0
       ? `Ready to replay ${selectedFileName ?? "selected file"}.`
       : "Select a replay file to enable replay controls."
+  };
+}
+
+function buildPromotionGateFields(): Record<PromotionGateField, PromotionGateFieldState> {
+  return {
+    runId: {
+      field: "runId",
+      id: "promotion-run-id",
+      label: "Run id",
+      ariaLabel: "Run id",
+      placeholder: "backtest run id",
+      describedBy: "promotion-run-help promotion-action-state",
+      helpText: "Evaluate this run before writing a promotion decision.",
+      helpId: "promotion-run-help",
+      required: false
+    },
+    approvedBy: {
+      field: "approvedBy",
+      id: "promotion-operator-id",
+      label: "Operator id",
+      ariaLabel: "Operator id",
+      placeholder: "operator id",
+      describedBy: "promotion-action-state",
+      helpText: null,
+      helpId: null,
+      required: true
+    },
+    approvalReason: {
+      field: "approvalReason",
+      id: "promotion-approval-reason",
+      label: "Approval reason",
+      ariaLabel: "Approval reason",
+      placeholder: "why this promotion is approved",
+      describedBy: "promotion-action-state",
+      helpText: null,
+      helpId: null,
+      required: true
+    },
+    rejectionReason: {
+      field: "rejectionReason",
+      id: "promotion-rejection-reason",
+      label: "Rejection reason",
+      ariaLabel: "Rejection reason",
+      placeholder: "why this promotion is rejected",
+      describedBy: "promotion-action-state",
+      helpText: null,
+      helpId: null,
+      required: false
+    },
+    reviewNotes: {
+      field: "reviewNotes",
+      id: "promotion-review-notes",
+      label: "Review notes",
+      ariaLabel: "Review notes",
+      placeholder: "optional review notes",
+      describedBy: null,
+      helpText: null,
+      helpId: null,
+      required: false
+    },
+    manualOverrideId: {
+      field: "manualOverrideId",
+      id: "promotion-manual-override",
+      label: "Manual override id",
+      ariaLabel: "Manual override id",
+      placeholder: "optional manual override id",
+      describedBy: null,
+      helpText: null,
+      helpId: null,
+      required: false
+    }
   };
 }
 

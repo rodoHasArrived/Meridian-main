@@ -430,11 +430,11 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getPromotionHistory).toHaveBeenCalledTimes(1));
     vi.mocked(api.getPromotionHistory).mockClear();
     const promotionGate = await openPromotionGate(user);
-    await user.type(within(promotionGate).getByLabelText("Run id"), "run-1");
-    await user.type(within(promotionGate).getByLabelText("Operator id"), "operator-7");
-    await user.type(within(promotionGate).getByLabelText("Approval reason"), "Meets risk constraints");
-    await user.type(within(promotionGate).getByLabelText("Review notes"), "Checked replay consistency");
-    await user.type(within(promotionGate).getByLabelText("Manual override id"), "override-9");
+    fireEvent.change(within(promotionGate).getByLabelText("Run id"), { target: { value: "run-1" } });
+    fireEvent.change(within(promotionGate).getByLabelText("Operator id"), { target: { value: "operator-7" } });
+    fireEvent.change(within(promotionGate).getByLabelText("Approval reason"), { target: { value: "Meets risk constraints" } });
+    fireEvent.change(within(promotionGate).getByLabelText("Review notes"), { target: { value: "Checked replay consistency" } });
+    fireEvent.change(within(promotionGate).getByLabelText("Manual override id"), { target: { value: "override-9" } });
     await user.click(within(promotionGate).getByRole("button", { name: /evaluate gate checks/i }));
     await waitFor(() => {
       expect(within(promotionGate).getByText("Evaluation results").parentElement).toHaveTextContent("Eligible: Yes");

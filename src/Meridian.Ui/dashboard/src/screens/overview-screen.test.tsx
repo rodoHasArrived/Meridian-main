@@ -82,8 +82,23 @@ describe("OverviewScreen", () => {
     expect(screen.getByText("Meridian Ops")).toBeInTheDocument();
     expect(screen.getByText(/Operator - 9 commands ready/i)).toBeInTheDocument();
     expect(screen.getAllByText(/^paper$/i).length).toBeGreaterThan(0);
+    expect(screen.getByText("Readiness blockers")).toBeInTheDocument();
+    expect(screen.getByText("3 blockers need attention before a confident operator handoff.")).toBeInTheDocument();
 
     const priorityCard = screen.getByText("Move from posture to action").closest("div");
+    const providerLink = screen.getByRole("link", {
+      name: /Provider baseline is degraded.*Review providers/i
+    });
+    const storageLink = screen.getByRole("link", {
+      name: /Storage evidence needs review.*Review storage/i
+    });
+    const backfillLink = screen.getByRole("link", {
+      name: /Backfill work is still running.*Review backfills/i
+    });
+
+    expect(providerLink).toHaveAttribute("href", "/data/providers");
+    expect(storageLink).toHaveAttribute("href", "/settings#backend-capability-coverage");
+    expect(backfillLink).toHaveAttribute("href", "/data/backfills");
     expect(screen.getByText("Open trading cockpit")).toBeInTheDocument();
     expect(screen.getByText("Open accounting lane")).toBeInTheDocument();
     expect(screen.getByText("Open reporting lane")).toBeInTheDocument();

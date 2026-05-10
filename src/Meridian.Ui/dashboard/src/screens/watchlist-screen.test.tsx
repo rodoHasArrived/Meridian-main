@@ -6,6 +6,19 @@ import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import * as api from "@/lib/api";
 import type { QuotesSnapshotResponse, SymbolRecord, SymbolStatistics } from "@/types";
 
+vi.mock("@/lib/api", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
+  return {
+    ...actual,
+    getSymbols: vi.fn(),
+    getSymbolsStatistics: vi.fn(),
+    getLiveQuotesSnapshot: vi.fn(),
+    addSymbol: vi.fn(),
+    bulkAddSymbols: vi.fn(),
+    removeSymbol: vi.fn()
+  };
+});
+
 const symbols: SymbolRecord[] = [
   {
     symbol: "MSFT",
@@ -72,18 +85,22 @@ const snapshot: QuotesSnapshotResponse = {
   ]
 };
 
+const fullSuiteTimeout = { timeout: 5000 };
+
 describe("WatchlistScreen", () => {
   beforeEach(() => {
-    vi.spyOn(api, "getSymbols").mockResolvedValue(symbols);
-    vi.spyOn(api, "getSymbolsStatistics").mockResolvedValue(stats);
-    vi.spyOn(api, "getLiveQuotesSnapshot").mockResolvedValue(snapshot);
-    vi.spyOn(api, "addSymbol").mockResolvedValue({ success: true, symbol: "SPY" });
-    vi.spyOn(api, "bulkAddSymbols").mockResolvedValue({ added: 2, skipped: 0, errors: [] });
-    vi.spyOn(api, "removeSymbol").mockResolvedValue({ success: true, symbol: "MSFT" });
+    vi.clearAllMocks();
+    vi.mocked(api.getSymbols).mockResolvedValue(symbols);
+    vi.mocked(api.getSymbolsStatistics).mockResolvedValue(stats);
+    vi.mocked(api.getLiveQuotesSnapshot).mockResolvedValue(snapshot);
+    vi.mocked(api.addSymbol).mockResolvedValue({ success: true, symbol: "SPY" });
+    vi.mocked(api.bulkAddSymbols).mockResolvedValue({ added: 2, skipped: 0, errors: [] });
+    vi.mocked(api.removeSymbol).mockResolvedValue({ success: true, symbol: "MSFT" });
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    cleanup();
+    vi.clearAllMocks();
   });
 
   it("renders sorted rows through the dense table with live quote labels", async () => {
@@ -117,7 +134,7 @@ describe("WatchlistScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    await screen.findByText(/Live prices for 2 symbols/i);
+    await screen.findByText(/Live prices for 2 symbols/i, undefined, fullSuiteTimeout);
     vi.mocked(api.getLiveQuotesSnapshot).mockClear();
 
     await user.click(screen.getByRole("button", { name: /Refresh live prices/i }));
@@ -152,7 +169,7 @@ describe("WatchlistScreen", () => {
 
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
-    expect(await screen.findByText(/Live prices for 1 of 2 symbols/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Live prices for 1 of 2 symbols/i, undefined, fullSuiteTimeout)).toBeInTheDocument();
     const table = screen.getByRole("table", { name: /subscribed symbol watchlist/i });
     expect(within(table).getByText("188.05 x 200")).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toHaveTextContent("Never");

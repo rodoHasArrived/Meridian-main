@@ -395,6 +395,20 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.backendCapabilityGroups.find((group) => group.id === "accounting")?.statusDetail).toContain(
       "templates and mutating endpoints stay reference-only"
     );
+    expect(vm.backendCapabilityGroups.find((group) => group.id === "accounting")?.endpoints).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          href: "/api/workstation/security-master/securities",
+          method: "GET",
+          isBrowserNavigable: true
+        })
+      ])
+    );
+    expect(vm.backendCapabilityGroups.find((group) => group.id === "data")?.endpoints).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ href: "/api/workstation/security-master/securities" })
+      ])
+    );
     expect(vm.backendCapabilityGroups.find((group) => group.id === "settings")?.endpoints).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ href: "/api/workstation/workflows", isBrowserNavigable: true }),

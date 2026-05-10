@@ -52,9 +52,12 @@ export interface WatchlistRowViewModel {
   isRemoving: boolean;
   quoteHref: string;
   quoteAriaLabel: string;
+  inspectLabel: string;
+  inspectAriaLabel: string;
   removeLabel: string;
   removeAriaLabel: string;
   removeDisabledReason: string | null;
+  rowSelectAriaLabel: string;
   ariaLabel: string;
 }
 
@@ -114,6 +117,7 @@ export interface WatchlistScreenViewModel {
   tableCaption: string;
   formLabel: string;
   inputId: string;
+  inputPlaceholder: string;
   inputHelpId: string;
   inputHelpText: string;
   addButtonLabel: string;
@@ -128,6 +132,8 @@ export interface WatchlistScreenViewModel {
   quoteStatusTone: WatchlistQuoteStatusTone;
   quoteProviderSetupHandoff: WatchlistProviderSetupHandoff | null;
   quoteRefreshCommand: WatchlistQuoteRefreshCommandState;
+  starterPackGroupLabel: string;
+  starterPackEyebrow: string;
   starterPacks: WatchlistStarterPackCommandState[];
   selectedSymbol: string | null;
   selectedRowId: string | null;
@@ -468,6 +474,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     tableCaption: "Subscribed symbols sorted alphabetically with status, live bid and ask, last price, spread, quote age, provider, and actions.",
     formLabel: "Add symbols to the watchlist",
     inputId: "add-symbol-input",
+    inputPlaceholder: "Add symbols (e.g. MSFT, SPY)",
     inputHelpId: submitFeedback ? "add-symbol-feedback add-symbol-help" : "add-symbol-help",
     inputHelpText: "Paste one or more symbols separated by spaces or commas. Meridian normalizes them to uppercase.",
     addButtonLabel: submitting ? "Adding..." : pendingSymbols.length > 1 ? `Add ${pendingSymbols.length}` : "Add",
@@ -486,6 +493,8 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     quoteStatusTone: quoteStatus.tone,
     quoteProviderSetupHandoff: quoteError ? buildProviderSetupHandoff("live-quotes") : null,
     quoteRefreshCommand: buildQuoteRefreshCommand(listState, rows.length, quoteRefreshing),
+    starterPackGroupLabel: "Watchlist starter packs",
+    starterPackEyebrow: "Quick add",
     starterPacks: buildStarterPackCommands(submitting, activeStarterPackId),
     selectedSymbol: selectedRow?.symbol ?? null,
     selectedRowId: selectedRow?.symbol ?? null,
@@ -544,9 +553,12 @@ export function buildWatchlistRows(
         isRemoving,
         quoteHref: `/data/quotes?symbol=${encodeURIComponent(record.symbol)}`,
         quoteAriaLabel: `View live quotes for ${record.symbol}`,
+        inspectLabel: "Inspect",
+        inspectAriaLabel: `Inspect ${record.symbol} watchlist detail`,
         removeLabel: isRemoving ? "Removing..." : "Remove",
         removeAriaLabel: isRemoving ? `Removing ${record.symbol} from watchlist` : `Remove ${record.symbol} from watchlist`,
         removeDisabledReason: isRemoving ? `${record.symbol} removal is already running.` : null,
+        rowSelectAriaLabel: `Select ${record.symbol} watchlist row. ${record.symbol}. Status ${record.status}.`,
         ariaLabel: `${record.symbol}. Status ${record.status}. Bid ${quote ? formatPriceSize(quote.bidPrice, quote.bidSize) : "not available"}. Ask ${quote ? formatPriceSize(quote.askPrice, quote.askSize) : "not available"}. Last ${quote ? formatPrice(quote.lastPrice) : "not available"}. Provider ${providerLabel}. Last event ${lastEventLabel}. ${eventCountLabel} events. History ${historyLabel}.`
       };
     });

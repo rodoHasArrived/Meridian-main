@@ -9,7 +9,7 @@ import type {
   WorkspaceSummary
 } from "@/types";
 
-export type CommandPaletteItemKind = "workspace" | "workflow" | "preset";
+export type CommandPaletteItemKind = "workspace" | "route" | "workflow" | "preset";
 export type CommandPaletteFocusBoundary = "first" | "last" | "middle" | "outside" | "none";
 export type CommandPaletteFocusTarget = "search" | "command" | "other";
 export type CommandPaletteKeyCommand =
@@ -46,6 +46,13 @@ export interface CommandPaletteWorkflowData {
   workflowError?: string | null;
 }
 
+interface CommandPaletteRouteDefinition {
+  id: string;
+  label: string;
+  description: string;
+  route: string;
+}
+
 export interface CommandPaletteViewModel {
   title: string;
   subtitle: string;
@@ -66,6 +73,75 @@ export interface CommandPaletteViewModel {
   emptyState: CommandPaletteEmptyState | null;
 }
 
+const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
+  {
+    id: "trading-readiness",
+    label: "Readiness console",
+    description: "Review paper cockpit blockers, operator work items, and promotion evidence.",
+    route: "/trading/readiness"
+  },
+  {
+    id: "portfolio-brokerage-sync",
+    label: "Brokerage sync",
+    description: "Review household brokerage account sync posture and recovery actions.",
+    route: "/portfolio/brokerage-sync"
+  },
+  {
+    id: "accounting-reconciliation",
+    label: "Reconciliation breaks",
+    description: "Work position breaks, sign-off detail, and reconciliation recovery.",
+    route: "/accounting/reconciliation"
+  },
+  {
+    id: "accounting-security-master",
+    label: "Security Master",
+    description: "Review reference-data coverage, identifier conflicts, and trusted instruments.",
+    route: "/accounting/security-master"
+  },
+  {
+    id: "reporting-report-packs",
+    label: "Report packs",
+    description: "Open approval-ready report packet review and governed outputs.",
+    route: "/reporting/report-packs"
+  },
+  {
+    id: "reporting-evidence",
+    label: "Evidence workbench",
+    description: "Inspect packet completeness, stale evidence, and lineage.",
+    route: "/reporting/evidence"
+  },
+  {
+    id: "strategy-quant-lab",
+    label: "Quant Lab",
+    description: "Run scripts with parameter hints, templates, plots, and metrics.",
+    route: "/strategy/quant-lab"
+  },
+  {
+    id: "data-watchlist",
+    label: "Watchlist",
+    description: "Add symbols and starter packs before validating live quotes.",
+    route: "/data/watchlist"
+  },
+  {
+    id: "data-quotes",
+    label: "Live quotes",
+    description: "Inspect quotes, trades, depth, charts, and staged tickets.",
+    route: "/data/quotes"
+  },
+  {
+    id: "data-backfills",
+    label: "Backfill queues",
+    description: "Preview, trigger, and review historical data backfill jobs.",
+    route: "/data/backfills"
+  },
+  {
+    id: "settings-integrations",
+    label: "Provider integrations",
+    description: "Repair credentials, paper endpoints, and backend capability coverage.",
+    route: "/settings/integrations"
+  }
+];
+
 export interface CommandPaletteKeyboardState {
   key: string;
   shiftKey?: boolean;
@@ -81,48 +157,53 @@ export function buildCommandPaletteViewModel(
 ): CommandPaletteViewModel {
   const activeKey = normalizeWorkspacePath(pathname);
   const workspaceItems = buildWorkspaceItems(workspaces, activeKey);
+  const routeItems = buildRouteItems(pathname);
   const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname);
   const workflowItems = buildWorkflowItems(workflowData.workflowLibrary?.workflows ?? [], pathname);
-  const items = [...workspaceItems, ...presetItems, ...workflowItems];
+  const items = [...workspaceItems, ...routeItems, ...presetItems, ...workflowItems];
   const normalizedQuery = query.trim();
   const filteredItems = filterCommandItems(items, normalizedQuery);
 
   const activeWorkspace = workspaceItems.find((item) => item.active);
+  const activeRoute = routeItems.find((item) => item.active);
   const activeWorkspaceLabel = activeWorkspace ? `Current: ${activeWorkspace.label}` : "No active workspace";
   const hasWorkflowBackend = Boolean(
     workflowData.workflowLibrary || workflowData.workflowPresets || workflowData.workflowError
   );
 
   return {
-    title: hasWorkflowBackend ? "Open workflow command" : "Open workspace",
+    title: hasWorkflowBackend ? "Open workflow command" : "Open workstation command",
     subtitle: hasWorkflowBackend
-      ? "Route through shared workflows, presets, and canonical workspaces."
-      : "Route to a canonical operator workspace.",
+      ? "Route through shared workflows, presets, quick routes, and canonical workspaces."
+      : "Route to common operator workflows and canonical workspaces.",
     routeSummary: buildRouteSummary(activeWorkspaceLabel, Boolean(activeWorkspace), hasWorkflowBackend, workflowData.workflowError),
     shortcutHint: "Esc to close",
-    scopeLabel: hasWorkflowBackend ? "Shared workflow and workspace routing" : "Canonical workspace routing",
+    scopeLabel: hasWorkflowBackend ? "Shared workflow, route, and workspace routing" : "Canonical workspace and route routing",
     backendStatusLabel: buildBackendStatusLabel(hasWorkflowBackend, workflowItems.length, presetItems.length, workflowData.workflowError),
     commandListLabel: hasWorkflowBackend
       ? `${items.length} command${items.length === 1 ? "" : "s"}`
-      : `${items.length} workspace command${items.length === 1 ? "" : "s"}`,
+      : `${items.length} workstation command${items.length === 1 ? "" : "s"}`,
     itemCountLabel: hasWorkflowBackend
-      ? buildItemCountLabel(workspaceItems.length, presetItems.length, workflowItems.length)
-      : `${items.length} workspace${items.length === 1 ? "" : "s"}`,
+      ? buildItemCountLabel(workspaceItems.length, routeItems.length, presetItems.length, workflowItems.length)
+      : buildLocalItemCountLabel(workspaceItems.length, routeItems.length),
     activeWorkspaceLabel,
     initialFocusItemId:
-      filteredItems.find((item) => item.id === activeWorkspace?.id)?.id ?? filteredItems[0]?.id ?? null,
+      filteredItems.find((item) => item.id === activeRoute?.id)?.id
+      ?? filteredItems.find((item) => item.id === activeWorkspace?.id)?.id
+      ?? filteredItems[0]?.id
+      ?? null,
     items,
     query,
     searchInputLabel: "Search command palette",
     searchPlaceholder: hasWorkflowBackend
-      ? "Search workflows, presets, or workspaces"
-      : "Search workspaces",
+      ? "Search workflows, routes, presets, or workspaces"
+      : "Search routes or workspaces",
     filteredItems,
     filteredItemCountLabel: buildFilteredItemCountLabel(filteredItems.length, items.length, normalizedQuery),
     emptyState:
       items.length === 0
         ? {
-            title: hasWorkflowBackend ? "No workflow commands available" : "No workspace commands available",
+            title: hasWorkflowBackend ? "No workflow commands available" : "No workstation commands available",
             detail: hasWorkflowBackend
               ? "Workflow and workspace metadata did not load; retry the shell bootstrap before navigating."
               : "Workspace metadata did not load; retry the shell bootstrap before navigating."
@@ -130,7 +211,7 @@ export function buildCommandPaletteViewModel(
         : normalizedQuery && filteredItems.length === 0
           ? {
               title: "No matching commands",
-              detail: "Try a workspace name, workflow title, route, or status label."
+              detail: "Try a workspace name, route, workflow title, or status label."
             }
         : null
   };
@@ -198,6 +279,25 @@ function buildWorkspaceItems(workspaces: WorkspaceSummary[], activeKey: Workspac
   });
 }
 
+function buildRouteItems(pathname: string): CommandPaletteItem[] {
+  return LOCAL_ROUTE_COMMANDS.map<CommandPaletteItem>((routeCommand) => {
+    const active = isActiveRoute(pathname, routeCommand.route);
+    return {
+      id: `route:${routeCommand.id}`,
+      kind: "route",
+      label: routeCommand.label,
+      description: routeCommand.description,
+      route: routeCommand.route,
+      routeLabel: routeCommand.route,
+      statusLabel: active ? "Current" : "Route",
+      commandLabel: active ? `Stay on ${routeCommand.label}` : `Open ${routeCommand.label}`,
+      ariaLabel: active ? `${routeCommand.label}, current route` : `Open ${routeCommand.label} route`,
+      presetId: null,
+      active
+    };
+  });
+}
+
 function buildPresetItems(presets: WorkflowPreset[], pathname: string): CommandPaletteItem[] {
   return [...presets]
     .sort(comparePresets)
@@ -254,11 +354,11 @@ function buildRouteSummary(
 ) {
   const current = hasActiveWorkspace ? activeWorkspaceLabel : "No active workspace";
   if (!hasWorkflowBackend) {
-    return `Route to a canonical operator workspace. ${current}.`;
+    return `Route to common operator workflows and canonical workspaces. ${current}.`;
   }
 
   if (workflowError) {
-    return `Route through shared backend workflow commands. ${current}. Workflow library unavailable; workspace commands remain available.`;
+    return `Route through shared backend workflow commands. ${current}. Workflow library unavailable; local route commands remain available.`;
   }
 
   return `Route through shared backend workflow commands. ${current}.`;
@@ -281,8 +381,12 @@ function buildBackendStatusLabel(
   return `${workflowActionCount} workflow action${workflowActionCount === 1 ? "" : "s"} - ${presetCount} preset${presetCount === 1 ? "" : "s"}`;
 }
 
-function buildItemCountLabel(workspaceCount: number, presetCount: number, workflowActionCount: number) {
-  return `${workspaceCount} workspace${workspaceCount === 1 ? "" : "s"} - ${presetCount} preset${presetCount === 1 ? "" : "s"} - ${workflowActionCount} workflow action${workflowActionCount === 1 ? "" : "s"}`;
+function buildLocalItemCountLabel(workspaceCount: number, routeCount: number) {
+  return `${workspaceCount} workspace${workspaceCount === 1 ? "" : "s"} - ${routeCount} quick route${routeCount === 1 ? "" : "s"}`;
+}
+
+function buildItemCountLabel(workspaceCount: number, routeCount: number, presetCount: number, workflowActionCount: number) {
+  return `${workspaceCount} workspace${workspaceCount === 1 ? "" : "s"} - ${routeCount} quick route${routeCount === 1 ? "" : "s"} - ${presetCount} preset${presetCount === 1 ? "" : "s"} - ${workflowActionCount} workflow action${workflowActionCount === 1 ? "" : "s"}`;
 }
 
 function buildFilteredItemCountLabel(filteredCount: number, totalCount: number, query: string) {
@@ -323,6 +427,12 @@ function isExactActivePath(pathname: string, route: string) {
   const cleanPath = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/";
   const cleanRoute = route.replace(/\/+$/, "") || "/";
   return cleanPath === cleanRoute;
+}
+
+function isActiveRoute(pathname: string, route: string) {
+  const cleanPath = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/";
+  const cleanRoute = route.replace(/\/+$/, "") || "/";
+  return cleanPath === cleanRoute || cleanPath.startsWith(`${cleanRoute}/`);
 }
 
 function comparePresets(left: WorkflowPreset, right: WorkflowPreset) {

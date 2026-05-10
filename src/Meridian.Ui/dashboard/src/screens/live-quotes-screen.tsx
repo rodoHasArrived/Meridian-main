@@ -353,7 +353,7 @@ interface QuickTradeCardProps {
 }
 
 function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
-  const { ticket, submitCommand, status } = vm;
+  const { fields, ticket, submitCommand, status } = vm;
   const statusToneClass = quickTicketStatusClass[status.tone];
   return (
     <Card>
@@ -367,28 +367,30 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={vm.submitTicket} className="space-y-3" aria-describedby={status.id}>
+        <form onSubmit={vm.submitTicket} className="space-y-3" aria-label={vm.formLabel} aria-describedby={status.id}>
           <div className="grid gap-2 sm:grid-cols-2">
             <div className="flex flex-col gap-1">
-              <label htmlFor="quick-ticket-side" className="text-xs uppercase tracking-wide text-muted-foreground">Side</label>
+              <label htmlFor={fields.side.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.side.label}</label>
               <Select
-                id="quick-ticket-side"
+                id={fields.side.id}
                 value={ticket.side}
                 onChange={(event) => vm.updateField("side", event.target.value as "Buy" | "Sell")}
                 className={vm.sideToneClass}
-                aria-label="Order side"
+                aria-label={fields.side.ariaLabel}
+                aria-describedby={fields.side.describedBy}
               >
                 <option value="Buy">Buy</option>
                 <option value="Sell">Sell</option>
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor="quick-ticket-type" className="text-xs uppercase tracking-wide text-muted-foreground">Type</label>
+              <label htmlFor={fields.type.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.type.label}</label>
               <Select
-                id="quick-ticket-type"
+                id={fields.type.id}
                 value={ticket.type}
                 onChange={(event) => vm.updateField("type", event.target.value as "Market" | "Limit")}
-                aria-label="Order type"
+                aria-label={fields.type.ariaLabel}
+                aria-describedby={fields.type.describedBy}
               >
                 <option value="Limit">Limit</option>
                 <option value="Market">Market</option>
@@ -398,42 +400,42 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
 
           <div className="grid gap-2 sm:grid-cols-2">
             <div className="flex flex-col gap-1">
-              <label htmlFor="quick-ticket-quantity" className="text-xs uppercase tracking-wide text-muted-foreground">Quantity</label>
+              <label htmlFor={fields.quantity.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.quantity.label}</label>
               <Input
-                id="quick-ticket-quantity"
+                id={fields.quantity.id}
                 type="number"
-                inputMode="numeric"
-                min={1}
-                step={1}
-                placeholder="100"
+                inputMode={fields.quantity.inputMode ?? undefined}
+                min={fields.quantity.min ?? undefined}
+                step={fields.quantity.step ?? undefined}
+                placeholder={fields.quantity.placeholder ?? undefined}
                 value={ticket.quantity}
                 onChange={(event) => vm.updateField("quantity", event.target.value)}
                 autoComplete="off"
                 spellCheck={false}
                 error={vm.quantityInvalid}
-                aria-label="Order quantity in shares"
-                aria-describedby={status.id}
+                aria-label={fields.quantity.ariaLabel}
+                aria-describedby={fields.quantity.describedBy}
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor="quick-ticket-price" className="text-xs uppercase tracking-wide text-muted-foreground">
-                {ticket.type === "Market" ? "Price (market)" : "Limit price"}
+              <label htmlFor={fields.limitPrice.id} className="text-xs uppercase tracking-wide text-muted-foreground">
+                {fields.limitPrice.label}
               </label>
               <Input
-                id="quick-ticket-price"
+                id={fields.limitPrice.id}
                 type="number"
-                inputMode="decimal"
-                min={0}
-                step="0.01"
-                placeholder={ticket.type === "Market" ? "Best available" : "0.00"}
+                inputMode={fields.limitPrice.inputMode ?? undefined}
+                min={fields.limitPrice.min ?? undefined}
+                step={fields.limitPrice.step ?? undefined}
+                placeholder={fields.limitPrice.placeholder ?? undefined}
                 value={ticket.type === "Market" ? "" : ticket.limitPrice}
                 onChange={(event) => vm.updateField("limitPrice", event.target.value)}
                 disabled={vm.priceDisabled}
                 autoComplete="off"
                 spellCheck={false}
                 error={vm.priceInvalid}
-                aria-label="Limit price"
-                aria-describedby={status.id}
+                aria-label={fields.limitPrice.ariaLabel}
+                aria-describedby={fields.limitPrice.describedBy}
               />
             </div>
           </div>

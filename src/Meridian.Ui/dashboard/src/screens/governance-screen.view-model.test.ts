@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildCalibrationSummaryViewState,
   buildGovernanceCashFlowViewState,
@@ -13,12 +14,19 @@ import {
   buildReconciliationResolveDialogState,
   buildSecurityConflictRows,
   buildSecurityIdentityDrillInState,
+  buildSecuritySearchResultRows,
   buildSecuritySearchState,
   countOpenSecurityConflicts,
   resolveGovernanceWorkstream,
-  resolveSelectedReconciliation
+  resolveSelectedReconciliation,
+  useSecurityMasterViewModel
 } from "@/screens/governance-screen.view-model";
 import type {
+  SecurityMasterDrillInServices,
+  SecurityMasterServices
+} from "@/screens/governance-screen.view-model";
+import type {
+  CorporateAction,
   GovernanceCashFlowSummary,
   GovernanceWorkspaceResponse,
   LedgerTrialBalanceLine,
@@ -26,7 +34,8 @@ import type {
   ReconciliationBreakQueueItem,
   SecurityMasterConflict,
   SecurityMasterEntry,
-  SecurityIdentityDrillIn
+  SecurityIdentityDrillIn,
+  TradingParameters
 } from "@/types";
 
 const reconciliationQueue: GovernanceWorkspaceResponse["reconciliationQueue"] = [
@@ -108,6 +117,48 @@ const securityIdentity: SecurityIdentityDrillIn = {
     }
   ]
 };
+
+const tradingParameters: TradingParameters = {
+  securityId: "sec-1",
+  lotSize: 100,
+  tickSize: 0.01,
+  contractMultiplier: 1,
+  marginRequirementPct: 25,
+  tradingHoursUtc: "14:30-21:00",
+  circuitBreakerThresholdPct: 7,
+  asOf: "2026-05-10T00:00:00Z"
+};
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}
+
+function createSecurityMasterServices(overrides: Partial<SecurityMasterServices> = {}): SecurityMasterServices {
+  return {
+    search: vi.fn().mockResolvedValue([]),
+    getIdentity: vi.fn().mockResolvedValue(securityIdentity),
+    getConflicts: vi.fn().mockResolvedValue([]),
+    resolveConflict: vi.fn().mockResolvedValue(conflicts[0]),
+    ...overrides
+  };
+}
+
+function createSecurityMasterDrillInServices(
+  overrides: Partial<SecurityMasterDrillInServices> = {}
+): SecurityMasterDrillInServices {
+  return {
+    getCorporateActions: vi.fn().mockResolvedValue([] as CorporateAction[]),
+    getTradingParameters: vi.fn().mockResolvedValue(tradingParameters),
+    ...overrides
+  };
+}
 
 const conflicts: SecurityMasterConflict[] = [
   {
@@ -417,8 +468,113 @@ describe("governance-screen view model", () => {
 
     expect(complete.hasResults).toBe(true);
     expect(complete.resultCount).toBe(1);
+    expect(complete.resultsTableLabel).toBe("Security search results");
+    expect(complete.resultColumns.map((column) => column.label)).toEqual(["Name", "Asset Class", "Primary ID", "Currency", "Status"]);
+    expect(complete.resultRows[0]).toMatchObject({
+      rowId: "security-result-sec-1",
+      isSelected: false,
+      selectAriaLabel: "Open identity drill-in for Apple Inc.",
+      primaryIdentifierLabel: "Ticker: AAPL",
+      statusTone: "success",
+      ariaLabel: "Apple Inc., Equity, primary identifier Ticker: AAPL, currency USD, status Active."
+    });
     expect(complete.searchStatusText).toBe('1 securities found for "AAPL".');
     expect(complete.statusAnnouncement).toBe("1 securities found for AAPL.");
+  });
+
+  it("derives selected Security Master search result rows", () => {
+    const rows = buildSecuritySearchResultRows([securityResult], "sec-1");
+
+    expect(rows[0]).toMatchObject({
+      rowId: "security-result-sec-1",
+      isSelected: true,
+      selectAriaLabel: "Open identity drill-in for Apple Inc.",
+      primaryIdentifierLabel: "Ticker: AAPL",
+      statusTone: "success"
+    });
+    expect(rows[0].ariaLabel).toContain("selected");
+    expect(buildSecuritySearchResultRows(null, null)).toEqual([]);
+  });
+
+  it("ignores stale Security Master identity responses after a newer selection settles", async () => {
+    const staleIdentity = deferred<SecurityIdentityDrillIn>();
+    const latestIdentity = deferred<SecurityIdentityDrillIn>();
+    const services = createSecurityMasterServices({
+      getIdentity: vi.fn()
+        .mockReturnValueOnce(staleIdentity.promise)
+        .mockReturnValueOnce(latestIdentity.promise)
+    });
+    const drillInServices = createSecurityMasterDrillInServices();
+    const latestDetail: SecurityIdentityDrillIn = {
+      ...securityIdentity,
+      securityId: "sec-2",
+      displayName: "Microsoft Corp."
+    };
+
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+
+    act(() => {
+      void result.current.selectSecurity("sec-1");
+    });
+    act(() => {
+      void result.current.selectSecurity("sec-2");
+    });
+    await act(async () => {
+      latestIdentity.resolve(latestDetail);
+      await latestIdentity.promise;
+    });
+
+    await waitFor(() => expect(result.current.identity?.securityId).toBe("sec-2"));
+
+    await act(async () => {
+      staleIdentity.resolve(securityIdentity);
+      await staleIdentity.promise;
+    });
+
+    expect(result.current.identity?.securityId).toBe("sec-2");
+    expect(result.current.identityLoading).toBe(false);
+    expect(result.current.identityErrorText).toBeNull();
+  });
+
+  it("clears pending Security Master drill-in state when the workstream becomes inactive", async () => {
+    const identity = deferred<SecurityIdentityDrillIn>();
+    const corporateActions = deferred<CorporateAction[]>();
+    const parameters = deferred<TradingParameters>();
+    const services = createSecurityMasterServices({
+      getIdentity: vi.fn().mockReturnValue(identity.promise)
+    });
+    const drillInServices = createSecurityMasterDrillInServices({
+      getCorporateActions: vi.fn().mockReturnValue(corporateActions.promise),
+      getTradingParameters: vi.fn().mockReturnValue(parameters.promise)
+    });
+
+    const { result, rerender } = renderHook(
+      ({ active }) => useSecurityMasterViewModel(active, services, drillInServices, 0),
+      { initialProps: { active: true } }
+    );
+
+    act(() => {
+      void result.current.selectSecurity("sec-1");
+    });
+    await waitFor(() => expect(result.current.identityLoading).toBe(true));
+
+    rerender({ active: false });
+
+    await waitFor(() => expect(result.current.identityLoading).toBe(false));
+    expect(result.current.selectedSecurityId).toBeNull();
+    expect(result.current.identity).toBeNull();
+    expect(result.current.corporateActionsLoading).toBe(false);
+    expect(result.current.tradingParametersLoading).toBe(false);
+
+    await act(async () => {
+      identity.resolve(securityIdentity);
+      corporateActions.resolve([]);
+      parameters.resolve(tradingParameters);
+      await Promise.all([identity.promise, corporateActions.promise, parameters.promise]);
+    });
+
+    expect(result.current.identity).toBeNull();
+    expect(result.current.selectedSecurityId).toBeNull();
   });
 
   it("surfaces search failures and counts open conflicts for badges", () => {
@@ -585,6 +741,7 @@ describe("governance-screen view model", () => {
       label: "Resolve rationale",
       submitLabel: "Confirm resolve",
       submitAriaLabel: "Confirm resolve for reconciliation break run-42:cash",
+      cancelLabel: "Cancel",
       cancelAriaLabel: "Cancel resolve for reconciliation break run-42:cash",
       isSubmitDisabled: true
     });

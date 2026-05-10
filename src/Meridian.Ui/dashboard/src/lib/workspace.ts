@@ -55,6 +55,7 @@ export const LEGACY_WORKSPACE_ALIASES: Record<LegacyWorkspaceKey, WorkspaceKey> 
 const PAGE_TAG_ROUTES: Record<string, string> = {
   AccountPortfolio: "/portfolio/brokerage-sync",
   AccountingShell: "/accounting",
+  Backtest: "/strategy",
   Backfill: "/data/backfills",
   BrokerageSync: "/portfolio/brokerage-sync",
   DataShell: "/data",
@@ -69,7 +70,7 @@ const PAGE_TAG_ROUTES: Record<string, string> = {
   ReportingShell: "/reporting",
   ReportPackApproval: "/reporting/report-packs",
   RunRisk: "/trading/readiness",
-  SecurityMaster: "/data/security-master",
+  SecurityMaster: "/accounting/security-master",
   SettingsShell: "/settings",
   StrategyRuns: "/strategy",
   StrategyShell: "/strategy",
@@ -99,6 +100,30 @@ export function workflowTargetPath(
   return workspaceKey ? workspacePath(workspaceKey) : "/trading";
 }
 
+export function normalizeLocalWorkstationRoute(route: string | null | undefined): string | null {
+  const trimmed = route?.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const localRoute = trimmed.startsWith("/workstation/")
+    ? trimmed.slice("/workstation".length)
+    : trimmed;
+
+  if (!localRoute.startsWith("/") || localRoute.startsWith("//") || localRoute.startsWith("/api/")) {
+    return null;
+  }
+
+  const { pathname, search, hash } = splitRouteParts(localRoute);
+  const canonicalRoute = legacyWorkspaceRedirect(pathname, search, hash) ?? `${pathname}${search}${hash}`;
+  const routeWorkspace = firstPathSegment(canonicalRoute);
+  if (!routeWorkspace || !isWorkspaceKey(routeWorkspace)) {
+    return null;
+  }
+
+  return canonicalRoute;
+}
+
 export function workspaceForKey(key: WorkspaceKey): WorkspaceSummary {
   return WORKSPACES.find((workspace) => workspace.key === key) ?? WORKSPACES[0];
 }
@@ -108,9 +133,14 @@ export function workspaceForPath(pathname: string): WorkspaceSummary {
 }
 
 export function normalizeWorkspacePath(pathname: string): WorkspaceKey {
-  const firstSegment = firstPathSegment(pathname);
+  const segments = pathSegments(pathname);
+  const firstSegment = segments[0] ?? null;
   if (!firstSegment) {
     return "trading";
+  }
+
+  if (firstSegment === "data" && segments[1] === "security-master") {
+    return "accounting";
   }
 
   if (isWorkspaceKey(firstSegment)) {
@@ -130,7 +160,16 @@ export function isWorkspacePathActive(pathname: string, key: WorkspaceKey): bool
 
 export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""): string | null {
   const firstSegment = firstPathSegment(pathname);
-  if (!firstSegment || !isLegacyWorkspaceKey(firstSegment)) {
+  if (!firstSegment) {
+    return null;
+  }
+
+  if (firstSegment === "data" && pathSegments(pathname)[1] === "security-master") {
+    const suffix = pathname.slice("/data/security-master".length);
+    return `/accounting/security-master${suffix}${search}${hash}`;
+  }
+
+  if (!isLegacyWorkspaceKey(firstSegment)) {
     return null;
   }
 
@@ -139,7 +178,23 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
 }
 
 function firstPathSegment(pathname: string): string | null {
-  return pathname.split(/[/?#]/).filter(Boolean)[0] ?? null;
+  return pathSegments(pathname)[0] ?? null;
+}
+
+function pathSegments(pathname: string): string[] {
+  return pathname.split(/[/?#]/).filter(Boolean);
+}
+
+function splitRouteParts(route: string): { pathname: string; search: string; hash: string } {
+  const hashIndex = route.indexOf("#");
+  const routeWithoutHash = hashIndex >= 0 ? route.slice(0, hashIndex) : route;
+  const hash = hashIndex >= 0 ? route.slice(hashIndex) : "";
+  const searchIndex = routeWithoutHash.indexOf("?");
+  return {
+    pathname: searchIndex >= 0 ? routeWithoutHash.slice(0, searchIndex) : routeWithoutHash,
+    search: searchIndex >= 0 ? routeWithoutHash.slice(searchIndex) : "",
+    hash
+  };
 }
 
 function isWorkspaceKey(value: string): value is WorkspaceKey {
@@ -156,5 +211,9 @@ function workspaceKeyFromId(workspaceId: string | null | undefined): WorkspaceKe
     return null;
   }
 
-  return isWorkspaceKey(normalized) ? normalized : null;
+  if (isWorkspaceKey(normalized)) {
+    return normalized;
+  }
+
+  return isLegacyWorkspaceKey(normalized) ? LEGACY_WORKSPACE_ALIASES[normalized] : null;
 }

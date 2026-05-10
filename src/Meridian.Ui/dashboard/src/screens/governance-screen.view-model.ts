@@ -133,10 +133,27 @@ export interface SecurityMasterDrillInServices {
   getTradingParameters: (securityId: string) => Promise<TradingParameters>;
 }
 
+export interface SecuritySearchResultColumnViewModel {
+  id: "name" | "assetClass" | "primaryId" | "currency" | "status";
+  label: string;
+}
+
+export interface SecuritySearchResultRowViewModel extends SecurityMasterEntry {
+  rowId: string;
+  isSelected: boolean;
+  selectAriaLabel: string;
+  primaryIdentifierLabel: string;
+  statusTone: "success" | "warning";
+  ariaLabel: string;
+}
+
 export interface SecuritySearchState {
   trimmedQuery: string;
   resultCount: number;
   hasResults: boolean;
+  resultsTableLabel: string;
+  resultColumns: SecuritySearchResultColumnViewModel[];
+  resultRows: SecuritySearchResultRowViewModel[];
   searchStatusText: string | null;
   searchErrorText: string | null;
   statusAnnouncement: string;
@@ -247,6 +264,7 @@ export interface ReconciliationResolveDialogState {
   helpText: string;
   submitLabel: string;
   submitAriaLabel: string;
+  cancelLabel: string;
   cancelAriaLabel: string;
   isSubmitDisabled: boolean;
 }
@@ -524,12 +542,40 @@ export function useSecurityMasterViewModel(
   const [tradingParametersError, setTradingParametersError] = useState<string | null>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchGenerationRef = useRef(0);
+  const identityGenerationRef = useRef(0);
 
   useEffect(() => () => {
     if (searchTimerRef.current) {
       clearTimeout(searchTimerRef.current);
     }
+    searchGenerationRef.current += 1;
+    identityGenerationRef.current += 1;
   }, []);
+
+  useEffect(() => {
+    if (active) {
+      return;
+    }
+
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+      searchTimerRef.current = null;
+    }
+
+    searchGenerationRef.current += 1;
+    identityGenerationRef.current += 1;
+    setSearching(false);
+    setSelectedSecurityId(null);
+    setIdentity(null);
+    setIdentityLoading(false);
+    setIdentityError(null);
+    setCorporateActions(null);
+    setCorporateActionsLoading(false);
+    setCorporateActionsError(null);
+    setTradingParameters(null);
+    setTradingParametersLoading(false);
+    setTradingParametersError(null);
+  }, [active]);
 
   useEffect(() => {
     if (!active) {
@@ -564,10 +610,12 @@ export function useSecurityMasterViewModel(
   }, [active, services]);
 
   useEffect(() => {
-    if (!selectedSecurityId) {
+    if (!active || !selectedSecurityId) {
       setCorporateActions(null);
+      setCorporateActionsLoading(false);
       setCorporateActionsError(null);
       setTradingParameters(null);
+      setTradingParametersLoading(false);
       setTradingParametersError(null);
       return;
     }
@@ -617,7 +665,7 @@ export function useSecurityMasterViewModel(
     return () => {
       cancelled = true;
     };
-  }, [selectedSecurityId, drillInServices]);
+  }, [active, selectedSecurityId, drillInServices]);
 
   const updateQuery = useCallback((nextQuery: string) => {
     setQuery(nextQuery);
@@ -625,9 +673,11 @@ export function useSecurityMasterViewModel(
     setIdentity(null);
     setIdentityError(null);
     setSearchError(null);
+    identityGenerationRef.current += 1;
 
     if (searchTimerRef.current) {
       clearTimeout(searchTimerRef.current);
+      searchTimerRef.current = null;
     }
 
     const trimmed = nextQuery.trim();
@@ -664,6 +714,12 @@ export function useSecurityMasterViewModel(
   }, [searchDelayMs, services]);
 
   const selectSecurity = useCallback(async (securityId: string) => {
+    if (!active) {
+      return;
+    }
+
+    const generation = identityGenerationRef.current + 1;
+    identityGenerationRef.current = generation;
     setSelectedSecurityId(securityId);
     setIdentity(null);
     setIdentityError(null);
@@ -675,13 +731,19 @@ export function useSecurityMasterViewModel(
 
     try {
       const detail = await services.getIdentity(securityId);
-      setIdentity(detail);
+      if (identityGenerationRef.current === generation) {
+        setIdentity(detail);
+      }
     } catch (err) {
-      setIdentityError(toErrorMessage(err, "Identity drill-in failed."));
+      if (identityGenerationRef.current === generation) {
+        setIdentityError(toErrorMessage(err, "Identity drill-in failed."));
+      }
     } finally {
-      setIdentityLoading(false);
+      if (identityGenerationRef.current === generation) {
+        setIdentityLoading(false);
+      }
     }
-  }, [services]);
+  }, [active, services]);
 
   const resolveConflict = useCallback(async (
     conflictId: string,
@@ -707,11 +769,12 @@ export function useSecurityMasterViewModel(
       query,
       searching,
       results,
+      selectedSecurityId,
       searchError,
       identityLoading,
       identityError
     }),
-    [identityError, identityLoading, query, results, searchError, searching]
+    [identityError, identityLoading, query, results, searchError, searching, selectedSecurityId]
   );
   const conflictRows = useMemo(
     () => buildSecurityConflictRows(conflicts, conflictResolvingId),
@@ -1127,10 +1190,19 @@ function buildReconciliationDetailField(
   };
 }
 
+const securitySearchResultColumns: SecuritySearchResultColumnViewModel[] = [
+  { id: "name", label: "Name" },
+  { id: "assetClass", label: "Asset Class" },
+  { id: "primaryId", label: "Primary ID" },
+  { id: "currency", label: "Currency" },
+  { id: "status", label: "Status" }
+];
+
 export function buildSecuritySearchState({
   query,
   searching,
   results,
+  selectedSecurityId,
   searchError,
   identityLoading,
   identityError
@@ -1138,6 +1210,7 @@ export function buildSecuritySearchState({
   query: string;
   searching: boolean;
   results: SecurityMasterEntry[] | null;
+  selectedSecurityId?: string | null;
   searchError: string | null;
   identityLoading: boolean;
   identityError: string | null;
@@ -1145,6 +1218,7 @@ export function buildSecuritySearchState({
   const trimmedQuery = query.trim();
   const resultCount = results?.length ?? 0;
   const hasResults = resultCount > 0;
+  const resultRows = buildSecuritySearchResultRows(results, selectedSecurityId ?? null);
   const searchErrorText = searchError
     ? searchError.startsWith("Security search failed")
       ? searchError
@@ -1170,6 +1244,9 @@ export function buildSecuritySearchState({
     trimmedQuery,
     resultCount,
     hasResults,
+    resultsTableLabel: "Security search results",
+    resultColumns: securitySearchResultColumns,
+    resultRows,
     searchStatusText,
     searchErrorText,
     statusAnnouncement: buildSecurityStatusAnnouncement({
@@ -1186,6 +1263,28 @@ export function buildSecuritySearchState({
 
 export function countOpenSecurityConflicts(conflicts: SecurityMasterConflict[] | null): number {
   return conflicts?.filter((conflict) => conflict.status === "Open").length ?? 0;
+}
+
+export function buildSecuritySearchResultRows(
+  results: SecurityMasterEntry[] | null,
+  selectedSecurityId: string | null
+): SecuritySearchResultRowViewModel[] {
+  return (results ?? []).map((entry) => {
+    const primaryIdentifierLabel = entry.classification.primaryIdentifierKind
+      ? `${entry.classification.primaryIdentifierKind}: ${entry.classification.primaryIdentifierValue}`
+      : "-";
+    const isSelected = selectedSecurityId === entry.securityId;
+
+    return {
+      ...entry,
+      rowId: `security-result-${entry.securityId}`,
+      isSelected,
+      selectAriaLabel: `Open identity drill-in for ${entry.displayName}`,
+      primaryIdentifierLabel,
+      statusTone: entry.status === "Active" ? "success" : "warning",
+      ariaLabel: `${entry.displayName}, ${entry.classification.assetClass}, primary identifier ${primaryIdentifierLabel}, currency ${entry.economicDefinition.currency}, status ${entry.status}${isSelected ? ", selected" : ""}.`
+    };
+  });
 }
 
 export function buildSecurityIdentityDrillInState(
@@ -1322,6 +1421,7 @@ export function buildReconciliationResolveDialogState(
     helpText: "A rationale is required before this queue action can be submitted.",
     submitLabel: `Confirm ${command}`,
     submitAriaLabel: `Confirm ${command} for reconciliation break ${breakId}`,
+    cancelLabel: "Cancel",
     cancelAriaLabel: `Cancel ${command} for reconciliation break ${breakId}`,
     isSubmitDisabled: !rationale.trim()
   };

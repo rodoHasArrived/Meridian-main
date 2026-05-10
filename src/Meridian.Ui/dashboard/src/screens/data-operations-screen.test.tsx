@@ -58,17 +58,28 @@ const data: DataOperationsWorkspaceResponse = {
 };
 
 describe("DataOperationsScreen", () => {
+  it("renders an accessible route-aware loading panel when bootstrap data is unavailable", () => {
+    renderWithRouter(<DataOperationsScreen data={null} />, { initialEntries: ["/data/backfills"] });
+
+    const loading = screen.getByRole("status", { name: "Data backfill loading state" });
+    expect(loading).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByText("Loading backfill queue")).toBeInTheDocument();
+    expect(screen.getByText("Bootstrap pending")).toBeInTheDocument();
+    expect(screen.getByText("Backfills")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /open settings to check provider setup/i })).toHaveAttribute("href", "/settings");
+    expect(screen.getByRole("link", { name: /open live quotes while data workspace loads/i })).toHaveAttribute("href", "/data/quotes");
+  });
+
   it("renders provider, backfill, and export summaries", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
-    expect(screen.getByText("Security Master command deck")).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: /search securities/i })).toHaveValue("goldman");
-    expect(screen.getByText("Search and resolve instruments")).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: /security master status filter/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /show active securities only/i })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: /show pending security master records/i })).toHaveAttribute("aria-pressed", "false");
-    expect(screen.getByRole("button", { name: /show inactive security master records/i })).toHaveAttribute("aria-pressed", "false");
-    expect(screen.getByRole("button", { name: /show all security statuses/i })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByText("Data operations command deck")).toBeInTheDocument();
+    expect(screen.getByText("Provider posture")).toBeInTheDocument();
+    expect(screen.getByText("Backfill repair")).toBeInTheDocument();
+    expect(screen.getByText("Export readiness")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Data workspace route focus" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Security Master in Accounting" }))
+      .toHaveAttribute("href", "/accounting/security-master");
     expect(screen.getAllByText("Provider health").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Recent exports").length).toBeGreaterThan(0);
@@ -98,7 +109,7 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByText("No providers configured")).toBeInTheDocument();
     expect(screen.getByText("No backfills queued")).toBeInTheDocument();
     expect(screen.getByText("No exports available")).toBeInTheDocument();
-    expect(screen.getByText("No backfill activity yet")).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "Backfill detail empty state" })).toHaveTextContent("No backfill activity yet");
     expect(screen.getAllByRole("status").length).toBeGreaterThanOrEqual(3);
   });
 
@@ -149,96 +160,12 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByText(/Replay is currently advancing/)).toBeInTheDocument();
   });
 
-  it("switches security master results and tab content inside the data lane", async () => {
-    const user = userEvent.setup();
-
+  it("keeps the old static Security Master workbench out of the Data route", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
-    expect(screen.getByRole("tab", { name: /overview/i })).toHaveAttribute("aria-selected", "true");
-
-    await user.click(screen.getByRole("button", { name: /Open Goldman Sachs Group Inc\. ticker GSN/i }));
-
-    expect(screen.getByText("Turquoise · United Kingdom")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("tab", { name: /company/i }));
-    expect(screen.getByRole("heading", { name: "The Goldman Sachs Group, Inc." })).toBeInTheDocument();
-    expect(screen.getByText("Coverage posture")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("tab", { name: /corporate actions/i }));
-    expect(screen.getByText("Event timeline")).toBeInTheDocument();
-    expect(screen.getByText("Quarterly dividend packet")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("tab", { name: /print \/ export/i }));
-    expect(screen.getByText("Packet contents")).toBeInTheDocument();
-    expect(screen.getAllByText("SM-PACKET-2026-05-31-GS").length).toBeGreaterThan(0);
-  });
-
-  it("supports roving keyboard navigation for security master detail tabs", async () => {
-    const user = userEvent.setup();
-
-    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
-
-    const overviewTab = screen.getByRole("tab", { name: /show overview/i });
-    expect(overviewTab).toHaveAttribute("tabindex", "0");
-
-    overviewTab.focus();
-    await user.keyboard("{ArrowRight}");
-
-    const companyTab = screen.getByRole("tab", { name: /show company/i });
-    await waitFor(() => expect(companyTab).toHaveAttribute("aria-selected", "true"));
-    expect(companyTab).toHaveAttribute("tabindex", "0");
-    expect(overviewTab).toHaveAttribute("tabindex", "-1");
-    await waitFor(() => expect(companyTab).toHaveFocus());
-
-    await user.keyboard("{End}");
-    const printTab = screen.getByRole("tab", { name: /show print \/ export/i });
-    await waitFor(() => expect(printTab).toHaveAttribute("aria-selected", "true"));
-    expect(screen.getByText("Packet contents")).toBeInTheDocument();
-
-    await user.keyboard("{Home}");
-    await waitFor(() => expect(overviewTab).toHaveAttribute("aria-selected", "true"));
-    expect(screen.getByText("Identifier groups")).toBeInTheDocument();
-  });
-
-  it("reveals pending and inactive matches when the status filter is expanded", async () => {
-    const user = userEvent.setup();
-
-    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
-
-    expect(screen.queryByRole("button", { name: /ticker GS\.DR/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /ticker GSL/i })).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /show pending security master records/i }));
-
-    expect(screen.getByRole("button", { name: /show pending security master records/i })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText("1 result")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /ticker GS\.DR/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /ticker GSL/i })).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /show all security statuses/i }));
-
-    expect(screen.getByRole("button", { name: /show all security statuses/i })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText("7 results")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /ticker GS\.DR/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /ticker GSL/i })).toBeInTheDocument();
-  });
-
-  it("offers a reset path when a security master search returns no rows", async () => {
-    const user = userEvent.setup();
-
-    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
-
-    const searchBox = screen.getByRole("textbox", { name: /search securities/i });
-
-    await user.clear(searchBox);
-    await user.type(searchBox, "zzzz");
-
-    expect(screen.getByText("No matching securities")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /reset security master search/i }));
-
-    expect(screen.queryByText("No matching securities")).not.toBeInTheDocument();
-    expect(searchBox).toHaveValue("goldman");
+    expect(screen.queryByRole("textbox", { name: /search securities/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: /show overview/i })).not.toBeInTheDocument();
+    expect(screen.queryByText("Security Master command deck")).not.toBeInTheDocument();
   });
 
   it("switches the detail panel when a backfill row is selected", async () => {

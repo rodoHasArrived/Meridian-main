@@ -154,7 +154,7 @@ export function SettingsScreen({
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card className="panel-surface">
+        <Card id="diagnostic-endpoints" className="panel-surface scroll-mt-6">
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -572,7 +572,7 @@ export function SettingsScreen({
         </Card>
       </section>
 
-      <Card className="panel-surface">
+      <Card id="backend-capability-coverage" className="panel-surface scroll-mt-6">
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>

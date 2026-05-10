@@ -46,6 +46,21 @@ const successfulRun: QuantRunResponse = {
   runtimeParameters: []
 };
 
+const noEvidenceSuccessfulRun: QuantRunResponse = {
+  success: true,
+  elapsedMs: 7,
+  compileTimeMs: 18,
+  peakMemoryBytes: 1024 * 8,
+  runtimeError: null,
+  consoleOutput: "",
+  compilationErrors: [],
+  runtimeDiagnostics: [],
+  metrics: [],
+  plots: [],
+  trades: [],
+  runtimeParameters: []
+};
+
 const failedRun: QuantRunResponse = {
   success: false,
   elapsedMs: 0,
@@ -105,6 +120,20 @@ describe("QuantLabScreen", () => {
     const consoleBlock = screen.getByText(/Hello from the Quant Lab\./, { selector: "pre" });
     expect(consoleBlock).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Sine" })).toBeInTheDocument();
+  });
+
+  it("renders an actionable empty-evidence state for successful runs with no output", async () => {
+    vi.spyOn(api, "runQuantScript").mockResolvedValue(noEvidenceSuccessfulRun);
+
+    const user = userEvent.setup();
+    renderWithRouter(<QuantLabScreen />);
+    await waitForAsyncEffects();
+
+    await user.click(screen.getByRole("button", { name: /Run script/i }));
+
+    expect(await screen.findByRole("heading", { name: /Run succeeded/i })).toBeInTheDocument();
+    const emptyEvidenceTitle = screen.getByText("Run completed without runtime evidence");
+    expect(emptyEvidenceTitle.closest('[role="status"]')).toHaveTextContent(/Add Print, PrintMetric, or plot calls/i);
   });
 
   it("surfaces compilation errors when the script fails", async () => {

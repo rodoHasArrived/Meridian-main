@@ -443,6 +443,23 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.statusDetail).toContain("unavailable");
     expect(result.current.queueChips.find((chip) => chip.label === "Recommended")?.value).toBe("0");
     expect(result.current.packTargetChips.find((chip) => chip.label === "Visible")?.value).toBe("0");
+    expect(result.current.loadingState).toEqual({
+      role: "status",
+      ariaBusy: true,
+      ariaLive: "polite",
+      titleId: "reporting-loading-title",
+      detailId: "reporting-loading-detail",
+      title: "Loading Reporting",
+      detail: "Waiting for governed report-pack and export evidence.",
+      badgeLabel: "Loading",
+      routeLabel: "Reporting"
+    });
+  });
+
+  it("derives route-aware loading state for report packs", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(null, undefined, "/reporting/report-packs"));
+
+    expect(result.current.loadingState.routeLabel).toBe("Report packs");
   });
 
   it("count label reflects profile count", () => {

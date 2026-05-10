@@ -26,7 +26,8 @@ import {
   useOverviewStatusViewModel,
   type OverviewActivityRow,
   type OverviewBriefingBadgeVariant,
-  type OverviewBriefingTone
+  type OverviewBriefingTone,
+  type OverviewValueBlocker
 } from "@/screens/overview-screen.view-model";
 import type { SessionInfo, SystemOverviewResponse, WorkspaceKey } from "@/types";
 
@@ -74,6 +75,24 @@ const activityToneConfig = {
     icon: XCircle,
     iconClassName: "text-danger",
     rowClassName: "border-danger/30 bg-danger/5"
+  }
+} as const;
+
+const blockerToneConfig = {
+  default: {
+    icon: Activity,
+    rowClassName: "border-border/70 bg-secondary/20",
+    iconClassName: "text-muted-foreground"
+  },
+  warning: {
+    icon: AlertCircle,
+    rowClassName: "border-warning/30 bg-warning/5",
+    iconClassName: "text-warning"
+  },
+  danger: {
+    icon: XCircle,
+    rowClassName: "border-danger/30 bg-danger/5",
+    iconClassName: "text-danger"
   }
 } as const;
 
@@ -180,6 +199,27 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
+            <section
+              aria-label={vm.valueBlockerRegionLabel}
+              className="rounded-lg border border-border/70 bg-background/70 p-4"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="eyebrow-label">Readiness blockers</div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.valueBlockerSummary}</p>
+                </div>
+                <Badge variant={vm.hasValueBlockers ? "warning" : "success"}>
+                  {vm.hasValueBlockers ? `${vm.valueBlockers.length} open` : "Clear"}
+                </Badge>
+              </div>
+              {vm.hasValueBlockers ? (
+                <ul className="mt-3 space-y-2">
+                  {vm.valueBlockers.map((blocker) => (
+                    <ValueBlockerRow key={blocker.id} blocker={blocker} />
+                  ))}
+                </ul>
+              ) : null}
+            </section>
             {vm.priorityRoutes.map((route) => (
               <div key={route.id} className="rounded-lg border border-border/70 bg-secondary/25 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -309,6 +349,40 @@ function BriefingTile({ label, value, detail, tone, badgeVariant, ariaLabel }: B
       ) : null}
       <p className="mt-2 text-xs leading-5 text-muted-foreground">{detail}</p>
     </div>
+  );
+}
+
+function ValueBlockerRow({ blocker }: { blocker: OverviewValueBlocker }) {
+  const config = blockerToneConfig[blocker.tone];
+  const Icon = config.icon;
+
+  return (
+    <li>
+      <div
+        role="group"
+        aria-label={blocker.ariaLabel}
+        className={cn("rounded-md border px-3 py-2", config.rowClassName)}
+      >
+        <div className="flex items-start gap-3">
+          <Icon aria-hidden="true" className={cn("mt-0.5 size-4 shrink-0", config.iconClassName)} />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={blocker.badgeVariant}>{blocker.badgeLabel}</Badge>
+              <p className="text-sm font-medium text-foreground">{blocker.title}</p>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{blocker.detail}</p>
+          </div>
+        </div>
+        <Link
+          to={blocker.href}
+          className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          aria-label={blocker.ariaLabel}
+        >
+          {blocker.actionLabel}
+          <ArrowRight className="size-3" aria-hidden="true" />
+        </Link>
+      </div>
+    </li>
   );
 }
 

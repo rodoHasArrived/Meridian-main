@@ -12,15 +12,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { QuantPlotChart } from "@/components/meridian/quant-plot";
 import { ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import {
-  buildTemplateLoadAriaLabel,
   useQuantLabScreenViewModel,
   type QuantParameterPanelState,
   type QuantParameterRow,
   type QuantRunResultPanelState,
   type QuantRunState,
-  type QuantTemplatePanelState
+  type QuantTemplatePanelState,
+  type QuantTemplateRow
 } from "@/screens/quant-lab-screen.view-model";
-import type { QuantDiagnostic, QuantTemplate } from "@/types";
+import type { QuantDiagnostic } from "@/types";
 
 export function QuantLabScreen() {
   const vm = useQuantLabScreenViewModel();
@@ -62,18 +62,18 @@ export function QuantLabScreen() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground">{vm.resultPanel.runtimeSummary}</span>
           </div>
-          <label htmlFor="quant-lab-source" className="sr-only">Script source</label>
+          <label htmlFor={vm.sourceEditor.id} className="sr-only">{vm.sourceEditor.label}</label>
           <textarea
-            id="quant-lab-source"
+            id={vm.sourceEditor.id}
             spellCheck={false}
             value={vm.source}
             onChange={(event) => vm.setSource(event.target.value)}
             className="w-full min-h-[16rem] resize-y rounded-md border border-border/70 bg-background/60 p-3 font-mono text-xs leading-5 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            aria-label="Script source"
-            aria-describedby="quant-lab-source-help"
+            aria-label={vm.sourceEditor.ariaLabel}
+            aria-describedby={vm.sourceEditor.describedBy}
           />
-          <p id="quant-lab-source-help" className="text-xs text-muted-foreground">
-            Source is scanned for runtime parameters after edits settle.
+          <p id={vm.sourceEditor.helpId} className="text-xs text-muted-foreground">
+            {vm.sourceEditor.helpText}
           </p>
         </CardContent>
       </Card>
@@ -87,7 +87,7 @@ export function QuantLabScreen() {
             onChange={vm.updateParameter}
             onReset={vm.resetParameter}
           />
-          <TemplatesPanel templates={vm.templates} state={vm.templatesPanel} onSelect={vm.loadTemplate} />
+          <TemplatesPanel templates={vm.templateRows} state={vm.templatesPanel} onSelect={vm.loadTemplate} />
         </div>
       </div>
     </div>
@@ -144,7 +144,7 @@ function RunResultPanel({ run, panel, consoleLines }: RunResultPanelProps) {
           <div className="flex items-center justify-between gap-2">
             <CardTitle className="flex items-center gap-2 text-base">
               {result.success ? (
-                <CheckCircle2 className="h-4 w-4 text-positive" aria-hidden="true" />
+                <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" />
               ) : (
                 <AlertCircle className="h-4 w-4 text-danger" aria-hidden="true" />
               )}
@@ -159,6 +159,16 @@ function RunResultPanel({ run, panel, consoleLines }: RunResultPanelProps) {
           ) : null}
         </CardHeader>
         <CardContent className="space-y-3">
+          {!panel.hasEvidence ? (
+            <div
+              role={panel.evidenceEmptyRole}
+              aria-live={panel.ariaLive}
+              className={`rounded-md border px-3 py-2 text-sm leading-6 ${emptyEvidenceToneClass[panel.evidenceEmptyTone]}`}
+            >
+              <div className="font-semibold">{panel.evidenceEmptyTitle}</div>
+              <p className="mt-1">{panel.evidenceEmptyDetail}</p>
+            </div>
+          ) : null}
           {panel.hasMetrics ? (
             <div>
               <div className="eyebrow-label mb-1">{panel.metricsLabel}</div>
@@ -206,6 +216,11 @@ function RunResultPanel({ run, panel, consoleLines }: RunResultPanelProps) {
     </div>
   );
 }
+
+const emptyEvidenceToneClass: Record<QuantRunResultPanelState["evidenceEmptyTone"], string> = {
+  warning: "border-warning/30 bg-warning/10 text-warning",
+  danger: "border-danger/30 bg-danger/10 text-danger"
+};
 
 function DiagnosticsBlock({
   label,
@@ -332,9 +347,9 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
 }
 
 interface TemplatesPanelProps {
-  templates: QuantTemplate[];
+  templates: QuantTemplateRow[];
   state: QuantTemplatePanelState;
-  onSelect: (template: QuantTemplate) => void;
+  onSelect: (template: QuantTemplateRow) => void;
 }
 
 function TemplatesPanel({ templates, state, onSelect }: TemplatesPanelProps) {
@@ -364,7 +379,7 @@ function TemplatesPanel({ templates, state, onSelect }: TemplatesPanelProps) {
                   type="button"
                   onClick={() => onSelect(template)}
                   className="w-full rounded-md border border-border/60 bg-background/40 px-3 py-2 text-left text-sm transition-colors hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  aria-label={buildTemplateLoadAriaLabel(template)}
+                  aria-label={template.ariaLabel}
                 >
                   <div className="font-semibold text-foreground">{template.title}</div>
                   <div className="mt-1 text-xs text-muted-foreground">{template.description}</div>

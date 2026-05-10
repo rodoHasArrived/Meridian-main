@@ -475,12 +475,40 @@ describe("operator readiness console view model", () => {
             workspace: "Reporting",
             targetRoute: "/api/workstation/operator/inbox",
             targetPageTag: "ReportPackApproval"
+          },
+          {
+            workItemId: "workstation-prefixed-brokerage",
+            kind: "BrokerageSync",
+            label: "Brokerage sync route",
+            detail: "Review brokerage sync from a host-served workstation route.",
+            tone: "Warning",
+            createdAt: "2026-04-29T12:06:00Z",
+            runId: null,
+            fundAccountId: "fund-1",
+            auditReference: null,
+            workspace: "Portfolio",
+            targetRoute: "/workstation/portfolio/brokerage-sync?fundAccountId=fund-1",
+            targetPageTag: "AccountPortfolio"
+          },
+          {
+            workItemId: "api-brokerage-fallback",
+            kind: "BrokerageSync",
+            label: "API brokerage route should fallback",
+            detail: "Fallback to the browser brokerage sync panel.",
+            tone: "Info",
+            createdAt: "2026-04-29T12:07:00Z",
+            runId: null,
+            fundAccountId: "fund-1",
+            auditReference: null,
+            workspace: "Portfolio",
+            targetRoute: "/api/fund-accounts/fund-1/brokerage-sync",
+            targetPageTag: "AccountPortfolio"
           }
         ],
-        warningCount: 1,
+        warningCount: 2,
         criticalCount: 1,
-        reviewCount: 2,
-        summary: "2 review items need attention."
+        reviewCount: 4,
+        summary: "4 review items need attention."
       },
       inboxLoading: false,
       inboxError: null
@@ -488,21 +516,21 @@ describe("operator readiness console view model", () => {
 
     expect(state.workItems[0].action).toEqual({
       label: "Open Security Master",
-      route: "/data/security-master",
+      route: "/accounting/security-master",
       ariaLabel: "Open Security Master: Security coverage open",
       variant: "secondary"
     });
     expect(state.nextAction).toEqual(expect.objectContaining({
       title: "Security coverage open",
       label: "Open Security Master",
-      route: "/data/security-master",
+      route: "/accounting/security-master",
       level: "blocked"
     }));
     expect(state.overallLevel).toBe("blocked");
     expect(state.overallLabel).toBe("Blocked");
     expect(state.overallDetail).toContain("Trading readiness has not loaded yet");
     expect(state.overallDetail).toContain("1 critical item");
-    expect(state.workItems[1].action).toEqual({
+    expect(state.workItems.find((item) => item.id === "provider-trust")?.action).toEqual({
       label: "Open provider trust",
       route: "/data/providers",
       ariaLabel: "Open provider trust: Provider trust gate review",
@@ -518,6 +546,18 @@ describe("operator readiness console view model", () => {
       label: "Open report packs",
       route: "/reporting",
       ariaLabel: "Open report packs: API route should not render",
+      variant: "outline"
+    });
+    expect(state.workItems.find((item) => item.id === "workstation-prefixed-brokerage")?.action).toEqual({
+      label: "Open brokerage sync",
+      route: "/portfolio/brokerage-sync?fundAccountId=fund-1",
+      ariaLabel: "Open brokerage sync: Brokerage sync route",
+      variant: "outline"
+    });
+    expect(state.workItems.find((item) => item.id === "api-brokerage-fallback")?.action).toEqual({
+      label: "Open brokerage sync",
+      route: "/portfolio/brokerage-sync",
+      ariaLabel: "Open brokerage sync: API brokerage route should fallback",
       variant: "outline"
     });
   });
@@ -584,7 +624,7 @@ describe("operator readiness console view model", () => {
     }));
     expect(state.selectedWorkItemId).toBe("critical-security-gap");
     expect(state.selectedWorkItemDetail?.fields).toEqual(expect.arrayContaining([
-      { label: "Route", value: "/data/security-master" },
+      { label: "Route", value: "/accounting/security-master" },
       { label: "Attention", value: "Blocked" }
     ]));
     expect(state.workItems.map((item) => item.label)).not.toContain("Info item");
@@ -593,7 +633,7 @@ describe("operator readiness console view model", () => {
     expect(state.nextAction).toEqual(expect.objectContaining({
       title: "Critical security coverage gap",
       label: "Open Security Master",
-      route: "/data/security-master",
+      route: "/accounting/security-master",
       level: "blocked"
     }));
   });

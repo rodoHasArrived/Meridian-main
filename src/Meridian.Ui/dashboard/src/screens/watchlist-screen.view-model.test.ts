@@ -74,6 +74,9 @@ describe("watchlist-screen view model", () => {
       eventCountLabel: "1,200",
       historyLabel: "Available",
       quoteHref: "/data/quotes?symbol=AAPL",
+      inspectLabel: "Inspect",
+      inspectAriaLabel: "Inspect AAPL watchlist detail",
+      rowSelectAriaLabel: "Select AAPL watchlist row. AAPL. Status Active.",
       removeLabel: "Removing...",
       removeDisabledReason: "AAPL removal is already running."
     });

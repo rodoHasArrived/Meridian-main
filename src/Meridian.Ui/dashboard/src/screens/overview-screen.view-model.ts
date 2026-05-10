@@ -57,6 +57,21 @@ export interface OverviewPriorityRoute {
   ariaLabel: string;
 }
 
+export type OverviewValueBlockerTone = "default" | "warning" | "danger";
+export type OverviewValueBlockerBadgeVariant = "outline" | "warning" | "danger";
+
+export interface OverviewValueBlocker {
+  id: string;
+  title: string;
+  detail: string;
+  href: string;
+  actionLabel: string;
+  badgeLabel: string;
+  badgeVariant: OverviewValueBlockerBadgeVariant;
+  tone: OverviewValueBlockerTone;
+  ariaLabel: string;
+}
+
 export interface OverviewStatusBannerState {
   role: "status" | "alert";
   ariaLive: "polite" | "assertive";
@@ -74,12 +89,16 @@ export interface OverviewStatusState {
   activityRows: OverviewActivityRow[];
   briefingItems: OverviewBriefingItem[];
   priorityRoutes: OverviewPriorityRoute[];
+  valueBlockers: OverviewValueBlocker[];
   fallbackStats: MetricSnapshot[];
   workspaceLinks: OverviewWorkspaceLink[];
   workspaceSummary: string;
   hasMetrics: boolean;
   hasEvents: boolean;
+  hasValueBlockers: boolean;
   activityListLabel: string;
+  valueBlockerRegionLabel: string;
+  valueBlockerSummary: string;
   statusBanner: OverviewStatusBannerState;
   statusLabel: string;
   providerSummary: string | null;
@@ -119,6 +138,7 @@ export function buildOverviewStatusState({
   const providerSummary = current ? `${current.providersOnline} of ${current.providersTotal} providers online` : null;
   const storageLabel = current ? storageLabels[current.storageHealth] : null;
   const lastHeartbeatLabel = current ? formatTime(current.lastHeartbeatUtc) : null;
+  const valueBlockers = buildOverviewValueBlockers(current, refreshErrorText);
 
   return {
     current,
@@ -134,12 +154,16 @@ export function buildOverviewStatusState({
       refreshErrorText
     }),
     priorityRoutes: buildOverviewPriorityRoutes(workspaceLinks, current),
+    valueBlockers,
     fallbackStats: buildFallbackStats(current),
     workspaceLinks,
     workspaceSummary: "7 canonical operator routes. Legacy routes redirect to their canonical workspaces.",
     hasMetrics: metrics.length > 0,
     hasEvents: activityRows.length > 0,
+    hasValueBlockers: valueBlockers.length > 0,
     activityListLabel: activityRows.length === 1 ? "1 recent system event" : `${activityRows.length} recent system events`,
+    valueBlockerRegionLabel: valueBlockers.length === 1 ? "1 readiness blocker" : `${valueBlockers.length} readiness blockers`,
+    valueBlockerSummary: buildOverviewValueBlockerSummary(valueBlockers),
     statusBanner: buildOverviewStatusBanner({
       current,
       statusLabel,
@@ -276,6 +300,148 @@ export function buildOverviewPriorityRoutes(
     })
     .filter((route): route is OverviewPriorityRoute => route !== null)
     .slice(0, 3);
+}
+
+export function buildOverviewValueBlockers(
+  current: SystemOverviewResponse | null,
+  refreshErrorText: string | null
+): OverviewValueBlocker[] {
+  const blockers: OverviewValueBlocker[] = [];
+
+  if (refreshErrorText) {
+    blockers.push(createOverviewValueBlocker({
+      id: "refresh-failed",
+      title: "Live status refresh failed",
+      detail: refreshErrorText,
+      href: "/settings#backend-capability-coverage",
+      actionLabel: "Review diagnostics",
+      badgeLabel: "Refresh",
+      badgeVariant: "danger",
+      tone: "danger"
+    }));
+  }
+
+  if (!current) {
+    blockers.push(createOverviewValueBlocker({
+      id: "status-unavailable",
+      title: "System posture is still loading",
+      detail: "The workstation has not returned a status payload yet. If this remains blank, review backend capability coverage.",
+      href: "/settings#backend-capability-coverage",
+      actionLabel: "Review diagnostics",
+      badgeLabel: "Waiting",
+      badgeVariant: "warning",
+      tone: "warning"
+    }));
+
+    return blockers;
+  }
+
+  if (current.systemStatus === "Offline") {
+    blockers.push(createOverviewValueBlocker({
+      id: "system-offline",
+      title: "Workstation host is offline",
+      detail: "Operator workflows cannot be trusted until the local host reports online status.",
+      href: "/settings#backend-capability-coverage",
+      actionLabel: "Review diagnostics",
+      badgeLabel: "Offline",
+      badgeVariant: "danger",
+      tone: "danger"
+    }));
+  }
+
+  if (current.providersTotal === 0) {
+    blockers.push(createOverviewValueBlocker({
+      id: "providers-missing",
+      title: "No provider baseline configured",
+      detail: "Connect a paper provider before expecting quotes, backfills, readiness checks, or paper orders to be useful.",
+      href: "/settings#alpaca-provider-setup",
+      actionLabel: "Connect provider",
+      badgeLabel: "Setup",
+      badgeVariant: "danger",
+      tone: "danger"
+    }));
+  } else if (current.providersOnline === 0) {
+    blockers.push(createOverviewValueBlocker({
+      id: "providers-offline",
+      title: "All configured providers are offline",
+      detail: `${current.providersTotal} configured ${pluralize(current.providersTotal, "provider")} need connectivity before market-data workflows are useful.`,
+      href: "/settings#alpaca-provider-setup",
+      actionLabel: "Repair provider",
+      badgeLabel: "Offline",
+      badgeVariant: "danger",
+      tone: "danger"
+    }));
+  } else if (current.providersOnline < current.providersTotal) {
+    const offlineCount = current.providersTotal - current.providersOnline;
+    blockers.push(createOverviewValueBlocker({
+      id: "providers-degraded",
+      title: "Provider baseline is degraded",
+      detail: `${offlineCount} of ${current.providersTotal} ${pluralize(current.providersTotal, "provider")} are offline. Review provider posture before accepting readiness evidence.`,
+      href: "/data/providers",
+      actionLabel: "Review providers",
+      badgeLabel: "Provider",
+      badgeVariant: "warning",
+      tone: "warning"
+    }));
+  }
+
+  if (current.symbolsMonitored === 0) {
+    blockers.push(createOverviewValueBlocker({
+      id: "symbols-empty",
+      title: "No monitored symbols",
+      detail: "Seed a watchlist before validating quotes, historical data, backfills, or paper-trade tickets.",
+      href: "/data/watchlist",
+      actionLabel: "Seed watchlist",
+      badgeLabel: "Symbols",
+      badgeVariant: "warning",
+      tone: "warning"
+    }));
+  }
+
+  if (current.storageHealth === "Critical" || current.storageHealth === "Warning") {
+    blockers.push(createOverviewValueBlocker({
+      id: current.storageHealth === "Critical" ? "storage-critical" : "storage-warning",
+      title: current.storageHealth === "Critical" ? "Storage evidence is critical" : "Storage evidence needs review",
+      detail: current.storageHealth === "Critical"
+        ? "Generated evidence and replay outputs are not safe to trust until storage health recovers."
+        : "Storage is warning. Confirm evidence durability before relying on generated reports or replay packets.",
+      href: "/settings#backend-capability-coverage",
+      actionLabel: "Review storage",
+      badgeLabel: "Storage",
+      badgeVariant: current.storageHealth === "Critical" ? "danger" : "warning",
+      tone: current.storageHealth === "Critical" ? "danger" : "warning"
+    }));
+  }
+
+  if (current.activeBackfills > 0) {
+    blockers.push(createOverviewValueBlocker({
+      id: "backfills-active",
+      title: "Backfill work is still running",
+      detail: `${current.activeBackfills} active ${pluralize(current.activeBackfills, "backfill")} may change data coverage and downstream evidence.`,
+      href: "/data/backfills",
+      actionLabel: "Review backfills",
+      badgeLabel: "Backfill",
+      badgeVariant: "outline",
+      tone: "default"
+    }));
+  }
+
+  const recentEvents = Array.isArray(current.recentEvents) ? current.recentEvents : [];
+  const latestError = recentEvents.find((event) => event.type === "error");
+  if (latestError) {
+    blockers.push(createOverviewValueBlocker({
+      id: `event-${latestError.id}`,
+      title: "Recent system error needs triage",
+      detail: `${latestError.source.trim() || "Unknown source"}: ${latestError.message}`,
+      href: "/settings#backend-capability-coverage",
+      actionLabel: "Review diagnostics",
+      badgeLabel: "Error",
+      badgeVariant: "danger",
+      tone: "danger"
+    }));
+  }
+
+  return blockers.slice(0, 4);
 }
 
 export function buildOverviewBriefingItems({
@@ -467,6 +633,25 @@ const priorityRouteCopy: Record<
   }
 };
 
+function createOverviewValueBlocker(
+  blocker: Omit<OverviewValueBlocker, "ariaLabel">
+): OverviewValueBlocker {
+  return {
+    ...blocker,
+    ariaLabel: `${blocker.title}. ${blocker.detail} ${blocker.actionLabel}.`
+  };
+}
+
+function buildOverviewValueBlockerSummary(blockers: OverviewValueBlocker[]): string {
+  if (blockers.length === 0) {
+    return "No immediate readiness blockers detected. Continue with the priority routes below.";
+  }
+
+  return blockers.length === 1
+    ? "1 blocker needs attention before a confident operator handoff."
+    : `${blockers.length} blockers need attention before a confident operator handoff.`;
+}
+
 function distinctPriorityIds(ids: OverviewPriorityRoute["id"][]): OverviewPriorityRoute["id"][] {
   return ids.filter((id, index) => ids.indexOf(id) === index);
 }
@@ -549,6 +734,10 @@ function activeCountDelta(count: number, singular: string, plural: string): stri
   }
 
   return count === 1 ? `1 active ${singular}` : `${count} active ${plural}`;
+}
+
+function pluralize(count: number, singular: string, plural = `${singular}s`): string {
+  return count === 1 ? singular : plural;
 }
 
 function badgeVariantForWorkspaceStatus(status: string): OverviewWorkspaceLink["badgeVariant"] {

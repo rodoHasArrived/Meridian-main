@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getOperatorInbox } from "@/lib/api";
-import { legacyWorkspaceRedirect, WORKSPACES } from "@/lib/workspace";
+import { normalizeLocalWorkstationRoute } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   DataOperationsProviderRecord,
@@ -163,8 +163,6 @@ export interface OperatorReadinessConsoleServices {
 const defaultServices: OperatorReadinessConsoleServices = {
   getOperatorInbox: (fundAccountId?: string) => getOperatorInbox(fundAccountId)
 };
-
-const workstationWorkspaceKeys = new Set<string>(WORKSPACES.map((workspace) => workspace.key));
 
 export function useOperatorReadinessConsoleViewModel(
   payload: Omit<BuildOperatorReadinessConsoleStateOptions, "operatorInbox" | "inboxLoading" | "inboxError">,
@@ -699,9 +697,7 @@ function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): Readi
 }
 
 function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction | null {
-  const route = item.kind === "SecurityMasterCoverage"
-    ? fallbackRouteForWorkItemKind(item.kind)
-    : normalizeTargetRoute(item.targetRoute) ?? fallbackRouteForWorkItemKind(item.kind);
+  const route = normalizeLocalWorkstationRoute(item.targetRoute) ?? fallbackRouteForWorkItemKind(item.kind);
   if (!route) {
     return null;
   }
@@ -715,30 +711,16 @@ function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction 
   };
 }
 
-function normalizeTargetRoute(route: string | null | undefined): string | null {
-  const trimmed = route?.trim();
-  if (!trimmed || !trimmed.startsWith("/") || trimmed.startsWith("//")) {
-    return null;
-  }
-
-  const canonicalRoute = legacyWorkspaceRedirect(trimmed) ?? trimmed;
-  const routeWorkspace = canonicalRoute.split(/[/?#]/).filter(Boolean)[0];
-  if (!routeWorkspace || !workstationWorkspaceKeys.has(routeWorkspace)) {
-    return null;
-  }
-
-  return canonicalRoute;
-}
-
 function fallbackRouteForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
   switch (kind) {
     case "PaperReplay":
     case "PromotionReview":
-    case "BrokerageSync":
     case "ExecutionControl":
       return "/trading/readiness";
+    case "BrokerageSync":
+      return "/portfolio/brokerage-sync";
     case "SecurityMasterCoverage":
-      return "/data/security-master";
+      return "/accounting/security-master";
     case "ReconciliationBreak":
       return "/accounting/reconciliation";
     case "ReportPackApproval":

@@ -1205,83 +1205,87 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <span className="sr-only" aria-live="polite">{promotionGate.statusAnnouncement}</span>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <label htmlFor="promotion-run-id" className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Run id</span>
+              <label htmlFor={promotionGate.fields.runId.id} className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.runId.label}</span>
                 <input
-                  id="promotion-run-id"
-                  aria-label="Run id"
-                  placeholder="backtest run id"
+                  id={promotionGate.fields.runId.id}
+                  aria-label={promotionGate.fields.runId.ariaLabel}
+                  placeholder={promotionGate.fields.runId.placeholder}
                   value={promotionGate.form.runId}
-                  onChange={(e) => promotionGate.updateField("runId", e.target.value)}
-                  aria-describedby="promotion-run-help promotion-action-state"
+                  onChange={(e) => promotionGate.updateField(promotionGate.fields.runId.field, e.target.value)}
+                  aria-describedby={promotionGate.fields.runId.describedBy ?? undefined}
                   disabled={promotionGate.busy}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
-                <span id="promotion-run-help" className="text-xs text-muted-foreground">Evaluate this run before writing a promotion decision.</span>
+                {promotionGate.fields.runId.helpText ? (
+                  <span id={promotionGate.fields.runId.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.runId.helpText}</span>
+                ) : null}
               </label>
-              <label htmlFor="promotion-operator-id" className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Operator id</span>
+              <label htmlFor={promotionGate.fields.approvedBy.id} className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.approvedBy.label}</span>
                 <input
-                  id="promotion-operator-id"
-                  aria-label="Operator id"
-                  placeholder="operator id"
+                  id={promotionGate.fields.approvedBy.id}
+                  aria-label={promotionGate.fields.approvedBy.ariaLabel}
+                  placeholder={promotionGate.fields.approvedBy.placeholder}
                   value={promotionGate.form.approvedBy}
-                  onChange={(e) => promotionGate.updateField("approvedBy", e.target.value)}
-                  aria-describedby="promotion-action-state"
+                  onChange={(e) => promotionGate.updateField(promotionGate.fields.approvedBy.field, e.target.value)}
+                  aria-describedby={promotionGate.fields.approvedBy.describedBy ?? undefined}
                   disabled={promotionGate.busy}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  required
+                  required={promotionGate.fields.approvedBy.required}
                 />
               </label>
             </div>
-            <label htmlFor="promotion-approval-reason" className="grid gap-1 text-sm">
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Approval reason</span>
+            <label htmlFor={promotionGate.fields.approvalReason.id} className="grid gap-1 text-sm">
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.approvalReason.label}</span>
               <input
-                id="promotion-approval-reason"
-                aria-label="Approval reason"
-                placeholder="why this promotion is approved"
+                id={promotionGate.fields.approvalReason.id}
+                aria-label={promotionGate.fields.approvalReason.ariaLabel}
+                placeholder={promotionGate.fields.approvalReason.placeholder}
                 value={promotionGate.form.approvalReason}
-                onChange={(e) => promotionGate.updateField("approvalReason", e.target.value)}
-                aria-describedby="promotion-action-state"
+                onChange={(e) => promotionGate.updateField(promotionGate.fields.approvalReason.field, e.target.value)}
+                aria-describedby={promotionGate.fields.approvalReason.describedBy ?? undefined}
                 disabled={promotionGate.busy}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                required
+                required={promotionGate.fields.approvalReason.required}
               />
             </label>
-            <label htmlFor="promotion-rejection-reason" className="grid gap-1 text-sm">
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Rejection reason</span>
+            <label htmlFor={promotionGate.fields.rejectionReason.id} className="grid gap-1 text-sm">
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.rejectionReason.label}</span>
               <input
-                id="promotion-rejection-reason"
-                aria-label="Rejection reason"
-                placeholder="why this promotion is rejected"
+                id={promotionGate.fields.rejectionReason.id}
+                aria-label={promotionGate.fields.rejectionReason.ariaLabel}
+                placeholder={promotionGate.fields.rejectionReason.placeholder}
                 value={promotionGate.form.rejectionReason}
-                onChange={(e) => promotionGate.updateField("rejectionReason", e.target.value)}
-                aria-describedby="promotion-action-state"
+                onChange={(e) => promotionGate.updateField(promotionGate.fields.rejectionReason.field, e.target.value)}
+                aria-describedby={promotionGate.fields.rejectionReason.describedBy ?? undefined}
                 disabled={promotionGate.busy}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               />
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
-              <label htmlFor="promotion-review-notes" className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Review notes</span>
+              <label htmlFor={promotionGate.fields.reviewNotes.id} className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.reviewNotes.label}</span>
                 <input
-                  id="promotion-review-notes"
-                  aria-label="Review notes"
-                  placeholder="optional review notes"
+                  id={promotionGate.fields.reviewNotes.id}
+                  aria-label={promotionGate.fields.reviewNotes.ariaLabel}
+                  placeholder={promotionGate.fields.reviewNotes.placeholder}
                   value={promotionGate.form.reviewNotes}
-                  onChange={(e) => promotionGate.updateField("reviewNotes", e.target.value)}
+                  onChange={(e) => promotionGate.updateField(promotionGate.fields.reviewNotes.field, e.target.value)}
+                  aria-describedby={promotionGate.fields.reviewNotes.describedBy ?? undefined}
                   disabled={promotionGate.busy}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
               </label>
-              <label htmlFor="promotion-manual-override" className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Manual override id</span>
+              <label htmlFor={promotionGate.fields.manualOverrideId.id} className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.manualOverrideId.label}</span>
                 <input
-                  id="promotion-manual-override"
-                  aria-label="Manual override id"
-                  placeholder="optional manual override id"
+                  id={promotionGate.fields.manualOverrideId.id}
+                  aria-label={promotionGate.fields.manualOverrideId.ariaLabel}
+                  placeholder={promotionGate.fields.manualOverrideId.placeholder}
                   value={promotionGate.form.manualOverrideId}
-                  onChange={(e) => promotionGate.updateField("manualOverrideId", e.target.value)}
+                  onChange={(e) => promotionGate.updateField(promotionGate.fields.manualOverrideId.field, e.target.value)}
+                  aria-describedby={promotionGate.fields.manualOverrideId.describedBy ?? undefined}
                   disabled={promotionGate.busy}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />

@@ -18,10 +18,27 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
 
   if (!data) {
     return (
-      <Card className="panel-surface">
-        <CardHeader>
-          <CardTitle>{vm.loadingTitle}</CardTitle>
-          <CardDescription>{vm.loadingDetail}</CardDescription>
+      <Card
+        role={vm.loadingState.role}
+        aria-busy={vm.loadingState.ariaBusy}
+        aria-live={vm.loadingState.ariaLive}
+        aria-labelledby={vm.loadingState.titleId}
+        aria-describedby={vm.loadingState.detailId}
+        className="panel-surface border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)]"
+      >
+        <CardHeader className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)] text-[var(--state-pending-fg)]"
+              dot
+            >
+              {vm.loadingState.badgeLabel}
+            </Badge>
+            <ReportingChip label="Route" value={vm.loadingState.routeLabel} />
+          </div>
+          <CardTitle id={vm.loadingState.titleId}>{vm.loadingState.title}</CardTitle>
+          <CardDescription id={vm.loadingState.detailId}>{vm.loadingState.detail}</CardDescription>
         </CardHeader>
       </Card>
     );

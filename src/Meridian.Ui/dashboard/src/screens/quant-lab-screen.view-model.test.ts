@@ -6,7 +6,9 @@ import {
   buildQuantParameters,
   buildRunCommandState,
   buildRunResultPanelState,
+  buildSourceEditorState,
   buildTemplateLoadAriaLabel,
+  buildTemplateRows,
   buildTemplatePanelState,
   buildToolbarItems,
   initializeNewParameterValues,
@@ -62,6 +64,25 @@ const successfulRunState: QuantRunState = {
         heatmapLabels: null
       }
     ],
+    trades: [],
+    runtimeParameters: []
+  }
+};
+
+const noEvidenceSuccessfulRunState: QuantRunState = {
+  phase: "ready",
+  error: null,
+  result: {
+    success: true,
+    elapsedMs: 7.2,
+    compileTimeMs: 18.4,
+    peakMemoryBytes: 1024 * 8,
+    runtimeError: null,
+    consoleOutput: "",
+    compilationErrors: [],
+    runtimeDiagnostics: [],
+    metrics: [],
+    plots: [],
     trades: [],
     runtimeParameters: []
   }
@@ -157,12 +178,28 @@ describe("Quant Lab view model helpers", () => {
   });
 
   it("keeps starter-template action labels in the view model layer", () => {
-    expect(buildTemplateLoadAriaLabel({
+    const template = {
       id: "mean-reversion",
       title: "Mean reversion",
       description: "Rolling z-score signal.",
       source: "PrintMetric(\"z\", 1);"
-    })).toBe("Load Mean reversion template");
+    };
+
+    expect(buildTemplateLoadAriaLabel(template)).toBe("Load Mean reversion template");
+    expect(buildTemplateRows([template])).toEqual([
+      {
+        ...template,
+        ariaLabel: "Load Mean reversion template"
+      }
+    ]);
+    expect(buildSourceEditorState()).toEqual({
+      id: "quant-lab-source",
+      label: "Script source",
+      ariaLabel: "Script source",
+      describedBy: "quant-lab-source-help",
+      helpId: "quant-lab-source-help",
+      helpText: "Source is scanned for runtime parameters after edits settle."
+    });
   });
 
   it("projects parameter panel loading, empty, unavailable, and ready states", () => {
@@ -225,9 +262,22 @@ describe("Quant Lab view model helpers", () => {
       consoleLabel: "Console output",
       plotsDescription: "1 chart returned by this run.",
       hasResult: true,
+      hasEvidence: true,
       hasMetrics: true,
       hasConsoleOutput: true,
       hasPlots: true
+    });
+
+    expect(buildRunResultPanelState(noEvidenceSuccessfulRunState)).toMatchObject({
+      role: "region",
+      ariaLive: "polite",
+      title: "Run succeeded",
+      statusBadgeLabel: "OK",
+      hasResult: true,
+      hasEvidence: false,
+      evidenceEmptyRole: "status",
+      evidenceEmptyTone: "warning",
+      evidenceEmptyTitle: "Run completed without runtime evidence"
     });
 
     expect(buildRunResultPanelState({

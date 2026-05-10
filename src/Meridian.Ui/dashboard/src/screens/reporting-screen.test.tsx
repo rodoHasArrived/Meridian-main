@@ -85,8 +85,20 @@ describe("ReportingScreen", () => {
   it("renders loading copy when governance reporting data is unavailable", () => {
     renderWithRouter(<ReportingScreen data={null} />, { initialEntries: ["/reporting"] });
 
-    expect(screen.getByText("Loading Reporting")).toBeInTheDocument();
+    const loading = screen.getByRole("status", { name: "Loading Reporting" });
+    expect(loading).toHaveAttribute("aria-busy", "true");
+    expect(loading).toHaveAttribute("aria-live", "polite");
+    expect(loading).toHaveClass("border-[var(--state-pending-bd)]", "bg-[var(--state-pending-bg)]");
     expect(screen.getByText(/waiting for governed report-pack and export evidence/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Route Reporting")).toBeInTheDocument();
+  });
+
+  it("renders route-aware loading copy for report packs", () => {
+    renderWithRouter(<ReportingScreen data={null} />, { initialEntries: ["/reporting/report-packs"] });
+
+    const loading = screen.getByRole("status", { name: "Loading Reporting" });
+    expect(loading).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByLabelText("Route Report packs")).toBeInTheDocument();
   });
 
   it("renders report-pack targets with accessible row labels", () => {

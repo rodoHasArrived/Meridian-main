@@ -5,7 +5,7 @@ import {
   getEvidenceSubjects,
   validateEvidencePacket
 } from "@/lib/api";
-import { evidenceWorkbenchPath, legacyWorkspaceRedirect, WORKSPACES, workflowTargetPath } from "@/lib/workspace";
+import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, workflowTargetPath } from "@/lib/workspace";
 import type {
   EvidenceCompleteness,
   EvidenceNode,
@@ -120,7 +120,6 @@ const defaultServices: EvidenceWorkbenchServices = {
   exportManifest: (subjectKind, subjectId) => exportEvidenceManifest(subjectKind, subjectId)
 };
 
-const workstationWorkspaceKeys = new Set<string>(WORKSPACES.map((workspace) => workspace.key));
 const noopReloadEvidence = () => {};
 
 export function useEvidenceWorkbenchViewModel(
@@ -586,44 +585,8 @@ function formatPageTag(value: string) {
   return value.replace(/([a-z])([A-Z])/g, "$1 $2");
 }
 
-function normalizeSubjectRoute(route: string | null | undefined) {
-  const trimmed = route?.trim();
-  if (!trimmed) {
-    return null;
-  }
-
-  const localRoute = trimmed.startsWith("/workstation/")
-    ? trimmed.slice("/workstation".length)
-    : trimmed;
-
-  if (!localRoute.startsWith("/") || localRoute.startsWith("//") || localRoute.startsWith("/api/")) {
-    return null;
-  }
-
-  const { pathname, search, hash } = splitRouteParts(localRoute);
-  const canonicalRoute = legacyWorkspaceRedirect(pathname, search, hash) ?? `${pathname}${search}${hash}`;
-  const routeWorkspace = canonicalRoute.split(/[/?#]/).filter(Boolean)[0];
-  if (!routeWorkspace || !workstationWorkspaceKeys.has(routeWorkspace)) {
-    return null;
-  }
-
-  return canonicalRoute;
-}
-
-function splitRouteParts(route: string): { pathname: string; search: string; hash: string } {
-  const hashIndex = route.indexOf("#");
-  const routeWithoutHash = hashIndex >= 0 ? route.slice(0, hashIndex) : route;
-  const hash = hashIndex >= 0 ? route.slice(hashIndex) : "";
-  const searchIndex = routeWithoutHash.indexOf("?");
-  return {
-    pathname: searchIndex >= 0 ? routeWithoutHash.slice(0, searchIndex) : routeWithoutHash,
-    search: searchIndex >= 0 ? routeWithoutHash.slice(searchIndex) : "",
-    hash
-  };
-}
-
 function resolveSourceWorkflowHref(subject: EvidenceSubject | null) {
-  const directRoute = normalizeSubjectRoute(subject?.route);
+  const directRoute = normalizeLocalWorkstationRoute(subject?.route);
   if (directRoute) {
     return directRoute;
   }

@@ -1162,6 +1162,31 @@ describe("trading promotion gate view model", () => {
 
     expect(ready.canPromote).toBe(true);
     expect(ready.nextActionText).toBe("Promotion trace is ready for confirmation.");
+    expect(ready.fields.runId).toEqual({
+      field: "runId",
+      id: "promotion-run-id",
+      label: "Run id",
+      ariaLabel: "Run id",
+      placeholder: "backtest run id",
+      describedBy: "promotion-run-help promotion-action-state",
+      helpText: "Evaluate this run before writing a promotion decision.",
+      helpId: "promotion-run-help",
+      required: false
+    });
+    expect(ready.fields.approvalReason).toMatchObject({
+      field: "approvalReason",
+      id: "promotion-approval-reason",
+      label: "Approval reason",
+      placeholder: "why this promotion is approved",
+      describedBy: "promotion-action-state",
+      required: true
+    });
+    expect(ready.fields.manualOverrideId).toMatchObject({
+      label: "Manual override id",
+      placeholder: "optional manual override id",
+      describedBy: null,
+      required: false
+    });
     expect(validatePromotionApproval(ready.form, eligibleEvaluation)).toBeNull();
   });
 

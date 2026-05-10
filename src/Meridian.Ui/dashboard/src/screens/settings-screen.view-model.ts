@@ -695,7 +695,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     workspaceLabel: "Accounting",
     route: "/accounting",
     title: "Accounting and reconciliation",
-    description: "Reconciliation run creation, break queues, audit history, calibration summary, cash flow, and ledger drill-ins.",
+    description: "Reconciliation run creation, break queues, audit history, calibration summary, cash flow, ledger drill-ins, and Security Master coverage.",
     isAvailable: (payload) => payload.governance !== null && payload.governance !== undefined,
     unavailableDetail: "Accounting workspace payload has not loaded.",
     endpoints: [
@@ -703,7 +703,8 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
       { id: "recon-runs", method: "POST", label: "Run reconciliation", href: RECONCILIATION_API_ENDPOINTS.runs },
       { id: "break-queue", method: "GET", label: "Break queue", href: RECONCILIATION_API_ENDPOINTS.breakQueue },
       { id: "calibration", method: "GET", label: "Calibration", href: RECONCILIATION_API_ENDPOINTS.calibrationSummary },
-      { id: "break-audit", method: "GET", label: "Break audit", href: `${RECONCILIATION_API_ENDPOINTS.breakQueue}/{breakId}/audit` }
+      { id: "break-audit", method: "GET", label: "Break audit", href: `${RECONCILIATION_API_ENDPOINTS.breakQueue}/{breakId}/audit` },
+      { id: "security-master", method: "GET", label: "Security Master", href: SECURITY_MASTER_API_ENDPOINTS.workstationSecurities }
     ]
   },
   {
@@ -746,14 +747,13 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     workspaceLabel: "Data",
     route: "/data",
     title: "Data trust and provider operations",
-    description: "Provider status, backfill trigger and preview, Security Master, symbols, storage quality, and data-quality queues.",
+    description: "Provider status, backfill trigger and preview, symbols, storage quality, and data-quality queues.",
     isAvailable: (payload) => payload.dataOperations !== null && payload.dataOperations !== undefined,
     unavailableDetail: "Data workspace payload has not loaded.",
     endpoints: [
       { id: "data-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.data },
       { id: "provider-status", method: "GET", label: "Provider status", href: PROVIDER_API_ENDPOINTS.status },
       { id: "backfill-run", method: "POST", label: "Backfill run", href: BACKFILL_API_ENDPOINTS.run },
-      { id: "security-master", method: "GET", label: "Security Master", href: SECURITY_MASTER_API_ENDPOINTS.workstationSecurities },
       { id: "symbols", method: "GET", label: "Symbols", href: SYMBOL_API_ENDPOINTS.symbols },
       { id: "quality-dashboard", method: "GET", label: "Quality", href: QUALITY_API_ENDPOINTS.dashboard }
     ]

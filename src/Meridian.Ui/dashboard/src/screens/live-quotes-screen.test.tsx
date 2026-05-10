@@ -10,6 +10,7 @@ import {
   buildLiveQuotesMarketViewModel,
   buildOrderRequest,
   buildPriceSparklineViewModel,
+  buildQuickTradeTicketViewModel,
   validateQuickTicket
 } from "@/screens/live-quotes-screen.view-model";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
@@ -214,6 +215,57 @@ describe("validateQuickTicket", () => {
       quantity: 10,
       limitPrice: 188.05
     });
+  });
+
+  it("keeps quick-ticket form fields and accessible copy in the view model", () => {
+    const vm = buildQuickTradeTicketViewModel({
+      activeSymbol: "AAPL",
+      ticket: { side: "Buy", type: "Limit", quantity: "", limitPrice: "", phase: "idle", message: null, orderId: null },
+      seedTicket: vi.fn(),
+      updateField: vi.fn(),
+      submitTicket: vi.fn(),
+      resetTicket: vi.fn()
+    });
+
+    expect(vm.formLabel).toBe("Quick trade ticket for AAPL");
+    expect(vm.fields.quantity).toMatchObject({
+      id: "quick-ticket-quantity",
+      label: "Quantity",
+      ariaLabel: "Order quantity in shares",
+      placeholder: "100",
+      describedBy: vm.status.id,
+      inputMode: "numeric",
+      min: 1,
+      step: 1
+    });
+    expect(vm.fields.limitPrice).toMatchObject({
+      id: "quick-ticket-price",
+      label: "Limit price",
+      ariaLabel: "Limit price",
+      placeholder: "0.00",
+      describedBy: vm.status.id,
+      inputMode: "decimal",
+      min: 0,
+      step: "0.01"
+    });
+  });
+
+  it("switches quick-ticket price metadata for market orders", () => {
+    const vm = buildQuickTradeTicketViewModel({
+      activeSymbol: "AAPL",
+      ticket: { side: "Buy", type: "Market", quantity: "10", limitPrice: "", phase: "idle", message: null, orderId: null },
+      seedTicket: vi.fn(),
+      updateField: vi.fn(),
+      submitTicket: vi.fn(),
+      resetTicket: vi.fn()
+    });
+
+    expect(vm.fields.limitPrice).toMatchObject({
+      label: "Price (market)",
+      ariaLabel: "Market order price",
+      placeholder: "Best available"
+    });
+    expect(vm.priceDisabled).toBe(true);
   });
 });
 
@@ -661,6 +713,7 @@ describe("LiveQuotesScreen quick trade", () => {
   });
 
   it("keeps the last market snapshot visible when a manual refresh fails", async () => {
+    vi.spyOn(window, "setInterval").mockReturnValue(0 as unknown as ReturnType<typeof setInterval>);
     vi.mocked(api.getLiveQuote)
       .mockResolvedValueOnce(quoteFixture)
       .mockRejectedValueOnce(new Error("quote feed offline"));
@@ -752,7 +805,7 @@ describe("LiveQuotesScreen quick trade", () => {
     const typeSelect = screen.getByLabelText("Order type");
     await user.selectOptions(typeSelect, "Market");
 
-    const priceInput = screen.getByLabelText("Limit price") as HTMLInputElement;
+    const priceInput = screen.getByLabelText("Market order price") as HTMLInputElement;
     expect(priceInput.disabled).toBe(true);
 
     await user.type(screen.getByLabelText("Order quantity in shares"), "5");
