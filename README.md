@@ -6772,7 +6772,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── dev-fixtures.ts
 │   │   │   │   │   ├── utils.ts
 │   │   │   │   │   ├── workspace.test.ts
-│   │   │   │   │   └── workspace.ts
+│   │   │   │   │   ├── workspace.ts
+│   │   │   │   │   ├── workstation-endpoints.test.ts
+│   │   │   │   │   └── workstation-endpoints.ts
 │   │   │   │   ├── main.tsx
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── data-operations-screen.security-master.ts
@@ -6841,8 +6843,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-BFzDDbOY.css
-│   │           │   └── index-bfzie5tL.js
+│   │           │   ├── index-B91Yvz3c.js
+│   │           │   └── index-BgcRAU_T.css
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8398,6 +8400,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-672 directories, 7543 files
+672 directories, 7545 files
 ```
 <!-- readme-tree end -->
