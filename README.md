@@ -713,6 +713,7 @@ Use these documents together when planning or implementing new work:
 ├── LICENSE
 ├── Makefile
 ├── Meridian Design System
+│   ├── BRAND_GUIDELINES.md
 │   ├── CONTENT_FUNDAMENTALS.md
 │   ├── ICONOGRAPHY.md
 │   ├── INSPIRATION_BRIEF.md
@@ -722,10 +723,15 @@ Use these documents together when planning or implementing new work:
 │   ├── assets
 │   │   ├── app.ico
 │   │   ├── brand
+│   │   │   ├── README.md
 │   │   │   ├── meridian-hero.svg
+│   │   │   ├── meridian-mark-light.svg
+│   │   │   ├── meridian-mark-monochrome.svg
 │   │   │   ├── meridian-mark.svg
+│   │   │   ├── meridian-symbol.svg
 │   │   │   ├── meridian-tile-256.png
 │   │   │   ├── meridian-tile.svg
+│   │   │   ├── meridian-wordmark-stacked.svg
 │   │   │   └── meridian-wordmark.svg
 │   │   └── icons
 │   │       ├── README.md
@@ -8400,6 +8406,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-672 directories, 7545 files
+672 directories, 7551 files
 ```
 <!-- readme-tree end -->
