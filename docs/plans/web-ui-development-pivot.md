@@ -93,7 +93,9 @@ source-workflow links should prefer packet subject routes, but fall back to shar
 when the evidence payload omits a direct route or returns a non-workstation/API route. Evidence
 Workbench packet validation and manifest export controls should expose disabled/busy state from the
 view model and use per-command revision guards so overlapping same-subject completions cannot
-replace newer results. Settings capability coverage should keep concrete
+replace newer results. Evidence Workbench load failures should remain visibly recoverable through
+the view-model retry command and must not render the no-subjects empty state while the API failure
+is unresolved. Settings capability coverage should keep concrete
 GET endpoints as browser-openable evidence links and show templated GET plus POST/PUT/DELETE
 endpoints as reference-only rows, so operators do not open placeholder URLs or trigger confusing
 browser GETs against mutating API routes.

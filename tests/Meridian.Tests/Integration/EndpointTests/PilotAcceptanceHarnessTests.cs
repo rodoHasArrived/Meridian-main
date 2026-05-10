@@ -142,17 +142,8 @@ public sealed class PilotAcceptanceHarnessTests
         var ledgerJournalRoute = $"/api/workstation/runs/{Uri.EscapeDataString(seed.PaperRunId)}/ledger/journal";
         var ledgerTrialBalanceRoute = $"/api/workstation/runs/{Uri.EscapeDataString(seed.PaperRunId)}/ledger/trial-balance";
         ledgerNode.Status.Should().Be(EvidenceStatusDto.Ready);
-        ledgerNode.ArtifactRefs.Should().HaveCount(2);
-        ledgerNode.ArtifactRefs.Should().Contain(artifact =>
-            artifact.Kind == "ledger-journal" &&
-            artifact.Route == ledgerJournalRoute &&
-            artifact.Path == null &&
-            artifact.Hash == null);
-        ledgerNode.ArtifactRefs.Should().Contain(artifact =>
-            artifact.Kind == "ledger-trial-balance" &&
-            artifact.Route == ledgerTrialBalanceRoute &&
-            artifact.Path == null &&
-            artifact.Hash == null);
+        var ledgerArtifactRefs = ledgerNode.ArtifactRefs;
+        AssertLedgerArtifactRefs(ledgerArtifactRefs, ledgerJournalRoute, ledgerTrialBalanceRoute);
 
         var reportPackResponse = await client.PostAsJsonAsync(
             "/api/fund-structure/report-packs",
@@ -207,7 +198,10 @@ public sealed class PilotAcceptanceHarnessTests
             ReportPackId: reportPack.ReportId.ToString("D"),
             ReportPackRelatedRunIds: reportPack.Provenance.RelatedRunIds,
             StageGates: stageGates,
-            EvidenceGraph: evidenceGraph);
+            EvidenceGraph: evidenceGraph)
+        {
+            LedgerArtifactRefs = ledgerArtifactRefs
+        };
 
         var artifactPath = await WritePilotReadinessArtifactAsync(artifact);
         using var artifactDocument = await JsonDocument.ParseAsync(File.OpenRead(artifactPath));
@@ -215,6 +209,7 @@ public sealed class PilotAcceptanceHarnessTests
         artifactDocument.RootElement.GetProperty("paperSessionId").GetString().Should().Be(session.SessionId);
         artifactDocument.RootElement.GetProperty("portfolioEvidenceId").GetString().Should().Be(portfolioEvidenceId);
         artifactDocument.RootElement.GetProperty("ledgerEvidenceId").GetString().Should().Be(ledgerEvidenceId);
+        AssertSerializedLedgerArtifactRefs(artifactDocument.RootElement, ledgerJournalRoute, ledgerTrialBalanceRoute);
         artifactDocument.RootElement.GetProperty("allStagesReady").GetBoolean().Should().BeTrue();
         artifactDocument.RootElement.GetProperty("readyStageCount").GetInt32().Should().Be(8);
         var stageNames = artifactDocument.RootElement.GetProperty("stageGates")
@@ -692,6 +687,46 @@ public sealed class PilotAcceptanceHarnessTests
             }));
         return artifactPath;
     }
+
+    private static void AssertLedgerArtifactRefs(
+        IReadOnlyList<EvidenceArtifactRefDto> artifactRefs,
+        string ledgerJournalRoute,
+        string ledgerTrialBalanceRoute)
+    {
+        artifactRefs.Should().HaveCount(2);
+        artifactRefs.Should().Contain(artifact =>
+            artifact.Kind == "ledger-journal" &&
+            artifact.Route == ledgerJournalRoute &&
+            artifact.Path == null &&
+            artifact.Hash == null);
+        artifactRefs.Should().Contain(artifact =>
+            artifact.Kind == "ledger-trial-balance" &&
+            artifact.Route == ledgerTrialBalanceRoute &&
+            artifact.Path == null &&
+            artifact.Hash == null);
+    }
+
+    private static void AssertSerializedLedgerArtifactRefs(
+        JsonElement artifactRoot,
+        string ledgerJournalRoute,
+        string ledgerTrialBalanceRoute)
+    {
+        var ledgerArtifactRefs = artifactRoot.GetProperty("ledgerArtifactRefs")
+            .EnumerateArray()
+            .ToArray();
+
+        ledgerArtifactRefs.Should().HaveCount(2);
+        ledgerArtifactRefs.Should().Contain(artifact =>
+            IsSerializedLedgerArtifact(artifact, "ledger-journal", ledgerJournalRoute));
+        ledgerArtifactRefs.Should().Contain(artifact =>
+            IsSerializedLedgerArtifact(artifact, "ledger-trial-balance", ledgerTrialBalanceRoute));
+    }
+
+    private static bool IsSerializedLedgerArtifact(JsonElement artifact, string kind, string route)
+        => artifact.GetProperty("kind").GetString() == kind &&
+           artifact.GetProperty("route").GetString() == route &&
+           artifact.GetProperty("path").ValueKind == JsonValueKind.Null &&
+           artifact.GetProperty("hash").ValueKind == JsonValueKind.Null;
 
     private static string FindRepositoryRoot()
     {

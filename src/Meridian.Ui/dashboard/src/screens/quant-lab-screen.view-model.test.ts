@@ -6,6 +6,7 @@ import {
   buildQuantParameters,
   buildRunCommandState,
   buildRunResultPanelState,
+  buildTemplateLoadAriaLabel,
   buildTemplatePanelState,
   buildToolbarItems,
   initializeNewParameterValues,
@@ -122,6 +123,9 @@ describe("Quant Lab view model helpers", () => {
 
   it("projects loading, empty, and error template states into accessible panel copy", () => {
     expect(buildTemplatePanelState("loading", null)).toMatchObject({
+      title: "Starter templates",
+      description: "Load a working snippet to verify the lab end-to-end.",
+      listLabel: "Starter templates",
       role: "status",
       ariaLive: "polite",
       message: "Loading starter templates..."
@@ -147,8 +151,18 @@ describe("Quant Lab view model helpers", () => {
       max: 252,
       step: "1",
       isDefault: false,
-      resetLabel: "Reset Lookback to default"
+      resetLabel: "Reset Lookback to default",
+      resetText: "Reset to default"
     });
+  });
+
+  it("keeps starter-template action labels in the view model layer", () => {
+    expect(buildTemplateLoadAriaLabel({
+      id: "mean-reversion",
+      title: "Mean reversion",
+      description: "Rolling z-score signal.",
+      source: "PrintMetric(\"z\", 1);"
+    })).toBe("Load Mean reversion template");
   });
 
   it("projects parameter panel loading, empty, unavailable, and ready states", () => {

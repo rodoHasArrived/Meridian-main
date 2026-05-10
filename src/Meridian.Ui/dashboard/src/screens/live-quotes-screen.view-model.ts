@@ -281,7 +281,18 @@ export function useLiveQuotesScreenViewModel(
   const [refreshing, setRefreshing] = useState(false);
   const requestIdRef = useRef(0);
   const inFlightSymbolRef = useRef<string | null>(null);
+  const mountedRef = useRef(true);
   const quickTrade = useQuickTradeTicket(activeSymbol, { submitOrder: api.submitOrder });
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      requestIdRef.current += 1;
+      inFlightSymbolRef.current = null;
+    };
+  }, []);
 
   const resetMarketState = useCallback(() => {
     setQuote({ data: null, error: null });
@@ -307,7 +318,7 @@ export function useLiveQuotesScreenViewModel(
         api.getLiveOrderbook(requestedSymbol, 10)
       ]);
 
-      if (requestIdRef.current !== requestId) {
+      if (!mountedRef.current || requestIdRef.current !== requestId) {
         return;
       }
 
@@ -315,7 +326,7 @@ export function useLiveQuotesScreenViewModel(
       setTrades((current) => mergeLiveQuotesLoadState(tradesResult, current, "Failed to load trades"));
       setOrderbook((current) => mergeLiveQuotesLoadState(orderbookResult, current, "Failed to load order book"));
     } finally {
-      if (requestIdRef.current === requestId) {
+      if (mountedRef.current && requestIdRef.current === requestId) {
         inFlightSymbolRef.current = null;
         setRefreshing(false);
       }

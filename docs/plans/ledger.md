@@ -60,6 +60,10 @@ existing `run-ledger` node. The references point to the run ledger journal and t
 workstation endpoints; they are route-only until a retained ledger export or manifest flow owns a
 file path and content hash.
 
+The pilot readiness artifact now carries the same `ledgerArtifactRefs` collection so CI evidence
+can prove the ledger journal and trial-balance routes are present while keeping `path` and `hash`
+null. The dashboard treats a missing or non-route-only ledger artifact ref as a golden-path gap.
+
 ### `src/Meridian.FSharp.Ledger/` — F# accounting kernel
 
 | File | Purpose |

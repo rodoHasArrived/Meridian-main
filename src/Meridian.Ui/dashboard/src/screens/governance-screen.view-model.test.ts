@@ -8,6 +8,7 @@ import {
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
   buildReconciliationDetailActions,
+  buildReconciliationDetailViewState,
   buildReconciliationNarrative,
   buildReconciliationResolveDialogState,
   buildSecurityConflictRows,
@@ -601,6 +602,23 @@ describe("governance-screen view model", () => {
   it("keeps reconciliation narratives in the view model", () => {
     expect(buildReconciliationNarrative(reconciliationQueue[0])).toContain("Open reconciliation breaks remain");
     expect(buildReconciliationNarrative({ ...reconciliationQueue[0], reconciliationStatus: "Balanced" })).toContain("currently balanced");
+  });
+
+  it("derives reconciliation detail presentation state", () => {
+    expect(buildReconciliationDetailViewState(reconciliationQueue[0])).toMatchObject({
+      eyebrow: "Reconciliation detail",
+      title: "Paper Index Mean Reversion",
+      description: "run-42 is currently BreaksOpen.",
+      ariaLabel: "Reconciliation detail for Paper Index Mean Reversion",
+      narrativeLabel: "Reconciliation narrative for Paper Index Mean Reversion",
+      fields: [
+        { label: "Mode", value: "PAPER", tone: "default", ariaLabel: "Mode: PAPER" },
+        { label: "Run status", value: "Running", tone: "default", ariaLabel: "Run status: Running" },
+        { label: "Break count", value: "2", tone: "default", ariaLabel: "Break count: 2" },
+        { label: "Open breaks", value: "1", tone: "warning", ariaLabel: "Open breaks: 1" },
+        { label: "Last updated", value: "3m ago", tone: "default", ariaLabel: "Last updated: 3m ago" }
+      ]
+    });
   });
 
   it("derives reconciliation detail actions from the selected run", () => {

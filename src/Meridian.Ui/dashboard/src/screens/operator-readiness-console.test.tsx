@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 import * as api from "@/lib/api";
 import { OperatorReadinessConsole } from "@/screens/operator-readiness-console";
@@ -166,7 +166,8 @@ describe("OperatorReadinessConsole", () => {
     expect(screen.getByRole("region", { name: "Readiness control strip" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Shared readiness API sources" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Latest runs readiness evidence" })).toBeInTheDocument();
-    expect(screen.getByRole("list", { name: "Prioritized operator work items" })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Prioritized operator work items table" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Selected operator work item detail" })).toBeInTheDocument();
     expect(screen.getAllByRole("group", { name: /Promotion checklist incomplete: Warning/i }).length).toBeGreaterThan(0);
     await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledWith(undefined));
   });
@@ -186,7 +187,7 @@ describe("OperatorReadinessConsole", () => {
       { initialEntries: ["/trading/readiness"] }
     );
 
-    await screen.findByRole("list", { name: "Prioritized operator work items" });
+    await screen.findByRole("table", { name: "Prioritized operator work items table" });
     await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledWith("fund-1"));
   });
 
@@ -219,5 +220,36 @@ describe("OperatorReadinessConsole", () => {
     expect(screen.getByRole("group", { name: /Primary next action: Critical security coverage gap/i })).toBeInTheDocument();
     expect(screen.getByText("Showing 6 of 7 operator work items; 1 critical item, 6 warnings. Critical items sort first.")).toBeInTheDocument();
     expect(screen.getByText("1 additional work item hidden from this view after priority sorting.")).toBeInTheDocument();
+  });
+
+  it("uses a selectable dense table and updates the detail panel for operator work items", async () => {
+    vi.spyOn(api, "getOperatorInbox").mockResolvedValueOnce({
+      ...inbox,
+      items: [criticalItem, ...warningItems],
+      criticalCount: 1,
+      warningCount: 6,
+      reviewCount: 7,
+      summary: "7 review items need attention."
+    });
+
+    renderWithRouter(
+      <OperatorReadinessConsole
+        research={null}
+        trading={null}
+        dataOperations={null}
+        governance={null}
+        reporting={null}
+      />,
+      { initialEntries: ["/trading/readiness"] }
+    );
+
+    const detail = await screen.findByRole("region", { name: "Selected operator work item detail" });
+    expect(within(detail).getByRole("heading", { name: "Critical security coverage gap" })).toBeInTheDocument();
+
+    const warningRow = screen.getByRole("row", { name: "Select operator work item Warning item 5" });
+    fireEvent.keyDown(warningRow, { key: "Enter" });
+
+    expect(within(detail).getByRole("heading", { name: "Warning item 5" })).toBeInTheDocument();
+    expect(within(detail).getByRole("link", { name: "Open report packs: Warning item 5" })).toHaveAttribute("href", "/reporting");
   });
 });

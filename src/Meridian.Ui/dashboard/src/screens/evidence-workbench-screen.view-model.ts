@@ -67,6 +67,7 @@ export interface EvidenceWorkbenchViewModel {
   subtitle: string;
   loading: boolean;
   error: string | null;
+  showSubjectPicker: boolean;
   hasSelection: boolean;
   hasPacket: boolean;
   hasSubjects: boolean;
@@ -97,6 +98,7 @@ export interface EvidenceWorkbenchViewModel {
   relatedWorkItemIds: string[];
   warnings: string[];
   canExport: boolean;
+  reloadCommand: EvidenceWorkbenchCommandState;
   validateCommand: EvidenceWorkbenchCommandState;
   exportCommand: EvidenceWorkbenchCommandState;
   exportBusy: boolean;
@@ -104,6 +106,7 @@ export interface EvidenceWorkbenchViewModel {
   validateBusy: boolean;
   validationResult: EvidenceCompleteness | null;
   openSubjectHref: (subject: EvidenceSubject) => string;
+  reloadEvidence: () => void;
   exportManifest: () => Promise<void>;
   validatePacket: () => Promise<void>;
 }
@@ -118,6 +121,7 @@ const defaultServices: EvidenceWorkbenchServices = {
 };
 
 const workstationWorkspaceKeys = new Set<string>(WORKSPACES.map((workspace) => workspace.key));
+const noopReloadEvidence = () => {};
 
 export function useEvidenceWorkbenchViewModel(
   search: string,
@@ -134,6 +138,7 @@ export function useEvidenceWorkbenchViewModel(
   const [exportResult, setExportResult] = useState<EvidencePacketExportResponse | null>(null);
   const [validateBusy, setValidateBusy] = useState(false);
   const [validationResult, setValidationResult] = useState<EvidenceCompleteness | null>(null);
+  const [reloadRevision, setReloadRevision] = useState(0);
   const requestRevisionRef = useRef(0);
   const validateCommandRevisionRef = useRef(0);
   const exportCommandRevisionRef = useRef(0);
@@ -184,7 +189,7 @@ export function useEvidenceWorkbenchViewModel(
       validateCommandRevisionRef.current += 1;
       exportCommandRevisionRef.current += 1;
     };
-  }, [selectedSubjectId, selectedSubjectKind, services]);
+  }, [reloadRevision, selectedSubjectId, selectedSubjectKind, services]);
 
   const exportCommand = async () => {
     if (!selectedSubjectKind || !selectedSubjectId) {
@@ -240,6 +245,14 @@ export function useEvidenceWorkbenchViewModel(
     }
   };
 
+  const reloadEvidence = () => {
+    if (loading) {
+      return;
+    }
+
+    setReloadRevision((revision) => revision + 1);
+  };
+
   return buildEvidenceWorkbenchViewModel({
     selectedSubjectKind,
     selectedSubjectId,
@@ -251,6 +264,7 @@ export function useEvidenceWorkbenchViewModel(
     exportResult,
     validateBusy,
     validationResult,
+    reloadEvidence,
     exportManifest: exportCommand,
     validatePacket: validateCommand
   });
@@ -267,6 +281,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
   exportResult: EvidencePacketExportResponse | null;
   validateBusy: boolean;
   validationResult: EvidenceCompleteness | null;
+  reloadEvidence?: () => void;
   exportManifest: () => Promise<void>;
   validatePacket: () => Promise<void>;
 }): EvidenceWorkbenchViewModel {
@@ -275,6 +290,12 @@ export function buildEvidenceWorkbenchViewModel(input: {
   const subject = input.packet?.subject ?? null;
   const sourceWorkflowHref = resolveSourceWorkflowHref(subject);
   const subjectLabel = subject?.label ?? "selected evidence subject";
+  const reloadCommand = buildReloadCommand(
+    input.loading,
+    hasSelection,
+    input.selectedSubjectKind,
+    input.selectedSubjectId
+  );
   const validateCommand = buildPrimaryActionCommand(
     "validate",
     subjectLabel,
@@ -304,6 +325,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
         : "Choose a workflow subject to inspect packet completeness and lineage.",
     loading: input.loading,
     error: input.error,
+    showSubjectPicker: !hasSelection && input.error === null,
     hasSelection,
     hasPacket: input.packet !== null,
     hasSubjects: input.subjects.length > 0,
@@ -336,6 +358,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     relatedWorkItemIds: collectWorkItemIds(input.packet?.nodes ?? []),
     warnings: input.packet?.warnings ?? [],
     canExport: input.packet !== null && !input.exportBusy,
+    reloadCommand,
     validateCommand,
     exportCommand,
     exportBusy: input.exportBusy,
@@ -344,6 +367,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     validationResult: input.validationResult,
     openSubjectHref: (subject) =>
       evidenceWorkbenchPath(subject.subjectKind, subject.subjectId),
+    reloadEvidence: input.reloadEvidence ?? noopReloadEvidence,
     exportManifest: input.exportManifest,
     validatePacket: input.validatePacket
   };
@@ -495,6 +519,27 @@ function buildActionCommand(
         disabledReason: null
       };
   }
+}
+
+function buildReloadCommand(
+  loading: boolean,
+  hasSelection: boolean,
+  selectedSubjectKind: string | null,
+  selectedSubjectId: string | null
+): EvidenceWorkbenchCommandState {
+  const targetLabel = hasSelection && selectedSubjectKind && selectedSubjectId
+    ? `evidence packet for ${selectedSubjectKind}/${selectedSubjectId}`
+    : "evidence subjects";
+
+  return {
+    commandLabel: "Retry",
+    label: loading ? "Retrying" : "Retry",
+    ariaLabel: `Retry loading ${targetLabel}`,
+    busy: loading,
+    busyLabel: "Retrying",
+    disabled: loading,
+    disabledReason: loading ? "Evidence load is already running." : null
+  };
 }
 
 function buildPrimaryActionCommand(

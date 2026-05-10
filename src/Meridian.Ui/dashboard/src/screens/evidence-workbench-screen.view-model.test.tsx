@@ -226,6 +226,7 @@ describe("Evidence Workbench view model", () => {
     });
 
     expect(loading.loading).toBe(true);
+    expect(loading.showSubjectPicker).toBe(true);
     expect(loading.hasSelection).toBe(false);
     expect(loading.hasSubjects).toBe(false);
     expect(loading.loadingLabel).toBe("Loading evidence subjects.");
@@ -233,7 +234,41 @@ describe("Evidence Workbench view model", () => {
     expect(loading.subjectEmptyTitle).toBe("No evidence subjects returned");
     expect(loading.subjectEmptyActionHref).toBe("/trading/readiness");
     expect(loading.title).toBe("Evidence Workbench");
+    expect(loading.reloadCommand).toMatchObject({
+      label: "Retrying",
+      ariaLabel: "Retry loading evidence subjects",
+      busy: true,
+      disabled: true,
+      disabledReason: "Evidence load is already running."
+    });
     expect(loading.openSubjectHref(subject)).toBe("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
+  });
+
+  it("keeps load failures recoverable without rendering them as empty evidence", () => {
+    const vm = buildEvidenceWorkbenchViewModel({
+      selectedSubjectKind: null,
+      selectedSubjectId: null,
+      loading: false,
+      error: "Evidence API unavailable",
+      subjects: [],
+      packet: null,
+      exportBusy: false,
+      exportResult: null,
+      validateBusy: false,
+      validationResult: null,
+      exportManifest: vi.fn(),
+      validatePacket: vi.fn()
+    });
+
+    expect(vm.showSubjectPicker).toBe(false);
+    expect(vm.subjectEmptyTitle).toBe("No evidence subjects returned");
+    expect(vm.reloadCommand).toMatchObject({
+      label: "Retry",
+      ariaLabel: "Retry loading evidence subjects",
+      busy: false,
+      disabled: false,
+      disabledReason: null
+    });
   });
 
   it("falls back to page-tag routing when evidence subjects omit a direct route", () => {
@@ -527,6 +562,28 @@ describe("EvidenceWorkbenchScreen", () => {
       "href",
       "/trading/readiness"
     );
+    await waitFor(() => expect(getEvidencePacket).not.toHaveBeenCalled());
+  });
+
+  it("lets operators retry a failed subject load without showing empty evidence copy", async () => {
+    vi.mocked(getEvidenceSubjects)
+      .mockRejectedValueOnce(new Error("Evidence API unavailable"))
+      .mockResolvedValueOnce([subject]);
+    vi.mocked(getEvidencePacket).mockResolvedValue(packet);
+    const user = userEvent.setup();
+
+    renderEvidenceRoute("/reporting/evidence");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Evidence API unavailable");
+    expect(screen.queryByText("No evidence subjects returned")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /retry loading evidence subjects/i }));
+
+    expect(await screen.findByRole("link", { name: /Momentum strategy run/i })).toHaveAttribute(
+      "href",
+      "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1"
+    );
+    await waitFor(() => expect(getEvidenceSubjects).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(getEvidencePacket).not.toHaveBeenCalled());
   });
 });

@@ -19,6 +19,9 @@ operator actions.
   ledger summary exists: `ledger-journal` routes to
   `/api/workstation/runs/{runId}/ledger/journal`, and `ledger-trial-balance` routes to
   `/api/workstation/runs/{runId}/ledger/trial-balance`.
+- The pilot readiness artifact carries those same ledger artifact refs so the golden-path CI
+  dashboard can prove ledger evidence is both present and route-only without fetching route content
+  or reading server-side journal files.
 
 ## Workstation API
 

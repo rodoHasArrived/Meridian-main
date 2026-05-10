@@ -327,6 +327,42 @@ describe("watchlist-screen view model", () => {
     ]);
   });
 
+  it("queues the latest quote snapshot when symbols change during an in-flight refresh", async () => {
+    const slowQuote = deferred<{ quotes: QuotesSnapshotItem[] }>();
+    const latestQuote = deferred<{ quotes: QuotesSnapshotItem[] }>();
+    const api = createWatchlistApi();
+    api.getSymbols = vi.fn()
+      .mockResolvedValueOnce([{ ...symbols[1], symbol: "AAPL" }])
+      .mockResolvedValueOnce([{ ...symbols[0], symbol: "MSFT" }]);
+    api.getLiveQuotesSnapshot = vi.fn()
+      .mockReturnValueOnce(slowQuote.promise)
+      .mockReturnValueOnce(latestQuote.promise);
+
+    const { result } = renderHook(() => useWatchlistScreenViewModel(api));
+    await waitFor(() => expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["AAPL"]));
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+    expect(result.current.rows.map((row) => row.symbol)).toEqual(["MSFT"]);
+
+    await act(async () => {
+      slowQuote.resolve({ quotes: [quote] });
+      await slowQuote.promise;
+    });
+
+    await waitFor(() => expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["MSFT"]));
+
+    await act(async () => {
+      latestQuote.resolve({ quotes: [{ ...quote, symbol: "MSFT" }] });
+      await latestQuote.promise;
+    });
+
+    await waitFor(() => expect(result.current.rows[0]).toEqual(
+      expect.objectContaining({ symbol: "MSFT", hasQuote: true })
+    ));
+  });
+
   it("keeps a selected watchlist row and falls back when the row disappears", async () => {
     const api = createWatchlistApi();
     api.getSymbols = vi.fn()

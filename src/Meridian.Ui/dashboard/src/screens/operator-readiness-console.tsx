@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { cn } from "@/lib/utils";
 import {
@@ -10,7 +11,8 @@ import {
   type ReadinessConsolePanel,
   type ReadinessConsoleLevel,
   type ReadinessConsoleNextAction,
-  type ReadinessConsoleRow
+  type ReadinessConsoleRow,
+  type ReadinessConsoleSelectedWorkItemDetail
 } from "@/screens/operator-readiness-console.view-model";
 import type {
   DataOperationsWorkspaceResponse,
@@ -49,6 +51,36 @@ const panelIcons: Record<ReadinessConsolePanel["id"], typeof ShieldCheck> = {
   "promotion-blockers": ShieldCheck,
   "governance-report-packs": FileCheck2
 };
+
+const workItemColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
+  {
+    id: "item",
+    label: "Work item",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.label}</span>
+        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.id}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => <Badge variant={levelBadge[row.level]} aria-label={row.statusAriaLabel}>{row.value}</Badge>
+  },
+  {
+    id: "target",
+    label: "Target",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-medium text-foreground">{row.action?.label ?? "Review item"}</span>
+        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">
+          {row.action?.route ?? row.meta}
+        </span>
+      </span>
+    )
+  }
+];
 
 export function OperatorReadinessConsole({
   research,
@@ -208,12 +240,20 @@ export function OperatorReadinessConsole({
             </p>
           ) : null}
           {vm.workItems.length > 0 ? (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="list" aria-label={vm.workItemsListLabel}>
-              {vm.workItems.map((item) => (
-                <div key={item.id} role="listitem">
-                  <ReadinessRow row={item} />
-                </div>
-              ))}
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+              <DenseDataTable
+                columns={workItemColumns}
+                rows={vm.workItems}
+                getRowId={(row) => row.id}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                getRowSelectAriaLabel={(row) => `Select operator work item ${row.label}`}
+                onRowSelect={(row) => vm.selectWorkItem(row.id)}
+                selectedRowId={vm.selectedWorkItemId}
+                emptyText={vm.workItemsSummary}
+                ariaLabel={vm.workItemsTableLabel}
+                caption={vm.workItemsListLabel}
+              />
+              <SelectedWorkItemDetail detail={vm.selectedWorkItemDetail} ariaLabel={vm.workItemsDetailLabel} />
             </div>
           ) : (
             <EmptyConsoleState text="No operator work items returned." />
@@ -221,6 +261,60 @@ export function OperatorReadinessConsole({
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function SelectedWorkItemDetail({
+  detail,
+  ariaLabel
+}: {
+  detail: ReadinessConsoleSelectedWorkItemDetail | null;
+  ariaLabel: string;
+}) {
+  if (!detail) {
+    return <EmptyConsoleState text="Select a work item to inspect its routing and evidence." />;
+  }
+
+  return (
+    <aside
+      className="row-detail-panel h-fit min-w-0"
+      role="region"
+      aria-label={ariaLabel}
+      aria-live="polite"
+    >
+      <div className="head flex items-center justify-between gap-3">
+        <span>Selected work item</span>
+        <Badge variant={levelBadge[detail.level]} aria-label={detail.statusAriaLabel}>{detail.statusLabel}</Badge>
+      </div>
+      <div className="body">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
+          <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
+          <p className="mt-2 break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
+        </div>
+        <dl className="mt-3 grid gap-2">
+          {detail.fields.map((field) => (
+            <div
+              key={field.label}
+              className="grid grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+            >
+              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+              <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
+            </div>
+          ))}
+        </dl>
+        {detail.action ? (
+          <div className="mt-3">
+            <Button asChild variant={detail.action.variant} size="sm">
+              <Link to={detail.action.route} aria-label={detail.action.ariaLabel}>
+                {detail.action.label}
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        ) : null}
+      </div>
+    </aside>
   );
 }
 

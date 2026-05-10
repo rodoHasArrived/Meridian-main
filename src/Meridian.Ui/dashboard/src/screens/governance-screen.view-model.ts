@@ -275,6 +275,23 @@ export interface ReconciliationDetailActionsViewModel {
 
 export type CashFlowEvidenceTone = "default" | "success" | "warning" | "danger";
 
+export interface ReconciliationDetailFieldViewModel {
+  label: string;
+  value: string;
+  tone: CashFlowEvidenceTone;
+  ariaLabel: string;
+}
+
+export interface ReconciliationDetailViewState {
+  eyebrow: string;
+  title: string;
+  description: string;
+  ariaLabel: string;
+  narrative: string;
+  narrativeLabel: string;
+  fields: ReconciliationDetailFieldViewModel[];
+}
+
 export interface GovernanceCashFlowRowViewModel {
   id: string;
   label: string;
@@ -959,6 +976,10 @@ export function useGovernanceReconciliationViewModel(
     () => selectedReconciliation ? buildReconciliationDetailActions(selectedReconciliation) : null,
     [selectedReconciliation]
   );
+  const detailView = useMemo(
+    () => selectedReconciliation ? buildReconciliationDetailViewState(selectedReconciliation) : null,
+    [selectedReconciliation]
+  );
 
   return {
     reconciliationQueue,
@@ -966,6 +987,7 @@ export function useGovernanceReconciliationViewModel(
     selectedReconciliation,
     selectRun: setSelectedRunId,
     detailActions,
+    detailView,
     trialBalance,
     trialBalanceLoading,
     trialBalanceErrorText: trialBalanceError,
@@ -1066,6 +1088,42 @@ export function buildReconciliationDetailActions(
     auditPacketHref: getRunReviewPacketPath(item.runId),
     auditPacketLabel: "Review audit packet",
     auditPacketAriaLabel: `Review audit packet for ${item.strategyName}`
+  };
+}
+
+export function buildReconciliationDetailViewState(
+  item: GovernanceWorkspaceResponse["reconciliationQueue"][number]
+): ReconciliationDetailViewState {
+  const openBreakTone: CashFlowEvidenceTone = item.openBreakCount === 0 ? "success" : "warning";
+  const fields: ReconciliationDetailFieldViewModel[] = [
+    buildReconciliationDetailField("Mode", item.mode.toUpperCase(), "default"),
+    buildReconciliationDetailField("Run status", item.status, "default"),
+    buildReconciliationDetailField("Break count", String(item.breakCount), "default"),
+    buildReconciliationDetailField("Open breaks", String(item.openBreakCount), openBreakTone),
+    buildReconciliationDetailField("Last updated", item.lastUpdated, "default")
+  ];
+
+  return {
+    eyebrow: "Reconciliation detail",
+    title: item.strategyName,
+    description: `${item.runId} is currently ${item.reconciliationStatus}.`,
+    ariaLabel: `Reconciliation detail for ${item.strategyName}`,
+    narrative: buildReconciliationNarrative(item),
+    narrativeLabel: `Reconciliation narrative for ${item.strategyName}`,
+    fields
+  };
+}
+
+function buildReconciliationDetailField(
+  label: string,
+  value: string,
+  tone: CashFlowEvidenceTone
+): ReconciliationDetailFieldViewModel {
+  return {
+    label,
+    value,
+    tone,
+    ariaLabel: `${label}: ${value}`
   };
 }
 

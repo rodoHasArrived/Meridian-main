@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  buildLinkedRunEvidenceLabel,
   buildPortfolioScreenViewModel,
   buildPortfolioFallbackMetrics,
   resolveBrokerageAccountFilterKeyCommand
@@ -269,6 +270,14 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.runRows[0].selectAriaLabel).toBe("Inspect Mean Reversion run evidence");
     expect(vm.selectedRun?.title).toBe("Mean Reversion");
     expect(vm.selectedRun?.statusDetail).toContain("Running paper run with +4.2% P&L");
+    expect(vm.runEvidenceChip).toEqual({ label: "Run evidence", value: "1 linked run" });
+    expect(vm.selectedRunChip).toEqual({ label: "Selected run", value: "Mean Reversion" });
+  });
+
+  it("keeps run-evidence chip pluralization in the view model", () => {
+    expect(buildLinkedRunEvidenceLabel(0)).toBe("No linked runs");
+    expect(buildLinkedRunEvidenceLabel(1)).toBe("1 linked run");
+    expect(buildLinkedRunEvidenceLabel(2)).toBe("2 linked runs");
   });
 
   it("surfaces cash-flow summary from governance data", () => {
@@ -490,6 +499,7 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.positionRows.map((row) => row.isSelected)).toEqual([false, true]);
     expect(vm.positionRows[1].selectAriaLabel).toBe("Inspect MSFT Short holding");
     expect(vm.selectedPosition?.title).toBe("MSFT");
+    expect(vm.selectedPositionChip).toEqual({ label: "Selected detail", value: "MSFT" });
     expect(vm.selectedPosition?.statusDetail).toContain("$10,250 exposure");
     expect(vm.selectedPosition?.fields.find((field) => field.label === "Guardrails")?.value).toBe("No active guardrails");
   });
@@ -535,6 +545,16 @@ describe("buildPortfolioScreenViewModel", () => {
       href: "/reporting/evidence?subjectKind=strategy-run&subjectId=run-2",
       ariaLabel: "Open Volatility Carry evidence packet"
     });
+  });
+
+  it("owns portfolio detail empty-state labels", () => {
+    const vm = buildPortfolioScreenViewModel({ trading: null, research: null, governance });
+
+    expect(vm.selectedPositionChip).toEqual({ label: "Selected detail", value: "None" });
+    expect(vm.runEvidenceChip).toEqual({ label: "Run evidence", value: "No linked runs" });
+    expect(vm.selectedRunChip).toEqual({ label: "Selected run", value: "None" });
+    expect(vm.positionDetailEmptyTitle).toBe("No holding selected");
+    expect(vm.runDetailEmptyTitle).toBe("No run selected");
   });
 
   it("derives provider-aware account selector and filtered brokerage positions", () => {

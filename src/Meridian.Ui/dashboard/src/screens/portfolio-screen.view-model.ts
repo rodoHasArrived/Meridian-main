@@ -212,6 +212,9 @@ export interface PortfolioScreenViewModel {
   positionListLabel: string;
   positionCountLabel: string;
   positionDetailId: string;
+  selectedPositionChip: PortfolioHeaderChip;
+  runEvidenceChip: PortfolioHeaderChip;
+  positionDetailEmptyTitle: string;
   positionEmptyText: string;
   selectedPosition: PortfolioPositionDetail | null;
   selectPosition: (id: string) => void;
@@ -220,6 +223,8 @@ export interface PortfolioScreenViewModel {
   runListLabel: string;
   runCountLabel: string;
   runDetailId: string;
+  selectedRunChip: PortfolioHeaderChip;
+  runDetailEmptyTitle: string;
   runEmptyText: string;
   selectedRun: PortfolioRunDetail | null;
   selectRun: (id: string) => void;
@@ -416,6 +421,9 @@ export function buildPortfolioScreenViewModel({
     positionListLabel: "Open positions",
     positionCountLabel: `${positionRows.length} position${positionRows.length === 1 ? "" : "s"}`,
     positionDetailId: "portfolio-position-detail",
+    selectedPositionChip: { label: "Selected detail", value: selectedPosition?.title ?? "None" },
+    runEvidenceChip: { label: "Run evidence", value: buildLinkedRunEvidenceLabel(runRows.length) },
+    positionDetailEmptyTitle: "No holding selected",
     positionEmptyText: trading
       ? "No open positions in the active paper session."
       : portfolio
@@ -428,6 +436,8 @@ export function buildPortfolioScreenViewModel({
     runListLabel: "Run-linked equity",
     runCountLabel: `${runRows.length} run${runRows.length === 1 ? "" : "s"}`,
     runDetailId: "portfolio-run-detail",
+    selectedRunChip: { label: "Selected run", value: selectedRun?.title ?? "None" },
+    runDetailEmptyTitle: "No run selected",
     runEmptyText: research
       ? "No runs available. Create a strategy run in the Strategy workspace."
       : portfolio
@@ -510,6 +520,14 @@ function buildBrokerageSetupAction({
       ? `Verify ${providerLabel} credentials before accepting brokerage portfolio state.`
       : `Review ${providerLabel} sync setup before accepting an empty household portfolio.`
   };
+}
+
+export function buildLinkedRunEvidenceLabel(runCount: number): string {
+  if (runCount <= 0) {
+    return "No linked runs";
+  }
+
+  return `${runCount} linked run${runCount === 1 ? "" : "s"}`;
 }
 
 function buildPortfolioHeaderChips({

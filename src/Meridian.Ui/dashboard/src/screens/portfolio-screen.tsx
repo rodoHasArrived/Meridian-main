@@ -370,9 +370,9 @@ export function PortfolioScreen({
           </CardHeader>
           <CardContent>
             <div className="mb-4 flex flex-wrap items-center gap-2">
-              <PortfolioChip label="Selected detail" value={vm.selectedPosition?.title ?? "None"} />
+              <PortfolioChip label={vm.selectedPositionChip.label} value={vm.selectedPositionChip.value} />
               <PortfolioChip label="Execution source" value={vm.positionSourceLabel} />
-              <PortfolioChip label="Run evidence" value={vm.hasRuns ? `${vm.runRows.length} linked run${vm.runRows.length === 1 ? "" : "s"}` : "No linked runs"} />
+              <PortfolioChip label={vm.runEvidenceChip.label} value={vm.runEvidenceChip.value} />
             </div>
             {vm.hasPositions ? (
               <div className="data-grid-surface overflow-x-auto">
@@ -491,7 +491,7 @@ export function PortfolioScreen({
             </>
           ) : (
             <div role="status" className="text-sm leading-6 text-muted-foreground">
-              <div className="eyebrow-label">No holding selected</div>
+              <div className="eyebrow-label">{vm.positionDetailEmptyTitle}</div>
               <p className="mt-2">{vm.positionEmptyText}</p>
             </div>
           )}
@@ -512,7 +512,7 @@ export function PortfolioScreen({
             </div>
             <div className="flex flex-wrap items-center justify-end gap-2">
               <PortfolioChip label="Runs" value={vm.runCountLabel} />
-              <PortfolioChip label="Selected run" value={vm.selectedRun?.title ?? "None"} />
+              <PortfolioChip label={vm.selectedRunChip.label} value={vm.selectedRunChip.value} />
             </div>
           </div>
         </CardHeader>
@@ -627,7 +627,7 @@ export function PortfolioScreen({
                   </>
                 ) : (
                   <div role="status" className="text-sm leading-6 text-muted-foreground">
-                    <div className="eyebrow-label">No run selected</div>
+                    <div className="eyebrow-label">{vm.runDetailEmptyTitle}</div>
                     <p className="mt-2">{vm.runEmptyText}</p>
                   </div>
                 )}

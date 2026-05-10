@@ -77,6 +77,7 @@ export function useWorkstationData() {
   const [state, setState] = useState<WorkstationDataState>(initialState);
   const mountedRef = useRef(true);
   const refreshRevisionRef = useRef(0);
+  const tradingRefreshRevisionRef = useRef(0);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -84,6 +85,7 @@ export function useWorkstationData() {
     return () => {
       mountedRef.current = false;
       refreshRevisionRef.current += 1;
+      tradingRefreshRevisionRef.current += 1;
     };
   }, []);
 
@@ -94,6 +96,7 @@ export function useWorkstationData() {
 
     const revision = refreshRevisionRef.current + 1;
     refreshRevisionRef.current = revision;
+    tradingRefreshRevisionRef.current += 1;
     resetDevelopmentFixtureUsage();
     setState((current) => ({ ...current, loading: true, error: null, workflowError: null, workspaceErrors: {} }));
 
@@ -194,10 +197,12 @@ export function useWorkstationData() {
   const refreshingTrading = useRef(false);
   const refreshTrading = useCallback(async () => {
     if (refreshingTrading.current || !mountedRef.current) return;
+    const revision = tradingRefreshRevisionRef.current + 1;
+    tradingRefreshRevisionRef.current = revision;
     refreshingTrading.current = true;
     try {
       const result = await getTradingWorkspace();
-      if (!mountedRef.current) {
+      if (!mountedRef.current || tradingRefreshRevisionRef.current !== revision) {
         return;
       }
       setState((current) => ({

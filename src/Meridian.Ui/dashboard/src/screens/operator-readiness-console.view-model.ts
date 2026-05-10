@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getOperatorInbox } from "@/lib/api";
 import { legacyWorkspaceRedirect, WORKSPACES } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -62,6 +62,24 @@ export interface ReadinessConsoleNextAction {
   actionAriaLabel: string;
 }
 
+export interface ReadinessConsoleDetailField {
+  label: string;
+  value: string;
+}
+
+export interface ReadinessConsoleSelectedWorkItemDetail {
+  id: string;
+  title: string;
+  statusLabel: string;
+  statusAriaLabel: string;
+  detail: string;
+  meta: string;
+  level: ReadinessConsoleLevel;
+  ariaLabel: string;
+  fields: ReadinessConsoleDetailField[];
+  action: ReadinessConsoleRowAction | null;
+}
+
 type ReadinessConsoleMetricBase = Omit<ReadinessConsoleMetric, "ariaLabel" | "statusAriaLabel" | "delta" | "tone" | "detailId">;
 type ReadinessConsoleApiSourceBase = Omit<ReadinessConsoleApiSource, "ariaLabel" | "statusAriaLabel">;
 type ReadinessConsoleRowBase = Omit<ReadinessConsoleRow, "ariaLabel" | "statusAriaLabel" | "detailId">;
@@ -118,6 +136,11 @@ export interface ReadinessConsoleState {
   workItemsOverflowText: string | null;
   workItemsRegionLabel: string;
   workItemsListLabel: string;
+  workItemsTableLabel: string;
+  workItemsDetailLabel: string;
+  selectedWorkItemId: string | null;
+  selectedWorkItemDetail: ReadinessConsoleSelectedWorkItemDetail | null;
+  selectWorkItem: (id: string) => void;
 }
 
 export interface BuildOperatorReadinessConsoleStateOptions {
@@ -129,6 +152,8 @@ export interface BuildOperatorReadinessConsoleStateOptions {
   operatorInbox: OperatorInbox | null;
   inboxLoading: boolean;
   inboxError: string | null;
+  selectedWorkItemId?: string | null;
+  selectWorkItem?: (id: string) => void;
 }
 
 export interface OperatorReadinessConsoleServices {
@@ -148,8 +173,12 @@ export function useOperatorReadinessConsoleViewModel(
   const [operatorInbox, setOperatorInbox] = useState<OperatorInbox | null>(null);
   const [inboxLoading, setInboxLoading] = useState(true);
   const [inboxError, setInboxError] = useState<string | null>(null);
+  const [selectedWorkItemId, setSelectedWorkItemId] = useState<string | null>(null);
 
   const activeFundAccountId = payload.trading?.readiness?.brokerageSync?.fundAccountId;
+  const selectWorkItem = useCallback((id: string) => {
+    setSelectedWorkItemId(id);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -185,9 +214,11 @@ export function useOperatorReadinessConsoleViewModel(
       ...payload,
       operatorInbox,
       inboxLoading,
-      inboxError
+      inboxError,
+      selectedWorkItemId,
+      selectWorkItem
     }),
-    [inboxError, inboxLoading, operatorInbox, payload]
+    [inboxError, inboxLoading, operatorInbox, payload, selectedWorkItemId, selectWorkItem]
   );
 }
 
@@ -199,7 +230,9 @@ export function buildOperatorReadinessConsoleState({
   reporting,
   operatorInbox,
   inboxLoading,
-  inboxError
+  inboxError,
+  selectedWorkItemId,
+  selectWorkItem
 }: BuildOperatorReadinessConsoleStateOptions): ReadinessConsoleState {
   const readiness = trading?.readiness ?? null;
   const workItems = operatorInbox?.items ?? readiness?.workItems ?? [];
@@ -211,6 +244,7 @@ export function buildOperatorReadinessConsoleState({
   const prioritizedWorkItems = prioritizeWorkItems(workItems);
   const reportPackFacts = withRowPresentation(buildReportPackFacts(reporting ?? governance), "report-pack");
   const workItemRows = withRowPresentation(buildWorkItemRows(prioritizedWorkItems), "work-items");
+  const selectedWorkItemDetail = buildSelectedWorkItemDetail(workItemRows, selectedWorkItemId ?? null);
   const nextAction = buildNextAction({
     workItemRows,
     activeSessionFacts,
@@ -293,7 +327,12 @@ export function buildOperatorReadinessConsoleState({
     workItemsSummary: buildWorkItemsSummary(prioritizedWorkItems, workItemRows.length),
     workItemsOverflowText: buildWorkItemsOverflowText(prioritizedWorkItems.length, workItemRows.length),
     workItemsRegionLabel: "Operator inbox review work items",
-    workItemsListLabel: "Prioritized operator work items"
+    workItemsListLabel: "Prioritized operator work items",
+    workItemsTableLabel: "Prioritized operator work items table",
+    workItemsDetailLabel: "Selected operator work item detail",
+    selectedWorkItemId: selectedWorkItemDetail?.id ?? null,
+    selectedWorkItemDetail,
+    selectWorkItem: selectWorkItem ?? (() => undefined)
   };
 }
 
@@ -753,6 +792,36 @@ function buildWorkItemsOverflowText(totalCount: number, visibleCount: number): s
   }
 
   return `${formatCount(hiddenCount, "additional work item")} hidden from this view after priority sorting.`;
+}
+
+function buildSelectedWorkItemDetail(
+  rows: ReadinessConsoleRow[],
+  selectedWorkItemId: string | null
+): ReadinessConsoleSelectedWorkItemDetail | null {
+  if (rows.length === 0) {
+    return null;
+  }
+
+  const selectedRow = rows.find((row) => row.id === selectedWorkItemId) ?? rows[0];
+  const actionRoute = selectedRow.action?.route ?? "No route action";
+
+  return {
+    id: selectedRow.id,
+    title: selectedRow.label,
+    statusLabel: selectedRow.value,
+    statusAriaLabel: selectedRow.statusAriaLabel,
+    detail: selectedRow.detail,
+    meta: selectedRow.meta,
+    level: selectedRow.level,
+    ariaLabel: `Selected operator work item: ${selectedRow.label}`,
+    fields: [
+      { label: "Work item ID", value: selectedRow.id },
+      { label: "Attention", value: formatLevelText(selectedRow.level) },
+      { label: "Route", value: actionRoute },
+      { label: "Evidence", value: selectedRow.meta }
+    ],
+    action: selectedRow.action ?? null
+  };
 }
 
 interface NextActionCandidate {

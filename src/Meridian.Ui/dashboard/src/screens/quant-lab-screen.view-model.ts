@@ -23,6 +23,9 @@ export type QuantTemplatePhase = "loading" | "ready" | "empty" | "error";
 export type QuantParameterPhase = "idle" | "extracting" | "ready" | "unavailable";
 
 export interface QuantTemplatePanelState {
+  title: string;
+  description: string;
+  listLabel: string;
   phase: QuantTemplatePhase;
   message: string;
   role: "status" | "alert";
@@ -52,6 +55,7 @@ export interface QuantParameterRow {
   step?: string;
   isDefault: boolean;
   resetLabel: string | null;
+  resetText: string | null;
   ariaLabel: string;
 }
 
@@ -358,9 +362,16 @@ export function buildTemplatePanelState(
   phase: QuantTemplatePhase,
   error: string | null
 ): QuantTemplatePanelState {
+  const base = {
+    title: "Starter templates",
+    description: "Load a working snippet to verify the lab end-to-end.",
+    listLabel: "Starter templates"
+  };
+
   switch (phase) {
     case "loading":
       return {
+        ...base,
         phase,
         message: "Loading starter templates...",
         role: "status",
@@ -368,6 +379,7 @@ export function buildTemplatePanelState(
       };
     case "empty":
       return {
+        ...base,
         phase,
         message: "No starter templates are available from the Quant Lab API.",
         role: "status",
@@ -375,6 +387,7 @@ export function buildTemplatePanelState(
       };
     case "error":
       return {
+        ...base,
         phase,
         message: error ?? "Failed to load templates.",
         role: "alert",
@@ -382,6 +395,7 @@ export function buildTemplatePanelState(
       };
     default:
       return {
+        ...base,
         phase,
         message: `${phase}`,
         role: "status",
@@ -413,8 +427,13 @@ export function buildParameterRow(
     step: inputType === "number" ? stepForQuantParameter(parameter.typeName) : undefined,
     isDefault,
     resetLabel: !isDefault && parameter.defaultValue !== null ? `Reset ${parameter.label} to default` : null,
+    resetText: !isDefault && parameter.defaultValue !== null ? "Reset to default" : null,
     ariaLabel: `${parameter.label} parameter`
   };
+}
+
+export function buildTemplateLoadAriaLabel(template: QuantTemplate): string {
+  return `Load ${template.title} template`;
 }
 
 export function buildParameterPanelState(

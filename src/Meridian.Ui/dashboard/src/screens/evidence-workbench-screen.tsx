@@ -57,10 +57,26 @@ export function EvidenceWorkbenchScreen() {
           </h2>
           <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{vm.subtitle}</p>
           {vm.error ? (
-            <p role="alert" className="mt-2 inline-flex items-center gap-2 text-sm text-danger">
-              <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-              {vm.error}
-            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <p role="alert" className="inline-flex items-center gap-2 text-sm text-danger">
+                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                {vm.error}
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={vm.reloadEvidence}
+                busy={vm.reloadCommand.busy}
+                busyLabel={vm.reloadCommand.busyLabel}
+                disabled={vm.reloadCommand.disabled}
+                disabledReason={vm.reloadCommand.disabledReason}
+                aria-label={vm.reloadCommand.ariaLabel}
+              >
+                <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+                {vm.reloadCommand.label}
+              </Button>
+            </div>
           ) : null}
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
@@ -78,7 +94,7 @@ export function EvidenceWorkbenchScreen() {
         </div>
       </section>
 
-      {!vm.hasSelection ? (
+      {vm.showSubjectPicker ? (
         <Card className="panel-surface">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">

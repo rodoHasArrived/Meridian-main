@@ -206,6 +206,8 @@ export function WatchlistScreen() {
                   rows={vm.rows}
                   getRowId={(row) => row.symbol}
                   getRowAriaLabel={(row) => row.ariaLabel}
+                  getRowSelectAriaLabel={(row) => `Select ${row.symbol} watchlist row. ${row.ariaLabel}`}
+                  onRowSelect={(row) => vm.selectSymbol(row.symbol)}
                   selectedRowId={vm.selectedRowId}
                   emptyText={vm.listDescription}
                   ariaLabel={vm.tableLabel}

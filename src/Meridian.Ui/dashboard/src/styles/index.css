@@ -740,12 +740,22 @@
     transition: background 100ms ease;
   }
 
+  .dense-data-table tbody tr.selectable {
+    cursor: pointer;
+  }
+
   .dense-data-table tbody tr:hover {
     background: rgba(42, 178, 212, 0.06);
   }
 
   .dense-data-table tbody tr.selected {
     background: rgba(42, 178, 212, 0.10);
+  }
+
+  .dense-data-table tbody tr.selectable:focus-visible {
+    outline: 2px solid rgba(42, 178, 212, 0.45);
+    outline-offset: -2px;
+    background: rgba(42, 178, 212, 0.08);
   }
 
   .dense-data-table-empty {

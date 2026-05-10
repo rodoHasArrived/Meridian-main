@@ -181,6 +181,48 @@ describe("useWorkstationData", () => {
       lastUsedAt: "2026-01-03T00:00:00Z"
     });
   });
+
+  it("does not let an older trading-only refresh overwrite a newer full refresh", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let staleTradingRefresh!: Promise<void>;
+    act(() => {
+      staleTradingRefresh = result.current.refreshTrading();
+    });
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(2));
+
+    let fullRefresh!: Promise<void>;
+    act(() => {
+      fullRefresh = result.current.refresh();
+    });
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(3));
+
+    await act(async () => {
+      resolveRefreshBatchWithIndexes({
+        marker: "fresh",
+        defaultIndex: 1,
+        tradingIndex: 2
+      });
+      await fullRefresh;
+    });
+
+    expect(result.current.trading).toEqual({ marker: "fresh trading" });
+
+    await act(async () => {
+      resolveRequest<TradingWorkspaceResponse>("trading", 1, { marker: "stale trading" } as unknown as TradingWorkspaceResponse);
+      await staleTradingRefresh;
+    });
+
+    expect(result.current.trading).toEqual({ marker: "fresh trading" });
+  });
 });
 
 function StrictModeWrapper({ children }: { children: ReactNode }) {
@@ -205,24 +247,36 @@ function createDeferred<T>(): Deferred<T> {
 }
 
 function resolveRefreshBatch(index: number, marker: string) {
-  resolveRequest<SessionInfo>("session", index, {
+  resolveRefreshBatchWithIndexes({ marker, defaultIndex: index, tradingIndex: index });
+}
+
+function resolveRefreshBatchWithIndexes({
+  marker,
+  defaultIndex,
+  tradingIndex
+}: {
+  marker: string;
+  defaultIndex: number;
+  tradingIndex: number;
+}) {
+  resolveRequest<SessionInfo>("session", defaultIndex, {
     activeWorkspace: "trading",
     commandCount: 1,
     displayName: `${marker} session`,
     environment: "paper",
     role: "Operator"
   });
-  resolveRequest<SystemOverviewResponse>("overview", index, { marker: `${marker} overview` } as unknown as SystemOverviewResponse);
-  resolveRequest<ResearchWorkspaceResponse>("research", index, { marker: `${marker} research` } as unknown as ResearchWorkspaceResponse);
-  resolveRequest<TradingWorkspaceResponse>("trading", index, { marker: `${marker} trading` } as unknown as TradingWorkspaceResponse);
-  resolveRequest<PortfolioWorkspaceResponse>("portfolio", index, { marker: `${marker} portfolio` } as unknown as PortfolioWorkspaceResponse);
-  resolveRequest<DataOperationsWorkspaceResponse>("dataOperations", index, { marker: `${marker} data` } as unknown as DataOperationsWorkspaceResponse);
-  resolveRequest<GovernanceWorkspaceResponse>("governance", index, { marker: `${marker} accounting` } as unknown as GovernanceWorkspaceResponse);
-  resolveRequest<GovernanceWorkspaceResponse>("reporting", index, { marker: `${marker} reporting` } as unknown as GovernanceWorkspaceResponse);
-  resolveRequest<BrokerageConnectionStatus>("brokerageConnection", index, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
-  resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", index, { marker: `${marker} brokerage` } as unknown as BrokerageHouseholdPortfolio);
-  resolveRequest<WorkflowLibrary>("workflowLibrary", index, { marker: `${marker} workflows` } as unknown as WorkflowLibrary);
-  resolveRequest<WorkflowPresetLibrary>("workflowPresets", index, {
+  resolveRequest<SystemOverviewResponse>("overview", defaultIndex, { marker: `${marker} overview` } as unknown as SystemOverviewResponse);
+  resolveRequest<ResearchWorkspaceResponse>("research", defaultIndex, { marker: `${marker} research` } as unknown as ResearchWorkspaceResponse);
+  resolveRequest<TradingWorkspaceResponse>("trading", tradingIndex, { marker: `${marker} trading` } as unknown as TradingWorkspaceResponse);
+  resolveRequest<PortfolioWorkspaceResponse>("portfolio", defaultIndex, { marker: `${marker} portfolio` } as unknown as PortfolioWorkspaceResponse);
+  resolveRequest<DataOperationsWorkspaceResponse>("dataOperations", defaultIndex, { marker: `${marker} data` } as unknown as DataOperationsWorkspaceResponse);
+  resolveRequest<GovernanceWorkspaceResponse>("governance", defaultIndex, { marker: `${marker} accounting` } as unknown as GovernanceWorkspaceResponse);
+  resolveRequest<GovernanceWorkspaceResponse>("reporting", defaultIndex, { marker: `${marker} reporting` } as unknown as GovernanceWorkspaceResponse);
+  resolveRequest<BrokerageConnectionStatus>("brokerageConnection", defaultIndex, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
+  resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", defaultIndex, { marker: `${marker} brokerage` } as unknown as BrokerageHouseholdPortfolio);
+  resolveRequest<WorkflowLibrary>("workflowLibrary", defaultIndex, { marker: `${marker} workflows` } as unknown as WorkflowLibrary);
+  resolveRequest<WorkflowPresetLibrary>("workflowPresets", defaultIndex, {
     generatedAt: "2026-01-01T00:00:00Z",
     presets: []
   });

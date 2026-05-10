@@ -171,6 +171,16 @@ describe("GovernanceScreen", () => {
     expect(screen.getByText("Paper Index Mean Reversion")).toBeInTheDocument();
   });
 
+  it("renders reconciliation strong panels with view-model presentation state", async () => {
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
+
+    expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Open breaks: 1")).toHaveTextContent("1");
+    expect(screen.getByLabelText("Reconciliation narrative for Paper Index Mean Reversion")).toHaveTextContent(
+      "Open reconciliation breaks remain on this run."
+    );
+  });
+
   it("renders trial-balance rows with accessible table evidence", async () => {
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
 
@@ -389,8 +399,10 @@ describe("GovernanceScreen", () => {
 
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
-    expect(screen.getByText("Reconciliation Detail")).toBeInTheDocument();
-    expect(screen.getByText(/Open reconciliation breaks remain on this run/)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Reconciliation narrative for Paper Index Mean Reversion")).toHaveTextContent(
+      /Open reconciliation breaks remain on this run/
+    );
     expect(screen.getByRole("link", { name: "Open break checklist for Paper Index Mean Reversion; 1 open break" }))
       .toHaveAttribute("href", "#reconciliation-break-queue");
     expect(screen.getByRole("link", { name: "Review audit packet for Paper Index Mean Reversion" }))

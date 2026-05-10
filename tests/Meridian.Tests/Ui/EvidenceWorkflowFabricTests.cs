@@ -165,6 +165,59 @@ public sealed class EvidenceWorkflowFabricTests
         manifestJson.Should().NotContain("This warning should be excluded.");
     }
 
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringLedgerManifestExport_PreservesRouteOnlyArtifactRefs()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.StrategyRunKind, "run-ledger-proof");
+        var generatedAt = new DateTimeOffset(2026, 5, 9, 12, 0, 0, TimeSpan.Zero);
+        var artifacts = new[]
+        {
+            new EvidenceArtifactRefDto(
+                "strategy-run:run-ledger-proof:ledger:journal",
+                "ledger-journal",
+                Path: null,
+                Route: "/api/workstation/runs/run-ledger-proof/ledger/journal",
+                GeneratedAt: generatedAt,
+                Hash: null,
+                Retained: true),
+            new EvidenceArtifactRefDto(
+                "strategy-run:run-ledger-proof:ledger:trial-balance",
+                "ledger-trial-balance",
+                Path: null,
+                Route: "/api/workstation/runs/run-ledger-proof/ledger/trial-balance",
+                GeneratedAt: generatedAt,
+                Hash: null,
+                Retained: true)
+        };
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: generatedAt,
+            Nodes: [Node(subject, "strategy-run:run-ledger-proof:ledger", "run-ledger", EvidenceStatusDto.Ready, artifacts: artifacts)],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["strategy-run:run-ledger-proof:ledger"], ["strategy-run:run-ledger-proof:ledger"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "ledger proof export"));
+        var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
+        await using var stream = File.OpenRead(manifestPath);
+        using var manifest = await JsonDocument.ParseAsync(stream);
+        var ledgerNode = manifest.RootElement.GetProperty("nodes")
+            .EnumerateArray()
+            .Single(node => node.GetProperty("kind").GetString() == "run-ledger");
+        var artifactRefs = ledgerNode.GetProperty("artifactRefs")
+            .EnumerateArray()
+            .ToArray();
+
+        artifactRefs.Should().HaveCount(2);
+        artifactRefs.Should().Contain(artifact =>
+            IsRouteOnlyArtifact(artifact, "ledger-journal", "/api/workstation/runs/run-ledger-proof/ledger/journal"));
+        artifactRefs.Should().Contain(artifact =>
+            IsRouteOnlyArtifact(artifact, "ledger-trial-balance", "/api/workstation/runs/run-ledger-proof/ledger/trial-balance"));
+    }
+
     private static EvidenceGraphService CreateGraphService(IReadOnlyList<IEvidenceContributor> contributors)
     {
         var services = new ServiceCollection().BuildServiceProvider();
@@ -211,7 +264,8 @@ public sealed class EvidenceWorkflowFabricTests
         string kind,
         EvidenceStatusDto status,
         bool stale = false,
-        IReadOnlyList<string>? workItemIds = null)
+        IReadOnlyList<string>? workItemIds = null,
+        IReadOnlyList<EvidenceArtifactRefDto>? artifacts = null)
         => new(
             EvidenceId: id,
             Subject: subject,
@@ -223,8 +277,14 @@ public sealed class EvidenceWorkflowFabricTests
                 stale ? "Evidence is older than seven days." : null),
             SourceSystem: "test",
             Summary: $"{kind} evidence",
-            ArtifactRefs: [],
+            ArtifactRefs: artifacts ?? [],
             RelatedWorkItemIds: workItemIds ?? []);
+
+    private static bool IsRouteOnlyArtifact(JsonElement artifact, string kind, string route)
+        => artifact.GetProperty("kind").GetString() == kind &&
+           artifact.GetProperty("route").GetString() == route &&
+           artifact.GetProperty("path").ValueKind == JsonValueKind.Null &&
+           artifact.GetProperty("hash").ValueKind == JsonValueKind.Null;
 
     private sealed class StubContributor : IEvidenceContributor
     {

@@ -139,7 +139,7 @@ export function ProviderCredentialSetup({ providers, onSave, onTest, isLoading }
                     <Label className="text-xs font-semibold text-muted-foreground">Supported Data Types</Label>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {provider.supportedDataTypes.map((type) => (
-                        <Badge key={type} variant="secondary" className="text-xs">
+                        <Badge key={type} variant="outline" className="text-xs">
                           {type}
                         </Badge>
                       ))}

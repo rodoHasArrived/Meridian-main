@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import {
-  buildReconciliationNarrative,
   resolveGovernanceWorkstream,
   useGovernanceCashFlowViewModel,
   useGovernanceReconciliationViewModel,
@@ -61,6 +60,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const reconciliation = useGovernanceReconciliationViewModel(data, workstream);
   const resolveDialog = useReconciliationResolveDialogViewModel(reconciliation.resolveBreak);
   const selectedReconciliation = reconciliation.selectedReconciliation;
+  const selectedReconciliationDetail = reconciliation.detailView;
   const cashFlow = useGovernanceCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useGovernanceReportingViewModel(data?.reporting ?? null);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
@@ -160,13 +160,13 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
           </CardContent>
         </Card>
 
-        <Card className="panel-surface-strong bg-panel-strong text-slate-50" role="region" aria-label={cashFlow.ariaLabel}>
+        <Card className="panel-surface-strong bg-panel-strong text-foreground" role="region" aria-label={cashFlow.ariaLabel}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="eyebrow-label">{cashFlow.eyebrow}</div>
                 <CardTitle>{cashFlow.title}</CardTitle>
-                <CardDescription className="mt-2 text-slate-300">
+                <CardDescription className="mt-2 text-muted-foreground">
                   {cashFlow.description}
                 </CardDescription>
               </div>
@@ -198,7 +198,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
         </Card>
       </section>
 
-      {workstream === "reconciliation" && selectedReconciliation ? (
+      {workstream === "reconciliation" && selectedReconciliation && selectedReconciliationDetail ? (
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <Card className="panel-surface">
             <CardHeader>
@@ -237,22 +237,29 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             </CardContent>
           </Card>
 
-          <Card className="panel-surface-strong bg-panel-strong text-slate-50">
+          <Card className="panel-surface-strong bg-panel-strong text-foreground" role="region" aria-label={selectedReconciliationDetail.ariaLabel}>
             <CardHeader>
-              <div className="eyebrow-label">Reconciliation Detail</div>
-              <CardTitle>{selectedReconciliation.strategyName}</CardTitle>
-              <CardDescription className="text-slate-300">
-                {selectedReconciliation.runId} is currently {selectedReconciliation.reconciliationStatus}.
+              <div className="eyebrow-label">{selectedReconciliationDetail.eyebrow}</div>
+              <CardTitle>{selectedReconciliationDetail.title}</CardTitle>
+              <CardDescription className="text-muted-foreground">
+                {selectedReconciliationDetail.description}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
-              <GovernanceValue label="Mode" value={selectedReconciliation.mode.toUpperCase()} />
-              <GovernanceValue label="Run status" value={selectedReconciliation.status} />
-              <GovernanceValue label="Break count" value={String(selectedReconciliation.breakCount)} />
-              <GovernanceValue label="Open breaks" value={String(selectedReconciliation.openBreakCount)} tone={selectedReconciliation.openBreakCount === 0 ? "text-success" : "text-warning"} />
-              <GovernanceValue label="Last updated" value={selectedReconciliation.lastUpdated} />
-              <div className="rounded-lg border border-border/70 bg-background/70 p-4 text-slate-200">
-                {buildReconciliationNarrative(selectedReconciliation)}
+              {selectedReconciliationDetail.fields.map((field) => (
+                <GovernanceValue
+                  key={field.label}
+                  label={field.label}
+                  value={field.value}
+                  tone={cashFlowTextClass(field.tone)}
+                  ariaLabel={field.ariaLabel}
+                />
+              ))}
+              <div
+                aria-label={selectedReconciliationDetail.narrativeLabel}
+                className="rounded-lg border border-border/70 bg-background/70 p-4 text-muted-foreground"
+              >
+                {selectedReconciliationDetail.narrative}
               </div>
               {reconciliation.detailActions ? (
                 <div className="flex flex-wrap gap-3">
@@ -1138,8 +1145,8 @@ function GovernanceHighlight({
 function GovernanceValue({ label, value, tone, ariaLabel }: { label: string; value: string; tone?: string; ariaLabel?: string }) {
   return (
     <div aria-label={ariaLabel} className="data-grid-surface flex items-center justify-between gap-4 px-3 py-2">
-      <span className="text-slate-300">{label}</span>
-      <span className={cn("font-mono text-slate-50", tone)}>{value}</span>
+      <span className="text-muted-foreground">{label}</span>
+      <span className={cn("font-mono text-foreground", tone)}>{value}</span>
     </div>
   );
 }

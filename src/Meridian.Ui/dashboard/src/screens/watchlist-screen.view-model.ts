@@ -170,11 +170,13 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   const currentQuoteSymbolsKeyRef = useRef("");
   const previousMidRef = useRef<Record<string, number>>({});
   const quoteInFlightRef = useRef(false);
+  const pendingQuoteSymbolsRef = useRef<readonly string[] | null>(null);
 
   useEffect(() => () => {
     mountedRef.current = false;
     refreshRevisionRef.current += 1;
     currentQuoteSymbolsKeyRef.current = "";
+    pendingQuoteSymbolsRef.current = null;
   }, []);
 
   const refresh = useCallback(async () => {
@@ -340,7 +342,13 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   const subscribedSymbols = useMemo(() => symbols?.map((symbol) => symbol.symbol) ?? [], [symbols]);
 
   const fetchQuotes = useCallback(async (currentSymbols: readonly string[]) => {
-    if (quoteInFlightRef.current || currentSymbols.length === 0) {
+    if (currentSymbols.length === 0) {
+      pendingQuoteSymbolsRef.current = null;
+      return;
+    }
+
+    if (quoteInFlightRef.current) {
+      pendingQuoteSymbolsRef.current = currentSymbols.slice();
       return;
     }
 
@@ -375,6 +383,11 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
       }
     } finally {
       quoteInFlightRef.current = false;
+      const pendingSymbols = pendingQuoteSymbolsRef.current;
+      pendingQuoteSymbolsRef.current = null;
+      if (mountedRef.current && pendingSymbols && buildQuoteSymbolsKey(pendingSymbols) === currentQuoteSymbolsKeyRef.current) {
+        void fetchQuotes(pendingSymbols);
+      }
     }
   }, [api.getLiveQuotesSnapshot]);
 

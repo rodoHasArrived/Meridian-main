@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { QuantPlotChart } from "@/components/meridian/quant-plot";
 import { ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import {
+  buildTemplateLoadAriaLabel,
   useQuantLabScreenViewModel,
   type QuantParameterPanelState,
   type QuantParameterRow,
@@ -318,7 +319,7 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
                     className="text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     aria-label={row.resetLabel}
                   >
-                    Reset to default
+                    {row.resetText}
                   </button>
                 ) : null}
               </li>
@@ -342,9 +343,9 @@ function TemplatesPanel({ templates, state, onSelect }: TemplatesPanelProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
-          Starter templates
+          {state.title}
         </CardTitle>
-        <CardDescription>Load a working snippet to verify the lab end-to-end.</CardDescription>
+        <CardDescription>{state.description}</CardDescription>
       </CardHeader>
       <CardContent>
         {state.phase !== "ready" ? (
@@ -356,14 +357,14 @@ function TemplatesPanel({ templates, state, onSelect }: TemplatesPanelProps) {
             {state.message}
           </p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-2" aria-label={state.listLabel}>
             {templates.map((template) => (
               <li key={template.id}>
                 <button
                   type="button"
                   onClick={() => onSelect(template)}
                   className="w-full rounded-md border border-border/60 bg-background/40 px-3 py-2 text-left text-sm transition-colors hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  aria-label={`Load ${template.title} template`}
+                  aria-label={buildTemplateLoadAriaLabel(template)}
                 >
                   <div className="font-semibold text-foreground">{template.title}</div>
                   <div className="mt-1 text-xs text-muted-foreground">{template.description}</div>

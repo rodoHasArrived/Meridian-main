@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface ToolbarStripItem {
@@ -49,6 +49,8 @@ export function DenseDataTable<T>({
   rows,
   getRowId,
   getRowAriaLabel,
+  getRowSelectAriaLabel,
+  onRowSelect,
   selectedRowId,
   emptyText,
   ariaLabel,
@@ -58,6 +60,8 @@ export function DenseDataTable<T>({
   rows: T[];
   getRowId: (row: T) => string;
   getRowAriaLabel?: (row: T) => string;
+  getRowSelectAriaLabel?: (row: T) => string;
+  onRowSelect?: (row: T) => void;
   selectedRowId?: string | null;
   emptyText: string;
   ariaLabel: string;
@@ -84,12 +88,25 @@ export function DenseDataTable<T>({
           {rows.length > 0 ? rows.map((row) => {
             const rowId = getRowId(row);
             const selected = selectedRowId === rowId;
+            const selectable = onRowSelect !== undefined;
+            const rowAriaLabel = selectable
+              ? getRowSelectAriaLabel?.(row) ?? getRowAriaLabel?.(row)
+              : getRowAriaLabel?.(row);
             return (
               <tr
                 key={rowId}
-                aria-label={getRowAriaLabel?.(row)}
+                aria-label={rowAriaLabel}
                 aria-selected={selected || undefined}
-                className={selected ? "selected" : undefined}
+                tabIndex={selectable ? 0 : undefined}
+                data-selectable={selectable ? "true" : undefined}
+                className={cn(selectable ? "selectable" : undefined, selected ? "selected" : undefined)}
+                onClick={selectable ? (event) => {
+                  if (isInteractiveTableTarget(event.target)) return;
+                  onRowSelect(row);
+                } : undefined}
+                onKeyDown={selectable ? (event) => {
+                  handleSelectableRowKeyDown(event, row, onRowSelect);
+                } : undefined}
               >
                 {columns.map((column) => (
                   <td
@@ -112,6 +129,23 @@ export function DenseDataTable<T>({
       </table>
     </div>
   );
+}
+
+function handleSelectableRowKeyDown<T>(
+  event: KeyboardEvent<HTMLTableRowElement>,
+  row: T,
+  onRowSelect: (row: T) => void
+) {
+  if (event.target !== event.currentTarget) return;
+  if (event.key !== "Enter" && event.key !== " ") return;
+
+  event.preventDefault();
+  onRowSelect(row);
+}
+
+function isInteractiveTableTarget(target: EventTarget): boolean {
+  if (!(target instanceof Element)) return false;
+  return target.closest("a,button,input,select,textarea,[role='button'],[role='link']") !== null;
 }
 
 export interface EntitySummaryField {

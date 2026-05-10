@@ -388,6 +388,14 @@ describe("operator readiness console view model", () => {
     expect(new Set(detailIds).size).toBe(detailIds.length);
     expect(state.workItemsRegionLabel).toBe("Operator inbox review work items");
     expect(state.workItemsListLabel).toBe("Prioritized operator work items");
+    expect(state.workItemsTableLabel).toBe("Prioritized operator work items table");
+    expect(state.workItemsDetailLabel).toBe("Selected operator work item detail");
+    expect(state.selectedWorkItemId).toBe("reconciliation-break-run-1-cash");
+    expect(state.selectedWorkItemDetail).toEqual(expect.objectContaining({
+      title: "Cash break open",
+      statusLabel: "Warning",
+      action: expect.objectContaining({ route: "/accounting/reconciliation" })
+    }));
     expect(state.nextAction).toEqual(expect.objectContaining({
       title: "Index Momentum",
       label: "Open break queue",
@@ -574,6 +582,11 @@ describe("operator readiness console view model", () => {
       label: "Critical security coverage gap",
       level: "blocked"
     }));
+    expect(state.selectedWorkItemId).toBe("critical-security-gap");
+    expect(state.selectedWorkItemDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Route", value: "/data/security-master" },
+      { label: "Attention", value: "Blocked" }
+    ]));
     expect(state.workItems.map((item) => item.label)).not.toContain("Info item");
     expect(state.workItemsSummary).toBe("Showing 6 of 8 operator work items; 1 critical item, 6 warnings, 1 info item. Critical items sort first.");
     expect(state.workItemsOverflowText).toBe("2 additional work items hidden from this view after priority sorting.");
@@ -761,5 +774,70 @@ describe("operator readiness console view model", () => {
 
     resolveFundTwoInbox?.(cleanInbox);
     await waitFor(() => expect(result.current.inboxSummary).toBe("No operator work items need attention."));
+  });
+
+  it("keeps selected operator work-item detail in the view model", () => {
+    const state = buildOperatorReadinessConsoleState({
+      research: null,
+      trading: null,
+      dataOperations: null,
+      governance: null,
+      operatorInbox: {
+        ...cleanInbox,
+        items: [
+          {
+            workItemId: "critical-security-gap",
+            kind: "SecurityMasterCoverage",
+            label: "Critical security coverage gap",
+            detail: "Resolve missing identifier coverage before accepting readiness.",
+            tone: "Critical",
+            createdAt: "2026-04-29T11:00:00Z",
+            runId: null,
+            fundAccountId: null,
+            auditReference: null,
+            workspace: "Accounting",
+            targetRoute: "/accounting/security-master",
+            targetPageTag: "SecurityMaster"
+          },
+          {
+            workItemId: "report-pack-warning",
+            kind: "ReportPackApproval",
+            label: "Report pack warning",
+            detail: "Attach owner sign-off before distribution.",
+            tone: "Warning",
+            createdAt: "2026-04-29T12:00:00Z",
+            runId: null,
+            fundAccountId: null,
+            auditReference: "audit-report-pack",
+            workspace: "Reporting",
+            targetRoute: "/reporting",
+            targetPageTag: "ReportPackApproval"
+          }
+        ],
+        criticalCount: 1,
+        warningCount: 1,
+        reviewCount: 2,
+        summary: "2 review items need attention."
+      },
+      inboxLoading: false,
+      inboxError: null,
+      selectedWorkItemId: "report-pack-warning"
+    });
+
+    expect(state.selectedWorkItemId).toBe("report-pack-warning");
+    expect(state.selectedWorkItemDetail).toEqual(expect.objectContaining({
+      id: "report-pack-warning",
+      title: "Report pack warning",
+      statusLabel: "Warning",
+      action: expect.objectContaining({
+        label: "Open report packs",
+        route: "/reporting"
+      })
+    }));
+    expect(state.selectedWorkItemDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Attention", value: "Review" },
+      { label: "Route", value: "/reporting" },
+      { label: "Evidence", value: "Reporting - ReportPackApproval - audit-report-pack" }
+    ]));
   });
 });
