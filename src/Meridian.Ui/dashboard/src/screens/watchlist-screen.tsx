@@ -36,6 +36,23 @@ function formatSpread(spread: number | null | undefined, mid: number | null | un
   return spread.toFixed(2);
 }
 
+function formatChange(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return "—";
+  const sign = value > 0 ? "+" : value < 0 ? "" : "";
+  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
+}
+
+function formatChangePercent(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return "—";
+  const sign = value > 0 ? "+" : value < 0 ? "" : "";
+  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+}
+
+function changeTone(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value) || value === 0) return "text-muted-foreground";
+  return value > 0 ? "text-positive" : "text-danger";
+}
+
 function formatRelative(iso: string | null): string {
   if (!iso) return "Never";
   const ts = new Date(iso).getTime();
@@ -275,6 +292,9 @@ export function WatchlistScreen() {
                       <th className="px-2 py-2 font-medium text-right">Bid × Size</th>
                       <th className="px-2 py-2 font-medium text-right">Ask × Size</th>
                       <th className="px-2 py-2 font-medium text-right">Last</th>
+                      <th className="px-2 py-2 font-medium text-right">Chg</th>
+                      <th className="px-2 py-2 font-medium text-right">Chg %</th>
+                      <th className="px-2 py-2 font-medium text-right">Day H / L</th>
                       <th className="px-2 py-2 font-medium text-right">Spread</th>
                       <th className="px-2 py-2 font-medium">Quote age</th>
                       <th className="px-2 py-2" />
@@ -322,6 +342,17 @@ export function WatchlistScreen() {
                           </td>
                           <td className={`px-2 py-1.5 text-right font-mono ${lastTone}`}>
                             {quote ? formatPrice(quote.lastPrice) : <span className="text-muted-foreground">—</span>}
+                          </td>
+                          <td className={`px-2 py-1.5 text-right font-mono ${changeTone(quote?.session?.change ?? null)}`}>
+                            {quote?.session ? formatChange(quote.session.change) : "—"}
+                          </td>
+                          <td className={`px-2 py-1.5 text-right font-mono ${changeTone(quote?.session?.changePercent ?? null)}`}>
+                            {quote?.session ? formatChangePercent(quote.session.changePercent) : "—"}
+                          </td>
+                          <td className="px-2 py-1.5 text-right font-mono text-muted-foreground">
+                            {quote?.session
+                              ? `${formatPrice(quote.session.high)} / ${formatPrice(quote.session.low)}`
+                              : "—"}
                           </td>
                           <td className="px-2 py-1.5 text-right font-mono text-muted-foreground">
                             {quote ? formatSpread(quote.spread, quote.midPrice) : "—"}

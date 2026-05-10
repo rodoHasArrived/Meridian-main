@@ -19,7 +19,21 @@ const quoteFixture = {
     spread: 0.02,
     sequenceNumber: 42,
     streamId: "stream-1",
-    venue: "NASDAQ"
+    venue: "NASDAQ",
+    session: {
+      sessionDate: "2026-05-08",
+      open: 187.00,
+      high: 188.50,
+      low: 186.80,
+      last: 188.06,
+      volume: 1_250_000,
+      vwap: 187.74,
+      tradeCount: 4321,
+      change: 1.06,
+      changePercent: 0.5668,
+      firstTradeAt: "2026-05-08T13:30:00.000Z",
+      lastTradeAt: "2026-05-08T14:59:59.000Z"
+    }
   },
   timestamp: "2026-05-08T15:00:00.000Z"
 };

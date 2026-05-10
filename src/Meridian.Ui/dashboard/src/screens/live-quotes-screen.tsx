@@ -24,6 +24,7 @@ import type {
   OrderResult,
   OrderSubmitRequest,
   QuotesResponse,
+  SessionStatsDto,
   TradeDataResponse,
   TradesResponse
 } from "@/types";
@@ -185,6 +186,7 @@ export function LiveQuotesScreen() {
   }, [activeSymbol, ticket]);
 
   const quoteRow = quote.data?.quote;
+  const session = quoteRow?.session ?? null;
   const stale = orderbook.data?.isStale === true;
   const venueLabel = quoteRow?.venue ?? orderbook.data?.venue ?? null;
 
@@ -277,29 +279,32 @@ export function LiveQuotesScreen() {
               ) : !quoteRow ? (
                 <p className="text-sm text-muted-foreground">No quote data available for {activeSymbol}.</p>
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <BboPanel
-                    label="Bid"
-                    price={quoteRow.bidPrice}
-                    size={quoteRow.bidSize}
-                    tone="positive"
-                    icon={<ArrowDown className="h-4 w-4" aria-hidden="true" />}
-                    onSeed={() => seedTicket("Sell", quoteRow.bidPrice)}
-                    seedLabel={`Sell ${activeSymbol} at bid ${formatPrice(quoteRow.bidPrice)}`}
-                  />
-                  <BboPanel
-                    label="Ask"
-                    price={quoteRow.askPrice}
-                    size={quoteRow.askSize}
-                    tone="negative"
-                    icon={<ArrowUp className="h-4 w-4" aria-hidden="true" />}
-                    onSeed={() => seedTicket("Buy", quoteRow.askPrice)}
-                    seedLabel={`Buy ${activeSymbol} at ask ${formatPrice(quoteRow.askPrice)}`}
-                  />
-                  <MetricRow label="Mid" value={formatPrice(quoteRow.midPrice)} />
-                  <MetricRow label="Spread" value={formatPrice(quoteRow.spread)} />
-                  <MetricRow label="Sequence" value={quoteRow.sequenceNumber.toLocaleString()} />
-                  <MetricRow label="Stream" value={quoteRow.streamId ?? "—"} />
+                <div className="space-y-4">
+                  {session ? <SessionStatsBanner session={session} /> : null}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <BboPanel
+                      label="Bid"
+                      price={quoteRow.bidPrice}
+                      size={quoteRow.bidSize}
+                      tone="positive"
+                      icon={<ArrowDown className="h-4 w-4" aria-hidden="true" />}
+                      onSeed={() => seedTicket("Sell", quoteRow.bidPrice)}
+                      seedLabel={`Sell ${activeSymbol} at bid ${formatPrice(quoteRow.bidPrice)}`}
+                    />
+                    <BboPanel
+                      label="Ask"
+                      price={quoteRow.askPrice}
+                      size={quoteRow.askSize}
+                      tone="negative"
+                      icon={<ArrowUp className="h-4 w-4" aria-hidden="true" />}
+                      onSeed={() => seedTicket("Buy", quoteRow.askPrice)}
+                      seedLabel={`Buy ${activeSymbol} at ask ${formatPrice(quoteRow.askPrice)}`}
+                    />
+                    <MetricRow label="Mid" value={formatPrice(quoteRow.midPrice)} />
+                    <MetricRow label="Spread" value={formatPrice(quoteRow.spread)} />
+                    <MetricRow label="Sequence" value={quoteRow.sequenceNumber.toLocaleString()} />
+                    <MetricRow label="Stream" value={quoteRow.streamId ?? "—"} />
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -360,6 +365,56 @@ function MetricRow({ label, value }: { label: string; value: string }) {
     <div className="flex items-baseline justify-between border-b border-border/40 py-2 text-sm">
       <span className="text-muted-foreground">{label}</span>
       <span className="font-mono text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function SessionStatsBanner({ session }: { session: SessionStatsDto }) {
+  const tone = session.change > 0
+    ? "text-positive"
+    : session.change < 0
+      ? "text-danger"
+      : "text-foreground";
+  const sign = session.change > 0 ? "+" : session.change < 0 ? "" : "";
+  const pct = session.changePercent;
+  const pctText = pct === null || !Number.isFinite(pct)
+    ? ""
+    : ` (${pct > 0 ? "+" : pct < 0 ? "" : ""}${pct.toFixed(2)}%)`;
+  const changeText = `${sign}${session.change.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4
+  })}${pctText}`;
+  const volumeText = session.volume >= 1_000_000
+    ? `${(session.volume / 1_000_000).toFixed(2)}M`
+    : session.volume >= 1_000
+      ? `${(session.volume / 1_000).toFixed(1)}K`
+      : session.volume.toLocaleString();
+
+  return (
+    <div className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2.5">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <div className="flex items-baseline gap-3">
+          <span className="text-xs uppercase tracking-wide text-muted-foreground">Today</span>
+          <span className={`font-mono text-base ${tone}`} aria-label="Day change">{changeText}</span>
+        </div>
+        <span className="text-[11px] text-muted-foreground">Session {session.sessionDate}</span>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-xs sm:grid-cols-5">
+        <SessionStatCell label="Open" value={formatPrice(session.open)} />
+        <SessionStatCell label="High" value={formatPrice(session.high)} />
+        <SessionStatCell label="Low" value={formatPrice(session.low)} />
+        <SessionStatCell label="VWAP" value={formatPrice(session.vwap)} />
+        <SessionStatCell label="Volume" value={volumeText} />
+      </div>
+    </div>
+  );
+}
+
+function SessionStatCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between sm:flex-col sm:items-start">
+      <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</span>
+      <span className="text-foreground">{value}</span>
     </div>
   );
 }

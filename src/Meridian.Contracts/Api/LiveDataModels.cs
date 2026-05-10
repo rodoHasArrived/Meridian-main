@@ -27,6 +27,25 @@ public sealed record TradesResponse(
 );
 
 /// <summary>
+/// Per-symbol intraday session statistics surfaced alongside live quotes so the watchlist
+/// and quote screens can render day open / high / low / change without an extra round trip.
+/// </summary>
+public sealed record SessionStatsDto(
+    string SessionDate,
+    decimal Open,
+    decimal High,
+    decimal Low,
+    decimal Last,
+    long Volume,
+    decimal Vwap,
+    long TradeCount,
+    decimal Change,
+    decimal? ChangePercent,
+    DateTimeOffset FirstTradeAt,
+    DateTimeOffset LastTradeAt
+);
+
+/// <summary>
 /// Response DTO for a single quote snapshot.
 /// </summary>
 public sealed record QuoteDataResponse(
@@ -40,7 +59,8 @@ public sealed record QuoteDataResponse(
     decimal? Spread,
     long SequenceNumber,
     string? StreamId,
-    string? Venue
+    string? Venue,
+    SessionStatsDto? Session = null
 );
 
 /// <summary>
@@ -55,7 +75,8 @@ public sealed record QuotesResponse(
 /// <summary>
 /// One row in the multi-symbol quotes snapshot — the latest BBO plus the last trade
 /// (if any) so a watchlist can render bid / ask / last / spread for every symbol from
-/// a single request.
+/// a single request. <see cref="Session"/> carries the intraday day-statistics for the
+/// symbol when at least one trade has been observed since the session anchor.
 /// </summary>
 public sealed record QuotesSnapshotItem(
     string Symbol,
@@ -71,7 +92,8 @@ public sealed record QuotesSnapshotItem(
     DateTimeOffset? LastTradeTimestamp,
     long SequenceNumber,
     string? StreamId,
-    string? Venue
+    string? Venue,
+    SessionStatsDto? Session = null
 );
 
 /// <summary>
