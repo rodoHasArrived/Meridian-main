@@ -540,4 +540,25 @@ public static class UiApiRoutes
     public const string QuantRun = "/api/quant/run";
     public const string QuantParameters = "/api/quant/parameters";
     public const string QuantTemplates = "/api/quant/templates";
+
+    // Demo mode endpoints
+    public const string DemoMode = "/api/demo/mode";
+    public const string DemoSymbols = "/api/demo/symbols";
+    public const string DemoMarketData = "/api/demo/market-data/{symbol}";
+    public const string DemoHistoricalData = "/api/demo/historical/{symbol}";
+
+    // Symbol universe management endpoints
+    public const string SymbolUpdate = "/api/symbols/{symbol}/update";
+    public const string SymbolDelete = "/api/symbols/{symbol}";
+    public const string SymbolCreate = "/api/symbols/create";
+
+    // Backfill validation endpoints
+    public const string BackfillValidation = "/api/backfill/validation";
+    public const string BackfillValidationBySymbol = "/api/backfill/validation/{symbol}";
+    public const string BackfillGapDetection = "/api/backfill/gaps";
+    public const string BackfillCompleteness = "/api/backfill/completeness";
+
+    // Provider credential verification endpoints
+    public const string ProviderCredentialsValidate = "/api/providers/{provider}/validate-credentials";
+    public const string ProviderConnectionTest = "/api/providers/{provider}/test-connection";
 }
