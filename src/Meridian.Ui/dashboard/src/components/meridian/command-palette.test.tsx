@@ -70,6 +70,48 @@ describe("CommandPalette", () => {
     expect(screen.queryByLabelText("Trading, current workspace")).not.toBeInTheDocument();
   });
 
+  it("opens the first filtered command when Enter is pressed from search", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+
+    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/trading"] });
+
+    await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "settings{Enter}");
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("keeps the palette open when Enter is pressed with no command matches", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+
+    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/trading"] });
+
+    await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "missing command{Enter}");
+
+    expect(screen.getByText("No matching commands")).toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it("moves through commands with arrow keys from the search field", () => {
+    renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, { initialEntries: ["/trading"] });
+
+    const search = screen.getByRole("searchbox", { name: "Search command palette" });
+    const currentTrading = screen.getByLabelText("Trading, current workspace");
+    const portfolio = screen.getByLabelText("Open Portfolio workspace");
+
+    expect(search).toHaveFocus();
+
+    fireEvent.keyDown(window, { key: "ArrowDown" });
+    expect(currentTrading).toHaveFocus();
+
+    fireEvent.keyDown(window, { key: "ArrowDown" });
+    expect(portfolio).toHaveFocus();
+
+    fireEvent.keyDown(window, { key: "ArrowUp" });
+    expect(currentTrading).toHaveFocus();
+  });
+
   it("shows an empty state when command filtering has no matches", async () => {
     const user = userEvent.setup();
 

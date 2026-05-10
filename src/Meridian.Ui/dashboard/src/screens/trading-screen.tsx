@@ -1,4 +1,4 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, Network, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, Network, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, Settings, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -1771,6 +1771,17 @@ function OperatorWorkItemList({
                 <p className="mt-2 font-mono text-[11px] text-foreground/70">
                   {item.metadataText}
                 </p>
+              )}
+              {item.action && (
+                <div className="mt-3">
+                  <Button asChild size="sm" variant="outline" className="bg-background/40">
+                    <Link to={item.action.href} aria-label={item.action.ariaLabel}>
+                      <Settings className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>{item.action.label}</span>
+                    </Link>
+                  </Button>
+                  <span className="sr-only">{item.action.detail}</span>
+                </div>
               )}
             </li>
           ))}

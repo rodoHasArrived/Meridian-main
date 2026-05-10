@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { evidenceWorkbenchPath } from "@/lib/workspace";
-import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdAccount,
@@ -121,6 +121,13 @@ export interface PortfolioBrokerageWarningRow {
   ariaLabel: string;
 }
 
+export interface PortfolioBrokerageSetupAction {
+  label: string;
+  href: string;
+  ariaLabel: string;
+  detail: string;
+}
+
 export interface PortfolioBackendLink {
   id: string;
   method: "GET";
@@ -199,6 +206,7 @@ export interface PortfolioScreenViewModel {
   hasBrokeragePositions: boolean;
   brokeragePositionRows: PortfolioBrokeragePositionRow[];
   brokerageEmptyText: string;
+  brokerageSetupAction: PortfolioBrokerageSetupAction | null;
   hasPositions: boolean;
   positionRows: PortfolioPositionRow[];
   positionListLabel: string;
@@ -398,6 +406,11 @@ export function buildPortfolioScreenViewModel({
     brokerageEmptyText: brokeragePortfolio
       ? `No ${providerLabel} positions are available for the selected account.`
       : `${providerLabel} portfolio sync has not produced a household projection yet.`,
+    brokerageSetupAction: buildBrokerageSetupAction({
+      connection: brokerageConnection,
+      portfolio: brokeragePortfolio,
+      providerLabel
+    }),
     hasPositions: positionRows.length > 0,
     positionRows,
     positionListLabel: "Open positions",
@@ -472,6 +485,31 @@ export function buildPortfolioFallbackMetrics({
       tone: hasPositions ? "success" : "default"
     }
   ];
+}
+
+function buildBrokerageSetupAction({
+  connection,
+  portfolio,
+  providerLabel
+}: {
+  connection: BrokerageConnectionStatus | null | undefined;
+  portfolio: BrokerageHouseholdPortfolio | null | undefined;
+  providerLabel: string;
+}): PortfolioBrokerageSetupAction | null {
+  const connectionNeedsSetup = connection?.isConnected !== true;
+  const portfolioNeedsSetup = !portfolio || portfolio.accounts.length === 0;
+  if (!connectionNeedsSetup && !portfolioNeedsSetup) {
+    return null;
+  }
+
+  return {
+    label: "Open provider setup",
+    href: "/settings#alpaca-provider-setup",
+    ariaLabel: `Open ${providerLabel} provider setup from Portfolio brokerage panel`,
+    detail: connectionNeedsSetup
+      ? `Verify ${providerLabel} credentials before accepting brokerage portfolio state.`
+      : `Review ${providerLabel} sync setup before accepting an empty household portfolio.`
+  };
 }
 
 function buildPortfolioHeaderChips({
@@ -887,35 +925,21 @@ function buildWorkflowTaskPanel({
       }
     ],
     backendLinks: [
-      {
-        id: "workstation-trading",
-        method: "GET",
-        label: "Trading workspace",
-        href: WORKSTATION_API_ENDPOINTS.trading,
-        ariaLabel: "Open GET /api/workstation/trading backend payload"
-      },
-      {
-        id: "trading-readiness",
-        method: "GET",
-        label: "Trading readiness",
-        href: WORKSTATION_API_ENDPOINTS.tradingReadiness,
-        ariaLabel: "Open GET /api/workstation/trading/readiness backend payload"
-      },
-      {
-        id: "portfolio-aggregate",
-        method: "GET",
-        label: "Portfolio aggregate",
-        href: "/api/portfolio/aggregate",
-        ariaLabel: "Open GET /api/portfolio/aggregate backend payload"
-      },
-      {
-        id: "portfolio-exposure",
-        method: "GET",
-        label: "Portfolio exposure",
-        href: "/api/portfolio/exposure",
-        ariaLabel: "Open GET /api/portfolio/exposure backend payload"
-      }
+      buildPortfolioBackendLink("workstation-trading", "Trading workspace", WORKSTATION_API_ENDPOINTS.trading),
+      buildPortfolioBackendLink("trading-readiness", "Trading readiness", WORKSTATION_API_ENDPOINTS.tradingReadiness),
+      buildPortfolioBackendLink("portfolio-aggregate", "Portfolio aggregate", PORTFOLIO_API_ENDPOINTS.aggregate),
+      buildPortfolioBackendLink("portfolio-exposure", "Portfolio exposure", PORTFOLIO_API_ENDPOINTS.exposure)
     ]
+  };
+}
+
+function buildPortfolioBackendLink(id: string, label: string, href: string): PortfolioBackendLink {
+  return {
+    id,
+    method: "GET",
+    label,
+    href,
+    ariaLabel: `Open GET ${href} backend payload`
   };
 }
 

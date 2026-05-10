@@ -660,6 +660,12 @@ describe("trading readiness view model", () => {
         kind: "BrokerageSync",
         label: "Brokerage sync failed",
         metadataText: "Trading · AccountPortfolio",
+        action: {
+          label: "Fix provider setup",
+          href: "/settings#alpaca-provider-setup",
+          ariaLabel: "Open provider setup for Brokerage sync failed",
+          detail: "Review provider credentials and connection status in Settings."
+        },
         ariaLabel: "Critical readiness item. Brokerage sync failed. Sync broker credentials before paper operation. Trading · AccountPortfolio"
       })
     ]);
@@ -703,7 +709,13 @@ describe("trading readiness view model", () => {
     expect(state.workItemOverflowLabel).toBe("2 more readiness items in the Operator Readiness Console.");
     expect(state.visibleWorkItems[0]).toMatchObject({
       workItemId: "work-1",
-      metadataText: "Trading · RunRisk · run-1 · audit-1"
+      metadataText: "Trading · RunRisk · run-1 · audit-1",
+      action: {
+        label: "Fix provider setup",
+        href: "/settings#alpaca-provider-setup",
+        ariaLabel: "Open provider setup for Work item 1",
+        detail: "Review provider credentials and connection status in Settings."
+      }
     });
     expect(state.visibleWarnings.map((warning) => warning.text)).toEqual([
       "Warning one.",

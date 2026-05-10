@@ -14,6 +14,7 @@ import type {
   SystemOverviewResponse,
   TradingWorkspaceResponse,
   WorkflowLibrary,
+  WorkflowPreset,
   WorkflowPresetLibrary
 } from "@/types";
 
@@ -153,6 +154,33 @@ describe("useWorkstationData", () => {
     expect(api.resetDevelopmentFixtureUsage).toHaveBeenCalled();
     expect(result.current.usingDevelopmentFixtures).toBe(true);
   });
+
+  it("merges workflow preset mutation results into the shell catalog", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "workflow");
+      await flushAsync();
+    });
+
+    act(() => {
+      result.current.upsertWorkflowPreset(buildPreset("daily-open", "Daily open", false, "2026-01-01T00:00:00Z"));
+      result.current.upsertWorkflowPreset(buildPreset("risk-review", "Risk review", true, "2026-01-02T00:00:00Z"));
+      result.current.upsertWorkflowPreset(buildPreset("daily-open", "Daily open", true, "2026-01-03T00:00:00Z"));
+    });
+
+    expect(result.current.workflowPresets?.presets.map((preset) => preset.presetId)).toEqual([
+      "daily-open",
+      "risk-review"
+    ]);
+    expect(result.current.workflowPresets?.presets[0]).toMatchObject({
+      presetId: "daily-open",
+      isPinned: true,
+      lastUsedAt: "2026-01-03T00:00:00Z"
+    });
+  });
 });
 
 function StrictModeWrapper({ children }: { children: ReactNode }) {
@@ -194,7 +222,10 @@ function resolveRefreshBatch(index: number, marker: string) {
   resolveRequest<BrokerageConnectionStatus>("brokerageConnection", index, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
   resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", index, { marker: `${marker} brokerage` } as unknown as BrokerageHouseholdPortfolio);
   resolveRequest<WorkflowLibrary>("workflowLibrary", index, { marker: `${marker} workflows` } as unknown as WorkflowLibrary);
-  resolveRequest<WorkflowPresetLibrary>("workflowPresets", index, { marker: `${marker} presets` } as unknown as WorkflowPresetLibrary);
+  resolveRequest<WorkflowPresetLibrary>("workflowPresets", index, {
+    generatedAt: "2026-01-01T00:00:00Z",
+    presets: []
+  });
 }
 
 function resolveRequest<T>(key: keyof typeof requests, index: number, value: T) {
@@ -209,4 +240,24 @@ function resolveRequest<T>(key: keyof typeof requests, index: number, value: T) 
 async function flushAsync() {
   await Promise.resolve();
   await Promise.resolve();
+}
+
+function buildPreset(presetId: string, name: string, isPinned: boolean, lastUsedAt: string): WorkflowPreset {
+  return {
+    presetId,
+    name,
+    description: null,
+    workflowId: "paper-trading-readiness",
+    workflowTitle: "Paper Trading Readiness",
+    actionId: "workflow.trading.review-paper-candidate",
+    actionLabel: "Review Candidate for Paper",
+    workspaceId: "trading",
+    workspaceTitle: "Trading",
+    targetPageTag: "TradingReadiness",
+    tags: [],
+    isPinned,
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: lastUsedAt,
+    lastUsedAt
+  };
 }

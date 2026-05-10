@@ -9,6 +9,7 @@ import {
   buildLiveQuoteSymbolLookupViewModel,
   buildLiveQuotesMarketViewModel,
   buildOrderRequest,
+  buildPriceSparklineViewModel,
   validateQuickTicket
 } from "@/screens/live-quotes-screen.view-model";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
@@ -360,7 +361,56 @@ describe("buildLiveQuotesMarketViewModel", () => {
       lastPriceLabel: "188.07",
       changeLabel: "0.00 (0.00%)",
       changeTone: "default",
+      strokeToken: "var(--chart-bench)",
       statusMessage: null
+    });
+    expect(vm.priceChart.sparkline).toMatchObject({
+      viewBox: "0 0 800 180",
+      strokeToken: "var(--chart-bench)",
+      highLabel: "188.07",
+      lowLabel: "188.07",
+      ariaLabel: "Recent AAPL trade prices, ranging from 188.07 to 188.07."
+    });
+    expect(vm.priceChart.sparkline?.points).toMatch(/^\d+\.\d{2},\d+\.\d{2}$/);
+  });
+
+  it("keeps sparkline projection in the view model and returns null without chartable prints", () => {
+    const empty = computeIntradayMetrics([]);
+
+    expect(buildPriceSparklineViewModel(empty, "var(--chart-bench)", "Empty chart")).toBeNull();
+
+    const metrics = computeIntradayMetrics([
+      {
+        symbol: "MSFT",
+        timestamp: "2026-05-08T15:01:00.000Z",
+        price: 421.5,
+        size: 20,
+        aggressor: "Buy",
+        sequenceNumber: 2,
+        streamId: null,
+        venue: "NYSE"
+      },
+      {
+        symbol: "MSFT",
+        timestamp: "2026-05-08T15:00:00.000Z",
+        price: 420,
+        size: 10,
+        aggressor: "Sell",
+        sequenceNumber: 1,
+        streamId: null,
+        venue: "NYSE"
+      }
+    ]);
+
+    expect(buildPriceSparklineViewModel(metrics, "var(--chart-up)", "MSFT chart")).toMatchObject({
+      viewBox: "0 0 800 180",
+      guideStartX: "8.00",
+      guideEndX: "792.00",
+      labelX: "792.00",
+      highLabel: "421.50",
+      lowLabel: "420.00",
+      strokeToken: "var(--chart-up)",
+      ariaLabel: "MSFT chart"
     });
   });
 

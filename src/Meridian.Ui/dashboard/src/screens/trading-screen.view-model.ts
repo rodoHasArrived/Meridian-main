@@ -356,7 +356,15 @@ export interface TradingReadinessWorkItemRow {
   detail: string;
   tone: OperatorWorkItem["tone"];
   metadataText: string | null;
+  action: TradingReadinessWorkItemAction | null;
   ariaLabel: string;
+}
+
+export interface TradingReadinessWorkItemAction {
+  label: string;
+  href: string;
+  ariaLabel: string;
+  detail: string;
 }
 
 export interface TradingReadinessWarningRow {
@@ -601,6 +609,7 @@ function buildTradingReadinessWorkItemRows(items: OperatorWorkItem[]): TradingRe
       detail: item.detail,
       tone: item.tone,
       metadataText: metadataText || null,
+      action: buildTradingReadinessWorkItemAction(item),
       ariaLabel: [
         `${item.tone} readiness item`,
         item.label,
@@ -609,6 +618,19 @@ function buildTradingReadinessWorkItemRows(items: OperatorWorkItem[]): TradingRe
       ].filter(Boolean).map((part) => String(part).trim().replace(/[.]+$/g, "")).join(". ")
     };
   });
+}
+
+function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingReadinessWorkItemAction | null {
+  if (item.kind !== "BrokerageSync") {
+    return null;
+  }
+
+  return {
+    label: "Fix provider setup",
+    href: "/settings#alpaca-provider-setup",
+    ariaLabel: `Open provider setup for ${item.label}`,
+    detail: "Review provider credentials and connection status in Settings."
+  };
 }
 
 function buildTradingReadinessWarningRows(warnings: string[]): TradingReadinessWarningRow[] {

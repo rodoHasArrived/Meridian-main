@@ -21,11 +21,11 @@ import { getLiveOrderbook, getLiveQuote, getLiveTrades, submitOrder } from "@/li
 import {
   computeIntradayMetrics,
   useLiveQuotesScreenViewModel,
-  type IntradayMetrics,
   type LiveQuotesBboPanelViewModel,
   type LiveQuotesDepthLadderViewModel,
   type LiveQuotesPanelState,
   type LiveQuotesPriceChartViewModel,
+  type LiveQuotesSparklineViewModel,
   type LiveQuotesTradeRowViewModel,
   type QuickTradeTicketViewModel
 } from "@/screens/live-quotes-screen.view-model";
@@ -137,7 +137,6 @@ export function LiveQuotesScreen() {
         <>
         <HistoricalChartCard symbol={activeSymbol} />
         <PriceChartCard
-          metrics={marketVm.intraday}
           viewModel={marketVm.priceChart}
         />
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
@@ -511,13 +510,11 @@ const tradeAggressorClass = {
 } as const;
 
 interface PriceChartCardProps {
-  metrics: IntradayMetrics;
   viewModel: LiveQuotesPriceChartViewModel;
 }
 
-function PriceChartCard({ metrics, viewModel }: PriceChartCardProps) {
+function PriceChartCard({ viewModel }: PriceChartCardProps) {
   const toneClass = chartChangeToneClass[viewModel.changeTone];
-  const stroke = chartStrokeToken[viewModel.strokeTone];
 
   return (
     <Card>
@@ -550,15 +547,7 @@ function PriceChartCard({ metrics, viewModel }: PriceChartCardProps) {
           </p>
         ) : (
           <div className="space-y-3">
-            <PriceSparkline
-              series={metrics.series}
-              stroke={stroke}
-              high={metrics.high}
-              low={metrics.low}
-              highLabel={viewModel.stats.find((stat) => stat.id === "high")?.value ?? ""}
-              lowLabel={viewModel.stats.find((stat) => stat.id === "low")?.value ?? ""}
-              ariaLabel={viewModel.ariaLabel}
-            />
+            {viewModel.sparkline ? <PriceSparkline sparkline={viewModel.sparkline} /> : null}
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
               {viewModel.stats.map((stat) => (
                 <ChartStat key={stat.id} label={stat.label} value={stat.value} />
@@ -577,12 +566,6 @@ const chartChangeToneClass = {
   default: "text-foreground"
 } as const;
 
-const chartStrokeToken = {
-  positive: "var(--meridian-chart-positive, #10b981)",
-  negative: "var(--meridian-chart-danger, #ef4444)",
-  default: "var(--meridian-chart-stroke, #94a3b8)"
-} as const;
-
 function ChartStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-border/60 bg-secondary/25 px-2.5 py-1.5">
@@ -592,102 +575,72 @@ function ChartStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-interface PriceSparklineProps {
-  series: { ts: number; price: number }[];
-  stroke: string;
-  high: number | null;
-  low: number | null;
-  highLabel: string;
-  lowLabel: string;
-  ariaLabel: string;
-}
-
-function PriceSparkline({ series, stroke, high, low, highLabel, lowLabel, ariaLabel }: PriceSparklineProps) {
-  const width = 800;
-  const height = 180;
-  const padX = 8;
-  const padY = 14;
-
-  if (series.length === 0 || high === null || low === null) {
-    return null;
-  }
-
-  const minTs = series[0]!.ts;
-  const maxTs = series[series.length - 1]!.ts;
-  const tsSpan = Math.max(1, maxTs - minTs);
-  const priceSpan = Math.max(high - low, Math.max(high * 0.0005, 0.01));
-  const xFor = (ts: number) => padX + ((ts - minTs) / tsSpan) * (width - padX * 2);
-  const yFor = (price: number) => padY + (1 - (price - low) / priceSpan) * (height - padY * 2);
-
-  const pointsAttr = series.map((p) => `${xFor(p.ts).toFixed(2)},${yFor(p.price).toFixed(2)}`).join(" ");
-  const lastPoint = series[series.length - 1]!;
-  const lastX = xFor(lastPoint.ts);
-  const lastY = yFor(lastPoint.price);
-  const baseY = (height - padY).toFixed(2);
-  const areaSegments = [`M ${xFor(series[0]!.ts).toFixed(2)} ${baseY}`];
-  for (const point of series) {
-    areaSegments.push(`L ${xFor(point.ts).toFixed(2)} ${yFor(point.price).toFixed(2)}`);
-  }
-  areaSegments.push(`L ${lastX.toFixed(2)} ${baseY} Z`);
-  const areaPath = areaSegments.join(" ");
-
+function PriceSparkline({ sparkline }: { sparkline: LiveQuotesSparklineViewModel }) {
   return (
     <svg
-      viewBox={`0 0 ${width} ${height}`}
+      viewBox={sparkline.viewBox}
       preserveAspectRatio="none"
       className="block h-44 w-full overflow-visible"
       role="img"
-      aria-label={ariaLabel}
+      aria-label={sparkline.ariaLabel}
     >
       <line
-        x1={padX}
-        x2={width - padX}
-        y1={yFor(high)}
-        y2={yFor(high)}
+        x1={sparkline.guideStartX}
+        x2={sparkline.guideEndX}
+        y1={sparkline.highGuideY}
+        y2={sparkline.highGuideY}
         stroke="currentColor"
         strokeOpacity="0.15"
         strokeDasharray="4 4"
       />
       <line
-        x1={padX}
-        x2={width - padX}
-        y1={yFor(low)}
-        y2={yFor(low)}
+        x1={sparkline.guideStartX}
+        x2={sparkline.guideEndX}
+        y1={sparkline.lowGuideY}
+        y2={sparkline.lowGuideY}
         stroke="currentColor"
         strokeOpacity="0.15"
         strokeDasharray="4 4"
       />
-      <path d={areaPath} fill={stroke} fillOpacity="0.12" stroke="none" />
+      <path d={sparkline.areaPath} fill={sparkline.strokeToken} fillOpacity="0.12" stroke="none" />
       <polyline
         fill="none"
-        stroke={stroke}
+        stroke={sparkline.strokeToken}
         strokeWidth="1.75"
         strokeLinejoin="round"
         strokeLinecap="round"
-        points={pointsAttr}
+        points={sparkline.points}
       />
-      <circle cx={lastX} cy={lastY} r="3.25" fill={stroke} stroke="currentColor" strokeOpacity="0.4" strokeWidth="1" />
+      <circle
+        cx={sparkline.lastPoint.x}
+        cy={sparkline.lastPoint.y}
+        r="3.25"
+        fill={sparkline.strokeToken}
+        stroke="currentColor"
+        strokeOpacity="0.4"
+        strokeWidth="1"
+      />
       <text
-        x={width - padX}
-        y={Math.max(yFor(high) - 4, 12)}
+        x={sparkline.labelX}
+        y={sparkline.highLabelY}
         textAnchor="end"
         fontFamily="IBM Plex Mono, ui-monospace"
         fontSize="10"
         fill="currentColor"
         fillOpacity="0.55"
       >
-        {highLabel}
+        {sparkline.highLabel}
       </text>
       <text
-        x={width - padX}
-        y={Math.min(yFor(low) + 12, height - 4)}
+        x={sparkline.labelX}
+        y={sparkline.lowLabelY}
         textAnchor="end"
         fontFamily="IBM Plex Mono, ui-monospace"
         fontSize="10"
         fill="currentColor"
         fillOpacity="0.55"
       >
-        {lowLabel}
+        {sparkline.lowLabel}
       </text>
     </svg>
   );

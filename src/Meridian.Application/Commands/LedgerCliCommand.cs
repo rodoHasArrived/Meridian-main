@@ -9,6 +9,8 @@ namespace Meridian.Application.Commands;
 /// </summary>
 internal sealed class LedgerCliCommand : ICliCommand
 {
+    private readonly LedgerTextJournalReportService _reportService = new();
+
     private static readonly HashSet<string> s_supportedReports = new(StringComparer.OrdinalIgnoreCase)
     {
         "accounts",
@@ -38,10 +40,7 @@ internal sealed class LedgerCliCommand : ICliCommand
         try
         {
             var lines = await File.ReadAllLinesAsync(options.JournalPath, ct).ConfigureAwait(false);
-            var document = LedgerTextJournalParser.Parse(lines);
-            var report = LedgerTextReportRenderer.Render(
-                document,
-                new LedgerTextReportOptions(options.Report, options.AccountFilter));
+            var report = _reportService.RenderReport(lines, new LedgerTextReportOptions(options.Report, options.AccountFilter));
             Console.Write(report);
             return CliResult.Ok();
         }

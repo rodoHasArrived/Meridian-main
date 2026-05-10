@@ -4,7 +4,8 @@ import { X } from "lucide-react";
 import {
   buildCommandPaletteViewModel,
   resolveCommandPaletteKeyCommand,
-  type CommandPaletteFocusBoundary
+  type CommandPaletteFocusBoundary,
+  type CommandPaletteFocusTarget
 } from "@/components/meridian/command-palette.view-model";
 import { cn } from "@/lib/utils";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
@@ -15,8 +16,9 @@ import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
  * Opened and closed by the parent via `open` / `onOpenChange`. The current workspace
  * item (matched from `useLocation`) is highlighted and receives initial focus on open.
  *
- * **Keyboard:** Escape closes the palette. Tab and Shift-Tab are contained inside
- * the modal command surface while it is open.
+ * **Keyboard:** Escape closes the palette. Arrow Up/Down moves across command
+ * results. Tab and Shift-Tab are contained inside the modal command surface while
+ * it is open.
  *
  * **Backdrop:** clicking outside the panel card calls `onOpenChange(false)`.
  *
@@ -79,7 +81,8 @@ export function CommandPalette({
       const command = resolveCommandPaletteKeyCommand({
         key: event.key,
         shiftKey: event.shiftKey,
-        focusBoundary: getCommandPaletteFocusBoundary(dialogRef.current, document.activeElement)
+        focusBoundary: getCommandPaletteFocusBoundary(dialogRef.current, document.activeElement),
+        focusTarget: getCommandPaletteFocusTarget(searchInputRef.current, document.activeElement)
       });
 
       if (command === "close") {
@@ -91,6 +94,18 @@ export function CommandPalette({
       if (command === "focus-first" || command === "focus-last") {
         event.preventDefault();
         focusCommandPaletteBoundary(dialogRef.current, command);
+        return;
+      }
+
+      if (command === "activate-first-command") {
+        event.preventDefault();
+        activateFirstCommandPaletteCommand(dialogRef.current);
+        return;
+      }
+
+      if (command === "focus-next-command" || command === "focus-previous-command") {
+        event.preventDefault();
+        focusCommandPaletteCommand(dialogRef.current, document.activeElement, command);
       }
     };
 
@@ -244,6 +259,25 @@ function getCommandPaletteFocusableElements(dialog: HTMLDivElement | null): HTML
   );
 }
 
+function getCommandPaletteCommandElements(dialog: HTMLDivElement | null): HTMLAnchorElement[] {
+  if (!dialog) {
+    return [];
+  }
+
+  return Array.from(dialog.querySelectorAll<HTMLAnchorElement>(".command-palette-command"));
+}
+
+function getCommandPaletteFocusTarget(
+  searchInput: HTMLInputElement | null,
+  activeElement: Element | null
+): CommandPaletteFocusTarget {
+  if (activeElement === searchInput) {
+    return "search";
+  }
+
+  return activeElement?.classList.contains("command-palette-command") ? "command" : "other";
+}
+
 function getCommandPaletteFocusBoundary(
   dialog: HTMLDivElement | null,
   activeElement: Element | null
@@ -272,4 +306,31 @@ function focusCommandPaletteBoundary(dialog: HTMLDivElement | null, command: "fo
   const focusable = getCommandPaletteFocusableElements(dialog);
   const target = command === "focus-first" ? focusable[0] : focusable[focusable.length - 1];
   (target ?? dialog)?.focus();
+}
+
+function activateFirstCommandPaletteCommand(dialog: HTMLDivElement | null) {
+  getCommandPaletteCommandElements(dialog)[0]?.click();
+}
+
+function focusCommandPaletteCommand(
+  dialog: HTMLDivElement | null,
+  activeElement: Element | null,
+  command: "focus-next-command" | "focus-previous-command"
+) {
+  const commands = getCommandPaletteCommandElements(dialog);
+  if (commands.length === 0) {
+    return;
+  }
+
+  const currentIndex = activeElement ? commands.findIndex((element) => element === activeElement) : -1;
+  const nextIndex =
+    command === "focus-next-command"
+      ? currentIndex < 0
+        ? 0
+        : (currentIndex + 1) % commands.length
+      : currentIndex < 0
+        ? commands.length - 1
+        : (currentIndex - 1 + commands.length) % commands.length;
+
+  commands[nextIndex]?.focus();
 }

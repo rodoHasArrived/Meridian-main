@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Activity, AlertCircle, CheckCircle2, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
+import { Activity, AlertCircle, CheckCircle2, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +14,12 @@ import {
   getSymbolsStatistics,
   removeSymbol as removeSymbolApi
 } from "@/lib/api";
-import { useWatchlistScreenViewModel, type WatchlistRowViewModel } from "@/screens/watchlist-screen.view-model";
+import {
+  useWatchlistScreenViewModel,
+  type WatchlistDetailFieldTone,
+  type WatchlistRowViewModel,
+  type WatchlistSelectedDetail
+} from "@/screens/watchlist-screen.view-model";
 
 export function WatchlistScreen() {
   const vm = useWatchlistScreenViewModel({
@@ -195,15 +200,25 @@ export function WatchlistScreen() {
                   </Button>
                 ) : null}
               </div>
-              <DenseDataTable
-                columns={buildColumns(vm.removeSymbol)}
-                rows={vm.rows}
-                getRowId={(row) => row.symbol}
-                getRowAriaLabel={(row) => row.ariaLabel}
-                emptyText={vm.listDescription}
-                ariaLabel={vm.tableLabel}
-                caption={vm.tableCaption}
-              />
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)]">
+                <DenseDataTable
+                  columns={buildColumns(vm.selectSymbol, vm.selectedSymbol, vm.removeSymbol)}
+                  rows={vm.rows}
+                  getRowId={(row) => row.symbol}
+                  getRowAriaLabel={(row) => row.ariaLabel}
+                  selectedRowId={vm.selectedRowId}
+                  emptyText={vm.listDescription}
+                  ariaLabel={vm.tableLabel}
+                  caption={vm.tableCaption}
+                />
+                <WatchlistDetailPanel
+                  title={vm.detailPanelTitle}
+                  description={vm.detailPanelDescription}
+                  emptyText={vm.detailPanelEmptyText}
+                  ariaLabel={vm.detailPanelAriaLabel}
+                  detail={vm.selectedDetail}
+                />
+              </div>
             </>
           )}
         </CardContent>
@@ -224,7 +239,19 @@ const quoteStatusClass = {
   danger: "border-danger/30 bg-danger/10 text-danger"
 } as const;
 
-function buildColumns(removeSymbol: (symbol: string) => Promise<void>): DenseDataTableColumn<WatchlistRowViewModel>[] {
+const detailFieldToneClass: Record<WatchlistDetailFieldTone, string> = {
+  default: "text-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger",
+  muted: "text-muted-foreground"
+};
+
+function buildColumns(
+  selectSymbol: (symbol: string) => void,
+  selectedSymbol: string | null,
+  removeSymbol: (symbol: string) => Promise<void>
+): DenseDataTableColumn<WatchlistRowViewModel>[] {
   return [
     {
       id: "symbol",
@@ -283,6 +310,18 @@ function buildColumns(removeSymbol: (symbol: string) => Promise<void>): DenseDat
       align: "right",
       render: (row) => (
         <div className="flex justify-end gap-1.5">
+          <Button
+            type="button"
+            variant={selectedSymbol === row.symbol ? "secondary" : "outline"}
+            size="sm"
+            aria-pressed={selectedSymbol === row.symbol}
+            aria-controls="watchlist-selected-symbol-detail"
+            aria-label={`Inspect ${row.symbol} watchlist detail`}
+            onClick={() => selectSymbol(row.symbol)}
+          >
+            <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="ml-1">Inspect</span>
+          </Button>
           <Button asChild variant="outline" size="sm">
             <Link to={row.quoteHref} aria-label={row.quoteAriaLabel}>
               <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
@@ -312,3 +351,66 @@ const lastToneClass = {
   danger: "text-danger",
   default: "text-foreground"
 } as const;
+
+function WatchlistDetailPanel({
+  title,
+  description,
+  emptyText,
+  ariaLabel,
+  detail
+}: {
+  title: string;
+  description: string;
+  emptyText: string;
+  ariaLabel: string;
+  detail: WatchlistSelectedDetail | null;
+}) {
+  return (
+    <aside
+      id="watchlist-selected-symbol-detail"
+      role="complementary"
+      aria-label={ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="head">{title}</div>
+      <div className="body">
+        {detail ? (
+          <div role="region" aria-label={detail.regionLabel} className="space-y-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="font-mono text-base font-semibold text-foreground">{detail.title}</h3>
+                <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+              </div>
+              <Badge variant={detail.statusVariant} aria-label={detail.statusAriaLabel}>
+                {detail.statusLabel}
+              </Badge>
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">{detail.description}</p>
+            <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+              {detail.fields.map((field) => (
+                <div key={field.label} className="rounded-sm border border-border/60 bg-background/35 px-2.5 py-2">
+                  <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                  <dd className={`mt-1 break-words font-mono text-xs ${detailFieldToneClass[field.tone]}`}>
+                    {field.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <Button asChild variant="outline" size="sm" className="bg-background/40">
+              <Link to={detail.quoteActionHref} aria-label={detail.quoteActionAriaLabel}>
+                <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>{detail.quoteActionLabel}</span>
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div role="status" className="rounded-md border border-dashed border-border/70 bg-secondary/20 px-3 py-3">
+            <div className="text-sm font-semibold text-foreground">{description}</div>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{emptyText}</p>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}

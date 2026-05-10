@@ -376,7 +376,11 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               <CardDescription>Entry points for report/export handoff using existing export infrastructure.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button asChild><a href="/api/export/preview" target="_blank" rel="noreferrer">Preview report payload</a></Button>
+              <Button asChild>
+                <a href={reporting.backendLinks[0].href} target="_blank" rel="noreferrer" aria-label={reporting.backendLinks[0].ariaLabel}>
+                  {reporting.backendLinks[0].label}
+                </a>
+              </Button>
               <Button
                 type="button"
                 variant="outline"
@@ -387,7 +391,11 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               >
                 {reporting.exportButtonLabel}
               </Button>
-              <Button asChild variant="outline"><a href="/api/export/formats" target="_blank" rel="noreferrer">List export formats</a></Button>
+              <Button asChild variant="outline">
+                <a href={reporting.backendLinks[1].href} target="_blank" rel="noreferrer" aria-label={reporting.backendLinks[1].ariaLabel}>
+                  {reporting.backendLinks[1].label}
+                </a>
+              </Button>
               {reporting.exportStatusText ? (
                 <p
                   role={reporting.exportStatusRole}

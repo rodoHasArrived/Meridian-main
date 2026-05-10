@@ -42,6 +42,7 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
         var required = new List<string>();
         var generatedAt = DateTimeOffset.UtcNow;
         var detailId = NodeId(context.Subject, "detail");
+        var ledgerId = NodeId(context.Subject, "ledger");
         nodes.Add(Node(
             context.Subject,
             detailId,
@@ -73,7 +74,10 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
                 ? "No ledger summary is available for this run."
                 : $"Ledger evidence is available with {run.Ledger.LedgerEntryCount} entry reference(s).",
             "StrategyRunReadService",
-            run.Summary.LastUpdatedAt);
+            run.Summary.LastUpdatedAt,
+            artifacts: run.Ledger is null
+                ? []
+                : BuildRunLedgerArtifacts(ledgerId, run.Summary.RunId, run.Ledger.AsOf));
 
         AddLinkedNode(
             nodes,
@@ -170,6 +174,27 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
 
     private static EvidenceContribution Empty(string warning)
         => new([], [], [], [], [warning]);
+
+    private static IReadOnlyList<EvidenceArtifactRefDto> BuildRunLedgerArtifacts(
+        string ledgerId,
+        string runId,
+        DateTimeOffset generatedAt)
+    {
+        var encodedRunId = Uri.EscapeDataString(runId);
+        return
+        [
+            Artifact(
+                $"{ledgerId}:journal",
+                "ledger-journal",
+                route: $"/api/workstation/runs/{encodedRunId}/ledger/journal",
+                generatedAt: generatedAt),
+            Artifact(
+                $"{ledgerId}:trial-balance",
+                "ledger-trial-balance",
+                route: $"/api/workstation/runs/{encodedRunId}/ledger/trial-balance",
+                generatedAt: generatedAt)
+        ];
+    }
 }
 
 public sealed class TradingReadinessEvidenceContributor : IEvidenceContributor
@@ -508,10 +533,11 @@ internal static class EvidenceContributionHelpers
         string summary,
         string sourceSystem,
         DateTimeOffset? asOf,
-        IReadOnlyList<string>? workItemIds = null)
+        IReadOnlyList<string>? workItemIds = null,
+        IReadOnlyList<EvidenceArtifactRefDto>? artifacts = null)
     {
         var nodeId = NodeId(subject, suffix);
-        nodes.Add(Node(subject, nodeId, kind, status, summary, sourceSystem, asOf, workItemIds: workItemIds));
+        nodes.Add(Node(subject, nodeId, kind, status, summary, sourceSystem, asOf, artifacts, workItemIds));
         edges.Add(new EvidenceEdgeDto(parentId, nodeId, "supports", $"{kind} supports {parentId}."));
         requiredIds?.Add(nodeId);
     }

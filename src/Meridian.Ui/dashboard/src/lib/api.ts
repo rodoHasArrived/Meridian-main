@@ -63,10 +63,22 @@ import type {
   ExecutionManualOverride
 } from "@/types";
 import {
+  BACKFILL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
+  EXPORT_API_ENDPOINTS,
+  PORTFOLIO_API_ENDPOINTS,
+  PROVIDER_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
+  QUALITY_API_ENDPOINTS,
+  QUANT_API_ENDPOINTS,
+  RECONCILIATION_API_ENDPOINTS,
   REPLAY_API_ENDPOINTS,
+  SECURITY_MASTER_API_ENDPOINTS,
+  SYMBOL_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
+  brokerageConnectionConnectEndpoint,
+  brokerageConnectionEndpoint,
+  brokerageConnectionStatusEndpoint,
   executionAuditEndpoint,
   executionManualOverrideClearEndpoint,
   executionOrderCancelEndpoint,
@@ -74,24 +86,63 @@ import {
   executionSessionCloseEndpoint,
   executionSessionEndpoint,
   executionSessionReplayEndpoint,
+  historicalBarsEndpoint,
+  marketDataOrderbookEndpoint,
+  marketDataQuoteEndpoint,
+  marketDataQuotesSnapshotEndpoint,
+  marketDataTradesEndpoint,
   portfolioHouseholdEndpoint,
+  portfolioSymbolExposureEndpoint,
   promotionEvaluateEndpoint,
+  providerRemoveEndpoint,
+  providerTestEndpoint,
+  qualityAnomalyAcknowledgeEndpoint,
+  reconciliationBreakAuditEndpoint,
+  reconciliationBreakEndpoint,
+  reconciliationBreakQueueEndpoint,
+  reconciliationBreakResolveEndpoint,
+  reconciliationBreakReviewEndpoint,
+  reconciliationRunEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
+  securityMasterAliasUpsertEndpoint,
+  securityMasterAmendEndpoint,
+  securityMasterConflictsEndpoint,
+  securityMasterConflictResolveEndpoint,
+  securityMasterCorporateActionsEndpoint,
+  securityMasterEntryEndpoint,
+  securityMasterTradingParametersEndpoint,
+  strategyActionEndpoint,
+  strategyRunsEndpoint,
+  symbolArchiveEndpoint,
+  symbolRemoveEndpoint,
+  symbolSearchEndpoint,
   workstationEvidenceExportManifestEndpoint,
   workstationEvidenceGraphEndpoint,
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
   workstationOperatorInboxEndpoint,
+  workstationRunAttributionEndpoint,
+  workstationRunCompareEndpoint,
   workstationRunContinuityEndpoint,
+  workstationRunDiffEndpoint,
+  workstationRunEquityCurveEndpoint,
+  workstationRunFillsEndpoint,
   workstationRunHistoryEndpoint,
   workstationRunLedgerEndpoint,
   workstationRunLedgerJournalEndpoint,
+  workstationRunLedgerTrialBalanceEndpoint,
   workstationRunReconciliationEndpoint,
   workstationRunReconciliationHistoryEndpoint,
   workstationRunReviewPacketEndpoint,
   workstationRunSweepsEndpoint,
   workstationRunTimelineEndpoint,
+  workstationSecurityMasterEconomicDefinitionEndpoint,
+  workstationSecurityMasterEntryEndpoint,
+  workstationSecurityMasterHistoryEndpoint,
+  workstationSecurityMasterIdentityEndpoint,
+  workstationSecurityMasterSearchEndpoint,
+  workstationSecurityMasterTrustSnapshotEndpoint,
   workstationWorkflowSummaryEndpoint,
   workstationWorkflowPresetEndpoint,
   workstationWorkflowPresetPinEndpoint,
@@ -209,18 +260,6 @@ async function deleteJson<T>(path: string): Promise<T> {
   return (text ? JSON.parse(text) : null) as T;
 }
 
-function queryString(params: Record<string, string | number | boolean | null | undefined>) {
-  const search = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== null && value !== undefined && value !== "") {
-      search.set(key, String(value));
-    }
-  }
-
-  const value = search.toString();
-  return value ? `?${value}` : "";
-}
-
 async function getDevelopmentSearchFallback(query: string, take: number, activeOnly: boolean) {
   if (!import.meta.env.DEV) {
     return undefined;
@@ -336,7 +375,7 @@ export function getReportingWorkspace() {
 }
 
 export function runAnalysisExport(profileId: string) {
-  return postJson<ExportAnalysisResult>("/api/export/analysis", { profileId });
+  return postJson<ExportAnalysisResult>(EXPORT_API_ENDPOINTS.analysis, { profileId });
 }
 
 // --- Promotion workflow ---
@@ -437,13 +476,13 @@ export function clearExecutionManualOverride(overrideId: string) {
 
 export function pauseStrategy(strategyId: string) {
   return postJson<{ strategyId: string; action: string; success: boolean; reason: string | null }>(
-    `/api/strategies/${encodeURIComponent(strategyId)}/pause`
+    strategyActionEndpoint(strategyId, "pause")
   );
 }
 
 export function stopStrategy(strategyId: string) {
   return postJson<{ strategyId: string; action: string; success: boolean; reason: string | null }>(
-    `/api/strategies/${encodeURIComponent(strategyId)}/stop`
+    strategyActionEndpoint(strategyId, "stop")
   );
 }
 
@@ -490,33 +529,31 @@ export function getReplayStatus(sessionId: string) {
 // --- Strategy runs ---
 
 export function getStrategyRuns(strategyId: string, type?: "backtest" | "paper" | "live") {
-  const params = type ? `?type=${encodeURIComponent(type)}` : "";
-  return getJson<ResearchRunRecord[]>(`/api/strategies/${encodeURIComponent(strategyId)}/runs${params}`);
+  return getJson<ResearchRunRecord[]>(strategyRunsEndpoint(strategyId, type));
 }
 
 // --- Multi-run comparison and diff ---
 
 export function compareRuns(runIds: string[]) {
-  return postJson<RunComparisonRow[]>("/api/workstation/runs/compare", { runIds });
+  return postJson<RunComparisonRow[]>(workstationRunCompareEndpoint(), { runIds });
 }
 
 export function diffRuns(baseRunId: string, targetRunId: string) {
-  return postJson<RunDiff>("/api/workstation/runs/diff", { baseRunId, targetRunId });
+  return postJson<RunDiff>(workstationRunDiffEndpoint(), { baseRunId, targetRunId });
 }
 
 // --- Run detail drill-ins ---
 
 export function getRunAttribution(runId: string) {
-  return getJson<RunAttributionSummary>(`/api/workstation/runs/${encodeURIComponent(runId)}/attribution`);
+  return getJson<RunAttributionSummary>(workstationRunAttributionEndpoint(runId));
 }
 
 export function getRunFills(runId: string, symbol?: string) {
-  const params = symbol ? `?symbol=${encodeURIComponent(symbol)}` : "";
-  return getJson<RunFillSummary>(`/api/workstation/runs/${encodeURIComponent(runId)}/fills${params}`);
+  return getJson<RunFillSummary>(workstationRunFillsEndpoint(runId, symbol));
 }
 
 export function getRunEquityCurve(runId: string) {
-  return getJson<EquityCurveSummary>(`/api/workstation/runs/${encodeURIComponent(runId)}/equity-curve`);
+  return getJson<EquityCurveSummary>(workstationRunEquityCurveEndpoint(runId));
 }
 
 export function getRunLedger(runId: string) {
@@ -524,13 +561,11 @@ export function getRunLedger(runId: string) {
 }
 
 export function getRunTrialBalance(runId: string, accountType?: string) {
-  const params = accountType ? `?accountType=${encodeURIComponent(accountType)}` : "";
-  return getJson<LedgerTrialBalanceLine[]>(`/api/workstation/runs/${encodeURIComponent(runId)}/ledger/trial-balance${params}`);
+  return getJson<LedgerTrialBalanceLine[]>(workstationRunLedgerTrialBalanceEndpoint(runId, accountType));
 }
 
 export function getRunLedgerJournal(runId: string, options: { from?: string; to?: string } = {}) {
-  const params = queryString(options);
-  return getJson<LedgerJournalLine[]>(`${workstationRunLedgerJournalEndpoint(runId)}${params}`);
+  return getJson<LedgerJournalLine[]>(workstationRunLedgerJournalEndpoint(runId, options));
 }
 
 export function getRunContinuity(runId: string) {
@@ -568,12 +603,7 @@ export function getRunSweeps(limit?: number) {
 // --- Security Master search ---
 
 export async function searchSecurities(query: string, take = 25, activeOnly = true) {
-  const params = new URLSearchParams({
-    query,
-    take: String(take),
-    activeOnly: String(activeOnly)
-  });
-  const path = `/api/workstation/security-master/securities?${params.toString()}`;
+  const path = workstationSecurityMasterSearchEndpoint({ query, take, activeOnly });
   const results = await getJson<SecurityMasterEntry[]>(path);
 
   if (import.meta.env.DEV && results.length === 0) {
@@ -587,132 +617,128 @@ export async function searchSecurities(query: string, take = 25, activeOnly = tr
 }
 
 export function getSecurityDetail(securityId: string) {
-  return getJson<SecurityMasterEntry>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}`);
+  return getJson<SecurityMasterEntry>(workstationSecurityMasterEntryEndpoint(securityId));
 }
 
 export function getSecurityIdentity(securityId: string) {
-  return getJson<SecurityIdentityDrillIn>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/identity`);
+  return getJson<SecurityIdentityDrillIn>(workstationSecurityMasterIdentityEndpoint(securityId));
 }
 
 export function getSecurityHistory(securityId: string) {
-  return getJson<unknown>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/history`);
+  return getJson<unknown>(workstationSecurityMasterHistoryEndpoint(securityId));
 }
 
 export function getSecurityEconomicDefinition(securityId: string) {
-  return getJson<unknown>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/economic-definition`);
+  return getJson<unknown>(workstationSecurityMasterEconomicDefinitionEndpoint(securityId));
 }
 
 export function getSecurityTrustSnapshot(securityId: string) {
-  return getJson<unknown>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/trust-snapshot`);
+  return getJson<unknown>(workstationSecurityMasterTrustSnapshotEndpoint(securityId));
 }
 
 export function createSecurityMasterEntry(request: Record<string, unknown>) {
-  return postJson<SecurityMasterEntry>("/api/security-master", request);
+  return postJson<SecurityMasterEntry>(securityMasterEntryEndpoint(), request);
 }
 
 export function amendSecurityMasterEntry(request: Record<string, unknown>) {
-  return postJson<SecurityMasterEntry>("/api/security-master/amend", request);
+  return postJson<SecurityMasterEntry>(securityMasterAmendEndpoint(), request);
 }
 
 export function upsertSecurityAlias(request: Record<string, unknown>) {
-  return postJson<Record<string, unknown>>("/api/security-master/aliases/upsert", request);
+  return postJson<Record<string, unknown>>(securityMasterAliasUpsertEndpoint(), request);
 }
 
 // --- Security Master corporate actions and trading parameters ---
 
 export function getCorporateActions(securityId: string) {
-  return getJson<CorporateAction[]>(`/api/security-master/${encodeURIComponent(securityId)}/corporate-actions`);
+  return getJson<CorporateAction[]>(securityMasterCorporateActionsEndpoint(securityId));
 }
 
 export function getTradingParameters(securityId: string) {
-  return getJson<TradingParameters>(`/api/security-master/${encodeURIComponent(securityId)}/trading-parameters`);
+  return getJson<TradingParameters>(securityMasterTradingParametersEndpoint(securityId));
 }
 
 // --- Security Master conflicts ---
 
 export function getSecurityConflicts() {
-  return getJson<SecurityMasterConflict[]>("/api/security-master/conflicts");
+  return getJson<SecurityMasterConflict[]>(securityMasterConflictsEndpoint());
 }
 
 export function resolveSecurityConflict(request: ResolveConflictRequest) {
   return postJson<SecurityMasterConflict>(
-    `/api/security-master/conflicts/${encodeURIComponent(request.conflictId)}/resolve`,
+    securityMasterConflictResolveEndpoint(request.conflictId),
     request
   );
 }
 
 export function bulkResolveSecurityConflicts(request: Record<string, unknown>) {
-  return postJson<unknown>("/api/workstation/security-master/conflicts/bulk-resolve", request);
+  return postJson<unknown>(SECURITY_MASTER_API_ENDPOINTS.workstationConflictsBulkResolve, request);
 }
 
 export function runReconciliation(request: Record<string, unknown>) {
-  return postJson<unknown>("/api/workstation/reconciliation/runs", request);
+  return postJson<unknown>(RECONCILIATION_API_ENDPOINTS.runs, request);
 }
 
 export function getReconciliationRun(reconciliationRunId: string) {
-  return getJson<unknown>(`/api/workstation/reconciliation/runs/${encodeURIComponent(reconciliationRunId)}`);
+  return getJson<unknown>(reconciliationRunEndpoint(reconciliationRunId));
 }
 
 export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) {
-  const search = new URLSearchParams();
-  if (status) search.set("status", status);
-  if (fundAccountId) search.set("fundAccountId", fundAccountId);
-  const params = search.toString() ? `?${search.toString()}` : "";
-  return getJson<ReconciliationBreakQueueItem[]>(`/api/workstation/reconciliation/break-queue${params}`);
+  return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId }));
 }
 
 export function getReconciliationBreakDetail(breakId: string) {
-  return getJson<ReconciliationBreakQueueItem>(`/api/workstation/reconciliation/break-queue/${encodeURIComponent(breakId)}`);
+  return getJson<ReconciliationBreakQueueItem>(reconciliationBreakEndpoint(breakId));
 }
 
 export function getReconciliationBreakAudit(breakId: string) {
-  return getJson<unknown>(`/api/workstation/reconciliation/break-queue/${encodeURIComponent(breakId)}/audit`);
+  return getJson<unknown>(reconciliationBreakAuditEndpoint(breakId));
 }
 
 export function reviewReconciliationBreak(request: ReviewReconciliationBreakRequest) {
   return postJson<ReconciliationBreakQueueItem>(
-    `/api/workstation/reconciliation/break-queue/${encodeURIComponent(request.breakId)}/review`,
+    reconciliationBreakReviewEndpoint(request.breakId),
     request
   );
 }
 
 export function resolveReconciliationBreak(request: ResolveReconciliationBreakRequest) {
   return postJson<ReconciliationBreakQueueItem>(
-    `/api/workstation/reconciliation/break-queue/${encodeURIComponent(request.breakId)}/resolve`,
+    reconciliationBreakResolveEndpoint(request.breakId),
     request
   );
 }
 
 export function getReconciliationCalibrationSummary() {
-  return getJson<ReconciliationCalibrationSummary>("/api/workstation/reconciliation/calibration-summary");
+  return getJson<ReconciliationCalibrationSummary>(RECONCILIATION_API_ENDPOINTS.calibrationSummary);
 }
 
 // --- Backfill mutations ---
 
 export function getBackfillProgress() {
-  return getJson<BackfillProgressResponse>("/api/backfill/progress");
+  return getJson<BackfillProgressResponse>(BACKFILL_API_ENDPOINTS.progress);
 }
 
 export function triggerBackfill(request: BackfillTriggerRequest) {
-  return postJson<BackfillTriggerResult>("/api/backfill/run", request);
+  return postJson<BackfillTriggerResult>(BACKFILL_API_ENDPOINTS.run, request);
 }
 
 export function previewBackfill(request: BackfillTriggerRequest) {
-  return postJson<BackfillTriggerResult>("/api/backfill/run/preview", request);
+  return postJson<BackfillTriggerResult>(BACKFILL_API_ENDPOINTS.runPreview, request);
 }
 
 // --- Provider management ---
 
 export function setupProvider(request: import("@/types").ProviderSetupRequest) {
-  return postJson<import("@/types").ProviderSetupResult>("/api/providers/configure", request);
+  return postJson<import("@/types").ProviderSetupResult>(PROVIDER_API_ENDPOINTS.configure, request);
 }
 
 export function removeProvider(providerId: string) {
-  return postJson<{ success: boolean; message: string }>(`/api/providers/${encodeURIComponent(providerId)}/remove`);
+  return postJson<{ success: boolean; message: string }>(providerRemoveEndpoint(providerId));
 }
 
 export function testProviderConnection(providerId: string) {
-  return postJson<{ success: boolean; latency: string | null; message: string }>(`/api/providers/${encodeURIComponent(providerId)}/test`);
+  return postJson<{ success: boolean; latency: string | null; message: string }>(providerTestEndpoint(providerId));
 }
 
 // --- System overview ---
@@ -918,65 +944,65 @@ function formatMetricNumber(value: number): string {
 // --- Symbol management ---
 
 export function getSymbols() {
-  return getJson<import("@/types").SymbolRecord[]>("/api/symbols");
+  return getJson<import("@/types").SymbolRecord[]>(SYMBOL_API_ENDPOINTS.symbols);
 }
 
 export function getSymbolsStatistics() {
-  return getJson<import("@/types").SymbolStatistics>("/api/symbols/statistics");
+  return getJson<import("@/types").SymbolStatistics>(SYMBOL_API_ENDPOINTS.statistics);
 }
 
 export function searchSymbolsQuery(query: string) {
-  return getJson<import("@/types").SymbolRecord[]>(`/api/symbols/search?query=${encodeURIComponent(query)}`);
+  return getJson<import("@/types").SymbolRecord[]>(symbolSearchEndpoint(query));
 }
 
 export function addSymbol(symbol: string, provider?: string) {
-  return postJson<{ success: boolean; symbol: string }>("/api/symbols/add", { symbol, provider: provider ?? null });
+  return postJson<{ success: boolean; symbol: string }>(SYMBOL_API_ENDPOINTS.add, { symbol, provider: provider ?? null });
 }
 
 export function removeSymbol(symbol: string) {
-  return postJson<{ success: boolean; symbol: string }>(`/api/symbols/${encodeURIComponent(symbol)}/remove`);
+  return postJson<{ success: boolean; symbol: string }>(symbolRemoveEndpoint(symbol));
 }
 
 export function archiveSymbol(symbol: string) {
-  return postJson<{ success: boolean; symbol: string }>(`/api/symbols/${encodeURIComponent(symbol)}/archive`);
+  return postJson<{ success: boolean; symbol: string }>(symbolArchiveEndpoint(symbol));
 }
 
 export function bulkAddSymbols(symbols: string[]) {
-  return postJson<{ added: number; skipped: number; errors: string[] }>("/api/symbols/bulk-add", { symbols });
+  return postJson<{ added: number; skipped: number; errors: string[] }>(SYMBOL_API_ENDPOINTS.bulkAdd, { symbols });
 }
 
 // --- Quality monitoring ---
 
 export function getQualityDashboard() {
-  return getJson<import("@/types").QualityDashboardResponse>("/api/quality/dashboard");
+  return getJson<import("@/types").QualityDashboardResponse>(QUALITY_API_ENDPOINTS.dashboard);
 }
 
 export function getQualityGaps() {
-  return getJson<import("@/types").QualityGapEntry[]>("/api/quality/gaps");
+  return getJson<import("@/types").QualityGapEntry[]>(QUALITY_API_ENDPOINTS.gaps);
 }
 
 export function getQualityAnomalies() {
-  return getJson<import("@/types").QualityAnomalyEntry[]>("/api/quality/anomalies");
+  return getJson<import("@/types").QualityAnomalyEntry[]>(QUALITY_API_ENDPOINTS.anomalies);
 }
 
 export function acknowledgeAnomaly(anomalyId: string) {
-  return postJson<void>(`/api/quality/anomalies/${encodeURIComponent(anomalyId)}/acknowledge`);
+  return postJson<void>(qualityAnomalyAcknowledgeEndpoint(anomalyId));
 }
 
 export function getQualityCompleteness() {
-  return getJson<Array<{ symbol: string; score: number; sampledAt: string }>>("/api/quality/completeness");
+  return getJson<Array<{ symbol: string; score: number; sampledAt: string }>>(QUALITY_API_ENDPOINTS.completeness);
 }
 
 export function getRobinhoodConnectionStatus() {
-  return getJson<BrokerageConnectionStatus>("/api/brokerage-connections/robinhood/status");
+  return getJson<BrokerageConnectionStatus>(brokerageConnectionStatusEndpoint("robinhood"));
 }
 
 export function startRobinhoodConnection() {
-  return postJson<BrokerageConnectionStatus>("/api/brokerage-connections/robinhood/connect");
+  return postJson<BrokerageConnectionStatus>(brokerageConnectionConnectEndpoint("robinhood"));
 }
 
 export function revokeRobinhoodConnection() {
-  return deleteJson<BrokerageConnectionStatus>("/api/brokerage-connections/robinhood");
+  return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("robinhood"));
 }
 
 export function getPortfolioWorkspace() {
@@ -984,15 +1010,15 @@ export function getPortfolioWorkspace() {
 }
 
 export function getAlpacaConnectionStatus() {
-  return getJson<BrokerageConnectionStatus>("/api/brokerage-connections/alpaca/status");
+  return getJson<BrokerageConnectionStatus>(brokerageConnectionStatusEndpoint("alpaca"));
 }
 
 export function connectAlpacaConnection(request: AlpacaBrokerageConnectionRequest) {
-  return postJson<BrokerageConnectionStatus>("/api/brokerage-connections/alpaca/connect", request);
+  return postJson<BrokerageConnectionStatus>(brokerageConnectionConnectEndpoint("alpaca"), request);
 }
 
 export function revokeAlpacaConnection() {
-  return deleteJson<BrokerageConnectionStatus>("/api/brokerage-connections/alpaca");
+  return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("alpaca"));
 }
 
 export function getBrokerageHouseholdPortfolio(provider = "alpaca") {
@@ -1000,35 +1026,33 @@ export function getBrokerageHouseholdPortfolio(provider = "alpaca") {
 }
 
 export function getPortfolioAggregate() {
-  return getJson<unknown>("/api/portfolio/aggregate");
+  return getJson<unknown>(PORTFOLIO_API_ENDPOINTS.aggregate);
 }
 
 export function getPortfolioExposure() {
-  return getJson<unknown>("/api/portfolio/exposure");
+  return getJson<unknown>(PORTFOLIO_API_ENDPOINTS.exposure);
 }
 
 export function getPortfolioSymbolExposure(symbol: string) {
-  return getJson<unknown>(`/api/portfolio/symbols/${encodeURIComponent(symbol)}/exposure`);
+  return getJson<unknown>(portfolioSymbolExposureEndpoint(symbol));
 }
 
 // --- Live market data ---
 
 export function getLiveQuote(symbol: string) {
-  return getJson<import("@/types").QuotesResponse>(`/api/data/quotes/${encodeURIComponent(symbol)}`);
+  return getJson<import("@/types").QuotesResponse>(marketDataQuoteEndpoint(symbol));
 }
 
 export function getLiveTrades(symbol: string, limit = 25) {
-  return getJson<import("@/types").TradesResponse>(`/api/data/trades/${encodeURIComponent(symbol)}?limit=${limit}`);
+  return getJson<import("@/types").TradesResponse>(marketDataTradesEndpoint(symbol, limit));
 }
 
 export function getLiveOrderbook(symbol: string, levels = 10) {
-  return getJson<import("@/types").OrderBookResponse>(`/api/data/orderbook/${encodeURIComponent(symbol)}?levels=${levels}`);
+  return getJson<import("@/types").OrderBookResponse>(marketDataOrderbookEndpoint(symbol, levels));
 }
 
 export function getLiveQuotesSnapshot(symbols?: readonly string[]) {
-  const trimmed = symbols?.map((s) => s.trim()).filter((s) => s.length > 0) ?? [];
-  const query = trimmed.length > 0 ? `?symbols=${encodeURIComponent(trimmed.join(","))}` : "";
-  return getJson<import("@/types").QuotesSnapshotResponse>(`/api/data/quotes-snapshot${query}`);
+  return getJson<import("@/types").QuotesSnapshotResponse>(marketDataQuotesSnapshotEndpoint(symbols));
 }
 
 export interface HistoricalBarsRequest {
@@ -1039,26 +1063,19 @@ export interface HistoricalBarsRequest {
 }
 
 export function getHistoricalBars(symbol: string, request: HistoricalBarsRequest) {
-  const params = new URLSearchParams();
-  params.set("intervalMinutes", String(request.intervalMinutes));
-  if (request.from) params.set("from", request.from);
-  if (request.to) params.set("to", request.to);
-  if (request.maxBars !== undefined) params.set("maxBars", String(request.maxBars));
-  return getJson<import("@/types").HistoricalBarsResponse>(
-    `/api/historical/${encodeURIComponent(symbol)}/bars?${params.toString()}`
-  );
+  return getJson<import("@/types").HistoricalBarsResponse>(historicalBarsEndpoint(symbol, request));
 }
 
 // --- Quant Lab ---
 
 export function getQuantTemplates() {
-  return getJson<import("@/types").QuantTemplatesResponse>("/api/quant/templates");
+  return getJson<import("@/types").QuantTemplatesResponse>(QUANT_API_ENDPOINTS.templates);
 }
 
 export function extractQuantParameters(source: string) {
-  return postJson<import("@/types").QuantParametersResponse>("/api/quant/parameters", { source });
+  return postJson<import("@/types").QuantParametersResponse>(QUANT_API_ENDPOINTS.parameters, { source });
 }
 
 export function runQuantScript(request: import("@/types").QuantRunRequest) {
-  return postJson<import("@/types").QuantRunResponse>("/api/quant/run", request);
+  return postJson<import("@/types").QuantRunResponse>(QUANT_API_ENDPOINTS.run, request);
 }

@@ -116,7 +116,11 @@ async function probeMeridianApiTarget(target: string, timeoutMs: number, fetchIm
 }
 
 function isDevelopmentFixtureRequest(req: IncomingMessage): boolean {
-  return (req.method === "GET" || req.method === "HEAD") && req.url?.startsWith("/api/") === true;
+  if (req.method === "GET" || req.method === "HEAD") {
+    return req.url?.startsWith("/api/") === true;
+  }
+
+  return req.method === "POST" && req.url?.split("?")[0] === "/api/quant/parameters";
 }
 
 function writeDevelopmentFixtureResponse(req: IncomingMessage, res: ServerResponse, fixture: unknown) {

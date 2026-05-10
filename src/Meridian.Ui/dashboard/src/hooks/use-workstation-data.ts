@@ -25,6 +25,7 @@ import type {
   SessionInfo,
   SystemOverviewResponse,
   TradingWorkspaceResponse,
+  WorkflowPreset,
   WorkflowLibrary,
   WorkflowPresetLibrary,
   WorkspaceKey
@@ -211,10 +212,58 @@ export function useWorkstationData() {
     }
   }, []);
 
+  const upsertWorkflowPreset = useCallback((preset: WorkflowPreset) => {
+    if (!mountedRef.current) {
+      return;
+    }
+
+    setState((current) => {
+      const existingLibrary = current.workflowPresets ?? {
+        generatedAt: preset.updatedAt,
+        presets: []
+      };
+      const presets = [
+        preset,
+        ...existingLibrary.presets.filter(
+          (item) => item.presetId.toLowerCase() !== preset.presetId.toLowerCase()
+        )
+      ].sort(compareWorkflowPresets);
+
+      return {
+        ...current,
+        workflowPresets: {
+          ...existingLibrary,
+          generatedAt: preset.updatedAt,
+          presets
+        }
+      };
+    });
+  }, []);
+
   useEffect(() => {
     const id = setInterval(() => { void refreshTrading(); }, 30_000);
     return () => clearInterval(id);
   }, [refreshTrading]);
 
-  return { ...state, refresh, refreshTrading };
+  return { ...state, refresh, refreshTrading, upsertWorkflowPreset };
+}
+
+function compareWorkflowPresets(left: WorkflowPreset, right: WorkflowPreset) {
+  if (left.isPinned !== right.isPinned) {
+    return left.isPinned ? -1 : 1;
+  }
+
+  const leftUsed = Date.parse(left.lastUsedAt ?? "") || 0;
+  const rightUsed = Date.parse(right.lastUsedAt ?? "") || 0;
+  if (leftUsed !== rightUsed) {
+    return rightUsed - leftUsed;
+  }
+
+  const leftUpdated = Date.parse(left.updatedAt) || 0;
+  const rightUpdated = Date.parse(right.updatedAt) || 0;
+  if (leftUpdated !== rightUpdated) {
+    return rightUpdated - leftUpdated;
+  }
+
+  return left.name.localeCompare(right.name);
 }

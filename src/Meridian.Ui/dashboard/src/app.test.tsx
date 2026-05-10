@@ -86,7 +86,8 @@ describe("App", () => {
       error: null,
       workspaceErrors: {},
       refresh: vi.fn(),
-      refreshTrading: vi.fn()
+      refreshTrading: vi.fn(),
+      upsertWorkflowPreset: vi.fn()
     });
   });
 
@@ -157,7 +158,8 @@ describe("App", () => {
       error: null,
       workspaceErrors: {},
       refresh: vi.fn(),
-      refreshTrading: vi.fn()
+      refreshTrading: vi.fn(),
+      upsertWorkflowPreset: vi.fn()
     });
 
     renderWithRouter(<App />, { initialEntries: ["/settings#alpaca-provider-setup"] });
@@ -204,7 +206,10 @@ describe("App", () => {
     expect(screen.queryByRole("dialog", { name: "Workspace navigation" })).not.toBeInTheDocument();
   });
 
-  it("labels fixture-backed bootstrap data as demo data", () => {
+  it("labels fixture-backed bootstrap data as demo data and can retry live data", async () => {
+    const user = userEvent.setup();
+    const refresh = vi.fn();
+
     mockedUseWorkstationData.mockReturnValue({
       session: {
         displayName: "Ops Desk",
@@ -229,8 +234,9 @@ describe("App", () => {
       loading: false,
       error: null,
       workspaceErrors: {},
-      refresh: vi.fn(),
-      refreshTrading: vi.fn()
+      refresh,
+      refreshTrading: vi.fn(),
+      upsertWorkflowPreset: vi.fn()
     });
 
     renderWithRouter(<App />, { initialEntries: ["/settings"] });
@@ -246,6 +252,8 @@ describe("App", () => {
       "href",
       "/settings#alpaca-provider-setup"
     );
+    await user.click(screen.getByRole("button", { name: "Retry Meridian API host and reload live workstation data" }));
+    expect(refresh).toHaveBeenCalledOnce();
   });
 
   it("renders the Portfolio route from the fetched portfolio workspace payload", () => {
@@ -274,7 +282,8 @@ describe("App", () => {
       error: null,
       workspaceErrors: {},
       refresh: vi.fn(),
-      refreshTrading: vi.fn()
+      refreshTrading: vi.fn(),
+      upsertWorkflowPreset: vi.fn()
     });
 
     renderWithRouter(<App />, { initialEntries: ["/portfolio"] });

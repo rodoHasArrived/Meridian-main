@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { act, renderHook } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  buildParameterPanelState,
   buildParameterRow,
   buildQuantParameters,
   buildRunCommandState,
@@ -8,10 +10,12 @@ import {
   buildToolbarItems,
   initializeNewParameterValues,
   mergeQuantParameters,
+  useQuantLabScreenViewModel,
   validateQuantSource,
+  type QuantLabServices,
   type QuantRunState
 } from "@/screens/quant-lab-screen.view-model";
-import type { QuantParameter } from "@/types";
+import type { QuantParameter, QuantParametersResponse, QuantRunResponse } from "@/types";
 
 const numberParameter: QuantParameter = {
   name: "lookback",
@@ -62,7 +66,22 @@ const successfulRunState: QuantRunState = {
   }
 };
 
+function createDeferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+  return { promise, resolve, reject };
+}
+
 describe("Quant Lab view model helpers", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
   it("merges detected and runtime parameters by stable name", () => {
     const merged = mergeQuantParameters(
       [numberParameter],
@@ -120,6 +139,8 @@ describe("Quant Lab view model helpers", () => {
 
     expect(row).toMatchObject({
       name: "lookback",
+      inputId: "quant-param-lookback",
+      descriptionId: "quant-param-lookback-description",
       inputType: "number",
       value: "63",
       min: 1,
@@ -127,6 +148,35 @@ describe("Quant Lab view model helpers", () => {
       step: "1",
       isDefault: false,
       resetLabel: "Reset Lookback to default"
+    });
+  });
+
+  it("projects parameter panel loading, empty, unavailable, and ready states", () => {
+    expect(buildParameterPanelState("extracting", 0, true)).toMatchObject({
+      showRows: false,
+      tone: "pending",
+      statusRole: "status",
+      ariaLive: "polite",
+      statusMessage: "Scanning source for runtime parameters."
+    });
+
+    expect(buildParameterPanelState("idle", 0, true)).toMatchObject({
+      showRows: false,
+      tone: "default",
+      statusMessage: "No runtime parameters detected in the current script."
+    });
+
+    expect(buildParameterPanelState("unavailable", 0, true)).toMatchObject({
+      showRows: false,
+      tone: "warning",
+      statusMessage: "Parameter extraction is unavailable. The script can still run with inline defaults."
+    });
+
+    expect(buildParameterPanelState("ready", 2, true)).toMatchObject({
+      showRows: true,
+      tone: "default",
+      statusMessage: null,
+      listLabel: "Script parameters"
     });
   });
 
@@ -176,5 +226,57 @@ describe("Quant Lab view model helpers", () => {
       title: "Run failed",
       description: "503 Quant Lab disabled"
     });
+  });
+
+  it("ignores stale parameter extraction responses after the source changes", async () => {
+    vi.useFakeTimers();
+    const firstRequest = createDeferred<QuantParametersResponse>();
+    const secondRequest = createDeferred<QuantParametersResponse>();
+    const services: QuantLabServices = {
+      getTemplates: vi.fn().mockResolvedValue({ templates: [] }),
+      extractParameters: vi.fn()
+        .mockReturnValueOnce(firstRequest.promise)
+        .mockReturnValueOnce(secondRequest.promise),
+      runScript: vi.fn<QuantLabServices["runScript"]>().mockResolvedValue({} as QuantRunResponse)
+    };
+
+    const { result } = renderHook(() => useQuantLabScreenViewModel(services));
+
+    await act(async () => {
+      result.current.setSource("PrintMetric(\"first\", firstLookback);");
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+    expect(services.extractParameters).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      result.current.setSource("PrintMetric(\"second\", includeFees ? 1 : 0);");
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+    });
+    expect(services.extractParameters).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      firstRequest.resolve({ parameters: [{ ...numberParameter, name: "firstLookback", label: "First lookback" }] });
+      await Promise.resolve();
+    });
+
+    expect(result.current.parameterRows).toEqual([]);
+    expect(result.current.parameterPhase).toBe("extracting");
+
+    await act(async () => {
+      secondRequest.resolve({ parameters: [boolParameter] });
+      await Promise.resolve();
+    });
+
+    expect(result.current.parameterRows).toHaveLength(1);
+    expect(result.current.parameterRows[0]).toMatchObject({
+      name: "includeFees",
+      label: "Include fees",
+      inputType: "checkbox"
+    });
+    expect(result.current.parameterPhase).toBe("ready");
   });
 });

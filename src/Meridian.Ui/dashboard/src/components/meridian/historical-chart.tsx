@@ -102,12 +102,12 @@ export function HistoricalChartCard({ symbol, className }: HistoricalChartCardPr
 
   const stats = useMemo(() => computeChartStats(state.bars), [state.bars]);
   const stroke = stats.change === null
-    ? "var(--meridian-chart-stroke, #94a3b8)"
+    ? "var(--chart-bench)"
     : stats.change > 0
-      ? "var(--meridian-chart-positive, #10b981)"
+      ? "var(--chart-up)"
       : stats.change < 0
-        ? "var(--meridian-chart-danger, #ef4444)"
-        : "var(--meridian-chart-stroke, #94a3b8)";
+        ? "var(--chart-dn)"
+        : "var(--chart-bench)";
   const tone = stats.change === null
     ? "text-foreground"
     : stats.change > 0

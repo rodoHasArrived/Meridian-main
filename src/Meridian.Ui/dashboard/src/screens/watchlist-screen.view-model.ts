@@ -5,6 +5,7 @@ export type WatchlistBadgeVariant = "default" | "outline" | "success" | "warning
 export type WatchlistListState = "loading" | "error" | "empty" | "ready";
 export type WatchlistPriceTone = "default" | "success" | "danger";
 export type WatchlistQuoteStatusTone = "default" | "warning" | "danger";
+export type WatchlistDetailFieldTone = "default" | "success" | "warning" | "danger" | "muted";
 
 const QUOTE_POLL_INTERVAL_MS = 2000;
 const QUOTE_STALE_THRESHOLD_MS = 15_000;
@@ -76,6 +77,27 @@ export interface WatchlistStarterPackCommandState {
   busy: boolean;
 }
 
+export interface WatchlistSelectedDetailField {
+  label: string;
+  value: string;
+  tone: WatchlistDetailFieldTone;
+}
+
+export interface WatchlistSelectedDetail {
+  symbol: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: WatchlistBadgeVariant;
+  statusAriaLabel: string;
+  regionLabel: string;
+  quoteActionLabel: string;
+  quoteActionHref: string;
+  quoteActionAriaLabel: string;
+  fields: WatchlistSelectedDetailField[];
+}
+
 export interface WatchlistScreenViewModel {
   pendingSymbol: string;
   setPendingSymbol: (value: string) => void;
@@ -107,6 +129,14 @@ export interface WatchlistScreenViewModel {
   quoteProviderSetupHandoff: WatchlistProviderSetupHandoff | null;
   quoteRefreshCommand: WatchlistQuoteRefreshCommandState;
   starterPacks: WatchlistStarterPackCommandState[];
+  selectedSymbol: string | null;
+  selectedRowId: string | null;
+  selectedDetail: WatchlistSelectedDetail | null;
+  detailPanelTitle: string;
+  detailPanelDescription: string;
+  detailPanelEmptyText: string;
+  detailPanelAriaLabel: string;
+  selectSymbol: (symbol: string) => void;
   refresh: () => Promise<void>;
   refreshQuotes: () => Promise<void>;
   addPendingSymbol: (event?: { preventDefault: () => void }) => Promise<void>;
@@ -134,16 +164,32 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   const [quoteFetchedAt, setQuoteFetchedAt] = useState<number | null>(null);
   const [quoteRefreshing, setQuoteRefreshing] = useState(false);
   const [activeStarterPackId, setActiveStarterPackId] = useState<string | null>(null);
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const mountedRef = useRef(true);
+  const refreshRevisionRef = useRef(0);
+  const currentQuoteSymbolsKeyRef = useRef("");
   const previousMidRef = useRef<Record<string, number>>({});
   const quoteInFlightRef = useRef(false);
 
+  useEffect(() => () => {
+    mountedRef.current = false;
+    refreshRevisionRef.current += 1;
+    currentQuoteSymbolsKeyRef.current = "";
+  }, []);
+
   const refresh = useCallback(async () => {
+    const revision = refreshRevisionRef.current + 1;
+    refreshRevisionRef.current = revision;
     setRefreshing(true);
     try {
       const [symbolResult, statsResult] = await Promise.allSettled([
         api.getSymbols(),
         api.getSymbolsStatistics()
       ]);
+
+      if (!mountedRef.current || refreshRevisionRef.current !== revision) {
+        return;
+      }
 
       if (symbolResult.status === "fulfilled") {
         setSymbols(symbolResult.value);
@@ -156,7 +202,9 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         setStats(statsResult.value);
       }
     } finally {
-      setRefreshing(false);
+      if (mountedRef.current && refreshRevisionRef.current === revision) {
+        setRefreshing(false);
+      }
     }
   }, [api.getSymbols, api.getSymbolsStatistics]);
 
@@ -178,6 +226,10 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
       if (nextSymbols.length === 1) {
         const [next] = nextSymbols;
         const result = await api.addSymbol(next);
+        if (!mountedRef.current) {
+          return;
+        }
+
         if (!result.success) {
           setSubmitFeedback({
             tone: "danger",
@@ -192,6 +244,10 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         await refresh();
       } else {
         const result = await api.bulkAddSymbols(nextSymbols);
+        if (!mountedRef.current) {
+          return;
+        }
+
         setSubmitFeedback(buildBulkAddFeedback(result, nextSymbols.length));
         if (result.added > 0 || result.errors.length === 0) {
           setPendingSymbol("");
@@ -202,13 +258,19 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         }
       }
     } catch (error) {
+      if (!mountedRef.current) {
+        return;
+      }
+
       setSubmitFeedback({
         tone: "danger",
         message: messageFromError(error, "Failed to add symbol"),
         providerSetupHandoff: buildProviderSetupHandoff("symbol-add-exception")
       });
     } finally {
-      setSubmitting(false);
+      if (mountedRef.current) {
+        setSubmitting(false);
+      }
     }
   }, [api.addSymbol, api.bulkAddSymbols, pendingSymbol, refresh, submitting]);
 
@@ -224,6 +286,10 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     setPendingSymbol(pack.symbols.join(", "));
     try {
       const result = await api.bulkAddSymbols(pack.symbols);
+      if (!mountedRef.current) {
+        return;
+      }
+
       setSubmitFeedback(buildStarterPackFeedback(pack.label, result, pack.symbols.length));
       if (result.added > 0 || result.errors.length === 0) {
         setPendingSymbol("");
@@ -233,14 +299,20 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         await refresh();
       }
     } catch (error) {
+      if (!mountedRef.current) {
+        return;
+      }
+
       setSubmitFeedback({
         tone: "danger",
         message: messageFromError(error, `Failed to add ${pack.label} starter pack.`),
         providerSetupHandoff: buildProviderSetupHandoff("starter-pack-exception")
       });
     } finally {
-      setActiveStarterPackId(null);
-      setSubmitting(false);
+      if (mountedRef.current) {
+        setActiveStarterPackId(null);
+        setSubmitting(false);
+      }
     }
   }, [api.bulkAddSymbols, refresh, submitting]);
 
@@ -250,12 +322,18 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
       await api.removeSymbol(symbol);
       await refresh();
     } catch (error) {
+      if (!mountedRef.current) {
+        return;
+      }
+
       setLoadError(messageFromError(error, `Failed to remove ${symbol}`));
     } finally {
-      setRemoving((current) => {
-        const { [symbol]: _removed, ...rest } = current;
-        return rest;
-      });
+      if (mountedRef.current) {
+        setRemoving((current) => {
+          const { [symbol]: _removed, ...rest } = current;
+          return rest;
+        });
+      }
     }
   }, [api.removeSymbol, refresh]);
 
@@ -266,9 +344,14 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
       return;
     }
 
+    const requestKey = buildQuoteSymbolsKey(currentSymbols);
     quoteInFlightRef.current = true;
     try {
       const response = await api.getLiveQuotesSnapshot(currentSymbols);
+      if (!mountedRef.current || currentQuoteSymbolsKeyRef.current !== requestKey) {
+        return;
+      }
+
       const next: Record<string, QuotesSnapshotItem> = {};
       for (const quote of response.quotes) {
         next[quote.symbol.toUpperCase()] = quote;
@@ -287,13 +370,16 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
       setQuoteFetchedAt(Date.now());
       setQuoteError(null);
     } catch (error) {
-      setQuoteError(messageFromError(error, "Failed to load live quotes"));
+      if (mountedRef.current && currentQuoteSymbolsKeyRef.current === requestKey) {
+        setQuoteError(messageFromError(error, "Failed to load live quotes"));
+      }
     } finally {
       quoteInFlightRef.current = false;
     }
   }, [api.getLiveQuotesSnapshot]);
 
   useEffect(() => {
+    currentQuoteSymbolsKeyRef.current = buildQuoteSymbolsKey(subscribedSymbols);
     if (subscribedSymbols.length === 0) {
       setQuotes({});
       setQuoteError(null);
@@ -316,7 +402,9 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     try {
       await fetchQuotes(subscribedSymbols);
     } finally {
-      setQuoteRefreshing(false);
+      if (mountedRef.current) {
+        setQuoteRefreshing(false);
+      }
     }
   }, [fetchQuotes, quoteRefreshing, subscribedSymbols]);
 
@@ -327,6 +415,20 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     () => buildWatchlistRows(symbols ?? [], removing, quotes, previousMidRef.current),
     [symbols, removing, quotes]
   );
+  useEffect(() => {
+    if (rows.length === 0) {
+      if (selectedSymbol !== null) {
+        setSelectedSymbol(null);
+      }
+      return;
+    }
+
+    if (!selectedSymbol || !rows.some((row) => row.symbol === selectedSymbol)) {
+      setSelectedSymbol(rows[0].symbol);
+    }
+  }, [rows, selectedSymbol]);
+
+  const selectedRow = rows.find((row) => row.symbol === selectedSymbol) ?? rows[0] ?? null;
   const listState = buildListState(symbols, loadError);
   const quoteStatus = buildQuoteStatus({
     listState,
@@ -372,6 +474,14 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     quoteProviderSetupHandoff: quoteError ? buildProviderSetupHandoff("live-quotes") : null,
     quoteRefreshCommand: buildQuoteRefreshCommand(listState, rows.length, quoteRefreshing),
     starterPacks: buildStarterPackCommands(submitting, activeStarterPackId),
+    selectedSymbol: selectedRow?.symbol ?? null,
+    selectedRowId: selectedRow?.symbol ?? null,
+    selectedDetail: buildWatchlistSelectedDetail(selectedRow),
+    detailPanelTitle: "Selected symbol inspector",
+    detailPanelDescription: "Inspect the active watchlist row without leaving the Data lane.",
+    detailPanelEmptyText: "No symbol is selected. Add a symbol or wait for the watchlist to load.",
+    detailPanelAriaLabel: "Selected watchlist symbol detail",
+    selectSymbol: setSelectedSymbol,
     refresh,
     refreshQuotes,
     addPendingSymbol,
@@ -429,6 +539,52 @@ export function buildWatchlistRows(
     });
 }
 
+export function buildWatchlistSelectedDetail(
+  row: WatchlistRowViewModel | null
+): WatchlistSelectedDetail | null {
+  if (!row) {
+    return null;
+  }
+
+  const description = !row.hasQuote
+    ? "No live quote has been returned for this symbol yet. Check provider setup or refresh prices after the subscription settles."
+    : row.quoteStale
+      ? "The latest quote is stale. Refresh prices or verify provider connectivity before using this row as current evidence."
+      : "Live quote, provider posture, and collection evidence are ready for operator review.";
+
+  return {
+    symbol: row.symbol,
+    title: row.symbol,
+    subtitle: `${row.providerLabel} - ${row.eventCountLabel} events - history ${row.historyLabel.toLowerCase()}`,
+    description,
+    statusLabel: row.status,
+    statusVariant: row.statusVariant,
+    statusAriaLabel: `${row.symbol} status ${row.status}`,
+    regionLabel: `${row.symbol} watchlist detail`,
+    quoteActionLabel: "Open live quote",
+    quoteActionHref: row.quoteHref,
+    quoteActionAriaLabel: row.quoteAriaLabel,
+    fields: [
+      buildSelectedDetailField("Bid x size", row.bidLabel, row.hasQuote ? "default" : "muted"),
+      buildSelectedDetailField("Ask x size", row.askLabel, row.hasQuote ? "default" : "muted"),
+      buildSelectedDetailField("Last", row.lastPriceLabel, row.lastTone),
+      buildSelectedDetailField("Spread", row.spreadLabel, row.hasQuote ? "default" : "muted"),
+      buildSelectedDetailField("Quote age", row.quoteAgeLabel, row.quoteStale ? "warning" : row.hasQuote ? "success" : "muted"),
+      buildSelectedDetailField("Provider", row.providerLabel, row.providerLabel === "No provider" ? "warning" : "default"),
+      buildSelectedDetailField("History", row.historyLabel, row.hasHistoricalData ? "success" : "warning"),
+      buildSelectedDetailField("Last event", row.lastEventLabel, row.lastEventLabel === "Never" ? "muted" : "default")
+    ]
+  };
+}
+
+function buildSelectedDetailField(
+  label: string,
+  value: string,
+  tone: WatchlistDetailFieldTone
+): WatchlistSelectedDetailField {
+  return { label, value, tone };
+}
+
 export function buildWatchlistStats(stats: SymbolStatistics | null): MetricSnapshot[] {
   return [
     buildStat("total", "Total", stats?.totalSymbols),
@@ -483,6 +639,10 @@ export function parseWatchlistSymbols(value: string): string[] {
     .filter(Boolean);
 
   return Array.from(new Set(symbols));
+}
+
+function buildQuoteSymbolsKey(symbols: readonly string[]): string {
+  return symbols.map((symbol) => normalizeSymbol(symbol)).sort().join("|");
 }
 
 export function buildBulkAddFeedback(

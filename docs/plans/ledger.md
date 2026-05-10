@@ -49,10 +49,16 @@ through `Meridian.Ledger`, and reports validation failures with source line numb
 `yyyy/MM/dd` and `yyyy-MM-dd` dates, account roots under `Assets`, `Liabilities`, `Equity`,
 `Income`/`Revenue`, and `Expenses`, and decimal amounts with an optional leading `$`.
 
-The parser and report renderer live under `src/Meridian.Application/Ledger/TextJournal/` so the CLI
-entry point remains a thin command wrapper. Browser/API integration should reuse that application
-adapter and should not expose endpoints that read arbitrary server-side journal paths; future
-preview surfaces should accept uploaded or pasted journal text.
+The parser, report renderer, and `LedgerTextJournalReportService` live under
+`src/Meridian.Application/Ledger/TextJournal/` so the CLI entry point remains a thin command
+wrapper. Browser/API integration should reuse that application adapter and should not expose
+endpoints that read arbitrary server-side journal paths; future preview surfaces should accept
+uploaded or pasted journal text.
+
+Strategy-run evidence packets now also expose ledger drill-in routes as artifact references on the
+existing `run-ledger` node. The references point to the run ledger journal and trial-balance
+workstation endpoints; they are route-only until a retained ledger export or manifest flow owns a
+file path and content hash.
 
 ### `src/Meridian.FSharp.Ledger/` — F# accounting kernel
 

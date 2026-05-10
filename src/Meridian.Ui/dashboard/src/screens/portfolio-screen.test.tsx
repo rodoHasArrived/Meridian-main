@@ -301,6 +301,16 @@ describe("PortfolioScreen", () => {
     expect(screen.getAllByText("AAPL").length).toBeGreaterThan(0);
   });
 
+  it("offers a provider setup handoff when brokerage portfolio sync is unavailable", () => {
+    renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
+
+    const handoff = screen.getByRole("link", {
+      name: /open alpaca paper provider setup from portfolio brokerage panel/i
+    });
+    expect(handoff).toHaveAttribute("href", "/settings#alpaca-provider-setup");
+    expect(screen.getByText(/verify alpaca paper credentials before accepting brokerage portfolio state/i)).toBeInTheDocument();
+  });
+
   it("renders portfolio and account sync warnings in the live brokerage panel", () => {
     const warningPortfolio: BrokerageHouseholdPortfolio = {
       ...brokeragePortfolio,

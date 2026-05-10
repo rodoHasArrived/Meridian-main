@@ -162,7 +162,9 @@ beside the acceptance gates, so API diagnostics can show the same replay, promot
 brokerage-sync, reconciliation, and execution-control blockers that desktop operators see through
 the shared queue. The browser readiness console ranks those work items plus direct readiness rows
 into one route-backed primary next action, so an operator can resolve the highest-severity blocker
-before scanning every evidence panel.
+before scanning every evidence panel. Critical operator-inbox items must keep the browser console
+headline blocked even when the trading-readiness payload is unavailable, so missing upstream
+readiness data does not visually soften known operator blockers.
 If reconciliation break queue storage cannot seed or load, the endpoint keeps the trading-readiness
 items available and adds a stable `reconciliation-break-queue-unavailable` warning routed to
 `GovernanceShell` instead of failing the whole operator inbox.

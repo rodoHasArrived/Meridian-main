@@ -19,6 +19,7 @@ using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -133,6 +134,26 @@ public sealed class PilotAcceptanceHarnessTests
         portfolioEvidenceId.Should().NotBeNullOrWhiteSpace();
         ledgerEvidenceId.Should().NotBeNullOrWhiteSpace();
 
+        var evidencePacket = await client.GetFromJsonAsync<EvidencePacketDto>(
+            $"/api/workstation/evidence/subjects/{EvidenceSubjectResolver.StrategyRunKind}/{Uri.EscapeDataString(seed.PaperRunId)}/packet",
+            ServerJsonOptions);
+        evidencePacket.Should().NotBeNull();
+        var ledgerNode = evidencePacket!.Nodes.Single(node => node.Kind == "run-ledger");
+        var ledgerJournalRoute = $"/api/workstation/runs/{Uri.EscapeDataString(seed.PaperRunId)}/ledger/journal";
+        var ledgerTrialBalanceRoute = $"/api/workstation/runs/{Uri.EscapeDataString(seed.PaperRunId)}/ledger/trial-balance";
+        ledgerNode.Status.Should().Be(EvidenceStatusDto.Ready);
+        ledgerNode.ArtifactRefs.Should().HaveCount(2);
+        ledgerNode.ArtifactRefs.Should().Contain(artifact =>
+            artifact.Kind == "ledger-journal" &&
+            artifact.Route == ledgerJournalRoute &&
+            artifact.Path == null &&
+            artifact.Hash == null);
+        ledgerNode.ArtifactRefs.Should().Contain(artifact =>
+            artifact.Kind == "ledger-trial-balance" &&
+            artifact.Route == ledgerTrialBalanceRoute &&
+            artifact.Path == null &&
+            artifact.Hash == null);
+
         var reportPackResponse = await client.PostAsJsonAsync(
             "/api/fund-structure/report-packs",
             new FundReportPackGenerateRequestDto(
@@ -217,6 +238,8 @@ public sealed class PilotAcceptanceHarnessTests
         graphRelationships.Should().Contain("feeds-run");
         graphRelationships.Should().Contain("produces-portfolio");
         graphRelationships.Should().Contain("books-ledger");
+        graphRelationships.Should().Contain("checked-against");
+        graphRelationships.Should().Contain("reconciled-by");
         graphRelationships.Should().Contain("summarized-by");
         artifactDocument.RootElement.GetProperty("evidenceGraph")
             .EnumerateArray()
@@ -291,6 +314,7 @@ public sealed class PilotAcceptanceHarnessTests
 
         var app = builder.Build();
         app.MapWorkstationEndpoints(ServerJsonOptions);
+        app.MapEvidenceEndpoints(ServerJsonOptions);
         app.MapExecutionEndpoints(ServerJsonOptions);
         app.MapFundStructureEndpoints(ServerJsonOptions);
         await app.StartAsync();

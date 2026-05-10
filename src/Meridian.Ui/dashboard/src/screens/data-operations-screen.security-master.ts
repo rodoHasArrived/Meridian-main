@@ -1,5 +1,5 @@
 export type SecurityMasterTab = "overview" | "company" | "corporate-actions" | "print";
-export type SecurityMasterStatusFilter = "active" | "all";
+export type SecurityMasterStatusFilter = "active" | "pending" | "inactive" | "all";
 
 export interface SecurityMasterDetailField {
   id: string;
@@ -193,6 +193,14 @@ export interface SecurityMasterSearchSummaryBadge {
   ariaLabel: string;
 }
 
+export interface SecurityMasterStatusFilterOptionState {
+  id: SecurityMasterStatusFilter;
+  label: string;
+  countLabel: string;
+  selected: boolean;
+  ariaLabel: string;
+}
+
 export interface SecurityMasterTabState {
   id: SecurityMasterTab;
   tabId: string;
@@ -251,6 +259,19 @@ export interface SecurityMasterWorkspaceState {
   searchMetaLabel: string;
   searchSummaryBadges: SecurityMasterSearchSummaryBadge[];
   statusChipLabel: string;
+  statusFilterGroupLabel: string;
+  statusFilterHelpText: string;
+  statusFilterOptions: SecurityMasterStatusFilterOptionState[];
+  clearSearchVisible: boolean;
+  clearSearchLabel: string;
+  clearSearchAriaLabel: string;
+  resetSearchLabel: string;
+  resetSearchAriaLabel: string;
+  showAllStatusesVisible: boolean;
+  showAllStatusesLabel: string;
+  showAllStatusesAriaLabel: string;
+  resultSortLabel: string;
+  resultListLabel: string;
   hasResults: boolean;
   emptyState: { title: string; description: string } | null;
   results: SecurityMasterSearchRowState[];
@@ -830,11 +851,7 @@ export function buildSecurityMasterWorkspaceState({
   statusFilter: SecurityMasterStatusFilter;
 }): SecurityMasterWorkspaceState {
   const normalizedQuery = query.trim().toLowerCase();
-  const visibleRecords = SECURITY_MASTER_RECORDS.filter((record) => {
-    if (statusFilter === "active" && record.status !== "Active") {
-      return false;
-    }
-
+  const matchingRecords = SECURITY_MASTER_RECORDS.filter((record) => {
     if (!normalizedQuery) {
       return true;
     }
@@ -850,11 +867,31 @@ export function buildSecurityMasterWorkspaceState({
     ].join(" ").toLowerCase();
 
     return haystack.includes(normalizedQuery);
-  }).sort((left, right) => right.score - left.score);
+  });
+  const activeRecords = matchingRecords.filter((record) => record.status === "Active");
+  const pendingRecords = matchingRecords.filter((record) => record.status === "Pending");
+  const inactiveRecords = matchingRecords.filter((record) => record.status === "Inactive");
+  const visibleRecords = filterSecurityMasterRecordsByStatus({
+    statusFilter,
+    matchingRecords,
+    activeRecords,
+    pendingRecords,
+    inactiveRecords
+  })
+    .slice()
+    .sort((left, right) => right.score - left.score);
 
   const selectedRecord = visibleRecords.find((record) => record.securityId === selectedSecurityId) ?? visibleRecords[0] ?? null;
   const resultCountLabel = `${visibleRecords.length} result${visibleRecords.length === 1 ? "" : "s"}`;
   const activeTabLabel = formatSecurityMasterTabLabel(activeTab);
+  const hiddenStatusCount = Math.max(matchingRecords.length - activeRecords.length, 0);
+  const statusFilterOptions = buildStatusFilterOptions({
+    statusFilter,
+    activeCount: activeRecords.length,
+    pendingCount: pendingRecords.length,
+    inactiveCount: inactiveRecords.length,
+    allCount: matchingRecords.length
+  });
 
   return {
     searchValue: query,
@@ -862,7 +899,20 @@ export function buildSecurityMasterWorkspaceState({
     resultCountLabel,
     searchMetaLabel: `${visibleRecords.length} results · 0.184s`,
     searchSummaryBadges: buildSearchSummaryBadges(visibleRecords),
-    statusChipLabel: statusFilter === "active" ? "Status: Active" : "Status: All",
+    statusChipLabel: buildStatusChipLabel(statusFilter),
+    statusFilterGroupLabel: "Security Master status filter",
+    statusFilterHelpText: buildStatusFilterHelpText(statusFilter, hiddenStatusCount),
+    statusFilterOptions,
+    clearSearchVisible: query.trim().length > 0,
+    clearSearchLabel: "Clear",
+    clearSearchAriaLabel: `Clear Security Master search query${query.trim() ? ` "${query.trim()}"` : ""}`,
+    resetSearchLabel: "Reset to default search",
+    resetSearchAriaLabel: `Reset Security Master search to ${SECURITY_MASTER_DEFAULT_QUERY}`,
+    showAllStatusesVisible: statusFilter !== "all" && hiddenStatusCount > 0,
+    showAllStatusesLabel: "Show all statuses",
+    showAllStatusesAriaLabel: `Show all security statuses; ${hiddenStatusCount} pending or inactive ${hiddenStatusCount === 1 ? "record is" : "records are"} currently hidden`,
+    resultSortLabel: "Sorted by search score - coverage and packet posture visible in detail panel",
+    resultListLabel: "Security master search results",
     hasResults: visibleRecords.length > 0,
     emptyState: visibleRecords.length === 0
       ? {
@@ -879,6 +929,107 @@ export function buildSecurityMasterWorkspaceState({
     tabs: buildTabState(activeTab, selectedRecord),
     selectedSecurity: selectedRecord ? buildSelectedSecurityState(selectedRecord) : null
   };
+}
+
+function filterSecurityMasterRecordsByStatus({
+  statusFilter,
+  matchingRecords,
+  activeRecords,
+  pendingRecords,
+  inactiveRecords
+}: {
+  statusFilter: SecurityMasterStatusFilter;
+  matchingRecords: SecurityMasterRecord[];
+  activeRecords: SecurityMasterRecord[];
+  pendingRecords: SecurityMasterRecord[];
+  inactiveRecords: SecurityMasterRecord[];
+}): SecurityMasterRecord[] {
+  if (statusFilter === "pending") {
+    return pendingRecords;
+  }
+
+  if (statusFilter === "inactive") {
+    return inactiveRecords;
+  }
+
+  return statusFilter === "active" ? activeRecords : matchingRecords;
+}
+
+function buildStatusChipLabel(statusFilter: SecurityMasterStatusFilter): string {
+  if (statusFilter === "pending") {
+    return "Status: Pending";
+  }
+
+  if (statusFilter === "inactive") {
+    return "Status: Inactive";
+  }
+
+  return statusFilter === "active" ? "Status: Active" : "Status: All";
+}
+
+function buildStatusFilterOptions({
+  statusFilter,
+  activeCount,
+  pendingCount,
+  inactiveCount,
+  allCount
+}: {
+  statusFilter: SecurityMasterStatusFilter;
+  activeCount: number;
+  pendingCount: number;
+  inactiveCount: number;
+  allCount: number;
+}): SecurityMasterStatusFilterOptionState[] {
+  return [
+    {
+      id: "active",
+      label: "Active",
+      countLabel: String(activeCount),
+      selected: statusFilter === "active",
+      ariaLabel: `Show active securities only, ${activeCount} ${activeCount === 1 ? "match" : "matches"}`
+    },
+    {
+      id: "pending",
+      label: "Pending",
+      countLabel: String(pendingCount),
+      selected: statusFilter === "pending",
+      ariaLabel: `Show pending Security Master records, ${pendingCount} ${pendingCount === 1 ? "match" : "matches"}`
+    },
+    {
+      id: "inactive",
+      label: "Inactive",
+      countLabel: String(inactiveCount),
+      selected: statusFilter === "inactive",
+      ariaLabel: `Show inactive Security Master records, ${inactiveCount} ${inactiveCount === 1 ? "match" : "matches"}`
+    },
+    {
+      id: "all",
+      label: "All statuses",
+      countLabel: String(allCount),
+      selected: statusFilter === "all",
+      ariaLabel: `Show all security statuses, ${allCount} ${allCount === 1 ? "match" : "matches"}`
+    }
+  ];
+}
+
+function buildStatusFilterHelpText(statusFilter: SecurityMasterStatusFilter, hiddenStatusCount: number): string {
+  if (statusFilter === "active" && hiddenStatusCount > 0) {
+    return `${hiddenStatusCount} pending or inactive ${hiddenStatusCount === 1 ? "record is" : "records are"} hidden. Switch to All statuses to inspect onboarding or archive evidence.`;
+  }
+
+  if (statusFilter === "pending") {
+    return "Only pending onboarding records are visible. Switch to All statuses to compare them against active and archive evidence.";
+  }
+
+  if (statusFilter === "inactive") {
+    return "Only inactive archive records are visible. Switch to All statuses to compare them against active and onboarding evidence.";
+  }
+
+  if (statusFilter === "all") {
+    return "All matching active, pending, and inactive security records are visible.";
+  }
+
+  return "Only active security records are visible.";
 }
 
 function buildSearchSummaryBadges(records: SecurityMasterRecord[]): SecurityMasterSearchSummaryBadge[] {

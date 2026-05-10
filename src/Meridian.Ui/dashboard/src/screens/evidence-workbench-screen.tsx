@@ -151,13 +151,30 @@ export function EvidenceWorkbenchScreen() {
                   <EvidenceMetric label="Stale" value={String(vm.staleEvidence.length)} tone={vm.staleEvidence.length ? "warning" : "success"} />
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Button type="button" variant="outline" onClick={vm.validatePacket} busy={vm.validateBusy} busyLabel="Validating">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={vm.validatePacket}
+                    busy={vm.validateCommand.busy}
+                    busyLabel={vm.validateCommand.busyLabel}
+                    disabled={vm.validateCommand.disabled}
+                    disabledReason={vm.validateCommand.disabledReason}
+                    aria-label={vm.validateCommand.ariaLabel}
+                  >
                     <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-                    Validate
+                    {vm.validateCommand.label}
                   </Button>
-                  <Button type="button" onClick={vm.exportManifest} busy={vm.exportBusy} busyLabel="Exporting" disabled={!vm.canExport}>
+                  <Button
+                    type="button"
+                    onClick={vm.exportManifest}
+                    busy={vm.exportCommand.busy}
+                    busyLabel={vm.exportCommand.busyLabel}
+                    disabled={vm.exportCommand.disabled}
+                    disabledReason={vm.exportCommand.disabledReason}
+                    aria-label={vm.exportCommand.ariaLabel}
+                  >
                     <Download className="h-4 w-4" aria-hidden="true" />
-                    Export manifest
+                    {vm.exportCommand.label}
                   </Button>
                 </div>
                 {vm.validationResult ? (

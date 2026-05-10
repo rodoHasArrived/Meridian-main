@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { runAnalysisExport } from "@/lib/api";
+import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath } from "@/lib/workspace";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary } from "@/types";
 
@@ -84,6 +85,11 @@ export interface ReportingPackTargetRow {
   ariaLabel: string;
 }
 
+export interface ReportingPackTargetsEmptyState {
+  text: string;
+  ariaLabel: string;
+}
+
 export interface ReportingChipViewModel {
   label: string;
   value: string;
@@ -126,8 +132,14 @@ export interface ReportingWorkflowTaskPanel {
   chips: ReportingChipViewModel[];
   targetsLabel: string;
   targets: ReportingPackTargetRow[];
+  hasTargets: boolean;
+  targetsEmptyText: string;
+  targetsEmptyAriaLabel: string;
   profileListLabel: string;
   profiles: ReportingWorkflowProfileRow[];
+  hasProfiles: boolean;
+  profilesEmptyText: string;
+  profilesEmptyAriaLabel: string;
   selectedSummary: string;
   backendLinksLabel: string;
   backendLinks: ReportingWorkflowBackendLink[];
@@ -157,6 +169,7 @@ export interface ReportingScreenViewModel {
   hasPackTargets: boolean;
   packTargetsSummary: string;
   packTargetsListLabel: string;
+  packTargetsEmptyState: ReportingPackTargetsEmptyState;
   workflowTaskPanel: ReportingWorkflowTaskPanel | null;
   loadingTitle: string;
   loadingDetail: string;
@@ -240,6 +253,7 @@ export function useReportingScreenViewModel(
       hasPackTargets: false,
       packTargetsSummary: "No report-pack targets configured.",
       packTargetsListLabel: "Report-pack targets",
+      packTargetsEmptyState: buildPackTargetsEmptyState(),
       workflowTaskPanel: null,
       loadingTitle: "Loading Reporting",
       loadingDetail: "Waiting for governed report-pack and export evidence.",
@@ -339,7 +353,7 @@ export function useReportingScreenViewModel(
       ? `${selectedProfileData.name} routes ${selectedProfileData.format} output to ${selectedProfileData.targetTool}.`
       : "Select a profile to inspect export evidence and ready-state.",
     nextAction: selectedProfileData
-      ? `POST /api/export/analysis · GET /api/export/preview?profile=${selectedProfileData.id}`
+      ? `POST ${EXPORT_API_ENDPOINTS.analysis} · GET ${exportPreviewEndpoint(selectedProfileData.id)}`
       : `${profiles.length} profile${profiles.length === 1 ? "" : "s"} on desk. Select one to inspect export evidence.`,
     selectedProfile: detail,
     packTargets,
@@ -349,6 +363,7 @@ export function useReportingScreenViewModel(
         ? `${packCount} report-pack target${packCount === 1 ? "" : "s"} configured.`
         : "No report-pack targets configured.",
     packTargetsListLabel: "Report-pack targets",
+    packTargetsEmptyState: buildPackTargetsEmptyState(),
     workflowTaskPanel,
     loadingTitle: "Loading Reporting",
     loadingDetail: "Waiting for governed report-pack and export evidence.",
@@ -356,6 +371,13 @@ export function useReportingScreenViewModel(
     runningProfileId,
     runExport: runExportCommand,
     selectProfile
+  };
+}
+
+function buildPackTargetsEmptyState(): ReportingPackTargetsEmptyState {
+  return {
+    text: "No report-pack targets loaded. Configure governed targets in the governance policy before approving this packet.",
+    ariaLabel: "No report-pack targets loaded"
   };
 }
 
@@ -384,7 +406,7 @@ function buildWorkbenchChips(
     { label: "Profiles", value: countLabel },
     { label: "Pack targets", value: packTargetCountLabel },
     { label: "Recommended", value: recommendedCountLabel },
-    { label: "Export route", value: "/api/export/analysis" }
+    { label: "Export route", value: EXPORT_API_ENDPOINTS.analysis }
   ];
 }
 
@@ -452,10 +474,13 @@ function buildWorkflowTaskPanel({
       { label: "Targets", value: String(packTargets.length) },
       { label: "Profiles", value: String(reporting.profiles.length) },
       { label: "Ready profiles", value: String(readyProfiles) },
-      { label: "Backend", value: "/api/fund-structure/report-packs" }
+      { label: "Backend", value: EXPORT_API_ENDPOINTS.reportPacks }
     ],
     targetsLabel: "Report-pack approval targets",
     targets: packTargets,
+    hasTargets: packTargets.length > 0,
+    targetsEmptyText: "No report-pack targets loaded. Configure governed targets before approving this packet.",
+    targetsEmptyAriaLabel: "No report-pack approval targets",
     profileListLabel: "Report-pack export profiles",
     profiles: rows.map((row) => {
       const profile = reporting.profiles.find((item) => item.id === row.id);
@@ -483,6 +508,9 @@ function buildWorkflowTaskPanel({
         selectAriaLabel: `Select ${row.name} for report-pack approval`
       };
     }),
+    hasProfiles: rows.length > 0,
+    profilesEmptyText: "No export profiles are configured. Add a governed profile before report-pack approval.",
+    profilesEmptyAriaLabel: "No report-pack export profiles",
     selectedSummary: selectedProfile
       ? `${selectedProfile.name} is selected for report-pack approval using ${selectedProfile.format} output to ${selectedProfile.targetTool}.`
       : "Select a profile to enable packet preview and export actions.",
@@ -492,14 +520,14 @@ function buildWorkflowTaskPanel({
         id: "report-pack-catalog",
         method: "GET",
         label: "Report-pack catalog",
-        href: "/api/fund-structure/report-packs",
+        href: EXPORT_API_ENDPOINTS.reportPacks,
         ariaLabel: "Open report-pack catalog backend endpoint"
       },
       {
         id: "export-preview",
         method: "GET",
         label: "Export preview",
-        href: selectedProfile ? `/api/export/preview?profile=${encodeURIComponent(selectedProfile.id)}` : "/api/export/preview",
+        href: exportPreviewEndpoint(selectedProfile?.id),
         ariaLabel: selectedProfile
           ? `Preview ${selectedProfile.name} export payload`
           : "Open export preview backend endpoint"
@@ -508,7 +536,7 @@ function buildWorkflowTaskPanel({
         id: "export-run",
         method: "POST",
         label: "Run export",
-        href: "/api/export/analysis",
+        href: EXPORT_API_ENDPOINTS.analysis,
         ariaLabel: selectedProfile
           ? `Run ${selectedProfile.name} export analysis`
           : "Run export analysis backend endpoint"
@@ -542,14 +570,13 @@ function buildProfileActions(
   profile: GovernanceReportingProfile,
   runningProfileId: string | null
 ): ReportingProfileAction[] {
-  const profileQuery = `profile=${encodeURIComponent(profile.id)}`;
   const isRunningThisProfile = runningProfileId === profile.id;
 
   return [
     {
       id: "preview",
       label: "Preview payload",
-      href: `/api/export/preview?${profileQuery}`,
+      href: exportPreviewEndpoint(profile.id),
       variant: "outline",
       ariaLabel: `Preview ${profile.name} export payload`,
       describedById: `reporting-action-${profile.id}-preview-status`,
@@ -563,7 +590,7 @@ function buildProfileActions(
     {
       id: "run",
       label: isRunningThisProfile ? "Running export…" : "Run export",
-      href: "/api/export/analysis",
+      href: EXPORT_API_ENDPOINTS.analysis,
       variant: "default",
       ariaLabel: `Run ${profile.name} export analysis`,
       describedById: `reporting-action-${profile.id}-run-status`,

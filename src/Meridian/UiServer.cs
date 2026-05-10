@@ -119,6 +119,9 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<ReconciliationGovernanceService>();
         builder.Services.AddSingleton<CashFlowProjectionService>();
         builder.Services.AddSingleton<StrategyRunContinuityService>();
+        builder.Services.AddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
+        builder.Services.AddSingleton<BrokerageConnectionService>();
+        builder.Services.AddSingleton<AlpacaBrokerageConnectionService>();
         builder.Services.AddSingleton(BrokeragePortfolioSyncOptions.Default);
         builder.Services.AddSingleton<BrokeragePortfolioSyncService>();
         builder.Services.AddSingleton(Dk1TrustGateReadinessOptions.Default);

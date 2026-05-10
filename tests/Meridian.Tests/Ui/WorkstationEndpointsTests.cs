@@ -703,7 +703,7 @@ public sealed class WorkstationEndpointsTests
         readiness.TrustGate.OperatorSignoff.SignedOwners.Should().BeEmpty();
         readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
         readiness.ReadyForPaperOperation.Should().BeFalse();
-        readiness.AcceptanceGates.Should().HaveCount(6);
+        readiness.AcceptanceGates.Should().HaveCount(8);
         readiness.AcceptanceGates.Should().ContainSingle(gate =>
             gate.GateId == "session" &&
             gate.Status == TradingAcceptanceGateStatusDto.Ready &&
@@ -731,10 +731,16 @@ public sealed class WorkstationEndpointsTests
             gate.GateId == "report-pack" &&
             gate.Status == TradingAcceptanceGateStatusDto.Ready &&
             gate.AuditReference == reportPack.ReportId.ToString("D"));
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "reconciliation" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "brokerage-sync" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
         readiness.EvidenceCompleteness.Should().NotBeNull();
-        readiness.EvidenceCompleteness!.ReadyGateCount.Should().Be(5);
-        readiness.EvidenceCompleteness.TotalGateCount.Should().Be(6);
-        readiness.EvidenceCompleteness.ReviewGateIds.Should().ContainSingle().Which.Should().Be("dk1-trust");
+        readiness.EvidenceCompleteness!.ReadyGateCount.Should().Be(6);
+        readiness.EvidenceCompleteness.TotalGateCount.Should().Be(8);
+        readiness.EvidenceCompleteness.ReviewGateIds.Should().BeEquivalentTo(["dk1-trust", "reconciliation"]);
         readiness.WorkItems.Should().ContainSingle(item =>
             item.Kind == OperatorWorkItemKindDto.ProviderTrustGate &&
             item.Tone == OperatorWorkItemToneDto.Warning &&
@@ -954,7 +960,15 @@ public sealed class WorkstationEndpointsTests
         readiness.AcceptanceGates
             .Select(static gate => gate.GateId)
             .Should()
-            .Equal("session", "replay", "audit-controls", "promotion", "dk1-trust", "report-pack");
+            .Equal(
+                "session",
+                "replay",
+                "audit-controls",
+                "promotion",
+                "dk1-trust",
+                "report-pack",
+                "reconciliation",
+                "brokerage-sync");
         readiness.ReportPack.Should().NotBeNull();
         readiness.ReportPack!.Status.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
         readiness.EvidenceCompleteness.Should().NotBeNull();
@@ -1943,7 +1957,7 @@ public sealed class WorkstationEndpointsTests
         var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
         resolved.Should().NotBeNull();
         resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
-        resolved.ResolvedBy.Should().Be("qa-resolve");
+        resolved.ResolvedBy.Should().Be("ops-user");
         resolved.SignoffStatus.Should().Be("signed-off");
     }
 
@@ -3071,6 +3085,7 @@ public sealed class WorkstationEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "ops-user";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ModifySecurityMaster;
             await next();
         });

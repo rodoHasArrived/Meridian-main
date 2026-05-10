@@ -5,7 +5,7 @@ import {
   getEvidenceSubjects,
   validateEvidencePacket
 } from "@/lib/api";
-import { evidenceWorkbenchPath, workflowTargetPath } from "@/lib/workspace";
+import { evidenceWorkbenchPath, legacyWorkspaceRedirect, WORKSPACES, workflowTargetPath } from "@/lib/workspace";
 import type {
   EvidenceCompleteness,
   EvidenceNode,
@@ -50,6 +50,16 @@ export interface EvidencePacketActionViewModel {
   disabledReason: string | null;
 }
 
+export interface EvidenceWorkbenchCommandState {
+  commandLabel: string;
+  label: string;
+  ariaLabel: string;
+  busy: boolean;
+  busyLabel: string | null;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
 export interface EvidenceWorkbenchViewModel {
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
@@ -87,6 +97,8 @@ export interface EvidenceWorkbenchViewModel {
   relatedWorkItemIds: string[];
   warnings: string[];
   canExport: boolean;
+  validateCommand: EvidenceWorkbenchCommandState;
+  exportCommand: EvidenceWorkbenchCommandState;
   exportBusy: boolean;
   exportResult: EvidencePacketExportResponse | null;
   validateBusy: boolean;
@@ -105,6 +117,8 @@ const defaultServices: EvidenceWorkbenchServices = {
   exportManifest: (subjectKind, subjectId) => exportEvidenceManifest(subjectKind, subjectId)
 };
 
+const workstationWorkspaceKeys = new Set<string>(WORKSPACES.map((workspace) => workspace.key));
+
 export function useEvidenceWorkbenchViewModel(
   search: string,
   services: EvidenceWorkbenchServices = defaultServices
@@ -121,10 +135,14 @@ export function useEvidenceWorkbenchViewModel(
   const [validateBusy, setValidateBusy] = useState(false);
   const [validationResult, setValidationResult] = useState<EvidenceCompleteness | null>(null);
   const requestRevisionRef = useRef(0);
+  const validateCommandRevisionRef = useRef(0);
+  const exportCommandRevisionRef = useRef(0);
 
   useEffect(() => {
     const revision = requestRevisionRef.current + 1;
     requestRevisionRef.current = revision;
+    validateCommandRevisionRef.current += 1;
+    exportCommandRevisionRef.current += 1;
     setLoading(true);
     setError(null);
     setPacket(null);
@@ -163,6 +181,8 @@ export function useEvidenceWorkbenchViewModel(
 
     return () => {
       requestRevisionRef.current += 1;
+      validateCommandRevisionRef.current += 1;
+      exportCommandRevisionRef.current += 1;
     };
   }, [selectedSubjectId, selectedSubjectKind, services]);
 
@@ -172,19 +192,22 @@ export function useEvidenceWorkbenchViewModel(
     }
 
     const revision = requestRevisionRef.current;
+    const exportRevision = exportCommandRevisionRef.current + 1;
+    exportCommandRevisionRef.current = exportRevision;
     setExportBusy(true);
     setError(null);
+    setExportResult(null);
     try {
       const result = await services.exportManifest(selectedSubjectKind, selectedSubjectId);
-      if (requestRevisionRef.current === revision) {
+      if (requestRevisionRef.current === revision && exportCommandRevisionRef.current === exportRevision) {
         setExportResult(result);
       }
     } catch (exportError) {
-      if (requestRevisionRef.current === revision) {
+      if (requestRevisionRef.current === revision && exportCommandRevisionRef.current === exportRevision) {
         setError(exportError instanceof Error ? exportError.message : "Evidence manifest export failed.");
       }
     } finally {
-      if (requestRevisionRef.current === revision) {
+      if (requestRevisionRef.current === revision && exportCommandRevisionRef.current === exportRevision) {
         setExportBusy(false);
       }
     }
@@ -196,19 +219,22 @@ export function useEvidenceWorkbenchViewModel(
     }
 
     const revision = requestRevisionRef.current;
+    const validateRevision = validateCommandRevisionRef.current + 1;
+    validateCommandRevisionRef.current = validateRevision;
     setValidateBusy(true);
     setError(null);
+    setValidationResult(null);
     try {
       const result = await services.validatePacket(selectedSubjectKind, selectedSubjectId);
-      if (requestRevisionRef.current === revision) {
+      if (requestRevisionRef.current === revision && validateCommandRevisionRef.current === validateRevision) {
         setValidationResult(result);
       }
     } catch (validateError) {
-      if (requestRevisionRef.current === revision) {
+      if (requestRevisionRef.current === revision && validateCommandRevisionRef.current === validateRevision) {
         setError(validateError instanceof Error ? validateError.message : "Evidence validation failed.");
       }
     } finally {
-      if (requestRevisionRef.current === revision) {
+      if (requestRevisionRef.current === revision && validateCommandRevisionRef.current === validateRevision) {
         setValidateBusy(false);
       }
     }
@@ -248,6 +274,17 @@ export function buildEvidenceWorkbenchViewModel(input: {
   const hasSelection = Boolean(input.selectedSubjectKind && input.selectedSubjectId);
   const subject = input.packet?.subject ?? null;
   const sourceWorkflowHref = resolveSourceWorkflowHref(subject);
+  const subjectLabel = subject?.label ?? "selected evidence subject";
+  const validateCommand = buildPrimaryActionCommand(
+    "validate",
+    subjectLabel,
+    buildActionCommand("validate", subjectLabel, input.exportBusy, input.validateBusy, input.packet !== null)
+  );
+  const exportCommand = buildPrimaryActionCommand(
+    "export",
+    subjectLabel,
+    buildActionCommand("export", subjectLabel, input.exportBusy, input.validateBusy, input.packet !== null)
+  );
   const packetActions = buildEvidencePacketActions({
     actions: input.packet?.actions ?? [],
     subject,
@@ -299,6 +336,8 @@ export function buildEvidenceWorkbenchViewModel(input: {
     relatedWorkItemIds: collectWorkItemIds(input.packet?.nodes ?? []),
     warnings: input.packet?.warnings ?? [],
     canExport: input.packet !== null && !input.exportBusy,
+    validateCommand,
+    exportCommand,
     exportBusy: input.exportBusy,
     exportResult: input.exportResult,
     validateBusy: input.validateBusy,
@@ -342,7 +381,7 @@ export function buildEvidencePacketActions(input: {
       ? evidenceWorkbenchPath(subjectKind, subjectId)
       : workflowTargetPath(action.targetPageTag, input.subject?.workspace);
     const subjectLabel = input.subject?.label ?? "selected evidence subject";
-    const command = buildActionCommand(control, subjectLabel, input.exportBusy, input.validateBusy);
+    const command = buildActionCommand(control, subjectLabel, input.exportBusy, input.validateBusy, Boolean(subjectKind && subjectId));
 
     return {
       id: action.actionId,
@@ -413,30 +452,42 @@ function buildActionCommand(
   control: EvidencePacketActionControl,
   subjectLabel: string,
   exportBusy: boolean,
-  validateBusy: boolean
-) {
+  validateBusy: boolean,
+  hasSubject: boolean
+): EvidenceWorkbenchCommandState {
   switch (control) {
     case "validate":
       return {
         commandLabel: "Validate",
+        label: "Validate",
         ariaLabel: `Validate evidence for ${subjectLabel}`,
         busy: validateBusy,
         busyLabel: "Validating",
-        disabled: validateBusy,
-        disabledReason: validateBusy ? "Evidence validation is already running." : null
+        disabled: validateBusy || !hasSubject,
+        disabledReason: validateBusy
+          ? "Evidence validation is already running."
+          : hasSubject
+            ? null
+            : "Select an evidence packet before validating."
       };
     case "export":
       return {
         commandLabel: "Export",
+        label: "Export manifest",
         ariaLabel: `Export evidence for ${subjectLabel}`,
         busy: exportBusy,
         busyLabel: "Exporting",
-        disabled: exportBusy,
-        disabledReason: exportBusy ? "Evidence export is already running." : null
+        disabled: exportBusy || !hasSubject,
+        disabledReason: exportBusy
+          ? "Evidence export is already running."
+          : hasSubject
+            ? null
+            : "Select an evidence packet before exporting."
       };
     default:
       return {
         commandLabel: "Open",
+        label: "Open",
         ariaLabel: `Open evidence packet for ${subjectLabel}`,
         busy: false,
         busyLabel: null,
@@ -444,6 +495,19 @@ function buildActionCommand(
         disabledReason: null
       };
   }
+}
+
+function buildPrimaryActionCommand(
+  control: "validate" | "export",
+  subjectLabel: string,
+  command: EvidenceWorkbenchCommandState
+): EvidenceWorkbenchCommandState {
+  return {
+    ...command,
+    ariaLabel: control === "validate"
+      ? `Validate selected evidence packet for ${subjectLabel}`
+      : `Export selected evidence manifest for ${subjectLabel}`
+  };
 }
 
 function mapWorkflowActionTone(tone: string): EvidencePacketActionTone {
@@ -483,9 +547,34 @@ function normalizeSubjectRoute(route: string | null | undefined) {
     return null;
   }
 
-  return trimmed.startsWith("/workstation/")
+  const localRoute = trimmed.startsWith("/workstation/")
     ? trimmed.slice("/workstation".length)
     : trimmed;
+
+  if (!localRoute.startsWith("/") || localRoute.startsWith("//") || localRoute.startsWith("/api/")) {
+    return null;
+  }
+
+  const { pathname, search, hash } = splitRouteParts(localRoute);
+  const canonicalRoute = legacyWorkspaceRedirect(pathname, search, hash) ?? `${pathname}${search}${hash}`;
+  const routeWorkspace = canonicalRoute.split(/[/?#]/).filter(Boolean)[0];
+  if (!routeWorkspace || !workstationWorkspaceKeys.has(routeWorkspace)) {
+    return null;
+  }
+
+  return canonicalRoute;
+}
+
+function splitRouteParts(route: string): { pathname: string; search: string; hash: string } {
+  const hashIndex = route.indexOf("#");
+  const routeWithoutHash = hashIndex >= 0 ? route.slice(0, hashIndex) : route;
+  const hash = hashIndex >= 0 ? route.slice(hashIndex) : "";
+  const searchIndex = routeWithoutHash.indexOf("?");
+  return {
+    pathname: searchIndex >= 0 ? routeWithoutHash.slice(0, searchIndex) : routeWithoutHash,
+    search: searchIndex >= 0 ? routeWithoutHash.slice(searchIndex) : "",
+    hash
+  };
 }
 
 function resolveSourceWorkflowHref(subject: EvidenceSubject | null) {

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { QuantLabScreen } from "@/screens/quant-lab-screen";
@@ -72,6 +72,7 @@ describe("QuantLabScreen", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -146,5 +147,49 @@ describe("QuantLabScreen", () => {
     expect(runButton).toBeDisabled();
     expect(runButton).toHaveAttribute("title", "Enter some script source first.");
     expect(runSpy).not.toHaveBeenCalled();
+  });
+
+  it("keeps the parameter panel visible when no runtime parameters are detected", async () => {
+    vi.useFakeTimers();
+    renderWithRouter(<QuantLabScreen />);
+    await waitForAsyncEffects();
+
+    expect(screen.getByRole("heading", { name: "Parameters" })).toBeInTheDocument();
+    expect(screen.getByText("Scanning source for runtime parameters.")).toHaveAttribute("role", "status");
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(650);
+    });
+
+    expect(screen.getByText("No runtime parameters detected in the current script.")).toBeInTheDocument();
+  });
+
+  it("links runtime parameter descriptions to editable controls", async () => {
+    vi.useFakeTimers();
+    vi.mocked(api.extractQuantParameters).mockResolvedValue({
+      parameters: [
+        {
+          name: "lookback",
+          label: "Lookback",
+          typeName: "int",
+          defaultValue: "20",
+          description: "Rolling window length",
+          min: 1,
+          max: 252
+        }
+      ]
+    });
+
+    renderWithRouter(<QuantLabScreen />);
+    await waitForAsyncEffects();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(650);
+    });
+
+    const lookback = screen.getByLabelText("Lookback parameter");
+    expect(lookback).toHaveAttribute("id", "quant-param-lookback");
+    expect(lookback).toHaveAttribute("aria-describedby", "quant-param-lookback-description");
+    expect(screen.getByText("Rolling window length")).toHaveAttribute("id", "quant-param-lookback-description");
   });
 });

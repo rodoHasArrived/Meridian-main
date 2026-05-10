@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildAppShellViewState, normalizeWorkspace, type AppShellWorkspacePayload } from "@/app-shell.view-model";
+import {
+  buildAppShellViewState,
+  buildDevelopmentFixtureNoticeViewModel,
+  normalizeWorkspace,
+  type AppShellWorkspacePayload
+} from "@/app-shell.view-model";
 import type { SessionInfo } from "@/types";
 
 const emptyPayload: AppShellWorkspacePayload = {
@@ -154,6 +159,45 @@ describe("app shell view model", () => {
       actionLabel: "Retry bootstrap",
       actionAriaLabel: "Retry workstation bootstrap",
       itemListLabel: "Bootstrap failure details"
+    });
+  });
+
+  it("builds a retryable demo-data notice with route-aware evidence steps", () => {
+    const state = buildDevelopmentFixtureNoticeViewModel({
+      pathname: "/data/quotes",
+      refreshing: true
+    });
+
+    expect(state).toMatchObject({
+      role: "status",
+      ariaLive: "polite",
+      title: "Demo data",
+      detail: "Showing local fixture responses because the Meridian API host is unavailable.",
+      workflowLabel: "Evidence path",
+      retryLabel: "Retrying live data",
+      retryAriaLabel: "Retrying Meridian API host and live workstation data",
+      retryDisabled: true,
+      retryBusy: true
+    });
+    expect(state.steps.map((step) => [step.id, step.active])).toEqual([
+      ["watchlist", false],
+      ["quotes", true],
+      ["readiness", false],
+      ["connect", false]
+    ]);
+  });
+
+  it("marks the provider setup anchor as the current demo handoff", () => {
+    const state = buildDevelopmentFixtureNoticeViewModel({
+      pathname: "/settings",
+      hash: "#alpaca-provider-setup"
+    });
+
+    expect(state.retryLabel).toBe("Retry live data");
+    expect(state.steps.find((step) => step.id === "connect")).toMatchObject({
+      href: "/settings#alpaca-provider-setup",
+      active: true,
+      ariaLabel: "Open Alpaca paper provider setup"
     });
   });
 });

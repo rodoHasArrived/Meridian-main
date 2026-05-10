@@ -1,6 +1,22 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { connectAlpacaConnection, revokeAlpacaConnection } from "@/lib/api";
-import { WORKSTATION_API_ENDPOINTS, WORKSTATION_API_ENDPOINT_TEMPLATES } from "@/lib/workstation-endpoints";
+import {
+  BACKFILL_API_ENDPOINTS,
+  CONFIG_API_ENDPOINTS,
+  EXECUTION_API_ENDPOINTS,
+  EXPORT_API_ENDPOINTS,
+  PORTFOLIO_API_ENDPOINTS,
+  PROVIDER_API_ENDPOINTS,
+  PROMOTION_API_ENDPOINTS,
+  QUALITY_API_ENDPOINTS,
+  RECONCILIATION_API_ENDPOINTS,
+  REPLAY_API_ENDPOINTS,
+  SECURITY_MASTER_API_ENDPOINTS,
+  SYMBOL_API_ENDPOINTS,
+  WORKSTATION_API_ENDPOINTS,
+  WORKSTATION_API_ENDPOINT_TEMPLATES,
+  workstationRunCompareEndpoint
+} from "@/lib/workstation-endpoints";
 import type {
   AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
@@ -259,7 +275,14 @@ export function useAlpacaConnectionFormViewModel({
   canClear: boolean;
 } & SettingsAlpacaConnectionDependencies): SettingsAlpacaConnectionFormViewModel {
   const [form, setForm] = useState<SettingsAlpacaConnectionFormState>(emptyAlpacaConnectionForm);
+  const mountedRef = useRef(true);
+  const actionRevisionRef = useRef(0);
   const command = buildAlpacaConnectionCommandState({ form, canClear });
+
+  useEffect(() => () => {
+    mountedRef.current = false;
+    actionRevisionRef.current += 1;
+  }, []);
 
   const setKeyId = (keyId: string) => {
     setForm((current) => ({ ...current, keyId, actionMessage: null, actionTone: "default" }));
@@ -283,6 +306,8 @@ export function useAlpacaConnectionFormViewModel({
       return;
     }
 
+    const revision = actionRevisionRef.current + 1;
+    actionRevisionRef.current = revision;
     setForm({ ...submittedForm, busyAction: "connect" });
 
     try {
@@ -291,7 +316,15 @@ export function useAlpacaConnectionFormViewModel({
         secretKey: form.secretKey.trim(),
         environment: form.environment
       });
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
       await onRefresh?.();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
       setForm((current) => ({
         ...current,
         secretKey: "",
@@ -303,6 +336,10 @@ export function useAlpacaConnectionFormViewModel({
         actionTone: status.isConnected ? "success" : "danger"
       }));
     } catch (err) {
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
       setForm((current) => ({
         ...current,
         busyAction: null,
@@ -318,17 +355,31 @@ export function useAlpacaConnectionFormViewModel({
       return;
     }
 
+    const revision = actionRevisionRef.current + 1;
+    actionRevisionRef.current = revision;
     setForm((current) => ({ ...current, busyAction: "clear", actionMessage: null, actionTone: "default" }));
 
     try {
       await revokeConnection();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
       await onRefresh?.();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
       setForm({
         ...emptyAlpacaConnectionForm,
         actionMessage: "Alpaca credentials cleared.",
         actionTone: "success"
       });
     } catch (err) {
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
       setForm((current) => ({
         ...current,
         busyAction: null,
@@ -347,6 +398,14 @@ export function useAlpacaConnectionFormViewModel({
     connect,
     clear
   };
+}
+
+function isActiveAction(
+  mountedRef: { readonly current: boolean },
+  actionRevisionRef: { readonly current: number },
+  revision: number
+): boolean {
+  return mountedRef.current && actionRevisionRef.current === revision;
 }
 
 export interface SettingsSessionItem {
@@ -607,9 +666,9 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
       { id: "trading-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.trading },
       { id: "trading-readiness", method: "GET", label: "Readiness", href: WORKSTATION_API_ENDPOINTS.tradingReadiness },
       { id: "operator-inbox", method: "GET", label: "Operator inbox", href: WORKSTATION_API_ENDPOINTS.operatorInbox },
-      { id: "orders-submit", method: "POST", label: "Submit order", href: "/api/execution/orders/submit" },
-      { id: "sessions", method: "GET", label: "Paper sessions", href: "/api/execution/sessions" },
-      { id: "replay-files", method: "GET", label: "Replay files", href: "/api/replay/files" }
+      { id: "orders-submit", method: "POST", label: "Submit order", href: EXECUTION_API_ENDPOINTS.ordersSubmit },
+      { id: "sessions", method: "GET", label: "Paper sessions", href: EXECUTION_API_ENDPOINTS.sessions },
+      { id: "replay-files", method: "GET", label: "Replay files", href: REPLAY_API_ENDPOINTS.files }
     ]
   },
   {
@@ -623,8 +682,8 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     unavailableDetail: "Portfolio workspace payload has not loaded.",
     endpoints: [
       { id: "portfolio-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.portfolio },
-      { id: "portfolio-aggregate", method: "GET", label: "Portfolio aggregate", href: "/api/portfolio/aggregate" },
-      { id: "portfolio-exposure", method: "GET", label: "Portfolio exposure", href: "/api/portfolio/exposure" },
+      { id: "portfolio-aggregate", method: "GET", label: "Portfolio aggregate", href: PORTFOLIO_API_ENDPOINTS.aggregate },
+      { id: "portfolio-exposure", method: "GET", label: "Portfolio exposure", href: PORTFOLIO_API_ENDPOINTS.exposure },
       { id: "run-ledger", method: "GET", label: "Run ledger", href: WORKSTATION_API_ENDPOINT_TEMPLATES.runLedger },
       { id: "run-continuity", method: "GET", label: "Run continuity", href: WORKSTATION_API_ENDPOINT_TEMPLATES.runContinuity },
       { id: "run-review-packet", method: "GET", label: "Review packet", href: WORKSTATION_API_ENDPOINT_TEMPLATES.runReviewPacket }
@@ -641,10 +700,10 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     unavailableDetail: "Accounting workspace payload has not loaded.",
     endpoints: [
       { id: "accounting-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.accounting },
-      { id: "recon-runs", method: "POST", label: "Run reconciliation", href: "/api/workstation/reconciliation/runs" },
-      { id: "break-queue", method: "GET", label: "Break queue", href: "/api/workstation/reconciliation/break-queue" },
-      { id: "calibration", method: "GET", label: "Calibration", href: "/api/workstation/reconciliation/calibration-summary" },
-      { id: "break-audit", method: "GET", label: "Break audit", href: "/api/workstation/reconciliation/break-queue/{breakId}/audit" }
+      { id: "recon-runs", method: "POST", label: "Run reconciliation", href: RECONCILIATION_API_ENDPOINTS.runs },
+      { id: "break-queue", method: "GET", label: "Break queue", href: RECONCILIATION_API_ENDPOINTS.breakQueue },
+      { id: "calibration", method: "GET", label: "Calibration", href: RECONCILIATION_API_ENDPOINTS.calibrationSummary },
+      { id: "break-audit", method: "GET", label: "Break audit", href: `${RECONCILIATION_API_ENDPOINTS.breakQueue}/{breakId}/audit` }
     ]
   },
   {
@@ -658,9 +717,9 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     unavailableDetail: "Reporting workspace payload has not loaded.",
     endpoints: [
       { id: "reporting-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.reporting },
-      { id: "analysis-export", method: "POST", label: "Analysis export", href: "/api/export/analysis" },
-      { id: "fund-report-packs", method: "GET", label: "Report packs", href: "/api/fund-structure/report-packs" },
-      { id: "export-formats", method: "GET", label: "Export formats", href: "/api/export/formats" }
+      { id: "analysis-export", method: "POST", label: "Analysis export", href: EXPORT_API_ENDPOINTS.analysis },
+      { id: "fund-report-packs", method: "GET", label: "Report packs", href: EXPORT_API_ENDPOINTS.reportPacks },
+      { id: "export-formats", method: "GET", label: "Export formats", href: EXPORT_API_ENDPOINTS.formats }
     ]
   },
   {
@@ -674,11 +733,11 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     unavailableDetail: "Strategy workspace payload has not loaded.",
     endpoints: [
       { id: "strategy-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.strategy },
-      { id: "run-history", method: "GET", label: "Run history", href: "/api/workstation/runs/history" },
-      { id: "run-timeline", method: "GET", label: "Run timeline", href: "/api/workstation/runs/timeline" },
-      { id: "run-sweeps", method: "GET", label: "Run sweeps", href: "/api/workstation/runs/sweeps" },
-      { id: "run-compare", method: "POST", label: "Compare runs", href: "/api/workstation/runs/compare" },
-      { id: "promotion", method: "GET", label: "Promotion check", href: "/api/promotion/evaluate/{runId}" }
+      { id: "run-history", method: "GET", label: "Run history", href: WORKSTATION_API_ENDPOINTS.runHistory },
+      { id: "run-timeline", method: "GET", label: "Run timeline", href: WORKSTATION_API_ENDPOINTS.runTimeline },
+      { id: "run-sweeps", method: "GET", label: "Run sweeps", href: WORKSTATION_API_ENDPOINTS.runSweeps },
+      { id: "run-compare", method: "POST", label: "Compare runs", href: workstationRunCompareEndpoint() },
+      { id: "promotion", method: "GET", label: "Promotion check", href: `${PROMOTION_API_ENDPOINTS.evaluate}/{runId}` }
     ]
   },
   {
@@ -692,11 +751,11 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     unavailableDetail: "Data workspace payload has not loaded.",
     endpoints: [
       { id: "data-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.data },
-      { id: "provider-status", method: "GET", label: "Provider status", href: "/api/providers/status" },
-      { id: "backfill-run", method: "POST", label: "Backfill run", href: "/api/backfill/run" },
-      { id: "security-master", method: "GET", label: "Security Master", href: "/api/workstation/security-master/securities" },
-      { id: "symbols", method: "GET", label: "Symbols", href: "/api/symbols" },
-      { id: "quality-dashboard", method: "GET", label: "Quality", href: "/api/quality/dashboard" }
+      { id: "provider-status", method: "GET", label: "Provider status", href: PROVIDER_API_ENDPOINTS.status },
+      { id: "backfill-run", method: "POST", label: "Backfill run", href: BACKFILL_API_ENDPOINTS.run },
+      { id: "security-master", method: "GET", label: "Security Master", href: SECURITY_MASTER_API_ENDPOINTS.workstationSecurities },
+      { id: "symbols", method: "GET", label: "Symbols", href: SYMBOL_API_ENDPOINTS.symbols },
+      { id: "quality-dashboard", method: "GET", label: "Quality", href: QUALITY_API_ENDPOINTS.dashboard }
     ]
   },
   {
@@ -714,7 +773,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
       { id: "workflow-summary", method: "GET", label: "Workflow summary", href: WORKSTATION_API_ENDPOINTS.workflowSummary },
       { id: "workflow-library", method: "GET", label: "Workflow library", href: WORKSTATION_API_ENDPOINTS.workflowLibrary },
       { id: "workflow-presets", method: "GET", label: "Workflow presets", href: WORKSTATION_API_ENDPOINTS.workflowPresets },
-      { id: "config", method: "GET", label: "Config", href: "/api/config" }
+      { id: "config", method: "GET", label: "Config", href: CONFIG_API_ENDPOINTS.config }
     ]
   }
 ];

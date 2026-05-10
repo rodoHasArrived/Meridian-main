@@ -667,6 +667,20 @@ describe("governance-screen view model", () => {
     expect(state.selectedExportProfileId).toBe("board");
     expect(state.exportCanRun).toBe(true);
     expect(state.exportAriaLabel).toBe("Run reporting export for Board packet");
+    expect(state.backendLinks).toEqual([
+      {
+        id: "preview",
+        label: "Preview report payload",
+        href: "/api/export/preview",
+        ariaLabel: "Open GET /api/export/preview for Preview report payload"
+      },
+      {
+        id: "formats",
+        label: "List export formats",
+        href: "/api/export/formats",
+        ariaLabel: "Open GET /api/export/formats for List export formats"
+      }
+    ]);
   });
 
   it("surfaces reporting profile empty state from the view model", () => {

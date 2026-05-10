@@ -239,7 +239,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                   <Button
                     size="sm"
                     aria-label={vm.promotionPanel.sessionCreated.actionAriaLabel}
-                    onClick={() => { navigate("/trading"); }}
+                    onClick={() => { navigate(vm.promotionPanel.sessionCreated.actionHref); }}
                   >
                     {vm.promotionPanel.sessionCreated.actionLabel}
                   </Button>

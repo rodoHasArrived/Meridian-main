@@ -11,7 +11,15 @@ import type {
 
 export type CommandPaletteItemKind = "workspace" | "workflow" | "preset";
 export type CommandPaletteFocusBoundary = "first" | "last" | "middle" | "outside" | "none";
-export type CommandPaletteKeyCommand = "close" | "focus-first" | "focus-last" | null;
+export type CommandPaletteFocusTarget = "search" | "command" | "other";
+export type CommandPaletteKeyCommand =
+  | "close"
+  | "activate-first-command"
+  | "focus-first"
+  | "focus-last"
+  | "focus-next-command"
+  | "focus-previous-command"
+  | null;
 
 export interface CommandPaletteItem {
   id: string;
@@ -62,6 +70,7 @@ export interface CommandPaletteKeyboardState {
   key: string;
   shiftKey?: boolean;
   focusBoundary: CommandPaletteFocusBoundary;
+  focusTarget?: CommandPaletteFocusTarget;
 }
 
 export function buildCommandPaletteViewModel(
@@ -130,10 +139,23 @@ export function buildCommandPaletteViewModel(
 export function resolveCommandPaletteKeyCommand({
   key,
   shiftKey = false,
-  focusBoundary
+  focusBoundary,
+  focusTarget = "other"
 }: CommandPaletteKeyboardState): CommandPaletteKeyCommand {
   if (key === "Escape") {
     return "close";
+  }
+
+  if (key === "Enter" && focusTarget === "search") {
+    return "activate-first-command";
+  }
+
+  if (key === "ArrowDown") {
+    return "focus-next-command";
+  }
+
+  if (key === "ArrowUp") {
+    return "focus-previous-command";
   }
 
   if (key !== "Tab") {

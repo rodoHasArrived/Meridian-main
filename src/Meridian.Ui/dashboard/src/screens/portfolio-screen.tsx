@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from "react";
 import { useEffect, useRef } from "react";
-import { BriefcaseBusiness, LineChart, Network, Wallet } from "lucide-react";
+import { BriefcaseBusiness, LineChart, Network, Settings, Wallet } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -317,8 +317,19 @@ export function PortfolioScreen({
               </table>
             </div>
           ) : (
-            <div role="status" className="rounded-lg border border-border/70 bg-secondary/20 px-4 py-3 text-sm text-muted-foreground">
-              {vm.brokerageEmptyText}
+            <div className="flex flex-col gap-3 rounded-lg border border-border/70 bg-secondary/20 px-4 py-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+              <span role="status">{vm.brokerageEmptyText}</span>
+              {vm.brokerageSetupAction ? (
+                <Button asChild variant="outline" size="sm" className="w-fit bg-background/40">
+                  <Link to={vm.brokerageSetupAction.href} aria-label={vm.brokerageSetupAction.ariaLabel}>
+                    <Settings className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>{vm.brokerageSetupAction.label}</span>
+                  </Link>
+                </Button>
+              ) : null}
+              {vm.brokerageSetupAction ? (
+                <span className="sr-only">{vm.brokerageSetupAction.detail}</span>
+              ) : null}
             </div>
           )}
         </CardContent>

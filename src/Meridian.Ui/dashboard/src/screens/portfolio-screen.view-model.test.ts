@@ -408,6 +408,9 @@ describe("buildPortfolioScreenViewModel", () => {
       "/api/portfolio/aggregate",
       "/api/portfolio/exposure"
     ]);
+    expect(vm.workflowTaskPanel?.backendLinks.map((link) => link.ariaLabel)).toEqual(
+      vm.workflowTaskPanel?.backendLinks.map((link) => `Open GET ${link.href} backend payload`)
+    );
   });
 
   it("uses the Portfolio workspace payload as the primary portfolio read model", () => {
@@ -556,6 +559,24 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.brokeragePositionRows[0].symbol).toBe("AAPL");
     expect(vm.brokeragePositionRows[0].accountKind).toBe("Roth IRA");
     expect(vm.headerChips[0]).toEqual({ label: "Alpaca paper equity", value: "$375,000" });
+    expect(vm.brokerageSetupAction).toBeNull();
+  });
+
+  it("routes missing brokerage portfolio state to Settings provider setup", () => {
+    const vm = buildPortfolioScreenViewModel({
+      trading,
+      research,
+      governance
+    });
+
+    expect(vm.brokerageConnectionLabel).toBe("Not configured");
+    expect(vm.brokerageEmptyText).toBe("Alpaca paper portfolio sync has not produced a household projection yet.");
+    expect(vm.brokerageSetupAction).toEqual({
+      label: "Open provider setup",
+      href: "/settings#alpaca-provider-setup",
+      ariaLabel: "Open Alpaca paper provider setup from Portfolio brokerage panel",
+      detail: "Verify Alpaca paper credentials before accepting brokerage portfolio state."
+    });
   });
 
   it("keeps connected brokerage portfolios in warning posture when sync warnings exist", () => {

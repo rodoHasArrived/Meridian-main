@@ -17,7 +17,7 @@ public static class BrokerageConnectionEndpoints
         group.MapPost("/robinhood/connect", async (HttpContext context) =>
         {
             if (!HasManageCredentialsPermission(context))
-                return Results.Forbid();
+                return PermissionDenied();
 
             var service = ResolveConnectionService(context);
             if (service is null)
@@ -33,7 +33,7 @@ public static class BrokerageConnectionEndpoints
         group.MapGet("/robinhood/status", async (HttpContext context) =>
         {
             if (!HasViewBrokeragePermission(context))
-                return Results.Forbid();
+                return PermissionDenied();
 
             var service = ResolveConnectionService(context);
             if (service is null)
@@ -49,7 +49,7 @@ public static class BrokerageConnectionEndpoints
         group.MapGet("/robinhood/callback", async (string? code, string? state, string? error, HttpContext context) =>
         {
             if (!HasManageCredentialsPermission(context))
-                return Results.Forbid();
+                return PermissionDenied();
 
             var service = ResolveConnectionService(context);
             if (service is null)
@@ -65,7 +65,7 @@ public static class BrokerageConnectionEndpoints
         group.MapDelete("/robinhood", async (HttpContext context) =>
         {
             if (!HasManageCredentialsPermission(context))
-                return Results.Forbid();
+                return PermissionDenied();
 
             var service = ResolveConnectionService(context);
             if (service is null)
@@ -81,7 +81,7 @@ public static class BrokerageConnectionEndpoints
         group.MapGet("/alpaca/status", async (HttpContext context) =>
         {
             if (!HasViewBrokeragePermission(context))
-                return Results.Forbid();
+                return PermissionDenied();
 
             var service = ResolveAlpacaConnectionService(context);
             if (service is null)
@@ -97,7 +97,7 @@ public static class BrokerageConnectionEndpoints
         group.MapPost("/alpaca/connect", async (AlpacaBrokerageConnectionRequestDto request, HttpContext context) =>
         {
             if (!HasManageCredentialsPermission(context))
-                return Results.Forbid();
+                return PermissionDenied();
 
             var service = ResolveAlpacaConnectionService(context);
             if (service is null)
@@ -113,7 +113,7 @@ public static class BrokerageConnectionEndpoints
         group.MapDelete("/alpaca", async (HttpContext context) =>
         {
             if (!HasManageCredentialsPermission(context))
-                return Results.Forbid();
+                return PermissionDenied();
 
             var service = ResolveAlpacaConnectionService(context);
             if (service is null)
@@ -135,6 +135,9 @@ public static class BrokerageConnectionEndpoints
 
     private static IResult ServiceUnavailable()
         => Results.Problem("Brokerage connection service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+    private static IResult PermissionDenied()
+        => Results.StatusCode(StatusCodes.Status403Forbidden);
 
     private static bool HasViewBrokeragePermission(HttpContext context)
         => TryGetPermissions(context, out var permissions)

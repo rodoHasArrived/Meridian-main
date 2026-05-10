@@ -58,6 +58,10 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.hasPackTargets).toBe(true);
     expect(result.current.packTargets.map((target) => target.label)).toEqual(["board", "audit"]);
     expect(result.current.packTargets[0].ariaLabel).toBe("board report-pack target");
+    expect(result.current.packTargetsEmptyState).toEqual({
+      text: "No report-pack targets loaded. Configure governed targets in the governance policy before approving this packet.",
+      ariaLabel: "No report-pack targets loaded"
+    });
   });
 
   it("builds a route-specific report-pack approval task panel", () => {
@@ -68,7 +72,9 @@ describe("useReportingScreenViewModel", () => {
       title: "Report-pack approval",
       statusLabel: "Evidence review",
       targetsLabel: "Report-pack approval targets",
-      profileListLabel: "Report-pack export profiles"
+      hasTargets: true,
+      profileListLabel: "Report-pack export profiles",
+      hasProfiles: true
     });
     expect(result.current.workflowTaskPanel?.targets.map((target) => target.label)).toEqual(["board", "audit"]);
     expect(result.current.workflowTaskPanel?.profiles.map((profile) => profile.readinessLabel)).toEqual([
@@ -80,6 +86,28 @@ describe("useReportingScreenViewModel", () => {
       "/api/export/preview",
       "/api/export/analysis"
     ]);
+  });
+
+  it("keeps report-pack approval empty-state copy in the view model", () => {
+    const emptyReporting: GovernanceReportingSummary = {
+      profileCount: 0,
+      recommendedProfiles: [],
+      profiles: [],
+      reportPackTargets: [],
+      summary: "No reporting profiles configured."
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(emptyReporting, undefined, "/reporting/report-packs"));
+
+    expect(result.current.workflowTaskPanel).toMatchObject({
+      statusLabel: "Targets missing",
+      hasTargets: false,
+      targetsEmptyText: "No report-pack targets loaded. Configure governed targets before approving this packet.",
+      targetsEmptyAriaLabel: "No report-pack approval targets",
+      hasProfiles: false,
+      profilesEmptyText: "No export profiles are configured. Add a governed profile before report-pack approval.",
+      profilesEmptyAriaLabel: "No report-pack export profiles"
+    });
   });
 
   it("scopes report-pack preview backend links to the selected profile", () => {

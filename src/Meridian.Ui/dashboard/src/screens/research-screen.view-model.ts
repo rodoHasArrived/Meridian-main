@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
-import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { evidenceWorkbenchPath, workspacePath } from "@/lib/workspace";
 import type {
   MetricSnapshot,
   MetricsDiff,
@@ -126,6 +126,7 @@ export interface ResearchPromotionSessionState {
   detail: string;
   actionLabel: string;
   actionAriaLabel: string;
+  actionHref: string;
 }
 
 export interface ResearchPromotionCashFormState {
@@ -864,7 +865,8 @@ export function buildPromotionPanelState({
       sessionId: promotionSession.sessionId,
       detail: `${promotionSession.strategyName ?? "Selected strategy"} is active with ${formatMoney(promotionSession.initialCash)} paper capital.`,
       actionLabel: "Go to Trading cockpit",
-      actionAriaLabel: `Go to Trading cockpit for paper session ${promotionSession.sessionId}`
+      actionAriaLabel: `Go to Trading cockpit for paper session ${promotionSession.sessionId}`,
+      actionHref: workspacePath("trading")
     }
     : null;
 

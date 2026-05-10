@@ -64,7 +64,11 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByText("Security Master command deck")).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: /search securities/i })).toHaveValue("goldman");
     expect(screen.getByText("Search and resolve instruments")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Status: Active/i })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /security master status filter/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /show active securities only/i })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: /show pending security master records/i })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: /show inactive security master records/i })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: /show all security statuses/i })).toHaveAttribute("aria-pressed", "false");
     expect(screen.getAllByText("Provider health").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Recent exports").length).toBeGreaterThan(0);
@@ -204,9 +208,16 @@ describe("DataOperationsScreen", () => {
     expect(screen.queryByRole("button", { name: /ticker GS\.DR/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /ticker GSL/i })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /Status: Active/i }));
+    await user.click(screen.getByRole("button", { name: /show pending security master records/i }));
 
-    expect(screen.getByRole("button", { name: /Status: All/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /show pending security master records/i })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText("1 result")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ticker GS\.DR/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /ticker GSL/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /show all security statuses/i }));
+
+    expect(screen.getByRole("button", { name: /show all security statuses/i })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByText("7 results")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /ticker GS\.DR/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /ticker GSL/i })).toBeInTheDocument();
@@ -224,7 +235,7 @@ describe("DataOperationsScreen", () => {
 
     expect(screen.getByText("No matching securities")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /reset to default search/i }));
+    await user.click(screen.getByRole("button", { name: /reset security master search/i }));
 
     expect(screen.queryByText("No matching securities")).not.toBeInTheDocument();
     expect(searchBox).toHaveValue("goldman");

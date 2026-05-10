@@ -418,6 +418,8 @@ describe("TradingScreen", () => {
     expect(screen.getByText("As of: 2026-04-26T16:05:00Z")).toBeInTheDocument();
     expect(screen.getByText("Brokerage sync failed")).toBeInTheDocument();
     expect(screen.getByText("Sync broker credentials before paper operation.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /open provider setup for brokerage sync failed/i }))
+      .toHaveAttribute("href", "/settings#alpaca-provider-setup");
     expect(screen.getByText("Portfolio snapshot failed.")).toBeInTheDocument();
   });
 

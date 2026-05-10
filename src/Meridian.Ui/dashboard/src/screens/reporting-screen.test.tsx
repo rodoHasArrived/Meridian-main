@@ -97,6 +97,25 @@ describe("ReportingScreen", () => {
     expect(screen.getByLabelText("audit report-pack target")).toBeInTheDocument();
   });
 
+  it("renders the VM-owned no-target state with warning token classes", () => {
+    const missingTargets: GovernanceWorkspaceResponse = {
+      ...governance,
+      reporting: {
+        ...governance.reporting,
+        reportPackTargets: []
+      }
+    };
+
+    renderWithRouter(<ReportingScreen data={missingTargets} />, { initialEntries: ["/reporting"] });
+
+    const emptyState = screen.getByRole("status", { name: "No report-pack targets loaded" });
+    expect(emptyState).toHaveTextContent(
+      "No report-pack targets loaded. Configure governed targets in the governance policy before approving this packet."
+    );
+    expect(emptyState).toHaveClass("border-warning/30", "bg-warning/10", "text-warning");
+    expect(screen.queryByRole("list", { name: "Report-pack targets" })).not.toBeInTheDocument();
+  });
+
   it("renders the dedicated report-pack approval workflow panel", async () => {
     const user = userEvent.setup();
     renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting/report-packs"] });
@@ -189,8 +208,32 @@ describe("ReportingScreen", () => {
     renderWithRouter(<ReportingScreen data={emptyGovernance} />, { initialEntries: ["/reporting"] });
 
     expect(screen.getByText(/no export profiles are configured/i)).toBeInTheDocument();
-    expect(screen.getByRole("status", { name: "No report-pack targets" })).toHaveTextContent(
-      "Configure report-pack targets in the governance policy."
+    expect(screen.getByRole("status", { name: "No report-pack targets loaded" })).toHaveTextContent(
+      "No report-pack targets loaded. Configure governed targets in the governance policy before approving this packet."
     );
+  });
+
+  it("renders report-pack approval task empty targets and profiles as accessible status panels", () => {
+    const emptyGovernance: GovernanceWorkspaceResponse = {
+      ...governance,
+      reporting: {
+        profileCount: 0,
+        recommendedProfiles: [],
+        profiles: [],
+        reportPackTargets: [],
+        summary: "No reporting profiles configured."
+      }
+    };
+
+    renderWithRouter(<ReportingScreen data={emptyGovernance} />, { initialEntries: ["/reporting/report-packs"] });
+
+    const task = screen.getByRole("region", { name: "Report-pack approval task" });
+    expect(within(task).getByRole("status", { name: "No report-pack approval targets" })).toHaveTextContent(
+      "No report-pack targets loaded. Configure governed targets before approving this packet."
+    );
+    expect(within(task).getByRole("status", { name: "No report-pack export profiles" })).toHaveTextContent(
+      "No export profiles are configured. Add a governed profile before report-pack approval."
+    );
+    expect(within(task).queryByRole("list", { name: "Report-pack export profiles" })).not.toBeInTheDocument();
   });
 });

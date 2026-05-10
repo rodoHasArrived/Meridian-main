@@ -1,5 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { buildAlpacaConnectionCommandState, buildSettingsScreenViewModel } from "@/screens/settings-screen.view-model";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import {
+  buildAlpacaConnectionCommandState,
+  buildSettingsScreenViewModel,
+  useAlpacaConnectionFormViewModel
+} from "@/screens/settings-screen.view-model";
 import type { BrokerageConnectionStatus, SessionInfo, SystemOverviewResponse } from "@/types";
 
 const session: SessionInfo = {
@@ -491,4 +496,42 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.systemItems).toHaveLength(0);
     expect(vm.systemSummary).toContain("unavailable");
   });
+
+  it("does not refresh or update Alpaca credential state after unmount", async () => {
+    const connectResult = deferred<BrokerageConnectionStatus>();
+    const connectConnection = vi.fn().mockReturnValue(connectResult.promise);
+    const onRefresh = vi.fn();
+    const { result, unmount } = renderHook(() => useAlpacaConnectionFormViewModel({
+      canClear: false,
+      connectConnection,
+      onRefresh
+    }));
+
+    act(() => {
+      result.current.setKeyId("paper-key");
+      result.current.setSecretKey("paper-secret");
+    });
+    await act(async () => {
+      void result.current.connect({ preventDefault: vi.fn() } as never);
+    });
+    await waitFor(() => expect(connectConnection).toHaveBeenCalledTimes(1));
+
+    unmount();
+    await act(async () => {
+      connectResult.resolve(alpacaConnection);
+      await connectResult.promise;
+    });
+
+    expect(onRefresh).not.toHaveBeenCalled();
+  });
 });
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}

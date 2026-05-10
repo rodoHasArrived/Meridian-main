@@ -99,9 +99,9 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
             <div className="grid gap-3 md:grid-cols-2">
               <div>
                 <div className="eyebrow-label">Targets</div>
-                <div role="list" aria-label={vm.workflowTaskPanel.targetsLabel} className="mt-2 grid gap-2">
-                  {vm.workflowTaskPanel.targets.length > 0 ? (
-                    vm.workflowTaskPanel.targets.map((target) => (
+                {vm.workflowTaskPanel.hasTargets ? (
+                  <div role="list" aria-label={vm.workflowTaskPanel.targetsLabel} className="mt-2 grid gap-2">
+                    {vm.workflowTaskPanel.targets.map((target) => (
                       <div
                         key={target.id}
                         role="listitem"
@@ -110,13 +110,17 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       >
                         <span className="font-mono text-sm text-foreground">{target.label}</span>
                       </div>
-                    ))
-                  ) : (
-                    <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-                      No report-pack targets loaded.
-                    </p>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p
+                    role="status"
+                    aria-label={vm.workflowTaskPanel.targetsEmptyAriaLabel}
+                    className="mt-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning"
+                  >
+                    {vm.workflowTaskPanel.targetsEmptyText}
+                  </p>
+                )}
               </div>
               <div>
                 <div className="eyebrow-label">Backend</div>
@@ -143,31 +147,42 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
           </div>
           <div>
             <div className="eyebrow-label">Approval profile</div>
-            <div role="list" aria-label={vm.workflowTaskPanel.profileListLabel} className="mt-3 grid gap-2">
-              {vm.workflowTaskPanel.profiles.map((profile) => (
-                <button
-                  key={profile.id}
-                  type="button"
-                  aria-pressed={profile.isSelected}
-                  aria-label={profile.selectAriaLabel}
-                  onClick={() => vm.selectProfile(profile.id)}
-                  className={cn(
-                    "rounded-md border px-3 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
-                    profile.isSelected
-                      ? "border-primary/45 bg-primary/10"
-                      : "border-border/70 bg-secondary/25 hover:bg-secondary/45"
-                  )}
-                >
-                  <span className="flex items-start justify-between gap-3">
-                    <span>
-                      <span className="block font-semibold text-foreground">{profile.name}</span>
-                      <span className="mt-1 block text-xs text-muted-foreground">{profile.summary}</span>
-                    </span>
-                    <Badge variant={profile.readinessVariant}>{profile.readinessLabel}</Badge>
-                  </span>
-                </button>
-              ))}
-            </div>
+            {vm.workflowTaskPanel.hasProfiles ? (
+              <div role="list" aria-label={vm.workflowTaskPanel.profileListLabel} className="mt-3 grid gap-2">
+                {vm.workflowTaskPanel.profiles.map((profile) => (
+                  <div key={profile.id} role="listitem">
+                    <button
+                      type="button"
+                      aria-pressed={profile.isSelected}
+                      aria-label={profile.selectAriaLabel}
+                      onClick={() => vm.selectProfile(profile.id)}
+                      className={cn(
+                        "w-full rounded-md border px-3 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
+                        profile.isSelected
+                          ? "border-primary/45 bg-primary/10"
+                          : "border-border/70 bg-secondary/25 hover:bg-secondary/45"
+                      )}
+                    >
+                      <span className="flex items-start justify-between gap-3">
+                        <span>
+                          <span className="block font-semibold text-foreground">{profile.name}</span>
+                          <span className="mt-1 block text-xs text-muted-foreground">{profile.summary}</span>
+                        </span>
+                        <Badge variant={profile.readinessVariant}>{profile.readinessLabel}</Badge>
+                      </span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p
+                role="status"
+                aria-label={vm.workflowTaskPanel.profilesEmptyAriaLabel}
+                className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning"
+              >
+                {vm.workflowTaskPanel.profilesEmptyText}
+              </p>
+            )}
           </div>
         </section>
       ) : null}
@@ -200,13 +215,13 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
           </CardContent>
         </Card>
 
-        <Card className="panel-surface-strong text-slate-50">
+        <Card className="panel-surface-strong text-foreground">
           <CardHeader>
             <div className="eyebrow-label">Pack targets</div>
             <CardTitle>Report-pack targets</CardTitle>
-            <CardDescription className="text-slate-300">{vm.packTargetsSummary}</CardDescription>
+            <CardDescription>{vm.packTargetsSummary}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-slate-200">
+          <CardContent className="space-y-3 text-sm text-foreground/85">
             <div className="flex flex-wrap gap-2">
               {vm.packTargetChips.map((chip) => (
                 <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
@@ -234,7 +249,13 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                 ))}
               </div>
             ) : (
-              <p role="status" aria-label="No report-pack targets" className="text-slate-300">Configure report-pack targets in the governance policy.</p>
+              <p
+                role="status"
+                aria-label={vm.packTargetsEmptyState.ariaLabel}
+                className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning"
+              >
+                {vm.packTargetsEmptyState.text}
+              </p>
             )}
           </CardContent>
         </Card>

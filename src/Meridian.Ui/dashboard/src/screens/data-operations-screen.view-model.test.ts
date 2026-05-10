@@ -426,12 +426,28 @@ describe("data-operations-screen view model", () => {
       activeTab: "overview",
       statusFilter: "all"
     });
+    const pendingState = buildSecurityMasterWorkspaceState({
+      query: "goldman",
+      selectedSecurityId: null,
+      activeTab: "overview",
+      statusFilter: "pending"
+    });
+    const inactiveState = buildSecurityMasterWorkspaceState({
+      query: "goldman",
+      selectedSecurityId: null,
+      activeTab: "overview",
+      statusFilter: "inactive"
+    });
 
     expect(activeState.results).toHaveLength(5);
     expect(allState.results).toHaveLength(7);
+    expect(pendingState.results).toHaveLength(1);
+    expect(inactiveState.results).toHaveLength(1);
     expect(activeState.results.some((row) => row.status === "Pending")).toBe(false);
     expect(allState.results.some((row) => row.status === "Pending")).toBe(true);
     expect(allState.results.some((row) => row.status === "Inactive")).toBe(true);
+    expect(pendingState.results.every((row) => row.status === "Pending")).toBe(true);
+    expect(inactiveState.results.every((row) => row.status === "Inactive")).toBe(true);
   });
 
   it("maps export row status into semantic tones and next actions", () => {
@@ -509,6 +525,44 @@ describe("data-operations-screen view model", () => {
 
     expect(securityMaster.resultCountLabel).toBe("5 results");
     expect(securityMaster.statusChipLabel).toBe("Status: Active");
+    expect(securityMaster.statusFilterGroupLabel).toBe("Security Master status filter");
+    expect(securityMaster.statusFilterHelpText).toContain("2 pending or inactive records are hidden");
+    expect(securityMaster.statusFilterOptions).toEqual([
+      {
+        id: "active",
+        label: "Active",
+        countLabel: "5",
+        selected: true,
+        ariaLabel: "Show active securities only, 5 matches"
+      },
+      {
+        id: "pending",
+        label: "Pending",
+        countLabel: "1",
+        selected: false,
+        ariaLabel: "Show pending Security Master records, 1 match"
+      },
+      {
+        id: "inactive",
+        label: "Inactive",
+        countLabel: "1",
+        selected: false,
+        ariaLabel: "Show inactive Security Master records, 1 match"
+      },
+      {
+        id: "all",
+        label: "All statuses",
+        countLabel: "7",
+        selected: false,
+        ariaLabel: "Show all security statuses, 7 matches"
+      }
+    ]);
+    expect(securityMaster.clearSearchVisible).toBe(true);
+    expect(securityMaster.clearSearchAriaLabel).toBe('Clear Security Master search query "goldman"');
+    expect(securityMaster.resetSearchAriaLabel).toBe("Reset Security Master search to goldman");
+    expect(securityMaster.showAllStatusesVisible).toBe(true);
+    expect(securityMaster.showAllStatusesAriaLabel).toContain("2 pending or inactive records are currently hidden");
+    expect(securityMaster.resultSortLabel).toBe("Sorted by search score - coverage and packet posture visible in detail panel");
     expect(securityMaster.searchSummaryBadges).toEqual([
       {
         id: "assets",

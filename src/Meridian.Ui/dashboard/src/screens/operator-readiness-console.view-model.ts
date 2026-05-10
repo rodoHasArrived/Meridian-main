@@ -1084,7 +1084,7 @@ function determineOverallLevel({
   reportPackFacts: ReadinessConsoleRow[];
 }): ReadinessConsoleLevel {
   if (!readiness) {
-    return "review";
+    return hasCriticalOperatorInbox(operatorInbox) ? "blocked" : "review";
   }
 
   if (
@@ -1131,7 +1131,7 @@ function buildOverallDetail({
   reportPackFacts: ReadinessConsoleRow[];
 }): string {
   if (!readiness) {
-    return "Trading readiness has not loaded yet. The console can still show any available Strategy, Data, or Governance payloads.";
+    return buildMissingReadinessDetail(operatorInbox, inboxLoading, inboxError);
   }
 
   const sourceStatus = formatReadinessStatusValue(readiness.overallStatus).toLowerCase();
@@ -1223,7 +1223,7 @@ function formatEffectiveOverallLabel(
   overallLevel: ReadinessConsoleLevel
 ): string {
   if (readinessStatusLabel === "Awaiting readiness payload") {
-    return readinessStatusLabel;
+    return overallLevel === "blocked" ? "Blocked" : readinessStatusLabel;
   }
 
   if (overallLevel === "blocked") {
@@ -1239,6 +1239,48 @@ function formatEffectiveOverallLabel(
 
 function hasReportPackReadinessGap(reportPackFacts: ReadinessConsoleRow[]): boolean {
   return reportPackFacts.length === 0 || reportPackFacts.some((row) => row.level !== "ready");
+}
+
+function buildMissingReadinessDetail(
+  operatorInbox: OperatorInbox | null,
+  inboxLoading: boolean,
+  inboxError: string | null
+): string {
+  if (inboxLoading) {
+    return "Trading readiness has not loaded yet, and the operator inbox is still loading. The console stays in review until shared work items settle.";
+  }
+
+  if (inboxError) {
+    return `Trading readiness has not loaded yet, and the operator inbox failed to load: ${inboxError}. Review any visible fallback work items before accepting readiness.`;
+  }
+
+  if (operatorInbox) {
+    const criticalCount = Math.max(
+      operatorInbox.criticalCount,
+      operatorInbox.items.filter((item) => item.tone === "Critical").length
+    );
+    const warningCount = Math.max(
+      operatorInbox.warningCount,
+      operatorInbox.items.filter((item) => item.tone === "Warning").length
+    );
+    const severitySummary = [
+      criticalCount > 0 ? formatCount(criticalCount, "critical item") : null,
+      warningCount > 0 ? formatCount(warningCount, "warning") : null
+    ].filter(Boolean).join(" and ");
+
+    if (severitySummary) {
+      return `Trading readiness has not loaded yet, but the operator inbox reports ${severitySummary}. Resolve the primary next action before accepting readiness.`;
+    }
+
+    return "Trading readiness has not loaded yet. The operator inbox is clean, but readiness cannot be accepted until the trading readiness payload loads.";
+  }
+
+  return "Trading readiness has not loaded yet. The console can still show any available Strategy, Data, or Governance payloads.";
+}
+
+function hasCriticalOperatorInbox(operatorInbox: OperatorInbox | null): boolean {
+  return (operatorInbox?.criticalCount ?? 0) > 0 ||
+    operatorInbox?.items.some((item) => item.tone === "Critical") === true;
 }
 
 function levelFromReadiness(status: string): ReadinessConsoleLevel {

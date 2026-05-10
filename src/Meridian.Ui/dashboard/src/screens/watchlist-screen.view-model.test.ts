@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildBulkAddFeedback,
   buildProviderSetupHandoff,
@@ -6,13 +7,16 @@ import {
   buildQuoteStatus,
   buildStarterPackCommands,
   buildStarterPackFeedback,
+  buildWatchlistSelectedDetail,
   buildWatchlistRows,
   buildWatchlistStats,
   formatRelative,
   parseWatchlistSymbols,
+  useWatchlistScreenViewModel,
   validatePendingSymbol
 } from "@/screens/watchlist-screen.view-model";
 import type { QuotesSnapshotItem, SymbolRecord, SymbolStatistics } from "@/types";
+import type { WatchlistApi } from "@/screens/watchlist-screen.view-model";
 
 const symbols: SymbolRecord[] = [
   {
@@ -151,6 +155,41 @@ describe("watchlist-screen view model", () => {
     });
   });
 
+  it("builds a selected-symbol detail panel from the active watchlist row", () => {
+    const now = Date.parse("2026-05-09T01:00:00.000Z");
+    const [row] = buildWatchlistRows(symbols, {}, { AAPL: quote }, { AAPL: 187 }, now);
+    const detail = buildWatchlistSelectedDetail(row);
+
+    expect(detail).toMatchObject({
+      symbol: "AAPL",
+      title: "AAPL",
+      statusLabel: "Active",
+      statusVariant: "success",
+      quoteActionHref: "/data/quotes?symbol=AAPL",
+      regionLabel: "AAPL watchlist detail"
+    });
+    expect(detail?.description).toContain("ready for operator review");
+    expect(detail?.fields).toEqual(expect.arrayContaining([
+      { label: "Bid x size", value: "188.05 x 200", tone: "default" },
+      { label: "Last", value: "188.50", tone: "success" },
+      { label: "Quote age", value: "10s ago", tone: "success" },
+      { label: "History", value: "Available", tone: "success" }
+    ]));
+  });
+
+  it("marks selected-symbol detail as recoverable when live quotes are missing", () => {
+    const rows = buildWatchlistRows(symbols);
+    const detail = buildWatchlistSelectedDetail(rows[1]);
+
+    expect(detail?.symbol).toBe("MSFT");
+    expect(detail?.description).toContain("No live quote has been returned");
+    expect(detail?.fields).toEqual(expect.arrayContaining([
+      { label: "Bid x size", value: "-", tone: "muted" },
+      { label: "Provider", value: "No provider", tone: "warning" },
+      { label: "History", value: "Missing", tone: "warning" }
+    ]));
+  });
+
   it("builds starter pack commands and pack-specific feedback", () => {
     expect(buildStarterPackCommands(false, null)[0]).toEqual({
       id: "us-core",
@@ -238,4 +277,102 @@ describe("watchlist-screen view model", () => {
       busy: true
     });
   });
+
+  it("keeps the latest symbol refresh when an earlier load finishes later", async () => {
+    const slowSymbols = deferred<SymbolRecord[]>();
+    const api = createWatchlistApi();
+    api.getSymbols = vi.fn()
+      .mockReturnValueOnce(slowSymbols.promise)
+      .mockResolvedValueOnce([{ ...symbols[0], symbol: "MSFT" }]);
+
+    const { result } = renderHook(() => useWatchlistScreenViewModel(api));
+    await waitFor(() => expect(api.getSymbols).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+    expect(result.current.rows.map((row) => row.symbol)).toEqual(["MSFT"]);
+
+    await act(async () => {
+      slowSymbols.resolve([{ ...symbols[1], symbol: "AAPL" }]);
+      await slowSymbols.promise;
+    });
+
+    expect(result.current.rows.map((row) => row.symbol)).toEqual(["MSFT"]);
+  });
+
+  it("ignores stale quote snapshots after the subscribed symbol set changes", async () => {
+    const slowQuote = deferred<{ quotes: QuotesSnapshotItem[] }>();
+    const api = createWatchlistApi();
+    api.getSymbols = vi.fn()
+      .mockResolvedValueOnce([{ ...symbols[1], symbol: "AAPL" }])
+      .mockResolvedValueOnce([{ ...symbols[0], symbol: "MSFT" }]);
+    api.getLiveQuotesSnapshot = vi.fn().mockReturnValue(slowQuote.promise);
+
+    const { result } = renderHook(() => useWatchlistScreenViewModel(api));
+    await waitFor(() => expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["AAPL"]));
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+    expect(result.current.rows.map((row) => row.symbol)).toEqual(["MSFT"]);
+
+    await act(async () => {
+      slowQuote.resolve({ quotes: [quote] });
+      await slowQuote.promise;
+    });
+
+    expect(result.current.rows).toEqual([
+      expect.objectContaining({ symbol: "MSFT", hasQuote: false, quoteAgeLabel: "Never" })
+    ]);
+  });
+
+  it("keeps a selected watchlist row and falls back when the row disappears", async () => {
+    const api = createWatchlistApi();
+    api.getSymbols = vi.fn()
+      .mockResolvedValueOnce(symbols)
+      .mockResolvedValueOnce([{ ...symbols[0], symbol: "MSFT" }]);
+
+    const { result } = renderHook(() => useWatchlistScreenViewModel(api));
+
+    await waitFor(() => expect(result.current.selectedSymbol).toBe("AAPL"));
+    act(() => result.current.selectSymbol("TSLA"));
+    expect(result.current.selectedSymbol).toBe("TSLA");
+    expect(result.current.selectedDetail?.title).toBe("TSLA");
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+
+    await waitFor(() => expect(result.current.selectedSymbol).toBe("MSFT"));
+    expect(result.current.selectedRowId).toBe("MSFT");
+    expect(result.current.selectedDetail?.title).toBe("MSFT");
+  });
 });
+
+function createWatchlistApi(): WatchlistApi {
+  return {
+    getSymbols: vi.fn().mockResolvedValue(symbols),
+    getSymbolsStatistics: vi.fn().mockResolvedValue({
+      totalSymbols: symbols.length,
+      monitoredSymbols: 1,
+      archivedSymbols: 1,
+      symbolsWithErrors: 1,
+      totalEventsLast24h: 1200
+    }),
+    getLiveQuotesSnapshot: vi.fn().mockResolvedValue({ quotes: [] }),
+    addSymbol: vi.fn().mockResolvedValue({ success: true, symbol: "AAPL" }),
+    bulkAddSymbols: vi.fn().mockResolvedValue({ added: 0, skipped: 0, errors: [] }),
+    removeSymbol: vi.fn().mockResolvedValue({ success: true, symbol: "AAPL" })
+  };
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}

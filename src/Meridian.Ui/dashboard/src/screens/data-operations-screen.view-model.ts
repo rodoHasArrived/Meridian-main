@@ -630,6 +630,11 @@ export function useDataOperationsViewModel(
     setSecurityMasterTab(tab);
   }, []);
 
+  const selectSecurityMasterStatusFilter = useCallback((filter: SecurityMasterStatusFilter) => {
+    setSecurityMasterStatusFilter(filter);
+    setSelectedSecurityMasterId(null);
+  }, []);
+
   const toggleSecurityMasterStatusFilter = useCallback(() => {
     setSecurityMasterStatusFilter((current) => current === "active" ? "all" : "active");
     setSelectedSecurityMasterId(null);
@@ -644,6 +649,7 @@ export function useDataOperationsViewModel(
     securityMasterTab,
     selectSecurityMasterTab,
     securityMasterStatusFilter,
+    selectSecurityMasterStatusFilter,
     toggleSecurityMasterStatusFilter,
     selectedBackfill,
     selectedBackfillId,

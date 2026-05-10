@@ -15,6 +15,10 @@ operator actions.
   missing nodes, applies template no-orphan warnings, and computes packet completeness.
 - `EvidenceTemplateRegistry` maps existing workflow ids to required and optional evidence kinds.
 - `IEvidenceArtifactStore` writes manifest-only JSON under `DataRoot/workstation/evidence/`.
+- Strategy-run packets attach route-based ledger artifact refs to the `run-ledger` node when a
+  ledger summary exists: `ledger-journal` routes to
+  `/api/workstation/runs/{runId}/ledger/journal`, and `ledger-trial-balance` routes to
+  `/api/workstation/runs/{runId}/ledger/trial-balance`.
 
 ## Workstation API
 
@@ -66,7 +70,8 @@ Add a contributor when a real user-facing evidence packet needs a new source. A 
 - reuse an existing read service or repository
 - return empty nodes with warnings when optional source services are absent
 - use stable evidence ids scoped to the subject
-- attach artifact references instead of copying source files
+- attach artifact references instead of copying source files; route-only references should leave
+  `path` and `hash` empty until a retained manifest/export flow owns those files
 - add required ids only for evidence the packet must validate
 - avoid creating duplicate operator next-action links when an inbox or workflow action already owns
   the route

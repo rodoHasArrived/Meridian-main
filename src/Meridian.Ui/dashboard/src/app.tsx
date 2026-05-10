@@ -1,8 +1,24 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, Database, KeyRound, LineChart, LoaderCircle, Menu, Search, ShieldCheck } from "lucide-react";
+import {
+  AlertTriangle,
+  Database,
+  KeyRound,
+  LineChart,
+  LoaderCircle,
+  Menu,
+  RefreshCcw,
+  Search,
+  ShieldCheck,
+  type LucideIcon
+} from "lucide-react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
-import { buildAppShellViewState, type ShellStatusPanel } from "@/app-shell.view-model";
+import {
+  buildAppShellViewState,
+  buildDevelopmentFixtureNoticeViewModel,
+  type DevelopmentFixtureNoticeStep,
+  type ShellStatusPanel
+} from "@/app-shell.view-model";
 import { CommandPalette } from "@/components/meridian/command-palette";
 import { MegaMenu } from "@/components/meridian/mega-menu";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
@@ -61,9 +77,13 @@ export function App() {
     loading,
     error,
     workspaceErrors,
-    refresh
+    refresh,
+    upsertWorkflowPreset
   } = useWorkstationData();
-  const handleWorkflowPresetUsed = (presetId: string) => markWorkflowPresetUsed(presetId).then(() => undefined);
+  const handleWorkflowPresetUsed = (presetId: string) =>
+    markWorkflowPresetUsed(presetId).then((preset) => {
+      upsertWorkflowPreset(preset);
+    });
 
   useEffect(() => {
     const handleCommandShortcut = (event: KeyboardEvent) => {
@@ -216,7 +236,7 @@ export function App() {
           />
 
           <div className="workbench-scroll px-4 py-4 lg:px-6 lg:py-5">
-            {usingDevelopmentFixtures ? <DevelopmentFixtureNotice /> : null}
+            {usingDevelopmentFixtures ? <DevelopmentFixtureNotice refreshing={loading} onRetry={refresh} /> : null}
             {shell.statusPanel ? <ShellStatus panel={shell.statusPanel} onRetry={refresh} /> : null}
             {shell.canRenderRoutes ? (
               <Routes>
@@ -313,52 +333,78 @@ function LegacyWorkspaceRedirect() {
   return <Navigate to={legacyWorkspaceRedirect(location.pathname, location.search, location.hash) ?? "/trading"} replace />;
 }
 
-function DevelopmentFixtureNotice() {
+function DevelopmentFixtureNotice({
+  refreshing,
+  onRetry
+}: {
+  refreshing: boolean;
+  onRetry: () => void | Promise<void>;
+}) {
   const location = useLocation();
+  const viewModel = buildDevelopmentFixtureNoticeViewModel({
+    pathname: location.pathname,
+    hash: location.hash,
+    refreshing
+  });
 
   return (
     <div
-      role="status"
-      aria-live="polite"
+      role={viewModel.role}
+      aria-live={viewModel.ariaLive}
       className="mb-4 flex flex-col gap-3 rounded-lg border border-warning/35 bg-warning/10 px-3 py-3 text-sm text-foreground lg:flex-row lg:items-center lg:justify-between"
     >
       <div className="flex min-w-0 flex-wrap items-center gap-2">
         <span className="font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-warning">
-          Demo data
+          {viewModel.title}
         </span>
         <span className="text-foreground/80">
-          Showing local fixture responses because the Meridian API host is unavailable.
+          {viewModel.detail}
         </span>
       </div>
-      <nav aria-label="Demo workflow" className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">Evidence path</span>
-        {developmentFixtureDemoLinks.map((item) => {
-          const Icon = item.icon;
-          const isCurrent = isCurrentDevelopmentFixtureDemoStep(item, location.pathname, location.hash);
-          return (
-            <Button
-              key={item.href}
-              asChild
-              variant={isCurrent ? "default" : "outline"}
-              size="sm"
-              className={isCurrent ? "" : "bg-background/40"}
-            >
-              <Link to={item.href} aria-label={item.ariaLabel} aria-current={isCurrent ? "step" : undefined}>
-                <span
-                  aria-hidden="true"
-                  className={isCurrent
-                    ? "font-mono text-[0.6875rem] text-primary-foreground/80"
-                    : "font-mono text-[0.6875rem] text-muted-foreground"}
-                >
-                  {item.step}
-                </span>
-                <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>{item.label}</span>
-              </Link>
-            </Button>
-          );
-        })}
-      </nav>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={viewModel.retryDisabled}
+          onClick={() => void onRetry()}
+          aria-label={viewModel.retryAriaLabel}
+          className="bg-background/40"
+        >
+          <RefreshCcw className={`h-3.5 w-3.5 ${viewModel.retryBusy ? "animate-spin" : ""}`} aria-hidden="true" />
+          <span>{viewModel.retryLabel}</span>
+        </Button>
+        <nav aria-label="Demo workflow" className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">
+            {viewModel.workflowLabel}
+          </span>
+          {viewModel.steps.map((item) => {
+            const Icon = developmentFixtureDemoIcons[item.id];
+            return (
+              <Button
+                key={item.href}
+                asChild
+                variant={item.active ? "default" : "outline"}
+                size="sm"
+                className={item.active ? "" : "bg-background/40"}
+              >
+                <Link to={item.href} aria-label={item.ariaLabel} aria-current={item.active ? "step" : undefined}>
+                  <span
+                    aria-hidden="true"
+                    className={item.active
+                      ? "font-mono text-[0.6875rem] text-primary-foreground/80"
+                      : "font-mono text-[0.6875rem] text-muted-foreground"}
+                  >
+                    {item.step}
+                  </span>
+                  <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>{item.label}</span>
+                </Link>
+              </Button>
+            );
+          })}
+        </nav>
+      </div>
     </div>
   );
 }
@@ -388,53 +434,12 @@ function focusElementById(targetElementId: string, fallbackElement: HTMLElement 
   }
 }
 
-const developmentFixtureDemoLinks = [
-  {
-    step: "1",
-    href: "/data/watchlist",
-    matchPath: "/data/watchlist",
-    label: "Watchlist",
-    ariaLabel: "Open sample watchlist demo lane",
-    icon: Database
-  },
-  {
-    step: "2",
-    href: "/data/quotes?symbol=AAPL",
-    matchPath: "/data/quotes",
-    label: "Quotes",
-    ariaLabel: "Open sample live quotes for AAPL",
-    icon: LineChart
-  },
-  {
-    step: "3",
-    href: "/trading/readiness",
-    matchPath: "/trading/readiness",
-    label: "Readiness",
-    ariaLabel: "Open sample readiness console",
-    icon: ShieldCheck
-  },
-  {
-    step: "4",
-    href: "/settings#alpaca-provider-setup",
-    matchPath: "/settings",
-    matchHash: "#alpaca-provider-setup",
-    label: "Connect",
-    ariaLabel: "Open Alpaca paper provider setup",
-    icon: KeyRound
-  }
-] as const;
-
-function isCurrentDevelopmentFixtureDemoStep(
-  item: (typeof developmentFixtureDemoLinks)[number],
-  pathname: string,
-  hash: string
-) {
-  if (item.matchPath !== pathname) {
-    return false;
-  }
-
-  return !("matchHash" in item) || item.matchHash === hash;
-}
+const developmentFixtureDemoIcons: Record<DevelopmentFixtureNoticeStep["id"], LucideIcon> = {
+  watchlist: Database,
+  quotes: LineChart,
+  readiness: ShieldCheck,
+  connect: KeyRound
+};
 
 function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () => void }) {
   const toneClass =

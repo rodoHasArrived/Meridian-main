@@ -490,6 +490,10 @@ describe("operator readiness console view model", () => {
       route: "/data/security-master",
       level: "blocked"
     }));
+    expect(state.overallLevel).toBe("blocked");
+    expect(state.overallLabel).toBe("Blocked");
+    expect(state.overallDetail).toContain("Trading readiness has not loaded yet");
+    expect(state.overallDetail).toContain("1 critical item");
     expect(state.workItems[1].action).toEqual({
       label: "Open provider trust",
       route: "/data/providers",

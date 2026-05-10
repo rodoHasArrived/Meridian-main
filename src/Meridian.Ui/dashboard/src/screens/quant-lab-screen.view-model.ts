@@ -39,6 +39,8 @@ export interface QuantCommandState {
 
 export interface QuantParameterRow {
   name: string;
+  inputId: string;
+  descriptionId: string | null;
   label: string;
   typeName: string;
   description: string | null;
@@ -51,6 +53,17 @@ export interface QuantParameterRow {
   isDefault: boolean;
   resetLabel: string | null;
   ariaLabel: string;
+}
+
+export interface QuantParameterPanelState {
+  title: string;
+  description: string;
+  listLabel: string;
+  statusMessage: string | null;
+  statusRole: "status" | "alert";
+  ariaLive: "polite" | "assertive";
+  tone: "default" | "pending" | "warning";
+  showRows: boolean;
 }
 
 export interface QuantLabToolbarItem {
@@ -98,6 +111,7 @@ export interface QuantLabScreenViewModel {
   templates: QuantTemplate[];
   templatesPanel: QuantTemplatePanelState;
   parameterRows: QuantParameterRow[];
+  parameterPanel: QuantParameterPanelState;
   parameterPhase: QuantParameterPhase;
   toolbarItems: QuantLabToolbarItem[];
   runCommand: QuantCommandState;
@@ -162,20 +176,26 @@ export function useQuantLabScreenViewModel(
       return;
     }
 
+    let cancelled = false;
     setParameterPhase("extracting");
     const timer = window.setTimeout(() => {
       services.extractParameters(source)
         .then((response) => {
+          if (cancelled) return;
           setDetectedParams((prev) => mergeQuantParameters(prev, response.parameters));
           setParamValues((prev) => initializeNewParameterValues(prev, response.parameters));
           setParameterPhase(response.parameters.length > 0 ? "ready" : "idle");
         })
         .catch(() => {
+          if (cancelled) return;
           setParameterPhase("unavailable");
         });
     }, 600);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, [services, source]);
 
   useEffect(() => {
@@ -240,6 +260,7 @@ export function useQuantLabScreenViewModel(
 
   const runCommand = buildRunCommandState(source, run.phase);
   const templatesPanel = buildTemplatePanelState(templatesPhase, templatesError);
+  const parameterPanel = buildParameterPanelState(parameterPhase, parameterRows.length, source.trim().length > 0);
 
   return {
     source,
@@ -251,6 +272,7 @@ export function useQuantLabScreenViewModel(
     templates,
     templatesPanel,
     parameterRows,
+    parameterPanel,
     parameterPhase,
     toolbarItems: buildToolbarItems(source, templates.length, parameterRows.length, run, parameterPhase),
     runCommand,
@@ -375,8 +397,11 @@ export function buildParameterRow(
   const inputType = inputTypeForQuantParameter(parameter.typeName);
   const value = values[parameter.name] ?? (parameter.defaultValue !== null ? String(parameter.defaultValue) : "");
   const isDefault = parameter.defaultValue !== null && value === String(parameter.defaultValue);
+  const stableId = stableQuantParameterId(parameter.name);
   return {
     name: parameter.name,
+    inputId: `quant-param-${stableId}`,
+    descriptionId: parameter.description ? `quant-param-${stableId}-description` : null,
     label: parameter.label,
     typeName: parameter.typeName,
     description: parameter.description,
@@ -390,6 +415,80 @@ export function buildParameterRow(
     resetLabel: !isDefault && parameter.defaultValue !== null ? `Reset ${parameter.label} to default` : null,
     ariaLabel: `${parameter.label} parameter`
   };
+}
+
+export function buildParameterPanelState(
+  phase: QuantParameterPhase,
+  rowCount: number,
+  hasSource: boolean
+): QuantParameterPanelState {
+  const base = {
+    title: "Parameters",
+    description: "Override runtime parameters before running the script.",
+    listLabel: "Script parameters",
+    statusRole: "status" as const,
+    ariaLive: "polite" as const,
+    showRows: rowCount > 0
+  };
+
+  if (rowCount > 0) {
+    if (phase === "extracting") {
+      return {
+        ...base,
+        tone: "pending",
+        statusMessage: "Refreshing parameter metadata from the current source."
+      };
+    }
+
+    if (phase === "unavailable") {
+      return {
+        ...base,
+        tone: "warning",
+        statusMessage: "Parameter extraction is unavailable. Existing values can still be edited and submitted."
+      };
+    }
+
+    return {
+      ...base,
+      tone: "default",
+      statusMessage: null
+    };
+  }
+
+  if (!hasSource) {
+    return {
+      ...base,
+      tone: "default",
+      statusMessage: "Enter script source to scan for runtime parameters."
+    };
+  }
+
+  if (phase === "extracting") {
+    return {
+      ...base,
+      tone: "pending",
+      statusMessage: "Scanning source for runtime parameters."
+    };
+  }
+
+  if (phase === "unavailable") {
+    return {
+      ...base,
+      tone: "warning",
+      statusMessage: "Parameter extraction is unavailable. The script can still run with inline defaults."
+    };
+  }
+
+  return {
+    ...base,
+    tone: "default",
+    statusMessage: "No runtime parameters detected in the current script."
+  };
+}
+
+function stableQuantParameterId(name: string): string {
+  const normalized = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return normalized || "parameter";
 }
 
 export function inputTypeForQuantParameter(typeName: string): "number" | "checkbox" | "text" {

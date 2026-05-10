@@ -10,6 +10,20 @@ import config, {
 } from "../vite.config";
 import type { ProxyOptions, UserConfig } from "vite";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import {
+  EXECUTION_API_ENDPOINTS,
+  PROMOTION_API_ENDPOINTS,
+  QUANT_API_ENDPOINTS,
+  REPLAY_API_ENDPOINTS,
+  SYMBOL_API_ENDPOINTS,
+  WORKSTATION_API_ENDPOINTS,
+  executionAuditEndpoint,
+  executionSessionEndpoint,
+  executionSessionReplayEndpoint,
+  historicalBarsEndpoint,
+  marketDataQuoteEndpoint,
+  marketDataQuotesSnapshotEndpoint
+} from "./lib/workstation-endpoints";
 
 function getApiProxyTarget(proxy: Record<string, string | ProxyOptions> | undefined): string | undefined {
   const apiProxy = proxy?.["/api"];
@@ -54,12 +68,12 @@ describe("Vite Meridian API proxy", () => {
     const response = new FakeResponse();
 
     const result = await bypass(
-      { method: "GET", url: "/api/workstation/session", headers: { accept: "application/json" } } as IncomingMessage,
+      { method: "GET", url: WORKSTATION_API_ENDPOINTS.session, headers: { accept: "application/json" } } as IncomingMessage,
       response as unknown as ServerResponse,
       {} as ProxyOptions
     );
 
-    expect(result).toBe("/api/workstation/session");
+    expect(result).toBe(WORKSTATION_API_ENDPOINTS.session);
     expect(response.statusCode).toBe(200);
     expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8");
     expect(response.headers.get(meridianDevFixtureHeader)).toBe("true");
@@ -76,22 +90,30 @@ describe("Vite Meridian API proxy", () => {
     const snapshotResponse = new FakeResponse();
 
     await bypass(
-      { method: "GET", url: "/api/data/quotes/AAPL", headers: { accept: "application/json" } } as IncomingMessage,
+      { method: "GET", url: marketDataQuoteEndpoint("AAPL"), headers: { accept: "application/json" } } as IncomingMessage,
       quoteResponse as unknown as ServerResponse,
       {} as ProxyOptions
     );
     await bypass(
-      { method: "GET", url: "/api/historical/AAPL/bars?intervalMinutes=5", headers: { accept: "application/json" } } as IncomingMessage,
+      {
+        method: "GET",
+        url: historicalBarsEndpoint("AAPL", { intervalMinutes: 5 }),
+        headers: { accept: "application/json" }
+      } as IncomingMessage,
       historyResponse as unknown as ServerResponse,
       {} as ProxyOptions
     );
     await bypass(
-      { method: "GET", url: "/api/symbols", headers: { accept: "application/json" } } as IncomingMessage,
+      { method: "GET", url: SYMBOL_API_ENDPOINTS.symbols, headers: { accept: "application/json" } } as IncomingMessage,
       symbolsResponse as unknown as ServerResponse,
       {} as ProxyOptions
     );
     await bypass(
-      { method: "GET", url: "/api/data/quotes-snapshot?symbols=AAPL,MSFT", headers: { accept: "application/json" } } as IncomingMessage,
+      {
+        method: "GET",
+        url: marketDataQuotesSnapshotEndpoint(["AAPL", "MSFT"]),
+        headers: { accept: "application/json" }
+      } as IncomingMessage,
       snapshotResponse as unknown as ServerResponse,
       {} as ProxyOptions
     );
@@ -126,6 +148,117 @@ describe("Vite Meridian API proxy", () => {
     });
   });
 
+  it("serves Quant Lab bootstrap fixtures for no-host preview without opening mutation routes", async () => {
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
+      isAvailable: async () => false
+    });
+    const templatesResponse = new FakeResponse();
+    const parametersResponse = new FakeResponse();
+
+    await bypass(
+      { method: "GET", url: QUANT_API_ENDPOINTS.templates, headers: { accept: "application/json" } } as IncomingMessage,
+      templatesResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "POST", url: QUANT_API_ENDPOINTS.parameters, headers: { accept: "application/json" } } as IncomingMessage,
+      parametersResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(templatesResponse.statusCode).toBe(200);
+    expect(templatesResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(templatesResponse.body)).toMatchObject({
+      templates: [
+        expect.objectContaining({ id: "hello-quant-lab" }),
+        expect.objectContaining({ id: "parameter-sweep-preview" })
+      ]
+    });
+    expect(parametersResponse.statusCode).toBe(200);
+    expect(parametersResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(parametersResponse.body)).toMatchObject({
+      parameters: [
+        expect.objectContaining({ name: "lookback", typeName: "int" }),
+        expect.objectContaining({ name: "includeFees", typeName: "bool" })
+      ]
+    });
+  });
+
+  it("serves Trading cockpit support fixtures for no-host demo smoke", async () => {
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
+      isAvailable: async () => false
+    });
+    const sessionsResponse = new FakeResponse();
+    const detailResponse = new FakeResponse();
+    const replayResponse = new FakeResponse();
+    const replayFilesResponse = new FakeResponse();
+    const auditResponse = new FakeResponse();
+    const controlsResponse = new FakeResponse();
+    const promotionHistoryResponse = new FakeResponse();
+
+    await bypass(
+      { method: "GET", url: EXECUTION_API_ENDPOINTS.sessions, headers: { accept: "application/json" } } as IncomingMessage,
+      sessionsResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: executionSessionEndpoint("paper-dev-42"), headers: { accept: "application/json" } } as IncomingMessage,
+      detailResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: executionSessionReplayEndpoint("paper-dev-42"), headers: { accept: "application/json" } } as IncomingMessage,
+      replayResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: REPLAY_API_ENDPOINTS.files, headers: { accept: "application/json" } } as IncomingMessage,
+      replayFilesResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: executionAuditEndpoint(8), headers: { accept: "application/json" } } as IncomingMessage,
+      auditResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: EXECUTION_API_ENDPOINTS.controls, headers: { accept: "application/json" } } as IncomingMessage,
+      controlsResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: PROMOTION_API_ENDPOINTS.history, headers: { accept: "application/json" } } as IncomingMessage,
+      promotionHistoryResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(JSON.parse(sessionsResponse.body)).toEqual([
+      expect.objectContaining({ sessionId: "paper-dev-42", isActive: true })
+    ]);
+    expect(JSON.parse(detailResponse.body)).toMatchObject({
+      summary: expect.objectContaining({ sessionId: "paper-dev-42" }),
+      symbols: ["AAPL", "MSFT", "NVDA"]
+    });
+    expect(JSON.parse(replayResponse.body)).toMatchObject({
+      isConsistent: true,
+      verificationAuditId: "audit-replay-dev-42"
+    });
+    expect(JSON.parse(replayFilesResponse.body)).toMatchObject({
+      total: 1,
+      files: [expect.objectContaining({ name: "paper-dev-42.jsonl" })]
+    });
+    expect(JSON.parse(auditResponse.body)).toEqual([
+      expect.objectContaining({ auditId: "audit-replay-dev-42" })
+    ]);
+    expect(JSON.parse(controlsResponse.body)).toMatchObject({
+      circuitBreaker: { isOpen: false },
+      manualOverrides: [expect.objectContaining({ overrideId: "override-fixture-1" })]
+    });
+    expect(JSON.parse(promotionHistoryResponse.body)).toEqual([
+      expect.objectContaining({ promotionId: "promo-dev-1", targetRunId: "paper-dev-42" })
+    ]);
+  });
+
   it("keeps live API proxying when the Meridian host is available", async () => {
     const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
       isAvailable: async () => true
@@ -133,7 +266,7 @@ describe("Vite Meridian API proxy", () => {
     const response = new FakeResponse();
 
     const result = await bypass(
-      { method: "GET", url: "/api/workstation/session", headers: { accept: "application/json" } } as IncomingMessage,
+      { method: "GET", url: WORKSTATION_API_ENDPOINTS.session, headers: { accept: "application/json" } } as IncomingMessage,
       response as unknown as ServerResponse,
       {} as ProxyOptions
     );
@@ -149,7 +282,7 @@ describe("Vite Meridian API proxy", () => {
     const response = new FakeResponse();
 
     const result = await bypass(
-      { method: "POST", url: "/api/workstation/workflows/presets", headers: { accept: "application/json" } } as IncomingMessage,
+      { method: "POST", url: WORKSTATION_API_ENDPOINTS.workflowPresets, headers: { accept: "application/json" } } as IncomingMessage,
       response as unknown as ServerResponse,
       {} as ProxyOptions
     );

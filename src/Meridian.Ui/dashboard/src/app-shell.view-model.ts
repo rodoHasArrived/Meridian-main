@@ -42,6 +42,28 @@ export interface AppShellViewState {
   routeFocus: AppShellRouteFocusState;
 }
 
+export interface DevelopmentFixtureNoticeStep {
+  id: "watchlist" | "quotes" | "readiness" | "connect";
+  step: string;
+  href: string;
+  label: string;
+  ariaLabel: string;
+  active: boolean;
+}
+
+export interface DevelopmentFixtureNoticeViewModel {
+  role: "status";
+  ariaLive: "polite";
+  title: string;
+  detail: string;
+  workflowLabel: string;
+  retryLabel: string;
+  retryAriaLabel: string;
+  retryDisabled: boolean;
+  retryBusy: boolean;
+  steps: DevelopmentFixtureNoticeStep[];
+}
+
 export interface AppShellRouteFocusState {
   routeKey: string;
   announcement: string;
@@ -104,6 +126,34 @@ export function getWorkspaceForPath(pathname: string): WorkspaceSummary {
 
 export function normalizeWorkspace(pathname: string): WorkspaceKey {
   return normalizeWorkspacePath(pathname);
+}
+
+export function buildDevelopmentFixtureNoticeViewModel({
+  pathname,
+  hash = "",
+  refreshing = false
+}: {
+  pathname: string;
+  hash?: string;
+  refreshing?: boolean;
+}): DevelopmentFixtureNoticeViewModel {
+  return {
+    role: "status",
+    ariaLive: "polite",
+    title: "Demo data",
+    detail: "Showing local fixture responses because the Meridian API host is unavailable.",
+    workflowLabel: "Evidence path",
+    retryLabel: refreshing ? "Retrying live data" : "Retry live data",
+    retryAriaLabel: refreshing
+      ? "Retrying Meridian API host and live workstation data"
+      : "Retry Meridian API host and reload live workstation data",
+    retryDisabled: refreshing,
+    retryBusy: refreshing,
+    steps: developmentFixtureDemoSteps.map((item) => ({
+      ...item,
+      active: isCurrentDevelopmentFixtureDemoStep(item, pathname, hash)
+    }))
+  };
 }
 
 export function buildRouteFocusState(
@@ -224,4 +274,52 @@ function formatHashTargetLabel(targetElementId: string): string {
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
+}
+
+const developmentFixtureDemoSteps = [
+  {
+    id: "watchlist",
+    step: "1",
+    href: "/data/watchlist",
+    matchPath: "/data/watchlist",
+    label: "Watchlist",
+    ariaLabel: "Open sample watchlist demo lane"
+  },
+  {
+    id: "quotes",
+    step: "2",
+    href: "/data/quotes?symbol=AAPL",
+    matchPath: "/data/quotes",
+    label: "Quotes",
+    ariaLabel: "Open sample live quotes for AAPL"
+  },
+  {
+    id: "readiness",
+    step: "3",
+    href: "/trading/readiness",
+    matchPath: "/trading/readiness",
+    label: "Readiness",
+    ariaLabel: "Open sample readiness console"
+  },
+  {
+    id: "connect",
+    step: "4",
+    href: "/settings#alpaca-provider-setup",
+    matchPath: "/settings",
+    matchHash: "#alpaca-provider-setup",
+    label: "Connect",
+    ariaLabel: "Open Alpaca paper provider setup"
+  }
+] as const;
+
+function isCurrentDevelopmentFixtureDemoStep(
+  item: (typeof developmentFixtureDemoSteps)[number],
+  pathname: string,
+  hash: string
+) {
+  if (item.matchPath !== pathname) {
+    return false;
+  }
+
+  return !("matchHash" in item) || item.matchHash === hash;
 }

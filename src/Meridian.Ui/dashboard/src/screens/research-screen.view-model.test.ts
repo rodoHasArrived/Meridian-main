@@ -549,7 +549,8 @@ describe("research-screen view model", () => {
     expect(done.sessionCreated).toMatchObject({
       title: "Paper session created - session sess-123",
       detail: "Index Momentum is active with $100,000 paper capital.",
-      actionAriaLabel: "Go to Trading cockpit for paper session sess-123"
+      actionAriaLabel: "Go to Trading cockpit for paper session sess-123",
+      actionHref: "/trading"
     });
   });
 

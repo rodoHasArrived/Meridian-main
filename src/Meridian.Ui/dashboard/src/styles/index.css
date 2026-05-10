@@ -88,6 +88,16 @@
     --state-pending-fg: #a78bfa;
     --state-pending-bd: rgba(167, 139, 250, 0.35);
     --state-pending-bg: rgba(167, 139, 250, 0.10);
+    --chart-grid: #1a2d44;
+    --chart-grid-major: #1f344c;
+    --chart-up: #26bf86;
+    --chart-dn: #de5878;
+    --chart-ma20: #2ab2d4;
+    --chart-ma50: #f2c94c;
+    --chart-bench: #60a5fa;
+    --chart-band: rgba(96, 165, 250, 0.15);
+    --chart-crosshair: #2ab2d4;
+    --chart-dd: rgba(222, 88, 120, 0.35);
     --shadow-workstation:
       0 1px 0 rgba(255, 255, 255, 0.02) inset,
       0 1px 2px rgba(0, 0, 0, 0.30);
@@ -741,6 +751,32 @@
   .dense-data-table-empty {
     text-align: center;
     color: var(--fg-muted);
+  }
+
+  .row-detail-panel {
+    overflow: hidden;
+    border: 1px solid rgba(31, 52, 76, 0.95);
+    border-radius: var(--radius-md);
+    background: rgba(8, 16, 26, 0.72);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .row-detail-panel .head {
+    padding: 0.5rem 0.625rem;
+    border-bottom: 1px solid rgba(31, 52, 76, 0.95);
+    background: #05101b;
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.59375rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .row-detail-panel .body {
+    padding: 0.625rem;
+    color: #d4dce6;
+    font-size: 0.75rem;
+    line-height: 1.5;
   }
 
   .entity-summary {

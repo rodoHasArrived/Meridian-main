@@ -46,6 +46,7 @@ import type {
   SecurityMasterSelectedState,
   SecurityMasterTimelineEvent,
   SecurityMasterVenueRow,
+  SecurityMasterStatusFilter,
   SecurityMasterWorkspaceState
 } from "@/screens/data-operations-screen.security-master";
 import {
@@ -148,7 +149,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
           state={vm.securityMaster}
           onQueryChange={vm.updateSecurityMasterQuery}
           onSelect={vm.selectSecurityMaster}
-          onToggleStatusFilter={vm.toggleSecurityMasterStatusFilter}
+          onStatusFilterChange={vm.selectSecurityMasterStatusFilter}
         />
         <SecurityMasterDetailCard
           state={vm.securityMaster}
@@ -698,12 +699,12 @@ function SecurityMasterSearchPanel({
   state,
   onQueryChange,
   onSelect,
-  onToggleStatusFilter
+  onStatusFilterChange
 }: {
   state: SecurityMasterWorkspaceState;
   onQueryChange: (value: string) => void;
   onSelect: (securityId: string) => void;
-  onToggleStatusFilter: () => void;
+  onStatusFilterChange: (filter: SecurityMasterStatusFilter) => void;
 }) {
   const selectedSecurity = state.selectedSecurity;
 
@@ -745,9 +746,16 @@ function SecurityMasterSearchPanel({
                     placeholder="Search by issuer, ticker, or ISIN"
                     onChange={(event) => onQueryChange(event.target.value)}
                   />
-                  {state.searchValue.trim() ? (
-                    <Button size="sm" variant="ghost" className="text-slate-300 hover:bg-slate-800/70 hover:text-slate-50" onClick={() => onQueryChange("")}>
-                      Clear
+                  {state.clearSearchVisible ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="text-slate-300 hover:bg-slate-800/70 hover:text-slate-50"
+                      aria-label={state.clearSearchAriaLabel}
+                      onClick={() => onQueryChange("")}
+                    >
+                      {state.clearSearchLabel}
                     </Button>
                   ) : null}
                 </div>
@@ -771,12 +779,46 @@ function SecurityMasterSearchPanel({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" variant="outline" onClick={onToggleStatusFilter}>
-            {state.statusChipLabel}
-          </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <div
+            role="group"
+            aria-label={state.statusFilterGroupLabel}
+            aria-describedby="security-master-status-filter-help"
+            className="inline-flex flex-wrap gap-1 rounded-md border border-border/70 bg-background/60 p-1 shadow-[var(--shadow-panel)]"
+          >
+            {state.statusFilterOptions.map((option) => (
+              <Button
+                key={option.id}
+                type="button"
+                size="sm"
+                variant={option.selected ? "secondary" : "ghost"}
+                aria-pressed={option.selected}
+                aria-label={option.ariaLabel}
+                className={cn(
+                  "min-h-7 gap-1.5 px-2.5 font-mono text-[11px]",
+                  option.selected
+                    ? "border-primary/35 bg-primary/10 text-primary hover:bg-primary/15"
+                    : "text-muted-foreground hover:bg-secondary/55 hover:text-foreground"
+                )}
+                onClick={() => onStatusFilterChange(option.id)}
+              >
+                <span>{option.label}</span>
+                <span
+                  className={cn(
+                    "rounded-sm border px-1.5 py-0.5 text-[10px]",
+                    option.selected ? "border-primary/30 bg-primary/10 text-primary" : "border-border/70 bg-background/70"
+                  )}
+                >
+                  {option.countLabel}
+                </span>
+              </Button>
+            ))}
+          </div>
+          <span id="security-master-status-filter-help" className="text-xs text-muted-foreground">
+            {state.statusFilterHelpText}
+          </span>
           <span className="text-xs text-muted-foreground">
-            Sorted by search score · coverage and packet posture visible in detail panel
+            {state.resultSortLabel}
           </span>
         </div>
 
@@ -793,7 +835,7 @@ function SecurityMasterSearchPanel({
               <span>ISIN</span>
               <span className="text-right">Score</span>
             </div>
-            <div className="space-y-2" aria-label="Security master search results">
+            <div className="space-y-2" aria-label={state.resultListLabel}>
               {state.results.map((result) => (
                 <button
                   key={result.securityId}
@@ -865,12 +907,24 @@ function SecurityMasterSearchPanel({
           <div className="space-y-3">
             <EmptyState state={state.emptyState} />
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={() => onQueryChange(SECURITY_MASTER_DEFAULT_QUERY)}>
-                Reset to default search
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                aria-label={state.resetSearchAriaLabel}
+                onClick={() => onQueryChange(SECURITY_MASTER_DEFAULT_QUERY)}
+              >
+                {state.resetSearchLabel}
               </Button>
-              {state.statusFilter === "active" ? (
-                <Button size="sm" variant="outline" onClick={onToggleStatusFilter}>
-                  Show all statuses
+              {state.showAllStatusesVisible ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  aria-label={state.showAllStatusesAriaLabel}
+                  onClick={() => onStatusFilterChange("all")}
+                >
+                  {state.showAllStatusesLabel}
                 </Button>
               ) : null}
             </div>

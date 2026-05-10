@@ -195,6 +195,18 @@ describe("Evidence Workbench view model", () => {
       ariaLabel: "Validate evidence for Momentum strategy run",
       tone: "warning"
     });
+    expect(vm.validateCommand).toMatchObject({
+      label: "Validate",
+      ariaLabel: "Validate selected evidence packet for Momentum strategy run",
+      disabled: false,
+      disabledReason: null
+    });
+    expect(vm.exportCommand).toMatchObject({
+      label: "Export manifest",
+      ariaLabel: "Export selected evidence manifest for Momentum strategy run",
+      disabled: false,
+      disabledReason: null
+    });
   });
 
   it("keeps loading and empty subject states explicit", () => {
@@ -251,6 +263,55 @@ describe("Evidence Workbench view model", () => {
 
     expect(vm.sourceWorkflowHref).toBe("/reporting/report-packs");
     expect(vm.sourceWorkflowAriaLabel).toBe("Open source workflow for Momentum strategy run");
+  });
+
+  it("normalizes subject routes to canonical workstation paths before falling back to page tags", () => {
+    const legacyRoutePacket: EvidencePacket = {
+      ...packet,
+      subject: {
+        ...subject,
+        route: "/workstation/governance/reconciliation?runId=run-1#break-7",
+        pageTag: "FundReportPack",
+        workspace: "Reporting"
+      }
+    };
+    const unsafeRoutePacket: EvidencePacket = {
+      ...packet,
+      subject: {
+        ...subject,
+        route: "https://example.test/workstation/strategy",
+        pageTag: "FundReportPack",
+        workspace: "Reporting"
+      }
+    };
+    const apiRoutePacket: EvidencePacket = {
+      ...packet,
+      subject: {
+        ...subject,
+        route: "/api/workstation/evidence/strategy-run/run-1",
+        pageTag: "FundReportPack",
+        workspace: "Reporting"
+      }
+    };
+
+    const build = (nextPacket: EvidencePacket) => buildEvidenceWorkbenchViewModel({
+      selectedSubjectKind: nextPacket.subject.subjectKind,
+      selectedSubjectId: nextPacket.subject.subjectId,
+      loading: false,
+      error: null,
+      subjects: [nextPacket.subject],
+      packet: nextPacket,
+      exportBusy: false,
+      exportResult: null,
+      validateBusy: false,
+      validationResult: null,
+      exportManifest: vi.fn(),
+      validatePacket: vi.fn()
+    });
+
+    expect(build(legacyRoutePacket).sourceWorkflowHref).toBe("/accounting/reconciliation?runId=run-1#break-7");
+    expect(build(unsafeRoutePacket).sourceWorkflowHref).toBe("/reporting/report-packs");
+    expect(build(apiRoutePacket).sourceWorkflowHref).toBe("/reporting/report-packs");
   });
 
   it("maps ready, review, blocked, missing, stale, and unknown statuses to accessible tones", () => {
@@ -318,6 +379,87 @@ describe("Evidence Workbench view model", () => {
     expect(result.current.validationResult).toBeNull();
     expect(result.current.scoreLabel).toBe("80% complete");
   });
+
+  it("keeps only the newest same-subject validation and export command results", async () => {
+    const firstValidation = createDeferred<EvidenceCompleteness>();
+    const secondValidation = createDeferred<EvidenceCompleteness>();
+    const firstExport = createDeferred<EvidencePacketExportResponse>();
+    const secondExport = createDeferred<EvidencePacketExportResponse>();
+    const services = {
+      getSubjects: vi.fn().mockResolvedValue([subject]),
+      getPacket: vi.fn().mockResolvedValue(packet),
+      validatePacket: vi.fn()
+        .mockReturnValueOnce(firstValidation.promise)
+        .mockReturnValueOnce(secondValidation.promise),
+      exportManifest: vi.fn()
+        .mockReturnValueOnce(firstExport.promise)
+        .mockReturnValueOnce(secondExport.promise)
+    };
+    const { result } = renderHook(
+      ({ search }) => useEvidenceWorkbenchViewModel(search, services),
+      { initialProps: { search: "?subjectKind=strategy-run&subjectId=run-1" } }
+    );
+
+    await waitFor(() => expect(result.current.hasPacket).toBe(true));
+
+    await act(async () => {
+      void result.current.validatePacket();
+      void result.current.validatePacket();
+    });
+    expect(services.validatePacket).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      firstValidation.resolve({ ...completeness, score: 41 });
+      await Promise.resolve();
+    });
+    expect(result.current.validationResult).toBeNull();
+    expect(result.current.validateBusy).toBe(true);
+
+    await act(async () => {
+      secondValidation.resolve({ ...completeness, score: 91 });
+      await secondValidation.promise;
+    });
+    expect(result.current.validationResult?.score).toBe(91);
+    expect(result.current.validateBusy).toBe(false);
+
+    await act(async () => {
+      void result.current.exportManifest();
+      void result.current.exportManifest();
+    });
+    expect(services.exportManifest).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      firstExport.resolve({
+        subjectKind: "strategy-run",
+        subjectId: "run-1",
+        generatedAt: "2026-05-09T12:35:00Z",
+        manifestPath: "stale-manifest.json",
+        manifestRoute: "/workstation/evidence/stale-manifest.json",
+        evidenceCount: 1,
+        warningCount: 0,
+        retained: true
+      });
+      await Promise.resolve();
+    });
+    expect(result.current.exportResult).toBeNull();
+    expect(result.current.exportBusy).toBe(true);
+
+    await act(async () => {
+      secondExport.resolve({
+        subjectKind: "strategy-run",
+        subjectId: "run-1",
+        generatedAt: "2026-05-09T12:36:00Z",
+        manifestPath: "fresh-manifest.json",
+        manifestRoute: "/workstation/evidence/fresh-manifest.json",
+        evidenceCount: 3,
+        warningCount: 1,
+        retained: true
+      });
+      await secondExport.promise;
+    });
+    expect(result.current.exportResult?.manifestPath).toBe("fresh-manifest.json");
+    expect(result.current.exportBusy).toBe(false);
+  });
 });
 
 describe("EvidenceWorkbenchScreen", () => {
@@ -353,10 +495,10 @@ describe("EvidenceWorkbenchScreen", () => {
       "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1"
     );
 
-    await user.click(screen.getByRole("button", { name: /validate evidence for momentum strategy run/i }));
+    await user.click(screen.getByRole("button", { name: /validate selected evidence packet for momentum strategy run/i }));
     expect(await screen.findByText(/Validation returned 50% completeness/i)).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /export evidence for momentum strategy run/i }));
+    await user.click(screen.getByRole("button", { name: /export selected evidence manifest for momentum strategy run/i }));
     expect(await screen.findByText("Manifest retained")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/strategy-run/run-1/manifest.json")).toBeInTheDocument();
   });

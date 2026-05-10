@@ -13,6 +13,7 @@ import { QuantPlotChart } from "@/components/meridian/quant-plot";
 import { ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import {
   useQuantLabScreenViewModel,
+  type QuantParameterPanelState,
   type QuantParameterRow,
   type QuantRunResultPanelState,
   type QuantRunState,
@@ -81,7 +82,7 @@ export function QuantLabScreen() {
         <div className="space-y-4">
           <ParametersSidePanel
             rows={vm.parameterRows}
-            phase={vm.parameterPhase}
+            panel={vm.parameterPanel}
             onChange={vm.updateParameter}
             onReset={vm.resetParameter}
           />
@@ -234,39 +235,45 @@ function DiagnosticsBlock({
 
 interface ParametersSidePanelProps {
   rows: QuantParameterRow[];
-  phase: "idle" | "extracting" | "ready" | "unavailable";
+  panel: QuantParameterPanelState;
   onChange: (name: string, value: string) => void;
   onReset: (name: string) => void;
 }
 
-function ParametersSidePanel({ rows, phase, onChange, onReset }: ParametersSidePanelProps) {
-  if (rows.length === 0 && phase !== "extracting" && phase !== "unavailable") return null;
+function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSidePanelProps) {
+  const statusToneClass = {
+    default: "border-border/70 bg-secondary/20 text-muted-foreground",
+    pending: "border-primary/30 bg-primary/10 text-primary",
+    warning: "border-warning/30 bg-warning/10 text-warning"
+  } satisfies Record<QuantParameterPanelState["tone"], string>;
 
   return (
     <Card className="self-start">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Settings2 className="h-4 w-4 text-primary" aria-hidden="true" />
-          Parameters
+          {panel.title}
         </CardTitle>
-        <CardDescription>Override script parameters before running.</CardDescription>
+        <CardDescription>{panel.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        {phase === "extracting" && rows.length === 0 ? (
-          <p role="status" className="text-sm text-muted-foreground">Scanning source for parameters...</p>
-        ) : phase === "unavailable" && rows.length === 0 ? (
-          <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-            Parameter extraction is unavailable. The script can still run with inline defaults.
+        {panel.statusMessage ? (
+          <p
+            role={panel.statusRole}
+            aria-live={panel.ariaLive}
+            className={`mb-3 rounded-md border px-3 py-2 text-sm ${statusToneClass[panel.tone]}`}
+          >
+            {panel.statusMessage}
           </p>
-        ) : (
-          <ul className="space-y-3" aria-label="Script parameters">
+        ) : null}
+        {panel.showRows ? (
+          <ul className="space-y-3" aria-label={panel.listLabel}>
             {rows.map((row) => (
               <li key={row.name} className="space-y-1">
                 <div className="flex items-center justify-between gap-1">
                   <label
-                    htmlFor={`param-${row.name}`}
+                    htmlFor={row.inputId}
                     className="text-xs font-medium text-foreground"
-                    title={row.description ?? undefined}
                   >
                     {row.label}
                   </label>
@@ -277,18 +284,19 @@ function ParametersSidePanel({ rows, phase, onChange, onReset }: ParametersSideP
                 {row.inputType === "checkbox" ? (
                   <div className="flex items-center gap-2">
                     <input
-                      id={`param-${row.name}`}
+                      id={row.inputId}
                       type="checkbox"
                       checked={row.checked}
                       onChange={(e) => onChange(row.name, e.target.checked ? "true" : "false")}
-                      className="h-4 w-4 rounded border border-border accent-primary"
+                      className="h-4 w-4 rounded border border-border accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                       aria-label={row.ariaLabel}
+                      aria-describedby={row.descriptionId ?? undefined}
                     />
                     <span className="text-xs text-muted-foreground">{row.checked ? "true" : "false"}</span>
                   </div>
                 ) : (
                   <input
-                    id={`param-${row.name}`}
+                    id={row.inputId}
                     type={row.inputType}
                     value={row.value}
                     min={row.min}
@@ -297,16 +305,17 @@ function ParametersSidePanel({ rows, phase, onChange, onReset }: ParametersSideP
                     onChange={(e) => onChange(row.name, e.target.value)}
                     className="w-full rounded-md border border-border/70 bg-background/60 px-2 py-1.5 font-mono text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     aria-label={row.ariaLabel}
+                    aria-describedby={row.descriptionId ?? undefined}
                   />
                 )}
                 {row.description ? (
-                  <p className="text-[10px] leading-4 text-muted-foreground">{row.description}</p>
+                  <p id={row.descriptionId ?? undefined} className="text-[10px] leading-4 text-muted-foreground">{row.description}</p>
                 ) : null}
                 {row.resetLabel ? (
                   <button
                     type="button"
                     onClick={() => onReset(row.name)}
-                    className="text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                    className="text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     aria-label={row.resetLabel}
                   >
                     Reset to default
@@ -315,7 +324,7 @@ function ParametersSidePanel({ rows, phase, onChange, onReset }: ParametersSideP
               </li>
             ))}
           </ul>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );

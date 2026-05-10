@@ -171,9 +171,34 @@ export interface LiveQuotesPriceChartViewModel {
   changeLabel: string;
   changeTone: "positive" | "negative" | "default";
   strokeTone: "positive" | "negative" | "default";
+  strokeToken: string;
   statusMessage: string | null;
   statusRole: "status" | "alert";
   stats: LiveQuotesMetricRowViewModel[];
+  ariaLabel: string;
+  sparkline: LiveQuotesSparklineViewModel | null;
+}
+
+export interface LiveQuotesSparklinePointViewModel {
+  x: string;
+  y: string;
+}
+
+export interface LiveQuotesSparklineViewModel {
+  viewBox: string;
+  points: string;
+  areaPath: string;
+  lastPoint: LiveQuotesSparklinePointViewModel;
+  guideStartX: string;
+  guideEndX: string;
+  highGuideY: string;
+  lowGuideY: string;
+  labelX: string;
+  highLabelY: string;
+  lowLabelY: string;
+  highLabel: string;
+  lowLabel: string;
+  strokeToken: string;
   ariaLabel: string;
 }
 
@@ -877,6 +902,8 @@ function buildPriceChartViewModel(
         ? `Waiting for prints from ${symbol}...`
         : `No recent prints available for ${symbol}.`
       : null;
+  const ariaLabel = `Recent ${symbol} trade prices, ranging from ${formatMarketPrice(metrics.low)} to ${formatMarketPrice(metrics.high)}.`;
+  const strokeToken = chartStrokeTokenForTone(changeTone);
 
   return {
     title: `${symbol} prints ${formatWindowSpan(metrics.windowStart, metrics.windowEnd)}`,
@@ -885,6 +912,7 @@ function buildPriceChartViewModel(
     changeLabel: `${formatChange(metrics.change)} (${formatChangePct(metrics.changePct)})`,
     changeTone,
     strokeTone: changeTone,
+    strokeToken,
     statusMessage,
     statusRole: error && metrics.count === 0 ? "alert" : "status",
     stats: [
@@ -894,8 +922,74 @@ function buildPriceChartViewModel(
       { id: "vwap", label: "VWAP", value: formatMarketPrice(metrics.vwap) },
       { id: "volume", label: "Volume", value: formatVolume(metrics.volume) }
     ],
-    ariaLabel: `Recent ${symbol} trade prices, ranging from ${formatMarketPrice(metrics.low)} to ${formatMarketPrice(metrics.high)}.`
+    ariaLabel,
+    sparkline: buildPriceSparklineViewModel(metrics, strokeToken, ariaLabel)
   };
+}
+
+export function buildPriceSparklineViewModel(
+  metrics: IntradayMetrics,
+  strokeToken: string,
+  ariaLabel: string
+): LiveQuotesSparklineViewModel | null {
+  const width = 800;
+  const height = 180;
+  const padX = 8;
+  const padY = 14;
+  const { series, high, low } = metrics;
+
+  if (series.length === 0 || high === null || low === null) {
+    return null;
+  }
+
+  const minTs = series[0]!.ts;
+  const maxTs = series[series.length - 1]!.ts;
+  const tsSpan = Math.max(1, maxTs - minTs);
+  const priceSpan = Math.max(high - low, Math.max(high * 0.0005, 0.01));
+  const xFor = (ts: number) => padX + ((ts - minTs) / tsSpan) * (width - padX * 2);
+  const yFor = (price: number) => padY + (1 - (price - low) / priceSpan) * (height - padY * 2);
+  const pointFor = (point: { ts: number; price: number }): LiveQuotesSparklinePointViewModel => ({
+    x: xFor(point.ts).toFixed(2),
+    y: yFor(point.price).toFixed(2)
+  });
+  const points = series.map(pointFor);
+  const lastPoint = points[points.length - 1]!;
+  const baseY = (height - padY).toFixed(2);
+  const areaSegments = [`M ${points[0]!.x} ${baseY}`];
+
+  for (const point of points) {
+    areaSegments.push(`L ${point.x} ${point.y}`);
+  }
+  areaSegments.push(`L ${lastPoint.x} ${baseY} Z`);
+
+  return {
+    viewBox: `0 0 ${width} ${height}`,
+    points: points.map((point) => `${point.x},${point.y}`).join(" "),
+    areaPath: areaSegments.join(" "),
+    lastPoint,
+    guideStartX: padX.toFixed(2),
+    guideEndX: (width - padX).toFixed(2),
+    highGuideY: yFor(high).toFixed(2),
+    lowGuideY: yFor(low).toFixed(2),
+    labelX: (width - padX).toFixed(2),
+    highLabelY: Math.max(yFor(high) - 4, 12).toFixed(2),
+    lowLabelY: Math.min(yFor(low) + 12, height - 4).toFixed(2),
+    highLabel: formatMarketPrice(high),
+    lowLabel: formatMarketPrice(low),
+    strokeToken,
+    ariaLabel
+  };
+}
+
+function chartStrokeTokenForTone(tone: LiveQuotesPriceChartViewModel["strokeTone"]): string {
+  switch (tone) {
+    case "positive":
+      return "var(--chart-up)";
+    case "negative":
+      return "var(--chart-dn)";
+    default:
+      return "var(--chart-bench)";
+  }
 }
 
 function buildPanelState({

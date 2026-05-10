@@ -15,6 +15,7 @@ import {
   searchSecurities
 } from "@/lib/api";
 import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   CorporateAction,
   ExportAnalysisResult,
@@ -348,6 +349,14 @@ export interface GovernanceReportingViewState {
   exportStatusRole: "status" | "alert";
   exportCanRun: boolean;
   exportBusy: boolean;
+  backendLinks: GovernanceReportingBackendLink[];
+}
+
+export interface GovernanceReportingBackendLink {
+  id: string;
+  label: string;
+  href: string;
+  ariaLabel: string;
 }
 
 export type GovernanceTrialBalanceState = "ready" | "loading" | "empty" | "error";
@@ -1421,7 +1430,20 @@ export function buildGovernanceReportingViewState({
     exportStatusTone: exportStatus?.tone ?? "neutral",
     exportStatusRole: exportStatus?.role ?? "status",
     exportCanRun,
-    exportBusy
+    exportBusy,
+    backendLinks: [
+      buildGovernanceReportingBackendLink("preview", "Preview report payload", EXPORT_API_ENDPOINTS.preview),
+      buildGovernanceReportingBackendLink("formats", "List export formats", EXPORT_API_ENDPOINTS.formats)
+    ]
+  };
+}
+
+function buildGovernanceReportingBackendLink(id: string, label: string, href: string): GovernanceReportingBackendLink {
+  return {
+    id,
+    label,
+    href,
+    ariaLabel: `Open GET ${href} for ${label}`
   };
 }
 

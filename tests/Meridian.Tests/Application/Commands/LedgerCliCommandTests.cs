@@ -95,6 +95,41 @@ public sealed class LedgerCliCommandTests
     }
 
     [Fact]
+    public void LedgerTextJournalReportService_RenderReport_ParsesAndRendersJournalLines()
+    {
+        var service = new LedgerTextJournalReportService();
+
+        var report = service.RenderReport(
+            [
+                "2026/01/01 Opening balance",
+                "    Assets:Checking              $100.00",
+                "    Equity:Opening Balances",
+            ],
+            new LedgerTextReportOptions("accounts", null));
+
+        report.Should().Contain("Assets:Checking");
+        report.Should().Contain("Equity:Opening Balances");
+    }
+
+    [Fact]
+    public void LedgerTextJournalReportService_InvalidJournal_PropagatesLineNumberedValidation()
+    {
+        var service = new LedgerTextJournalReportService();
+
+        var act = () => service.RenderReport(
+            [
+                "2026/01/01 Broken entry",
+                "    Assets:Checking              $100.00",
+                "    Income:Sales                 $-50.00",
+            ],
+            new LedgerTextReportOptions("balance", null));
+
+        act.Should()
+            .Throw<LedgerTextJournalException>()
+            .WithMessage("*line 1*not balanced*");
+    }
+
+    [Fact]
     public async Task ExecuteAsync_MissingFileOption_ReturnsValidationExitCode()
     {
         var command = new LedgerCliCommand();
