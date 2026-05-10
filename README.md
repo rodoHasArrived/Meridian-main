@@ -5778,6 +5778,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Api
 │   │   │   ├── BackfillApiModels.cs
 │   │   │   ├── ClientModels.cs
+│   │   │   ├── DataIngestionContracts.cs
 │   │   │   ├── ErrorResponse.cs
 │   │   │   ├── ExecutionApiModels.cs
 │   │   │   ├── LeanApiModels.cs
@@ -6726,6 +6727,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   └── brand
 │   │   │   │   │       └── meridian-mark.svg
 │   │   │   │   ├── components
+│   │   │   │   │   ├── data
+│   │   │   │   │   │   ├── backfill-validation-dashboard.tsx
+│   │   │   │   │   │   └── symbol-universe-manager.tsx
 │   │   │   │   │   ├── meridian
 │   │   │   │   │   │   ├── command-palette.test.tsx
 │   │   │   │   │   │   ├── command-palette.tsx
@@ -6752,6 +6756,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── workspace-nav.tsx
 │   │   │   │   │   │   ├── workspace-nav.view-model.test.ts
 │   │   │   │   │   │   └── workspace-nav.view-model.ts
+│   │   │   │   │   ├── settings
+│   │   │   │   │   │   └── provider-credential-setup.tsx
 │   │   │   │   │   └── ui
 │   │   │   │   │       ├── badge.tsx
 │   │   │   │   │       ├── button.test.tsx
@@ -6987,6 +6993,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AuthenticationMode.cs
 │   │   │   ├── BackfillEndpoints.cs
 │   │   │   ├── BackfillScheduleEndpoints.cs
+│   │   │   ├── BackfillValidationEndpoints.cs
 │   │   │   ├── BankingEndpoints.cs
 │   │   │   ├── BrokerageConnectionEndpoints.cs
 │   │   │   ├── CalendarEndpoints.cs
@@ -6997,6 +7004,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CppTraderEndpoints.cs
 │   │   │   ├── CredentialEndpoints.cs
 │   │   │   ├── CronEndpoints.cs
+│   │   │   ├── DemoModeEndpoints.cs
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
 │   │   │   ├── EdgarReferenceDataEndpoints.cs
@@ -7021,6 +7029,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── OptionsEndpoints.cs
 │   │   │   ├── PathValidation.cs
 │   │   │   ├── PromotionEndpoints.cs
+│   │   │   ├── ProviderCredentialEndpoints.cs
 │   │   │   ├── ProviderEndpoints.cs
 │   │   │   ├── ProviderExtendedEndpoints.cs
 │   │   │   ├── QuantLabEndpoints.cs
@@ -8406,6 +8415,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-672 directories, 7551 files
+674 directories, 7558 files
 ```
 <!-- readme-tree end -->
