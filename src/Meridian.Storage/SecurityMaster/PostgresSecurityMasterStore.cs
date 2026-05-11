@@ -8,6 +8,11 @@ namespace Meridian.Storage.SecurityMaster;
 
 public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
 {
+    private const string BondProjectionTable = "bond_projection";
+    private const string BondLifecycleProjectionTable = "bond_lifecycle_projection";
+    private const string BondAccrualConventionProjectionTable = "bond_accrual_convention_projection";
+    private const string BondIssuerProjectionTable = "bond_issuer_projection";
+
     private readonly SecurityMasterOptions _options;
 
     public PostgresSecurityMasterStore(SecurityMasterOptions options)
@@ -431,10 +436,10 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     {
         foreach (var table in new[]
                  {
-                     "bond_projection",
-                     "bond_lifecycle_projection",
-                     "bond_accrual_convention_projection",
-                     "bond_issuer_projection"
+                     BondProjectionTable,
+                     BondLifecycleProjectionTable,
+                     BondAccrualConventionProjectionTable,
+                     BondIssuerProjectionTable
                  })
         {
             await using var command = connection.CreateCommand();
@@ -652,7 +657,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            insert into {Qualified("bond_projection")} (
+            insert into {Qualified(BondProjectionTable)} (
                 security_id, issuer_name, seniority, subclass, issue_date, maturity_date,
                 coupon_kind, fixed_coupon_rate, floating_rate_index, floating_spread_bps, version)
             values (
@@ -684,7 +689,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            insert into {Qualified("bond_lifecycle_projection")} (
+            insert into {Qualified(BondLifecycleProjectionTable)} (
                 security_id, lifecycle_stat, issue_date, call_date, maturity_date, is_callable, version)
             values (
                 @security_id, @lifecycle_stat, @issue_date, @call_date, @maturity_date, @is_callable, @version)
@@ -716,7 +721,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            insert into {Qualified("bond_accrual_convention_projection")} (
+            insert into {Qualified(BondAccrualConventionProjectionTable)} (
                 security_id, day_count_convention, settlement_cycle_days, holiday_calendar_id,
                 coupon_kind, fixed_coupon_rate, floating_rate_index, floating_spread_bps, version)
             values (
@@ -755,7 +760,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         {
             await using var delete = connection.CreateCommand();
             delete.Transaction = transaction;
-            delete.CommandText = $"delete from {Qualified("bond_issuer_projection")} where security_id = @security_id;";
+            delete.CommandText = $"delete from {Qualified(BondIssuerProjectionTable)} where security_id = @security_id;";
             delete.Parameters.AddWithValue("security_id", projection.SecurityId);
             await delete.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
             return;
@@ -765,7 +770,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            insert into {Qualified("bond_issuer_projection")} (
+            insert into {Qualified(BondIssuerProjectionTable)} (
                 security_id, issuer_name, display_name, primary_identifier_value, currency, maturity_date, seniority, version)
             values (
                 @security_id, @issuer_name, @display_name, @primary_identifier_value, @currency, @maturity_date, @seniority, @version)

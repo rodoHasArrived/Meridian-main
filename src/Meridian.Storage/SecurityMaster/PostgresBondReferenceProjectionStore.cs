@@ -38,10 +38,10 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
     public Task<IReadOnlyList<BondProjectionRow>> GetMaturityLadderAsync(DateOnly from, DateOnly to, CancellationToken ct = default)
         => GetBondListAsync(
             """
-            where bp.maturity_date between @from and @to
+            where bp.maturity_date between @from_date and @to_date
             order by bp.maturity_date, s.display_name
             """,
-            [new NpgsqlParameter("from", from.ToDateTime(TimeOnly.MinValue)), new NpgsqlParameter("to", to.ToDateTime(TimeOnly.MinValue))],
+            [new NpgsqlParameter("from_date", from.ToDateTime(TimeOnly.MinValue)), new NpgsqlParameter("to_date", to.ToDateTime(TimeOnly.MinValue))],
             ct);
 
     private async Task<BondProjectionRow?> GetSingleBondAsync(string predicateSql, IReadOnlyList<NpgsqlParameter> parameters, CancellationToken ct)
@@ -63,10 +63,23 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
                    bp.issuer_name,
                    bp.seniority,
                    bp.maturity_date,
+                   blp.lifecycle_stat,
+                   blp.issue_date,
+                   blp.call_date,
+                   blp.is_callable,
+                   bacp.day_count_convention,
+                   bacp.settlement_cycle_days,
+                   bacp.holiday_calendar_id,
+                   bacp.coupon_kind,
+                   bacp.fixed_coupon_rate,
+                   bacp.floating_rate_index,
+                   bacp.floating_spread_bps,
                    bp.version
             from {Qualified("bond_projection")} bp
             join {Qualified("securities")} s on s.security_id = bp.security_id
             left join {Qualified("bond_issuer_projection")} bip on bip.security_id = bp.security_id
+            left join {Qualified("bond_lifecycle_projection")} blp on blp.security_id = bp.security_id
+            left join {Qualified("bond_accrual_convention_projection")} bacp on bacp.security_id = bp.security_id
             {predicateSql};
             """;
 
@@ -87,7 +100,18 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
                 reader.IsDBNull(4) ? null : reader.GetString(4),
                 reader.IsDBNull(5) ? null : reader.GetString(5),
                 reader.IsDBNull(6) ? null : DateOnly.FromDateTime(reader.GetDateTime(6)),
-                reader.GetInt64(7)));
+                reader.IsDBNull(7) ? null : reader.GetString(7),
+                reader.IsDBNull(8) ? null : DateOnly.FromDateTime(reader.GetDateTime(8)),
+                reader.IsDBNull(9) ? null : DateOnly.FromDateTime(reader.GetDateTime(9)),
+                reader.IsDBNull(10) ? null : reader.GetBoolean(10),
+                reader.IsDBNull(11) ? null : reader.GetString(11),
+                reader.IsDBNull(12) ? null : reader.GetInt32(12),
+                reader.IsDBNull(13) ? null : reader.GetString(13),
+                reader.IsDBNull(14) ? null : reader.GetString(14),
+                reader.IsDBNull(15) ? null : reader.GetDecimal(15),
+                reader.IsDBNull(16) ? null : reader.GetString(16),
+                reader.IsDBNull(17) ? null : reader.GetDecimal(17),
+                reader.GetInt64(18)));
         }
 
         return results;

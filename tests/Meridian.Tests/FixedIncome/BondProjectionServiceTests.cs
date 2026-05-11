@@ -26,6 +26,17 @@ public sealed class BondProjectionServiceTests
                 "Meridian Treasury LLC",
                 "SeniorUnsecured",
                 new DateOnly(2032, 1, 15),
+                "Callable",
+                new DateOnly(2024, 1, 15),
+                new DateOnly(2029, 1, 15),
+                true,
+                "30/360",
+                2,
+                "NYSE",
+                "Fixed",
+                5.125m,
+                null,
+                null,
                 9));
         projectionStore.GetLifecycleAsync(securityId, Arg.Any<CancellationToken>())
             .Returns(new BondLifecycleProjectionRow(

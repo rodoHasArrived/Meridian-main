@@ -17,6 +17,17 @@ public sealed record BondProjectionRow(
     string? IssuerName,
     string? Seniority,
     DateOnly? MaturityDate,
+    string? LifecycleStat,
+    DateOnly? IssueDate,
+    DateOnly? CallDate,
+    bool? IsCallable,
+    string? DayCountConvention,
+    int? SettlementCycleDays,
+    string? HolidayCalendarId,
+    string? CouponKind,
+    decimal? FixedCouponRate,
+    string? FloatingRateIndex,
+    decimal? FloatingSpreadBps,
     long Version);
 
 public sealed record BondLifecycleProjectionRow(

@@ -30,10 +30,7 @@ public sealed class BondProjectionService : IBondReferenceService
             return null;
         }
 
-        var lifecycle = await GetLifecycleAsync(securityId, ct).ConfigureAwait(false);
-        var accrual = await GetAccrualConventionAsync(securityId, ct).ConfigureAwait(false);
-
-        return MapReference(projection, lifecycle, accrual);
+        return MapReference(projection);
     }
 
     public async Task<BondLifecycleDto?> GetLifecycleAsync(Guid securityId, CancellationToken ct = default)
@@ -101,18 +98,13 @@ public sealed class BondProjectionService : IBondReferenceService
         foreach (var projection in projections)
         {
             ct.ThrowIfCancellationRequested();
-            var lifecycle = await GetLifecycleAsync(projection.SecurityId, ct).ConfigureAwait(false);
-            var accrual = await GetAccrualConventionAsync(projection.SecurityId, ct).ConfigureAwait(false);
-            results.Add(MapReference(projection, lifecycle, accrual));
+            results.Add(MapReference(projection));
         }
 
         return results;
     }
 
-    private static BondReferenceDto MapReference(
-        BondProjectionRow projection,
-        BondLifecycleDto? lifecycle,
-        BondAccrualConventionDto? accrual)
+    private static BondReferenceDto MapReference(BondProjectionRow projection)
         => new(
             projection.SecurityId,
             projection.DisplayName,
@@ -120,9 +112,53 @@ public sealed class BondProjectionService : IBondReferenceService
             projection.IssuerName,
             projection.Seniority,
             projection.PrimaryIdentifierValue,
-            lifecycle,
-            accrual,
+            MapLifecycle(projection),
+            MapAccrual(projection),
             projection.Version);
+
+    private static BondLifecycleDto? MapLifecycle(BondProjectionRow projection)
+    {
+        if (projection.MaturityDate is null ||
+            string.IsNullOrWhiteSpace(projection.LifecycleStat) ||
+            !Enum.TryParse<BondLifecycleStat>(projection.LifecycleStat, ignoreCase: true, out var lifecycleStat))
+        {
+            return null;
+        }
+
+        return new BondLifecycleDto(
+            projection.SecurityId,
+            lifecycleStat,
+            projection.IssueDate,
+            projection.CallDate,
+            projection.MaturityDate.Value,
+            projection.IsCallable ?? false,
+            projection.Version);
+    }
+
+    private static BondAccrualConventionDto? MapAccrual(BondProjectionRow projection)
+    {
+        if (projection.DayCountConvention is null &&
+            projection.SettlementCycleDays is null &&
+            projection.HolidayCalendarId is null &&
+            projection.CouponKind is null &&
+            projection.FixedCouponRate is null &&
+            projection.FloatingRateIndex is null &&
+            projection.FloatingSpreadBps is null)
+        {
+            return null;
+        }
+
+        return new BondAccrualConventionDto(
+            projection.SecurityId,
+            projection.DayCountConvention,
+            projection.SettlementCycleDays,
+            projection.HolidayCalendarId,
+            projection.CouponKind,
+            projection.FixedCouponRate,
+            projection.FloatingRateIndex,
+            projection.FloatingSpreadBps,
+            projection.Version);
+    }
 }
 
 public sealed class NullBondReferenceService : IBondReferenceService
