@@ -67,7 +67,7 @@
       "id": "W02B",
       "name": "web-portfolio-brokerage-sync",
       "path": "/portfolio/brokerage-sync",
-      "docLabel": "Portfolio — Brokerage sync",
+      "docLabel": "Portfolio — Brokerage Sync",
       "waitForText": "Portfolio lane"
     },
     {
@@ -109,14 +109,14 @@
       "id": "W04A",
       "name": "web-reporting-report-packs",
       "path": "/reporting/report-packs",
-      "docLabel": "Reporting — Report packs",
+      "docLabel": "Reporting — Report Packs",
       "waitForText": "Reporting lane"
     },
     {
       "id": "W04B",
       "name": "web-reporting-evidence-workbench",
       "path": "/reporting/evidence",
-      "docLabel": "Reporting — Evidence workbench",
+      "docLabel": "Reporting — Evidence Workbench",
       "waitForText": "Evidence workbench"
     },
     {
@@ -152,7 +152,7 @@
       "name": "web-strategy-quant-lab",
       "path": "/strategy/quant-lab",
       "docLabel": "Strategy — Quant Lab",
-      "waitForText": "Quant Lab"
+      "waitForText": "Strategy Lane"
     },
     {
       "id": "W06",
@@ -172,7 +172,7 @@
       "id": "W06B",
       "name": "web-data-live-quotes",
       "path": "/data/quotes",
-      "docLabel": "Data — Live quotes",
+      "docLabel": "Data — Live Quotes",
       "waitForText": "Data Lane"
     },
     {
