@@ -26,13 +26,13 @@ public sealed class EndpointMetadataTests
             .GetRequiredService<EndpointDataSource>()
             .Endpoints
             .Select(endpoint => endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName)
+            .OfType<string>()
             .Where(name => !string.IsNullOrWhiteSpace(name))
-            .Cast<string>()
             .GroupBy(name => name, StringComparer.Ordinal)
             .Where(group => group.Count() > 1)
             .Select(group => group.Key)
             .ToArray();
 
-        duplicateNames.Should().BeEmpty();
+        duplicateNames.Should().BeEmpty("all endpoint names must be unique, but found duplicates: {0}", string.Join(", ", duplicateNames));
     }
 }
