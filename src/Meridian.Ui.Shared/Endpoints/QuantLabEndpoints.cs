@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
 using Microsoft.AspNetCore.Builder;
@@ -43,6 +44,11 @@ public static class QuantLabEndpoints
                     new { error = "Source code is required" },
                     jsonOptions,
                     statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            if (!HasQuantLabExecutionPermission(ctx))
+            {
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
             }
 
             var runner = services.GetService<IScriptRunner>();
@@ -120,6 +126,16 @@ public static class QuantLabEndpoints
         })
         .WithName("GetQuantTemplates")
         .Produces(200);
+    }
+
+    private static bool HasQuantLabExecutionPermission(HttpContext context)
+    {
+        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+        {
+            return false;
+        }
+
+        return (permissions & UserPermission.ManageStrategies) == UserPermission.ManageStrategies;
     }
 
     private static IResult QuantLabUnavailable(JsonSerializerOptions jsonOptions)
