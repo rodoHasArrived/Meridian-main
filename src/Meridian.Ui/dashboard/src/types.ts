@@ -1268,6 +1268,18 @@ export interface SecurityIdentityDrillIn {
   aliases: SecurityAliasEntry[];
 }
 
+export interface OperatorOverridesDto {
+  securityId: string;
+  values: Record<string, string>;
+  updatedBy: string;
+  updatedAt: string;
+}
+
+export interface OperatorOverridesPatchRequest {
+  setValues?: Record<string, string>;
+  removeKeys?: string[];
+}
+
 export interface SecurityMasterConflict {
   conflictId: string;
   securityId: string;

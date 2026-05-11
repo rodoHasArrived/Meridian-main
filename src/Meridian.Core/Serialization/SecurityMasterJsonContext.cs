@@ -43,6 +43,8 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(DeactivateSecurityRequest))]
 [JsonSerializable(typeof(ResolveSecurityRequest))]
 [JsonSerializable(typeof(UpsertSecurityAliasRequest))]
+[JsonSerializable(typeof(OperatorOverridesDto))]
+[JsonSerializable(typeof(OperatorOverridesPatchRequest))]
 [JsonSerializable(typeof(Dictionary<string, object>))]
 [JsonSerializable(typeof(Dictionary<string, JsonElement>))]
 [JsonSerializable(typeof(SecurityClassificationSummaryDto))]

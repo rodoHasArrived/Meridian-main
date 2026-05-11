@@ -366,6 +366,10 @@ export function securityMasterTradingParametersEndpoint(securityId: string): str
   return `${SECURITY_MASTER_API_ENDPOINTS.base}/${pathSegment(securityId, "securityId")}/trading-parameters`;
 }
 
+export function securityMasterOperatorOverridesEndpoint(securityId: string): string {
+  return `${SECURITY_MASTER_API_ENDPOINTS.base}/${pathSegment(securityId, "securityId")}/operator-overrides`;
+}
+
 export function securityMasterConflictsEndpoint(): string {
   return `${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`;
 }

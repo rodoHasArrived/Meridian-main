@@ -5,6 +5,7 @@ import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import {
@@ -66,6 +67,9 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const reporting = useGovernanceReportingViewModel(data?.reporting ?? null);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
   const identity = securityMaster.identityView;
+  const selectedSecurityEntry = securityMaster.selectedSecurityId
+    ? securityMaster.results?.find((entry) => entry.securityId === securityMaster.selectedSecurityId) ?? null
+    : null;
   const identifierColumns: DenseDataTableColumn<NonNullable<typeof identity>["identifiers"][number]>[] = [
     { id: "kind", label: "Kind", render: (identifier) => <span className="font-mono">{identifier.kind}</span> },
     { id: "value", label: "Value", render: (identifier) => <span className="font-mono text-foreground">{identifier.value}</span> },
@@ -823,6 +827,21 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               />
               <TradingParametersPanel view={securityMaster.tradingParametersView} />
             </div>
+          )}
+
+          {/* Extended security details & lots tracker — shown when a security is selected */}
+          {securityMaster.selectedSecurityId && (
+            <>
+              <SecurityDetailsPanel
+                entry={selectedSecurityEntry}
+                identity={securityMaster.identity}
+                tradingParameters={securityMaster.tradingParameters}
+              />
+              <LotsTrackerPanel
+                securityId={securityMaster.selectedSecurityId}
+                currency={selectedSecurityEntry?.economicDefinition.currency ?? null}
+              />
+            </>
           )}
         </section>
       )}
