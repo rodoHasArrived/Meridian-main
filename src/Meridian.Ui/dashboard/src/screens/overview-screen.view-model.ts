@@ -832,19 +832,20 @@ export function buildOverviewPortfolioPanel(
   const metrics: MetricSnapshot[] = [
     pnlMetric
       ? { ...pnlMetric, id: "overview-pnl", label: "Net P&L" }
-      : { id: "overview-pnl", label: "Net P&L", value: "—", tone: "default" },
+      : { id: "overview-pnl", label: "Net P&L", value: "—", delta: "Unavailable", tone: "default" },
     equityMetric
       ? { ...equityMetric, id: "overview-equity", label: "Portfolio Equity" }
-      : { id: "overview-equity", label: "Portfolio Equity", value: "—", tone: "default" },
+      : { id: "overview-equity", label: "Portfolio Equity", value: "—", delta: "Unavailable", tone: "default" },
     cashMetric
       ? { ...cashMetric, id: "overview-cash", label: "Cash" }
-      : { id: "overview-cash", label: "Cash", value: "—", tone: "default" },
+      : { id: "overview-cash", label: "Cash", value: "—", delta: "Unavailable", tone: "default" },
     ordersMetric
       ? { ...ordersMetric, id: "overview-orders", label: "Open Orders" }
       : {
           id: "overview-orders",
           label: "Open Orders",
           value: String(trading?.openOrders.length ?? 0),
+          delta: activeCountDelta(trading?.openOrders.length ?? 0, "order", "orders"),
           tone: "default"
         }
   ];
