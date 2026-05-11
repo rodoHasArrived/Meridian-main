@@ -2880,6 +2880,18 @@ public sealed class WorkstationEndpointsTests
             r.GetProperty("mode").GetString().Should().BeOneOf("paper", "backtest");
             r.GetProperty("notes").GetString().Should().NotBeNull();
         });
+
+        // Cash-flow summary is populated so the Portfolio workspace can surface
+        // cash posture and ledger variance without falling back to Governance fixtures.
+        var cashFlow = portfolio.RootElement.GetProperty("cashFlow");
+        cashFlow.ValueKind.Should().NotBe(JsonValueKind.Null);
+        cashFlow.GetProperty("tone").GetString().Should().NotBeNullOrEmpty();
+        cashFlow.GetProperty("summary").GetString().Should().NotBeNullOrEmpty();
+        cashFlow.TryGetProperty("totalCash", out _).Should().BeTrue();
+        cashFlow.TryGetProperty("totalLedgerCash", out _).Should().BeTrue();
+        cashFlow.TryGetProperty("netVariance", out _).Should().BeTrue();
+        cashFlow.TryGetProperty("runsWithCashSignals", out _).Should().BeTrue();
+        cashFlow.TryGetProperty("runsWithCashVariance", out _).Should().BeTrue();
     }
 
     [Fact]
@@ -2895,6 +2907,14 @@ public sealed class WorkstationEndpointsTests
         portfolio.RootElement.GetProperty("runs").GetArrayLength().Should().Be(0);
         portfolio.RootElement.GetProperty("risk").GetProperty("state").GetString().Should().Be("Healthy");
         portfolio.RootElement.GetProperty("brokerage").GetProperty("connection").GetString().Should().NotBeNullOrEmpty();
+
+        // CashFlow summary is always present (zeroed when there is no run data) so the
+        // Portfolio screen never has to discriminate between "no data" and "missing field".
+        var cashFlow = portfolio.RootElement.GetProperty("cashFlow");
+        cashFlow.ValueKind.Should().NotBe(JsonValueKind.Null);
+        cashFlow.GetProperty("runsWithCashSignals").GetInt32().Should().Be(0);
+        cashFlow.GetProperty("runsWithCashVariance").GetInt32().Should().Be(0);
+        cashFlow.GetProperty("tone").GetString().Should().Be("default");
     }
 
     [Fact]
@@ -2983,6 +3003,8 @@ public sealed class WorkstationEndpointsTests
         var risk = trading.RootElement.GetProperty("risk");
         risk.GetProperty("netExposure").GetString().Should().Be("+$20K");
         risk.GetProperty("grossExposure").GetString().Should().Be("+$20K");
+        // Buying power = Cash (100K, default) → 20,000 / 100,000 = 20% utilisation.
+        risk.GetProperty("buyingPowerUsed").GetString().Should().Be("+20.0%");
     }
 
     [Fact]
@@ -3093,6 +3115,8 @@ public sealed class WorkstationEndpointsTests
 
         var risk = portfolio.RootElement.GetProperty("risk");
         risk.GetProperty("grossExposure").GetString().Should().Be("+$21K");
+        // Buying power = Cash (100K, default) → 21,000 / 100,000 = 21% utilisation.
+        risk.GetProperty("buyingPowerUsed").GetString().Should().Be("+21.0%");
     }
 
     private sealed class LiveMarkTestPortfolioState : Meridian.Execution.Models.IPortfolioState
