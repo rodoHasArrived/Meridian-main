@@ -1,3 +1,4 @@
+import React from "react";
 import {
   DatabaseZap,
   FileCheck2,
@@ -56,24 +57,44 @@ export function WorkspaceNav({ className, onNavigate }: WorkspaceNavProps) {
         {viewModel.items.map((item) => {
           const Icon = icons[item.key];
           return (
-            <Link
-              key={item.key}
-              to={item.route}
-              aria-current={item.ariaCurrent}
-              aria-label={item.ariaLabel}
-              className={cn(
-                "operator-nav-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                item.active ? "active" : ""
+            <React.Fragment key={item.key}>
+              <Link
+                to={item.route}
+                aria-current={item.ariaCurrent}
+                aria-label={item.ariaLabel}
+                className={cn(
+                  "operator-nav-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  item.active ? "active" : ""
+                )}
+                onClick={onNavigate}
+              >
+                <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span className="truncate font-medium">{item.label}</span>
+                <span className={`operator-nav-status operator-nav-status-${item.statusTone}`}>
+                  <span className="operator-nav-status-dot" aria-hidden="true" />
+                  {item.statusLabel}
+                </span>
+              </Link>
+              {item.subItems.length > 0 && (
+                <div className="operator-nav-subitems" role="group" aria-label={`${item.label} sub-routes`}>
+                  {item.subItems.map((sub) => (
+                    <Link
+                      key={sub.route}
+                      to={sub.route}
+                      aria-current={sub.ariaCurrent}
+                      aria-label={sub.ariaLabel}
+                      className={cn(
+                        "operator-nav-subitem focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                        sub.active && "active"
+                      )}
+                      onClick={onNavigate}
+                    >
+                      <span className="truncate">{sub.label}</span>
+                    </Link>
+                  ))}
+                </div>
               )}
-              onClick={onNavigate}
-            >
-              <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span className="truncate font-medium">{item.label}</span>
-              <span className={`operator-nav-status operator-nav-status-${item.statusTone}`}>
-                <span className="operator-nav-status-dot" aria-hidden="true" />
-                {item.statusLabel}
-              </span>
-            </Link>
+            </React.Fragment>
           );
         })}
       </nav>
