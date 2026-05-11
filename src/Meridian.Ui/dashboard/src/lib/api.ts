@@ -43,6 +43,8 @@ import type {
   RunComparisonRow,
   RunDiff,
   RunFillSummary,
+  OperatorOverridesDto,
+  OperatorOverridesPatchRequest,
   SecurityIdentityDrillIn,
   SecurityMasterConflict,
   SecurityMasterEntry,
@@ -111,6 +113,7 @@ import {
   securityMasterConflictResolveEndpoint,
   securityMasterCorporateActionsEndpoint,
   securityMasterEntryEndpoint,
+  securityMasterOperatorOverridesEndpoint,
   securityMasterTradingParametersEndpoint,
   strategyActionEndpoint,
   strategyRunsEndpoint,
@@ -226,6 +229,24 @@ async function postJson<T>(path: string, body?: unknown, options: ApiRequestOpti
 async function putJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
   const response = await fetch(path, {
     method: "PUT",
+    signal: options.signal,
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined
+  });
+
+  if (!response.ok) {
+    throw new Error(await buildRequestFailureMessage(path, response));
+  }
+
+  return readJsonResponse<T>(path, response);
+}
+
+async function patchJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
+  const response = await fetch(path, {
+    method: "PATCH",
     signal: options.signal,
     headers: {
       Accept: "application/json",
@@ -767,6 +788,14 @@ export function getCorporateActions(securityId: string) {
 
 export function getTradingParameters(securityId: string) {
   return getJson<TradingParameters>(securityMasterTradingParametersEndpoint(securityId));
+}
+
+export function getOperatorOverrides(securityId: string) {
+  return getJson<OperatorOverridesDto>(securityMasterOperatorOverridesEndpoint(securityId));
+}
+
+export function patchOperatorOverrides(securityId: string, request: OperatorOverridesPatchRequest) {
+  return patchJson<OperatorOverridesDto>(securityMasterOperatorOverridesEndpoint(securityId), request);
 }
 
 // --- Security Master conflicts ---

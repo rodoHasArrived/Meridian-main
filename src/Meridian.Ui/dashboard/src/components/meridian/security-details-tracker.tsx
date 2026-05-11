@@ -1,14 +1,27 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Briefcase, ClipboardList, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getOperatorOverrides as defaultGetOperatorOverrides, patchOperatorOverrides as defaultPatchOperatorOverrides } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type {
+  OperatorOverridesDto,
+  OperatorOverridesPatchRequest,
   SecurityIdentityDrillIn,
   SecurityMasterEntry,
   TradingParameters
 } from "@/types";
+
+export interface OperatorOverridesService {
+  get: (securityId: string) => Promise<OperatorOverridesDto>;
+  patch: (securityId: string, request: OperatorOverridesPatchRequest) => Promise<OperatorOverridesDto>;
+}
+
+const defaultOperatorOverridesService: OperatorOverridesService = {
+  get: defaultGetOperatorOverrides,
+  patch: defaultPatchOperatorOverrides
+};
 
 export type SecurityDetailFieldKind = "text" | "number" | "date" | "select" | "boolean";
 
@@ -222,6 +235,17 @@ function dispatchOverridesChanged(securityId: string): void {
   }
 }
 
+function sanitiseOverrideValues(values: Record<string, string> | null | undefined): Record<string, string> {
+  if (!values) return {};
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(values)) {
+    if (typeof key !== "string" || key.length === 0) continue;
+    if (typeof value !== "string") continue;
+    result[key] = value;
+  }
+  return result;
+}
+
 function safeLocalStorage(): Storage | null {
   try {
     if (typeof window === "undefined") return null;
@@ -258,23 +282,59 @@ export interface SecurityDetailsPanelProps {
   entry: SecurityMasterEntry | null;
   identity: SecurityIdentityDrillIn | null;
   tradingParameters: TradingParameters | null;
+  overridesService?: OperatorOverridesService;
 }
 
-export function SecurityDetailsPanel({ entry, identity, tradingParameters }: SecurityDetailsPanelProps) {
+export function SecurityDetailsPanel({
+  entry,
+  identity,
+  tradingParameters,
+  overridesService = defaultOperatorOverridesService
+}: SecurityDetailsPanelProps) {
   const securityId = identity?.securityId ?? entry?.securityId ?? null;
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [draftValue, setDraftValue] = useState<string>("");
+  const [serverStatus, setServerStatus] = useState<"idle" | "loading" | "synced" | "offline" | "saving" | "error">("idle");
+  const [serverErrorText, setServerErrorText] = useState<string | null>(null);
+  const [updatedBy, setUpdatedBy] = useState<string | null>(null);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const loadGenerationRef = useRef(0);
 
   useEffect(() => {
     if (!securityId) {
       setOverrides({});
       setEditingKey(null);
+      setServerStatus("idle");
+      setServerErrorText(null);
+      setUpdatedBy(null);
+      setUpdatedAt(null);
       return;
     }
-    setOverrides(loadOverrides(securityId));
+
     setEditingKey(null);
-  }, [securityId]);
+    setServerErrorText(null);
+    setOverrides(loadOverrides(securityId));
+    setServerStatus("loading");
+
+    const generation = ++loadGenerationRef.current;
+    overridesService.get(securityId)
+      .then((dto) => {
+        if (loadGenerationRef.current !== generation) return;
+        const next = sanitiseOverrideValues(dto.values);
+        setOverrides(next);
+        saveOverrides(securityId, next);
+        setUpdatedBy(dto.updatedBy || null);
+        setUpdatedAt(dto.updatedAt || null);
+        setServerStatus("synced");
+        dispatchOverridesChanged(securityId);
+      })
+      .catch((err) => {
+        if (loadGenerationRef.current !== generation) return;
+        setServerStatus("offline");
+        setServerErrorText(err instanceof Error ? err.message : "Failed to load server overrides.");
+      });
+  }, [securityId, overridesService]);
 
   const ctx = useMemo<SecurityDetailContext>(
     () => ({ entry, identity, tradingParameters }),
@@ -291,31 +351,52 @@ export function SecurityDetailsPanel({ entry, identity, tradingParameters }: Sec
     setDraftValue("");
   }, []);
 
+  const persistPatch = useCallback(async (next: Record<string, string>, patch: OperatorOverridesPatchRequest) => {
+    if (!securityId) return;
+    setOverrides(next);
+    saveOverrides(securityId, next);
+    dispatchOverridesChanged(securityId);
+    setServerStatus("saving");
+    setServerErrorText(null);
+    try {
+      const dto = await overridesService.patch(securityId, patch);
+      const merged = sanitiseOverrideValues(dto.values);
+      setOverrides(merged);
+      saveOverrides(securityId, merged);
+      setUpdatedBy(dto.updatedBy || null);
+      setUpdatedAt(dto.updatedAt || null);
+      setServerStatus("synced");
+      dispatchOverridesChanged(securityId);
+    } catch (err) {
+      setServerStatus("offline");
+      setServerErrorText(err instanceof Error ? err.message : "Failed to save override on the server. Changes kept locally.");
+    }
+  }, [overridesService, securityId]);
+
   const commitEdit = useCallback((field: SecurityDetailFieldDef) => {
     if (!securityId) return;
     const next = { ...overrides };
     const trimmed = draftValue.trim();
+    const patch: OperatorOverridesPatchRequest = trimmed.length === 0
+      ? { removeKeys: [field.key] }
+      : { setValues: { [field.key]: trimmed } };
     if (trimmed.length === 0) {
       delete next[field.key];
     } else {
       next[field.key] = trimmed;
     }
-    setOverrides(next);
-    saveOverrides(securityId, next);
-    dispatchOverridesChanged(securityId);
     setEditingKey(null);
     setDraftValue("");
-  }, [draftValue, overrides, securityId]);
+    void persistPatch(next, patch);
+  }, [draftValue, overrides, persistPatch, securityId]);
 
   const clearOverride = useCallback((field: SecurityDetailFieldDef) => {
     if (!securityId) return;
     if (!(field.key in overrides)) return;
     const next = { ...overrides };
     delete next[field.key];
-    setOverrides(next);
-    saveOverrides(securityId, next);
-    dispatchOverridesChanged(securityId);
-  }, [overrides, securityId]);
+    void persistPatch(next, { removeKeys: [field.key] });
+  }, [overrides, persistPatch, securityId]);
 
   if (!securityId) {
     return null;
@@ -336,9 +417,20 @@ export function SecurityDetailsPanel({ entry, identity, tradingParameters }: Sec
           )}
         </CardTitle>
         <CardDescription>
-          Extended reference data for <span className="font-mono">{securityId}</span>. Operator overrides are stored
-          locally and override values derived from the Security Master until cleared.
+          Extended reference data for <span className="font-mono">{securityId}</span>. Operator overrides sync to the
+          server when available and fall back to local storage when offline.
         </CardDescription>
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <ServerStatusBadge status={serverStatus} />
+          {updatedBy && updatedAt && (
+            <span className="font-mono">
+              last edit by {updatedBy} @ {updatedAt}
+            </span>
+          )}
+          {serverErrorText && (
+            <span role="alert" className="font-mono text-warning">{serverErrorText}</span>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {SECURITY_DETAIL_GROUPS.map((group) => (
@@ -434,6 +526,29 @@ export function SecurityDetailsPanel({ entry, identity, tradingParameters }: Sec
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+type ServerStatus = "idle" | "loading" | "synced" | "offline" | "saving" | "error";
+
+function ServerStatusBadge({ status }: { status: ServerStatus }) {
+  if (status === "idle") return null;
+  const label = (
+    status === "loading" ? "Loading from server"
+    : status === "saving" ? "Saving"
+    : status === "synced" ? "Synced"
+    : status === "offline" ? "Offline (local only)"
+    : "Error"
+  );
+  const tone = (
+    status === "synced" ? "border-success/35 bg-success/10 text-success"
+    : status === "saving" || status === "loading" ? "border-primary/35 bg-primary/10 text-primary"
+    : "border-warning/35 bg-warning/10 text-warning"
+  );
+  return (
+    <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", tone)}>
+      {label}
+    </span>
   );
 }
 

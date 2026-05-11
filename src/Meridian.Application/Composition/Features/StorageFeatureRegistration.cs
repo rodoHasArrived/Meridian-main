@@ -103,6 +103,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterEventStore, PostgresSecurityMasterEventStore>();
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
+            services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
             services.AddSingleton<SecurityMasterMigrationRunner>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
             services.AddSingleton<SecurityMasterProjectionCache>();
@@ -138,6 +139,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
         services.TryAddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
+        services.TryAddSingleton<IOperatorOverridesStore, NullOperatorOverridesStore>();
 
         if (DirectLendingStartup.IsConfigured())
         {
