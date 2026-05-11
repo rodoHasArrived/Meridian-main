@@ -23,6 +23,8 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     private const string CommodityProjectionTable = "commodity_projection";
     private const string CryptoProjectionTable = "crypto_projection";
     private const string DepositProjectionTable = "deposit_projection";
+    private const string MoneyMarketFundProjectionTable = "money_market_fund_projection";
+    private const string CertificateOfDepositProjectionTable = "certificate_of_deposit_projection";
 
     private readonly SecurityMasterOptions _options;
 
@@ -312,10 +314,12 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     await UpsertFutureProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
     await UpsertFxSpotProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
     await UpsertSwapProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-    await UpsertCommodityProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-    await UpsertCryptoProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-    await UpsertDepositProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-}
+        await UpsertCommodityProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+        await UpsertCryptoProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+        await UpsertDepositProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+        await UpsertMoneyMarketFundProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+        await UpsertCertificateOfDepositProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+    }
 
     private async Task UpsertBondProjectionTablesAsync(
         NpgsqlConnection connection,
@@ -1535,6 +1539,118 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Parameters.AddWithValue("interest_rate", (object?)interestRate ?? DBNull.Value);
         command.Parameters.AddWithValue("day_count", (object?)dayCount ?? DBNull.Value);
         command.Parameters.AddWithValue("is_callable", isCallable);
+        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
+        command.Parameters.AddWithValue("version", record.Version);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertMoneyMarketFundProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityProjectionRecord record,
+        CancellationToken ct)
+    {
+        if (!string.Equals(record.AssetClass, "MoneyMarketFund", StringComparison.OrdinalIgnoreCase))
+        {
+            await using var delete = connection.CreateCommand();
+            delete.Transaction = transaction;
+            delete.CommandText = $"""delete from {Qualified(MoneyMarketFundProjectionTable)} where security_id = @security_id;""";
+            delete.Parameters.AddWithValue("security_id", record.SecurityId);
+            await delete.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            return;
+        }
+
+        var fundFamily = GetOptionalString(record.AssetSpecificTerms, "fundFamily");
+        var sweepEligible = GetOptionalBool(record.AssetSpecificTerms, "sweepEligible") ?? false;
+        var weightedAverageMaturityDays = GetOptionalInt(record.AssetSpecificTerms, "weightedAverageMaturityDays");
+        var liquidityFeeEligible = GetOptionalBool(record.AssetSpecificTerms, "liquidityFeeEligible") ?? false;
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified(MoneyMarketFundProjectionTable)} (
+                security_id, display_name, currency, fund_family, sweep_eligible,
+                weighted_average_maturity_days, liquidity_fee_eligible, primary_identifier_value, version)
+            values (
+                @security_id, @display_name, @currency, @fund_family, @sweep_eligible,
+                @weighted_average_maturity_days, @liquidity_fee_eligible, @primary_identifier_value, @version)
+            on conflict (security_id) do update set
+                display_name = excluded.display_name,
+                currency = excluded.currency,
+                fund_family = excluded.fund_family,
+                sweep_eligible = excluded.sweep_eligible,
+                weighted_average_maturity_days = excluded.weighted_average_maturity_days,
+                liquidity_fee_eligible = excluded.liquidity_fee_eligible,
+                primary_identifier_value = excluded.primary_identifier_value,
+                version = excluded.version;
+            """;
+        command.Parameters.AddWithValue("security_id", record.SecurityId);
+        command.Parameters.AddWithValue("display_name", record.DisplayName);
+        command.Parameters.AddWithValue("currency", record.Currency);
+        command.Parameters.AddWithValue("fund_family", (object?)fundFamily?.Trim() ?? DBNull.Value);
+        command.Parameters.AddWithValue("sweep_eligible", sweepEligible);
+        command.Parameters.AddWithValue("weighted_average_maturity_days", (object?)weightedAverageMaturityDays ?? DBNull.Value);
+        command.Parameters.AddWithValue("liquidity_fee_eligible", liquidityFeeEligible);
+        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
+        command.Parameters.AddWithValue("version", record.Version);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertCertificateOfDepositProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityProjectionRecord record,
+        CancellationToken ct)
+    {
+        var issuerName = GetOptionalString(record.AssetSpecificTerms, "issuerName");
+        var maturity = GetOptionalDateOnly(record.AssetSpecificTerms, "maturity");
+
+        if (!string.Equals(record.AssetClass, "CertificateOfDeposit", StringComparison.OrdinalIgnoreCase) ||
+            string.IsNullOrWhiteSpace(issuerName) ||
+            !maturity.HasValue)
+        {
+            await using var delete = connection.CreateCommand();
+            delete.Transaction = transaction;
+            delete.CommandText = $"""delete from {Qualified(CertificateOfDepositProjectionTable)} where security_id = @security_id;""";
+            delete.Parameters.AddWithValue("security_id", record.SecurityId);
+            await delete.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            return;
+        }
+
+        var couponRate = GetOptionalDecimal(record.AssetSpecificTerms, "couponRate");
+        var callableDate = GetOptionalDateOnly(record.AssetSpecificTerms, "callableDate");
+        var dayCount = GetOptionalString(record.AssetSpecificTerms, "dayCount");
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified(CertificateOfDepositProjectionTable)} (
+                security_id, display_name, currency, issuer_name, maturity_date,
+                coupon_rate, callable_date, day_count, primary_identifier_value, version)
+            values (
+                @security_id, @display_name, @currency, @issuer_name, @maturity_date,
+                @coupon_rate, @callable_date, @day_count, @primary_identifier_value, @version)
+            on conflict (security_id) do update set
+                display_name = excluded.display_name,
+                currency = excluded.currency,
+                issuer_name = excluded.issuer_name,
+                maturity_date = excluded.maturity_date,
+                coupon_rate = excluded.coupon_rate,
+                callable_date = excluded.callable_date,
+                day_count = excluded.day_count,
+                primary_identifier_value = excluded.primary_identifier_value,
+                version = excluded.version;
+            """;
+        command.Parameters.AddWithValue("security_id", record.SecurityId);
+        command.Parameters.AddWithValue("display_name", record.DisplayName);
+        command.Parameters.AddWithValue("currency", record.Currency);
+        command.Parameters.AddWithValue("issuer_name", issuerName.Trim());
+        command.Parameters.AddWithValue("maturity_date", maturity.Value.ToDateTime(TimeOnly.MinValue));
+        command.Parameters.AddWithValue("coupon_rate", (object?)couponRate ?? DBNull.Value);
+        command.Parameters.AddWithValue("callable_date", callableDate.HasValue ? (object)callableDate.Value.ToDateTime(TimeOnly.MinValue) : DBNull.Value);
+        command.Parameters.AddWithValue("day_count", (object?)dayCount ?? DBNull.Value);
         command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
         command.Parameters.AddWithValue("version", record.Version);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);

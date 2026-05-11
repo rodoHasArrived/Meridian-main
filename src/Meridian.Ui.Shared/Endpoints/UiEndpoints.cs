@@ -283,6 +283,8 @@ public static class UiEndpoints
         app.MapCommodityReferenceEndpoints(jsonOptions);
         app.MapCryptoReferenceEndpoints(jsonOptions);
         app.MapDepositReferenceEndpoints(jsonOptions);
+        app.MapMoneyMarketFundReferenceEndpoints(jsonOptions);
+        app.MapCertificateOfDepositReferenceEndpoints(jsonOptions);
         app.MapEdgarReferenceDataEndpoints(jsonOptions);
 
         // Credential management endpoints
@@ -424,6 +426,8 @@ public static class UiEndpoints
         app.MapCommodityReferenceEndpoints(jsonOptions);
         app.MapCryptoReferenceEndpoints(jsonOptions);
         app.MapDepositReferenceEndpoints(jsonOptions);
+        app.MapMoneyMarketFundReferenceEndpoints(jsonOptions);
+        app.MapCertificateOfDepositReferenceEndpoints(jsonOptions);
         app.MapEdgarReferenceDataEndpoints(jsonOptions);
 
         // Credential management endpoints

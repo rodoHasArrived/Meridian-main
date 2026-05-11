@@ -363,6 +363,14 @@ public static class UiApiRoutes
     public const string ReferenceDataDepositsByInstitution = "/api/reference-data/deposits/by-institution";
     public const string ReferenceDataDepositsMaturingBefore = "/api/reference-data/deposits/maturing-before";
 
+    public const string ReferenceDataMoneyMarketFundReference = "/api/reference-data/money-market-funds/{securityId:guid}";
+    public const string ReferenceDataMoneyMarketFundsByFamily = "/api/reference-data/money-market-funds/by-family";
+    public const string ReferenceDataMoneyMarketFundsBySweepEligibility = "/api/reference-data/money-market-funds/by-sweep-eligibility";
+
+    public const string ReferenceDataCertificateOfDepositReference = "/api/reference-data/certificates-of-deposit/{securityId:guid}";
+    public const string ReferenceDataCertificatesOfDepositByIssuer = "/api/reference-data/certificates-of-deposit/by-issuer";
+    public const string ReferenceDataCertificatesOfDepositMaturingBefore = "/api/reference-data/certificates-of-deposit/maturing-before";
+
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";
     public const string MessagingStatus = "/api/messaging/status";
