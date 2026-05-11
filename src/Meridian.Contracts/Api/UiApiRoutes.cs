@@ -322,6 +322,11 @@ public static class UiApiRoutes
     public const string ReferenceDataEdgarFiler = "/api/reference-data/edgar/filers/{cik}";
     public const string ReferenceDataEdgarFacts = "/api/reference-data/edgar/facts/{cik}";
     public const string ReferenceDataEdgarSecurityData = "/api/reference-data/edgar/security-data/{cik}";
+    public const string ReferenceDataBondReference = "/api/reference-data/bonds/{securityId:guid}";
+    public const string ReferenceDataBondLifecycle = "/api/reference-data/bonds/{securityId:guid}/lifecycle";
+    public const string ReferenceDataBondAccrualConvention = "/api/reference-data/bonds/{securityId:guid}/accrual-convention";
+    public const string ReferenceDataBondIssuerLadder = "/api/reference-data/bonds/issuer-ladder";
+    public const string ReferenceDataBondMaturityLadder = "/api/reference-data/bonds/maturity-ladder";
 
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";

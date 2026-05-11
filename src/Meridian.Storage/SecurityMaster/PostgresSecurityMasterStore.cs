@@ -285,11 +285,31 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             command.Parameters.AddWithValue("version", record.Version);
             command.Parameters.AddWithValue("effective_from", record.EffectiveFrom.UtcDateTime);
             command.Parameters.AddWithValue("effective_to", (object?)record.EffectiveTo?.UtcDateTime ?? DBNull.Value);
-            await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    await ReplaceIdentifiersAsync(connection, transaction, record.SecurityId, record.Identifiers, ct).ConfigureAwait(false);
+    await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
+    await UpsertBondProjectionTablesAsync(connection, transaction, record, ct).ConfigureAwait(false);
+}
+
+    private async Task UpsertBondProjectionTablesAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityProjectionRecord record,
+        CancellationToken ct)
+    {
+        if (!string.Equals(record.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase) ||
+            !TryBuildBondProjection(record, out var projection))
+        {
+            await DeleteBondProjectionTablesAsync(connection, transaction, record.SecurityId, ct).ConfigureAwait(false);
+            return;
         }
 
-        await ReplaceIdentifiersAsync(connection, transaction, record.SecurityId, record.Identifiers, ct).ConfigureAwait(false);
-        await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
+        await UpsertBondProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
+        await UpsertBondLifecycleProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
+        await UpsertBondAccrualProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
+        await UpsertBondIssuerProjectionAsync(connection, transaction, projection, record, ct).ConfigureAwait(false);
     }
 
     private async Task ReplaceIdentifiersAsync(
@@ -401,6 +421,28 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Parameters.AddWithValue("last_global_sequence", lastGlobalSequence);
         command.Parameters.AddWithValue("updated_at", DateTime.UtcNow);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task DeleteBondProjectionTablesAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid securityId,
+        CancellationToken ct)
+    {
+        foreach (var table in new[]
+                 {
+                     "bond_projection",
+                     "bond_lifecycle_projection",
+                     "bond_accrual_convention_projection",
+                     "bond_issuer_projection"
+                 })
+        {
+            await using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = $"delete from {Qualified(table)} where security_id = @security_id;";
+            command.Parameters.AddWithValue("security_id", securityId);
+            await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
     }
 
     private async Task<SecurityProjectionRecord?> GetProjectionCoreAsync(NpgsqlConnection connection, Guid securityId, CancellationToken ct)
@@ -600,6 +642,215 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
 
     private string Qualified(string table) => $"{_options.Schema}.{table}";
 
+    private async Task UpsertBondProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        BondProjectionWriteModel projection,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified("bond_projection")} (
+                security_id, issuer_name, seniority, subclass, issue_date, maturity_date,
+                coupon_kind, fixed_coupon_rate, floating_rate_index, floating_spread_bps, version)
+            values (
+                @security_id, @issuer_name, @seniority, @subclass, @issue_date, @maturity_date,
+                @coupon_kind, @fixed_coupon_rate, @floating_rate_index, @floating_spread_bps, @version)
+            on conflict (security_id) do update set
+                issuer_name = excluded.issuer_name,
+                seniority = excluded.seniority,
+                subclass = excluded.subclass,
+                issue_date = excluded.issue_date,
+                maturity_date = excluded.maturity_date,
+                coupon_kind = excluded.coupon_kind,
+                fixed_coupon_rate = excluded.fixed_coupon_rate,
+                floating_rate_index = excluded.floating_rate_index,
+                floating_spread_bps = excluded.floating_spread_bps,
+                version = excluded.version;
+            """;
+        AddBondProjectionParameters(command, projection);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertBondLifecycleProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        BondProjectionWriteModel projection,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified("bond_lifecycle_projection")} (
+                security_id, lifecycle_stat, issue_date, call_date, maturity_date, is_callable, version)
+            values (
+                @security_id, @lifecycle_stat, @issue_date, @call_date, @maturity_date, @is_callable, @version)
+            on conflict (security_id) do update set
+                lifecycle_stat = excluded.lifecycle_stat,
+                issue_date = excluded.issue_date,
+                call_date = excluded.call_date,
+                maturity_date = excluded.maturity_date,
+                is_callable = excluded.is_callable,
+                version = excluded.version;
+            """;
+        command.Parameters.AddWithValue("security_id", projection.SecurityId);
+        command.Parameters.AddWithValue("lifecycle_stat", projection.LifecycleStat);
+        command.Parameters.AddWithValue("issue_date", (object?)projection.IssueDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
+        command.Parameters.AddWithValue("call_date", (object?)projection.CallDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
+        command.Parameters.AddWithValue("maturity_date", projection.MaturityDate.ToDateTime(TimeOnly.MinValue));
+        command.Parameters.AddWithValue("is_callable", projection.IsCallable);
+        command.Parameters.AddWithValue("version", projection.Version);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertBondAccrualProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        BondProjectionWriteModel projection,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified("bond_accrual_convention_projection")} (
+                security_id, day_count_convention, settlement_cycle_days, holiday_calendar_id,
+                coupon_kind, fixed_coupon_rate, floating_rate_index, floating_spread_bps, version)
+            values (
+                @security_id, @day_count_convention, @settlement_cycle_days, @holiday_calendar_id,
+                @coupon_kind, @fixed_coupon_rate, @floating_rate_index, @floating_spread_bps, @version)
+            on conflict (security_id) do update set
+                day_count_convention = excluded.day_count_convention,
+                settlement_cycle_days = excluded.settlement_cycle_days,
+                holiday_calendar_id = excluded.holiday_calendar_id,
+                coupon_kind = excluded.coupon_kind,
+                fixed_coupon_rate = excluded.fixed_coupon_rate,
+                floating_rate_index = excluded.floating_rate_index,
+                floating_spread_bps = excluded.floating_spread_bps,
+                version = excluded.version;
+            """;
+        command.Parameters.AddWithValue("security_id", projection.SecurityId);
+        command.Parameters.AddWithValue("day_count_convention", (object?)projection.DayCountConvention ?? DBNull.Value);
+        command.Parameters.AddWithValue("settlement_cycle_days", (object?)projection.SettlementCycleDays ?? DBNull.Value);
+        command.Parameters.AddWithValue("holiday_calendar_id", (object?)projection.HolidayCalendarId ?? DBNull.Value);
+        command.Parameters.AddWithValue("coupon_kind", (object?)projection.CouponKind ?? DBNull.Value);
+        command.Parameters.AddWithValue("fixed_coupon_rate", (object?)projection.FixedCouponRate ?? DBNull.Value);
+        command.Parameters.AddWithValue("floating_rate_index", (object?)projection.FloatingRateIndex ?? DBNull.Value);
+        command.Parameters.AddWithValue("floating_spread_bps", (object?)projection.FloatingSpreadBps ?? DBNull.Value);
+        command.Parameters.AddWithValue("version", projection.Version);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertBondIssuerProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        BondProjectionWriteModel projection,
+        SecurityProjectionRecord record,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(projection.IssuerName))
+        {
+            await using var delete = connection.CreateCommand();
+            delete.Transaction = transaction;
+            delete.CommandText = $"delete from {Qualified("bond_issuer_projection")} where security_id = @security_id;";
+            delete.Parameters.AddWithValue("security_id", projection.SecurityId);
+            await delete.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            return;
+        }
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified("bond_issuer_projection")} (
+                security_id, issuer_name, display_name, primary_identifier_value, currency, maturity_date, seniority, version)
+            values (
+                @security_id, @issuer_name, @display_name, @primary_identifier_value, @currency, @maturity_date, @seniority, @version)
+            on conflict (security_id) do update set
+                issuer_name = excluded.issuer_name,
+                display_name = excluded.display_name,
+                primary_identifier_value = excluded.primary_identifier_value,
+                currency = excluded.currency,
+                maturity_date = excluded.maturity_date,
+                seniority = excluded.seniority,
+                version = excluded.version;
+            """;
+        command.Parameters.AddWithValue("security_id", projection.SecurityId);
+        command.Parameters.AddWithValue("issuer_name", projection.IssuerName!);
+        command.Parameters.AddWithValue("display_name", record.DisplayName);
+        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
+        command.Parameters.AddWithValue("currency", record.Currency);
+        command.Parameters.AddWithValue("maturity_date", projection.MaturityDate.ToDateTime(TimeOnly.MinValue));
+        command.Parameters.AddWithValue("seniority", (object?)projection.Seniority ?? DBNull.Value);
+        command.Parameters.AddWithValue("version", projection.Version);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private static void AddBondProjectionParameters(NpgsqlCommand command, BondProjectionWriteModel projection)
+    {
+        command.Parameters.AddWithValue("security_id", projection.SecurityId);
+        command.Parameters.AddWithValue("issuer_name", (object?)projection.IssuerName ?? DBNull.Value);
+        command.Parameters.AddWithValue("seniority", (object?)projection.Seniority ?? DBNull.Value);
+        command.Parameters.AddWithValue("subclass", (object?)projection.Subclass ?? DBNull.Value);
+        command.Parameters.AddWithValue("issue_date", (object?)projection.IssueDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
+        command.Parameters.AddWithValue("maturity_date", projection.MaturityDate.ToDateTime(TimeOnly.MinValue));
+        command.Parameters.AddWithValue("coupon_kind", (object?)projection.CouponKind ?? DBNull.Value);
+        command.Parameters.AddWithValue("fixed_coupon_rate", (object?)projection.FixedCouponRate ?? DBNull.Value);
+        command.Parameters.AddWithValue("floating_rate_index", (object?)projection.FloatingRateIndex ?? DBNull.Value);
+        command.Parameters.AddWithValue("floating_spread_bps", (object?)projection.FloatingSpreadBps ?? DBNull.Value);
+        command.Parameters.AddWithValue("version", projection.Version);
+    }
+
+    private static bool TryBuildBondProjection(SecurityProjectionRecord record, out BondProjectionWriteModel projection)
+    {
+        if (!TryGetOptionalDateOnly(record.AssetSpecificTerms, "maturity", out var maturityDate) || maturityDate is null)
+        {
+            projection = default!;
+            return false;
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var issueDate = GetOptionalDateOnly(record.AssetSpecificTerms, "issueDate");
+        var callDate = GetOptionalDateOnly(record.AssetSpecificTerms, "callDate");
+        var isCallable = GetOptionalBool(record.AssetSpecificTerms, "isCallable") ?? false;
+        var coupon = GetOptionalObject(record.AssetSpecificTerms, "coupon");
+        var couponKind = coupon.HasValue ? GetOptionalString(coupon.Value, "kind") : null;
+        var fixedCouponRate = coupon.HasValue ? GetOptionalDecimal(coupon.Value, "rate") : null;
+        var floatingRateIndex = coupon.HasValue ? GetOptionalString(coupon.Value, "index") : null;
+        var floatingSpreadBps = coupon.HasValue ? GetOptionalDecimal(coupon.Value, "spreadBps") : null;
+        var dayCountConvention = coupon.HasValue ? GetOptionalString(coupon.Value, "dayCountConvention") : null;
+
+        var lifecycleStat =
+            record.EffectiveTo.HasValue ? "Retired" :
+            maturityDate.Value < today ? "Matured" :
+            isCallable && callDate.HasValue && callDate.Value <= today ? "Callable" :
+            issueDate.HasValue && issueDate.Value > today ? "WhenIssued" :
+            "Active";
+
+        projection = new BondProjectionWriteModel(
+            record.SecurityId,
+            GetOptionalString(record.AssetSpecificTerms, "issuerName") ?? GetOptionalString(record.CommonTerms, "issuerName"),
+            GetOptionalString(record.AssetSpecificTerms, "seniority"),
+            GetOptionalString(record.AssetSpecificTerms, "subclass"),
+            issueDate,
+            maturityDate.Value,
+            callDate,
+            isCallable,
+            lifecycleStat,
+            couponKind,
+            fixedCouponRate,
+            floatingRateIndex,
+            floatingSpreadBps,
+            dayCountConvention,
+            GetOptionalInt(record.CommonTerms, "settlementCycleDays"),
+            GetOptionalString(record.CommonTerms, "holidayCalendarId"),
+            record.Version);
+        return true;
+    }
+
     private static string? GetOptionalString(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
@@ -609,4 +860,56 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         => json.TryGetProperty(propertyName, out var value) && value.TryGetDecimal(out var decimalValue)
             ? decimalValue
             : null;
+
+    private static int? GetOptionalInt(JsonElement json, string propertyName)
+        => json.TryGetProperty(propertyName, out var value) && value.TryGetInt32(out var intValue)
+            ? intValue
+            : null;
+
+    private static bool? GetOptionalBool(JsonElement json, string propertyName)
+        => json.TryGetProperty(propertyName, out var value) &&
+            value.ValueKind is JsonValueKind.True or JsonValueKind.False
+            ? value.GetBoolean()
+            : null;
+
+    private static JsonElement? GetOptionalObject(JsonElement json, string propertyName)
+        => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Object
+            ? value
+            : null;
+
+    private static DateOnly? GetOptionalDateOnly(JsonElement json, string propertyName)
+        => TryGetOptionalDateOnly(json, propertyName, out var value) ? value : null;
+
+    private static bool TryGetOptionalDateOnly(JsonElement json, string propertyName, out DateOnly? value)
+    {
+        if (json.TryGetProperty(propertyName, out var element) &&
+            element.ValueKind == JsonValueKind.String &&
+            DateOnly.TryParse(element.GetString(), out var parsed))
+        {
+            value = parsed;
+            return true;
+        }
+
+        value = null;
+        return false;
+    }
+
+    private sealed record BondProjectionWriteModel(
+        Guid SecurityId,
+        string? IssuerName,
+        string? Seniority,
+        string? Subclass,
+        DateOnly? IssueDate,
+        DateOnly MaturityDate,
+        DateOnly? CallDate,
+        bool IsCallable,
+        string LifecycleStat,
+        string? CouponKind,
+        decimal? FixedCouponRate,
+        string? FloatingRateIndex,
+        decimal? FloatingSpreadBps,
+        string? DayCountConvention,
+        int? SettlementCycleDays,
+        string? HolidayCalendarId,
+        long Version);
 }
