@@ -12,6 +12,10 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     private const string BondLifecycleProjectionTable = "bond_lifecycle_projection";
     private const string BondAccrualConventionProjectionTable = "bond_accrual_convention_projection";
     private const string BondIssuerProjectionTable = "bond_issuer_projection";
+    private const string OptionContractProjectionTable = "option_contract_projection";
+    private const string OptionSeriesProjectionTable = "option_series_projection";
+    private const string OptionLifecycleProjectionTable = "option_lifecycle_projection";
+    private const string OptionAliasProjectionTable = "option_alias_projection";
 
     private readonly SecurityMasterOptions _options;
 
@@ -296,6 +300,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     await ReplaceIdentifiersAsync(connection, transaction, record.SecurityId, record.Identifiers, ct).ConfigureAwait(false);
     await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
     await UpsertBondProjectionTablesAsync(connection, transaction, record, ct).ConfigureAwait(false);
+    await UpsertOptionProjectionTablesAsync(connection, transaction, record, ct).ConfigureAwait(false);
 }
 
     private async Task UpsertBondProjectionTablesAsync(
@@ -315,6 +320,25 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         await UpsertBondLifecycleProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
         await UpsertBondAccrualProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
         await UpsertBondIssuerProjectionAsync(connection, transaction, projection, record, ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertOptionProjectionTablesAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityProjectionRecord record,
+        CancellationToken ct)
+    {
+        if (!string.Equals(record.AssetClass, "Option", StringComparison.OrdinalIgnoreCase) ||
+            !TryBuildOptionProjection(record, out var projection))
+        {
+            await DeleteOptionProjectionTablesAsync(connection, transaction, record.SecurityId, ct).ConfigureAwait(false);
+            return;
+        }
+
+        await UpsertOptionContractProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
+        await UpsertOptionSeriesProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
+        await UpsertOptionLifecycleProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
+        await UpsertOptionAliasProjectionAsync(connection, transaction, projection, record.Aliases, ct).ConfigureAwait(false);
     }
 
     private async Task ReplaceIdentifiersAsync(
@@ -448,6 +472,19 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             command.Parameters.AddWithValue("security_id", securityId);
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
+    }
+
+    private async Task DeleteOptionProjectionTablesAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid securityId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"delete from {Qualified(OptionContractProjectionTable)} where security_id = @security_id;";
+        command.Parameters.AddWithValue("security_id", securityId);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
     private async Task<SecurityProjectionRecord?> GetProjectionCoreAsync(NpgsqlConnection connection, Guid securityId, CancellationToken ct)
@@ -856,6 +893,217 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         return true;
     }
 
+    private async Task UpsertOptionContractProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        OptionProjectionWriteModel projection,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified(OptionContractProjectionTable)} (
+                contract_symbol, security_id, option_chain_id, underlying_symbol, underlying_security_id,
+                put_call, strike, expiry_date, multiplier, is_adjusted, last_trading_dt, lifecycle_stat, updated_at, version)
+            values (
+                @contract_symbol, @security_id, @option_chain_id, @underlying_symbol, @underlying_security_id,
+                @put_call, @strike, @expiry_date, @multiplier, @is_adjusted, @last_trading_dt, @lifecycle_stat, @updated_at, @version)
+            on conflict (contract_symbol) do update set
+                security_id = excluded.security_id,
+                option_chain_id = excluded.option_chain_id,
+                underlying_symbol = excluded.underlying_symbol,
+                underlying_security_id = excluded.underlying_security_id,
+                put_call = excluded.put_call,
+                strike = excluded.strike,
+                expiry_date = excluded.expiry_date,
+                multiplier = excluded.multiplier,
+                is_adjusted = excluded.is_adjusted,
+                last_trading_dt = excluded.last_trading_dt,
+                lifecycle_stat = excluded.lifecycle_stat,
+                updated_at = excluded.updated_at,
+                version = excluded.version;
+            """;
+        AddOptionProjectionParameters(command, projection);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertOptionSeriesProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        OptionProjectionWriteModel projection,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified(OptionSeriesProjectionTable)} (
+                option_chain_id, contract_symbol, underlying_symbol, expiry_date, strike, put_call)
+            values (
+                @option_chain_id, @contract_symbol, @underlying_symbol, @expiry_date, @strike, @put_call)
+            on conflict (option_chain_id, contract_symbol) do update set
+                underlying_symbol = excluded.underlying_symbol,
+                expiry_date = excluded.expiry_date,
+                strike = excluded.strike,
+                put_call = excluded.put_call;
+            """;
+        command.Parameters.AddWithValue("option_chain_id", projection.OptionChainId);
+        command.Parameters.AddWithValue("contract_symbol", projection.ContractSymbol);
+        command.Parameters.AddWithValue("underlying_symbol", projection.UnderlyingSymbol);
+        command.Parameters.AddWithValue("expiry_date", projection.ExpiryDate.ToDateTime(TimeOnly.MinValue));
+        command.Parameters.AddWithValue("strike", projection.Strike);
+        command.Parameters.AddWithValue("put_call", projection.PutCall);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertOptionLifecycleProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        OptionProjectionWriteModel projection,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified(OptionLifecycleProjectionTable)} (
+                contract_symbol, lifecycle_stat, listed_at, last_trading_dt, expiry_date, version)
+            values (
+                @contract_symbol, @lifecycle_stat, @listed_at, @last_trading_dt, @expiry_date, @version)
+            on conflict (contract_symbol) do update set
+                lifecycle_stat = excluded.lifecycle_stat,
+                last_trading_dt = excluded.last_trading_dt,
+                expiry_date = excluded.expiry_date,
+                version = excluded.version;
+            """;
+        command.Parameters.AddWithValue("contract_symbol", projection.ContractSymbol);
+        command.Parameters.AddWithValue("lifecycle_stat", projection.LifecycleStat);
+        command.Parameters.AddWithValue("listed_at", projection.ListedAt.UtcDateTime);
+        command.Parameters.AddWithValue("last_trading_dt", (object?)projection.LastTradingDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
+        command.Parameters.AddWithValue("expiry_date", projection.ExpiryDate.ToDateTime(TimeOnly.MinValue));
+        command.Parameters.AddWithValue("version", projection.Version);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertOptionAliasProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        OptionProjectionWriteModel projection,
+        IReadOnlyList<SecurityAliasDto> aliases,
+        CancellationToken ct)
+    {
+        await using (var delete = connection.CreateCommand())
+        {
+            delete.Transaction = transaction;
+            delete.CommandText = $"delete from {Qualified(OptionAliasProjectionTable)} where contract_symbol = @contract_symbol;";
+            delete.Parameters.AddWithValue("contract_symbol", projection.ContractSymbol);
+            await delete.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
+        foreach (var alias in aliases)
+        {
+            await using var insert = connection.CreateCommand();
+            insert.Transaction = transaction;
+            insert.CommandText =
+                $"""
+                insert into {Qualified(OptionAliasProjectionTable)} (
+                    contract_symbol, alias_kind, alias_value, provider, normalized_alias)
+                values (
+                    @contract_symbol, @alias_kind, @alias_value, @provider, @normalized_alias);
+                """;
+            insert.Parameters.AddWithValue("contract_symbol", projection.ContractSymbol);
+            insert.Parameters.AddWithValue("alias_kind", alias.AliasKind);
+            insert.Parameters.AddWithValue("alias_value", alias.AliasValue);
+            insert.Parameters.AddWithValue("provider", alias.Provider ?? string.Empty);
+            insert.Parameters.AddWithValue("normalized_alias", alias.AliasValue.Trim().ToUpperInvariant());
+            await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+    }
+
+    private static void AddOptionProjectionParameters(NpgsqlCommand command, OptionProjectionWriteModel projection)
+    {
+        command.Parameters.AddWithValue("contract_symbol", projection.ContractSymbol);
+        command.Parameters.AddWithValue("security_id", projection.SecurityId);
+        command.Parameters.AddWithValue("option_chain_id", projection.OptionChainId);
+        command.Parameters.AddWithValue("underlying_symbol", projection.UnderlyingSymbol);
+        command.Parameters.AddWithValue("underlying_security_id", (object?)projection.UnderlyingSecurityId ?? DBNull.Value);
+        command.Parameters.AddWithValue("put_call", projection.PutCall);
+        command.Parameters.AddWithValue("strike", projection.Strike);
+        command.Parameters.AddWithValue("expiry_date", projection.ExpiryDate.ToDateTime(TimeOnly.MinValue));
+        command.Parameters.AddWithValue("multiplier", projection.Multiplier);
+        command.Parameters.AddWithValue("is_adjusted", projection.IsAdjusted);
+        command.Parameters.AddWithValue("last_trading_dt", (object?)projection.LastTradingDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
+        command.Parameters.AddWithValue("lifecycle_stat", projection.LifecycleStat);
+        command.Parameters.AddWithValue("updated_at", projection.ListedAt.UtcDateTime);
+        command.Parameters.AddWithValue("version", projection.Version);
+    }
+
+    private static bool TryBuildOptionProjection(SecurityProjectionRecord record, out OptionProjectionWriteModel projection)
+    {
+        if (!TryGetOptionalDateOnly(record.AssetSpecificTerms, "expiry", out var expiryDate) ||
+            expiryDate is null)
+        {
+            projection = default!;
+            return false;
+        }
+
+        var contractSymbol = record.PrimaryIdentifierValue.Trim().ToUpperInvariant();
+        var underlyingSymbol = GetOptionalString(record.AssetSpecificTerms, "underlyingSymbol")
+            ?? GetOptionalString(record.CommonTerms, "underlyingSymbol")
+            ?? "UNKNOWN";
+
+        var putCall = GetOptionalString(record.AssetSpecificTerms, "putCall") ?? "Call";
+        var strike = GetOptionalDecimal(record.AssetSpecificTerms, "strike");
+        var multiplier = GetOptionalDecimal(record.AssetSpecificTerms, "multiplier");
+
+        if (strike is null || multiplier is null)
+        {
+            projection = default!;
+            return false;
+        }
+
+        Guid? underlyingSecurityId = null;
+        if (record.AssetSpecificTerms.TryGetProperty("underlyingId", out var underlyingIdEl) &&
+            underlyingIdEl.ValueKind == JsonValueKind.String &&
+            Guid.TryParse(underlyingIdEl.GetString(), out var parsed))
+        {
+            underlyingSecurityId = parsed;
+        }
+
+        var optionChainId = GetOptionalString(record.AssetSpecificTerms, "optChainId");
+        if (string.IsNullOrWhiteSpace(optionChainId))
+        {
+            optionChainId = BuildOptionChainId(underlyingSymbol, expiryDate.Value);
+        }
+
+        var lastTradingDate = GetOptionalDateOnly(record.AssetSpecificTerms, "lastTradingDt") ?? expiryDate;
+        var lifecycleStat =
+            record.EffectiveTo.HasValue ? "Retired" :
+            expiryDate.Value < DateOnly.FromDateTime(DateTime.UtcNow) ? "Expired" :
+            "Active";
+
+        projection = new OptionProjectionWriteModel(
+            contractSymbol,
+            record.SecurityId,
+            optionChainId!,
+            underlyingSymbol.Trim().ToUpperInvariant(),
+            underlyingSecurityId,
+            putCall,
+            strike.Value,
+            expiryDate.Value,
+            multiplier.Value,
+            GetOptionalBool(record.AssetSpecificTerms, "isAdjusted") ?? false,
+            lastTradingDate,
+            lifecycleStat,
+            record.EffectiveFrom,
+            record.Version);
+        return true;
+    }
+
+    private static string BuildOptionChainId(string underlyingSymbol, DateOnly expiryDate)
+        => $"{underlyingSymbol.Trim().ToUpperInvariant()}-{expiryDate:yyyyMMdd}";
+
     private static string? GetOptionalString(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
@@ -916,5 +1164,21 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         string? DayCountConvention,
         int? SettlementCycleDays,
         string? HolidayCalendarId,
+        long Version);
+
+    private sealed record OptionProjectionWriteModel(
+        string ContractSymbol,
+        Guid SecurityId,
+        string OptionChainId,
+        string UnderlyingSymbol,
+        Guid? UnderlyingSecurityId,
+        string PutCall,
+        decimal Strike,
+        DateOnly ExpiryDate,
+        decimal Multiplier,
+        bool IsAdjusted,
+        DateOnly? LastTradingDate,
+        string LifecycleStat,
+        DateTimeOffset ListedAt,
         long Version);
 }

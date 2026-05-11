@@ -327,6 +327,12 @@ public static class UiApiRoutes
     public const string ReferenceDataBondAccrualConvention = "/api/reference-data/bonds/{securityId:guid}/accrual-convention";
     public const string ReferenceDataBondIssuerLadder = "/api/reference-data/bonds/issuer-ladder";
     public const string ReferenceDataBondMaturityLadder = "/api/reference-data/bonds/maturity-ladder";
+    public const string ReferenceDataOptionContract = "/api/reference-data/options/contracts/{contractSymbol}";
+    public const string ReferenceDataOptionSeries = "/api/reference-data/options/series/{optionChainId}";
+    public const string ReferenceDataOptionUnderlyingLinkage = "/api/reference-data/options/contracts/{contractSymbol}/underlying-linkage";
+    public const string ReferenceDataOptionExpiryLadder = "/api/reference-data/options/expiry-ladder";
+    public const string ReferenceDataOptionChainImport = "/api/reference-data/options/chains/import";
+    public const string ReferenceDataOptionChainSnapshot = "/api/reference-data/options/chains/snapshot";
 
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";

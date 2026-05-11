@@ -274,6 +274,8 @@ public static class UiEndpoints
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
         app.MapBondReferenceEndpoints(jsonOptions);
+        app.MapOptionReferenceEndpoints(jsonOptions);
+        app.MapOptionChainEndpoints(jsonOptions);
         app.MapEdgarReferenceDataEndpoints(jsonOptions);
 
         // Credential management endpoints

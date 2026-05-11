@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FixedIncome;
+using Meridian.Contracts.Options;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 
@@ -28,6 +29,13 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(List<BondReferenceDto>))]
 [JsonSerializable(typeof(BondLifecycleDto))]
 [JsonSerializable(typeof(BondAccrualConventionDto))]
+[JsonSerializable(typeof(OptionContractReferenceDto))]
+[JsonSerializable(typeof(OptionContractReferenceDto[]))]
+[JsonSerializable(typeof(List<OptionContractReferenceDto>))]
+[JsonSerializable(typeof(OptionSeriesDto))]
+[JsonSerializable(typeof(OptionSeriesDto[]))]
+[JsonSerializable(typeof(List<OptionSeriesDto>))]
+[JsonSerializable(typeof(OptionChainSnapshotDto))]
 [JsonSerializable(typeof(TradingParametersDto))]
 [JsonSerializable(typeof(CorporateActionDto))]
 [JsonSerializable(typeof(CorporateActionDto[]))]

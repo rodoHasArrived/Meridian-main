@@ -5,6 +5,7 @@ using Meridian.Application.EnvironmentDesign;
 using Meridian.Application.FixedIncome;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
+using Meridian.Application.Options;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
@@ -105,6 +106,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
             services.AddSingleton<IBondReferenceProjectionStore, PostgresBondReferenceProjectionStore>();
+            services.AddSingleton<IOptionReferenceProjectionStore, PostgresOptionReferenceProjectionStore>();
             services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
             services.AddSingleton<SecurityMasterMigrationRunner>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
@@ -118,6 +120,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<IBondReferenceService, BondProjectionService>();
+            services.AddSingleton<IOptionReferenceService, OptionProjectionService>();
+            services.AddSingleton<IOptionChainImportService>(sp => (OptionProjectionService)sp.GetRequiredService<IOptionReferenceService>());
             services.AddSingleton<ISecurityResolver, SecurityResolver>();
             services.AddHostedService<SecurityMasterProjectionWarmupService>();
             services.AddSingleton<IPolygonCorporateActionFetcher, PolygonCorporateActionFetcher>();
@@ -139,6 +143,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService, NullSecurityMasterQueryService>();
         services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, NullSecurityMasterService>();
         services.TryAddSingleton<IBondReferenceService, NullBondReferenceService>();
+        services.TryAddSingleton<IOptionReferenceService, NullOptionReferenceService>();
+        services.TryAddSingleton<IOptionChainImportService, NullOptionChainImportService>();
         services.TryAddSingleton<ISecurityMasterAmender, NullSecurityMasterService>();
         services.TryAddSingleton<ISecurityMasterConflictService, NullSecurityMasterConflictService>();
         services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
