@@ -4,9 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils";
 import {
   HISTORICAL_CHART_TIMEFRAMES,
+  buildCandlestickChartViewModel,
   computeChartStats,
   formatIntervalLabel,
   useHistoricalChartViewModel,
+  type CandlestickBarViewModel,
+  type CandlestickChartViewModel,
+  type ChartModeOption,
   type HistoricalChartSparklineViewModel,
   type HistoricalChartStatePanel,
   type HistoricalChartStatTile
@@ -14,6 +18,7 @@ import {
 
 export {
   HISTORICAL_CHART_TIMEFRAMES,
+  buildCandlestickChartViewModel,
   computeChartStats,
   formatIntervalLabel
 } from "@/components/meridian/historical-chart.view-model";
@@ -54,29 +59,40 @@ export function HistoricalChartCard({ symbol, className }: HistoricalChartCardPr
             </span>
           </div>
         </div>
-        <div
-          className="mt-3 flex flex-wrap gap-1"
-          role="group"
-          aria-label="Select chart timeframe"
-        >
-          {vm.timeframeOptions.map((timeframe) => (
-            <Button
-              key={timeframe.id}
-              size="sm"
-              variant={timeframe.buttonVariant}
-              onClick={timeframe.select}
-              aria-pressed={timeframe.ariaPressed}
-              aria-label={timeframe.ariaLabel}
-              data-testid={timeframe.testId}
-            >
-              {timeframe.label}
-            </Button>
-          ))}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <div
+            className="flex flex-wrap gap-1"
+            role="group"
+            aria-label="Select chart timeframe"
+          >
+            {vm.timeframeOptions.map((timeframe) => (
+              <Button
+                key={timeframe.id}
+                size="sm"
+                variant={timeframe.buttonVariant}
+                onClick={timeframe.select}
+                aria-pressed={timeframe.ariaPressed}
+                aria-label={timeframe.ariaLabel}
+                data-testid={timeframe.testId}
+              >
+                {timeframe.label}
+              </Button>
+            ))}
+          </div>
+          <span aria-hidden="true" className="text-border/60 select-none">|</span>
+          <ChartModeToggle options={vm.chartModeOptions} />
         </div>
       </CardHeader>
       <CardContent>
         {vm.statePanel ? (
           <HistoricalChartStatePanelView panel={vm.statePanel} onRetry={vm.retry} />
+        ) : vm.activeChartMode === "candles" && vm.candlestickChart ? (
+          <div className="space-y-3">
+            <CandlestickChartView viewModel={vm.candlestickChart} />
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+              {vm.statTiles.map((stat) => <ChartStat key={stat.id} stat={stat} />)}
+            </div>
+          </div>
         ) : vm.chart ? (
           <div className="space-y-3">
             <BarChartSparkline viewModel={vm.chart} />
@@ -215,5 +231,147 @@ function ChartStat({ stat }: { stat: HistoricalChartStatTile }) {
       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{stat.label}</div>
       <div className="mt-0.5 font-mono text-sm text-foreground">{stat.value}</div>
     </div>
+  );
+}
+
+function ChartModeToggle({ options }: { options: ChartModeOption[] }) {
+  return (
+    <div
+      role="group"
+      aria-label="Select chart type"
+      className="flex gap-1"
+    >
+      {options.map((opt) => (
+        <Button
+          key={opt.mode}
+          size="sm"
+          variant={opt.buttonVariant}
+          onClick={opt.select}
+          aria-pressed={opt.ariaPressed}
+          aria-label={opt.ariaLabel}
+          data-testid={`historical-chart-mode-${opt.mode}`}
+        >
+          {opt.label}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
+function CandlestickChartView({ viewModel: vm }: { viewModel: CandlestickChartViewModel }) {
+  return (
+    <svg
+      viewBox={vm.viewBox}
+      preserveAspectRatio="none"
+      className="block h-64 w-full overflow-visible"
+      role="img"
+      aria-label={vm.ariaLabel}
+    >
+      {/* High guide line */}
+      <line
+        x1={vm.guideX1}
+        x2={vm.guideX2}
+        y1={vm.highGuideY}
+        y2={vm.highGuideY}
+        stroke="var(--chart-grid)"
+        strokeOpacity="0.85"
+        strokeDasharray="4 4"
+      />
+      {/* Low guide line */}
+      <line
+        x1={vm.guideX1}
+        x2={vm.guideX2}
+        y1={vm.lowGuideY}
+        y2={vm.lowGuideY}
+        stroke="var(--chart-grid)"
+        strokeOpacity="0.85"
+        strokeDasharray="4 4"
+      />
+      {/* High price label */}
+      <text
+        x={vm.highLabel.x}
+        y={vm.highLabel.y}
+        textAnchor="end"
+        fontFamily="IBM Plex Mono, ui-monospace"
+        fontSize="10"
+        fill="currentColor"
+        fillOpacity="0.55"
+      >
+        {vm.highLabel.value}
+      </text>
+      {/* Low price label */}
+      <text
+        x={vm.lowLabel.x}
+        y={vm.lowLabel.y}
+        textAnchor="end"
+        fontFamily="IBM Plex Mono, ui-monospace"
+        fontSize="10"
+        fill="currentColor"
+        fillOpacity="0.55"
+      >
+        {vm.lowLabel.value}
+      </text>
+      {/* Separator between price and volume areas */}
+      <line
+        x1={vm.guideX1}
+        x2={vm.guideX2}
+        y1={vm.volumeAreaTop - 2}
+        y2={vm.volumeAreaTop - 2}
+        stroke="var(--chart-grid)"
+        strokeOpacity="0.3"
+      />
+      {/* Candlestick bars */}
+      {vm.bars.map((bar, i) => (
+        <CandlestickBar key={i} bar={bar} />
+      ))}
+      {/* Volume bars */}
+      {vm.volumeBars.map((vb, i) => (
+        <rect
+          key={i}
+          x={vb.x}
+          y={vb.y}
+          width={vb.width}
+          height={vb.height}
+          fill={vb.isBullish ? "var(--chart-up)" : "var(--chart-dn)"}
+          fillOpacity="0.35"
+        />
+      ))}
+    </svg>
+  );
+}
+
+function CandlestickBar({ bar }: { bar: CandlestickBarViewModel }) {
+  const color = bar.isDoji
+    ? "var(--chart-bench)"
+    : bar.isBullish
+      ? "var(--chart-up)"
+      : "var(--chart-dn)";
+
+  return (
+    <g>
+      <title>{bar.tooltipLabel}</title>
+      {/* Wick */}
+      <line
+        x1={bar.midX}
+        x2={bar.midX}
+        y1={bar.wickY1}
+        y2={bar.wickY2}
+        stroke={color}
+        strokeWidth="1"
+        strokeOpacity="0.8"
+      />
+      {/* Body */}
+      <rect
+        x={bar.bodyX}
+        y={bar.bodyY}
+        width={bar.bodyWidth}
+        height={bar.bodyHeight}
+        fill={bar.isBullish ? color : "none"}
+        fillOpacity={bar.isBullish ? 0.85 : 0}
+        stroke={color}
+        strokeWidth="1"
+        strokeOpacity="0.9"
+      />
+    </g>
   );
 }

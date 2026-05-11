@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { getHistoricalBars } from "@/lib/api";
 import {
   HISTORICAL_CHART_TIMEFRAMES,
+  buildCandlestickChartViewModel,
   buildHistoricalChartSparklineViewModel,
   buildHistoricalChartStatePanel,
   computeChartStats,
@@ -143,7 +144,116 @@ describe("computeChartStats", () => {
   });
 });
 
+describe("buildCandlestickChartViewModel", () => {
+  it("produces a bar for every valid OHLCV entry", () => {
+    const bars = [
+      bar("2026-05-01T14:30:00Z", 100, 102, 99, 101, 1000),
+      bar("2026-05-01T14:35:00Z", 101, 105, 100, 104, 1500),
+      bar("2026-05-01T14:40:00Z", 104, 105, 101, 102, 800)
+    ];
+    const vm = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "AAPL",
+      timeframe: "1D"
+    });
+
+    expect(vm).not.toBeNull();
+    expect(vm?.bars).toHaveLength(3);
+    expect(vm?.volumeBars).toHaveLength(3);
+    expect(vm?.ariaLabel).toContain("AAPL 1D candlestick chart, 3 bars");
+  });
+
+  it("marks bullish and bearish bars correctly", () => {
+    const bars = [
+      bar("2026-05-01T14:30:00Z", 100, 105, 99, 103, 1000),
+      bar("2026-05-01T14:35:00Z", 103, 104, 98, 99, 900)
+    ];
+    const vm = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "MSFT",
+      timeframe: "5D"
+    });
+
+    expect(vm?.bars[0]?.isBullish).toBe(true);
+    expect(vm?.bars[1]?.isBullish).toBe(false);
+  });
+
+  it("returns null when there are no bars", () => {
+    const vm = buildCandlestickChartViewModel({
+      bars: [],
+      stats: computeChartStats([]),
+      symbol: "AAPL",
+      timeframe: "1D"
+    });
+
+    expect(vm).toBeNull();
+  });
+
+  it("does not produce NaN coordinates for valid bars", () => {
+    const bars = [
+      bar("2026-05-01T14:30:00Z", 150, 152, 149, 151, 2000),
+      bar("2026-05-01T14:35:00Z", 151, 153, 150, 152.5, 1800)
+    ];
+    const vm = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "NVDA",
+      timeframe: "1M"
+    });
+
+    for (const b of vm?.bars ?? []) {
+      expect(Number.isFinite(b.midX)).toBe(true);
+      expect(Number.isFinite(b.bodyY)).toBe(true);
+      expect(b.bodyHeight).toBeGreaterThan(0);
+      expect(Number.isFinite(b.wickY1)).toBe(true);
+      expect(Number.isFinite(b.wickY2)).toBe(true);
+    }
+  });
+
+  it("includes OHLC values in tooltip label for each bar", () => {
+    const bars = [
+      bar("2026-05-01T14:30:00Z", 100, 105, 99, 103, 1000)
+    ];
+    const vm = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "SPY",
+      timeframe: "1D"
+    });
+
+    expect(vm?.bars[0]?.tooltipLabel).toContain("103");
+    expect(vm?.bars[0]?.tooltipLabel).toContain("105");
+    expect(vm?.bars[0]?.tooltipLabel).toContain("99");
+  });
+});
+
 describe("useHistoricalChartViewModel", () => {
+  it("defaults to candles chart mode and exposes a working toggle", async () => {
+    vi.mocked(getHistoricalBars).mockResolvedValue({
+      success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
+      from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
+      queryTimeMs: 0, bars: []
+    });
+
+    const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
+
+    expect(result.current.activeChartMode).toBe("candles");
+    expect(result.current.chartModeOptions).toHaveLength(2);
+
+    const lineOption = result.current.chartModeOptions.find((o) => o.mode === "line");
+    expect(lineOption?.ariaPressed).toBe(false);
+
+    await act(async () => {
+      lineOption?.select();
+    });
+
+    expect(result.current.activeChartMode).toBe("line");
+    expect(result.current.chartModeOptions.find((o) => o.mode === "line")?.ariaPressed).toBe(true);
+    expect(result.current.chartModeOptions.find((o) => o.mode === "candles")?.ariaPressed).toBe(false);
+  });
+
   it("aborts superseded historical-bar requests", async () => {
     const first = deferred<Awaited<ReturnType<typeof getHistoricalBars>>>();
     const second = deferred<Awaited<ReturnType<typeof getHistoricalBars>>>();

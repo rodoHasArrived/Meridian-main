@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getHistoricalBars } from "@/lib/api";
 import type { HistoricalBarPoint } from "@/types";
 
+export type ChartMode = "line" | "candles";
+
 export interface HistoricalChartTimeframe {
   readonly id: string;
   readonly label: string;
@@ -90,17 +92,57 @@ export interface HistoricalChartStatTile {
   value: string;
 }
 
+export interface CandlestickBarViewModel {
+  midX: number;
+  bodyX: number;
+  bodyY: number;
+  bodyHeight: number;
+  bodyWidth: number;
+  wickY1: number;
+  wickY2: number;
+  isBullish: boolean;
+  isDoji: boolean;
+  tooltipLabel: string;
+}
+
+export interface CandlestickChartViewModel {
+  viewBox: string;
+  ariaLabel: string;
+  bars: CandlestickBarViewModel[];
+  highGuideY: number;
+  lowGuideY: number;
+  guideX1: number;
+  guideX2: number;
+  highLabel: { value: string; x: number; y: number };
+  lowLabel: { value: string; x: number; y: number };
+  volumeBars: { x: number; y: number; width: number; height: number; isBullish: boolean }[];
+  priceAreaHeight: number;
+  volumeAreaTop: number;
+}
+
+export interface ChartModeOption {
+  mode: ChartMode;
+  label: string;
+  ariaLabel: string;
+  ariaPressed: boolean;
+  buttonVariant: "default" | "outline";
+  select: () => void;
+}
+
 export interface HistoricalChartViewModel {
   eyebrow: string;
   title: string;
   description: string;
   activeTimeframeLabel: string;
   timeframeOptions: HistoricalChartTimeframeOption[];
+  chartModeOptions: ChartModeOption[];
+  activeChartMode: ChartMode;
   lastPriceText: string;
   changeText: string;
   changeToneClass: string;
   statePanel: HistoricalChartStatePanel | null;
   chart: HistoricalChartSparklineViewModel | null;
+  candlestickChart: CandlestickChartViewModel | null;
   statTiles: HistoricalChartStatTile[];
   retry: () => void;
 }
@@ -110,6 +152,7 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
     HISTORICAL_CHART_TIMEFRAMES[0]!
   );
   const [state, setState] = useState<FetchState>(initialFetchState);
+  const [chartMode, setChartMode] = useState<ChartMode>("candles");
   const requestRevision = useRef(0);
   const mounted = useRef(false);
   const requestAbortRef = useRef<AbortController | null>(null);
@@ -201,6 +244,25 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
     [activeTimeframe.id, symbol]
   );
 
+  const chartModeOptions = useMemo<ChartModeOption[]>(() => [
+    {
+      mode: "candles",
+      label: "Candles",
+      ariaLabel: `Switch to candlestick chart for ${symbol || "selected symbol"}`,
+      ariaPressed: chartMode === "candles",
+      buttonVariant: chartMode === "candles" ? "default" : "outline",
+      select: () => setChartMode("candles")
+    },
+    {
+      mode: "line",
+      label: "Line",
+      ariaLabel: `Switch to line chart for ${symbol || "selected symbol"}`,
+      ariaPressed: chartMode === "line",
+      buttonVariant: chartMode === "line" ? "default" : "outline",
+      select: () => setChartMode("line")
+    }
+  ], [chartMode, symbol]);
+
   const statePanel = buildHistoricalChartStatePanel({
     status: state.status,
     bars: state.bars,
@@ -215,11 +277,19 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
     description: `OHLCV bars aggregated from stored trade events. Each bar covers ${formatIntervalLabel(activeTimeframe.intervalMinutes)}.`,
     activeTimeframeLabel: activeTimeframe.label,
     timeframeOptions,
+    chartModeOptions,
+    activeChartMode: chartMode,
     lastPriceText: formatPrice(stats.last),
     changeText: `${formatChange(stats.change)} (${formatChangePct(stats.changePct)})`,
     changeToneClass: chartChangeToneClass(stats.change),
     statePanel,
     chart: buildHistoricalChartSparklineViewModel({
+      bars: state.bars,
+      stats,
+      symbol,
+      timeframe: activeTimeframe.label
+    }),
+    candlestickChart: buildCandlestickChartViewModel({
       bars: state.bars,
       stats,
       symbol,
@@ -234,6 +304,110 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
     ],
     retry
   };
+}
+
+export function buildCandlestickChartViewModel({
+  bars,
+  stats,
+  symbol,
+  timeframe
+}: {
+  bars: readonly HistoricalBarPoint[];
+  stats: HistoricalChartStats;
+  symbol: string;
+  timeframe: string;
+}): CandlestickChartViewModel | null {
+  const width = 900;
+  const priceAreaHeight = 175;
+  const volumeGap = 8;
+  const volumeAreaHeight = 35;
+  const totalHeight = priceAreaHeight + volumeGap + volumeAreaHeight;
+  const padX = 12;
+  const padY = 14;
+  const volumeAreaTop = priceAreaHeight + volumeGap;
+
+  if (bars.length === 0 || stats.high === null || stats.low === null) {
+    return null;
+  }
+
+  const chartBars = toChronologicalChartBars(bars);
+  if (chartBars.length === 0) return null;
+
+  const n = chartBars.length;
+  const slotWidth = (width - padX * 2) / n;
+  const bodyWidth = Math.max(1.5, slotWidth * 0.65);
+
+  const priceSpan = Math.max(stats.high - stats.low, Math.max(stats.high * 0.001, 0.01));
+  const plotH = priceAreaHeight - padY * 2;
+  const yForPrice = (price: number): number =>
+    padY + (1 - (price - stats.low!) / priceSpan) * plotH;
+
+  const maxVolume = chartBars.reduce((m, { bar }) => Math.max(m, bar.volume), 0);
+
+  const candleBars: CandlestickBarViewModel[] = chartBars.map(({ bar }, i) => {
+    const midX = padX + (i + 0.5) * slotWidth;
+    const openY = yForPrice(bar.open);
+    const closeY = yForPrice(bar.close);
+    const highY = yForPrice(bar.high);
+    const lowY = yForPrice(bar.low);
+    const isBullish = bar.close >= bar.open;
+    const isDoji = Math.abs(bar.close - bar.open) < priceSpan * 0.002;
+    const bodyTop = Math.min(openY, closeY);
+    const bodyH = Math.max(1.5, Math.abs(closeY - openY));
+
+    return {
+      midX,
+      bodyX: midX - bodyWidth / 2,
+      bodyY: bodyTop,
+      bodyHeight: bodyH,
+      bodyWidth,
+      wickY1: highY,
+      wickY2: lowY,
+      isBullish,
+      isDoji,
+      tooltipLabel: `${new Date(bar.start).toLocaleString()} · O ${formatPriceRaw(bar.open)} H ${formatPriceRaw(bar.high)} L ${formatPriceRaw(bar.low)} C ${formatPriceRaw(bar.close)}`
+    };
+  });
+
+  const volumeBars = chartBars.map(({ bar }, i) => {
+    const midX = padX + (i + 0.5) * slotWidth;
+    const ratio = maxVolume > 0 ? bar.volume / maxVolume : 0;
+    const barH = Math.max(1, ratio * volumeAreaHeight);
+    return {
+      x: midX - bodyWidth / 2,
+      y: volumeAreaTop + volumeAreaHeight - barH,
+      width: bodyWidth,
+      height: barH,
+      isBullish: bar.close >= bar.open
+    };
+  });
+
+  return {
+    viewBox: `0 0 ${width} ${totalHeight}`,
+    ariaLabel: `${symbol} ${timeframe} candlestick chart, ${n} bars from ${formatPrice(stats.low)} to ${formatPrice(stats.high)}.`,
+    bars: candleBars,
+    highGuideY: yForPrice(stats.high),
+    lowGuideY: yForPrice(stats.low),
+    guideX1: padX,
+    guideX2: width - padX,
+    highLabel: {
+      value: formatPrice(stats.high),
+      x: width - padX,
+      y: Math.max(yForPrice(stats.high) - 4, 10)
+    },
+    lowLabel: {
+      value: formatPrice(stats.low),
+      x: width - padX,
+      y: Math.min(yForPrice(stats.low) + 12, priceAreaHeight - 4)
+    },
+    volumeBars,
+    priceAreaHeight,
+    volumeAreaTop
+  };
+}
+
+function formatPriceRaw(value: number): string {
+  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 }
 
 export function buildHistoricalChartStatePanel({
