@@ -1,0 +1,108 @@
+using System.Text.Json;
+using Meridian.Contracts.Derivatives;
+using Meridian.Contracts.SecurityMaster;
+using Meridian.Storage.SecurityMaster;
+
+namespace Meridian.Application.Derivatives;
+
+public sealed class SwapProjectionService : ISwapReferenceService
+{
+    private readonly ISecurityMasterStore _securityMasterStore;
+    private readonly ISwapReferenceProjectionStore _projectionStore;
+
+    public SwapProjectionService(
+        ISecurityMasterStore securityMasterStore,
+        ISwapReferenceProjectionStore projectionStore)
+    {
+        _securityMasterStore = securityMasterStore;
+        _projectionStore = projectionStore;
+    }
+
+    public async Task<SwapReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)
+    {
+        var security = await _securityMasterStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+        if (security is null || !string.Equals(security.AssetClass, "Swap", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var row = await _projectionStore.GetSwapAsync(securityId, ct).ConfigureAwait(false);
+        return row is null ? null : MapRow(row, security.AssetSpecificTerms);
+    }
+
+    public async Task<IReadOnlyList<SwapReferenceDto>> GetBySwapTypeAsync(string swapType, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(swapType))
+        {
+            return Array.Empty<SwapReferenceDto>();
+        }
+
+        var rows = await _projectionStore.GetBySwapTypeAsync(swapType.Trim(), ct).ConfigureAwait(false);
+        return rows.Select(r => MapRow(r, default)).ToArray();
+    }
+
+    public async Task<IReadOnlyList<SwapReferenceDto>> GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default)
+    {
+        var rows = await _projectionStore.GetMaturingBeforeAsync(beforeDate, ct).ConfigureAwait(false);
+        return rows.Select(r => MapRow(r, default)).ToArray();
+    }
+
+    private static SwapReferenceDto MapRow(SwapProjectionRow row, JsonElement assetSpecificTerms)
+    {
+        var legs = ParseLegs(assetSpecificTerms);
+        return new(
+            row.SecurityId,
+            row.DisplayName,
+            row.Currency,
+            row.SwapType,
+            row.EffectiveDate,
+            row.MaturityDate,
+            row.LifecycleState,
+            legs,
+            row.PrimaryIdentifierValue,
+            row.Version);
+    }
+
+    private static IReadOnlyList<SwapLegDto> ParseLegs(JsonElement assetSpecificTerms)
+    {
+        if (assetSpecificTerms.ValueKind != JsonValueKind.Object)
+        {
+            return Array.Empty<SwapLegDto>();
+        }
+
+        if (!assetSpecificTerms.TryGetProperty("legs", out var legsElement) ||
+            legsElement.ValueKind != JsonValueKind.Array)
+        {
+            return Array.Empty<SwapLegDto>();
+        }
+
+        var result = new List<SwapLegDto>(legsElement.GetArrayLength());
+        foreach (var leg in legsElement.EnumerateArray())
+        {
+            var legType = leg.TryGetProperty("legType", out var lt) ? lt.GetString() ?? string.Empty : string.Empty;
+            var currency = leg.TryGetProperty("currency", out var cur) ? cur.GetString() ?? string.Empty : string.Empty;
+            var index = leg.TryGetProperty("index", out var idx) && idx.ValueKind != JsonValueKind.Null ? idx.GetString() : null;
+            decimal? fixedRate = null;
+            if (leg.TryGetProperty("fixedRate", out var fr) && fr.ValueKind == JsonValueKind.Number)
+            {
+                fixedRate = fr.GetDecimal();
+            }
+
+            result.Add(new SwapLegDto(legType, currency, index, fixedRate));
+        }
+
+        return result;
+    }
+}
+
+public sealed class NullSwapReferenceService : ISwapReferenceService
+{
+    public Task<SwapReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)
+        => Task.FromResult<SwapReferenceDto?>(null);
+
+    public Task<IReadOnlyList<SwapReferenceDto>> GetBySwapTypeAsync(string swapType, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<SwapReferenceDto>>(Array.Empty<SwapReferenceDto>());
+
+    public Task<IReadOnlyList<SwapReferenceDto>> GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<SwapReferenceDto>>(Array.Empty<SwapReferenceDto>());
+}

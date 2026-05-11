@@ -279,6 +279,8 @@ public static class UiEndpoints
         app.MapEquityReferenceEndpoints(jsonOptions);
         app.MapFutureReferenceEndpoints(jsonOptions);
         app.MapFxSpotReferenceEndpoints(jsonOptions);
+        app.MapSwapReferenceEndpoints(jsonOptions);
+        app.MapCommodityReferenceEndpoints(jsonOptions);
         app.MapEdgarReferenceDataEndpoints(jsonOptions);
 
         // Credential management endpoints
@@ -416,6 +418,8 @@ public static class UiEndpoints
         app.MapEquityReferenceEndpoints(jsonOptions);
         app.MapFutureReferenceEndpoints(jsonOptions);
         app.MapFxSpotReferenceEndpoints(jsonOptions);
+        app.MapSwapReferenceEndpoints(jsonOptions);
+        app.MapCommodityReferenceEndpoints(jsonOptions);
         app.MapEdgarReferenceDataEndpoints(jsonOptions);
 
         // Credential management endpoints

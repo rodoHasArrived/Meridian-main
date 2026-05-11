@@ -347,6 +347,14 @@ public static class UiApiRoutes
     public const string ReferenceDataFxSpotByPairCode = "/api/reference-data/fxspot/pairs/{pairCode}";
     public const string ReferenceDataFxSpotByCurrency = "/api/reference-data/fxspot/by-currency";
 
+    public const string ReferenceDataSwapReference = "/api/reference-data/swaps/{securityId:guid}";
+    public const string ReferenceDataSwapsByType = "/api/reference-data/swaps/by-type";
+    public const string ReferenceDataSwapsMaturingBefore = "/api/reference-data/swaps/maturing-before";
+
+    public const string ReferenceDataCommodityReference = "/api/reference-data/commodities/{securityId:guid}";
+    public const string ReferenceDataCommoditiesByType = "/api/reference-data/commodities/by-type";
+    public const string ReferenceDataCommoditiesByExchange = "/api/reference-data/commodities/by-exchange";
+
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";
     public const string MessagingStatus = "/api/messaging/status";

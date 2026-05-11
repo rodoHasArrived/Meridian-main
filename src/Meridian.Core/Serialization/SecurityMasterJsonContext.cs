@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Commodities;
+using Meridian.Contracts.Derivatives;
 using Meridian.Contracts.Equity;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Futures;
@@ -49,6 +51,15 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(FxSpotReferenceDto[]))]
 [JsonSerializable(typeof(List<FxSpotReferenceDto>))]
 [JsonSerializable(typeof(FxSpotPairsForCurrencyDto))]
+[JsonSerializable(typeof(SwapReferenceDto))]
+[JsonSerializable(typeof(SwapReferenceDto[]))]
+[JsonSerializable(typeof(List<SwapReferenceDto>))]
+[JsonSerializable(typeof(SwapLegDto))]
+[JsonSerializable(typeof(SwapLegDto[]))]
+[JsonSerializable(typeof(List<SwapLegDto>))]
+[JsonSerializable(typeof(CommodityReferenceDto))]
+[JsonSerializable(typeof(CommodityReferenceDto[]))]
+[JsonSerializable(typeof(List<CommodityReferenceDto>))]
 [JsonSerializable(typeof(TradingParametersDto))]
 [JsonSerializable(typeof(CorporateActionDto))]
 [JsonSerializable(typeof(CorporateActionDto[]))]
