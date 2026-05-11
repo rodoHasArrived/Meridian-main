@@ -6793,7 +6793,6 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   └── workstation-endpoints.ts
 │   │   │   │   ├── main.tsx
 │   │   │   │   ├── screens
-│   │   │   │   │   ├── data-operations-screen.security-master.ts
 │   │   │   │   │   ├── data-operations-screen.test.tsx
 │   │   │   │   │   ├── data-operations-screen.tsx
 │   │   │   │   │   ├── data-operations-screen.view-model.test.ts
@@ -6859,8 +6858,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-BQB0EwVK.css
-│   │           │   └── index-DZ6DOyBf.js
+│   │           │   ├── index-C28BqfRv.css
+│   │           │   └── index-DP_D57HY.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8419,6 +8418,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-674 directories, 7562 files
+674 directories, 7561 files
 ```
 <!-- readme-tree end -->
