@@ -59,7 +59,8 @@ const quote: QuotesSnapshotItem = {
   lastTradeTimestamp: "2026-05-09T00:59:49.000Z",
   sequenceNumber: 42,
   streamId: "s1",
-  venue: "NASDAQ"
+  venue: "NASDAQ",
+  session: null
 };
 
 describe("watchlist-screen view model", () => {
