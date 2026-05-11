@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSystemStatus } from "@/lib/api";
 import { WORKSPACES, workspacePath } from "@/lib/workspace";
-import type { MetricSnapshot, SessionInfo, SystemEventRecord, SystemOverviewResponse, WorkspaceKey } from "@/types";
+import type {
+  MetricSnapshot,
+  PortfolioWorkspaceResponse,
+  SessionInfo,
+  SystemEventRecord,
+  SystemOverviewResponse,
+  TradingWorkspaceResponse,
+  WorkspaceKey
+} from "@/types";
 
 export type OverviewRefreshFetcher = () => Promise<SystemOverviewResponse>;
 
@@ -763,4 +771,121 @@ function formatTime(value: string | Date | null | undefined): string {
 
   const date = typeof value === "string" ? new Date(value) : value;
   return Number.isNaN(date.getTime()) ? "Unavailable" : date.toLocaleTimeString();
+}
+
+// --- Portfolio at-a-glance panel ---
+
+export type PortfolioPanelTone = "default" | "success" | "warning" | "danger";
+
+export interface OverviewPositionRow {
+  key: string;
+  symbol: string;
+  side: "Long" | "Short";
+  quantity: string;
+  markPrice: string;
+  unrealizedPnl: string;
+  pnlTone: PortfolioPanelTone;
+  exposure: string;
+  ariaLabel: string;
+}
+
+export interface OverviewPortfolioPanel {
+  hasData: boolean;
+  metrics: MetricSnapshot[];
+  positions: OverviewPositionRow[];
+  riskState: string;
+  riskTone: PortfolioPanelTone;
+  riskSummary: string;
+  brokerageLabel: string;
+  openOrderCount: number;
+  emptyMessage: string;
+}
+
+export function buildOverviewPortfolioPanel(
+  trading: TradingWorkspaceResponse | null,
+  portfolio: PortfolioWorkspaceResponse | null
+): OverviewPortfolioPanel {
+  const source = trading ?? portfolio;
+
+  if (!source) {
+    return {
+      hasData: false,
+      metrics: [],
+      positions: [],
+      riskState: "—",
+      riskTone: "default",
+      riskSummary: "",
+      brokerageLabel: "—",
+      openOrderCount: 0,
+      emptyMessage: "Connect a brokerage account or start a paper session to see your portfolio here."
+    };
+  }
+
+  const tradingMetrics = trading?.metrics ?? [];
+  const portfolioMetrics = portfolio?.metrics ?? tradingMetrics;
+
+  const pnlMetric = tradingMetrics.find((m) => m.id === "pnl") ?? portfolioMetrics.find((m) => m.id === "portfolio-equity");
+  const equityMetric = portfolioMetrics.find((m) => m.id === "portfolio-equity");
+  const cashMetric = portfolioMetrics.find((m) => m.id === "portfolio-cash");
+  const ordersMetric = tradingMetrics.find((m) => m.id === "orders");
+
+  const metrics: MetricSnapshot[] = [
+    pnlMetric
+      ? { ...pnlMetric, id: "overview-pnl", label: "Net P&L" }
+      : { id: "overview-pnl", label: "Net P&L", value: "—", tone: "default" },
+    equityMetric
+      ? { ...equityMetric, id: "overview-equity", label: "Portfolio Equity" }
+      : { id: "overview-equity", label: "Portfolio Equity", value: "—", tone: "default" },
+    cashMetric
+      ? { ...cashMetric, id: "overview-cash", label: "Cash" }
+      : { id: "overview-cash", label: "Cash", value: "—", tone: "default" },
+    ordersMetric
+      ? { ...ordersMetric, id: "overview-orders", label: "Open Orders" }
+      : {
+          id: "overview-orders",
+          label: "Open Orders",
+          value: String(trading?.openOrders.length ?? 0),
+          tone: "default"
+        }
+  ];
+
+  const riskState = source.risk?.state ?? "—";
+  const riskTone: PortfolioPanelTone =
+    riskState === "Constrained" ? "danger" : riskState === "Observe" ? "warning" : riskState === "Healthy" ? "success" : "default";
+
+  const positions: OverviewPositionRow[] = (source.positions ?? [])
+    .filter((pos) => pos.symbol !== "—")
+    .slice(0, 5)
+    .map((pos) => {
+      const pnlStr = pos.unrealizedPnl ?? "";
+      const pnlTone: PortfolioPanelTone = pnlStr.startsWith("+") ? "success" : pnlStr.startsWith("-") ? "danger" : "default";
+      return {
+        key: pos.positionKey ?? pos.symbol,
+        symbol: pos.symbol,
+        side: pos.side,
+        quantity: pos.quantity,
+        markPrice: pos.markPrice,
+        unrealizedPnl: pos.unrealizedPnl,
+        pnlTone,
+        exposure: pos.exposure,
+        ariaLabel: `${pos.symbol} ${pos.side} ${pos.quantity} shares, mark ${pos.markPrice}, unrealized P&L ${pos.unrealizedPnl}`
+      };
+    });
+
+  const brokerage = source.brokerage;
+  const brokerageLabel = brokerage
+    ? `${brokerage.provider} · ${brokerage.account} · ${brokerage.environment}`
+    : "—";
+
+  return {
+    hasData: true,
+    metrics,
+    positions,
+    riskState,
+    riskTone,
+    riskSummary: source.risk?.summary ?? "",
+    brokerageLabel,
+    openOrderCount: trading?.openOrders.length ?? 0,
+    emptyMessage: "No open positions. Use the trading cockpit to place your first order."
+  };
 }

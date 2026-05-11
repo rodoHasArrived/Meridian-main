@@ -23,17 +23,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
+  buildOverviewPortfolioPanel,
   useOverviewStatusViewModel,
   type OverviewActivityRow,
   type OverviewBriefingBadgeVariant,
   type OverviewBriefingTone,
-  type OverviewValueBlocker
+  type OverviewPortfolioPanel,
+  type OverviewValueBlocker,
+  type PortfolioPanelTone
 } from "@/screens/overview-screen.view-model";
-import type { SessionInfo, SystemOverviewResponse, WorkspaceKey } from "@/types";
+import type {
+  PortfolioWorkspaceResponse,
+  SessionInfo,
+  SystemOverviewResponse,
+  TradingWorkspaceResponse,
+  WorkspaceKey
+} from "@/types";
 
 interface OverviewScreenProps {
   data: SystemOverviewResponse | null;
   session: SessionInfo | null;
+  trading?: TradingWorkspaceResponse | null;
+  portfolio?: PortfolioWorkspaceResponse | null;
 }
 
 const systemStatusConfig = {
@@ -106,11 +117,12 @@ const workspaceIconConfig: Record<WorkspaceKey, { icon: ElementType; accent: str
   settings: { icon: Settings, accent: "text-muted-foreground" }
 };
 
-export function OverviewScreen({ data, session }: OverviewScreenProps) {
+export function OverviewScreen({ data, session, trading = null, portfolio = null }: OverviewScreenProps) {
   const vm = useOverviewStatusViewModel(data, session);
   const current = vm.current;
   const statusConfig = current ? systemStatusConfig[current.systemStatus] : null;
   const StatusIcon = statusConfig?.icon ?? Radio;
+  const portfolioPanel = buildOverviewPortfolioPanel(trading, portfolio);
 
   return (
     <div className="space-y-6">
@@ -165,6 +177,8 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
           {vm.refreshErrorText}
         </div>
       )}
+
+      <PortfolioPanel panel={portfolioPanel} />
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <Card className="border-border/70 bg-panel-strong">
@@ -383,6 +397,105 @@ function ValueBlockerRow({ blocker }: { blocker: OverviewValueBlocker }) {
         </Link>
       </div>
     </li>
+  );
+}
+
+const portfolioPanelToneClass: Record<PortfolioPanelTone, string> = {
+  default: "text-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger"
+} as const;
+
+const riskBadgeVariant: Record<PortfolioPanelTone, "outline" | "success" | "warning" | "danger"> = {
+  default: "outline",
+  success: "success",
+  warning: "warning",
+  danger: "danger"
+} as const;
+
+function PortfolioPanel({ panel }: { panel: OverviewPortfolioPanel }) {
+  return (
+    <Card className="border-border/70">
+      <CardHeader className="pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="eyebrow-label">Portfolio cockpit</div>
+            <CardTitle className="mt-1 flex items-center gap-2 text-base">
+              <TrendingUp className="size-4 text-success" aria-hidden="true" />
+              Portfolio at a glance
+            </CardTitle>
+          </div>
+          <div className="flex items-center gap-2">
+            {panel.hasData && (
+              <Badge variant={riskBadgeVariant[panel.riskTone]} dot={panel.riskTone === "success"}>
+                {panel.riskState}
+              </Badge>
+            )}
+            <Button asChild variant="outline" size="sm">
+              <Link to="/trading">
+                <ArrowRight className="size-3.5" aria-hidden="true" />
+                Trading cockpit
+              </Link>
+            </Button>
+          </div>
+        </div>
+        {panel.hasData && panel.brokerageLabel !== "—" && (
+          <p className="mt-1 font-mono text-[11px] text-muted-foreground">{panel.brokerageLabel}</p>
+        )}
+      </CardHeader>
+      <CardContent>
+        {panel.hasData ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {panel.metrics.map((metric) => (
+                <MetricCard key={metric.id} {...metric} />
+              ))}
+            </div>
+            {panel.positions.length > 0 ? (
+              <div>
+                <p className="mb-2 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  Open positions
+                </p>
+                <ul className="space-y-1.5" aria-label="Open positions overview">
+                  {panel.positions.map((pos) => (
+                    <li
+                      key={pos.key}
+                      role="group"
+                      aria-label={pos.ariaLabel}
+                      className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-xs"
+                    >
+                      <span className="min-w-[3.5rem] font-mono font-semibold text-foreground">{pos.symbol}</span>
+                      <Badge variant={pos.side === "Long" ? "outline" : "warning"} className="shrink-0 text-[10px]">
+                        {pos.side}
+                      </Badge>
+                      <span className="font-mono text-muted-foreground">{pos.quantity} shares</span>
+                      <span className="font-mono text-muted-foreground">mark {pos.markPrice}</span>
+                      <span className={cn("ml-auto font-mono font-medium", portfolioPanelToneClass[pos.pnlTone])}>
+                        {pos.unrealizedPnl}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <p className="rounded-md border border-border/60 bg-secondary/20 px-4 py-3 text-center text-xs text-muted-foreground">
+                {panel.emptyMessage}
+              </p>
+            )}
+            {panel.riskSummary ? (
+              <p className={cn("text-xs leading-5", portfolioPanelToneClass[panel.riskTone])}>
+                {panel.riskSummary}
+              </p>
+            ) : null}
+          </div>
+        ) : (
+          <p className="rounded-md border border-border/60 bg-secondary/20 px-4 py-6 text-center text-sm text-muted-foreground">
+            {panel.emptyMessage}
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

@@ -252,7 +252,7 @@ export function App() {
             {shell.canRenderRoutes ? (
               <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
                 <Routes>
-                  <Route path="/" element={<OverviewScreen data={overview} session={session} />} />
+                  <Route path="/" element={<OverviewScreen data={overview} session={session} trading={trading} portfolio={portfolio} />} />
                   <Route path="/trading/readiness" element={(
                     <OperatorReadinessConsole
                       research={research}
