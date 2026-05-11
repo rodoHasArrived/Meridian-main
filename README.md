@@ -6715,6 +6715,12 @@ Use these documents together when planning or implementing new work:
 │   │       └── StrategyRunStore.cs
 │   ├── Meridian.Ui
 │   │   ├── dashboard
+│   │   │   ├── artifacts
+│   │   │   │   └── automation
+│   │   │   │       └── progress
+│   │   │   │           ├── portfolio-sync-trust-smoke.png
+│   │   │   │           ├── readiness-inbox-refresh-smoke.png
+│   │   │   │           └── workstation-preview-smoke.png
 │   │   │   ├── index.html
 │   │   │   ├── package-lock.json
 │   │   │   ├── package.json
@@ -6738,6 +6744,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── command-palette.view-model.ts
 │   │   │   │   │   │   ├── historical-chart.test.tsx
 │   │   │   │   │   │   ├── historical-chart.tsx
+│   │   │   │   │   │   ├── historical-chart.view-model.test.ts
+│   │   │   │   │   │   ├── historical-chart.view-model.ts
 │   │   │   │   │   │   ├── mega-menu.test.tsx
 │   │   │   │   │   │   ├── mega-menu.tsx
 │   │   │   │   │   │   ├── mega-menu.view-model.test.ts
@@ -6858,8 +6866,42 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-C28BqfRv.css
-│   │           │   └── index-DP_D57HY.js
+│   │           │   ├── activity-DYQ_vwXW.js
+│   │           │   ├── arrow-right-C2_oZ_g-.js
+│   │           │   ├── briefcase-business-DfrykRdY.js
+│   │           │   ├── circle-alert-CprQJhqK.js
+│   │           │   ├── circle-check-2HG-4FeZ.js
+│   │           │   ├── circle-x-BNUVEBHA.js
+│   │           │   ├── clipboard-list-_NY5ZTHr.js
+│   │           │   ├── data-operations-screen-M_y5IDAA.js
+│   │           │   ├── dialog-CU9eExSc.js
+│   │           │   ├── evidence-workbench-screen-CdVI1540.js
+│   │           │   ├── external-link-C5MXZSYI.js
+│   │           │   ├── file-text-Doaullvx.js
+│   │           │   ├── governance-screen-BkwLU6VD.js
+│   │           │   ├── index-CCdOqhoa.css
+│   │           │   ├── index-CwXBN1W9.js
+│   │           │   ├── input-DCbJiBY3.js
+│   │           │   ├── live-quotes-screen-BLlSSBxv.js
+│   │           │   ├── metric-card-BM9jSfvS.js
+│   │           │   ├── network-iZmJSJ27.js
+│   │           │   ├── operator-readiness-console-CGiq2wj9.js
+│   │           │   ├── overview-screen-BOhEKf8t.js
+│   │           │   ├── plus-BRkBrje5.js
+│   │           │   ├── portfolio-screen-BFQsglkj.js
+│   │           │   ├── quant-lab-screen-DPa8WFHB.js
+│   │           │   ├── refresh-cw-BsK0YEKV.js
+│   │           │   ├── reporting-screen-DPSdKJgr.js
+│   │           │   ├── research-screen-DYI0ulg1.js
+│   │           │   ├── select-DrO3GJps.js
+│   │           │   ├── settings-screen-bMFC2A3E.js
+│   │           │   ├── sparkles-DX8RkuUT.js
+│   │           │   ├── trading-screen-Ba4o0kv8.js
+│   │           │   ├── trash-2-Blsk9arM.js
+│   │           │   ├── trending-up-BB-ZKh8-.js
+│   │           │   ├── ui-kit-primitives-DSk4Hbhn.js
+│   │           │   ├── wallet-rzuU-gyw.js
+│   │           │   └── watchlist-screen-yP37QjLs.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8418,6 +8460,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-674 directories, 7561 files
+677 directories, 7600 files
 ```
 <!-- readme-tree end -->
