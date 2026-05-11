@@ -2419,11 +2419,21 @@ public static class WorkstationEndpoints
 
         // Resolve all runs for the run-linked equity panel
         StrategyRunSummary[] allRuns = [];
+        StrategyRunDetail?[] runDetailsForCashFlow = [];
         if (readService is not null)
         {
             allRuns = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false))
                 .Take(12)
                 .ToArray();
+
+            // Fetch details for the most recent runs to power the cash-flow summary.
+            // Mirrors the Governance workspace pattern; bounded to avoid amplifying load.
+            var cashFlowRuns = allRuns.Take(6).ToArray();
+            runDetailsForCashFlow = cashFlowRuns.Length == 0
+                ? []
+                : await Task.WhenAll(cashFlowRuns.Select(run =>
+                        readService.GetRunDetailAsync(run.RunId, context.RequestAborted)))
+                    .ConfigureAwait(false);
         }
 
         // --- Metrics ---
@@ -2543,7 +2553,7 @@ public static class WorkstationEndpoints
             Risk: risk,
             Brokerage: brokerage,
             Runs: runs,
-            CashFlow: null);
+            CashFlow: BuildGovernanceWorkspaceCashFlowSummary(runDetailsForCashFlow));
     }
 
     private static async Task<WorkstationGovernancePayload> BuildGovernancePayloadAsync(HttpContext context)
