@@ -104,6 +104,20 @@ public sealed class SecurityMasterRebuildOrchestrator
             _options.ProjectionReplayBatchSize);
     }
 
+    public Task RebuildAsync(string assetClass, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(assetClass))
+        {
+            throw new ArgumentException("Asset class is required.", nameof(assetClass));
+        }
+
+        _logger.LogInformation(
+            "Security master rebuild received asset class scope {AssetClass}; replay currently applies to the shared security master projection.",
+            assetClass);
+
+        return RebuildAsync(ct);
+    }
+
     private async Task TryRecordConflictsAsync(IReadOnlyList<SecurityProjectionRecord> rebuiltRecords, CancellationToken ct)
     {
         if (_conflictService is null || rebuiltRecords.Count == 0)

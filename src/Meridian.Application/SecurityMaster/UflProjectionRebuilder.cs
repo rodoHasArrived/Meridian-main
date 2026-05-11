@@ -7,6 +7,29 @@ namespace Meridian.Application.SecurityMaster;
 /// </summary>
 public sealed class UflProjectionRebuilder : IUflProjectionRebuilder
 {
+    private static readonly HashSet<string> SupportedAssetClasses = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Equity",
+        "Option",
+        "Future",
+        "Bond",
+        "FxSpot",
+        "Deposit",
+        "MoneyMarketFund",
+        "CertificateOfDeposit",
+        "CommercialPaper",
+        "TreasuryBill",
+        "Repo",
+        "CashSweep",
+        "OtherSecurity",
+        "Swap",
+        "DirectLoan",
+        "Commodity",
+        "CryptoCurrency",
+        "Cfd",
+        "Warrant"
+    };
+
     private readonly SecurityMasterRebuildOrchestrator _orchestrator;
     private readonly ILogger<UflProjectionRebuilder> _logger;
 
@@ -25,11 +48,19 @@ public sealed class UflProjectionRebuilder : IUflProjectionRebuilder
             throw new ArgumentException("Asset class is required.", nameof(assetClass));
         }
 
+        if (!SupportedAssetClasses.Contains(assetClass))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(assetClass),
+                assetClass,
+                "Asset class is not supported by the UFL projection rebuild pipeline.");
+        }
+
         _logger.LogInformation(
             "Rebuilding UFL projections for asset class {AssetClass} via security master projection replay.",
             assetClass);
 
-        await _orchestrator.RebuildAsync(ct).ConfigureAwait(false);
+        await _orchestrator.RebuildAsync(assetClass, ct).ConfigureAwait(false);
     }
 }
 

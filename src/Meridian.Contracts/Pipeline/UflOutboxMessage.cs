@@ -10,7 +10,7 @@ public sealed record UflCommandMetadataDto(
     string? SourceAssetClass,
     string? EventType,
     string? SourceSystem,
-    bool ReplayFlag);
+    bool IsReplay);
 
 /// <summary>
 /// Durable outbox envelope for UFL workflow publication.
