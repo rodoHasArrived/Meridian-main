@@ -7,7 +7,7 @@ public sealed record SwapReferenceDto(
     string? SwapType,
     DateOnly EffectiveDate,
     DateOnly MaturityDate,
-    string LifecycleState,
+    string LifecycleStat,
     IReadOnlyList<SwapLegDto> Legs,
     string PrimaryIdentifier,
     long Version);

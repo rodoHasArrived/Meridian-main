@@ -14,6 +14,6 @@ public sealed record SwapProjectionRow(
     string? SwapType,
     DateOnly EffectiveDate,
     DateOnly MaturityDate,
-    string LifecycleState,
+    string LifecycleStat,
     string PrimaryIdentifierValue,
     long Version);

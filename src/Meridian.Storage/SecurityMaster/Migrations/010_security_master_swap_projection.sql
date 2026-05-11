@@ -1,5 +1,5 @@
 -- Migration 010: swap reference projection table
-create table if not exists {schema}.swap_projection (
+create table if not exists __SCHEMA__.swap_projection (
     security_id              uuid         not null primary key,
     display_name             text         not null,
     currency                 text         not null,
@@ -12,7 +12,7 @@ create table if not exists {schema}.swap_projection (
 );
 
 create index if not exists swap_projection_swap_type_idx
-    on {schema}.swap_projection (lower(swap_type));
+    on __SCHEMA__.swap_projection (lower(swap_type));
 
 create index if not exists swap_projection_maturity_date_idx
-    on {schema}.swap_projection (maturity_date);
+    on __SCHEMA__.swap_projection (maturity_date);

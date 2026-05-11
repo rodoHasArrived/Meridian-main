@@ -57,7 +57,7 @@ public sealed class SwapProjectionService : ISwapReferenceService
             row.SwapType,
             row.EffectiveDate,
             row.MaturityDate,
-            row.LifecycleState,
+            row.LifecycleStat,
             legs,
             row.PrimaryIdentifierValue,
             row.Version);

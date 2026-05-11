@@ -1,5 +1,5 @@
 -- Migration 011: commodity reference projection table
-create table if not exists {schema}.commodity_projection (
+create table if not exists __SCHEMA__.commodity_projection (
     security_id              uuid          not null primary key,
     display_name             text          not null,
     currency                 text          not null,
@@ -13,7 +13,7 @@ create table if not exists {schema}.commodity_projection (
 );
 
 create index if not exists commodity_projection_type_idx
-    on {schema}.commodity_projection (lower(commodity_type));
+    on __SCHEMA__.commodity_projection (lower(commodity_type));
 
 create index if not exists commodity_projection_exchange_idx
-    on {schema}.commodity_projection (exchange_code);
+    on __SCHEMA__.commodity_projection (exchange_code);
