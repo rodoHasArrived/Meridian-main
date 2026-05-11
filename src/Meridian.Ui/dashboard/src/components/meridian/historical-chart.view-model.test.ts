@@ -2,11 +2,16 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getHistoricalBars } from "@/lib/api";
 import {
+  COMPARE_SYMBOL_LIMIT,
   HISTORICAL_CHART_TIMEFRAMES,
   buildCandlestickChartViewModel,
+  buildCompareChartViewModel,
   buildHistoricalChartSparklineViewModel,
   buildHistoricalChartStatePanel,
+  computeBollingerBands,
   computeChartStats,
+  computePercentChangeSeries,
+  computeRsi,
   computeSimpleMovingAverage,
   useHistoricalChartViewModel
 } from "@/components/meridian/historical-chart.view-model";
@@ -330,6 +335,134 @@ describe("computeSimpleMovingAverage", () => {
   });
 });
 
+describe("computeBollingerBands", () => {
+  it("returns null until the period is reached, then a band per index", () => {
+    const bands = computeBollingerBands([1, 2, 3, 4, 5], 3, 2);
+    expect(bands[0]).toBeNull();
+    expect(bands[1]).toBeNull();
+    expect(bands[2]).not.toBeNull();
+    expect(bands[2]!.middle).toBeCloseTo(2, 5);
+    expect(bands[2]!.upper).toBeGreaterThan(bands[2]!.middle);
+    expect(bands[2]!.lower).toBeLessThan(bands[2]!.middle);
+  });
+
+  it("collapses to middle when all values are identical", () => {
+    const bands = computeBollingerBands([5, 5, 5, 5, 5], 3, 2);
+    const last = bands[bands.length - 1]!;
+    expect(last.middle).toBeCloseTo(5, 5);
+    expect(last.upper).toBeCloseTo(5, 5);
+    expect(last.lower).toBeCloseTo(5, 5);
+  });
+
+  it("returns all nulls when there are fewer values than the period", () => {
+    expect(computeBollingerBands([1, 2], 5, 2)).toEqual([null, null]);
+  });
+
+  it("guards against non-positive period without throwing", () => {
+    expect(computeBollingerBands([1, 2, 3], 0, 2)).toEqual([null, null, null]);
+  });
+});
+
+describe("computeRsi", () => {
+  it("returns 100 when every change is a gain (avgLoss zero)", () => {
+    const closes = [1, 2, 3, 4, 5, 6];
+    const rsi = computeRsi(closes, 3);
+    expect(rsi[0]).toBeNull();
+    expect(rsi[2]).toBeNull();
+    expect(rsi[3]).toBe(100);
+    expect(rsi[5]).toBe(100);
+  });
+
+  it("returns ~50 when alternating gains and losses cancel out", () => {
+    const closes = [10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10];
+    const rsi = computeRsi(closes, 14);
+    expect(rsi[14]).not.toBeNull();
+    expect(rsi[14]!).toBeGreaterThan(40);
+    expect(rsi[14]!).toBeLessThan(60);
+  });
+
+  it("returns all nulls when there are not enough values", () => {
+    expect(computeRsi([1, 2, 3], 5)).toEqual([null, null, null]);
+  });
+
+  it("guards against non-positive period without throwing", () => {
+    expect(computeRsi([1, 2, 3], 0)).toEqual([null, null, null]);
+  });
+});
+
+describe("candlestick indicators visibility", () => {
+  function buildClimbingBars(count: number) {
+    return Array.from({ length: count }, (_, i) =>
+      bar(
+        new Date(2026, 4, 1, 14, 30 + i).toISOString(),
+        100 + i - 0.5,
+        100 + i + 1,
+        100 + i - 1,
+        100 + i,
+        1000 + i
+      )
+    );
+  }
+
+  it("hides SMA when sma visibility is false", () => {
+    const bars = buildClimbingBars(25);
+    const vm = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "AAPL",
+      timeframe: "1D",
+      indicators: { sma: false, bollinger: false, rsi: false }
+    });
+    expect(vm?.smaOverlays).toHaveLength(0);
+    expect(vm?.bollingerOverlay).toBeNull();
+    expect(vm?.rsiPanel).toBeNull();
+  });
+
+  it("emits Bollinger overlay when bollinger visibility is true and enough bars exist", () => {
+    const bars = buildClimbingBars(25);
+    const vm = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "AAPL",
+      timeframe: "1D",
+      indicators: { sma: false, bollinger: true, rsi: false }
+    });
+    expect(vm?.bollingerOverlay).not.toBeNull();
+    expect(vm?.bollingerOverlay?.label).toContain("Bollinger");
+    expect(vm?.bollingerOverlay?.upperPoints.length).toBeGreaterThan(0);
+    expect(vm?.bollingerOverlay?.lowerPoints.length).toBeGreaterThan(0);
+    expect(vm?.bollingerOverlay?.bandPath).toContain("Z");
+  });
+
+  it("emits RSI panel with reference lines when rsi visibility is true", () => {
+    const bars = buildClimbingBars(25);
+    const vm = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "AAPL",
+      timeframe: "1D",
+      indicators: { sma: false, bollinger: false, rsi: true }
+    });
+    expect(vm?.rsiPanel).not.toBeNull();
+    expect(vm?.rsiPanel?.period).toBe(14);
+    expect(vm?.rsiPanel?.overboughtY).toBeLessThan(vm!.rsiPanel!.oversoldY);
+    expect(vm?.rsiPanel?.lastValue).not.toBeNull();
+    // Climbing series should reach overbought
+    expect(vm?.rsiPanel?.lastValueTone).toBe("overbought");
+    // Total chart viewBox grows when RSI is enabled
+    const heightWithRsi = Number(vm!.viewBox.split(" ")[3]);
+    const vmNoRsi = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "AAPL",
+      timeframe: "1D",
+      indicators: { sma: false, bollinger: false, rsi: false }
+    });
+    const heightNoRsi = Number(vmNoRsi!.viewBox.split(" ")[3]);
+    expect(heightWithRsi).toBeGreaterThan(heightNoRsi);
+  });
+});
+
 describe("useHistoricalChartViewModel", () => {
   it("defaults to candles chart mode and exposes a working toggle", async () => {
     vi.mocked(getHistoricalBars).mockResolvedValue({
@@ -353,6 +486,29 @@ describe("useHistoricalChartViewModel", () => {
     expect(result.current.activeChartMode).toBe("line");
     expect(result.current.chartModeOptions.find((o) => o.mode === "line")?.ariaPressed).toBe(true);
     expect(result.current.chartModeOptions.find((o) => o.mode === "candles")?.ariaPressed).toBe(false);
+  });
+
+  it("exposes indicator toggles defaulting to SMA on, Bollinger off, RSI off", async () => {
+    vi.mocked(getHistoricalBars).mockResolvedValue({
+      success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
+      from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
+      queryTimeMs: 0, bars: []
+    });
+
+    const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
+
+    expect(result.current.indicators).toEqual({ sma: true, bollinger: false, rsi: false });
+    expect(result.current.indicatorOptions.map((o) => o.id)).toEqual(["sma", "bollinger", "rsi"]);
+
+    const rsiOption = result.current.indicatorOptions.find((o) => o.id === "rsi");
+    expect(rsiOption?.ariaPressed).toBe(false);
+
+    await act(async () => {
+      rsiOption?.toggle();
+    });
+
+    expect(result.current.indicators.rsi).toBe(true);
+    expect(result.current.indicatorOptions.find((o) => o.id === "rsi")?.ariaPressed).toBe(true);
   });
 
   it("aborts superseded historical-bar requests", async () => {
@@ -397,5 +553,179 @@ describe("useHistoricalChartViewModel", () => {
 
     unmount();
     expect(secondSignal?.aborted).toBe(false);
+  });
+
+  it("manages compare symbols: add, dedupe, base-conflict, limit, remove, clear", async () => {
+    vi.mocked(getHistoricalBars).mockResolvedValue({
+      success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
+      from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
+      queryTimeMs: 0, bars: []
+    });
+
+    const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
+    expect(result.current.compareActive).toBe(false);
+    expect(result.current.compareChips).toHaveLength(0);
+
+    await act(async () => {
+      result.current.addCompareSymbol("msft");
+    });
+    expect(result.current.compareChips.map((c) => c.symbol)).toEqual(["MSFT"]);
+    expect(result.current.compareActive).toBe(true);
+
+    // Dedupe: adding same symbol again is rejected
+    await act(async () => {
+      result.current.addCompareSymbol("MSFT");
+    });
+    expect(result.current.compareErrorMessage).toContain("already in the comparison");
+    expect(result.current.compareChips).toHaveLength(1);
+
+    // Base-conflict: adding the base symbol is rejected
+    await act(async () => {
+      result.current.addCompareSymbol("AAPL");
+    });
+    expect(result.current.compareErrorMessage).toContain("base symbol");
+
+    // Fill up to the limit
+    for (let i = 0; i < COMPARE_SYMBOL_LIMIT - 1; i++) {
+      await act(async () => {
+        result.current.addCompareSymbol(`SYM${i}`);
+      });
+    }
+    expect(result.current.compareChips).toHaveLength(COMPARE_SYMBOL_LIMIT);
+
+    await act(async () => {
+      result.current.addCompareSymbol("EXTRA");
+    });
+    expect(result.current.compareErrorMessage).toContain(`limited to ${COMPARE_SYMBOL_LIMIT}`);
+
+    // Remove one
+    await act(async () => {
+      result.current.removeCompareSymbol("MSFT");
+    });
+    expect(result.current.compareChips.map((c) => c.symbol)).not.toContain("MSFT");
+
+    // Clear all
+    await act(async () => {
+      result.current.clearCompareSymbols();
+    });
+    expect(result.current.compareChips).toHaveLength(0);
+    expect(result.current.compareActive).toBe(false);
+  });
+
+  it("assigns distinct colors to each compare symbol", async () => {
+    vi.mocked(getHistoricalBars).mockResolvedValue({
+      success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
+      from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
+      queryTimeMs: 0, bars: []
+    });
+
+    const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
+
+    await act(async () => {
+      result.current.addCompareSymbol("MSFT");
+      result.current.addCompareSymbol("GOOG");
+    });
+
+    const colors = result.current.compareChips.map((c) => c.color);
+    expect(new Set(colors).size).toBe(colors.length);
+  });
+});
+
+describe("computePercentChangeSeries", () => {
+  it("returns an empty array when input bars are empty", () => {
+    expect(computePercentChangeSeries([])).toEqual([]);
+  });
+
+  it("normalizes to percent change off the first bar's close", () => {
+    const bars = [
+      bar("2026-05-01T14:30:00Z", 100, 100, 100, 100, 1),
+      bar("2026-05-01T14:31:00Z", 100, 100, 100, 110, 1),
+      bar("2026-05-01T14:32:00Z", 100, 100, 100, 90, 1)
+    ];
+    const series = computePercentChangeSeries(bars);
+    expect(series).toHaveLength(3);
+    expect(series[0]!.changePct).toBeCloseTo(0, 5);
+    expect(series[1]!.changePct).toBeCloseTo(10, 5);
+    expect(series[2]!.changePct).toBeCloseTo(-10, 5);
+  });
+
+  it("guards against a zero or non-finite base close", () => {
+    const bars = [bar("2026-05-01T14:30:00Z", 0, 0, 0, 0, 0)];
+    expect(computePercentChangeSeries(bars)).toEqual([]);
+  });
+});
+
+describe("buildCompareChartViewModel", () => {
+  function makeBars(start: string, changes: number[]) {
+    return changes.map((c, i) =>
+      bar(
+        new Date(new Date(start).getTime() + i * 60_000).toISOString(),
+        100 + c - 0.1,
+        100 + c + 0.1,
+        100 + c - 0.2,
+        100 + c,
+        100
+      )
+    );
+  }
+
+  it("returns null when there are no points across any series", () => {
+    const vm = buildCompareChartViewModel({
+      baseSymbol: "AAPL",
+      baseBars: [],
+      compareSymbols: [],
+      compareStates: {},
+      timeframe: "1D"
+    });
+    expect(vm).toBeNull();
+  });
+
+  it("renders base + compare series, includes zero-line, and computes last percent change", () => {
+    const baseBars = makeBars("2026-05-01T14:30:00Z", [0, 1, 2, 3]);
+    const compareBars = makeBars("2026-05-01T14:30:00Z", [0, -1, 1, 5]);
+    const vm = buildCompareChartViewModel({
+      baseSymbol: "AAPL",
+      baseBars,
+      compareSymbols: ["MSFT"],
+      compareStates: { MSFT: { status: "ready", bars: compareBars } },
+      timeframe: "1D"
+    });
+    expect(vm).not.toBeNull();
+    expect(vm!.series.map((s) => s.symbol)).toEqual(["AAPL", "MSFT"]);
+    const base = vm!.series.find((s) => s.symbol === "AAPL")!;
+    expect(base.isBase).toBe(true);
+    expect(base.lastChangePct).toBeCloseTo(3, 1);
+    expect(base.lastChangeTone).toBe("positive");
+
+    const msft = vm!.series.find((s) => s.symbol === "MSFT")!;
+    expect(msft.lastChangePct).toBeCloseTo(5, 1);
+    expect(msft.points.split(" ")).toHaveLength(4);
+
+    // Zero line is somewhere on the chart
+    expect(vm!.zeroLineY).toBeGreaterThanOrEqual(0);
+    expect(vm!.zeroLineY).toBeLessThanOrEqual(vm!.height);
+  });
+
+  it("surfaces loading/error/empty status on compare series with no points", () => {
+    const baseBars = makeBars("2026-05-01T14:30:00Z", [0, 1, 2]);
+    const vm = buildCompareChartViewModel({
+      baseSymbol: "AAPL",
+      baseBars,
+      compareSymbols: ["MSFT", "GOOG"],
+      compareStates: {
+        MSFT: { status: "loading", bars: [] },
+        GOOG: { status: "error", bars: [] }
+      },
+      timeframe: "1D"
+    });
+
+    const msft = vm!.series.find((s) => s.symbol === "MSFT")!;
+    expect(msft.status).toBe("loading");
+    expect(msft.points).toBe("");
+    expect(msft.lastChangeLabel).toContain("Loading");
+
+    const goog = vm!.series.find((s) => s.symbol === "GOOG")!;
+    expect(goog.status).toBe("error");
+    expect(goog.lastChangeLabel).toBe("Error");
   });
 });
