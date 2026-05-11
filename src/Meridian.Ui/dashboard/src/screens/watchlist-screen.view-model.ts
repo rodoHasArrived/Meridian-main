@@ -45,11 +45,15 @@ export interface WatchlistRowViewModel {
   bidLabel: string;
   askLabel: string;
   lastPriceLabel: string;
+  changeLabel: string;
+  changePercentLabel: string;
+  dayRangeLabel: string;
   spreadLabel: string;
   quoteAgeLabel: string;
   hasQuote: boolean;
   quoteStale: boolean;
   lastTone: WatchlistPriceTone;
+  changeTone: WatchlistDetailFieldTone;
   isRemoving: boolean;
   quoteHref: string;
   quoteAriaLabel: string;
@@ -500,7 +504,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     listState,
     listDescription: buildListDescription(listState, rows.length, loadError),
     tableLabel: "Subscribed symbol watchlist",
-    tableCaption: "Subscribed symbols sorted alphabetically with status, live bid and ask, last price, spread, quote age, provider, and actions.",
+    tableCaption: "Subscribed symbols sorted alphabetically with status, live bid and ask, last price, day change, day high/low, spread, quote age, provider, and actions.",
     formLabel: "Add symbols to the watchlist",
     inputId: "add-symbol-input",
     inputPlaceholder: "Add symbols (e.g. MSFT, SPY)",
@@ -562,6 +566,11 @@ export function buildWatchlistRows(
       const quoteAgeMs = quote ? now - new Date(quote.timestamp).getTime() : null;
       const quoteStale = quoteAgeMs !== null && quoteAgeMs > QUOTE_STALE_THRESHOLD_MS;
       const lastTone = resolveLastTone(quote, priorMid);
+      const session = quote?.session ?? null;
+      const changeLabel = session ? formatChange(session.change) : "-";
+      const changePercentLabel = session ? formatChangePercent(session.changePercent) : "-";
+      const dayRangeLabel = session ? formatDayRange(session.high, session.low) : "-";
+      const changeTone = resolveChangeTone(session?.change);
 
       return {
         symbol: record.symbol,
@@ -575,11 +584,15 @@ export function buildWatchlistRows(
         bidLabel: quote ? formatPriceSize(quote.bidPrice, quote.bidSize) : "-",
         askLabel: quote ? formatPriceSize(quote.askPrice, quote.askSize) : "-",
         lastPriceLabel: quote ? formatPrice(quote.lastPrice) : "-",
+        changeLabel,
+        changePercentLabel,
+        dayRangeLabel,
         spreadLabel: quote ? formatSpread(quote.spread, quote.midPrice) : "-",
         quoteAgeLabel: quote ? formatRelative(quote.timestamp, now) : "Never",
         hasQuote: quote !== undefined,
         quoteStale,
         lastTone,
+        changeTone,
         isRemoving,
         quoteHref: `/data/quotes?symbol=${encodeURIComponent(record.symbol)}`,
         quoteAriaLabel: `View live quotes for ${record.symbol}`,
@@ -589,7 +602,7 @@ export function buildWatchlistRows(
         removeAriaLabel: isRemoving ? `Removing ${record.symbol} from watchlist` : `Remove ${record.symbol} from watchlist`,
         removeDisabledReason: isRemoving ? `${record.symbol} removal is already running.` : null,
         rowSelectAriaLabel: `Select ${record.symbol} watchlist row. ${record.symbol}. Status ${record.status}.`,
-        ariaLabel: `${record.symbol}. Status ${record.status}. Bid ${quote ? formatPriceSize(quote.bidPrice, quote.bidSize) : "not available"}. Ask ${quote ? formatPriceSize(quote.askPrice, quote.askSize) : "not available"}. Last ${quote ? formatPrice(quote.lastPrice) : "not available"}. Provider ${providerLabel}. Last event ${lastEventLabel}. ${eventCountLabel} events. History ${historyLabel}.`
+        ariaLabel: `${record.symbol}. Status ${record.status}. Bid ${quote ? formatPriceSize(quote.bidPrice, quote.bidSize) : "not available"}. Ask ${quote ? formatPriceSize(quote.askPrice, quote.askSize) : "not available"}. Last ${quote ? formatPrice(quote.lastPrice) : "not available"}. Change ${changeLabel}. Change percent ${changePercentLabel}. Day high low ${dayRangeLabel}. Provider ${providerLabel}. Last event ${lastEventLabel}. ${eventCountLabel} events. History ${historyLabel}.`
       };
     });
 }
@@ -623,6 +636,9 @@ export function buildWatchlistSelectedDetail(
       buildSelectedDetailField("Bid x size", row.bidLabel, row.hasQuote ? "default" : "muted"),
       buildSelectedDetailField("Ask x size", row.askLabel, row.hasQuote ? "default" : "muted"),
       buildSelectedDetailField("Last", row.lastPriceLabel, row.lastTone),
+      buildSelectedDetailField("Chg", row.changeLabel, row.changeTone),
+      buildSelectedDetailField("Chg%", row.changePercentLabel, row.changeTone),
+      buildSelectedDetailField("Day H/L", row.dayRangeLabel, row.hasQuote ? "default" : "muted"),
       buildSelectedDetailField("Spread", row.spreadLabel, row.hasQuote ? "default" : "muted"),
       buildSelectedDetailField("Quote age", row.quoteAgeLabel, row.quoteStale ? "warning" : row.hasQuote ? "success" : "muted"),
       buildSelectedDetailField("Provider", row.providerLabel, row.providerLabel === "No provider" ? "warning" : "default"),
@@ -1007,6 +1023,28 @@ function formatSpread(spread: number | null | undefined, mid: number | null | un
   return spread.toFixed(2);
 }
 
+function formatChange(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "-";
+  }
+
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
+}
+
+function formatChangePercent(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "-";
+  }
+
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+}
+
+function formatDayRange(high: number | null | undefined, low: number | null | undefined): string {
+  return `${formatPrice(high)} / ${formatPrice(low)}`;
+}
+
 function resolveLastTone(quote: QuotesSnapshotItem | undefined, previousMid: number | undefined): WatchlistPriceTone {
   if (!quote || quote.lastPrice === null || quote.lastPrice === undefined || previousMid === undefined) {
     return "default";
@@ -1017,6 +1055,22 @@ function resolveLastTone(quote: QuotesSnapshotItem | undefined, previousMid: num
   }
 
   if (quote.lastPrice < previousMid) {
+    return "danger";
+  }
+
+  return "default";
+}
+
+function resolveChangeTone(value: number | null | undefined): WatchlistDetailFieldTone {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "muted";
+  }
+
+  if (value > 0) {
+    return "success";
+  }
+
+  if (value < 0) {
     return "danger";
   }
 

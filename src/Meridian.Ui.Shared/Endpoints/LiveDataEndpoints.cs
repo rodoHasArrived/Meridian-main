@@ -73,6 +73,8 @@ public static class LiveDataEndpoints
                     statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
+            var sessionStats = ctx.RequestServices.GetService<SessionStatsCollector>();
+
             QuoteDataResponse? quoteDto = null;
             if (quoteCollector.TryGet(symbol, out var bbo) && bbo is not null)
             {
@@ -87,7 +89,8 @@ public static class LiveDataEndpoints
                     Spread: bbo.Spread,
                     SequenceNumber: bbo.SequenceNumber,
                     StreamId: bbo.StreamId,
-                    Venue: bbo.Venue);
+                    Venue: bbo.Venue,
+                    Session: ToSessionDto(sessionStats?.TryGet(bbo.Symbol)));
             }
 
             var response = new QuotesResponse(
@@ -115,6 +118,7 @@ public static class LiveDataEndpoints
             }
 
             var tradeCollector = ctx.RequestServices.GetService<TradeDataCollector>();
+            var sessionStats = ctx.RequestServices.GetService<SessionStatsCollector>();
             var snapshot = quoteCollector.Snapshot();
 
             HashSet<string>? filter = null;
@@ -162,7 +166,8 @@ public static class LiveDataEndpoints
                     LastTradeTimestamp: lastTs,
                     SequenceNumber: bbo.SequenceNumber,
                     StreamId: bbo.StreamId,
-                    Venue: bbo.Venue));
+                    Venue: bbo.Venue,
+                    Session: ToSessionDto(sessionStats?.TryGet(bbo.Symbol))));
             }
 
             items.Sort(static (a, b) => string.Compare(a.Symbol, b.Symbol, StringComparison.OrdinalIgnoreCase));
@@ -474,5 +479,23 @@ public static class LiveDataEndpoints
         })
         .WithName("GetDataHealth")
         .Produces(200);
+    }
+
+    private static SessionStatsDto? ToSessionDto(Meridian.Contracts.Domain.Models.SessionStats? stats)
+    {
+        if (stats is null) return null;
+        return new SessionStatsDto(
+            SessionDate: stats.SessionDate.ToString("yyyy-MM-dd"),
+            Open: stats.Open,
+            High: stats.High,
+            Low: stats.Low,
+            Last: stats.Last,
+            Volume: stats.Volume,
+            Vwap: stats.Vwap,
+            TradeCount: stats.TradeCount,
+            Change: stats.Change,
+            ChangePercent: stats.ChangePercent,
+            FirstTradeAt: stats.FirstTradeAt,
+            LastTradeAt: stats.LastTradeAt);
     }
 }

@@ -1515,6 +1515,21 @@ export interface TradingParameters {
   asOf: string;
 }
 
+export interface SessionStatsDto {
+  sessionDate: string;
+  open: number;
+  high: number;
+  low: number;
+  last: number;
+  volume: number;
+  vwap: number;
+  tradeCount: number;
+  change: number;
+  changePercent: number | null;
+  firstTradeAt: string;
+  lastTradeAt: string;
+}
+
 export interface QuoteDataResponse {
   symbol: string;
   timestamp: string;
@@ -1527,6 +1542,7 @@ export interface QuoteDataResponse {
   sequenceNumber: number;
   streamId: string | null;
   venue: string | null;
+  session: SessionStatsDto | null;
 }
 
 export interface QuotesResponse {
@@ -1550,6 +1566,7 @@ export interface QuotesSnapshotItem {
   sequenceNumber: number;
   streamId: string | null;
   venue: string | null;
+  session: SessionStatsDto | null;
 }
 
 export interface QuotesSnapshotResponse {

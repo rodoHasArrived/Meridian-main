@@ -64,7 +64,21 @@ const snapshot: QuotesSnapshotResponse = {
       lastTradeTimestamp: "2026-05-09T00:59:59.000Z",
       sequenceNumber: 42,
       streamId: "s1",
-      venue: "NASDAQ"
+      venue: "NASDAQ",
+      session: {
+        sessionDate: "2026-05-08",
+        open: 187.00,
+        high: 188.50,
+        low: 186.80,
+        last: 188.06,
+        volume: 1_250_000,
+        vwap: 187.74,
+        tradeCount: 4321,
+        change: 1.06,
+        changePercent: 0.5668,
+        firstTradeAt: "2026-05-08T13:30:00.000Z",
+        lastTradeAt: "2026-05-08T14:59:59.000Z"
+      }
     },
     {
       symbol: "MSFT",
@@ -80,7 +94,21 @@ const snapshot: QuotesSnapshotResponse = {
       lastTradeTimestamp: "2026-05-09T00:59:58.000Z",
       sequenceNumber: 99,
       streamId: "s1",
-      venue: "NASDAQ"
+      venue: "NASDAQ",
+      session: {
+        sessionDate: "2026-05-08",
+        open: 415.00,
+        high: 415.30,
+        low: 411.10,
+        last: 412.13,
+        volume: 850_000,
+        vwap: 412.55,
+        tradeCount: 3120,
+        change: -2.87,
+        changePercent: -0.6916,
+        firstTradeAt: "2026-05-08T13:30:00.000Z",
+        lastTradeAt: "2026-05-08T14:59:58.000Z"
+      }
     }
   ]
 };
@@ -143,6 +171,22 @@ describe("WatchlistScreen", () => {
       expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["MSFT", "AAPL"], expect.objectContaining({
         signal: expect.any(AbortSignal)
       }));
+    });
+  });
+
+  it("renders the day change and percent change for each symbol", async () => {
+    renderWithRouter(<WatchlistScreen />);
+
+    await waitForAsyncEffects();
+
+    const aaplRow = await screen.findByRole("row", { name: /AAPL/i });
+    const msftRow = await screen.findByRole("row", { name: /MSFT/i });
+
+    await waitFor(() => {
+      expect(within(aaplRow).getByText(/\+1\.06/)).toBeInTheDocument();
+      expect(within(aaplRow).getByText(/\+0\.57%/)).toBeInTheDocument();
+      expect(within(msftRow).getByText(/-2\.87/)).toBeInTheDocument();
+      expect(within(msftRow).getByText(/-0\.69%/)).toBeInTheDocument();
     });
   });
 

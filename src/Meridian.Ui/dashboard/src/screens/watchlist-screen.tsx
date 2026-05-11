@@ -292,6 +292,27 @@ function buildColumns(
       render: (row) => <span className={lastToneClass[row.lastTone]}>{row.lastPriceLabel}</span>
     },
     {
+      id: "change",
+      label: "Chg",
+      align: "right",
+      className: "font-mono",
+      render: (row) => <span className={detailFieldToneClass[row.changeTone]}>{row.changeLabel}</span>
+    },
+    {
+      id: "change-percent",
+      label: "Chg%",
+      align: "right",
+      className: "font-mono",
+      render: (row) => <span className={detailFieldToneClass[row.changeTone]}>{row.changePercentLabel}</span>
+    },
+    {
+      id: "day-range",
+      label: "Day H/L",
+      align: "right",
+      className: "font-mono text-muted-foreground",
+      render: (row) => row.dayRangeLabel
+    },
+    {
       id: "spread",
       label: "Spread",
       align: "right",
