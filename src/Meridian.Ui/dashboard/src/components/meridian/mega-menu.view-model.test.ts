@@ -1,0 +1,107 @@
+import { describe, expect, it, vi } from "vitest";
+import { buildMegaMenuViewModel, resolveMegaMenuKeyCommand } from "@/components/meridian/mega-menu.view-model";
+
+describe("mega menu view model", () => {
+  it("derives active section and route labels from the current path", () => {
+    const model = buildMegaMenuViewModel({
+      pathname: "/data/backfills/queued",
+      open: true,
+      openMenu: vi.fn(),
+      closeMenu: vi.fn(),
+      toggleMenu: vi.fn()
+    });
+
+    const dataSection = model.sections.find((section) => section.key === "data");
+    const backfillLink = dataSection?.links.find((link) => link.route === "/data/backfills");
+
+    expect(model.triggerAriaLabel).toBe("Close workspace navigation menu");
+    expect(model.triggerExpanded).toBe(true);
+    expect(model.triggerControlsId).toBe(model.panelId);
+    expect(dataSection).toMatchObject({
+      active: true,
+      ariaCurrent: "page"
+    });
+    expect(backfillLink).toMatchObject({
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Backfill queues, current route, Data workspace"
+    });
+    expect(dataSection?.links.find((link) => link.route === "/data")).toMatchObject({
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Provider posture, Data workspace"
+    });
+  });
+
+  it("keeps top-level routes exact so child routes own current-route state", () => {
+    const model = buildMegaMenuViewModel({
+      pathname: "/trading/readiness",
+      open: false,
+      openMenu: vi.fn(),
+      closeMenu: vi.fn(),
+      toggleMenu: vi.fn()
+    });
+
+    const tradingSection = model.sections.find((section) => section.key === "trading");
+
+    expect(model.triggerAriaLabel).toBe("Open workspace navigation menu");
+    expect(model.triggerExpanded).toBe(false);
+    expect(tradingSection).toMatchObject({ active: true, ariaCurrent: "page" });
+    expect(tradingSection?.links.find((link) => link.route === "/trading")).toMatchObject({
+      active: false,
+      ariaCurrent: undefined
+    });
+    expect(tradingSection?.links.find((link) => link.route === "/trading/readiness")).toMatchObject({
+      active: true,
+      ariaCurrent: "page"
+    });
+  });
+
+  it("surfaces implemented high-frequency workflow routes", () => {
+    const model = buildMegaMenuViewModel({
+      pathname: "/reporting/evidence",
+      open: true,
+      openMenu: vi.fn(),
+      closeMenu: vi.fn(),
+      toggleMenu: vi.fn()
+    });
+
+    const portfolioSection = model.sections.find((section) => section.key === "portfolio");
+    const accountingSection = model.sections.find((section) => section.key === "accounting");
+    const reportingSection = model.sections.find((section) => section.key === "reporting");
+    const dataSection = model.sections.find((section) => section.key === "data");
+
+    expect(portfolioSection?.links.map((link) => link.route)).toContain("/portfolio/brokerage-sync");
+    expect(accountingSection?.links.map((link) => link.route)).toContain("/accounting/security-master");
+    expect(reportingSection?.links.map((link) => link.route)).toEqual([
+      "/reporting",
+      "/reporting/report-packs",
+      "/reporting/evidence",
+      "/reporting/exports"
+    ]);
+    expect(dataSection?.links.map((link) => link.route)).toEqual([
+      "/data",
+      "/data/watchlist",
+      "/data/quotes",
+      "/data/backfills"
+    ]);
+    expect(reportingSection?.links.find((link) => link.route === "/reporting/evidence")).toMatchObject({
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Evidence, current route, Reporting workspace"
+    });
+    expect(reportingSection?.links.find((link) => link.route === "/reporting/report-packs")).toMatchObject({
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Report packs, Reporting workspace"
+    });
+  });
+
+  it("resolves close and focus-loop keyboard commands", () => {
+    expect(resolveMegaMenuKeyCommand({ key: "Escape", shiftKey: false, focusBoundary: "middle" })).toBe("close");
+    expect(resolveMegaMenuKeyCommand({ key: "Tab", shiftKey: false, focusBoundary: "last" })).toBe("focus-first");
+    expect(resolveMegaMenuKeyCommand({ key: "Tab", shiftKey: true, focusBoundary: "first" })).toBe("focus-last");
+    expect(resolveMegaMenuKeyCommand({ key: "Tab", shiftKey: false, focusBoundary: "middle" })).toBeNull();
+    expect(resolveMegaMenuKeyCommand({ key: "ArrowDown", shiftKey: false, focusBoundary: "middle" })).toBeNull();
+  });
+});

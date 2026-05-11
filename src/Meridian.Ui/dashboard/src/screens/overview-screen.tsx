@@ -2,13 +2,11 @@ import {
   Activity,
   AlertCircle,
   ArrowRight,
-  BarChart3,
   BriefcaseBusiness,
   CheckCircle2,
   Database,
   FileText,
   FlaskConical,
-  Globe,
   LineChart,
   Radio,
   RefreshCcw,
@@ -25,17 +23,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
+  buildOverviewPortfolioPanel,
   useOverviewStatusViewModel,
   type OverviewActivityRow,
   type OverviewBriefingBadgeVariant,
   type OverviewBriefingTone,
-  type OverviewFallbackStatId
+  type OverviewPortfolioPanel,
+  type OverviewValueBlocker,
+  type PortfolioPanelTone
 } from "@/screens/overview-screen.view-model";
-import type { SessionInfo, SystemOverviewResponse, WorkspaceKey } from "@/types";
+import type {
+  PortfolioWorkspaceResponse,
+  SessionInfo,
+  SystemOverviewResponse,
+  TradingWorkspaceResponse,
+  WorkspaceKey
+} from "@/types";
 
 interface OverviewScreenProps {
   data: SystemOverviewResponse | null;
   session: SessionInfo | null;
+  trading?: TradingWorkspaceResponse | null;
+  portfolio?: PortfolioWorkspaceResponse | null;
 }
 
 const systemStatusConfig = {
@@ -80,6 +89,24 @@ const activityToneConfig = {
   }
 } as const;
 
+const blockerToneConfig = {
+  default: {
+    icon: Activity,
+    rowClassName: "border-border/70 bg-secondary/20",
+    iconClassName: "text-muted-foreground"
+  },
+  warning: {
+    icon: AlertCircle,
+    rowClassName: "border-warning/30 bg-warning/5",
+    iconClassName: "text-warning"
+  },
+  danger: {
+    icon: XCircle,
+    rowClassName: "border-danger/30 bg-danger/5",
+    iconClassName: "text-danger"
+  }
+} as const;
+
 const workspaceIconConfig: Record<WorkspaceKey, { icon: ElementType; accent: string }> = {
   trading: { icon: TrendingUp, accent: "text-success" },
   portfolio: { icon: BriefcaseBusiness, accent: "text-paper" },
@@ -90,18 +117,12 @@ const workspaceIconConfig: Record<WorkspaceKey, { icon: ElementType; accent: str
   settings: { icon: Settings, accent: "text-muted-foreground" }
 };
 
-const fallbackStatIcons: Record<OverviewFallbackStatId, ElementType> = {
-  providers: Globe,
-  runs: LineChart,
-  symbols: BarChart3,
-  backfills: Activity
-};
-
-export function OverviewScreen({ data, session }: OverviewScreenProps) {
+export function OverviewScreen({ data, session, trading = null, portfolio = null }: OverviewScreenProps) {
   const vm = useOverviewStatusViewModel(data, session);
   const current = vm.current;
   const statusConfig = current ? systemStatusConfig[current.systemStatus] : null;
   const StatusIcon = statusConfig?.icon ?? Radio;
+  const portfolioPanel = buildOverviewPortfolioPanel(trading, portfolio);
 
   return (
     <div className="space-y-6">
@@ -157,6 +178,8 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
         </div>
       )}
 
+      <PortfolioPanel panel={portfolioPanel} />
+
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <Card className="border-border/70 bg-panel-strong">
           <CardHeader className="pb-3">
@@ -190,6 +213,27 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
+            <section
+              aria-label={vm.valueBlockerRegionLabel}
+              className="rounded-lg border border-border/70 bg-background/70 p-4"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="eyebrow-label">Readiness blockers</div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.valueBlockerSummary}</p>
+                </div>
+                <Badge variant={vm.hasValueBlockers ? "warning" : "success"}>
+                  {vm.hasValueBlockers ? `${vm.valueBlockers.length} open` : "Clear"}
+                </Badge>
+              </div>
+              {vm.hasValueBlockers ? (
+                <ul className="mt-3 space-y-2">
+                  {vm.valueBlockers.map((blocker) => (
+                    <ValueBlockerRow key={blocker.id} blocker={blocker} />
+                  ))}
+                </ul>
+              ) : null}
+            </section>
             {vm.priorityRoutes.map((route) => (
               <div key={route.id} className="rounded-lg border border-border/70 bg-secondary/25 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -223,13 +267,7 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
       ) : (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {vm.fallbackStats.map((stat) => (
-            <StatCard
-              key={stat.id}
-              icon={fallbackStatIcons[stat.id]}
-              label={stat.label}
-              value={stat.value}
-              tone={stat.tone}
-            />
+            <MetricCard key={stat.id} {...stat} />
           ))}
         </div>
       )}
@@ -297,33 +335,12 @@ export function OverviewScreen({ data, session }: OverviewScreenProps) {
 
 // --- Sub-components ---
 
-interface StatCardProps {
-  icon: ElementType;
-  label: string;
-  value: string;
-  tone: "default" | "success" | "warning" | "danger";
-}
-
-const toneClass: Record<StatCardProps["tone"], string> = {
+const toneClass: Record<OverviewBriefingTone, string> = {
   default: "text-foreground",
   success: "text-success",
   warning: "text-warning",
   danger: "text-danger"
 };
-
-function StatCard({ icon: Icon, label, value, tone }: StatCardProps) {
-  return (
-    <Card>
-      <CardContent className="pt-5 pb-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Icon className="size-4 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">{label}</span>
-        </div>
-        <p className={cn("text-2xl font-semibold tabular-nums", toneClass[tone])}>{value}</p>
-      </CardContent>
-    </Card>
-  );
-}
 
 interface BriefingTileProps {
   label: string;
@@ -346,6 +363,139 @@ function BriefingTile({ label, value, detail, tone, badgeVariant, ariaLabel }: B
       ) : null}
       <p className="mt-2 text-xs leading-5 text-muted-foreground">{detail}</p>
     </div>
+  );
+}
+
+function ValueBlockerRow({ blocker }: { blocker: OverviewValueBlocker }) {
+  const config = blockerToneConfig[blocker.tone];
+  const Icon = config.icon;
+
+  return (
+    <li>
+      <div
+        role="group"
+        aria-label={blocker.ariaLabel}
+        className={cn("rounded-md border px-3 py-2", config.rowClassName)}
+      >
+        <div className="flex items-start gap-3">
+          <Icon aria-hidden="true" className={cn("mt-0.5 size-4 shrink-0", config.iconClassName)} />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={blocker.badgeVariant}>{blocker.badgeLabel}</Badge>
+              <p className="text-sm font-medium text-foreground">{blocker.title}</p>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{blocker.detail}</p>
+          </div>
+        </div>
+        <Link
+          to={blocker.href}
+          className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          aria-label={blocker.ariaLabel}
+        >
+          {blocker.actionLabel}
+          <ArrowRight className="size-3" aria-hidden="true" />
+        </Link>
+      </div>
+    </li>
+  );
+}
+
+const portfolioPanelToneClass: Record<PortfolioPanelTone, string> = {
+  default: "text-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger"
+} as const;
+
+const riskBadgeVariant: Record<PortfolioPanelTone, "outline" | "success" | "warning" | "danger"> = {
+  default: "outline",
+  success: "success",
+  warning: "warning",
+  danger: "danger"
+} as const;
+
+function PortfolioPanel({ panel }: { panel: OverviewPortfolioPanel }) {
+  return (
+    <Card className="border-border/70">
+      <CardHeader className="pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="eyebrow-label">Portfolio cockpit</div>
+            <CardTitle className="mt-1 flex items-center gap-2 text-base">
+              <TrendingUp className="size-4 text-success" aria-hidden="true" />
+              Portfolio at a glance
+            </CardTitle>
+          </div>
+          <div className="flex items-center gap-2">
+            {panel.hasData && (
+              <Badge variant={riskBadgeVariant[panel.riskTone]} dot={panel.riskTone === "success"}>
+                {panel.riskState}
+              </Badge>
+            )}
+            <Button asChild variant="outline" size="sm">
+              <Link to="/trading">
+                <ArrowRight className="size-3.5" aria-hidden="true" />
+                Trading cockpit
+              </Link>
+            </Button>
+          </div>
+        </div>
+        {panel.hasData && panel.brokerageLabel !== "—" && (
+          <p className="mt-1 font-mono text-[11px] text-muted-foreground">{panel.brokerageLabel}</p>
+        )}
+      </CardHeader>
+      <CardContent>
+        {panel.hasData ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {panel.metrics.map((metric) => (
+                <MetricCard key={metric.id} {...metric} />
+              ))}
+            </div>
+            {panel.positions.length > 0 ? (
+              <div>
+                <p className="mb-2 font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  Open positions
+                </p>
+                <ul className="space-y-1.5" aria-label="Open positions overview">
+                  {panel.positions.map((pos) => (
+                    <li
+                      key={pos.key}
+                      role="group"
+                      aria-label={pos.ariaLabel}
+                      className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-xs"
+                    >
+                      <span className="min-w-[3.5rem] font-mono font-semibold text-foreground">{pos.symbol}</span>
+                      <Badge variant={pos.side === "Long" ? "outline" : "warning"} className="shrink-0 text-[10px]">
+                        {pos.side}
+                      </Badge>
+                      <span className="font-mono text-muted-foreground">{pos.quantity} shares</span>
+                      <span className="font-mono text-muted-foreground">mark {pos.markPrice}</span>
+                      <span className={cn("ml-auto font-mono font-medium", portfolioPanelToneClass[pos.pnlTone])}>
+                        {pos.unrealizedPnl}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <p className="rounded-md border border-border/60 bg-secondary/20 px-4 py-3 text-center text-xs text-muted-foreground">
+                {panel.emptyMessage}
+              </p>
+            )}
+            {panel.riskSummary ? (
+              <p className={cn("text-xs leading-5", portfolioPanelToneClass[panel.riskTone])}>
+                {panel.riskSummary}
+              </p>
+            ) : null}
+          </div>
+        ) : (
+          <p className="rounded-md border border-border/60 bg-secondary/20 px-4 py-6 text-center text-sm text-muted-foreground">
+            {panel.emptyMessage}
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

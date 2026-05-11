@@ -3,6 +3,7 @@ import {
   getCorporateActions,
   getReconciliationBreakQueue,
   getReconciliationCalibrationSummary,
+  getRunReviewPacketPath,
   getRunTrialBalance,
   getSecurityConflicts,
   getSecurityIdentity,
@@ -13,6 +14,8 @@ import {
   reviewReconciliationBreak,
   searchSecurities
 } from "@/lib/api";
+import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   CorporateAction,
   ExportAnalysisResult,
@@ -37,6 +40,7 @@ import type {
 
 export type GovernanceWorkstream = "ledger" | "reconciliation" | "security-master" | "reporting";
 export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
+export type ReconciliationBreakResolutionStatus = ResolveReconciliationBreakRequest["status"];
 export type SecurityConflictResolution = ResolveConflictRequest["resolution"];
 
 export interface SecurityMasterServices {
@@ -59,6 +63,15 @@ export interface GovernanceReportingServices {
 }
 
 export type CalibrationStatusTone = "success" | "warning" | "danger";
+export type CalibrationStatusIcon = "check" | "alert";
+
+export interface CalibrationSummaryMetricViewModel {
+  id: string;
+  label: string;
+  value: number;
+  tone: "default" | "warning";
+  ariaLabel: string;
+}
 
 export interface CalibrationProfileRowViewModel {
   toleranceProfileId: string;
@@ -75,6 +88,9 @@ export interface CalibrationSummaryViewState {
   status: ReconciliationCalibrationStatus;
   statusLabel: string;
   statusTone: CalibrationStatusTone;
+  statusIcon: CalibrationStatusIcon;
+  statusTextClassName: string;
+  statusBannerClassName: string;
   summary: string;
   asOfLabel: string;
   totalBreakCount: number;
@@ -83,6 +99,7 @@ export interface CalibrationSummaryViewState {
   pendingSignoffCount: number;
   signedOffCount: number;
   missingMetadataCount: number;
+  metricRows: CalibrationSummaryMetricViewModel[];
   profileRows: CalibrationProfileRowViewModel[];
   hasProfiles: boolean;
   profilesLabel: string;
@@ -116,10 +133,27 @@ export interface SecurityMasterDrillInServices {
   getTradingParameters: (securityId: string) => Promise<TradingParameters>;
 }
 
+export interface SecuritySearchResultColumnViewModel {
+  id: "name" | "assetClass" | "primaryId" | "currency" | "status";
+  label: string;
+}
+
+export interface SecuritySearchResultRowViewModel extends SecurityMasterEntry {
+  rowId: string;
+  isSelected: boolean;
+  selectAriaLabel: string;
+  primaryIdentifierLabel: string;
+  statusTone: "success" | "warning";
+  ariaLabel: string;
+}
+
 export interface SecuritySearchState {
   trimmedQuery: string;
   resultCount: number;
   hasResults: boolean;
+  resultsTableLabel: string;
+  resultColumns: SecuritySearchResultColumnViewModel[];
+  resultRows: SecuritySearchResultRowViewModel[];
   searchStatusText: string | null;
   searchErrorText: string | null;
   statusAnnouncement: string;
@@ -218,7 +252,63 @@ export interface ReconciliationBreakQueueState {
   statusAnnouncement: string;
 }
 
+export interface ReconciliationResolveDialogState {
+  breakId: string;
+  status: ReconciliationBreakResolutionStatus;
+  rationale: string;
+  inputId: string;
+  helpId: string;
+  formAriaLabel: string;
+  label: string;
+  placeholder: string;
+  helpText: string;
+  submitLabel: string;
+  submitAriaLabel: string;
+  cancelLabel: string;
+  cancelAriaLabel: string;
+  isSubmitDisabled: boolean;
+}
+
+export interface ReconciliationResolveDialogViewModel {
+  active: ReconciliationResolveDialogState | null;
+  open: (breakId: string, status: ReconciliationBreakResolutionStatus) => void;
+  close: () => void;
+  updateRationale: (value: string) => void;
+  submit: () => Promise<void>;
+  isOpenFor: (breakId: string) => boolean;
+}
+
+export interface ReconciliationDetailActionsViewModel {
+  breakChecklistTargetId: string;
+  breakChecklistHref: string;
+  breakChecklistLabel: string;
+  breakChecklistAriaLabel: string;
+  evidencePacketHref: string;
+  evidencePacketLabel: string;
+  evidencePacketAriaLabel: string;
+  auditPacketHref: string;
+  auditPacketLabel: string;
+  auditPacketAriaLabel: string;
+}
+
 export type CashFlowEvidenceTone = "default" | "success" | "warning" | "danger";
+
+export interface ReconciliationDetailFieldViewModel {
+  label: string;
+  value: string;
+  tone: CashFlowEvidenceTone;
+  ariaLabel: string;
+}
+
+export interface ReconciliationDetailViewState {
+  eyebrow: string;
+  title: string;
+  description: string;
+  ariaLabel: string;
+  narrative: string;
+  narrativeLabel: string;
+  fields: ReconciliationDetailFieldViewModel[];
+}
 
 export interface GovernanceCashFlowRowViewModel {
   id: string;
@@ -240,6 +330,16 @@ export interface GovernanceCashFlowViewState {
   rowGroupLabel: string;
   rows: GovernanceCashFlowRowViewModel[];
   statusAnnouncement: string;
+}
+
+export interface GovernanceLoadingViewState {
+  role: "status";
+  ariaBusy: true;
+  ariaLive: "polite";
+  titleId: string;
+  detailId: string;
+  title: string;
+  detail: string;
 }
 
 export interface ReportingProfileBadgeViewModel {
@@ -294,6 +394,14 @@ export interface GovernanceReportingViewState {
   exportStatusRole: "status" | "alert";
   exportCanRun: boolean;
   exportBusy: boolean;
+  backendLinks: GovernanceReportingBackendLink[];
+}
+
+export interface GovernanceReportingBackendLink {
+  id: string;
+  label: string;
+  href: string;
+  ariaLabel: string;
 }
 
 export type GovernanceTrialBalanceState = "ready" | "loading" | "empty" | "error";
@@ -355,6 +463,22 @@ export function useGovernanceCashFlowViewModel(
     () => buildGovernanceCashFlowViewState(cashFlow, pathname, workstream),
     [cashFlow, pathname, workstream]
   );
+}
+
+export function buildGovernanceLoadingViewState(pathname: string): GovernanceLoadingViewState {
+  const workspaceLabel = pathname.startsWith("/reporting") ? "Reporting" : "Accounting";
+  const slug = workspaceLabel.toLowerCase();
+  return {
+    role: "status",
+    ariaBusy: true,
+    ariaLive: "polite",
+    titleId: `${slug}-workspace-loading-title`,
+    detailId: `${slug}-workspace-loading-detail`,
+    title: `Loading ${workspaceLabel}`,
+    detail: workspaceLabel === "Reporting"
+      ? "Waiting for report-pack, governed export, and approval summaries from the workstation bootstrap payload."
+      : "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from the workstation bootstrap payload."
+  };
 }
 
 export function useGovernanceReportingViewModel(
@@ -444,12 +568,40 @@ export function useSecurityMasterViewModel(
   const [tradingParametersError, setTradingParametersError] = useState<string | null>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchGenerationRef = useRef(0);
+  const identityGenerationRef = useRef(0);
 
   useEffect(() => () => {
     if (searchTimerRef.current) {
       clearTimeout(searchTimerRef.current);
     }
+    searchGenerationRef.current += 1;
+    identityGenerationRef.current += 1;
   }, []);
+
+  useEffect(() => {
+    if (active) {
+      return;
+    }
+
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+      searchTimerRef.current = null;
+    }
+
+    searchGenerationRef.current += 1;
+    identityGenerationRef.current += 1;
+    setSearching(false);
+    setSelectedSecurityId(null);
+    setIdentity(null);
+    setIdentityLoading(false);
+    setIdentityError(null);
+    setCorporateActions(null);
+    setCorporateActionsLoading(false);
+    setCorporateActionsError(null);
+    setTradingParameters(null);
+    setTradingParametersLoading(false);
+    setTradingParametersError(null);
+  }, [active]);
 
   useEffect(() => {
     if (!active) {
@@ -484,10 +636,12 @@ export function useSecurityMasterViewModel(
   }, [active, services]);
 
   useEffect(() => {
-    if (!selectedSecurityId) {
+    if (!active || !selectedSecurityId) {
       setCorporateActions(null);
+      setCorporateActionsLoading(false);
       setCorporateActionsError(null);
       setTradingParameters(null);
+      setTradingParametersLoading(false);
       setTradingParametersError(null);
       return;
     }
@@ -537,7 +691,7 @@ export function useSecurityMasterViewModel(
     return () => {
       cancelled = true;
     };
-  }, [selectedSecurityId, drillInServices]);
+  }, [active, selectedSecurityId, drillInServices]);
 
   const updateQuery = useCallback((nextQuery: string) => {
     setQuery(nextQuery);
@@ -545,9 +699,11 @@ export function useSecurityMasterViewModel(
     setIdentity(null);
     setIdentityError(null);
     setSearchError(null);
+    identityGenerationRef.current += 1;
 
     if (searchTimerRef.current) {
       clearTimeout(searchTimerRef.current);
+      searchTimerRef.current = null;
     }
 
     const trimmed = nextQuery.trim();
@@ -584,6 +740,12 @@ export function useSecurityMasterViewModel(
   }, [searchDelayMs, services]);
 
   const selectSecurity = useCallback(async (securityId: string) => {
+    if (!active) {
+      return;
+    }
+
+    const generation = identityGenerationRef.current + 1;
+    identityGenerationRef.current = generation;
     setSelectedSecurityId(securityId);
     setIdentity(null);
     setIdentityError(null);
@@ -595,13 +757,19 @@ export function useSecurityMasterViewModel(
 
     try {
       const detail = await services.getIdentity(securityId);
-      setIdentity(detail);
+      if (identityGenerationRef.current === generation) {
+        setIdentity(detail);
+      }
     } catch (err) {
-      setIdentityError(toErrorMessage(err, "Identity drill-in failed."));
+      if (identityGenerationRef.current === generation) {
+        setIdentityError(toErrorMessage(err, "Identity drill-in failed."));
+      }
     } finally {
-      setIdentityLoading(false);
+      if (identityGenerationRef.current === generation) {
+        setIdentityLoading(false);
+      }
     }
-  }, [services]);
+  }, [active, services]);
 
   const resolveConflict = useCallback(async (
     conflictId: string,
@@ -627,11 +795,12 @@ export function useSecurityMasterViewModel(
       query,
       searching,
       results,
+      selectedSecurityId,
       searchError,
       identityLoading,
       identityError
     }),
-    [identityError, identityLoading, query, results, searchError, searching]
+    [identityError, identityLoading, query, results, searchError, searching, selectedSecurityId]
   );
   const conflictRows = useMemo(
     () => buildSecurityConflictRows(conflicts, conflictResolvingId),
@@ -892,12 +1061,22 @@ export function useGovernanceReconciliationViewModel(
     () => buildCalibrationSummaryViewState(calibrationSummary, calibrationLoading, calibrationError),
     [calibrationSummary, calibrationLoading, calibrationError]
   );
+  const detailActions = useMemo(
+    () => selectedReconciliation ? buildReconciliationDetailActions(selectedReconciliation) : null,
+    [selectedReconciliation]
+  );
+  const detailView = useMemo(
+    () => selectedReconciliation ? buildReconciliationDetailViewState(selectedReconciliation) : null,
+    [selectedReconciliation]
+  );
 
   return {
     reconciliationQueue,
     selectedRunId,
     selectedReconciliation,
     selectRun: setSelectedRunId,
+    detailActions,
+    detailView,
     trialBalance,
     trialBalanceLoading,
     trialBalanceErrorText: trialBalanceError,
@@ -910,6 +1089,52 @@ export function useGovernanceReconciliationViewModel(
     calibrationErrorText: calibrationError,
     calibrationView,
     ...breakQueueState
+  };
+}
+
+export function useReconciliationResolveDialogViewModel(
+  resolveBreak: (
+    breakId: string,
+    status: ReconciliationBreakResolutionStatus,
+    operatorRationale: string
+  ) => Promise<void>
+): ReconciliationResolveDialogViewModel {
+  const [dialog, setDialog] = useState<{ breakId: string; status: ReconciliationBreakResolutionStatus } | null>(null);
+  const [rationale, setRationale] = useState("");
+
+  const close = useCallback(() => {
+    setDialog(null);
+    setRationale("");
+  }, []);
+
+  const open = useCallback((breakId: string, status: ReconciliationBreakResolutionStatus) => {
+    setDialog({ breakId, status });
+    setRationale("");
+  }, []);
+
+  const submit = useCallback(async () => {
+    if (!dialog || !rationale.trim()) {
+      return;
+    }
+
+    await resolveBreak(dialog.breakId, dialog.status, rationale);
+    close();
+  }, [close, dialog, rationale, resolveBreak]);
+
+  const active = useMemo(
+    () => (dialog ? buildReconciliationResolveDialogState(dialog.breakId, dialog.status, rationale) : null),
+    [dialog, rationale]
+  );
+
+  const isOpenFor = useCallback((breakId: string) => dialog?.breakId === breakId, [dialog]);
+
+  return {
+    active,
+    open,
+    close,
+    updateRationale: setRationale,
+    submit,
+    isOpenFor
   };
 }
 
@@ -936,10 +1161,74 @@ export function resolveSelectedReconciliation(
   return queue.find((item) => item.runId === selectedRunId) ?? queue[0] ?? null;
 }
 
+export function buildReconciliationDetailActions(
+  item: GovernanceWorkspaceResponse["reconciliationQueue"][number]
+): ReconciliationDetailActionsViewModel {
+  const openBreakLabel = `${item.openBreakCount} open break${item.openBreakCount === 1 ? "" : "s"}`;
+
+  return {
+    breakChecklistTargetId: "reconciliation-break-queue",
+    breakChecklistHref: "#reconciliation-break-queue",
+    breakChecklistLabel: "Open break checklist",
+    breakChecklistAriaLabel: `Open break checklist for ${item.strategyName}; ${openBreakLabel}`,
+    evidencePacketHref: evidenceWorkbenchPath("reconciliation-review", item.runId),
+    evidencePacketLabel: "Evidence packet",
+    evidencePacketAriaLabel: `Open reconciliation evidence packet for ${item.strategyName}`,
+    auditPacketHref: getRunReviewPacketPath(item.runId),
+    auditPacketLabel: "Review audit packet",
+    auditPacketAriaLabel: `Review audit packet for ${item.strategyName}`
+  };
+}
+
+export function buildReconciliationDetailViewState(
+  item: GovernanceWorkspaceResponse["reconciliationQueue"][number]
+): ReconciliationDetailViewState {
+  const openBreakTone: CashFlowEvidenceTone = item.openBreakCount === 0 ? "success" : "warning";
+  const fields: ReconciliationDetailFieldViewModel[] = [
+    buildReconciliationDetailField("Mode", item.mode.toUpperCase(), "default"),
+    buildReconciliationDetailField("Run status", item.status, "default"),
+    buildReconciliationDetailField("Break count", String(item.breakCount), "default"),
+    buildReconciliationDetailField("Open breaks", String(item.openBreakCount), openBreakTone),
+    buildReconciliationDetailField("Last updated", item.lastUpdated, "default")
+  ];
+
+  return {
+    eyebrow: "Reconciliation detail",
+    title: item.strategyName,
+    description: `${item.runId} is currently ${item.reconciliationStatus}.`,
+    ariaLabel: `Reconciliation detail for ${item.strategyName}`,
+    narrative: buildReconciliationNarrative(item),
+    narrativeLabel: `Reconciliation narrative for ${item.strategyName}`,
+    fields
+  };
+}
+
+function buildReconciliationDetailField(
+  label: string,
+  value: string,
+  tone: CashFlowEvidenceTone
+): ReconciliationDetailFieldViewModel {
+  return {
+    label,
+    value,
+    tone,
+    ariaLabel: `${label}: ${value}`
+  };
+}
+
+const securitySearchResultColumns: SecuritySearchResultColumnViewModel[] = [
+  { id: "name", label: "Name" },
+  { id: "assetClass", label: "Asset Class" },
+  { id: "primaryId", label: "Primary ID" },
+  { id: "currency", label: "Currency" },
+  { id: "status", label: "Status" }
+];
+
 export function buildSecuritySearchState({
   query,
   searching,
   results,
+  selectedSecurityId,
   searchError,
   identityLoading,
   identityError
@@ -947,6 +1236,7 @@ export function buildSecuritySearchState({
   query: string;
   searching: boolean;
   results: SecurityMasterEntry[] | null;
+  selectedSecurityId?: string | null;
   searchError: string | null;
   identityLoading: boolean;
   identityError: string | null;
@@ -954,6 +1244,7 @@ export function buildSecuritySearchState({
   const trimmedQuery = query.trim();
   const resultCount = results?.length ?? 0;
   const hasResults = resultCount > 0;
+  const resultRows = buildSecuritySearchResultRows(results, selectedSecurityId ?? null);
   const searchErrorText = searchError
     ? searchError.startsWith("Security search failed")
       ? searchError
@@ -979,6 +1270,9 @@ export function buildSecuritySearchState({
     trimmedQuery,
     resultCount,
     hasResults,
+    resultsTableLabel: "Security search results",
+    resultColumns: securitySearchResultColumns,
+    resultRows,
     searchStatusText,
     searchErrorText,
     statusAnnouncement: buildSecurityStatusAnnouncement({
@@ -995,6 +1289,28 @@ export function buildSecuritySearchState({
 
 export function countOpenSecurityConflicts(conflicts: SecurityMasterConflict[] | null): number {
   return conflicts?.filter((conflict) => conflict.status === "Open").length ?? 0;
+}
+
+export function buildSecuritySearchResultRows(
+  results: SecurityMasterEntry[] | null,
+  selectedSecurityId: string | null
+): SecuritySearchResultRowViewModel[] {
+  return (results ?? []).map((entry) => {
+    const primaryIdentifierLabel = entry.classification.primaryIdentifierKind
+      ? `${entry.classification.primaryIdentifierKind}: ${entry.classification.primaryIdentifierValue}`
+      : "-";
+    const isSelected = selectedSecurityId === entry.securityId;
+
+    return {
+      ...entry,
+      rowId: `security-result-${entry.securityId}`,
+      isSelected,
+      selectAriaLabel: `Open identity drill-in for ${entry.displayName}`,
+      primaryIdentifierLabel,
+      statusTone: entry.status === "Active" ? "success" : "warning",
+      ariaLabel: `${entry.displayName}, ${entry.classification.assetClass}, primary identifier ${primaryIdentifierLabel}, currency ${entry.economicDefinition.currency}, status ${entry.status}${isSelected ? ", selected" : ""}.`
+    };
+  });
 }
 
 export function buildSecurityIdentityDrillInState(
@@ -1106,6 +1422,34 @@ export function buildReconciliationBreakQueueState({
       actionError: actionErrorText,
       breakCount: rows.length
     })
+  };
+}
+
+export function buildReconciliationResolveDialogState(
+  breakId: string,
+  status: ReconciliationBreakResolutionStatus,
+  rationale: string
+): ReconciliationResolveDialogState {
+  const command = status === "Resolved" ? "resolve" : "dismiss";
+  const commandLabel = status === "Resolved" ? "Resolve" : "Dismiss";
+  const inputId = `rationale-${breakId}`;
+  const helpId = `rationale-help-${breakId}`;
+
+  return {
+    breakId,
+    status,
+    rationale,
+    inputId,
+    helpId,
+    formAriaLabel: `${commandLabel} reconciliation break ${breakId}`,
+    label: `${commandLabel} rationale`,
+    placeholder: `Describe why this break is being ${command === "resolve" ? "resolved" : "dismissed"}...`,
+    helpText: "A rationale is required before this queue action can be submitted.",
+    submitLabel: `Confirm ${command}`,
+    submitAriaLabel: `Confirm ${command} for reconciliation break ${breakId}`,
+    cancelLabel: "Cancel",
+    cancelAriaLabel: `Cancel ${command} for reconciliation break ${breakId}`,
+    isSubmitDisabled: !rationale.trim()
   };
 }
 
@@ -1270,7 +1614,20 @@ export function buildGovernanceReportingViewState({
     exportStatusTone: exportStatus?.tone ?? "neutral",
     exportStatusRole: exportStatus?.role ?? "status",
     exportCanRun,
-    exportBusy
+    exportBusy,
+    backendLinks: [
+      buildGovernanceReportingBackendLink("preview", "Preview report payload", EXPORT_API_ENDPOINTS.preview),
+      buildGovernanceReportingBackendLink("formats", "List export formats", EXPORT_API_ENDPOINTS.formats)
+    ]
+  };
+}
+
+function buildGovernanceReportingBackendLink(id: string, label: string, href: string): GovernanceReportingBackendLink {
+  return {
+    id,
+    label,
+    href,
+    ariaLabel: `Open GET ${href} for ${label}`
   };
 }
 
@@ -1755,11 +2112,15 @@ export function buildCalibrationSummaryViewState(
 ): CalibrationSummaryViewState {
   const statusTone = calibrationStatusTone(summary?.status ?? null);
   const profileRows = (summary?.profiles ?? []).map(buildCalibrationProfileRow);
+  const metricRows = buildCalibrationSummaryMetrics(summary);
 
   return {
     status: summary?.status ?? "Ready",
     statusLabel: calibrationStatusLabel(summary?.status ?? null, loading),
     statusTone,
+    statusIcon: statusTone === "success" ? "check" : "alert",
+    statusTextClassName: calibrationStatusTextClass(statusTone),
+    statusBannerClassName: calibrationStatusBannerClass(statusTone),
     summary: summary?.summary ?? "",
     asOfLabel: summary?.asOf ? formatSecurityDate(summary.asOf) : "—",
     totalBreakCount: summary?.totalBreakCount ?? 0,
@@ -1768,6 +2129,7 @@ export function buildCalibrationSummaryViewState(
     pendingSignoffCount: summary?.pendingSignoffCount ?? 0,
     signedOffCount: summary?.signedOffCount ?? 0,
     missingMetadataCount: summary?.missingCalibrationMetadataCount ?? 0,
+    metricRows,
     profileRows,
     hasProfiles: profileRows.length > 0,
     profilesLabel: profileRows.length === 1 ? "1 tolerance profile" : `${profileRows.length} tolerance profiles`,
@@ -1780,6 +2142,41 @@ export function buildCalibrationSummaryViewState(
         : summary
           ? `Calibration status: ${calibrationStatusLabel(summary.status, false)}. ${summary.summary}`
           : ""
+  };
+}
+
+function buildCalibrationSummaryMetrics(
+  summary: ReconciliationCalibrationSummary | null
+): CalibrationSummaryMetricViewModel[] {
+  const totalBreakCount = summary?.totalBreakCount ?? 0;
+  const openBreakCount = summary?.openBreakCount ?? 0;
+  const criticalOpenBreakCount = summary?.criticalOpenBreakCount ?? 0;
+  const pendingSignoffCount = summary?.pendingSignoffCount ?? 0;
+  const signedOffCount = summary?.signedOffCount ?? 0;
+  const missingMetadataCount = summary?.missingCalibrationMetadataCount ?? 0;
+
+  return [
+    buildCalibrationSummaryMetric("total", "Total breaks", totalBreakCount, false),
+    buildCalibrationSummaryMetric("open", "Open", openBreakCount, openBreakCount > 0),
+    buildCalibrationSummaryMetric("critical-open", "Critical open", criticalOpenBreakCount, criticalOpenBreakCount > 0),
+    buildCalibrationSummaryMetric("pending-signoff", "Pending sign-off", pendingSignoffCount, pendingSignoffCount > 0),
+    buildCalibrationSummaryMetric("signed-off", "Signed off", signedOffCount, false),
+    buildCalibrationSummaryMetric("missing-metadata", "Missing metadata", missingMetadataCount, missingMetadataCount > 0)
+  ];
+}
+
+function buildCalibrationSummaryMetric(
+  id: string,
+  label: string,
+  value: number,
+  warn: boolean
+): CalibrationSummaryMetricViewModel {
+  return {
+    id,
+    label,
+    value,
+    tone: warn ? "warning" : "default",
+    ariaLabel: `${label}: ${value}`
   };
 }
 
@@ -1808,6 +2205,30 @@ function calibrationStatusTone(status: ReconciliationCalibrationStatus | null): 
   }
 
   return "warning";
+}
+
+function calibrationStatusTextClass(tone: CalibrationStatusTone): string {
+  if (tone === "success") {
+    return "text-success";
+  }
+
+  if (tone === "danger") {
+    return "text-danger";
+  }
+
+  return "text-warning";
+}
+
+function calibrationStatusBannerClass(tone: CalibrationStatusTone): string {
+  if (tone === "success") {
+    return "border-success/30 bg-success/5";
+  }
+
+  if (tone === "danger") {
+    return "border-danger/30 bg-danger/5";
+  }
+
+  return "border-warning/30 bg-warning/5";
 }
 
 function calibrationStatusLabel(status: ReconciliationCalibrationStatus | null, loading: boolean): string {

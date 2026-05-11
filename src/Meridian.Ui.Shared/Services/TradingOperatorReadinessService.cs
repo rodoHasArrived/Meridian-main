@@ -1328,7 +1328,7 @@ public sealed class TradingOperatorReadinessService
             OperatorWorkItemKindDto.BrokerageSync => (
                 "Trading",
                 fundAccountId.HasValue
-                    ? UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.Value.ToString(), StringComparison.Ordinal)
+                    ? UiApiRoutes.WithParam(UiApiRoutes.FundAccountBrokerageSyncStatus, "accountId", fundAccountId.Value.ToString())
                     : UiApiRoutes.FundAccountBrokerageSyncAccounts,
                 "AccountPortfolio"),
             _ => (

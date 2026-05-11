@@ -1,8 +1,9 @@
-import { screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import * as api from "@/lib/api";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
+import { DATA_BACKFILL_DETAIL_PANEL_ID } from "@/screens/data-operations-screen.view-model";
 import { renderWithRouter } from "@/test/render";
 import type { BackfillProgressResponse, BackfillTriggerResult, DataOperationsWorkspaceResponse } from "@/types";
 
@@ -58,13 +59,28 @@ const data: DataOperationsWorkspaceResponse = {
 };
 
 describe("DataOperationsScreen", () => {
+  it("renders an accessible route-aware loading panel when bootstrap data is unavailable", () => {
+    renderWithRouter(<DataOperationsScreen data={null} />, { initialEntries: ["/data/backfills"] });
+
+    const loading = screen.getByRole("status", { name: "Data backfill loading state" });
+    expect(loading).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByText("Loading backfill queue")).toBeInTheDocument();
+    expect(screen.getByText("Bootstrap pending")).toBeInTheDocument();
+    expect(screen.getByText("Backfills")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /open settings to check provider setup/i })).toHaveAttribute("href", "/settings");
+    expect(screen.getByRole("link", { name: /open live quotes while data workspace loads/i })).toHaveAttribute("href", "/data/quotes");
+  });
+
   it("renders provider, backfill, and export summaries", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
-    expect(screen.getByText("Security Master command deck")).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: /search securities/i })).toHaveValue("goldman");
-    expect(screen.getByText("Search and resolve instruments")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Status: Active/i })).toBeInTheDocument();
+    expect(screen.getByText("Data operations command deck")).toBeInTheDocument();
+    expect(screen.getByText("Provider posture")).toBeInTheDocument();
+    expect(screen.getByText("Backfill repair")).toBeInTheDocument();
+    expect(screen.getByText("Export readiness")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Data workspace route focus" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Security Master in Accounting" }))
+      .toHaveAttribute("href", "/accounting/security-master");
     expect(screen.getAllByText("Provider health").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Recent exports").length).toBeGreaterThan(0);
@@ -94,8 +110,47 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByText("No providers configured")).toBeInTheDocument();
     expect(screen.getByText("No backfills queued")).toBeInTheDocument();
     expect(screen.getByText("No exports available")).toBeInTheDocument();
-    expect(screen.getByText("No backfill activity yet")).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "Backfill detail empty state" })).toHaveTextContent("No backfill activity yet");
     expect(screen.getAllByRole("status").length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("clears provider credentials after setup and suppresses browser autocomplete", async () => {
+    const user = userEvent.setup();
+
+    vi.spyOn(api, "setupProvider").mockResolvedValueOnce({
+      success: true,
+      providerId: "provider-alpaca",
+      providerName: "Alpaca paper",
+      message: "Provider configured.",
+      error: null
+    });
+
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+
+    await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
+    await user.selectOptions(screen.getByLabelText("Select provider type"), "alpaca");
+
+    const apiKey = screen.getByLabelText("Provider API key");
+    const apiSecret = screen.getByLabelText("Provider API secret");
+    expect(apiKey).toHaveAttribute("autocomplete", "new-password");
+    expect(apiSecret).toHaveAttribute("autocomplete", "new-password");
+
+    await user.type(apiKey, "key-123");
+    await user.type(apiSecret, "secret-456");
+    await user.click(screen.getByRole("button", { name: /configure and register provider/i }));
+
+    await waitFor(() => expect(api.setupProvider).toHaveBeenCalledWith(expect.objectContaining({
+      kind: "alpaca",
+      apiKey: "key-123",
+      apiSecret: "secret-456"
+    })));
+
+    expect(await screen.findByText("Alpaca paper configured")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Configure another" }));
+
+    expect(screen.getByLabelText("Provider API key")).toHaveValue("");
+    expect(screen.getByLabelText("Provider API secret")).toHaveValue("");
   });
 
   it("adapts the hero copy for deep-link routes", () => {
@@ -106,89 +161,12 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByText(/Replay is currently advancing/)).toBeInTheDocument();
   });
 
-  it("switches security master results and tab content inside the data lane", async () => {
-    const user = userEvent.setup();
-
+  it("keeps the old static Security Master workbench out of the Data route", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
-    expect(screen.getByRole("tab", { name: /overview/i })).toHaveAttribute("aria-selected", "true");
-
-    await user.click(screen.getByRole("button", { name: /Open Goldman Sachs Group Inc\. ticker GSN/i }));
-
-    expect(screen.getByText("Turquoise · United Kingdom")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("tab", { name: /company/i }));
-    expect(screen.getByRole("heading", { name: "The Goldman Sachs Group, Inc." })).toBeInTheDocument();
-    expect(screen.getByText("Coverage posture")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("tab", { name: /corporate actions/i }));
-    expect(screen.getByText("Event timeline")).toBeInTheDocument();
-    expect(screen.getByText("Quarterly dividend packet")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("tab", { name: /print \/ export/i }));
-    expect(screen.getByText("Packet contents")).toBeInTheDocument();
-    expect(screen.getAllByText("SM-PACKET-2026-05-31-GS").length).toBeGreaterThan(0);
-  });
-
-  it("supports roving keyboard navigation for security master detail tabs", async () => {
-    const user = userEvent.setup();
-
-    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
-
-    const overviewTab = screen.getByRole("tab", { name: /show overview/i });
-    expect(overviewTab).toHaveAttribute("tabindex", "0");
-
-    overviewTab.focus();
-    await user.keyboard("{ArrowRight}");
-
-    const companyTab = screen.getByRole("tab", { name: /show company/i });
-    await waitFor(() => expect(companyTab).toHaveAttribute("aria-selected", "true"));
-    expect(companyTab).toHaveAttribute("tabindex", "0");
-    expect(overviewTab).toHaveAttribute("tabindex", "-1");
-    await waitFor(() => expect(companyTab).toHaveFocus());
-
-    await user.keyboard("{End}");
-    const printTab = screen.getByRole("tab", { name: /show print \/ export/i });
-    await waitFor(() => expect(printTab).toHaveAttribute("aria-selected", "true"));
-    expect(screen.getByText("Packet contents")).toBeInTheDocument();
-
-    await user.keyboard("{Home}");
-    await waitFor(() => expect(overviewTab).toHaveAttribute("aria-selected", "true"));
-    expect(screen.getByText("Identifier groups")).toBeInTheDocument();
-  });
-
-  it("reveals pending and inactive matches when the status filter is expanded", async () => {
-    const user = userEvent.setup();
-
-    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
-
-    expect(screen.queryByRole("button", { name: /ticker GS\.DR/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /ticker GSL/i })).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /Status: Active/i }));
-
-    expect(screen.getByRole("button", { name: /Status: All/i })).toBeInTheDocument();
-    expect(screen.getByText("7 results")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /ticker GS\.DR/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /ticker GSL/i })).toBeInTheDocument();
-  });
-
-  it("offers a reset path when a security master search returns no rows", async () => {
-    const user = userEvent.setup();
-
-    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
-
-    const searchBox = screen.getByRole("textbox", { name: /search securities/i });
-
-    await user.clear(searchBox);
-    await user.type(searchBox, "zzzz");
-
-    expect(screen.getByText("No matching securities")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /reset to default search/i }));
-
-    expect(screen.queryByText("No matching securities")).not.toBeInTheDocument();
-    expect(searchBox).toHaveValue("goldman");
+    expect(screen.queryByRole("textbox", { name: /search securities/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: /show overview/i })).not.toBeInTheDocument();
+    expect(screen.queryByText("Security Master command deck")).not.toBeInTheDocument();
   });
 
   it("switches the detail panel when a backfill row is selected", async () => {
@@ -197,13 +175,19 @@ describe("DataOperationsScreen", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
     const reviewBackfill = screen.getByRole("button", { name: /BF-1044/i });
+    const runningBackfill = screen.getByRole("button", { name: /BF-1042/i });
 
-    expect(screen.getByRole("button", { name: /BF-1042/i })).toHaveAttribute("aria-pressed", "true");
-    expect(reviewBackfill).toHaveAttribute("aria-controls", "backfill-detail-bf-1044");
+    expect(runningBackfill).toHaveAttribute("aria-pressed", "true");
+    expect(runningBackfill).toHaveAttribute("aria-expanded", "true");
+    expect(runningBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
+    expect(reviewBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
+    expect(reviewBackfill).toHaveAttribute("aria-expanded", "false");
 
     await user.click(reviewBackfill);
 
     expect(reviewBackfill).toHaveAttribute("aria-pressed", "true");
+    expect(reviewBackfill).toHaveAttribute("aria-expanded", "true");
+    expect(runningBackfill).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("region", { name: /backfill detail for BF-1044/i })).toBeInTheDocument();
     expect(screen.getAllByText("Options chains / 7d").length).toBeGreaterThan(0);
     expect(screen.getByText(/waiting on operator review/i)).toBeInTheDocument();
@@ -236,7 +220,9 @@ describe("DataOperationsScreen", () => {
     expect(disabledPreview).toBeDisabled();
     expect(disabledPreview).toHaveAttribute("title", "Enter at least one symbol before previewing a backfill.");
 
-    await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "AAPL");
+    fireEvent.change(screen.getByRole("textbox", { name: "Backfill symbols" }), {
+      target: { value: "AAPL" }
+    });
 
     expect(screen.getByRole("button", { name: "Preview backfill request" })).toBeEnabled();
     expect(screen.getByText("Backfill request is ready to preview.")).toBeInTheDocument();
@@ -273,6 +259,49 @@ describe("DataOperationsScreen", () => {
       expect(previewStatus).toHaveTextContent("2024-01-01 to 2024-01-31");
     });
     expect(screen.getByText("Preview is ready. Review the summary before running.")).toBeInTheDocument();
+  });
+
+  it("locks backfill request fields while preview is pending", async () => {
+    const user = userEvent.setup();
+
+    const mockPreview: BackfillTriggerResult = {
+      success: true,
+      provider: "polygon",
+      symbols: ["AAPL"],
+      from: "2024-01-01",
+      to: "2024-01-31",
+      barsWritten: 2100,
+      startedUtc: "2024-01-31T10:00:00Z",
+      completedUtc: "2024-01-31T10:00:05Z",
+      error: null
+    };
+    let resolvePreview!: (value: BackfillTriggerResult) => void;
+
+    vi.spyOn(api, "previewBackfill").mockReturnValueOnce(new Promise<BackfillTriggerResult>((resolve) => {
+      resolvePreview = resolve;
+    }));
+
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+
+    await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Backfill symbols" }), {
+      target: { value: "AAPL" }
+    });
+    await user.click(screen.getByRole("button", { name: "Preview backfill request" }));
+
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Backfill symbols" })).toBeDisabled());
+    expect(screen.getByRole("textbox", { name: "Backfill provider" })).toBeDisabled();
+    expect(screen.getByLabelText("Backfill start date")).toBeDisabled();
+    expect(screen.getByLabelText("Backfill end date")).toBeDisabled();
+    expect(screen.getByRole("textbox", { name: "Backfill symbols" }))
+      .toHaveAttribute("title", "Backfill request is running; wait for the current request to finish before editing.");
+
+    await act(async () => {
+      resolvePreview(mockPreview);
+    });
+
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Backfill symbols" })).toBeEnabled());
+    expect(screen.getByRole("status", { name: /preview ready — polygon/i })).toHaveTextContent("Preview only");
   });
 
   it("calls triggerBackfill after preview and shows success result", async () => {

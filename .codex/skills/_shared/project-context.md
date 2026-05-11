@@ -120,7 +120,8 @@ Prefer the narrowest validation command that matches the files being changed.
 - `src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs`: strategy lifecycle contract
 - `src/Meridian.Strategies/Services/StrategyRunReadService.cs`: shared run read-model seam
 - `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`: shared workstation surface
-- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: current shell orchestration anchor
+- `src/Meridian.Wpf/Shell/`: retained WPF shell route, launch, session, refresh, and presentation seams
+- `src/Meridian.Wpf/ViewModels/MainPageViewModel.cs`: retained shell compatibility view model and migration anchor
 
 ## Review Guardrails
 

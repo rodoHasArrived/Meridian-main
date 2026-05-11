@@ -2,7 +2,7 @@ import { screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
-import type { BrokerageConnectionStatus, SessionInfo, SystemOverviewResponse } from "@/types";
+import type { BrokerageConnectionStatus, PortfolioWorkspaceResponse, SessionInfo, SystemOverviewResponse } from "@/types";
 
 const session: SessionInfo = {
   displayName: "Andrew Rowden",
@@ -52,6 +52,33 @@ const alpacaConnection: BrokerageConnectionStatus = {
   maskedKeyId: "********1234"
 };
 
+const portfolio: PortfolioWorkspaceResponse = {
+  metrics: [],
+  positions: [],
+  risk: {
+    state: "Healthy",
+    summary: "No portfolio risk flags.",
+    netExposure: "$0",
+    grossExposure: "$0",
+    var95: "$0",
+    maxDrawdown: "0%",
+    activeGuardrails: [],
+    buyingPowerUsed: "0%"
+  },
+  brokerage: {
+    provider: "Alpaca",
+    account: "PA-DEMO",
+    environment: "paper",
+    connection: "Connected",
+    orderIngress: "healthy",
+    fillFeed: "healthy",
+    lastHeartbeat: "2026-05-07T12:00:00Z",
+    notes: "Paper brokerage fixture is healthy."
+  },
+  runs: [],
+  cashFlow: null
+};
+
 describe("SettingsScreen", () => {
   it("renders recent events as accessible status evidence rows", () => {
     renderWithRouter(<SettingsScreen session={session} overview={overview} />);
@@ -73,7 +100,7 @@ describe("SettingsScreen", () => {
     renderWithRouter(<SettingsScreen session={session} overview={{ ...overview, recentEvents: [] }} />);
 
     expect(screen.getAllByText("No recent events")).toHaveLength(2);
-    expect(screen.getByRole("status")).toHaveTextContent("No system events reported");
+    expect(screen.getByText("No system events reported for the active session. Diagnostic endpoints remain available below.")).toBeInTheDocument();
   });
 
   it("renders an alert state when overview data is unavailable", () => {
@@ -90,6 +117,7 @@ describe("SettingsScreen", () => {
         overview={overview}
         research={{ metrics: [], runs: [] }}
         trading={{} as never}
+        portfolio={portfolio}
         dataOperations={{ metrics: [], providers: [], backfills: [], exports: [] }}
         governance={{} as never}
         reporting={{} as never}
@@ -121,15 +149,30 @@ describe("SettingsScreen", () => {
       />
     );
 
-    expect(screen.getByText("Alpaca paper API keys")).toBeInTheDocument();
-    expect(screen.getByLabelText("Alpaca trading environment")).toHaveValue("paper");
+    expect(screen.getByText("Alpaca paper API keys").closest("#alpaca-provider-setup")).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: "Alpaca trading environment" })).toBeInTheDocument();
+    const paperEndpoint = screen.getByRole("radio", { name: "Use Alpaca paper endpoint for workstation validation" });
+    const liveEndpoint = screen.getByRole("radio", { name: "Use Alpaca live endpoint for production brokerage verification" });
+    expect(paperEndpoint).toBeChecked();
+    expect(liveEndpoint).not.toBeChecked();
+    expect(paperEndpoint).toHaveAccessibleDescription(/Paper endpoint for workstation validation.*Paper endpoint selected/s);
+    expect(liveEndpoint).toHaveAccessibleDescription(/Live endpoint for production brokerage verification.*Paper endpoint selected/s);
+    expect(screen.getByText("Enter Alpaca credentials")).toBeInTheDocument();
+    expect(screen.getAllByText("Key ID").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Needed").length).toBeGreaterThan(0);
     expect(screen.getByText("********1234")).toBeInTheDocument();
     expect(screen.getByText("PA123")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /connect \/ test/i })).toBeDisabled();
+    expect(screen.getByRole("list", { name: "Alpaca provider setup checklist" })).toBeInTheDocument();
+    expect(screen.getByText("Move from demo data to a verified paper connection before relying on readiness evidence.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Trading readiness after Alpaca account verification" })).toHaveAttribute(
+      "href",
+      "/trading/readiness"
+    );
+    expect(screen.getByRole("button", { name: /connect and test/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /clear/i })).toBeEnabled();
-    expect(screen.getByLabelText(/Key ID/)).toHaveAccessibleDescription("Stored values remain masked after refresh.");
-    expect(screen.getByLabelText(/Secret key/)).toHaveAccessibleDescription("Secret key is never displayed after submit.");
-    expect(screen.getByRole("button", { name: /connect \/ test/i })).toHaveAttribute(
+    expect(screen.getByLabelText(/Key ID/)).toHaveAccessibleDescription(/Stored values remain masked after refresh\..*Enter Alpaca credentials/s);
+    expect(screen.getByLabelText(/Secret key/)).toHaveAccessibleDescription(/Secret key is never displayed after submit\..*Enter Alpaca credentials/s);
+    expect(screen.getByRole("button", { name: /connect and test/i })).toHaveAttribute(
       "title",
       "Enter an Alpaca key ID before testing the connection."
     );
@@ -142,6 +185,7 @@ describe("SettingsScreen", () => {
         overview={overview}
         research={{ metrics: [], runs: [] }}
         trading={{} as never}
+        portfolio={portfolio}
         dataOperations={{ metrics: [], providers: [], backfills: [], exports: [] }}
         governance={{} as never}
         reporting={{} as never}
@@ -157,9 +201,11 @@ describe("SettingsScreen", () => {
       "href",
       "/api/workstation/runs/history"
     );
-    expect(screen.getByRole("link", { name: "POST /api/workstation/reconciliation/runs for Accounting Run reconciliation" })).toHaveAttribute(
-      "href",
-      "/api/workstation/reconciliation/runs"
+    expect(screen.queryByRole("link", { name: "POST /api/workstation/reconciliation/runs for Accounting Run reconciliation" })).toBeNull();
+    expect(screen.getByRole("group", {
+      name: "Reference-only POST /api/workstation/reconciliation/runs for Accounting Run reconciliation"
+    })).toHaveTextContent(
+      "Reference"
     );
   });
 

@@ -4,15 +4,19 @@ import {
   buildDiffPanel,
   buildPlotToolState,
   buildPlotToolTabs,
+  buildPromotionCashForm,
+  buildPromotionPanelState,
   buildPromotionHistoryTable,
+  buildResearchCommandStates,
   buildResearchRunLibraryState,
   buildRunDetail,
   buildRunTable,
   nextPlotToolViewForKey,
+  parsePromotionInitialCashInput,
   shouldCloseRunDetailForKey,
   toggleRunSelection
 } from "@/screens/research-screen.view-model";
-import type { MetricSnapshot, PromotionRecord, ResearchPlotToolPayload, ResearchRunRecord, RunComparisonRow, RunDiff } from "@/types";
+import type { MetricSnapshot, PromotionEvaluationResult, PromotionRecord, ResearchPlotToolPayload, ResearchRunRecord, RunDiff, RunComparisonRow } from "@/types";
 
 const runs: ResearchRunRecord[] = [
   {
@@ -110,6 +114,22 @@ const history: PromotionRecord[] = [
   }
 ];
 
+const promotionEvaluation: PromotionEvaluationResult = {
+  runId: "run-2",
+  strategyId: "strat-2",
+  strategyName: "Index Momentum",
+  sourceMode: "backtest",
+  targetMode: "paper",
+  isEligible: false,
+  sharpeRatio: 0.91,
+  maxDrawdownPercent: -0.124,
+  totalReturn: 0.019,
+  reason: "Risk review failed.",
+  found: true,
+  ready: false,
+  blockingReasons: ["Sharpe ratio below promotion threshold.", "Drawdown exceeds paper gate."]
+};
+
 const metrics: MetricSnapshot[] = [
   { id: "runs", label: "Runs", value: "24", delta: "+8%", tone: "success" },
   { id: "queued", label: "Queued", value: "3", delta: "0%", tone: "default" },
@@ -138,8 +158,27 @@ describe("research-screen view model", () => {
 
     expect(state.canCompare).toBe(true);
     expect(state.canDiff).toBe(true);
+    expect(state.compareCommand).toMatchObject({
+      label: "Compare 2 runs",
+      ariaLabel: "Compare 2 runs: Mean Reversion FX and Index Momentum",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
+    expect(state.diffCommand).toMatchObject({
+      label: "Diff 2 runs",
+      ariaLabel: "Diff 2 runs: Mean Reversion FX and Index Momentum",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
     expect(state.selectionText).toBe("Mean Reversion FX vs Index Momentum");
     expect(state.selectionDetail).toBe("Ready to compare or diff the selected run pair.");
+    expect(state.evidenceAction).toEqual({
+      label: "Evidence packet",
+      href: "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1",
+      ariaLabel: "Open Mean Reversion FX evidence packet"
+    });
     expect(state.runTable.rows[0].selectAriaLabel).toBe("Select Mean Reversion FX");
   });
 
@@ -157,6 +196,13 @@ describe("research-screen view model", () => {
 
     expect(busy.canCompare).toBe(false);
     expect(busy.compareButtonLabel).toBe("Comparing...");
+    expect(busy.compareCommand).toMatchObject({
+      label: "Comparing...",
+      disabled: true,
+      disabledReason: "Wait for the current Strategy command to finish.",
+      busy: true
+    });
+    expect(busy.diffCommand.disabledReason).toBe("Wait for the current Strategy command to finish.");
     expect(busy.statusAnnouncement).toBe("Comparing selected research runs.");
 
     const failed = buildResearchRunLibraryState({
@@ -323,6 +369,17 @@ describe("research-screen view model", () => {
     expect(plotTool.workspace.studySummary[0]).toMatchObject({ label: "Primary notebook", value: "Mean Reversion FX" });
     expect(plotTool.workspace.legendItems[1]).toMatchObject({ label: "Current", detail: "88.40 / 73.80", tone: "current" });
     expect(plotTool.workspace.focusPoint).toMatchObject({ label: "Current marker", xValueText: "88.40", yValueText: "73.80" });
+    expect(plotTool.workspace.scatterChart).toMatchObject({
+      ariaLabel: "Mean Reversion FX vs Index Momentum PlotTool scatter chart. Current marker 88.40, 73.80.",
+      xAxisLabel: "Spread (bps)",
+      yAxisLabel: "3m implied vol"
+    });
+    expect(plotTool.workspace.scatterChart.gridLines[0]).toMatchObject({ stroke: "var(--chart-grid)" });
+    expect(plotTool.workspace.scatterChart.trendLine).toMatchObject({ stroke: "var(--chart-up)", strokeDasharray: "5 4" });
+    expect(plotTool.workspace.scatterChart.marker).toMatchObject({
+      fill: "var(--state-warn-fg)",
+      labelText: "88.40, 73.80"
+    });
     expect(plotTool.workspace.signalCards[2]).toMatchObject({
       label: "Queued studies",
       value: "3",
@@ -333,6 +390,15 @@ describe("research-screen view model", () => {
     expect(plotTool.statistics.summaryTiles).toHaveLength(9);
     expect(plotTool.statistics.distributionSummary).toContain("2,211 samples");
     expect(plotTool.statistics.distributionFootnote).toContain("Latest observation 2026-04-25");
+    expect(plotTool.statistics.distributionChart.bars[0]).toMatchObject({
+      id: "distribution-bar-0",
+      heightPercent: 12,
+      tone: "base"
+    });
+    expect(plotTool.statistics.distributionChart.bars[8]).toMatchObject({
+      heightPercent: 94,
+      tone: "selected"
+    });
     expect(plotTool.statistics.summaryTiles[7]).toMatchObject({ label: "Sharpe (5d)", value: "1.41", tone: "success" });
     expect(plotTool.statistics.regression.detailItems[2]).toContain("position changes linked");
     expect(plotTool.statistics.sampleRows[0]).toMatchObject({ signalText: "Crowded vol", tone: "warning" });
@@ -370,6 +436,142 @@ describe("research-screen view model", () => {
     expect(shouldCloseRunDetailForKey("Escape")).toBe(true);
     expect(shouldCloseRunDetailForKey("Esc")).toBe(true);
     expect(shouldCloseRunDetailForKey("Enter")).toBe(false);
+  });
+
+  it("derives paper-promotion cash validation and disabled command state", () => {
+    expect(parsePromotionInitialCashInput("100000")).toBe(100000);
+    expect(parsePromotionInitialCashInput("999")).toBeNull();
+    expect(parsePromotionInitialCashInput("1000.50")).toBeNull();
+    expect(parsePromotionInitialCashInput("")).toBeNull();
+
+    const valid = buildPromotionCashForm({
+      input: "100000",
+      eligible: true,
+      promoteState: "evaluated"
+    });
+
+    expect(valid.canSubmit).toBe(true);
+    expect(valid.errorText).toBeNull();
+    expect(valid.helpText).toBe("Minimum $1,000. Use whole-dollar paper capital.");
+    expect(valid.describedBy).toBe("promote-initial-cash-help");
+
+    const invalid = buildPromotionCashForm({
+      input: "500",
+      eligible: true,
+      promoteState: "evaluated"
+    });
+
+    expect(invalid.canSubmit).toBe(false);
+    expect(invalid.errorText).toBe("Enter at least $1,000 in whole dollars.");
+
+    const creating = buildPromotionCashForm({
+      input: "100000",
+      eligible: true,
+      promoteState: "creating"
+    });
+
+    expect(creating.canSubmit).toBe(false);
+    expect(creating.submitLabel).toBe("Starting paper session...");
+  });
+
+  it("derives disabled command reasons for incomplete selections", () => {
+    const noSelection = buildResearchCommandStates({
+      selectedRuns: [],
+      hasTwoRuns: false,
+      hasOneBacktestRun: false,
+      busy: false,
+      activeCommand: null,
+      promoteState: "idle",
+      promoteBusy: false
+    });
+
+    expect(noSelection.compare).toMatchObject({
+      label: "Compare 2 runs",
+      ariaLabel: "Compare 2 runs unavailable",
+      disabled: true,
+      disabledReason: "Select exactly two runs before using this command. 0 selected."
+    });
+    expect(noSelection.diff.disabledReason).toBe("Select exactly two runs before using this command. 0 selected.");
+    expect(noSelection.promote.disabledReason).toBe("Select one completed backtest run before promoting to paper. 0 selected.");
+
+    const oneCompletedBacktest = buildResearchCommandStates({
+      selectedRuns: [runs[1]],
+      hasTwoRuns: false,
+      hasOneBacktestRun: true,
+      busy: false,
+      activeCommand: null,
+      promoteState: "idle",
+      promoteBusy: false
+    });
+
+    expect(oneCompletedBacktest.promote).toMatchObject({
+      label: "Promote to Paper",
+      ariaLabel: "Promote to Paper: evaluate Index Momentum for paper trading",
+      disabled: false,
+      disabledReason: null
+    });
+  });
+
+  it("derives paper-promotion evaluation panel state outside the view", () => {
+    const blocked = buildPromotionPanelState({
+      promoteState: "evaluated",
+      promotionEval: promotionEvaluation,
+      promotionSession: null
+    });
+
+    expect(blocked.statusRole).toBe("alert");
+    expect(blocked.statusLive).toBe("assertive");
+    expect(blocked.evaluation).toMatchObject({
+      title: "Not eligible",
+      titleTone: "danger",
+      reason: "Risk review failed.",
+      hasBlockingReasons: true,
+      blockingListLabel: "Not eligible blocking reasons"
+    });
+    expect(blocked.evaluation?.metricRows).toEqual([
+      { id: "sharpe", label: "Sharpe", value: "0.91" },
+      { id: "drawdown", label: "Max DD", value: "-12.4%" },
+      { id: "return", label: "Return", value: "1.9%" }
+    ]);
+    expect(blocked.evaluation?.blockingReasons[0]).toEqual({
+      id: "run-2-blocker-0",
+      text: "Sharpe ratio below promotion threshold."
+    });
+    expect(blocked.showCashForm).toBe(false);
+    expect(blocked.showIneligibleDismiss).toBe(true);
+
+    const eligible = buildPromotionPanelState({
+      promoteState: "evaluated",
+      promotionEval: { ...promotionEvaluation, isEligible: true, reason: "", blockingReasons: [] },
+      promotionSession: null
+    });
+
+    expect(eligible.statusRole).toBe("status");
+    expect(eligible.evaluation?.title).toBe("Eligible for paper trading");
+    expect(eligible.evaluation?.reason).toBe("Promotion evaluation returned no reason.");
+    expect(eligible.showCashForm).toBe(true);
+    expect(eligible.showIneligibleDismiss).toBe(false);
+
+    const done = buildPromotionPanelState({
+      promoteState: "done",
+      promotionEval: eligible.evaluation ? { ...promotionEvaluation, isEligible: true } : null,
+      promotionSession: {
+        sessionId: "sess-123",
+        strategyId: "strat-2",
+        strategyName: "Index Momentum",
+        initialCash: 100000,
+        createdAt: "2026-05-09T00:00:00Z",
+        closedAt: null,
+        isActive: true
+      }
+    });
+
+    expect(done.sessionCreated).toMatchObject({
+      title: "Paper session created - session sess-123",
+      detail: "Index Momentum is active with $100,000 paper capital.",
+      actionAriaLabel: "Go to Trading cockpit for paper session sess-123",
+      actionHref: "/trading"
+    });
   });
 
   it("preserves canonical run-pair ordering across toggle churn for compare continuity", () => {

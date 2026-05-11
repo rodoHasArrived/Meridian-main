@@ -1,5 +1,5 @@
-import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, Network, PauseCircle, PlayCircle, PlusCircle, RadioTower, RotateCcw, Settings, ShieldCheck, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +35,7 @@ import {
   useOrderTicketViewModel,
   usePromotionGateViewModel,
   useTradingReadinessViewModel,
+  useTradingScreenShellViewModel,
   type AcceptanceLevel,
   type OrderPreview,
   type OrderPreviewEffect,
@@ -45,6 +46,7 @@ import {
   type PromotionOutcomeLevel,
   type TradingBlotterDetail,
   type TradingDataTone,
+  type TradingWorkflowCommandState,
   type TradingConfirmViewModel,
   type TradingReadinessWorkItemRow,
   type TradingReadinessState,
@@ -69,21 +71,6 @@ const wiringTone: Record<TradingWorkspaceResponse["brokerage"]["connection"], st
   Disconnected: "text-danger"
 };
 
-const focusCopy: Record<string, { title: string; description: string }> = {
-  orders: {
-    title: "Orders blotter",
-    description: "Working and partially filled orders remain visible in real time so you can cancel, replace, or monitor fill progress without leaving the cockpit."
-  },
-  positions: {
-    title: "Position book",
-    description: "Open positions with mark prices, exposure, and unrealized P&L are refreshed from the live execution layer each time the workspace loads."
-  },
-  risk: {
-    title: "Risk guardrails",
-    description: "Paper thresholds, drawdown limits, and buying-power constraints are evaluated on every order submission and displayed here for operator review."
-  }
-};
-
 interface CockpitAcceptanceItem {
   label: string;
   value: string;
@@ -96,6 +83,23 @@ const promotionOutcomeTone: Record<PromotionOutcomeLevel, string> = {
   warning: "text-warning",
   danger: "text-danger"
 };
+
+const promotionEvaluationPanelTone = {
+  success: "border-success/30 bg-success/10 text-success",
+  warning: "border-warning/30 bg-warning/10 text-warning",
+  danger: "border-danger/30 bg-danger/10 text-danger"
+} as const;
+
+const promotionEvaluationTextTone = {
+  success: "text-success",
+  warning: "text-warning"
+} as const;
+
+const promotionChecklistDotTone = {
+  ready: "bg-success",
+  blocked: "bg-danger",
+  review: "bg-warning"
+} as const;
 
 const acceptanceTone: Record<AcceptanceLevel, string> = {
   ready: "border-success/30 bg-success/10 text-success",
@@ -132,13 +136,16 @@ const dataTonePanelClass: Record<TradingDataTone, string> = {
   muted: "border-border/70 bg-secondary/20"
 };
 
+const sessionReplayStatusPanelClass = {
+  default: "border-border/70 bg-secondary/25 text-muted-foreground",
+  success: "border-success/30 bg-success/10 text-success",
+  warning: "border-warning/30 bg-warning/10 text-warning",
+  danger: "border-danger/30 bg-danger/10 text-danger"
+} as const;
+
 export function TradingScreen({ data }: TradingScreenProps) {
   const { pathname } = useLocation();
-  const workstream = useMemo(() => {
-    if (pathname.includes("/positions")) return "positions";
-    if (pathname.includes("/risk")) return "risk";
-    return "orders";
-  }, [pathname]);
+  const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null });
   const executionEvidence = useExecutionEvidenceViewModel();
@@ -172,10 +179,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
   });
   const sessionReplay = useSessionReplayControlsViewModel();
   const promotionGate = usePromotionGateViewModel();
-
-  const [strategySheetOpen, setStrategySheetOpen] = useState(false);
-  const [replaySheetOpen, setReplaySheetOpen] = useState(false);
-  const [promotionSheetOpen, setPromotionSheetOpen] = useState(false);
 
   async function refreshSessionEvidence() {
     await Promise.all([
@@ -224,18 +227,16 @@ export function TradingScreen({ data }: TradingScreenProps) {
         <div className="min-w-0">
           <div className="eyebrow-label">Trading lane</div>
           <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
-            {focusCopy[workstream].title}
+            {shellVm.route.title}
           </h2>
           <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
-            {focusCopy[workstream].description}
+            {shellVm.route.description}
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <CockpitChip label="Route" value={pathname} />
-          <CockpitChip label="Account" value={data.brokerage.account} />
-          <CockpitChip label="Environment" value={data.brokerage.environment.toUpperCase()} />
-          <CockpitChip label="Orders" value={String(data.openOrders.length)} />
-          <CockpitChip label="Fills" value={String(data.fills.length)} />
+          {shellVm.headerChips.map((chip) => (
+            <CockpitChip key={chip.label} label={chip.label} value={chip.value} />
+          ))}
         </div>
       </section>
 
@@ -245,9 +246,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <div className="eyebrow-label">Trading Lane</div>
             <CardTitle className="flex items-center gap-2">
               <RadioTower className="h-5 w-5 text-primary" />
-              {focusCopy[workstream].title}
+              {shellVm.route.title}
             </CardTitle>
-            <CardDescription>{focusCopy[workstream].description}</CardDescription>
+            <CardDescription>{shellVm.route.description}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <TradingHighlight
@@ -274,7 +275,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <CardTitle>Current workstream</CardTitle>
             <CardDescription>
               Deep links under{" "}
-              <code className="rounded-sm bg-background/70 px-1 py-0.5 text-xs text-foreground">{pathname}</code>{" "}
+              <code className="rounded-sm bg-background/70 px-1 py-0.5 text-xs text-foreground">{shellVm.route.pathname}</code>{" "}
               reuse the same prefetched cockpit payload.
             </CardDescription>
           </CardHeader>
@@ -292,27 +293,27 @@ export function TradingScreen({ data }: TradingScreenProps) {
         readinessVm={tradingReadiness}
       />
 
-      {/* Workflow tools strip — triggered workflows live in side panels, not inline */}
       <div
         role="region"
-        aria-label="Workflow control strip"
+        aria-label={shellVm.workflowStrip.ariaLabel}
         className="panel-surface flex flex-wrap items-center gap-3 px-4 py-3"
       >
-        <span className="mr-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Workflow tools</span>
-        <CockpitChip label="Positions" value={String(data.positions.length)} />
-        <CockpitChip label="Connection" value={data.brokerage.connection} />
-        <Button size="sm" variant="outline" aria-label="Open strategy controls" onClick={() => setStrategySheetOpen(true)}>
-          <PlayCircle className="mr-2 h-4 w-4" />
-          Strategy controls
-        </Button>
-        <Button size="sm" variant="outline" aria-label="Open session replay controls" onClick={() => setReplaySheetOpen(true)}>
-          <RotateCcw className="mr-2 h-4 w-4" />
-          Session replay
-        </Button>
-        <Button size="sm" variant="outline" aria-label="Open promotion gate" onClick={() => setPromotionSheetOpen(true)}>
-          <FlaskConical className="mr-2 h-4 w-4" />
-          Promotion gate
-        </Button>
+        <span className="mr-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          {shellVm.workflowStrip.eyebrow}
+        </span>
+        {shellVm.workflowStrip.chips.map((chip) => (
+          <CockpitChip key={chip.label} label={chip.label} value={chip.value} />
+        ))}
+        <span id={shellVm.workflowStrip.statusId} className="sr-only" aria-live="polite">
+          {shellVm.workflowStrip.statusText}
+        </span>
+        {shellVm.workflowStrip.commands.map((command) => (
+          <WorkflowPanelButton
+            key={command.id}
+            command={command}
+            onOpen={() => shellVm.openWorkflowPanel(command.id)}
+          />
+        ))}
       </div>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -478,7 +479,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                         <td className="px-3 py-2 text-right">
                           <button
                             type="button"
-                            onClick={() => confirmVm.openConfirm({ kind: "close-position", symbol: position.symbol })}
+                            onClick={() => confirmVm.openConfirm({ kind: "close-position", positionKey: position.positionKey, symbol: position.symbol })}
                             className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                             aria-label={position.closeAriaLabel}
                             title="Close position"
@@ -964,15 +965,15 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </section>
 
       {/* ---- Strategy Controls Sheet ---- */}
-      <Sheet open={strategySheetOpen} onOpenChange={setStrategySheetOpen}>
-        <SheetContent aria-labelledby="strategy-lifecycle-title" aria-describedby="strategy-lifecycle-description">
+      <Sheet open={shellVm.strategySheetOpen} onOpenChange={(open) => shellVm.setWorkflowPanelOpen("strategy", open)}>
+        <SheetContent id="strategy-lifecycle-panel" aria-labelledby="strategy-lifecycle-title" aria-describedby="strategy-lifecycle-description">
           <SheetHeader>
             <SheetTitle id="strategy-lifecycle-title">
               <PlayCircle className="h-4 w-4 text-primary" />
               {strategyLifecycle.title}
             </SheetTitle>
             <SheetDescription id="strategy-lifecycle-description">{strategyLifecycle.description}</SheetDescription>
-            <SheetCloseButton onClick={() => setStrategySheetOpen(false)} />
+            <SheetCloseButton onClick={() => shellVm.closeWorkflowPanel("strategy")} />
           </SheetHeader>
           <SheetBody>
             <div className="space-y-1">
@@ -1023,15 +1024,15 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </Sheet>
 
       {/* ---- Session Replay Sheet ---- */}
-      <Sheet open={replaySheetOpen} onOpenChange={setReplaySheetOpen}>
-        <SheetContent aria-labelledby={sessionReplay.sectionTitleId} aria-describedby={sessionReplay.sectionDescriptionId}>
+      <Sheet open={shellVm.replaySheetOpen} onOpenChange={(open) => shellVm.setWorkflowPanelOpen("replay", open)}>
+        <SheetContent id="session-replay-panel" aria-labelledby={sessionReplay.sectionTitleId} aria-describedby={sessionReplay.sectionDescriptionId}>
           <SheetHeader>
             <SheetTitle id={sessionReplay.sectionTitleId}>
               <RotateCcw className="h-4 w-4 text-primary" />
               {sessionReplay.sectionTitle}
             </SheetTitle>
             <SheetDescription id={sessionReplay.sectionDescriptionId}>{sessionReplay.sectionDescription}</SheetDescription>
-            <SheetCloseButton onClick={() => setReplaySheetOpen(false)} />
+            <SheetCloseButton onClick={() => shellVm.closeWorkflowPanel("replay")} />
           </SheetHeader>
           <SheetBody className="space-y-3">
             <div className="grid gap-2">
@@ -1075,18 +1076,41 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 </span>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <Button size="sm" onClick={sessionReplay.startReplay} disabled={!sessionReplay.canStart}>
+                <Button
+                  size="sm"
+                  onClick={sessionReplay.startReplay}
+                  disabled={!sessionReplay.canStart}
+                  disabledReason={sessionReplay.startDisabledReason}
+                >
                   {sessionReplay.startButtonLabel}
                 </Button>
-                <Button size="sm" variant="outline" onClick={sessionReplay.pauseReplay} disabled={!sessionReplay.canPause}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.pauseReplay}
+                  disabled={!sessionReplay.canPause}
+                  disabledReason={sessionReplay.pauseDisabledReason}
+                >
                   <PauseCircle className="mr-2 h-4 w-4" />
                   {sessionReplay.pauseButtonLabel}
                 </Button>
-                <Button size="sm" variant="outline" onClick={sessionReplay.resumeReplay} disabled={!sessionReplay.canResume}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.resumeReplay}
+                  disabled={!sessionReplay.canResume}
+                  disabledReason={sessionReplay.resumeDisabledReason}
+                >
                   <PlayCircle className="mr-2 h-4 w-4" />
                   {sessionReplay.resumeButtonLabel}
                 </Button>
-                <Button size="sm" variant="outline" onClick={sessionReplay.stopReplay} disabled={!sessionReplay.canStop}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.stopReplay}
+                  disabled={!sessionReplay.canStop}
+                  disabledReason={sessionReplay.stopDisabledReason}
+                >
                   <StopCircle className="mr-2 h-4 w-4" />
                   {sessionReplay.stopButtonLabel}
                 </Button>
@@ -1112,22 +1136,44 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 </span>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <Button size="sm" variant="outline" onClick={sessionReplay.seekReplay} disabled={!sessionReplay.canSeek}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.seekReplay}
+                  disabled={!sessionReplay.canSeek}
+                  disabledReason={sessionReplay.seekDisabledReason}
+                >
                   {sessionReplay.seekButtonLabel}
                 </Button>
-                <Button size="sm" variant="outline" onClick={sessionReplay.applyReplaySpeed} disabled={!sessionReplay.canApplySpeed}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={sessionReplay.applyReplaySpeed}
+                  disabled={!sessionReplay.canApplySpeed}
+                  disabledReason={sessionReplay.applySpeedDisabledReason}
+                >
                   <FastForward className="mr-2 h-4 w-4" />
                   {sessionReplay.applySpeedButtonLabel}
                 </Button>
               </div>
             </div>
 
-            <div id={sessionReplay.statusId} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-xs text-muted-foreground">
-              {sessionReplay.statusText}
+            <div
+              id={sessionReplay.statusId}
+              role={sessionReplay.statusPanel.role}
+              aria-live={sessionReplay.statusPanel.ariaLive}
+              aria-label={sessionReplay.statusPanel.ariaLabel}
+              className={cn(
+                "rounded-lg border px-3 py-2 text-xs",
+                sessionReplayStatusPanelClass[sessionReplay.statusPanel.tone]
+              )}
+            >
+              <div className="font-semibold">{sessionReplay.statusPanel.title}</div>
+              <div className="mt-1">{sessionReplay.statusPanel.detail}</div>
             </div>
-            {(sessionReplay.errorText || sessionReplay.speedValidationText || sessionReplay.seekValidationText) && (
-              <p id={sessionReplay.errorId} className="text-xs text-danger">
-                {sessionReplay.errorText ?? sessionReplay.speedValidationText ?? sessionReplay.seekValidationText}
+            {sessionReplay.activeErrorText && (
+              <p id={sessionReplay.errorId} className="sr-only">
+                {sessionReplay.activeErrorText}
               </p>
             )}
             <span className="sr-only" aria-live="polite">{sessionReplay.statusAnnouncement}</span>
@@ -1136,15 +1182,15 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </Sheet>
 
       {/* ---- Promotion Gate Sheet ---- */}
-      <Sheet open={promotionSheetOpen} onOpenChange={setPromotionSheetOpen}>
-        <SheetContent aria-labelledby="promotion-gate-title" aria-describedby="promotion-gate-description">
+      <Sheet open={shellVm.promotionSheetOpen} onOpenChange={(open) => shellVm.setWorkflowPanelOpen("promotion", open)}>
+        <SheetContent id="promotion-gate-panel" aria-labelledby="promotion-gate-title" aria-describedby="promotion-gate-description">
           <SheetHeader>
             <SheetTitle id="promotion-gate-title">
               <FlaskConical className="h-4 w-4 text-primary" />
               Backtest → Paper promotion gate
             </SheetTitle>
             <SheetDescription id="promotion-gate-description">Requires eligibility check before confirmation and audit refresh.</SheetDescription>
-            <SheetCloseButton onClick={() => setPromotionSheetOpen(false)} />
+            <SheetCloseButton onClick={() => shellVm.closeWorkflowPanel("promotion")} />
           </SheetHeader>
           <SheetBody className="space-y-3">
             <div id="promotion-action-state" className="rounded-lg border border-border/70 bg-secondary/25 px-4 py-3">
@@ -1159,110 +1205,166 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <span className="sr-only" aria-live="polite">{promotionGate.statusAnnouncement}</span>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <label htmlFor="promotion-run-id" className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Run id</span>
+              <label htmlFor={promotionGate.fields.runId.id} className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.runId.label}</span>
                 <input
-                  id="promotion-run-id"
-                  aria-label="Run id"
-                  placeholder="backtest run id"
+                  id={promotionGate.fields.runId.id}
+                  aria-label={promotionGate.fields.runId.ariaLabel}
+                  placeholder={promotionGate.fields.runId.placeholder}
                   value={promotionGate.form.runId}
-                  onChange={(e) => promotionGate.updateField("runId", e.target.value)}
-                  aria-describedby="promotion-run-help promotion-action-state"
+                  onChange={(e) => promotionGate.updateField(promotionGate.fields.runId.field, e.target.value)}
+                  aria-describedby={promotionGate.fields.runId.describedBy ?? undefined}
+                  disabled={promotionGate.busy}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
-                <span id="promotion-run-help" className="text-xs text-muted-foreground">Evaluate this run before writing a promotion decision.</span>
+                {promotionGate.fields.runId.helpText ? (
+                  <span id={promotionGate.fields.runId.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.runId.helpText}</span>
+                ) : null}
               </label>
-              <label htmlFor="promotion-operator-id" className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Operator id</span>
+              <label htmlFor={promotionGate.fields.approvedBy.id} className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.approvedBy.label}</span>
                 <input
-                  id="promotion-operator-id"
-                  aria-label="Operator id"
-                  placeholder="operator id"
+                  id={promotionGate.fields.approvedBy.id}
+                  aria-label={promotionGate.fields.approvedBy.ariaLabel}
+                  placeholder={promotionGate.fields.approvedBy.placeholder}
                   value={promotionGate.form.approvedBy}
-                  onChange={(e) => promotionGate.updateField("approvedBy", e.target.value)}
-                  aria-describedby="promotion-action-state"
+                  onChange={(e) => promotionGate.updateField(promotionGate.fields.approvedBy.field, e.target.value)}
+                  aria-describedby={promotionGate.fields.approvedBy.describedBy ?? undefined}
+                  disabled={promotionGate.busy}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  required
+                  required={promotionGate.fields.approvedBy.required}
                 />
               </label>
             </div>
-            <label htmlFor="promotion-approval-reason" className="grid gap-1 text-sm">
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Approval reason</span>
+            <label htmlFor={promotionGate.fields.approvalReason.id} className="grid gap-1 text-sm">
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.approvalReason.label}</span>
               <input
-                id="promotion-approval-reason"
-                aria-label="Approval reason"
-                placeholder="why this promotion is approved"
+                id={promotionGate.fields.approvalReason.id}
+                aria-label={promotionGate.fields.approvalReason.ariaLabel}
+                placeholder={promotionGate.fields.approvalReason.placeholder}
                 value={promotionGate.form.approvalReason}
-                onChange={(e) => promotionGate.updateField("approvalReason", e.target.value)}
-                aria-describedby="promotion-action-state"
+                onChange={(e) => promotionGate.updateField(promotionGate.fields.approvalReason.field, e.target.value)}
+                aria-describedby={promotionGate.fields.approvalReason.describedBy ?? undefined}
+                disabled={promotionGate.busy}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                required
+                required={promotionGate.fields.approvalReason.required}
               />
             </label>
-            <label htmlFor="promotion-rejection-reason" className="grid gap-1 text-sm">
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Rejection reason</span>
+            <label htmlFor={promotionGate.fields.rejectionReason.id} className="grid gap-1 text-sm">
+              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.rejectionReason.label}</span>
               <input
-                id="promotion-rejection-reason"
-                aria-label="Rejection reason"
-                placeholder="why this promotion is rejected"
+                id={promotionGate.fields.rejectionReason.id}
+                aria-label={promotionGate.fields.rejectionReason.ariaLabel}
+                placeholder={promotionGate.fields.rejectionReason.placeholder}
                 value={promotionGate.form.rejectionReason}
-                onChange={(e) => promotionGate.updateField("rejectionReason", e.target.value)}
-                aria-describedby="promotion-action-state"
+                onChange={(e) => promotionGate.updateField(promotionGate.fields.rejectionReason.field, e.target.value)}
+                aria-describedby={promotionGate.fields.rejectionReason.describedBy ?? undefined}
+                disabled={promotionGate.busy}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               />
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
-              <label htmlFor="promotion-review-notes" className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Review notes</span>
+              <label htmlFor={promotionGate.fields.reviewNotes.id} className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.reviewNotes.label}</span>
                 <input
-                  id="promotion-review-notes"
-                  aria-label="Review notes"
-                  placeholder="optional review notes"
+                  id={promotionGate.fields.reviewNotes.id}
+                  aria-label={promotionGate.fields.reviewNotes.ariaLabel}
+                  placeholder={promotionGate.fields.reviewNotes.placeholder}
                   value={promotionGate.form.reviewNotes}
-                  onChange={(e) => promotionGate.updateField("reviewNotes", e.target.value)}
+                  onChange={(e) => promotionGate.updateField(promotionGate.fields.reviewNotes.field, e.target.value)}
+                  aria-describedby={promotionGate.fields.reviewNotes.describedBy ?? undefined}
+                  disabled={promotionGate.busy}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
               </label>
-              <label htmlFor="promotion-manual-override" className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Manual override id</span>
+              <label htmlFor={promotionGate.fields.manualOverrideId.id} className="grid gap-1 text-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.manualOverrideId.label}</span>
                 <input
-                  id="promotion-manual-override"
-                  aria-label="Manual override id"
-                  placeholder="optional manual override id"
+                  id={promotionGate.fields.manualOverrideId.id}
+                  aria-label={promotionGate.fields.manualOverrideId.ariaLabel}
+                  placeholder={promotionGate.fields.manualOverrideId.placeholder}
                   value={promotionGate.form.manualOverrideId}
-                  onChange={(e) => promotionGate.updateField("manualOverrideId", e.target.value)}
+                  onChange={(e) => promotionGate.updateField(promotionGate.fields.manualOverrideId.field, e.target.value)}
+                  aria-describedby={promotionGate.fields.manualOverrideId.describedBy ?? undefined}
+                  disabled={promotionGate.busy}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
               </label>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={() => void promotionGate.evaluateGateChecks()} disabled={!promotionGate.canEvaluate}>
-                {promotionGate.evaluateButtonLabel}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => void promotionGate.evaluateGateChecks()}
+                disabled={promotionGate.evaluateCommand.disabled}
+                disabledReason={promotionGate.evaluateCommand.disabledReason}
+                busy={promotionGate.evaluateCommand.busy}
+                busyLabel={promotionGate.evaluateCommand.busyLabel}
+                aria-label={promotionGate.evaluateCommand.ariaLabel}
+              >
+                {promotionGate.evaluateCommand.label}
               </Button>
-              <Button size="sm" onClick={() => void promotionGate.promoteToPaper()} disabled={!promotionGate.canPromote}>
-                {promotionGate.promoteButtonLabel}
+              <Button
+                size="sm"
+                onClick={() => void promotionGate.promoteToPaper()}
+                disabled={promotionGate.promoteCommand.disabled}
+                disabledReason={promotionGate.promoteCommand.disabledReason}
+                busy={promotionGate.promoteCommand.busy}
+                busyLabel={promotionGate.promoteCommand.busyLabel}
+                aria-label={promotionGate.promoteCommand.ariaLabel}
+              >
+                {promotionGate.promoteCommand.label}
               </Button>
-              <Button size="sm" variant="destructive" onClick={() => void promotionGate.rejectPromotion()} disabled={!promotionGate.canReject}>
-                {promotionGate.rejectButtonLabel}
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => void promotionGate.rejectPromotion()}
+                disabled={promotionGate.rejectCommand.disabled}
+                disabledReason={promotionGate.rejectCommand.disabledReason}
+                busy={promotionGate.rejectCommand.busy}
+                busyLabel={promotionGate.rejectCommand.busyLabel}
+                aria-label={promotionGate.rejectCommand.ariaLabel}
+              >
+                {promotionGate.rejectCommand.label}
               </Button>
             </div>
-            {promotionGate.evaluation && (
+            {promotionGate.evaluationPanel && (
               <div className="space-y-3">
-                <div className="rounded-lg border border-border/60 p-3 text-xs">
-                  <p className="font-semibold">Evaluation results</p>
-                  <p className="mt-1">Eligible: <span className={promotionGate.evaluation.isEligible ? "text-success" : "text-warning"}>{promotionGate.evaluation.isEligible ? "Yes" : "No"}</span></p>
-                  <p>Sharpe: {promotionGate.evaluation.sharpeRatio.toFixed(2)} · Max DD: {promotionGate.evaluation.maxDrawdownPercent.toFixed(1)}% · Return: {promotionGate.evaluation.totalReturn.toFixed(1)}%</p>
-                  {promotionGate.evaluation.reason && <p className="mt-1 text-muted-foreground">{promotionGate.evaluation.reason}</p>}
-                  {promotionGate.evaluation.requiresHumanApproval && <p className="mt-1 text-warning">⚠ Human approval required</p>}
-                  {promotionGate.evaluation.requiresManualOverride && (
-                    <p className="mt-1 text-warning">⚠ Manual override required{promotionGate.evaluation.requiredManualOverrideKind ? `: ${promotionGate.evaluation.requiredManualOverrideKind}` : ""}</p>
+                <div
+                  role={promotionGate.evaluationPanel.role}
+                  aria-live={promotionGate.evaluationPanel.ariaLive}
+                  aria-label={promotionGate.evaluationPanel.ariaLabel}
+                  className={cn(
+                    "rounded-lg border p-3 text-xs",
+                    promotionEvaluationPanelTone[promotionGate.evaluationPanel.tone]
                   )}
-                  {promotionGate.evaluation.blockingReasons && promotionGate.evaluation.blockingReasons.length > 0 && (
+                >
+                  <p className="font-semibold">{promotionGate.evaluationPanel.title}</p>
+                  <p className="mt-1">
+                    <span className={promotionEvaluationTextTone[promotionGate.evaluationPanel.eligibleTone]}>
+                      {promotionGate.evaluationPanel.eligibleLabel}
+                    </span>
+                  </p>
+                  <dl className="mt-2 grid gap-2 sm:grid-cols-3">
+                    {promotionGate.evaluationPanel.metrics.map((metric) => (
+                      <div key={metric.id}>
+                        <dt className="font-mono text-[10px] uppercase tracking-[0.14em] opacity-75">{metric.label}</dt>
+                        <dd className="font-mono text-xs">{metric.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  {promotionGate.evaluationPanel.reason && (
+                    <p className="mt-2 text-muted-foreground">{promotionGate.evaluationPanel.reason}</p>
+                  )}
+                  {promotionGate.evaluationPanel.warnings.map((warning) => (
+                    <p key={warning.id} className="mt-1 text-warning">{warning.text}</p>
+                  ))}
+                  {promotionGate.evaluationPanel.blockingReasons.length > 0 && (
                     <div className="mt-2 rounded border border-danger/30 bg-danger/10 p-2">
                       <p className="font-semibold text-danger">Blocking reasons:</p>
-                      <ul className="mt-1 list-disc space-y-1 pl-4 text-danger">
-                        {promotionGate.evaluation.blockingReasons.map((reason) => (
-                          <li key={reason}>{reason}</li>
+                      <ul aria-label={promotionGate.evaluationPanel.blockingListLabel ?? undefined} className="mt-1 list-disc space-y-1 pl-4 text-danger">
+                        {promotionGate.evaluationPanel.blockingReasons.map((reason) => (
+                          <li key={reason.id}>{reason.text}</li>
                         ))}
                       </ul>
                     </div>
@@ -1272,10 +1374,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   <p className="font-semibold">Approval checklist</p>
                   <ul className="mt-2 space-y-2">
                     {promotionGate.approvalChecklist.map((item) => (
-                      <li key={item.label} className="flex items-start gap-2">
+                      <li key={item.id} className="flex items-start gap-2" aria-label={item.ariaLabel}>
                         <span className={cn(
                           "mt-0.5 inline-block h-2 w-2 rounded-full flex-shrink-0",
-                          item.status === "ready" ? "bg-success" : item.status === "blocked" ? "bg-danger" : "bg-warning"
+                          promotionChecklistDotTone[item.status]
                         )} />
                         <div>
                           <p className="font-medium">{item.label}</p>
@@ -1296,20 +1398,12 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <div className="rounded-lg border border-border/60 p-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Audit trail</p>
               <ul className="space-y-1 text-xs">
-                {promotionGate.history.length === 0 && (
+                {promotionGate.historyRows.length === 0 && (
                   <li className="text-muted-foreground">{promotionGate.historyEmptyText}</li>
                 )}
-                {promotionGate.history.slice(0, 4).map((record) => (
-                  <li key={record.promotionId} className="font-mono">
-                    {record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType}
-                    {record.decision ? ` · ${record.decision}` : ""}
-                    {record.sourceRunId ? ` · source: ${record.sourceRunId}` : record.runId ? ` · source: ${record.runId}` : ""}
-                    {record.targetRunId ? ` · target: ${record.targetRunId}` : ""}
-                    {record.approvedBy ? ` · by ${record.approvedBy}` : ""}
-                    {record.approvalReason ? ` · reason: ${record.approvalReason}` : ""}
-                    {record.auditReference ? ` · audit: ${record.auditReference}` : ""}
-                    {record.manualOverrideId ? ` · override: ${record.manualOverrideId}` : ""}
-                    {record.reviewNotes ? ` · notes: ${record.reviewNotes}` : ""}
+                {promotionGate.historyRows.map((record) => (
+                  <li key={record.id} className="font-mono" aria-label={record.ariaLabel}>
+                    {record.label}
                   </li>
                 ))}
               </ul>
@@ -1548,6 +1642,12 @@ function AcceptanceStatusCard({
             <Button asChild size="sm" variant="secondary">
               <Link to="/trading/readiness">Open console</Link>
             </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to={readinessVm.evidenceAction.href} aria-label={readinessVm.evidenceAction.ariaLabel}>
+                <Network className="h-4 w-4" />
+                {readinessVm.evidenceAction.label}
+              </Link>
+            </Button>
             <Button
               size="sm"
               variant="outline"
@@ -1675,6 +1775,17 @@ function OperatorWorkItemList({
                 <p className="mt-2 font-mono text-[11px] text-foreground/70">
                   {item.metadataText}
                 </p>
+              )}
+              {item.action && (
+                <div className="mt-3">
+                  <Button asChild size="sm" variant="outline" className="bg-background/40">
+                    <Link to={item.action.href} aria-label={item.action.ariaLabel}>
+                      <Settings className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>{item.action.label}</span>
+                    </Link>
+                  </Button>
+                  <span className="sr-only">{item.action.detail}</span>
+                </div>
               )}
             </li>
           ))}
@@ -1830,13 +1941,41 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
         )}
 
         {!vm.isCompleted && (
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" onClick={vm.closeConfirm} disabled={!vm.canClose}>
-              {vm.cancelButtonLabel}
-            </Button>
-            <Button onClick={() => { void vm.executeConfirm(); }} disabled={!vm.canConfirm} aria-label={vm.confirmAriaLabel}>
-              {vm.confirmButtonLabel}
-            </Button>
+          <div className="space-y-3 pt-2">
+            <label
+              htmlFor={vm.acknowledgement.id}
+              className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
+              title={vm.acknowledgement.disabledReason ?? undefined}
+            >
+              <input
+                id={vm.acknowledgement.id}
+                type="checkbox"
+                checked={vm.acknowledgement.checked}
+                disabled={vm.acknowledgement.disabled}
+                onChange={(event) => vm.setReviewAcknowledged(event.target.checked)}
+                aria-describedby={`${vm.acknowledgement.id}-description`}
+                className="mt-1 h-4 w-4 accent-primary"
+              />
+              <span>
+                <span className="block font-medium text-foreground">{vm.acknowledgement.label}</span>
+                <span id={`${vm.acknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
+                  {vm.acknowledgement.description}
+                </span>
+              </span>
+            </label>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={vm.closeConfirm} disabled={!vm.canClose}>
+                {vm.cancelButtonLabel}
+              </Button>
+              <Button
+                onClick={() => { void vm.executeConfirm(); }}
+                disabled={!vm.canConfirm}
+                disabledReason={vm.confirmDisabledReason}
+                aria-label={vm.confirmAriaLabel}
+              >
+                {vm.confirmButtonLabel}
+              </Button>
+            </div>
           </div>
         )}
 
@@ -1985,10 +2124,34 @@ function TradingHighlight({ icon: Icon, title, description }: { icon: React.Elem
 
 function CockpitChip({ label, value }: { label: string; value: string }) {
   return (
-    <span className="toolbar-chip">
+    <span className="toolbar-chip" aria-label={`${label}: ${value}`}>
       <span className="text-muted-foreground">{label}</span>
       <span className="font-mono text-foreground">{value}</span>
     </span>
+  );
+}
+
+function WorkflowPanelButton({
+  command,
+  onOpen
+}: {
+  command: TradingWorkflowCommandState;
+  onOpen: () => void;
+}) {
+  const Icon = command.icon === "strategy" ? PlayCircle : command.icon === "replay" ? RotateCcw : FlaskConical;
+
+  return (
+    <Button
+      size="sm"
+      variant={command.active ? "secondary" : "outline"}
+      aria-label={command.ariaLabel}
+      aria-expanded={command.expanded}
+      aria-controls={command.controlsId}
+      onClick={onOpen}
+    >
+      <Icon className="mr-2 h-4 w-4" aria-hidden="true" />
+      {command.label}
+    </Button>
   );
 }
 

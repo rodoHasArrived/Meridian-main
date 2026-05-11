@@ -3,22 +3,52 @@ import type {
   BrokerageHouseholdPortfolio,
   CorporateAction,
   DataOperationsWorkspaceResponse,
+  ExecutionAuditEntry,
+  ExecutionControlSnapshot,
   GovernanceWorkspaceResponse,
+  HistoricalBarsResponse,
+  OrderBookResponse,
   OperatorInbox,
+  PaperSessionDetail,
+  PaperSessionReplayVerification,
+  PaperSessionSummary,
+  PortfolioWorkspaceResponse,
+  PromotionRecord,
+  QuantParametersResponse,
+  QuantTemplatesResponse,
+  QuotesResponse,
+  QuotesSnapshotResponse,
   ReconciliationCalibrationSummary,
   ResearchWorkspaceResponse,
+  ReplayFileRecord,
   SecurityIdentityDrillIn,
   SecurityMasterConflict,
   SecurityMasterEntry,
   SessionInfo,
+  SymbolRecord,
+  SymbolStatistics,
   SystemOverviewResponse,
   TradingOperatorReadiness,
   TradingParameters,
   TradingWorkspaceResponse,
+  TradesResponse,
   WorkflowAction,
   WorkflowLibrary,
   WorkflowPresetLibrary
-} from "@/types";
+} from "../types";
+import {
+  EXECUTION_API_ENDPOINTS,
+  MARKET_DATA_API_ENDPOINTS,
+  PORTFOLIO_API_ENDPOINTS,
+  PROMOTION_API_ENDPOINTS,
+  QUANT_API_ENDPOINTS,
+  RECONCILIATION_API_ENDPOINTS,
+  REPLAY_API_ENDPOINTS,
+  SECURITY_MASTER_API_ENDPOINTS,
+  SYMBOL_API_ENDPOINTS,
+  WORKSTATION_API_ENDPOINTS,
+  brokerageConnectionStatusEndpoint
+} from "./workstation-endpoints";
 
 const fixtureSession: SessionInfo = {
   displayName: "Ops Desk",
@@ -240,6 +270,181 @@ const fixtureTradingReadiness: TradingOperatorReadiness = {
   ],
   warnings: ["Brokerage sync is older than the active paper session."]
 };
+
+const fixturePaperSessionSummaries: PaperSessionSummary[] = [
+  {
+    sessionId: "paper-dev-42",
+    strategyId: "strat-mean-reversion",
+    strategyName: "Mean Reversion FX",
+    initialCash: 100000,
+    createdAt: "2026-04-28T17:30:00Z",
+    closedAt: null,
+    isActive: true
+  }
+];
+
+const fixturePaperSessionPortfolio = {
+  cash: 98210.5,
+  portfolioValue: 101240,
+  unrealisedPnl: 1240,
+  realisedPnl: 320.75,
+  positions: [
+    {
+      symbol: "AAPL",
+      quantity: 100,
+      averageCostBasis: 176.6,
+      currentPrice: 188.4,
+      marketValue: 18840,
+      unrealisedPnl: 1180,
+      realisedPnl: 0
+    },
+    {
+      symbol: "MSFT",
+      quantity: 16,
+      averageCostBasis: 418,
+      currentPrice: 421.7,
+      marketValue: 6747.2,
+      unrealisedPnl: 59.2,
+      realisedPnl: 320.75
+    }
+  ],
+  asOf: "2026-04-28T18:14:30Z"
+};
+
+const fixturePaperSessionDetail: PaperSessionDetail = {
+  summary: fixturePaperSessionSummaries[0]!,
+  symbols: ["AAPL", "MSFT", "NVDA"],
+  portfolio: fixturePaperSessionPortfolio,
+  orderHistory: [
+    {
+      orderId: "PO-0",
+      symbol: "NVDA",
+      side: "Sell",
+      type: "Market",
+      quantity: 10,
+      filledQuantity: 10,
+      averageFillPrice: 948.2,
+      status: "Filled",
+      createdAt: "2026-04-28T18:03:00Z",
+      updatedAt: "2026-04-28T18:03:10Z"
+    },
+    {
+      orderId: "PO-1",
+      symbol: "MSFT",
+      side: "Buy",
+      type: "Limit",
+      quantity: 20,
+      filledQuantity: 0,
+      averageFillPrice: null,
+      status: "Working",
+      createdAt: "2026-04-28T18:09:00Z",
+      updatedAt: "2026-04-28T18:09:00Z"
+    }
+  ]
+};
+
+const fixturePaperSessionReplayVerification: PaperSessionReplayVerification = {
+  summary: fixturePaperSessionSummaries[0]!,
+  symbols: fixturePaperSessionDetail.symbols,
+  replaySource: "fixtures/paper-dev-42.jsonl",
+  isConsistent: true,
+  mismatchReasons: [],
+  currentPortfolio: fixturePaperSessionPortfolio,
+  replayPortfolio: fixturePaperSessionPortfolio,
+  verifiedAt: "2026-04-28T18:12:00Z",
+  comparedFillCount: 9,
+  comparedOrderCount: 3,
+  comparedLedgerEntryCount: 11,
+  lastPersistedFillAt: "2026-04-28T18:10:00Z",
+  lastPersistedOrderUpdateAt: "2026-04-28T18:10:30Z",
+  verificationAuditId: "audit-replay-dev-42"
+};
+
+const fixtureExecutionAudit: ExecutionAuditEntry[] = [
+  {
+    auditId: "audit-replay-dev-42",
+    category: "PaperSession",
+    action: "ReplayPaperSession",
+    outcome: "Completed",
+    occurredAt: "2026-04-28T18:12:00Z",
+    actor: "fixture-operator",
+    brokerName: null,
+    orderId: null,
+    runId: "run-dev-1",
+    symbol: null,
+    correlationId: "fixture-readiness",
+    message: "Replay matched the fixture paper session state.",
+    metadata: { sessionId: "paper-dev-42" }
+  }
+];
+
+const fixtureExecutionControls: ExecutionControlSnapshot = {
+  circuitBreaker: {
+    isOpen: false,
+    reason: null,
+    changedBy: "fixture-operator",
+    changedAt: "2026-04-28T17:45:00Z"
+  },
+  defaultMaxPositionSize: 50000,
+  symbolPositionLimits: {
+    AAPL: 25000,
+    MSFT: 20000,
+    NVDA: 15000
+  },
+  manualOverrides: [
+    {
+      overrideId: "override-fixture-1",
+      kind: "BypassOrderControls",
+      reason: "Fixture drill for paper-cockpit acceptance review.",
+      createdBy: "fixture-operator",
+      createdAt: "2026-04-28T17:58:00Z",
+      expiresAt: null,
+      symbol: "MSFT",
+      strategyId: "strat-mean-reversion",
+      runId: "run-dev-1"
+    }
+  ],
+  asOf: "2026-04-28T18:15:00Z"
+};
+
+const fixtureReplayFiles = {
+  files: [
+    {
+      path: "fixtures/paper-dev-42.jsonl",
+      name: "paper-dev-42.jsonl",
+      symbol: "AAPL",
+      eventType: "trades",
+      sizeBytes: 18432,
+      isCompressed: false,
+      lastModified: "2026-04-28T18:10:00Z"
+    } satisfies ReplayFileRecord
+  ],
+  total: 1,
+  timestamp: "2026-04-28T18:15:00Z"
+};
+
+const fixturePromotionHistory: PromotionRecord[] = [
+  {
+    promotionId: "promo-dev-1",
+    strategyId: "strat-mean-reversion",
+    strategyName: "Mean Reversion FX",
+    sourceRunType: "backtest",
+    targetRunType: "paper",
+    runId: "run-dev-1",
+    sourceRunId: "run-dev-1",
+    targetRunId: "paper-dev-42",
+    decision: "Approved",
+    approvedBy: "fixture-operator",
+    approvalReason: "Replay, DK1 trust, and risk controls are available for review.",
+    reviewNotes: "Fixture promotion history keeps the no-host Trading cockpit populated.",
+    auditReference: "audit-promo-dev-1",
+    manualOverrideId: null,
+    qualifyingSharpe: 1.41,
+    qualifyingMaxDrawdownPercent: 5,
+    qualifyingTotalReturn: 4.2,
+    promotedAt: "2026-04-28T18:05:00Z"
+  }
+];
 
 const fixtureTradingWorkspace: TradingWorkspaceResponse = {
   metrics: [
@@ -611,7 +816,7 @@ const fixtureTradingWorkflowActions: WorkflowAction[] = [
     targetPageTag: "TradingShell",
     tone: "Primary",
     workItemKind: "PromotionReview",
-    routePrefixes: ["/api/workstation/trading/readiness"],
+    routePrefixes: [WORKSTATION_API_ENDPOINTS.tradingReadiness],
     routeContains: [],
     aliases: []
   },
@@ -622,7 +827,7 @@ const fixtureTradingWorkflowActions: WorkflowAction[] = [
     targetPageTag: "RunRisk",
     tone: "Warning",
     workItemKind: "ExecutionControl",
-    routePrefixes: ["/api/execution/controls"],
+    routePrefixes: [EXECUTION_API_ENDPOINTS.controls],
     routeContains: [],
     aliases: []
   }
@@ -647,7 +852,7 @@ const fixtureDataWorkflowActions: WorkflowAction[] = [
     targetPageTag: "SecurityMaster",
     tone: "Warning",
     workItemKind: "SecurityMasterCoverage",
-    routePrefixes: ["/api/workstation/security-master/securities"],
+    routePrefixes: [SECURITY_MASTER_API_ENDPOINTS.workstationSecurities],
     routeContains: [],
     aliases: []
   }
@@ -969,6 +1174,75 @@ const fixtureSecurityIdentities: Record<string, SecurityIdentityDrillIn> = {
   }
 };
 
+const fixturePortfolioWorkspace: PortfolioWorkspaceResponse = {
+  metrics: [
+    { id: "portfolio-equity", label: "Portfolio equity", value: "$312,400", delta: "+1.2%", tone: "success" },
+    { id: "portfolio-cash", label: "Cash", value: "$87,500", delta: "28% reserve", tone: "default" },
+    { id: "portfolio-exposure", label: "Exposure", value: "$54,347", delta: "3 positions", tone: "default" },
+    { id: "portfolio-sync", label: "Brokerage sync", value: "Stale", delta: "review", tone: "warning" }
+  ],
+  positions: fixtureTradingWorkspace.positions,
+  risk: fixtureTradingWorkspace.risk,
+  brokerage: fixtureTradingWorkspace.brokerage,
+  runs: [
+    {
+      runId: "portfolio-run-dev-1",
+      strategyName: "Mean Reversion FX",
+      engine: "Meridian Native",
+      mode: "paper",
+      status: "Running",
+      pnl: "+4.2%",
+      sharpe: "1.41",
+      dataset: "FX Majors",
+      window: "90d",
+      lastUpdated: "2m ago",
+      notes: "Primary paper candidate reflected in the portfolio fixture.",
+      promotionState: "ReviewRequired"
+    }
+  ],
+  cashFlow: fixtureGovernanceWorkspace.cashFlow
+};
+
+const fixtureQuantTemplates: QuantTemplatesResponse = {
+  templates: [
+    {
+      id: "hello-quant-lab",
+      title: "Hello Quant Lab",
+      description: "Print a metric and verify the local script runtime path.",
+      source: "Print(\"Hello from the Quant Lab fixture.\");\nPrintMetric(\"answer\", 42);\n"
+    },
+    {
+      id: "parameter-sweep-preview",
+      title: "Parameter sweep preview",
+      description: "Exercise parameter extraction with a lookback and fee toggle.",
+      source: "var lookback = Parameter(\"lookback\", 20);\nvar includeFees = Parameter(\"includeFees\", true);\nPrintMetric(\"lookback\", lookback);\nPrintMetric(\"fees\", includeFees ? 1 : 0);\n"
+    }
+  ]
+};
+
+const fixtureQuantParameters: QuantParametersResponse = {
+  parameters: [
+    {
+      name: "lookback",
+      label: "Lookback",
+      typeName: "int",
+      defaultValue: "20",
+      min: 1,
+      max: 252,
+      description: "Rolling window length for the fixture run."
+    },
+    {
+      name: "includeFees",
+      label: "Include fees",
+      typeName: "bool",
+      defaultValue: "true",
+      min: null,
+      max: null,
+      description: "Toggle transaction-cost assumptions in the fixture run."
+    }
+  ]
+};
+
 const fixtureSecurityConflicts: SecurityMasterConflict[] = [
   {
     conflictId: "conflict-dev-001",
@@ -995,32 +1269,98 @@ const fixtureTradingParameters: TradingParameters = {
   asOf: "2026-04-28T18:15:00Z"
 };
 
+interface FixtureMarketProfile {
+  bidPrice: number;
+  bidSize: number;
+  askPrice: number;
+  askSize: number;
+  lastPrice: number;
+  venue: string;
+  streamId: string;
+}
+
+const fixtureMarketTimestamp = "2026-05-08T15:00:00.000Z";
+
+const fixtureMarketProfiles: Record<string, FixtureMarketProfile> = {
+  AAPL: { bidPrice: 188.05, bidSize: 200, askPrice: 188.07, askSize: 150, lastPrice: 188.06, venue: "NASDAQ", streamId: "fixture-aapl" },
+  MSFT: { bidPrice: 421.1, bidSize: 300, askPrice: 421.2, askSize: 250, lastPrice: 421.15, venue: "NASDAQ", streamId: "fixture-msft" },
+  NVDA: { bidPrice: 950.2, bidSize: 80, askPrice: 950.45, askSize: 65, lastPrice: 950.35, venue: "NASDAQ", streamId: "fixture-nvda" },
+  QQQ: { bidPrice: 438.24, bidSize: 420, askPrice: 438.28, askSize: 390, lastPrice: 438.26, venue: "NASDAQ", streamId: "fixture-qqq" },
+  SPY: { bidPrice: 512.44, bidSize: 500, askPrice: 512.48, askSize: 520, lastPrice: 512.46, venue: "NYSE Arca", streamId: "fixture-spy" }
+};
+
+const fixtureSymbolRecords: SymbolRecord[] = [
+  { symbol: "AAPL", status: "Active", provider: "Alpaca", lastEventAt: fixtureMarketTimestamp, eventCount: 1842, hasHistoricalData: true },
+  { symbol: "MSFT", status: "Active", provider: "Alpaca", lastEventAt: fixtureMarketTimestamp, eventCount: 1328, hasHistoricalData: true },
+  { symbol: "QQQ", status: "Monitored", provider: "Alpaca", lastEventAt: fixtureMarketTimestamp, eventCount: 942, hasHistoricalData: true },
+  { symbol: "SPY", status: "Monitored", provider: "Alpaca", lastEventAt: fixtureMarketTimestamp, eventCount: 1104, hasHistoricalData: true }
+];
+
+const fixtureSymbolStatistics: SymbolStatistics = {
+  totalSymbols: fixtureSymbolRecords.length,
+  monitoredSymbols: fixtureSymbolRecords.filter((symbol) => symbol.status === "Active" || symbol.status === "Monitored").length,
+  archivedSymbols: 0,
+  symbolsWithErrors: 0,
+  totalEventsLast24h: fixtureSymbolRecords.reduce((total, symbol) => total + symbol.eventCount, 0)
+};
+
 const fixtures = {
-  "/api/status": fixtureSystemOverview,
-  "/api/workstation/session": fixtureSession,
-  "/api/workstation/strategy": fixtureResearchWorkspace,
+  [WORKSTATION_API_ENDPOINTS.systemStatus]: fixtureSystemOverview,
+  [WORKSTATION_API_ENDPOINTS.session]: fixtureSession,
+  [WORKSTATION_API_ENDPOINTS.strategy]: fixtureResearchWorkspace,
   "/api/workstation/research": fixtureResearchWorkspace,
-  "/api/workstation/trading": fixtureTradingWorkspace,
-  "/api/workstation/trading/readiness": fixtureTradingReadiness,
-  "/api/workstation/operator/inbox": fixtureOperatorInbox,
-  "/api/workstation/workflows": fixtureWorkflowLibrary,
-  "/api/workstation/workflows/presets": fixtureWorkflowPresetLibrary,
-  "/api/brokerage-connections/alpaca/status": fixtureAlpacaConnection,
-  "/api/brokerage-connections/robinhood/status": fixtureAlpacaConnection,
-  "/api/portfolio/household": fixtureAlpacaPortfolio,
-  "/api/workstation/data": fixtureDataOperationsWorkspace,
+  [WORKSTATION_API_ENDPOINTS.trading]: fixtureTradingWorkspace,
+  [WORKSTATION_API_ENDPOINTS.portfolio]: fixturePortfolioWorkspace,
+  [WORKSTATION_API_ENDPOINTS.tradingReadiness]: fixtureTradingReadiness,
+  [WORKSTATION_API_ENDPOINTS.operatorInbox]: fixtureOperatorInbox,
+  [WORKSTATION_API_ENDPOINTS.workflowLibrary]: fixtureWorkflowLibrary,
+  [WORKSTATION_API_ENDPOINTS.workflowPresets]: fixtureWorkflowPresetLibrary,
+  [EXECUTION_API_ENDPOINTS.sessions]: fixturePaperSessionSummaries,
+  [EXECUTION_API_ENDPOINTS.audit]: fixtureExecutionAudit,
+  [EXECUTION_API_ENDPOINTS.controls]: fixtureExecutionControls,
+  [REPLAY_API_ENDPOINTS.files]: fixtureReplayFiles,
+  [PROMOTION_API_ENDPOINTS.history]: fixturePromotionHistory,
+  [brokerageConnectionStatusEndpoint("alpaca")]: fixtureAlpacaConnection,
+  [brokerageConnectionStatusEndpoint("robinhood")]: fixtureAlpacaConnection,
+  [PORTFOLIO_API_ENDPOINTS.household]: fixtureAlpacaPortfolio,
+  [WORKSTATION_API_ENDPOINTS.data]: fixtureDataOperationsWorkspace,
   "/api/workstation/data-operations": fixtureDataOperationsWorkspace,
-  "/api/workstation/accounting": fixtureGovernanceWorkspace,
-  "/api/workstation/reporting": fixtureGovernanceWorkspace,
+  [WORKSTATION_API_ENDPOINTS.accounting]: fixtureGovernanceWorkspace,
+  [WORKSTATION_API_ENDPOINTS.reporting]: fixtureGovernanceWorkspace,
   "/api/workstation/governance": fixtureGovernanceWorkspace,
-  "/api/workstation/reconciliation/calibration-summary": fixtureCalibrationSummary,
-  "/api/security-master/conflicts": fixtureSecurityConflicts
+  [RECONCILIATION_API_ENDPOINTS.calibrationSummary]: fixtureCalibrationSummary,
+  [QUANT_API_ENDPOINTS.templates]: fixtureQuantTemplates,
+  [QUANT_API_ENDPOINTS.parameters]: fixtureQuantParameters,
+  [`${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`]: fixtureSecurityConflicts,
+  [SYMBOL_API_ENDPOINTS.symbols]: fixtureSymbolRecords,
+  [SYMBOL_API_ENDPOINTS.statistics]: fixtureSymbolStatistics
 } satisfies Record<string, unknown>;
 
-const dynamicFixturePatterns: Array<{ pattern: RegExp; fixture: unknown }> = [
-  { pattern: /^\/api\/workstation\/security-master\/securities\/[^/]+\/identity$/, fixture: null },
-  { pattern: /^\/api\/security-master\/[^/]+\/corporate-actions$/, fixture: fixtureCorporateActions },
-  { pattern: /^\/api\/security-master\/[^/]+\/trading-parameters$/, fixture: fixtureTradingParameters }
+type DynamicFixturePattern = {
+  pattern: RegExp;
+  resolve: (cleanPath: string, path: string) => unknown | undefined;
+};
+
+const dynamicFixturePatterns: DynamicFixturePattern[] = [
+  {
+    pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.workstationSecurities, "/[^/]+/identity"),
+    resolve: (cleanPath) => {
+      const securityId = cleanPath.split("/").at(-2);
+      return securityId ? fixtureSecurityIdentities[securityId] : undefined;
+    }
+  },
+  { pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/corporate-actions"), resolve: () => fixtureCorporateActions },
+  { pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/trading-parameters"), resolve: () => fixtureTradingParameters },
+  { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.quotes, "/[^/]+"), resolve: (cleanPath) => buildFixtureQuote(readSymbolFromPath(cleanPath)) },
+  { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.trades, "/[^/]+"), resolve: (cleanPath) => buildFixtureTrades(readSymbolFromPath(cleanPath)) },
+  { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.orderbook, "/[^/]+"), resolve: (cleanPath) => buildFixtureOrderbook(readSymbolFromPath(cleanPath)) },
+  {
+    pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.historical, "/[^/]+/bars"),
+    resolve: (cleanPath, path) => buildFixtureHistoricalBars(readSymbolFromPath(cleanPath, 1), path)
+  },
+  { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.quotesSnapshot), resolve: (_cleanPath, path) => buildFixtureQuotesSnapshot(path) },
+  { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+"), resolve: () => fixturePaperSessionDetail },
+  { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+/replay"), resolve: () => fixturePaperSessionReplayVerification }
 ];
 
 export function resolveDevFixture<T>(path: string): T | undefined {
@@ -1030,19 +1370,211 @@ export function resolveDevFixture<T>(path: string): T | undefined {
     return cloneFixture(exact as T);
   }
 
-  for (const { pattern, fixture } of dynamicFixturePatterns) {
+  for (const { pattern, resolve } of dynamicFixturePatterns) {
     if (pattern.test(cleanPath)) {
-      if (cleanPath.includes("/identity")) {
-        const securityId = cleanPath.split("/").at(-2);
-        if (securityId && fixtureSecurityIdentities[securityId]) {
-          return cloneFixture(fixtureSecurityIdentities[securityId] as T);
-        }
+      const fixture = resolve(cleanPath, path);
+      if (fixture !== undefined) {
+        return cloneFixture(fixture as T);
       }
-      return cloneFixture(fixture as T);
     }
   }
 
   return undefined;
+}
+
+function readSymbolFromPath(cleanPath: string, segmentFromEnd = 0): string {
+  const rawSymbol = cleanPath.split("/").at(-1 - segmentFromEnd) ?? "AAPL";
+  try {
+    return decodeURIComponent(rawSymbol).trim().toUpperCase() || "AAPL";
+  } catch {
+    return rawSymbol.trim().toUpperCase() || "AAPL";
+  }
+}
+
+function apiRoutePattern(baseRoute: string, suffixPattern = ""): RegExp {
+  return new RegExp(`^${escapeRegExp(baseRoute)}${suffixPattern}$`);
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function getFixtureMarketProfile(symbol: string): FixtureMarketProfile {
+  const normalized = symbol.trim().toUpperCase();
+  const known = fixtureMarketProfiles[normalized];
+  if (known) {
+    return known;
+  }
+
+  const offset = Math.max(0, Math.min(8, normalized.length)) * 0.13;
+  return {
+    ...fixtureMarketProfiles.AAPL!,
+    bidPrice: roundMarketPrice(fixtureMarketProfiles.AAPL!.bidPrice + offset),
+    askPrice: roundMarketPrice(fixtureMarketProfiles.AAPL!.askPrice + offset),
+    lastPrice: roundMarketPrice(fixtureMarketProfiles.AAPL!.lastPrice + offset),
+    streamId: `fixture-${normalized.toLowerCase()}`
+  };
+}
+
+function buildFixtureQuote(symbol: string): QuotesResponse {
+  const normalized = symbol.trim().toUpperCase() || "AAPL";
+  const profile = getFixtureMarketProfile(normalized);
+  return {
+    symbol: normalized,
+    timestamp: fixtureMarketTimestamp,
+    quote: {
+      symbol: normalized,
+      timestamp: fixtureMarketTimestamp,
+      bidPrice: profile.bidPrice,
+      bidSize: profile.bidSize,
+      askPrice: profile.askPrice,
+      askSize: profile.askSize,
+      midPrice: roundMarketPrice((profile.bidPrice + profile.askPrice) / 2),
+      spread: roundMarketPrice(profile.askPrice - profile.bidPrice),
+      sequenceNumber: 42,
+      streamId: profile.streamId,
+      venue: profile.venue
+    }
+  };
+}
+
+function buildFixtureQuotesSnapshot(path: string): QuotesSnapshotResponse {
+  const params = readFixtureSearchParams(path);
+  const requestedSymbols = (params.get("symbols") ?? "")
+    .split(",")
+    .map((symbol) => symbol.trim().toUpperCase())
+    .filter(Boolean);
+  const symbols = requestedSymbols.length > 0 ? requestedSymbols : fixtureSymbolRecords.map((symbol) => symbol.symbol);
+
+  return {
+    timestamp: fixtureMarketTimestamp,
+    count: symbols.length,
+    quotes: symbols.map((symbol, index) => {
+      const profile = getFixtureMarketProfile(symbol);
+      return {
+        symbol,
+        timestamp: fixtureMarketTimestamp,
+        bidPrice: profile.bidPrice,
+        bidSize: profile.bidSize,
+        askPrice: profile.askPrice,
+        askSize: profile.askSize,
+        midPrice: roundMarketPrice((profile.bidPrice + profile.askPrice) / 2),
+        spread: roundMarketPrice(profile.askPrice - profile.bidPrice),
+        lastPrice: profile.lastPrice,
+        lastSize: 100 + index * 25,
+        lastTradeTimestamp: fixtureMarketTimestamp,
+        sequenceNumber: 1000 + index,
+        streamId: profile.streamId,
+        venue: profile.venue
+      };
+    })
+  };
+}
+
+function buildFixtureTrades(symbol: string): TradesResponse {
+  const normalized = symbol.trim().toUpperCase() || "AAPL";
+  const profile = getFixtureMarketProfile(normalized);
+  const baseTimestamp = new Date(fixtureMarketTimestamp).getTime();
+  const offsets = [0.03, -0.01, 0.07, -0.04, -0.08, 0.02, -0.12, -0.05];
+  const trades = offsets.map((offset, index) => ({
+    symbol: normalized,
+    timestamp: new Date(baseTimestamp - index * 30_000).toISOString(),
+    price: roundMarketPrice(profile.lastPrice + offset),
+    size: 50 + index * 25,
+    aggressor: index % 3 === 0 ? "Buy" : index % 3 === 1 ? "Sell" : "Neutral",
+    sequenceNumber: 500 - index,
+    streamId: profile.streamId,
+    venue: profile.venue
+  }));
+
+  return {
+    symbol: normalized,
+    trades,
+    count: trades.length,
+    timestamp: fixtureMarketTimestamp
+  };
+}
+
+function buildFixtureOrderbook(symbol: string): OrderBookResponse {
+  const normalized = symbol.trim().toUpperCase() || "AAPL";
+  const profile = getFixtureMarketProfile(normalized);
+  return {
+    symbol: normalized,
+    timestamp: fixtureMarketTimestamp,
+    bids: [0, 1, 2, 3, 4].map((level) => ({
+      side: "Bid",
+      level: level + 1,
+      price: roundMarketPrice(profile.bidPrice - level * 0.02),
+      size: Math.max(25, profile.bidSize - level * 20),
+      marketMaker: null
+    })),
+    asks: [0, 1, 2, 3, 4].map((level) => ({
+      side: "Ask",
+      level: level + 1,
+      price: roundMarketPrice(profile.askPrice + level * 0.02),
+      size: Math.max(25, profile.askSize - level * 15),
+      marketMaker: null
+    })),
+    midPrice: roundMarketPrice((profile.bidPrice + profile.askPrice) / 2),
+    imbalance: roundMarketPrice((profile.bidSize - profile.askSize) / Math.max(1, profile.bidSize + profile.askSize)),
+    marketState: "Open",
+    sequenceNumber: 42,
+    isStale: false,
+    streamId: profile.streamId,
+    venue: profile.venue
+  };
+}
+
+function buildFixtureHistoricalBars(symbol: string, path: string): HistoricalBarsResponse {
+  const normalized = symbol.trim().toUpperCase() || "AAPL";
+  const profile = getFixtureMarketProfile(normalized);
+  const params = readFixtureSearchParams(path);
+  const intervalMinutes = Number(params.get("intervalMinutes") ?? 5);
+  const start = new Date("2026-05-08T13:30:00.000Z").getTime();
+  const offsets = [-0.72, -0.46, -0.3, -0.16, 0.05, 0.12, 0.01, 0.18, 0.31, 0.24, 0.36, 0.29];
+  const bars = offsets.map((offset, index) => {
+    const open = roundMarketPrice(profile.lastPrice + offset);
+    const close = roundMarketPrice(profile.lastPrice + offsets[Math.min(index + 1, offsets.length - 1)]!);
+    const high = roundMarketPrice(Math.max(open, close) + 0.08);
+    const low = roundMarketPrice(Math.min(open, close) - 0.07);
+    const volume = 15_000 + index * 1_250;
+    return {
+      start: new Date(start + index * intervalMinutes * 60_000).toISOString(),
+      open,
+      high,
+      low,
+      close,
+      volume,
+      vwap: roundMarketPrice((open + high + low + close) / 4),
+      tradeCount: 40 + index * 3
+    };
+  });
+
+  return {
+    success: true,
+    message: null,
+    symbol: normalized,
+    intervalMinutes: Number.isFinite(intervalMinutes) && intervalMinutes > 0 ? intervalMinutes : 5,
+    from: params.get("from"),
+    to: params.get("to"),
+    totalBars: bars.length,
+    filesProcessed: 1,
+    totalFiles: 1,
+    queryTimeMs: 3,
+    bars
+  };
+}
+
+function readFixtureSearchParams(path: string): URLSearchParams {
+  try {
+    return new URL(path, "http://meridian.local").searchParams;
+  } catch {
+    return new URLSearchParams();
+  }
+}
+
+function roundMarketPrice(value: number): number {
+  return Math.round(value * 10000) / 10000;
 }
 
 export function searchDevSecurityMasterEntries(query: string, take = 25, activeOnly = true): SecurityMasterEntry[] {

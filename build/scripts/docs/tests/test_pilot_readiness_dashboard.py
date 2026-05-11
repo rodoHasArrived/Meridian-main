@@ -50,6 +50,11 @@ class PilotReadinessDashboardTests(unittest.TestCase):
             self.assertEqual("dataset/pilot/unit", artifact["key_evidence"]["dataset_evidence_id"])
             self.assertEqual("portfolio/unit", artifact["key_evidence"]["portfolio_evidence_id"])
             self.assertEqual("ledger/unit", artifact["key_evidence"]["ledger_evidence_id"])
+            self.assertEqual(2, artifact["ledger_artifact_count"])
+            self.assertEqual(
+                "/api/workstation/runs/run-paper-unit/ledger/journal",
+                artifact["ledger_artifact_refs"][0]["route"],
+            )
             self.assertEqual("Governed report pack lineage", artifact["stage_gates"][-1]["label"])
             acceptance_check = next(
                 check for check in payload["checks"] if check["id"] == "pilot-acceptance-artifact"
@@ -102,6 +107,38 @@ class PilotReadinessDashboardTests(unittest.TestCase):
             any("self-edge" in issue for issue in loaded["consistency_issues"])
         )
 
+    def test_dashboard_flags_missing_route_only_ledger_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            artifact = build_artifact()
+            artifact["ledgerArtifactRefs"] = [
+                {
+                    "artifactId": "ledger:journal",
+                    "kind": "ledger-journal",
+                    "path": "workstation/evidence/ledger/journal.json",
+                    "route": "/api/workstation/runs/run-paper-unit/ledger/journal",
+                    "generatedAt": "2026-04-29T00:00:00Z",
+                    "hash": None,
+                    "retained": True,
+                }
+            ]
+            artifact_path = root / "artifacts" / "pilot-acceptance" / "latest" / "pilot-readiness.json"
+            artifact_path.parent.mkdir(parents=True)
+            artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+
+            payload = pilot_dashboard.build_dashboard(root)
+
+            artifact_summary = payload["pilot_acceptance_artifact"]
+            acceptance_check = next(
+                check for check in payload["checks"] if check["id"] == "pilot-acceptance-artifact"
+            )
+            self.assertFalse(artifact_summary["all_stages_ready"])
+            self.assertTrue(
+                any("Ledger artifact ref" in issue for issue in artifact_summary["consistency_issues"])
+            )
+            self.assertIn("route-only ledger artifact refs", acceptance_check["missing_terms"])
+            self.assertEqual("gap", acceptance_check["status"])
+
     def test_dashboard_marks_missing_pilot_acceptance_artifact_without_failing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             payload = pilot_dashboard.build_dashboard(Path(tmp))
@@ -142,6 +179,8 @@ class PilotReadinessDashboardTests(unittest.TestCase):
 
         self.assertIn("## Pilot Acceptance Artifact", rendered)
         self.assertIn("Governed report pack lineage", rendered)
+        self.assertIn("### Ledger Artifact Refs", rendered)
+        self.assertIn("ledger-journal", rendered)
         self.assertIn("### Evidence Graph", rendered)
         self.assertIn("feeds-run", rendered)
         self.assertIn("No stage blockers were recorded", rendered)
@@ -167,6 +206,26 @@ def build_artifact() -> dict:
         "totalStageCount": 8,
         "allStagesReady": True,
         "stageGates": build_expected_stage_gates(camel_case=True),
+        "ledgerArtifactRefs": [
+            {
+                "artifactId": "ledger:journal",
+                "kind": "ledger-journal",
+                "path": None,
+                "route": "/api/workstation/runs/run-paper-unit/ledger/journal",
+                "generatedAt": "2026-04-29T00:00:00Z",
+                "hash": None,
+                "retained": True,
+            },
+            {
+                "artifactId": "ledger:trial-balance",
+                "kind": "ledger-trial-balance",
+                "path": None,
+                "route": "/api/workstation/runs/run-paper-unit/ledger/trial-balance",
+                "generatedAt": "2026-04-29T00:00:00Z",
+                "hash": None,
+                "retained": True,
+            },
+        ],
         "evidenceGraph": [
             {
                 "fromEvidenceId": "dataset/pilot/unit",

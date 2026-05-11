@@ -59,11 +59,14 @@ The primary runnable project. Supports multiple modes via `--mode <mode>`:
 | `--symbols` / `--symbols-add` / `--symbols-remove` | Symbol management commands |
 | `--dry-run` | Validate configuration and connectivity without side effects |
 | `--quickstart` | Interactive first-run bootstrap wizard |
+| `ledger -f <journal-file> <report>` | Read a Ledger-compatible journal and print balance/register/accounts reports |
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --help
+dotnet run --project src/Meridian/Meridian.csproj -- --help ledger
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2024-01-01 --backfill-to 2024-12-31
+dotnet run --project src/Meridian/Meridian.csproj -- ledger -f ledger.dat balance
 ```
 
 When you launch the desktop-local API host from the repository root, Meridian binds to `http://localhost:8080` by default, so you do not need to `cd` into `src/Meridian` first.
@@ -89,6 +92,11 @@ npm run build
 set, or `http://localhost:8080` by default. When the local API host is not running, development
 builds fall back to typed fixture data for the initial dashboard bootstrap GETs only; command and
 mutation workflows still require the Meridian API.
+
+Current web evidence support includes the `/reporting/evidence` workbench plus shared evidence
+APIs for subjects, packet/graph inspection, validation, and manifest export. Treat that as
+browser-visible support for run, readiness, reconciliation, report-pack, provider-trust, and export
+evidence, not as completion of the full Evidence Vault or report-line provenance roadmap.
 
 ### MCP server (minimal) — `src/Meridian.Mcp`
 
@@ -705,6 +713,7 @@ Use these documents together when planning or implementing new work:
 ├── LICENSE
 ├── Makefile
 ├── Meridian Design System
+│   ├── BRAND_GUIDELINES.md
 │   ├── CONTENT_FUNDAMENTALS.md
 │   ├── ICONOGRAPHY.md
 │   ├── INSPIRATION_BRIEF.md
@@ -714,10 +723,15 @@ Use these documents together when planning or implementing new work:
 │   ├── assets
 │   │   ├── app.ico
 │   │   ├── brand
+│   │   │   ├── README.md
 │   │   │   ├── meridian-hero.svg
+│   │   │   ├── meridian-mark-light.svg
+│   │   │   ├── meridian-mark-monochrome.svg
 │   │   │   ├── meridian-mark.svg
+│   │   │   ├── meridian-symbol.svg
 │   │   │   ├── meridian-tile-256.png
 │   │   │   ├── meridian-tile.svg
+│   │   │   ├── meridian-wordmark-stacked.svg
 │   │   │   └── meridian-wordmark.svg
 │   │   └── icons
 │   │       ├── README.md
@@ -879,15 +893,6 @@ Use these documents together when planning or implementing new work:
 │           ├── STRUCTURAL_IMPROVEMENTS_2026-02.md
 │           ├── TEST_MATRIX_FIX_SUMMARY.md
 │           └── desktop-improvements-executive-summary.md
-├── artifacts
-│   └── provider-validation
-│       └── _automation
-│           └── 2026-04-27
-│               ├── dk1-operator-signoff.json
-│               ├── dk1-pilot-parity-packet.json
-│               ├── dk1-pilot-parity-packet.md
-│               ├── wave1-validation-summary.json
-│               └── wave1-validation-summary.md
 ├── benchmarks
 │   ├── BOTTLENECK_REPORT.md
 │   ├── Meridian.Benchmarks
@@ -1117,6 +1122,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── deterministic-canonicalization.md
 │   │   ├── domains.md
 │   │   ├── environment-designer-runtime-projection-and-wpf-admin-surface.md
+│   │   ├── evidence-workflow-fabric.md
 │   │   ├── layer-boundaries.md
 │   │   ├── ledger-architecture.md
 │   │   ├── overview.md
@@ -5352,6 +5358,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── GenerateLoaderCommand.cs
 │   │   │   ├── HelpCommand.cs
 │   │   │   ├── ICliCommand.cs
+│   │   │   ├── LedgerCliCommand.cs
 │   │   │   ├── PackageCommands.cs
 │   │   │   ├── ProviderCalibrationCommand.cs
 │   │   │   ├── QueryCommand.cs
@@ -5490,6 +5497,15 @@ Use these documents together when planning or implementing new work:
 │   │   │       └── StatusEndpointHandlers.cs
 │   │   ├── Indicators
 │   │   │   └── TechnicalIndicatorService.cs
+│   │   ├── Ledger
+│   │   │   └── TextJournal
+│   │   │       ├── LedgerTextJournalDocument.cs
+│   │   │       ├── LedgerTextJournalException.cs
+│   │   │       ├── LedgerTextJournalParser.cs
+│   │   │       ├── LedgerTextJournalReportService.cs
+│   │   │       ├── LedgerTextReportOptions.cs
+│   │   │       ├── LedgerTextReportRenderer.cs
+│   │   │       └── LedgerTextTransaction.cs
 │   │   ├── Meridian.Application.csproj
 │   │   ├── Monitoring
 │   │   │   ├── BackpressureAlertService.cs
@@ -5763,6 +5779,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Api
 │   │   │   ├── BackfillApiModels.cs
 │   │   │   ├── ClientModels.cs
+│   │   │   ├── DataIngestionContracts.cs
 │   │   │   ├── ErrorResponse.cs
 │   │   │   ├── ExecutionApiModels.cs
 │   │   │   ├── LeanApiModels.cs
@@ -5900,6 +5917,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterRuntimeStatus.cs
 │   │   │   ├── ISecurityMasterService.cs
+│   │   │   ├── OperatorOverrides.cs
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityDtos.cs
 │   │   │   ├── SecurityEvents.cs
@@ -5917,6 +5935,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   └── Workstation
 │   │       ├── BrokerageSyncDtos.cs
+│   │       ├── EvidenceWorkflowDtos.cs
 │   │       ├── FundLedgerDtos.cs
 │   │       ├── FundOperationsDtos.cs
 │   │       ├── FundOperationsWorkspaceDtos.cs
@@ -6604,13 +6623,16 @@ Use these documents together when planning or implementing new work:
 │   │   ├── SecurityMaster
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IEdgarReferenceDataStore.cs
+│   │   │   ├── IOperatorOverridesStore.cs
 │   │   │   ├── ISecurityMasterEventStore.cs
 │   │   │   ├── ISecurityMasterSnapshotStore.cs
 │   │   │   ├── ISecurityMasterStore.cs
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_security_master.sql
 │   │   │   │   ├── 002_security_master_fts.sql
-│   │   │   │   └── 003_security_master_corp_actions.sql
+│   │   │   │   ├── 003_security_master_corp_actions.sql
+│   │   │   │   └── 004_security_master_operator_overrides.sql
+│   │   │   ├── PostgresOperatorOverridesStore.cs
 │   │   │   ├── PostgresSecurityMasterEventStore.cs
 │   │   │   ├── PostgresSecurityMasterSnapshotStore.cs
 │   │   │   ├── PostgresSecurityMasterStore.cs
@@ -6697,6 +6719,12 @@ Use these documents together when planning or implementing new work:
 │   │       └── StrategyRunStore.cs
 │   ├── Meridian.Ui
 │   │   ├── dashboard
+│   │   │   ├── artifacts
+│   │   │   │   └── automation
+│   │   │   │       └── progress
+│   │   │   │           ├── portfolio-sync-trust-smoke.png
+│   │   │   │           ├── readiness-inbox-refresh-smoke.png
+│   │   │   │           └── workstation-preview-smoke.png
 │   │   │   ├── index.html
 │   │   │   ├── package-lock.json
 │   │   │   ├── package.json
@@ -6710,6 +6738,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   └── brand
 │   │   │   │   │       └── meridian-mark.svg
 │   │   │   │   ├── components
+│   │   │   │   │   ├── data
+│   │   │   │   │   │   ├── backfill-validation-dashboard.tsx
+│   │   │   │   │   │   └── symbol-universe-manager.tsx
 │   │   │   │   │   ├── meridian
 │   │   │   │   │   │   ├── command-palette.test.tsx
 │   │   │   │   │   │   ├── command-palette.tsx
@@ -6717,7 +6748,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── command-palette.view-model.ts
 │   │   │   │   │   │   ├── historical-chart.test.tsx
 │   │   │   │   │   │   ├── historical-chart.tsx
+│   │   │   │   │   │   ├── historical-chart.view-model.test.ts
+│   │   │   │   │   │   ├── historical-chart.view-model.ts
+│   │   │   │   │   │   ├── mega-menu.test.tsx
 │   │   │   │   │   │   ├── mega-menu.tsx
+│   │   │   │   │   │   ├── mega-menu.view-model.test.ts
 │   │   │   │   │   │   ├── mega-menu.view-model.ts
 │   │   │   │   │   │   ├── metric-card.test.tsx
 │   │   │   │   │   │   ├── metric-card.tsx
@@ -6725,6 +6760,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── metric-card.view-model.ts
 │   │   │   │   │   │   ├── quant-plot.test.tsx
 │   │   │   │   │   │   ├── quant-plot.tsx
+│   │   │   │   │   │   ├── security-details-tracker.tsx
+│   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
@@ -6734,6 +6771,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── workspace-nav.tsx
 │   │   │   │   │   │   ├── workspace-nav.view-model.test.ts
 │   │   │   │   │   │   └── workspace-nav.view-model.ts
+│   │   │   │   │   ├── settings
+│   │   │   │   │   │   └── provider-credential-setup.tsx
 │   │   │   │   │   └── ui
 │   │   │   │   │       ├── badge.tsx
 │   │   │   │   │       ├── button.test.tsx
@@ -6746,11 +6785,15 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │       ├── dialog.view-model.test.ts
 │   │   │   │   │       ├── dialog.view-model.ts
 │   │   │   │   │       ├── input.tsx
+│   │   │   │   │       ├── label.tsx
+│   │   │   │   │       ├── progress.tsx
 │   │   │   │   │       ├── select.tsx
+│   │   │   │   │       ├── sheet.test.tsx
 │   │   │   │   │       ├── sheet.tsx
 │   │   │   │   │       └── tooltip.tsx
 │   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── hooks
+│   │   │   │   │   ├── use-workstation-data.test.ts
 │   │   │   │   │   └── use-workstation-data.ts
 │   │   │   │   ├── lib
 │   │   │   │   │   ├── api.trading.test.ts
@@ -6758,20 +6801,25 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── dev-fixtures.ts
 │   │   │   │   │   ├── utils.ts
 │   │   │   │   │   ├── workspace.test.ts
-│   │   │   │   │   └── workspace.ts
+│   │   │   │   │   ├── workspace.ts
+│   │   │   │   │   ├── workstation-endpoints.test.ts
+│   │   │   │   │   └── workstation-endpoints.ts
 │   │   │   │   ├── main.tsx
 │   │   │   │   ├── screens
-│   │   │   │   │   ├── data-operations-screen.security-master.ts
 │   │   │   │   │   ├── data-operations-screen.test.tsx
 │   │   │   │   │   ├── data-operations-screen.tsx
 │   │   │   │   │   ├── data-operations-screen.view-model.test.ts
 │   │   │   │   │   ├── data-operations-screen.view-model.ts
+│   │   │   │   │   ├── evidence-workbench-screen.tsx
+│   │   │   │   │   ├── evidence-workbench-screen.view-model.test.tsx
+│   │   │   │   │   ├── evidence-workbench-screen.view-model.ts
 │   │   │   │   │   ├── governance-screen.test.tsx
 │   │   │   │   │   ├── governance-screen.tsx
 │   │   │   │   │   ├── governance-screen.view-model.test.ts
 │   │   │   │   │   ├── governance-screen.view-model.ts
 │   │   │   │   │   ├── live-quotes-screen.test.tsx
 │   │   │   │   │   ├── live-quotes-screen.tsx
+│   │   │   │   │   ├── live-quotes-screen.view-model.ts
 │   │   │   │   │   ├── operator-readiness-console.test.tsx
 │   │   │   │   │   ├── operator-readiness-console.tsx
 │   │   │   │   │   ├── operator-readiness-console.view-model.test.ts
@@ -6786,6 +6834,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── portfolio-screen.view-model.ts
 │   │   │   │   │   ├── quant-lab-screen.test.tsx
 │   │   │   │   │   ├── quant-lab-screen.tsx
+│   │   │   │   │   ├── quant-lab-screen.view-model.test.ts
+│   │   │   │   │   ├── quant-lab-screen.view-model.ts
 │   │   │   │   │   ├── reporting-screen.test.tsx
 │   │   │   │   │   ├── reporting-screen.tsx
 │   │   │   │   │   ├── reporting-screen.view-model.test.ts
@@ -6803,7 +6853,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
 │   │   │   │   │   ├── trading-screen.view-model.ts
 │   │   │   │   │   ├── watchlist-screen.test.tsx
-│   │   │   │   │   └── watchlist-screen.tsx
+│   │   │   │   │   ├── watchlist-screen.tsx
+│   │   │   │   │   ├── watchlist-screen.view-model.test.ts
+│   │   │   │   │   └── watchlist-screen.view-model.ts
 │   │   │   │   ├── styles
 │   │   │   │   │   └── index.css
 │   │   │   │   ├── test
@@ -6819,8 +6871,42 @@ Use these documents together when planning or implementing new work:
 │   │   └── wwwroot
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-DbBLfYyJ.css
-│   │           │   └── index-hpE42RgI.js
+│   │           │   ├── activity-CkTL-2V1.js
+│   │           │   ├── arrow-right-NxLhc94z.js
+│   │           │   ├── briefcase-business-C3f_m-qz.js
+│   │           │   ├── circle-alert-Bnj1_2Pi.js
+│   │           │   ├── circle-check-SrErAAs7.js
+│   │           │   ├── circle-x-BFsB5MG8.js
+│   │           │   ├── clipboard-list-CR3W2anE.js
+│   │           │   ├── data-operations-screen-DUomRSU-.js
+│   │           │   ├── dialog-GYBHox_K.js
+│   │           │   ├── evidence-workbench-screen-B9dZA5oe.js
+│   │           │   ├── external-link-D2sUEENK.js
+│   │           │   ├── file-text-DkF3NpHz.js
+│   │           │   ├── governance-screen-Bt8jFeQ5.js
+│   │           │   ├── index-BiC9xK9E.js
+│   │           │   ├── index-COFCSvvf.css
+│   │           │   ├── input-Df3cmCtO.js
+│   │           │   ├── live-quotes-screen-Dvkmr2aS.js
+│   │           │   ├── metric-card-cpRatFMB.js
+│   │           │   ├── network-D0LEyN6_.js
+│   │           │   ├── operator-readiness-console-CCK62eKA.js
+│   │           │   ├── overview-screen-cfPGvKL8.js
+│   │           │   ├── plus-CPt3SQlF.js
+│   │           │   ├── portfolio-screen-BgtkmdhT.js
+│   │           │   ├── quant-lab-screen-C4wdVbJn.js
+│   │           │   ├── refresh-cw-CMgwTeNi.js
+│   │           │   ├── reporting-screen-BKc_JlSm.js
+│   │           │   ├── research-screen-PV9lDkLP.js
+│   │           │   ├── select-uXNJaWiT.js
+│   │           │   ├── settings-screen-DVNlCXCk.js
+│   │           │   ├── sparkles-DfOVNAtk.js
+│   │           │   ├── trading-screen-msb1mR_e.js
+│   │           │   ├── trash-2-b-FPbPvh.js
+│   │           │   ├── trending-up-CTzXeE9m.js
+│   │           │   ├── ui-kit-primitives-BdZQzlNi.js
+│   │           │   ├── wallet-FjSGVsfq.js
+│   │           │   └── watchlist-screen-C6g-AHwX.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -6957,6 +7043,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AuthenticationMode.cs
 │   │   │   ├── BackfillEndpoints.cs
 │   │   │   ├── BackfillScheduleEndpoints.cs
+│   │   │   ├── BackfillValidationEndpoints.cs
 │   │   │   ├── BankingEndpoints.cs
 │   │   │   ├── BrokerageConnectionEndpoints.cs
 │   │   │   ├── CalendarEndpoints.cs
@@ -6967,11 +7054,13 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CppTraderEndpoints.cs
 │   │   │   ├── CredentialEndpoints.cs
 │   │   │   ├── CronEndpoints.cs
+│   │   │   ├── DemoModeEndpoints.cs
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
 │   │   │   ├── EdgarReferenceDataEndpoints.cs
 │   │   │   ├── EndpointHelpers.cs
 │   │   │   ├── EnvironmentDesignerEndpoints.cs
+│   │   │   ├── EvidenceEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExportEndpoints.cs
 │   │   │   ├── FailoverEndpoints.cs
@@ -6990,6 +7079,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── OptionsEndpoints.cs
 │   │   │   ├── PathValidation.cs
 │   │   │   ├── PromotionEndpoints.cs
+│   │   │   ├── ProviderCredentialEndpoints.cs
 │   │   │   ├── ProviderEndpoints.cs
 │   │   │   ├── ProviderExtendedEndpoints.cs
 │   │   │   ├── QuantLabEndpoints.cs
@@ -7006,6 +7096,14 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SymbolMappingEndpoints.cs
 │   │   │   ├── UiEndpoints.cs
 │   │   │   └── WorkstationEndpoints.cs
+│   │   ├── Evidence
+│   │   │   ├── EvidenceContribution.cs
+│   │   │   ├── EvidenceContributors.cs
+│   │   │   ├── EvidenceGraphService.cs
+│   │   │   ├── EvidenceSubjectResolver.cs
+│   │   │   ├── EvidenceTemplateRegistry.cs
+│   │   │   ├── EvidenceWorkflowServiceCollectionExtensions.cs
+│   │   │   └── FileEvidenceArtifactStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── HtmlTemplateGenerator.Login.cs
 │   │   ├── HtmlTemplateGenerator.Scripts.cs
@@ -7254,6 +7352,12 @@ Use these documents together when planning or implementing new work:
 │       │   │   ├── PaneContentState.cs
 │       │   │   ├── PaneDropResult.cs
 │       │   │   └── ShellRoute.cs
+│       │   ├── Refresh
+│       │   │   └── ShellRefreshCoordinator.cs
+│       │   ├── Root
+│       │   │   ├── DesktopLaunchRouter.cs
+│       │   │   ├── DesktopShellCoordinator.cs
+│       │   │   └── FileDropRouter.cs
 │       │   ├── Services
 │       │   │   ├── IPageContentFactory.cs
 │       │   │   ├── IShellNavigationCoordinator.cs
@@ -7261,8 +7365,16 @@ Use these documents together when planning or implementing new work:
 │       │   │   ├── PageContentFactory.cs
 │       │   │   ├── ShellNavigationCoordinator.cs
 │       │   │   └── ShellRouteRegistry.cs
+│       │   ├── Session
+│       │   │   ├── DesktopShellSessionService.cs
+│       │   │   ├── DesktopWindowState.cs
+│       │   │   ├── IWindowStateStore.cs
+│       │   │   └── WindowStateStore.cs
 │       │   └── ViewModels
-│       │       └── PaneHostViewModel.cs
+│       │       ├── CommandPaletteViewModel.cs
+│       │       ├── OperatorInboxViewModel.cs
+│       │       ├── PaneHostViewModel.cs
+│       │       └── WorkflowSummaryStripViewModel.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
 │       │   ├── AppStyles.xaml
@@ -7336,6 +7448,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── QuantScriptViewModel.cs
 │       │   ├── QuoteFloatViewModel.cs
 │       │   ├── ResearchWorkspaceShellViewModel.cs
+│       │   ├── RetentionAssuranceViewModel.cs
 │       │   ├── RunMatViewModel.cs
 │       │   ├── RunRiskViewModel.cs
 │       │   ├── ScatterAnalysisViewModel.cs
@@ -7681,6 +7794,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── DryRunCommandTests.cs
 │   │   │   │   ├── EtlCommandsTests.cs
 │   │   │   │   ├── HelpCommandTests.cs
+│   │   │   │   ├── LedgerCliCommandTests.cs
 │   │   │   │   ├── PackageCommandsTests.cs
 │   │   │   │   ├── SecurityMasterCommandsEdgarTests.cs
 │   │   │   │   ├── SelfTestCommandTests.cs
@@ -7957,6 +8071,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── CheckpointEndpointTests.cs
 │   │   │   │   ├── ConfigEndpointTests.cs
 │   │   │   │   ├── EndpointIntegrationTestBase.cs
+│   │   │   │   ├── EndpointMetadataTests.cs
 │   │   │   │   ├── EndpointTestCollection.cs
 │   │   │   │   ├── EndpointTestFixture.cs
 │   │   │   │   ├── EnvironmentDesignerEndpointTests.cs
@@ -8099,6 +8214,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── BrokeragePortfolioSyncServiceTests.cs
 │   │       ├── DirectLendingEndpointsTests.cs
 │   │       ├── EdgarReferenceDataEndpointsTests.cs
+│   │       ├── EvidenceWorkflowFabricTests.cs
 │   │       ├── ExecutionGovernanceEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
 │   │       ├── ExportEndpointsTests.cs
@@ -8264,9 +8380,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ProviderHealthViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── ResearchWorkspaceShellViewModelTests.cs
+│   │   │   ├── RetentionAssuranceViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   ├── ScheduleManagerViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
+│   │   │   ├── ShellPresentationViewModelTests.cs
 │   │   │   ├── StatusBarViewModelTests.cs
 │   │   │   ├── StorageViewModelTests.cs
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
@@ -8340,8 +8458,14 @@ Use these documents together when planning or implementing new work:
 │   │   └── test_shared_build_retention.py
 │   ├── setup-script-tests.md
 │   └── xunit.runner.json
-└── tree.bak
+├── tree.bak
+└── wwwroot
+    └── workstation
+        ├── assets
+        │   ├── index-B6vmAcIy.js
+        │   └── index-B6xPZbt9.css
+        └── index.html
 
-667 directories, 7500 files
+677 directories, 7606 files
 ```
 <!-- readme-tree end -->

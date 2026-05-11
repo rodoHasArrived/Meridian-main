@@ -18,6 +18,7 @@ internal sealed class HelpCommand : ICliCommand
         ["security-master"] = ShowSecurityMasterHelp,
         ["runbooks"] = ShowRunbooksHelp,
         ["statements"] = ShowStatementsHelp,
+        ["ledger"] = ShowLedgerHelp,
     };
 
     public bool CanHandle(string[] args)
@@ -63,8 +64,39 @@ internal sealed class HelpCommand : ICliCommand
         Console.WriteLine("  --help security-master  Security Master bulk ingest and conflict resolution");
         Console.WriteLine("  --help runbooks         Runbook preset create/list/run commands");
         Console.WriteLine("  --help statements       Statement import/validation/reconciliation");
+        Console.WriteLine("  --help ledger           Ledger-compatible text journal reports");
         Console.WriteLine();
         Console.WriteLine("Run --help without a topic for the full reference.");
+    }
+
+    private static void ShowLedgerHelp()
+    {
+        Console.WriteLine(@"
+LEDGER
+══════
+
+Read a Ledger-compatible plain-text journal and run in-memory double-entry reports.
+The source file is read-only; Meridian never rewrites it.
+
+COMMANDS:
+    ledger -f <journal-file> balance [account-filter]     Show account balances
+    ledger -f <journal-file> register [account-filter]    Show postings and running balance
+    ledger -f <journal-file> print                        Normalize supported entries
+    ledger -f <journal-file> accounts                     List accounts
+
+SUPPORTED V1 JOURNAL SYNTAX:
+    yyyy/MM/dd Payee
+        Assets:Checking        $-23.00
+        Expenses:Phone          $23.00
+
+    One posting amount may be omitted; Meridian infers it from the balancing amount.
+    Supported account roots: Assets, Liabilities, Equity, Income/Revenue, Expenses.
+
+EXAMPLES:
+    Meridian ledger -f ledger.dat balance
+    Meridian ledger -f ledger.dat register checking
+    Meridian ledger -f ledger.dat accounts
+");
     }
 
     private static void ShowRunbooksHelp()
@@ -429,12 +461,14 @@ HELP TOPICS:
     --help package        Data packaging and import/export
     --help diagnostics    Diagnostics and troubleshooting
     --help providers      Data provider information
+    --help ledger         Ledger-compatible text journal reports
 
 MODES:
     --mode <desktop|headless> Unified deployment mode selector
     --backfill              Run historical data backfill
     --replay <path>         Replay events from JSONL file
     --package               Create a portable data package
+    ledger -f <file> <report> Read a Ledger-compatible journal and run a report
     --import-package <path> Import a package into storage
     --list-package <path>   List contents of a package
     --validate-package <path> Validate a package

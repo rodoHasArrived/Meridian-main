@@ -256,24 +256,19 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         });
     }
 
-    private Task TryRecordConflictsAsync(SecurityProjectionRecord projection, Guid securityId, CancellationToken ct)
+    private async Task TryRecordConflictsAsync(SecurityProjectionRecord projection, Guid securityId, CancellationToken ct)
     {
         if (_conflictService is null)
-            return Task.CompletedTask;
+            return;
 
-        _ = Task.Run(async () =>
+        try
         {
-            try
-            {
-                await _conflictService.RecordConflictsForProjectionAsync(projection, ct).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Conflict detection failed for security {SecurityId}", securityId);
-            }
-        }, CancellationToken.None);
-
-        return Task.CompletedTask;
+            await _conflictService.RecordConflictsForProjectionAsync(projection, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Conflict detection failed for security {SecurityId}", securityId);
+        }
     }
 
     private static SecurityProjectionRecord CreateProjectionFromResult(

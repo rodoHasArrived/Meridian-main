@@ -1,24 +1,32 @@
-import { describe, expect, it } from "vitest";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import * as workstationApi from "@/lib/api";
 import {
+  DATA_BACKFILL_DETAIL_PANEL_ID,
   buildBackfillSection,
   buildBackfillDialogState,
   buildBackfillNarrative,
   buildBackfillRequest,
   buildBackfillResultCardState,
   buildBackfillTriggerState,
+  buildDataOperationsLoadingState,
   buildDataOperationsPresentationState,
   buildExportSection,
   buildProviderRow,
   buildProviderSection,
   buildProviderSetupDialogState,
-  buildSecurityMasterWorkspaceState,
+  buildRouteFocusCardState,
+  clearProviderSetupCredentials,
   buildSelectedBackfillDetail,
-  resolveSecurityMasterTabKeyCommand,
   resolveDataOperationsWorkstream,
   resolveSelectedBackfill,
-  validateBackfillForm
+  useDataOperationsViewModel,
+  validateBackfillForm,
+  validateProviderSetupForm
 } from "@/screens/data-operations-screen.view-model";
 import type {
+  BackfillProgressResponse,
+  BackfillTriggerRequest,
   BackfillTriggerResult,
   DataOperationsBackfillRecord,
   DataOperationsExportRecord,
@@ -84,6 +92,31 @@ const exports: DataOperationsExportRecord[] = [
 ];
 
 describe("data-operations-screen view model", () => {
+  it("derives route-aware loading state with operator recovery actions", () => {
+    const overview = buildDataOperationsLoadingState("overview");
+    expect(overview).toMatchObject({
+      title: "Loading Data workspace",
+      statusLabel: "Bootstrap pending",
+      role: "status",
+      ariaLive: "polite",
+      ariaBusy: true,
+      regionLabel: "Data workspace loading state"
+    });
+    expect(overview.chips.map((chip) => chip.label)).toEqual(["Providers", "Data quality", "Exports"]);
+    expect(overview.actions).toContainEqual({
+      id: "settings",
+      label: "Check provider setup",
+      href: "/settings",
+      ariaLabel: "Open Settings to check provider setup while Data workspace loads",
+      variant: "default"
+    });
+
+    const backfills = buildDataOperationsLoadingState("backfills");
+    expect(backfills.title).toBe("Loading backfill queue");
+    expect(backfills.description).toContain("historical repair jobs");
+    expect(backfills.chips[2]).toEqual({ label: "Backfills", value: "Pending" });
+  });
+
   it("derives route focus, selected backfill, and detail narrative", () => {
     expect(resolveDataOperationsWorkstream("/data/backfills")).toBe("backfills");
     expect(resolveDataOperationsWorkstream("/data")).toBe("overview");
@@ -93,6 +126,33 @@ describe("data-operations-screen view model", () => {
     expect(resolveSelectedBackfill(backfills, "BF-1044")?.jobId).toBe("BF-1044");
     expect(resolveSelectedBackfill(backfills, null)?.jobId).toBe("BF-1042");
     expect(buildBackfillNarrative(backfills[1])).toContain("waiting on operator review");
+
+    const selectedDetail = buildSelectedBackfillDetail(backfills, "BF-1044");
+    const backfillFocus = buildRouteFocusCardState({
+      workstream: "backfills",
+      selectedBackfillDetail: selectedDetail,
+      backfillDetailEmptyState: null
+    });
+    expect(backfillFocus).toMatchObject({
+      id: DATA_BACKFILL_DETAIL_PANEL_ID,
+      role: "region",
+      eyebrow: "Backfill Detail",
+      title: "Backfill queue focus",
+      action: null
+    });
+    expect(backfillFocus.rows).toContainEqual({ id: "updated", label: "Updated", value: "5m ago" });
+
+    const overviewFocus = buildRouteFocusCardState({
+      workstream: "overview",
+      selectedBackfillDetail: null,
+      backfillDetailEmptyState: null
+    });
+    expect(overviewFocus.ariaLabel).toBe("Data workspace route focus");
+    expect(overviewFocus.action).toEqual({
+      label: "Open Security Master",
+      href: "/accounting/security-master",
+      ariaLabel: "Open Security Master in Accounting"
+    });
   });
 
   it("normalizes request data and validates required symbols and date range", () => {
@@ -110,6 +170,8 @@ describe("data-operations-screen view model", () => {
 
     expect(validateBackfillForm({ provider: "polygon", symbols: "", from: "", to: "" }))
       .toBe("Enter at least one symbol before previewing a backfill.");
+    expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "2024-02-31", to: "" }))
+      .toBe("Use YYYY-MM-DD for the From date.");
     expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "2024-02-01", to: "2024-01-01" }))
       .toBe("From date must be before or equal to To date.");
   });
@@ -161,6 +223,8 @@ describe("data-operations-screen view model", () => {
     });
     expect(running.dialogState.runAction.busy).toBe(true);
     expect(running.dialogState.closeButtonDisabledReason).toContain("wait for the current request");
+    expect(running.dialogState.symbolsField.disabled).toBe(true);
+    expect(running.dialogState.symbolsField.disabledReason).toContain("wait for the current request");
     expect(running.statusAnnouncement).toBe("Running backfill request.");
   });
 
@@ -201,6 +265,59 @@ describe("data-operations-screen view model", () => {
     expect(dialog.runAction.disabledReason).toBe("Enter at least one symbol before previewing a backfill.");
     expect(dialog.formStatusLabel).toBe("Enter at least one symbol before previewing a backfill.");
     expect(dialog.formStatusTone).toBe("warning");
+  });
+
+  it("ignores stale backfill preview responses after a newer preview settles", async () => {
+    const previewRequests: Array<{
+      request: BackfillTriggerRequest;
+      resolve: (value: BackfillTriggerResult) => void;
+    }> = [];
+    const idleProgress: BackfillProgressResponse = {
+      active: false,
+      provider: null,
+      symbols: [],
+      message: null
+    };
+    const services = {
+      preview: (request: BackfillTriggerRequest) => new Promise<BackfillTriggerResult>((resolve) => {
+        previewRequests.push({ request, resolve });
+      }),
+      run: async (request: BackfillTriggerRequest) => ({ ...preview, symbols: request.symbols }),
+      getProgress: async () => idleProgress
+    };
+
+    const { result } = renderHook(() => useDataOperationsViewModel(null, "/data/backfills", services));
+
+    act(() => {
+      result.current.updateBackfillForm("symbols", "AAPL MSFT");
+    });
+
+    let firstPreview!: Promise<void>;
+    let secondPreview!: Promise<void>;
+    act(() => {
+      firstPreview = result.current.previewBackfill();
+      secondPreview = result.current.previewBackfill();
+    });
+
+    await waitFor(() => expect(previewRequests).toHaveLength(2));
+
+    await act(async () => {
+      previewRequests[1].resolve({ ...preview, symbols: ["MSFT"], barsWritten: 25 });
+      await secondPreview;
+    });
+
+    expect(result.current.preview?.symbols).toEqual(["MSFT"]);
+    expect(result.current.preview?.barsWritten).toBe(25);
+
+    await act(async () => {
+      previewRequests[0].resolve({ ...preview, symbols: ["AAPL"], barsWritten: 1000 });
+      await firstPreview;
+    });
+
+    expect(result.current.preview?.symbols).toEqual(["MSFT"]);
+    expect(result.current.preview?.barsWritten).toBe(25);
+    expect(result.current.phase).toBe("idle");
+    expect(result.current.busy).toBe(false);
   });
 
   it("derives backfill preview and completion result cards", () => {
@@ -253,14 +370,17 @@ describe("data-operations-screen view model", () => {
       value: "98%"
     });
     expect(providerSection.rows[0].recommendedActionText).toBe("Keep provider active.");
-    expect(buildProviderSection([]).emptyState.title).toBe("No providers reported");
+    expect(buildProviderSection([]).emptyState.title).toBe("No providers configured");
 
     const backfillSection = buildBackfillSection(backfills, "BF-1044", "backfills");
     expect(backfillSection.rows[1].selected).toBe(true);
+    expect(backfillSection.rows[1].expanded).toBe(true);
+    expect(backfillSection.rows[0].expanded).toBe(false);
     expect(backfillSection.rows[1].rowId).toBe("backfill-row-bf-1044");
-    expect(backfillSection.rows[1].detailPanelId).toBe("backfill-detail-bf-1044");
+    expect(backfillSection.rows[1].detailPanelId).toBe(DATA_BACKFILL_DETAIL_PANEL_ID);
+    expect(backfillSection.rows[0].detailPanelId).toBe(DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(backfillSection.rows[1].ariaLabel).toContain("Selected backfill BF-1044");
-    expect(backfillSection.rows[0].detailDescription).toContain("details will replace the current backfill detail panel");
+    expect(backfillSection.rows[0].detailDescription).toContain("updates the shared backfill detail panel");
     expect(buildBackfillSection([], null, "backfills").emptyState.description).toContain("Trigger backfill");
 
     const exportSection = buildExportSection(exports);
@@ -294,6 +414,7 @@ describe("data-operations-screen view model", () => {
       value: "Alpaca"
     });
     expect(alpacaDialog.credentialFields.map((field) => field.field)).toEqual(["apiKey", "apiSecret"]);
+    expect(alpacaDialog.credentialFields.map((field) => field.autoComplete)).toEqual(["new-password", "new-password"]);
     expect(alpacaDialog.capabilityOptions.find((option) => option.id === "brokerage")?.selected).toBe(true);
     expect(alpacaDialog.submitAction.disabledReason).toBe("An API key is required for Alpaca.");
 
@@ -308,29 +429,122 @@ describe("data-operations-screen view model", () => {
 
     expect(yahooDialog.credentialFields).toHaveLength(0);
     expect(yahooDialog.submitAction.disabled).toBe(false);
-  });
 
-  it("keeps non-active security records hidden until the filter is expanded", () => {
-    const activeState = buildSecurityMasterWorkspaceState({
-      query: "goldman",
-      selectedSecurityId: null,
-      activeTab: "overview",
-      statusFilter: "active"
+    const submittingDialog = buildProviderSetupDialogState("submitting", {
+      kind: "alpaca",
+      displayName: "Alpaca",
+      apiKey: "key-123",
+      apiSecret: "secret-456",
+      endpoint: "",
+      capabilities: ["streaming", "brokerage"]
     });
 
-    const allState = buildSecurityMasterWorkspaceState({
-      query: "goldman",
-      selectedSecurityId: null,
-      activeTab: "overview",
-      statusFilter: "all"
-    });
-
-    expect(activeState.results).toHaveLength(5);
-    expect(allState.results).toHaveLength(7);
-    expect(activeState.results.some((row) => row.status === "Pending")).toBe(false);
-    expect(allState.results.some((row) => row.status === "Pending")).toBe(true);
-    expect(allState.results.some((row) => row.status === "Inactive")).toBe(true);
+    expect(submittingDialog.providerKindField.disabled).toBe(true);
+    expect(submittingDialog.displayNameField.disabled).toBe(true);
+    expect(submittingDialog.credentialFields.every((field) => field.disabled)).toBe(true);
+    expect(submittingDialog.capabilityOptions.every((option) => option.disabled)).toBe(true);
+    expect(submittingDialog.providerKindField.disabledReason).toBe("Provider setup is in progress; wait before editing.");
   });
+
+  it("ignores stale provider setup responses after a newer submission settles", async () => {
+    const setupRequests: Array<{
+      resolve: (value: Awaited<ReturnType<typeof workstationApi.setupProvider>>) => void;
+    }> = [];
+    const setupProvider = vi.spyOn(workstationApi, "setupProvider").mockImplementation(() => (
+      new Promise((resolve) => {
+        setupRequests.push({ resolve });
+      })
+    ));
+
+    try {
+      const { result } = renderHook(() => useDataOperationsViewModel(null, "/data"));
+
+      act(() => {
+        result.current.updateProviderForm("kind", "alpaca");
+        result.current.updateProviderForm("apiKey", "key-123");
+        result.current.updateProviderForm("apiSecret", "secret-456");
+      });
+
+      let firstSubmit!: Promise<void>;
+      let secondSubmit!: Promise<void>;
+      act(() => {
+        firstSubmit = result.current.submitProviderSetup();
+        secondSubmit = result.current.submitProviderSetup();
+      });
+
+      await waitFor(() => expect(setupRequests).toHaveLength(2));
+
+      await act(async () => {
+        setupRequests[1].resolve({
+          success: true,
+          providerId: "provider-alpaca-paper",
+          providerName: "Alpaca paper",
+          message: "Provider configured.",
+          error: null
+        });
+        await secondSubmit;
+      });
+
+      expect(result.current.providerPhase).toBe("success");
+      expect(result.current.providerSetupResult?.providerName).toBe("Alpaca paper");
+
+      await act(async () => {
+        setupRequests[0].resolve({
+          success: false,
+          providerId: "provider-alpaca-old",
+          providerName: "Old Alpaca",
+          message: "Old provider response.",
+          error: "Old response failed."
+        });
+        await firstSubmit;
+      });
+
+      expect(result.current.providerPhase).toBe("success");
+      expect(result.current.providerSetupResult?.providerName).toBe("Alpaca paper");
+      expect(result.current.providerSetupError).toBeNull();
+    } finally {
+      setupProvider.mockRestore();
+    }
+  });
+
+  it("clears provider setup secrets while preserving non-secret form context", () => {
+    expect(clearProviderSetupCredentials({
+      kind: "alpaca",
+      displayName: "Alpaca paper",
+      apiKey: "key-123",
+      apiSecret: "secret-456",
+      endpoint: "https://paper-api.alpaca.markets",
+      capabilities: ["streaming", "brokerage"]
+    })).toEqual({
+      kind: "alpaca",
+      displayName: "Alpaca paper",
+      apiKey: "",
+      apiSecret: "",
+      endpoint: "https://paper-api.alpaca.markets",
+      capabilities: ["streaming", "brokerage"]
+    });
+  });
+
+  it("validates endpoint provider URLs before submit", () => {
+    expect(validateProviderSetupForm({
+      kind: "interactivebrokers",
+      displayName: "IBKR",
+      apiKey: "",
+      apiSecret: "",
+      endpoint: "not-a-url",
+      capabilities: ["streaming"]
+    })).toBe("Enter a valid http or https endpoint URL for Interactive Brokers.");
+
+    expect(validateProviderSetupForm({
+      kind: "interactivebrokers",
+      displayName: "IBKR",
+      apiKey: "",
+      apiSecret: "",
+      endpoint: "https://localhost:7497",
+      capabilities: ["streaming"]
+    })).toBeNull();
+  });
+
 
   it("maps export row status into semantic tones and next actions", () => {
     const exportSection = buildExportSection([
@@ -389,7 +603,7 @@ describe("data-operations-screen view model", () => {
   it("derives selected backfill detail panel state with stable linkage ids", () => {
     const detail = buildSelectedBackfillDetail(backfills, "BF-1044");
 
-    expect(detail?.id).toBe("backfill-detail-bf-1044");
+    expect(detail?.id).toBe(DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(detail?.title).toBe("Options chains / 7d");
     expect(detail?.description).toContain("waiting on operator review");
     expect(detail?.ariaLabel).toContain("Backfill detail for BF-1044");
@@ -397,83 +611,7 @@ describe("data-operations-screen view model", () => {
     expect(buildSelectedBackfillDetail([], null)).toBeNull();
   });
 
-  it("builds a security master workspace with search results, tab state, and packet detail", () => {
-    const securityMaster = buildSecurityMasterWorkspaceState({
-      query: "goldman",
-      selectedSecurityId: "gs-bond-de",
-      activeTab: "corporate-actions",
-      statusFilter: "active"
-    });
 
-    expect(securityMaster.resultCountLabel).toBe("5 results");
-    expect(securityMaster.statusChipLabel).toBe("Status: Active");
-    expect(securityMaster.searchSummaryBadges).toEqual([
-      {
-        id: "assets",
-        label: "Assets",
-        value: "3",
-        ariaLabel: "3 asset types in current security search results"
-      },
-      {
-        id: "countries",
-        label: "Countries",
-        value: "4",
-        ariaLabel: "4 countries in current security search results"
-      },
-      {
-        id: "packet-lanes",
-        label: "Packet lanes",
-        value: "5",
-        ariaLabel: "5 packet lanes in current security search results"
-      }
-    ]);
-    expect(securityMaster.results.some((row) => row.selected && row.securityId === "gs-bond-de")).toBe(true);
-    expect(securityMaster.tabs.find((tab) => tab.id === "corporate-actions")?.selected).toBe(true);
-    expect(securityMaster.tabs.find((tab) => tab.id === "corporate-actions")).toMatchObject({
-      tabIndex: 0,
-      selectAriaLabel: "Show Corporate actions for Goldman Sachs Group Inc"
-    });
-    expect(securityMaster.tabs.find((tab) => tab.id === "overview")?.tabIndex).toBe(-1);
-    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "ArrowRight")).toBe("print");
-    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "ArrowLeft")).toBe("company");
-    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "Home")).toBe("overview");
-    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "End")).toBe("print");
-    expect(resolveSecurityMasterTabKeyCommand(securityMaster.tabs, "corporate-actions", "Enter")).toBeNull();
-    expect(securityMaster.selectedSecurity?.titleCode).toBe("GOS 3.625 10/30");
-    expect(securityMaster.selectedSecurity?.corporateActions[0].description).toContain("Semi-annual coupon");
-    expect(securityMaster.selectedSecurity?.printPacketId).toBe("SM-PACKET-2026-06-09-GOS");
-    expect(securityMaster.selectedSecurity?.printPacketState).toMatchObject({
-      statusLabel: "Review required",
-      statusVariant: "warning",
-      contentsLabel: "4 packet content sections",
-      checklistLabel: "3 sign-off checklist items",
-      exportLabel: "3 downstream export lanes"
-    });
-    expect(securityMaster.selectedSecurity?.printPacketState.previewFields.map((field) => field.label)).toEqual([
-      "Ticker",
-      "Primary venue",
-      "Country",
-      "ISIN"
-    ]);
-    expect(securityMaster.selectedSecurity?.printPacketState.readinessPills).toEqual([
-      { id: "ready", label: "Ready", value: "2", tone: "success" },
-      { id: "review", label: "Review", value: "1", tone: "warning" },
-      { id: "draft", label: "Draft", value: "0" }
-    ]);
-  });
-
-  it("derives a security master empty state when the query returns no matches", () => {
-    const securityMaster = buildSecurityMasterWorkspaceState({
-      query: "nonexistent issuer",
-      selectedSecurityId: null,
-      activeTab: "overview",
-      statusFilter: "active"
-    });
-
-    expect(securityMaster.hasResults).toBe(false);
-    expect(securityMaster.emptyState?.title).toBe("No matching securities");
-    expect(securityMaster.selectedSecurity).toBeNull();
-  });
 
   it("derives a data operations presentation state for empty workspace arrays", () => {
     const emptyData: DataOperationsWorkspaceResponse = {
@@ -490,5 +628,11 @@ describe("data-operations-screen view model", () => {
     expect(presentation.exportSection.hasRows).toBe(false);
     expect(presentation.selectedBackfillDetail).toBeNull();
     expect(presentation.backfillDetailEmptyState?.title).toBe("No backfill activity yet");
+    expect(presentation.routeFocusCard).toMatchObject({
+      role: "status",
+      ariaLabel: "Backfill detail empty state",
+      title: "No backfill activity yet",
+      rows: []
+    });
   });
 });

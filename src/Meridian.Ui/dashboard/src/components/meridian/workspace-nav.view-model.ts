@@ -1,6 +1,14 @@
 import { isWorkspacePathActive, WORKSPACES, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 
+export interface WorkspaceNavSubItemViewModel {
+  label: string;
+  route: string;
+  active: boolean;
+  ariaCurrent: "page" | undefined;
+  ariaLabel: string;
+}
+
 export interface WorkspaceNavItemViewModel {
   key: WorkspaceKey;
   label: string;
@@ -11,6 +19,7 @@ export interface WorkspaceNavItemViewModel {
   active: boolean;
   ariaCurrent: "page" | undefined;
   ariaLabel: string;
+  subItems: WorkspaceNavSubItemViewModel[];
 }
 
 export interface WorkspaceNavCurrentWorkspaceViewModel {
@@ -40,6 +49,43 @@ export interface WorkspaceNavViewModel {
 
 export type WorkspaceNavStatusTone = "live" | "review" | "paper" | "preview" | "setup";
 
+const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: string }[]>> = {
+  trading: [
+    { label: "Orders", route: "/trading/orders" },
+    { label: "Positions", route: "/trading/positions" },
+    { label: "Risk", route: "/trading/risk" },
+    { label: "Readiness", route: "/trading/readiness" }
+  ],
+  portfolio: [
+    { label: "Attribution", route: "/portfolio/attribution" },
+    { label: "Brokerage sync", route: "/portfolio/brokerage-sync" }
+  ],
+  accounting: [
+    { label: "Reconciliation", route: "/accounting/reconciliation" },
+    { label: "Security Master", route: "/accounting/security-master" },
+    { label: "Approvals", route: "/accounting/approvals" }
+  ],
+  reporting: [
+    { label: "Report packs", route: "/reporting/report-packs" },
+    { label: "Evidence", route: "/reporting/evidence" },
+    { label: "Exports", route: "/reporting/exports" }
+  ],
+  strategy: [
+    { label: "Promotions", route: "/strategy/promotions" },
+    { label: "Research", route: "/strategy/research" },
+    { label: "Quant Lab", route: "/strategy/quant-lab" }
+  ],
+  data: [
+    { label: "Watchlist", route: "/data/watchlist" },
+    { label: "Live quotes", route: "/data/quotes" },
+    { label: "Backfill queues", route: "/data/backfills" }
+  ],
+  settings: [
+    { label: "Preferences", route: "/settings/preferences" },
+    { label: "Integrations", route: "/settings/integrations" }
+  ]
+};
+
 export function buildWorkspaceNavViewModel(
   pathname: string,
   workspaces: WorkspaceSummary[] = WORKSPACES
@@ -50,6 +96,19 @@ export function buildWorkspaceNavViewModel(
   const items = workspaces.map<WorkspaceNavItemViewModel>((workspace) => {
     const active = isWorkspacePathActive(pathname, workspace.key);
     const statusTone = workspaceStatusTone(workspace.status);
+    const rawSubRoutes = WORKSPACE_SUBROUTES[workspace.key] ?? [];
+    const subItems: WorkspaceNavSubItemViewModel[] = active
+      ? rawSubRoutes.map((sub) => {
+          const subActive = isSubRouteActive(pathname, sub.route);
+          return {
+            label: sub.label,
+            route: sub.route,
+            active: subActive,
+            ariaCurrent: subActive ? "page" : undefined,
+            ariaLabel: subActive ? `${sub.label}, current page` : `Open ${sub.label}`
+          };
+        })
+      : [];
 
     return {
       key: workspace.key,
@@ -62,7 +121,8 @@ export function buildWorkspaceNavViewModel(
       ariaCurrent: active ? "page" : undefined,
       ariaLabel: active
         ? `${workspace.label} workspace, current route, ${workspace.status}`
-        : `Open ${workspace.label} workspace, ${workspace.status}`
+        : `Open ${workspace.label} workspace, ${workspace.status}`,
+      subItems
     };
   });
 
@@ -90,6 +150,12 @@ export function buildWorkspaceNavViewModel(
     deliveryShortcutAriaLabel: "Open command palette with Control K",
     items
   };
+}
+
+function isSubRouteActive(pathname: string, route: string): boolean {
+  const clean = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/";
+  const cleanRoute = route.replace(/\/+$/, "") || "/";
+  return clean === cleanRoute || clean.startsWith(`${cleanRoute}/`);
 }
 
 function workspaceStatusTone(status: string): WorkspaceNavStatusTone {

@@ -1,15 +1,16 @@
-import { Activity, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, ShieldCheck, Trash2, User } from "lucide-react";
+import { Activity, ArrowRight, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, ShieldCheck, Trash2, User } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { buildSettingsScreenViewModel, useAlpacaConnectionFormViewModel } from "@/screens/settings-screen.view-model";
 import type {
   BrokerageConnectionStatus,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
+  PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -22,6 +23,7 @@ interface SettingsScreenProps {
   overview: SystemOverviewResponse | null;
   research?: ResearchWorkspaceResponse | null;
   trading?: TradingWorkspaceResponse | null;
+  portfolio?: PortfolioWorkspaceResponse | null;
   dataOperations?: DataOperationsWorkspaceResponse | null;
   governance?: GovernanceWorkspaceResponse | null;
   reporting?: GovernanceWorkspaceResponse | null;
@@ -60,11 +62,45 @@ const diagnosticToneClass = {
   danger: "border-danger/35 bg-danger/10"
 } as const;
 
+const formReadinessTextClass = {
+  default: "text-muted-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger"
+} as const;
+
+const requirementToneClass = {
+  success: "border-success/30 bg-success/10 text-success",
+  warning: "border-warning/35 bg-warning/10 text-warning",
+  muted: "border-border/70 bg-secondary/25 text-muted-foreground"
+} as const;
+
+const environmentOptionClass = {
+  paper: {
+    selected: "border-paper/40 bg-paper/10 text-paper",
+    idle: "border-border/70 bg-secondary/25 text-foreground hover:border-paper/35 hover:bg-paper/10",
+    badge: "border-paper/30 bg-paper/10 text-paper"
+  },
+  live: {
+    selected: "border-live-env/40 bg-live-env/10 text-live-env",
+    idle: "border-border/70 bg-secondary/25 text-foreground hover:border-live-env/35 hover:bg-live-env/10",
+    badge: "border-live-env/35 bg-live-env/10 text-live-env"
+  }
+} as const;
+
+const setupStepToneClass = {
+  success: "border-success/30 bg-success/10",
+  warning: "border-warning/35 bg-warning/10",
+  danger: "border-danger/35 bg-danger/10",
+  muted: "border-border/70 bg-secondary/25"
+} as const;
+
 export function SettingsScreen({
   session,
   overview,
   research = null,
   trading = null,
+  portfolio = null,
   dataOperations = null,
   governance = null,
   reporting = null,
@@ -79,6 +115,7 @@ export function SettingsScreen({
     overview,
     research,
     trading,
+    portfolio,
     dataOperations,
     governance,
     reporting,
@@ -110,15 +147,14 @@ export function SettingsScreen({
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <SettingsChip label="Environment" value={session ? session.environment.toUpperCase() : "—"} />
-          <SettingsChip label="Workspace" value={session?.activeWorkspace ?? "—"} />
-          <SettingsChip label="Diagnostics" value={vm.diagnosticStatusLabel} />
-          <SettingsChip label="Heartbeat" value={overview?.lastHeartbeatUtc ?? "—"} />
+          {vm.headerChips.map((chip) => (
+            <SettingsChip key={chip.label} label={chip.label} value={chip.value} />
+          ))}
         </div>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card className="panel-surface">
+        <Card id="diagnostic-endpoints" className="panel-surface scroll-mt-6">
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -194,7 +230,10 @@ export function SettingsScreen({
         </Card>
       </section>
 
-      <Card className={cn("panel-surface border", diagnosticToneClass[vm.alpacaConnectionPanel.statusTone])}>
+      <Card
+        id="alpaca-provider-setup"
+        className={cn("panel-surface scroll-mt-6 border", diagnosticToneClass[vm.alpacaConnectionPanel.statusTone])}
+      >
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div>
@@ -211,7 +250,7 @@ export function SettingsScreen({
           </div>
         </CardHeader>
         <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
-          <form className="grid gap-3" onSubmit={alpacaForm.connect} noValidate>
+          <form className="grid gap-3" onSubmit={alpacaForm.connect} noValidate aria-describedby={alpacaForm.formPanelId}>
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem]">
               <label htmlFor="alpaca-key-id" className="grid gap-1 text-xs font-medium text-muted-foreground">
                 Key ID
@@ -224,9 +263,9 @@ export function SettingsScreen({
                   leadingIcon={<KeyRound className="h-4 w-4" />}
                   disabled={!alpacaForm.canEdit}
                   error={alpacaForm.keyIdError}
-                  aria-describedby="alpaca-key-id-help"
+                  aria-describedby={`${alpacaForm.fieldHelpIds.keyId} ${alpacaForm.formPanelId}`}
                 />
-                <span id="alpaca-key-id-help" className={cn("text-[11px] leading-4", alpacaForm.keyIdError ? "text-danger" : "text-muted-foreground")}>
+                <span id={alpacaForm.fieldHelpIds.keyId} className={cn("text-[11px] leading-4", alpacaForm.keyIdError ? "text-danger" : "text-muted-foreground")}>
                   {alpacaForm.keyIdHelpText}
                 </span>
               </label>
@@ -242,25 +281,83 @@ export function SettingsScreen({
                   leadingIcon={<ShieldCheck className="h-4 w-4" />}
                   disabled={!alpacaForm.canEdit}
                   error={alpacaForm.secretKeyError}
-                  aria-describedby="alpaca-secret-key-help"
+                  aria-describedby={`${alpacaForm.fieldHelpIds.secretKey} ${alpacaForm.formPanelId}`}
                 />
-                <span id="alpaca-secret-key-help" className={cn("text-[11px] leading-4", alpacaForm.secretKeyError ? "text-danger" : "text-muted-foreground")}>
+                <span id={alpacaForm.fieldHelpIds.secretKey} className={cn("text-[11px] leading-4", alpacaForm.secretKeyError ? "text-danger" : "text-muted-foreground")}>
                   {alpacaForm.secretKeyHelpText}
                 </span>
               </label>
-              <label htmlFor="alpaca-environment" className="grid gap-1 text-xs font-medium text-muted-foreground">
-                Environment
-                <Select
-                  id="alpaca-environment"
-                  value={alpacaForm.environment}
-                  onChange={(event) => alpacaForm.setEnvironment(event.target.value === "live" ? "live" : "paper")}
-                  disabled={!alpacaForm.canEdit}
-                  aria-label="Alpaca trading environment"
+              <fieldset className="grid gap-1 text-xs font-medium text-muted-foreground">
+                <legend>{alpacaForm.environmentLegend}</legend>
+                <div
+                  className="grid gap-2 sm:grid-cols-2"
+                  role="radiogroup"
+                  aria-label={alpacaForm.environmentLegend}
+                  aria-describedby={`${alpacaForm.fieldHelpIds.environment} ${alpacaForm.formPanelId}`}
                 >
-                  <option value="paper">Paper</option>
-                  <option value="live">Live</option>
-                </Select>
-              </label>
+                  {alpacaForm.environmentOptions.map((option) => (
+                    <label
+                      key={option.id}
+                      className={cn(
+                        "relative grid min-h-[4.75rem] cursor-pointer gap-1 rounded-md border px-3 py-2 transition-colors",
+                        option.isSelected ? environmentOptionClass[option.tone].selected : environmentOptionClass[option.tone].idle,
+                        option.disabled && "cursor-not-allowed opacity-60"
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="alpaca-environment"
+                        value={option.value}
+                        checked={option.isSelected}
+                        disabled={option.disabled}
+                        onChange={() => alpacaForm.setEnvironment(option.value)}
+                        aria-label={option.ariaLabel}
+                        aria-describedby={`${option.descriptionId} ${alpacaForm.fieldHelpIds.environment} ${alpacaForm.formPanelId}`}
+                        className="peer sr-only"
+                      />
+                      <span className="pointer-events-none absolute inset-0 rounded-md peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40" aria-hidden="true" />
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-foreground">{option.label}</span>
+                        <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase", environmentOptionClass[option.tone].badge)}>
+                          {option.badgeLabel}
+                        </span>
+                      </span>
+                      <span id={option.descriptionId} className="text-[11px] font-normal leading-4 text-muted-foreground">
+                        {option.description}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <span id={alpacaForm.fieldHelpIds.environment} className="text-[11px] leading-4 text-muted-foreground">
+                  {alpacaForm.environmentHelpText}
+                </span>
+              </fieldset>
+            </div>
+            <div
+              id={alpacaForm.formPanelId}
+              role={alpacaForm.formPanelRole}
+              aria-live={alpacaForm.formPanelAriaLive}
+              className={cn("rounded-md border px-3 py-3", diagnosticToneClass[alpacaForm.formPanelTone])}
+            >
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0">
+                  <div className={cn("text-sm font-semibold", formReadinessTextClass[alpacaForm.formPanelTone])}>
+                    {alpacaForm.formPanelTitle}
+                  </div>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{alpacaForm.formPanelDetail}</p>
+                </div>
+                <div className="flex flex-wrap gap-2" aria-label="Alpaca credential requirements">
+                  {alpacaForm.requirements.map((requirement) => (
+                    <span
+                      key={requirement.id}
+                      className={cn("inline-flex items-center gap-2 rounded-sm border px-2 py-1 text-[11px] font-medium", requirementToneClass[requirement.tone])}
+                    >
+                      <span className="text-muted-foreground">{requirement.label}</span>
+                      <span className="font-mono">{requirement.value}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Button
@@ -272,7 +369,7 @@ export function SettingsScreen({
                 disabledReason={alpacaForm.submitDisabledReason}
               >
                 <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                Connect / Test
+                {alpacaForm.submitLabel}
               </Button>
               <Button
                 type="button"
@@ -285,7 +382,7 @@ export function SettingsScreen({
                 disabledReason={alpacaForm.clearDisabledReason}
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
-                Clear
+                {alpacaForm.clearLabel}
               </Button>
               {alpacaForm.actionMessage ? (
                 <span role={alpacaForm.statusRole} className={alpacaForm.statusClassName}>{alpacaForm.actionMessage}</span>
@@ -308,6 +405,45 @@ export function SettingsScreen({
                 {vm.alpacaConnectionPanel.warnings[0]}
               </div>
             ) : null}
+            <div
+              role="list"
+              aria-label={vm.alpacaConnectionPanel.setupChecklistAriaLabel}
+              className="grid gap-2"
+            >
+              <div className="min-w-0">
+                <h3 className="text-xs font-semibold uppercase text-muted-foreground">
+                  {vm.alpacaConnectionPanel.setupChecklistTitle}
+                </h3>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  {vm.alpacaConnectionPanel.setupChecklistDetail}
+                </p>
+              </div>
+              {vm.alpacaConnectionPanel.setupChecklist.map((step) => (
+                <div
+                  key={step.id}
+                  role="listitem"
+                  className={cn("rounded-md border px-3 py-2", setupStepToneClass[step.tone])}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-foreground">{step.label}</div>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
+                    </div>
+                    <Badge variant={step.badgeVariant} className="shrink-0">
+                      {step.statusLabel}
+                    </Badge>
+                  </div>
+                  {step.actionHref && step.actionLabel ? (
+                    <Button asChild variant="outline" size="sm" className="mt-3">
+                      <Link to={step.actionHref} aria-label={step.actionAriaLabel ?? step.actionLabel}>
+                        {step.actionLabel}
+                        <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                      </Link>
+                    </Button>
+                  ) : null}
+                </div>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -436,7 +572,7 @@ export function SettingsScreen({
         </Card>
       </section>
 
-      <Card className="panel-surface">
+      <Card id="backend-capability-coverage" className="panel-surface scroll-mt-6">
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -476,7 +612,7 @@ export function SettingsScreen({
                 </div>
                 <p className="mt-3 text-xs leading-5 text-foreground/75">{group.statusDetail}</p>
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  {group.endpoints.map((endpoint) => (
+                  {group.endpoints.map((endpoint) => endpoint.isBrowserNavigable ? (
                     <a
                       key={endpoint.id}
                       href={endpoint.href}
@@ -485,14 +621,17 @@ export function SettingsScreen({
                       aria-label={endpoint.ariaLabel}
                       className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-background/45 px-3 py-2 text-xs transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
-                      <Badge variant="outline" className="shrink-0">{endpoint.method}</Badge>
-                      <span className="min-w-0">
-                        <span className="block font-semibold text-foreground">{endpoint.label}</span>
-                        <span className="mt-1 block break-all font-mono text-[10px] leading-4 text-muted-foreground">
-                          {endpoint.href}
-                        </span>
-                      </span>
+                      <EndpointReference endpoint={endpoint} />
                     </a>
+                  ) : (
+                    <div
+                      key={endpoint.id}
+                      role="group"
+                      aria-label={endpoint.ariaLabel}
+                      className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-xs"
+                    >
+                      <EndpointReference endpoint={endpoint} />
+                    </div>
                   ))}
                 </div>
               </div>
@@ -501,6 +640,32 @@ export function SettingsScreen({
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function EndpointReference({
+  endpoint
+}: {
+  endpoint: {
+    method: string;
+    label: string;
+    href: string;
+    interactionLabel: string;
+  };
+}) {
+  return (
+    <>
+      <Badge variant="outline" className="shrink-0">{endpoint.method}</Badge>
+      <span className="min-w-0">
+        <span className="block font-semibold text-foreground">{endpoint.label}</span>
+        <span className="mt-1 block break-all font-mono text-[10px] leading-4 text-muted-foreground">
+          {endpoint.href}
+        </span>
+        <span className="mt-1 inline-flex rounded-sm border border-border/60 px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+          {endpoint.interactionLabel}
+        </span>
+      </span>
+    </>
   );
 }
 

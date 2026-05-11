@@ -1,9 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildPortfolioScreenViewModel } from "@/screens/portfolio-screen.view-model";
+import {
+  buildLinkedRunEvidenceLabel,
+  buildPortfolioScreenViewModel,
+  buildPortfolioFallbackMetrics,
+  resolveBrokerageAccountFilterKeyCommand
+} from "@/screens/portfolio-screen.view-model";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   GovernanceWorkspaceResponse,
+  PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
   TradingWorkspaceResponse
 } from "@/types";
@@ -187,6 +193,60 @@ const brokeragePortfolio: BrokerageHouseholdPortfolio = {
   ]
 };
 
+const portfolio: PortfolioWorkspaceResponse = {
+  metrics: [
+    {
+      id: "portfolio-equity",
+      label: "Portfolio equity",
+      value: "$625,000",
+      delta: "+1.4%",
+      tone: "success"
+    }
+  ],
+  positions: [
+    {
+      symbol: "NVDA",
+      side: "Long",
+      quantity: "12",
+      averagePrice: "840.00",
+      markPrice: "850.00",
+      dayPnl: "+$120",
+      unrealizedPnl: "+$120",
+      exposure: "$10,200"
+    }
+  ],
+  risk: {
+    ...trading.risk,
+    summary: "Portfolio endpoint risk posture.",
+    buyingPowerUsed: "22%"
+  },
+  brokerage: {
+    ...trading.brokerage,
+    account: "PF-ENDPOINT"
+  },
+  runs: [
+    {
+      runId: "portfolio-run-1",
+      strategyName: "Portfolio Endpoint Run",
+      engine: "Native",
+      mode: "paper",
+      status: "Completed",
+      pnl: "+2.1%",
+      sharpe: "1.10",
+      dataset: "Live portfolio",
+      window: "30d",
+      lastUpdated: "1m ago",
+      notes: "Sourced from portfolio workspace.",
+      promotionState: "Promoted"
+    }
+  ],
+  cashFlow: {
+    ...governance.cashFlow,
+    netVariance: -125,
+    summary: "Portfolio endpoint cash posture."
+  }
+};
+
 describe("buildPortfolioScreenViewModel", () => {
   it("returns position rows from trading data", () => {
     const vm = buildPortfolioScreenViewModel({ trading, research, governance });
@@ -210,6 +270,14 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.runRows[0].selectAriaLabel).toBe("Inspect Mean Reversion run evidence");
     expect(vm.selectedRun?.title).toBe("Mean Reversion");
     expect(vm.selectedRun?.statusDetail).toContain("Running paper run with +4.2% P&L");
+    expect(vm.runEvidenceChip).toEqual({ label: "Run evidence", value: "1 linked run" });
+    expect(vm.selectedRunChip).toEqual({ label: "Selected run", value: "Mean Reversion" });
+  });
+
+  it("keeps run-evidence chip pluralization in the view model", () => {
+    expect(buildLinkedRunEvidenceLabel(0)).toBe("No linked runs");
+    expect(buildLinkedRunEvidenceLabel(1)).toBe("1 linked run");
+    expect(buildLinkedRunEvidenceLabel(2)).toBe("2 linked runs");
   });
 
   it("surfaces cash-flow summary from governance data", () => {
@@ -247,7 +315,62 @@ describe("buildPortfolioScreenViewModel", () => {
   it("provides fallback stats when trading is available", () => {
     const vm = buildPortfolioScreenViewModel({ trading, research, governance });
     expect(vm.fallbackStats).toHaveLength(4);
-    expect(vm.fallbackStats.find((s) => s.label === "Open positions")?.value).toBe("1");
+    expect(vm.fallbackStats.find((s) => s.id === "portfolio-open-positions")).toMatchObject({
+      label: "Open positions",
+      value: "1",
+      delta: "Selectable detail",
+      tone: "success"
+    });
+    expect(vm.fallbackStats.find((s) => s.id === "portfolio-unrealized-pnl")).toMatchObject({
+      value: "+$90",
+      tone: "success"
+    });
+  });
+
+  it("builds fallback portfolio metrics as shared MetricSnapshot view state", () => {
+    expect(buildPortfolioFallbackMetrics({
+      openPositionCount: 0,
+      totalExposure: 0,
+      totalUnrealizedPnl: 0
+    })).toEqual([
+      {
+        id: "portfolio-total-exposure",
+        label: "Total exposure",
+        value: "—",
+        delta: "No holdings",
+        tone: "default"
+      },
+      {
+        id: "portfolio-unrealized-pnl",
+        label: "Unrealized P&L",
+        value: "—",
+        delta: "No holdings",
+        tone: "default"
+      },
+      {
+        id: "portfolio-cash",
+        label: "Cash",
+        value: "—",
+        delta: "Awaiting portfolio cash feed",
+        tone: "warning"
+      },
+      {
+        id: "portfolio-open-positions",
+        label: "Open positions",
+        value: "0",
+        delta: "No holdings",
+        tone: "default"
+      }
+    ]);
+
+    expect(buildPortfolioFallbackMetrics({
+      openPositionCount: 2,
+      totalExposure: 1000,
+      totalUnrealizedPnl: -25
+    }).find((metric) => metric.id === "portfolio-unrealized-pnl")).toMatchObject({
+      value: "-$25",
+      tone: "danger"
+    });
   });
 
   it("derives named header chips without relying on fallback stat positions", () => {
@@ -294,9 +417,35 @@ describe("buildPortfolioScreenViewModel", () => {
       "/api/portfolio/aggregate",
       "/api/portfolio/exposure"
     ]);
+    expect(vm.workflowTaskPanel?.backendLinks.map((link) => link.ariaLabel)).toEqual(
+      vm.workflowTaskPanel?.backendLinks.map((link) => `Open GET ${link.href} backend payload`)
+    );
   });
 
-  it("marks the brokerage-sync panel as blocked when trading data is unavailable", () => {
+  it("uses the Portfolio workspace payload as the primary portfolio read model", () => {
+    const vm = buildPortfolioScreenViewModel({
+      portfolio,
+      trading,
+      research,
+      governance,
+      pathname: "/portfolio/brokerage-sync"
+    });
+
+    expect(vm.metricCards).toEqual(portfolio.metrics);
+    expect(vm.positionSourceLabel).toBe("Portfolio workspace");
+    expect(vm.positionRows).toHaveLength(1);
+    expect(vm.positionRows[0].symbol).toBe("NVDA");
+    expect(vm.selectedPosition?.statusDetail).toContain("Portfolio endpoint risk posture.");
+    expect(vm.selectedPosition?.fields.find((field) => field.label === "Buying power")?.value).toBe("22%");
+    expect(vm.runRows).toHaveLength(1);
+    expect(vm.runRows[0].id).toBe("portfolio-run-1");
+    expect(vm.selectedRun?.title).toBe("Portfolio Endpoint Run");
+    expect(vm.cashFlowSummary).toBe("Portfolio endpoint cash posture.");
+    expect(vm.cashVarianceLabel).toBe("-$125");
+    expect(vm.workflowTaskPanel?.selectedSummary).toContain("Alpaca / paper account PF-ENDPOINT");
+  });
+
+  it("marks the brokerage-sync panel as blocked when portfolio posture is unavailable", () => {
     const vm = buildPortfolioScreenViewModel({
       trading: null,
       research,
@@ -304,9 +453,9 @@ describe("buildPortfolioScreenViewModel", () => {
       pathname: "/portfolio/brokerage-sync"
     });
 
-    expect(vm.workflowTaskPanel?.statusLabel).toBe("Trading unavailable");
+    expect(vm.workflowTaskPanel?.statusLabel).toBe("Portfolio unavailable");
     expect(vm.workflowTaskPanel?.statusTone).toBe("danger");
-    expect(vm.workflowTaskPanel?.selectedSummary).toContain("Trading workspace data is unavailable");
+    expect(vm.workflowTaskPanel?.selectedSummary).toContain("Portfolio workspace data is unavailable");
   });
 
   it("uses stable placeholder header chips when trading data is unavailable", () => {
@@ -350,6 +499,7 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.positionRows.map((row) => row.isSelected)).toEqual([false, true]);
     expect(vm.positionRows[1].selectAriaLabel).toBe("Inspect MSFT Short holding");
     expect(vm.selectedPosition?.title).toBe("MSFT");
+    expect(vm.selectedPositionChip).toEqual({ label: "Selected detail", value: "MSFT" });
     expect(vm.selectedPosition?.statusDetail).toContain("$10,250 exposure");
     expect(vm.selectedPosition?.fields.find((field) => field.label === "Guardrails")?.value).toBe("No active guardrails");
   });
@@ -390,6 +540,21 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.selectedRun?.statusBadgeVariant).toBe("warning");
     expect(vm.selectedRun?.statusDetail).toContain("Drawdown review required.");
     expect(vm.selectedRun?.fields.find((field) => field.label === "Promotion")?.value).toBe("Not promoted");
+    expect(vm.selectedRun?.evidenceAction).toEqual({
+      label: "Open evidence packet",
+      href: "/reporting/evidence?subjectKind=strategy-run&subjectId=run-2",
+      ariaLabel: "Open Volatility Carry evidence packet"
+    });
+  });
+
+  it("owns portfolio detail empty-state labels", () => {
+    const vm = buildPortfolioScreenViewModel({ trading: null, research: null, governance });
+
+    expect(vm.selectedPositionChip).toEqual({ label: "Selected detail", value: "None" });
+    expect(vm.runEvidenceChip).toEqual({ label: "Run evidence", value: "No linked runs" });
+    expect(vm.selectedRunChip).toEqual({ label: "Selected run", value: "None" });
+    expect(vm.positionDetailEmptyTitle).toBe("No holding selected");
+    expect(vm.runDetailEmptyTitle).toBe("No run selected");
   });
 
   it("derives provider-aware account selector and filtered brokerage positions", () => {
@@ -408,11 +573,61 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.brokerageAccountFilterLabel).toBe("Alpaca paper account filter");
     expect(vm.brokerageAccountOptions.map((option) => option.label)).toEqual(["All", "Roth IRA", "Brokerage"]);
     expect(vm.brokerageAccountOptions.find((option) => option.key === "fund-roth")?.isSelected).toBe(true);
+    expect(vm.brokerageAccountOptions.map((option) => option.tabIndex)).toEqual([-1, 0, -1]);
     expect(vm.brokerageAccountRows).toHaveLength(2);
     expect(vm.brokeragePositionRows).toHaveLength(1);
     expect(vm.brokeragePositionRows[0].symbol).toBe("AAPL");
     expect(vm.brokeragePositionRows[0].accountKind).toBe("Roth IRA");
+    expect(vm.brokeragePositionRows[0].isSelected).toBe(true);
+    expect(vm.brokeragePositionRows[0].expanded).toBe(true);
+    expect(vm.brokeragePositionRows[0].detailPanelId).toBe(vm.brokeragePositionDetailId);
+    expect(vm.selectedBrokeragePositionId).toBe("fund-roth-AAPL-pos-aapl");
+    expect(vm.selectedBrokeragePosition?.title).toBe("AAPL");
+    expect(vm.selectedBrokeragePosition?.fields.find((field) => field.label === "Security coverage")?.value).toBe("Security master missing");
     expect(vm.headerChips[0]).toEqual({ label: "Alpaca paper equity", value: "$375,000" });
+    expect(vm.brokerageSetupAction).toBeNull();
+  });
+
+  it("keeps selected brokerage position state in the view model", () => {
+    const selectBrokeragePosition = vi.fn();
+    const vm = buildPortfolioScreenViewModel({
+      trading,
+      research,
+      governance,
+      brokerageConnection,
+      brokeragePortfolio,
+      selectedBrokeragePositionId: "fund-taxable-MSFT-pos-msft",
+      selectBrokeragePosition
+    });
+
+    expect(vm.brokeragePositionRows.map((row) => row.isSelected)).toEqual([false, true]);
+    expect(vm.brokeragePositionRows.map((row) => row.expanded)).toEqual([false, true]);
+    expect(vm.brokeragePositionRows[1].selectAriaLabel).toBe("Inspect MSFT Brokerage live position");
+    expect(vm.brokeragePositionRows[1].detailPanelId).toBe("portfolio-brokerage-position-detail");
+    expect(vm.selectedBrokeragePositionId).toBe("fund-taxable-MSFT-pos-msft");
+    expect(vm.selectedBrokeragePosition?.title).toBe("MSFT");
+    expect(vm.selectedBrokeragePosition?.statusDetail).toContain("$1,750 market value");
+    expect(vm.selectedBrokeragePosition?.fields.find((field) => field.label === "Position ID")?.value).toBe("pos-msft");
+
+    vm.selectBrokeragePosition("fund-roth-AAPL-pos-aapl");
+    expect(selectBrokeragePosition).toHaveBeenCalledWith("fund-roth-AAPL-pos-aapl");
+  });
+
+  it("routes missing brokerage portfolio state to Settings provider setup", () => {
+    const vm = buildPortfolioScreenViewModel({
+      trading,
+      research,
+      governance
+    });
+
+    expect(vm.brokerageConnectionLabel).toBe("Not configured");
+    expect(vm.brokerageEmptyText).toBe("Alpaca paper portfolio sync has not produced a household projection yet.");
+    expect(vm.brokerageSetupAction).toEqual({
+      label: "Open provider setup",
+      href: "/settings#alpaca-provider-setup",
+      ariaLabel: "Open Alpaca paper provider setup from Portfolio brokerage panel",
+      detail: "Verify Alpaca paper credentials before accepting brokerage portfolio state."
+    });
   });
 
   it("keeps connected brokerage portfolios in warning posture when sync warnings exist", () => {
@@ -475,5 +690,15 @@ describe("buildPortfolioScreenViewModel", () => {
 
     vm.selectAdjacentBrokerageAccount("last");
     expect(selectBrokerageAccount).toHaveBeenLastCalledWith("fund-taxable");
+  });
+
+  it("keeps brokerage account selector keyboard commands in the view model", () => {
+    expect(resolveBrokerageAccountFilterKeyCommand("ArrowRight")).toBe("next");
+    expect(resolveBrokerageAccountFilterKeyCommand("ArrowDown")).toBe("next");
+    expect(resolveBrokerageAccountFilterKeyCommand("ArrowLeft")).toBe("previous");
+    expect(resolveBrokerageAccountFilterKeyCommand("ArrowUp")).toBe("previous");
+    expect(resolveBrokerageAccountFilterKeyCommand("Home")).toBe("first");
+    expect(resolveBrokerageAccountFilterKeyCommand("End")).toBe("last");
+    expect(resolveBrokerageAccountFilterKeyCommand("Tab")).toBeNull();
   });
 });

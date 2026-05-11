@@ -1,0 +1,315 @@
+import { describe, expect, it } from "vitest";
+import {
+  BACKFILL_API_ENDPOINTS,
+  EXECUTION_API_ENDPOINTS,
+  EXPORT_API_ENDPOINTS,
+  PROVIDER_API_ENDPOINTS,
+  PROMOTION_API_ENDPOINTS,
+  PORTFOLIO_API_ENDPOINTS,
+  QUALITY_API_ENDPOINTS,
+  QUANT_API_ENDPOINTS,
+  RECONCILIATION_API_ENDPOINTS,
+  REPLAY_API_ENDPOINTS,
+  SECURITY_MASTER_API_ENDPOINTS,
+  SYMBOL_API_ENDPOINTS,
+  WORKSTATION_API_ENDPOINTS,
+  WORKSTATION_API_ENDPOINT_TEMPLATES,
+  brokerageConnectionConnectEndpoint,
+  brokerageConnectionEndpoint,
+  brokerageConnectionStatusEndpoint,
+  exportPreviewEndpoint,
+  executionAuditEndpoint,
+  executionManualOverrideClearEndpoint,
+  executionOrderCancelEndpoint,
+  executionPositionCloseEndpoint,
+  executionSessionCloseEndpoint,
+  executionSessionEndpoint,
+  executionSessionReplayEndpoint,
+  historicalBarsEndpoint,
+  marketDataOrderbookEndpoint,
+  marketDataQuoteEndpoint,
+  marketDataQuotesSnapshotEndpoint,
+  marketDataTradesEndpoint,
+  portfolioHouseholdEndpoint,
+  portfolioSymbolExposureEndpoint,
+  promotionEvaluateEndpoint,
+  providerRemoveEndpoint,
+  providerTestEndpoint,
+  qualityAnomalyAcknowledgeEndpoint,
+  reconciliationBreakAuditEndpoint,
+  reconciliationBreakEndpoint,
+  reconciliationBreakQueueEndpoint,
+  reconciliationBreakResolveEndpoint,
+  reconciliationBreakReviewEndpoint,
+  reconciliationRunEndpoint,
+  replayFilesEndpoint,
+  replaySessionActionEndpoint,
+  securityMasterAliasUpsertEndpoint,
+  securityMasterAmendEndpoint,
+  securityMasterConflictsEndpoint,
+  securityMasterConflictResolveEndpoint,
+  securityMasterCorporateActionsEndpoint,
+  securityMasterEntryEndpoint,
+  securityMasterTradingParametersEndpoint,
+  strategyActionEndpoint,
+  strategyRunsEndpoint,
+  symbolArchiveEndpoint,
+  symbolRemoveEndpoint,
+  symbolSearchEndpoint,
+  workstationEvidenceExportManifestEndpoint,
+  workstationEvidenceGraphEndpoint,
+  workstationEvidencePacketEndpoint,
+  workstationEvidenceValidateEndpoint,
+  workstationOperatorInboxEndpoint,
+  workstationRunAttributionEndpoint,
+  workstationRunCompareEndpoint,
+  workstationRunContinuityEndpoint,
+  workstationRunDiffEndpoint,
+  workstationRunEquityCurveEndpoint,
+  workstationRunFillsEndpoint,
+  workstationRunHistoryEndpoint,
+  workstationRunLedgerEndpoint,
+  workstationRunLedgerJournalEndpoint,
+  workstationRunLedgerTrialBalanceEndpoint,
+  workstationRunReconciliationEndpoint,
+  workstationRunReconciliationHistoryEndpoint,
+  workstationRunReviewPacketEndpoint,
+  workstationRunSweepsEndpoint,
+  workstationRunTimelineEndpoint,
+  workstationSecurityMasterEconomicDefinitionEndpoint,
+  workstationSecurityMasterEntryEndpoint,
+  workstationSecurityMasterHistoryEndpoint,
+  workstationSecurityMasterIdentityEndpoint,
+  workstationSecurityMasterSearchEndpoint,
+  workstationSecurityMasterTrustSnapshotEndpoint,
+  workstationWorkflowSummaryEndpoint,
+  workstationWorkflowPresetEndpoint,
+  workstationWorkflowPresetPinEndpoint,
+  workstationWorkflowPresetUsedEndpoint
+} from "@/lib/workstation-endpoints";
+
+describe("workstation API endpoint catalog", () => {
+  it("keeps canonical workspace bootstrap endpoints in one shared catalog", () => {
+    expect(WORKSTATION_API_ENDPOINTS).toMatchObject({
+      session: "/api/workstation/session",
+      strategy: "/api/workstation/strategy",
+      trading: "/api/workstation/trading",
+      tradingReadiness: "/api/workstation/trading/readiness",
+      portfolio: "/api/workstation/portfolio",
+      data: "/api/workstation/data",
+      accounting: "/api/workstation/accounting",
+      reporting: "/api/workstation/reporting",
+      workflowSummary: "/api/workstation/workflow-summary",
+      runHistory: "/api/workstation/runs/history",
+      runTimeline: "/api/workstation/runs/timeline",
+      runSweeps: "/api/workstation/runs/sweeps",
+      evidenceSubjects: "/api/workstation/evidence/subjects",
+      evidenceTemplates: "/api/workstation/evidence/templates"
+    });
+  });
+
+  it("builds account-scoped operator inbox endpoints without changing the base contract", () => {
+    expect(workstationOperatorInboxEndpoint()).toBe("/api/workstation/operator/inbox");
+    expect(workstationOperatorInboxEndpoint("fund account/1")).toBe(
+      "/api/workstation/operator/inbox?fundAccountId=fund+account%2F1"
+    );
+    expect(workstationOperatorInboxEndpoint("  fund account/1  ")).toBe(
+      "/api/workstation/operator/inbox?fundAccountId=fund+account%2F1"
+    );
+  });
+
+  it("builds workflow preset endpoints from the shared preset root", () => {
+    expect(workstationWorkflowSummaryEndpoint()).toBe("/api/workstation/workflow-summary");
+    expect(workstationWorkflowSummaryEndpoint({
+      hasOperatingContext: true,
+      operatingContext: "portfolio/review",
+      fundProfileId: "fund / 1",
+      fundDisplayName: "Core Fund"
+    })).toBe(
+      "/api/workstation/workflow-summary?hasOperatingContext=true&operatingContext=portfolio%2Freview&fundProfileId=fund+%2F+1&fundDisplayName=Core+Fund"
+    );
+    expect(workstationWorkflowPresetEndpoint()).toBe("/api/workstation/workflows/presets");
+    expect(workstationWorkflowPresetEndpoint("preset / 1")).toBe("/api/workstation/workflows/presets/preset%20%2F%201");
+    expect(workstationWorkflowPresetPinEndpoint("preset / 1")).toBe("/api/workstation/workflows/presets/preset%20%2F%201/pin");
+    expect(workstationWorkflowPresetUsedEndpoint("preset / 1")).toBe("/api/workstation/workflows/presets/preset%20%2F%201/used");
+  });
+
+  it("builds run evidence endpoints and matching Settings templates", () => {
+    expect(WORKSTATION_API_ENDPOINT_TEMPLATES).toMatchObject({
+      runLedger: "/api/workstation/runs/{runId}/ledger",
+      runContinuity: "/api/workstation/runs/{runId}/continuity",
+      runReviewPacket: "/api/workstation/runs/{runId}/review-packet",
+      runReconciliation: "/api/workstation/runs/{runId}/reconciliation"
+    });
+    expect(workstationRunLedgerEndpoint("run / 1")).toBe("/api/workstation/runs/run%20%2F%201/ledger");
+    expect(workstationRunLedgerJournalEndpoint("run / 1")).toBe("/api/workstation/runs/run%20%2F%201/ledger/journal");
+    expect(workstationRunLedgerJournalEndpoint("run / 1", { from: "2026-01-01", to: "2026-01-31" })).toBe(
+      "/api/workstation/runs/run%20%2F%201/ledger/journal?from=2026-01-01&to=2026-01-31"
+    );
+    expect(workstationRunContinuityEndpoint("run / 1")).toBe("/api/workstation/runs/run%20%2F%201/continuity");
+    expect(workstationRunReviewPacketEndpoint("run / 1", "fund / 1")).toBe(
+      "/api/workstation/runs/run%20%2F%201/review-packet?fundAccountId=fund+%2F+1"
+    );
+    expect(workstationRunReconciliationEndpoint("run / 1")).toBe("/api/workstation/runs/run%20%2F%201/reconciliation");
+    expect(workstationRunReconciliationHistoryEndpoint("run / 1")).toBe(
+      "/api/workstation/runs/run%20%2F%201/reconciliation/history"
+    );
+    expect(workstationRunHistoryEndpoint({ mode: "paper", status: "Ready", limit: 10 })).toBe(
+      "/api/workstation/runs/history?mode=paper&status=Ready&limit=10"
+    );
+    expect(workstationRunHistoryEndpoint({ mode: " paper ", status: "", limit: Number.NaN })).toBe(
+      "/api/workstation/runs/history?mode=paper"
+    );
+    expect(workstationRunTimelineEndpoint({ strategyId: "strategy / 1", limit: 5 })).toBe(
+      "/api/workstation/runs/timeline?strategyId=strategy+%2F+1&limit=5"
+    );
+    expect(workstationRunSweepsEndpoint(20)).toBe("/api/workstation/runs/sweeps?limit=20");
+  });
+
+  it("builds evidence workbench subject endpoints from the shared evidence root", () => {
+    expect(workstationEvidencePacketEndpoint("strategy/run", "run / 1")).toBe(
+      "/api/workstation/evidence/subjects/strategy%2Frun/run%20%2F%201/packet"
+    );
+    expect(workstationEvidenceGraphEndpoint("strategy/run", "run / 1")).toBe(
+      "/api/workstation/evidence/subjects/strategy%2Frun/run%20%2F%201/graph"
+    );
+    expect(workstationEvidenceValidateEndpoint("strategy/run", "run / 1")).toBe(
+      "/api/workstation/evidence/subjects/strategy%2Frun/run%20%2F%201/validate"
+    );
+    expect(workstationEvidenceExportManifestEndpoint("strategy/run", "run / 1")).toBe(
+      "/api/workstation/evidence/subjects/strategy%2Frun/run%20%2F%201/export-manifest"
+    );
+  });
+
+  it("keeps execution, replay, and promotion endpoint builders encoded", () => {
+    expect(EXECUTION_API_ENDPOINTS.sessions).toBe("/api/execution/sessions");
+    expect(REPLAY_API_ENDPOINTS.start).toBe("/api/replay/start");
+    expect(PROMOTION_API_ENDPOINTS.approve).toBe("/api/promotion/approve");
+    expect(promotionEvaluateEndpoint("run / 1")).toBe("/api/promotion/evaluate/run%20%2F%201");
+    expect(executionOrderCancelEndpoint("ord / 1")).toBe("/api/execution/orders/ord%20%2F%201/cancel");
+    expect(executionPositionCloseEndpoint()).toBe("/api/execution/positions/actions/close");
+    expect(executionSessionEndpoint("sess / 1")).toBe("/api/execution/sessions/sess%20%2F%201");
+    expect(executionSessionCloseEndpoint("sess / 1")).toBe("/api/execution/sessions/sess%20%2F%201/close");
+    expect(executionSessionReplayEndpoint("sess / 1")).toBe("/api/execution/sessions/sess%20%2F%201/replay");
+    expect(executionAuditEndpoint(12)).toBe("/api/execution/audit?take=12");
+    expect(executionManualOverrideClearEndpoint("override / 1")).toBe(
+      "/api/execution/controls/manual-overrides/override%20%2F%201/clear"
+    );
+    expect(replayFilesEndpoint("ES / M6")).toBe("/api/replay/files?symbol=ES+%2F+M6");
+    expect(replaySessionActionEndpoint("rep / 1", "seek")).toBe("/api/replay/rep%20%2F%201/seek");
+    expect(PORTFOLIO_API_ENDPOINTS.household).toBe("/api/portfolio/household");
+    expect(portfolioHouseholdEndpoint("alpaca paper")).toBe("/api/portfolio/household?provider=alpaca+paper");
+    expect(PORTFOLIO_API_ENDPOINTS.aggregate).toBe("/api/portfolio/aggregate");
+    expect(PORTFOLIO_API_ENDPOINTS.exposure).toBe("/api/portfolio/exposure");
+    expect(portfolioSymbolExposureEndpoint("BRK/B")).toBe("/api/portfolio/symbols/BRK%2FB/exposure");
+  });
+
+  it("builds strategy run detail, comparison, and export endpoints from shared roots", () => {
+    expect(strategyActionEndpoint("strategy / 1", "pause")).toBe("/api/strategies/strategy%20%2F%201/pause");
+    expect(strategyRunsEndpoint("strategy / 1", "paper")).toBe("/api/strategies/strategy%20%2F%201/runs?type=paper");
+    expect(workstationRunCompareEndpoint()).toBe("/api/workstation/runs/compare");
+    expect(workstationRunDiffEndpoint()).toBe("/api/workstation/runs/diff");
+    expect(workstationRunAttributionEndpoint("run / 1")).toBe("/api/workstation/runs/run%20%2F%201/attribution");
+    expect(workstationRunFillsEndpoint("run / 1", "ES / M6")).toBe(
+      "/api/workstation/runs/run%20%2F%201/fills?symbol=ES+%2F+M6"
+    );
+    expect(workstationRunEquityCurveEndpoint("run / 1")).toBe("/api/workstation/runs/run%20%2F%201/equity-curve");
+    expect(workstationRunLedgerTrialBalanceEndpoint("run / 1", "Asset")).toBe(
+      "/api/workstation/runs/run%20%2F%201/ledger/trial-balance?accountType=Asset"
+    );
+    expect(EXPORT_API_ENDPOINTS.analysis).toBe("/api/export/analysis");
+    expect(EXPORT_API_ENDPOINTS.reportPacks).toBe("/api/fund-structure/report-packs");
+    expect(exportPreviewEndpoint("audit pack")).toBe("/api/export/preview?profile=audit+pack");
+  });
+
+  it("builds security-master and reconciliation endpoint families from shared roots", () => {
+    expect(SECURITY_MASTER_API_ENDPOINTS.workstationSecurities).toBe("/api/workstation/security-master/securities");
+    expect(workstationSecurityMasterSearchEndpoint({ query: "BRK/B", take: 5, activeOnly: true })).toBe(
+      "/api/workstation/security-master/securities?query=BRK%2FB&take=5&activeOnly=true"
+    );
+    expect(workstationSecurityMasterEntryEndpoint("security / 1")).toBe(
+      "/api/workstation/security-master/securities/security%20%2F%201"
+    );
+    expect(workstationSecurityMasterIdentityEndpoint("security / 1")).toBe(
+      "/api/workstation/security-master/securities/security%20%2F%201/identity"
+    );
+    expect(workstationSecurityMasterHistoryEndpoint("security / 1")).toBe(
+      "/api/workstation/security-master/securities/security%20%2F%201/history"
+    );
+    expect(workstationSecurityMasterEconomicDefinitionEndpoint("security / 1")).toBe(
+      "/api/workstation/security-master/securities/security%20%2F%201/economic-definition"
+    );
+    expect(workstationSecurityMasterTrustSnapshotEndpoint("security / 1")).toBe(
+      "/api/workstation/security-master/securities/security%20%2F%201/trust-snapshot"
+    );
+    expect(securityMasterEntryEndpoint()).toBe("/api/security-master");
+    expect(securityMasterAmendEndpoint()).toBe("/api/security-master/amend");
+    expect(securityMasterAliasUpsertEndpoint()).toBe("/api/security-master/aliases/upsert");
+    expect(securityMasterCorporateActionsEndpoint("security / 1")).toBe(
+      "/api/security-master/security%20%2F%201/corporate-actions"
+    );
+    expect(securityMasterTradingParametersEndpoint("security / 1")).toBe(
+      "/api/security-master/security%20%2F%201/trading-parameters"
+    );
+    expect(securityMasterConflictsEndpoint()).toBe("/api/security-master/conflicts");
+    expect(securityMasterConflictResolveEndpoint("conflict / 1")).toBe(
+      "/api/security-master/conflicts/conflict%20%2F%201/resolve"
+    );
+    expect(SECURITY_MASTER_API_ENDPOINTS.workstationConflictsBulkResolve).toBe(
+      "/api/workstation/security-master/conflicts/bulk-resolve"
+    );
+    expect(RECONCILIATION_API_ENDPOINTS.runs).toBe("/api/workstation/reconciliation/runs");
+    expect(reconciliationRunEndpoint("recon / 1")).toBe("/api/workstation/reconciliation/runs/recon%20%2F%201");
+    expect(reconciliationBreakQueueEndpoint({ status: "Open", fundAccountId: "fund / 1" })).toBe(
+      "/api/workstation/reconciliation/break-queue?status=Open&fundAccountId=fund+%2F+1"
+    );
+    expect(reconciliationBreakEndpoint("break / 1")).toBe("/api/workstation/reconciliation/break-queue/break%20%2F%201");
+    expect(reconciliationBreakAuditEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/audit"
+    );
+    expect(reconciliationBreakReviewEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/review"
+    );
+    expect(reconciliationBreakResolveEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/resolve"
+    );
+  });
+
+  it("builds data, provider, symbol, quality, and quant endpoints from shared roots", () => {
+    expect(BACKFILL_API_ENDPOINTS.runPreview).toBe("/api/backfill/run/preview");
+    expect(PROVIDER_API_ENDPOINTS.configure).toBe("/api/providers/configure");
+    expect(PROVIDER_API_ENDPOINTS.status).toBe("/api/providers/status");
+    expect(providerRemoveEndpoint("provider / 1")).toBe("/api/providers/provider%20%2F%201/remove");
+    expect(providerTestEndpoint("provider / 1")).toBe("/api/providers/provider%20%2F%201/test");
+    expect(SYMBOL_API_ENDPOINTS.symbols).toBe("/api/symbols");
+    expect(symbolSearchEndpoint("BRK/B")).toBe("/api/symbols/search?query=BRK%2FB");
+    expect(symbolRemoveEndpoint("BRK/B")).toBe("/api/symbols/BRK%2FB/remove");
+    expect(symbolArchiveEndpoint("BRK/B")).toBe("/api/symbols/BRK%2FB/archive");
+    expect(QUALITY_API_ENDPOINTS.dashboard).toBe("/api/quality/dashboard");
+    expect(qualityAnomalyAcknowledgeEndpoint("anomaly / 1")).toBe(
+      "/api/quality/anomalies/anomaly%20%2F%201/acknowledge"
+    );
+    expect(marketDataQuoteEndpoint("BRK/B")).toBe("/api/data/quotes/BRK%2FB");
+    expect(marketDataTradesEndpoint("BRK/B", 10)).toBe("/api/data/trades/BRK%2FB?limit=10");
+    expect(marketDataOrderbookEndpoint("BRK/B", 3)).toBe("/api/data/orderbook/BRK%2FB?levels=3");
+    expect(marketDataQuotesSnapshotEndpoint(["AAPL", "MSFT"])).toBe("/api/data/quotes-snapshot?symbols=AAPL%2CMSFT");
+    expect(historicalBarsEndpoint("BRK/B", { intervalMinutes: 5, maxBars: 20 })).toBe(
+      "/api/historical/BRK%2FB/bars?intervalMinutes=5&maxBars=20"
+    );
+    expect(QUANT_API_ENDPOINTS.templates).toBe("/api/quant/templates");
+    expect(QUANT_API_ENDPOINTS.parameters).toBe("/api/quant/parameters");
+    expect(QUANT_API_ENDPOINTS.run).toBe("/api/quant/run");
+  });
+
+  it("builds brokerage connection endpoints from the shared catalog", () => {
+    expect(brokerageConnectionEndpoint("alpaca")).toBe("/api/brokerage-connections/alpaca");
+    expect(brokerageConnectionStatusEndpoint("alpaca")).toBe("/api/brokerage-connections/alpaca/status");
+    expect(brokerageConnectionConnectEndpoint("robinhood")).toBe("/api/brokerage-connections/robinhood/connect");
+  });
+
+  it("rejects blank path segments before issuing malformed API routes", () => {
+    expect(() => workstationRunLedgerEndpoint("   ")).toThrow("runId is required");
+    expect(() => marketDataQuoteEndpoint("")).toThrow("symbol is required");
+    expect(() => reconciliationBreakEndpoint("\t")).toThrow("breakId is required");
+  });
+});

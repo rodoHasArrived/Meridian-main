@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
   FlaskConical,
-  Loader2,
   Play,
   Settings2,
   Sparkles
@@ -12,175 +10,24 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuantPlotChart } from "@/components/meridian/quant-plot";
-import { extractQuantParameters, getQuantTemplates, runQuantScript } from "@/lib/api";
-import type {
-  QuantDiagnostic,
-  QuantParameter,
-  QuantRunResponse,
-  QuantTemplate
-} from "@/types";
-
-const DEFAULT_SOURCE = `// Welcome to the Meridian Quant Lab.
-// Press Run to compile and execute this C# script in-process.
-Print("Hello from the Quant Lab.");
-PrintMetric("answer", 42);
-`;
-
-interface RunState {
-  phase: "idle" | "running" | "ready" | "error";
-  result: QuantRunResponse | null;
-  error: string | null;
-}
-
-const initialRunState: RunState = { phase: "idle", result: null, error: null };
-
-function mergeParams(existing: QuantParameter[], incoming: QuantParameter[]): QuantParameter[] {
-  const map = new Map(existing.map((p) => [p.name, p]));
-  for (const p of incoming) map.set(p.name, p);
-  return [...map.values()];
-}
-
-function initNewParamValues(
-  existing: Record<string, string>,
-  params: QuantParameter[]
-): Record<string, string> {
-  const next = { ...existing };
-  let changed = false;
-  for (const p of params) {
-    if (!(p.name in next) && p.defaultValue !== null) {
-      next[p.name] = String(p.defaultValue);
-      changed = true;
-    }
-  }
-  return changed ? next : existing;
-}
-
-function buildParameters(
-  params: QuantParameter[],
-  values: Record<string, string>
-): Record<string, string | number | boolean | null> {
-  const result: Record<string, string | number | boolean | null> = {};
-  for (const p of params) {
-    const raw = values[p.name];
-    if (raw === undefined || raw === "") {
-      result[p.name] = null;
-      continue;
-    }
-    switch (p.typeName) {
-      case "bool":
-        result[p.name] = raw === "true";
-        break;
-      case "int":
-      case "long":
-      case "double":
-      case "float":
-      case "decimal": {
-        const n = Number(raw);
-        result[p.name] = Number.isFinite(n) ? n : null;
-        break;
-      }
-      default:
-        result[p.name] = raw;
-    }
-  }
-  return result;
-}
+import { ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
+import {
+  useQuantLabScreenViewModel,
+  type QuantParameterPanelState,
+  type QuantParameterRow,
+  type QuantRunResultPanelState,
+  type QuantRunState,
+  type QuantTemplatePanelState,
+  type QuantTemplateRow
+} from "@/screens/quant-lab-screen.view-model";
+import type { QuantDiagnostic } from "@/types";
 
 export function QuantLabScreen() {
-  const [source, setSource] = useState(DEFAULT_SOURCE);
-  const [templates, setTemplates] = useState<QuantTemplate[]>([]);
-  const [templatesError, setTemplatesError] = useState<string | null>(null);
-  const [run, setRun] = useState<RunState>(initialRunState);
-  const [detectedParams, setDetectedParams] = useState<QuantParameter[]>([]);
-  const [paramValues, setParamValues] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    let cancelled = false;
-    getQuantTemplates()
-      .then((response) => {
-        if (cancelled) return;
-        setTemplates(response.templates);
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        setTemplatesError((err as Error)?.message ?? "Failed to load templates.");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Debounced parameter extraction from source
-  useEffect(() => {
-    if (!source.trim()) {
-      setDetectedParams([]);
-      return;
-    }
-    const timer = setTimeout(() => {
-      extractQuantParameters(source)
-        .then((r) => {
-          setDetectedParams((prev) => mergeParams(prev, r.parameters));
-          setParamValues((prev) => initNewParamValues(prev, r.parameters));
-        })
-        .catch(() => {/* non-critical — QuantLab may be disabled */});
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [source]);
-
-  // Merge runtime parameters discovered during a run
-  useEffect(() => {
-    const rp = run.result?.runtimeParameters;
-    if (!rp || rp.length === 0) return;
-    setDetectedParams((prev) => mergeParams(prev, rp));
-    setParamValues((prev) => initNewParamValues(prev, rp));
-  }, [run.result]);
-
-  const handleRun = useCallback(async () => {
-    if (!source.trim()) {
-      setRun({ phase: "error", result: null, error: "Enter some script source first." });
-      return;
-    }
-    setRun({ phase: "running", result: null, error: null });
-    try {
-      const parameters = buildParameters(detectedParams, paramValues);
-      const result = await runQuantScript({ source, parameters });
-      setRun({ phase: "ready", result, error: null });
-    } catch (err) {
-      setRun({
-        phase: "error",
-        result: null,
-        error: (err as Error)?.message ?? "Failed to run script."
-      });
-    }
-  }, [source, detectedParams, paramValues]);
-
-  const loadTemplate = useCallback((template: QuantTemplate) => {
-    setSource(template.source);
-    setRun(initialRunState);
-    setDetectedParams([]);
-    setParamValues({});
-  }, []);
-
-  const handleParamChange = useCallback((name: string, value: string) => {
-    setParamValues((prev) => ({ ...prev, [name]: value }));
-  }, []);
-
-  const handleParamReset = useCallback((param: QuantParameter) => {
-    setParamValues((prev) => ({
-      ...prev,
-      [param.name]: param.defaultValue !== null ? String(param.defaultValue) : ""
-    }));
-  }, []);
-
-  const consoleLines = useMemo(() => {
-    if (!run.result) return [] as string[];
-    return run.result.consoleOutput.split("\n");
-  }, [run.result]);
-
-  const summaryTone = run.result?.success ? "success" : run.phase === "error" || (run.result && !run.result.success) ? "danger" : "default";
+  const vm = useQuantLabScreenViewModel();
 
   return (
     <div className="space-y-6">
+      <span className="sr-only" aria-live="polite">{vm.runStatusAnnouncement}</span>
       <Card>
         <CardHeader>
           <div className="eyebrow-label">Strategy Lane</div>
@@ -193,49 +40,54 @@ export function QuantLabScreen() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="default"
-              onClick={() => void handleRun()}
-              disabled={run.phase === "running"}
-              aria-label="Run script"
-            >
-              {run.phase === "running" ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              ) : (
+          <ToolbarStrip
+            ariaLabel="Quant Lab status"
+            items={vm.toolbarItems}
+            right={
+              <Button
+                type="button"
+                variant="default"
+                onClick={() => void vm.runScript()}
+                disabled={vm.runCommand.disabled}
+                disabledReason={vm.runCommand.disabledReason}
+                busy={vm.runCommand.busy}
+                busyLabel={vm.runCommand.label}
+                aria-label={vm.runCommand.ariaLabel}
+              >
                 <Play className="h-4 w-4" aria-hidden="true" />
-              )}
-              <span className="ml-1.5">{run.phase === "running" ? "Running…" : "Run"}</span>
-            </Button>
-            {run.result ? (
-              <span className="text-xs text-muted-foreground">
-                Compiled in {run.result.compileTimeMs.toFixed(0)} ms · executed in {run.result.elapsedMs.toFixed(0)} ms · peak {(run.result.peakMemoryBytes / 1024).toFixed(0)} KB
-              </span>
-            ) : null}
-          </div>
-          <label htmlFor="quant-lab-source" className="sr-only">Script source</label>
-          <textarea
-            id="quant-lab-source"
-            spellCheck={false}
-            value={source}
-            onChange={(event) => setSource(event.target.value)}
-            className="w-full min-h-[16rem] resize-y rounded-md border border-border/70 bg-background/60 p-3 font-mono text-xs leading-5 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            aria-label="Script source"
+                <span className="ml-1.5">{vm.runCommand.label}</span>
+              </Button>
+            }
           />
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground">{vm.resultPanel.runtimeSummary}</span>
+          </div>
+          <label htmlFor={vm.sourceEditor.id} className="sr-only">{vm.sourceEditor.label}</label>
+          <textarea
+            id={vm.sourceEditor.id}
+            spellCheck={false}
+            value={vm.source}
+            onChange={(event) => vm.setSource(event.target.value)}
+            className="w-full min-h-[16rem] resize-y rounded-md border border-border/70 bg-background/60 p-3 font-mono text-xs leading-5 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            aria-label={vm.sourceEditor.ariaLabel}
+            aria-describedby={vm.sourceEditor.describedBy}
+          />
+          <p id={vm.sourceEditor.helpId} className="text-xs text-muted-foreground">
+            {vm.sourceEditor.helpText}
+          </p>
         </CardContent>
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-        <RunResultPanel run={run} consoleLines={consoleLines} tone={summaryTone} />
+        <RunResultPanel run={vm.run} panel={vm.resultPanel} consoleLines={vm.consoleLines} />
         <div className="space-y-4">
           <ParametersSidePanel
-            params={detectedParams}
-            values={paramValues}
-            onChange={handleParamChange}
-            onReset={handleParamReset}
+            rows={vm.parameterRows}
+            panel={vm.parameterPanel}
+            onChange={vm.updateParameter}
+            onReset={vm.resetParameter}
           />
-          <TemplatesPanel templates={templates} error={templatesError} onSelect={loadTemplate} />
+          <TemplatesPanel templates={vm.templateRows} state={vm.templatesPanel} onSelect={vm.loadTemplate} />
         </div>
       </div>
     </div>
@@ -243,43 +95,51 @@ export function QuantLabScreen() {
 }
 
 interface RunResultPanelProps {
-  run: RunState;
+  run: QuantRunState;
+  panel: QuantRunResultPanelState;
   consoleLines: string[];
-  tone: "success" | "danger" | "default";
 }
 
-function RunResultPanel({ run, consoleLines, tone }: RunResultPanelProps) {
-  if (run.phase === "idle") {
+function RunResultPanel({ run, panel, consoleLines }: RunResultPanelProps) {
+  if (panel.phase === "idle") {
     return (
       <Card>
-        <CardContent className="py-10 text-center text-sm text-muted-foreground">
-          Run a script to see console output, metrics, plots, and diagnostics here.
+        <CardContent className="py-10 text-center text-sm text-muted-foreground" role={panel.role} aria-live={panel.ariaLive}>
+          {panel.description}
         </CardContent>
       </Card>
     );
   }
 
-  if (run.phase === "running") {
+  if (panel.phase === "running") {
     return (
       <Card>
-        <CardContent className="flex items-center gap-2 py-10 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-          Compiling and running script…
+        <CardContent className="space-y-3 py-10 text-sm text-muted-foreground" role={panel.role} aria-live={panel.ariaLive}>
+          <div className="flex items-center gap-2">
+            <span className="h-4 w-4 animate-spin rounded-full border border-primary/30 border-t-primary" aria-hidden="true" />
+            {panel.description}
+          </div>
+          <SourceDriftNotice panel={panel} />
         </CardContent>
       </Card>
     );
   }
 
-  if (run.phase === "error" || !run.result) {
+  if (!panel.hasResult || !run.result) {
     return (
-      <Card>
+      <Card role={panel.role} aria-live={panel.ariaLive}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base text-danger">
             <AlertCircle className="h-4 w-4" aria-hidden="true" />
-            Run failed
+            {panel.title}
           </CardTitle>
-          <CardDescription className="text-danger/80">{run.error ?? "Unknown error."}</CardDescription>
+          <CardDescription className="text-danger/80">{panel.description}</CardDescription>
         </CardHeader>
+        {panel.sourceDrifted ? (
+          <CardContent>
+            <SourceDriftNotice panel={panel} />
+          </CardContent>
+        ) : null}
       </Card>
     );
   }
@@ -287,29 +147,40 @@ function RunResultPanel({ run, consoleLines, tone }: RunResultPanelProps) {
   const result = run.result;
   return (
     <div className="space-y-4">
-      <Card>
+      <Card role={panel.role} aria-live={panel.ariaLive}>
         <CardHeader>
           <div className="flex items-center justify-between gap-2">
             <CardTitle className="flex items-center gap-2 text-base">
               {result.success ? (
-                <CheckCircle2 className="h-4 w-4 text-positive" aria-hidden="true" />
+                <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" />
               ) : (
                 <AlertCircle className="h-4 w-4 text-danger" aria-hidden="true" />
               )}
-              {result.success ? "Run succeeded" : "Run finished with errors"}
+              {panel.title}
             </CardTitle>
-            <Badge variant={tone === "success" ? "success" : tone === "danger" ? "danger" : "outline"} dot>
-              {result.success ? "OK" : "ERR"}
+            <Badge variant={panel.tone === "success" ? "success" : panel.tone === "danger" ? "danger" : "outline"} dot>
+              {panel.statusBadgeLabel}
             </Badge>
           </div>
           {result.runtimeError ? (
-            <CardDescription className="text-danger/80">{result.runtimeError}</CardDescription>
+            <CardDescription className="text-danger/80">{panel.description}</CardDescription>
           ) : null}
         </CardHeader>
         <CardContent className="space-y-3">
-          {result.metrics.length > 0 ? (
+          <SourceDriftNotice panel={panel} />
+          {!panel.hasEvidence ? (
+            <div
+              role={panel.evidenceEmptyRole}
+              aria-live={panel.ariaLive}
+              className={`rounded-md border px-3 py-2 text-sm leading-6 ${emptyEvidenceToneClass[panel.evidenceEmptyTone]}`}
+            >
+              <div className="font-semibold">{panel.evidenceEmptyTitle}</div>
+              <p className="mt-1">{panel.evidenceEmptyDetail}</p>
+            </div>
+          ) : null}
+          {panel.hasMetrics ? (
             <div>
-              <div className="eyebrow-label mb-1">Metrics</div>
+              <div className="eyebrow-label mb-1">{panel.metricsLabel}</div>
               <table className="w-full text-sm">
                 <tbody>
                   {result.metrics.map((m) => (
@@ -322,24 +193,25 @@ function RunResultPanel({ run, consoleLines, tone }: RunResultPanelProps) {
               </table>
             </div>
           ) : null}
-          {consoleLines.some((line) => line.length > 0) ? (
+          {panel.hasConsoleOutput ? (
             <div>
-              <div className="eyebrow-label mb-1">Console</div>
+              <div className="eyebrow-label mb-1">{panel.consoleLabel}</div>
               <pre className="max-h-48 overflow-auto rounded-md border border-border/60 bg-secondary/15 p-3 font-mono text-xs leading-5 text-foreground">
                 {consoleLines.map((line, idx) => `${line}${idx < consoleLines.length - 1 ? "\n" : ""}`).join("")}
               </pre>
             </div>
           ) : null}
-          <DiagnosticsBlock label="Compilation errors" entries={result.compilationErrors} tone="danger" />
-          <DiagnosticsBlock label="Runtime diagnostics" entries={result.runtimeDiagnostics} tone="warning" />
+          {panel.diagnosticSections.map((section) => (
+            <DiagnosticsBlock key={section.id} label={section.label} entries={section.entries} tone={section.tone} />
+          ))}
         </CardContent>
       </Card>
 
-      {result.plots.length > 0 ? (
+      {panel.hasPlots ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Plots</CardTitle>
-            <CardDescription>{result.plots.length} chart{result.plots.length === 1 ? "" : "s"} returned by this run.</CardDescription>
+            <CardTitle className="text-base">{panel.plotsLabel}</CardTitle>
+            <CardDescription>{panel.plotsDescription}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 lg:grid-cols-2">
@@ -353,6 +225,28 @@ function RunResultPanel({ run, consoleLines, tone }: RunResultPanelProps) {
     </div>
   );
 }
+
+function SourceDriftNotice({ panel }: { panel: QuantRunResultPanelState }) {
+  if (!panel.sourceDrifted || !panel.sourceDriftTitle || !panel.sourceDriftDetail) {
+    return null;
+  }
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning"
+    >
+      <div className="font-semibold">{panel.sourceDriftTitle}</div>
+      <p className="mt-1">{panel.sourceDriftDetail}</p>
+    </div>
+  );
+}
+
+const emptyEvidenceToneClass: Record<QuantRunResultPanelState["evidenceEmptyTone"], string> = {
+  warning: "border-warning/30 bg-warning/10 text-warning",
+  danger: "border-danger/30 bg-danger/10 text-danger"
+};
 
 function DiagnosticsBlock({
   label,
@@ -381,141 +275,137 @@ function DiagnosticsBlock({
   );
 }
 
-function inputTypeFor(typeName: string): "number" | "checkbox" | "text" {
-  switch (typeName) {
-    case "int":
-    case "long":
-    case "double":
-    case "float":
-    case "decimal":
-      return "number";
-    case "bool":
-      return "checkbox";
-    default:
-      return "text";
-  }
-}
-
-function stepFor(typeName: string): string {
-  return typeName === "int" || typeName === "long" ? "1" : "any";
-}
-
 interface ParametersSidePanelProps {
-  params: QuantParameter[];
-  values: Record<string, string>;
+  rows: QuantParameterRow[];
+  panel: QuantParameterPanelState;
   onChange: (name: string, value: string) => void;
-  onReset: (param: QuantParameter) => void;
+  onReset: (name: string) => void;
 }
 
-function ParametersSidePanel({ params, values, onChange, onReset }: ParametersSidePanelProps) {
-  if (params.length === 0) return null;
+function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSidePanelProps) {
+  const statusToneClass = {
+    default: "border-border/70 bg-secondary/20 text-muted-foreground",
+    pending: "border-primary/30 bg-primary/10 text-primary",
+    warning: "border-warning/30 bg-warning/10 text-warning"
+  } satisfies Record<QuantParameterPanelState["tone"], string>;
 
   return (
     <Card className="self-start">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Settings2 className="h-4 w-4 text-primary" aria-hidden="true" />
-          Parameters
+          {panel.title}
         </CardTitle>
-        <CardDescription>Override script parameters before running.</CardDescription>
+        <CardDescription>{panel.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <ul className="space-y-3" aria-label="Script parameters">
-          {params.map((p) => {
-            const inputType = inputTypeFor(p.typeName);
-            const currentValue = values[p.name] ?? (p.defaultValue !== null ? String(p.defaultValue) : "");
-            const isDefault = p.defaultValue !== null && currentValue === String(p.defaultValue);
-            return (
-              <li key={p.name} className="space-y-1">
+        {panel.statusMessage ? (
+          <p
+            role={panel.statusRole}
+            aria-live={panel.ariaLive}
+            className={`mb-3 rounded-md border px-3 py-2 text-sm ${statusToneClass[panel.tone]}`}
+          >
+            {panel.statusMessage}
+          </p>
+        ) : null}
+        {panel.showRows ? (
+          <ul className="space-y-3" aria-label={panel.listLabel}>
+            {rows.map((row) => (
+              <li key={row.name} className="space-y-1">
                 <div className="flex items-center justify-between gap-1">
                   <label
-                    htmlFor={`param-${p.name}`}
+                    htmlFor={row.inputId}
                     className="text-xs font-medium text-foreground"
-                    title={p.description ?? undefined}
                   >
-                    {p.label}
+                    {row.label}
                   </label>
                   <span className="rounded bg-secondary/50 px-1 py-0.5 font-mono text-[10px] text-muted-foreground">
-                    {p.typeName}
+                    {row.typeName}
                   </span>
                 </div>
-                {inputType === "checkbox" ? (
+                {row.inputType === "checkbox" ? (
                   <div className="flex items-center gap-2">
                     <input
-                      id={`param-${p.name}`}
+                      id={row.inputId}
                       type="checkbox"
-                      checked={currentValue === "true"}
-                      onChange={(e) => onChange(p.name, e.target.checked ? "true" : "false")}
-                      className="h-4 w-4 rounded border border-border accent-primary"
-                      aria-label={`${p.label} parameter`}
+                      checked={row.checked}
+                      onChange={(e) => onChange(row.name, e.target.checked ? "true" : "false")}
+                      className="h-4 w-4 rounded border border-border accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                      aria-label={row.ariaLabel}
+                      aria-describedby={row.descriptionId ?? undefined}
                     />
-                    <span className="text-xs text-muted-foreground">{currentValue === "true" ? "true" : "false"}</span>
+                    <span className="text-xs text-muted-foreground">{row.checked ? "true" : "false"}</span>
                   </div>
                 ) : (
                   <input
-                    id={`param-${p.name}`}
-                    type={inputType}
-                    value={currentValue}
-                    min={p.min !== null && p.min > Number.MIN_SAFE_INTEGER ? p.min : undefined}
-                    max={p.max !== null && p.max < Number.MAX_SAFE_INTEGER ? p.max : undefined}
-                    step={inputType === "number" ? stepFor(p.typeName) : undefined}
-                    onChange={(e) => onChange(p.name, e.target.value)}
+                    id={row.inputId}
+                    type={row.inputType}
+                    value={row.value}
+                    min={row.min}
+                    max={row.max}
+                    step={row.step}
+                    onChange={(e) => onChange(row.name, e.target.value)}
                     className="w-full rounded-md border border-border/70 bg-background/60 px-2 py-1.5 font-mono text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    aria-label={`${p.label} parameter`}
+                    aria-label={row.ariaLabel}
+                    aria-describedby={row.descriptionId ?? undefined}
                   />
                 )}
-                {p.description ? (
-                  <p className="text-[10px] leading-4 text-muted-foreground">{p.description}</p>
+                {row.description ? (
+                  <p id={row.descriptionId ?? undefined} className="text-[10px] leading-4 text-muted-foreground">{row.description}</p>
                 ) : null}
-                {!isDefault && p.defaultValue !== null ? (
+                {row.resetLabel ? (
                   <button
                     type="button"
-                    onClick={() => onReset(p)}
-                    className="text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-                    aria-label={`Reset ${p.label} to default`}
+                    onClick={() => onReset(row.name)}
+                    className="text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    aria-label={row.resetLabel}
                   >
-                    Reset to {p.defaultValue}
+                    {row.resetText}
                   </button>
                 ) : null}
               </li>
-            );
-          })}
-        </ul>
+            ))}
+          </ul>
+        ) : null}
       </CardContent>
     </Card>
   );
 }
 
 interface TemplatesPanelProps {
-  templates: QuantTemplate[];
-  error: string | null;
-  onSelect: (template: QuantTemplate) => void;
+  templates: QuantTemplateRow[];
+  state: QuantTemplatePanelState;
+  onSelect: (template: QuantTemplateRow) => void;
 }
 
-function TemplatesPanel({ templates, error, onSelect }: TemplatesPanelProps) {
+function TemplatesPanel({ templates, state, onSelect }: TemplatesPanelProps) {
   return (
     <Card className="self-start">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
-          Starter templates
+          {state.title}
         </CardTitle>
-        <CardDescription>Load a working snippet to verify the lab end-to-end.</CardDescription>
+        <CardDescription>{state.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        {error && templates.length === 0 ? (
-          <p className="text-sm text-danger">{error}</p>
-        ) : templates.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Loading templates…</p>
+        {state.phase !== "ready" ? (
+          <p
+            role={state.role}
+            aria-live={state.ariaLive}
+            className={state.phase === "error" ? "text-sm text-danger" : "text-sm text-muted-foreground"}
+          >
+            {state.message}
+          </p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-2" aria-label={state.listLabel}>
             {templates.map((template) => (
               <li key={template.id}>
                 <button
                   type="button"
                   onClick={() => onSelect(template)}
                   className="w-full rounded-md border border-border/60 bg-background/40 px-3 py-2 text-left text-sm transition-colors hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  aria-label={`Load ${template.title} template`}
+                  aria-label={template.ariaLabel}
                 >
                   <div className="font-semibold text-foreground">{template.title}</div>
                   <div className="mt-1 text-xs text-muted-foreground">{template.description}</div>

@@ -1,16 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { buildCommandPaletteViewModel } from "@/components/meridian/command-palette.view-model";
+import {
+  buildCommandPaletteViewModel,
+  resolveCommandPaletteKeyCommand
+} from "@/components/meridian/command-palette.view-model";
 
 describe("command palette view model", () => {
   it("marks the current workspace from the active route", () => {
     const model = buildCommandPaletteViewModel("/settings/integrations");
 
-    expect(model.itemCountLabel).toBe("7 workspaces");
-    expect(model.commandListLabel).toBe("7 workspace commands");
+    expect(model.itemCountLabel).toBe("7 workspaces - 11 quick routes");
+    expect(model.commandListLabel).toBe("18 workstation commands");
+    expect(model.filteredItemCountLabel).toBe("18 commands available");
     expect(model.activeWorkspaceLabel).toBe("Current: Settings");
-    expect(model.routeSummary).toBe("Route to a canonical operator workspace. Current: Settings.");
+    expect(model.routeSummary).toBe("Route to common operator workflows and canonical workspaces. Current: Settings.");
     expect(model.shortcutHint).toBe("Esc to close");
-    expect(model.initialFocusItemId).toBe("settings");
+    expect(model.initialFocusItemId).toBe("route:settings-integrations");
     expect(model.items.find((item) => item.id === "settings")).toMatchObject({
       kind: "workspace",
       route: "/settings",
@@ -25,6 +29,34 @@ describe("command palette view model", () => {
       commandLabel: "Open Trading",
       active: false
     });
+    expect(model.items.find((item) => item.id === "route:settings-integrations")).toMatchObject({
+      kind: "route",
+      route: "/settings/integrations",
+      statusLabel: "Current",
+      commandLabel: "Stay on Provider integrations",
+      active: true
+    });
+    expect(model.filteredItems).toHaveLength(18);
+  });
+
+  it("filters commands by workspace, route, status, and description text", () => {
+    const model = buildCommandPaletteViewModel("/settings", undefined, {}, "preview portfolio");
+
+    expect(model.filteredItemCountLabel).toBe("1 of 18 commands match");
+    expect(model.filteredItems.map((item) => item.id)).toEqual(["portfolio"]);
+    expect(model.initialFocusItemId).toBe("portfolio");
+  });
+
+  it("exposes a searchable empty state when commands do not match", () => {
+    const model = buildCommandPaletteViewModel("/settings", undefined, {}, "not-a-command");
+
+    expect(model.items).toHaveLength(18);
+    expect(model.filteredItems).toEqual([]);
+    expect(model.filteredItemCountLabel).toBe("0 of 18 commands match");
+    expect(model.emptyState).toEqual({
+      title: "No matching commands",
+      detail: "Try a workspace name, route, workflow title, or status label."
+    });
   });
 
   it("normalizes legacy routes before deriving active state", () => {
@@ -34,16 +66,15 @@ describe("command palette view model", () => {
     expect(model.items.find((item) => item.id === "data")?.active).toBe(true);
   });
 
-  it("exposes an empty state when workspace metadata is missing", () => {
+  it("keeps quick routes available when workspace metadata is missing", () => {
     const model = buildCommandPaletteViewModel("/trading", []);
 
-    expect(model.items).toEqual([]);
-    expect(model.commandListLabel).toBe("0 workspace commands");
-    expect(model.routeSummary).toBe("Route to a canonical operator workspace. No active workspace.");
-    expect(model.initialFocusItemId).toBeNull();
-    expect(model.emptyState).toMatchObject({
-      title: "No workspace commands available"
-    });
+    expect(model.items).toHaveLength(11);
+    expect(model.commandListLabel).toBe("11 workstation commands");
+    expect(model.itemCountLabel).toBe("0 workspaces - 11 quick routes");
+    expect(model.routeSummary).toBe("Route to common operator workflows and canonical workspaces. No active workspace.");
+    expect(model.initialFocusItemId).toBe("route:trading-readiness");
+    expect(model.emptyState).toBeNull();
   });
 
   it("adds backend workflow actions and pinned presets to command routing", () => {
@@ -102,8 +133,8 @@ describe("command palette view model", () => {
       }
     });
 
-    expect(model.itemCountLabel).toBe("7 workspaces - 1 preset - 1 workflow action");
-    expect(model.commandListLabel).toBe("9 commands");
+    expect(model.itemCountLabel).toBe("7 workspaces - 11 quick routes - 1 preset - 1 workflow action");
+    expect(model.commandListLabel).toBe("20 commands");
     expect(model.backendStatusLabel).toBe("1 workflow action - 1 preset");
     expect(model.items.find((item) => item.id === "workflow:accounting-reconciliation-review:workflow.accounting.review-reconciliation")).toMatchObject({
       kind: "workflow",
@@ -160,6 +191,47 @@ describe("command palette view model", () => {
     });
   });
 
+  it("routes evidence workflow actions to the Evidence Workbench", () => {
+    const model = buildCommandPaletteViewModel("/strategy", undefined, {
+      workflowLibrary: {
+        generatedAt: "2026-01-01T00:00:00Z",
+        actions: [],
+        workflows: [
+          {
+            workflowId: "strategy-to-paper-review",
+            title: "Strategy to Paper Review",
+            summary: "Review strategy evidence before promotion.",
+            workspaceId: "strategy",
+            workspaceTitle: "Strategy",
+            entryPageTag: "StrategyShell",
+            tone: "Primary",
+            evidenceTags: ["run evidence"],
+            marketPatternTags: ["promotion review"],
+            actions: [
+              {
+                actionId: "workflow.evidence.open-packet",
+                label: "Open Evidence Packet",
+                detail: "Open the reusable evidence packet.",
+                targetPageTag: "EvidenceWorkbench",
+                tone: "Primary",
+                workItemKind: null,
+                routePrefixes: [],
+                routeContains: [],
+                aliases: []
+              }
+            ]
+          }
+        ]
+      }
+    });
+
+    expect(model.items.find((item) => item.id === "workflow:strategy-to-paper-review:workflow.evidence.open-packet")).toMatchObject({
+      kind: "workflow",
+      route: "/reporting/evidence",
+      routeLabel: "/reporting/evidence"
+    });
+  });
+
   it("routes account portfolio workflows to the dedicated brokerage-sync task panel", () => {
     const model = buildCommandPaletteViewModel("/portfolio", undefined, {
       workflowLibrary: {
@@ -201,15 +273,32 @@ describe("command palette view model", () => {
     });
   });
 
-  it("keeps workspace commands available when the workflow backend is unavailable", () => {
+  it("keeps local route commands available when the workflow backend is unavailable", () => {
     const model = buildCommandPaletteViewModel("/settings", undefined, {
       workflowError: "Request failed for /api/workstation/workflows (503)"
     });
 
-    expect(model.items).toHaveLength(7);
+    expect(model.items).toHaveLength(18);
     expect(model.backendStatusLabel).toBe("Workflow library unavailable");
     expect(model.routeSummary).toBe(
-      "Route through shared backend workflow commands. Current: Settings. Workflow library unavailable; workspace commands remain available."
+      "Route through shared backend workflow commands. Current: Settings. Workflow library unavailable; local route commands remain available."
     );
+  });
+
+  it("keeps command palette keyboard commands in the view model", () => {
+    expect(resolveCommandPaletteKeyCommand({ key: "Escape", focusBoundary: "middle" })).toBe("close");
+    expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "last" })).toBe("focus-first");
+    expect(resolveCommandPaletteKeyCommand({ key: "Tab", shiftKey: true, focusBoundary: "first" })).toBe("focus-last");
+    expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "outside" })).toBe("focus-first");
+    expect(resolveCommandPaletteKeyCommand({ key: "Tab", shiftKey: true, focusBoundary: "outside" })).toBe("focus-last");
+    expect(resolveCommandPaletteKeyCommand({ key: "Enter", focusBoundary: "middle", focusTarget: "search" })).toBe(
+      "activate-first-command"
+    );
+    expect(resolveCommandPaletteKeyCommand({ key: "Enter", focusBoundary: "middle", focusTarget: "command" })).toBeNull();
+    expect(resolveCommandPaletteKeyCommand({ key: "ArrowDown", focusBoundary: "middle" })).toBe("focus-next-command");
+    expect(resolveCommandPaletteKeyCommand({ key: "ArrowUp", focusBoundary: "middle" })).toBe("focus-previous-command");
+    expect(resolveCommandPaletteKeyCommand({ key: "Home", focusBoundary: "middle" })).toBeNull();
+    expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "middle" })).toBeNull();
+    expect(resolveCommandPaletteKeyCommand({ key: "Tab", focusBoundary: "none" })).toBeNull();
   });
 });

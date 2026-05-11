@@ -50,14 +50,14 @@ compatibility aliases or grouping language, not new root navigation.
 
 | Priority | Capability | Roadmap placement | Current posture |
 | ---: | --- | --- | --- |
-| 1 | Run Evidence Graph and Evidence Vault | Wave 3 backbone into Wave 4 | Planned; provider packets, run continuity, paper replay metadata, reconciliation work items, and report-pack seams are inputs |
+| 1 | Run Evidence Graph and Evidence Vault | Wave 3 backbone into Wave 4 | Partial graph support through shared evidence subject/packet/graph/validation/manifest-export APIs and the browser Evidence Workbench; the durable Evidence Vault and canonical cross-lifecycle graph remain planned |
 | 2 | Governed Report Pack Studio | Wave 4 | Partial support through report-pack schema/version checks and export/reporting seams; `/api/export/analysis` now returns a shared typed response with normalized profile scope, warnings, and file-level artifact evidence for the browser Reporting lane |
 | 3 | Reconciliation Desk / Casework | Wave 4 | Early in progress through file-backed break queues, tolerance/sign-off metadata, audit history, and calibration rollups |
 | 4 | Accounting-grade PaperOps | Wave 2 into Wave 3 | Partial support through paper sessions, replay/audit metadata, readiness gates, and ledger count checks |
 | 5 | Shadow Books and Shadow NAV | Wave 4 later slice | Planned on top of ledger, reconciliation, external-statement import, and report-pack foundations |
 | 6 | Strategy / Promotion Passport | Wave 2 into Wave 3 | Partial support through promotion checklist and review-packet state |
 | 7 | Data Trust Passport | Wave 1 maintenance into Wave 3 | Partial support through DK1 trust packets, validation evidence, and data-quality posture |
-| 8 | Operator Readiness Console | Wave 2 support surface | Partial browser support through `/trading/readiness` and shared readiness payloads; the shared readiness model now includes report-pack lineage and evidence-completeness posture |
+| 8 | Operator Readiness Console | Wave 2 support surface | Partial browser support through `/trading/readiness`, shared readiness payloads, and evidence packet actions into `/reporting/evidence`; the shared readiness model now includes report-pack lineage and evidence-completeness posture |
 
 Do not expand live-broker breadth, generic analytics, or bank-style governance frameworks ahead of
 these evidence-producing seams unless the roadmap explicitly pulls that work forward.
@@ -79,7 +79,7 @@ These package names are positioning aids, not implementation status:
    exposes an evidence-completeness summary alongside the existing session, replay, control,
    promotion, and DK1 gates.
 2. Productize the visible evidence surfaces: Data Trust Passport, Strategy / Promotion Passport,
-   Run Evidence Graph, and governed packs.
+   Run Evidence Graph, Evidence Workbench packet actions, and governed packs.
 3. Deepen daily operations: reconciliation casework, shadow books, close readiness, and statement
    comparison.
 4. Only then widen integration breadth, analytics depth, live-readiness claims, or optional

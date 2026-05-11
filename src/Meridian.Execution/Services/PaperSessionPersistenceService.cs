@@ -364,15 +364,21 @@ public sealed class PaperSessionPersistenceService
     {
         ArgumentNullException.ThrowIfNull(fill);
 
+        PaperSession? activeSession = null;
         if (_sessions.TryGetValue(sessionId, out var session) && session.IsActive)
         {
-            session.Portfolio?.ApplyFill(fill);
-            session.FillHistory.Add(fill);
+            activeSession = session;
+            activeSession.Portfolio?.ApplyFill(fill);
+            activeSession.FillHistory.Add(fill);
         }
 
         if (_store is not null)
         {
             await _store.AppendFillAsync(sessionId, fill, ct).ConfigureAwait(false);
+            if (activeSession is not null)
+            {
+                await PersistSessionLedgerAsync(activeSession, ct).ConfigureAwait(false);
+            }
         }
     }
 
@@ -623,7 +629,21 @@ public sealed class PaperSessionPersistenceService
         }
 
         var dtos = SerializeLedgerJournal(ledger, session.SessionId);
-        await _store.SaveLedgerJournalAsync(session.SessionId, dtos, ct).ConfigureAwait(false);
+        try
+        {
+            await _store.SaveLedgerJournalAsync(session.SessionId, dtos, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to persist ledger journal snapshot for paper session {SessionId}; continuing with in-memory ledger state",
+                session.SessionId);
+        }
     }
 
     private static Meridian.Ledger.Ledger? ReconstructLedger(IReadOnlyList<PersistedJournalEntryDto> dtos)

@@ -1,27 +1,42 @@
-import { describe, expect, it } from "vitest";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import {
+  buildCalibrationSummaryViewState,
   buildGovernanceCashFlowViewState,
+  buildGovernanceLoadingViewState,
   buildGovernanceReportingViewState,
   buildGovernanceTrialBalanceViewState,
   formatReportingExportResult,
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
+  buildReconciliationDetailActions,
+  buildReconciliationDetailViewState,
   buildReconciliationNarrative,
+  buildReconciliationResolveDialogState,
   buildSecurityConflictRows,
   buildSecurityIdentityDrillInState,
+  buildSecuritySearchResultRows,
   buildSecuritySearchState,
   countOpenSecurityConflicts,
   resolveGovernanceWorkstream,
-  resolveSelectedReconciliation
+  resolveSelectedReconciliation,
+  useSecurityMasterViewModel
 } from "@/screens/governance-screen.view-model";
 import type {
+  SecurityMasterDrillInServices,
+  SecurityMasterServices
+} from "@/screens/governance-screen.view-model";
+import type {
+  CorporateAction,
   GovernanceCashFlowSummary,
   GovernanceWorkspaceResponse,
   LedgerTrialBalanceLine,
+  ReconciliationCalibrationSummary,
   ReconciliationBreakQueueItem,
   SecurityMasterConflict,
   SecurityMasterEntry,
-  SecurityIdentityDrillIn
+  SecurityIdentityDrillIn,
+  TradingParameters
 } from "@/types";
 
 const reconciliationQueue: GovernanceWorkspaceResponse["reconciliationQueue"] = [
@@ -103,6 +118,48 @@ const securityIdentity: SecurityIdentityDrillIn = {
     }
   ]
 };
+
+const tradingParameters: TradingParameters = {
+  securityId: "sec-1",
+  lotSize: 100,
+  tickSize: 0.01,
+  contractMultiplier: 1,
+  marginRequirementPct: 25,
+  tradingHoursUtc: "14:30-21:00",
+  circuitBreakerThresholdPct: 7,
+  asOf: "2026-05-10T00:00:00Z"
+};
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}
+
+function createSecurityMasterServices(overrides: Partial<SecurityMasterServices> = {}): SecurityMasterServices {
+  return {
+    search: vi.fn().mockResolvedValue([]),
+    getIdentity: vi.fn().mockResolvedValue(securityIdentity),
+    getConflicts: vi.fn().mockResolvedValue([]),
+    resolveConflict: vi.fn().mockResolvedValue(conflicts[0]),
+    ...overrides
+  };
+}
+
+function createSecurityMasterDrillInServices(
+  overrides: Partial<SecurityMasterDrillInServices> = {}
+): SecurityMasterDrillInServices {
+  return {
+    getCorporateActions: vi.fn().mockResolvedValue([] as CorporateAction[]),
+    getTradingParameters: vi.fn().mockResolvedValue(tradingParameters),
+    ...overrides
+  };
+}
 
 const conflicts: SecurityMasterConflict[] = [
   {
@@ -204,6 +261,25 @@ describe("governance-screen view model", () => {
     expect(resolveSelectedReconciliation([], null)).toBeNull();
   });
 
+  it("derives canonical Accounting and Reporting loading states", () => {
+    expect(buildGovernanceLoadingViewState("/accounting/reconciliation")).toMatchObject({
+      role: "status",
+      ariaBusy: true,
+      ariaLive: "polite",
+      titleId: "accounting-workspace-loading-title",
+      detailId: "accounting-workspace-loading-detail",
+      title: "Loading Accounting",
+      detail: "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from the workstation bootstrap payload."
+    });
+
+    expect(buildGovernanceLoadingViewState("/reporting")).toMatchObject({
+      titleId: "reporting-workspace-loading-title",
+      detailId: "reporting-workspace-loading-detail",
+      title: "Loading Reporting",
+      detail: "Waiting for report-pack, governed export, and approval summaries from the workstation bootstrap payload."
+    });
+  });
+
   it("derives cash-flow evidence rows, route context, and variance posture", () => {
     const cashFlow: GovernanceCashFlowSummary = {
       totalCash: 120000,
@@ -244,6 +320,61 @@ describe("governance-screen view model", () => {
       rows: [],
       statusAnnouncement: "Cash-flow evidence is loading."
     });
+  });
+
+  it("derives calibration summary status presentation and KPI rows", () => {
+    const summary: ReconciliationCalibrationSummary = {
+      status: "ReviewRequired",
+      summary: "Two routes need operator review before sign-off.",
+      asOf: "2026-05-09T14:30:00Z",
+      totalBreakCount: 8,
+      activeBreakCount: 5,
+      openBreakCount: 2,
+      inReviewBreakCount: 3,
+      resolvedBreakCount: 6,
+      dismissedBreakCount: 0,
+      criticalOpenBreakCount: 1,
+      pendingSignoffCount: 3,
+      signedOffCount: 4,
+      missingCalibrationMetadataCount: 1,
+      profiles: [
+        {
+          toleranceProfileId: "profile-cash",
+          exceptionRoute: "cash",
+          highestSeverity: "Critical",
+          maxToleranceBand: 250,
+          totalBreakCount: 8,
+          openBreakCount: 2,
+          inReviewBreakCount: 3,
+          resolvedBreakCount: 6,
+          dismissedBreakCount: 0,
+          pendingSignoffCount: 3,
+          signedOffCount: 4,
+          lastUpdatedAt: "2026-05-09T14:00:00Z"
+        }
+      ]
+    };
+
+    const state = buildCalibrationSummaryViewState(summary, false, null);
+
+    expect(state).toMatchObject({
+      statusLabel: "Review required",
+      statusTone: "warning",
+      statusIcon: "alert",
+      statusTextClassName: "text-warning",
+      statusBannerClassName: "border-warning/30 bg-warning/5",
+      profilesLabel: "1 tolerance profile",
+      hasProfiles: true
+    });
+    expect(state.metricRows).toEqual([
+      expect.objectContaining({ id: "total", label: "Total breaks", value: 8, tone: "default", ariaLabel: "Total breaks: 8" }),
+      expect.objectContaining({ id: "open", label: "Open", value: 2, tone: "warning", ariaLabel: "Open: 2" }),
+      expect.objectContaining({ id: "critical-open", label: "Critical open", value: 1, tone: "warning" }),
+      expect.objectContaining({ id: "pending-signoff", label: "Pending sign-off", value: 3, tone: "warning" }),
+      expect.objectContaining({ id: "signed-off", label: "Signed off", value: 4, tone: "default" }),
+      expect.objectContaining({ id: "missing-metadata", label: "Missing metadata", value: 1, tone: "warning" })
+    ]);
+    expect(state.profileRows[0].ariaLabel).toContain("profile-cash");
   });
 
   it("derives trial-balance table rows, labels, and status announcements", () => {
@@ -357,8 +488,113 @@ describe("governance-screen view model", () => {
 
     expect(complete.hasResults).toBe(true);
     expect(complete.resultCount).toBe(1);
+    expect(complete.resultsTableLabel).toBe("Security search results");
+    expect(complete.resultColumns.map((column) => column.label)).toEqual(["Name", "Asset Class", "Primary ID", "Currency", "Status"]);
+    expect(complete.resultRows[0]).toMatchObject({
+      rowId: "security-result-sec-1",
+      isSelected: false,
+      selectAriaLabel: "Open identity drill-in for Apple Inc.",
+      primaryIdentifierLabel: "Ticker: AAPL",
+      statusTone: "success",
+      ariaLabel: "Apple Inc., Equity, primary identifier Ticker: AAPL, currency USD, status Active."
+    });
     expect(complete.searchStatusText).toBe('1 securities found for "AAPL".');
     expect(complete.statusAnnouncement).toBe("1 securities found for AAPL.");
+  });
+
+  it("derives selected Security Master search result rows", () => {
+    const rows = buildSecuritySearchResultRows([securityResult], "sec-1");
+
+    expect(rows[0]).toMatchObject({
+      rowId: "security-result-sec-1",
+      isSelected: true,
+      selectAriaLabel: "Open identity drill-in for Apple Inc.",
+      primaryIdentifierLabel: "Ticker: AAPL",
+      statusTone: "success"
+    });
+    expect(rows[0].ariaLabel).toContain("selected");
+    expect(buildSecuritySearchResultRows(null, null)).toEqual([]);
+  });
+
+  it("ignores stale Security Master identity responses after a newer selection settles", async () => {
+    const staleIdentity = deferred<SecurityIdentityDrillIn>();
+    const latestIdentity = deferred<SecurityIdentityDrillIn>();
+    const services = createSecurityMasterServices({
+      getIdentity: vi.fn()
+        .mockReturnValueOnce(staleIdentity.promise)
+        .mockReturnValueOnce(latestIdentity.promise)
+    });
+    const drillInServices = createSecurityMasterDrillInServices();
+    const latestDetail: SecurityIdentityDrillIn = {
+      ...securityIdentity,
+      securityId: "sec-2",
+      displayName: "Microsoft Corp."
+    };
+
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+
+    act(() => {
+      void result.current.selectSecurity("sec-1");
+    });
+    act(() => {
+      void result.current.selectSecurity("sec-2");
+    });
+    await act(async () => {
+      latestIdentity.resolve(latestDetail);
+      await latestIdentity.promise;
+    });
+
+    await waitFor(() => expect(result.current.identity?.securityId).toBe("sec-2"));
+
+    await act(async () => {
+      staleIdentity.resolve(securityIdentity);
+      await staleIdentity.promise;
+    });
+
+    expect(result.current.identity?.securityId).toBe("sec-2");
+    expect(result.current.identityLoading).toBe(false);
+    expect(result.current.identityErrorText).toBeNull();
+  });
+
+  it("clears pending Security Master drill-in state when the workstream becomes inactive", async () => {
+    const identity = deferred<SecurityIdentityDrillIn>();
+    const corporateActions = deferred<CorporateAction[]>();
+    const parameters = deferred<TradingParameters>();
+    const services = createSecurityMasterServices({
+      getIdentity: vi.fn().mockReturnValue(identity.promise)
+    });
+    const drillInServices = createSecurityMasterDrillInServices({
+      getCorporateActions: vi.fn().mockReturnValue(corporateActions.promise),
+      getTradingParameters: vi.fn().mockReturnValue(parameters.promise)
+    });
+
+    const { result, rerender } = renderHook(
+      ({ active }) => useSecurityMasterViewModel(active, services, drillInServices, 0),
+      { initialProps: { active: true } }
+    );
+
+    act(() => {
+      void result.current.selectSecurity("sec-1");
+    });
+    await waitFor(() => expect(result.current.identityLoading).toBe(true));
+
+    rerender({ active: false });
+
+    await waitFor(() => expect(result.current.identityLoading).toBe(false));
+    expect(result.current.selectedSecurityId).toBeNull();
+    expect(result.current.identity).toBeNull();
+    expect(result.current.corporateActionsLoading).toBe(false);
+    expect(result.current.tradingParametersLoading).toBe(false);
+
+    await act(async () => {
+      identity.resolve(securityIdentity);
+      corporateActions.resolve([]);
+      parameters.resolve(tradingParameters);
+      await Promise.all([identity.promise, corporateActions.promise, parameters.promise]);
+    });
+
+    expect(result.current.identity).toBeNull();
+    expect(result.current.selectedSecurityId).toBeNull();
   });
 
   it("surfaces search failures and counts open conflicts for badges", () => {
@@ -513,9 +749,68 @@ describe("governance-screen view model", () => {
     expect(failed.statusAnnouncement).toBe("Break action failed: Review endpoint rejected");
   });
 
+  it("derives reconciliation resolve dialog labels and validation state", () => {
+    const blankResolve = buildReconciliationResolveDialogState("run-42:cash", "Resolved", "  ");
+
+    expect(blankResolve).toMatchObject({
+      breakId: "run-42:cash",
+      status: "Resolved",
+      inputId: "rationale-run-42:cash",
+      helpId: "rationale-help-run-42:cash",
+      formAriaLabel: "Resolve reconciliation break run-42:cash",
+      label: "Resolve rationale",
+      submitLabel: "Confirm resolve",
+      submitAriaLabel: "Confirm resolve for reconciliation break run-42:cash",
+      cancelLabel: "Cancel",
+      cancelAriaLabel: "Cancel resolve for reconciliation break run-42:cash",
+      isSubmitDisabled: true
+    });
+
+    const dismiss = buildReconciliationResolveDialogState("run-42:cash", "Dismissed", "Reviewed duplicate break");
+
+    expect(dismiss).toMatchObject({
+      label: "Dismiss rationale",
+      placeholder: "Describe why this break is being dismissed...",
+      submitLabel: "Confirm dismiss",
+      isSubmitDisabled: false
+    });
+  });
+
   it("keeps reconciliation narratives in the view model", () => {
     expect(buildReconciliationNarrative(reconciliationQueue[0])).toContain("Open reconciliation breaks remain");
     expect(buildReconciliationNarrative({ ...reconciliationQueue[0], reconciliationStatus: "Balanced" })).toContain("currently balanced");
+  });
+
+  it("derives reconciliation detail presentation state", () => {
+    expect(buildReconciliationDetailViewState(reconciliationQueue[0])).toMatchObject({
+      eyebrow: "Reconciliation detail",
+      title: "Paper Index Mean Reversion",
+      description: "run-42 is currently BreaksOpen.",
+      ariaLabel: "Reconciliation detail for Paper Index Mean Reversion",
+      narrativeLabel: "Reconciliation narrative for Paper Index Mean Reversion",
+      fields: [
+        { label: "Mode", value: "PAPER", tone: "default", ariaLabel: "Mode: PAPER" },
+        { label: "Run status", value: "Running", tone: "default", ariaLabel: "Run status: Running" },
+        { label: "Break count", value: "2", tone: "default", ariaLabel: "Break count: 2" },
+        { label: "Open breaks", value: "1", tone: "warning", ariaLabel: "Open breaks: 1" },
+        { label: "Last updated", value: "3m ago", tone: "default", ariaLabel: "Last updated: 3m ago" }
+      ]
+    });
+  });
+
+  it("derives reconciliation detail actions from the selected run", () => {
+    expect(buildReconciliationDetailActions(reconciliationQueue[0])).toEqual({
+      breakChecklistTargetId: "reconciliation-break-queue",
+      breakChecklistHref: "#reconciliation-break-queue",
+      breakChecklistLabel: "Open break checklist",
+      breakChecklistAriaLabel: "Open break checklist for Paper Index Mean Reversion; 1 open break",
+      evidencePacketHref: "/reporting/evidence?subjectKind=reconciliation-review&subjectId=run-42",
+      evidencePacketLabel: "Evidence packet",
+      evidencePacketAriaLabel: "Open reconciliation evidence packet for Paper Index Mean Reversion",
+      auditPacketHref: "/api/workstation/runs/run-42/review-packet",
+      auditPacketLabel: "Review audit packet",
+      auditPacketAriaLabel: "Review audit packet for Paper Index Mean Reversion"
+    });
   });
 
   it("derives reporting profile selector rows and detail state", () => {
@@ -567,6 +862,20 @@ describe("governance-screen view model", () => {
     expect(state.selectedExportProfileId).toBe("board");
     expect(state.exportCanRun).toBe(true);
     expect(state.exportAriaLabel).toBe("Run reporting export for Board packet");
+    expect(state.backendLinks).toEqual([
+      {
+        id: "preview",
+        label: "Preview report payload",
+        href: "/api/export/preview",
+        ariaLabel: "Open GET /api/export/preview for Preview report payload"
+      },
+      {
+        id: "formats",
+        label: "List export formats",
+        href: "/api/export/formats",
+        ariaLabel: "Open GET /api/export/formats for List export formats"
+      }
+    ]);
   });
 
   it("surfaces reporting profile empty state from the view model", () => {

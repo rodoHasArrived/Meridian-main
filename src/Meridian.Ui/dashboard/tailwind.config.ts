@@ -40,6 +40,7 @@ export default {
           foreground: "hsl(var(--popover-foreground) / <alpha-value>)"
         },
         success: "hsl(var(--success) / <alpha-value>)",
+        positive: "hsl(var(--success) / <alpha-value>)",
         warning: "hsl(var(--warning) / <alpha-value>)",
         danger: "hsl(var(--danger) / <alpha-value>)",
         destructive: "hsl(var(--danger) / <alpha-value>)",

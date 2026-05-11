@@ -1,5 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { buildAlpacaConnectionCommandState, buildSettingsScreenViewModel } from "@/screens/settings-screen.view-model";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import {
+  buildAlpacaConnectionCommandState,
+  buildSettingsScreenViewModel,
+  useAlpacaConnectionFormViewModel
+} from "@/screens/settings-screen.view-model";
 import type { BrokerageConnectionStatus, SessionInfo, SystemOverviewResponse } from "@/types";
 
 const session: SessionInfo = {
@@ -51,6 +56,12 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.sessionItems.some((i) => i.label === "Display name" && i.value === "Andrew Rowden")).toBe(true);
     expect(vm.sessionItems.some((i) => i.label === "Environment" && i.value === "paper")).toBe(true);
     expect(vm.sessionItems.some((i) => i.label === "Commands issued" && i.value === "42")).toBe(true);
+    expect(vm.headerChips).toEqual([
+      { label: "Environment", value: "PAPER" },
+      { label: "Workspace", value: "settings" },
+      { label: "Diagnostics", value: "6 unavailable" },
+      { label: "Heartbeat", value: "—" }
+    ]);
   });
 
   it("marks live environment with warning tone", () => {
@@ -181,6 +192,12 @@ describe("buildSettingsScreenViewModel", () => {
 
     expect(vm.diagnosticStatusLabel).toBe("All reachable");
     expect(vm.diagnosticStatusVariant).toBe("success");
+    expect(vm.headerChips).toEqual([
+      { label: "Environment", value: "PAPER" },
+      { label: "Workspace", value: "settings" },
+      { label: "Diagnostics", value: "All reachable" },
+      { label: "Heartbeat", value: "2026-05-01T00:00:00Z" }
+    ]);
     expect(vm.diagnosticCounts).toMatchObject({
       loaded: 7,
       failed: 0,
@@ -210,6 +227,17 @@ describe("buildSettingsScreenViewModel", () => {
     });
     expect(vm.alpacaConnectionPanel.statusDetail).toContain("PA123");
     expect(vm.alpacaConnectionPanel.statusDetail).not.toContain("secret");
+    expect(vm.alpacaConnectionPanel.setupChecklist.map((step) => [step.id, step.statusLabel, step.tone])).toEqual([
+      ["alpaca-paper-environment", "Ready", "success"],
+      ["alpaca-api-keys", "Stored", "success"],
+      ["alpaca-account-verification", "Verified", "success"],
+      ["alpaca-readiness-handoff", "Ready", "success"]
+    ]);
+    expect(vm.alpacaConnectionPanel.setupChecklist[vm.alpacaConnectionPanel.setupChecklist.length - 1]).toMatchObject({
+      actionLabel: "Open readiness",
+      actionHref: "/trading/readiness",
+      actionAriaLabel: "Open Trading readiness after Alpaca account verification"
+    });
   });
 
   it("marks invalid Alpaca credentials as a degraded connection state", () => {
@@ -228,6 +256,46 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.alpacaConnectionPanel.stateLabel).toBe("Verification failed");
     expect(vm.alpacaConnectionPanel.statusTone).toBe("danger");
     expect(vm.alpacaConnectionPanel.statusDetail).toContain("401");
+    expect(vm.alpacaConnectionPanel.setupChecklist.find((step) => step.id === "alpaca-account-verification")).toMatchObject({
+      statusLabel: "Failed",
+      tone: "danger",
+      detail: "Alpaca /v2/account verification failed: status 401"
+    });
+    expect(vm.alpacaConnectionPanel.setupChecklist.find((step) => step.id === "alpaca-readiness-handoff")).toMatchObject({
+      statusLabel: "Blocked",
+      actionHref: null
+    });
+  });
+
+  it("keeps pristine Alpaca credential readiness neutral before submit", () => {
+    const pristineState = buildAlpacaConnectionCommandState({
+      canClear: false,
+      form: {
+        keyId: "",
+        secretKey: "",
+        environment: "paper",
+        busyAction: null,
+        submitted: false,
+        actionMessage: null,
+        actionTone: "default"
+      }
+    });
+
+    expect(pristineState).toMatchObject({
+      canSubmit: false,
+      canEdit: true,
+      keyIdError: false,
+      secretKeyError: false,
+      formPanelTitle: "Enter Alpaca credentials",
+      formPanelTone: "default",
+      formPanelRole: "status",
+      submitLabel: "Connect and test"
+    });
+    expect(pristineState.requirements).toEqual([
+      expect.objectContaining({ id: "alpaca-key-id-requirement", value: "Needed", met: false, tone: "muted" }),
+      expect.objectContaining({ id: "alpaca-secret-key-requirement", value: "Needed", met: false, tone: "muted" }),
+      expect.objectContaining({ id: "alpaca-environment-requirement", value: "PAPER", met: true, tone: "success" })
+    ]);
   });
 
   it("derives Alpaca credential command disabled and validation state", () => {
@@ -249,9 +317,36 @@ describe("buildSettingsScreenViewModel", () => {
       canEdit: true,
       keyIdError: true,
       secretKeyError: true,
+      formPanelTitle: "Credentials incomplete",
+      formPanelTone: "warning",
+      submitLabel: "Connect and test",
       clearDisabledReason: "No stored Alpaca credentials are available to clear."
     });
     expect(emptyState.submitDisabledReason).toContain("key ID");
+    expect(emptyState.environmentLegend).toBe("Alpaca trading environment");
+    expect(emptyState.environmentOptions).toEqual([
+      expect.objectContaining({
+        id: "alpaca-environment-paper",
+        value: "paper",
+        badgeLabel: "Default",
+        isSelected: true,
+        disabled: false,
+        tone: "paper"
+      }),
+      expect.objectContaining({
+        id: "alpaca-environment-live",
+        value: "live",
+        badgeLabel: "Real money",
+        isSelected: false,
+        disabled: false,
+        tone: "live"
+      })
+    ]);
+    expect(emptyState.requirements).toEqual([
+      expect.objectContaining({ id: "alpaca-key-id-requirement", value: "Required", met: false, tone: "warning" }),
+      expect.objectContaining({ id: "alpaca-secret-key-requirement", value: "Required", met: false, tone: "warning" }),
+      expect.objectContaining({ id: "alpaca-environment-requirement", value: "PAPER", met: true, tone: "success" })
+    ]);
 
     const busyState = buildAlpacaConnectionCommandState({
       canClear: true,
@@ -272,7 +367,12 @@ describe("buildSettingsScreenViewModel", () => {
       submitBusy: true,
       clearBusy: false
     });
+    expect(busyState.formPanelTitle).toBe("Testing Alpaca credentials");
     expect(busyState.submitDisabledReason).toContain("already running");
+    expect(busyState.environmentOptions).toEqual([
+      expect.objectContaining({ value: "paper", isSelected: false, disabled: true }),
+      expect.objectContaining({ value: "live", isSelected: true, disabled: true })
+    ]);
   });
 
   it("surfaces canonical backend capability groups with browser routes and mapped endpoints", () => {
@@ -281,6 +381,7 @@ describe("buildSettingsScreenViewModel", () => {
       overview,
       research: { metrics: [], runs: [] },
       trading: {} as never,
+      portfolio: {} as never,
       dataOperations: { metrics: [], providers: [], backfills: [], exports: [] },
       governance: {} as never,
       reporting: {} as never,
@@ -302,16 +403,71 @@ describe("buildSettingsScreenViewModel", () => {
     ]);
     expect(vm.backendCapabilityGroups.find((group) => group.id === "strategy")?.endpoints).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ href: "/api/workstation/runs/history", method: "GET" }),
-        expect.objectContaining({ href: "/api/workstation/runs/compare", method: "POST" })
+        expect.objectContaining({ href: "/api/workstation/runs/history", method: "GET", isBrowserNavigable: true }),
+        expect.objectContaining({
+          href: "/api/workstation/runs/compare",
+          method: "POST",
+          isBrowserNavigable: false,
+          interactionLabel: "Reference"
+        })
+      ])
+    );
+    expect(vm.backendCapabilityGroups.find((group) => group.id === "portfolio")?.endpoints).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ href: "/api/workstation/portfolio", method: "GET", isBrowserNavigable: true }),
+        expect.objectContaining({
+          href: "/api/workstation/runs/{runId}/review-packet",
+          method: "GET",
+          isBrowserNavigable: false,
+          interactionLabel: "Reference"
+        })
+      ])
+    );
+    expect(vm.backendCapabilityGroups.find((group) => group.id === "accounting")?.statusDetail).toContain(
+      "templates and mutating endpoints stay reference-only"
+    );
+    expect(vm.backendCapabilityGroups.find((group) => group.id === "accounting")?.endpoints).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          href: "/api/workstation/security-master/securities",
+          method: "GET",
+          isBrowserNavigable: true
+        })
+      ])
+    );
+    expect(vm.backendCapabilityGroups.find((group) => group.id === "data")?.endpoints).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ href: "/api/workstation/security-master/securities" })
       ])
     );
     expect(vm.backendCapabilityGroups.find((group) => group.id === "settings")?.endpoints).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ href: "/api/workstation/workflows" }),
-        expect.objectContaining({ href: "/api/workstation/workflows/presets" })
+        expect.objectContaining({ href: "/api/workstation/workflows", isBrowserNavigable: true }),
+        expect.objectContaining({ href: "/api/workstation/workflows/presets", isBrowserNavigable: true })
       ])
     );
+  });
+
+  it("does not mark Portfolio capability as surfaced from Trading alone", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      research: { metrics: [], runs: [] },
+      trading: {} as never,
+      portfolio: null,
+      dataOperations: { metrics: [], providers: [], backfills: [], exports: [] },
+      governance: {} as never,
+      reporting: {} as never,
+      loading: false,
+      error: null,
+      workspaceErrors: {}
+    });
+
+    expect(vm.backendCapabilityGroups.find((group) => group.id === "portfolio")).toMatchObject({
+      statusLabel: "Unavailable",
+      statusVariant: "danger",
+      statusDetail: "Portfolio workspace payload has not loaded."
+    });
   });
 
   it("surfaces workspace diagnostic failures without hiding endpoint links", () => {
@@ -385,4 +541,42 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.systemItems).toHaveLength(0);
     expect(vm.systemSummary).toContain("unavailable");
   });
+
+  it("does not refresh or update Alpaca credential state after unmount", async () => {
+    const connectResult = deferred<BrokerageConnectionStatus>();
+    const connectConnection = vi.fn().mockReturnValue(connectResult.promise);
+    const onRefresh = vi.fn();
+    const { result, unmount } = renderHook(() => useAlpacaConnectionFormViewModel({
+      canClear: false,
+      connectConnection,
+      onRefresh
+    }));
+
+    act(() => {
+      result.current.setKeyId("paper-key");
+      result.current.setSecretKey("paper-secret");
+    });
+    await act(async () => {
+      void result.current.connect({ preventDefault: vi.fn() } as never);
+    });
+    await waitFor(() => expect(connectConnection).toHaveBeenCalledTimes(1));
+
+    unmount();
+    await act(async () => {
+      connectResult.resolve(alpacaConnection);
+      await connectResult.promise;
+    });
+
+    expect(onRefresh).not.toHaveBeenCalled();
+  });
 });
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}

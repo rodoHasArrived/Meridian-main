@@ -1,10 +1,28 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { connectAlpacaConnection, revokeAlpacaConnection } from "@/lib/api";
+import {
+  BACKFILL_API_ENDPOINTS,
+  CONFIG_API_ENDPOINTS,
+  EXECUTION_API_ENDPOINTS,
+  EXPORT_API_ENDPOINTS,
+  PORTFOLIO_API_ENDPOINTS,
+  PROVIDER_API_ENDPOINTS,
+  PROMOTION_API_ENDPOINTS,
+  QUALITY_API_ENDPOINTS,
+  RECONCILIATION_API_ENDPOINTS,
+  REPLAY_API_ENDPOINTS,
+  SECURITY_MASTER_API_ENDPOINTS,
+  SYMBOL_API_ENDPOINTS,
+  WORKSTATION_API_ENDPOINTS,
+  WORKSTATION_API_ENDPOINT_TEMPLATES,
+  workstationRunCompareEndpoint
+} from "@/lib/workstation-endpoints";
 import type {
   AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
+  PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -27,6 +45,19 @@ export interface SettingsAlpacaConnectionFormState {
 export interface SettingsAlpacaConnectionCommandState {
   keyIdError: boolean;
   secretKeyError: boolean;
+  formPanelId: string;
+  formPanelTitle: string;
+  formPanelDetail: string;
+  formPanelTone: "default" | "success" | "warning" | "danger";
+  formPanelRole: "status" | "alert";
+  formPanelAriaLive: "polite" | "assertive";
+  fieldHelpIds: {
+    keyId: string;
+    secretKey: string;
+    environment: string;
+  };
+  submitLabel: string;
+  clearLabel: string;
   canSubmit: boolean;
   canEdit: boolean;
   submitBusy: boolean;
@@ -37,6 +68,43 @@ export interface SettingsAlpacaConnectionCommandState {
   statusClassName: string;
   keyIdHelpText: string;
   secretKeyHelpText: string;
+  environmentHelpText: string;
+  environmentLegend: string;
+  environmentOptions: SettingsAlpacaEnvironmentOption[];
+  requirements: SettingsAlpacaRequirementRow[];
+}
+
+export interface SettingsAlpacaEnvironmentOption {
+  id: string;
+  value: AlpacaEnvironment;
+  label: string;
+  badgeLabel: string;
+  description: string;
+  descriptionId: string;
+  isSelected: boolean;
+  disabled: boolean;
+  ariaLabel: string;
+  tone: "paper" | "live";
+}
+
+export interface SettingsAlpacaRequirementRow {
+  id: string;
+  label: string;
+  value: string;
+  met: boolean;
+  tone: "success" | "warning" | "muted";
+}
+
+export interface SettingsAlpacaSetupStep {
+  id: string;
+  label: string;
+  statusLabel: string;
+  detail: string;
+  tone: "success" | "warning" | "danger" | "muted";
+  badgeVariant: "success" | "warning" | "danger" | "outline";
+  actionLabel: string | null;
+  actionHref: string | null;
+  actionAriaLabel: string | null;
 }
 
 export interface SettingsAlpacaConnectionFormViewModel extends SettingsAlpacaConnectionFormState, SettingsAlpacaConnectionCommandState {
@@ -73,12 +141,108 @@ export function buildAlpacaConnectionCommandState({
   const secretKeyMissing = form.secretKey.trim().length === 0;
   const hasValidationErrors = keyIdMissing || secretKeyMissing;
   const busy = form.busyAction !== null;
-  const keyIdError = form.submitted && keyIdMissing;
-  const secretKeyError = form.submitted && secretKeyMissing;
+  const validationVisible = form.submitted || form.actionTone === "danger";
+  const keyIdError = validationVisible && keyIdMissing;
+  const secretKeyError = validationVisible && secretKeyMissing;
+  const missingCredentialValue = validationVisible ? "Required" : "Needed";
+  const missingCredentialTone = validationVisible ? "warning" : "muted";
+  const environmentOptions: SettingsAlpacaEnvironmentOption[] = [
+    {
+      id: "alpaca-environment-paper",
+      value: "paper",
+      label: "Paper",
+      badgeLabel: "Default",
+      description: "Paper endpoint for workstation validation and readiness rehearsal.",
+      descriptionId: "alpaca-environment-paper-description",
+      isSelected: form.environment === "paper",
+      disabled: busy,
+      ariaLabel: "Use Alpaca paper endpoint for workstation validation",
+      tone: "paper"
+    },
+    {
+      id: "alpaca-environment-live",
+      value: "live",
+      label: "Live",
+      badgeLabel: "Real money",
+      description: "Live endpoint for production brokerage verification.",
+      descriptionId: "alpaca-environment-live-description",
+      isSelected: form.environment === "live",
+      disabled: busy,
+      ariaLabel: "Use Alpaca live endpoint for production brokerage verification",
+      tone: "live"
+    }
+  ];
+  const requirements: SettingsAlpacaRequirementRow[] = [
+    {
+      id: "alpaca-key-id-requirement",
+      label: "Key ID",
+      value: keyIdMissing ? missingCredentialValue : "Ready",
+      met: !keyIdMissing,
+      tone: keyIdMissing ? missingCredentialTone : "success"
+    },
+    {
+      id: "alpaca-secret-key-requirement",
+      label: "Secret key",
+      value: secretKeyMissing ? missingCredentialValue : "Ready",
+      met: !secretKeyMissing,
+      tone: secretKeyMissing ? missingCredentialTone : "success"
+    },
+    {
+      id: "alpaca-environment-requirement",
+      label: "Environment",
+      value: form.environment === "live" ? "LIVE" : "PAPER",
+      met: true,
+      tone: form.environment === "live" ? "warning" : "success"
+    }
+  ];
+  const formPanelTone: SettingsAlpacaConnectionCommandState["formPanelTone"] = busy
+    ? "warning"
+    : form.actionTone === "danger"
+      ? "danger"
+      : form.actionTone === "success"
+        ? "success"
+        : hasValidationErrors && validationVisible
+          ? "warning"
+          : "default";
+  const formPanelTitle = busy
+    ? form.busyAction === "clear"
+      ? "Clearing Alpaca credentials"
+      : "Testing Alpaca credentials"
+    : form.actionMessage
+      ? form.actionMessage
+      : hasValidationErrors && validationVisible
+        ? "Credentials incomplete"
+        : hasValidationErrors
+          ? "Enter Alpaca credentials"
+          : "Credentials ready for test";
+  const formPanelDetail = busy
+    ? "Meridian is waiting on the brokerage connection request."
+    : form.actionMessage
+      ? hasValidationErrors
+        ? "Review the required fields before the next connection test."
+        : "Credential readiness has been recalculated from the current form state."
+      : hasValidationErrors && validationVisible
+        ? "Enter the required Alpaca API values before Meridian can call /v2/account."
+        : hasValidationErrors
+          ? "Paste the paper key ID and secret key to enable account verification."
+          : "Submitting will test the account and clear the secret key from the form after the response.";
 
   return {
     keyIdError,
     secretKeyError,
+    formPanelId: "alpaca-credential-readiness",
+    formPanelTitle,
+    formPanelDetail,
+    formPanelTone,
+    formPanelRole: formPanelTone === "danger" ? "alert" : "status",
+    formPanelAriaLive: formPanelTone === "danger" ? "assertive" : "polite",
+    fieldHelpIds: {
+      keyId: "alpaca-key-id-help",
+      secretKey: "alpaca-secret-key-help",
+      environment: "alpaca-environment-help"
+    },
+    submitLabel: "Connect and test",
+    clearLabel: "Clear",
     canSubmit: !busy && !hasValidationErrors,
     canEdit: !busy,
     submitBusy: form.busyAction === "connect",
@@ -98,7 +262,13 @@ export function buildAlpacaConnectionCommandState({
     statusRole: form.actionTone === "danger" ? "alert" : "status",
     statusClassName: form.actionTone === "danger" ? "text-sm text-danger" : "text-sm text-muted-foreground",
     keyIdHelpText: keyIdError ? "Key ID is required before Meridian can test the Alpaca account." : "Stored values remain masked after refresh.",
-    secretKeyHelpText: secretKeyError ? "Secret key is required and is cleared after a connection test." : "Secret key is never displayed after submit."
+    secretKeyHelpText: secretKeyError ? "Secret key is required and is cleared after a connection test." : "Secret key is never displayed after submit.",
+    environmentHelpText: form.environment === "live"
+      ? "Live endpoint selected. Paper remains the default workstation path."
+      : "Paper endpoint selected for workstation validation.",
+    environmentLegend: "Alpaca trading environment",
+    environmentOptions,
+    requirements
   };
 }
 
@@ -112,7 +282,14 @@ export function useAlpacaConnectionFormViewModel({
   canClear: boolean;
 } & SettingsAlpacaConnectionDependencies): SettingsAlpacaConnectionFormViewModel {
   const [form, setForm] = useState<SettingsAlpacaConnectionFormState>(emptyAlpacaConnectionForm);
+  const mountedRef = useRef(true);
+  const actionRevisionRef = useRef(0);
   const command = buildAlpacaConnectionCommandState({ form, canClear });
+
+  useEffect(() => () => {
+    mountedRef.current = false;
+    actionRevisionRef.current += 1;
+  }, []);
 
   const setKeyId = (keyId: string) => {
     setForm((current) => ({ ...current, keyId, actionMessage: null, actionTone: "default" }));
@@ -136,6 +313,8 @@ export function useAlpacaConnectionFormViewModel({
       return;
     }
 
+    const revision = actionRevisionRef.current + 1;
+    actionRevisionRef.current = revision;
     setForm({ ...submittedForm, busyAction: "connect" });
 
     try {
@@ -144,7 +323,15 @@ export function useAlpacaConnectionFormViewModel({
         secretKey: form.secretKey.trim(),
         environment: form.environment
       });
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
       await onRefresh?.();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
       setForm((current) => ({
         ...current,
         secretKey: "",
@@ -156,6 +343,10 @@ export function useAlpacaConnectionFormViewModel({
         actionTone: status.isConnected ? "success" : "danger"
       }));
     } catch (err) {
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
       setForm((current) => ({
         ...current,
         busyAction: null,
@@ -171,17 +362,31 @@ export function useAlpacaConnectionFormViewModel({
       return;
     }
 
+    const revision = actionRevisionRef.current + 1;
+    actionRevisionRef.current = revision;
     setForm((current) => ({ ...current, busyAction: "clear", actionMessage: null, actionTone: "default" }));
 
     try {
       await revokeConnection();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
       await onRefresh?.();
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
       setForm({
         ...emptyAlpacaConnectionForm,
         actionMessage: "Alpaca credentials cleared.",
         actionTone: "success"
       });
     } catch (err) {
+      if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
+        return;
+      }
+
       setForm((current) => ({
         ...current,
         busyAction: null,
@@ -200,6 +405,14 @@ export function useAlpacaConnectionFormViewModel({
     connect,
     clear
   };
+}
+
+function isActiveAction(
+  mountedRef: { readonly current: boolean },
+  actionRevisionRef: { readonly current: number },
+  revision: number
+): boolean {
+  return mountedRef.current && actionRevisionRef.current === revision;
 }
 
 export interface SettingsSessionItem {
@@ -232,6 +445,8 @@ export interface SettingsBackendCapabilityEndpoint {
   label: string;
   href: string;
   ariaLabel: string;
+  isBrowserNavigable: boolean;
+  interactionLabel: string;
 }
 
 export interface SettingsBackendCapabilityGroup {
@@ -283,6 +498,10 @@ export interface SettingsAlpacaConnectionPanel {
   verifiedAtLabel: string;
   warnings: string[];
   canClear: boolean;
+  setupChecklistTitle: string;
+  setupChecklistDetail: string;
+  setupChecklistAriaLabel: string;
+  setupChecklist: SettingsAlpacaSetupStep[];
 }
 
 export interface SettingsDiagnosticCounts {
@@ -294,7 +513,13 @@ export interface SettingsDiagnosticCounts {
   checking: number;
 }
 
+export interface SettingsHeaderChip {
+  label: string;
+  value: string;
+}
+
 export interface SettingsScreenViewModel {
+  headerChips: SettingsHeaderChip[];
   sessionTitle: string;
   sessionItems: SettingsSessionItem[];
   hasSession: boolean;
@@ -323,6 +548,7 @@ export interface SettingsScreenPayload {
   overview: SystemOverviewResponse | null;
   research?: ResearchWorkspaceResponse | null;
   trading?: TradingWorkspaceResponse | null;
+  portfolio?: PortfolioWorkspaceResponse | null;
   dataOperations?: DataOperationsWorkspaceResponse | null;
   governance?: GovernanceWorkspaceResponse | null;
   reporting?: GovernanceWorkspaceResponse | null;
@@ -366,7 +592,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "system-overview",
     label: "System overview",
-    href: "/api/status",
+    href: WORKSTATION_API_ENDPOINTS.systemStatus,
     description: "System health, provider counts, and active run summary.",
     ariaLabel: "Open System overview diagnostic endpoint",
     isAvailable: (payload) => payload.overview !== null,
@@ -375,7 +601,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "session-info",
     label: "Session info",
-    href: "/api/workstation/session",
+    href: WORKSTATION_API_ENDPOINTS.session,
     description: "Current operator session context and environment.",
     ariaLabel: "Open Session info diagnostic endpoint",
     isAvailable: (payload) => payload.session !== null,
@@ -384,7 +610,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "data-workspace",
     label: "Data workspace",
-    href: "/api/workstation/data",
+    href: WORKSTATION_API_ENDPOINTS.data,
     description: "Provider posture, backfill queues, and export readiness.",
     ariaLabel: "Open Data workspace diagnostic endpoint",
     workspaceKey: "data",
@@ -394,7 +620,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "strategy-workspace",
     label: "Strategy workspace",
-    href: "/api/workstation/strategy",
+    href: WORKSTATION_API_ENDPOINTS.strategy,
     description: "Strategy run metrics and active run rows.",
     ariaLabel: "Open Strategy workspace diagnostic endpoint",
     workspaceKey: "strategy",
@@ -404,7 +630,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "trading-workspace",
     label: "Trading workspace",
-    href: "/api/workstation/trading",
+    href: WORKSTATION_API_ENDPOINTS.trading,
     description: "Live trading positions, orders, fills, and risk.",
     ariaLabel: "Open Trading workspace diagnostic endpoint",
     workspaceKey: "trading",
@@ -414,7 +640,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "accounting-workspace",
     label: "Accounting workspace",
-    href: "/api/workstation/accounting",
+    href: WORKSTATION_API_ENDPOINTS.accounting,
     description: "Reconciliation queue, cash flow, and accounting evidence.",
     ariaLabel: "Open Accounting workspace diagnostic endpoint",
     workspaceKey: "accounting",
@@ -424,7 +650,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
   {
     id: "reporting-workspace",
     label: "Reporting workspace",
-    href: "/api/workstation/reporting",
+    href: WORKSTATION_API_ENDPOINTS.reporting,
     description: "Reporting profiles and governed report-pack targets.",
     ariaLabel: "Open Reporting workspace diagnostic endpoint",
     workspaceKey: "reporting",
@@ -444,12 +670,12 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     isAvailable: (payload) => payload.trading !== null && payload.trading !== undefined,
     unavailableDetail: "Trading cockpit payload has not loaded.",
     endpoints: [
-      { id: "trading-workspace", method: "GET", label: "Workspace", href: "/api/workstation/trading" },
-      { id: "trading-readiness", method: "GET", label: "Readiness", href: "/api/workstation/trading/readiness" },
-      { id: "operator-inbox", method: "GET", label: "Operator inbox", href: "/api/workstation/operator/inbox" },
-      { id: "orders-submit", method: "POST", label: "Submit order", href: "/api/execution/orders/submit" },
-      { id: "sessions", method: "GET", label: "Paper sessions", href: "/api/execution/sessions" },
-      { id: "replay-files", method: "GET", label: "Replay files", href: "/api/replay/files" }
+      { id: "trading-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.trading },
+      { id: "trading-readiness", method: "GET", label: "Readiness", href: WORKSTATION_API_ENDPOINTS.tradingReadiness },
+      { id: "operator-inbox", method: "GET", label: "Operator inbox", href: WORKSTATION_API_ENDPOINTS.operatorInbox },
+      { id: "orders-submit", method: "POST", label: "Submit order", href: EXECUTION_API_ENDPOINTS.ordersSubmit },
+      { id: "sessions", method: "GET", label: "Paper sessions", href: EXECUTION_API_ENDPOINTS.sessions },
+      { id: "replay-files", method: "GET", label: "Replay files", href: REPLAY_API_ENDPOINTS.files }
     ]
   },
   {
@@ -459,14 +685,15 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     route: "/portfolio",
     title: "Portfolio and run continuity",
     description: "Aggregate exposure, symbol exposure, run fills, ledger, attribution, continuity, and review packets.",
-    isAvailable: (payload) => payload.trading !== null && payload.trading !== undefined,
-    unavailableDetail: "Portfolio uses trading and run-continuity payloads; trading workspace data has not loaded.",
+    isAvailable: (payload) => payload.portfolio !== null && payload.portfolio !== undefined,
+    unavailableDetail: "Portfolio workspace payload has not loaded.",
     endpoints: [
-      { id: "portfolio-aggregate", method: "GET", label: "Portfolio aggregate", href: "/api/portfolio/aggregate" },
-      { id: "portfolio-exposure", method: "GET", label: "Portfolio exposure", href: "/api/portfolio/exposure" },
-      { id: "run-ledger", method: "GET", label: "Run ledger", href: "/api/workstation/runs/{runId}/ledger" },
-      { id: "run-continuity", method: "GET", label: "Run continuity", href: "/api/workstation/runs/{runId}/continuity" },
-      { id: "run-review-packet", method: "GET", label: "Review packet", href: "/api/workstation/runs/{runId}/review-packet" }
+      { id: "portfolio-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.portfolio },
+      { id: "portfolio-aggregate", method: "GET", label: "Portfolio aggregate", href: PORTFOLIO_API_ENDPOINTS.aggregate },
+      { id: "portfolio-exposure", method: "GET", label: "Portfolio exposure", href: PORTFOLIO_API_ENDPOINTS.exposure },
+      { id: "run-ledger", method: "GET", label: "Run ledger", href: WORKSTATION_API_ENDPOINT_TEMPLATES.runLedger },
+      { id: "run-continuity", method: "GET", label: "Run continuity", href: WORKSTATION_API_ENDPOINT_TEMPLATES.runContinuity },
+      { id: "run-review-packet", method: "GET", label: "Review packet", href: WORKSTATION_API_ENDPOINT_TEMPLATES.runReviewPacket }
     ]
   },
   {
@@ -475,15 +702,16 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     workspaceLabel: "Accounting",
     route: "/accounting",
     title: "Accounting and reconciliation",
-    description: "Reconciliation run creation, break queues, audit history, calibration summary, cash flow, and ledger drill-ins.",
+    description: "Reconciliation run creation, break queues, audit history, calibration summary, cash flow, ledger drill-ins, and Security Master coverage.",
     isAvailable: (payload) => payload.governance !== null && payload.governance !== undefined,
     unavailableDetail: "Accounting workspace payload has not loaded.",
     endpoints: [
-      { id: "accounting-workspace", method: "GET", label: "Workspace", href: "/api/workstation/accounting" },
-      { id: "recon-runs", method: "POST", label: "Run reconciliation", href: "/api/workstation/reconciliation/runs" },
-      { id: "break-queue", method: "GET", label: "Break queue", href: "/api/workstation/reconciliation/break-queue" },
-      { id: "calibration", method: "GET", label: "Calibration", href: "/api/workstation/reconciliation/calibration-summary" },
-      { id: "break-audit", method: "GET", label: "Break audit", href: "/api/workstation/reconciliation/break-queue/{breakId}/audit" }
+      { id: "accounting-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.accounting },
+      { id: "recon-runs", method: "POST", label: "Run reconciliation", href: RECONCILIATION_API_ENDPOINTS.runs },
+      { id: "break-queue", method: "GET", label: "Break queue", href: RECONCILIATION_API_ENDPOINTS.breakQueue },
+      { id: "calibration", method: "GET", label: "Calibration", href: RECONCILIATION_API_ENDPOINTS.calibrationSummary },
+      { id: "break-audit", method: "GET", label: "Break audit", href: `${RECONCILIATION_API_ENDPOINTS.breakQueue}/{breakId}/audit` },
+      { id: "security-master", method: "GET", label: "Security Master", href: SECURITY_MASTER_API_ENDPOINTS.workstationSecurities }
     ]
   },
   {
@@ -496,10 +724,10 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
     unavailableDetail: "Reporting workspace payload has not loaded.",
     endpoints: [
-      { id: "reporting-workspace", method: "GET", label: "Workspace", href: "/api/workstation/reporting" },
-      { id: "analysis-export", method: "POST", label: "Analysis export", href: "/api/export/analysis" },
-      { id: "fund-report-packs", method: "GET", label: "Report packs", href: "/api/fund-structure/report-packs" },
-      { id: "export-formats", method: "GET", label: "Export formats", href: "/api/export/formats" }
+      { id: "reporting-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.reporting },
+      { id: "analysis-export", method: "POST", label: "Analysis export", href: EXPORT_API_ENDPOINTS.analysis },
+      { id: "fund-report-packs", method: "GET", label: "Report packs", href: EXPORT_API_ENDPOINTS.reportPacks },
+      { id: "export-formats", method: "GET", label: "Export formats", href: EXPORT_API_ENDPOINTS.formats }
     ]
   },
   {
@@ -512,12 +740,12 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     isAvailable: (payload) => payload.research !== null && payload.research !== undefined,
     unavailableDetail: "Strategy workspace payload has not loaded.",
     endpoints: [
-      { id: "strategy-workspace", method: "GET", label: "Workspace", href: "/api/workstation/strategy" },
-      { id: "run-history", method: "GET", label: "Run history", href: "/api/workstation/runs/history" },
-      { id: "run-timeline", method: "GET", label: "Run timeline", href: "/api/workstation/runs/timeline" },
-      { id: "run-sweeps", method: "GET", label: "Run sweeps", href: "/api/workstation/runs/sweeps" },
-      { id: "run-compare", method: "POST", label: "Compare runs", href: "/api/workstation/runs/compare" },
-      { id: "promotion", method: "GET", label: "Promotion check", href: "/api/promotion/evaluate/{runId}" }
+      { id: "strategy-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.strategy },
+      { id: "run-history", method: "GET", label: "Run history", href: WORKSTATION_API_ENDPOINTS.runHistory },
+      { id: "run-timeline", method: "GET", label: "Run timeline", href: WORKSTATION_API_ENDPOINTS.runTimeline },
+      { id: "run-sweeps", method: "GET", label: "Run sweeps", href: WORKSTATION_API_ENDPOINTS.runSweeps },
+      { id: "run-compare", method: "POST", label: "Compare runs", href: workstationRunCompareEndpoint() },
+      { id: "promotion", method: "GET", label: "Promotion check", href: `${PROMOTION_API_ENDPOINTS.evaluate}/{runId}` }
     ]
   },
   {
@@ -526,16 +754,15 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     workspaceLabel: "Data",
     route: "/data",
     title: "Data trust and provider operations",
-    description: "Provider status, backfill trigger and preview, Security Master, symbols, storage quality, and data-quality queues.",
+    description: "Provider status, backfill trigger and preview, symbols, storage quality, and data-quality queues.",
     isAvailable: (payload) => payload.dataOperations !== null && payload.dataOperations !== undefined,
     unavailableDetail: "Data workspace payload has not loaded.",
     endpoints: [
-      { id: "data-workspace", method: "GET", label: "Workspace", href: "/api/workstation/data" },
-      { id: "provider-status", method: "GET", label: "Provider status", href: "/api/providers/status" },
-      { id: "backfill-run", method: "POST", label: "Backfill run", href: "/api/backfill/run" },
-      { id: "security-master", method: "GET", label: "Security Master", href: "/api/workstation/security-master/securities" },
-      { id: "symbols", method: "GET", label: "Symbols", href: "/api/symbols" },
-      { id: "quality-dashboard", method: "GET", label: "Quality", href: "/api/quality/dashboard" }
+      { id: "data-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.data },
+      { id: "provider-status", method: "GET", label: "Provider status", href: PROVIDER_API_ENDPOINTS.status },
+      { id: "backfill-run", method: "POST", label: "Backfill run", href: BACKFILL_API_ENDPOINTS.run },
+      { id: "symbols", method: "GET", label: "Symbols", href: SYMBOL_API_ENDPOINTS.symbols },
+      { id: "quality-dashboard", method: "GET", label: "Quality", href: QUALITY_API_ENDPOINTS.dashboard }
     ]
   },
   {
@@ -548,12 +775,12 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     isAvailable: (payload) => payload.session !== null && payload.overview !== null,
     unavailableDetail: "Session or system overview has not loaded.",
     endpoints: [
-      { id: "session", method: "GET", label: "Session", href: "/api/workstation/session" },
-      { id: "status", method: "GET", label: "System status", href: "/api/status" },
-      { id: "workflow-summary", method: "GET", label: "Workflow summary", href: "/api/workstation/workflow-summary" },
-      { id: "workflow-library", method: "GET", label: "Workflow library", href: "/api/workstation/workflows" },
-      { id: "workflow-presets", method: "GET", label: "Workflow presets", href: "/api/workstation/workflows/presets" },
-      { id: "config", method: "GET", label: "Config", href: "/api/config" }
+      { id: "session", method: "GET", label: "Session", href: WORKSTATION_API_ENDPOINTS.session },
+      { id: "status", method: "GET", label: "System status", href: WORKSTATION_API_ENDPOINTS.systemStatus },
+      { id: "workflow-summary", method: "GET", label: "Workflow summary", href: WORKSTATION_API_ENDPOINTS.workflowSummary },
+      { id: "workflow-library", method: "GET", label: "Workflow library", href: WORKSTATION_API_ENDPOINTS.workflowLibrary },
+      { id: "workflow-presets", method: "GET", label: "Workflow presets", href: WORKSTATION_API_ENDPOINTS.workflowPresets },
+      { id: "config", method: "GET", label: "Config", href: CONFIG_API_ENDPOINTS.config }
     ]
   }
 ];
@@ -675,8 +902,84 @@ function buildAlpacaConnectionPanel(connection: BrokerageConnectionStatus | null
     maskedKeyIdLabel: connection?.maskedKeyId?.trim() || "Not stored",
     verifiedAtLabel: connection?.verifiedAt?.trim() || "Not verified",
     warnings,
-    canClear: connection?.isConfigured === true
+    canClear: connection?.isConfigured === true,
+    setupChecklistTitle: "Provider setup checklist",
+    setupChecklistDetail: "Move from demo data to a verified paper connection before relying on readiness evidence.",
+    setupChecklistAriaLabel: "Alpaca provider setup checklist",
+    setupChecklist: buildAlpacaSetupChecklist(connection, isLive)
   };
+}
+
+function buildAlpacaSetupChecklist(
+  connection: BrokerageConnectionStatus | null,
+  isLive: boolean
+): SettingsAlpacaSetupStep[] {
+  const isConfigured = connection?.isConfigured === true;
+  const isConnected = connection?.isConnected === true;
+  const isFailed = connection?.state === "Degraded" || connection?.state === "ReauthorizationRequired";
+  const account = connection?.externalAccountId?.trim();
+  const lastError = connection?.lastError?.trim();
+
+  return [
+    {
+      id: "alpaca-paper-environment",
+      label: "Use paper endpoint",
+      statusLabel: isLive ? "Review" : "Ready",
+      detail: isLive
+        ? "Switch back to paper before rehearsing first-run readiness."
+        : "Paper mode keeps provider setup safe for onboarding and demos.",
+      tone: isLive ? "warning" : "success",
+      badgeVariant: isLive ? "warning" : "success",
+      actionLabel: null,
+      actionHref: null,
+      actionAriaLabel: null
+    },
+    {
+      id: "alpaca-api-keys",
+      label: "Store API keys",
+      statusLabel: isConfigured ? "Stored" : "Needed",
+      detail: isConfigured
+        ? "Key ID is masked and the secret is not displayed after submit."
+        : "Paste the paper key ID and secret, then test the account.",
+      tone: isConfigured ? "success" : "warning",
+      badgeVariant: isConfigured ? "success" : "warning",
+      actionLabel: null,
+      actionHref: null,
+      actionAriaLabel: null
+    },
+    {
+      id: "alpaca-account-verification",
+      label: "Verify account",
+      statusLabel: isConnected ? "Verified" : isFailed ? "Failed" : isConfigured ? "Test needed" : "Blocked",
+      detail: isConnected
+        ? account
+          ? `Alpaca /v2/account returned account ${account}.`
+          : "Alpaca /v2/account returned an account response."
+        : isFailed
+          ? lastError || "The last Alpaca verification attempt failed."
+          : isConfigured
+            ? "Run Connect and test to verify the stored paper account."
+            : "Store paper credentials before account verification can run.",
+      tone: isConnected ? "success" : isFailed ? "danger" : isConfigured ? "warning" : "muted",
+      badgeVariant: isConnected ? "success" : isFailed ? "danger" : isConfigured ? "warning" : "outline",
+      actionLabel: null,
+      actionHref: null,
+      actionAriaLabel: null
+    },
+    {
+      id: "alpaca-readiness-handoff",
+      label: "Check readiness",
+      statusLabel: isConnected ? "Ready" : "Blocked",
+      detail: isConnected
+        ? "Open Trading readiness to confirm brokerage-sync and execution-control evidence."
+        : "Readiness handoff unlocks after account verification succeeds.",
+      tone: isConnected ? "success" : "muted",
+      badgeVariant: isConnected ? "success" : "outline",
+      actionLabel: isConnected ? "Open readiness" : null,
+      actionHref: isConnected ? "/trading/readiness" : null,
+      actionAriaLabel: isConnected ? "Open Trading readiness after Alpaca account verification" : null
+    }
+  ];
 }
 
 function connectionStateLabel(state: BrokerageConnectionStatus["state"]): string {
@@ -758,8 +1061,11 @@ export function buildSettingsScreenViewModel(
   const sysSummary = overview
     ? `${overview.systemStatus} · ${overview.providersOnline}/${overview.providersTotal} providers · ${overview.activeRuns} active run${overview.activeRuns === 1 ? "" : "s"}`
     : "System overview unavailable.";
+  const diagnosticSection = buildDiagnosticEndpointSection(payload);
+  const backendCapabilitySection = buildBackendCapabilitySection(payload);
 
   return {
+    headerChips: buildSettingsHeaderChips(session, overview, diagnosticSection.diagnosticStatusLabel),
     sessionTitle: session ? `Session - ${session.displayName}` : "Session",
     sessionItems,
     hasSession: session !== null,
@@ -770,8 +1076,8 @@ export function buildSettingsScreenViewModel(
     hasOverview: overview !== null,
     recentEventsSection: buildRecentEventsSection(overview),
     alpacaConnectionPanel: buildAlpacaConnectionPanel(payload.brokerageConnection ?? null),
-    ...buildDiagnosticEndpointSection(payload),
-    ...buildBackendCapabilitySection(payload)
+    ...diagnosticSection,
+    ...backendCapabilitySection
   };
 }
 
@@ -805,6 +1111,19 @@ function buildDiagnosticEndpointSection(payload: SettingsScreenPayload): Pick<
     diagnosticStatusLabel,
     diagnosticStatusVariant: counts.checking > 0 ? "warning" : counts.failed > 0 ? "danger" : "success"
   };
+}
+
+function buildSettingsHeaderChips(
+  session: SessionInfo | null,
+  overview: SystemOverviewResponse | null,
+  diagnosticStatusLabel: string
+): SettingsHeaderChip[] {
+  return [
+    { label: "Environment", value: session ? session.environment.toUpperCase() : "—" },
+    { label: "Workspace", value: session?.activeWorkspace ?? "—" },
+    { label: "Diagnostics", value: diagnosticStatusLabel },
+    { label: "Heartbeat", value: overview?.lastHeartbeatUtc ?? "—" }
+  ];
 }
 
 function buildBackendCapabilitySection(payload: SettingsScreenPayload): Pick<
@@ -843,7 +1162,11 @@ function buildBackendCapabilityGroup(
   const endpointCount = definition.endpoints.length;
   const endpoints = definition.endpoints.map((endpoint) => ({
     ...endpoint,
-    ariaLabel: `${endpoint.method} ${endpoint.href} for ${definition.workspaceLabel} ${endpoint.label}`
+    isBrowserNavigable: isBrowserNavigableEndpoint(endpoint),
+    interactionLabel: isBrowserNavigableEndpoint(endpoint) ? "Open" : "Reference",
+    ariaLabel: isBrowserNavigableEndpoint(endpoint)
+      ? `${endpoint.method} ${endpoint.href} for ${definition.workspaceLabel} ${endpoint.label}`
+      : `Reference-only ${endpoint.method} ${endpoint.href} for ${definition.workspaceLabel} ${endpoint.label}`
   }));
 
   if (isLoading) {
@@ -876,7 +1199,7 @@ function buildBackendCapabilityGroup(
       endpointCountLabel: `${endpointCount} endpoint${endpointCount === 1 ? "" : "s"}`,
       loadedCountLabel: `${endpointCount} mapped`,
       statusLabel: "Surfaced",
-      statusDetail: `${definition.workspaceLabel} has a browser route and mapped backend endpoints.`,
+      statusDetail: `${definition.workspaceLabel} has a browser route and mapped backend endpoints. Concrete GET endpoints open directly; templates and mutating endpoints stay reference-only.`,
       statusVariant: "success",
       endpoints
     };
@@ -891,6 +1214,10 @@ function buildBackendCapabilityGroup(
     statusVariant: "danger",
     endpoints
   };
+}
+
+function isBrowserNavigableEndpoint(endpoint: CapabilityEndpointDefinition): boolean {
+  return endpoint.method === "GET" && !endpoint.href.includes("{");
 }
 
 function buildDiagnosticCounts(links: SettingsDiagnosticLink[]): SettingsDiagnosticCounts {

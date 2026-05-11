@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Security.Cryptography;
 
@@ -10,6 +11,11 @@ namespace Meridian.Ui.Services;
 /// </summary>
 public sealed class AnalysisExportWizardService
 {
+    private static readonly JsonSerializerOptions NotebookJsonOptions = new(DesktopJsonOptions.PrettyPrint)
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     private readonly DataCompletenessService _completenessService;
     private readonly StorageAnalyticsService _storageService;
     private readonly ConfigService _configService;
@@ -625,25 +631,25 @@ public sealed class AnalysisExportWizardService
             var appConfig = await _configService.LoadConfigAsync();
             var dataRoot = _configService.ResolveDataRoot(appConfig);
 
-            // Determine source files based on data types requested
+            // Determine source files based on data types requested.
+            // Symbols like BRK/B appear in file names with provider-specific separators,
+            // so search normalized filename tokens instead of embedding the raw symbol in a glob.
             var sourceFiles = new List<string>();
+            var seenSourceFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var dataType in config.DataTypes)
             {
-                var pattern = dataType switch
-                {
-                    "trades" => $"*{symbol}*trade*.jsonl*",
-                    "quotes" => $"*{symbol}*quote*.jsonl*",
-                    "depth" => $"*{symbol}*depth*.jsonl*",
-                    "bars_1m" or "bars_5m" or "bars_1h" or "bars_1d" => $"*{symbol}*bar*.jsonl*",
-                    _ => $"*{symbol}*.jsonl*"
-                };
-
                 if (Directory.Exists(dataRoot))
                 {
-                    var files = Directory.GetFiles(dataRoot, pattern, SearchOption.AllDirectories)
-                        .Where(f => IsInDateRange(f, config.FromDate, config.ToDate))
-                        .ToList();
-                    sourceFiles.AddRange(files);
+                    foreach (var pattern in BuildSourceFileSearchPatterns(symbol, dataType))
+                    {
+                        var files = Directory.GetFiles(dataRoot, pattern, SearchOption.AllDirectories)
+                            .Where(f => IsInDateRange(f, config.FromDate, config.ToDate));
+                        foreach (var file in files)
+                        {
+                            if (seenSourceFiles.Add(file))
+                                sourceFiles.Add(file);
+                        }
+                    }
                 }
             }
 
@@ -713,6 +719,61 @@ public sealed class AnalysisExportWizardService
 
         // If we can't determine the date, include the file
         return true;
+    }
+
+    private static IEnumerable<string> BuildSourceFileSearchPatterns(string symbol, string dataType)
+    {
+        var dataFragment = dataType switch
+        {
+            "trades" => "trade",
+            "quotes" => "quote",
+            "depth" => "depth",
+            "bars_1m" or "bars_5m" or "bars_1h" or "bars_1d" => "bar",
+            _ => string.Empty
+        };
+
+        foreach (var token in BuildSymbolFileNameTokens(symbol))
+        {
+            yield return string.IsNullOrEmpty(dataFragment)
+                ? $"*{token}*.jsonl*"
+                : $"*{token}*{dataFragment}*.jsonl*";
+        }
+    }
+
+    private static IEnumerable<string> BuildSymbolFileNameTokens(string symbol)
+    {
+        var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        AddToken(CreateSafeFileStem(symbol));
+        AddToken(ReplaceUnsafeSymbolFileNameCharacters(symbol, '-'));
+        AddToken(ReplaceUnsafeSymbolFileNameCharacters(symbol, '_'));
+
+        var compact = new string(symbol.Trim().Where(char.IsLetterOrDigit).ToArray());
+        AddToken(compact);
+        return tokens;
+
+        void AddToken(string token)
+        {
+            var trimmed = token.Trim('.', ' ', '-', '_');
+            if (trimmed.Length > 0)
+                tokens.Add(trimmed);
+        }
+    }
+
+    private static string ReplaceUnsafeSymbolFileNameCharacters(string symbol, char replacement)
+    {
+        var trimmed = symbol.Trim();
+        if (trimmed.Length == 0)
+            return "symbol";
+
+        var builder = new StringBuilder(trimmed.Length);
+        foreach (var character in trimmed)
+        {
+            builder.Append(char.IsLetterOrDigit(character) || character is '.' or '-' or '_'
+                ? character
+                : replacement);
+        }
+
+        return builder.ToString();
     }
 
     /// <summary>
@@ -1271,7 +1332,7 @@ public sealed class AnalysisExportWizardService
             }
         };
 
-        var notebookJson = JsonSerializer.Serialize(notebook, DesktopJsonOptions.PrettyPrint);
+        var notebookJson = JsonSerializer.Serialize(notebook, NotebookJsonOptions);
         await File.WriteAllTextAsync(notebookFile, notebookJson, ct);
 
         var result = csvResult;

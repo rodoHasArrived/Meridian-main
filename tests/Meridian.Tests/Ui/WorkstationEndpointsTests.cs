@@ -359,6 +359,50 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldEncodeRunDrillInRoutes()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run latest/encoded",
+            strategyId: "carry-encoded",
+            strategyName: "Encoded Carry",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 18, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/fx/spot",
+            feedReference: "synthetic:fx"));
+
+        var client = app.GetTestClient();
+        using var research = await ReadJsonAsync(client, "/api/workstation/research");
+
+        var run = research.RootElement.GetProperty("runs")[0];
+        run.GetProperty("id").GetString().Should().Be("run latest/encoded");
+        run.GetProperty("drillIn").GetProperty("equityCurve").GetString()
+            .Should()
+            .Be("/api/workstation/runs/run%20latest%2Fencoded/equity-curve");
+        run.GetProperty("drillIn").GetProperty("fills").GetString()
+            .Should()
+            .Be("/api/workstation/runs/run%20latest%2Fencoded/fills");
+        run.GetProperty("drillIn").GetProperty("cashFlows").GetString()
+            .Should()
+            .Be("/api/portfolio/run%20latest%2Fencoded/cash-flows");
+
+        var response = await client.GetAsync("/api/workstation/research/briefing");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
+        briefing.Should().NotBeNull();
+        briefing!.InsightFeed.Widgets[0].DrillInRoute.Should()
+            .Be("/api/workstation/runs/run%20latest%2Fencoded/equity-curve");
+        briefing.RecentRuns[0].DrillIn.Continuity.Should()
+            .Be("/api/workstation/runs/run%20latest%2Fencoded/continuity");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnFallbackResearchBriefing()
     {
         await using var app = await CreateAppAsync();
@@ -703,7 +747,7 @@ public sealed class WorkstationEndpointsTests
         readiness.TrustGate.OperatorSignoff.SignedOwners.Should().BeEmpty();
         readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
         readiness.ReadyForPaperOperation.Should().BeFalse();
-        readiness.AcceptanceGates.Should().HaveCount(6);
+        readiness.AcceptanceGates.Should().HaveCount(8);
         readiness.AcceptanceGates.Should().ContainSingle(gate =>
             gate.GateId == "session" &&
             gate.Status == TradingAcceptanceGateStatusDto.Ready &&
@@ -731,10 +775,16 @@ public sealed class WorkstationEndpointsTests
             gate.GateId == "report-pack" &&
             gate.Status == TradingAcceptanceGateStatusDto.Ready &&
             gate.AuditReference == reportPack.ReportId.ToString("D"));
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "reconciliation" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "brokerage-sync" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
         readiness.EvidenceCompleteness.Should().NotBeNull();
-        readiness.EvidenceCompleteness!.ReadyGateCount.Should().Be(5);
-        readiness.EvidenceCompleteness.TotalGateCount.Should().Be(6);
-        readiness.EvidenceCompleteness.ReviewGateIds.Should().ContainSingle().Which.Should().Be("dk1-trust");
+        readiness.EvidenceCompleteness!.ReadyGateCount.Should().Be(6);
+        readiness.EvidenceCompleteness.TotalGateCount.Should().Be(8);
+        readiness.EvidenceCompleteness.ReviewGateIds.Should().BeEquivalentTo(["dk1-trust", "reconciliation"]);
         readiness.WorkItems.Should().ContainSingle(item =>
             item.Kind == OperatorWorkItemKindDto.ProviderTrustGate &&
             item.Tone == OperatorWorkItemToneDto.Warning &&
@@ -954,7 +1004,15 @@ public sealed class WorkstationEndpointsTests
         readiness.AcceptanceGates
             .Select(static gate => gate.GateId)
             .Should()
-            .Equal("session", "replay", "audit-controls", "promotion", "dk1-trust", "report-pack");
+            .Equal(
+                "session",
+                "replay",
+                "audit-controls",
+                "promotion",
+                "dk1-trust",
+                "report-pack",
+                "reconciliation",
+                "brokerage-sync");
         readiness.ReportPack.Should().NotBeNull();
         readiness.ReportPack!.Status.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
         readiness.EvidenceCompleteness.Should().NotBeNull();
@@ -998,7 +1056,7 @@ public sealed class WorkstationEndpointsTests
             readiness.WorkItems.Should().Contain(item =>
                 item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
                 item.FundAccountId == fundAccountId &&
-                item.TargetRoute == UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.ToString(), StringComparison.Ordinal));
+                item.TargetRoute == UiApiRoutes.WithParam(UiApiRoutes.FundAccountBrokerageSyncStatus, "accountId", fundAccountId.ToString()));
         }
         finally
         {
@@ -1113,12 +1171,12 @@ public sealed class WorkstationEndpointsTests
         newestReviewItem.Tone.Should().Be(OperatorWorkItemToneDto.Warning);
         newestReviewItem.Workspace.Should().Be("Trading");
         newestReviewItem.RunId.Should().Be(newestRunId);
-        newestReviewItem.TargetRoute.Should().Be(UiApiRoutes.RunsReviewPacket.Replace("{runId}", newestRunId, StringComparison.Ordinal));
+        newestReviewItem.TargetRoute.Should().Be(UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", newestRunId));
         newestReviewItem.TargetPageTag.Should().Be("TradingShell");
         olderReviewItem.Tone.Should().Be(OperatorWorkItemToneDto.Warning);
         olderReviewItem.Workspace.Should().Be("Trading");
         olderReviewItem.RunId.Should().Be(olderRunId);
-        olderReviewItem.TargetRoute.Should().Be(UiApiRoutes.RunsReviewPacket.Replace("{runId}", olderRunId, StringComparison.Ordinal));
+        olderReviewItem.TargetRoute.Should().Be(UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", olderRunId));
         olderReviewItem.TargetPageTag.Should().Be("TradingShell");
         inbox.Items.Should().OnlyContain(item =>
             !item.WorkItemId.StartsWith("promotion-review-", StringComparison.OrdinalIgnoreCase) ||
@@ -1159,7 +1217,7 @@ public sealed class WorkstationEndpointsTests
                 .Which;
             syncItem.Tone.Should().Be(OperatorWorkItemToneDto.Critical);
             syncItem.Workspace.Should().Be("Trading");
-            syncItem.TargetRoute.Should().Be(UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.ToString(), StringComparison.Ordinal));
+            syncItem.TargetRoute.Should().Be(UiApiRoutes.WithParam(UiApiRoutes.FundAccountBrokerageSyncStatus, "accountId", fundAccountId.ToString()));
             syncItem.TargetPageTag.Should().Be("AccountPortfolio");
             syncItem.Detail.Should().Contain("Alpaca credentials are missing.");
         }
@@ -1943,7 +2001,7 @@ public sealed class WorkstationEndpointsTests
         var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
         resolved.Should().NotBeNull();
         resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
-        resolved.ResolvedBy.Should().Be("qa-resolve");
+        resolved.ResolvedBy.Should().Be("ops-user");
         resolved.SignoffStatus.Should().Be("signed-off");
     }
 
@@ -2113,7 +2171,7 @@ public sealed class WorkstationEndpointsTests
             item.WorkItemId == $"promotion-review-{runId.ToLowerInvariant()}" &&
             item.Kind == OperatorWorkItemKindDto.PromotionReview &&
             item.Workspace == "Trading" &&
-            item.TargetRoute == UiApiRoutes.RunsReviewPacket.Replace("{runId}", runId, StringComparison.Ordinal) &&
+            item.TargetRoute == UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", runId) &&
             item.TargetPageTag == "TradingShell");
         first.WorkItems.Should().NotContain(static item =>
             item.WorkItemId.StartsWith("operator-", StringComparison.OrdinalIgnoreCase));
@@ -2822,6 +2880,18 @@ public sealed class WorkstationEndpointsTests
             r.GetProperty("mode").GetString().Should().BeOneOf("paper", "backtest");
             r.GetProperty("notes").GetString().Should().NotBeNull();
         });
+
+        // Cash-flow summary is populated so the Portfolio workspace can surface
+        // cash posture and ledger variance without falling back to Governance fixtures.
+        var cashFlow = portfolio.RootElement.GetProperty("cashFlow");
+        cashFlow.ValueKind.Should().NotBe(JsonValueKind.Null);
+        cashFlow.GetProperty("tone").GetString().Should().NotBeNullOrEmpty();
+        cashFlow.GetProperty("summary").GetString().Should().NotBeNullOrEmpty();
+        cashFlow.TryGetProperty("totalCash", out _).Should().BeTrue();
+        cashFlow.TryGetProperty("totalLedgerCash", out _).Should().BeTrue();
+        cashFlow.TryGetProperty("netVariance", out _).Should().BeTrue();
+        cashFlow.TryGetProperty("runsWithCashSignals", out _).Should().BeTrue();
+        cashFlow.TryGetProperty("runsWithCashVariance", out _).Should().BeTrue();
     }
 
     [Fact]
@@ -2837,6 +2907,14 @@ public sealed class WorkstationEndpointsTests
         portfolio.RootElement.GetProperty("runs").GetArrayLength().Should().Be(0);
         portfolio.RootElement.GetProperty("risk").GetProperty("state").GetString().Should().Be("Healthy");
         portfolio.RootElement.GetProperty("brokerage").GetProperty("connection").GetString().Should().NotBeNullOrEmpty();
+
+        // CashFlow summary is always present (zeroed when there is no run data) so the
+        // Portfolio screen never has to discriminate between "no data" and "missing field".
+        var cashFlow = portfolio.RootElement.GetProperty("cashFlow");
+        cashFlow.ValueKind.Should().NotBe(JsonValueKind.Null);
+        cashFlow.GetProperty("runsWithCashSignals").GetInt32().Should().Be(0);
+        cashFlow.GetProperty("runsWithCashVariance").GetInt32().Should().Be(0);
+        cashFlow.GetProperty("tone").GetString().Should().Be("default");
     }
 
     [Fact]
@@ -2904,6 +2982,7 @@ public sealed class WorkstationEndpointsTests
         var rows = trading.RootElement.GetProperty("positions").EnumerateArray().ToArray();
         rows.Should().NotBeEmpty();
         var row = rows[0];
+        row.GetProperty("positionKey").GetString().Should().Be("AAPL");
         row.GetProperty("symbol").GetString().Should().Be("AAPL");
 
         // Mid of (199.90, 200.10) = 200.00
@@ -2924,6 +3003,8 @@ public sealed class WorkstationEndpointsTests
         var risk = trading.RootElement.GetProperty("risk");
         risk.GetProperty("netExposure").GetString().Should().Be("+$20K");
         risk.GetProperty("grossExposure").GetString().Should().Be("+$20K");
+        // Buying power = Cash (100K, default) → 20,000 / 100,000 = 20% utilisation.
+        risk.GetProperty("buyingPowerUsed").GetString().Should().Be("+20.0%");
     }
 
     [Fact]
@@ -3034,6 +3115,8 @@ public sealed class WorkstationEndpointsTests
 
         var risk = portfolio.RootElement.GetProperty("risk");
         risk.GetProperty("grossExposure").GetString().Should().Be("+$21K");
+        // Buying power = Cash (100K, default) → 21,000 / 100,000 = 21% utilisation.
+        risk.GetProperty("buyingPowerUsed").GetString().Should().Be("+21.0%");
     }
 
     private sealed class LiveMarkTestPortfolioState : Meridian.Execution.Models.IPortfolioState
@@ -3071,6 +3154,7 @@ public sealed class WorkstationEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "ops-user";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ModifySecurityMaster;
             await next();
         });

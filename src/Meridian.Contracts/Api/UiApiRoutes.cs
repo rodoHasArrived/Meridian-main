@@ -33,6 +33,8 @@ public static class UiApiRoutes
     public const string BackfillProviders = "/api/backfill/providers";
     public const string BackfillStatus = "/api/backfill/status";
     public const string BackfillRun = "/api/backfill/run";
+    public const string BackfillRunPreview = "/api/backfill/run/preview";
+    public const string BackfillProgress = "/api/backfill/progress";
     public const string BackfillHealth = "/api/backfill/health";
     public const string BackfillResolve = "/api/backfill/resolve/{symbol}";
     public const string BackfillGapFill = "/api/backfill/gap-fill";
@@ -86,6 +88,10 @@ public static class UiApiRoutes
     public const string ProviderTest = "/api/providers/{providerName}/test";
     public const string ProviderFailoverThresholds = "/api/providers/failover-thresholds";
     public const string ProviderHealth = "/api/providers/health";
+    public const string ProviderRoutingConnections = "/api/provider-routing/connections";
+    public const string ProviderRoutingBindings = "/api/provider-routing/bindings";
+    public const string ProviderRoutingTrustSnapshots = "/api/provider-routing/trust-snapshots";
+    public const string ProviderRoutingPreview = "/api/provider-routing/preview";
 
     /// <summary>
     /// Unified traffic-light health dashboard across all providers.
@@ -307,6 +313,7 @@ public static class UiApiRoutes
     public const string SecurityMasterPreferredEquityTerms = "/api/security-master/{securityId:guid}/preferred-equity-terms";
     public const string SecurityMasterConvertibleEquityTerms = "/api/security-master/{securityId:guid}/convertible-equity-terms";
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
+    public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
     public const string SecurityMasterImport = "/api/security-master/import";
@@ -469,8 +476,17 @@ public static class UiApiRoutes
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
     public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
     public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
+    public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
+    public const string WorkstationEvidenceSubjectPacket = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet";
+    public const string WorkstationEvidenceSubjectGraph = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/graph";
+    public const string WorkstationEvidenceSubjectValidate = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/validate";
+    public const string WorkstationEvidenceSubjectExportManifest = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/export-manifest";
+    public const string WorkstationEvidenceTemplates = "/api/workstation/evidence/templates";
     public const string RunsCompare = "/api/workstation/runs/compare";
     public const string RunsDiff = "/api/workstation/runs/diff";
+    public const string RunsEquityCurve = "/api/workstation/runs/{runId}/equity-curve";
+    public const string RunsFills = "/api/workstation/runs/{runId}/fills";
+    public const string RunsAttribution = "/api/workstation/runs/{runId}/attribution";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsReconciliationHistory = "/api/workstation/runs/{runId}/reconciliation/history";
     public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";
@@ -483,7 +499,9 @@ public static class UiApiRoutes
     public const string RunsLedgerJournal = "/api/workstation/runs/{runId}/ledger/journal";
     public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";
     public const string WorkstationSecurityMasterById = "/api/workstation/security-master/securities/{securityId:guid}";
+    public const string WorkstationSecurityMasterHistory = "/api/workstation/security-master/securities/{securityId:guid}/history";
     public const string WorkstationSecurityMasterIdentity = "/api/workstation/security-master/securities/{securityId:guid}/identity";
+    public const string WorkstationSecurityMasterEconomicDefinition = "/api/workstation/security-master/securities/{securityId:guid}/economic-definition";
     public const string WorkstationSecurityMasterTrustSnapshot = "/api/workstation/security-master/securities/{securityId:guid}/trust-snapshot";
     public const string WorkstationSecurityMasterBulkResolveConflicts = "/api/workstation/security-master/conflicts/bulk-resolve";
     public const string ReconciliationCalibrationSummary = "/api/workstation/reconciliation/calibration-summary";
@@ -514,10 +532,44 @@ public static class UiApiRoutes
     public const string RetentionComplianceReport = "/api/admin/retention/compliance-report";
 
     /// <summary>
-    /// Replaces a route parameter with a value.
+    /// Replaces a route parameter with a URL-encoded path segment value.
     /// </summary>
     public static string WithParam(string route, string paramName, string value)
-        => route.Replace($"{{{paramName}}}", Uri.EscapeDataString(value));
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(route);
+        ArgumentException.ThrowIfNullOrWhiteSpace(paramName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
+
+        var encodedValue = Uri.EscapeDataString(value.Trim());
+        var parameterName = paramName.Trim();
+        var simplePlaceholder = $"{{{parameterName}}}";
+        var updated = route.Replace(simplePlaceholder, encodedValue, StringComparison.Ordinal);
+
+        var constrainedPrefix = $"{{{parameterName}:";
+        var searchIndex = 0;
+        while (searchIndex < updated.Length)
+        {
+            var startIndex = updated.IndexOf(constrainedPrefix, searchIndex, StringComparison.Ordinal);
+            if (startIndex < 0)
+            {
+                break;
+            }
+
+            var endIndex = updated.IndexOf('}', startIndex);
+            if (endIndex < 0)
+            {
+                break;
+            }
+
+            updated = string.Concat(
+                updated.AsSpan(0, startIndex),
+                encodedValue,
+                updated.AsSpan(endIndex + 1));
+            searchIndex = startIndex + encodedValue.Length;
+        }
+
+        return updated;
+    }
 
     /// <summary>
     /// Appends a query string to a route.
@@ -534,4 +586,25 @@ public static class UiApiRoutes
     public const string QuantRun = "/api/quant/run";
     public const string QuantParameters = "/api/quant/parameters";
     public const string QuantTemplates = "/api/quant/templates";
+
+    // Demo mode endpoints
+    public const string DemoMode = "/api/demo/mode";
+    public const string DemoSymbols = "/api/demo/symbols";
+    public const string DemoMarketData = "/api/demo/market-data/{symbol}";
+    public const string DemoHistoricalData = "/api/demo/historical/{symbol}";
+
+    // Symbol universe management endpoints
+    public const string SymbolUpdate = "/api/symbols/{symbol}/update";
+    public const string SymbolDelete = "/api/symbols/{symbol}";
+    public const string SymbolCreate = "/api/symbols/create";
+
+    // Backfill validation endpoints
+    public const string BackfillValidation = "/api/backfill/validation";
+    public const string BackfillValidationBySymbol = "/api/backfill/validation/{symbol}";
+    public const string BackfillGapDetection = "/api/backfill/gaps";
+    public const string BackfillCompleteness = "/api/backfill/completeness";
+
+    // Provider credential verification endpoints
+    public const string ProviderCredentialsValidate = "/api/providers/{provider}/validate-credentials";
+    public const string ProviderConnectionTest = "/api/providers/{provider}/test-connection";
 }

@@ -161,7 +161,7 @@ describe("GovernanceScreen", () => {
   it("renders reconciliation, cash-flow, and reporting summaries", async () => {
     await renderGovernanceScreen();
 
-    expect(screen.getByRole("region", { name: "Governance workbench context" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
     expect(screen.getByText("Reporting profiles")).toBeInTheDocument();
     expect(screen.getByText("Cash-flow coverage is available for 4 runs; 1 run needs variance review.")).toBeInTheDocument();
@@ -169,6 +169,16 @@ describe("GovernanceScreen", () => {
     expect(screen.getByLabelText("Cash-flow status Variance review. Net variance $500.")).toHaveTextContent("Variance review");
     expect(screen.getByLabelText("Runs with variance: 1")).toHaveTextContent("1");
     expect(screen.getByText("Paper Index Mean Reversion")).toBeInTheDocument();
+  });
+
+  it("renders reconciliation strong panels with view-model presentation state", async () => {
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
+
+    expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Open breaks: 1")).toHaveTextContent("1");
+    expect(screen.getByLabelText("Reconciliation narrative for Paper Index Mean Reversion")).toHaveTextContent(
+      "Open reconciliation breaks remain on this run."
+    );
   });
 
   it("renders trial-balance rows with accessible table evidence", async () => {
@@ -389,8 +399,16 @@ describe("GovernanceScreen", () => {
 
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
-    expect(screen.getByText("Reconciliation Detail")).toBeInTheDocument();
-    expect(screen.getByText(/Open reconciliation breaks remain on this run/)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Reconciliation narrative for Paper Index Mean Reversion")).toHaveTextContent(
+      /Open reconciliation breaks remain on this run/
+    );
+    expect(screen.getByRole("link", { name: "Open break checklist for Paper Index Mean Reversion; 1 open break" }))
+      .toHaveAttribute("href", "#reconciliation-break-queue");
+    expect(screen.getByRole("link", { name: "Review audit packet for Paper Index Mean Reversion" }))
+      .toHaveAttribute("href", "/api/workstation/runs/run-42/review-packet");
+    expect(screen.getByRole("region", { name: "Reconciliation break checklist" }))
+      .toHaveAttribute("id", "reconciliation-break-queue");
 
     await user.click(screen.getByRole("button", { name: /Intraday Vol Carry/i }));
 

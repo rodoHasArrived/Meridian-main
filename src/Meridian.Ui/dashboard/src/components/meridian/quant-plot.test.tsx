@@ -106,7 +106,9 @@ describe("QuantPlotChart", () => {
 
   it("renders an SVG with the plot title as accessible label", () => {
     render(<QuantPlotChart plot={basePlot} />);
-    expect(screen.getByRole("img", { name: "Equity curve" })).toBeInTheDocument();
+    const chart = screen.getByRole("img", { name: "Equity curve" });
+    expect(chart).toBeInTheDocument();
+    expect(chart).toHaveAccessibleDescription(/Series: A, B/);
     expect(screen.getByText("A")).toBeInTheDocument();
     expect(screen.getByText("B")).toBeInTheDocument();
   });

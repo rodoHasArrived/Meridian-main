@@ -1,205 +1,36 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Activity, AlertCircle, LineChart, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Activity, AlertCircle, CheckCircle2, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseDataTable, type DenseDataTableColumn, ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import {
   addSymbol as addSymbolApi,
+  bulkAddSymbols,
   getLiveQuotesSnapshot,
   getSymbols,
   getSymbolsStatistics,
   removeSymbol as removeSymbolApi
 } from "@/lib/api";
-import type { QuotesSnapshotItem, SymbolRecord, SymbolStatistics } from "@/types";
-
-const QUOTE_POLL_INTERVAL_MS = 2000;
-const QUOTE_STALE_THRESHOLD_MS = 15_000;
-
-function formatPrice(value: number | null | undefined): string {
-  if (value === null || value === undefined || Number.isNaN(value)) return "—";
-  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
-}
-
-function formatSize(value: number | null | undefined): string {
-  if (value === null || value === undefined || Number.isNaN(value)) return "—";
-  return value.toLocaleString();
-}
-
-function formatSpread(spread: number | null | undefined, mid: number | null | undefined): string {
-  if (spread === null || spread === undefined || Number.isNaN(spread)) return "—";
-  if (mid && mid > 0) {
-    const bps = (spread / mid) * 10_000;
-    return `${spread.toFixed(2)} (${bps.toFixed(1)} bps)`;
-  }
-  return spread.toFixed(2);
-}
-
-function formatChange(value: number | null | undefined): string {
-  if (value === null || value === undefined || !Number.isFinite(value)) return "—";
-  const sign = value > 0 ? "+" : value < 0 ? "" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
-}
-
-function formatChangePercent(value: number | null | undefined): string {
-  if (value === null || value === undefined || !Number.isFinite(value)) return "—";
-  const sign = value > 0 ? "+" : value < 0 ? "" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
-}
-
-function changeTone(value: number | null | undefined): string {
-  if (value === null || value === undefined || !Number.isFinite(value) || value === 0) return "text-muted-foreground";
-  return value > 0 ? "text-positive" : "text-danger";
-}
-
-function formatRelative(iso: string | null): string {
-  if (!iso) return "Never";
-  const ts = new Date(iso).getTime();
-  if (Number.isNaN(ts)) return "Never";
-  const diff = Date.now() - ts;
-  if (diff < 0) return new Date(iso).toLocaleString();
-  const seconds = Math.round(diff / 1000);
-  if (seconds < 60) return `${seconds}s ago`;
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.round(hours / 24);
-  return `${days}d ago`;
-}
-
-function statusVariant(status: SymbolRecord["status"]) {
-  switch (status) {
-    case "Active":
-      return "success" as const;
-    case "Monitored":
-      return "default" as const;
-    case "Archived":
-      return "outline" as const;
-    case "Error":
-      return "danger" as const;
-    default:
-      return "outline" as const;
-  }
-}
+import {
+  useWatchlistScreenViewModel,
+  type WatchlistDetailFieldTone,
+  type WatchlistRowViewModel,
+  type WatchlistSelectedDetail
+} from "@/screens/watchlist-screen.view-model";
 
 export function WatchlistScreen() {
-  const [symbols, setSymbols] = useState<SymbolRecord[] | null>(null);
-  const [stats, setStats] = useState<SymbolStatistics | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [pendingSymbol, setPendingSymbol] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [removing, setRemoving] = useState<Record<string, boolean>>({});
-  const [quotes, setQuotes] = useState<Record<string, QuotesSnapshotItem>>({});
-  const [quoteError, setQuoteError] = useState<string | null>(null);
-  const [quoteFetchedAt, setQuoteFetchedAt] = useState<number | null>(null);
-  const previousMidRef = useRef<Record<string, number>>({});
-  const inFlightRef = useRef(false);
-
-  const refresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      const [s, st] = await Promise.allSettled([getSymbols(), getSymbolsStatistics()]);
-      if (s.status === "fulfilled") {
-        setSymbols(s.value);
-        setLoadError(null);
-      } else {
-        setLoadError((s.reason as Error)?.message ?? "Failed to load symbols");
-      }
-      if (st.status === "fulfilled") {
-        setStats(st.value);
-      }
-    } finally {
-      setRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
-
-  const fetchQuotes = useCallback(async (subscribed: readonly string[]) => {
-    if (inFlightRef.current || subscribed.length === 0) return;
-    inFlightRef.current = true;
-    try {
-      const response = await getLiveQuotesSnapshot(subscribed);
-      const next: Record<string, QuotesSnapshotItem> = {};
-      for (const q of response.quotes) next[q.symbol.toUpperCase()] = q;
-      setQuotes((current) => {
-        const prev: Record<string, number> = {};
-        for (const [sym, q] of Object.entries(current)) {
-          if (q.midPrice !== null && q.midPrice !== undefined) prev[sym] = q.midPrice;
-        }
-        previousMidRef.current = prev;
-        return next;
-      });
-      setQuoteFetchedAt(Date.now());
-      setQuoteError(null);
-    } catch (err) {
-      setQuoteError((err as Error)?.message ?? "Failed to load live quotes");
-    } finally {
-      inFlightRef.current = false;
-    }
-  }, []);
-
-  const subscribedSymbols = useMemo(() => {
-    if (!symbols) return [] as string[];
-    return symbols.map((s) => s.symbol);
-  }, [symbols]);
-
-  useEffect(() => {
-    if (subscribedSymbols.length === 0) {
-      setQuotes({});
-      return;
-    }
-    void fetchQuotes(subscribedSymbols);
-    const id = window.setInterval(() => void fetchQuotes(subscribedSymbols), QUOTE_POLL_INTERVAL_MS);
-    return () => window.clearInterval(id);
-  }, [fetchQuotes, subscribedSymbols]);
-
-  const handleAdd = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const next = pendingSymbol.trim().toUpperCase();
-    if (!next || submitting) return;
-    setSubmitting(true);
-    setSubmitError(null);
-    try {
-      const result = await addSymbolApi(next);
-      if (!result.success) {
-        setSubmitError(`Could not add ${next}.`);
-        return;
-      }
-      setPendingSymbol("");
-      await refresh();
-    } catch (err) {
-      setSubmitError((err as Error)?.message ?? "Failed to add symbol");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleRemove = async (symbol: string) => {
-    setRemoving((current) => ({ ...current, [symbol]: true }));
-    try {
-      await removeSymbolApi(symbol);
-      await refresh();
-    } catch (err) {
-      setLoadError((err as Error)?.message ?? `Failed to remove ${symbol}`);
-    } finally {
-      setRemoving((current) => {
-        const { [symbol]: _ignored, ...rest } = current;
-        return rest;
-      });
-    }
-  };
-
-  const sortedSymbols = useMemo(() => {
-    if (!symbols) return null;
-    return [...symbols].sort((a, b) => a.symbol.localeCompare(b.symbol));
-  }, [symbols]);
+  const vm = useWatchlistScreenViewModel({
+    getSymbols,
+    getSymbolsStatistics,
+    getLiveQuotesSnapshot,
+    addSymbol: addSymbolApi,
+    bulkAddSymbols,
+    removeSymbol: removeSymbolApi
+  });
+  const FeedbackIcon = vm.submitFeedback?.tone === "success" ? CheckCircle2 : AlertCircle;
 
   return (
     <div className="space-y-6">
@@ -211,43 +42,103 @@ export function WatchlistScreen() {
             Symbol watchlist
           </CardTitle>
           <CardDescription>
-            Add, remove, and monitor symbols subscribed to the live data pipeline. Click a symbol to view live quotes.
+            Add, remove, and monitor symbols subscribed to the live data pipeline. Open a symbol to view live quotes.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard label="Total" value={stats?.totalSymbols} />
-            <StatCard label="Monitored" value={stats?.monitoredSymbols} />
-            <StatCard label="Archived" value={stats?.archivedSymbols} />
-            <StatCard label="Errors" value={stats?.symbolsWithErrors} tone={stats && stats.symbolsWithErrors > 0 ? "danger" : "default"} />
+            {vm.stats.map((stat) => (
+              <MetricCard key={stat.id} {...stat} />
+            ))}
           </div>
 
-          <form onSubmit={handleAdd} className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
-            <label htmlFor="add-symbol-input" className="sr-only">Add symbol</label>
+          <form
+            onSubmit={(event) => void vm.addPendingSymbol(event)}
+            className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center"
+            aria-label={vm.formLabel}
+          >
+            <label htmlFor={vm.inputId} className="sr-only">Add symbol</label>
             <Input
-              id="add-symbol-input"
-              placeholder="Add a symbol (e.g. MSFT)"
-              value={pendingSymbol}
-              onChange={(event) => setPendingSymbol(event.target.value)}
+              id={vm.inputId}
+              placeholder={vm.inputPlaceholder}
+              value={vm.pendingSymbol}
+              onChange={(event) => vm.setPendingSymbol(event.target.value)}
               autoComplete="off"
               spellCheck={false}
-              error={submitError !== null}
-              aria-describedby={submitError ? "add-symbol-error" : undefined}
+              error={vm.submitFeedback?.tone === "danger"}
+              disabled={vm.submitting}
+              aria-describedby={vm.inputHelpId}
             />
-            <Button type="submit" variant="default" disabled={submitting || pendingSymbol.trim().length === 0}>
+            <Button
+              type="submit"
+              variant="default"
+              disabled={vm.addDisabled}
+              disabledReason={vm.addDisabledReason}
+              busy={vm.submitting}
+              busyLabel="Adding..."
+              aria-label={vm.addButtonAriaLabel}
+            >
               <Plus className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">{submitting ? "Adding…" : "Add"}</span>
+              <span className="ml-1.5">{vm.addButtonLabel}</span>
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => void refresh()} aria-label="Refresh watchlist">
-              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
-              <span className="ml-1.5">Refresh</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void vm.refresh()}
+              aria-label={vm.refreshButtonAriaLabel}
+              disabled={vm.refreshDisabled}
+              busy={vm.refreshing}
+              busyLabel="Refreshing..."
+            >
+              <RefreshCw className={`h-4 w-4 ${vm.refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
+              <span className="ml-1.5">{vm.refreshButtonLabel}</span>
             </Button>
           </form>
-          {submitError ? (
-            <p id="add-symbol-error" className="mt-2 flex items-center gap-1.5 text-xs text-danger">
-              <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
-              {submitError}
-            </p>
+          <p id="add-symbol-help" className="mt-2 text-xs text-muted-foreground">
+            {vm.inputHelpText}
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2" aria-label={vm.starterPackGroupLabel}>
+            <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">{vm.starterPackEyebrow}</span>
+            {vm.starterPacks.map((pack) => (
+              <Button
+                key={pack.id}
+                type="button"
+                variant="outline"
+                size="sm"
+                className="max-w-full flex-wrap justify-start"
+                onClick={() => void vm.applyStarterPack(pack.id)}
+                disabled={pack.disabled}
+                disabledReason={pack.disabledReason}
+                busy={pack.busy}
+                busyLabel="Adding..."
+                aria-label={pack.ariaLabel}
+              >
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>{pack.label}</span>
+                <span className="break-all text-left font-mono text-[11px] font-normal text-muted-foreground">{pack.symbolsLabel}</span>
+              </Button>
+            ))}
+          </div>
+          {vm.submitFeedback ? (
+            <div
+              id="add-symbol-feedback"
+              role={vm.submitFeedback.tone === "success" ? "status" : "alert"}
+              className={`mt-2 flex flex-wrap items-center gap-2 text-xs ${feedbackTextClass[vm.submitFeedback.tone]}`}
+            >
+              <span className="inline-flex min-w-0 items-center gap-1.5">
+                <FeedbackIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>{vm.submitFeedback.message}</span>
+              </span>
+              {vm.submitFeedback.providerSetupHandoff ? (
+                <Button asChild variant="outline" size="sm">
+                  <Link to={vm.submitFeedback.providerSetupHandoff.href} aria-label={vm.submitFeedback.providerSetupHandoff.ariaLabel}>
+                    <Settings className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>{vm.submitFeedback.providerSetupHandoff.label}</span>
+                  </Link>
+                </Button>
+              ) : null}
+            </div>
           ) : null}
         </CardContent>
       </Card>
@@ -256,139 +147,82 @@ export function WatchlistScreen() {
         <CardHeader>
           <CardTitle className="text-base">Subscribed symbols</CardTitle>
           <CardDescription>
-            {sortedSymbols ? `${sortedSymbols.length} symbol${sortedSymbols.length === 1 ? "" : "s"} configured.` : "Loading…"}
+            {vm.listDescription}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          {loadError && !sortedSymbols ? (
-            <p className="text-sm text-danger">{loadError}</p>
-          ) : !sortedSymbols ? (
-            <p className="text-sm text-muted-foreground">Loading symbols…</p>
-          ) : sortedSymbols.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No symbols configured. Add one above to start collecting live data.</p>
+        <CardContent className="space-y-3">
+          <ToolbarStrip
+            items={vm.toolbarItems}
+            ariaLabel="Symbol watchlist status"
+            right={
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => void vm.refreshQuotes()}
+                disabled={vm.quoteRefreshCommand.disabled}
+                disabledReason={vm.quoteRefreshCommand.disabledReason}
+                busy={vm.quoteRefreshCommand.busy}
+                busyLabel={vm.quoteRefreshCommand.label}
+                aria-label={vm.quoteRefreshCommand.ariaLabel}
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${vm.quoteRefreshCommand.busy ? "animate-spin" : ""}`} aria-hidden="true" />
+                <span className="ml-1">{vm.quoteRefreshCommand.label}</span>
+              </Button>
+            }
+          />
+          {vm.listState === "error" ? (
+            <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+              {vm.listDescription}
+            </p>
+          ) : vm.listState === "loading" ? (
+            <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-4 py-3 text-sm text-muted-foreground">
+              {vm.listDescription}
+            </p>
           ) : (
             <>
-              <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground" data-testid="watchlist-quote-status">
-                <span aria-live="polite">
-                  {quoteFetchedAt
-                    ? `Live prices · updated ${formatRelative(new Date(quoteFetchedAt).toISOString())}`
-                    : quoteError
-                      ? "Live prices unavailable"
-                      : "Live prices · waiting for first tick…"}
-                </span>
-                {quoteError ? (
-                  <span className="flex items-center gap-1 text-warning">
-                    <AlertCircle className="h-3 w-3" aria-hidden="true" />
-                    {quoteError}
-                  </span>
+              {vm.loadError ? (
+                <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                  {vm.loadError}
+                </p>
+              ) : null}
+              <div
+                role={vm.quoteStatusTone === "danger" ? "alert" : "status"}
+                className={`flex flex-col gap-3 rounded-md border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between ${quoteStatusClass[vm.quoteStatusTone]}`}
+              >
+                <span>{vm.quoteStatusLabel}</span>
+                {vm.quoteProviderSetupHandoff ? (
+                  <Button asChild variant="outline" size="sm" className="w-fit bg-background/40">
+                    <Link to={vm.quoteProviderSetupHandoff.href} aria-label={vm.quoteProviderSetupHandoff.ariaLabel}>
+                      <Settings className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>{vm.quoteProviderSetupHandoff.label}</span>
+                    </Link>
+                  </Button>
                 ) : null}
               </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
-                      <th className="px-2 py-2 font-medium">Symbol</th>
-                      <th className="px-2 py-2 font-medium">Status</th>
-                      <th className="px-2 py-2 font-medium text-right">Bid × Size</th>
-                      <th className="px-2 py-2 font-medium text-right">Ask × Size</th>
-                      <th className="px-2 py-2 font-medium text-right">Last</th>
-                      <th className="px-2 py-2 font-medium text-right">Chg</th>
-                      <th className="px-2 py-2 font-medium text-right">Chg %</th>
-                      <th className="px-2 py-2 font-medium text-right">Day H / L</th>
-                      <th className="px-2 py-2 font-medium text-right">Spread</th>
-                      <th className="px-2 py-2 font-medium">Quote age</th>
-                      <th className="px-2 py-2" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedSymbols.map((row) => {
-                      const isRemoving = removing[row.symbol] === true;
-                      const quote = quotes[row.symbol.toUpperCase()];
-                      const previousMid = previousMidRef.current[row.symbol.toUpperCase()];
-                      const lastTone = quote && quote.lastPrice !== null && previousMid !== undefined
-                        ? quote.lastPrice > previousMid
-                          ? "text-positive"
-                          : quote.lastPrice < previousMid
-                            ? "text-danger"
-                            : "text-foreground"
-                        : "text-foreground";
-                      const quoteAgeMs = quote ? Date.now() - new Date(quote.timestamp).getTime() : null;
-                      const isStale = quoteAgeMs !== null && quoteAgeMs > QUOTE_STALE_THRESHOLD_MS;
-                      return (
-                        <tr key={row.symbol} className="border-b border-border/30">
-                          <td className="px-2 py-1.5 font-mono font-semibold">{row.symbol}</td>
-                          <td className="px-2 py-1.5">
-                            <Badge variant={statusVariant(row.status)} dot>{row.status}</Badge>
-                          </td>
-                          <td className="px-2 py-1.5 text-right font-mono">
-                            {quote ? (
-                              <span className="text-foreground">
-                                {formatPrice(quote.bidPrice)}
-                                <span className="ml-1 text-xs text-muted-foreground">× {formatSize(quote.bidSize)}</span>
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </td>
-                          <td className="px-2 py-1.5 text-right font-mono">
-                            {quote ? (
-                              <span className="text-foreground">
-                                {formatPrice(quote.askPrice)}
-                                <span className="ml-1 text-xs text-muted-foreground">× {formatSize(quote.askSize)}</span>
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </td>
-                          <td className={`px-2 py-1.5 text-right font-mono ${lastTone}`}>
-                            {quote ? formatPrice(quote.lastPrice) : <span className="text-muted-foreground">—</span>}
-                          </td>
-                          <td className={`px-2 py-1.5 text-right font-mono ${changeTone(quote?.session?.change ?? null)}`}>
-                            {quote?.session ? formatChange(quote.session.change) : "—"}
-                          </td>
-                          <td className={`px-2 py-1.5 text-right font-mono ${changeTone(quote?.session?.changePercent ?? null)}`}>
-                            {quote?.session ? formatChangePercent(quote.session.changePercent) : "—"}
-                          </td>
-                          <td className="px-2 py-1.5 text-right font-mono text-muted-foreground">
-                            {quote?.session
-                              ? `${formatPrice(quote.session.high)} / ${formatPrice(quote.session.low)}`
-                              : "—"}
-                          </td>
-                          <td className="px-2 py-1.5 text-right font-mono text-muted-foreground">
-                            {quote ? formatSpread(quote.spread, quote.midPrice) : "—"}
-                          </td>
-                          <td className={`px-2 py-1.5 ${isStale ? "text-warning" : "text-muted-foreground"}`}>
-                            {quote ? formatRelative(quote.timestamp) : "Never"}
-                          </td>
-                          <td className="px-2 py-1.5 text-right">
-                            <div className="flex justify-end gap-1.5">
-                              <Button asChild variant="outline" size="sm">
-                                <Link
-                                  to={`/data/quotes?symbol=${encodeURIComponent(row.symbol)}`}
-                                  aria-label={`View live quotes for ${row.symbol}`}
-                                >
-                                  <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
-                                  <span className="ml-1">Quote</span>
-                                </Link>
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={isRemoving}
-                                onClick={() => void handleRemove(row.symbol)}
-                                aria-label={`Remove ${row.symbol} from watchlist`}
-                              >
-                                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                                <span className="ml-1">{isRemoving ? "Removing…" : "Remove"}</span>
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)]">
+                <DenseDataTable
+                  columns={buildColumns(vm.selectSymbol, vm.selectedSymbol, vm.detailPanelId, vm.removeSymbol)}
+                  rows={vm.rows}
+                  getRowId={(row) => row.symbol}
+                  getRowAriaLabel={(row) => row.ariaLabel}
+                  getRowAriaControls={() => vm.detailPanelId}
+                  getRowAriaExpanded={(row) => row.symbol === vm.selectedRowId}
+                  getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+                  onRowSelect={(row) => vm.selectSymbol(row.symbol)}
+                  selectedRowId={vm.selectedRowId}
+                  emptyText={vm.listDescription}
+                  ariaLabel={vm.tableLabel}
+                  caption={vm.tableCaption}
+                />
+                <WatchlistDetailPanel
+                  title={vm.detailPanelTitle}
+                  description={vm.detailPanelDescription}
+                  emptyText={vm.detailPanelEmptyText}
+                  id={vm.detailPanelId}
+                  ariaLabel={vm.detailPanelAriaLabel}
+                  detail={vm.selectedDetail}
+                />
               </div>
             </>
           )}
@@ -398,14 +232,215 @@ export function WatchlistScreen() {
   );
 }
 
-function StatCard({ label, value, tone = "default" }: { label: string; value: number | undefined; tone?: "default" | "danger" }) {
-  const toneClass = tone === "danger" ? "text-danger" : "text-foreground";
+const feedbackTextClass = {
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger"
+} as const;
+
+const quoteStatusClass = {
+  default: "border-border/70 bg-secondary/25 text-muted-foreground",
+  warning: "border-warning/30 bg-warning/10 text-warning",
+  danger: "border-danger/30 bg-danger/10 text-danger"
+} as const;
+
+const detailFieldToneClass: Record<WatchlistDetailFieldTone, string> = {
+  default: "text-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger",
+  muted: "text-muted-foreground"
+};
+
+function buildColumns(
+  selectSymbol: (symbol: string) => void,
+  selectedSymbol: string | null,
+  detailPanelId: string,
+  removeSymbol: (symbol: string) => Promise<void>
+): DenseDataTableColumn<WatchlistRowViewModel>[] {
+  return [
+    {
+      id: "symbol",
+      label: "Symbol",
+      className: "font-mono font-semibold text-foreground",
+      render: (row) => row.symbol
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => <Badge variant={row.statusVariant} dot>{row.status}</Badge>
+    },
+    {
+      id: "bid",
+      label: "Bid x size",
+      align: "right",
+      className: "font-mono",
+      render: (row) => row.bidLabel
+    },
+    {
+      id: "ask",
+      label: "Ask x size",
+      align: "right",
+      className: "font-mono",
+      render: (row) => row.askLabel
+    },
+    {
+      id: "last",
+      label: "Last",
+      align: "right",
+      className: `font-mono`,
+      render: (row) => <span className={lastToneClass[row.lastTone]}>{row.lastPriceLabel}</span>
+    },
+    {
+      id: "change",
+      label: "Chg",
+      align: "right",
+      className: "font-mono",
+      render: (row) => <span className={detailFieldToneClass[row.changeTone]}>{row.changeLabel}</span>
+    },
+    {
+      id: "change-percent",
+      label: "Chg%",
+      align: "right",
+      className: "font-mono",
+      render: (row) => <span className={detailFieldToneClass[row.changeTone]}>{row.changePercentLabel}</span>
+    },
+    {
+      id: "day-range",
+      label: "Day H/L",
+      align: "right",
+      className: "font-mono text-muted-foreground",
+      render: (row) => row.dayRangeLabel
+    },
+    {
+      id: "spread",
+      label: "Spread",
+      align: "right",
+      className: "font-mono text-muted-foreground",
+      render: (row) => row.spreadLabel
+    },
+    {
+      id: "quote-age",
+      label: "Quote age",
+      className: "text-muted-foreground",
+      render: (row) => <span className={row.quoteStale ? "text-warning" : undefined}>{row.quoteAgeLabel}</span>
+    },
+    {
+      id: "provider",
+      label: "Provider",
+      className: "text-muted-foreground",
+      render: (row) => row.providerLabel
+    },
+    {
+      id: "actions",
+      label: "Actions",
+      align: "right",
+      render: (row) => (
+        <div className="flex justify-end gap-1.5">
+          <Button
+            type="button"
+            variant={selectedSymbol === row.symbol ? "secondary" : "outline"}
+            size="sm"
+            aria-pressed={selectedSymbol === row.symbol}
+            aria-controls={detailPanelId}
+            aria-expanded={selectedSymbol === row.symbol}
+            aria-label={row.inspectAriaLabel}
+            onClick={() => selectSymbol(row.symbol)}
+          >
+            <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="ml-1">{row.inspectLabel}</span>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to={row.quoteHref} aria-label={row.quoteAriaLabel}>
+              <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="ml-1">Quote</span>
+            </Link>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={row.isRemoving}
+            disabledReason={row.removeDisabledReason}
+            onClick={() => void removeSymbol(row.symbol)}
+            aria-label={row.removeAriaLabel}
+          >
+            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="ml-1">{row.removeLabel}</span>
+          </Button>
+        </div>
+      )
+    }
+  ];
+}
+
+const lastToneClass = {
+  success: "text-success",
+  danger: "text-danger",
+  default: "text-foreground"
+} as const;
+
+function WatchlistDetailPanel({
+  title,
+  description,
+  emptyText,
+  id,
+  ariaLabel,
+  detail
+}: {
+  title: string;
+  description: string;
+  emptyText: string;
+  id: string;
+  ariaLabel: string;
+  detail: WatchlistSelectedDetail | null;
+}) {
   return (
-    <div className="rounded-md border border-border/60 bg-secondary/25 px-3 py-3">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={`mt-1 font-mono text-2xl ${toneClass}`}>
-        {value === undefined ? "—" : value.toLocaleString()}
+    <aside
+      id={id}
+      role="complementary"
+      aria-label={ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="head">{title}</div>
+      <div className="body">
+        {detail ? (
+          <div role="region" aria-label={detail.regionLabel} className="space-y-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="font-mono text-base font-semibold text-foreground">{detail.title}</h3>
+                <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+              </div>
+              <Badge variant={detail.statusVariant} aria-label={detail.statusAriaLabel}>
+                {detail.statusLabel}
+              </Badge>
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">{detail.description}</p>
+            <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+              {detail.fields.map((field) => (
+                <div key={field.label} className="rounded-sm border border-border/60 bg-background/35 px-2.5 py-2">
+                  <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                  <dd className={`mt-1 break-words font-mono text-xs ${detailFieldToneClass[field.tone]}`}>
+                    {field.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <Button asChild variant="outline" size="sm" className="bg-background/40">
+              <Link to={detail.quoteActionHref} aria-label={detail.quoteActionAriaLabel}>
+                <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>{detail.quoteActionLabel}</span>
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div role="status" className="rounded-md border border-dashed border-border/70 bg-secondary/20 px-3 py-3">
+            <div className="text-sm font-semibold text-foreground">{description}</div>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{emptyText}</p>
+          </div>
+        )}
       </div>
-    </div>
+    </aside>
   );
 }

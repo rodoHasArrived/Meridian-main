@@ -251,6 +251,7 @@ internal static class CommandDispatchPlanner
             new ValidateConfigCommand(configService, cfgPath, log),
             new DryRunCommand(cfg, configService, log),
             new SelfTestCommand(log),
+            new LedgerCliCommand(),
             new PackageCommands(cfg, log),
             new EtlCommands(cfgPath, log),
             new StatementCommands(),

@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -467,6 +468,66 @@ public static class SecurityMasterEndpoints
         .WithName("SecurityMasterIngestStatus")
         .Produces<SecurityMasterIngestStatusResponse>(StatusCodes.Status200OK);
 
+        /// <summary>
+        /// Retrieves operator-supplied per-security overrides used by the workstation security
+        /// details view (free-form key/value strings such as ratings or sector overrides).
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns an empty payload (with default <c>UpdatedBy</c>/<c>UpdatedAt</c>) when no
+        /// overrides have been recorded for the security.</para>
+        /// </remarks>
+        group.MapGet(UiApiRoutes.SecurityMasterOperatorOverrides, async (
+            Guid securityId,
+            [FromServices] IOperatorOverridesStore store,
+            CancellationToken ct) =>
+        {
+            var overrides = await store.GetAsync(securityId, ct).ConfigureAwait(false);
+            overrides ??= new OperatorOverridesDto(
+                securityId,
+                new Dictionary<string, string>(),
+                string.Empty,
+                DateTimeOffset.MinValue);
+            return Results.Json(overrides, jsonOptions);
+        })
+        .WithName("GetSecurityMasterOperatorOverrides")
+        .Produces<OperatorOverridesDto>(StatusCodes.Status200OK);
+
+        /// <summary>
+        /// Applies a partial update to operator overrides for a security. Values listed in
+        /// <c>SetValues</c> are upserted; keys in <c>RemoveKeys</c> are deleted. Requires the
+        /// <c>ModifySecurityMaster</c> permission.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns the merged overrides snapshot after the patch is applied.</para>
+        /// </remarks>
+        group.MapPatch(UiApiRoutes.SecurityMasterOperatorOverrides, async (
+            Guid securityId,
+            OperatorOverridesPatchRequest request,
+            HttpContext context,
+            [FromServices] IOperatorOverridesStore store,
+            CancellationToken ct) =>
+        {
+            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+            {
+                return Results.Unauthorized();
+            }
+
+            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
+            {
+                return Results.Forbid();
+            }
+
+            var actor = ResolveActor(context);
+            var updated = await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false);
+            return Results.Json(updated, jsonOptions);
+        })
+        .WithName("PatchSecurityMasterOperatorOverrides")
+        .Accepts<OperatorOverridesPatchRequest>("application/json")
+        .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         // PATCH /api/security-master/equities/{securityId}/preferred-terms
         group.MapMethods("/api/security-master/equities/{securityId:guid}/preferred-terms", [HttpMethods.Patch], async (
             Guid securityId,
@@ -485,6 +546,24 @@ public static class SecurityMasterEndpoints
         .WithName("PatchSecurityPreferredTerms")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
+    }
+
+    private static string ResolveActor(HttpContext context)
+    {
+        if (context.User.Identity?.IsAuthenticated == true &&
+            !string.IsNullOrWhiteSpace(context.User.Identity.Name))
+        {
+            return context.User.Identity.Name!;
+        }
+
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserKey, out var currentUser) &&
+            currentUser is string username &&
+            !string.IsNullOrWhiteSpace(username))
+        {
+            return username;
+        }
+
+        return "operator";
     }
 
     private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(

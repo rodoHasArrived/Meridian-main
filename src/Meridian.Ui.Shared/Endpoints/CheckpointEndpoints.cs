@@ -13,6 +13,10 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class CheckpointEndpoints
 {
+    private static readonly string CheckpointByIdRoute = $"{UiApiRoutes.BackfillCheckpoints}/{{jobId}}";
+    private static readonly string CheckpointPendingSymbolsRoute = $"{UiApiRoutes.BackfillCheckpoints}/{{jobId}}/pending";
+    private static readonly string CheckpointResumeRoute = $"{UiApiRoutes.BackfillCheckpoints}/{{jobId}}/resume";
+
     /// <summary>
     /// Maps all checkpoint and ingestion job API endpoints.
     /// </summary>
@@ -114,7 +118,7 @@ public static class CheckpointEndpoints
         .Produces(200);
 
         // Get checkpoint for a specific job
-        group.MapGet("/api/backfill/checkpoints/{jobId}", (string jobId, BackfillCoordinator backfill) =>
+        group.MapGet(CheckpointByIdRoute, (string jobId, BackfillCoordinator backfill) =>
         {
             var status = backfill.TryReadLast();
             if (status is null)
@@ -140,7 +144,7 @@ public static class CheckpointEndpoints
         .Produces(404);
 
         // Get pending symbols for a checkpoint
-        group.MapGet("/api/backfill/checkpoints/{jobId}/pending", (string jobId, BackfillCoordinator backfill) =>
+        group.MapGet(CheckpointPendingSymbolsRoute, (string jobId, BackfillCoordinator backfill) =>
         {
             var status = backfill.TryReadLast();
             if (status is null)
@@ -200,9 +204,10 @@ public static class CheckpointEndpoints
         .Produces(404);
 
         // Resume a checkpoint (trigger backfill for pending symbols)
-        group.MapPost("/api/backfill/checkpoints/{jobId}/resume", async (
+        group.MapPost(CheckpointResumeRoute, async (
             string jobId,
-            BackfillCoordinator backfill) =>
+            BackfillCoordinator backfill,
+            HttpContext context) =>
         {
             var status = backfill.TryReadLast();
             if (status is null)
@@ -225,7 +230,7 @@ public static class CheckpointEndpoints
                     status.To ?? DateOnly.FromDateTime(DateTime.Today),
                     ResumeFromCheckpoint: true);
 
-                var result = await backfill.RunAsync(request, CancellationToken.None);
+                var result = await backfill.RunAsync(request, context.RequestAborted);
 
                 return Results.Json(new
                 {

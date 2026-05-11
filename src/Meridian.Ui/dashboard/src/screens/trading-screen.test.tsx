@@ -307,7 +307,24 @@ describe("TradingScreen", () => {
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /session replay/i })).toBeInTheDocument();
     expect(within(workflowStrip).getByRole("button", { name: /promotion gate/i })).toBeInTheDocument();
+    expect(within(workflowStrip).getByLabelText("Panel: None")).toBeInTheDocument();
+    expect(within(workflowStrip).getByRole("button", { name: /open strategy controls panel/i })).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByText("Live positions")).toBeInTheDocument();
+  });
+
+  it("announces active workflow side panels from the trading shell view model", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    const workflowStrip = screen.getByRole("region", { name: "Workflow control strip" });
+    const strategyButton = within(workflowStrip).getByRole("button", { name: /open strategy controls panel/i });
+    expect(strategyButton).toHaveAttribute("aria-controls", "strategy-lifecycle-panel");
+
+    await user.click(strategyButton);
+
+    expect(screen.getByRole("dialog", { name: /strategy lifecycle/i })).toHaveAttribute("id", "strategy-lifecycle-panel");
+    expect(within(workflowStrip).getByLabelText("Panel: Strategy controls")).toBeInTheDocument();
+    expect(within(workflowStrip).getByRole("button", { name: /strategy controls panel is open/i })).toHaveAttribute("aria-expanded", "true");
   });
 
   it("fetches and renders execution controls snapshot", async () => {
@@ -401,6 +418,8 @@ describe("TradingScreen", () => {
     expect(screen.getByText("As of: 2026-04-26T16:05:00Z")).toBeInTheDocument();
     expect(screen.getByText("Brokerage sync failed")).toBeInTheDocument();
     expect(screen.getByText("Sync broker credentials before paper operation.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /open provider setup for brokerage sync failed/i }))
+      .toHaveAttribute("href", "/settings#alpaca-provider-setup");
     expect(screen.getByText("Portfolio snapshot failed.")).toBeInTheDocument();
   });
 
@@ -411,11 +430,11 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getPromotionHistory).toHaveBeenCalledTimes(1));
     vi.mocked(api.getPromotionHistory).mockClear();
     const promotionGate = await openPromotionGate(user);
-    await user.type(within(promotionGate).getByLabelText("Run id"), "run-1");
-    await user.type(within(promotionGate).getByLabelText("Operator id"), "operator-7");
-    await user.type(within(promotionGate).getByLabelText("Approval reason"), "Meets risk constraints");
-    await user.type(within(promotionGate).getByLabelText("Review notes"), "Checked replay consistency");
-    await user.type(within(promotionGate).getByLabelText("Manual override id"), "override-9");
+    fireEvent.change(within(promotionGate).getByLabelText("Run id"), { target: { value: "run-1" } });
+    fireEvent.change(within(promotionGate).getByLabelText("Operator id"), { target: { value: "operator-7" } });
+    fireEvent.change(within(promotionGate).getByLabelText("Approval reason"), { target: { value: "Meets risk constraints" } });
+    fireEvent.change(within(promotionGate).getByLabelText("Review notes"), { target: { value: "Checked replay consistency" } });
+    fireEvent.change(within(promotionGate).getByLabelText("Manual override id"), { target: { value: "override-9" } });
     await user.click(within(promotionGate).getByRole("button", { name: /evaluate gate checks/i }));
     await waitFor(() => {
       expect(within(promotionGate).getByText("Evaluation results").parentElement).toHaveTextContent("Eligible: Yes");
@@ -584,7 +603,8 @@ describe("TradingScreen", () => {
     const startButton = await screen.findByRole("button", { name: "Start" });
     await waitFor(() => expect(startButton).toBeEnabled());
     await user.click(startButton);
-    await screen.findByText("Replay running · 3/10 (30%)");
+    await screen.findByRole("status", { name: /Replay running for rep-1/i });
+    expect(screen.getByText("Processed 3/10 events at 30%.")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /restore paper session sess-1/i }));
     await waitFor(() => expect(api.getPaperSessionDetail).toHaveBeenCalledWith("sess-1"));
@@ -608,11 +628,16 @@ describe("TradingScreen", () => {
   });
 
   it("opens confirmation dialog when Cancel order button is clicked", async () => {
+    const user = userEvent.setup();
     await renderTradingScreen();
-    fireEvent.click(screen.getByTitle("Cancel order"));
+    await user.click(screen.getByTitle("Cancel order"));
     const dialog = screen.getByRole("dialog", { name: /cancel order PO-1/i });
     expect(dialog).toHaveAccessibleDescription("This will request cancellation of the selected order. Partial fills that already occurred are not reversed.");
-    expect(screen.getByRole("button", { name: /confirm cancel order po-1/i })).toBeEnabled();
+    const confirmButton = screen.getByRole("button", { name: /confirm cancel order po-1/i });
+    expect(confirmButton).toBeDisabled();
+    expect(confirmButton).toHaveAttribute("title", "Review and acknowledge the trading action before confirming.");
+    await user.click(screen.getByRole("checkbox", { name: /I reviewed this trading action/i }));
+    expect(confirmButton).toBeEnabled();
   });
 
   it("keeps strategy lifecycle commands disabled until the view model has a strategy ID", async () => {

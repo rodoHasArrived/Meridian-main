@@ -59,8 +59,9 @@ remain planned until shared contracts, durable evidence, and browser-visible wor
 
 The umbrella commercial name for the evidence layer is **Meridian Evidence OS**. In this pilot
 workflow it means every artifact, decision, blocker, and report output should eventually link back
-to a governed evidence subject; it does not create a new wave or imply an implemented evidence
-platform.
+to a governed evidence subject. The current shared evidence packet/graph APIs and browser Evidence
+Workbench are support evidence for that direction; they do not create a new wave or imply a
+completed evidence platform.
 
 ---
 
@@ -110,9 +111,9 @@ operator shell.
 | Meridian PaperOps | Paper promotion, paper session, replay verification, Books Before Broker, paper books direction | Partial support exists through readiness/replay/audit metadata; accounting-grade paper books and accounting-impact previews remain open. |
 | Meridian FundOps | Portfolio / ledger review, Transaction Lab, reconciliation, statement reconciliation, close workflow, report-pack inputs | Partial support exists through ledger, reconciliation, and account posture seams; durable casework, statement import, insurance accounting, shadow books, and close workflow remain open. |
 | Meridian Controls | Approval history, promotion rationale, policy controls, audit events, governed report pack | Partial support exists through approval checklist and report-pack checks; Controls-as-Code, policy mapping, evidence vault, restatement tracker, and explorer modules remain planned. |
-| Meridian Command Center | Readiness console, buyer demo mode, role-based demo views, blocker queue, report-pack readiness, operational health | Partial browser support exists through the read-only Operator Readiness Console; SLA aging, role-based demos, evidence packet actions, and full command-center scope remain planned. |
+| Meridian Command Center | Readiness console, buyer demo mode, role-based demo views, blocker queue, report-pack readiness, operational health | Partial browser support exists through the read-only Operator Readiness Console and Evidence Workbench packet actions; SLA aging, role-based demos, universal evidence actions, and full command-center scope remain planned. |
 
-Future implementation should favor shared-contract additions such as `EvidenceCompletenessSummary`, Run Evidence Graph lineage, Promotion/Data Trust Passport projections, accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, report restatement tracking, controls-as-code policy summaries, evidence packet readiness, reconciliation casework, and governed report-pack readiness before expanding client-specific UI.
+Future implementation should favor shared-contract additions such as `EvidenceCompletenessSummary`, Run Evidence Graph lineage, Promotion/Data Trust Passport projections, accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, report restatement tracking, controls-as-code policy summaries, evidence packet readiness, reconciliation casework, and governed report-pack readiness before expanding client-specific UI. The browser Evidence Workbench should remain the shared consumer for supported subjects rather than becoming page-local state.
 
 Evidence OS follow-ons should use the same rule: model evidence bundle identity, proof/certificate projections, report-line provenance, strategy-to-ledger lineage, instrument passport projections, close-readiness scoring, break explanation summaries, evidence SLA freshness, decision memory, no-orphan-evidence validation, and Evidence Vault artifact metadata in shared contracts before adding screen-specific workflow.
 
@@ -154,7 +155,7 @@ The scenario should fail loudly if any stage has only display state and no retai
 
 1. **Pilot fixture and acceptance harness:** one repeatable dataset, strategy pair, paper session, restart/replay verification, reconciliation queue, and report-pack output.
    - Validation lane: `PilotAcceptanceHarnessTests` seeds the shared endpoint path and writes `artifacts/pilot-acceptance/latest/pilot-readiness.json` with stage gates, evidence-graph edges, and provider, dataset, run, promotion, session, replay, portfolio, ledger, reconciliation, continuity, and report-pack evidence IDs. `.github/workflows/golden-path-validation.yml` now runs that harness, renders the pilot readiness dashboard from the generated artifact, uploads the acceptance evidence, and treats the artifact itself as a weighted dashboard readiness check.
-2. **Run Evidence Graph skeleton:** a shared evidence model that links provider evidence, dataset snapshots, run parameters, fills, orders, positions, ledger entries, reconciliation breaks, promotion decisions, report artifacts, and audit events.
+2. **Run Evidence Graph skeleton:** a shared evidence model that links provider evidence, dataset snapshots, run parameters, fills, orders, positions, ledger entries, reconciliation breaks, promotion decisions, report artifacts, and audit events. Current support includes shared subject, packet, graph, validation, template, and manifest-export endpoints plus `/reporting/evidence`; the remaining work is making that graph canonical across the whole pilot lifecycle.
 3. **Generated readiness dashboard:** one dashboard that reports pilot-stage readiness, blockers, source evidence, and the validation command or artifact proving the current state.
 4. **Paper-session health and mismatch diagnostics:** operator-visible stale replay, count divergence, and replay mismatch reasons.
 5. **Governed report-pack MVP:** retained report artifact with period, lineage, approval state, and source evidence references.

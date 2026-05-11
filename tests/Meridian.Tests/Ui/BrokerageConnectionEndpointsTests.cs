@@ -1,11 +1,13 @@
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Config;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.Workstation;
+using Meridian;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -73,6 +75,32 @@ public sealed class BrokerageConnectionEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task UiServer_RegistersBrokerageConnectionServices_ForMappedBrokerageRoutes()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "ui-server-brokerage", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, CreateMinimalConfig(root));
+
+        try
+        {
+            await using var server = new UiServer(configPath, port: 0);
+            var app = GetServerApp(server);
+
+            app.Services.GetService<BrokerageConnectionOptions>().Should().NotBeNull();
+            app.Services.GetService<BrokerageConnectionService>().Should().NotBeNull();
+            app.Services.GetService<AlpacaBrokerageConnectionService>().Should().NotBeNull();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         UserPermission permissions = UserPermission.ViewTrades | UserPermission.ManageCredentials)
@@ -98,6 +126,52 @@ public sealed class BrokerageConnectionEndpointsTests
 
         await app.StartAsync();
         return app;
+    }
+
+    private static WebApplication GetServerApp(UiServer server)
+    {
+        var field = typeof(UiServer).GetField("_app", BindingFlags.Instance | BindingFlags.NonPublic);
+        field.Should().NotBeNull();
+        var app = field!.GetValue(server) as WebApplication;
+        app.Should().NotBeNull();
+        return app!;
+    }
+
+    private static string CreateMinimalConfig(string root)
+    {
+        var config = new
+        {
+            DataRoot = Path.Combine(root, "data"),
+            Compress = false,
+            DataSource = "IB",
+            Symbols = new[]
+            {
+                new
+                {
+                    Symbol = "SPY",
+                    SubscribeTrades = true,
+                    SubscribeDepth = true,
+                    DepthLevels = 10,
+                    SecurityType = "STK",
+                    Exchange = "SMART",
+                    Currency = "USD"
+                }
+            },
+            Storage = new
+            {
+                NamingConvention = "BySymbol",
+                DatePartition = "Daily",
+                IncludeProvider = false
+            },
+            Backfill = new
+            {
+                Enabled = false,
+                Provider = "stooq",
+                Symbols = new[] { "SPY" }
+            }
+        };
+
+        return JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
     }
 
     private static StringContent JsonContent(object payload) =>

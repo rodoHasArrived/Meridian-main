@@ -195,7 +195,7 @@ public static class ConfigEndpoints
             var next = cfg with { Symbols = list.ToArray() };
             await store.SaveAsync(next);
             return Results.Ok();
-        }).WithName("DeleteSymbol")
+        }).WithName("DeleteConfigSymbol")
         .WithDescription("Removes a symbol from the monitoring configuration.")
         .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 

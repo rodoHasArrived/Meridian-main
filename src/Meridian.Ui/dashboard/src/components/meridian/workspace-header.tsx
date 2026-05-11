@@ -7,8 +7,8 @@ import type { SessionInfo, WorkspaceSummary } from "@/types";
 /**
  * Top-of-workspace header strip rendered inside each workspace layout.
  *
- * Displays the workspace title, eyebrow, description, session context pill, and
- * an optional refresh action. When the active session environment is `"live"`,
+ * Displays the workspace title, posture, description, and an optional refresh action. When the
+ * active session environment is `"live"`,
  * a high-contrast alarm banner is prepended to warn operators they are in a
  * real-money environment.
  *
@@ -117,21 +117,7 @@ export function WorkspaceHeader({
             </div>
           </div>
 
-          <div className="grid gap-3 xl:grid-cols-[minmax(0,1.2fr)_repeat(3,minmax(0,1fr))]">
-            <div className="workspace-header-card" aria-label={viewModel.sessionPillAriaLabel}>
-              <div className="eyebrow-label">Session lane</div>
-              <div className="workspace-header-card-value">{viewModel.sessionLabel}</div>
-              {viewModel.sessionRoleLabel ? (
-                <div className="mt-1 text-xs text-muted-foreground">{viewModel.sessionRoleLabel}</div>
-              ) : null}
-            </div>
-            {viewModel.metaItems.map((item) => (
-              <div key={item.id} className="workspace-header-card" aria-label={item.ariaLabel}>
-                <div className="eyebrow-label">{item.label}</div>
-                <div className="workspace-header-card-value">{item.value}</div>
-              </div>
-            ))}
-          </div>
+          <span className="sr-only" aria-label={viewModel.sessionPillAriaLabel}>{viewModel.sessionLabel}</span>
         </div>
       </div>
       <span className="sr-only" aria-live="polite">{viewModel.liveAnnouncement}</span>

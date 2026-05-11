@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
@@ -19,180 +18,32 @@ import { HistoricalChartCard } from "@/components/meridian/historical-chart";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getLiveOrderbook, getLiveQuote, getLiveTrades, submitOrder } from "@/lib/api";
-import type {
-  OrderBookResponse,
-  OrderResult,
-  OrderSubmitRequest,
-  QuotesResponse,
-  SessionStatsDto,
-  TradeDataResponse,
-  TradesResponse
-} from "@/types";
+import type { SessionStatsDto } from "@/types";
+import {
+  computeIntradayMetrics,
+  useLiveQuotesScreenViewModel,
+  type LiveQuotesBboPanelViewModel,
+  type LiveQuotesDepthLadderViewModel,
+  type LiveQuotesPanelState,
+  type LiveQuotesPriceChartViewModel,
+  type LiveQuotesSparklineViewModel,
+  type LiveQuotesTradeRowViewModel,
+  type QuickTradeTicketViewModel
+} from "@/screens/live-quotes-screen.view-model";
 
-const POLL_INTERVAL_MS = 2000;
-const TRADE_HISTORY_LIMIT = 200;
-const TRADE_TABLE_LIMIT = 25;
-
-interface LoadState<T> {
-  data: T | null;
-  error: string | null;
-}
-
-function formatPrice(value: number | null | undefined, fractionDigits = 4): string {
-  if (value === null || value === undefined || Number.isNaN(value)) {
-    return "—";
-  }
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: fractionDigits
-  });
-}
-
-function formatSize(value: number | null | undefined): string {
-  if (value === null || value === undefined || Number.isNaN(value)) {
-    return "—";
-  }
-  return value.toLocaleString();
-}
-
-function formatTimestamp(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleTimeString(undefined, { hour12: false }) + "." + String(date.getMilliseconds()).padStart(3, "0");
-}
+export { computeIntradayMetrics };
 
 export function LiveQuotesScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialSymbol = (searchParams.get("symbol") ?? "").trim().toUpperCase();
-  const [symbolInput, setSymbolInput] = useState(initialSymbol);
-  const [activeSymbol, setActiveSymbol] = useState<string | null>(initialSymbol || null);
-  const [quote, setQuote] = useState<LoadState<QuotesResponse>>({ data: null, error: null });
-  const [trades, setTrades] = useState<LoadState<TradesResponse>>({ data: null, error: null });
-  const [orderbook, setOrderbook] = useState<LoadState<OrderBookResponse>>({ data: null, error: null });
-  const [refreshing, setRefreshing] = useState(false);
-  const inFlightRef = useRef(false);
-  const [ticket, setTicket] = useState<QuickTicketState>(initialQuickTicketState);
-
-  const fetchAll = useCallback(async (symbol: string) => {
-    if (inFlightRef.current) return;
-    inFlightRef.current = true;
-    setRefreshing(true);
-    try {
-      const [q, t, ob] = await Promise.allSettled([
-        getLiveQuote(symbol),
-        getLiveTrades(symbol, TRADE_HISTORY_LIMIT),
-        getLiveOrderbook(symbol, 10)
-      ]);
-      setQuote(q.status === "fulfilled"
-        ? { data: q.value, error: null }
-        : { data: null, error: (q.reason as Error)?.message ?? "Failed to load quote" });
-      setTrades(t.status === "fulfilled"
-        ? { data: t.value, error: null }
-        : { data: null, error: (t.reason as Error)?.message ?? "Failed to load trades" });
-      setOrderbook(ob.status === "fulfilled"
-        ? { data: ob.value, error: null }
-        : { data: null, error: (ob.reason as Error)?.message ?? "Failed to load order book" });
-    } finally {
-      inFlightRef.current = false;
-      setRefreshing(false);
+  const vm = useLiveQuotesScreenViewModel(
+    { getLiveQuote, getLiveTrades, getLiveOrderbook, submitOrder },
+    {
+      routeSymbol: searchParams.get("symbol") ?? "",
+      setRouteSymbol: (symbol) => setSearchParams({ symbol }, { replace: true })
     }
-  }, []);
-
-  useEffect(() => {
-    if (!activeSymbol) return;
-    void fetchAll(activeSymbol);
-    const interval = window.setInterval(() => void fetchAll(activeSymbol), POLL_INTERVAL_MS);
-    return () => window.clearInterval(interval);
-  }, [activeSymbol, fetchAll]);
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    const next = symbolInput.trim().toUpperCase();
-    if (!next) return;
-    setQuote({ data: null, error: null });
-    setTrades({ data: null, error: null });
-    setOrderbook({ data: null, error: null });
-    setActiveSymbol(next);
-    setTicket(initialQuickTicketState);
-    setSearchParams({ symbol: next }, { replace: true });
-  };
-
-  const seedTicket = useCallback((side: "Buy" | "Sell", price: number) => {
-    setTicket((current) => ({
-      ...current,
-      side,
-      type: "Limit",
-      limitPrice: formatTicketPrice(price),
-      phase: "idle",
-      message: null,
-      orderId: null
-    }));
-  }, []);
-
-  const updateTicketField = useCallback(<K extends keyof QuickTicketForm>(field: K, value: QuickTicketForm[K]) => {
-    setTicket((current) => ({
-      ...current,
-      [field]: value,
-      phase: current.phase === "submitted" ? "idle" : current.phase,
-      message: current.phase === "error" ? null : current.message
-    }));
-  }, []);
-
-  const submitTicket = useCallback(async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!activeSymbol) return;
-
-    const validation = validateQuickTicket(ticket);
-    if (validation) {
-      setTicket((current) => ({ ...current, phase: "error", message: validation, orderId: null }));
-      return;
-    }
-
-    const request: OrderSubmitRequest = {
-      symbol: activeSymbol,
-      side: ticket.side,
-      type: ticket.type,
-      quantity: Number(ticket.quantity),
-      limitPrice: ticket.type === "Market" ? null : Number(ticket.limitPrice)
-    };
-
-    setTicket((current) => ({ ...current, phase: "submitting", message: null, orderId: null }));
-    try {
-      const result: OrderResult = await submitOrder(request);
-      if (result.success) {
-        setTicket((current) => ({
-          ...current,
-          phase: "submitted",
-          message: result.orderId ? `Order ${result.orderId} accepted.` : "Order accepted.",
-          orderId: result.orderId
-        }));
-      } else {
-        setTicket((current) => ({
-          ...current,
-          phase: "error",
-          message: result.reason ?? "Order rejected.",
-          orderId: null
-        }));
-      }
-    } catch (err) {
-      setTicket((current) => ({
-        ...current,
-        phase: "error",
-        message: (err as Error)?.message ?? "Order submission failed.",
-        orderId: null
-      }));
-    }
-  }, [activeSymbol, ticket]);
-
-  const quoteRow = quote.data?.quote;
-  const session = quoteRow?.session ?? null;
-  const stale = orderbook.data?.isStale === true;
-  const venueLabel = quoteRow?.venue ?? orderbook.data?.venue ?? null;
-
-  const tradeHistory = useMemo<TradeDataResponse[]>(() => trades.data?.trades ?? [], [trades.data]);
-  const tradeRows = useMemo(() => tradeHistory.slice(0, TRADE_TABLE_LIMIT), [tradeHistory]);
-  const intraday = useMemo(() => computeIntradayMetrics(tradeHistory), [tradeHistory]);
+  );
+  const { activeSymbol, lookup: symbolLookupVm, market: marketVm, quickTrade } = vm;
+  const session = marketVm.quoteRow?.session ?? null;
 
   return (
     <div className="space-y-6">
@@ -204,49 +55,75 @@ export function LiveQuotesScreen() {
             Live quotes & order book
           </CardTitle>
           <CardDescription>
-            Look up live bid/ask, recent trades, and L2 depth for any subscribed symbol. Refreshes every {POLL_INTERVAL_MS / 1000}s.
+            Look up live bid/ask, recent trades, and L2 depth for any subscribed symbol. Refreshes every {vm.pollIntervalSecondsLabel}s.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <label htmlFor="live-quote-symbol" className="sr-only">Symbol</label>
+          <form
+            onSubmit={vm.submitLookup}
+            className="flex flex-col gap-3 sm:flex-row sm:items-center"
+            aria-label={symbolLookupVm.formLabel}
+          >
+            <label htmlFor={symbolLookupVm.inputId} className="sr-only">{symbolLookupVm.inputLabel}</label>
             <Input
-              id="live-quote-symbol"
-              placeholder="Enter a symbol (e.g. AAPL)"
-              value={symbolInput}
-              onChange={(event) => setSymbolInput(event.target.value)}
+              id={symbolLookupVm.inputId}
+              placeholder={symbolLookupVm.inputPlaceholder}
+              value={vm.symbolInput}
+              onChange={(event) => vm.setSymbolInput(event.target.value)}
               leadingIcon={<Search className="h-4 w-4" />}
               autoComplete="off"
               spellCheck={false}
+              error={symbolLookupVm.inputInvalid}
+              aria-describedby={symbolLookupVm.statusId}
             />
             <div className="flex items-center gap-2">
-              <Button type="submit" variant="default">View quote</Button>
+              <Button
+                type="submit"
+                variant="default"
+                disabled={symbolLookupVm.command.disabled}
+                disabledReason={symbolLookupVm.command.disabledReason}
+                aria-label={symbolLookupVm.command.ariaLabel}
+              >
+                {symbolLookupVm.command.label}
+              </Button>
               <Button asChild variant="outline" size="sm">
                 <Link to="/data/watchlist" aria-label="Open symbol watchlist">
                   <ListPlus className="h-4 w-4" aria-hidden="true" />
                   <span className="ml-1.5">Watchlist</span>
                 </Link>
               </Button>
-              {activeSymbol ? (
+              {vm.refreshCommand ? (
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => void fetchAll(activeSymbol)}
-                  aria-label="Refresh live data now"
+                  onClick={() => void vm.refreshMarketData()}
+                  aria-label={vm.refreshCommand.ariaLabel}
+                  disabled={vm.refreshCommand.disabled}
+                  disabledReason={vm.refreshCommand.disabledReason}
+                  busy={vm.refreshCommand.busy}
+                  busyLabel="Refreshing..."
                 >
-                  <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
-                  <span className="ml-1.5">Refresh</span>
+                  <RefreshCw className={`h-4 w-4 ${vm.refreshCommand.busy ? "animate-spin" : ""}`} aria-hidden="true" />
+                  <span className="ml-1.5">{vm.refreshCommand.label}</span>
                 </Button>
               ) : null}
             </div>
           </form>
+          <p
+            id={symbolLookupVm.statusId}
+            role={symbolLookupVm.status.role}
+            aria-live={symbolLookupVm.status.role === "status" ? "polite" : undefined}
+            className={`mt-2 text-xs ${symbolLookupVm.status.toneClass}`}
+          >
+            {symbolLookupVm.status.message}
+          </p>
           {activeSymbol ? (
             <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span className="font-semibold text-foreground">{activeSymbol}</span>
-              {venueLabel ? <Badge variant="outline">{venueLabel}</Badge> : null}
-              {stale ? <Badge variant="warning">Stale</Badge> : null}
-              <span>Last update {formatTimestamp(quoteRow?.timestamp ?? orderbook.data?.timestamp ?? null)}</span>
+              {marketVm.venueLabel ? <Badge variant="outline">{marketVm.venueLabel}</Badge> : null}
+              {marketVm.stale ? <Badge variant="warning">Stale</Badge> : null}
+              <span>Last update {marketVm.lastUpdateLabel}</span>
             </div>
           ) : null}
         </CardContent>
@@ -262,10 +139,7 @@ export function LiveQuotesScreen() {
         <>
         <HistoricalChartCard symbol={activeSymbol} />
         <PriceChartCard
-          symbol={activeSymbol}
-          metrics={intraday}
-          loading={refreshing && tradeHistory.length === 0}
-          error={trades.error}
+          viewModel={marketVm.priceChart}
         />
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
           <Card>
@@ -274,36 +148,24 @@ export function LiveQuotesScreen() {
               <CardDescription>Click bid or ask to seed the trade ticket</CardDescription>
             </CardHeader>
             <CardContent>
-              {quote.error && !quote.data ? (
-                <p className="text-sm text-danger">{quote.error}</p>
-              ) : !quoteRow ? (
-                <p className="text-sm text-muted-foreground">No quote data available for {activeSymbol}.</p>
+              {!marketVm.quoteState.showData || marketVm.bboPanels.length === 0 ? (
+                <PanelStateMessage state={marketVm.quoteState} />
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {session ? <SessionStatsBanner session={session} /> : null}
+                  <PanelStateMessage state={marketVm.quoteState} />
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <BboPanel
-                      label="Bid"
-                      price={quoteRow.bidPrice}
-                      size={quoteRow.bidSize}
-                      tone="positive"
-                      icon={<ArrowDown className="h-4 w-4" aria-hidden="true" />}
-                      onSeed={() => seedTicket("Sell", quoteRow.bidPrice)}
-                      seedLabel={`Sell ${activeSymbol} at bid ${formatPrice(quoteRow.bidPrice)}`}
-                    />
-                    <BboPanel
-                      label="Ask"
-                      price={quoteRow.askPrice}
-                      size={quoteRow.askSize}
-                      tone="negative"
-                      icon={<ArrowUp className="h-4 w-4" aria-hidden="true" />}
-                      onSeed={() => seedTicket("Buy", quoteRow.askPrice)}
-                      seedLabel={`Buy ${activeSymbol} at ask ${formatPrice(quoteRow.askPrice)}`}
-                    />
-                    <MetricRow label="Mid" value={formatPrice(quoteRow.midPrice)} />
-                    <MetricRow label="Spread" value={formatPrice(quoteRow.spread)} />
-                    <MetricRow label="Sequence" value={quoteRow.sequenceNumber.toLocaleString()} />
-                    <MetricRow label="Stream" value={quoteRow.streamId ?? "—"} />
+                    {marketVm.bboPanels.map((panel) => (
+                      <BboPanel
+                        key={panel.id}
+                        panel={panel}
+                        icon={panel.id === "bid" ? <ArrowDown className="h-4 w-4" aria-hidden="true" /> : <ArrowUp className="h-4 w-4" aria-hidden="true" />}
+                        onSeed={() => quickTrade.seedTicket(panel.seedSide, panel.price)}
+                      />
+                    ))}
+                    {marketVm.quoteMetrics.map((metric) => (
+                      <MetricRow key={metric.id} label={metric.label} value={metric.value} />
+                    ))}
                   </div>
                 </div>
               )}
@@ -312,28 +174,26 @@ export function LiveQuotesScreen() {
 
           <QuickTradeCard
             symbol={activeSymbol}
-            ticket={ticket}
-            onFieldChange={updateTicketField}
-            onSubmit={submitTicket}
+            vm={quickTrade}
           />
 
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Order book (L2)</CardTitle>
-              <CardDescription>Top {orderbook.data?.bids.length ?? 0} bids / {orderbook.data?.asks.length ?? 0} asks</CardDescription>
+              <CardDescription>{marketVm.orderbookDescription}</CardDescription>
             </CardHeader>
             <CardContent>
-              {orderbook.error && !orderbook.data ? (
-                <p className="text-sm text-danger">{orderbook.error}</p>
-              ) : !orderbook.data || (orderbook.data.bids.length === 0 && orderbook.data.asks.length === 0) ? (
-                <p className="text-sm text-muted-foreground">No depth data available for {activeSymbol}.</p>
+              {!marketVm.orderbookState.showData || !marketVm.orderbook ? (
+                <PanelStateMessage state={marketVm.orderbookState} />
               ) : (
-                <DepthLadder
-                  data={orderbook.data}
-                  onSeedBuy={(price) => seedTicket("Buy", price)}
-                  onSeedSell={(price) => seedTicket("Sell", price)}
-                  symbol={activeSymbol}
-                />
+                <div className="space-y-3">
+                  <PanelStateMessage state={marketVm.orderbookState} />
+                  <DepthLadder
+                    ladder={marketVm.depthLadder}
+                    onSeedBuy={(price) => quickTrade.seedTicket("Buy", price)}
+                    onSeedSell={(price) => quickTrade.seedTicket("Sell", price)}
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -341,15 +201,16 @@ export function LiveQuotesScreen() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Recent trades</CardTitle>
-              <CardDescription>Last {tradeRows.length} prints</CardDescription>
+              <CardDescription>{marketVm.tradesDescription}</CardDescription>
             </CardHeader>
             <CardContent>
-              {trades.error && !trades.data ? (
-                <p className="text-sm text-danger">{trades.error}</p>
-              ) : tradeRows.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No recent trades for {activeSymbol}.</p>
+              {!marketVm.tradesState.showData ? (
+                <PanelStateMessage state={marketVm.tradesState} />
               ) : (
-                <TradesTable trades={tradeRows} />
+                <div className="space-y-3">
+                  <PanelStateMessage state={marketVm.tradesState} />
+                  <TradesTable trades={marketVm.tradeDisplayRows} />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -369,17 +230,33 @@ function MetricRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function PanelStateMessage({ state }: { state: LiveQuotesPanelState }) {
+  if (!state.message) {
+    return null;
+  }
+
+  return (
+    <p
+      role={state.role}
+      aria-live={state.role === "status" ? "polite" : undefined}
+      className={`rounded-md border px-3 py-2 text-sm ${state.toneClass}`}
+    >
+      {state.message}
+    </p>
+  );
+}
+
 function SessionStatsBanner({ session }: { session: SessionStatsDto }) {
   const tone = session.change > 0
     ? "text-positive"
     : session.change < 0
       ? "text-danger"
       : "text-foreground";
-  const sign = session.change > 0 ? "+" : session.change < 0 ? "" : "";
+  const sign = session.change > 0 ? "+" : "";
   const pct = session.changePercent;
   const pctText = pct === null || !Number.isFinite(pct)
     ? ""
-    : ` (${pct > 0 ? "+" : pct < 0 ? "" : ""}${pct.toFixed(2)}%)`;
+    : ` (${pct > 0 ? "+" : ""}${pct.toFixed(2)}%)`;
   const changeText = `${sign}${session.change.toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 4
@@ -400,10 +277,10 @@ function SessionStatsBanner({ session }: { session: SessionStatsDto }) {
         <span className="text-[11px] text-muted-foreground">Session {session.sessionDate}</span>
       </div>
       <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-xs sm:grid-cols-5">
-        <SessionStatCell label="Open" value={formatPrice(session.open)} />
-        <SessionStatCell label="High" value={formatPrice(session.high)} />
-        <SessionStatCell label="Low" value={formatPrice(session.low)} />
-        <SessionStatCell label="VWAP" value={formatPrice(session.vwap)} />
+        <SessionStatCell label="Open" value={formatSessionPrice(session.open)} />
+        <SessionStatCell label="High" value={formatSessionPrice(session.high)} />
+        <SessionStatCell label="Low" value={formatSessionPrice(session.low)} />
+        <SessionStatCell label="VWAP" value={formatSessionPrice(session.vwap)} />
         <SessionStatCell label="Volume" value={volumeText} />
       </div>
     </div>
@@ -419,21 +296,28 @@ function SessionStatCell({ label, value }: { label: string; value: string }) {
   );
 }
 
-interface BboPanelProps {
-  label: string;
-  price: number;
-  size: number;
-  tone: "positive" | "negative";
-  icon: React.ReactNode;
-  onSeed?: () => void;
-  seedLabel?: string;
+function formatSessionPrice(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return "—";
+  }
+
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4
+  });
 }
 
-function BboPanel({ label, price, size, tone, icon, onSeed, seedLabel }: BboPanelProps) {
-  const toneClass = tone === "positive"
+interface BboPanelProps {
+  panel: LiveQuotesBboPanelViewModel;
+  icon: React.ReactNode;
+  onSeed?: () => void;
+}
+
+function BboPanel({ panel, icon, onSeed }: BboPanelProps) {
+  const toneClass = panel.tone === "positive"
     ? "border-positive/30 bg-positive/5 text-positive"
     : "border-danger/30 bg-danger/5 text-danger";
-  const interactive = typeof onSeed === "function" && Number.isFinite(price) && price > 0;
+  const interactive = typeof onSeed === "function" && Number.isFinite(panel.price) && panel.price > 0;
   const interactiveClass = interactive
     ? "cursor-pointer hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
     : "";
@@ -443,10 +327,10 @@ function BboPanel({ label, price, size, tone, icon, onSeed, seedLabel }: BboPane
       <div className={`rounded-md border px-3 py-3 text-left ${toneClass}`}>
         <div className="flex items-center gap-1.5 text-xs uppercase tracking-wide">
           {icon}
-          <span>{label}</span>
+          <span>{panel.label}</span>
         </div>
-        <div className="mt-2 font-mono text-2xl text-foreground">{formatPrice(price)}</div>
-        <div className="mt-1 text-xs text-muted-foreground">{formatSize(size)} shares</div>
+        <div className="mt-2 font-mono text-2xl text-foreground">{panel.priceLabel}</div>
+        <div className="mt-1 text-xs text-muted-foreground">{panel.sizeLabel}</div>
       </div>
     );
   }
@@ -455,32 +339,26 @@ function BboPanel({ label, price, size, tone, icon, onSeed, seedLabel }: BboPane
     <button
       type="button"
       onClick={onSeed}
-      aria-label={seedLabel ?? `${label} ${formatPrice(price)}`}
+      aria-label={panel.seedLabel}
       className={`rounded-md border px-3 py-3 text-left transition-colors ${toneClass} ${interactiveClass}`}
     >
       <div className="flex items-center gap-1.5 text-xs uppercase tracking-wide">
         {icon}
-        <span>{label}</span>
+        <span>{panel.label}</span>
       </div>
-      <div className="mt-2 font-mono text-2xl text-foreground">{formatPrice(price)}</div>
-      <div className="mt-1 text-xs text-muted-foreground">{formatSize(size)} shares</div>
+      <div className="mt-2 font-mono text-2xl text-foreground">{panel.priceLabel}</div>
+      <div className="mt-1 text-xs text-muted-foreground">{panel.sizeLabel}</div>
     </button>
   );
 }
 
 interface DepthLadderProps {
-  data: OrderBookResponse;
+  ladder: LiveQuotesDepthLadderViewModel;
   onSeedBuy?: (price: number) => void;
   onSeedSell?: (price: number) => void;
-  symbol?: string;
 }
 
-function DepthLadder({ data, onSeedBuy, onSeedSell, symbol }: DepthLadderProps) {
-  const maxSize = Math.max(
-    1,
-    ...data.bids.map((l) => l.size),
-    ...data.asks.map((l) => l.size)
-  );
+function DepthLadder({ ladder, onSeedBuy, onSeedSell }: DepthLadderProps) {
   return (
     <div className="grid grid-cols-2 gap-2 font-mono text-xs">
       <div>
@@ -488,21 +366,21 @@ function DepthLadder({ data, onSeedBuy, onSeedSell, symbol }: DepthLadderProps) 
           <span>Bid size</span>
           <span>Price</span>
         </div>
-        {data.bids.map((level) => (
+        {ladder.bids.map((level) => (
           <button
             type="button"
-            key={`bid-${level.level}`}
+            key={level.id}
             onClick={() => onSeedSell?.(level.price)}
-            aria-label={symbol ? `Sell ${symbol} at ${formatPrice(level.price)}` : `Sell at ${formatPrice(level.price)}`}
+            aria-label={level.seedLabel}
             className="relative flex w-full justify-between rounded-sm px-2 py-1 text-left transition-colors hover:bg-positive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             <span
               aria-hidden="true"
               className="absolute inset-y-0 right-0 rounded-sm bg-positive/15"
-              style={{ width: `${(level.size / maxSize) * 100}%` }}
+              style={{ width: level.barWidth }}
             />
-            <span className="relative">{formatSize(level.size)}</span>
-            <span className="relative text-positive">{formatPrice(level.price)}</span>
+            <span className="relative">{level.sizeLabel}</span>
+            <span className="relative text-positive">{level.priceLabel}</span>
           </button>
         ))}
       </div>
@@ -511,21 +389,21 @@ function DepthLadder({ data, onSeedBuy, onSeedSell, symbol }: DepthLadderProps) 
           <span>Price</span>
           <span>Ask size</span>
         </div>
-        {data.asks.map((level) => (
+        {ladder.asks.map((level) => (
           <button
             type="button"
-            key={`ask-${level.level}`}
+            key={level.id}
             onClick={() => onSeedBuy?.(level.price)}
-            aria-label={symbol ? `Buy ${symbol} at ${formatPrice(level.price)}` : `Buy at ${formatPrice(level.price)}`}
+            aria-label={level.seedLabel}
             className="relative flex w-full justify-between rounded-sm px-2 py-1 text-left transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             <span
               aria-hidden="true"
               className="absolute inset-y-0 left-0 rounded-sm bg-danger/15"
-              style={{ width: `${(level.size / maxSize) * 100}%` }}
+              style={{ width: level.barWidth }}
             />
-            <span className="relative text-danger">{formatPrice(level.price)}</span>
-            <span className="relative">{formatSize(level.size)}</span>
+            <span className="relative text-danger">{level.priceLabel}</span>
+            <span className="relative">{level.sizeLabel}</span>
           </button>
         ))}
       </div>
@@ -533,75 +411,14 @@ function DepthLadder({ data, onSeedBuy, onSeedSell, symbol }: DepthLadderProps) 
   );
 }
 
-type QuickTicketPhase = "idle" | "submitting" | "submitted" | "error";
-
-interface QuickTicketForm {
-  side: "Buy" | "Sell";
-  type: "Market" | "Limit";
-  quantity: string;
-  limitPrice: string;
-}
-
-interface QuickTicketState extends QuickTicketForm {
-  phase: QuickTicketPhase;
-  message: string | null;
-  orderId: string | null;
-}
-
-const initialQuickTicketState: QuickTicketState = {
-  side: "Buy",
-  type: "Limit",
-  quantity: "",
-  limitPrice: "",
-  phase: "idle",
-  message: null,
-  orderId: null
-};
-
-function formatTicketPrice(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "";
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
-    useGrouping: false
-  });
-}
-
-export function validateQuickTicket(state: QuickTicketForm): string | null {
-  const qty = Number(state.quantity);
-  if (!state.quantity || !Number.isFinite(qty) || qty <= 0) {
-    return "Enter a quantity greater than zero.";
-  }
-  if (!Number.isInteger(qty)) {
-    return "Quantity must be a whole number of shares.";
-  }
-  if (state.type === "Limit") {
-    const price = Number(state.limitPrice);
-    if (!state.limitPrice || !Number.isFinite(price) || price <= 0) {
-      return "Enter a limit price greater than zero.";
-    }
-  }
-  return null;
-}
-
 interface QuickTradeCardProps {
   symbol: string;
-  ticket: QuickTicketState;
-  onFieldChange: <K extends keyof QuickTicketForm>(field: K, value: QuickTicketForm[K]) => void;
-  onSubmit: (event: React.FormEvent) => void;
+  vm: QuickTradeTicketViewModel;
 }
 
-function QuickTradeCard({ symbol, ticket, onFieldChange, onSubmit }: QuickTradeCardProps) {
-  const submitting = ticket.phase === "submitting";
-  const submitted = ticket.phase === "submitted";
-  const errored = ticket.phase === "error";
-  const sideTone = ticket.side === "Buy"
-    ? "bg-positive/10 text-positive border-positive/30"
-    : "bg-danger/10 text-danger border-danger/30";
-  const submitLabel = submitting
-    ? "Submitting…"
-    : `${ticket.side} ${symbol}${ticket.type === "Limit" && ticket.limitPrice ? ` @ ${ticket.limitPrice}` : ""}`;
-
+function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
+  const { fields, ticket, reviewAcknowledgement, submitCommand, status } = vm;
+  const statusToneClass = quickTicketStatusClass[status.tone];
   return (
     <Card>
       <CardHeader>
@@ -614,28 +431,34 @@ function QuickTradeCard({ symbol, ticket, onFieldChange, onSubmit }: QuickTradeC
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={onSubmit} className="space-y-3" aria-describedby="quick-ticket-status">
+        <form onSubmit={vm.submitTicket} className="space-y-3" aria-label={vm.formLabel} aria-describedby={status.id}>
           <div className="grid gap-2 sm:grid-cols-2">
             <div className="flex flex-col gap-1">
-              <label htmlFor="quick-ticket-side" className="text-xs uppercase tracking-wide text-muted-foreground">Side</label>
+              <label htmlFor={fields.side.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.side.label}</label>
               <Select
-                id="quick-ticket-side"
+                id={fields.side.id}
                 value={ticket.side}
-                onChange={(event) => onFieldChange("side", event.target.value as "Buy" | "Sell")}
-                className={sideTone}
-                aria-label="Order side"
+                onChange={(event) => vm.updateField("side", event.target.value as "Buy" | "Sell")}
+                className={vm.sideToneClass}
+                aria-label={fields.side.ariaLabel}
+                aria-describedby={fields.side.describedBy}
+                disabled={fields.side.disabled}
+                title={fields.side.disabledReason ?? undefined}
               >
                 <option value="Buy">Buy</option>
                 <option value="Sell">Sell</option>
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor="quick-ticket-type" className="text-xs uppercase tracking-wide text-muted-foreground">Type</label>
+              <label htmlFor={fields.type.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.type.label}</label>
               <Select
-                id="quick-ticket-type"
+                id={fields.type.id}
                 value={ticket.type}
-                onChange={(event) => onFieldChange("type", event.target.value as "Market" | "Limit")}
-                aria-label="Order type"
+                onChange={(event) => vm.updateField("type", event.target.value as "Market" | "Limit")}
+                aria-label={fields.type.ariaLabel}
+                aria-describedby={fields.type.describedBy}
+                disabled={fields.type.disabled}
+                title={fields.type.disabledReason ?? undefined}
               >
                 <option value="Limit">Limit</option>
                 <option value="Market">Market</option>
@@ -645,69 +468,94 @@ function QuickTradeCard({ symbol, ticket, onFieldChange, onSubmit }: QuickTradeC
 
           <div className="grid gap-2 sm:grid-cols-2">
             <div className="flex flex-col gap-1">
-              <label htmlFor="quick-ticket-quantity" className="text-xs uppercase tracking-wide text-muted-foreground">Quantity</label>
+              <label htmlFor={fields.quantity.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.quantity.label}</label>
               <Input
-                id="quick-ticket-quantity"
+                id={fields.quantity.id}
                 type="number"
-                inputMode="numeric"
-                min={1}
-                step={1}
-                placeholder="100"
+                inputMode={fields.quantity.inputMode ?? undefined}
+                min={fields.quantity.min ?? undefined}
+                step={fields.quantity.step ?? undefined}
+                placeholder={fields.quantity.placeholder ?? undefined}
                 value={ticket.quantity}
-                onChange={(event) => onFieldChange("quantity", event.target.value)}
+                onChange={(event) => vm.updateField("quantity", event.target.value)}
                 autoComplete="off"
                 spellCheck={false}
-                aria-label="Order quantity in shares"
+                error={vm.quantityInvalid}
+                aria-label={fields.quantity.ariaLabel}
+                aria-describedby={fields.quantity.describedBy}
+                disabled={fields.quantity.disabled}
+                title={fields.quantity.disabledReason ?? undefined}
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor="quick-ticket-price" className="text-xs uppercase tracking-wide text-muted-foreground">
-                {ticket.type === "Market" ? "Price (market)" : "Limit price"}
+              <label htmlFor={fields.limitPrice.id} className="text-xs uppercase tracking-wide text-muted-foreground">
+                {fields.limitPrice.label}
               </label>
               <Input
-                id="quick-ticket-price"
+                id={fields.limitPrice.id}
                 type="number"
-                inputMode="decimal"
-                min={0}
-                step="0.01"
-                placeholder={ticket.type === "Market" ? "Best available" : "0.00"}
+                inputMode={fields.limitPrice.inputMode ?? undefined}
+                min={fields.limitPrice.min ?? undefined}
+                step={fields.limitPrice.step ?? undefined}
+                placeholder={fields.limitPrice.placeholder ?? undefined}
                 value={ticket.type === "Market" ? "" : ticket.limitPrice}
-                onChange={(event) => onFieldChange("limitPrice", event.target.value)}
-                disabled={ticket.type === "Market"}
+                onChange={(event) => vm.updateField("limitPrice", event.target.value)}
+                disabled={fields.limitPrice.disabled}
                 autoComplete="off"
                 spellCheck={false}
-                aria-label="Limit price"
+                error={vm.priceInvalid}
+                aria-label={fields.limitPrice.ariaLabel}
+                aria-describedby={fields.limitPrice.describedBy}
+                title={fields.limitPrice.disabledReason ?? undefined}
               />
             </div>
           </div>
 
+          <label
+            htmlFor={reviewAcknowledgement.id}
+            className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
+            title={reviewAcknowledgement.disabledReason ?? undefined}
+          >
+            <input
+              id={reviewAcknowledgement.id}
+              type="checkbox"
+              checked={reviewAcknowledgement.checked}
+              disabled={reviewAcknowledgement.disabled}
+              onChange={(event) => vm.setReviewAcknowledged(event.target.checked)}
+              aria-describedby={`${reviewAcknowledgement.id}-description ${status.id}`}
+              className="mt-1 h-4 w-4 accent-primary"
+            />
+            <span className="min-w-0">
+              <span className="block font-medium text-foreground">{reviewAcknowledgement.label}</span>
+              <span id={`${reviewAcknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
+                {reviewAcknowledgement.description}
+              </span>
+            </span>
+          </label>
+
           <Button
             type="submit"
-            variant={ticket.side === "Buy" ? "default" : "destructive"}
+            variant={submitCommand.variant}
             className="w-full"
-            disabled={submitting}
-            aria-label={`Submit ${ticket.side.toLowerCase()} order for ${symbol}`}
+            disabled={submitCommand.disabled}
+            disabledReason={submitCommand.disabledReason}
+            busy={submitCommand.busy}
+            busyLabel={submitCommand.busyLabel}
+            aria-label={submitCommand.ariaLabel}
           >
             <Send className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">{submitLabel}</span>
+            <span className="ml-1.5">{submitCommand.label}</span>
           </Button>
 
-          <div id="quick-ticket-status" aria-live="polite" className="min-h-[1.25rem] text-xs">
-            {submitted && ticket.message ? (
-              <span className="flex items-center gap-1.5 text-positive">
-                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-                {ticket.message}
-              </span>
-            ) : errored && ticket.message ? (
-              <span className="flex items-center gap-1.5 text-danger">
-                <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                {ticket.message}
-              </span>
-            ) : (
-              <span className="text-muted-foreground">
-                Orders route through Meridian's pre-trade risk and execution controls.
-              </span>
-            )}
+          <div
+            id={status.id}
+            role={status.role}
+            aria-live="polite"
+            className={`flex min-h-[1.25rem] items-center gap-1.5 text-xs ${statusToneClass}`}
+          >
+            {status.showSuccessIcon ? <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+            {status.showErrorIcon ? <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+            <span>{status.message}</span>
           </div>
         </form>
       </CardContent>
@@ -715,7 +563,13 @@ function QuickTradeCard({ symbol, ticket, onFieldChange, onSubmit }: QuickTradeC
   );
 }
 
-function TradesTable({ trades }: { trades: TradeDataResponse[] }) {
+const quickTicketStatusClass = {
+  default: "text-muted-foreground",
+  success: "text-positive",
+  danger: "text-danger"
+} as const;
+
+function TradesTable({ trades }: { trades: LiveQuotesTradeRowViewModel[] }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
@@ -729,161 +583,33 @@ function TradesTable({ trades }: { trades: TradeDataResponse[] }) {
           </tr>
         </thead>
         <tbody className="font-mono">
-          {trades.map((t) => {
-            const aggressor = t.aggressor?.toLowerCase();
-            const aggressorClass = aggressor === "buy"
-              ? "text-positive"
-              : aggressor === "sell"
-                ? "text-danger"
-                : "text-muted-foreground";
-            return (
-              <tr key={`${t.sequenceNumber}-${t.timestamp}`} className="border-b border-border/30">
-                <td className="px-2 py-1.5">{formatTimestamp(t.timestamp)}</td>
-                <td className="px-2 py-1.5 text-right">{formatPrice(t.price)}</td>
-                <td className="px-2 py-1.5 text-right">{formatSize(t.size)}</td>
-                <td className={`px-2 py-1.5 ${aggressorClass}`}>{t.aggressor}</td>
-                <td className="px-2 py-1.5 text-muted-foreground">{t.venue ?? "—"}</td>
+          {trades.map((trade) => (
+              <tr key={trade.id} className="border-b border-border/30">
+                <td className="px-2 py-1.5">{trade.timeLabel}</td>
+                <td className="px-2 py-1.5 text-right">{trade.priceLabel}</td>
+                <td className="px-2 py-1.5 text-right">{trade.sizeLabel}</td>
+                <td className={`px-2 py-1.5 ${tradeAggressorClass[trade.aggressorTone]}`}>{trade.aggressorLabel}</td>
+                <td className="px-2 py-1.5 text-muted-foreground">{trade.venueLabel}</td>
               </tr>
-            );
-          })}
+          ))}
         </tbody>
       </table>
     </div>
   );
 }
 
-interface IntradayMetrics {
-  count: number;
-  open: number | null;
-  last: number | null;
-  high: number | null;
-  low: number | null;
-  vwap: number | null;
-  volume: number;
-  change: number | null;
-  changePct: number | null;
-  windowStart: string | null;
-  windowEnd: string | null;
-  series: { ts: number; price: number }[];
-}
-
-export function computeIntradayMetrics(trades: readonly TradeDataResponse[]): IntradayMetrics {
-  if (trades.length === 0) {
-    return {
-      count: 0,
-      open: null,
-      last: null,
-      high: null,
-      low: null,
-      vwap: null,
-      volume: 0,
-      change: null,
-      changePct: null,
-      windowStart: null,
-      windowEnd: null,
-      series: []
-    };
-  }
-
-  // The API returns most-recent trades first; chronological is needed for charts.
-  const chronological = [...trades].reverse();
-  const series: { ts: number; price: number }[] = [];
-  let high = -Infinity;
-  let low = Infinity;
-  let volume = 0;
-  let pxVolume = 0;
-  for (const trade of chronological) {
-    const price = Number(trade.price);
-    const size = Number(trade.size);
-    if (!Number.isFinite(price) || price <= 0) continue;
-    const ts = new Date(trade.timestamp).getTime();
-    if (Number.isFinite(ts)) {
-      series.push({ ts, price });
-    }
-    if (price > high) high = price;
-    if (price < low) low = price;
-    if (Number.isFinite(size) && size > 0) {
-      volume += size;
-      pxVolume += size * price;
-    }
-  }
-
-  const open = series[0]?.price ?? null;
-  const last = series[series.length - 1]?.price ?? null;
-  const change = open !== null && last !== null ? last - open : null;
-  const changePct = change !== null && open !== null && open !== 0 ? (change / open) * 100 : null;
-  const vwap = volume > 0 ? pxVolume / volume : null;
-
-  return {
-    count: chronological.length,
-    open,
-    last,
-    high: Number.isFinite(high) ? high : null,
-    low: Number.isFinite(low) ? low : null,
-    vwap,
-    volume,
-    change,
-    changePct,
-    windowStart: chronological[0]?.timestamp ?? null,
-    windowEnd: chronological[chronological.length - 1]?.timestamp ?? null,
-    series
-  };
-}
-
-function formatChange(value: number | null): string {
-  if (value === null || !Number.isFinite(value)) return "—";
-  const sign = value > 0 ? "+" : value < 0 ? "" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
-}
-
-function formatChangePct(value: number | null): string {
-  if (value === null || !Number.isFinite(value)) return "—";
-  const sign = value > 0 ? "+" : value < 0 ? "" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
-}
-
-function formatVolume(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "—";
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-  return value.toLocaleString();
-}
-
-function formatWindowSpan(startIso: string | null, endIso: string | null): string {
-  if (!startIso || !endIso) return "Waiting for prints";
-  const start = new Date(startIso).getTime();
-  const end = new Date(endIso).getTime();
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return "Waiting for prints";
-  const seconds = Math.max(1, Math.round((end - start) / 1000));
-  if (seconds < 60) return `over ${seconds}s`;
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `over ${minutes}m`;
-  const hours = Math.round(minutes / 60);
-  return `over ${hours}h`;
-}
+const tradeAggressorClass = {
+  positive: "text-positive",
+  negative: "text-danger",
+  muted: "text-muted-foreground"
+} as const;
 
 interface PriceChartCardProps {
-  symbol: string;
-  metrics: IntradayMetrics;
-  loading: boolean;
-  error: string | null;
+  viewModel: LiveQuotesPriceChartViewModel;
 }
 
-function PriceChartCard({ symbol, metrics, loading, error }: PriceChartCardProps) {
-  const tone = metrics.change === null
-    ? "text-foreground"
-    : metrics.change > 0
-      ? "text-positive"
-      : metrics.change < 0
-        ? "text-danger"
-        : "text-foreground";
-  const stroke = metrics.change === null
-    ? "var(--meridian-chart-stroke, #94a3b8)"
-    : metrics.change > 0
-      ? "var(--meridian-chart-positive, #10b981)"
-      : metrics.change < 0
-        ? "var(--meridian-chart-danger, #ef4444)"
-        : "var(--meridian-chart-stroke, #94a3b8)";
+function PriceChartCard({ viewModel }: PriceChartCardProps) {
+  const toneClass = chartChangeToneClass[viewModel.changeTone];
 
   return (
     <Card>
@@ -893,42 +619,34 @@ function PriceChartCard({ symbol, metrics, loading, error }: PriceChartCardProps
             <div className="eyebrow-label">Recent price action</div>
             <CardTitle className="flex items-center gap-2 text-base">
               <LineChart className="h-4 w-4 text-primary" aria-hidden="true" />
-              {symbol} prints {formatWindowSpan(metrics.windowStart, metrics.windowEnd)}
+              {viewModel.title}
             </CardTitle>
             <CardDescription>
-              Last {metrics.count} trades streamed from the live pipeline. Chart shows trade-by-trade price; not a fixed-interval candle.
+              {viewModel.description}
             </CardDescription>
           </div>
           <div className="flex flex-col items-start gap-0.5 sm:items-end" aria-live="polite">
-            <span className="font-mono text-2xl text-foreground">{formatPrice(metrics.last)}</span>
-            <span className={`font-mono text-xs ${tone}`}>
-              {formatChange(metrics.change)} ({formatChangePct(metrics.changePct)})
-            </span>
+            <span className="font-mono text-2xl text-foreground">{viewModel.lastPriceLabel}</span>
+            <span className={`font-mono text-xs ${toneClass}`}>{viewModel.changeLabel}</span>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        {error && metrics.count === 0 ? (
-          <p className="text-sm text-danger">{error}</p>
-        ) : metrics.count === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {loading ? `Waiting for prints from ${symbol}…` : `No recent prints available for ${symbol}.`}
+        {viewModel.statusMessage ? (
+          <p
+            role={viewModel.statusRole}
+            aria-live={viewModel.statusRole === "status" ? "polite" : undefined}
+            className={viewModel.statusRole === "alert" ? "text-sm text-danger" : "text-sm text-muted-foreground"}
+          >
+            {viewModel.statusMessage}
           </p>
         ) : (
           <div className="space-y-3">
-            <PriceSparkline
-              series={metrics.series}
-              stroke={stroke}
-              high={metrics.high}
-              low={metrics.low}
-              symbol={symbol}
-            />
+            {viewModel.sparkline ? <PriceSparkline sparkline={viewModel.sparkline} /> : null}
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-              <ChartStat label="Open" value={formatPrice(metrics.open)} />
-              <ChartStat label="High" value={formatPrice(metrics.high)} />
-              <ChartStat label="Low" value={formatPrice(metrics.low)} />
-              <ChartStat label="VWAP" value={formatPrice(metrics.vwap)} />
-              <ChartStat label="Volume" value={formatVolume(metrics.volume)} />
+              {viewModel.stats.map((stat) => (
+                <ChartStat key={stat.id} label={stat.label} value={stat.value} />
+              ))}
             </div>
           </div>
         )}
@@ -936,6 +654,12 @@ function PriceChartCard({ symbol, metrics, loading, error }: PriceChartCardProps
     </Card>
   );
 }
+
+const chartChangeToneClass = {
+  positive: "text-positive",
+  negative: "text-danger",
+  default: "text-foreground"
+} as const;
 
 function ChartStat({ label, value }: { label: string; value: string }) {
   return (
@@ -946,100 +670,72 @@ function ChartStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-interface PriceSparklineProps {
-  series: { ts: number; price: number }[];
-  stroke: string;
-  high: number | null;
-  low: number | null;
-  symbol: string;
-}
-
-function PriceSparkline({ series, stroke, high, low, symbol }: PriceSparklineProps) {
-  const width = 800;
-  const height = 180;
-  const padX = 8;
-  const padY = 14;
-
-  if (series.length === 0 || high === null || low === null) {
-    return null;
-  }
-
-  const minTs = series[0]!.ts;
-  const maxTs = series[series.length - 1]!.ts;
-  const tsSpan = Math.max(1, maxTs - minTs);
-  const priceSpan = Math.max(high - low, Math.max(high * 0.0005, 0.01));
-  const xFor = (ts: number) => padX + ((ts - minTs) / tsSpan) * (width - padX * 2);
-  const yFor = (price: number) => padY + (1 - (price - low) / priceSpan) * (height - padY * 2);
-
-  const pointsAttr = series.map((p) => `${xFor(p.ts).toFixed(2)},${yFor(p.price).toFixed(2)}`).join(" ");
-  const lastPoint = series[series.length - 1]!;
-  const lastX = xFor(lastPoint.ts);
-  const lastY = yFor(lastPoint.price);
-  const baseY = (height - padY).toFixed(2);
-  const areaSegments = [`M ${xFor(series[0]!.ts).toFixed(2)} ${baseY}`];
-  for (const point of series) {
-    areaSegments.push(`L ${xFor(point.ts).toFixed(2)} ${yFor(point.price).toFixed(2)}`);
-  }
-  areaSegments.push(`L ${lastX.toFixed(2)} ${baseY} Z`);
-  const areaPath = areaSegments.join(" ");
-
+function PriceSparkline({ sparkline }: { sparkline: LiveQuotesSparklineViewModel }) {
   return (
     <svg
-      viewBox={`0 0 ${width} ${height}`}
+      viewBox={sparkline.viewBox}
       preserveAspectRatio="none"
       className="block h-44 w-full overflow-visible"
       role="img"
-      aria-label={`Recent ${symbol} trade prices, ranging from ${formatPrice(low)} to ${formatPrice(high)}.`}
+      aria-label={sparkline.ariaLabel}
     >
       <line
-        x1={padX}
-        x2={width - padX}
-        y1={yFor(high)}
-        y2={yFor(high)}
+        x1={sparkline.guideStartX}
+        x2={sparkline.guideEndX}
+        y1={sparkline.highGuideY}
+        y2={sparkline.highGuideY}
         stroke="currentColor"
         strokeOpacity="0.15"
         strokeDasharray="4 4"
       />
       <line
-        x1={padX}
-        x2={width - padX}
-        y1={yFor(low)}
-        y2={yFor(low)}
+        x1={sparkline.guideStartX}
+        x2={sparkline.guideEndX}
+        y1={sparkline.lowGuideY}
+        y2={sparkline.lowGuideY}
         stroke="currentColor"
         strokeOpacity="0.15"
         strokeDasharray="4 4"
       />
-      <path d={areaPath} fill={stroke} fillOpacity="0.12" stroke="none" />
+      <path d={sparkline.areaPath} fill={sparkline.strokeToken} fillOpacity="0.12" stroke="none" />
       <polyline
         fill="none"
-        stroke={stroke}
+        stroke={sparkline.strokeToken}
         strokeWidth="1.75"
         strokeLinejoin="round"
         strokeLinecap="round"
-        points={pointsAttr}
+        points={sparkline.points}
       />
-      <circle cx={lastX} cy={lastY} r="3.25" fill={stroke} stroke="currentColor" strokeOpacity="0.4" strokeWidth="1" />
+      <circle
+        cx={sparkline.lastPoint.x}
+        cy={sparkline.lastPoint.y}
+        r="3.25"
+        fill={sparkline.strokeToken}
+        stroke="currentColor"
+        strokeOpacity="0.4"
+        strokeWidth="1"
+      />
       <text
-        x={width - padX}
-        y={Math.max(yFor(high) - 4, 12)}
+        x={sparkline.labelX}
+        y={sparkline.highLabelY}
         textAnchor="end"
         fontFamily="IBM Plex Mono, ui-monospace"
         fontSize="10"
         fill="currentColor"
         fillOpacity="0.55"
       >
-        {formatPrice(high)}
+        {sparkline.highLabel}
       </text>
       <text
-        x={width - padX}
-        y={Math.min(yFor(low) + 12, height - 4)}
+        x={sparkline.labelX}
+        y={sparkline.lowLabelY}
         textAnchor="end"
         fontFamily="IBM Plex Mono, ui-monospace"
         fontSize="10"
         fill="currentColor"
         fillOpacity="0.55"
       >
-        {formatPrice(low)}
+        {sparkline.lowLabel}
       </text>
     </svg>
   );

@@ -32,6 +32,38 @@ Wave 4 operator-readiness acceptance criteria.
 | `LedgerSnapshot.cs` | Point-in-time snapshot of account balances |
 | `LedgerQuery.cs` | Filtered journal and balance query helpers |
 
+### Ledger-compatible CLI journal reports
+
+Meridian also exposes a bounded Ledger-style text journal command for local accounting checks:
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- ledger -f ledger.dat balance
+dotnet run --project src/Meridian/Meridian.csproj -- ledger -f ledger.dat register checking
+dotnet run --project src/Meridian/Meridian.csproj -- ledger -f ledger.dat print
+dotnet run --project src/Meridian/Meridian.csproj -- ledger -f ledger.dat accounts
+```
+
+The command reads the source journal without modifying it, parses v1 Ledger-style transaction
+headers and indented postings, infers one omitted posting amount per transaction, posts the result
+through `Meridian.Ledger`, and reports validation failures with source line numbers. It supports
+`yyyy/MM/dd` and `yyyy-MM-dd` dates, account roots under `Assets`, `Liabilities`, `Equity`,
+`Income`/`Revenue`, and `Expenses`, and decimal amounts with an optional leading `$`.
+
+The parser, report renderer, and `LedgerTextJournalReportService` live under
+`src/Meridian.Application/Ledger/TextJournal/` so the CLI entry point remains a thin command
+wrapper. Browser/API integration should reuse that application adapter and should not expose
+endpoints that read arbitrary server-side journal paths; future preview surfaces should accept
+uploaded or pasted journal text.
+
+Strategy-run evidence packets now also expose ledger drill-in routes as artifact references on the
+existing `run-ledger` node. The references point to the run ledger journal and trial-balance
+workstation endpoints; they are route-only until a retained ledger export or manifest flow owns a
+file path and content hash.
+
+The pilot readiness artifact now carries the same `ledgerArtifactRefs` collection so CI evidence
+can prove the ledger journal and trial-balance routes are present while keeping `path` and `hash`
+null. The dashboard treats a missing or non-route-only ledger artifact ref as a golden-path gap.
+
 ### `src/Meridian.FSharp.Ledger/` — F# accounting kernel
 
 | File | Purpose |

@@ -13,6 +13,7 @@ using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
+using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -54,6 +55,7 @@ public static class UiEndpoints
         });
 
         RegisterStrategyWorkstationServices(services);
+        services.AddEvidenceWorkflowFabric();
 
         services.AddMutationRateLimiter();
         services.AddMemoryCache();
@@ -91,6 +93,7 @@ public static class UiEndpoints
         });
 
         RegisterStrategyWorkstationServices(services);
+        services.AddEvidenceWorkflowFabric();
 
         services.AddSingleton(statusHandlers);
         services.AddMutationRateLimiter();
@@ -216,6 +219,12 @@ public static class UiEndpoints
         app.MapSymbolMappingEndpoints(jsonOptions);
         app.MapLiveDataEndpoints(jsonOptions);
         app.MapSymbolEndpoints(jsonOptions);
+
+        // Data ingestion and operator onboarding endpoints
+        app.MapDemoModeEndpoints(jsonOptions);
+        app.MapBackfillValidationEndpoints(jsonOptions);
+        app.MapProviderCredentialEndpoints(jsonOptions);
+
         app.MapStorageEndpoints(jsonOptions);
         app.MapStorageQualityEndpoints(jsonOptions);
         app.MapCatalogEndpoints(jsonOptions);
@@ -298,6 +307,7 @@ public static class UiEndpoints
 
         // React workstation shell and bootstrap data
         app.MapWorkstationEndpoints(jsonOptions);
+        app.MapEvidenceEndpoints(jsonOptions);
 
         // Paper trading cockpit endpoints
         app.MapExecutionEndpoints(jsonOptions);
@@ -340,6 +350,12 @@ public static class UiEndpoints
         app.MapSymbolMappingEndpoints(jsonOptions);
         app.MapLiveDataEndpoints(jsonOptions);
         app.MapSymbolEndpoints(jsonOptions);
+
+        // Data ingestion and operator onboarding endpoints
+        app.MapDemoModeEndpoints(jsonOptions);
+        app.MapBackfillValidationEndpoints(jsonOptions);
+        app.MapProviderCredentialEndpoints(jsonOptions);
+
         app.MapStorageEndpoints(jsonOptions);
         app.MapStorageQualityEndpoints(jsonOptions);
         app.MapCatalogEndpoints(jsonOptions);
@@ -422,6 +438,7 @@ public static class UiEndpoints
 
         // React workstation shell and bootstrap data
         app.MapWorkstationEndpoints(jsonOptions);
+        app.MapEvidenceEndpoints(jsonOptions);
 
         // Paper trading cockpit endpoints
         app.MapExecutionEndpoints(jsonOptions);

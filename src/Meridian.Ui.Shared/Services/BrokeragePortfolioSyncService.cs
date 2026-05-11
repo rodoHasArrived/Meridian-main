@@ -155,6 +155,23 @@ public sealed class BrokeragePortfolioSyncService
         var link = await ResolveLinkAsync(fundAccountId, request, ct).ConfigureAwait(false);
         if (link is null)
         {
+            var requestProviderId = NormalizeProviderId(request.ProviderId);
+            var requestExternalAccountId = NormalizeExternalAccountId(request.ExternalAccountId);
+            if (requestProviderId is not null && requestExternalAccountId is not null)
+            {
+                link = new WorkstationBrokerageAccountLinkDto(
+                    FundAccountId: fundAccountId,
+                    ProviderId: requestProviderId,
+                    ExternalAccountId: requestExternalAccountId,
+                    DisplayName: $"{requestProviderId}:{requestExternalAccountId}",
+                    LinkedAt: attemptedAt,
+                    LinkedBy: request.RequestedBy,
+                    AccountKind: request.AccountKind);
+            }
+        }
+
+        if (link is null)
+        {
             return UnlinkedStatus(fundAccountId, "Run request did not include a provider/account link and the fund account does not expose one.");
         }
 
@@ -323,7 +340,7 @@ public sealed class BrokeragePortfolioSyncService
             .ToArray();
 
         var warnings = new List<string>();
-        if (projection is null)
+        if (projection is null && points.Length == 0)
         {
             warnings.Add("No brokerage sync projection exists for this fund account.");
         }
@@ -843,24 +860,25 @@ public sealed class BrokeragePortfolioSyncService
         WorkstationBrokerageSyncRunRequestDto? request,
         CancellationToken ct)
     {
-        var account = await ResolveFundAccountAsync(fundAccountId, ct).ConfigureAwait(false);
-        if (account is null)
-        {
-            return null;
-        }
-
         var requestProviderId = NormalizeProviderId(request?.ProviderId);
         var requestExternalAccountId = NormalizeExternalAccountId(request?.ExternalAccountId);
         if (requestProviderId is not null && requestExternalAccountId is not null)
         {
+            var requestedAccount = await ResolveFundAccountAsync(fundAccountId, ct).ConfigureAwait(false);
             return new WorkstationBrokerageAccountLinkDto(
                 FundAccountId: fundAccountId,
                 ProviderId: requestProviderId,
                 ExternalAccountId: requestExternalAccountId,
-                DisplayName: account.DisplayName ?? $"{requestProviderId}:{requestExternalAccountId}",
+                DisplayName: requestedAccount?.DisplayName ?? $"{requestProviderId}:{requestExternalAccountId}",
                 LinkedAt: DateTimeOffset.UtcNow,
                 LinkedBy: request?.RequestedBy,
                 AccountKind: request?.AccountKind ?? BrokerageAccountKindDto.Unknown);
+        }
+
+        var account = await ResolveFundAccountAsync(fundAccountId, ct).ConfigureAwait(false);
+        if (account is null)
+        {
+            return null;
         }
 
         var persistedLink = await LoadLinkAsync(fundAccountId, ct).ConfigureAwait(false);

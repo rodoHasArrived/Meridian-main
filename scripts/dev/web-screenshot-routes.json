@@ -8,10 +8,24 @@
   },
   "captures": [
     {
+      "id": "W00",
+      "name": "web-overview-workspace",
+      "path": "/",
+      "docLabel": "Overview",
+      "waitForText": "Operator Workstation"
+    },
+    {
       "id": "W01",
       "name": "web-trading-workspace",
       "path": "/trading",
       "docLabel": "Trading — Orders blotter",
+      "waitForText": "Trading lane"
+    },
+    {
+      "id": "W01A",
+      "name": "web-trading-orders",
+      "path": "/trading/orders",
+      "docLabel": "Trading — Orders",
       "waitForText": "Trading lane"
     },
     {
@@ -29,7 +43,7 @@
       "waitForText": "Trading lane"
     },
     {
-      "id": "W01A",
+      "id": "W01D",
       "name": "web-operator-readiness-console",
       "path": "/trading/readiness",
       "docLabel": "Operator Readiness Console",
@@ -40,6 +54,20 @@
       "name": "web-portfolio-workspace",
       "path": "/portfolio",
       "docLabel": "Portfolio",
+      "waitForText": "Portfolio lane"
+    },
+    {
+      "id": "W02A",
+      "name": "web-portfolio-attribution",
+      "path": "/portfolio/attribution",
+      "docLabel": "Portfolio — Attribution",
+      "waitForText": "Portfolio lane"
+    },
+    {
+      "id": "W02B",
+      "name": "web-portfolio-brokerage-sync",
+      "path": "/portfolio/brokerage-sync",
+      "docLabel": "Portfolio — Brokerage Sync",
       "waitForText": "Portfolio lane"
     },
     {
@@ -64,10 +92,38 @@
       "waitForText": "Accounting lane"
     },
     {
+      "id": "W03C",
+      "name": "web-accounting-approvals",
+      "path": "/accounting/approvals",
+      "docLabel": "Accounting — Approvals",
+      "waitForText": "Accounting lane"
+    },
+    {
       "id": "W04",
       "name": "web-reporting-workspace",
       "path": "/reporting",
       "docLabel": "Reporting",
+      "waitForText": "Reporting lane"
+    },
+    {
+      "id": "W04A",
+      "name": "web-reporting-report-packs",
+      "path": "/reporting/report-packs",
+      "docLabel": "Reporting — Report Packs",
+      "waitForText": "Reporting lane"
+    },
+    {
+      "id": "W04B",
+      "name": "web-reporting-evidence-workbench",
+      "path": "/reporting/evidence",
+      "docLabel": "Reporting — Evidence Workbench",
+      "waitForText": "Evidence workbench"
+    },
+    {
+      "id": "W04C",
+      "name": "web-reporting-exports",
+      "path": "/reporting/exports",
+      "docLabel": "Reporting — Exports",
       "waitForText": "Reporting lane"
     },
     {
@@ -78,6 +134,27 @@
       "waitForText": "Strategy Lane"
     },
     {
+      "id": "W05A",
+      "name": "web-strategy-promotions",
+      "path": "/strategy/promotions",
+      "docLabel": "Strategy — Promotions",
+      "waitForText": "Strategy Lane"
+    },
+    {
+      "id": "W05B",
+      "name": "web-strategy-research",
+      "path": "/strategy/research",
+      "docLabel": "Strategy — Research",
+      "waitForText": "Strategy Lane"
+    },
+    {
+      "id": "W05C",
+      "name": "web-strategy-quant-lab",
+      "path": "/strategy/quant-lab",
+      "docLabel": "Strategy — Quant Lab",
+      "waitForText": "Strategy Lane"
+    },
+    {
       "id": "W06",
       "name": "web-data-workspace",
       "path": "/data",
@@ -85,10 +162,45 @@
       "waitForText": "Data Lane"
     },
     {
+      "id": "W06A",
+      "name": "web-data-watchlist",
+      "path": "/data/watchlist",
+      "docLabel": "Data — Watchlist",
+      "waitForText": "Data Lane"
+    },
+    {
+      "id": "W06B",
+      "name": "web-data-live-quotes",
+      "path": "/data/quotes",
+      "docLabel": "Data — Live Quotes",
+      "waitForText": "Data Lane"
+    },
+    {
+      "id": "W06C",
+      "name": "web-data-backfills",
+      "path": "/data/backfills",
+      "docLabel": "Data — Backfills",
+      "waitForText": "Data Lane"
+    },
+    {
       "id": "W07",
       "name": "web-settings-workspace",
       "path": "/settings",
       "docLabel": "Settings",
+      "waitForText": "Settings lane"
+    },
+    {
+      "id": "W07A",
+      "name": "web-settings-preferences",
+      "path": "/settings/preferences",
+      "docLabel": "Settings — Preferences",
+      "waitForText": "Settings lane"
+    },
+    {
+      "id": "W07B",
+      "name": "web-settings-integrations",
+      "path": "/settings/integrations",
+      "docLabel": "Settings — Integrations",
       "waitForText": "Settings lane"
     }
   ]

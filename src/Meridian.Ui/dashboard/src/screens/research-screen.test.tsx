@@ -1,10 +1,10 @@
-import { screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ResearchScreen } from "@/screens/research-screen";
 import * as api from "@/lib/api";
 import { afterEach } from "vitest";
 import { renderWithRouter } from "@/test/render";
-import type { PromotionRecord, ResearchWorkspaceResponse, RunComparisonRow, RunDiff } from "@/types";
+import type { PromotionEvaluationResult, PromotionRecord, ResearchWorkspaceResponse, RunComparisonRow, RunDiff } from "@/types";
 
 const twoRuns: ResearchWorkspaceResponse = {
   metrics: [
@@ -48,6 +48,8 @@ describe("ResearchScreen", () => {
     restoreApiSpy(api.compareRuns);
     restoreApiSpy(api.diffRuns);
     restoreApiSpy(api.getPromotionHistory);
+    restoreApiSpy(api.evaluatePromotion);
+    restoreApiSpy(api.createPaperSession);
   });
 
   it("opens a detail dialog with run notes when the Open button is clicked", async () => {
@@ -89,7 +91,8 @@ describe("ResearchScreen", () => {
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool study brief")).toBeInTheDocument();
     expect(screen.getByText("Strategy notebooks")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "PlotTool scatter chart" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Mean Reversion FX vs Index Momentum scatter" })).toBeInTheDocument();
+    expect(screen.getByText(/Spread \(bps\) against 3m implied vol/)).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool chart legend")).toBeInTheDocument();
     expect(screen.getAllByText("Current marker").length).toBeGreaterThan(0);
     expect(screen.getByText("Meridian overlays")).toBeInTheDocument();
@@ -103,6 +106,7 @@ describe("ResearchScreen", () => {
 
     expect(screen.getByText("Distribution profile")).toBeInTheDocument();
     expect(screen.getByText("Residual distribution")).toBeInTheDocument();
+    expect(screen.getByLabelText("PlotTool residual distribution chart")).toBeInTheDocument();
     expect(screen.getByText("Regression frame")).toBeInTheDocument();
     expect(screen.getByText("Observation sheet")).toBeInTheDocument();
   });
@@ -130,16 +134,20 @@ describe("ResearchScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<ResearchScreen data={twoRuns} />);
 
-    expect(screen.getByRole("button", { name: /compare 2 runs/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /diff 2 runs/i })).toBeDisabled();
+    const disabledCompare = screen.getByRole("button", { name: /compare 2 runs unavailable/i });
+    const disabledDiff = screen.getByRole("button", { name: /diff 2 runs unavailable/i });
+    expect(disabledCompare).toBeDisabled();
+    expect(disabledCompare).toHaveAttribute("title", "Select exactly two runs before using this command. 0 selected.");
+    expect(disabledDiff).toBeDisabled();
+    expect(disabledDiff).toHaveAttribute("title", "Select exactly two runs before using this command. 0 selected.");
     expect(screen.getByText("No runs selected")).toBeInTheDocument();
 
     const checkboxes = screen.getAllByRole("checkbox");
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
 
-    expect(screen.getByRole("button", { name: /compare 2 runs/i })).toBeEnabled();
-    expect(screen.getByRole("button", { name: /diff 2 runs/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /compare 2 runs: mean reversion fx and index momentum/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /diff 2 runs: mean reversion fx and index momentum/i })).toBeEnabled();
     expect(screen.getByText("Mean Reversion FX vs Index Momentum")).toBeInTheDocument();
   });
 
@@ -184,6 +192,50 @@ describe("ResearchScreen", () => {
     expect(screen.getByText("-1.80%")).toBeInTheDocument();
     expect(screen.getAllByText("Ledger missing; Audit missing").length).toBeGreaterThanOrEqual(1);
     expect(api.compareRuns).toHaveBeenCalledOnce();
+  });
+
+  it("clears pending compare evidence when the selected run pair changes before the response", async () => {
+    const pending = createDeferred<RunComparisonRow[]>();
+    vi.spyOn(api, "compareRuns").mockReturnValueOnce(pending.promise);
+
+    const user = userEvent.setup();
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    await user.click(checkboxes[0]);
+    await user.click(checkboxes[1]);
+    await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
+
+    expect(screen.getByRole("button", { name: /comparing/i })).toBeDisabled();
+
+    await user.click(checkboxes[1]);
+
+    await act(async () => {
+      pending.resolve([
+        {
+          runId: "run-stale",
+          strategyName: "Stale Carry Pair",
+          mode: "paper",
+          engine: "MeridianNative",
+          status: "Running",
+          netPnl: 4200,
+          totalReturn: 0.052,
+          finalEquity: 104200,
+          maxDrawdown: -0.02,
+          sharpeRatio: 1.5,
+          fillCount: 31,
+          lastUpdatedAt: "2026-03-26T10:00:00Z",
+          promotionState: "CandidateForPaper",
+          hasLedger: true,
+          hasAuditTrail: true
+        }
+      ]);
+      await pending.promise;
+    });
+
+    expect(screen.queryByRole("table", { name: "Strategy run comparison evidence" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Stale Carry Pair")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /compare 2 runs/i })).toBeDisabled();
   });
 
   it("renders empty comparison guidance when compare returns no rows", async () => {
@@ -377,9 +429,109 @@ describe("ResearchScreen", () => {
       expect(screen.getAllByText("No promotion history records returned.").length).toBeGreaterThanOrEqual(2);
     });
   });
+
+  it("validates promotion initial cash before starting a paper session", async () => {
+    vi.spyOn(api, "evaluatePromotion").mockResolvedValue({
+      runId: "run-2",
+      strategyId: "run-2",
+      strategyName: "Index Momentum",
+      sourceMode: "backtest",
+      targetMode: "paper",
+      isEligible: true,
+      sharpeRatio: 1.25,
+      maxDrawdownPercent: -0.04,
+      totalReturn: 0.08,
+      reason: "Promotion gates passed.",
+      found: true,
+      ready: true
+    });
+    vi.spyOn(api, "createPaperSession").mockResolvedValue({
+      sessionId: "session-1",
+      strategyId: "run-2",
+      strategyName: "Index Momentum",
+      initialCash: 100000,
+      createdAt: "2026-05-09T00:00:00Z",
+      closedAt: null,
+      isActive: true
+    });
+
+    const user = userEvent.setup();
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
+
+    await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum" }));
+    await user.click(screen.getByRole("button", { name: /promote to paper/i }));
+
+    const cashInput = await screen.findByLabelText("Initial cash ($)");
+    const startButton = screen.getByRole("button", { name: "Start paper session from selected strategy run" });
+    expect(startButton).toBeEnabled();
+
+    await user.clear(cashInput);
+    await user.type(cashInput, "500");
+
+    expect(cashInput).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByText("Enter at least $1,000 in whole dollars.")).toBeInTheDocument();
+    expect(startButton).toBeDisabled();
+
+    await user.clear(cashInput);
+    await user.type(cashInput, "125000");
+    await user.click(startButton);
+
+    await waitFor(() => {
+      expect(api.createPaperSession).toHaveBeenCalledWith("run-2", "Index Momentum", 125000);
+    });
+    expect(screen.getByText("Paper session created - session session-1")).toBeInTheDocument();
+  });
+
+  it("discards pending promotion evaluation when the selected run changes", async () => {
+    const pending = createDeferred<PromotionEvaluationResult>();
+    vi.spyOn(api, "evaluatePromotion").mockReturnValueOnce(pending.promise);
+
+    const user = userEvent.setup();
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
+
+    await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum" }));
+    await user.click(screen.getByRole("button", { name: /promote to paper/i }));
+
+    expect(screen.getByRole("button", { name: /evaluating/i })).toBeDisabled();
+
+    await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum" }));
+
+    await act(async () => {
+      pending.resolve({
+        runId: "run-2",
+        strategyId: "run-2",
+        strategyName: "Index Momentum",
+        sourceMode: "backtest",
+        targetMode: "paper",
+        isEligible: true,
+        sharpeRatio: 1.25,
+        maxDrawdownPercent: -0.04,
+        totalReturn: 0.08,
+        reason: "Promotion gates passed.",
+        found: true,
+        ready: true
+      });
+      await pending.promise;
+    });
+
+    expect(screen.queryByText("Eligible for paper trading")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Initial cash ($)")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /promote to paper/i })).toBeDisabled();
+  });
 });
 
 function restoreApiSpy(fn: unknown) {
   const spy = fn as { mockRestore?: () => void };
   spy.mockRestore?.();
+}
+
+function createDeferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
 }

@@ -9,13 +9,14 @@ describe("CommandPalette", () => {
   it("marks the route-aware current workspace", () => {
     renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, { initialEntries: ["/portfolio/positions"] });
 
-    expect(screen.getByRole("dialog", { name: "Open workspace" })).toBeInTheDocument();
-    expect(screen.getByText("Route to a canonical operator workspace. Current: Portfolio.")).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "7 workspace commands" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Open workstation command" })).toBeInTheDocument();
+    expect(screen.getByText("Route to common operator workflows and canonical workspaces. Current: Portfolio.")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "18 workstation commands" })).toBeInTheDocument();
     expect(screen.getByText("Esc to close")).toBeInTheDocument();
+    expect(screen.getByRole("searchbox", { name: "Search command palette" })).toHaveFocus();
+    expect(screen.getByText("18 commands available")).toBeInTheDocument();
     expect(screen.getByLabelText("Route /portfolio")).toBeInTheDocument();
     expect(screen.getByLabelText("Portfolio, current workspace")).toHaveAttribute("aria-current", "page");
-    expect(screen.getByLabelText("Portfolio, current workspace")).toHaveFocus();
   });
 
   it("closes when Escape is pressed", async () => {
@@ -29,6 +30,23 @@ describe("CommandPalette", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it("keeps Tab focus inside the modal command surface", () => {
+    const onOpenChange = vi.fn();
+
+    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/settings"] });
+
+    const closeButton = screen.getByRole("button", { name: "Close command palette" });
+    const lastCommand = screen.getByLabelText("Open Provider integrations route");
+
+    lastCommand.focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(closeButton).toHaveFocus();
+
+    fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+    expect(lastCommand).toHaveFocus();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
   it("closes when a workspace command is selected", async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
@@ -38,6 +56,72 @@ describe("CommandPalette", () => {
     await user.click(screen.getByLabelText("Open Settings workspace"));
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("filters command results from the search field", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, { initialEntries: ["/trading"] });
+
+    await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "settings");
+
+    expect(screen.getByText("2 of 18 commands match")).toBeInTheDocument();
+    expect(screen.getByLabelText("Open Settings workspace")).toBeInTheDocument();
+    expect(screen.getByLabelText("Open Provider integrations route")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Trading, current workspace")).not.toBeInTheDocument();
+  });
+
+  it("opens the first filtered command when Enter is pressed from search", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+
+    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/trading"] });
+
+    await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "settings{Enter}");
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it("keeps the palette open when Enter is pressed with no command matches", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+
+    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/trading"] });
+
+    await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "missing command{Enter}");
+
+    expect(screen.getByText("No matching commands")).toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it("moves through commands with arrow keys from the search field", () => {
+    renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, { initialEntries: ["/trading"] });
+
+    const search = screen.getByRole("searchbox", { name: "Search command palette" });
+    const currentTrading = screen.getByLabelText("Trading, current workspace");
+    const portfolio = screen.getByLabelText("Open Portfolio workspace");
+
+    expect(search).toHaveFocus();
+
+    fireEvent.keyDown(window, { key: "ArrowDown" });
+    expect(currentTrading).toHaveFocus();
+
+    fireEvent.keyDown(window, { key: "ArrowDown" });
+    expect(portfolio).toHaveFocus();
+
+    fireEvent.keyDown(window, { key: "ArrowUp" });
+    expect(currentTrading).toHaveFocus();
+  });
+
+  it("shows an empty state when command filtering has no matches", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, { initialEntries: ["/trading"] });
+
+    await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "missing command");
+
+    expect(screen.getByText("0 of 18 commands match")).toBeInTheDocument();
+    expect(screen.getByText("No matching commands")).toBeInTheDocument();
   });
 
   it("closes when the backdrop is selected", () => {
@@ -118,9 +202,9 @@ describe("CommandPalette", () => {
       { initialEntries: ["/trading"] }
     );
 
-    expect(screen.getByRole("navigation", { name: "9 commands" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "20 commands" })).toBeInTheDocument();
     expect(screen.getByText("1 workflow action - 1 preset")).toBeInTheDocument();
-    expect(screen.getByLabelText("Review Security Master, Data Provider Recovery")).toHaveAttribute("href", "/data/security-master");
+    expect(screen.getByLabelText("Review Security Master, Data Provider Recovery")).toHaveAttribute("href", "/accounting/security-master");
 
     await user.click(screen.getByLabelText("Open workflow preset Security open items"));
 

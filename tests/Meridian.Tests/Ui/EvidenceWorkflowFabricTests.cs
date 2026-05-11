@@ -1,0 +1,314 @@
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using FluentAssertions;
+using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Evidence;
+using Meridian.Ui.Shared.Workflows;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
+
+namespace Meridian.Tests.Ui;
+
+/// <summary>
+/// Guards the operator review scenario where multiple workstation contributors assemble one evidence packet before paper operation.
+/// </summary>
+public sealed class EvidenceWorkflowFabricTests
+{
+    private static readonly JsonSerializerOptions ServerJsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
+    [Fact]
+    public async Task EvidenceGraphService_DuringPaperReadinessReview_DeduplicatesNodesAndFlagsInvalidEdges()
+    {
+        var subject = Subject(EvidenceSubjectResolver.PaperReadinessKind, "current");
+        var ready = Node(subject, "ready", "readiness-gate", EvidenceStatusDto.Ready);
+        var stale = Node(subject, "stale", "paper-replay", EvidenceStatusDto.Stale, stale: true);
+        var review = Node(subject, "review", "provider-trust", EvidenceStatusDto.ReviewRequired, workItemIds: ["provider-trust:sample-review"]);
+        var duplicateReady = ready with { Summary = "Duplicate contributor result should not replace the first node." };
+        var contributors = new IEvidenceContributor[]
+        {
+            new StubContributor("readiness", static _ => true, _ => new EvidenceContribution(
+                Nodes: [ready, stale],
+                Edges:
+                [
+                    new EvidenceEdgeDto("ready", "stale", "requires", "Replay evidence supports readiness."),
+                    new EvidenceEdgeDto("ready", "missing", "requires", "Broken edge should be rejected.")
+                ],
+                Actions: [],
+                RequiredEvidenceIds: ["ready", "stale", "missing"],
+                Warnings: [])),
+            new StubContributor("provider-trust", static _ => true, _ => new EvidenceContribution(
+                Nodes: [duplicateReady, review],
+                Edges: [new EvidenceEdgeDto("ready", "review", "requires", "Provider trust supports readiness.")],
+                Actions: [],
+                RequiredEvidenceIds: ["review"],
+                Warnings: ["Optional DK1 sample review is pending."]))
+        };
+        var service = CreateGraphService(contributors);
+
+        var packet = await service.GetPacketAsync(subject.SubjectKind, subject.SubjectId);
+
+        packet.Should().NotBeNull();
+        packet!.Nodes.Should().HaveCount(3);
+        packet.Nodes.Single(node => node.EvidenceId == "ready").Summary.Should().Be(ready.Summary);
+        packet.Edges.Should().OnlyContain(edge => edge.ToId != "missing");
+        packet.Warnings.Should().Contain(warning => warning.Contains("references a missing node", StringComparison.OrdinalIgnoreCase));
+        packet.Warnings.Should().Contain("Optional DK1 sample review is pending.");
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.Blocked);
+        packet.Completeness.Score.Should().Be(25);
+        packet.Completeness.MissingIds.Should().Contain("missing");
+        packet.Completeness.StaleIds.Should().Contain("stale");
+        packet.Completeness.BlockingWorkItemIds.Should().Contain("provider-trust:sample-review");
+    }
+
+    [Fact]
+    public async Task EvidenceGraphService_DuringCancelledReview_PreservesCancellation()
+    {
+        var service = CreateGraphService([new StubContributor("slow", static _ => true, _ => new EvidenceContribution([], [], [], [], []))]);
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => service.GetPacketAsync(EvidenceSubjectResolver.PaperReadinessKind, "current", cts.Token));
+    }
+
+    [Fact]
+    public async Task MapEvidenceEndpoints_DuringReportPackReview_ReturnsPacketGraphValidationTemplatesAndManifest()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-workflow", Guid.NewGuid().ToString("N"));
+        await using var app = await CreateEvidenceAppAsync(root);
+        var client = app.GetTestClient();
+
+        var templatesResponse = await client.GetAsync("/api/workstation/evidence/templates");
+        templatesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var templates = await templatesResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceTemplateDto>>(ServerJsonOptions);
+        templates.Should().NotBeNull();
+        templates!.Should().Contain(template =>
+            template.WorkflowId == "portfolio-reporting-output" &&
+            template.ExportSettings.ManifestOnly &&
+            template.ExportSettings.SchemaVersion == 1);
+
+        var packetResponse = await client.GetAsync("/api/workstation/evidence/subjects/report-pack/current/packet");
+        packetResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var packet = await packetResponse.Content.ReadFromJsonAsync<EvidencePacketDto>(ServerJsonOptions);
+        packet.Should().NotBeNull();
+        packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
+        packet.Nodes.Should().Contain(node => node.Kind == "analysis-export");
+        packet.Warnings.Should().Contain(warning => warning.Contains("report-pack repository is not registered", StringComparison.OrdinalIgnoreCase));
+
+        var graphResponse = await client.GetAsync("/api/workstation/evidence/subjects/report-pack/current/graph");
+        graphResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var graph = await graphResponse.Content.ReadFromJsonAsync<EvidenceGraphDto>(ServerJsonOptions);
+        graph!.Nodes.Should().Contain(node => node.EvidenceId == "report-pack:current:analysis-export");
+
+        var validationResponse = await client.PostAsync("/api/workstation/evidence/subjects/report-pack/current/validate", content: null);
+        validationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var completeness = await validationResponse.Content.ReadFromJsonAsync<EvidenceCompletenessDto>(ServerJsonOptions);
+        completeness!.ReadyIds.Should().Contain("report-pack:current:analysis-export");
+
+        var exportResponse = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/subjects/report-pack/current/export-manifest",
+            new EvidencePacketExportRequest("operator", "report-pack review", IncludeWarnings: false),
+            ServerJsonOptions);
+        exportResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var export = await exportResponse.Content.ReadFromJsonAsync<EvidencePacketExportResponse>(ServerJsonOptions);
+        export.Should().NotBeNull();
+        export!.Retained.Should().BeTrue();
+        export.WarningCount.Should().Be(0);
+        File.Exists(Path.Combine(root, export.ManifestPath.Replace('/', Path.DirectorySeparatorChar))).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task MapEvidenceEndpoints_DuringUnsupportedSubjectReview_ReturnsBadRequest()
+    {
+        await using var app = await CreateEvidenceAppAsync(Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-workflow", Guid.NewGuid().ToString("N")));
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync("/api/workstation/evidence/subjects/unknown/current/packet");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_SanitizesSubjectPathAndHonorsWarningPreference()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject("report-pack", "Review Jan/../2026");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "node-1", "analysis-export", EvidenceStatusDto.Ready)],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["node-1"], ["node-1"], [], [], []),
+            Actions: [],
+            Warnings: ["This warning should be excluded."]);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "safe export", IncludeWarnings: false));
+        var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
+        var manifestJson = await File.ReadAllTextAsync(manifestPath);
+
+        response.ManifestPath.Should().Contain("review jan-..-2026");
+        response.ManifestRoute.Should().Contain("/workstation/evidence/report-pack/review%20jan-..-2026/");
+        response.WarningCount.Should().Be(0);
+        manifestJson.Should().Contain("\"schemaVersion\": 1");
+        manifestJson.Should().NotContain("This warning should be excluded.");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringLedgerManifestExport_PreservesRouteOnlyArtifactRefs()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.StrategyRunKind, "run-ledger-proof");
+        var generatedAt = new DateTimeOffset(2026, 5, 9, 12, 0, 0, TimeSpan.Zero);
+        var artifacts = new[]
+        {
+            new EvidenceArtifactRefDto(
+                "strategy-run:run-ledger-proof:ledger:journal",
+                "ledger-journal",
+                Path: null,
+                Route: "/api/workstation/runs/run-ledger-proof/ledger/journal",
+                GeneratedAt: generatedAt,
+                Hash: null,
+                Retained: true),
+            new EvidenceArtifactRefDto(
+                "strategy-run:run-ledger-proof:ledger:trial-balance",
+                "ledger-trial-balance",
+                Path: null,
+                Route: "/api/workstation/runs/run-ledger-proof/ledger/trial-balance",
+                GeneratedAt: generatedAt,
+                Hash: null,
+                Retained: true)
+        };
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: generatedAt,
+            Nodes: [Node(subject, "strategy-run:run-ledger-proof:ledger", "run-ledger", EvidenceStatusDto.Ready, artifacts: artifacts)],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["strategy-run:run-ledger-proof:ledger"], ["strategy-run:run-ledger-proof:ledger"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "ledger proof export"));
+        var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
+        await using var stream = File.OpenRead(manifestPath);
+        using var manifest = await JsonDocument.ParseAsync(stream);
+        var ledgerNode = manifest.RootElement.GetProperty("nodes")
+            .EnumerateArray()
+            .Single(node => node.GetProperty("kind").GetString() == "run-ledger");
+        var artifactRefs = ledgerNode.GetProperty("artifactRefs")
+            .EnumerateArray()
+            .ToArray();
+
+        artifactRefs.Should().HaveCount(2);
+        artifactRefs.Should().Contain(artifact =>
+            IsRouteOnlyArtifact(artifact, "ledger-journal", "/api/workstation/runs/run-ledger-proof/ledger/journal"));
+        artifactRefs.Should().Contain(artifact =>
+            IsRouteOnlyArtifact(artifact, "ledger-trial-balance", "/api/workstation/runs/run-ledger-proof/ledger/trial-balance"));
+    }
+
+    private static EvidenceGraphService CreateGraphService(IReadOnlyList<IEvidenceContributor> contributors)
+    {
+        var services = new ServiceCollection().BuildServiceProvider();
+        return new EvidenceGraphService(
+            new EvidenceSubjectResolver(services),
+            new EvidenceTemplateRegistry(),
+            contributors,
+            NullLogger<EvidenceGraphService>.Instance);
+    }
+
+    private static async Task<WebApplication> CreateEvidenceAppAsync(string root)
+    {
+        Directory.CreateDirectory(root);
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, """{"DataRoot":"."}""");
+
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = Environments.Development
+        });
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
+        builder.Services.AddWorkflowLibrary();
+        builder.Services.AddEvidenceWorkflowFabric();
+
+        var app = builder.Build();
+        app.MapEvidenceEndpoints(ServerJsonOptions);
+        await app.StartAsync();
+        return app;
+    }
+
+    private static EvidenceSubjectDto Subject(string kind, string id)
+        => new(
+            SubjectId: id,
+            SubjectKind: kind,
+            Label: $"{kind} {id}",
+            Workspace: "Trading",
+            Route: "/trading/readiness",
+            PageTag: "TradingReadiness");
+
+    private static EvidenceNodeDto Node(
+        EvidenceSubjectDto subject,
+        string id,
+        string kind,
+        EvidenceStatusDto status,
+        bool stale = false,
+        IReadOnlyList<string>? workItemIds = null,
+        IReadOnlyList<EvidenceArtifactRefDto>? artifacts = null)
+        => new(
+            EvidenceId: id,
+            Subject: subject,
+            Kind: kind,
+            Status: status,
+            Freshness: new EvidenceFreshnessDto(
+                stale ? DateTimeOffset.UtcNow.AddDays(-8) : DateTimeOffset.UtcNow,
+                stale,
+                stale ? "Evidence is older than seven days." : null),
+            SourceSystem: "test",
+            Summary: $"{kind} evidence",
+            ArtifactRefs: artifacts ?? [],
+            RelatedWorkItemIds: workItemIds ?? []);
+
+    private static bool IsRouteOnlyArtifact(JsonElement artifact, string kind, string route)
+        => artifact.GetProperty("kind").GetString() == kind &&
+           artifact.GetProperty("route").GetString() == route &&
+           artifact.GetProperty("path").ValueKind == JsonValueKind.Null &&
+           artifact.GetProperty("hash").ValueKind == JsonValueKind.Null;
+
+    private sealed class StubContributor : IEvidenceContributor
+    {
+        private readonly Func<EvidenceSubjectDto, bool> _supports;
+        private readonly Func<EvidenceContributionContext, EvidenceContribution> _contribute;
+
+        public StubContributor(
+            string contributorId,
+            Func<EvidenceSubjectDto, bool> supports,
+            Func<EvidenceContributionContext, EvidenceContribution> contribute)
+        {
+            ContributorId = contributorId;
+            _supports = supports;
+            _contribute = contribute;
+        }
+
+        public string ContributorId { get; }
+
+        public bool Supports(EvidenceSubjectDto subject) => _supports(subject);
+
+        public Task<EvidenceContribution> ContributeAsync(EvidenceContributionContext context)
+        {
+            context.CancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(_contribute(context));
+        }
+    }
+}

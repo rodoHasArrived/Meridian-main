@@ -1,11 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildOverviewActivityRows,
   buildOverviewBriefingItems,
   buildOverviewPriorityRoutes,
   buildOverviewStatusBanner,
   buildOverviewStatusState,
-  buildOverviewWorkspaceLinks
+  buildOverviewValueBlockers,
+  buildOverviewWorkspaceLinks,
+  useOverviewStatusViewModel,
+  type OverviewRefreshFetcher
 } from "@/screens/overview-screen.view-model";
 import type { SessionInfo, SystemOverviewResponse } from "@/types";
 
@@ -52,18 +56,28 @@ describe("overview-screen view model", () => {
     expect(state.storageLabel).toBe("Warning");
     expect(state.hasMetrics).toBe(false);
     expect(state.hasEvents).toBe(false);
+    expect(state.hasValueBlockers).toBe(true);
+    expect(state.valueBlockerRegionLabel).toBe("3 readiness blockers");
+    expect(state.valueBlockerSummary).toBe("3 blockers need attention before a confident operator handoff.");
+    expect(state.valueBlockers.map((blocker) => blocker.id)).toEqual([
+      "providers-degraded",
+      "storage-warning",
+      "backfills-active"
+    ]);
     expect(state.activityEmptyText).toBe("No recent events.");
     expect(state.activityRows).toEqual([]);
     expect(state.fallbackStats).toContainEqual({
       id: "providers",
       label: "Providers Online",
       value: "2 / 4",
+      delta: "2 offline",
       tone: "warning"
     });
     expect(state.fallbackStats).toContainEqual({
       id: "backfills",
       label: "Active Backfills",
       value: "1",
+      delta: "1 active backfill",
       tone: "warning"
     });
     expect(state.workspaceSummary).toBe("7 canonical operator routes. Legacy routes redirect to their canonical workspaces.");
@@ -93,6 +107,27 @@ describe("overview-screen view model", () => {
     expect(state.statusBanner.role).toBe("alert");
     expect(state.statusBanner.ariaLabel).toContain("Refresh failed: Provider offline");
     expect(state.refreshButtonLabel).toBe("Refresh");
+  });
+
+  it("does not crash when the host status payload omits optional overview collections", () => {
+    const state = buildOverviewStatusState({
+      current: {
+        ...overview,
+        lastHeartbeatUtc: undefined as unknown as string,
+        metrics: undefined as unknown as SystemOverviewResponse["metrics"],
+        recentEvents: undefined as unknown as SystemOverviewResponse["recentEvents"]
+      },
+      session: null,
+      refreshing: false,
+      refreshError: null,
+      refreshedAt: null
+    });
+
+    expect(state.lastHeartbeatLabel).toBe("Unavailable");
+    expect(state.hasMetrics).toBe(false);
+    expect(state.hasEvents).toBe(false);
+    expect(state.activityRows).toEqual([]);
+    expect(state.statusBanner.detailText).toContain("Last heartbeat Unavailable");
   });
 
   it("announces active refresh state", () => {
@@ -186,6 +221,95 @@ describe("overview-screen view model", () => {
     });
   });
 
+  it("moves first-run symbol setup ahead of default priority routes", () => {
+    const routes = buildOverviewPriorityRoutes(buildOverviewWorkspaceLinks(), {
+      ...overview,
+      symbolsMonitored: 0
+    });
+
+    expect(routes.map((route) => route.id)).toEqual(["data", "trading", "accounting"]);
+    expect(routes[0]).toMatchObject({
+      eyebrow: "First-run data setup",
+      title: "Seed a working watchlist",
+      buttonLabel: "Open watchlist",
+      href: "/data/watchlist",
+      ariaLabel: "Open Data watchlist starter packs"
+    });
+    expect(routes[0].detail).toContain("No monitored symbols are loaded yet");
+  });
+
+  it("moves provider setup ahead of data setup when no provider baseline is available", () => {
+    const routes = buildOverviewPriorityRoutes(buildOverviewWorkspaceLinks(), {
+      ...overview,
+      providersOnline: 0,
+      providersTotal: 0,
+      symbolsMonitored: 0
+    });
+
+    expect(routes.map((route) => route.id)).toEqual(["settings", "data", "trading"]);
+    expect(routes[0]).toMatchObject({
+      eyebrow: "Integration setup",
+      title: "Connect provider baseline",
+      buttonLabel: "Open setup checks",
+      href: "/settings#alpaca-provider-setup",
+      ariaLabel: "Open Alpaca paper provider setup checklist"
+    });
+    expect(routes[0].detail).toContain("No providers are configured yet");
+  });
+
+  it("derives first-run blocker repair links from the live overview snapshot", () => {
+    const blockers = buildOverviewValueBlockers(
+      {
+        ...overview,
+        providersOnline: 0,
+        providersTotal: 0,
+        symbolsMonitored: 0,
+        storageHealth: "Critical",
+        activeBackfills: 0
+      },
+      null
+    );
+
+    expect(blockers.map((blocker) => blocker.id)).toEqual([
+      "providers-missing",
+      "symbols-empty",
+      "storage-critical"
+    ]);
+    expect(blockers[0]).toMatchObject({
+      href: "/settings#alpaca-provider-setup",
+      actionLabel: "Connect provider",
+      badgeVariant: "danger",
+      tone: "danger"
+    });
+    expect(blockers[1]).toMatchObject({
+      href: "/data/watchlist",
+      actionLabel: "Seed watchlist"
+    });
+    expect(blockers[2].detail).toContain("not safe to trust");
+  });
+
+  it("keeps the blocker panel clear when readiness prerequisites are healthy", () => {
+    const state = buildOverviewStatusState({
+      current: {
+        ...overview,
+        systemStatus: "Healthy",
+        providersOnline: 4,
+        providersTotal: 4,
+        activeBackfills: 0,
+        storageHealth: "Healthy"
+      },
+      session,
+      refreshing: false,
+      refreshError: null,
+      refreshedAt: null
+    });
+
+    expect(state.hasValueBlockers).toBe(false);
+    expect(state.valueBlockers).toEqual([]);
+    expect(state.valueBlockerRegionLabel).toBe("0 readiness blockers");
+    expect(state.valueBlockerSummary).toBe("No immediate readiness blockers detected. Continue with the priority routes below.");
+  });
+
   it("derives activity row status, fallback timestamps, and accessible summaries", () => {
     const rows = buildOverviewActivityRows([
       {
@@ -238,4 +362,83 @@ describe("overview-screen view model", () => {
     expect(healthy.detailText).toBe("4 of 4 providers online. Storage Healthy. Last heartbeat 10:15 AM.");
     expect(healthy.ariaLabel).toContain("All Systems Healthy");
   });
+
+  it("ignores an older manual refresh that resolves after a newer refresh", async () => {
+    const olderRefresh = createDeferred<SystemOverviewResponse>();
+    const newerRefresh = createDeferred<SystemOverviewResponse>();
+    const fetchSystemStatus = vi.fn<OverviewRefreshFetcher>()
+      .mockReturnValueOnce(olderRefresh.promise)
+      .mockReturnValueOnce(newerRefresh.promise);
+
+    const { result } = renderHook(() => useOverviewStatusViewModel(overview, session, fetchSystemStatus));
+
+    let olderCommand!: Promise<void>;
+    let newerCommand!: Promise<void>;
+    act(() => {
+      olderCommand = result.current.refresh();
+      newerCommand = result.current.refresh();
+    });
+    await waitFor(() => expect(fetchSystemStatus).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      newerRefresh.resolve({ ...overview, systemStatus: "Healthy", providersOnline: 4, providersTotal: 4 });
+      await newerCommand;
+    });
+
+    expect(result.current.statusLabel).toBe("All Systems Healthy");
+    expect(result.current.refreshing).toBe(false);
+
+    await act(async () => {
+      olderRefresh.resolve({ ...overview, systemStatus: "Offline", providersOnline: 0 });
+      await olderCommand;
+      await flushAsync();
+    });
+
+    expect(result.current.statusLabel).toBe("All Systems Healthy");
+    expect(result.current.providerSummary).toBe("4 of 4 providers online");
+  });
+
+  it("does not publish a manual refresh after the overview unmounts", async () => {
+    const pendingRefresh = createDeferred<SystemOverviewResponse>();
+    const fetchSystemStatus = vi.fn<OverviewRefreshFetcher>().mockReturnValueOnce(pendingRefresh.promise);
+    const { result, unmount } = renderHook(() => useOverviewStatusViewModel(overview, session, fetchSystemStatus));
+
+    let refreshCommand!: Promise<void>;
+    act(() => {
+      refreshCommand = result.current.refresh();
+    });
+    await waitFor(() => expect(fetchSystemStatus).toHaveBeenCalledTimes(1));
+
+    unmount();
+    await act(async () => {
+      pendingRefresh.resolve({ ...overview, systemStatus: "Offline", providersOnline: 0 });
+      await refreshCommand;
+      await flushAsync();
+    });
+
+    expect(result.current.statusLabel).toBe("System Degraded");
+    expect(result.current.providerSummary).toBe("2 of 4 providers online");
+  });
 });
+
+interface Deferred<T> {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (reason?: unknown) => void;
+}
+
+function createDeferred<T>(): Deferred<T> {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}
+
+async function flushAsync() {
+  await Promise.resolve();
+  await Promise.resolve();
+}

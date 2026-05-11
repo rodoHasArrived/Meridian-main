@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
+import { evidenceWorkbenchPath, workspacePath } from "@/lib/workspace";
 import type {
   MetricSnapshot,
   MetricsDiff,
@@ -53,18 +54,93 @@ export interface ResearchRunLibraryState {
   canDiff: boolean;
   canLoadPromotionHistory: boolean;
   canPromote: boolean;
+  promotionHistoryCommand: ResearchCommandState;
+  compareCommand: ResearchCommandState;
+  diffCommand: ResearchCommandState;
+  promoteCommand: ResearchCommandState;
   promoteState: PromoteState;
   promotionEval: PromotionEvaluationResult | null;
+  promotionPanel: ResearchPromotionPanelState;
   promotionSession: PaperSessionSummary | null;
   showPromotePanel: boolean;
   promoteError: string | null;
+  promotionCashForm: ResearchPromotionCashFormState;
   selectionText: string;
   selectionDetail: string;
+  evidenceAction: ResearchEvidenceAction | null;
   compareButtonLabel: string;
   diffButtonLabel: string;
   promotionHistoryButtonLabel: string;
   promoteButtonLabel: string;
   statusAnnouncement: string;
+}
+
+export interface ResearchCommandState {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
+}
+
+export interface ResearchPromotionPanelState {
+  panelLabel: string;
+  statusRole: "status" | "alert";
+  statusLive: "polite" | "assertive";
+  evaluation: ResearchPromotionEvaluationState | null;
+  sessionCreated: ResearchPromotionSessionState | null;
+  showCashForm: boolean;
+  showIneligibleDismiss: boolean;
+}
+
+export interface ResearchEvidenceAction {
+  label: string;
+  href: string;
+  ariaLabel: string;
+}
+
+export interface ResearchPromotionEvaluationState {
+  title: string;
+  titleTone: "success" | "danger";
+  reason: string;
+  metricRows: ResearchPromotionMetricRow[];
+  blockingReasons: ResearchPromotionBlockingReason[];
+  hasBlockingReasons: boolean;
+  blockingListLabel: string;
+}
+
+export interface ResearchPromotionMetricRow {
+  id: string;
+  label: string;
+  value: string;
+}
+
+export interface ResearchPromotionBlockingReason {
+  id: string;
+  text: string;
+}
+
+export interface ResearchPromotionSessionState {
+  title: string;
+  sessionId: string;
+  detail: string;
+  actionLabel: string;
+  actionAriaLabel: string;
+  actionHref: string;
+}
+
+export interface ResearchPromotionCashFormState {
+  inputId: string;
+  label: string;
+  value: string;
+  min: number;
+  step: number;
+  helpText: string;
+  errorText: string | null;
+  describedBy: string;
+  canSubmit: boolean;
+  submitLabel: string;
+  submitAriaLabel: string;
 }
 
 export interface ResearchPlotToolTab {
@@ -237,6 +313,7 @@ export interface ResearchPlotWorkspaceState {
   xTicks: ResearchPlotAxisTick[];
   yTicks: ResearchPlotAxisTick[];
   points: ResearchPlotScatterPoint[];
+  scatterChart: ResearchPlotScatterChartState;
   studySummary: ResearchPlotWorkspaceField[];
   legendItems: ResearchPlotLegendItem[];
   focusPoint: ResearchPlotFocusPointState;
@@ -253,6 +330,7 @@ export interface ResearchPlotStatisticsState {
   description: string;
   summaryTiles: ResearchPlotSummaryTile[];
   distributionBars: number[];
+  distributionChart: ResearchPlotDistributionChartState;
   distributionSummary: string;
   distributionFootnote: string;
   moments: ResearchPlotMomentRow[];
@@ -269,6 +347,85 @@ export interface ResearchPlotScatterPoint {
   x: number;
   y: number;
   emphasis: boolean;
+}
+
+export interface ResearchPlotScatterChartState {
+  ariaLabel: string;
+  titleId: string;
+  descriptionId: string;
+  title: string;
+  description: string;
+  viewBox: string;
+  gridLines: ResearchPlotChartLine[];
+  xTicks: ResearchPlotAxisTick[];
+  yTicks: ResearchPlotAxisTick[];
+  xAxisLabel: string;
+  yAxisLabel: string;
+  trendLine: ResearchPlotTrendLineState;
+  points: ResearchPlotScatterPointMark[];
+  marker: ResearchPlotMarkerState;
+}
+
+export interface ResearchPlotChartLine {
+  id: string;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  stroke: string;
+  strokeWidth: number;
+  opacity?: number;
+  strokeDasharray?: string;
+}
+
+export interface ResearchPlotTrendLineState {
+  points: string;
+  stroke: string;
+  strokeWidth: number;
+  strokeDasharray: string;
+}
+
+export interface ResearchPlotScatterPointMark {
+  id: string;
+  x: number;
+  y: number;
+  radius: number;
+  fill: string;
+  fillOpacity: number;
+  ariaLabel: string;
+}
+
+export interface ResearchPlotMarkerState {
+  x: number;
+  y: number;
+  radius: number;
+  fill: string;
+  stroke: string;
+  strokeWidth: number;
+  labelX: number;
+  labelY: number;
+  labelTextX: number;
+  labelTextY: number;
+  labelWidth: number;
+  labelHeight: number;
+  labelRadius: number;
+  labelFill: string;
+  labelStroke: string;
+  labelText: string;
+  verticalGuide: ResearchPlotChartLine;
+  horizontalGuide: ResearchPlotChartLine;
+}
+
+export interface ResearchPlotDistributionChartState {
+  ariaLabel: string;
+  bars: ResearchPlotDistributionBar[];
+}
+
+export interface ResearchPlotDistributionBar {
+  id: string;
+  heightPercent: number;
+  tone: "selected" | "base";
+  ariaLabel: string;
 }
 
 export interface ResearchPlotWorkspaceField {
@@ -362,6 +519,9 @@ export function useResearchRunLibraryViewModel(
   const [promotionEval, setPromotionEval] = useState<PromotionEvaluationResult | null>(null);
   const [promotionSession, setPromotionSession] = useState<PaperSessionSummary | null>(null);
   const [promoteError, setPromoteError] = useState<string | null>(null);
+  const [promotionInitialCashInput, setPromotionInitialCashInput] = useState("100000");
+  const runScopedCommandRequestId = useRef(0);
+  const promotionRequestId = useRef(0);
 
   const metrics = data?.metrics ?? [];
   const runs = data?.runs ?? [];
@@ -385,7 +545,8 @@ export function useResearchRunLibraryViewModel(
       promoteState,
       promotionEval,
       promotionSession,
-      promoteError
+      promoteError,
+      promotionInitialCashInput
     }),
     [
       actionError,
@@ -405,13 +566,26 @@ export function useResearchRunLibraryViewModel(
       promoteState,
       promotionEval,
       promotionSession,
-      promoteError
+      promoteError,
+      promotionInitialCashInput
     ]
   );
 
   const toggleRun = useCallback((runId: string) => {
+    runScopedCommandRequestId.current += 1;
+    promotionRequestId.current += 1;
     setSelectedIds((current) => toggleRunSelection(current, runId));
+    setComparison([]);
+    setRunDiff(null);
+    setComparisonLoaded(false);
+    setRunDiffLoaded(false);
+    setPromoteState("idle");
+    setPromotionEval(null);
+    setPromotionSession(null);
+    setPromoteError(null);
+    setPromotionInitialCashInput("100000");
     setActionError(null);
+    setActiveCommand((current) => current === "history" ? current : null);
   }, []);
 
   const openRunDetail = useCallback((run: ResearchRunRecord) => {
@@ -462,19 +636,32 @@ export function useResearchRunLibraryViewModel(
       return;
     }
 
+    const requestId = runScopedCommandRequestId.current + 1;
+    runScopedCommandRequestId.current = requestId;
+    const requestedRunIds = [...selectedIds];
     setActiveCommand("compare");
     setActionError(null);
 
     try {
-      const rows = await services.compareRuns(selectedIds);
+      const rows = await services.compareRuns(requestedRunIds);
+      if (runScopedCommandRequestId.current !== requestId) {
+        return;
+      }
+
       setComparison(rows);
       setRunDiff(null);
       setComparisonLoaded(true);
       setRunDiffLoaded(false);
     } catch (err) {
+      if (runScopedCommandRequestId.current !== requestId) {
+        return;
+      }
+
       setActionError(err instanceof Error ? err.message : "Run comparison failed.");
     } finally {
-      setActiveCommand(null);
+      if (runScopedCommandRequestId.current === requestId) {
+        setActiveCommand(null);
+      }
     }
   }, [selectedIds, services]);
 
@@ -484,59 +671,101 @@ export function useResearchRunLibraryViewModel(
       return;
     }
 
+    const requestId = runScopedCommandRequestId.current + 1;
+    runScopedCommandRequestId.current = requestId;
+    const requestedRunIds = [...selectedIds];
     setActiveCommand("diff");
     setActionError(null);
 
     try {
-      const result = await services.diffRuns(selectedIds[0], selectedIds[1]);
+      const result = await services.diffRuns(requestedRunIds[0], requestedRunIds[1]);
+      if (runScopedCommandRequestId.current !== requestId) {
+        return;
+      }
+
       setRunDiff(result);
       setComparison([]);
       setRunDiffLoaded(true);
       setComparisonLoaded(false);
     } catch (err) {
+      if (runScopedCommandRequestId.current !== requestId) {
+        return;
+      }
+
       setActionError(err instanceof Error ? err.message : "Run diff failed.");
     } finally {
-      setActiveCommand(null);
+      if (runScopedCommandRequestId.current === requestId) {
+        setActiveCommand(null);
+      }
     }
   }, [selectedIds, services]);
 
   const promoteSelectedRun = useCallback(async () => {
     const run = state.selectedRuns[0];
     if (!run) return;
+    const requestId = promotionRequestId.current + 1;
+    promotionRequestId.current = requestId;
     setPromoteState("evaluating");
     setPromoteError(null);
     setPromotionEval(null);
     setPromotionSession(null);
+    setPromotionInitialCashInput("100000");
     try {
       const result = await services.evaluatePromotion(run.id);
+      if (promotionRequestId.current !== requestId) {
+        return;
+      }
+
       setPromotionEval(result);
       setPromoteState("evaluated");
     } catch (err) {
+      if (promotionRequestId.current !== requestId) {
+        return;
+      }
+
       setPromoteError(err instanceof Error ? err.message : "Promotion evaluation failed.");
       setPromoteState("idle");
     }
   }, [services, state.selectedRuns]);
 
-  const confirmPromotion = useCallback(async (initialCash: number) => {
+  const confirmPromotion = useCallback(async () => {
     const run = state.selectedRuns[0];
     if (!run || !promotionEval?.isEligible) return;
+    const initialCash = parsePromotionInitialCashInput(promotionInitialCashInput);
+    if (initialCash === null) {
+      setPromoteError("Enter initial cash of at least $1,000 before starting a paper session.");
+      return;
+    }
+
+    const requestId = promotionRequestId.current + 1;
+    promotionRequestId.current = requestId;
     setPromoteState("creating");
     setPromoteError(null);
     try {
       const session = await services.createPaperSession(run.id, run.strategyName, initialCash);
+      if (promotionRequestId.current !== requestId) {
+        return;
+      }
+
       setPromotionSession(session);
       setPromoteState("done");
     } catch (err) {
+      if (promotionRequestId.current !== requestId) {
+        return;
+      }
+
       setPromoteError(err instanceof Error ? err.message : "Paper session creation failed.");
       setPromoteState("evaluated");
     }
-  }, [services, state.selectedRuns, promotionEval]);
+  }, [services, state.selectedRuns, promotionEval, promotionInitialCashInput]);
 
   const cancelPromotion = useCallback(() => {
+    promotionRequestId.current += 1;
     setPromoteState("idle");
     setPromotionEval(null);
     setPromotionSession(null);
     setPromoteError(null);
+    setPromotionInitialCashInput("100000");
   }, []);
 
   return {
@@ -552,7 +781,8 @@ export function useResearchRunLibraryViewModel(
     diffSelectedRuns,
     promoteSelectedRun,
     confirmPromotion,
-    cancelPromotion
+    cancelPromotion,
+    setPromotionInitialCash: setPromotionInitialCashInput
   };
 }
 
@@ -574,7 +804,8 @@ export function buildResearchRunLibraryState({
   promoteState = "idle",
   promotionEval = null,
   promotionSession = null,
-  promoteError = null
+  promoteError = null,
+  promotionInitialCashInput = "100000"
 }: {
   metrics?: MetricSnapshot[];
   runs: ResearchRunRecord[];
@@ -594,6 +825,7 @@ export function buildResearchRunLibraryState({
   promotionEval?: PromotionEvaluationResult | null;
   promotionSession?: PaperSessionSummary | null;
   promoteError?: string | null;
+  promotionInitialCashInput?: string;
 }): ResearchRunLibraryState {
   const selectedRuns = selectedIds
     .map((id) => runs.find((run) => run.id === id))
@@ -604,6 +836,16 @@ export function buildResearchRunLibraryState({
     selectedRuns[0]?.status === "Completed";
   const busy = activeCommand !== null;
   const promoteBusy = promoteState === "evaluating" || promoteState === "creating";
+  const promotionCashForm = buildPromotionCashForm({
+    input: promotionInitialCashInput,
+    eligible: promotionEval?.isEligible === true,
+    promoteState
+  });
+  const promotionPanel = buildPromotionPanelState({
+    promoteState,
+    promotionEval,
+    promotionSession
+  });
   const runTable = buildRunTable(runs);
   const comparisonTable = buildComparisonTable(comparison);
   const diffPanel = buildDiffPanel(runDiff);
@@ -618,6 +860,15 @@ export function buildResearchRunLibraryState({
       runDiff
     }
   );
+  const commandStates = buildResearchCommandStates({
+    selectedRuns,
+    hasTwoRuns,
+    hasOneBacktestRun,
+    busy,
+    activeCommand,
+    promoteState,
+    promoteBusy
+  });
 
   return {
     runs,
@@ -644,27 +895,28 @@ export function buildResearchRunLibraryState({
     canDiff: hasTwoRuns && !busy,
     canLoadPromotionHistory: !busy,
     canPromote: hasOneBacktestRun && !busy && !promoteBusy && promoteState !== "done",
+    promotionHistoryCommand: commandStates.promotionHistory,
+    compareCommand: commandStates.compare,
+    diffCommand: commandStates.diff,
+    promoteCommand: commandStates.promote,
     promoteState,
     promotionEval,
+    promotionPanel,
     promotionSession,
     showPromotePanel: promoteState !== "idle",
     promoteError,
+    promotionCashForm,
     selectionText: buildSelectionText(selectedRuns),
     selectionDetail: hasTwoRuns
       ? "Ready to compare or diff the selected run pair."
       : hasOneBacktestRun
         ? "Select Promote to Paper to evaluate this run for paper trading."
         : "Select two runs to enable compare and diff commands.",
-    compareButtonLabel: activeCommand === "compare" ? "Comparing..." : "Compare 2 runs",
-    diffButtonLabel: activeCommand === "diff" ? "Diffing..." : "Diff 2 runs",
-    promotionHistoryButtonLabel: activeCommand === "history" ? "Loading history..." : "Promotion history",
-    promoteButtonLabel: promoteState === "evaluating"
-      ? "Evaluating…"
-      : promoteState === "creating"
-        ? "Creating session…"
-        : promoteState === "done"
-          ? "Session created"
-          : "Promote to Paper",
+    evidenceAction: buildResearchEvidenceAction(selectedRuns[0] ?? runs[0] ?? null),
+    compareButtonLabel: commandStates.compare.label,
+    diffButtonLabel: commandStates.diff.label,
+    promotionHistoryButtonLabel: commandStates.promotionHistory.label,
+    promoteButtonLabel: commandStates.promote.label,
     statusAnnouncement: buildResearchStatusAnnouncement({
       activeCommand,
       actionError,
@@ -676,6 +928,219 @@ export function buildResearchRunLibraryState({
       promotionHistoryLoaded
     })
   };
+}
+
+export function buildPromotionPanelState({
+  promoteState,
+  promotionEval,
+  promotionSession
+}: {
+  promoteState: PromoteState;
+  promotionEval: PromotionEvaluationResult | null;
+  promotionSession: PaperSessionSummary | null;
+}): ResearchPromotionPanelState {
+  const evaluation = promotionEval ? buildPromotionEvaluationState(promotionEval) : null;
+  const sessionCreated = promoteState === "done" && promotionSession
+    ? {
+      title: `Paper session created - session ${promotionSession.sessionId}`,
+      sessionId: promotionSession.sessionId,
+      detail: `${promotionSession.strategyName ?? "Selected strategy"} is active with ${formatMoney(promotionSession.initialCash)} paper capital.`,
+      actionLabel: "Go to Trading cockpit",
+      actionAriaLabel: `Go to Trading cockpit for paper session ${promotionSession.sessionId}`,
+      actionHref: workspacePath("trading")
+    }
+    : null;
+
+  return {
+    panelLabel: "Promotion evaluation",
+    statusRole: evaluation?.titleTone === "danger" ? "alert" : "status",
+    statusLive: evaluation?.titleTone === "danger" ? "assertive" : "polite",
+    evaluation,
+    sessionCreated,
+    showCashForm: promoteState === "evaluated" && promotionEval?.isEligible === true,
+    showIneligibleDismiss: promoteState === "evaluated" && promotionEval?.isEligible === false
+  };
+}
+
+export function buildResearchCommandStates({
+  selectedRuns,
+  hasTwoRuns,
+  hasOneBacktestRun,
+  busy,
+  activeCommand,
+  promoteState,
+  promoteBusy
+}: {
+  selectedRuns: ResearchRunRecord[];
+  hasTwoRuns: boolean;
+  hasOneBacktestRun: boolean;
+  busy: boolean;
+  activeCommand: ResearchCommand | null;
+  promoteState: PromoteState;
+  promoteBusy: boolean;
+}): {
+  promotionHistory: ResearchCommandState;
+  compare: ResearchCommandState;
+  diff: ResearchCommandState;
+  promote: ResearchCommandState;
+} {
+  const pairLabel = selectedRuns.length === 2
+    ? `${formatText(selectedRuns[0].strategyName)} and ${formatText(selectedRuns[1].strategyName)}`
+    : null;
+  const selectedRun = selectedRuns[0] ?? null;
+  const pairDisabledReason = busy
+    ? "Wait for the current Strategy command to finish."
+    : hasTwoRuns
+      ? null
+      : `Select exactly two runs before using this command. ${selectedRuns.length} selected.`;
+  const promoteLabel = promoteState === "evaluating"
+    ? "Evaluating..."
+    : promoteState === "creating"
+      ? "Creating session..."
+      : promoteState === "done"
+        ? "Session created"
+        : "Promote to Paper";
+  const promoteDisabledReason = busy
+    ? "Wait for the current Strategy command to finish."
+    : promoteBusy
+      ? "Paper-promotion workflow is already running."
+      : promoteState === "done"
+        ? "A paper session was already created for this promotion."
+        : hasOneBacktestRun
+          ? null
+          : selectedRuns.length === 1
+            ? "Select one completed backtest run before promoting to paper."
+            : `Select one completed backtest run before promoting to paper. ${selectedRuns.length} selected.`;
+
+  return {
+    promotionHistory: {
+      label: activeCommand === "history" ? "Loading history..." : "Promotion history",
+      ariaLabel: activeCommand === "history" ? "Promotion history: loading" : "Promotion history",
+      disabled: busy,
+      disabledReason: busy ? "Wait for the current Strategy command to finish." : null,
+      busy: activeCommand === "history"
+    },
+    compare: {
+      label: activeCommand === "compare" ? "Comparing..." : "Compare 2 runs",
+      ariaLabel: activeCommand === "compare"
+        ? `Comparing selected runs: ${pairLabel ?? "current selection"}`
+        : pairLabel
+          ? `Compare 2 runs: ${pairLabel}`
+          : "Compare 2 runs unavailable",
+      disabled: !hasTwoRuns || busy,
+      disabledReason: pairDisabledReason,
+      busy: activeCommand === "compare"
+    },
+    diff: {
+      label: activeCommand === "diff" ? "Diffing..." : "Diff 2 runs",
+      ariaLabel: activeCommand === "diff"
+        ? `Diffing selected runs: ${pairLabel ?? "current selection"}`
+        : pairLabel
+          ? `Diff 2 runs: ${pairLabel}`
+          : "Diff 2 runs unavailable",
+      disabled: !hasTwoRuns || busy,
+      disabledReason: pairDisabledReason,
+      busy: activeCommand === "diff"
+    },
+    promote: {
+      label: promoteLabel,
+      ariaLabel: selectedRun
+        ? `${promoteLabel}: evaluate ${formatText(selectedRun.strategyName)} for paper trading`
+        : `${promoteLabel} unavailable`,
+      disabled: !hasOneBacktestRun || busy || promoteBusy || promoteState === "done",
+      disabledReason: promoteDisabledReason,
+      busy: promoteBusy
+    }
+  };
+}
+
+function formatDecimal(value: number | null | undefined, digits: number): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "Unavailable";
+  }
+
+  return value.toFixed(digits);
+}
+
+function formatPercent(value: number | null | undefined, digits: number): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "Unavailable";
+  }
+
+  return `${(value * 100).toFixed(digits)}%`;
+}
+
+export function buildPromotionEvaluationState(
+  promotionEval: PromotionEvaluationResult
+): ResearchPromotionEvaluationState {
+  const title = promotionEval.isEligible ? "Eligible for paper trading" : "Not eligible";
+  const blockingReasons = (promotionEval.blockingReasons ?? [])
+    .filter((reason) => reason.trim().length > 0)
+    .map((reason, index) => ({
+      id: `${promotionEval.runId}-blocker-${index}`,
+      text: reason
+    }));
+
+  return {
+    title,
+    titleTone: promotionEval.isEligible ? "success" : "danger",
+    reason: promotionEval.reason.trim() || "Promotion evaluation returned no reason.",
+    metricRows: [
+      { id: "sharpe", label: "Sharpe", value: formatDecimal(promotionEval.sharpeRatio, 2) },
+      { id: "drawdown", label: "Max DD", value: formatPercent(promotionEval.maxDrawdownPercent, 1) },
+      { id: "return", label: "Return", value: formatPercent(promotionEval.totalReturn, 1) }
+    ],
+    blockingReasons,
+    hasBlockingReasons: blockingReasons.length > 0,
+    blockingListLabel: `${title} blocking reasons`
+  };
+}
+
+export function buildPromotionCashForm({
+  input,
+  eligible,
+  promoteState
+}: {
+  input: string;
+  eligible: boolean;
+  promoteState: PromoteState;
+}): ResearchPromotionCashFormState {
+  const normalizedInput = input.trim();
+  const parsed = parsePromotionInitialCashInput(input);
+  const isCreating = promoteState === "creating";
+  const shouldValidate = eligible && promoteState === "evaluated";
+  const errorText = shouldValidate && normalizedInput.length > 0 && parsed === null
+    ? "Enter at least $1,000 in whole dollars."
+    : null;
+  const helpText = errorText ?? "Minimum $1,000. Use whole-dollar paper capital.";
+
+  return {
+    inputId: "promote-initial-cash",
+    label: "Initial cash ($)",
+    value: input,
+    min: 1000,
+    step: 1000,
+    helpText,
+    errorText,
+    describedBy: "promote-initial-cash-help",
+    canSubmit: eligible && promoteState === "evaluated" && parsed !== null && !isCreating,
+    submitLabel: isCreating ? "Starting paper session..." : "Start paper session",
+    submitAriaLabel: "Start paper session from selected strategy run"
+  };
+}
+
+export function parsePromotionInitialCashInput(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed) || parsed < 1000 || !Number.isInteger(parsed)) {
+    return null;
+  }
+
+  return parsed;
 }
 
 export function buildPlotToolTabs(activeView: ResearchPlotToolView): ResearchPlotToolTab[] {
@@ -763,10 +1228,13 @@ function buildPlotToolStateFromApiOrFallback(
   }
 ): ResearchPlotToolState {
   if (plotToolFromApi?.workspace && plotToolFromApi.statistics) {
+    const workspace = plotToolFromApi.workspace as ResearchPlotWorkspaceState;
+    const statistics = plotToolFromApi.statistics as ResearchPlotStatisticsState;
+
     return {
       studies: (plotToolFromApi.studies as ResearchPlotStudyItem[]) ?? [],
-      workspace: plotToolFromApi.workspace as ResearchPlotWorkspaceState,
-      statistics: plotToolFromApi.statistics as ResearchPlotStatisticsState
+      workspace: ensurePlotToolWorkspaceChartState(workspace),
+      statistics: ensurePlotToolStatisticsChartState(statistics)
     };
   }
 
@@ -811,6 +1279,14 @@ export function buildPlotToolState({
   const chartStudyLabel = companionName ? `${studyName} vs ${companionName}` : studyName;
   const latestObservation = plotToolSampleRows[0];
   const focusPoint = findLastPlotPoint(plotToolScatterPoints, (point) => point.emphasis) ?? plotToolScatterPoints[plotToolScatterPoints.length - 1];
+  const xAxisLabel = "Spread (bps)";
+  const yAxisLabel = "3m implied vol";
+  const focusPointState: ResearchPlotFocusPointState = {
+    label: "Current marker",
+    xValueText: latestObservation.spreadText,
+    yValueText: latestObservation.impliedVolText,
+    detail: `${latestObservation.signalText} · highlighted at ${formatText(activeRun?.lastUpdated ?? "2m ago")} · x ${focusPoint.x}, y ${focusPoint.y}`
+  };
 
   return {
     studies: runs.map((run, index) => ({
@@ -844,11 +1320,21 @@ export function buildPlotToolState({
         `R² ${rSquared.toFixed(2)}`,
         `ρ ${correlation.toFixed(2)}`
       ],
-      xAxisLabel: "Spread (bps)",
-      yAxisLabel: "3m implied vol",
+      xAxisLabel,
+      yAxisLabel,
       xTicks: plotToolXTicks,
       yTicks: plotToolYTicks,
       points: plotToolScatterPoints,
+      scatterChart: buildPlotToolScatterChartState({
+        points: plotToolScatterPoints,
+        xTicks: plotToolXTicks,
+        yTicks: plotToolYTicks,
+        xAxisLabel,
+        yAxisLabel,
+        markerPoint: focusPoint,
+        focusPoint: focusPointState,
+        chartStudyLabel
+      }),
       studySummary: [
         { id: "primary", label: "Primary notebook", value: studyName },
         { id: "companion", label: "Pair target", value: companionName ?? "Select a second run" },
@@ -863,12 +1349,7 @@ export function buildPlotToolState({
         { id: "trend", label: "OLS fit", detail: "y = 0.48x + 39.31", tone: "trend" },
         { id: "refresh", label: "Refresh", detail: formatText(activeRun?.lastUpdated ?? "2m ago"), tone: "muted" }
       ],
-      focusPoint: {
-        label: "Current marker",
-        xValueText: latestObservation.spreadText,
-        yValueText: latestObservation.impliedVolText,
-        detail: `${latestObservation.signalText} · highlighted at ${formatText(activeRun?.lastUpdated ?? "2m ago")} · x ${focusPoint.x}, y ${focusPoint.y}`
-      },
+      focusPoint: focusPointState,
       signalCards: [
         {
           id: "correlation",
@@ -980,6 +1461,7 @@ export function buildPlotToolState({
         }
       ],
       distributionBars: plotToolDistributionBars,
+      distributionChart: buildPlotToolDistributionChartState(plotToolDistributionBars),
       distributionSummary: `${observationCount.toLocaleString()} samples centered on spread ${meanX.toFixed(2)} and IV ${meanY.toFixed(2)}.`,
       distributionFootnote: `Latest observation ${latestObservation.timestamp} · ${latestObservation.signalText} · z-score ${latestObservation.zScoreText}.`,
       moments: [
@@ -1218,6 +1700,18 @@ export function buildRunDetail(run: ResearchRunRecord): ResearchRunDetailState {
   };
 }
 
+function buildResearchEvidenceAction(run: ResearchRunRecord | null): ResearchEvidenceAction | null {
+  if (!run) {
+    return null;
+  }
+
+  return {
+    label: "Evidence packet",
+    href: evidenceWorkbenchPath("strategy-run", run.id),
+    ariaLabel: `Open ${run.strategyName} evidence packet`
+  };
+}
+
 export function toggleRunSelection(currentIds: string[], runId: string): string[] {
   if (currentIds.includes(runId)) {
     return currentIds.filter((id) => id !== runId);
@@ -1362,6 +1856,183 @@ function buildComparisonEvidenceText(row: RunComparisonRow): string {
   const ledgerText = row.hasLedger ? "Ledger linked" : "Ledger missing";
   const auditText = row.hasAuditTrail ? "Audit linked" : "Audit missing";
   return `${ledgerText}; ${auditText}`;
+}
+
+function ensurePlotToolWorkspaceChartState(workspace: ResearchPlotWorkspaceState): ResearchPlotWorkspaceState {
+  if (workspace.scatterChart) {
+    return workspace;
+  }
+
+  const points = workspace.points?.length ? workspace.points : plotToolScatterPoints;
+  const markerPoint = findLastPlotPoint(points, (point) => point.emphasis) ?? points[points.length - 1] ?? plotToolScatterPoints[0];
+  const focusPoint = workspace.focusPoint ?? {
+    label: "Current marker",
+    xValueText: "Unavailable",
+    yValueText: "Unavailable",
+    detail: `Selected PlotTool marker at x ${markerPoint.x}, y ${markerPoint.y}.`
+  };
+
+  return {
+    ...workspace,
+    xTicks: workspace.xTicks ?? plotToolXTicks,
+    yTicks: workspace.yTicks ?? plotToolYTicks,
+    xAxisLabel: workspace.xAxisLabel ?? "Spread (bps)",
+    yAxisLabel: workspace.yAxisLabel ?? "3m implied vol",
+    points,
+    focusPoint,
+    scatterChart: buildPlotToolScatterChartState({
+      points,
+      xTicks: workspace.xTicks ?? plotToolXTicks,
+      yTicks: workspace.yTicks ?? plotToolYTicks,
+      xAxisLabel: workspace.xAxisLabel ?? "Spread (bps)",
+      yAxisLabel: workspace.yAxisLabel ?? "3m implied vol",
+      markerPoint,
+      focusPoint,
+      chartStudyLabel: workspace.title ?? "PlotTool"
+    })
+  };
+}
+
+function ensurePlotToolStatisticsChartState(statistics: ResearchPlotStatisticsState): ResearchPlotStatisticsState {
+  if (statistics.distributionChart) {
+    return statistics;
+  }
+
+  const distributionBars = statistics.distributionBars?.length ? statistics.distributionBars : plotToolDistributionBars;
+
+  return {
+    ...statistics,
+    distributionBars,
+    distributionChart: buildPlotToolDistributionChartState(distributionBars)
+  };
+}
+
+function buildPlotToolScatterChartState({
+  points,
+  xTicks,
+  yTicks,
+  xAxisLabel,
+  yAxisLabel,
+  markerPoint,
+  focusPoint,
+  chartStudyLabel
+}: {
+  points: ResearchPlotScatterPoint[];
+  xTicks: ResearchPlotAxisTick[];
+  yTicks: ResearchPlotAxisTick[];
+  xAxisLabel: string;
+  yAxisLabel: string;
+  markerPoint: ResearchPlotScatterPoint;
+  focusPoint: ResearchPlotFocusPointState;
+  chartStudyLabel: string;
+}): ResearchPlotScatterChartState {
+  const labelX = Math.min(markerPoint.x + 10, 512);
+  const labelY = Math.max(markerPoint.y - 26, 52);
+  const labelText = `${focusPoint.xValueText}, ${focusPoint.yValueText}`;
+
+  return {
+    ariaLabel: `${chartStudyLabel} PlotTool scatter chart. Current marker ${labelText}.`,
+    titleId: "plottool-scatter-title",
+    descriptionId: "plottool-scatter-description",
+    title: `${chartStudyLabel} scatter`,
+    description: `${xAxisLabel} against ${yAxisLabel}. ${focusPoint.detail}`,
+    viewBox: "0 0 640 320",
+    gridLines: buildPlotToolGridLines(),
+    xTicks,
+    yTicks,
+    xAxisLabel,
+    yAxisLabel,
+    trendLine: {
+      points: "90,250 150,222 210,198 270,170 330,142 390,114 450,88 510,66 564,54",
+      stroke: "var(--chart-up)",
+      strokeWidth: 2,
+      strokeDasharray: "5 4"
+    },
+    points: points.map((point, index) => ({
+      id: `plot-point-${index}`,
+      x: point.x,
+      y: point.y,
+      radius: point.emphasis ? 5 : 3.25,
+      fill: point.emphasis ? "var(--chart-up)" : "var(--chart-ma20)",
+      fillOpacity: point.emphasis ? 0.95 : 0.65,
+      ariaLabel: `${point.emphasis ? "Emphasized" : "History"} observation ${index + 1}, x ${point.x}, y ${point.y}`
+    })),
+    marker: {
+      x: markerPoint.x,
+      y: markerPoint.y,
+      radius: 6,
+      fill: "var(--state-warn-fg)",
+      stroke: "var(--surface-topbar)",
+      strokeWidth: 2,
+      labelX,
+      labelY,
+      labelTextX: labelX + 8,
+      labelTextY: labelY + 14,
+      labelWidth: 96,
+      labelHeight: 22,
+      labelRadius: 4,
+      labelFill: "var(--surface-input)",
+      labelStroke: "var(--state-warn-fg)",
+      labelText,
+      verticalGuide: {
+        id: "current-marker-x",
+        x1: markerPoint.x,
+        y1: 40,
+        x2: markerPoint.x,
+        y2: 290,
+        stroke: "var(--state-warn-fg)",
+        strokeWidth: 1,
+        strokeDasharray: "4 4",
+        opacity: 0.55
+      },
+      horizontalGuide: {
+        id: "current-marker-y",
+        x1: 50,
+        y1: markerPoint.y,
+        x2: 610,
+        y2: markerPoint.y,
+        stroke: "var(--state-warn-fg)",
+        strokeWidth: 1,
+        strokeDasharray: "4 4",
+        opacity: 0.55
+      }
+    }
+  };
+}
+
+function buildPlotToolGridLines(): ResearchPlotChartLine[] {
+  const horizontal = [40, 90, 140, 190, 240, 290].map((y) => ({
+    id: `h-${y}`,
+    x1: 50,
+    y1: y,
+    x2: 610,
+    y2: y,
+    stroke: y === 290 ? "var(--chart-grid-major)" : "var(--chart-grid)",
+    strokeWidth: 1
+  }));
+  const vertical = [50, 130, 210, 290, 370, 450, 530, 610].map((x) => ({
+    id: `v-${x}`,
+    x1: x,
+    y1: 40,
+    x2: x,
+    y2: 290,
+    stroke: x === 50 ? "var(--chart-grid-major)" : "var(--chart-grid)",
+    strokeWidth: 1
+  }));
+
+  return [...horizontal, ...vertical];
+}
+
+function buildPlotToolDistributionChartState(bars: number[]): ResearchPlotDistributionChartState {
+  return {
+    ariaLabel: "PlotTool residual distribution chart",
+    bars: bars.map((bar, index) => ({
+      id: `distribution-bar-${index}`,
+      heightPercent: Math.max(bar, 4),
+      tone: index >= 8 && index <= 14 ? "selected" : "base",
+      ariaLabel: `Distribution bucket ${index + 1}: ${bar}% density`
+    }))
+  };
 }
 
 const plotToolXTicks: ResearchPlotAxisTick[] = [

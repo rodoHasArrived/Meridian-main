@@ -1,3 +1,4 @@
+import { act, renderHook, waitFor } from "@testing-library/react";
 import {
   buildExecutionEvidenceState,
   buildPaperSessionCreateRequest,
@@ -25,9 +26,14 @@ import {
   validatePaperSessionForm,
   validateOrderTicketForm,
   validatePromotionApproval,
-  validatePromotionRejection
+  validatePromotionRejection,
+  useTradingConfirmViewModel,
+  useTradingReadinessViewModel,
+  usePromotionGateViewModel,
+  type TradingConfirmServices,
+  type TradingReadinessServices
 } from "@/screens/trading-screen.view-model";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionPortfolioSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingOperatorReadiness, TradingPosition, TradingRiskState, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionPortfolioSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingOperatorReadiness, TradingPosition, TradingRiskState, TradingWorkspaceResponse } from "@/types";
 
 const eligibleEvaluation: PromotionEvaluationResult = {
   runId: "run-1",
@@ -43,6 +49,17 @@ const eligibleEvaluation: PromotionEvaluationResult = {
   found: true,
   ready: true
 };
+
+function createDeferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}
 
 const blockedReadiness: TradingOperatorReadiness = {
   asOf: "2026-04-26T16:05:00Z",
@@ -533,6 +550,7 @@ describe("session replay controls view model", () => {
     expect(ready.statusText).toBe("Ready to replay replay.jsonl.");
     expect(ready.canStart).toBe(true);
     expect(ready.canPause).toBe(false);
+    expect(ready.pauseDisabledReason).toBe("Start a replay before using this control.");
     expect(ready.sectionTitle).toBe("Session replay controls");
     expect(ready.fileSelectLabel).toBe("Replay file");
     expect(ready.fileSelectDescribedBy).toBe("session-replay-status");
@@ -540,6 +558,12 @@ describe("session replay controls view model", () => {
     expect(ready.speedDescribedBy).toBe("session-replay-status session-replay-speed-help");
     expect(ready.seekLabel).toBe("Seek position");
     expect(ready.seekDescribedBy).toBe("session-replay-status session-replay-seek-help");
+    expect(ready.statusPanel).toEqual(expect.objectContaining({
+      role: "status",
+      tone: "success",
+      title: "Replay file selected",
+      detail: "Ready to replay replay.jsonl."
+    }));
     expect(ready.statusAnnouncement).toBe("Replay file replay.jsonl selected.");
 
     const running = buildSessionReplayControlsState({
@@ -553,6 +577,12 @@ describe("session replay controls view model", () => {
     expect(running.canPause).toBe(true);
     expect(running.canSeek).toBe(true);
     expect(running.canApplySpeed).toBe(true);
+    expect(running.statusPanel).toEqual(expect.objectContaining({
+      role: "status",
+      tone: "success",
+      title: "Replay running",
+      detail: "Processed 3/10 events at 30%."
+    }));
     expect(running.statusAnnouncement).toBe("Replay running for rep-1 at 30 percent.");
   });
 
@@ -570,11 +600,22 @@ describe("session replay controls view model", () => {
 
     expect(invalid.speedValidationText).toBe("Enter a replay speed greater than 0.");
     expect(invalid.seekValidationText).toBe("Enter a seek position of 0 ms or greater.");
+    expect(invalid.fileSelectDescribedBy).toBe("session-replay-status session-replay-error");
     expect(invalid.speedDescribedBy).toBe("session-replay-status session-replay-speed-help session-replay-error");
     expect(invalid.seekDescribedBy).toBe("session-replay-status session-replay-seek-help session-replay-error");
     expect(invalid.canStart).toBe(false);
     expect(invalid.canSeek).toBe(false);
     expect(invalid.canApplySpeed).toBe(false);
+    expect(invalid.activeErrorText).toBe("Replay service unavailable.");
+    expect(invalid.statusPanel).toEqual(expect.objectContaining({
+      role: "alert",
+      ariaLive: "assertive",
+      tone: "danger",
+      title: "Replay blocked",
+      detail: "Replay service unavailable."
+    }));
+    expect(invalid.startDisabledReason).toBe("Enter a replay speed greater than 0.");
+    expect(invalid.seekDisabledReason).toBe("Enter a seek position of 0 ms or greater.");
     expect(invalid.statusAnnouncement).toBe("Session replay failed: Replay service unavailable.");
 
     const starting = buildSessionReplayControlsState({
@@ -611,12 +652,23 @@ describe("trading readiness view model", () => {
     expect(state.hasOperatorAttention).toBe(true);
     expect(state.workItemSummaryText).toBe("1 readiness item and 1 warning.");
     expect(state.primaryWorkItemKind).toBe("BrokerageSync");
+    expect(state.evidenceAction).toEqual({
+      label: "Evidence",
+      href: "/reporting/evidence?subjectKind=paper-readiness&subjectId=current",
+      ariaLabel: "Open paper cockpit readiness evidence"
+    });
     expect(state.visibleWorkItems).toEqual([
       expect.objectContaining({
         workItemId: "brokerage-sync-failed-fund-1",
         kind: "BrokerageSync",
         label: "Brokerage sync failed",
         metadataText: "Trading · AccountPortfolio",
+        action: {
+          label: "Fix provider setup",
+          href: "/settings#alpaca-provider-setup",
+          ariaLabel: "Open provider setup for Brokerage sync failed",
+          detail: "Review provider credentials and connection status in Settings."
+        },
         ariaLabel: "Critical readiness item. Brokerage sync failed. Sync broker credentials before paper operation. Trading · AccountPortfolio"
       })
     ]);
@@ -660,7 +712,13 @@ describe("trading readiness view model", () => {
     expect(state.workItemOverflowLabel).toBe("2 more readiness items in the Operator Readiness Console.");
     expect(state.visibleWorkItems[0]).toMatchObject({
       workItemId: "work-1",
-      metadataText: "Trading · RunRisk · run-1 · audit-1"
+      metadataText: "Trading · RunRisk · run-1 · audit-1",
+      action: {
+        label: "Fix provider setup",
+        href: "/settings#alpaca-provider-setup",
+        ariaLabel: "Open provider setup for Work item 1",
+        detail: "Review provider credentials and connection status in Settings."
+      }
     });
     expect(state.visibleWarnings.map((warning) => warning.text)).toEqual([
       "Warning one.",
@@ -690,6 +748,49 @@ describe("trading readiness view model", () => {
 
     expect(failed.summaryRows).toEqual([]);
     expect(failed.statusAnnouncement).toBe("Trading readiness refresh failed: Network failed.");
+  });
+
+  it("ignores stale readiness refresh results after the initial payload changes", async () => {
+    const staleRefresh = createDeferred<TradingOperatorReadiness | null>();
+    const getTradingReadiness = vi.fn<TradingReadinessServices["getTradingReadiness"]>().mockReturnValue(staleRefresh.promise);
+    const services: TradingReadinessServices = {
+      getTradingReadiness
+    };
+    const nextReadiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      asOf: "2026-04-26T16:10:00Z",
+      overallStatus: "ReviewRequired"
+    };
+    const { result, rerender } = renderHook(
+      ({ initialReadiness }) => useTradingReadinessViewModel({ initialReadiness, services }),
+      { initialProps: { initialReadiness: blockedReadiness } }
+    );
+
+    await act(async () => {
+      void result.current.refresh();
+    });
+
+    const refreshSignal = getTradingReadiness.mock.calls[0]?.[0]?.signal;
+    expect(refreshSignal?.aborted).toBe(false);
+    expect(result.current.refreshing).toBe(true);
+
+    rerender({ initialReadiness: nextReadiness });
+
+    expect(refreshSignal?.aborted).toBe(true);
+    expect(result.current.refreshing).toBe(false);
+    expect(result.current.readiness?.asOf).toBe("2026-04-26T16:10:00Z");
+
+    await act(async () => {
+      staleRefresh.resolve({
+        ...blockedReadiness,
+        asOf: "2026-04-26T15:55:00Z",
+        overallStatus: "Blocked"
+      });
+      await staleRefresh.promise;
+    });
+
+    expect(result.current.readiness?.asOf).toBe("2026-04-26T16:10:00Z");
+    expect(result.current.statusAnnouncement).toBe("Trading readiness review required as of 2026-04-26T16:10:00Z.");
   });
 
   it("normalizes readiness and brokerage status levels", () => {
@@ -738,12 +839,25 @@ describe("trading confirmation view model", () => {
     expect(state.confirmButtonLabel).toBe("Confirm");
     expect(state.confirmAriaLabel).toBe("Confirm cancel order po-1");
     expect(state.canClose).toBe(true);
-    expect(state.canConfirm).toBe(true);
+    expect(state.canConfirm).toBe(false);
+    expect(state.confirmDisabledReason).toBe("Review and acknowledge the trading action before confirming.");
+    expect(state.acknowledgement).toEqual({
+      id: "trading-confirm-cancel-order-po-1-acknowledgement",
+      label: "I reviewed this trading action",
+      description: "Cancel order PO-1 after reviewing partial-fill risk.",
+      checked: false,
+      disabled: false,
+      disabledReason: null
+    });
     expect(state.statusAnnouncement).toBe("Cancel order PO-1 confirmation open.");
+
+    const acknowledged = buildTradingConfirmDialogState(createTradingConfirmState({ kind: "cancel-order", orderId: "PO-1" }, true));
+    expect(acknowledged.canConfirm).toBe(true);
+    expect(acknowledged.confirmDisabledReason).toBeNull();
   });
 
   it("derives busy and completed states for assistive feedback", () => {
-    const action = { kind: "close-position" as const, symbol: "AAPL" };
+    const action = { kind: "close-position" as const, positionKey: "acct-1:AAPL", symbol: "AAPL" };
     const busy = buildTradingConfirmDialogState({
       ...createTradingConfirmState(action),
       busy: true
@@ -803,6 +917,56 @@ describe("trading confirmation view model", () => {
       tone: "warning",
       ariaLabel: "Action rejected: Strategy already stopped."
     }));
+  });
+
+  it("requires acknowledgement before executing the selected trading action", async () => {
+    const completedResult: TradingActionResult = {
+      actionId: "act-1",
+      status: "Completed",
+      message: "Order cancelled.",
+      occurredAt: "2026-04-26T16:00:00Z"
+    };
+    const services: TradingConfirmServices = {
+      cancelOrder: vi.fn().mockResolvedValue(completedResult),
+      cancelAllOrders: vi.fn(),
+      closePosition: vi.fn(),
+      pauseStrategy: vi.fn(),
+      stopStrategy: vi.fn()
+    };
+    const { result } = renderHook(() => useTradingConfirmViewModel({ services }));
+
+    act(() => {
+      result.current.openConfirm({ kind: "cancel-order", orderId: "PO-1" });
+    });
+
+    expect(result.current.canConfirm).toBe(false);
+    await act(async () => {
+      await result.current.executeConfirm();
+    });
+    expect(services.cancelOrder).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.setReviewAcknowledged(true);
+    });
+    expect(result.current.canConfirm).toBe(true);
+
+    await act(async () => {
+      await result.current.executeConfirm();
+    });
+
+    expect(services.cancelOrder).toHaveBeenCalledWith("PO-1");
+    expect(result.current.resultPanel).toEqual(expect.objectContaining({
+      status: "Completed",
+      message: "Order cancelled."
+    }));
+
+    act(() => {
+      result.current.closeConfirm();
+      result.current.openConfirm({ kind: "cancel-all" });
+    });
+
+    expect(result.current.acknowledgement.checked).toBe(false);
+    expect(result.current.canConfirm).toBe(false);
   });
 });
 
@@ -1068,6 +1232,31 @@ describe("trading promotion gate view model", () => {
 
     expect(ready.canPromote).toBe(true);
     expect(ready.nextActionText).toBe("Promotion trace is ready for confirmation.");
+    expect(ready.fields.runId).toEqual({
+      field: "runId",
+      id: "promotion-run-id",
+      label: "Run id",
+      ariaLabel: "Run id",
+      placeholder: "backtest run id",
+      describedBy: "promotion-run-help promotion-action-state",
+      helpText: "Evaluate this run before writing a promotion decision.",
+      helpId: "promotion-run-help",
+      required: false
+    });
+    expect(ready.fields.approvalReason).toMatchObject({
+      field: "approvalReason",
+      id: "promotion-approval-reason",
+      label: "Approval reason",
+      placeholder: "why this promotion is approved",
+      describedBy: "promotion-action-state",
+      required: true
+    });
+    expect(ready.fields.manualOverrideId).toMatchObject({
+      label: "Manual override id",
+      placeholder: "optional manual override id",
+      describedBy: null,
+      required: false
+    });
     expect(validatePromotionApproval(ready.form, eligibleEvaluation)).toBeNull();
   });
 
@@ -1120,6 +1309,72 @@ describe("trading promotion gate view model", () => {
       reviewNotes: undefined,
       manualOverrideId: "override-9"
     });
+  });
+
+  it("does not authorize a selected run with stale promotion evaluation", () => {
+    const form = {
+      ...emptyPromotionGateForm,
+      runId: "run-2",
+      approvedBy: "operator-7",
+      approvalReason: "Meets risk constraints"
+    };
+
+    const staleState = buildPromotionGateState({
+      form,
+      busy: false,
+      phase: "idle",
+      errorText: null,
+      outcome: null,
+      evaluation: eligibleEvaluation,
+      history: []
+    });
+
+    expect(staleState.evaluation).toBeNull();
+    expect(staleState.canPromote).toBe(false);
+    expect(validatePromotionApproval(form, eligibleEvaluation)).toBe(
+      "Evaluate gate checks for run-2 before confirming promotion."
+    );
+  });
+
+  it("ignores stale promotion evaluation when the selected run changes before the response settles", async () => {
+    const deferred = createDeferred<PromotionEvaluationResult>();
+    const services = {
+      evaluatePromotion: vi.fn(() => deferred.promise),
+      approvePromotion: vi.fn(),
+      rejectPromotion: vi.fn(),
+      getPromotionHistory: vi.fn().mockResolvedValue([])
+    };
+
+    const { result } = renderHook(() => usePromotionGateViewModel(services));
+    await waitFor(() => expect(services.getPromotionHistory).toHaveBeenCalledTimes(1));
+
+    act(() => {
+      result.current.updateField("runId", "run-1");
+    });
+
+    let request: Promise<void> | undefined;
+    act(() => {
+      request = result.current.evaluateGateChecks();
+    });
+
+    expect(result.current.busy).toBe(true);
+    expect(result.current.evaluateButtonLabel).toBe("Evaluating...");
+
+    act(() => {
+      result.current.updateField("runId", "run-2");
+    });
+
+    expect(result.current.busy).toBe(false);
+    expect(result.current.form.runId).toBe("run-2");
+
+    await act(async () => {
+      deferred.resolve(eligibleEvaluation);
+      await request;
+    });
+
+    expect(result.current.evaluation).toBeNull();
+    expect(result.current.canPromote).toBe(false);
+    expect(result.current.nextActionText).toBe("Evaluate gate checks before approving or rejecting this run.");
   });
 
   it("announces busy and error states for assistive technology", () => {
@@ -1250,7 +1505,7 @@ describe("trading promotion gate view model", () => {
         phase: "idle",
         errorText: null,
         outcome: null,
-        evaluation: eligibleEvaluation,
+        evaluation: { ...eligibleEvaluation, runId: "run-from-session-001" },
         history: []
       });
 

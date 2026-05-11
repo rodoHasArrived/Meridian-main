@@ -1,21 +1,29 @@
 import type { KeyboardEvent } from "react";
-import { BriefcaseBusiness, LineChart, Wallet } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { BriefcaseBusiness, LineChart, Network, Settings, Wallet } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { cn } from "@/lib/utils";
-import { usePortfolioScreenViewModel } from "@/screens/portfolio-screen.view-model";
+import {
+  resolveBrokerageAccountFilterKeyCommand,
+  type PortfolioBrokeragePositionRow,
+  usePortfolioScreenViewModel
+} from "@/screens/portfolio-screen.view-model";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   GovernanceWorkspaceResponse,
+  PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
   TradingWorkspaceResponse
 } from "@/types";
 
 interface PortfolioScreenProps {
+  portfolio?: PortfolioWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
   research: ResearchWorkspaceResponse | null;
   governance: GovernanceWorkspaceResponse | null;
@@ -44,40 +52,65 @@ const cashFlowBorderClass = {
   danger: "border-danger/30"
 } as const;
 
-function handleBrokerageAccountFilterKeyDown(
-  event: KeyboardEvent<HTMLDivElement>,
-  selectAdjacentBrokerageAccount: (direction: "next" | "previous" | "first" | "last") => void
-) {
-  const direction = accountFilterKeyDirection(event.key);
-  if (!direction) {
-    return;
+const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionRow>[] = [
+  {
+    id: "account",
+    label: "Account",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.accountKind}</span>
+        <span className="block truncate text-xs text-muted-foreground">{row.accountLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "symbol",
+    label: "Symbol",
+    render: (row) => <span className="font-mono font-semibold text-foreground">{row.symbol}</span>
+  },
+  {
+    id: "quantity",
+    label: "Qty",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.quantity}</span>
+  },
+  {
+    id: "average",
+    label: "Avg",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.averagePrice}</span>
+  },
+  {
+    id: "mark",
+    label: "Mark",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.markPrice}</span>
+  },
+  {
+    id: "market-value",
+    label: "Market value",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.marketValue}</span>
+  },
+  {
+    id: "unrealized-pnl",
+    label: "Unrealized P&L",
+    align: "right",
+    render: (row) => <span className={cn("font-mono font-semibold", pnlToneClass[row.pnlTone])}>{row.unrealizedPnl}</span>
+  },
+  {
+    id: "coverage",
+    label: "Coverage",
+    render: (row) => (
+      <Badge variant={row.securityCoverage === "Covered" ? "success" : "warning"}>
+        {row.securityCoverage}
+      </Badge>
+    )
   }
-
-  event.preventDefault();
-  selectAdjacentBrokerageAccount(direction);
-}
-
-function accountFilterKeyDirection(key: string): "next" | "previous" | "first" | "last" | null {
-  if (key === "ArrowRight" || key === "ArrowDown") {
-    return "next";
-  }
-
-  if (key === "ArrowLeft" || key === "ArrowUp") {
-    return "previous";
-  }
-
-  if (key === "Home") {
-    return "first";
-  }
-
-  if (key === "End") {
-    return "last";
-  }
-
-  return null;
-}
+];
 
 export function PortfolioScreen({
+  portfolio,
   trading,
   research,
   governance,
@@ -85,7 +118,10 @@ export function PortfolioScreen({
   brokeragePortfolio
 }: PortfolioScreenProps) {
   const location = useLocation();
+  const brokerageAccountButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const shouldFocusBrokerageAccount = useRef(false);
   const vm = usePortfolioScreenViewModel({
+    portfolio,
     trading,
     research,
     governance,
@@ -93,6 +129,26 @@ export function PortfolioScreen({
     brokeragePortfolio,
     pathname: location.pathname
   });
+
+  useEffect(() => {
+    if (!shouldFocusBrokerageAccount.current) {
+      return;
+    }
+
+    shouldFocusBrokerageAccount.current = false;
+    brokerageAccountButtonRefs.current[vm.selectedBrokerageAccountKey]?.focus();
+  }, [vm.selectedBrokerageAccountKey]);
+
+  function handleBrokerageAccountFilterKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const command = resolveBrokerageAccountFilterKeyCommand(event.key);
+    if (!command) {
+      return;
+    }
+
+    event.preventDefault();
+    shouldFocusBrokerageAccount.current = true;
+    vm.selectAdjacentBrokerageAccount(command);
+  }
 
   return (
     <div className="space-y-8">
@@ -197,20 +253,63 @@ export function PortfolioScreen({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          <section
+            role="region"
+            aria-label={vm.brokerageTrustSnapshot.regionLabel}
+            className={cn("rounded-lg border bg-secondary/15 px-4 py-3", cashFlowBorderClass[vm.brokerageTrustSnapshot.statusTone])}
+          >
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <div className="eyebrow-label">Sync trust</div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <h3 className="text-base font-semibold text-foreground">{vm.brokerageTrustSnapshot.title}</h3>
+                  <Badge variant={workflowStatusVariant(vm.brokerageTrustSnapshot.statusTone)}>
+                    {vm.brokerageTrustSnapshot.statusLabel}
+                  </Badge>
+                </div>
+                <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">
+                  {vm.brokerageTrustSnapshot.summary}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                {vm.brokerageTrustSnapshot.chips.map((chip) => (
+                  <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
+                ))}
+              </div>
+            </div>
+            <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {vm.brokerageTrustSnapshot.fields.map((field) => (
+                <div
+                  key={field.label}
+                  className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/20 px-3 py-2"
+                >
+                  <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                  <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
+                    {field.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+
           <div
             className="flex flex-wrap items-center gap-2"
             role="group"
             aria-label={vm.brokerageAccountFilterLabel}
-            onKeyDown={(event) => handleBrokerageAccountFilterKeyDown(event, vm.selectAdjacentBrokerageAccount)}
+            onKeyDown={handleBrokerageAccountFilterKeyDown}
           >
             {vm.brokerageAccountOptions.map((option) => (
               <Button
                 key={option.key}
+                ref={(node) => {
+                  brokerageAccountButtonRefs.current[option.key] = node;
+                }}
                 type="button"
                 size="sm"
                 variant={option.isSelected ? "secondary" : "outline"}
                 aria-pressed={option.isSelected}
                 aria-label={option.ariaLabel}
+                tabIndex={option.tabIndex}
                 onClick={() => vm.selectBrokerageAccount(option.key)}
               >
                 {option.label}
@@ -274,50 +373,86 @@ export function PortfolioScreen({
           ) : null}
 
           {vm.hasBrokeragePositions ? (
-            <div className="data-grid-surface overflow-x-auto">
-              <table
-                className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm"
-                aria-label={vm.brokeragePositionsTableLabel}
+            <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+              <DenseDataTable
+                columns={brokeragePositionColumns}
+                rows={vm.brokeragePositionRows}
+                getRowId={(row) => row.id}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                getRowAriaControls={(row) => row.detailPanelId}
+                getRowAriaExpanded={(row) => row.expanded}
+                onRowSelect={(row) => vm.selectBrokeragePosition(row.id)}
+                selectedRowId={vm.selectedBrokeragePositionId}
+                emptyText={vm.brokerageEmptyText}
+                ariaLabel={vm.brokeragePositionsTableLabel}
+                caption="Select a brokerage position row to update the live brokerage position inspector."
+              />
+              <aside
+                id={vm.brokeragePositionDetailId}
+                role="complementary"
+                aria-live="polite"
+                aria-label={vm.selectedBrokeragePosition?.ariaLabel ?? "Brokerage position detail"}
+                className={cn(
+                  "panel-surface h-fit min-w-0 overflow-hidden p-4",
+                  vm.selectedBrokeragePosition
+                    ? cashFlowBorderClass[vm.selectedBrokeragePosition.statusTone]
+                    : "border-border/70"
+                )}
               >
-                <thead className="bg-secondary/30">
-                  <tr>
-                    {["Account", "Symbol", "Qty", "Avg", "Mark", "Market value", "Unrealized P&L", "Coverage"].map((col) => (
-                      <th
-                        key={col}
-                        className={cn(
-                          "px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground",
-                          ["Qty", "Avg", "Mark", "Market value", "Unrealized P&L"].includes(col) ? "text-right" : ""
-                        )}
-                      >
-                        {col}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {vm.brokeragePositionRows.map((row) => (
-                    <tr key={row.id} aria-label={row.ariaLabel} className="bg-background/20">
-                      <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{row.accountKind}</div>
-                        <div className="text-xs text-muted-foreground">{row.accountLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 font-mono font-semibold text-foreground">{row.symbol}</td>
-                      <td className="px-3 py-2 text-right font-mono text-foreground">{row.quantity}</td>
-                      <td className="px-3 py-2 text-right font-mono text-foreground">{row.averagePrice}</td>
-                      <td className="px-3 py-2 text-right font-mono text-foreground">{row.markPrice}</td>
-                      <td className="px-3 py-2 text-right font-mono text-foreground">{row.marketValue}</td>
-                      <td className={cn("px-3 py-2 text-right font-mono font-semibold", pnlToneClass[row.pnlTone])}>
-                        {row.unrealizedPnl}
-                      </td>
-                      <td className="px-3 py-2 text-muted-foreground">{row.securityCoverage}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                {vm.selectedBrokeragePosition ? (
+                  <>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="eyebrow-label">{vm.selectedBrokeragePosition.statusTitle}</div>
+                        <h3 className="mt-2 text-base font-semibold text-foreground">{vm.selectedBrokeragePosition.title}</h3>
+                        <p className="mt-1 break-words font-mono text-xs text-muted-foreground">
+                          {vm.selectedBrokeragePosition.subtitle}
+                        </p>
+                      </div>
+                      <Badge variant={vm.selectedBrokeragePosition.statusBadgeVariant}>
+                        {vm.selectedBrokeragePosition.statusBadgeLabel}
+                      </Badge>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                      {vm.selectedBrokeragePosition.statusDetail}
+                    </p>
+                    <dl className="mt-4 grid gap-2">
+                      {vm.selectedBrokeragePosition.fields.map((field) => (
+                        <div
+                          key={field.label}
+                          className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
+                        >
+                          <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                          <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
+                            {field.value}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </>
+                ) : (
+                  <div role="status" className="text-sm leading-6 text-muted-foreground">
+                    <div className="eyebrow-label">No brokerage position selected</div>
+                    <p className="mt-2">{vm.brokerageEmptyText}</p>
+                  </div>
+                )}
+              </aside>
             </div>
           ) : (
-            <div role="status" className="rounded-lg border border-border/70 bg-secondary/20 px-4 py-3 text-sm text-muted-foreground">
-              {vm.brokerageEmptyText}
+            <div className="flex flex-col gap-3 rounded-lg border border-border/70 bg-secondary/20 px-4 py-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+              <span role="status">{vm.brokerageEmptyText}</span>
+              {vm.brokerageSetupAction ? (
+                <Button asChild variant="outline" size="sm" className="w-fit bg-background/40">
+                  <Link to={vm.brokerageSetupAction.href} aria-label={vm.brokerageSetupAction.ariaLabel}>
+                    <Settings className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>{vm.brokerageSetupAction.label}</span>
+                  </Link>
+                </Button>
+              ) : null}
+              {vm.brokerageSetupAction ? (
+                <span className="sr-only">{vm.brokerageSetupAction.detail}</span>
+              ) : null}
             </div>
           )}
         </CardContent>
@@ -332,10 +467,7 @@ export function PortfolioScreen({
       ) : (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {vm.fallbackStats.map((stat) => (
-            <div key={stat.label} className="metric-tile">
-              <div className="text-xs text-muted-foreground mb-2 font-mono uppercase tracking-[0.14em]">{stat.label}</div>
-              <p className="text-2xl font-semibold tabular-nums font-mono text-foreground">{stat.value}</p>
-            </div>
+            <MetricCard key={stat.id} {...stat} />
           ))}
         </section>
       )}
@@ -361,9 +493,9 @@ export function PortfolioScreen({
           </CardHeader>
           <CardContent>
             <div className="mb-4 flex flex-wrap items-center gap-2">
-              <PortfolioChip label="Selected detail" value={vm.selectedPosition?.title ?? "None"} />
-              <PortfolioChip label="Execution source" value={trading ? "Trading workspace" : "Unavailable"} />
-              <PortfolioChip label="Run evidence" value={vm.hasRuns ? `${vm.runRows.length} linked run${vm.runRows.length === 1 ? "" : "s"}` : "No linked runs"} />
+              <PortfolioChip label={vm.selectedPositionChip.label} value={vm.selectedPositionChip.value} />
+              <PortfolioChip label="Execution source" value={vm.positionSourceLabel} />
+              <PortfolioChip label={vm.runEvidenceChip.label} value={vm.runEvidenceChip.value} />
             </div>
             {vm.hasPositions ? (
               <div className="data-grid-surface overflow-x-auto">
@@ -482,7 +614,7 @@ export function PortfolioScreen({
             </>
           ) : (
             <div role="status" className="text-sm leading-6 text-muted-foreground">
-              <div className="eyebrow-label">No holding selected</div>
+              <div className="eyebrow-label">{vm.positionDetailEmptyTitle}</div>
               <p className="mt-2">{vm.positionEmptyText}</p>
             </div>
           )}
@@ -503,7 +635,7 @@ export function PortfolioScreen({
             </div>
             <div className="flex flex-wrap items-center justify-end gap-2">
               <PortfolioChip label="Runs" value={vm.runCountLabel} />
-              <PortfolioChip label="Selected run" value={vm.selectedRun?.title ?? "None"} />
+              <PortfolioChip label={vm.selectedRunChip.label} value={vm.selectedRunChip.value} />
             </div>
           </div>
         </CardHeader>
@@ -594,6 +726,14 @@ export function PortfolioScreen({
                       <Badge variant={vm.selectedRun.statusBadgeVariant}>{vm.selectedRun.statusBadgeLabel}</Badge>
                     </div>
                     <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.selectedRun.statusDetail}</p>
+                    <div className="mt-4">
+                      <Button asChild size="sm" variant="outline">
+                        <Link to={vm.selectedRun.evidenceAction.href} aria-label={vm.selectedRun.evidenceAction.ariaLabel}>
+                          <Network className="h-4 w-4" />
+                          {vm.selectedRun.evidenceAction.label}
+                        </Link>
+                      </Button>
+                    </div>
                     <dl className="mt-4 grid gap-2">
                       {vm.selectedRun.fields.map((field) => (
                         <div
@@ -610,7 +750,7 @@ export function PortfolioScreen({
                   </>
                 ) : (
                   <div role="status" className="text-sm leading-6 text-muted-foreground">
-                    <div className="eyebrow-label">No run selected</div>
+                    <div className="eyebrow-label">{vm.runDetailEmptyTitle}</div>
                     <p className="mt-2">{vm.runEmptyText}</p>
                   </div>
                 )}

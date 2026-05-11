@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { QuantLabScreen } from "@/screens/quant-lab-screen";
@@ -46,6 +46,21 @@ const successfulRun: QuantRunResponse = {
   runtimeParameters: []
 };
 
+const noEvidenceSuccessfulRun: QuantRunResponse = {
+  success: true,
+  elapsedMs: 7,
+  compileTimeMs: 18,
+  peakMemoryBytes: 1024 * 8,
+  runtimeError: null,
+  consoleOutput: "",
+  compilationErrors: [],
+  runtimeDiagnostics: [],
+  metrics: [],
+  plots: [],
+  trades: [],
+  runtimeParameters: []
+};
+
 const failedRun: QuantRunResponse = {
   success: false,
   elapsedMs: 0,
@@ -65,6 +80,16 @@ const failedRun: QuantRunResponse = {
 
 const emptyParameters: QuantParametersResponse = { parameters: [] };
 
+function createDeferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+  return { promise, resolve, reject };
+}
+
 describe("QuantLabScreen", () => {
   beforeEach(() => {
     vi.spyOn(api, "getQuantTemplates").mockResolvedValue(templates);
@@ -72,6 +97,7 @@ describe("QuantLabScreen", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -98,12 +124,54 @@ describe("QuantLabScreen", () => {
     await user.click(screen.getByRole("button", { name: /Run script/i }));
 
     await waitFor(() => expect(runSpy).toHaveBeenCalledTimes(1));
-    expect(await screen.findByText(/Run succeeded/i)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /Run succeeded/i })).toBeInTheDocument();
     expect(screen.getByText("answer")).toBeInTheDocument();
     expect(screen.getByText("42")).toBeInTheDocument();
     const consoleBlock = screen.getByText(/Hello from the Quant Lab\./, { selector: "pre" });
     expect(consoleBlock).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Sine" })).toBeInTheDocument();
+  });
+
+  it("labels run evidence when the editor changes before the run completes", async () => {
+    const deferredRun = createDeferred<QuantRunResponse>();
+    vi.spyOn(api, "runQuantScript").mockReturnValue(deferredRun.promise);
+
+    const user = userEvent.setup();
+    renderWithRouter(<QuantLabScreen />);
+    await waitForAsyncEffects();
+
+    const editor = screen.getByLabelText("Script source") as HTMLTextAreaElement;
+    await user.clear(editor);
+    await user.type(editor, "Print(\"submitted\");");
+    await user.click(screen.getByRole("button", { name: /Run script/i }));
+
+    await user.clear(editor);
+    await user.type(editor, "Print(\"edited\");");
+
+    expect(screen.getByText("Editor changed during this run")).toBeInTheDocument();
+
+    await act(async () => {
+      deferredRun.resolve(successfulRun);
+      await Promise.resolve();
+    });
+
+    expect(await screen.findByRole("heading", { name: /Run succeeded for previous source/i })).toBeInTheDocument();
+    expect(screen.getByText("Evidence is for previous source")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Run current edited script source/i })).toHaveTextContent("Run current source");
+  });
+
+  it("renders an actionable empty-evidence state for successful runs with no output", async () => {
+    vi.spyOn(api, "runQuantScript").mockResolvedValue(noEvidenceSuccessfulRun);
+
+    const user = userEvent.setup();
+    renderWithRouter(<QuantLabScreen />);
+    await waitForAsyncEffects();
+
+    await user.click(screen.getByRole("button", { name: /Run script/i }));
+
+    expect(await screen.findByRole("heading", { name: /Run succeeded/i })).toBeInTheDocument();
+    const emptyEvidenceTitle = screen.getByText("Run completed without runtime evidence");
+    expect(emptyEvidenceTitle.closest('[role="status"]')).toHaveTextContent(/Add Print, PrintMetric, or plot calls/i);
   });
 
   it("surfaces compilation errors when the script fails", async () => {
@@ -115,7 +183,7 @@ describe("QuantLabScreen", () => {
 
     await user.click(screen.getByRole("button", { name: /Run script/i }));
 
-    expect(await screen.findByText(/Run finished with errors/i)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /Run finished with errors/i })).toBeInTheDocument();
     expect(screen.getByText(/missing semicolon/i)).toBeInTheDocument();
   });
 
@@ -128,11 +196,11 @@ describe("QuantLabScreen", () => {
 
     await user.click(screen.getByRole("button", { name: /Run script/i }));
 
-    expect(await screen.findByText(/Run failed/i)).toBeInTheDocument();
-    expect(screen.getByText(/Quant Lab is not enabled/i)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /Run failed/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/Quant Lab is not enabled/i).length).toBeGreaterThan(0);
   });
 
-  it("blocks running an empty script", async () => {
+  it("disables running an empty script with a disabled reason", async () => {
     const runSpy = vi.spyOn(api, "runQuantScript");
 
     const user = userEvent.setup();
@@ -141,9 +209,54 @@ describe("QuantLabScreen", () => {
 
     const editor = screen.getByLabelText("Script source") as HTMLTextAreaElement;
     await user.clear(editor);
-    await user.click(screen.getByRole("button", { name: /Run script/i }));
+    const runButton = screen.getByRole("button", { name: /Run script/i });
 
+    expect(runButton).toBeDisabled();
+    expect(runButton).toHaveAttribute("title", "Enter some script source first.");
     expect(runSpy).not.toHaveBeenCalled();
-    expect(await screen.findByText(/Enter some script source first/i)).toBeInTheDocument();
+  });
+
+  it("keeps the parameter panel visible when no runtime parameters are detected", async () => {
+    vi.useFakeTimers();
+    renderWithRouter(<QuantLabScreen />);
+    await waitForAsyncEffects();
+
+    expect(screen.getByRole("heading", { name: "Parameters" })).toBeInTheDocument();
+    expect(screen.getByText("Scanning source for runtime parameters.")).toHaveAttribute("role", "status");
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(650);
+    });
+
+    expect(screen.getByText("No runtime parameters detected in the current script.")).toBeInTheDocument();
+  });
+
+  it("links runtime parameter descriptions to editable controls", async () => {
+    vi.useFakeTimers();
+    vi.mocked(api.extractQuantParameters).mockResolvedValue({
+      parameters: [
+        {
+          name: "lookback",
+          label: "Lookback",
+          typeName: "int",
+          defaultValue: "20",
+          description: "Rolling window length",
+          min: 1,
+          max: 252
+        }
+      ]
+    });
+
+    renderWithRouter(<QuantLabScreen />);
+    await waitForAsyncEffects();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(650);
+    });
+
+    const lookback = screen.getByLabelText("Lookback parameter");
+    expect(lookback).toHaveAttribute("id", "quant-param-lookback");
+    expect(lookback).toHaveAttribute("aria-describedby", "quant-param-lookback-description");
+    expect(screen.getByText("Rolling window length")).toHaveAttribute("id", "quant-param-lookback-description");
   });
 });

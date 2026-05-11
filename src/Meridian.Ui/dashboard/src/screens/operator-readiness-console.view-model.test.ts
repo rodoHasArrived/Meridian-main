@@ -1,6 +1,7 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildOperatorReadinessConsoleState, useOperatorReadinessConsoleViewModel } from "@/screens/operator-readiness-console.view-model";
+import type { ApiRequestOptions } from "@/lib/api";
 import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
@@ -320,6 +321,10 @@ const cleanInbox: OperatorInbox = {
 };
 
 describe("operator readiness console view model", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("builds the API-first readiness console from shared workstation payloads", () => {
     const state = buildOperatorReadinessConsoleState({
       research,
@@ -341,10 +346,31 @@ describe("operator readiness console view model", () => {
     expect(state.promotionRows.some((row) => row.label === "Promotion checklist")).toBe(true);
     expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({ value: "Targets present", level: "ready" }));
     expect(state.apiSources.map((source) => source.endpoint)).toContain("/api/workstation/operator/inbox");
+    expect(state.apiSources.map((source) => source.endpoint)).toEqual(expect.arrayContaining([
+      "/api/workstation/strategy",
+      "/api/workstation/data",
+      "/api/workstation/accounting",
+      "/api/workstation/reporting"
+    ]));
+    expect(state.apiSources.map((source) => source.endpoint)).not.toEqual(expect.arrayContaining([
+      "/api/workstation/research",
+      "/api/workstation/data-operations"
+    ]));
     expect(state.apiSourcesLabel).toBe("Shared readiness API sources");
     expect(state.apiSources[0].ariaLabel).toContain("/api/workstation/trading/readiness");
     expect(state.metricsLabel).toBe("Operator readiness metrics");
-    expect(state.metrics[0].statusAriaLabel).toBe("Latest runs status Ready");
+    expect(state.metrics[0]).toMatchObject({
+      id: "latest-runs",
+      delta: "Ready",
+      tone: "success",
+      detailId: "readiness-metric-latest-runs-detail",
+      statusAriaLabel: "Latest runs status Ready"
+    });
+    expect(state.metrics.find((metric) => metric.id === "provider-trust")).toMatchObject({
+      value: "3/3",
+      delta: "Ready",
+      tone: "success"
+    });
     expect(state.latestRuns[0].ariaLabel).toContain("Index Momentum: Needs Review");
     expect(state.latestRuns[0].detailId).toBe("readiness-row-latest-runs-run-1-detail");
     expect(state.panels.map((panel) => panel.id)).toEqual([
@@ -353,7 +379,7 @@ describe("operator readiness console view model", () => {
       "provider-trust",
       "reconciliation-breaks",
       "promotion-blockers",
-      "governance-report-packs"
+      "reporting-report-packs"
     ]);
     expect(state.panels[0]).toEqual(expect.objectContaining({
       ariaLabel: "Latest runs readiness evidence",
@@ -363,12 +389,32 @@ describe("operator readiness console view model", () => {
     expect(new Set(detailIds).size).toBe(detailIds.length);
     expect(state.workItemsRegionLabel).toBe("Operator inbox review work items");
     expect(state.workItemsListLabel).toBe("Prioritized operator work items");
+    expect(state.workItemsTableLabel).toBe("Prioritized operator work items table");
+    expect(state.workItemsDetailLabel).toBe("Selected operator work item detail");
+    expect(state.selectedWorkItemId).toBe("reconciliation-break-run-1-cash");
+    expect(state.selectedWorkItemDetail).toEqual(expect.objectContaining({
+      title: "Cash break open",
+      statusLabel: "Warning",
+      action: expect.objectContaining({ route: "/accounting/reconciliation" })
+    }));
+    expect(state.nextAction).toEqual(expect.objectContaining({
+      title: "Index Momentum",
+      label: "Open break queue",
+      route: "/accounting/reconciliation",
+      level: "blocked",
+      actionAriaLabel: "Open break queue: Index Momentum"
+    }));
     expect(state.workItems.find((item) => item.id === "promotion-review-run-1")?.action).toEqual({
       label: "Open promotion review",
       route: "/trading/readiness",
       ariaLabel: "Open promotion review: Promotion checklist incomplete",
       variant: "outline"
     });
+    expect(state.panels.find((panel) => panel.id === "reporting-report-packs")).toEqual(expect.objectContaining({
+      title: "Reporting report packs",
+      ariaLabel: "Reporting report packs readiness evidence",
+      listLabel: "Reporting report packs rows"
+    }));
   });
 
   it("derives safe work-item routes and fallback actions in the view model", () => {
@@ -435,12 +481,40 @@ describe("operator readiness console view model", () => {
             workspace: "Reporting",
             targetRoute: "/api/workstation/operator/inbox",
             targetPageTag: "ReportPackApproval"
+          },
+          {
+            workItemId: "workstation-prefixed-brokerage",
+            kind: "BrokerageSync",
+            label: "Brokerage sync route",
+            detail: "Review brokerage sync from a host-served workstation route.",
+            tone: "Warning",
+            createdAt: "2026-04-29T12:06:00Z",
+            runId: null,
+            fundAccountId: "fund-1",
+            auditReference: null,
+            workspace: "Portfolio",
+            targetRoute: "/workstation/portfolio/brokerage-sync?fundAccountId=fund-1",
+            targetPageTag: "AccountPortfolio"
+          },
+          {
+            workItemId: "api-brokerage-fallback",
+            kind: "BrokerageSync",
+            label: "API brokerage route should fallback",
+            detail: "Fallback to the browser brokerage sync panel.",
+            tone: "Info",
+            createdAt: "2026-04-29T12:07:00Z",
+            runId: null,
+            fundAccountId: "fund-1",
+            auditReference: null,
+            workspace: "Portfolio",
+            targetRoute: "/api/fund-accounts/fund-1/brokerage-sync",
+            targetPageTag: "AccountPortfolio"
           }
         ],
-        warningCount: 1,
+        warningCount: 2,
         criticalCount: 1,
-        reviewCount: 2,
-        summary: "2 review items need attention."
+        reviewCount: 4,
+        summary: "4 review items need attention."
       },
       inboxLoading: false,
       inboxError: null
@@ -452,7 +526,17 @@ describe("operator readiness console view model", () => {
       ariaLabel: "Open Security Master: Security coverage open",
       variant: "secondary"
     });
-    expect(state.workItems[1].action).toEqual({
+    expect(state.nextAction).toEqual(expect.objectContaining({
+      title: "Security coverage open",
+      label: "Open Security Master",
+      route: "/accounting/security-master",
+      level: "blocked"
+    }));
+    expect(state.overallLevel).toBe("blocked");
+    expect(state.overallLabel).toBe("Blocked");
+    expect(state.overallDetail).toContain("Trading readiness has not loaded yet");
+    expect(state.overallDetail).toContain("1 critical item");
+    expect(state.workItems.find((item) => item.id === "provider-trust")?.action).toEqual({
       label: "Open provider trust",
       route: "/data/providers",
       ariaLabel: "Open provider trust: Provider trust gate review",
@@ -470,6 +554,43 @@ describe("operator readiness console view model", () => {
       ariaLabel: "Open report packs: API route should not render",
       variant: "outline"
     });
+    expect(state.workItems.find((item) => item.id === "workstation-prefixed-brokerage")?.action).toEqual({
+      label: "Open brokerage sync",
+      route: "/portfolio/brokerage-sync?fundAccountId=fund-1",
+      ariaLabel: "Open brokerage sync: Brokerage sync route",
+      variant: "outline"
+    });
+    expect(state.workItems.find((item) => item.id === "api-brokerage-fallback")?.action).toEqual({
+      label: "Open brokerage sync",
+      route: "/portfolio/brokerage-sync",
+      ariaLabel: "Open brokerage sync: API brokerage route should fallback",
+      variant: "outline"
+    });
+  });
+
+  it("keeps report-pack ownership aligned to Reporting when payloads are unavailable", () => {
+    const state = buildOperatorReadinessConsoleState({
+      research: null,
+      trading: null,
+      dataOperations: null,
+      governance: null,
+      reporting: null,
+      operatorInbox: null,
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    expect(state.overallDetail).toContain("Strategy, Data, Accounting, or Reporting payloads");
+    expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({
+      label: "Report-pack readiness",
+      detail: "Reporting payload has not loaded.",
+      meta: "Wait for Accounting/Reporting bootstrap recovery.",
+      level: "review"
+    }));
+    expect(state.panels.find((panel) => panel.id === "reporting-report-packs")).toEqual(expect.objectContaining({
+      title: "Reporting report packs",
+      emptyText: "No reporting readiness payload loaded."
+    }));
   });
 
   it("prioritizes critical operator inbox work items before truncating the visible queue", () => {
@@ -532,9 +653,20 @@ describe("operator readiness console view model", () => {
       label: "Critical security coverage gap",
       level: "blocked"
     }));
+    expect(state.selectedWorkItemId).toBe("critical-security-gap");
+    expect(state.selectedWorkItemDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Route", value: "/accounting/security-master" },
+      { label: "Attention", value: "Blocked" }
+    ]));
     expect(state.workItems.map((item) => item.label)).not.toContain("Info item");
     expect(state.workItemsSummary).toBe("Showing 6 of 8 operator work items; 1 critical item, 6 warnings, 1 info item. Critical items sort first.");
     expect(state.workItemsOverflowText).toBe("2 additional work items hidden from this view after priority sorting.");
+    expect(state.nextAction).toEqual(expect.objectContaining({
+      title: "Critical security coverage gap",
+      label: "Open Security Master",
+      route: "/accounting/security-master",
+      level: "blocked"
+    }));
   });
 
   it("surfaces operator inbox failures while keeping payload fallbacks visible", () => {
@@ -596,6 +728,12 @@ describe("operator readiness console view model", () => {
     expect(loadingState.overallLabel).toBe("Review pending");
     expect(readyState.overallLevel).toBe("ready");
     expect(readyState.overallLabel).toBe("Ready");
+    expect(readyState.nextAction).toEqual(expect.objectContaining({
+      title: "No blocking review items",
+      label: "Open Trading cockpit",
+      route: "/trading",
+      level: "ready"
+    }));
   });
 
   it("keeps the headline in review when governed report-pack readiness is missing", () => {
@@ -657,5 +795,208 @@ describe("operator readiness console view model", () => {
     expect(queueRoutes).toContain("reconciliation-break-run-1-cash:/accounting/reconciliation");
     expect(queueIds.has("promotion-review-run-1")).toBe(true);
     expect(queueIds.has("reconciliation-break-run-1-cash")).toBe(true);
+  });
+
+  it("clears stale account-scoped inbox rows while loading a new fund account inbox", async () => {
+    let resolveFundTwoInbox: ((value: OperatorInbox) => void) | null = null;
+    const fundTwoReadiness: TradingOperatorReadiness = {
+      ...readyReadiness,
+      brokerageSync: {
+        ...readyReadiness.brokerageSync,
+        fundAccountId: "fund-2"
+      }
+    };
+    const fundTwoTrading: TradingWorkspaceResponse = {
+      ...readyTrading,
+      readiness: fundTwoReadiness
+    };
+    const getOperatorInbox = vi.fn((fundAccountId?: string, _options?: ApiRequestOptions) => {
+      if (fundAccountId === "fund-1") {
+        return Promise.resolve(inbox);
+      }
+
+      return new Promise<OperatorInbox>((resolve) => {
+        resolveFundTwoInbox = resolve;
+      });
+    });
+    const services = { getOperatorInbox };
+
+    const { result, rerender } = renderHook(
+      ({ tradingPayload }: { tradingPayload: TradingWorkspaceResponse }) => useOperatorReadinessConsoleViewModel({
+        research,
+        trading: tradingPayload,
+        dataOperations,
+        governance: cleanGovernance,
+        reporting: governance
+      }, services),
+      { initialProps: { tradingPayload: readyTrading } }
+    );
+
+    await waitFor(() => expect(result.current.inboxSummary).toBe("2 review items need attention."));
+    await waitFor(() => expect(result.current.workItems.length).toBeGreaterThan(0));
+    expect(result.current.workItems.map((item) => item.id)).toContain("reconciliation-break-run-1-cash");
+
+    rerender({ tradingPayload: fundTwoTrading });
+
+    await waitFor(() => expect(getOperatorInbox).toHaveBeenLastCalledWith(
+      "fund-2",
+      expect.objectContaining({ signal: expect.any(Object) })
+    ));
+    await waitFor(() => expect(result.current.inboxLoadingLabel).toBe("Loading operator inbox..."));
+    expect(result.current.inboxSummary).toBe("Operator inbox not loaded; using workstation payload fallbacks where available.");
+    expect(result.current.workItems.map((item) => item.id)).not.toContain("reconciliation-break-run-1-cash");
+
+    resolveFundTwoInbox?.(cleanInbox);
+    await waitFor(() => expect(result.current.inboxSummary).toBe("No operator work items need attention."));
+  });
+
+  it("aborts superseded operator inbox loads when the fund account changes", async () => {
+    const fundOneInbox = new Promise<OperatorInbox>(() => undefined);
+    let resolveFundTwoInbox: ((value: OperatorInbox) => void) | null = null;
+    const fundTwoReadiness: TradingOperatorReadiness = {
+      ...readyReadiness,
+      brokerageSync: {
+        ...readyReadiness.brokerageSync,
+        fundAccountId: "fund-2"
+      }
+    };
+    const getOperatorInbox = vi.fn((fundAccountId?: string, _options?: ApiRequestOptions) => {
+      if (fundAccountId === "fund-1") {
+        return fundOneInbox;
+      }
+
+      return new Promise<OperatorInbox>((resolve) => {
+        resolveFundTwoInbox = resolve;
+      });
+    });
+    const services = { getOperatorInbox };
+
+    const { result, rerender } = renderHook(
+      ({ tradingPayload }: { tradingPayload: TradingWorkspaceResponse }) => useOperatorReadinessConsoleViewModel({
+        research,
+        trading: tradingPayload,
+        dataOperations,
+        governance: cleanGovernance,
+        reporting: governance
+      }, services),
+      { initialProps: { tradingPayload: readyTrading } }
+    );
+
+    await waitFor(() => expect(getOperatorInbox).toHaveBeenCalledWith(
+      "fund-1",
+      expect.objectContaining({ signal: expect.any(Object) })
+    ));
+    const fundOneSignal = getOperatorInbox.mock.calls[0]?.[1]?.signal;
+    expect(fundOneSignal?.aborted).toBe(false);
+
+    rerender({
+      tradingPayload: {
+        ...readyTrading,
+        readiness: fundTwoReadiness
+      }
+    });
+
+    await waitFor(() => expect(getOperatorInbox).toHaveBeenLastCalledWith(
+      "fund-2",
+      expect.objectContaining({ signal: expect.any(Object) })
+    ));
+    expect(fundOneSignal?.aborted).toBe(true);
+
+    resolveFundTwoInbox?.(cleanInbox);
+    await waitFor(() => expect(result.current.inboxSummary).toBe("No operator work items need attention."));
+  });
+
+  it("exposes a guarded inbox refresh command for recovering failed loads", async () => {
+    const getOperatorInbox = vi.fn()
+      .mockRejectedValueOnce(new Error("Operator inbox 503"))
+      .mockResolvedValueOnce(inbox);
+    const services = { getOperatorInbox };
+
+    const { result } = renderHook(() => useOperatorReadinessConsoleViewModel({
+      research,
+      trading: readyTrading,
+      dataOperations,
+      governance: cleanGovernance,
+      reporting: governance
+    }, services));
+
+    await waitFor(() => expect(result.current.inboxErrorText).toBe("Operator inbox 503"));
+    expect(result.current.inboxRefreshLabel).toBe("Refresh inbox");
+    expect(result.current.inboxRefreshAriaLabel).toBe("Refresh operator inbox work items");
+    expect(result.current.inboxRefreshDisabled).toBe(false);
+
+    await act(async () => {
+      await result.current.refreshInbox();
+    });
+
+    await waitFor(() => expect(result.current.inboxSummary).toBe("2 review items need attention."));
+    expect(result.current.inboxErrorText).toBeNull();
+    expect(result.current.workItems.map((item) => item.id)).toContain("reconciliation-break-run-1-cash");
+    expect(getOperatorInbox).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps selected operator work-item detail in the view model", () => {
+    const state = buildOperatorReadinessConsoleState({
+      research: null,
+      trading: null,
+      dataOperations: null,
+      governance: null,
+      operatorInbox: {
+        ...cleanInbox,
+        items: [
+          {
+            workItemId: "critical-security-gap",
+            kind: "SecurityMasterCoverage",
+            label: "Critical security coverage gap",
+            detail: "Resolve missing identifier coverage before accepting readiness.",
+            tone: "Critical",
+            createdAt: "2026-04-29T11:00:00Z",
+            runId: null,
+            fundAccountId: null,
+            auditReference: null,
+            workspace: "Accounting",
+            targetRoute: "/accounting/security-master",
+            targetPageTag: "SecurityMaster"
+          },
+          {
+            workItemId: "report-pack-warning",
+            kind: "ReportPackApproval",
+            label: "Report pack warning",
+            detail: "Attach owner sign-off before distribution.",
+            tone: "Warning",
+            createdAt: "2026-04-29T12:00:00Z",
+            runId: null,
+            fundAccountId: null,
+            auditReference: "audit-report-pack",
+            workspace: "Reporting",
+            targetRoute: "/reporting",
+            targetPageTag: "ReportPackApproval"
+          }
+        ],
+        criticalCount: 1,
+        warningCount: 1,
+        reviewCount: 2,
+        summary: "2 review items need attention."
+      },
+      inboxLoading: false,
+      inboxError: null,
+      selectedWorkItemId: "report-pack-warning"
+    });
+
+    expect(state.selectedWorkItemId).toBe("report-pack-warning");
+    expect(state.selectedWorkItemDetail).toEqual(expect.objectContaining({
+      id: "report-pack-warning",
+      title: "Report pack warning",
+      statusLabel: "Warning",
+      action: expect.objectContaining({
+        label: "Open report packs",
+        route: "/reporting"
+      })
+    }));
+    expect(state.selectedWorkItemDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Attention", value: "Review" },
+      { label: "Route", value: "/reporting" },
+      { label: "Evidence", value: "Reporting - ReportPackApproval - audit-report-pack" }
+    ]));
   });
 });

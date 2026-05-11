@@ -1,8 +1,25 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { runAnalysisExport } from "@/lib/api";
+import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint } from "@/lib/workstation-endpoints";
+import { evidenceWorkbenchPath } from "@/lib/workspace";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
+export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
+export type ReportingWorkflowTone = "success" | "warning" | "muted";
+export type ReportingDetailFieldTone = "default" | "success" | "warning" | "muted";
+export type ReportingExportStatusTone = "default" | "success" | "danger";
+export type ReportingFieldClassName = "text-foreground" | "text-success" | "text-warning" | "text-muted-foreground";
+export type ReportingExportStatusClassName =
+  | "border-border/70 bg-secondary/25 text-muted-foreground"
+  | "border-success/30 bg-success/10 text-success"
+  | "border-danger/35 bg-danger/10 text-danger";
+
+export interface ReportingProfileBadge {
+  label: string;
+  tone: ReportingProfileBadgeTone;
+  variant: ReportingBadgeVariant;
+}
 
 export interface ReportingProfileRow {
   id: string;
@@ -11,8 +28,10 @@ export interface ReportingProfileRow {
   formatLabel: string;
   description: string;
   isSelected: boolean;
+  isExpanded: boolean;
   isRecommended: boolean;
-  badges: Array<{ label: string; tone: ReportingProfileBadgeTone }>;
+  controlsId: string;
+  badges: ReportingProfileBadge[];
   selectAriaLabel: string;
 }
 
@@ -22,6 +41,8 @@ export interface ReportingProfileAction {
   href: string;
   variant: "default" | "outline";
   ariaLabel: string;
+  describedById: string;
+  statusText: string;
   isDisabled: boolean;
   disabledReason: string | null;
   method: "GET" | "POST";
@@ -32,7 +53,8 @@ export interface ReportingProfileAction {
 export interface ReportingDetailField {
   label: string;
   value: string;
-  tone: "default" | "success" | "warning" | "muted";
+  tone: ReportingDetailFieldTone;
+  className: ReportingFieldClassName;
 }
 
 export interface ReportingDetailViewModel {
@@ -47,7 +69,8 @@ export interface ReportingDetailViewModel {
 
 export interface ReportingExportStatusState {
   text: string;
-  tone: "default" | "success" | "danger";
+  tone: ReportingExportStatusTone;
+  className: ReportingExportStatusClassName;
   ariaLabel: string;
   fields: ReportingDetailField[];
   warnings: string[];
@@ -64,9 +87,21 @@ export interface ReportingPackTargetRow {
   ariaLabel: string;
 }
 
+export interface ReportingPackTargetsEmptyState {
+  text: string;
+  ariaLabel: string;
+}
+
 export interface ReportingChipViewModel {
   label: string;
   value: string;
+}
+
+export interface ReportingWorkbenchAction {
+  id: "evidence";
+  label: string;
+  href: string;
+  ariaLabel: string;
 }
 
 export interface ReportingWorkflowProfileRow {
@@ -74,7 +109,8 @@ export interface ReportingWorkflowProfileRow {
   name: string;
   summary: string;
   readinessLabel: string;
-  readinessTone: "success" | "warning" | "muted";
+  readinessTone: ReportingWorkflowTone;
+  readinessVariant: Exclude<ReportingBadgeVariant, "default">;
   isSelected: boolean;
   selectAriaLabel: string;
 }
@@ -93,15 +129,34 @@ export interface ReportingWorkflowTaskPanel {
   title: string;
   description: string;
   statusLabel: string;
-  statusTone: "success" | "warning" | "muted";
+  statusTone: ReportingWorkflowTone;
+  statusVariant: Exclude<ReportingBadgeVariant, "default">;
   chips: ReportingChipViewModel[];
   targetsLabel: string;
   targets: ReportingPackTargetRow[];
+  hasTargets: boolean;
+  targetsEmptyText: string;
+  targetsEmptyAriaLabel: string;
   profileListLabel: string;
   profiles: ReportingWorkflowProfileRow[];
+  hasProfiles: boolean;
+  profilesEmptyText: string;
+  profilesEmptyAriaLabel: string;
   selectedSummary: string;
   backendLinksLabel: string;
   backendLinks: ReportingWorkflowBackendLink[];
+}
+
+export interface ReportingLoadingState {
+  role: "status";
+  ariaBusy: true;
+  ariaLive: "polite";
+  titleId: string;
+  detailId: string;
+  title: string;
+  detail: string;
+  badgeLabel: string;
+  routeLabel: string;
 }
 
 export interface ReportingScreenViewModel {
@@ -115,19 +170,24 @@ export interface ReportingScreenViewModel {
   emptyText: string;
   listLabel: string;
   visibleCountLabel: string;
+  workbenchActions: ReportingWorkbenchAction[];
   workbenchChips: ReportingChipViewModel[];
   queueChips: ReportingChipViewModel[];
   packTargetChips: ReportingChipViewModel[];
   detailId: string;
   statusTitle: string;
   statusDetail: string;
+  statusBadgeLabel: string;
+  statusBadgeVariant: "default" | "outline";
   nextAction: string;
   selectedProfile: ReportingDetailViewModel | null;
   packTargets: ReportingPackTargetRow[];
   hasPackTargets: boolean;
   packTargetsSummary: string;
   packTargetsListLabel: string;
+  packTargetsEmptyState: ReportingPackTargetsEmptyState;
   workflowTaskPanel: ReportingWorkflowTaskPanel | null;
+  loadingState: ReportingLoadingState;
   loadingTitle: string;
   loadingDetail: string;
   exportStatus: ReportingExportStatusState | null;
@@ -145,24 +205,48 @@ export function useReportingScreenViewModel(
   services: ReportingExportServices = defaultReportingExportServices,
   pathname = "/reporting"
 ): ReportingScreenViewModel {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null | undefined>(undefined);
   const [runningProfileId, setRunningProfileId] = useState<string | null>(null);
   const [exportStatus, setExportStatus] = useState<ReportingExportStatusState | null>(null);
+  const exportCommandRevisionRef = useRef(0);
+  const detailId = "reporting-profile-detail";
 
-  const selectProfile = (id: string) =>
-    setSelectedId((prev) => (prev === id ? null : id));
+  useEffect(() => () => {
+    exportCommandRevisionRef.current += 1;
+  }, []);
+
+  const selectProfile = (id: string) => {
+    exportCommandRevisionRef.current += 1;
+    setSelectedId((prev) => {
+      const defaultProfileId = reporting ? defaultReportPackProfileId(reporting, pathname) : null;
+      const activeId = prev === undefined ? defaultProfileId : prev;
+      return activeId === id ? null : id;
+    });
+    setRunningProfileId(null);
+    setExportStatus(null);
+  };
 
   const runExportCommand = async (profileId: string, profileName: string) => {
+    const commandRevision = exportCommandRevisionRef.current + 1;
+    exportCommandRevisionRef.current = commandRevision;
     setRunningProfileId(profileId);
     setExportStatus(buildExportStatusStarting(profileName));
 
     try {
       const result = await services.runExport(profileId);
+      if (exportCommandRevisionRef.current !== commandRevision) {
+        return;
+      }
       setExportStatus(buildExportStatusResult(profileId, profileName, result));
     } catch (error) {
+      if (exportCommandRevisionRef.current !== commandRevision) {
+        return;
+      }
       setExportStatus(buildExportStatusFailure(profileName, error));
     } finally {
-      setRunningProfileId(null);
+      if (exportCommandRevisionRef.current === commandRevision) {
+        setRunningProfileId(null);
+      }
     }
   };
 
@@ -178,19 +262,24 @@ export function useReportingScreenViewModel(
       emptyText: "No export or reporting profiles are configured for this workspace.",
       listLabel: "Export profiles",
       visibleCountLabel: "0 visible",
+      workbenchActions: buildWorkbenchActions(null),
       workbenchChips: buildWorkbenchChips("0 profiles", "0", "0"),
       queueChips: buildQueueChips("0 visible", "0", "0", "Export profiles"),
       packTargetChips: buildPackTargetChips("0", "No profile selected"),
-      detailId: "reporting-profile-detail",
+      detailId,
       statusTitle: "No profile selected",
-      statusDetail: "Reporting data is unavailable. Check the Governance workspace or API connection.",
+      statusDetail: "Reporting data is unavailable. Check the Reporting workspace API connection.",
+      statusBadgeLabel: "Waiting",
+      statusBadgeVariant: "outline",
       nextAction: "—",
       selectedProfile: null,
       packTargets: [],
       hasPackTargets: false,
       packTargetsSummary: "No report-pack targets configured.",
       packTargetsListLabel: "Report-pack targets",
+      packTargetsEmptyState: buildPackTargetsEmptyState(),
       workflowTaskPanel: null,
+      loadingState: buildLoadingState(pathname),
       loadingTitle: "Loading Reporting",
       loadingDetail: "Waiting for governed report-pack and export evidence.",
       exportStatus,
@@ -202,8 +291,10 @@ export function useReportingScreenViewModel(
 
   const profiles = reporting.profiles;
   const recommended = new Set(reporting.recommendedProfiles);
+  const defaultSelectedId = defaultReportPackProfileId(reporting, pathname);
+  const effectiveSelectedId = selectedId === undefined ? defaultSelectedId : selectedId;
   const selectedProfileData: GovernanceReportingProfile | null =
-    profiles.find((p) => p.id === selectedId) ?? null;
+    profiles.find((p) => p.id === effectiveSelectedId) ?? null;
 
   const rows: ReportingProfileRow[] = profiles.map((p) => ({
     id: p.id,
@@ -211,13 +302,15 @@ export function useReportingScreenViewModel(
     targetLabel: p.targetTool,
     formatLabel: p.format,
     description: p.description,
-    isSelected: p.id === selectedId,
+    isSelected: p.id === effectiveSelectedId,
+    isExpanded: p.id === effectiveSelectedId,
     isRecommended: recommended.has(p.id),
+    controlsId: detailId,
     selectAriaLabel: `Select ${p.name} export profile`,
     badges: [
-      ...(recommended.has(p.id) ? [{ label: "Recommended", tone: "primary" as const }] : []),
-      ...(p.loaderScript ? [{ label: "Loader", tone: "success" as const }] : []),
-      ...(p.dataDictionary ? [{ label: "Dictionary", tone: "success" as const }] : [])
+      ...(recommended.has(p.id) ? [buildReportingBadge("Recommended", "primary")] : []),
+      ...(p.loaderScript ? [buildReportingBadge("Loader", "success")] : []),
+      ...(p.dataDictionary ? [buildReportingBadge("Dictionary", "success")] : [])
     ]
   }));
 
@@ -228,19 +321,19 @@ export function useReportingScreenViewModel(
         subtitle: `${selectedProfileData.format} · ${selectedProfileData.targetTool}`,
         description: selectedProfileData.description,
         fields: [
-          { label: "Profile ID", value: selectedProfileData.id, tone: "default" },
-          { label: "Format", value: selectedProfileData.format, tone: "default" },
-          { label: "Target", value: selectedProfileData.targetTool, tone: "default" },
-          {
-            label: "Loader script",
-            value: selectedProfileData.loaderScript ? "Included" : "Not included",
-            tone: selectedProfileData.loaderScript ? "success" : "muted"
-          },
-          {
-            label: "Data dictionary",
-            value: selectedProfileData.dataDictionary ? "Included" : "Not included",
-            tone: selectedProfileData.dataDictionary ? "success" : "muted"
-          }
+          buildReportingDetailField("Profile ID", selectedProfileData.id, "default"),
+          buildReportingDetailField("Format", selectedProfileData.format, "default"),
+          buildReportingDetailField("Target", selectedProfileData.targetTool, "default"),
+          buildReportingDetailField(
+            "Loader script",
+            selectedProfileData.loaderScript ? "Included" : "Not included",
+            selectedProfileData.loaderScript ? "success" : "muted"
+          ),
+          buildReportingDetailField(
+            "Data dictionary",
+            selectedProfileData.dataDictionary ? "Included" : "Not included",
+            selectedProfileData.dataDictionary ? "success" : "muted"
+          )
         ],
         readinessSummary: buildProfileReadinessSummary(selectedProfileData),
         actions: buildProfileActions(selectedProfileData, runningProfileId)
@@ -279,16 +372,19 @@ export function useReportingScreenViewModel(
       "No export profiles are configured. Add a governed profile to restore reporting evidence.",
     listLabel,
     visibleCountLabel,
+    workbenchActions: buildWorkbenchActions(selectedProfileData),
     workbenchChips: buildWorkbenchChips(countLabel, packTargetCountLabel, recommendedCountLabel),
     queueChips: buildQueueChips(visibleCountLabel, recommendedCountLabel, packTargetCountLabel, listLabel),
     packTargetChips: buildPackTargetChips(packTargetCountLabel, statusTitle),
-    detailId: "reporting-profile-detail",
+    detailId,
     statusTitle,
     statusDetail: selectedProfileData
       ? `${selectedProfileData.name} routes ${selectedProfileData.format} output to ${selectedProfileData.targetTool}.`
       : "Select a profile to inspect export evidence and ready-state.",
+    statusBadgeLabel: selectedProfileData ? "Selected" : "Waiting",
+    statusBadgeVariant: selectedProfileData ? "default" : "outline",
     nextAction: selectedProfileData
-      ? `POST /api/export/analysis · GET /api/export/preview?profile=${selectedProfileData.id}`
+      ? `POST ${EXPORT_API_ENDPOINTS.analysis} · GET ${exportPreviewEndpoint(selectedProfileData.id)}`
       : `${profiles.length} profile${profiles.length === 1 ? "" : "s"} on desk. Select one to inspect export evidence.`,
     selectedProfile: detail,
     packTargets,
@@ -298,7 +394,9 @@ export function useReportingScreenViewModel(
         ? `${packCount} report-pack target${packCount === 1 ? "" : "s"} configured.`
         : "No report-pack targets configured.",
     packTargetsListLabel: "Report-pack targets",
+    packTargetsEmptyState: buildPackTargetsEmptyState(),
     workflowTaskPanel,
+    loadingState: buildLoadingState(pathname),
     loadingTitle: "Loading Reporting",
     loadingDetail: "Waiting for governed report-pack and export evidence.",
     exportStatus,
@@ -306,6 +404,45 @@ export function useReportingScreenViewModel(
     runExport: runExportCommand,
     selectProfile
   };
+}
+
+function buildLoadingState(pathname: string): ReportingLoadingState {
+  const title = "Loading Reporting";
+
+  return {
+    role: "status",
+    ariaBusy: true,
+    ariaLive: "polite",
+    titleId: "reporting-loading-title",
+    detailId: "reporting-loading-detail",
+    title,
+    detail: "Waiting for governed report-pack and export evidence.",
+    badgeLabel: "Loading",
+    routeLabel: isReportPackRoute(pathname) ? "Report packs" : "Reporting"
+  };
+}
+
+function buildPackTargetsEmptyState(): ReportingPackTargetsEmptyState {
+  return {
+    text: "No report-pack targets loaded. Configure governed targets in the governance policy before approving this packet.",
+    ariaLabel: "No report-pack targets loaded"
+  };
+}
+
+function buildWorkbenchActions(selectedProfile: GovernanceReportingProfile | null): ReportingWorkbenchAction[] {
+  const subjectId = selectedProfile?.id ?? "current";
+  const label = selectedProfile ? "Profile evidence" : "Evidence";
+
+  return [
+    {
+      id: "evidence",
+      label,
+      href: evidenceWorkbenchPath("report-pack", subjectId),
+      ariaLabel: selectedProfile
+        ? `Open ${selectedProfile.name} report-pack evidence`
+        : "Open current report-pack evidence"
+    }
+  ];
 }
 
 function buildWorkbenchChips(
@@ -317,7 +454,7 @@ function buildWorkbenchChips(
     { label: "Profiles", value: countLabel },
     { label: "Pack targets", value: packTargetCountLabel },
     { label: "Recommended", value: recommendedCountLabel },
-    { label: "Export route", value: "/api/export/analysis" }
+    { label: "Export route", value: EXPORT_API_ENDPOINTS.analysis }
   ];
 }
 
@@ -380,14 +517,18 @@ function buildWorkflowTaskPanel({
       "Review loaded report-pack targets, pick the export profile that carries the packet evidence, then preview or run the backend export before approval.",
     statusLabel,
     statusTone,
+    statusVariant: workflowStatusVariant(statusTone),
     chips: [
       { label: "Targets", value: String(packTargets.length) },
       { label: "Profiles", value: String(reporting.profiles.length) },
       { label: "Ready profiles", value: String(readyProfiles) },
-      { label: "Backend", value: "/api/fund-structure/report-packs" }
+      { label: "Backend", value: EXPORT_API_ENDPOINTS.reportPacks }
     ],
     targetsLabel: "Report-pack approval targets",
     targets: packTargets,
+    hasTargets: packTargets.length > 0,
+    targetsEmptyText: "No report-pack targets loaded. Configure governed targets before approving this packet.",
+    targetsEmptyAriaLabel: "No report-pack approval targets",
     profileListLabel: "Report-pack export profiles",
     profiles: rows.map((row) => {
       const profile = reporting.profiles.find((item) => item.id === row.id);
@@ -410,10 +551,14 @@ function buildWorkflowTaskPanel({
         summary: `${row.formatLabel} for ${row.targetLabel}`,
         readinessLabel,
         readinessTone,
+        readinessVariant: workflowStatusVariant(readinessTone),
         isSelected: row.isSelected,
         selectAriaLabel: `Select ${row.name} for report-pack approval`
       };
     }),
+    hasProfiles: rows.length > 0,
+    profilesEmptyText: "No export profiles are configured. Add a governed profile before report-pack approval.",
+    profilesEmptyAriaLabel: "No report-pack export profiles",
     selectedSummary: selectedProfile
       ? `${selectedProfile.name} is selected for report-pack approval using ${selectedProfile.format} output to ${selectedProfile.targetTool}.`
       : "Select a profile to enable packet preview and export actions.",
@@ -423,14 +568,14 @@ function buildWorkflowTaskPanel({
         id: "report-pack-catalog",
         method: "GET",
         label: "Report-pack catalog",
-        href: "/api/fund-structure/report-packs",
+        href: EXPORT_API_ENDPOINTS.reportPacks,
         ariaLabel: "Open report-pack catalog backend endpoint"
       },
       {
         id: "export-preview",
         method: "GET",
         label: "Export preview",
-        href: selectedProfile ? `/api/export/preview?profile=${encodeURIComponent(selectedProfile.id)}` : "/api/export/preview",
+        href: exportPreviewEndpoint(selectedProfile?.id),
         ariaLabel: selectedProfile
           ? `Preview ${selectedProfile.name} export payload`
           : "Open export preview backend endpoint"
@@ -439,7 +584,7 @@ function buildWorkflowTaskPanel({
         id: "export-run",
         method: "POST",
         label: "Run export",
-        href: "/api/export/analysis",
+        href: EXPORT_API_ENDPOINTS.analysis,
         ariaLabel: selectedProfile
           ? `Run ${selectedProfile.name} export analysis`
           : "Run export analysis backend endpoint"
@@ -451,6 +596,32 @@ function buildWorkflowTaskPanel({
 function isReportPackRoute(pathname: string): boolean {
   const normalized = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/reporting";
   return normalized === "/reporting/report-packs";
+}
+
+function defaultReportPackProfileId(reporting: GovernanceReportingSummary, pathname: string): string | null {
+  if (!isReportPackRoute(pathname) || reporting.profiles.length === 0) {
+    return null;
+  }
+
+  const recommended = new Set(reporting.recommendedProfiles);
+  let bestProfile = reporting.profiles[0];
+  let bestScore = reportPackProfileScore(bestProfile, recommended);
+  for (let index = 1; index < reporting.profiles.length; index += 1) {
+    const profile = reporting.profiles[index];
+    const score = reportPackProfileScore(profile, recommended);
+    if (score > bestScore) {
+      bestProfile = profile;
+      bestScore = score;
+    }
+  }
+
+  return bestProfile?.id ?? null;
+}
+
+function reportPackProfileScore(profile: GovernanceReportingProfile, recommended: ReadonlySet<string>): number {
+  return (recommended.has(profile.id) ? 4 : 0)
+    + (profile.loaderScript ? 2 : 0)
+    + (profile.dataDictionary ? 2 : 0);
 }
 
 function buildProfileReadinessSummary(profile: GovernanceReportingProfile): string {
@@ -473,16 +644,17 @@ function buildProfileActions(
   profile: GovernanceReportingProfile,
   runningProfileId: string | null
 ): ReportingProfileAction[] {
-  const profileQuery = `profile=${encodeURIComponent(profile.id)}`;
   const isRunningThisProfile = runningProfileId === profile.id;
 
   return [
     {
       id: "preview",
       label: "Preview payload",
-      href: `/api/export/preview?${profileQuery}`,
+      href: exportPreviewEndpoint(profile.id),
       variant: "outline",
       ariaLabel: `Preview ${profile.name} export payload`,
+      describedById: `reporting-action-${profile.id}-preview-status`,
+      statusText: "Opens the current export payload preview in a new browser tab.",
       isDisabled: false,
       disabledReason: null,
       method: "GET",
@@ -492,9 +664,13 @@ function buildProfileActions(
     {
       id: "run",
       label: isRunningThisProfile ? "Running export…" : "Run export",
-      href: "/api/export/analysis",
+      href: EXPORT_API_ENDPOINTS.analysis,
       variant: "default",
       ariaLabel: `Run ${profile.name} export analysis`,
+      describedById: `reporting-action-${profile.id}-run-status`,
+      statusText: isRunningThisProfile
+        ? `${profile.name} export is running. Wait for the result before starting another export.`
+        : "Runs the governed export through the backend mutation and reports generated artifacts here.",
       isDisabled: isRunningThisProfile,
       disabledReason: isRunningThisProfile ? `${profile.name} export is already running.` : null,
       method: "POST",
@@ -508,10 +684,11 @@ export function buildExportStatusStarting(profileName: string): ReportingExportS
   return {
     text: `Starting ${profileName} export…`,
     tone: "default",
+    className: exportStatusToneClass("default"),
     ariaLabel: "Reporting export status",
     fields: [
-      { label: "Profile", value: profileName, tone: "default" },
-      { label: "State", value: "Running", tone: "warning" }
+      buildReportingDetailField("Profile", profileName, "default"),
+      buildReportingDetailField("State", "Running", "warning")
     ],
     warnings: [],
     artifacts: []
@@ -530,6 +707,7 @@ export function buildExportStatusResult(
   return {
     text,
     tone: result.success ? "success" : "danger",
+    className: exportStatusToneClass(result.success ? "success" : "danger"),
     ariaLabel: "Reporting export status",
     fields: buildExportResultFields(requestedProfileId, result),
     warnings: buildExportResultWarnings(requestedProfileId, result),
@@ -543,10 +721,11 @@ export function buildExportStatusFailure(profileName: string, error: unknown): R
   return {
     text: `${profileName} export failed. ${message}`,
     tone: "danger",
+    className: exportStatusToneClass("danger"),
     ariaLabel: "Reporting export status",
     fields: [
-      { label: "Profile", value: profileName, tone: "default" },
-      { label: "Failure", value: message, tone: "warning" }
+      buildReportingDetailField("Profile", profileName, "default"),
+      buildReportingDetailField("Failure", message, "warning")
     ],
     warnings: [],
     artifacts: []
@@ -559,17 +738,17 @@ function buildExportResultFields(requestedProfileId: string, result: ExportAnaly
   const symbolsLabel = result.symbols?.length ? result.symbols.join(", ") : "All configured symbols";
 
   return [
-    { label: "Job ID", value: result.jobId ?? "Unavailable", tone: result.jobId ? "default" : "muted" },
-    { label: "Status", value: result.status, tone: result.success ? "success" : "warning" },
-    { label: "Requested", value: requestedProfileId, tone: "default" },
-    { label: "Profile", value: result.profileId, tone: "default" },
-    { label: "Symbols", value: symbolsLabel, tone: result.symbols?.length ? "default" : "muted" },
-    { label: "Output", value: result.outputDirectory ?? "Unavailable", tone: result.outputDirectory ? "default" : "muted" },
-    { label: "Files", value: String(result.filesGenerated), tone: result.filesGenerated > 0 ? "success" : "warning" },
-    { label: "Records", value: result.totalRecords.toLocaleString(), tone: result.totalRecords > 0 ? "default" : "muted" },
-    { label: "Bytes", value: byteLabel, tone: result.totalBytes > 0 ? "default" : "muted" },
-    { label: "Duration", value: durationLabel, tone: "muted" },
-    { label: "Timestamp", value: result.timestamp, tone: "muted" }
+    buildReportingDetailField("Job ID", result.jobId ?? "Unavailable", result.jobId ? "default" : "muted"),
+    buildReportingDetailField("Status", result.status, result.success ? "success" : "warning"),
+    buildReportingDetailField("Requested", requestedProfileId, "default"),
+    buildReportingDetailField("Profile", result.profileId, "default"),
+    buildReportingDetailField("Symbols", symbolsLabel, result.symbols?.length ? "default" : "muted"),
+    buildReportingDetailField("Output", result.outputDirectory ?? "Unavailable", result.outputDirectory ? "default" : "muted"),
+    buildReportingDetailField("Files", String(result.filesGenerated), result.filesGenerated > 0 ? "success" : "warning"),
+    buildReportingDetailField("Records", result.totalRecords.toLocaleString(), result.totalRecords > 0 ? "default" : "muted"),
+    buildReportingDetailField("Bytes", byteLabel, result.totalBytes > 0 ? "default" : "muted"),
+    buildReportingDetailField("Duration", durationLabel, "muted"),
+    buildReportingDetailField("Timestamp", result.timestamp, "muted")
   ];
 }
 
@@ -583,11 +762,60 @@ function buildExportResultWarnings(requestedProfileId: string, result: ExportAna
 }
 
 function buildExportArtifactFields(result: ExportAnalysisResult): ReportingDetailField[] {
-  return (result.files ?? []).map((file) => ({
-    label: file.symbol ? `${file.symbol} ${file.format ?? "file"}` : file.format ?? "File",
-    value: `${file.path} · ${file.recordCount.toLocaleString()} records · ${formatBytes(file.sizeBytes)}`,
-    tone: file.recordCount > 0 ? "default" : "warning"
-  }));
+  return (result.files ?? []).map((file) =>
+    buildReportingDetailField(
+      file.symbol ? `${file.symbol} ${file.format ?? "file"}` : file.format ?? "File",
+      `${file.path} · ${file.recordCount.toLocaleString()} records · ${formatBytes(file.sizeBytes)}`,
+      file.recordCount > 0 ? "default" : "warning"
+    )
+  );
+}
+
+function buildReportingBadge(label: string, tone: ReportingProfileBadgeTone): ReportingProfileBadge {
+  return {
+    label,
+    tone,
+    variant: badgeVariant(tone)
+  };
+}
+
+function buildReportingDetailField(
+  label: string,
+  value: string,
+  tone: ReportingDetailFieldTone
+): ReportingDetailField {
+  return {
+    label,
+    value,
+    tone,
+    className: fieldToneClass(tone)
+  };
+}
+
+function badgeVariant(tone: ReportingProfileBadgeTone): ReportingBadgeVariant {
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  if (tone === "muted") return "outline";
+  return "default";
+}
+
+function workflowStatusVariant(tone: ReportingWorkflowTone): Exclude<ReportingBadgeVariant, "default"> {
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  return "outline";
+}
+
+function fieldToneClass(tone: ReportingDetailFieldTone): ReportingFieldClassName {
+  if (tone === "success") return "text-success";
+  if (tone === "warning") return "text-warning";
+  if (tone === "muted") return "text-muted-foreground";
+  return "text-foreground";
+}
+
+function exportStatusToneClass(tone: ReportingExportStatusTone): ReportingExportStatusClassName {
+  if (tone === "success") return "border-success/30 bg-success/10 text-success";
+  if (tone === "danger") return "border-danger/35 bg-danger/10 text-danger";
+  return "border-border/70 bg-secondary/25 text-muted-foreground";
 }
 
 function formatBytes(value: number): string {

@@ -1,6 +1,6 @@
 # WPF Desktop Application — Implementation Notes
 
-**Version**: 1.7.x | **Last updated**: 2026-04-27 | **Status**: Authored / Included in solution build
+**Version**: 1.7.x | **Last updated**: 2026-05-09 | **Status**: Authored / Included in solution build
 
 ## Overview
 
@@ -57,6 +57,7 @@ Content Frame
 **Workspace-aware navigation** — `ResolveWorkspaceIdForPage()` maps a page tag to its home workspace so that clicking a sidebar item or executing a command palette entry also activates the correct workspace session state. `WorkspacePrimaryNavList`, `WorkspaceSecondaryNavList`, `WorkspaceOverflowNavList`, and `RelatedWorkflowNavList` all dispatch through the same `NavigateToPageCommand` contract when the operator changes selection.
 
 **Desktop shell MVVM seam** — shell-owned route and pane orchestration now lives under `src/Meridian.Wpf/Shell/`. `IShellRouteRegistry` projects `ShellNavigationCatalog` into route metadata, `IPageContentFactory` preserves existing `NavigationService.CreatePageContent()` behavior for docked pages, `IShellNavigationCoordinator` bridges explicit route/pane state back to the retained frame navigation service, and `PaneHostViewModel` owns pane layout, active-pane, and dropped-page assignments. `MainPage` remains the compatibility shell while its split-pane code-behind is limited to frame/content wiring.
+`Shell/Root` owns launch/deep-link and drop routing, `Shell/Session` owns workspace/window restore and persistence, `Shell/Refresh` owns cancellable shell context refresh scheduling, and `Shell/ViewModels` owns command-palette, operator-inbox, and workflow-summary presentation state. `MainWindow` should compose these services and forward WPF lifecycle events; it should not own JSON persistence, workspace-session decisions, file-drop routing, or launch-argument workflow logic directly.
 
 **Canonical sidebar buckets** — the shell now standardizes the left-rail group labels as `Home`, `Active Work`, `Review / Alerts`, and `Admin / Support`. The workspace selector tiles expose the same grouping model in their hover help so operators can see the shell structure before they switch workspaces.
 
@@ -161,6 +162,8 @@ Content Frame
 **Admin Maintenance cleanup readiness** — `AdminMaintenancePage` now renders a cleanup readiness card with preview, execution, and confirmation actions bound through `AdminMaintenanceViewModel`. The view model owns preview scope, empty/error copy, destructive-action gating, inline confirmation state, and cleanup execution reset behavior while the page keeps cleanup rendering and layout concerns in XAML.
 
 **Admin Maintenance schedule readiness** — `AdminMaintenancePage` now renders a schedule readiness strip and binds Save Schedule through `AdminMaintenanceViewModel`. The view model owns selected-operation summary, frequency copy, validation, and save command enablement so an enabled schedule cannot be saved without at least one maintenance operation.
+
+**Retention Assurance cleanup readiness** — `RetentionAssurancePage` now renders a cleanup readiness card and inline confirmation panel bound through `RetentionAssuranceViewModel`. The view model owns guardrail inputs, retention-policy parsing, validation result rows, dry-run result copy, destructive-action gating, busy/error status, and cleanup reset behavior, while the page keeps legal-hold and audit-list rendering in WPF. No new polling, timers, or persistence behavior is added beyond the existing retention service calls.
 
 **Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.
 

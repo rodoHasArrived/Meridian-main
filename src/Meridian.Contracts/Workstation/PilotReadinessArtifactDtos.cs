@@ -54,6 +54,14 @@ public sealed record PilotReadinessArtifactDto(
     IReadOnlyList<PilotReadinessStageGateDto> StageGates,
     IReadOnlyList<PilotEvidenceGraphEdgeDto> EvidenceGraph)
 {
+    private IReadOnlyList<EvidenceArtifactRefDto> _ledgerArtifactRefs = [];
+
+    public IReadOnlyList<EvidenceArtifactRefDto> LedgerArtifactRefs
+    {
+        get => _ledgerArtifactRefs;
+        init => _ledgerArtifactRefs = value ?? [];
+    }
+
     public int ReadyStageCount => StageGates.Count(static gate =>
         gate.Status == PilotReadinessStageStatusDto.Ready);
 

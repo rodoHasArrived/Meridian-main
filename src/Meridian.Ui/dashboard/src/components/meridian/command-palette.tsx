@@ -1,9 +1,38 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
-import { buildCommandPaletteViewModel } from "@/components/meridian/command-palette.view-model";
+import {
+  buildCommandPaletteViewModel,
+  resolveCommandPaletteKeyCommand,
+  type CommandPaletteFocusBoundary,
+  type CommandPaletteItemKind,
+  type CommandPaletteItem,
+  type CommandPaletteFocusTarget
+} from "@/components/meridian/command-palette.view-model";
+import { COMMAND_PALETTE_DIALOG_ID } from "@/app-shell.view-model";
 import { cn } from "@/lib/utils";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
+
+const KIND_LABELS: Record<CommandPaletteItemKind, string> = {
+  workspace: "Workspaces",
+  route: "Quick routes",
+  preset: "Presets",
+  workflow: "Workflows"
+};
+
+const KIND_ORDER: CommandPaletteItemKind[] = ["workspace", "route", "preset", "workflow"];
+
+interface CommandGroup {
+  kind: CommandPaletteItemKind;
+  label: string;
+  items: CommandPaletteItem[];
+}
+
+function groupItems(items: CommandPaletteItem[]): CommandGroup[] {
+  return KIND_ORDER
+    .map((kind) => ({ kind, label: KIND_LABELS[kind], items: items.filter((item) => item.kind === kind) }))
+    .filter((group) => group.items.length > 0);
+}
 
 /**
  * Full-screen command palette overlay for quick workspace navigation.
@@ -11,8 +40,9 @@ import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
  * Opened and closed by the parent via `open` / `onOpenChange`. The current workspace
  * item (matched from `useLocation`) is highlighted and receives initial focus on open.
  *
- * **Keyboard:** Escape closes the palette and returns focus to the trigger. The item list
- * supports standard Tab/Shift-Tab navigation.
+ * **Keyboard:** Escape closes the palette. Arrow Up/Down moves across command
+ * results. Tab and Shift-Tab are contained inside the modal command surface while
+ * it is open.
  *
  * **Backdrop:** clicking outside the panel card calls `onOpenChange(false)`.
  *
@@ -41,31 +71,77 @@ export function CommandPalette({
   onPresetUsed
 }: CommandPaletteProps) {
   const { pathname } = useLocation();
+  const [query, setQuery] = useState("");
   const dialogRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const initialCommandRef = useRef<HTMLAnchorElement | null>(null);
-  const viewModel = buildCommandPaletteViewModel(pathname, undefined, {
-    workflowLibrary,
-    workflowPresets,
-    workflowError
-  });
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const viewModel = buildCommandPaletteViewModel(
+    pathname,
+    undefined,
+    {
+      workflowLibrary,
+      workflowPresets,
+      workflowError
+    },
+    query
+  );
+
+  useEffect(() => {
+    if (!open) {
+      setQuery("");
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) {
       return;
     }
 
-    (initialCommandRef.current ?? dialogRef.current)?.focus();
+    restoreFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    searchInputRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      const command = resolveCommandPaletteKeyCommand({
+        key: event.key,
+        shiftKey: event.shiftKey,
+        focusBoundary: getCommandPaletteFocusBoundary(dialogRef.current, document.activeElement),
+        focusTarget: getCommandPaletteFocusTarget(searchInputRef.current, document.activeElement)
+      });
+
+      if (command === "close") {
         event.preventDefault();
-        onOpenChange(false);
+        closePalette();
+        return;
+      }
+
+      if (command === "focus-first" || command === "focus-last") {
+        event.preventDefault();
+        focusCommandPaletteBoundary(dialogRef.current, command);
+        return;
+      }
+
+      if (command === "activate-first-command") {
+        event.preventDefault();
+        activateFirstCommandPaletteCommand(dialogRef.current);
+        return;
+      }
+
+      if (command === "focus-next-command" || command === "focus-previous-command") {
+        event.preventDefault();
+        focusCommandPaletteCommand(dialogRef.current, document.activeElement, command);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onOpenChange, open]);
+
+  const closePalette = () => {
+    onOpenChange(false);
+    setQuery("");
+    restoreFocusRef.current?.focus();
+  };
 
   if (!open) {
     return null;
@@ -77,11 +153,12 @@ export function CommandPalette({
       data-testid="command-palette-backdrop"
       onClick={(event) => {
         if (event.target === event.currentTarget) {
-          onOpenChange(false);
+          closePalette();
         }
       }}
     >
       <div
+        id={COMMAND_PALETTE_DIALOG_ID}
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
@@ -102,8 +179,8 @@ export function CommandPalette({
           </div>
           <button
             type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
-            onClick={() => onOpenChange(false)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            onClick={closePalette}
             aria-label="Close command palette"
           >
             <X className="h-4 w-4" />
@@ -116,55 +193,180 @@ export function CommandPalette({
             <span className="command-palette-chip">{viewModel.backendStatusLabel}</span>
           ) : null}
         </div>
-        <nav className="mt-3 grid max-h-[68vh] gap-2 overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
-          <div className="eyebrow-label">{viewModel.itemCountLabel}</div>
+        <label htmlFor="command-palette-search" className="sr-only">
+          {viewModel.searchInputLabel}
+        </label>
+        <input
+          ref={searchInputRef}
+          id="command-palette-search"
+          type="search"
+          value={query}
+          autoComplete="off"
+          spellCheck={false}
+          placeholder={viewModel.searchPlaceholder}
+          aria-label={viewModel.searchInputLabel}
+          aria-describedby="command-palette-filter-count"
+          className="mt-3 h-10 w-full rounded-md border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/35"
+          onChange={(event) => setQuery(event.target.value)}
+        />
+        <nav className="mt-3 max-h-[62vh] overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
+          <div className="flex items-center justify-between gap-3 pb-2">
+            <div className="eyebrow-label">{viewModel.itemCountLabel}</div>
+            <div id="command-palette-filter-count" className="text-xs text-muted-foreground" aria-live="polite">
+              {viewModel.filteredItemCountLabel}
+            </div>
+          </div>
           {viewModel.emptyState ? (
             <div className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm">
               <div className="font-semibold">{viewModel.emptyState.title}</div>
               <div className="mt-1 text-muted-foreground">{viewModel.emptyState.detail}</div>
             </div>
           ) : null}
-          {viewModel.items.map((item) => (
-            <Link
-              key={item.id}
-              ref={item.id === viewModel.initialFocusItemId ? initialCommandRef : undefined}
-              to={item.route}
-              data-command-id={item.id}
-              aria-label={item.ariaLabel}
-              aria-current={item.active ? "page" : undefined}
-              className={cn(
-                "command-palette-command rounded-md border px-3 py-3 text-sm transition-colors",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                item.active
-                  ? "border-primary/35 bg-primary/10 text-foreground"
-                  : "border-transparent hover:border-border/70 hover:bg-secondary/70"
-              )}
-              onClick={() => {
-                if (item.presetId && onPresetUsed) {
-                  void Promise.resolve(onPresetUsed(item.presetId)).catch(() => undefined);
-                }
+          {groupItems(viewModel.filteredItems).map((group) => (
+            <div key={group.kind} className="command-palette-group">
+              <div className="command-palette-group-label">{group.label}</div>
+              <div className="grid gap-1">
+                {group.items.map((item) => (
+                  <Link
+                    key={item.id}
+                    ref={item.id === viewModel.initialFocusItemId ? initialCommandRef : undefined}
+                    to={item.route}
+                    data-command-id={item.id}
+                    aria-label={item.ariaLabel}
+                    aria-current={item.active ? "page" : undefined}
+                    className={cn(
+                      "command-palette-command rounded-md border px-3 py-2.5 text-sm transition-colors",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      item.active
+                        ? "border-primary/35 bg-primary/10 text-foreground"
+                        : "border-transparent hover:border-border/70 hover:bg-secondary/70"
+                    )}
+                    onClick={() => {
+                      if (item.presetId && onPresetUsed) {
+                        void Promise.resolve(onPresetUsed(item.presetId)).catch(() => undefined);
+                      }
 
-                onOpenChange(false);
-              }}
-            >
-              <span className="flex items-start justify-between gap-3">
-                <span className="min-w-0">
-                  <span className="block font-semibold">{item.commandLabel}</span>
-                  <span className="mt-1 block text-muted-foreground">{item.description}</span>
-                </span>
-                <span className="flex shrink-0 flex-col items-end gap-2">
-                  <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`}>
-                    {item.routeLabel}
-                  </span>
-                  <span className="rounded-sm border border-border/70 bg-secondary/55 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                    {item.statusLabel}
-                  </span>
-                </span>
-              </span>
-            </Link>
+                      closePalette();
+                    }}
+                  >
+                    <span className="flex items-start justify-between gap-3">
+                      <span className="min-w-0">
+                        <span className="block font-semibold leading-snug">{item.commandLabel}</span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground">{item.description}</span>
+                      </span>
+                      <span className="flex shrink-0 flex-col items-end gap-1.5">
+                        <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`}>
+                          {item.routeLabel}
+                        </span>
+                        {item.active && (
+                          <span className="rounded-sm border border-primary/35 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
+                            {item.statusLabel}
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
       </div>
     </div>
   );
+}
+
+const commandPaletteFocusableSelector = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])"
+].join(",");
+
+function getCommandPaletteFocusableElements(dialog: HTMLDivElement | null): HTMLElement[] {
+  if (!dialog) {
+    return [];
+  }
+
+  return Array.from(dialog.querySelectorAll<HTMLElement>(commandPaletteFocusableSelector)).filter(
+    (element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true"
+  );
+}
+
+function getCommandPaletteCommandElements(dialog: HTMLDivElement | null): HTMLAnchorElement[] {
+  if (!dialog) {
+    return [];
+  }
+
+  return Array.from(dialog.querySelectorAll<HTMLAnchorElement>(".command-palette-command"));
+}
+
+function getCommandPaletteFocusTarget(
+  searchInput: HTMLInputElement | null,
+  activeElement: Element | null
+): CommandPaletteFocusTarget {
+  if (activeElement === searchInput) {
+    return "search";
+  }
+
+  return activeElement?.classList.contains("command-palette-command") ? "command" : "other";
+}
+
+function getCommandPaletteFocusBoundary(
+  dialog: HTMLDivElement | null,
+  activeElement: Element | null
+): CommandPaletteFocusBoundary {
+  const focusable = getCommandPaletteFocusableElements(dialog);
+  if (focusable.length === 0) {
+    return "none";
+  }
+
+  if (!dialog || !activeElement || !dialog.contains(activeElement)) {
+    return "outside";
+  }
+
+  if (activeElement === focusable[0]) {
+    return "first";
+  }
+
+  if (activeElement === focusable[focusable.length - 1]) {
+    return "last";
+  }
+
+  return "middle";
+}
+
+function focusCommandPaletteBoundary(dialog: HTMLDivElement | null, command: "focus-first" | "focus-last") {
+  const focusable = getCommandPaletteFocusableElements(dialog);
+  const target = command === "focus-first" ? focusable[0] : focusable[focusable.length - 1];
+  (target ?? dialog)?.focus();
+}
+
+function activateFirstCommandPaletteCommand(dialog: HTMLDivElement | null) {
+  getCommandPaletteCommandElements(dialog)[0]?.click();
+}
+
+function focusCommandPaletteCommand(
+  dialog: HTMLDivElement | null,
+  activeElement: Element | null,
+  command: "focus-next-command" | "focus-previous-command"
+) {
+  const commands = getCommandPaletteCommandElements(dialog);
+  if (commands.length === 0) {
+    return;
+  }
+
+  const currentIndex = activeElement ? commands.findIndex((element) => element === activeElement) : -1;
+  const nextIndex =
+    command === "focus-next-command"
+      ? currentIndex < 0
+        ? 0
+        : (currentIndex + 1) % commands.length
+      : currentIndex < 0
+        ? commands.length - 1
+        : (currentIndex - 1 + commands.length) % commands.length;
+
+  commands[nextIndex]?.focus();
 }

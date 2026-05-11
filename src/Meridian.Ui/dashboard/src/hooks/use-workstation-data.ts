@@ -4,8 +4,10 @@ import {
   getDataWorkspace,
   getGovernanceWorkspace,
   getAlpacaConnectionStatus,
+  hasDevelopmentFixtureUsage,
   getPortfolioWorkspace,
   getReportingWorkspace,
+  resetDevelopmentFixtureUsage,
   getSession,
   getStrategyWorkspace,
   getSystemStatus,
@@ -23,6 +25,7 @@ import type {
   SessionInfo,
   SystemOverviewResponse,
   TradingWorkspaceResponse,
+  WorkflowPreset,
   WorkflowLibrary,
   WorkflowPresetLibrary,
   WorkspaceKey
@@ -44,6 +47,7 @@ interface WorkstationDataState {
   workflowLibrary: WorkflowLibrary | null;
   workflowPresets: WorkflowPresetLibrary | null;
   workflowError: string | null;
+  usingDevelopmentFixtures: boolean;
   loading: boolean;
   error: string | null;
   workspaceErrors: WorkspaceErrorMap;
@@ -63,6 +67,7 @@ const initialState: WorkstationDataState = {
   workflowLibrary: null,
   workflowPresets: null,
   workflowError: null,
+  usingDevelopmentFixtures: false,
   loading: true,
   error: null,
   workspaceErrors: {}
@@ -70,8 +75,38 @@ const initialState: WorkstationDataState = {
 
 export function useWorkstationData() {
   const [state, setState] = useState<WorkstationDataState>(initialState);
+  const mountedRef = useRef(true);
+  const refreshRevisionRef = useRef(0);
+  const tradingRefreshRevisionRef = useRef(0);
+  const refreshAbortRef = useRef<AbortController | null>(null);
+  const tradingRefreshAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      refreshRevisionRef.current += 1;
+      tradingRefreshRevisionRef.current += 1;
+      refreshAbortRef.current?.abort();
+      tradingRefreshAbortRef.current?.abort();
+    };
+  }, []);
 
   const refresh = useCallback(async () => {
+    if (!mountedRef.current) {
+      return;
+    }
+
+    const revision = refreshRevisionRef.current + 1;
+    refreshRevisionRef.current = revision;
+    tradingRefreshRevisionRef.current += 1;
+    refreshAbortRef.current?.abort();
+    tradingRefreshAbortRef.current?.abort();
+    const controller = new AbortController();
+    refreshAbortRef.current = controller;
+    const requestOptions = { signal: controller.signal };
+    resetDevelopmentFixtureUsage();
     setState((current) => ({ ...current, loading: true, error: null, workflowError: null, workspaceErrors: {} }));
 
     const [
@@ -88,18 +123,18 @@ export function useWorkstationData() {
       workflowLibrary,
       workflowPresets
     ] = await Promise.allSettled([
-      getSession(),
-      getSystemStatus(),
-      getStrategyWorkspace(),
-      getTradingWorkspace(),
-      getPortfolioWorkspace(),
-      getDataWorkspace(),
-      getGovernanceWorkspace(),
-      getReportingWorkspace(),
-      getAlpacaConnectionStatus(),
-      getBrokerageHouseholdPortfolio("alpaca"),
-      getWorkflowLibrary(),
-      getWorkflowPresets()
+      getSession(requestOptions),
+      getSystemStatus(requestOptions),
+      getStrategyWorkspace(requestOptions),
+      getTradingWorkspace(requestOptions),
+      getPortfolioWorkspace(requestOptions),
+      getDataWorkspace(requestOptions),
+      getGovernanceWorkspace(requestOptions),
+      getReportingWorkspace(requestOptions),
+      getAlpacaConnectionStatus(requestOptions),
+      getBrokerageHouseholdPortfolio("alpaca", requestOptions),
+      getWorkflowLibrary(requestOptions),
+      getWorkflowPresets(requestOptions)
     ]);
 
     const workspaceErrors: WorkspaceErrorMap = {};
@@ -110,9 +145,9 @@ export function useWorkstationData() {
         return result.value;
       }
 
-      const message = result.reason instanceof Error ? result.reason.message : "Workspace request failed.";
+      const message = formatRequestError(result.reason, "Workspace request failed.");
       for (const key of keys) {
-        workspaceErrors[key] = message;
+        appendWorkspaceError(workspaceErrors, key, message);
       }
       return null;
     };
@@ -122,7 +157,7 @@ export function useWorkstationData() {
         return result.value;
       }
 
-      bootstrapErrors.push(result.reason instanceof Error ? result.reason.message : "Workstation bootstrap request failed.");
+      bootstrapErrors.push(formatRequestError(result.reason, "Workstation bootstrap request failed."));
       return null;
     };
 
@@ -131,7 +166,7 @@ export function useWorkstationData() {
         return result.value;
       }
 
-      workflowErrors.push(result.reason instanceof Error ? result.reason.message : "Workflow library request failed.");
+      workflowErrors.push(formatRequestError(result.reason, "Workflow library request failed."));
       return null;
     };
 
@@ -149,11 +184,19 @@ export function useWorkstationData() {
       workflowLibrary: readWorkflow(workflowLibrary),
       workflowPresets: readWorkflow(workflowPresets),
       workflowError: workflowErrors[0] ?? null,
+      usingDevelopmentFixtures: hasDevelopmentFixtureUsage(),
       loading: false,
       error: Object.values(workspaceErrors)[0] ?? bootstrapErrors[0] ?? null,
       workspaceErrors
     };
 
+    if (!mountedRef.current || refreshRevisionRef.current !== revision) {
+      return;
+    }
+
+    if (refreshAbortRef.current === controller) {
+      refreshAbortRef.current = null;
+    }
     setState(nextState);
   }, []);
 
@@ -165,16 +208,80 @@ export function useWorkstationData() {
   // Positions, orders, fills, and readiness status change as trading runs.
   const refreshingTrading = useRef(false);
   const refreshTrading = useCallback(async () => {
-    if (refreshingTrading.current) return;
+    if (refreshingTrading.current || !mountedRef.current) return;
+    const revision = tradingRefreshRevisionRef.current + 1;
+    tradingRefreshRevisionRef.current = revision;
+    tradingRefreshAbortRef.current?.abort();
+    const controller = new AbortController();
+    tradingRefreshAbortRef.current = controller;
     refreshingTrading.current = true;
     try {
-      const result = await getTradingWorkspace();
-      setState((current) => ({ ...current, trading: result }));
-    } catch {
-      // keep stale data; full refresh() is always available
+      const result = await getTradingWorkspace({ signal: controller.signal });
+      if (!mountedRef.current || tradingRefreshRevisionRef.current !== revision) {
+        return;
+      }
+      setState((current) => {
+        const tradingError = current.workspaceErrors.trading;
+        const workspaceErrors = withoutWorkspaceError(current.workspaceErrors, "trading");
+        return {
+          ...current,
+          trading: result,
+          error: current.error === tradingError ? firstWorkspaceError(workspaceErrors) ?? null : current.error,
+          workspaceErrors,
+          usingDevelopmentFixtures: current.usingDevelopmentFixtures || hasDevelopmentFixtureUsage()
+        };
+      });
+    } catch (err) {
+      if (!mountedRef.current || tradingRefreshRevisionRef.current !== revision) {
+        return;
+      }
+
+      const message = formatRequestError(err, "Trading workspace refresh failed.");
+      setState((current) => {
+        const workspaceErrors = {
+          ...current.workspaceErrors,
+          trading: message
+        };
+        return {
+          ...current,
+          error: current.error ?? message,
+          workspaceErrors
+        };
+      });
     } finally {
+      if (tradingRefreshAbortRef.current === controller) {
+        tradingRefreshAbortRef.current = null;
+      }
       refreshingTrading.current = false;
     }
+  }, []);
+
+  const upsertWorkflowPreset = useCallback((preset: WorkflowPreset) => {
+    if (!mountedRef.current) {
+      return;
+    }
+
+    setState((current) => {
+      const existingLibrary = current.workflowPresets ?? {
+        generatedAt: preset.updatedAt,
+        presets: []
+      };
+      const presets = [
+        preset,
+        ...existingLibrary.presets.filter(
+          (item) => item.presetId.toLowerCase() !== preset.presetId.toLowerCase()
+        )
+      ].sort(compareWorkflowPresets);
+
+      return {
+        ...current,
+        workflowPresets: {
+          ...existingLibrary,
+          generatedAt: preset.updatedAt,
+          presets
+        }
+      };
+    });
   }, []);
 
   useEffect(() => {
@@ -182,5 +289,57 @@ export function useWorkstationData() {
     return () => clearInterval(id);
   }, [refreshTrading]);
 
-  return { ...state, refresh, refreshTrading };
+  return { ...state, refresh, refreshTrading, upsertWorkflowPreset };
+}
+
+function formatRequestError(reason: unknown, fallback: string): string {
+  return reason instanceof Error && reason.message.trim() ? reason.message : fallback;
+}
+
+function appendWorkspaceError(errors: WorkspaceErrorMap, key: WorkspaceKey, message: string) {
+  const current = errors[key];
+  if (!current) {
+    errors[key] = message;
+    return;
+  }
+
+  if (current.split("; ").includes(message)) {
+    return;
+  }
+
+  errors[key] = `${current}; ${message}`;
+}
+
+function withoutWorkspaceError(errors: WorkspaceErrorMap, key: WorkspaceKey): WorkspaceErrorMap {
+  if (!(key in errors)) {
+    return errors;
+  }
+
+  const next = { ...errors };
+  delete next[key];
+  return next;
+}
+
+function firstWorkspaceError(errors: WorkspaceErrorMap): string | undefined {
+  return Object.values(errors).find((value): value is string => Boolean(value));
+}
+
+function compareWorkflowPresets(left: WorkflowPreset, right: WorkflowPreset) {
+  if (left.isPinned !== right.isPinned) {
+    return left.isPinned ? -1 : 1;
+  }
+
+  const leftUsed = Date.parse(left.lastUsedAt ?? "") || 0;
+  const rightUsed = Date.parse(right.lastUsedAt ?? "") || 0;
+  if (leftUsed !== rightUsed) {
+    return rightUsed - leftUsed;
+  }
+
+  const leftUpdated = Date.parse(left.updatedAt) || 0;
+  const rightUpdated = Date.parse(right.updatedAt) || 0;
+  if (leftUpdated !== rightUpdated) {
+    return rightUpdated - leftUpdated;
+  }
+
+  return left.name.localeCompare(right.name);
 }
