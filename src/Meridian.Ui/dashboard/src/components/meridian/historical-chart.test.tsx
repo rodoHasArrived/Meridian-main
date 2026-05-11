@@ -164,4 +164,59 @@ describe("HistoricalChartCard", () => {
       expect(screen.getByRole("alert")).toHaveTextContent(/boom/);
     });
   });
+
+  it("reveals the OHLC hover panel when the candlestick chart receives keyboard focus and arrow navigation", async () => {
+    const user = userEvent.setup();
+    getBarsSpy.mockResolvedValueOnce(response([
+      bar("2024-06-03T14:30:00Z", 100, 101, 99.5, 100.5, 1000),
+      bar("2024-06-03T14:35:00Z", 100.5, 102, 100.4, 101.7, 800)
+    ]));
+
+    render(<HistoricalChartCard symbol="AAPL" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Open")).toBeInTheDocument();
+    });
+
+    // Hover panel should not be visible yet — placeholder hint is shown instead.
+    expect(screen.queryByTestId("historical-chart-hover-panel")).toBeNull();
+    expect(screen.getByText(/Hover, tap, or focus the chart/)).toBeInTheDocument();
+
+    const chart = screen.getByLabelText(/AAPL 1D candlestick chart/i);
+    chart.focus();
+    await user.keyboard("{ArrowRight}");
+
+    const panel = await screen.findByTestId("historical-chart-hover-panel");
+    expect(panel).toBeInTheDocument();
+    // Crosshair line should be drawn on the hovered bar.
+    expect(screen.getByTestId("historical-chart-crosshair")).toBeInTheDocument();
+
+    // Escape clears hover; the hint should come back.
+    await user.keyboard("{Escape}");
+    expect(screen.queryByTestId("historical-chart-hover-panel")).toBeNull();
+    expect(screen.queryByTestId("historical-chart-crosshair")).toBeNull();
+  });
+
+  it("renders an SMA legend entry when enough bars are loaded", async () => {
+    const bars = Array.from({ length: 22 }, (_, i) =>
+      bar(
+        new Date(2024, 5, 3, 14, 30 + i).toISOString(),
+        100 + i,
+        102 + i,
+        99 + i,
+        101 + i,
+        1000 + i
+      )
+    );
+    getBarsSpy.mockResolvedValueOnce(response(bars));
+
+    render(<HistoricalChartCard symbol="AAPL" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Open")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("SMA 20")).toBeInTheDocument();
+    expect(screen.getByTestId("historical-chart-sma-20")).toBeInTheDocument();
+  });
 });

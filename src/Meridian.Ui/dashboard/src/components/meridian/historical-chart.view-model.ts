@@ -103,6 +103,38 @@ export interface CandlestickBarViewModel {
   isBullish: boolean;
   isDoji: boolean;
   tooltipLabel: string;
+  hover: CandlestickHoverDetail;
+}
+
+export type CandlestickChangeTone = "positive" | "negative" | "neutral";
+
+export interface CandlestickHoverDetail {
+  index: number;
+  timeLabel: string;
+  openLabel: string;
+  highLabel: string;
+  lowLabel: string;
+  closeLabel: string;
+  volumeLabel: string;
+  changeLabel: string;
+  changeTone: CandlestickChangeTone;
+  ariaLabel: string;
+}
+
+export interface CandlestickSmaOverlay {
+  period: number;
+  label: string;
+  ariaLabel: string;
+  stroke: string;
+  points: string;
+}
+
+export interface CandlestickChartGeometry {
+  width: number;
+  height: number;
+  padX: number;
+  slotWidth: number;
+  priceAreaHeight: number;
 }
 
 export interface CandlestickChartViewModel {
@@ -118,6 +150,8 @@ export interface CandlestickChartViewModel {
   volumeBars: { x: number; y: number; width: number; height: number; isBullish: boolean }[];
   priceAreaHeight: number;
   volumeAreaTop: number;
+  geometry: CandlestickChartGeometry;
+  smaOverlays: CandlestickSmaOverlay[];
 }
 
 export interface ChartModeOption {
@@ -354,6 +388,26 @@ export function buildCandlestickChartViewModel({
     const isDoji = Math.abs(bar.close - bar.open) < priceSpan * 0.002;
     const bodyTop = Math.min(openY, closeY);
     const bodyH = Math.max(1.5, Math.abs(closeY - openY));
+    const prevClose = i > 0 ? chartBars[i - 1]!.bar.close : null;
+    const changeFromPrev = prevClose !== null ? bar.close - prevClose : null;
+    const changeFromPrevPct = prevClose !== null && prevClose !== 0
+      ? (changeFromPrev! / prevClose) * 100
+      : null;
+    const timeLabel = formatBarTimeLabel(bar.start);
+    const tooltipLabel = `${timeLabel} · O ${formatPriceRaw(bar.open)} H ${formatPriceRaw(bar.high)} L ${formatPriceRaw(bar.low)} C ${formatPriceRaw(bar.close)}`;
+
+    const hover: CandlestickHoverDetail = {
+      index: i,
+      timeLabel,
+      openLabel: formatPrice(bar.open),
+      highLabel: formatPrice(bar.high),
+      lowLabel: formatPrice(bar.low),
+      closeLabel: formatPrice(bar.close),
+      volumeLabel: formatVolume(bar.volume),
+      changeLabel: formatChangeWithPct(changeFromPrev, changeFromPrevPct),
+      changeTone: candleChangeTone(changeFromPrev),
+      ariaLabel: `${timeLabel}. Open ${formatPrice(bar.open)}, high ${formatPrice(bar.high)}, low ${formatPrice(bar.low)}, close ${formatPrice(bar.close)}. Volume ${formatVolume(bar.volume)}.`
+    };
 
     return {
       midX,
@@ -365,7 +419,8 @@ export function buildCandlestickChartViewModel({
       wickY2: lowY,
       isBullish,
       isDoji,
-      tooltipLabel: `${new Date(bar.start).toLocaleString()} · O ${formatPriceRaw(bar.open)} H ${formatPriceRaw(bar.high)} L ${formatPriceRaw(bar.low)} C ${formatPriceRaw(bar.close)}`
+      tooltipLabel,
+      hover
     };
   });
 
@@ -380,6 +435,12 @@ export function buildCandlestickChartViewModel({
       height: barH,
       isBullish: bar.close >= bar.open
     };
+  });
+
+  const smaOverlays = buildSmaOverlays({
+    closes: chartBars.map(({ bar }) => bar.close),
+    midXs: candleBars.map((b) => b.midX),
+    yForPrice
   });
 
   return {
@@ -402,8 +463,95 @@ export function buildCandlestickChartViewModel({
     },
     volumeBars,
     priceAreaHeight,
-    volumeAreaTop
+    volumeAreaTop,
+    geometry: {
+      width,
+      height: totalHeight,
+      padX,
+      slotWidth,
+      priceAreaHeight
+    },
+    smaOverlays
   };
+}
+
+interface BuildSmaOverlaysInput {
+  closes: number[];
+  midXs: number[];
+  yForPrice: (price: number) => number;
+}
+
+const SMA_OVERLAY_DEFINITIONS: ReadonlyArray<{
+  period: number;
+  label: string;
+  stroke: string;
+}> = [
+  { period: 20, label: "SMA 20", stroke: "var(--chart-sma-20, #f5a524)" },
+  { period: 50, label: "SMA 50", stroke: "var(--chart-sma-50, #7c5cff)" }
+];
+
+function buildSmaOverlays({ closes, midXs, yForPrice }: BuildSmaOverlaysInput): CandlestickSmaOverlay[] {
+  const overlays: CandlestickSmaOverlay[] = [];
+  for (const def of SMA_OVERLAY_DEFINITIONS) {
+    const values = computeSimpleMovingAverage(closes, def.period);
+    const points = values
+      .map((value, i) =>
+        value === null
+          ? null
+          : `${midXs[i]!.toFixed(2)},${yForPrice(value).toFixed(2)}`
+      )
+      .filter((p): p is string => p !== null)
+      .join(" ");
+
+    if (!points) continue;
+
+    overlays.push({
+      period: def.period,
+      label: def.label,
+      ariaLabel: `${def.period}-period simple moving average`,
+      stroke: def.stroke,
+      points
+    });
+  }
+  return overlays;
+}
+
+export function computeSimpleMovingAverage(
+  values: readonly number[],
+  period: number
+): Array<number | null> {
+  if (period <= 0) return values.map(() => null);
+  const result: Array<number | null> = new Array(values.length).fill(null);
+  if (values.length < period) return result;
+
+  let sum = 0;
+  for (let i = 0; i < period; i++) sum += values[i]!;
+  result[period - 1] = sum / period;
+  for (let i = period; i < values.length; i++) {
+    sum += values[i]! - values[i - period]!;
+    result[i] = sum / period;
+  }
+  return result;
+}
+
+function formatBarTimeLabel(start: string): string {
+  const date = new Date(start);
+  if (Number.isNaN(date.getTime())) return start;
+  return date.toLocaleString();
+}
+
+function formatChangeWithPct(change: number | null, pct: number | null): string {
+  if (change === null || !Number.isFinite(change)) return "-";
+  const sign = change > 0 ? "+" : change < 0 ? "" : "";
+  const changeText = `${sign}${change.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
+  if (pct === null || !Number.isFinite(pct)) return changeText;
+  const pctSign = pct > 0 ? "+" : pct < 0 ? "" : "";
+  return `${changeText} (${pctSign}${pct.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)`;
+}
+
+function candleChangeTone(change: number | null): CandlestickChangeTone {
+  if (change === null || !Number.isFinite(change) || change === 0) return "neutral";
+  return change > 0 ? "positive" : "negative";
 }
 
 function formatPriceRaw(value: number): string {
