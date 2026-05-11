@@ -21,6 +21,8 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     private const string FxSpotProjectionTable = "fxspot_projection";
     private const string SwapProjectionTable = "swap_projection";
     private const string CommodityProjectionTable = "commodity_projection";
+    private const string CryptoProjectionTable = "crypto_projection";
+    private const string DepositProjectionTable = "deposit_projection";
 
     private readonly SecurityMasterOptions _options;
 
@@ -311,6 +313,8 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     await UpsertFxSpotProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
     await UpsertSwapProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
     await UpsertCommodityProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+    await UpsertCryptoProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+    await UpsertDepositProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
 }
 
     private async Task UpsertBondProjectionTablesAsync(
@@ -1416,6 +1420,121 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Parameters.AddWithValue("contract_size", (object?)contractSize ?? DBNull.Value);
         command.Parameters.AddWithValue("exchange_code", (object?)exchangeCode ?? DBNull.Value);
         command.Parameters.AddWithValue("delivery_country", (object?)deliveryCountry ?? DBNull.Value);
+        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
+        command.Parameters.AddWithValue("version", record.Version);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertCryptoProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityProjectionRecord record,
+        CancellationToken ct)
+    {
+        var baseCurrency = GetOptionalString(record.AssetSpecificTerms, "baseCurrency");
+        var quoteCurrency = GetOptionalString(record.AssetSpecificTerms, "quoteCurrency");
+
+        if (!string.Equals(record.AssetClass, "CryptoCurrency", StringComparison.OrdinalIgnoreCase) ||
+            string.IsNullOrWhiteSpace(baseCurrency) ||
+            string.IsNullOrWhiteSpace(quoteCurrency))
+        {
+            await using var del = connection.CreateCommand();
+            del.Transaction = transaction;
+            del.CommandText = $"delete from {Qualified(CryptoProjectionTable)} where security_id = @security_id;";
+            del.Parameters.AddWithValue("security_id", record.SecurityId);
+            await del.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            return;
+        }
+
+        var network = GetOptionalString(record.AssetSpecificTerms, "network");
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified(CryptoProjectionTable)} (
+                security_id, display_name, base_currency, quote_currency, network,
+                primary_identifier_value, version)
+            values (
+                @security_id, @display_name, @base_currency, @quote_currency, @network,
+                @primary_identifier_value, @version)
+            on conflict (security_id) do update set
+                display_name = excluded.display_name,
+                base_currency = excluded.base_currency,
+                quote_currency = excluded.quote_currency,
+                network = excluded.network,
+                primary_identifier_value = excluded.primary_identifier_value,
+                version = excluded.version;
+            """;
+        command.Parameters.AddWithValue("security_id", record.SecurityId);
+        command.Parameters.AddWithValue("display_name", record.DisplayName);
+        command.Parameters.AddWithValue("base_currency", baseCurrency.Trim().ToUpperInvariant());
+        command.Parameters.AddWithValue("quote_currency", quoteCurrency.Trim().ToUpperInvariant());
+        command.Parameters.AddWithValue("network", (object?)network ?? DBNull.Value);
+        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
+        command.Parameters.AddWithValue("version", record.Version);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertDepositProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityProjectionRecord record,
+        CancellationToken ct)
+    {
+        var depositType = GetOptionalString(record.AssetSpecificTerms, "depositType");
+        var institutionName = GetOptionalString(record.AssetSpecificTerms, "institutionName");
+
+        if (!string.Equals(record.AssetClass, "Deposit", StringComparison.OrdinalIgnoreCase) ||
+            string.IsNullOrWhiteSpace(depositType) ||
+            string.IsNullOrWhiteSpace(institutionName))
+        {
+            await using var del = connection.CreateCommand();
+            del.Transaction = transaction;
+            del.CommandText = $"delete from {Qualified(DepositProjectionTable)} where security_id = @security_id;";
+            del.Parameters.AddWithValue("security_id", record.SecurityId);
+            await del.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            return;
+        }
+
+        var maturity = GetOptionalDateOnly(record.AssetSpecificTerms, "maturity");
+        var interestRate = GetOptionalDecimal(record.AssetSpecificTerms, "interestRate");
+        var dayCount = GetOptionalString(record.AssetSpecificTerms, "dayCount");
+        var isCallable = GetOptionalBool(record.AssetSpecificTerms, "isCallable") ?? false;
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified(DepositProjectionTable)} (
+                security_id, display_name, currency, deposit_type, institution_name,
+                maturity_date, interest_rate, day_count, is_callable,
+                primary_identifier_value, version)
+            values (
+                @security_id, @display_name, @currency, @deposit_type, @institution_name,
+                @maturity_date, @interest_rate, @day_count, @is_callable,
+                @primary_identifier_value, @version)
+            on conflict (security_id) do update set
+                display_name = excluded.display_name,
+                currency = excluded.currency,
+                deposit_type = excluded.deposit_type,
+                institution_name = excluded.institution_name,
+                maturity_date = excluded.maturity_date,
+                interest_rate = excluded.interest_rate,
+                day_count = excluded.day_count,
+                is_callable = excluded.is_callable,
+                primary_identifier_value = excluded.primary_identifier_value,
+                version = excluded.version;
+            """;
+        command.Parameters.AddWithValue("security_id", record.SecurityId);
+        command.Parameters.AddWithValue("display_name", record.DisplayName);
+        command.Parameters.AddWithValue("currency", record.Currency);
+        command.Parameters.AddWithValue("deposit_type", depositType.Trim());
+        command.Parameters.AddWithValue("institution_name", institutionName.Trim());
+        command.Parameters.AddWithValue("maturity_date", maturity.HasValue ? (object)maturity.Value.ToDateTime(TimeOnly.MinValue) : DBNull.Value);
+        command.Parameters.AddWithValue("interest_rate", (object?)interestRate ?? DBNull.Value);
+        command.Parameters.AddWithValue("day_count", (object?)dayCount ?? DBNull.Value);
+        command.Parameters.AddWithValue("is_callable", isCallable);
         command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
         command.Parameters.AddWithValue("version", record.Version);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);

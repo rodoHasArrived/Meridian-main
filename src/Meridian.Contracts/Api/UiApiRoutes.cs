@@ -355,6 +355,14 @@ public static class UiApiRoutes
     public const string ReferenceDataCommoditiesByType = "/api/reference-data/commodities/by-type";
     public const string ReferenceDataCommoditiesByExchange = "/api/reference-data/commodities/by-exchange";
 
+    public const string ReferenceDataCryptoReference = "/api/reference-data/crypto/{securityId:guid}";
+    public const string ReferenceDataCryptoByNetwork = "/api/reference-data/crypto/by-network";
+    public const string ReferenceDataCryptoByBaseCurrency = "/api/reference-data/crypto/by-base-currency";
+
+    public const string ReferenceDataDepositReference = "/api/reference-data/deposits/{securityId:guid}";
+    public const string ReferenceDataDepositsByInstitution = "/api/reference-data/deposits/by-institution";
+    public const string ReferenceDataDepositsMaturingBefore = "/api/reference-data/deposits/maturing-before";
+
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";
     public const string MessagingStatus = "/api/messaging/status";

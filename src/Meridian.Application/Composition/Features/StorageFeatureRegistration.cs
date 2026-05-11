@@ -1,6 +1,8 @@
 using Meridian.Application.Config;
 using Meridian.Application.Accounts;
 using Meridian.Application.Commodities;
+using Meridian.Application.CryptoCurrency;
+using Meridian.Application.Deposits;
 using Meridian.Application.Derivatives;
 using Meridian.Application.DirectLending;
 using Meridian.Application.EnvironmentDesign;
@@ -117,6 +119,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IFxSpotReferenceProjectionStore, PostgresFxSpotReferenceProjectionStore>();
             services.AddSingleton<ISwapReferenceProjectionStore, PostgresSwapReferenceProjectionStore>();
             services.AddSingleton<ICommodityReferenceProjectionStore, PostgresCommodityReferenceProjectionStore>();
+            services.AddSingleton<ICryptoReferenceProjectionStore, PostgresCryptoReferenceProjectionStore>();
+            services.AddSingleton<IDepositReferenceProjectionStore, PostgresDepositReferenceProjectionStore>();
             services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
             services.AddSingleton<SecurityMasterMigrationRunner>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
@@ -137,6 +141,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IFxSpotReferenceService, FxSpotProjectionService>();
             services.AddSingleton<ISwapReferenceService, SwapProjectionService>();
             services.AddSingleton<ICommodityReferenceService, CommodityProjectionService>();
+            services.AddSingleton<ICryptoReferenceService, CryptoProjectionService>();
+            services.AddSingleton<IDepositReferenceService, DepositProjectionService>();
             services.AddSingleton<ISecurityResolver, SecurityResolver>();
             services.AddHostedService<SecurityMasterProjectionWarmupService>();
             services.AddSingleton<IPolygonCorporateActionFetcher, PolygonCorporateActionFetcher>();
@@ -165,6 +171,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IFxSpotReferenceService, NullFxSpotReferenceService>();
         services.TryAddSingleton<ISwapReferenceService, NullSwapReferenceService>();
         services.TryAddSingleton<ICommodityReferenceService, NullCommodityReferenceService>();
+        services.TryAddSingleton<ICryptoReferenceService, NullCryptoReferenceService>();
+        services.TryAddSingleton<IDepositReferenceService, NullDepositReferenceService>();
         services.TryAddSingleton<ISecurityMasterAmender, NullSecurityMasterService>();
         services.TryAddSingleton<ISecurityMasterConflictService, NullSecurityMasterConflictService>();
         services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
