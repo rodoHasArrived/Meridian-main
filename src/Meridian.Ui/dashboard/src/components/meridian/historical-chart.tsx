@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { AlertCircle, LineChart, Loader2, RefreshCcw } from "lucide-react";
+import { AlertCircle, LineChart, Loader2, RefreshCcw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
   HISTORICAL_CHART_TIMEFRAMES,
@@ -15,6 +16,9 @@ import {
   type CandlestickHoverDetail,
   type CandlestickRsiPanel,
   type ChartModeOption,
+  type CompareChartViewModel,
+  type CompareChipViewModel,
+  type CompareSeriesViewModel,
   type HistoricalChartSparklineViewModel,
   type HistoricalChartStatePanel,
   type HistoricalChartStatTile,
@@ -89,10 +93,28 @@ export function HistoricalChartCard({ symbol, className }: HistoricalChartCardPr
           <span aria-hidden="true" className="text-border/60 select-none">|</span>
           <IndicatorToggleGroup options={vm.indicatorOptions} />
         </div>
+        <CompareControl
+          inputId={vm.compareInputId}
+          inputLabel={vm.compareInputLabel}
+          inputPlaceholder={vm.compareInputPlaceholder}
+          value={vm.compareInput}
+          onChange={vm.setCompareInput}
+          onSubmit={vm.submitCompareSymbol}
+          submitDisabled={vm.compareSubmitDisabled}
+          submitDisabledReason={vm.compareSubmitDisabledReason}
+          submitAriaLabel={vm.compareSubmitAriaLabel}
+          chips={vm.compareChips}
+          errorMessage={vm.compareErrorMessage}
+          onClearAll={vm.clearCompareSymbols}
+        />
       </CardHeader>
       <CardContent>
         {vm.statePanel ? (
           <HistoricalChartStatePanelView panel={vm.statePanel} onRetry={vm.retry} />
+        ) : vm.compareActive && vm.compareChart ? (
+          <div className="space-y-3">
+            <CompareChartView viewModel={vm.compareChart} />
+          </div>
         ) : vm.activeChartMode === "candles" && vm.candlestickChart ? (
           <div className="space-y-3">
             <CandlestickChartView viewModel={vm.candlestickChart} />
@@ -110,6 +132,224 @@ export function HistoricalChartCard({ symbol, className }: HistoricalChartCardPr
         ) : null}
       </CardContent>
     </Card>
+  );
+}
+
+interface CompareControlProps {
+  inputId: string;
+  inputLabel: string;
+  inputPlaceholder: string;
+  value: string;
+  onChange: (next: string) => void;
+  onSubmit: (event?: { preventDefault?: () => void }) => void;
+  submitDisabled: boolean;
+  submitDisabledReason: string | null;
+  submitAriaLabel: string;
+  chips: CompareChipViewModel[];
+  errorMessage: string | null;
+  onClearAll: () => void;
+}
+
+function CompareControl({
+  inputId,
+  inputLabel,
+  inputPlaceholder,
+  value,
+  onChange,
+  onSubmit,
+  submitDisabled,
+  submitDisabledReason,
+  submitAriaLabel,
+  chips,
+  errorMessage,
+  onClearAll
+}: CompareControlProps) {
+  return (
+    <div className="mt-3 flex flex-col gap-2" data-testid="historical-chart-compare-control">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSubmit(event);
+        }}
+        className="flex flex-col gap-2 sm:flex-row sm:items-center"
+        aria-label="Compare additional symbols"
+      >
+        <label htmlFor={inputId} className="sr-only">{inputLabel}</label>
+        <Input
+          id={inputId}
+          placeholder={inputPlaceholder}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          autoComplete="off"
+          spellCheck={false}
+          className="sm:max-w-[200px]"
+        />
+        <div className="flex items-center gap-2">
+          <Button
+            type="submit"
+            size="sm"
+            variant="outline"
+            disabled={submitDisabled}
+            disabledReason={submitDisabledReason}
+            aria-label={submitAriaLabel}
+            data-testid="historical-chart-compare-submit"
+          >
+            Compare
+          </Button>
+          {chips.length > 0 ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={onClearAll}
+              aria-label="Clear all comparison symbols"
+              data-testid="historical-chart-compare-clear"
+            >
+              Clear
+            </Button>
+          ) : null}
+        </div>
+      </form>
+      {chips.length > 0 ? (
+        <ul aria-label="Active comparison symbols" className="flex flex-wrap gap-1.5">
+          {chips.map((chip) => (
+            <CompareChip key={chip.symbol} chip={chip} />
+          ))}
+        </ul>
+      ) : null}
+      {errorMessage ? (
+        <p role="alert" className="text-xs text-danger" data-testid="historical-chart-compare-error">
+          {errorMessage}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function CompareChip({ chip }: { chip: CompareChipViewModel }) {
+  const statusToneClass = chip.status === "error"
+    ? "text-danger"
+    : chip.status === "loading"
+      ? "text-muted-foreground"
+      : chip.status === "empty"
+        ? "text-warning"
+        : "text-foreground";
+  return (
+    <li
+      aria-label={chip.ariaLabel}
+      data-testid={`historical-chart-compare-chip-${chip.symbol}`}
+      className="flex items-center gap-1.5 rounded-full border border-border/60 bg-secondary/30 px-2 py-0.5 text-xs"
+    >
+      <span
+        aria-hidden="true"
+        className="inline-block h-2 w-2 rounded-full"
+        style={{ backgroundColor: chip.color }}
+      />
+      <span className="font-mono">{chip.symbol}</span>
+      <span className={cn("text-[10px] uppercase tracking-wide", statusToneClass)}>{chip.statusLabel}</span>
+      <button
+        type="button"
+        onClick={chip.remove}
+        aria-label={chip.removeAriaLabel}
+        className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-secondary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        data-testid={`historical-chart-compare-chip-${chip.symbol}-remove`}
+      >
+        <X className="h-3 w-3" aria-hidden="true" />
+      </button>
+    </li>
+  );
+}
+
+function CompareChartView({ viewModel: vm }: { viewModel: CompareChartViewModel }) {
+  return (
+    <div className="relative">
+      <svg
+        viewBox={vm.viewBox}
+        preserveAspectRatio="none"
+        className="block h-64 w-full overflow-visible"
+        role="img"
+        aria-label={vm.ariaLabel}
+      >
+        <line
+          x1={vm.guideX1}
+          x2={vm.guideX2}
+          y1={vm.zeroLineY}
+          y2={vm.zeroLineY}
+          stroke="var(--chart-grid-major, currentColor)"
+          strokeOpacity="0.4"
+          strokeDasharray="4 4"
+        />
+        <text
+          x={vm.highLabel.x}
+          y={vm.highLabel.y}
+          textAnchor="end"
+          fontFamily="IBM Plex Mono, ui-monospace"
+          fontSize="10"
+          fill="currentColor"
+          fillOpacity="0.55"
+        >
+          {vm.highLabel.value}
+        </text>
+        <text
+          x={vm.lowLabel.x}
+          y={vm.lowLabel.y}
+          textAnchor="end"
+          fontFamily="IBM Plex Mono, ui-monospace"
+          fontSize="10"
+          fill="currentColor"
+          fillOpacity="0.55"
+        >
+          {vm.lowLabel.value}
+        </text>
+        {vm.series.map((series) =>
+          series.points ? (
+            <polyline
+              key={series.symbol}
+              fill="none"
+              stroke={series.color}
+              strokeOpacity={series.isBase ? 1 : 0.9}
+              strokeWidth={series.isBase ? 2 : 1.5}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              points={series.points}
+              data-testid={`historical-chart-compare-series-${series.symbol}`}
+            />
+          ) : null
+        )}
+      </svg>
+      <CompareLegend series={vm.series} />
+    </div>
+  );
+}
+
+const compareLegendToneClass = {
+  positive: "text-success",
+  negative: "text-danger",
+  neutral: "text-foreground"
+} as const;
+
+function CompareLegend({ series }: { series: CompareSeriesViewModel[] }) {
+  return (
+    <ul
+      aria-label="Comparison series legend"
+      className="mt-2 flex flex-wrap gap-3 text-[11px] text-muted-foreground"
+      data-testid="historical-chart-compare-legend"
+    >
+      {series.map((s) => (
+        <li key={s.symbol} className="flex items-center gap-1.5">
+          <span
+            aria-hidden="true"
+            className="inline-block h-0.5 w-4 rounded"
+            style={{ backgroundColor: s.color }}
+          />
+          <span className="font-mono">{s.symbol}</span>
+          {s.isBase ? <span className="text-[10px] uppercase tracking-wide">Base</span> : null}
+          <span className={cn("font-mono", compareLegendToneClass[s.lastChangeTone])}>
+            {s.lastChangeLabel}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 

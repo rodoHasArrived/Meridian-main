@@ -219,4 +219,67 @@ describe("HistoricalChartCard", () => {
     expect(screen.getByText("SMA 20")).toBeInTheDocument();
     expect(screen.getByTestId("historical-chart-sma-20")).toBeInTheDocument();
   });
+
+  it("compares multiple symbols, fetches each, and renders normalized series with a legend", async () => {
+    const aaplBars = [
+      bar("2024-06-03T14:30:00Z", 100, 101, 99.5, 100, 1000),
+      bar("2024-06-03T14:35:00Z", 100, 102, 99, 110, 800),
+      bar("2024-06-03T14:40:00Z", 110, 112, 108, 115, 900)
+    ];
+    const msftBars = [
+      bar("2024-06-03T14:30:00Z", 200, 201, 199, 200, 1000),
+      bar("2024-06-03T14:35:00Z", 200, 202, 199, 220, 800),
+      bar("2024-06-03T14:40:00Z", 220, 222, 218, 240, 900)
+    ];
+
+    getBarsSpy.mockImplementation(async (symbol: string) => {
+      if (symbol === "MSFT") return response(msftBars);
+      return response(aaplBars);
+    });
+
+    const user = userEvent.setup();
+    render(<HistoricalChartCard symbol="AAPL" />);
+
+    await waitFor(() => expect(getBarsSpy).toHaveBeenCalled());
+    expect(screen.queryByTestId("historical-chart-compare-legend")).toBeNull();
+
+    const input = screen.getByPlaceholderText(/Compare with/i);
+    await user.type(input, "msft");
+    await user.click(screen.getByTestId("historical-chart-compare-submit"));
+
+    await waitFor(() =>
+      expect(getBarsSpy.mock.calls.some(([s]) => s === "MSFT")).toBe(true)
+    );
+
+    const legend = await screen.findByTestId("historical-chart-compare-legend");
+    expect(legend).toBeInTheDocument();
+    expect(screen.getByTestId("historical-chart-compare-chip-MSFT")).toBeInTheDocument();
+    // MSFT compared series should be drawn
+    await waitFor(() =>
+      expect(screen.getByTestId("historical-chart-compare-series-MSFT")).toBeInTheDocument()
+    );
+
+    // Remove MSFT via chip remove button — compare mode should turn off
+    await user.click(screen.getByTestId("historical-chart-compare-chip-MSFT-remove"));
+    await waitFor(() =>
+      expect(screen.queryByTestId("historical-chart-compare-legend")).toBeNull()
+    );
+  });
+
+  it("rejects duplicate and base-symbol compare entries with an inline error", async () => {
+    getBarsSpy.mockResolvedValue(response([
+      bar("2024-06-03T14:30:00Z", 100, 101, 99, 100, 1000)
+    ]));
+
+    const user = userEvent.setup();
+    render(<HistoricalChartCard symbol="AAPL" />);
+    await waitFor(() => expect(getBarsSpy).toHaveBeenCalled());
+
+    const input = screen.getByPlaceholderText(/Compare with/i);
+    await user.type(input, "AAPL");
+    await user.click(screen.getByTestId("historical-chart-compare-submit"));
+
+    const alert = await screen.findByTestId("historical-chart-compare-error");
+    expect(alert).toHaveTextContent(/base symbol/i);
+  });
 });

@@ -214,6 +214,52 @@ export interface IndicatorToggleOption {
   toggle: () => void;
 }
 
+export const COMPARE_SYMBOL_LIMIT = 3;
+
+export const COMPARE_SERIES_COLORS: ReadonlyArray<string> = [
+  "var(--chart-compare-1, #7c5cff)",
+  "var(--chart-compare-2, #f5a524)",
+  "var(--chart-compare-3, #14b8a6)"
+];
+
+export type CompareSeriesStatus = "loading" | "ready" | "error" | "empty";
+
+export interface CompareSeriesViewModel {
+  symbol: string;
+  color: string;
+  isBase: boolean;
+  status: CompareSeriesStatus;
+  points: string;
+  lastChangePct: number | null;
+  lastChangeLabel: string;
+  lastChangeTone: "positive" | "negative" | "neutral";
+  ariaLabel: string;
+}
+
+export interface CompareChartViewModel {
+  viewBox: string;
+  ariaLabel: string;
+  width: number;
+  height: number;
+  padX: number;
+  guideX1: number;
+  guideX2: number;
+  zeroLineY: number;
+  highLabel: { value: string; x: number; y: number };
+  lowLabel: { value: string; x: number; y: number };
+  series: CompareSeriesViewModel[];
+}
+
+export interface CompareChipViewModel {
+  symbol: string;
+  color: string;
+  status: CompareSeriesStatus;
+  ariaLabel: string;
+  removeAriaLabel: string;
+  statusLabel: string;
+  remove: () => void;
+}
+
 export interface HistoricalChartViewModel {
   eyebrow: string;
   title: string;
@@ -230,6 +276,22 @@ export interface HistoricalChartViewModel {
   statePanel: HistoricalChartStatePanel | null;
   chart: HistoricalChartSparklineViewModel | null;
   candlestickChart: CandlestickChartViewModel | null;
+  compareChart: CompareChartViewModel | null;
+  compareActive: boolean;
+  compareInput: string;
+  setCompareInput: (value: string) => void;
+  submitCompareSymbol: (event?: { preventDefault?: () => void }) => void;
+  addCompareSymbol: (symbol: string) => boolean;
+  removeCompareSymbol: (symbol: string) => void;
+  clearCompareSymbols: () => void;
+  compareInputId: string;
+  compareInputLabel: string;
+  compareInputPlaceholder: string;
+  compareSubmitDisabled: boolean;
+  compareSubmitDisabledReason: string | null;
+  compareSubmitAriaLabel: string;
+  compareChips: CompareChipViewModel[];
+  compareErrorMessage: string | null;
   statTiles: HistoricalChartStatTile[];
   retry: () => void;
 }
@@ -240,6 +302,20 @@ const DEFAULT_INDICATOR_VISIBILITY: CandlestickIndicatorVisibility = {
   rsi: false
 };
 
+interface CompareSeriesState {
+  status: CompareSeriesStatus;
+  bars: HistoricalBarPoint[];
+  errorMessage: string | null;
+  appliedTimeframeId: string | null;
+}
+
+const initialCompareSeriesState: CompareSeriesState = {
+  status: "loading",
+  bars: [],
+  errorMessage: null,
+  appliedTimeframeId: null
+};
+
 export function useHistoricalChartViewModel(symbol: string): HistoricalChartViewModel {
   const [activeTimeframe, setActiveTimeframe] = useState<HistoricalChartTimeframe>(
     HISTORICAL_CHART_TIMEFRAMES[0]!
@@ -247,9 +323,15 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
   const [state, setState] = useState<FetchState>(initialFetchState);
   const [chartMode, setChartMode] = useState<ChartMode>("candles");
   const [indicators, setIndicators] = useState<CandlestickIndicatorVisibility>(DEFAULT_INDICATOR_VISIBILITY);
+  const [compareSymbols, setCompareSymbols] = useState<string[]>([]);
+  const [compareStates, setCompareStates] = useState<Record<string, CompareSeriesState>>({});
+  const [compareInput, setCompareInput] = useState("");
+  const [compareErrorMessage, setCompareErrorMessage] = useState<string | null>(null);
   const requestRevision = useRef(0);
   const mounted = useRef(false);
   const requestAbortRef = useRef<AbortController | null>(null);
+  const compareRevision = useRef(0);
+  const compareAbortsRef = useRef<Map<string, AbortController>>(new Map());
 
   const fetchBars = useCallback(async (sym: string, tf: HistoricalChartTimeframe) => {
     const revision = requestRevision.current + 1;
@@ -312,12 +394,145 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
       mounted.current = false;
       requestRevision.current += 1;
       requestAbortRef.current?.abort();
+      compareRevision.current += 1;
+      for (const controller of compareAbortsRef.current.values()) {
+        controller.abort();
+      }
+      compareAbortsRef.current.clear();
     };
   }, []);
 
   useEffect(() => {
     void fetchBars(symbol, activeTimeframe);
   }, [symbol, activeTimeframe, fetchBars]);
+
+  const fetchCompareSymbol = useCallback(
+    async (sym: string, tf: HistoricalChartTimeframe, revision: number) => {
+      const existing = compareAbortsRef.current.get(sym);
+      existing?.abort();
+      const controller = new AbortController();
+      compareAbortsRef.current.set(sym, controller);
+
+      const today = new Date();
+      const fromDate = new Date(today);
+      fromDate.setDate(fromDate.getDate() - tf.lookbackDays);
+
+      try {
+        const response = await getHistoricalBars(sym, {
+          intervalMinutes: tf.intervalMinutes,
+          from: formatDateForRequest(fromDate),
+          to: formatDateForRequest(today),
+          maxBars: 1500
+        }, { signal: controller.signal });
+
+        if (!mounted.current || compareRevision.current !== revision) return;
+        const bars = response.bars ?? [];
+        setCompareStates((prev) => ({
+          ...prev,
+          [sym]: {
+            status: bars.length === 0 ? "empty" : "ready",
+            bars,
+            errorMessage: null,
+            appliedTimeframeId: tf.id
+          }
+        }));
+      } catch (err) {
+        if (!mounted.current || compareRevision.current !== revision) return;
+        if ((err as { name?: string })?.name === "AbortError") return;
+        setCompareStates((prev) => ({
+          ...prev,
+          [sym]: {
+            status: "error",
+            bars: [],
+            errorMessage: (err as Error)?.message ?? "Failed to load compare bars",
+            appliedTimeframeId: tf.id
+          }
+        }));
+      } finally {
+        if (mounted.current && compareAbortsRef.current.get(sym) === controller) {
+          compareAbortsRef.current.delete(sym);
+        }
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    const revision = compareRevision.current + 1;
+    compareRevision.current = revision;
+
+    // Drop states for removed symbols
+    setCompareStates((prev) => {
+      const next: Record<string, CompareSeriesState> = {};
+      for (const sym of compareSymbols) {
+        next[sym] = prev[sym] ?? { ...initialCompareSeriesState };
+      }
+      return next;
+    });
+
+    // Abort fetches for symbols that are no longer in the list
+    for (const [sym, controller] of compareAbortsRef.current.entries()) {
+      if (!compareSymbols.includes(sym)) {
+        controller.abort();
+        compareAbortsRef.current.delete(sym);
+      }
+    }
+
+    for (const sym of compareSymbols) {
+      void fetchCompareSymbol(sym, activeTimeframe, revision);
+    }
+  }, [compareSymbols, activeTimeframe, fetchCompareSymbol]);
+
+  const addCompareSymbol = useCallback(
+    (rawSymbol: string): boolean => {
+      const normalized = rawSymbol.trim().toUpperCase();
+      if (!normalized) {
+        setCompareErrorMessage("Enter a symbol to add to the comparison.");
+        return false;
+      }
+      if (normalized === symbol.toUpperCase()) {
+        setCompareErrorMessage(`${normalized} is already the base symbol.`);
+        return false;
+      }
+      let added = false;
+      setCompareSymbols((prev) => {
+        if (prev.includes(normalized)) {
+          setCompareErrorMessage(`${normalized} is already in the comparison.`);
+          return prev;
+        }
+        if (prev.length >= COMPARE_SYMBOL_LIMIT) {
+          setCompareErrorMessage(`Comparison is limited to ${COMPARE_SYMBOL_LIMIT} symbols.`);
+          return prev;
+        }
+        added = true;
+        return [...prev, normalized];
+      });
+      if (added) {
+        setCompareErrorMessage(null);
+        setCompareInput("");
+      }
+      return added;
+    },
+    [symbol]
+  );
+
+  const removeCompareSymbol = useCallback((target: string) => {
+    setCompareSymbols((prev) => prev.filter((s) => s !== target));
+    setCompareErrorMessage(null);
+  }, []);
+
+  const clearCompareSymbols = useCallback(() => {
+    setCompareSymbols([]);
+    setCompareErrorMessage(null);
+  }, []);
+
+  const submitCompareSymbol = useCallback(
+    (event?: { preventDefault?: () => void }) => {
+      event?.preventDefault?.();
+      addCompareSymbol(compareInput);
+    },
+    [addCompareSymbol, compareInput]
+  );
 
   const stats = useMemo(() => computeChartStats(state.bars), [state.bars]);
   const retry = useCallback(() => {
@@ -396,6 +611,51 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
     errorMessage: state.errorMessage
   });
 
+  const compareActive = compareSymbols.length > 0;
+
+  const compareChart = compareActive
+    ? buildCompareChartViewModel({
+        baseSymbol: symbol,
+        baseBars: state.bars,
+        compareSymbols,
+        compareStates,
+        timeframe: activeTimeframe.label
+      })
+    : null;
+
+  const compareChips = useMemo<CompareChipViewModel[]>(
+    () =>
+      compareSymbols.map((sym, idx) => {
+        const seriesState = compareStates[sym];
+        const status: CompareSeriesStatus = seriesState?.status ?? "loading";
+        const statusLabel =
+          status === "loading"
+            ? "Loading"
+            : status === "error"
+              ? "Error"
+              : status === "empty"
+                ? "No bars"
+                : "Ready";
+        return {
+          symbol: sym,
+          color: COMPARE_SERIES_COLORS[idx % COMPARE_SERIES_COLORS.length]!,
+          status,
+          ariaLabel: `Compare symbol ${sym} (${statusLabel.toLowerCase()})`,
+          removeAriaLabel: `Remove ${sym} from the comparison`,
+          statusLabel,
+          remove: () => removeCompareSymbol(sym)
+        };
+      }),
+    [compareSymbols, compareStates, removeCompareSymbol]
+  );
+
+  const trimmedCompareInput = compareInput.trim().toUpperCase();
+  const compareSubmitDisabledReason = !trimmedCompareInput
+    ? "Enter a symbol"
+    : compareSymbols.length >= COMPARE_SYMBOL_LIMIT
+      ? `Limited to ${COMPARE_SYMBOL_LIMIT} symbols`
+      : null;
+
   return {
     eyebrow: "Historical price",
     title: `${symbol || "Symbol"} · ${activeTimeframe.label}`,
@@ -423,6 +683,24 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
       timeframe: activeTimeframe.label,
       indicators
     }),
+    compareChart,
+    compareActive,
+    compareInput,
+    setCompareInput,
+    submitCompareSymbol,
+    addCompareSymbol,
+    removeCompareSymbol,
+    clearCompareSymbols,
+    compareInputId: "historical-chart-compare-input",
+    compareInputLabel: "Add a symbol to overlay on the chart",
+    compareInputPlaceholder: "Compare with…",
+    compareSubmitDisabled: compareSubmitDisabledReason !== null,
+    compareSubmitDisabledReason,
+    compareSubmitAriaLabel: trimmedCompareInput
+      ? `Compare ${trimmedCompareInput} against ${symbol || "selected symbol"}`
+      : "Compare another symbol",
+    compareChips,
+    compareErrorMessage,
     statTiles: [
       { id: "open", label: "Open", value: formatPrice(stats.open) },
       { id: "high", label: "High", value: formatPrice(stats.high) },
@@ -959,6 +1237,140 @@ export function buildHistoricalChartStatePanel({
   }
 
   return null;
+}
+
+export interface CompareSeriesInput {
+  symbol: string;
+  bars: readonly HistoricalBarPoint[];
+  status: CompareSeriesStatus;
+  isBase: boolean;
+  color: string;
+}
+
+export function computePercentChangeSeries(
+  bars: readonly HistoricalBarPoint[]
+): Array<{ timestamp: number; changePct: number }> {
+  const chronological = toChronologicalChartBars(bars);
+  if (chronological.length === 0) return [];
+  const base = chronological[0]!.bar.close;
+  if (!Number.isFinite(base) || base === 0) return [];
+  return chronological.map(({ bar, timestamp }) => ({
+    timestamp,
+    changePct: ((bar.close - base) / base) * 100
+  }));
+}
+
+export function buildCompareChartViewModel({
+  baseSymbol,
+  baseBars,
+  compareSymbols,
+  compareStates,
+  timeframe
+}: {
+  baseSymbol: string;
+  baseBars: readonly HistoricalBarPoint[];
+  compareSymbols: readonly string[];
+  compareStates: Record<string, { status: CompareSeriesStatus; bars: HistoricalBarPoint[] }>;
+  timeframe: string;
+}): CompareChartViewModel | null {
+  const width = 900;
+  const height = 220;
+  const padX = 12;
+  const padY = 18;
+
+  const seriesInputs: CompareSeriesInput[] = [];
+  const baseSeriesPct = computePercentChangeSeries(baseBars);
+  if (baseSeriesPct.length === 0 && baseBars.length === 0) {
+    // Base has no bars — still render the compare frame if we have any compare series with data
+  }
+  seriesInputs.push({
+    symbol: baseSymbol || "Symbol",
+    bars: baseBars,
+    status: baseBars.length === 0 ? "empty" : "ready",
+    isBase: true,
+    color: "var(--chart-up, currentColor)"
+  });
+  compareSymbols.forEach((sym, idx) => {
+    const s = compareStates[sym];
+    seriesInputs.push({
+      symbol: sym,
+      bars: s?.bars ?? [],
+      status: s?.status ?? "loading",
+      isBase: false,
+      color: COMPARE_SERIES_COLORS[idx % COMPARE_SERIES_COLORS.length]!
+    });
+  });
+
+  const seriesData = seriesInputs.map((input) => ({
+    input,
+    points: computePercentChangeSeries(input.bars)
+  }));
+
+  const allPoints = seriesData.flatMap(({ points }) => points);
+  if (allPoints.length === 0) return null;
+
+  const minTs = Math.min(...allPoints.map((p) => p.timestamp));
+  const maxTs = Math.max(...allPoints.map((p) => p.timestamp));
+  const tsSpan = Math.max(1, maxTs - minTs);
+  let minPct = Math.min(...allPoints.map((p) => p.changePct));
+  let maxPct = Math.max(...allPoints.map((p) => p.changePct));
+  if (minPct === maxPct) {
+    minPct -= 1;
+    maxPct += 1;
+  }
+  // Pad so the zero line is always visible
+  minPct = Math.min(minPct, 0);
+  maxPct = Math.max(maxPct, 0);
+  const pctSpan = Math.max(maxPct - minPct, 0.01);
+
+  const xFor = (ms: number) => padX + ((ms - minTs) / tsSpan) * (width - padX * 2);
+  const yFor = (pct: number) => padY + (1 - (pct - minPct) / pctSpan) * (height - padY * 2);
+  const zeroLineY = yFor(0);
+
+  const seriesViewModels: CompareSeriesViewModel[] = seriesData.map(({ input, points }) => {
+    if (points.length === 0) {
+      const fallbackStatus: CompareSeriesStatus = input.status === "ready" ? "empty" : input.status;
+      return {
+        symbol: input.symbol,
+        color: input.color,
+        isBase: input.isBase,
+        status: fallbackStatus,
+        points: "",
+        lastChangePct: null,
+        lastChangeLabel: fallbackStatus === "loading" ? "Loading…" : fallbackStatus === "error" ? "Error" : "-",
+        lastChangeTone: "neutral",
+        ariaLabel: `${input.symbol} ${fallbackStatus === "loading" ? "loading" : "no data"} on ${timeframe} comparison`
+      };
+    }
+    const lastChangePct = points[points.length - 1]!.changePct;
+    const tone: CompareSeriesViewModel["lastChangeTone"] =
+      Math.abs(lastChangePct) < 1e-6 ? "neutral" : lastChangePct > 0 ? "positive" : "negative";
+    return {
+      symbol: input.symbol,
+      color: input.color,
+      isBase: input.isBase,
+      status: "ready",
+      points: points.map((p) => `${xFor(p.timestamp).toFixed(2)},${yFor(p.changePct).toFixed(2)}`).join(" "),
+      lastChangePct,
+      lastChangeLabel: formatChangePct(lastChangePct),
+      lastChangeTone: tone,
+      ariaLabel: `${input.symbol} ${input.isBase ? "(base)" : ""} ${formatChangePct(lastChangePct)} change over ${timeframe}`.replace(/\s+/g, " ").trim()
+    };
+  });
+
+  return {
+    viewBox: `0 0 ${width} ${height}`,
+    ariaLabel: `Normalized percent-change comparison over ${timeframe}: ${seriesViewModels.map((s) => s.symbol).join(", ")}`,
+    width,
+    height,
+    padX,
+    guideX1: padX,
+    guideX2: width - padX,
+    zeroLineY,
+    highLabel: { value: formatChangePct(maxPct), x: width - padX, y: Math.max(yFor(maxPct) - 4, 12) },
+    lowLabel: { value: formatChangePct(minPct), x: width - padX, y: Math.min(yFor(minPct) + 12, height - 4) },
+    series: seriesViewModels
+  };
 }
 
 export function buildHistoricalChartSparklineViewModel({
