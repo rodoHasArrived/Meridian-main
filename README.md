@@ -8066,6 +8066,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── CheckpointEndpointTests.cs
 │   │   │   │   ├── ConfigEndpointTests.cs
 │   │   │   │   ├── EndpointIntegrationTestBase.cs
+│   │   │   │   ├── EndpointMetadataTests.cs
 │   │   │   │   ├── EndpointTestCollection.cs
 │   │   │   │   ├── EndpointTestFixture.cs
 │   │   │   │   ├── EnvironmentDesignerEndpointTests.cs
@@ -8460,6 +8461,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-677 directories, 7600 files
+677 directories, 7601 files
 ```
 <!-- readme-tree end -->
