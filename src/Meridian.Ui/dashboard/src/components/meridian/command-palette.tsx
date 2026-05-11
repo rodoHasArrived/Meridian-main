@@ -5,11 +5,34 @@ import {
   buildCommandPaletteViewModel,
   resolveCommandPaletteKeyCommand,
   type CommandPaletteFocusBoundary,
+  type CommandPaletteItemKind,
+  type CommandPaletteItem,
   type CommandPaletteFocusTarget
 } from "@/components/meridian/command-palette.view-model";
 import { COMMAND_PALETTE_DIALOG_ID } from "@/app-shell.view-model";
 import { cn } from "@/lib/utils";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
+
+const KIND_LABELS: Record<CommandPaletteItemKind, string> = {
+  workspace: "Workspaces",
+  route: "Quick routes",
+  preset: "Presets",
+  workflow: "Workflows"
+};
+
+const KIND_ORDER: CommandPaletteItemKind[] = ["workspace", "route", "preset", "workflow"];
+
+interface CommandGroup {
+  kind: CommandPaletteItemKind;
+  label: string;
+  items: CommandPaletteItem[];
+}
+
+function groupItems(items: CommandPaletteItem[]): CommandGroup[] {
+  return KIND_ORDER
+    .map((kind) => ({ kind, label: KIND_LABELS[kind], items: items.filter((item) => item.kind === kind) }))
+    .filter((group) => group.items.length > 0);
+}
 
 /**
  * Full-screen command palette overlay for quick workspace navigation.
@@ -186,10 +209,12 @@ export function CommandPalette({
           className="mt-3 h-10 w-full rounded-md border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/35"
           onChange={(event) => setQuery(event.target.value)}
         />
-        <nav className="mt-3 grid max-h-[62vh] gap-2 overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
-          <div className="eyebrow-label">{viewModel.itemCountLabel}</div>
-          <div id="command-palette-filter-count" className="text-xs text-muted-foreground" aria-live="polite">
-            {viewModel.filteredItemCountLabel}
+        <nav className="mt-3 max-h-[62vh] overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
+          <div className="flex items-center justify-between gap-3 pb-2">
+            <div className="eyebrow-label">{viewModel.itemCountLabel}</div>
+            <div id="command-palette-filter-count" className="text-xs text-muted-foreground" aria-live="polite">
+              {viewModel.filteredItemCountLabel}
+            </div>
           </div>
           {viewModel.emptyState ? (
             <div className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm">
@@ -197,44 +222,53 @@ export function CommandPalette({
               <div className="mt-1 text-muted-foreground">{viewModel.emptyState.detail}</div>
             </div>
           ) : null}
-          {viewModel.filteredItems.map((item) => (
-            <Link
-              key={item.id}
-              ref={item.id === viewModel.initialFocusItemId ? initialCommandRef : undefined}
-              to={item.route}
-              data-command-id={item.id}
-              aria-label={item.ariaLabel}
-              aria-current={item.active ? "page" : undefined}
-              className={cn(
-                "command-palette-command rounded-md border px-3 py-3 text-sm transition-colors",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                item.active
-                  ? "border-primary/35 bg-primary/10 text-foreground"
-                  : "border-transparent hover:border-border/70 hover:bg-secondary/70"
-              )}
-              onClick={() => {
-                if (item.presetId && onPresetUsed) {
-                  void Promise.resolve(onPresetUsed(item.presetId)).catch(() => undefined);
-                }
+          {groupItems(viewModel.filteredItems).map((group) => (
+            <div key={group.kind} className="command-palette-group">
+              <div className="command-palette-group-label">{group.label}</div>
+              <div className="grid gap-1">
+                {group.items.map((item) => (
+                  <Link
+                    key={item.id}
+                    ref={item.id === viewModel.initialFocusItemId ? initialCommandRef : undefined}
+                    to={item.route}
+                    data-command-id={item.id}
+                    aria-label={item.ariaLabel}
+                    aria-current={item.active ? "page" : undefined}
+                    className={cn(
+                      "command-palette-command rounded-md border px-3 py-2.5 text-sm transition-colors",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      item.active
+                        ? "border-primary/35 bg-primary/10 text-foreground"
+                        : "border-transparent hover:border-border/70 hover:bg-secondary/70"
+                    )}
+                    onClick={() => {
+                      if (item.presetId && onPresetUsed) {
+                        void Promise.resolve(onPresetUsed(item.presetId)).catch(() => undefined);
+                      }
 
-                closePalette();
-              }}
-            >
-              <span className="flex items-start justify-between gap-3">
-                <span className="min-w-0">
-                  <span className="block font-semibold">{item.commandLabel}</span>
-                  <span className="mt-1 block text-muted-foreground">{item.description}</span>
-                </span>
-                <span className="flex shrink-0 flex-col items-end gap-2">
-                  <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`}>
-                    {item.routeLabel}
-                  </span>
-                  <span className="rounded-sm border border-border/70 bg-secondary/55 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                    {item.statusLabel}
-                  </span>
-                </span>
-              </span>
-            </Link>
+                      closePalette();
+                    }}
+                  >
+                    <span className="flex items-start justify-between gap-3">
+                      <span className="min-w-0">
+                        <span className="block font-semibold leading-snug">{item.commandLabel}</span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground">{item.description}</span>
+                      </span>
+                      <span className="flex shrink-0 flex-col items-end gap-1.5">
+                        <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`}>
+                          {item.routeLabel}
+                        </span>
+                        {item.active && (
+                          <span className="rounded-sm border border-primary/35 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
+                            {item.statusLabel}
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
       </div>

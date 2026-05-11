@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { LayoutGrid, X } from "lucide-react";
+import { DatabaseZap, FileCheck2, FlaskConical, Landmark, LayoutGrid, RadioTower, Settings, WalletCards, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   resolveMegaMenuKeyCommand,
@@ -7,6 +7,17 @@ import {
   type MegaMenuFocusBoundary
 } from "@/components/meridian/mega-menu.view-model";
 import { cn } from "@/lib/utils";
+import type { WorkspaceKey } from "@/types";
+
+const WORKSPACE_ICONS: Record<WorkspaceKey, typeof RadioTower> = {
+  trading: RadioTower,
+  portfolio: WalletCards,
+  accounting: Landmark,
+  reporting: FileCheck2,
+  strategy: FlaskConical,
+  data: DatabaseZap,
+  settings: Settings
+};
 
 /**
  * Masthead workspace mega menu. The view model owns open state, active route state,
@@ -110,8 +121,13 @@ export function MegaMenu() {
           className="mega-menu-panel"
         >
           <div className="mega-menu-grid">
-            {vm.sections.map((section) => (
+            {vm.sections.map((section) => {
+              const SectionIcon = WORKSPACE_ICONS[section.key];
+              return (
               <div key={section.key} className={cn("mega-menu-section", section.active && "active")}>
+                <div className="mega-menu-section-icon-row">
+                  <SectionIcon className="mega-menu-section-icon" aria-hidden="true" />
+                </div>
                 <div className="mega-menu-section-eyebrow">{section.eyebrow}</div>
                 <div className="mega-menu-section-heading">
                   <Link
@@ -144,13 +160,15 @@ export function MegaMenu() {
                   ))}
                 </ul>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="mega-menu-footer">
             <span className="mega-menu-footer-label">{vm.footerLabel}</span>
-            <span className="mega-menu-footer-shortcut" aria-label="Open command palette with Control K">
-              {vm.footerShortcut}
+            <span className="mega-menu-footer-hint" aria-label="Open command palette with Control K">
+              <span className="mega-menu-footer-hint-label">Command palette</span>
+              <span className="mega-menu-footer-shortcut">{vm.footerShortcut}</span>
             </span>
           </div>
         </div>
