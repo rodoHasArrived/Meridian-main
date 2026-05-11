@@ -5346,6 +5346,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── EventCanonicalizer.cs
 │   │   │   ├── IEventCanonicalizer.cs
 │   │   │   └── VenueMicMapper.cs
+│   │   ├── CertificatesOfDeposit
+│   │   │   ├── CertificateOfDepositProjectionService.cs
+│   │   │   └── ICertificateOfDepositReferenceService.cs
 │   │   ├── Commands
 │   │   │   ├── CatalogCommand.cs
 │   │   │   ├── CliArguments.cs
@@ -5371,6 +5374,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SymbolCommands.cs
 │   │   │   ├── ValidateConfigCommand.cs
 │   │   │   └── WalRepairCommand.cs
+│   │   ├── Commodities
+│   │   │   ├── CommodityProjectionService.cs
+│   │   │   └── ICommodityReferenceService.cs
 │   │   ├── Composition
 │   │   │   ├── CircuitBreakerCallbackRouter.cs
 │   │   │   ├── DirectLendingStartup.cs
@@ -5449,6 +5455,15 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── SubscriptionOwnershipService.cs
 │   │   ├── Credentials
 │   │   │   └── ICredentialStore.cs
+│   │   ├── CryptoCurrency
+│   │   │   ├── CryptoProjectionService.cs
+│   │   │   └── ICryptoReferenceService.cs
+│   │   ├── Deposits
+│   │   │   ├── DepositProjectionService.cs
+│   │   │   └── IDepositReferenceService.cs
+│   │   ├── Derivatives
+│   │   │   ├── ISwapReferenceService.cs
+│   │   │   └── SwapProjectionService.cs
 │   │   ├── DirectLending
 │   │   │   ├── DailyAccrualWorker.cs
 │   │   │   ├── DirectLendingEventRebuilder.cs
@@ -5470,11 +5485,17 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── IEnvironmentPublishService.cs
 │   │   │   ├── IEnvironmentRuntimeProjectionService.cs
 │   │   │   └── IEnvironmentValidationService.cs
+│   │   ├── Equity
+│   │   │   ├── EquityProjectionService.cs
+│   │   │   └── IEquityReferenceService.cs
 │   │   ├── Etl
 │   │   │   ├── EtlAbstractions.cs
 │   │   │   └── EtlServices.cs
 │   │   ├── Filters
 │   │   │   └── MarketEventFilter.cs
+│   │   ├── FixedIncome
+│   │   │   ├── BondProjectionService.cs
+│   │   │   └── IBondReferenceService.cs
 │   │   ├── FundAccounts
 │   │   │   ├── IFundAccountService.cs
 │   │   │   └── InMemoryFundAccountService.cs
@@ -5486,6 +5507,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── IGovernanceSharedDataAccessService.cs
 │   │   │   ├── InMemoryFundStructureService.cs
 │   │   │   └── LedgerGroupingRules.cs
+│   │   ├── Futures
+│   │   │   ├── FutureProjectionService.cs
+│   │   │   └── IFutureReferenceService.cs
+│   │   ├── FxSpot
+│   │   │   ├── FxSpotProjectionService.cs
+│   │   │   └── IFxSpotReferenceService.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Http
 │   │   │   ├── BackfillCoordinator.cs
@@ -5507,6 +5534,9 @@ Use these documents together when planning or implementing new work:
 │   │   │       ├── LedgerTextReportRenderer.cs
 │   │   │       └── LedgerTextTransaction.cs
 │   │   ├── Meridian.Application.csproj
+│   │   ├── MoneyMarketFunds
+│   │   │   ├── IMoneyMarketFundReferenceService.cs
+│   │   │   └── MoneyMarketFundProjectionService.cs
 │   │   ├── Monitoring
 │   │   │   ├── BackpressureAlertService.cs
 │   │   │   ├── BadTickFilter.cs
@@ -5552,6 +5582,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── TickSizeValidator.cs
 │   │   │   ├── TimestampMonotonicityChecker.cs
 │   │   │   └── ValidationMetrics.cs
+│   │   ├── Options
+│   │   │   ├── IOptionChainImportService.cs
+│   │   │   ├── IOptionReferenceService.cs
+│   │   │   └── OptionProjectionService.cs
 │   │   ├── Pipeline
 │   │   │   ├── DeadLetterSink.cs
 │   │   │   ├── DroppedEventAuditTrail.cs
@@ -5597,6 +5631,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── ISecurityResolver.cs
+│   │   │   ├── IUflProjectionRebuilder.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
 │   │   │   ├── SecurityKindMapping.cs
@@ -5614,7 +5649,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterQueryService.cs
 │   │   │   ├── SecurityMasterRebuildOrchestrator.cs
 │   │   │   ├── SecurityMasterService.cs
-│   │   │   └── SecurityResolver.cs
+│   │   │   ├── SecurityResolver.cs
+│   │   │   └── UflProjectionRebuilder.cs
 │   │   ├── Services
 │   │   │   ├── ApiDocumentationService.cs
 │   │   │   ├── AutoConfigurationService.cs
@@ -5813,6 +5849,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ICanonicalSymbolRegistry.cs
 │   │   │   ├── StorageCatalog.cs
 │   │   │   └── SymbolRegistry.cs
+│   │   ├── CertificatesOfDeposit
+│   │   │   └── CertificateOfDepositReferenceDtos.cs
+│   │   ├── Commodities
+│   │   │   └── CommodityDtos.cs
 │   │   ├── Configuration
 │   │   │   ├── AppConfigDto.cs
 │   │   │   ├── DerivativesConfigDto.cs
@@ -5822,6 +5862,12 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Credentials
 │   │   │   ├── CredentialModels.cs
 │   │   │   └── ISecretProvider.cs
+│   │   ├── CryptoCurrency
+│   │   │   └── CryptoDtos.cs
+│   │   ├── Deposits
+│   │   │   └── DepositDtos.cs
+│   │   ├── Derivatives
+│   │   │   └── SwapDtos.cs
 │   │   ├── DirectLending
 │   │   │   ├── DirectLendingCommandResults.cs
 │   │   │   ├── DirectLendingDtos.cs
@@ -5887,12 +5933,16 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── VenueCode.cs
 │   │   ├── EnvironmentDesign
 │   │   │   └── EnvironmentDesignDtos.cs
+│   │   ├── Equity
+│   │   │   └── EquityReferenceDtos.cs
 │   │   ├── Etl
 │   │   │   └── EtlModels.cs
 │   │   ├── Export
 │   │   │   ├── AnalysisExportModels.cs
 │   │   │   ├── ExportPreset.cs
 │   │   │   └── StandardPresets.cs
+│   │   ├── FixedIncome
+│   │   │   └── BondReferenceDtos.cs
 │   │   ├── FundStructure
 │   │   │   ├── AccountManagementDtos.cs
 │   │   │   ├── AccountManagementOptions.cs
@@ -5901,12 +5951,21 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── FundStructureDtos.cs
 │   │   │   ├── FundStructureQueries.cs
 │   │   │   └── LedgerGroupId.cs
+│   │   ├── Futures
+│   │   │   └── FutureReferenceDtos.cs
+│   │   ├── FxSpot
+│   │   │   └── FxSpotReferenceDtos.cs
 │   │   ├── Manifest
 │   │   │   └── DataManifest.cs
 │   │   ├── Meridian.Contracts.csproj
+│   │   ├── MoneyMarketFunds
+│   │   │   └── MoneyMarketFundReferenceDtos.cs
+│   │   ├── Options
+│   │   │   └── OptionReferenceDtos.cs
 │   │   ├── Pipeline
 │   │   │   ├── IngestionJob.cs
-│   │   │   └── PipelinePolicyConstants.cs
+│   │   │   ├── PipelinePolicyConstants.cs
+│   │   │   └── UflOutboxMessage.cs
 │   │   ├── RuleEvaluation
 │   │   │   └── DecisionContracts.cs
 │   │   ├── Schema
@@ -5976,6 +6035,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── RateLimitException.cs
 │   │   │   ├── SequenceValidationException.cs
 │   │   │   ├── StorageException.cs
+│   │   │   ├── UnsupportedAssetClassException.cs
 │   │   │   └── ValidationException.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Logging
@@ -6624,20 +6684,53 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── MemoryMappedJsonlReader.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── FileEdgarReferenceDataStore.cs
+│   │   │   ├── IBondReferenceProjectionStore.cs
+│   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
+│   │   │   ├── ICommodityReferenceProjectionStore.cs
+│   │   │   ├── ICryptoReferenceProjectionStore.cs
+│   │   │   ├── IDepositReferenceProjectionStore.cs
 │   │   │   ├── IEdgarReferenceDataStore.cs
+│   │   │   ├── IEquityReferenceProjectionStore.cs
+│   │   │   ├── IFutureReferenceProjectionStore.cs
+│   │   │   ├── IFxSpotReferenceProjectionStore.cs
+│   │   │   ├── IMoneyMarketFundReferenceProjectionStore.cs
 │   │   │   ├── IOperatorOverridesStore.cs
+│   │   │   ├── IOptionReferenceProjectionStore.cs
 │   │   │   ├── ISecurityMasterEventStore.cs
 │   │   │   ├── ISecurityMasterSnapshotStore.cs
 │   │   │   ├── ISecurityMasterStore.cs
+│   │   │   ├── ISwapReferenceProjectionStore.cs
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_security_master.sql
 │   │   │   │   ├── 002_security_master_fts.sql
 │   │   │   │   ├── 003_security_master_corp_actions.sql
-│   │   │   │   └── 004_security_master_operator_overrides.sql
+│   │   │   │   ├── 004_security_master_operator_overrides.sql
+│   │   │   │   ├── 005_security_master_bond_reference_projection.sql
+│   │   │   │   ├── 006_security_master_option_reference_projection.sql
+│   │   │   │   ├── 007_security_master_equity_projection.sql
+│   │   │   │   ├── 008_security_master_future_projection.sql
+│   │   │   │   ├── 009_security_master_fxspot_projection.sql
+│   │   │   │   ├── 010_security_master_swap_projection.sql
+│   │   │   │   ├── 011_security_master_commodity_projection.sql
+│   │   │   │   ├── 012_security_master_crypto_projection.sql
+│   │   │   │   ├── 013_security_master_deposit_projection.sql
+│   │   │   │   ├── 014_security_master_money_market_fund_projection.sql
+│   │   │   │   └── 015_security_master_certificate_of_deposit_projection.sql
+│   │   │   ├── PostgresBondReferenceProjectionStore.cs
+│   │   │   ├── PostgresCertificateOfDepositReferenceProjectionStore.cs
+│   │   │   ├── PostgresCommodityReferenceProjectionStore.cs
+│   │   │   ├── PostgresCryptoReferenceProjectionStore.cs
+│   │   │   ├── PostgresDepositReferenceProjectionStore.cs
+│   │   │   ├── PostgresEquityReferenceProjectionStore.cs
+│   │   │   ├── PostgresFutureReferenceProjectionStore.cs
+│   │   │   ├── PostgresFxSpotReferenceProjectionStore.cs
+│   │   │   ├── PostgresMoneyMarketFundReferenceProjectionStore.cs
 │   │   │   ├── PostgresOperatorOverridesStore.cs
+│   │   │   ├── PostgresOptionReferenceProjectionStore.cs
 │   │   │   ├── PostgresSecurityMasterEventStore.cs
 │   │   │   ├── PostgresSecurityMasterSnapshotStore.cs
 │   │   │   ├── PostgresSecurityMasterStore.cs
+│   │   │   ├── PostgresSwapReferenceProjectionStore.cs
 │   │   │   ├── SecurityMasterDbMapper.cs
 │   │   │   ├── SecurityMasterMigrationRunner.cs
 │   │   │   └── SecurityMasterProjectionCache.cs
@@ -7048,27 +7141,35 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillScheduleEndpoints.cs
 │   │   │   ├── BackfillValidationEndpoints.cs
 │   │   │   ├── BankingEndpoints.cs
+│   │   │   ├── BondReferenceEndpoints.cs
 │   │   │   ├── BrokerageConnectionEndpoints.cs
 │   │   │   ├── CalendarEndpoints.cs
 │   │   │   ├── CanonicalizationEndpoints.cs
 │   │   │   ├── CatalogEndpoints.cs
+│   │   │   ├── CertificateOfDepositReferenceEndpoints.cs
 │   │   │   ├── CheckpointEndpoints.cs
+│   │   │   ├── CommodityReferenceEndpoints.cs
 │   │   │   ├── ConfigEndpoints.cs
 │   │   │   ├── CppTraderEndpoints.cs
 │   │   │   ├── CredentialEndpoints.cs
 │   │   │   ├── CronEndpoints.cs
+│   │   │   ├── CryptoReferenceEndpoints.cs
 │   │   │   ├── DemoModeEndpoints.cs
+│   │   │   ├── DepositReferenceEndpoints.cs
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
 │   │   │   ├── EdgarReferenceDataEndpoints.cs
 │   │   │   ├── EndpointHelpers.cs
 │   │   │   ├── EnvironmentDesignerEndpoints.cs
+│   │   │   ├── EquityReferenceEndpoints.cs
 │   │   │   ├── EvidenceEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExportEndpoints.cs
 │   │   │   ├── FailoverEndpoints.cs
 │   │   │   ├── FundAccountEndpoints.cs
 │   │   │   ├── FundStructureEndpoints.cs
+│   │   │   ├── FutureReferenceEndpoints.cs
+│   │   │   ├── FxSpotReferenceEndpoints.cs
 │   │   │   ├── HealthEndpoints.cs
 │   │   │   ├── HistoricalEndpoints.cs
 │   │   │   ├── IBEndpoints.cs
@@ -7079,6 +7180,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── MaintenanceScheduleEndpoints.cs
 │   │   │   ├── MessagingEndpoints.cs
 │   │   │   ├── MoneyMarketFundEndpoints.cs
+│   │   │   ├── MoneyMarketFundReferenceEndpoints.cs
+│   │   │   ├── OptionChainEndpoints.cs
+│   │   │   ├── OptionReferenceEndpoints.cs
 │   │   │   ├── OptionsEndpoints.cs
 │   │   │   ├── PathValidation.cs
 │   │   │   ├── PromotionEndpoints.cs
@@ -7095,6 +7199,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StorageQualityEndpoints.cs
 │   │   │   ├── StrategyLifecycleEndpoints.cs
 │   │   │   ├── SubscriptionEndpoints.cs
+│   │   │   ├── SwapReferenceEndpoints.cs
 │   │   │   ├── SymbolEndpoints.cs
 │   │   │   ├── SymbolMappingEndpoints.cs
 │   │   │   ├── UiEndpoints.cs
@@ -7897,6 +8002,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ReconciliationRunServiceTests.cs
 │   │   │   ├── SecurityMaster
 │   │   │   │   ├── EdgarIngestOrchestratorTests.cs
+│   │   │   │   ├── SecurityKindMappingTests.cs
 │   │   │   │   ├── SecurityMasterImportServiceTests.cs
 │   │   │   │   └── SecurityMasterMappingInteropTests.cs
 │   │   │   ├── Services
@@ -7928,10 +8034,20 @@ Use these documents together when planning or implementing new work:
 │   │   │       └── WizardConfigurationStepTests.cs
 │   │   ├── Architecture
 │   │   │   └── LayerBoundaryTests.cs
+│   │   ├── CertificatesOfDeposit
+│   │   │   └── CertificateOfDepositProjectionServiceTests.cs
+│   │   ├── Commodities
+│   │   │   └── CommodityProjectionServiceTests.cs
 │   │   ├── Contracts
 │   │   │   ├── Api
 │   │   │   │   └── UiApiClientTests.cs
 │   │   │   └── FundStructureContractsJsonContextTests.cs
+│   │   ├── CryptoCurrency
+│   │   │   └── CryptoProjectionServiceTests.cs
+│   │   ├── Deposits
+│   │   │   └── DepositProjectionServiceTests.cs
+│   │   ├── Derivatives
+│   │   │   └── SwapProjectionServiceTests.cs
 │   │   ├── Domain
 │   │   │   ├── Collectors
 │   │   │   │   ├── L3OrderBookCollectorTests.cs
@@ -7957,6 +8073,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── OrderEventPayloadTests.cs
 │   │   │   │   └── TradeModelTests.cs
 │   │   │   └── StrongDomainTypeTests.cs
+│   │   ├── Equity
+│   │   │   └── EquityProjectionServiceTests.cs
 │   │   ├── Execution
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── Enhancements
@@ -7976,6 +8094,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PaperTradingPortfolioLotSnapshotTests.cs
 │   │   │   ├── PaperTradingPortfolioTests.cs
 │   │   │   └── PositionLotSelectorTests.cs
+│   │   ├── FixedIncome
+│   │   │   └── BondProjectionServiceTests.cs
+│   │   ├── Futures
+│   │   │   └── FutureProjectionServiceTests.cs
+│   │   ├── FxSpot
+│   │   │   └── FxSpotProjectionServiceTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Infrastructure
 │   │   │   ├── CppTrader
@@ -8106,6 +8230,10 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Ledger
 │   │   │   └── LedgerIntegrationTests.cs
 │   │   ├── Meridian.Tests.csproj
+│   │   ├── MoneyMarketFunds
+│   │   │   └── MoneyMarketFundProjectionServiceTests.cs
+│   │   ├── Options
+│   │   │   └── OptionProjectionServiceTests.cs
 │   │   ├── Performance
 │   │   │   └── AllocationBudgetIntegrationTests.cs
 │   │   ├── ProviderSdk
@@ -8214,6 +8342,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   └── Ui
 │   │       ├── AlpacaBrokerageConnectionServiceTests.cs
+│   │       ├── BondReferenceEndpointsTests.cs
 │   │       ├── BrokerageConnectionEndpointsTests.cs
 │   │       ├── BrokeragePortfolioSyncServiceTests.cs
 │   │       ├── DirectLendingEndpointsTests.cs
@@ -8222,6 +8351,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ExecutionGovernanceEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
 │   │       ├── ExportEndpointsTests.cs
+│   │       ├── OptionReferenceEndpointsRoundtripTests.cs
 │   │       ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │       ├── SecurityMasterPreferredEquityEndpointsTests.cs
@@ -8470,6 +8600,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-677 directories, 7610 files
+710 directories, 7707 files
 ```
 <!-- readme-tree end -->
