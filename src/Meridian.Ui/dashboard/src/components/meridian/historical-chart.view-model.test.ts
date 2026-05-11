@@ -7,6 +7,7 @@ import {
   buildHistoricalChartSparklineViewModel,
   buildHistoricalChartStatePanel,
   computeChartStats,
+  computeSimpleMovingAverage,
   useHistoricalChartViewModel
 } from "@/components/meridian/historical-chart.view-model";
 import type { HistoricalBarPoint } from "@/types";
@@ -226,6 +227,106 @@ describe("buildCandlestickChartViewModel", () => {
     expect(vm?.bars[0]?.tooltipLabel).toContain("103");
     expect(vm?.bars[0]?.tooltipLabel).toContain("105");
     expect(vm?.bars[0]?.tooltipLabel).toContain("99");
+  });
+
+  it("exposes per-bar hover detail with OHLC, volume, and change-from-prev", () => {
+    const bars = [
+      bar("2026-05-01T14:30:00Z", 100, 102, 99, 100, 1000),
+      bar("2026-05-01T14:35:00Z", 100, 105, 100, 104, 1500)
+    ];
+    const vm = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "AAPL",
+      timeframe: "1D"
+    });
+
+    const firstHover = vm?.bars[0]?.hover;
+    expect(firstHover?.index).toBe(0);
+    expect(firstHover?.openLabel).toBe("100.00");
+    expect(firstHover?.highLabel).toBe("102.00");
+    expect(firstHover?.lowLabel).toBe("99.00");
+    expect(firstHover?.closeLabel).toBe("100.00");
+    expect(firstHover?.volumeLabel).toBe("1.0K");
+    // First bar has no prior close, so change is "-"
+    expect(firstHover?.changeLabel).toBe("-");
+    expect(firstHover?.changeTone).toBe("neutral");
+    expect(firstHover?.ariaLabel).toContain("Open 100.00");
+    expect(firstHover?.ariaLabel).toContain("Volume 1.0K");
+
+    const secondHover = vm?.bars[1]?.hover;
+    expect(secondHover?.index).toBe(1);
+    // Close moved from 100 -> 104, +4 (+4%)
+    expect(secondHover?.changeLabel).toContain("+4");
+    expect(secondHover?.changeLabel).toContain("%");
+    expect(secondHover?.changeTone).toBe("positive");
+  });
+
+  it("exposes geometry needed for crosshair hit-testing", () => {
+    const bars = [
+      bar("2026-05-01T14:30:00Z", 100, 102, 99, 101, 1000),
+      bar("2026-05-01T14:35:00Z", 101, 105, 100, 104, 1500)
+    ];
+    const vm = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "AAPL",
+      timeframe: "1D"
+    });
+
+    expect(vm?.geometry.width).toBeGreaterThan(0);
+    expect(vm?.geometry.padX).toBeGreaterThanOrEqual(0);
+    expect(vm?.geometry.slotWidth).toBeGreaterThan(0);
+    // slotWidth * n should equal plot width (within rounding)
+    const plotWidth = vm!.geometry.width - vm!.geometry.padX * 2;
+    expect(vm!.geometry.slotWidth * 2).toBeCloseTo(plotWidth, 5);
+  });
+
+  it("emits SMA polyline overlays once enough bars are available", () => {
+    const closes = Array.from({ length: 25 }, (_, i) => 100 + i);
+    const bars = closes.map((close, i) =>
+      bar(
+        new Date(2026, 4, 1, 14, 30 + i).toISOString(),
+        close - 0.5,
+        close + 1,
+        close - 1,
+        close,
+        1000 + i
+      )
+    );
+    const vm = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "AAPL",
+      timeframe: "1D"
+    });
+
+    expect(vm?.smaOverlays.some((o) => o.period === 20)).toBe(true);
+    const sma20 = vm?.smaOverlays.find((o) => o.period === 20);
+    expect(sma20?.label).toBe("SMA 20");
+    expect(sma20?.points.split(" ").length).toBe(closes.length - 19);
+    // Not enough bars for SMA 50
+    expect(vm?.smaOverlays.some((o) => o.period === 50)).toBe(false);
+  });
+});
+
+describe("computeSimpleMovingAverage", () => {
+  it("returns null for indices below the SMA window then the trailing mean", () => {
+    const sma = computeSimpleMovingAverage([1, 2, 3, 4, 5], 3);
+    expect(sma).toEqual([null, null, 2, 3, 4]);
+  });
+
+  it("returns all nulls when there are fewer values than the period", () => {
+    const sma = computeSimpleMovingAverage([1, 2], 5);
+    expect(sma).toEqual([null, null]);
+  });
+
+  it("handles period 1 as identity", () => {
+    expect(computeSimpleMovingAverage([10, 20, 30], 1)).toEqual([10, 20, 30]);
+  });
+
+  it("guards against non-positive period without throwing", () => {
+    expect(computeSimpleMovingAverage([1, 2, 3], 0)).toEqual([null, null, null]);
   });
 });
 
