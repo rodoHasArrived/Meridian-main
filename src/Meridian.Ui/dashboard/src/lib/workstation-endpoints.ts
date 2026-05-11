@@ -29,6 +29,7 @@ export const WORKSTATION_API_ENDPOINT_TEMPLATES = {
 export const EXECUTION_API_ENDPOINTS = {
   ordersSubmit: "/api/execution/orders/submit",
   ordersCancelAll: "/api/execution/orders/cancel-all",
+  positionsActionClose: "/api/execution/positions/actions/close",
   sessions: "/api/execution/sessions",
   sessionsCreate: "/api/execution/sessions/create",
   audit: "/api/execution/audit",
@@ -128,7 +129,7 @@ export const CONFIG_API_ENDPOINTS = {
 export type BrokerageConnectionProvider = "alpaca" | "robinhood";
 
 export function brokerageConnectionEndpoint(provider: BrokerageConnectionProvider): string {
-  return `${BROKERAGE_CONNECTION_API_ENDPOINTS.base}/${encodeURIComponent(provider)}`;
+  return `${BROKERAGE_CONNECTION_API_ENDPOINTS.base}/${pathSegment(provider, "provider")}`;
 }
 
 export function brokerageConnectionStatusEndpoint(provider: BrokerageConnectionProvider): string {
@@ -141,7 +142,7 @@ export function brokerageConnectionConnectEndpoint(provider: BrokerageConnection
 
 export function workstationOperatorInboxEndpoint(fundAccountId?: string): string {
   return fundAccountId
-    ? `${WORKSTATION_API_ENDPOINTS.operatorInbox}?fundAccountId=${encodeURIComponent(fundAccountId)}`
+    ? `${WORKSTATION_API_ENDPOINTS.operatorInbox}${queryString({ fundAccountId })}`
     : WORKSTATION_API_ENDPOINTS.operatorInbox;
 }
 
@@ -156,7 +157,7 @@ export function workstationWorkflowSummaryEndpoint(options: {
 
 export function workstationWorkflowPresetEndpoint(presetId?: string): string {
   return presetId
-    ? `${WORKSTATION_API_ENDPOINTS.workflowPresets}/${encodeURIComponent(presetId)}`
+    ? `${WORKSTATION_API_ENDPOINTS.workflowPresets}/${pathSegment(presetId, "presetId")}`
     : WORKSTATION_API_ENDPOINTS.workflowPresets;
 }
 
@@ -207,7 +208,7 @@ export function workstationRunSweepsEndpoint(limit?: number): string {
 }
 
 export function workstationEvidenceSubjectBaseEndpoint(subjectKind: string, subjectId: string): string {
-  return `${WORKSTATION_API_ENDPOINTS.evidenceSubjects}/${encodeURIComponent(subjectKind)}/${encodeURIComponent(subjectId)}`;
+  return `${WORKSTATION_API_ENDPOINTS.evidenceSubjects}/${pathSegment(subjectKind, "subjectKind")}/${pathSegment(subjectId, "subjectId")}`;
 }
 
 export function workstationEvidencePacketEndpoint(subjectKind: string, subjectId: string): string {
@@ -227,19 +228,19 @@ export function workstationEvidenceExportManifestEndpoint(subjectKind: string, s
 }
 
 export function promotionEvaluateEndpoint(runId: string): string {
-  return `${PROMOTION_API_ENDPOINTS.evaluate}/${encodeURIComponent(runId)}`;
+  return `${PROMOTION_API_ENDPOINTS.evaluate}/${pathSegment(runId, "runId")}`;
 }
 
 export function executionOrderCancelEndpoint(orderId: string): string {
-  return `/api/execution/orders/${encodeURIComponent(orderId)}/cancel`;
+  return `/api/execution/orders/${pathSegment(orderId, "orderId")}/cancel`;
 }
 
-export function executionPositionCloseEndpoint(symbol: string): string {
-  return `/api/execution/positions/${encodeURIComponent(symbol)}/close`;
+export function executionPositionCloseEndpoint(): string {
+  return EXECUTION_API_ENDPOINTS.positionsActionClose;
 }
 
 export function executionSessionEndpoint(sessionId: string): string {
-  return `${EXECUTION_API_ENDPOINTS.sessions}/${encodeURIComponent(sessionId)}`;
+  return `${EXECUTION_API_ENDPOINTS.sessions}/${pathSegment(sessionId, "sessionId")}`;
 }
 
 export function executionSessionCloseEndpoint(sessionId: string): string {
@@ -255,7 +256,7 @@ export function executionAuditEndpoint(take = 20): string {
 }
 
 export function executionManualOverrideClearEndpoint(overrideId: string): string {
-  return `${EXECUTION_API_ENDPOINTS.manualOverrides}/${encodeURIComponent(overrideId)}/clear`;
+  return `${EXECUTION_API_ENDPOINTS.manualOverrides}/${pathSegment(overrideId, "overrideId")}/clear`;
 }
 
 export function replayFilesEndpoint(symbol?: string): string {
@@ -267,7 +268,7 @@ export function portfolioHouseholdEndpoint(provider = "alpaca"): string {
 }
 
 export function portfolioSymbolExposureEndpoint(symbol: string): string {
-  return `${PORTFOLIO_API_ENDPOINTS.exposure.replace(/\/exposure$/, "/symbols")}/${encodeURIComponent(symbol)}/exposure`;
+  return `${PORTFOLIO_API_ENDPOINTS.exposure.replace(/\/exposure$/, "/symbols")}/${pathSegment(symbol, "symbol")}/exposure`;
 }
 
 export function exportPreviewEndpoint(profile?: string): string {
@@ -275,7 +276,7 @@ export function exportPreviewEndpoint(profile?: string): string {
 }
 
 export function strategyEndpoint(strategyId: string): string {
-  return `${STRATEGY_API_ENDPOINTS.base}/${encodeURIComponent(strategyId)}`;
+  return `${STRATEGY_API_ENDPOINTS.base}/${pathSegment(strategyId, "strategyId")}`;
 }
 
 export function strategyActionEndpoint(strategyId: string, action: "pause" | "stop"): string {
@@ -290,7 +291,7 @@ export function replaySessionActionEndpoint(
   sessionId: string,
   action: "pause" | "resume" | "stop" | "seek" | "speed" | "status"
 ): string {
-  return `/api/replay/${encodeURIComponent(sessionId)}/${action}`;
+  return `/api/replay/${pathSegment(sessionId, "sessionId")}/${action}`;
 }
 
 export function workstationRunCompareEndpoint(): string {
@@ -326,7 +327,7 @@ export function workstationSecurityMasterSearchEndpoint(options: {
 }
 
 export function workstationSecurityMasterEntryEndpoint(securityId: string): string {
-  return `${SECURITY_MASTER_API_ENDPOINTS.workstationSecurities}/${encodeURIComponent(securityId)}`;
+  return `${SECURITY_MASTER_API_ENDPOINTS.workstationSecurities}/${pathSegment(securityId, "securityId")}`;
 }
 
 export function workstationSecurityMasterIdentityEndpoint(securityId: string): string {
@@ -358,11 +359,11 @@ export function securityMasterAliasUpsertEndpoint(): string {
 }
 
 export function securityMasterCorporateActionsEndpoint(securityId: string): string {
-  return `${SECURITY_MASTER_API_ENDPOINTS.base}/${encodeURIComponent(securityId)}/corporate-actions`;
+  return `${SECURITY_MASTER_API_ENDPOINTS.base}/${pathSegment(securityId, "securityId")}/corporate-actions`;
 }
 
 export function securityMasterTradingParametersEndpoint(securityId: string): string {
-  return `${SECURITY_MASTER_API_ENDPOINTS.base}/${encodeURIComponent(securityId)}/trading-parameters`;
+  return `${SECURITY_MASTER_API_ENDPOINTS.base}/${pathSegment(securityId, "securityId")}/trading-parameters`;
 }
 
 export function securityMasterConflictsEndpoint(): string {
@@ -370,11 +371,11 @@ export function securityMasterConflictsEndpoint(): string {
 }
 
 export function securityMasterConflictResolveEndpoint(conflictId: string): string {
-  return `${securityMasterConflictsEndpoint()}/${encodeURIComponent(conflictId)}/resolve`;
+  return `${securityMasterConflictsEndpoint()}/${pathSegment(conflictId, "conflictId")}/resolve`;
 }
 
 export function reconciliationRunEndpoint(reconciliationRunId: string): string {
-  return `${RECONCILIATION_API_ENDPOINTS.runs}/${encodeURIComponent(reconciliationRunId)}`;
+  return `${RECONCILIATION_API_ENDPOINTS.runs}/${pathSegment(reconciliationRunId, "reconciliationRunId")}`;
 }
 
 export function reconciliationBreakQueueEndpoint(options: { status?: string; fundAccountId?: string } = {}): string {
@@ -382,7 +383,7 @@ export function reconciliationBreakQueueEndpoint(options: { status?: string; fun
 }
 
 export function reconciliationBreakEndpoint(breakId: string): string {
-  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/${encodeURIComponent(breakId)}`;
+  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/${pathSegment(breakId, "breakId")}`;
 }
 
 export function reconciliationBreakAuditEndpoint(breakId: string): string {
@@ -398,7 +399,7 @@ export function reconciliationBreakResolveEndpoint(breakId: string): string {
 }
 
 export function providerEndpoint(providerId: string): string {
-  return `/api/providers/${encodeURIComponent(providerId)}`;
+  return `/api/providers/${pathSegment(providerId, "providerId")}`;
 }
 
 export function providerRemoveEndpoint(providerId: string): string {
@@ -414,7 +415,7 @@ export function symbolSearchEndpoint(query: string): string {
 }
 
 export function symbolEndpoint(symbol: string): string {
-  return `${SYMBOL_API_ENDPOINTS.symbols}/${encodeURIComponent(symbol)}`;
+  return `${SYMBOL_API_ENDPOINTS.symbols}/${pathSegment(symbol, "symbol")}`;
 }
 
 export function symbolRemoveEndpoint(symbol: string): string {
@@ -426,45 +427,77 @@ export function symbolArchiveEndpoint(symbol: string): string {
 }
 
 export function qualityAnomalyAcknowledgeEndpoint(anomalyId: string): string {
-  return `${QUALITY_API_ENDPOINTS.anomalies}/${encodeURIComponent(anomalyId)}/acknowledge`;
+  return `${QUALITY_API_ENDPOINTS.anomalies}/${pathSegment(anomalyId, "anomalyId")}/acknowledge`;
 }
 
 export function marketDataQuoteEndpoint(symbol: string): string {
-  return `${MARKET_DATA_API_ENDPOINTS.quotes}/${encodeURIComponent(symbol)}`;
+  return `${MARKET_DATA_API_ENDPOINTS.quotes}/${pathSegment(symbol, "symbol")}`;
 }
 
 export function marketDataTradesEndpoint(symbol: string, limit = 25): string {
-  return `${MARKET_DATA_API_ENDPOINTS.trades}/${encodeURIComponent(symbol)}${queryString({ limit })}`;
+  return `${MARKET_DATA_API_ENDPOINTS.trades}/${pathSegment(symbol, "symbol")}${queryString({ limit })}`;
 }
 
 export function marketDataOrderbookEndpoint(symbol: string, levels = 10): string {
-  return `${MARKET_DATA_API_ENDPOINTS.orderbook}/${encodeURIComponent(symbol)}${queryString({ levels })}`;
+  return `${MARKET_DATA_API_ENDPOINTS.orderbook}/${pathSegment(symbol, "symbol")}${queryString({ levels })}`;
 }
 
 export function marketDataQuotesSnapshotEndpoint(symbols?: readonly string[]): string {
   const trimmed = symbols?.map((symbol) => symbol.trim()).filter(Boolean) ?? [];
-  return `${MARKET_DATA_API_ENDPOINTS.quotesSnapshot}${queryString({ symbols: trimmed.length > 0 ? trimmed.join(",") : undefined })}`;
+  return `${MARKET_DATA_API_ENDPOINTS.quotesSnapshot}${queryString({ symbols: trimmed })}`;
 }
 
 export function historicalBarsEndpoint(
   symbol: string,
   request: { intervalMinutes: number; from?: string; to?: string; maxBars?: number }
 ): string {
-  return `${MARKET_DATA_API_ENDPOINTS.historical}/${encodeURIComponent(symbol)}/bars${queryString(request)}`;
+  return `${MARKET_DATA_API_ENDPOINTS.historical}/${pathSegment(symbol, "symbol")}/bars${queryString(request)}`;
 }
 
 function workstationRunBaseEndpoint(runId: string): string {
-  return `/api/workstation/runs/${encodeURIComponent(runId)}`;
+  return `/api/workstation/runs/${pathSegment(runId, "runId")}`;
 }
 
 function workstationRunRootEndpoint(): string {
   return "/api/workstation/runs";
 }
 
-function queryString(params: Record<string, string | number | boolean | null | undefined>): string {
+function pathSegment(value: string, name: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    throw new Error(`Cannot build Meridian API endpoint: ${name} is required.`);
+  }
+
+  return encodeURIComponent(trimmed);
+}
+
+function queryString(params: Record<string, string | number | boolean | readonly string[] | null | undefined>): string {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
-    if (value !== null && value !== undefined && value !== "") {
+    if (Array.isArray(value)) {
+      const normalizedValues = value.map((entry) => entry.trim()).filter(Boolean);
+      if (normalizedValues.length > 0) {
+        search.set(key, normalizedValues.join(","));
+      }
+      continue;
+    }
+
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed) {
+        search.set(key, trimmed);
+      }
+      continue;
+    }
+
+    if (typeof value === "number") {
+      if (Number.isFinite(value)) {
+        search.set(key, String(value));
+      }
+      continue;
+    }
+
+    if (typeof value === "boolean") {
       search.set(key, String(value));
     }
   }

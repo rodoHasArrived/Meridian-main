@@ -91,7 +91,8 @@ describe("ResearchScreen", () => {
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool study brief")).toBeInTheDocument();
     expect(screen.getByText("Strategy notebooks")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "PlotTool scatter chart" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Mean Reversion FX vs Index Momentum scatter" })).toBeInTheDocument();
+    expect(screen.getByText(/Spread \(bps\) against 3m implied vol/)).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool chart legend")).toBeInTheDocument();
     expect(screen.getAllByText("Current marker").length).toBeGreaterThan(0);
     expect(screen.getByText("Meridian overlays")).toBeInTheDocument();
@@ -105,6 +106,7 @@ describe("ResearchScreen", () => {
 
     expect(screen.getByText("Distribution profile")).toBeInTheDocument();
     expect(screen.getByText("Residual distribution")).toBeInTheDocument();
+    expect(screen.getByLabelText("PlotTool residual distribution chart")).toBeInTheDocument();
     expect(screen.getByText("Regression frame")).toBeInTheDocument();
     expect(screen.getByText("Observation sheet")).toBeInTheDocument();
   });

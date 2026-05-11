@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import {
+  buildGovernanceLoadingViewState,
   resolveGovernanceWorkstream,
   useGovernanceCashFlowViewModel,
   useGovernanceReconciliationViewModel,
@@ -41,7 +42,7 @@ const focusCopy: Record<string, { title: string; description: string }> = {
   },
   reconciliation: {
     title: "Reconciliation queue",
-    description: "Open breaks, timing drift, and balanced runs stay visible without leaving governance."
+    description: "Open breaks, timing drift, and balanced runs stay visible without leaving Accounting."
   },
   "security-master": {
     title: "Security coverage",
@@ -91,11 +92,18 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   ];
 
   if (!data) {
+    const loading = buildGovernanceLoadingViewState(pathname);
     return (
-      <Card>
+      <Card
+        role={loading.role}
+        aria-busy={loading.ariaBusy}
+        aria-live={loading.ariaLive}
+        aria-labelledby={loading.titleId}
+        aria-describedby={loading.detailId}
+      >
         <CardHeader>
-          <CardTitle>Loading Governance</CardTitle>
-          <CardDescription>Waiting for reconciliation, cash-flow, and reporting summaries from the workstation bootstrap payload.</CardDescription>
+          <CardTitle id={loading.titleId}>{loading.title}</CardTitle>
+          <CardDescription id={loading.detailId}>{loading.detail}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -107,7 +115,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
     <div className="space-y-8">
       <section
         role="region"
-        aria-label="Governance workbench context"
+        aria-label={`${workspace.label} workbench context`}
         className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
       >
         <div className="min-w-0">

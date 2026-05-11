@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as api from "@/lib/api";
 import type {
   QuantDiagnostic,
@@ -17,6 +17,8 @@ export interface QuantRunState {
   phase: "idle" | "running" | "ready" | "error";
   result: QuantRunResponse | null;
   error: string | null;
+  submittedSource?: string | null;
+  sourceChangedSinceRun?: boolean;
 }
 
 export type QuantTemplatePhase = "loading" | "ready" | "empty" | "error";
@@ -115,6 +117,9 @@ export interface QuantRunResultPanelState {
   consoleLabel: string;
   plotsLabel: string;
   plotsDescription: string;
+  sourceDrifted: boolean;
+  sourceDriftTitle: string | null;
+  sourceDriftDetail: string | null;
   hasResult: boolean;
   hasMetrics: boolean;
   hasConsoleOutput: boolean;
@@ -175,6 +180,13 @@ export function useQuantLabScreenViewModel(
   const [detectedParams, setDetectedParams] = useState<QuantParameter[]>([]);
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
   const [parameterPhase, setParameterPhase] = useState<QuantParameterPhase>("idle");
+  const sourceRef = useRef(DEFAULT_QUANT_SOURCE);
+
+  const updateSource = useCallback((nextSource: string) => {
+    sourceRef.current = nextSource;
+    setSource(nextSource);
+    setRun((current) => markQuantRunSourceDrift(current, nextSource));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -237,31 +249,46 @@ export function useQuantLabScreenViewModel(
   const runScriptCommand = useCallback(async () => {
     const validation = validateQuantSource(source);
     if (validation) {
-      setRun({ phase: "error", result: null, error: validation });
+      setRun({ phase: "error", result: null, error: validation, submittedSource: null, sourceChangedSinceRun: false });
       return;
     }
 
-    setRun({ phase: "running", result: null, error: null });
+    const submittedSource = sourceRef.current;
+    setRun({
+      phase: "running",
+      result: null,
+      error: null,
+      submittedSource,
+      sourceChangedSinceRun: false
+    });
     try {
       const parameters = buildQuantParameters(detectedParams, paramValues);
-      const result = await services.runScript({ source, parameters });
-      setRun({ phase: "ready", result, error: null });
+      const result = await services.runScript({ source: submittedSource, parameters });
+      setRun({
+        phase: "ready",
+        result,
+        error: null,
+        submittedSource,
+        sourceChangedSinceRun: sourceRef.current !== submittedSource
+      });
     } catch (err) {
       setRun({
         phase: "error",
         result: null,
-        error: (err as Error)?.message ?? "Failed to run script."
+        error: (err as Error)?.message ?? "Failed to run script.",
+        submittedSource,
+        sourceChangedSinceRun: sourceRef.current !== submittedSource
       });
     }
   }, [detectedParams, paramValues, services, source]);
 
   const loadTemplate = useCallback((template: QuantTemplate) => {
-    setSource(template.source);
+    updateSource(template.source);
     setRun(initialQuantRunState);
     setDetectedParams([]);
     setParamValues({});
     setParameterPhase("extracting");
-  }, []);
+  }, [updateSource]);
 
   const updateParameter = useCallback((name: string, value: string) => {
     setParamValues((prev) => ({ ...prev, [name]: value }));
@@ -286,13 +313,13 @@ export function useQuantLabScreenViewModel(
     [detectedParams, paramValues]
   );
 
-  const runCommand = buildRunCommandState(source, run.phase);
+  const runCommand = buildRunCommandState(source, run.phase, run.sourceChangedSinceRun === true);
   const templatesPanel = buildTemplatePanelState(templatesPhase, templatesError);
   const parameterPanel = buildParameterPanelState(parameterPhase, parameterRows.length, source.trim().length > 0);
 
   return {
     source,
-    setSource,
+    setSource: updateSource,
     run,
     resultPanel: buildRunResultPanelState(run),
     consoleLines,
@@ -372,15 +399,39 @@ export function validateQuantSource(source: string): string | null {
   return source.trim() ? null : "Enter some script source first.";
 }
 
-export function buildRunCommandState(source: string, phase: QuantRunState["phase"]): QuantCommandState {
+export function buildRunCommandState(
+  source: string,
+  phase: QuantRunState["phase"],
+  sourceChangedSinceRun = false
+): QuantCommandState {
   const sourceError = validateQuantSource(source);
   const running = phase === "running";
   return {
-    label: running ? "Running..." : "Run",
-    ariaLabel: running ? "Quant script is running" : "Run script",
+    label: running ? "Running..." : sourceChangedSinceRun && sourceError === null ? "Run current source" : "Run",
+    ariaLabel: running
+      ? "Quant script is running"
+      : sourceChangedSinceRun && sourceError === null
+        ? "Run current edited script source"
+        : "Run script",
     disabled: running || sourceError !== null,
     disabledReason: sourceError,
     busy: running
+  };
+}
+
+export function markQuantRunSourceDrift(run: QuantRunState, currentSource: string): QuantRunState {
+  if (!run.submittedSource || run.phase === "idle") {
+    return run;
+  }
+
+  const sourceChangedSinceRun = currentSource !== run.submittedSource;
+  if (run.sourceChangedSinceRun === sourceChangedSinceRun) {
+    return run;
+  }
+
+  return {
+    ...run,
+    sourceChangedSinceRun
   };
 }
 
@@ -583,16 +634,63 @@ export function buildSummaryTone(run: QuantRunState): "success" | "danger" | "de
 }
 
 export function buildRunStatusAnnouncement(run: QuantRunState): string {
-  if (run.phase === "running") return "Quant script is compiling and running.";
-  if (run.phase === "error") return run.error ? `Quant script error: ${run.error}` : "Quant script error.";
-  if (run.result?.success) return "Quant script completed successfully.";
-  if (run.result && !run.result.success) return "Quant script completed with errors.";
+  if (run.phase === "running") {
+    return run.sourceChangedSinceRun
+      ? "Quant script is compiling and running. The editor has changed since this run started."
+      : "Quant script is compiling and running.";
+  }
+  if (run.phase === "error") {
+    const message = run.error ? `Quant script error: ${run.error}` : "Quant script error";
+    return run.sourceChangedSinceRun
+      ? `${message} The editor has changed since this run started.`
+      : message.endsWith(".")
+        ? message
+        : `${message}.`;
+  }
+  if (run.result?.success) {
+    return run.sourceChangedSinceRun
+      ? "Quant script completed successfully for a previous source."
+      : "Quant script completed successfully.";
+  }
+  if (run.result && !run.result.success) {
+    return run.sourceChangedSinceRun
+      ? "Quant script completed with errors for a previous source."
+      : "Quant script completed with errors.";
+  }
   return "Quant Lab is ready.";
+}
+
+function buildQuantRunSourceDriftState(run: QuantRunState): Pick<
+  QuantRunResultPanelState,
+  "sourceDrifted" | "sourceDriftTitle" | "sourceDriftDetail"
+> {
+  if (run.sourceChangedSinceRun !== true) {
+    return {
+      sourceDrifted: false,
+      sourceDriftTitle: null,
+      sourceDriftDetail: null
+    };
+  }
+
+  if (run.phase === "running") {
+    return {
+      sourceDrifted: true,
+      sourceDriftTitle: "Editor changed during this run",
+      sourceDriftDetail: "The run is still using the source that was submitted. Run current source after it finishes to refresh the evidence."
+    };
+  }
+
+  return {
+    sourceDrifted: true,
+    sourceDriftTitle: "Evidence is for previous source",
+    sourceDriftDetail: "The editor changed after this run started. Run current source before accepting metrics, console output, diagnostics, or plots."
+  };
 }
 
 export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPanelState {
   const tone = buildSummaryTone(run);
   const result = run.result;
+  const sourceDriftState = buildQuantRunSourceDriftState(run);
 
   if (run.phase === "idle") {
     return {
@@ -609,6 +707,7 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       consoleLabel: "Console",
       plotsLabel: "Plots",
       plotsDescription: "No plots returned yet.",
+      ...sourceDriftState,
       hasResult: false,
       hasMetrics: false,
       hasConsoleOutput: false,
@@ -637,6 +736,7 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       consoleLabel: "Console",
       plotsLabel: "Plots",
       plotsDescription: "Plots will render after the run completes.",
+      ...sourceDriftState,
       hasResult: false,
       hasMetrics: false,
       hasConsoleOutput: false,
@@ -665,6 +765,7 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       consoleLabel: "Console",
       plotsLabel: "Plots",
       plotsDescription: "No plots returned because the run failed.",
+      ...sourceDriftState,
       hasResult: false,
       hasMetrics: false,
       hasConsoleOutput: false,
@@ -693,8 +794,16 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
     tone,
     role: result.success ? "region" : "alert",
     ariaLive: result.success ? "polite" : "assertive",
-    title: result.success ? "Run succeeded" : "Run finished with errors",
-    description: result.runtimeError ?? "Runtime evidence returned by this run.",
+    title: sourceDriftState.sourceDrifted
+      ? result.success
+        ? "Run succeeded for previous source"
+        : "Run finished with errors for previous source"
+      : result.success ? "Run succeeded" : "Run finished with errors",
+    description: result.runtimeError ?? (
+      sourceDriftState.sourceDrifted
+        ? "Runtime evidence returned by the previously submitted source."
+        : "Runtime evidence returned by this run."
+    ),
     statusLabel: result.success ? "Completed successfully" : "Completed with errors",
     statusBadgeLabel: result.success ? "OK" : "ERR",
     runtimeSummary: `Compiled in ${formatWholeNumber(result.compileTimeMs)} ms · executed in ${formatWholeNumber(result.elapsedMs)} ms · peak ${formatWholeNumber(result.peakMemoryBytes / 1024)} KB`,
@@ -702,6 +811,7 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
     consoleLabel: hasConsoleOutput ? "Console output" : "Console",
     plotsLabel: "Plots",
     plotsDescription: `${plotCount} chart${plotCount === 1 ? "" : "s"} returned by this run.`,
+    ...sourceDriftState,
     hasResult: true,
     hasMetrics,
     hasConsoleOutput,

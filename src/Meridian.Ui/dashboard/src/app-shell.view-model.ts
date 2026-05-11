@@ -14,7 +14,7 @@ import type {
 export type ShellStatusTone = "loading" | "warning" | "danger";
 
 export interface ShellStatusItem {
-  key: WorkspaceKey;
+  key: WorkspaceKey | "workflow-catalog";
   label: string;
   detail: string;
   ariaLabel: string;
@@ -104,6 +104,7 @@ export interface BuildAppShellViewStateOptions {
   commandPaletteOpen?: boolean;
   loading: boolean;
   error: string | null;
+  workflowError?: string | null;
   workspaceErrors: WorkspaceErrorMap;
   payload: AppShellWorkspacePayload;
 }
@@ -128,11 +129,12 @@ export function buildAppShellViewState({
   commandPaletteOpen = false,
   loading,
   error,
+  workflowError = null,
   workspaceErrors,
   payload
 }: BuildAppShellViewStateOptions): AppShellViewState {
   const activeWorkspace = getWorkspaceForPath(pathname);
-  const failedItems = buildWorkspaceFailureItems(workspaceErrors);
+  const failedItems = buildShellFailureItems(workspaceErrors, workflowError);
   const hasAnyPayload = Object.values(payload).some(Boolean);
   const bootstrapFailed = !loading && !hasAnyPayload;
 
@@ -308,13 +310,15 @@ function buildShellStatusPanel({
   }
 
   if (failedItems.length > 0) {
+    const sliceLabel = failedItems.length === 1 ? "slice" : "slices";
+    const recoveryLabel = failedItems.length === 1 ? "that slice recovers" : "those slices recover";
     return {
       id: "workstation-shell-status-degraded",
       titleId: "workstation-shell-status-degraded-title",
       detailId: "workstation-shell-status-degraded-detail",
       tone: "warning",
       title: "Workstation bootstrap is partially degraded",
-      detail: `${failedItems.length} workspace ${failedItems.length === 1 ? "slice" : "slices"} failed to load. Available routes remain open while those slices recover.`,
+      detail: `${failedItems.length} workstation ${sliceLabel} failed to load. Available routes remain open while ${recoveryLabel}.`,
       role: "status",
       ariaLive: "polite",
       actionLabel: "Retry failed slices",
@@ -322,7 +326,7 @@ function buildShellStatusPanel({
       secondaryActionLabel: "Review diagnostics",
       secondaryActionAriaLabel: "Review Settings capability coverage for failed workstation slices",
       secondaryActionHref: "/settings#backend-capability-coverage",
-      itemListLabel: "Failed workspace slices",
+      itemListLabel: "Failed workstation slices",
       items: failedItems
     };
   }
@@ -330,8 +334,8 @@ function buildShellStatusPanel({
   return null;
 }
 
-function buildWorkspaceFailureItems(workspaceErrors: WorkspaceErrorMap): ShellStatusItem[] {
-  return Object.entries(workspaceErrors)
+function buildShellFailureItems(workspaceErrors: WorkspaceErrorMap, workflowError: string | null): ShellStatusItem[] {
+  const items: ShellStatusItem[] = Object.entries(workspaceErrors)
     .map(([key, detail]) => {
       const workspaceKey = key as WorkspaceKey;
       const label = WORKSPACES.find((workspace) => workspace.key === workspaceKey)?.label ?? key;
@@ -343,6 +347,17 @@ function buildWorkspaceFailureItems(workspaceErrors: WorkspaceErrorMap): ShellSt
       };
     })
     .sort((left, right) => left.label.localeCompare(right.label));
+
+  if (workflowError) {
+    items.push({
+      key: "workflow-catalog",
+      label: "Workflow catalog",
+      detail: workflowError,
+      ariaLabel: `Workflow catalog: ${workflowError}`
+    });
+  }
+
+  return items;
 }
 
 function normalizeHashTarget(hash: string): string | null {

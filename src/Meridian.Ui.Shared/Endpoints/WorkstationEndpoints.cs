@@ -33,6 +33,7 @@ public static class WorkstationEndpoints
 {
     private const int MaxRunComparisonRequestIds = 10;
     private const int SecurityCoveragePreviewLimit = 5;
+    private const string WorkstationApiRoutePrefix = "/api/workstation";
 
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -705,7 +706,7 @@ public static class WorkstationEndpoints
         .Produces<SecurityMasterWorkstationDto>(200)
         .Produces(404);
 
-        group.MapGet("/security-master/securities/{securityId:guid}/history", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterHistory), async (
             Guid securityId,
             int? take,
             [FromServices] ContractSecurityMasterQueryService queryService,
@@ -726,7 +727,7 @@ public static class WorkstationEndpoints
         .Produces<IReadOnlyList<SecurityMasterEventEnvelope>>(200)
         .Produces(404);
 
-        group.MapGet("/security-master/securities/{securityId:guid}/identity", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterIdentity), async (
             Guid securityId,
             [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
@@ -740,7 +741,7 @@ public static class WorkstationEndpoints
         .Produces<SecurityIdentityDrillInDto>(200)
         .Produces(404);
 
-        group.MapGet("/security-master/securities/{securityId:guid}/economic-definition", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterEconomicDefinition), async (
             Guid securityId,
             [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
@@ -754,7 +755,7 @@ public static class WorkstationEndpoints
         .Produces<SecurityEconomicDefinitionSummaryDto>(200)
         .Produces(404);
 
-        group.MapGet("/security-master/securities/{securityId:guid}/trust-snapshot", async (
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterTrustSnapshot), async (
             Guid securityId,
             string? fundProfileId,
             HttpContext context) =>
@@ -778,7 +779,7 @@ public static class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapPost("/security-master/conflicts/bulk-resolve", async (
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterBulkResolveConflicts), async (
             BulkResolveSecurityMasterConflictsRequest request,
             HttpContext context) =>
         {
@@ -1167,6 +1168,14 @@ public static class WorkstationEndpoints
             Metrics: metricsDiff);
     }
 
+    private static string WorkstationSubroute(string route)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(route);
+        return route.StartsWith(WorkstationApiRoutePrefix, StringComparison.Ordinal)
+            ? route[WorkstationApiRoutePrefix.Length..]
+            : route;
+    }
+
     private static IReadOnlyList<ParameterDiff> BuildParameterDiff(
         IReadOnlyDictionary<string, string> baseParams,
         IReadOnlyDictionary<string, string> targetParams)
@@ -1372,7 +1381,7 @@ public static class WorkstationEndpoints
                         Tone: "success",
                         Summary: "Primary paper candidate with steady fill quality and stable financing.",
                         RunId: "run-research-001",
-                        DrillInRoute: "/api/workstation/runs/run-research-001/equity-curve"),
+                        DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, "run-research-001")),
                     new InsightWidget(
                         WidgetId: "insight-index-carry",
                         Title: "Index Carry Basket",
@@ -1381,7 +1390,7 @@ public static class WorkstationEndpoints
                         Tone: "default",
                         Summary: "Pinned chart compares carry spread compression against basket returns.",
                         RunId: "run-research-014",
-                        DrillInRoute: "/api/workstation/runs/run-research-014/equity-curve"),
+                        DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, "run-research-014")),
                     new InsightWidget(
                         WidgetId: "insight-vol-breakout",
                         Title: "Volatility Breakout",
@@ -1390,7 +1399,7 @@ public static class WorkstationEndpoints
                         Tone: "warning",
                         Summary: "Transaction-cost preview deteriorated after the most recent parameter sweep.",
                         RunId: "run-research-022",
-                        DrillInRoute: "/api/workstation/runs/run-research-022/equity-curve")
+                        DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, "run-research-022"))
                 ]),
             Watchlists:
             [
@@ -1431,12 +1440,12 @@ public static class WorkstationEndpoints
                     TotalReturn: 0.042m,
                     FinalEquity: 104200m,
                     DrillIn: new ResearchRunDrillInLinks(
-                        EquityCurve: "/api/workstation/runs/run-research-001/equity-curve",
-                        Fills: "/api/workstation/runs/run-research-001/fills",
-                        Attribution: "/api/workstation/runs/run-research-001/attribution",
-                        Ledger: "/api/workstation/runs/run-research-001/ledger",
-                        CashFlows: "/api/portfolio/run-research-001/cash-flows",
-                        Continuity: "/api/workstation/runs/run-research-001/continuity"))
+                        EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, "run-research-001"),
+                        Fills: RunRoute(UiApiRoutes.RunsFills, "run-research-001"),
+                        Attribution: RunRoute(UiApiRoutes.RunsAttribution, "run-research-001"),
+                        Ledger: RunRoute(UiApiRoutes.RunsLedger, "run-research-001"),
+                        CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, "run-research-001"),
+                        Continuity: RunRoute(UiApiRoutes.RunsContinuity, "run-research-001")))
             ],
             SavedComparisons:
             [
@@ -1455,12 +1464,12 @@ public static class WorkstationEndpoints
                             NetPnl: 4200m,
                             TotalReturn: 0.042m,
                             DrillIn: new ResearchRunDrillInLinks(
-                                EquityCurve: "/api/workstation/runs/run-research-001/equity-curve",
-                                Fills: "/api/workstation/runs/run-research-001/fills",
-                                Attribution: "/api/workstation/runs/run-research-001/attribution",
-                                Ledger: "/api/workstation/runs/run-research-001/ledger",
-                                CashFlows: "/api/portfolio/run-research-001/cash-flows",
-                                Continuity: "/api/workstation/runs/run-research-001/continuity"))
+                                EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, "run-research-001"),
+                                Fills: RunRoute(UiApiRoutes.RunsFills, "run-research-001"),
+                                Attribution: RunRoute(UiApiRoutes.RunsAttribution, "run-research-001"),
+                                Ledger: RunRoute(UiApiRoutes.RunsLedger, "run-research-001"),
+                                CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, "run-research-001"),
+                                Continuity: RunRoute(UiApiRoutes.RunsContinuity, "run-research-001")))
                     ])
             ],
             Alerts:
@@ -1595,6 +1604,7 @@ public static class WorkstationEndpoints
                 var liveExposure = Math.Abs(pos.Quantity * effectiveMark);
 
                 return new WorkstationTradingPositionRow(
+                    PositionKey: pos.Symbol,
                     Symbol: pos.Symbol,
                     Side: pos.Quantity >= 0 ? "Long" : "Short",
                     Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
@@ -1610,7 +1620,7 @@ public static class WorkstationEndpoints
             // No live positions yet — show an informational placeholder row
             positions =
             [
-                new WorkstationTradingPositionRow("—", "—", "—", "—", "—", "—", "—", "No open positions")
+                new WorkstationTradingPositionRow("—", "—", "—", "—", "—", "—", "—", "—", "No open positions")
             ];
         }
 
@@ -1998,7 +2008,7 @@ public static class WorkstationEndpoints
             OperatorWorkItemKindDto.BrokerageSync => (
                 "Trading",
                 fundAccountId.HasValue
-                    ? UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.Value.ToString(), StringComparison.Ordinal)
+                    ? UiApiRoutes.WithParam(UiApiRoutes.FundAccountBrokerageSyncStatus, "accountId", fundAccountId.Value.ToString())
                     : UiApiRoutes.FundAccountBrokerageSyncAccounts,
                 "AccountPortfolio"),
             _ => (
@@ -2103,8 +2113,8 @@ public static class WorkstationEndpoints
             ],
             Positions:
             [
-                new WorkstationTradingPositionRow("AAPL", "Long", "300", "188.22", "189.30", "+$324", "+$1,126", "$56,790"),
-                new WorkstationTradingPositionRow("MSFT", "Long", "150", "416.10", "414.80", "-$195", "-$195", "$62,220")
+                new WorkstationTradingPositionRow("AAPL", "AAPL", "Long", "300", "188.22", "189.30", "+$324", "+$1,126", "$56,790"),
+                new WorkstationTradingPositionRow("MSFT", "MSFT", "Long", "150", "416.10", "414.80", "-$195", "-$195", "$62,220")
             ],
             OpenOrders:
             [
@@ -2443,6 +2453,7 @@ public static class WorkstationEndpoints
                 var liveExposure = Math.Abs(pos.Quantity * effectiveMark);
 
                 return new WorkstationTradingPositionRow(
+                    PositionKey: pos.Symbol,
                     Symbol: pos.Symbol,
                     Side: pos.Quantity >= 0 ? "Long" : "Short",
                     Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
@@ -3090,7 +3101,7 @@ public static class WorkstationEndpoints
                 Tone: GetInsightTone(run, detail),
                 Summary: BuildInsightSummary(run, detail),
                 RunId: run.RunId,
-                DrillInRoute: $"/api/workstation/runs/{run.RunId}/equity-curve"))
+                DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, run.RunId)))
             .Take(3)
             .ToArray();
 
@@ -3318,12 +3329,12 @@ public static class WorkstationEndpoints
 
     private static ResearchRunDrillInLinks BuildResearchDrillInLinks(StrategyRunSummary run)
         => new(
-            EquityCurve: $"/api/workstation/runs/{run.RunId}/equity-curve",
-            Fills: $"/api/workstation/runs/{run.RunId}/fills",
-            Attribution: $"/api/workstation/runs/{run.RunId}/attribution",
-            Ledger: string.IsNullOrWhiteSpace(run.LedgerReference) ? null : $"/api/workstation/runs/{run.RunId}/ledger",
-            CashFlows: $"/api/portfolio/{run.RunId}/cash-flows",
-            Continuity: UiApiRoutes.RunsContinuity.Replace("{runId}", run.RunId, StringComparison.Ordinal));
+            EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, run.RunId),
+            Fills: RunRoute(UiApiRoutes.RunsFills, run.RunId),
+            Attribution: RunRoute(UiApiRoutes.RunsAttribution, run.RunId),
+            Ledger: string.IsNullOrWhiteSpace(run.LedgerReference) ? null : RunRoute(UiApiRoutes.RunsLedger, run.RunId),
+            CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, run.RunId),
+            Continuity: RunRoute(UiApiRoutes.RunsContinuity, run.RunId));
 
     // PR-03: returns typed DTO
     private static WorkstationTimelineCard BuildTimelineCard(StrategyRunSummary run) =>
@@ -3364,14 +3375,17 @@ public static class WorkstationEndpoints
 
     private static object BuildRunDrillInLinks(StrategyRunSummary run) => new
     {
-        equityCurve = $"/api/workstation/runs/{run.RunId}/equity-curve",
-        fills = $"/api/workstation/runs/{run.RunId}/fills",
-        attribution = $"/api/workstation/runs/{run.RunId}/attribution",
-        ledger = string.IsNullOrWhiteSpace(run.LedgerReference) ? null : $"/api/workstation/runs/{run.RunId}/ledger",
-        cashFlows = $"/api/portfolio/{run.RunId}/cash-flows",
-        continuity = UiApiRoutes.RunsContinuity.Replace("{runId}", run.RunId, StringComparison.Ordinal),
-        comparison = "/api/workstation/runs/compare"
+        equityCurve = RunRoute(UiApiRoutes.RunsEquityCurve, run.RunId),
+        fills = RunRoute(UiApiRoutes.RunsFills, run.RunId),
+        attribution = RunRoute(UiApiRoutes.RunsAttribution, run.RunId),
+        ledger = string.IsNullOrWhiteSpace(run.LedgerReference) ? null : RunRoute(UiApiRoutes.RunsLedger, run.RunId),
+        cashFlows = RunRoute(UiApiRoutes.PortfolioCashFlows, run.RunId),
+        continuity = RunRoute(UiApiRoutes.RunsContinuity, run.RunId),
+        comparison = UiApiRoutes.RunsCompare
     };
+
+    private static string RunRoute(string routeTemplate, string runId)
+        => UiApiRoutes.WithParam(routeTemplate, "runId", runId);
 
     private static IReadOnlyList<StrategyRunMode>? ParseModes(string? mode)
     {

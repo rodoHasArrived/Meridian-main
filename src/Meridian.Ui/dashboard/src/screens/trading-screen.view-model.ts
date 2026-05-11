@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
-import type { ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
+import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath } from "@/lib/workspace";
 import type {
   ExecutionAuditEntry,
@@ -268,6 +268,7 @@ export interface TradingBlotterField {
 
 export interface TradingPositionRow {
   id: string;
+  positionKey: string;
   symbol: string;
   side: string;
   quantity: string;
@@ -408,7 +409,7 @@ export interface TradingReadinessViewModel extends TradingReadinessState {
 }
 
 export interface TradingReadinessServices {
-  getTradingReadiness: () => Promise<TradingOperatorReadiness | null>;
+  getTradingReadiness: (options?: ApiRequestOptions) => Promise<TradingOperatorReadiness | null>;
 }
 
 export interface BuildTradingReadinessStateOptions {
@@ -418,7 +419,7 @@ export interface BuildTradingReadinessStateOptions {
 }
 
 const defaultTradingReadinessServices: TradingReadinessServices = {
-  getTradingReadiness: () => workstationApi.getTradingReadiness()
+  getTradingReadiness: (options?: ApiRequestOptions) => workstationApi.getTradingReadiness(options)
 };
 
 const visibleWorkItemLimit = 4;
@@ -500,15 +501,18 @@ export function useTradingReadinessViewModel({
   const [refreshing, setRefreshing] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
   const readinessRevisionRef = useRef(0);
+  const readinessAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     return () => {
       readinessRevisionRef.current += 1;
+      readinessAbortRef.current?.abort();
     };
   }, []);
 
   useEffect(() => {
     readinessRevisionRef.current += 1;
+    readinessAbortRef.current?.abort();
     setReadiness(initialReadiness);
     setErrorText(null);
     setRefreshing(false);
@@ -517,11 +521,14 @@ export function useTradingReadinessViewModel({
   const refresh = useCallback(async () => {
     const revision = readinessRevisionRef.current + 1;
     readinessRevisionRef.current = revision;
+    readinessAbortRef.current?.abort();
+    const controller = new AbortController();
+    readinessAbortRef.current = controller;
     setRefreshing(true);
     setErrorText(null);
 
     try {
-      const nextReadiness = await services.getTradingReadiness();
+      const nextReadiness = await services.getTradingReadiness({ signal: controller.signal });
       if (readinessRevisionRef.current === revision) {
         setReadiness(nextReadiness);
       }
@@ -531,6 +538,9 @@ export function useTradingReadinessViewModel({
       }
     } finally {
       if (readinessRevisionRef.current === revision) {
+        if (readinessAbortRef.current === controller) {
+          readinessAbortRef.current = null;
+        }
         setRefreshing(false);
       }
     }
@@ -755,9 +765,11 @@ function buildPositionRow(
   selectedId: string | null
 ): TradingPositionRow {
   const id = positionRowId(position, index);
+  const positionKey = position.positionKey?.trim() || position.symbol;
 
   return {
     id,
+    positionKey,
     symbol: position.symbol,
     side: position.side,
     quantity: position.quantity,
@@ -2261,7 +2273,7 @@ function parseReplaySeekMs(value: string): number | null {
 export type TradingConfirmAction =
   | { kind: "cancel-order"; orderId: string }
   | { kind: "cancel-all" }
-  | { kind: "close-position"; symbol: string }
+  | { kind: "close-position"; positionKey: string; symbol: string }
   | { kind: "pause-strategy"; strategyId: string }
   | { kind: "stop-strategy"; strategyId: string };
 
@@ -2372,6 +2384,7 @@ export interface TradingConfirmState {
   busy: boolean;
   result: TradingActionResult | null;
   error: string | null;
+  acknowledged: boolean;
 }
 
 export interface TradingConfirmResultPanel {
@@ -2387,6 +2400,15 @@ export interface TradingConfirmErrorPanel {
   ariaLabel: string;
 }
 
+export interface TradingConfirmAcknowledgementState {
+  id: string;
+  label: string;
+  description: string;
+  checked: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
 export interface TradingConfirmDialogState {
   open: boolean;
   title: string;
@@ -2399,6 +2421,8 @@ export interface TradingConfirmDialogState {
   closeButtonLabel: string;
   confirmAriaLabel: string;
   closeAriaLabel: string;
+  confirmDisabledReason: string | null;
+  acknowledgement: TradingConfirmAcknowledgementState;
   canClose: boolean;
   canConfirm: boolean;
   isCompleted: boolean;
@@ -2409,7 +2433,7 @@ export interface TradingConfirmDialogState {
 export interface TradingConfirmServices {
   cancelOrder: (orderId: string) => Promise<TradingActionResult>;
   cancelAllOrders: () => Promise<TradingActionResult>;
-  closePosition: (symbol: string) => Promise<TradingActionResult>;
+  closePosition: (positionKey: string) => Promise<TradingActionResult>;
   pauseStrategy: (strategyId: string) => Promise<{ success: boolean; reason: string | null }>;
   stopStrategy: (strategyId: string) => Promise<{ success: boolean; reason: string | null }>;
 }
@@ -2418,13 +2442,14 @@ export interface TradingConfirmViewModel extends TradingConfirmDialogState {
   state: TradingConfirmState;
   openConfirm: (action: TradingConfirmAction) => void;
   closeConfirm: () => void;
+  setReviewAcknowledged: (value: boolean) => void;
   executeConfirm: () => Promise<void>;
 }
 
 const defaultTradingConfirmServices: TradingConfirmServices = {
   cancelOrder: (orderId) => workstationApi.cancelOrder(orderId),
   cancelAllOrders: () => workstationApi.cancelAllOrders(),
-  closePosition: (symbol) => workstationApi.closePosition(symbol),
+  closePosition: (positionKey) => workstationApi.closePosition(positionKey),
   pauseStrategy: (strategyId) => workstationApi.pauseStrategy(strategyId),
   stopStrategy: (strategyId) => workstationApi.stopStrategy(strategyId)
 };
@@ -2437,21 +2462,33 @@ export function useTradingConfirmViewModel({
   onActionSettled?: () => Promise<void> | void;
 } = {}): TradingConfirmViewModel {
   const [state, setState] = useState<TradingConfirmState>(() => createTradingConfirmState());
+  const executingRef = useRef(false);
 
   const openConfirm = useCallback((action: TradingConfirmAction) => {
-    setState(createTradingConfirmState(action));
+    setState((current) => current.busy ? current : createTradingConfirmState(action));
   }, []);
 
   const closeConfirm = useCallback(() => {
     setState((current) => current.busy ? current : createTradingConfirmState());
   }, []);
 
+  const setReviewAcknowledged = useCallback((value: boolean) => {
+    setState((current) => {
+      if (!current.action || current.busy || current.result) {
+        return current;
+      }
+
+      return { ...current, acknowledged: value };
+    });
+  }, []);
+
   const executeConfirm = useCallback(async () => {
     const action = state.action;
-    if (!action) {
+    if (!action || !state.acknowledged || state.busy || state.result || executingRef.current) {
       return;
     }
 
+    executingRef.current = true;
     setState((current) => ({ ...current, busy: true, result: null, error: null }));
 
     try {
@@ -2464,8 +2501,10 @@ export function useTradingConfirmViewModel({
         busy: false,
         error: toErrorMessage(err, "Action failed.")
       }));
+    } finally {
+      executingRef.current = false;
     }
-  }, [onActionSettled, services, state.action]);
+  }, [onActionSettled, services, state]);
 
   const dialogState = useMemo(() => buildTradingConfirmDialogState(state), [state]);
 
@@ -2474,16 +2513,18 @@ export function useTradingConfirmViewModel({
     state,
     openConfirm,
     closeConfirm,
+    setReviewAcknowledged,
     executeConfirm
   };
 }
 
-export function createTradingConfirmState(action: TradingConfirmAction | null = null): TradingConfirmState {
+export function createTradingConfirmState(action: TradingConfirmAction | null = null, acknowledged = false): TradingConfirmState {
   return {
     action,
     busy: false,
     result: null,
-    error: null
+    error: null,
+    acknowledged
   };
 }
 
@@ -2494,6 +2535,9 @@ export function buildTradingConfirmDialogState(state: TradingConfirmState): Trad
   const actionId = state.action ? sanitizeDomId(tradingConfirmActionDomKey(state.action)) : "none";
   const resultPanel = state.result ? buildTradingConfirmResultPanel(state.result) : null;
   const errorPanel = state.error ? { text: state.error, ariaLabel: `Confirmation action failed: ${state.error}` } : null;
+  const confirmDisabledReason = buildTradingConfirmDisabledReason(state, isCompleted);
+  const acknowledgementDisabledReason = buildTradingConfirmAcknowledgementDisabledReason(state, isCompleted);
+  const canConfirm = Boolean(state.action) && !state.busy && !isCompleted && state.acknowledged;
 
   return {
     open: state.action !== null,
@@ -2507,12 +2551,57 @@ export function buildTradingConfirmDialogState(state: TradingConfirmState): Trad
     closeButtonLabel: "Close",
     confirmAriaLabel: title ? `Confirm ${title.toLowerCase()}` : "Confirm trading action",
     closeAriaLabel: title ? `Close ${title.toLowerCase()} confirmation` : "Close trading action confirmation",
+    confirmDisabledReason,
+    acknowledgement: {
+      id: `trading-confirm-${actionId}-acknowledgement`,
+      label: "I reviewed this trading action",
+      description: state.action ? tradingConfirmAcknowledgementDescription(state.action) : "Review the trading action before confirming.",
+      checked: state.acknowledged,
+      disabled: acknowledgementDisabledReason !== null,
+      disabledReason: acknowledgementDisabledReason
+    },
     canClose: !state.busy,
-    canConfirm: Boolean(state.action) && !state.busy && !isCompleted,
+    canConfirm,
     isCompleted,
     resultPanel,
     errorPanel
   };
+}
+
+function buildTradingConfirmDisabledReason(state: TradingConfirmState, isCompleted: boolean): string | null {
+  if (!state.action) {
+    return "Open a trading action before confirming.";
+  }
+
+  if (state.busy) {
+    return "Wait for this trading action to finish.";
+  }
+
+  if (isCompleted) {
+    return "This trading action already has a result.";
+  }
+
+  if (!state.acknowledged) {
+    return "Review and acknowledge the trading action before confirming.";
+  }
+
+  return null;
+}
+
+function buildTradingConfirmAcknowledgementDisabledReason(state: TradingConfirmState, isCompleted: boolean): string | null {
+  if (!state.action) {
+    return "Open a trading action before acknowledging.";
+  }
+
+  if (state.busy) {
+    return "Wait for this trading action to finish.";
+  }
+
+  if (isCompleted) {
+    return "This trading action already has a result.";
+  }
+
+  return null;
 }
 
 function buildTradingConfirmResultPanel(result: TradingActionResult): TradingConfirmResultPanel {
@@ -2540,7 +2629,7 @@ async function executeTradingConfirmAction(
   }
 
   if (action.kind === "close-position") {
-    return services.closePosition(action.symbol);
+    return services.closePosition(action.positionKey);
   }
 
   const raw = action.kind === "pause-strategy"
@@ -2581,11 +2670,26 @@ function tradingConfirmActionDescription(action: TradingConfirmAction): string {
   }
 }
 
+function tradingConfirmAcknowledgementDescription(action: TradingConfirmAction): string {
+  switch (action.kind) {
+    case "cancel-order":
+      return `Cancel order ${action.orderId} after reviewing partial-fill risk.`;
+    case "cancel-all":
+      return "Cancel every open order in the current session after reviewing partial-fill risk.";
+    case "close-position":
+      return `Flatten ${action.symbol} with a market order after reviewing fill risk.`;
+    case "pause-strategy":
+      return `Pause strategy ${action.strategyId} while leaving existing orders and positions unchanged.`;
+    case "stop-strategy":
+      return `Stop strategy ${action.strategyId} while leaving open positions for manual handling.`;
+  }
+}
+
 function tradingConfirmActionDomKey(action: TradingConfirmAction): string {
   switch (action.kind) {
     case "cancel-order": return `${action.kind}-${action.orderId}`;
     case "cancel-all": return action.kind;
-    case "close-position": return `${action.kind}-${action.symbol}`;
+    case "close-position": return `${action.kind}-${action.positionKey}`;
     case "pause-strategy":
     case "stop-strategy":
       return `${action.kind}-${action.strategyId}`;

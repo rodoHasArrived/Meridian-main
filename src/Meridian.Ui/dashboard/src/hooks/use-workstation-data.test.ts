@@ -106,6 +106,28 @@ describe("useWorkstationData", () => {
     expect(result.current.overview).toEqual({ marker: "newer overview" });
   });
 
+  it("aborts superseded full refresh requests before starting the next batch", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    const olderSignal = vi.mocked(api.getSession).mock.calls[0]?.[0]?.signal;
+    expect(olderSignal?.aborted).toBe(false);
+
+    act(() => {
+      void result.current.refresh();
+    });
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(2));
+
+    const newerSignal = vi.mocked(api.getSession).mock.calls[1]?.[0]?.signal;
+    expect(olderSignal?.aborted).toBe(true);
+    expect(newerSignal?.aborted).toBe(false);
+
+    await act(async () => {
+      resolveRefreshBatch(1, "newer");
+      await flushAsync();
+    });
+  });
+
   it("does not publish a full refresh after the hook unmounts", async () => {
     const { result, unmount } = renderHook(() => useWorkstationData());
 
@@ -223,6 +245,105 @@ describe("useWorkstationData", () => {
 
     expect(result.current.trading).toEqual({ marker: "fresh trading" });
   });
+
+  it("surfaces trading-only refresh failures without discarding stale trading data", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let tradingRefresh!: Promise<void>;
+    act(() => {
+      tradingRefresh = result.current.refreshTrading();
+    });
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      rejectRequest("trading", 1, new Error("Trading endpoint timed out."));
+      await tradingRefresh;
+    });
+
+    expect(result.current.trading).toEqual({ marker: "initial trading" });
+    expect(result.current.workspaceErrors).toMatchObject({
+      trading: "Trading endpoint timed out."
+    });
+    expect(result.current.error).toBe("Trading endpoint timed out.");
+  });
+
+  it("preserves multiple request failures for a shared workspace slice", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRequest<SessionInfo>("session", 0, {
+        activeWorkspace: "portfolio",
+        commandCount: 1,
+        displayName: "Ops session",
+        environment: "paper",
+        role: "Operator"
+      });
+      resolveRequest<SystemOverviewResponse>("overview", 0, { marker: "overview" } as unknown as SystemOverviewResponse);
+      resolveRequest<ResearchWorkspaceResponse>("research", 0, { marker: "research" } as unknown as ResearchWorkspaceResponse);
+      resolveRequest<TradingWorkspaceResponse>("trading", 0, { marker: "trading" } as unknown as TradingWorkspaceResponse);
+      rejectRequest("portfolio", 0, new Error("Portfolio workspace timed out."));
+      resolveRequest<DataOperationsWorkspaceResponse>("dataOperations", 0, { marker: "data" } as unknown as DataOperationsWorkspaceResponse);
+      resolveRequest<GovernanceWorkspaceResponse>("governance", 0, { marker: "accounting" } as unknown as GovernanceWorkspaceResponse);
+      resolveRequest<GovernanceWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as GovernanceWorkspaceResponse);
+      rejectRequest("brokerageConnection", 0, new Error("Alpaca connection status failed."));
+      rejectRequest("brokeragePortfolio", 0, new Error("Brokerage household sync failed."));
+      resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "workflows" } as unknown as WorkflowLibrary);
+      resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, {
+        generatedAt: "2026-01-01T00:00:00Z",
+        presets: []
+      });
+      await flushAsync();
+    });
+
+    expect(result.current.workspaceErrors.portfolio).toBe(
+      "Portfolio workspace timed out.; Alpaca connection status failed.; Brokerage household sync failed."
+    );
+    expect(result.current.error).toBe(result.current.workspaceErrors.portfolio);
+  });
+
+  it("clears the trading-only refresh failure after a later trading refresh succeeds", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let failedRefresh!: Promise<void>;
+    act(() => {
+      failedRefresh = result.current.refreshTrading();
+    });
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      rejectRequest("trading", 1, new Error("Trading endpoint timed out."));
+      await failedRefresh;
+    });
+
+    let recoveryRefresh!: Promise<void>;
+    act(() => {
+      recoveryRefresh = result.current.refreshTrading();
+    });
+    await waitFor(() => expect(api.getTradingWorkspace).toHaveBeenCalledTimes(3));
+    await act(async () => {
+      resolveRequest<TradingWorkspaceResponse>("trading", 2, { marker: "recovered trading" } as unknown as TradingWorkspaceResponse);
+      await recoveryRefresh;
+    });
+
+    expect(result.current.trading).toEqual({ marker: "recovered trading" });
+    expect(result.current.workspaceErrors.trading).toBeUndefined();
+    expect(result.current.error).toBeNull();
+  });
 });
 
 function StrictModeWrapper({ children }: { children: ReactNode }) {
@@ -289,6 +410,15 @@ function resolveRequest<T>(key: keyof typeof requests, index: number, value: T) 
   }
 
   request.resolve(value);
+}
+
+function rejectRequest(key: keyof typeof requests, index: number, reason: unknown) {
+  const request = requests[key][index];
+  if (!request) {
+    throw new Error(`Missing ${String(key)} request ${index}`);
+  }
+
+  request.reject(reason);
 }
 
 async function flushAsync() {

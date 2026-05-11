@@ -160,6 +160,9 @@ describe("ReportingScreen", () => {
     await user.click(auditButton);
 
     expect(auditButton).toHaveAttribute("aria-pressed", "true");
+    expect(auditButton).toHaveAttribute("aria-controls", "reporting-profile-detail");
+    expect(auditButton).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: /select excel export profile/i })).toHaveAttribute("aria-expanded", "false");
     const inspector = screen.getByRole("complementary", { name: /audit pack selected/i });
     expect(inspector).toBeInTheDocument();
     expect(screen.getByRole("status", { name: /audit pack readiness/i })).toHaveTextContent(

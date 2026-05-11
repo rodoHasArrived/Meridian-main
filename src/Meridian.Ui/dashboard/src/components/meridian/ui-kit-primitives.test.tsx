@@ -31,6 +31,8 @@ describe("DenseDataTable", () => {
         getRowId={(row) => row.id}
         getRowAriaLabel={(row) => `${row.symbol} ${row.status}`}
         getRowSelectAriaLabel={(row) => `Select ${row.symbol}`}
+        getRowAriaControls={() => "symbol-detail"}
+        getRowAriaExpanded={(row) => row.id === "aapl"}
         onRowSelect={onRowSelect}
         selectedRowId="aapl"
         emptyText="No rows"
@@ -40,7 +42,10 @@ describe("DenseDataTable", () => {
 
     const selectedRow = screen.getByRole("row", { name: "Select AAPL" });
     expect(selectedRow).toHaveAttribute("aria-selected", "true");
+    expect(selectedRow).toHaveAttribute("aria-controls", "symbol-detail");
+    expect(selectedRow).toHaveAttribute("aria-expanded", "true");
     expect(selectedRow).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("row", { name: "Select MSFT" })).toHaveAttribute("aria-expanded", "false");
 
     await user.click(screen.getByRole("row", { name: "Select MSFT" }));
     expect(onRowSelect).toHaveBeenLastCalledWith(rows[1]);

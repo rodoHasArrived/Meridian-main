@@ -78,6 +78,8 @@ export function useWorkstationData() {
   const mountedRef = useRef(true);
   const refreshRevisionRef = useRef(0);
   const tradingRefreshRevisionRef = useRef(0);
+  const refreshAbortRef = useRef<AbortController | null>(null);
+  const tradingRefreshAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -86,6 +88,8 @@ export function useWorkstationData() {
       mountedRef.current = false;
       refreshRevisionRef.current += 1;
       tradingRefreshRevisionRef.current += 1;
+      refreshAbortRef.current?.abort();
+      tradingRefreshAbortRef.current?.abort();
     };
   }, []);
 
@@ -97,6 +101,11 @@ export function useWorkstationData() {
     const revision = refreshRevisionRef.current + 1;
     refreshRevisionRef.current = revision;
     tradingRefreshRevisionRef.current += 1;
+    refreshAbortRef.current?.abort();
+    tradingRefreshAbortRef.current?.abort();
+    const controller = new AbortController();
+    refreshAbortRef.current = controller;
+    const requestOptions = { signal: controller.signal };
     resetDevelopmentFixtureUsage();
     setState((current) => ({ ...current, loading: true, error: null, workflowError: null, workspaceErrors: {} }));
 
@@ -114,18 +123,18 @@ export function useWorkstationData() {
       workflowLibrary,
       workflowPresets
     ] = await Promise.allSettled([
-      getSession(),
-      getSystemStatus(),
-      getStrategyWorkspace(),
-      getTradingWorkspace(),
-      getPortfolioWorkspace(),
-      getDataWorkspace(),
-      getGovernanceWorkspace(),
-      getReportingWorkspace(),
-      getAlpacaConnectionStatus(),
-      getBrokerageHouseholdPortfolio("alpaca"),
-      getWorkflowLibrary(),
-      getWorkflowPresets()
+      getSession(requestOptions),
+      getSystemStatus(requestOptions),
+      getStrategyWorkspace(requestOptions),
+      getTradingWorkspace(requestOptions),
+      getPortfolioWorkspace(requestOptions),
+      getDataWorkspace(requestOptions),
+      getGovernanceWorkspace(requestOptions),
+      getReportingWorkspace(requestOptions),
+      getAlpacaConnectionStatus(requestOptions),
+      getBrokerageHouseholdPortfolio("alpaca", requestOptions),
+      getWorkflowLibrary(requestOptions),
+      getWorkflowPresets(requestOptions)
     ]);
 
     const workspaceErrors: WorkspaceErrorMap = {};
@@ -136,9 +145,9 @@ export function useWorkstationData() {
         return result.value;
       }
 
-      const message = result.reason instanceof Error ? result.reason.message : "Workspace request failed.";
+      const message = formatRequestError(result.reason, "Workspace request failed.");
       for (const key of keys) {
-        workspaceErrors[key] = message;
+        appendWorkspaceError(workspaceErrors, key, message);
       }
       return null;
     };
@@ -148,7 +157,7 @@ export function useWorkstationData() {
         return result.value;
       }
 
-      bootstrapErrors.push(result.reason instanceof Error ? result.reason.message : "Workstation bootstrap request failed.");
+      bootstrapErrors.push(formatRequestError(result.reason, "Workstation bootstrap request failed."));
       return null;
     };
 
@@ -157,7 +166,7 @@ export function useWorkstationData() {
         return result.value;
       }
 
-      workflowErrors.push(result.reason instanceof Error ? result.reason.message : "Workflow library request failed.");
+      workflowErrors.push(formatRequestError(result.reason, "Workflow library request failed."));
       return null;
     };
 
@@ -185,6 +194,9 @@ export function useWorkstationData() {
       return;
     }
 
+    if (refreshAbortRef.current === controller) {
+      refreshAbortRef.current = null;
+    }
     setState(nextState);
   }, []);
 
@@ -199,20 +211,47 @@ export function useWorkstationData() {
     if (refreshingTrading.current || !mountedRef.current) return;
     const revision = tradingRefreshRevisionRef.current + 1;
     tradingRefreshRevisionRef.current = revision;
+    tradingRefreshAbortRef.current?.abort();
+    const controller = new AbortController();
+    tradingRefreshAbortRef.current = controller;
     refreshingTrading.current = true;
     try {
-      const result = await getTradingWorkspace();
+      const result = await getTradingWorkspace({ signal: controller.signal });
       if (!mountedRef.current || tradingRefreshRevisionRef.current !== revision) {
         return;
       }
-      setState((current) => ({
-        ...current,
-        trading: result,
-        usingDevelopmentFixtures: current.usingDevelopmentFixtures || hasDevelopmentFixtureUsage()
-      }));
-    } catch {
-      // keep stale data; full refresh() is always available
+      setState((current) => {
+        const tradingError = current.workspaceErrors.trading;
+        const workspaceErrors = withoutWorkspaceError(current.workspaceErrors, "trading");
+        return {
+          ...current,
+          trading: result,
+          error: current.error === tradingError ? firstWorkspaceError(workspaceErrors) ?? null : current.error,
+          workspaceErrors,
+          usingDevelopmentFixtures: current.usingDevelopmentFixtures || hasDevelopmentFixtureUsage()
+        };
+      });
+    } catch (err) {
+      if (!mountedRef.current || tradingRefreshRevisionRef.current !== revision) {
+        return;
+      }
+
+      const message = formatRequestError(err, "Trading workspace refresh failed.");
+      setState((current) => {
+        const workspaceErrors = {
+          ...current.workspaceErrors,
+          trading: message
+        };
+        return {
+          ...current,
+          error: current.error ?? message,
+          workspaceErrors
+        };
+      });
     } finally {
+      if (tradingRefreshAbortRef.current === controller) {
+        tradingRefreshAbortRef.current = null;
+      }
       refreshingTrading.current = false;
     }
   }, []);
@@ -251,6 +290,38 @@ export function useWorkstationData() {
   }, [refreshTrading]);
 
   return { ...state, refresh, refreshTrading, upsertWorkflowPreset };
+}
+
+function formatRequestError(reason: unknown, fallback: string): string {
+  return reason instanceof Error && reason.message.trim() ? reason.message : fallback;
+}
+
+function appendWorkspaceError(errors: WorkspaceErrorMap, key: WorkspaceKey, message: string) {
+  const current = errors[key];
+  if (!current) {
+    errors[key] = message;
+    return;
+  }
+
+  if (current.split("; ").includes(message)) {
+    return;
+  }
+
+  errors[key] = `${current}; ${message}`;
+}
+
+function withoutWorkspaceError(errors: WorkspaceErrorMap, key: WorkspaceKey): WorkspaceErrorMap {
+  if (!(key in errors)) {
+    return errors;
+  }
+
+  const next = { ...errors };
+  delete next[key];
+  return next;
+}
+
+function firstWorkspaceError(errors: WorkspaceErrorMap): string | undefined {
+  return Object.values(errors).find((value): value is string => Boolean(value));
 }
 
 function compareWorkflowPresets(left: WorkflowPreset, right: WorkflowPreset) {

@@ -579,6 +579,9 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.brokeragePositionRows[0].symbol).toBe("AAPL");
     expect(vm.brokeragePositionRows[0].accountKind).toBe("Roth IRA");
     expect(vm.brokeragePositionRows[0].isSelected).toBe(true);
+    expect(vm.brokeragePositionRows[0].expanded).toBe(true);
+    expect(vm.brokeragePositionRows[0].detailPanelId).toBe(vm.brokeragePositionDetailId);
+    expect(vm.selectedBrokeragePositionId).toBe("fund-roth-AAPL-pos-aapl");
     expect(vm.selectedBrokeragePosition?.title).toBe("AAPL");
     expect(vm.selectedBrokeragePosition?.fields.find((field) => field.label === "Security coverage")?.value).toBe("Security master missing");
     expect(vm.headerChips[0]).toEqual({ label: "Alpaca paper equity", value: "$375,000" });
@@ -598,7 +601,10 @@ describe("buildPortfolioScreenViewModel", () => {
     });
 
     expect(vm.brokeragePositionRows.map((row) => row.isSelected)).toEqual([false, true]);
+    expect(vm.brokeragePositionRows.map((row) => row.expanded)).toEqual([false, true]);
     expect(vm.brokeragePositionRows[1].selectAriaLabel).toBe("Inspect MSFT Brokerage live position");
+    expect(vm.brokeragePositionRows[1].detailPanelId).toBe("portfolio-brokerage-position-detail");
+    expect(vm.selectedBrokeragePositionId).toBe("fund-taxable-MSFT-pos-msft");
     expect(vm.selectedBrokeragePosition?.title).toBe("MSFT");
     expect(vm.selectedBrokeragePosition?.statusDetail).toContain("$1,750 market value");
     expect(vm.selectedBrokeragePosition?.fields.find((field) => field.label === "Position ID")?.value).toBe("pos-msft");

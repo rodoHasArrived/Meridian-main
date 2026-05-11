@@ -3,10 +3,15 @@ import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import {
   mapStatusTone,
+  useEvidenceLineageSelectionViewModel,
   useEvidenceWorkbenchViewModel,
+  type EvidenceLineageDetailViewModel,
+  type EvidenceLineagePanelViewModel,
+  type EvidenceLineageRowViewModel,
   type EvidencePacketActionTone,
   type EvidencePacketActionViewModel,
   type EvidenceStatusTone
@@ -214,37 +219,12 @@ export function EvidenceWorkbenchScreen() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Network className="h-5 w-5 text-primary" aria-hidden="true" />
-                  Lineage
+                  {vm.lineagePanel.title}
                 </CardTitle>
-                <CardDescription>Graph edges show how evidence nodes support this workflow subject.</CardDescription>
+                <CardDescription>{vm.lineagePanel.description}</CardDescription>
               </CardHeader>
-              <CardContent className="overflow-x-auto">
-                {vm.packet.edges.length > 0 ? (
-                  <table className="min-w-full text-left text-sm">
-                    <thead className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                      <tr>
-                        <th className="px-2 py-2">From</th>
-                        <th className="px-2 py-2">Relationship</th>
-                        <th className="px-2 py-2">To</th>
-                        <th className="px-2 py-2">Reason</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {vm.packet.edges.map((edge) => (
-                        <tr key={`${edge.fromId}-${edge.relationship}-${edge.toId}`} className="border-t border-border/60">
-                          <td className="max-w-[16rem] break-all px-2 py-2 font-mono text-xs">{edge.fromId}</td>
-                          <td className="px-2 py-2"><Badge variant="outline">{edge.relationship}</Badge></td>
-                          <td className="max-w-[16rem] break-all px-2 py-2 font-mono text-xs">{edge.toId}</td>
-                          <td className="px-2 py-2 text-muted-foreground">{edge.reason}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-                    No graph edges are available for this packet.
-                  </p>
-                )}
+              <CardContent>
+                <EvidenceLineagePanel panel={vm.lineagePanel} />
               </CardContent>
             </Card>
           </section>
@@ -297,6 +277,94 @@ export function EvidenceWorkbenchScreen() {
         </Card>
       ) : null}
     </div>
+  );
+}
+
+function EvidenceLineagePanel({ panel }: { panel: EvidenceLineagePanelViewModel }) {
+  const selection = useEvidenceLineageSelectionViewModel(panel);
+
+  if (!panel.hasRows) {
+    return (
+      <div
+        role={panel.emptyRole}
+        aria-live={panel.emptyAriaLive}
+        className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning"
+      >
+        <div className="font-semibold">{panel.emptyTitle}</div>
+        <p className="mt-1 text-warning/90">{panel.emptyDetail}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(16rem,0.85fr)]">
+      <DenseDataTable
+        columns={lineageColumns}
+        rows={panel.rows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => row.ariaLabel}
+        getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+        getRowAriaControls={() => panel.detailPanelId}
+        getRowAriaExpanded={(row) => row.id === selection.selectedRowId}
+        onRowSelect={(row) => selection.selectRow(row.id)}
+        selectedRowId={selection.selectedRowId}
+        emptyText={panel.emptyTitle}
+        ariaLabel={panel.tableLabel}
+        caption={panel.summaryLabel}
+      />
+      {selection.selectedDetail ? (
+        <EvidenceLineageDetailPanel detail={selection.selectedDetail} id={panel.detailPanelId} />
+      ) : null}
+    </div>
+  );
+}
+
+const lineageColumns: DenseDataTableColumn<EvidenceLineageRowViewModel>[] = [
+  {
+    id: "from",
+    label: "From",
+    className: "max-w-[16rem] break-all font-mono text-xs",
+    render: (row) => row.fromId
+  },
+  {
+    id: "relationship",
+    label: "Relationship",
+    render: (row) => <Badge variant="outline">{row.relationshipLabel}</Badge>
+  },
+  {
+    id: "to",
+    label: "To",
+    className: "max-w-[16rem] break-all font-mono text-xs",
+    render: (row) => row.toId
+  },
+  {
+    id: "reason",
+    label: "Reason",
+    className: "text-muted-foreground",
+    render: (row) => row.reason
+  }
+];
+
+function EvidenceLineageDetailPanel({ detail, id }: { detail: EvidenceLineageDetailViewModel; id: string }) {
+  return (
+    <aside id={id} className="row-detail-panel h-fit min-w-0" role="region" aria-label={detail.ariaLabel}>
+      <div className="head">{detail.eyebrow}</div>
+      <div className="body space-y-3">
+        <div className="min-w-0">
+          <h3 className="font-semibold text-foreground">{detail.title}</h3>
+          <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail.description}</p>
+        </div>
+        <dl className="grid gap-2">
+          {detail.fields.map((field) => (
+            <div key={field.label} className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
+              <dt className="eyebrow-label">{field.label}</dt>
+              <dd className="mt-1 break-all font-mono text-xs text-foreground">{field.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </aside>
   );
 }
 

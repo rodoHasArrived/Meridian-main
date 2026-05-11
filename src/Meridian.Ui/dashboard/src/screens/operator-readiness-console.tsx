@@ -1,4 +1,4 @@
-import { Activity, ArrowRight, ClipboardList, FileCheck2, RadioTower, ShieldCheck, TrendingUp } from "lucide-react";
+import { Activity, ArrowRight, ClipboardList, FileCheck2, RadioTower, RefreshCcw, ShieldCheck, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,7 @@ const panelIcons: Record<ReadinessConsolePanel["id"], typeof ShieldCheck> = {
   "provider-trust": RadioTower,
   "reconciliation-breaks": ClipboardList,
   "promotion-blockers": ShieldCheck,
-  "governance-report-packs": FileCheck2
+  "reporting-report-packs": FileCheck2
 };
 
 const workItemColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
@@ -162,6 +162,20 @@ export function OperatorReadinessConsole({
               <Button asChild variant="outline" size="sm">
                 <Link to="/reporting">Report packs</Link>
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => void vm.refreshInbox()}
+                disabled={vm.inboxRefreshDisabled}
+                disabledReason={vm.inboxRefreshDisabledReason}
+                busy={vm.inboxRefreshBusy}
+                busyLabel={vm.inboxRefreshLabel}
+                aria-label={vm.inboxRefreshAriaLabel}
+              >
+                <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+                {vm.inboxRefreshLabel}
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -247,13 +261,19 @@ export function OperatorReadinessConsole({
                 getRowId={(row) => row.id}
                 getRowAriaLabel={(row) => row.ariaLabel}
                 getRowSelectAriaLabel={(row) => `Select operator work item ${row.label}`}
+                getRowAriaControls={() => vm.workItemsDetailPanelId}
+                getRowAriaExpanded={(row) => row.id === vm.selectedWorkItemId}
                 onRowSelect={(row) => vm.selectWorkItem(row.id)}
                 selectedRowId={vm.selectedWorkItemId}
                 emptyText={vm.workItemsSummary}
                 ariaLabel={vm.workItemsTableLabel}
                 caption={vm.workItemsListLabel}
               />
-              <SelectedWorkItemDetail detail={vm.selectedWorkItemDetail} ariaLabel={vm.workItemsDetailLabel} />
+              <SelectedWorkItemDetail
+                detail={vm.selectedWorkItemDetail}
+                id={vm.workItemsDetailPanelId}
+                ariaLabel={vm.workItemsDetailLabel}
+              />
             </div>
           ) : (
             <EmptyConsoleState text="No operator work items returned." />
@@ -266,9 +286,11 @@ export function OperatorReadinessConsole({
 
 function SelectedWorkItemDetail({
   detail,
+  id,
   ariaLabel
 }: {
   detail: ReadinessConsoleSelectedWorkItemDetail | null;
+  id: string;
   ariaLabel: string;
 }) {
   if (!detail) {
@@ -277,6 +299,7 @@ function SelectedWorkItemDetail({
 
   return (
     <aside
+      id={id}
       className="row-detail-panel h-fit min-w-0"
       role="region"
       aria-label={ariaLabel}

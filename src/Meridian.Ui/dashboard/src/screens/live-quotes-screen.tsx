@@ -353,7 +353,7 @@ interface QuickTradeCardProps {
 }
 
 function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
-  const { fields, ticket, submitCommand, status } = vm;
+  const { fields, ticket, reviewAcknowledgement, submitCommand, status } = vm;
   const statusToneClass = quickTicketStatusClass[status.tone];
   return (
     <Card>
@@ -378,6 +378,8 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
                 className={vm.sideToneClass}
                 aria-label={fields.side.ariaLabel}
                 aria-describedby={fields.side.describedBy}
+                disabled={fields.side.disabled}
+                title={fields.side.disabledReason ?? undefined}
               >
                 <option value="Buy">Buy</option>
                 <option value="Sell">Sell</option>
@@ -391,6 +393,8 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
                 onChange={(event) => vm.updateField("type", event.target.value as "Market" | "Limit")}
                 aria-label={fields.type.ariaLabel}
                 aria-describedby={fields.type.describedBy}
+                disabled={fields.type.disabled}
+                title={fields.type.disabledReason ?? undefined}
               >
                 <option value="Limit">Limit</option>
                 <option value="Market">Market</option>
@@ -415,6 +419,8 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
                 error={vm.quantityInvalid}
                 aria-label={fields.quantity.ariaLabel}
                 aria-describedby={fields.quantity.describedBy}
+                disabled={fields.quantity.disabled}
+                title={fields.quantity.disabledReason ?? undefined}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -430,15 +436,38 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
                 placeholder={fields.limitPrice.placeholder ?? undefined}
                 value={ticket.type === "Market" ? "" : ticket.limitPrice}
                 onChange={(event) => vm.updateField("limitPrice", event.target.value)}
-                disabled={vm.priceDisabled}
+                disabled={fields.limitPrice.disabled}
                 autoComplete="off"
                 spellCheck={false}
                 error={vm.priceInvalid}
                 aria-label={fields.limitPrice.ariaLabel}
                 aria-describedby={fields.limitPrice.describedBy}
+                title={fields.limitPrice.disabledReason ?? undefined}
               />
             </div>
           </div>
+
+          <label
+            htmlFor={reviewAcknowledgement.id}
+            className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
+            title={reviewAcknowledgement.disabledReason ?? undefined}
+          >
+            <input
+              id={reviewAcknowledgement.id}
+              type="checkbox"
+              checked={reviewAcknowledgement.checked}
+              disabled={reviewAcknowledgement.disabled}
+              onChange={(event) => vm.setReviewAcknowledged(event.target.checked)}
+              aria-describedby={`${reviewAcknowledgement.id}-description ${status.id}`}
+              className="mt-1 h-4 w-4 accent-primary"
+            />
+            <span className="min-w-0">
+              <span className="block font-medium text-foreground">{reviewAcknowledgement.label}</span>
+              <span id={`${reviewAcknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
+                {reviewAcknowledgement.description}
+              </span>
+            </span>
+          </label>
 
           <Button
             type="submit"

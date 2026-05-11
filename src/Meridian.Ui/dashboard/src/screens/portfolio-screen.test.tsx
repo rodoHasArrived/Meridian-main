@@ -296,6 +296,12 @@ describe("PortfolioScreen", () => {
     );
 
     expect(screen.getByText(/live brokerage portfolio/i)).toBeDefined();
+    const trustSnapshot = screen.getByRole("region", { name: /alpaca paper brokerage sync snapshot/i });
+    expect(within(trustSnapshot).getByText(/household synced/i)).toBeInTheDocument();
+    expect(within(trustSnapshot).getAllByText("May 7, 12:00 UTC").length).toBeGreaterThan(0);
+    expect(within(trustSnapshot).getAllByText("$375,000").length).toBeGreaterThan(0);
+    expect(within(trustSnapshot).getByText("2 accounts")).toBeInTheDocument();
+    expect(within(trustSnapshot).getByText("2 positions")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /show alpaca paper roth ira account/i })).toBeDefined();
     expect(screen.getByRole("table", { name: /alpaca paper current positions/i })).toBeDefined();
     expect(screen.getAllByText(/alpaca roth ira/i).length).toBeGreaterThan(0);
@@ -305,16 +311,47 @@ describe("PortfolioScreen", () => {
     expect(within(defaultDetail).getByText(/brokerage position inspector/i)).toBeInTheDocument();
     expect(within(defaultDetail).getAllByText(/security master missing/i).length).toBeGreaterThan(0);
 
-    await user.click(screen.getByRole("button", { name: /inspect msft brokerage live position/i }));
+    const msftRow = screen.getByRole("row", { name: /inspect msft brokerage live position/i });
+    expect(msftRow).toHaveAttribute("aria-controls", "portfolio-brokerage-position-detail");
+    expect(msftRow).toHaveAttribute("aria-expanded", "false");
+    await user.click(msftRow);
 
     const updatedDetail = screen.getByRole("complementary", { name: /msft brokerage position detail/i });
     expect(within(updatedDetail).getByText(/alpaca paper \/ alpaca brokerage \/ equity/i)).toBeInTheDocument();
     expect(within(updatedDetail).getByText("$1,750")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /inspect msft brokerage live position/i })).toHaveAttribute("aria-pressed", "true");
+    expect(msftRow).toHaveAttribute("aria-selected", "true");
+    expect(msftRow).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("selects live brokerage positions from the row with keyboard activation", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(
+      <PortfolioScreen
+        trading={trading}
+        research={research}
+        governance={governance}
+        brokerageConnection={brokerageConnection}
+        brokeragePortfolio={brokeragePortfolio}
+      />
+    );
+
+    const msftRow = screen.getByRole("row", { name: /inspect msft brokerage live position/i });
+    msftRow.focus();
+    expect(msftRow).toHaveFocus();
+
+    await user.keyboard("{Enter}");
+
+    expect(msftRow).toHaveAttribute("aria-selected", "true");
+    expect(msftRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("complementary", { name: /msft brokerage position detail/i })).toBeInTheDocument();
   });
 
   it("offers a provider setup handoff when brokerage portfolio sync is unavailable", () => {
     renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
+
+    const trustSnapshot = screen.getByRole("region", { name: /alpaca paper brokerage sync snapshot/i });
+    expect(within(trustSnapshot).getByText(/provider setup needed/i)).toBeInTheDocument();
+    expect(within(trustSnapshot).getByText(/no alpaca paper household snapshot has loaded yet/i)).toBeInTheDocument();
 
     const handoff = screen.getByRole("link", {
       name: /open alpaca paper provider setup from portfolio brokerage panel/i
@@ -344,6 +381,9 @@ describe("PortfolioScreen", () => {
     );
 
     const warningSummary = screen.getByRole("status", { name: "2 brokerage warnings" });
+    const trustSnapshot = screen.getByRole("region", { name: /alpaca paper brokerage sync snapshot/i });
+    expect(within(trustSnapshot).getByText(/review sync/i)).toBeInTheDocument();
+    expect(within(trustSnapshot).getByText("2 issues")).toBeInTheDocument();
     expect(within(warningSummary).getByText("Portfolio sync is stale.")).toBeInTheDocument();
     expect(within(warningSummary).getByText("Roth IRA account sync stale.")).toBeInTheDocument();
     expect(screen.getAllByText("Roth IRA account sync stale.").length).toBeGreaterThan(1);

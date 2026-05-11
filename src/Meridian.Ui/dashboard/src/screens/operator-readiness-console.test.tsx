@@ -169,7 +169,10 @@ describe("OperatorReadinessConsole", () => {
     expect(screen.getByRole("table", { name: "Prioritized operator work items table" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Selected operator work item detail" })).toBeInTheDocument();
     expect(screen.getAllByRole("group", { name: /Promotion checklist incomplete: Warning/i }).length).toBeGreaterThan(0);
-    await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledWith(undefined));
+    await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({ signal: expect.any(Object) })
+    ));
   });
 
 
@@ -188,7 +191,10 @@ describe("OperatorReadinessConsole", () => {
     );
 
     await screen.findByRole("table", { name: "Prioritized operator work items table" });
-    await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledWith("fund-1"));
+    await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledWith(
+      "fund-1",
+      expect.objectContaining({ signal: expect.any(Object) })
+    ));
   });
 
   it("shows critical operator inbox items before lower-priority overflow", async () => {
@@ -244,12 +250,41 @@ describe("OperatorReadinessConsole", () => {
     );
 
     const detail = await screen.findByRole("region", { name: "Selected operator work item detail" });
+    expect(detail).toHaveAttribute("id", "operator-readiness-selected-work-item-detail");
     expect(within(detail).getByRole("heading", { name: "Critical security coverage gap" })).toBeInTheDocument();
 
     const warningRow = screen.getByRole("row", { name: "Select operator work item Warning item 5" });
+    expect(warningRow).toHaveAttribute("aria-controls", "operator-readiness-selected-work-item-detail");
+    expect(warningRow).toHaveAttribute("aria-expanded", "false");
     fireEvent.keyDown(warningRow, { key: "Enter" });
 
+    expect(warningRow).toHaveAttribute("aria-expanded", "true");
     expect(within(detail).getByRole("heading", { name: "Warning item 5" })).toBeInTheDocument();
     expect(within(detail).getByRole("link", { name: "Open report packs: Warning item 5" })).toHaveAttribute("href", "/reporting");
+  });
+
+  it("lets operators retry a failed inbox load from the console", async () => {
+    vi.spyOn(api, "getOperatorInbox")
+      .mockRejectedValueOnce(new Error("Operator inbox 503"))
+      .mockResolvedValueOnce(inbox);
+
+    renderWithRouter(
+      <OperatorReadinessConsole
+        research={null}
+        trading={null}
+        dataOperations={null}
+        governance={null}
+        reporting={null}
+      />,
+      { initialEntries: ["/trading/readiness"] }
+    );
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Operator inbox 503");
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh operator inbox work items" }));
+
+    await waitFor(() => expect(screen.getAllByText("1 review item needs attention.").length).toBeGreaterThan(0));
+    await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledTimes(2));
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });

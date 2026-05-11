@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -146,8 +147,8 @@ public static class DemoModeEndpoints
             if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
                 continue;
 
-            var open = (decimal)(minPrice + (maxPrice - minPrice) * random.NextDouble());
-            var close = (decimal)(minPrice + (maxPrice - minPrice) * random.NextDouble());
+            var open = minPrice + (maxPrice - minPrice) * (decimal)random.NextDouble();
+            var close = minPrice + (maxPrice - minPrice) * (decimal)random.NextDouble();
             var high = Math.Max(open, close) * (decimal)(1.0 + random.NextDouble() * 0.02);
             var low = Math.Min(open, close) * (decimal)(1.0 - random.NextDouble() * 0.02);
             var volume = (long)(random.Next(1000000, 100000000));

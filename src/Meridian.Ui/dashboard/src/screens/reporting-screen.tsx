@@ -305,43 +305,44 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     <button
                       type="button"
                       aria-pressed={profile.isSelected}
-                      aria-controls={vm.detailId}
-                       aria-label={profile.selectAriaLabel}
-                       onClick={() => vm.selectProfile(profile.id)}
-                       className={cn(
-                         "w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
-                         profile.isSelected
-                           ? "border-primary/45 bg-primary/10"
-                           : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
-                       )}
-                     >
-                       <div className="flex flex-col gap-3">
-                         <div className="flex items-start justify-between gap-3">
-                           <div className="min-w-0">
-                             <div className="font-semibold text-foreground">{profile.name}</div>
-                             <div className="mt-1 font-mono text-xs text-muted-foreground">{profile.id}</div>
-                           </div>
-                           <div className="flex flex-wrap justify-end gap-2">
-                             <Badge variant="outline">{profile.formatLabel}</Badge>
-                             {profile.badges.map((badge) => (
-                               <Badge key={badge.label} variant={badge.variant}>
-                                 {badge.label}
-                               </Badge>
-                             ))}
-                           </div>
-                         </div>
-                         <div className="grid gap-2 sm:grid-cols-3">
-                           <ReportingEvidenceField label="Profile ID" value={profile.id} />
-                           <ReportingEvidenceField label="Target" value={profile.targetLabel} />
-                           <ReportingEvidenceField label="Format" value={profile.formatLabel} />
-                         </div>
-                         <p className="text-sm leading-6 text-muted-foreground">
-                           {profile.description}
-                         </p>
-                       </div>
-                     </button>
-                   </div>
-                 ))
+                      aria-controls={profile.controlsId}
+                      aria-expanded={profile.isExpanded}
+                      aria-label={profile.selectAriaLabel}
+                      onClick={() => vm.selectProfile(profile.id)}
+                      className={cn(
+                        "w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
+                        profile.isSelected
+                          ? "border-primary/45 bg-primary/10"
+                          : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
+                      )}
+                    >
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="font-semibold text-foreground">{profile.name}</div>
+                            <div className="mt-1 font-mono text-xs text-muted-foreground">{profile.id}</div>
+                          </div>
+                          <div className="flex flex-wrap justify-end gap-2">
+                            <Badge variant="outline">{profile.formatLabel}</Badge>
+                            {profile.badges.map((badge) => (
+                              <Badge key={badge.label} variant={badge.variant}>
+                                {badge.label}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-3">
+                          <ReportingEvidenceField label="Profile ID" value={profile.id} />
+                          <ReportingEvidenceField label="Target" value={profile.targetLabel} />
+                          <ReportingEvidenceField label="Format" value={profile.formatLabel} />
+                        </div>
+                        <p className="text-sm leading-6 text-muted-foreground">
+                          {profile.description}
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                ))
               ) : (
                 <div
                   role="status"
@@ -371,8 +372,8 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                 {vm.selectedProfile ? `${vm.selectedProfile.id} · ${vm.selectedProfile.subtitle}` : vm.nextAction}
               </p>
             </div>
-            <Badge variant={vm.selectedProfile ? "default" : "outline"}>
-              {vm.selectedProfile ? "Selected" : "Waiting"}
+            <Badge variant={vm.statusBadgeVariant}>
+              {vm.statusBadgeLabel}
             </Badge>
           </div>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.statusDetail}</p>

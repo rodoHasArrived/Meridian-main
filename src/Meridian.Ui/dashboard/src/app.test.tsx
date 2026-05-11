@@ -161,7 +161,7 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/security-master"] });
 
     await waitFor(() => expect(document.title).toBe("Accounting Workstation - Meridian"));
-    expect(screen.getByRole("heading", { name: "Loading Governance" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Accounting workspace, current route, Review")).toHaveAttribute("aria-current", "page");
   });
 
   it("announces route changes and moves focus to the workbench", async () => {
@@ -217,9 +217,9 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/settings#alpaca-provider-setup"] });
 
-    const alpacaSetup = document.getElementById("alpaca-provider-setup");
-    expect(alpacaSetup).not.toBeNull();
     expect(await screen.findByText("Settings Workstation loaded. Jumping to alpaca provider setup.")).toBeInTheDocument();
+    await waitFor(() => expect(document.getElementById("alpaca-provider-setup")).not.toBeNull());
+    const alpacaSetup = document.getElementById("alpaca-provider-setup");
     expect(screen.getByRole("link", { name: "Open Alpaca paper provider setup" })).toHaveAttribute(
       "aria-current",
       "step"
@@ -359,7 +359,7 @@ describe("App", () => {
     await waitFor(() => expect(capabilityCoverage).toHaveFocus());
   });
 
-  it("renders the Portfolio route from the fetched portfolio workspace payload", () => {
+  it("renders the Portfolio route from the fetched portfolio workspace payload", async () => {
     mockedUseWorkstationData.mockReturnValue({
       session: {
         displayName: "Ops Desk",
@@ -391,7 +391,7 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/portfolio"] });
 
-    const positionsTable = screen.getByRole("table", { name: /open positions/i });
+    const positionsTable = await screen.findByRole("table", { name: /open positions/i });
     expect(within(positionsTable).getByText("NVDA")).toBeInTheDocument();
     expect(screen.getByText("Portfolio workspace")).toBeInTheDocument();
   });

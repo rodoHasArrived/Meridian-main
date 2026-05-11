@@ -28,7 +28,9 @@ export interface ReportingProfileRow {
   formatLabel: string;
   description: string;
   isSelected: boolean;
+  isExpanded: boolean;
   isRecommended: boolean;
+  controlsId: string;
   badges: ReportingProfileBadge[];
   selectAriaLabel: string;
 }
@@ -175,6 +177,8 @@ export interface ReportingScreenViewModel {
   detailId: string;
   statusTitle: string;
   statusDetail: string;
+  statusBadgeLabel: string;
+  statusBadgeVariant: "default" | "outline";
   nextAction: string;
   selectedProfile: ReportingDetailViewModel | null;
   packTargets: ReportingPackTargetRow[];
@@ -201,10 +205,11 @@ export function useReportingScreenViewModel(
   services: ReportingExportServices = defaultReportingExportServices,
   pathname = "/reporting"
 ): ReportingScreenViewModel {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null | undefined>(undefined);
   const [runningProfileId, setRunningProfileId] = useState<string | null>(null);
   const [exportStatus, setExportStatus] = useState<ReportingExportStatusState | null>(null);
   const exportCommandRevisionRef = useRef(0);
+  const detailId = "reporting-profile-detail";
 
   useEffect(() => () => {
     exportCommandRevisionRef.current += 1;
@@ -212,7 +217,11 @@ export function useReportingScreenViewModel(
 
   const selectProfile = (id: string) => {
     exportCommandRevisionRef.current += 1;
-    setSelectedId((prev) => (prev === id ? null : id));
+    setSelectedId((prev) => {
+      const defaultProfileId = reporting ? defaultReportPackProfileId(reporting, pathname) : null;
+      const activeId = prev === undefined ? defaultProfileId : prev;
+      return activeId === id ? null : id;
+    });
     setRunningProfileId(null);
     setExportStatus(null);
   };
@@ -257,9 +266,11 @@ export function useReportingScreenViewModel(
       workbenchChips: buildWorkbenchChips("0 profiles", "0", "0"),
       queueChips: buildQueueChips("0 visible", "0", "0", "Export profiles"),
       packTargetChips: buildPackTargetChips("0", "No profile selected"),
-      detailId: "reporting-profile-detail",
+      detailId,
       statusTitle: "No profile selected",
-      statusDetail: "Reporting data is unavailable. Check the Governance workspace or API connection.",
+      statusDetail: "Reporting data is unavailable. Check the Reporting workspace API connection.",
+      statusBadgeLabel: "Waiting",
+      statusBadgeVariant: "outline",
       nextAction: "—",
       selectedProfile: null,
       packTargets: [],
@@ -280,8 +291,10 @@ export function useReportingScreenViewModel(
 
   const profiles = reporting.profiles;
   const recommended = new Set(reporting.recommendedProfiles);
+  const defaultSelectedId = defaultReportPackProfileId(reporting, pathname);
+  const effectiveSelectedId = selectedId === undefined ? defaultSelectedId : selectedId;
   const selectedProfileData: GovernanceReportingProfile | null =
-    profiles.find((p) => p.id === selectedId) ?? null;
+    profiles.find((p) => p.id === effectiveSelectedId) ?? null;
 
   const rows: ReportingProfileRow[] = profiles.map((p) => ({
     id: p.id,
@@ -289,8 +302,10 @@ export function useReportingScreenViewModel(
     targetLabel: p.targetTool,
     formatLabel: p.format,
     description: p.description,
-    isSelected: p.id === selectedId,
+    isSelected: p.id === effectiveSelectedId,
+    isExpanded: p.id === effectiveSelectedId,
     isRecommended: recommended.has(p.id),
+    controlsId: detailId,
     selectAriaLabel: `Select ${p.name} export profile`,
     badges: [
       ...(recommended.has(p.id) ? [buildReportingBadge("Recommended", "primary")] : []),
@@ -361,11 +376,13 @@ export function useReportingScreenViewModel(
     workbenchChips: buildWorkbenchChips(countLabel, packTargetCountLabel, recommendedCountLabel),
     queueChips: buildQueueChips(visibleCountLabel, recommendedCountLabel, packTargetCountLabel, listLabel),
     packTargetChips: buildPackTargetChips(packTargetCountLabel, statusTitle),
-    detailId: "reporting-profile-detail",
+    detailId,
     statusTitle,
     statusDetail: selectedProfileData
       ? `${selectedProfileData.name} routes ${selectedProfileData.format} output to ${selectedProfileData.targetTool}.`
       : "Select a profile to inspect export evidence and ready-state.",
+    statusBadgeLabel: selectedProfileData ? "Selected" : "Waiting",
+    statusBadgeVariant: selectedProfileData ? "default" : "outline",
     nextAction: selectedProfileData
       ? `POST ${EXPORT_API_ENDPOINTS.analysis} · GET ${exportPreviewEndpoint(selectedProfileData.id)}`
       : `${profiles.length} profile${profiles.length === 1 ? "" : "s"} on desk. Select one to inspect export evidence.`,
@@ -579,6 +596,32 @@ function buildWorkflowTaskPanel({
 function isReportPackRoute(pathname: string): boolean {
   const normalized = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/reporting";
   return normalized === "/reporting/report-packs";
+}
+
+function defaultReportPackProfileId(reporting: GovernanceReportingSummary, pathname: string): string | null {
+  if (!isReportPackRoute(pathname) || reporting.profiles.length === 0) {
+    return null;
+  }
+
+  const recommended = new Set(reporting.recommendedProfiles);
+  let bestProfile = reporting.profiles[0];
+  let bestScore = reportPackProfileScore(bestProfile, recommended);
+  for (let index = 1; index < reporting.profiles.length; index += 1) {
+    const profile = reporting.profiles[index];
+    const score = reportPackProfileScore(profile, recommended);
+    if (score > bestScore) {
+      bestProfile = profile;
+      bestScore = score;
+    }
+  }
+
+  return bestProfile?.id ?? null;
+}
+
+function reportPackProfileScore(profile: GovernanceReportingProfile, recommended: ReadonlySet<string>): number {
+  return (recommended.has(profile.id) ? 4 : 0)
+    + (profile.loaderScript ? 2 : 0)
+    + (profile.dataDictionary ? 2 : 0);
 }
 
 function buildProfileReadinessSummary(profile: GovernanceReportingProfile): string {

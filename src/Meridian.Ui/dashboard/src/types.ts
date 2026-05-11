@@ -760,6 +760,7 @@ export interface DataOperationsWorkspaceResponse {
 }
 
 export interface TradingPosition {
+  positionKey?: string;
   symbol: string;
   side: "Long" | "Short";
   quantity: string;

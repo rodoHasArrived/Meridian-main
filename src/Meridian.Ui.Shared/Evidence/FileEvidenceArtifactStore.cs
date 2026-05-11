@@ -74,7 +74,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             SubjectId: packet.Subject.SubjectId,
             GeneratedAt: generatedAt,
             ManifestPath: relativePath.Replace(Path.DirectorySeparatorChar, '/'),
-            ManifestRoute: $"/workstation/evidence/{subjectKind}/{subjectId}/{fileName}",
+            ManifestRoute: $"/workstation/evidence/{RouteSegment(subjectKind)}/{RouteSegment(subjectId)}/{RouteSegment(fileName)}",
             EvidenceCount: packet.Nodes.Count,
             WarningCount: request.IncludeWarnings ? packet.Warnings.Count : 0,
             Retained: true);
@@ -114,6 +114,9 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         var sanitized = new string(chars);
         return string.IsNullOrWhiteSpace(sanitized) ? "unknown" : sanitized;
     }
+
+    private static string RouteSegment(string value)
+        => Uri.EscapeDataString(value);
 
     private sealed record EvidenceManifestDto(
         int SchemaVersion,

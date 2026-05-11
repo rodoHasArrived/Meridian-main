@@ -157,9 +157,9 @@ describe("SettingsScreen", () => {
     expect(liveEndpoint).not.toBeChecked();
     expect(paperEndpoint).toHaveAccessibleDescription(/Paper endpoint for workstation validation.*Paper endpoint selected/s);
     expect(liveEndpoint).toHaveAccessibleDescription(/Live endpoint for production brokerage verification.*Paper endpoint selected/s);
-    expect(screen.getByText("Credentials incomplete")).toBeInTheDocument();
+    expect(screen.getByText("Enter Alpaca credentials")).toBeInTheDocument();
     expect(screen.getAllByText("Key ID").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Required").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Needed").length).toBeGreaterThan(0);
     expect(screen.getByText("********1234")).toBeInTheDocument();
     expect(screen.getByText("PA123")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Alpaca provider setup checklist" })).toBeInTheDocument();
@@ -170,8 +170,8 @@ describe("SettingsScreen", () => {
     );
     expect(screen.getByRole("button", { name: /connect and test/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /clear/i })).toBeEnabled();
-    expect(screen.getByLabelText(/Key ID/)).toHaveAccessibleDescription(/Stored values remain masked after refresh\..*Credentials incomplete/s);
-    expect(screen.getByLabelText(/Secret key/)).toHaveAccessibleDescription(/Secret key is never displayed after submit\..*Credentials incomplete/s);
+    expect(screen.getByLabelText(/Key ID/)).toHaveAccessibleDescription(/Stored values remain masked after refresh\..*Enter Alpaca credentials/s);
+    expect(screen.getByLabelText(/Secret key/)).toHaveAccessibleDescription(/Secret key is never displayed after submit\..*Enter Alpaca credentials/s);
     expect(screen.getByRole("button", { name: /connect and test/i })).toHaveAttribute(
       "title",
       "Enter an Alpaca key ID before testing the connection."

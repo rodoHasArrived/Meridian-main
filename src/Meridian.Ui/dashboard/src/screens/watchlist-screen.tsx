@@ -202,10 +202,12 @@ export function WatchlistScreen() {
               </div>
               <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)]">
                 <DenseDataTable
-                  columns={buildColumns(vm.selectSymbol, vm.selectedSymbol, vm.removeSymbol)}
+                  columns={buildColumns(vm.selectSymbol, vm.selectedSymbol, vm.detailPanelId, vm.removeSymbol)}
                   rows={vm.rows}
                   getRowId={(row) => row.symbol}
                   getRowAriaLabel={(row) => row.ariaLabel}
+                  getRowAriaControls={() => vm.detailPanelId}
+                  getRowAriaExpanded={(row) => row.symbol === vm.selectedRowId}
                   getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
                   onRowSelect={(row) => vm.selectSymbol(row.symbol)}
                   selectedRowId={vm.selectedRowId}
@@ -217,6 +219,7 @@ export function WatchlistScreen() {
                   title={vm.detailPanelTitle}
                   description={vm.detailPanelDescription}
                   emptyText={vm.detailPanelEmptyText}
+                  id={vm.detailPanelId}
                   ariaLabel={vm.detailPanelAriaLabel}
                   detail={vm.selectedDetail}
                 />
@@ -252,6 +255,7 @@ const detailFieldToneClass: Record<WatchlistDetailFieldTone, string> = {
 function buildColumns(
   selectSymbol: (symbol: string) => void,
   selectedSymbol: string | null,
+  detailPanelId: string,
   removeSymbol: (symbol: string) => Promise<void>
 ): DenseDataTableColumn<WatchlistRowViewModel>[] {
   return [
@@ -317,7 +321,8 @@ function buildColumns(
             variant={selectedSymbol === row.symbol ? "secondary" : "outline"}
             size="sm"
             aria-pressed={selectedSymbol === row.symbol}
-            aria-controls="watchlist-selected-symbol-detail"
+            aria-controls={detailPanelId}
+            aria-expanded={selectedSymbol === row.symbol}
             aria-label={row.inspectAriaLabel}
             onClick={() => selectSymbol(row.symbol)}
           >
@@ -358,18 +363,20 @@ function WatchlistDetailPanel({
   title,
   description,
   emptyText,
+  id,
   ariaLabel,
   detail
 }: {
   title: string;
   description: string;
   emptyText: string;
+  id: string;
   ariaLabel: string;
   detail: WatchlistSelectedDetail | null;
 }) {
   return (
     <aside
-      id="watchlist-selected-symbol-detail"
+      id={id}
       role="complementary"
       aria-label={ariaLabel}
       aria-live="polite"

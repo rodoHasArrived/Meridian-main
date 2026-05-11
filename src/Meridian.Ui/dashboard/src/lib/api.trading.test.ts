@@ -3,6 +3,7 @@ import {
   approvePromotion,
   bulkResolveSecurityConflicts,
   clearExecutionManualOverride,
+  closePosition,
   connectAlpacaConnection,
   createExecutionManualOverride,
   deleteWorkflowPreset,
@@ -117,17 +118,22 @@ describe("trading endpoint wiring", () => {
   });
 
   it("wires execution controls and manual override endpoints", async () => {
+    const controller = new AbortController();
     await getExecutionControls();
-    await getTradingReadiness();
+    await getTradingReadiness({ signal: controller.signal });
     await createExecutionManualOverride({
       kind: "BypassOrderControls",
       reason: "maintenance",
       symbol: "AAPL"
     });
     await clearExecutionManualOverride("ovr-1");
+    await closePosition("paper:AAPL");
 
     expect(fetchMock).toHaveBeenCalledWith("/api/execution/controls", expect.anything());
-    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/trading/readiness", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/trading/readiness",
+      expect.objectContaining({ signal: controller.signal })
+    );
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/execution/controls/manual-overrides",
       expect.objectContaining({ method: "POST" })
@@ -135,6 +141,13 @@ describe("trading endpoint wiring", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/execution/controls/manual-overrides/ovr-1/clear",
       expect.objectContaining({ method: "POST" })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/execution/positions/actions/close",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ positionKey: "paper:AAPL" })
+      })
     );
   });
 
@@ -288,7 +301,87 @@ describe("trading endpoint wiring", () => {
         type: "Market",
         quantity: 1
       })
-    ).rejects.toThrow("Request failed for /api/execution/orders/submit (404)");
+    ).rejects.toThrow("Request failed for /api/execution/orders/submit (404) - not found");
+  });
+
+  it("preserves backend problem details for every HTTP verb", async () => {
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        text: async () => JSON.stringify({ detail: "Promotion gate still has open blockers." })
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 422,
+        text: async () => JSON.stringify({ message: "Preset name is required." })
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        text: async () => "Workflow preset store unavailable"
+      });
+
+    await expect(evaluatePromotion("run-123")).rejects.toThrow(
+      "Request failed for /api/promotion/evaluate/run-123 (409) - Promotion gate still has open blockers."
+    );
+    await expect(
+      updateWorkflowPreset("preset-1", {
+        presetId: "preset-1",
+        name: "",
+        description: "",
+        workflowId: "paper-trading-readiness",
+        actionId: "workflow.trading.review-paper-candidate",
+        tags: [],
+        isPinned: false
+      })
+    ).rejects.toThrow(
+      "Request failed for /api/workstation/workflows/presets/preset-1 (422) - Preset name is required."
+    );
+    await expect(deleteWorkflowPreset("preset-1")).rejects.toThrow(
+      "Request failed for /api/workstation/workflows/presets/preset-1 (503) - Workflow preset store unavailable"
+    );
+  });
+
+  it("includes validation problem field errors in mutation diagnostics", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      text: async () => JSON.stringify({
+        title: "One or more validation errors occurred.",
+        errors: {
+          approvedBy: ["Approved by is required."],
+          approvalReason: ["Approval reason must explain the promotion evidence."]
+        }
+      })
+    });
+
+    await expect(
+      approvePromotion({
+        runId: "run-123",
+        approvedBy: "",
+        approvalReason: ""
+      })
+    ).rejects.toThrow(
+      "Request failed for /api/promotion/approve (400) - One or more validation errors occurred. approvedBy: Approved by is required.; approvalReason: Approval reason must explain the promotion evidence."
+    );
+  });
+
+  it("accepts empty success bodies from no-content mutations", async () => {
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, status: 200, text: async () => "" })
+      .mockResolvedValueOnce({ ok: true, status: 204, text: async () => "" });
+
+    await expect(deleteWorkflowPreset("preset-1")).resolves.toBeNull();
+    await expect(deleteWorkflowPreset("preset-2")).resolves.toBeNull();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/workflows/presets/preset-1",
+      expect.objectContaining({ method: "DELETE" })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/workflows/presets/preset-2",
+      expect.objectContaining({ method: "DELETE" })
+    );
   });
 
   it("wires analysis export as a POST mutation", async () => {

@@ -106,6 +106,8 @@ export interface PortfolioBrokeragePositionRow {
   assetClass: string;
   securityCoverage: string;
   isSelected: boolean;
+  detailPanelId: string;
+  expanded: boolean;
   selectAriaLabel: string;
   ariaLabel: string;
 }
@@ -128,6 +130,16 @@ export interface PortfolioBrokerageSetupAction {
   href: string;
   ariaLabel: string;
   detail: string;
+}
+
+export interface PortfolioBrokerageTrustSnapshot {
+  regionLabel: string;
+  title: string;
+  statusLabel: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  summary: string;
+  chips: PortfolioHeaderChip[];
+  fields: PortfolioDetailField[];
 }
 
 export interface PortfolioBackendLink {
@@ -208,6 +220,7 @@ export interface PortfolioScreenViewModel {
   brokerageConnectionTone: "default" | "success" | "warning" | "danger";
   brokerageConnectionDetail: string;
   brokerageConnectionWarnings: string[];
+  brokerageTrustSnapshot: PortfolioBrokerageTrustSnapshot;
   brokerageWarningRows: PortfolioBrokerageWarningRow[];
   brokerageWarningCountLabel: string;
   brokerageAccountFilterLabel: string;
@@ -221,6 +234,7 @@ export interface PortfolioScreenViewModel {
   hasBrokeragePositions: boolean;
   brokeragePositionRows: PortfolioBrokeragePositionRow[];
   brokeragePositionDetailId: string;
+  selectedBrokeragePositionId: string | null;
   selectedBrokeragePosition: PortfolioBrokeragePositionDetail | null;
   selectBrokeragePosition: (id: string) => void;
   brokerageEmptyText: string;
@@ -319,6 +333,12 @@ export function buildPortfolioScreenViewModel({
     ...(brokeragePortfolio?.warnings ?? [])
   ];
   const brokerageWarningRows = buildBrokerageWarningRows(brokerageConnection, brokeragePortfolio, providerLabel);
+  const brokerageTrustSnapshot = buildBrokerageTrustSnapshot({
+    portfolio: brokeragePortfolio,
+    providerLabel,
+    warningCount: brokerageWarningRows.length,
+    connectionState: brokerageConnectionState
+  });
   const selectedId =
     positions.find((p, index) => positionId(p.symbol, p.side, index) === selectedPositionId) !== undefined
       ? selectedPositionId
@@ -432,6 +452,7 @@ export function buildPortfolioScreenViewModel({
     brokerageConnectionTone: brokerageConnectionTone(brokerageConnectionState, brokerageConnection, brokeragePortfolio),
     brokerageConnectionDetail: brokerageConnectionDetail(brokerageConnection, brokeragePortfolio, providerLabel),
     brokerageConnectionWarnings,
+    brokerageTrustSnapshot,
     brokerageWarningRows,
     brokerageWarningCountLabel: `${brokerageWarningRows.length} brokerage warning${brokerageWarningRows.length === 1 ? "" : "s"}`,
     brokerageAccountFilterLabel: `${providerLabel} account filter`,
@@ -445,6 +466,7 @@ export function buildPortfolioScreenViewModel({
     hasBrokeragePositions: brokeragePositions.length > 0,
     brokeragePositionRows,
     brokeragePositionDetailId: "portfolio-brokerage-position-detail",
+    selectedBrokeragePositionId: selectedBrokerageStableId,
     selectedBrokeragePosition,
     selectBrokeragePosition,
     brokerageEmptyText: brokeragePortfolio
@@ -558,6 +580,82 @@ function buildBrokerageSetupAction({
     detail: connectionNeedsSetup
       ? `Verify ${providerLabel} credentials before accepting brokerage portfolio state.`
       : `Review ${providerLabel} sync setup before accepting an empty household portfolio.`
+  };
+}
+
+function buildBrokerageTrustSnapshot({
+  portfolio,
+  providerLabel,
+  warningCount,
+  connectionState
+}: {
+  portfolio: BrokerageHouseholdPortfolio | null | undefined;
+  providerLabel: string;
+  warningCount: number;
+  connectionState: BrokerageConnectionStatus["state"];
+}): PortfolioBrokerageTrustSnapshot {
+  const regionLabel = `${providerLabel} brokerage sync snapshot`;
+
+  if (!portfolio) {
+    return {
+      regionLabel,
+      title: `${providerLabel} household snapshot`,
+      statusLabel: connectionState === "NotConfigured" ? "Provider setup needed" : "Awaiting sync",
+      statusTone: connectionState === "NotConfigured" ? "warning" : "default",
+      summary: `No ${providerLabel} household snapshot has loaded yet. Connect the provider or run brokerage sync before accepting live portfolio state.`,
+      chips: [
+        { label: "Snapshot", value: "Unavailable" },
+        { label: "Connection", value: brokerageConnectionLabel(connectionState) },
+        { label: "Issues", value: formatCountLabel(warningCount, "issue") }
+      ],
+      fields: [
+        { label: "As of", value: "Unavailable", tone: "warning" },
+        { label: "Accounts", value: "0", tone: "muted" },
+        { label: "Positions", value: "0", tone: "muted" },
+        { label: "Warnings", value: formatCountLabel(warningCount, "warning"), tone: warningCount > 0 ? "warning" : "muted" }
+      ]
+    };
+  }
+
+  const unhealthyCount = portfolio.accounts.filter((account) => account.health !== "Healthy").length;
+  const issueCount = warningCount + unhealthyCount;
+  const hasAccounts = portfolio.accounts.length > 0;
+  const statusTone: PortfolioBrokerageTrustSnapshot["statusTone"] = issueCount > 0
+    ? "warning"
+    : hasAccounts
+      ? "success"
+      : "warning";
+  const statusLabel = issueCount > 0
+    ? "Review sync"
+    : hasAccounts
+      ? "Household synced"
+      : "Awaiting accounts";
+  const accountHealthLabel = unhealthyCount > 0
+    ? `${unhealthyCount} account${unhealthyCount === 1 ? "" : "s"} need review`
+    : hasAccounts
+      ? formatCountLabel(portfolio.accounts.length, "healthy account")
+      : "No accounts";
+
+  return {
+    regionLabel,
+    title: `${providerLabel} household snapshot`,
+    statusLabel,
+    statusTone,
+    summary: `${providerLabel} snapshot was generated at ${formatDateTime(portfolio.asOf)} with ${formatCurrency(portfolio.totalEquity)} equity, ${formatCurrency(portfolio.totalCash)} cash, and ${formatCurrency(portfolio.totalBuyingPower)} buying power.`,
+    chips: [
+      { label: "Accounts", value: formatCountLabel(portfolio.accounts.length, "account") },
+      { label: "Positions", value: formatCountLabel(portfolio.positions.length, "position") },
+      { label: "Currency", value: portfolio.currency },
+      { label: "Issues", value: formatCountLabel(issueCount, "issue") }
+    ],
+    fields: [
+      { label: "As of", value: formatDateTime(portfolio.asOf), tone: "muted" },
+      { label: "Total equity", value: formatCurrency(portfolio.totalEquity), tone: "default" },
+      { label: "Cash", value: formatCurrency(portfolio.totalCash), tone: "default" },
+      { label: "Buying power", value: formatCurrency(portfolio.totalBuyingPower), tone: "default" },
+      { label: "Account health", value: accountHealthLabel, tone: unhealthyCount > 0 ? "warning" : "success" },
+      { label: "Warnings", value: formatCountLabel(warningCount, "warning"), tone: warningCount > 0 ? "warning" : "success" }
+    ]
   };
 }
 
@@ -777,6 +875,8 @@ function toBrokeragePositionRow(
     assetClass: position.assetClass,
     securityCoverage: position.security ? "Covered" : "Missing",
     isSelected: id === selectedId,
+    detailPanelId: "portfolio-brokerage-position-detail",
+    expanded: id === selectedId,
     selectAriaLabel: `Inspect ${position.symbol} ${accountKind} live position`,
     ariaLabel: `${position.symbol} ${accountKind} brokerage position: ${formatNumber(position.quantity)} shares, market value ${formatCurrency(position.marketValue)}, unrealized P&L ${pnl}`
   };
@@ -1211,9 +1311,19 @@ function formatNumber(value: number): string {
   return value.toLocaleString(undefined, { maximumFractionDigits: 4 });
 }
 
+function formatCountLabel(count: number, noun: string): string {
+  return `${count} ${noun}${count === 1 ? "" : "s"}`;
+}
+
 function formatDateTime(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? "—"
-    : date.toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" });
+    : `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+}
+
+const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function padUtc(value: number): string {
+  return value.toString().padStart(2, "0");
 }

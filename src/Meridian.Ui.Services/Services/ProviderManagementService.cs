@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ public sealed class ProviderManagementService
     public async Task<AllProvidersStatusResult> GetAllProvidersStatusAsync(CancellationToken ct = default)
     {
         var response = await _apiClient.GetWithResponseAsync<AllProvidersStatusResponse>(
-            "/api/providers/status",
+            UiApiRoutes.ProviderStatus,
             ct);
 
         if (response.Success && response.Data != null)
@@ -56,7 +57,7 @@ public sealed class ProviderManagementService
     public async Task<ProviderDetailResult> GetProviderDetailAsync(string providerName, CancellationToken ct = default)
     {
         var response = await _apiClient.GetWithResponseAsync<ProviderDetailResponse>(
-            $"/api/providers/{Uri.EscapeDataString(providerName)}",
+            BuildProviderDetailRoute(providerName),
             ct);
 
         if (response.Success && response.Data != null)
@@ -83,7 +84,7 @@ public sealed class ProviderManagementService
     public async Task<FailoverConfigResult> GetFailoverConfigAsync(CancellationToken ct = default)
     {
         var response = await _apiClient.GetWithResponseAsync<FailoverConfigResponse>(
-            "/api/providers/failover",
+            UiApiRoutes.ProviderFailover,
             ct);
 
         if (response.Success && response.Data != null)
@@ -118,7 +119,7 @@ public sealed class ProviderManagementService
         CancellationToken ct = default)
     {
         var response = await _apiClient.PostWithResponseAsync<OperationResult>(
-            "/api/providers/failover",
+            UiApiRoutes.ProviderFailover,
             new
             {
                 enabled,
@@ -142,7 +143,7 @@ public sealed class ProviderManagementService
     public async Task<FailoverResult> TriggerFailoverAsync(string targetProvider, CancellationToken ct = default)
     {
         var response = await _apiClient.PostWithResponseAsync<FailoverResponse>(
-            "/api/providers/failover/trigger",
+            UiApiRoutes.ProviderFailoverTrigger,
             new { targetProvider },
             ct);
 
@@ -170,7 +171,7 @@ public sealed class ProviderManagementService
     public async Task<OperationResult> ResetFailoverAsync(CancellationToken ct = default)
     {
         var response = await _apiClient.PostWithResponseAsync<OperationResult>(
-            "/api/providers/failover/reset",
+            UiApiRoutes.ProviderFailoverReset,
             null,
             ct);
 
@@ -190,7 +191,7 @@ public sealed class ProviderManagementService
     public async Task<RateLimitsResult> GetRateLimitsAsync(CancellationToken ct = default)
     {
         var response = await _apiClient.GetWithResponseAsync<RateLimitsResponse>(
-            "/api/providers/rate-limits",
+            UiApiRoutes.ProviderRateLimits,
             ct);
 
         if (response.Success && response.Data != null)
@@ -218,7 +219,7 @@ public sealed class ProviderManagementService
         CancellationToken ct = default)
     {
         var response = await _apiClient.GetWithResponseAsync<RateLimitHistoryResponse>(
-            $"/api/providers/{Uri.EscapeDataString(providerName)}/rate-limit-history?hours={hours}",
+            BuildProviderRateLimitHistoryRoute(providerName, hours),
             ct);
 
         if (response.Success && response.Data != null)
@@ -245,7 +246,7 @@ public sealed class ProviderManagementService
     public async Task<ProviderCapabilitiesResult> GetCapabilitiesAsync(CancellationToken ct = default)
     {
         var response = await _apiClient.GetWithResponseAsync<ProviderCapabilitiesResponse>(
-            "/api/providers/capabilities",
+            UiApiRoutes.ProviderCapabilities,
             ct);
 
         if (response.Success && response.Data != null)
@@ -275,7 +276,7 @@ public sealed class ProviderManagementService
         CancellationToken ct = default)
     {
         var response = await _apiClient.PostWithResponseAsync<SwitchProviderResponse>(
-            "/api/providers/switch",
+            UiApiRoutes.ProviderSwitch,
             new { provider = providerName, saveAsDefault },
             ct);
 
@@ -303,7 +304,7 @@ public sealed class ProviderManagementService
     public async Task<ProviderManagementTestResult> TestProviderAsync(string providerName, CancellationToken ct = default)
     {
         var response = await _apiClient.PostWithResponseAsync<ProviderTestResponse>(
-            $"/api/providers/{Uri.EscapeDataString(providerName)}/test",
+            BuildProviderTestRoute(providerName),
             null,
             ct);
 
@@ -333,7 +334,7 @@ public sealed class ProviderManagementService
     public async Task<ProviderConnectionsResult> GetProviderConnectionsAsync(CancellationToken ct = default)
     {
         var response = await _apiClient.GetWithResponseAsync<List<ProviderConnectionDto>>(
-            "/api/provider-routing/connections",
+            UiApiRoutes.ProviderRoutingConnections,
             ct);
 
         return response.Success && response.Data is not null
@@ -355,7 +356,7 @@ public sealed class ProviderManagementService
     public async Task<ProviderBindingsResult> GetProviderBindingsAsync(CancellationToken ct = default)
     {
         var response = await _apiClient.GetWithResponseAsync<List<ProviderBindingDto>>(
-            "/api/provider-routing/bindings",
+            UiApiRoutes.ProviderRoutingBindings,
             ct);
 
         return response.Success && response.Data is not null
@@ -377,7 +378,7 @@ public sealed class ProviderManagementService
     public async Task<ProviderTrustSnapshotsResult> GetProviderTrustSnapshotsAsync(CancellationToken ct = default)
     {
         var response = await _apiClient.GetWithResponseAsync<List<ProviderTrustSnapshotDto>>(
-            "/api/provider-routing/trust-snapshots",
+            UiApiRoutes.ProviderRoutingTrustSnapshots,
             ct);
 
         return response.Success && response.Data is not null
@@ -399,7 +400,7 @@ public sealed class ProviderManagementService
     public async Task<ProviderRoutePreviewQueryResult> PreviewRouteAsync(RoutePreviewRequest request, CancellationToken ct = default)
     {
         var response = await _apiClient.PostWithResponseAsync<RoutePreviewResponse>(
-            "/api/provider-routing/preview",
+            UiApiRoutes.ProviderRoutingPreview,
             request,
             ct);
 
@@ -415,6 +416,17 @@ public sealed class ProviderManagementService
                 Error = response.ErrorMessage ?? "Failed to preview provider route."
             };
     }
+
+    internal static string BuildProviderDetailRoute(string providerName)
+        => UiApiRoutes.WithParam(UiApiRoutes.ProviderById, "providerName", providerName);
+
+    internal static string BuildProviderRateLimitHistoryRoute(string providerName, int hours)
+        => UiApiRoutes.WithQuery(
+            UiApiRoutes.WithParam(UiApiRoutes.ProviderRateLimitHistory, "providerName", providerName),
+            string.Create(CultureInfo.InvariantCulture, $"hours={hours}"));
+
+    internal static string BuildProviderTestRoute(string providerName)
+        => UiApiRoutes.WithParam(UiApiRoutes.ProviderTest, "providerName", providerName);
 
 }
 
@@ -640,4 +652,3 @@ public sealed class ProviderTestResponse
     public string? Version { get; set; }
     public string? Error { get; set; }
 }
-

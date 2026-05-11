@@ -1,8 +1,9 @@
-import { act, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import * as api from "@/lib/api";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
+import { DATA_BACKFILL_DETAIL_PANEL_ID } from "@/screens/data-operations-screen.view-model";
 import { renderWithRouter } from "@/test/render";
 import type { BackfillProgressResponse, BackfillTriggerResult, DataOperationsWorkspaceResponse } from "@/types";
 
@@ -174,13 +175,19 @@ describe("DataOperationsScreen", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
     const reviewBackfill = screen.getByRole("button", { name: /BF-1044/i });
+    const runningBackfill = screen.getByRole("button", { name: /BF-1042/i });
 
-    expect(screen.getByRole("button", { name: /BF-1042/i })).toHaveAttribute("aria-pressed", "true");
-    expect(reviewBackfill).toHaveAttribute("aria-controls", "backfill-detail-bf-1044");
+    expect(runningBackfill).toHaveAttribute("aria-pressed", "true");
+    expect(runningBackfill).toHaveAttribute("aria-expanded", "true");
+    expect(runningBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
+    expect(reviewBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
+    expect(reviewBackfill).toHaveAttribute("aria-expanded", "false");
 
     await user.click(reviewBackfill);
 
     expect(reviewBackfill).toHaveAttribute("aria-pressed", "true");
+    expect(reviewBackfill).toHaveAttribute("aria-expanded", "true");
+    expect(runningBackfill).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("region", { name: /backfill detail for BF-1044/i })).toBeInTheDocument();
     expect(screen.getAllByText("Options chains / 7d").length).toBeGreaterThan(0);
     expect(screen.getByText(/waiting on operator review/i)).toBeInTheDocument();
@@ -213,7 +220,9 @@ describe("DataOperationsScreen", () => {
     expect(disabledPreview).toBeDisabled();
     expect(disabledPreview).toHaveAttribute("title", "Enter at least one symbol before previewing a backfill.");
 
-    await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "AAPL");
+    fireEvent.change(screen.getByRole("textbox", { name: "Backfill symbols" }), {
+      target: { value: "AAPL" }
+    });
 
     expect(screen.getByRole("button", { name: "Preview backfill request" })).toBeEnabled();
     expect(screen.getByText("Backfill request is ready to preview.")).toBeInTheDocument();
@@ -275,7 +284,9 @@ describe("DataOperationsScreen", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
-    await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "AAPL");
+    fireEvent.change(screen.getByRole("textbox", { name: "Backfill symbols" }), {
+      target: { value: "AAPL" }
+    });
     await user.click(screen.getByRole("button", { name: "Preview backfill request" }));
 
     await waitFor(() => expect(screen.getByRole("textbox", { name: "Backfill symbols" })).toBeDisabled());

@@ -142,6 +142,7 @@ public sealed record WorkstationResearchPayload(
 /// A single position row shown in the trading workstation positions table.
 /// </summary>
 public sealed record WorkstationTradingPositionRow(
+    string PositionKey,
     string Symbol,
     string Side,
     string Quantity,

@@ -1,6 +1,7 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildOperatorReadinessConsoleState, useOperatorReadinessConsoleViewModel } from "@/screens/operator-readiness-console.view-model";
+import type { ApiRequestOptions } from "@/lib/api";
 import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
@@ -378,7 +379,7 @@ describe("operator readiness console view model", () => {
       "provider-trust",
       "reconciliation-breaks",
       "promotion-blockers",
-      "governance-report-packs"
+      "reporting-report-packs"
     ]);
     expect(state.panels[0]).toEqual(expect.objectContaining({
       ariaLabel: "Latest runs readiness evidence",
@@ -409,6 +410,11 @@ describe("operator readiness console view model", () => {
       ariaLabel: "Open promotion review: Promotion checklist incomplete",
       variant: "outline"
     });
+    expect(state.panels.find((panel) => panel.id === "reporting-report-packs")).toEqual(expect.objectContaining({
+      title: "Reporting report packs",
+      ariaLabel: "Reporting report packs readiness evidence",
+      listLabel: "Reporting report packs rows"
+    }));
   });
 
   it("derives safe work-item routes and fallback actions in the view model", () => {
@@ -560,6 +566,31 @@ describe("operator readiness console view model", () => {
       ariaLabel: "Open brokerage sync: API brokerage route should fallback",
       variant: "outline"
     });
+  });
+
+  it("keeps report-pack ownership aligned to Reporting when payloads are unavailable", () => {
+    const state = buildOperatorReadinessConsoleState({
+      research: null,
+      trading: null,
+      dataOperations: null,
+      governance: null,
+      reporting: null,
+      operatorInbox: null,
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    expect(state.overallDetail).toContain("Strategy, Data, Accounting, or Reporting payloads");
+    expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({
+      label: "Report-pack readiness",
+      detail: "Reporting payload has not loaded.",
+      meta: "Wait for Accounting/Reporting bootstrap recovery.",
+      level: "review"
+    }));
+    expect(state.panels.find((panel) => panel.id === "reporting-report-packs")).toEqual(expect.objectContaining({
+      title: "Reporting report packs",
+      emptyText: "No reporting readiness payload loaded."
+    }));
   });
 
   it("prioritizes critical operator inbox work items before truncating the visible queue", () => {
@@ -779,7 +810,7 @@ describe("operator readiness console view model", () => {
       ...readyTrading,
       readiness: fundTwoReadiness
     };
-    const getOperatorInbox = vi.fn((fundAccountId?: string) => {
+    const getOperatorInbox = vi.fn((fundAccountId?: string, _options?: ApiRequestOptions) => {
       if (fundAccountId === "fund-1") {
         return Promise.resolve(inbox);
       }
@@ -807,13 +838,101 @@ describe("operator readiness console view model", () => {
 
     rerender({ tradingPayload: fundTwoTrading });
 
-    await waitFor(() => expect(getOperatorInbox).toHaveBeenLastCalledWith("fund-2"));
+    await waitFor(() => expect(getOperatorInbox).toHaveBeenLastCalledWith(
+      "fund-2",
+      expect.objectContaining({ signal: expect.any(Object) })
+    ));
     await waitFor(() => expect(result.current.inboxLoadingLabel).toBe("Loading operator inbox..."));
     expect(result.current.inboxSummary).toBe("Operator inbox not loaded; using workstation payload fallbacks where available.");
     expect(result.current.workItems.map((item) => item.id)).not.toContain("reconciliation-break-run-1-cash");
 
     resolveFundTwoInbox?.(cleanInbox);
     await waitFor(() => expect(result.current.inboxSummary).toBe("No operator work items need attention."));
+  });
+
+  it("aborts superseded operator inbox loads when the fund account changes", async () => {
+    const fundOneInbox = new Promise<OperatorInbox>(() => undefined);
+    let resolveFundTwoInbox: ((value: OperatorInbox) => void) | null = null;
+    const fundTwoReadiness: TradingOperatorReadiness = {
+      ...readyReadiness,
+      brokerageSync: {
+        ...readyReadiness.brokerageSync,
+        fundAccountId: "fund-2"
+      }
+    };
+    const getOperatorInbox = vi.fn((fundAccountId?: string, _options?: ApiRequestOptions) => {
+      if (fundAccountId === "fund-1") {
+        return fundOneInbox;
+      }
+
+      return new Promise<OperatorInbox>((resolve) => {
+        resolveFundTwoInbox = resolve;
+      });
+    });
+    const services = { getOperatorInbox };
+
+    const { result, rerender } = renderHook(
+      ({ tradingPayload }: { tradingPayload: TradingWorkspaceResponse }) => useOperatorReadinessConsoleViewModel({
+        research,
+        trading: tradingPayload,
+        dataOperations,
+        governance: cleanGovernance,
+        reporting: governance
+      }, services),
+      { initialProps: { tradingPayload: readyTrading } }
+    );
+
+    await waitFor(() => expect(getOperatorInbox).toHaveBeenCalledWith(
+      "fund-1",
+      expect.objectContaining({ signal: expect.any(Object) })
+    ));
+    const fundOneSignal = getOperatorInbox.mock.calls[0]?.[1]?.signal;
+    expect(fundOneSignal?.aborted).toBe(false);
+
+    rerender({
+      tradingPayload: {
+        ...readyTrading,
+        readiness: fundTwoReadiness
+      }
+    });
+
+    await waitFor(() => expect(getOperatorInbox).toHaveBeenLastCalledWith(
+      "fund-2",
+      expect.objectContaining({ signal: expect.any(Object) })
+    ));
+    expect(fundOneSignal?.aborted).toBe(true);
+
+    resolveFundTwoInbox?.(cleanInbox);
+    await waitFor(() => expect(result.current.inboxSummary).toBe("No operator work items need attention."));
+  });
+
+  it("exposes a guarded inbox refresh command for recovering failed loads", async () => {
+    const getOperatorInbox = vi.fn()
+      .mockRejectedValueOnce(new Error("Operator inbox 503"))
+      .mockResolvedValueOnce(inbox);
+    const services = { getOperatorInbox };
+
+    const { result } = renderHook(() => useOperatorReadinessConsoleViewModel({
+      research,
+      trading: readyTrading,
+      dataOperations,
+      governance: cleanGovernance,
+      reporting: governance
+    }, services));
+
+    await waitFor(() => expect(result.current.inboxErrorText).toBe("Operator inbox 503"));
+    expect(result.current.inboxRefreshLabel).toBe("Refresh inbox");
+    expect(result.current.inboxRefreshAriaLabel).toBe("Refresh operator inbox work items");
+    expect(result.current.inboxRefreshDisabled).toBe(false);
+
+    await act(async () => {
+      await result.current.refreshInbox();
+    });
+
+    await waitFor(() => expect(result.current.inboxSummary).toBe("2 review items need attention."));
+    expect(result.current.inboxErrorText).toBeNull();
+    expect(result.current.workItems.map((item) => item.id)).toContain("reconciliation-break-run-1-cash");
+    expect(getOperatorInbox).toHaveBeenCalledTimes(2);
   });
 
   it("keeps selected operator work-item detail in the view model", () => {

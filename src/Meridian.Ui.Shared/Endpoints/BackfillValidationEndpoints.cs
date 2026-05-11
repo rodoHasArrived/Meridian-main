@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Storage;
 using Meridian.Storage.Services;
 using Meridian.Ui.Shared.Services;
@@ -39,13 +40,14 @@ public static class BackfillValidationEndpoints
             try
             {
                 var results = new List<BackfillValidationResult>();
-                var catalog = await searchService.DiscoverAsync(new DiscoveryQuery(), ct);
 
                 foreach (var symbol in symbols.Select(s => s.Symbol).Distinct())
                 {
-                    var symbolData = catalog.Symbols?.FirstOrDefault(s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
+                    var searchResult = await searchService.SearchFilesAsync(
+                        new FileSearchQuery(Symbols: [symbol], Take: 10_000),
+                        ct);
 
-                    if (symbolData is null)
+                    if (searchResult.TotalMatches == 0)
                     {
                         results.Add(new BackfillValidationResult(
                             Symbol: symbol,
@@ -58,24 +60,30 @@ public static class BackfillValidationEndpoints
                         continue;
                     }
 
-                    var completeness = CalculateCompleteness(symbolData);
-                    var gaps = DetectGaps(symbolData);
+                    var tradingDates = GetTradingDates(searchResult.Results);
+                    var completeness = CalculateSymbolCompleteness(searchResult.Results);
+                    var gaps = DetectSymbolGaps(searchResult.Results, symbol);
+                    var totalDays = tradingDates.Count == 0
+                        ? 0
+                        : CalculateExpectedTradingDays(tradingDates.First(), tradingDates.Last());
+                    DateTime? firstDataPoint = tradingDates.Count == 0 ? null : tradingDates.First();
+                    DateTime? lastDataPoint = tradingDates.Count == 0 ? null : tradingDates.Last();
 
                     results.Add(new BackfillValidationResult(
                         Symbol: symbol,
                         IsComplete: completeness >= 0.95,
-                        TotalDays: symbolData.DateRange?.Count ?? 0,
-                        CoveredDays: (int)((symbolData.DateRange?.Count ?? 0) * completeness),
+                        TotalDays: totalDays,
+                        CoveredDays: tradingDates.Count,
                         Completeness: completeness,
                         Gaps: gaps.Select(g => g.ToString()).ToArray(),
-                        FirstDataPoint: symbolData.DateRange?.Min,
-                        LastDataPoint: symbolData.DateRange?.Max,
+                        FirstDataPoint: firstDataPoint,
+                        LastDataPoint: lastDataPoint,
                         Status: completeness >= 0.95 ? "Complete" : (completeness >= 0.80 ? "Good" : "Incomplete")
                     ));
                 }
 
                 var completeCount = results.Count(r => r.IsComplete);
-                var avgCompleteness = results.Average(r => r.Completeness);
+                var avgCompleteness = results.Count == 0 ? 0.0 : results.Average(r => r.Completeness);
 
                 return Results.Json(new BackfillCompletenessSummary(
                     TotalSymbols: symbols.Length,
@@ -125,16 +133,22 @@ public static class BackfillValidationEndpoints
 
                 var completeness = CalculateSymbolCompleteness(result.Results);
                 var gaps = DetectSymbolGaps(result.Results);
+                var tradingDates = GetTradingDates(result.Results);
+                var totalDays = tradingDates.Count == 0
+                    ? 0
+                    : CalculateExpectedTradingDays(tradingDates.First(), tradingDates.Last());
+                DateTime? firstDataPoint = tradingDates.Count == 0 ? null : tradingDates.First();
+                DateTime? lastDataPoint = tradingDates.Count == 0 ? null : tradingDates.Last();
 
                 return Results.Json(new BackfillValidationResult(
                     Symbol: symbol,
                     IsComplete: completeness >= 0.95,
-                    TotalDays: result.Results?.Select(r => r.Date).Distinct().Count() ?? 0,
-                    CoveredDays: result.Results?.Select(r => r.Date).Distinct().Count() ?? 0,
+                    TotalDays: totalDays,
+                    CoveredDays: tradingDates.Count,
                     Completeness: completeness,
                     Gaps: gaps.Select(g => $"{g.StartDate:yyyy-MM-dd} to {g.EndDate:yyyy-MM-dd}").ToArray(),
-                    FirstDataPoint: result.Results?.Min(r => r.Date),
-                    LastDataPoint: result.Results?.Max(r => r.Date),
+                    FirstDataPoint: firstDataPoint,
+                    LastDataPoint: lastDataPoint,
                     Status: completeness >= 0.95 ? "Complete" : (completeness >= 0.80 ? "Good" : "Incomplete")
                 ), jsonOptions);
             }
@@ -161,22 +175,12 @@ public static class BackfillValidationEndpoints
             {
                 try
                 {
-                    var catalog = await searchService.DiscoverAsync(new DiscoveryQuery(), ct);
-
                     foreach (var symbol in symbols.Select(s => s.Symbol))
                     {
-                        var symbolData = catalog.Symbols?.FirstOrDefault(s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
-                        if (symbolData is not null)
-                        {
-                            var gaps = DetectGaps(symbolData);
-                            allGaps.AddRange(gaps.Select(g => new BackfillGapInfo(
-                                Symbol: symbol,
-                                StartDate: g.StartDate,
-                                EndDate: g.EndDate,
-                                DaysGap: g.DaysGap,
-                                Reason: g.Reason
-                            )));
-                        }
+                        var result = await searchService.SearchFilesAsync(
+                            new FileSearchQuery(Symbols: [symbol], Take: 10_000),
+                            ct);
+                        allGaps.AddRange(DetectSymbolGaps(result.Results, symbol));
                     }
                 }
                 catch { /* non-critical */ }
@@ -211,12 +215,12 @@ public static class BackfillValidationEndpoints
             {
                 try
                 {
-                    var catalog = await searchService.DiscoverAsync(new DiscoveryQuery(), ct);
-
                     foreach (var symbol in symbols.Select(s => s.Symbol))
                     {
-                        var symbolData = catalog.Symbols?.FirstOrDefault(s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
-                        completenessScores[symbol] = symbolData is not null ? CalculateCompleteness(symbolData) : 0.0;
+                        var result = await searchService.SearchFilesAsync(
+                            new FileSearchQuery(Symbols: [symbol], Take: 10_000),
+                            ct);
+                        completenessScores[symbol] = CalculateSymbolCompleteness(result.Results);
                     }
                 }
                 catch { /* non-critical */ }
@@ -249,24 +253,12 @@ public static class BackfillValidationEndpoints
         .Produces(200);
     }
 
-    private static double CalculateCompleteness(SymbolInfo symbolInfo)
-    {
-        if (symbolInfo.DateRange is null || symbolInfo.DateRange.Count == 0)
-            return 0.0;
-
-        var expectedTradingDays = CalculateExpectedTradingDays(symbolInfo.DateRange.Min, symbolInfo.DateRange.Max);
-        if (expectedTradingDays == 0)
-            return 0.0;
-
-        return Math.Min(1.0, (double)symbolInfo.DateRange.Count / expectedTradingDays);
-    }
-
-    private static double CalculateSymbolCompleteness(IEnumerable<StorageFile>? files)
+    private static double CalculateSymbolCompleteness(IEnumerable<FileSearchResult>? files)
     {
         if (files is null || !files.Any())
             return 0.0;
 
-        var dates = files.Select(f => f.Date).Distinct().OrderBy(d => d).ToList();
+        var dates = GetTradingDates(files);
         if (!dates.Any())
             return 0.0;
 
@@ -290,49 +282,14 @@ public static class BackfillValidationEndpoints
         return count;
     }
 
-    private static List<GapInfo> DetectGaps(SymbolInfo symbolInfo)
-    {
-        var gaps = new List<GapInfo>();
-
-        if (symbolInfo.DateRange is null || symbolInfo.DateRange.Count < 2)
-            return gaps;
-
-        var dates = symbolInfo.DateRange.Where(d => d.DayOfWeek != DayOfWeek.Saturday && d.DayOfWeek != DayOfWeek.Sunday)
-            .OrderBy(d => d)
-            .ToList();
-
-        for (int i = 0; i < dates.Count - 1; i++)
-        {
-            var current = dates[i];
-            var next = dates[i + 1];
-            var expectedNext = GetNextTradingDay(current);
-
-            if (expectedNext < next)
-            {
-                gaps.Add(new GapInfo
-                {
-                    StartDate = expectedNext,
-                    EndDate = next.AddDays(-1),
-                    DaysGap = (int)(next - expectedNext).TotalDays,
-                    Reason = "Data gap detected"
-                });
-            }
-        }
-
-        return gaps;
-    }
-
-    private static List<BackfillGapInfo> DetectSymbolGaps(IEnumerable<StorageFile>? files)
+    private static List<BackfillGapInfo> DetectSymbolGaps(IEnumerable<FileSearchResult>? files, string symbol = "")
     {
         var gaps = new List<BackfillGapInfo>();
 
         if (files is null || !files.Any())
             return gaps;
 
-        var dates = files.Select(f => f.Date).Distinct()
-            .Where(d => d.DayOfWeek != DayOfWeek.Saturday && d.DayOfWeek != DayOfWeek.Sunday)
-            .OrderBy(d => d)
-            .ToList();
+        var dates = GetTradingDates(files);
 
         if (dates.Count < 2)
             return gaps;
@@ -346,7 +303,7 @@ public static class BackfillValidationEndpoints
             if (expectedNext < next)
             {
                 gaps.Add(new BackfillGapInfo(
-                    Symbol: "", // Will be set by caller
+                    Symbol: symbol,
                     StartDate: expectedNext,
                     EndDate: next.AddDays(-1),
                     DaysGap: (int)(next - expectedNext).TotalDays,
@@ -358,19 +315,19 @@ public static class BackfillValidationEndpoints
         return gaps;
     }
 
+    private static List<DateTime> GetTradingDates(IEnumerable<FileSearchResult> files)
+        => files
+            .Select(f => f.Date.UtcDateTime.Date)
+            .Distinct()
+            .Where(d => d.DayOfWeek != DayOfWeek.Saturday && d.DayOfWeek != DayOfWeek.Sunday)
+            .OrderBy(d => d)
+            .ToList();
+
     private static DateTime GetNextTradingDay(DateTime date)
     {
         var next = date.AddDays(1);
         while (next.DayOfWeek == DayOfWeek.Saturday || next.DayOfWeek == DayOfWeek.Sunday)
             next = next.AddDays(1);
         return next;
-    }
-
-    private class GapInfo
-    {
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public int DaysGap { get; set; }
-        public string Reason { get; set; } = "Unknown";
     }
 }

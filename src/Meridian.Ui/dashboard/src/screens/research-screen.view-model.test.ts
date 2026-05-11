@@ -369,6 +369,17 @@ describe("research-screen view model", () => {
     expect(plotTool.workspace.studySummary[0]).toMatchObject({ label: "Primary notebook", value: "Mean Reversion FX" });
     expect(plotTool.workspace.legendItems[1]).toMatchObject({ label: "Current", detail: "88.40 / 73.80", tone: "current" });
     expect(plotTool.workspace.focusPoint).toMatchObject({ label: "Current marker", xValueText: "88.40", yValueText: "73.80" });
+    expect(plotTool.workspace.scatterChart).toMatchObject({
+      ariaLabel: "Mean Reversion FX vs Index Momentum PlotTool scatter chart. Current marker 88.40, 73.80.",
+      xAxisLabel: "Spread (bps)",
+      yAxisLabel: "3m implied vol"
+    });
+    expect(plotTool.workspace.scatterChart.gridLines[0]).toMatchObject({ stroke: "var(--chart-grid)" });
+    expect(plotTool.workspace.scatterChart.trendLine).toMatchObject({ stroke: "var(--chart-up)", strokeDasharray: "5 4" });
+    expect(plotTool.workspace.scatterChart.marker).toMatchObject({
+      fill: "var(--state-warn-fg)",
+      labelText: "88.40, 73.80"
+    });
     expect(plotTool.workspace.signalCards[2]).toMatchObject({
       label: "Queued studies",
       value: "3",
@@ -379,6 +390,15 @@ describe("research-screen view model", () => {
     expect(plotTool.statistics.summaryTiles).toHaveLength(9);
     expect(plotTool.statistics.distributionSummary).toContain("2,211 samples");
     expect(plotTool.statistics.distributionFootnote).toContain("Latest observation 2026-04-25");
+    expect(plotTool.statistics.distributionChart.bars[0]).toMatchObject({
+      id: "distribution-bar-0",
+      heightPercent: 12,
+      tone: "base"
+    });
+    expect(plotTool.statistics.distributionChart.bars[8]).toMatchObject({
+      heightPercent: 94,
+      tone: "selected"
+    });
     expect(plotTool.statistics.summaryTiles[7]).toMatchObject({ label: "Sharpe (5d)", value: "1.41", tone: "success" });
     expect(plotTool.statistics.regression.detailItems[2]).toContain("position changes linked");
     expect(plotTool.statistics.sampleRows[0]).toMatchObject({ signalText: "Crowded vol", tone: "warning" });

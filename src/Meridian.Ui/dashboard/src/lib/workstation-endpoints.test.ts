@@ -111,7 +111,10 @@ describe("workstation API endpoint catalog", () => {
   it("builds account-scoped operator inbox endpoints without changing the base contract", () => {
     expect(workstationOperatorInboxEndpoint()).toBe("/api/workstation/operator/inbox");
     expect(workstationOperatorInboxEndpoint("fund account/1")).toBe(
-      "/api/workstation/operator/inbox?fundAccountId=fund%20account%2F1"
+      "/api/workstation/operator/inbox?fundAccountId=fund+account%2F1"
+    );
+    expect(workstationOperatorInboxEndpoint("  fund account/1  ")).toBe(
+      "/api/workstation/operator/inbox?fundAccountId=fund+account%2F1"
     );
   });
 
@@ -154,6 +157,9 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationRunHistoryEndpoint({ mode: "paper", status: "Ready", limit: 10 })).toBe(
       "/api/workstation/runs/history?mode=paper&status=Ready&limit=10"
     );
+    expect(workstationRunHistoryEndpoint({ mode: " paper ", status: "", limit: Number.NaN })).toBe(
+      "/api/workstation/runs/history?mode=paper"
+    );
     expect(workstationRunTimelineEndpoint({ strategyId: "strategy / 1", limit: 5 })).toBe(
       "/api/workstation/runs/timeline?strategyId=strategy+%2F+1&limit=5"
     );
@@ -181,7 +187,7 @@ describe("workstation API endpoint catalog", () => {
     expect(PROMOTION_API_ENDPOINTS.approve).toBe("/api/promotion/approve");
     expect(promotionEvaluateEndpoint("run / 1")).toBe("/api/promotion/evaluate/run%20%2F%201");
     expect(executionOrderCancelEndpoint("ord / 1")).toBe("/api/execution/orders/ord%20%2F%201/cancel");
-    expect(executionPositionCloseEndpoint("BRK/B")).toBe("/api/execution/positions/BRK%2FB/close");
+    expect(executionPositionCloseEndpoint()).toBe("/api/execution/positions/actions/close");
     expect(executionSessionEndpoint("sess / 1")).toBe("/api/execution/sessions/sess%20%2F%201");
     expect(executionSessionCloseEndpoint("sess / 1")).toBe("/api/execution/sessions/sess%20%2F%201/close");
     expect(executionSessionReplayEndpoint("sess / 1")).toBe("/api/execution/sessions/sess%20%2F%201/replay");
@@ -299,5 +305,11 @@ describe("workstation API endpoint catalog", () => {
     expect(brokerageConnectionEndpoint("alpaca")).toBe("/api/brokerage-connections/alpaca");
     expect(brokerageConnectionStatusEndpoint("alpaca")).toBe("/api/brokerage-connections/alpaca/status");
     expect(brokerageConnectionConnectEndpoint("robinhood")).toBe("/api/brokerage-connections/robinhood/connect");
+  });
+
+  it("rejects blank path segments before issuing malformed API routes", () => {
+    expect(() => workstationRunLedgerEndpoint("   ")).toThrow("runId is required");
+    expect(() => marketDataQuoteEndpoint("")).toThrow("symbol is required");
+    expect(() => reconciliationBreakEndpoint("\t")).toThrow("breakId is required");
   });
 });

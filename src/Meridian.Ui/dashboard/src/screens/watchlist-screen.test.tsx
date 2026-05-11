@@ -140,7 +140,9 @@ describe("WatchlistScreen", () => {
     await user.click(screen.getByRole("button", { name: /Refresh live prices/i }));
 
     await waitFor(() => {
-      expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["MSFT", "AAPL"]);
+      expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["MSFT", "AAPL"], expect.objectContaining({
+        signal: expect.any(AbortSignal)
+      }));
     });
   });
 
@@ -249,23 +251,44 @@ describe("WatchlistScreen", () => {
     expect(api.getSymbols).toHaveBeenCalledTimes(1);
   });
 
+  it("treats unsuccessful remove responses as failed mutations", async () => {
+    vi.mocked(api.removeSymbol).mockResolvedValueOnce({ success: false, symbol: "MSFT" });
+    const user = userEvent.setup();
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
+
+    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Could not remove MSFT.");
+    expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toBeInTheDocument();
+    expect(api.getSymbols).toHaveBeenCalledTimes(1);
+  });
+
   it("selects watchlist rows with the shared dense-table keyboard command", async () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 
     await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
     const msftRow = screen.getByRole("row", { name: /Select MSFT watchlist row/i });
+    const detail = screen.getByRole("complementary", { name: /selected watchlist symbol detail/i });
+    expect(msftRow).toHaveAttribute("aria-controls", "watchlist-selected-symbol-detail");
+    expect(detail).toHaveAttribute("id", "watchlist-selected-symbol-detail");
+    expect(msftRow).toHaveAttribute("aria-expanded", "false");
 
     msftRow.focus();
     await user.keyboard("{Enter}");
 
     await waitFor(() => expect(msftRow).toHaveAttribute("aria-selected", "true"));
+    expect(msftRow).toHaveAttribute("aria-expanded", "true");
+    expect(within(msftRow).getByRole("button", { name: /Inspect MSFT watchlist detail/i })).toHaveAttribute("aria-expanded", "true");
 
     const aaplRow = screen.getByRole("row", { name: /Select AAPL watchlist row/i });
     aaplRow.focus();
     await user.keyboard(" ");
 
     await waitFor(() => expect(aaplRow).toHaveAttribute("aria-selected", "true"));
+    expect(aaplRow).toHaveAttribute("aria-expanded", "true");
+    expect(msftRow).toHaveAttribute("aria-expanded", "false");
   });
 
   it("shows loading, empty, and initial error states", async () => {

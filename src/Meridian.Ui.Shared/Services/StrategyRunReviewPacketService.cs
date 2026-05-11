@@ -251,14 +251,14 @@ public sealed class StrategyRunReviewPacketService
             OperatorWorkItemKindDto.BrokerageSync => (
                 "Trading",
                 fundAccountId.HasValue
-                    ? UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.Value.ToString(), StringComparison.Ordinal)
+                    ? UiApiRoutes.WithParam(UiApiRoutes.FundAccountBrokerageSyncStatus, "accountId", fundAccountId.Value.ToString())
                     : UiApiRoutes.FundAccountBrokerageSyncAccounts,
                 "TradingShell"),
             _ => (
                 "Trading",
                 string.IsNullOrWhiteSpace(runId)
                     ? UiApiRoutes.WorkstationTradingReadiness
-                    : UiApiRoutes.RunsReviewPacket.Replace("{runId}", runId, StringComparison.Ordinal),
+                    : UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", runId),
                 "TradingShell")
         };
     }

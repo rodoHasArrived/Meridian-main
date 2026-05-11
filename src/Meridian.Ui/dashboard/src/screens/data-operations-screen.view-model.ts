@@ -165,6 +165,7 @@ export interface DataOperationsBackfillRow {
   progress: string;
   updatedAt: string;
   selected: boolean;
+  expanded: boolean;
   detailText: string;
   ariaLabel: string;
   detailDescription: string;
@@ -274,6 +275,8 @@ export interface ProviderSetupSelectFieldState {
   ariaLabel: string;
   description: string;
   options: ProviderSetupKindOptionState[];
+  disabled: boolean;
+  disabledReason: string | null;
 }
 
 export interface ProviderSetupTextFieldState {
@@ -282,6 +285,8 @@ export interface ProviderSetupTextFieldState {
   ariaLabel: string;
   field: "displayName";
   value: string;
+  disabled: boolean;
+  disabledReason: string | null;
 }
 
 export interface ProviderSetupCredentialFieldState {
@@ -293,6 +298,8 @@ export interface ProviderSetupCredentialFieldState {
   value: string;
   autoComplete: "new-password" | "off";
   placeholder: string | null;
+  disabled: boolean;
+  disabledReason: string | null;
 }
 
 export interface ProviderSetupCapabilityOptionState {
@@ -300,6 +307,8 @@ export interface ProviderSetupCapabilityOptionState {
   label: string;
   description: string;
   selected: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
 }
 
 export const PROVIDER_KIND_CATALOG: ProviderKindMeta[] = [
@@ -390,6 +399,8 @@ const defaultBackfillForm: BackfillFormState = {
   to: ""
 };
 
+export const DATA_BACKFILL_DETAIL_PANEL_ID = "data-backfill-detail-panel";
+
 export function useDataOperationsViewModel(
   data: DataOperationsWorkspaceResponse | null,
   pathname: string,
@@ -411,6 +422,7 @@ export function useDataOperationsViewModel(
   const [providerPhase, setProviderPhase] = useState<ProviderSetupPhase>("idle");
   const [providerSetupResult, setProviderSetupResult] = useState<ProviderSetupResult | null>(null);
   const [providerSetupError, setProviderSetupError] = useState<string | null>(null);
+  const providerSetupCommandRevisionRef = useRef(0);
 
   const nextBackfillCommandRevision = useCallback(() => {
     const revision = backfillCommandRevisionRef.current + 1;
@@ -422,8 +434,19 @@ export function useDataOperationsViewModel(
     backfillCommandRevisionRef.current === revision
   ), []);
 
+  const nextProviderSetupCommandRevision = useCallback(() => {
+    const revision = providerSetupCommandRevisionRef.current + 1;
+    providerSetupCommandRevisionRef.current = revision;
+    return revision;
+  }, []);
+
+  const isCurrentProviderSetupCommand = useCallback((revision: number) => (
+    providerSetupCommandRevisionRef.current === revision
+  ), []);
+
   useEffect(() => () => {
     backfillCommandRevisionRef.current += 1;
+    providerSetupCommandRevisionRef.current += 1;
   }, []);
 
   const workstream = useMemo(() => resolveDataOperationsWorkstream(pathname), [pathname]);
@@ -549,21 +572,23 @@ export function useDataOperationsViewModel(
   }, [form, isCurrentBackfillCommand, nextBackfillCommandRevision, preview, services]);
 
   const openProviderSetup = useCallback(() => {
+    nextProviderSetupCommandRevision();
     setProviderSetupOpen(true);
     setProviderForm(clearProviderSetupCredentials);
     setProviderSetupResult(null);
     setProviderSetupError(null);
     setProviderPhase("idle");
-  }, []);
+  }, [nextProviderSetupCommandRevision]);
 
   const closeProviderSetup = useCallback(() => {
     if (providerPhase === "submitting") return;
+    nextProviderSetupCommandRevision();
     setProviderForm(clearProviderSetupCredentials);
     setProviderSetupOpen(false);
     setProviderSetupResult(null);
     setProviderSetupError(null);
     setProviderPhase("idle");
-  }, [providerPhase]);
+  }, [nextProviderSetupCommandRevision, providerPhase]);
 
   const updateProviderForm = useCallback((field: Exclude<keyof ProviderSetupFormState, "capabilities">, value: string) => {
     setProviderForm((current) => {
@@ -601,6 +626,7 @@ export function useDataOperationsViewModel(
       return;
     }
 
+    const commandRevision = nextProviderSetupCommandRevision();
     setProviderPhase("submitting");
     setProviderSetupError(null);
     setProviderSetupResult(null);
@@ -616,16 +642,24 @@ export function useDataOperationsViewModel(
 
     try {
       const response = await workstationApi.setupProvider(request);
+      if (!isCurrentProviderSetupCommand(commandRevision)) {
+        return;
+      }
       setProviderSetupResult(response);
       setProviderPhase(response.success ? "success" : "error");
     } catch (err) {
+      if (!isCurrentProviderSetupCommand(commandRevision)) {
+        return;
+      }
       const message = err instanceof Error ? err.message : "Provider setup failed.";
       setProviderSetupError(message);
       setProviderPhase("error");
     } finally {
-      setProviderForm(clearProviderSetupCredentials);
+      if (isCurrentProviderSetupCommand(commandRevision)) {
+        setProviderForm(clearProviderSetupCredentials);
+      }
     }
-  }, [providerForm]);
+  }, [isCurrentProviderSetupCommand, nextProviderSetupCommandRevision, providerForm]);
 
   const providerSetupDialogState = useMemo(
     () => buildProviderSetupDialogState(providerPhase, providerForm),
@@ -757,7 +791,7 @@ export function buildRouteFocusCardState({
   if (workstream === "backfills") {
     if (selectedBackfillDetail) {
       return {
-        id: selectedBackfillDetail.id,
+        id: DATA_BACKFILL_DETAIL_PANEL_ID,
         role: "region",
         ariaLabel: selectedBackfillDetail.ariaLabel,
         eyebrow: "Backfill Detail",
@@ -771,7 +805,7 @@ export function buildRouteFocusCardState({
     const title = backfillDetailEmptyState?.title ?? "Backfill queue focus";
     const description = backfillDetailEmptyState?.description ?? "No backfill selected.";
     return {
-      id: "data-backfill-empty-detail",
+      id: DATA_BACKFILL_DETAIL_PANEL_ID,
       role: "status",
       ariaLabel: "Backfill detail empty state",
       eyebrow: "Backfill Detail",
@@ -877,23 +911,23 @@ export function buildBackfillSection(
       const detailText = `${backfill.scope}. ${backfill.status}; ${backfill.progress}; updated ${backfill.updatedAt}.`;
       const selected = selectedBackfillId === backfill.jobId;
       const rowId = buildBackfillRowId(backfill.jobId);
-      const detailPanelId = buildBackfillDetailPanelId(backfill.jobId);
 
       return {
         jobId: backfill.jobId,
         rowId,
-        detailPanelId,
+        detailPanelId: DATA_BACKFILL_DETAIL_PANEL_ID,
         scope: backfill.scope,
         provider: backfill.provider,
         status: backfill.status,
         progress: backfill.progress,
         updatedAt: backfill.updatedAt,
         selected,
+        expanded: selected,
         detailText,
         ariaLabel: `${selected ? "Selected" : "Inspect"} backfill ${backfill.jobId}: ${detailText}`,
         detailDescription: selected
-          ? `Selected backfill ${backfill.jobId}; details are shown in the backfill detail panel.`
-          : `Inspect backfill ${backfill.jobId}; details will replace the current backfill detail panel.`
+          ? `Selected backfill ${backfill.jobId}; the backfill detail panel is expanded for this row.`
+          : `Inspect backfill ${backfill.jobId}; activation updates the shared backfill detail panel.`
       };
     }),
     hasRows: backfills.length > 0,
@@ -919,7 +953,7 @@ export function buildSelectedBackfillDetail(
   const description = buildBackfillNarrative(selected);
 
   return {
-    id: buildBackfillDetailPanelId(selected.jobId),
+    id: DATA_BACKFILL_DETAIL_PANEL_ID,
     title: selected.scope,
     description,
     ariaLabel: `Backfill detail for ${selected.jobId}: ${selected.scope}. ${description}`,
@@ -1470,10 +1504,6 @@ function buildBackfillRowId(jobId: string): string {
   return `backfill-row-${toDomId(jobId)}`;
 }
 
-function buildBackfillDetailPanelId(jobId: string): string {
-  return `backfill-detail-${toDomId(jobId)}`;
-}
-
 function toDomId(value: string): string {
   const normalized = value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   return normalized || "item";
@@ -1579,6 +1609,7 @@ export function buildProviderSetupDialogState(
   const submitting = phase === "submitting";
   const validationError = phase === "submitting" ? null : validateProviderSetupForm(form);
   const providerMeta = resolveProviderKindMeta(form.kind);
+  const fieldDisabledReason = submitting ? "Provider setup is in progress; wait before editing." : null;
 
   return {
     titleId: "provider-setup-dialog-title",
@@ -1592,19 +1623,25 @@ export function buildProviderSetupDialogState(
       options: PROVIDER_KIND_CATALOG.map((provider) => ({
         value: provider.kind,
         label: provider.label
-      }))
+      })),
+      disabled: submitting,
+      disabledReason: fieldDisabledReason
     },
     displayNameField: {
       id: "provider-setup-name",
       label: "Display name",
       ariaLabel: "Provider display name",
       field: "displayName",
-      value: form.displayName
+      value: form.displayName,
+      disabled: submitting,
+      disabledReason: fieldDisabledReason
     },
-    credentialFields: buildProviderCredentialFields(form, providerMeta),
+    credentialFields: buildProviderCredentialFields(form, providerMeta, fieldDisabledReason),
     capabilityOptions: ALL_CAPABILITIES.map((capability) => ({
       ...capability,
-      selected: form.capabilities.includes(capability.id)
+      selected: form.capabilities.includes(capability.id),
+      disabled: submitting,
+      disabledReason: fieldDisabledReason
     })),
     closeButtonLabel: "Close provider setup",
     closeButtonDisabledReason: submitting ? "Provider setup is in progress; wait before closing." : null,
@@ -1647,8 +1684,10 @@ function resolveProviderKindMeta(kind: ProviderSetupFormState["kind"]): Provider
 
 function buildProviderCredentialFields(
   form: ProviderSetupFormState,
-  meta: ProviderKindMeta | undefined
+  meta: ProviderKindMeta | undefined,
+  disabledReason: string | null
 ): ProviderSetupCredentialFieldState[] {
+  const disabled = disabledReason !== null;
   const fields: ProviderSetupCredentialFieldState[] = [];
 
   if (meta?.needsApiKey !== false) {
@@ -1660,7 +1699,9 @@ function buildProviderCredentialFields(
       type: "password",
       value: form.apiKey,
       autoComplete: "new-password",
-      placeholder: "Stored server-side; never sent to the browser after save"
+      placeholder: "Stored server-side; never sent to the browser after save",
+      disabled,
+      disabledReason
     });
   }
 
@@ -1673,7 +1714,9 @@ function buildProviderCredentialFields(
       type: "password",
       value: form.apiSecret,
       autoComplete: "new-password",
-      placeholder: null
+      placeholder: null,
+      disabled,
+      disabledReason
     });
   }
 
@@ -1686,7 +1729,9 @@ function buildProviderCredentialFields(
       type: "url",
       value: form.endpoint,
       autoComplete: "off",
-      placeholder: "https://localhost:7497 or https://api.yourprovider.com"
+      placeholder: "https://localhost:7497 or https://api.yourprovider.com",
+      disabled,
+      disabledReason
     });
   }
 

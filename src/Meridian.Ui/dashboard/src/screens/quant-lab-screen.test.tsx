@@ -80,6 +80,16 @@ const failedRun: QuantRunResponse = {
 
 const emptyParameters: QuantParametersResponse = { parameters: [] };
 
+function createDeferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+  return { promise, resolve, reject };
+}
+
 describe("QuantLabScreen", () => {
   beforeEach(() => {
     vi.spyOn(api, "getQuantTemplates").mockResolvedValue(templates);
@@ -120,6 +130,34 @@ describe("QuantLabScreen", () => {
     const consoleBlock = screen.getByText(/Hello from the Quant Lab\./, { selector: "pre" });
     expect(consoleBlock).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Sine" })).toBeInTheDocument();
+  });
+
+  it("labels run evidence when the editor changes before the run completes", async () => {
+    const deferredRun = createDeferred<QuantRunResponse>();
+    vi.spyOn(api, "runQuantScript").mockReturnValue(deferredRun.promise);
+
+    const user = userEvent.setup();
+    renderWithRouter(<QuantLabScreen />);
+    await waitForAsyncEffects();
+
+    const editor = screen.getByLabelText("Script source") as HTMLTextAreaElement;
+    await user.clear(editor);
+    await user.type(editor, "Print(\"submitted\");");
+    await user.click(screen.getByRole("button", { name: /Run script/i }));
+
+    await user.clear(editor);
+    await user.type(editor, "Print(\"edited\");");
+
+    expect(screen.getByText("Editor changed during this run")).toBeInTheDocument();
+
+    await act(async () => {
+      deferredRun.resolve(successfulRun);
+      await Promise.resolve();
+    });
+
+    expect(await screen.findByRole("heading", { name: /Run succeeded for previous source/i })).toBeInTheDocument();
+    expect(screen.getByText("Evidence is for previous source")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Run current edited script source/i })).toHaveTextContent("Run current source");
   });
 
   it("renders an actionable empty-evidence state for successful runs with no output", async () => {

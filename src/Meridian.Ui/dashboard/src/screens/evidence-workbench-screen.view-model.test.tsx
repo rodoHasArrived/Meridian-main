@@ -10,6 +10,8 @@ import {
 } from "@/lib/api";
 import { EvidenceWorkbenchScreen } from "@/screens/evidence-workbench-screen";
 import {
+  buildEvidenceLineageDetail,
+  buildEvidenceLineagePanel,
   buildEvidenceWorkbenchViewModel,
   groupNodes,
   mapStatusTone,
@@ -178,6 +180,7 @@ describe("Evidence Workbench view model", () => {
     expect(vm.title).toBe("Momentum strategy run");
     expect(vm.scoreLabel).toBe("33% complete");
     expect(vm.statusTone).toBe("danger");
+    expect(vm.generatedLabel).toBe("May 9, 12:30 UTC");
     expect(vm.missingEvidence).toEqual(["strategy-run:run-1:ledger"]);
     expect(vm.staleEvidence).toEqual([staleNode.evidenceId]);
     expect(vm.relatedWorkItemIds).toEqual(["provider-trust:sample-review"]);
@@ -206,6 +209,18 @@ describe("Evidence Workbench view model", () => {
       ariaLabel: "Export selected evidence manifest for Momentum strategy run",
       disabled: false,
       disabledReason: null
+    });
+    expect(vm.lineagePanel).toMatchObject({
+      hasRows: true,
+      defaultSelectedRowId: "strategy-run:run-1:detail:requires:strategy-run:run-1:replay:0",
+      detailPanelId: "evidence-lineage-selected-edge-detail",
+      summaryLabel: "1 edge",
+      tableLabel: "Evidence lineage edges for Momentum strategy run"
+    });
+    expect(vm.lineagePanel.rows[0]).toMatchObject({
+      relationshipLabel: "Requires",
+      ariaLabel: "Requires from strategy-run:run-1:detail to strategy-run:run-1:replay. Replay evidence supports the run.",
+      selectAriaLabel: "Inspect lineage edge: Requires from strategy-run:run-1:detail to strategy-run:run-1:replay"
     });
   });
 
@@ -367,6 +382,111 @@ describe("Evidence Workbench view model", () => {
     ]);
   });
 
+  it("builds accessible empty and populated lineage presentation state", () => {
+    const emptyPanel = buildEvidenceLineagePanel([], subject);
+
+    expect(emptyPanel).toMatchObject({
+      hasRows: false,
+      defaultSelectedRowId: null,
+      detailPanelId: "evidence-lineage-selected-edge-detail",
+      summaryLabel: "0 edges",
+      tableLabel: "Evidence lineage edges for Momentum strategy run",
+      emptyTitle: "No lineage edges",
+      emptyRole: "status",
+      emptyAriaLive: "polite"
+    });
+
+    const populatedPanel = buildEvidenceLineagePanel([
+      {
+        fromId: "provider-trust:sample-review",
+        relationship: "blocks_readiness",
+        toId: "strategy-run:run-1:promotion",
+        reason: "Provider evidence must be reviewed first."
+      }
+    ], subject);
+
+    expect(populatedPanel.hasRows).toBe(true);
+    expect(populatedPanel.rows[0]).toMatchObject({
+      relationshipLabel: "Blocks Readiness",
+      reason: "Provider evidence must be reviewed first."
+    });
+    expect(buildEvidenceLineageDetail(populatedPanel.rows[0])).toMatchObject({
+      eyebrow: "Selected lineage edge",
+      title: "Blocks Readiness",
+      subtitle: "provider-trust:sample-review to strategy-run:run-1:promotion",
+      description: "Provider evidence must be reviewed first.",
+      fields: [
+        { label: "From node", value: "provider-trust:sample-review" },
+        { label: "Relationship", value: "Blocks Readiness" },
+        { label: "To node", value: "strategy-run:run-1:promotion" },
+        {
+          label: "Edge ID",
+          value: "provider-trust:sample-review:blocks_readiness:strategy-run:run-1:promotion:0"
+        }
+      ]
+    });
+  });
+
+  it("serializes validation and export commands for the selected evidence packet", () => {
+    const validating = buildEvidenceWorkbenchViewModel({
+      selectedSubjectKind: "strategy-run",
+      selectedSubjectId: "run-1",
+      loading: false,
+      error: null,
+      subjects: [subject],
+      packet,
+      exportBusy: false,
+      exportResult: null,
+      validateBusy: true,
+      validationResult: null,
+      exportManifest: vi.fn(),
+      validatePacket: vi.fn()
+    });
+
+    expect(validating.validateCommand).toMatchObject({
+      busy: true,
+      disabled: true,
+      disabledReason: "Evidence validation is already running."
+    });
+    expect(validating.exportCommand).toMatchObject({
+      disabled: true,
+      disabledReason: "Evidence validation is already running."
+    });
+    expect(validating.packetActions.find((action) => action.control === "export")).toMatchObject({
+      disabled: true,
+      disabledReason: "Evidence validation is already running."
+    });
+
+    const exporting = buildEvidenceWorkbenchViewModel({
+      selectedSubjectKind: "strategy-run",
+      selectedSubjectId: "run-1",
+      loading: false,
+      error: null,
+      subjects: [subject],
+      packet,
+      exportBusy: true,
+      exportResult: null,
+      validateBusy: false,
+      validationResult: null,
+      exportManifest: vi.fn(),
+      validatePacket: vi.fn()
+    });
+
+    expect(exporting.exportCommand).toMatchObject({
+      busy: true,
+      disabled: true,
+      disabledReason: "Evidence export is already running."
+    });
+    expect(exporting.validateCommand).toMatchObject({
+      disabled: true,
+      disabledReason: "Evidence export is already running."
+    });
+    expect(exporting.packetActions.find((action) => action.control === "validate")).toMatchObject({
+      disabled: true,
+      disabledReason: "Evidence export is already running."
+    });
+  });
+
   it("ignores stale validation results after the selected subject changes", async () => {
     const validation = createDeferred<EvidenceCompleteness>();
     const nextSubject: EvidenceSubject = {
@@ -403,6 +523,8 @@ describe("Evidence Workbench view model", () => {
     await waitFor(() => expect(result.current.selectedSubjectId).toBe("run-2"));
     await waitFor(() => expect(result.current.hasPacket).toBe(true));
     expect(result.current.validateBusy).toBe(false);
+    const validationCalls = services.validatePacket.mock.calls as unknown as Array<[string, string, { signal?: AbortSignal }]>;
+    expect(validationCalls[0]?.[2]?.signal?.aborted).toBe(true);
 
     await act(async () => {
       validation.resolve({ ...completeness, score: 50 });
@@ -442,6 +564,9 @@ describe("Evidence Workbench view model", () => {
       void result.current.validatePacket();
     });
     expect(services.validatePacket).toHaveBeenCalledTimes(2);
+    const validationCalls = services.validatePacket.mock.calls as unknown as Array<[string, string, { signal?: AbortSignal }]>;
+    expect(validationCalls[0]?.[2]?.signal?.aborted).toBe(true);
+    expect(validationCalls[1]?.[2]?.signal?.aborted).toBe(false);
 
     await act(async () => {
       firstValidation.resolve({ ...completeness, score: 41 });
@@ -462,6 +587,9 @@ describe("Evidence Workbench view model", () => {
       void result.current.exportManifest();
     });
     expect(services.exportManifest).toHaveBeenCalledTimes(2);
+    const exportCalls = services.exportManifest.mock.calls as unknown as Array<[string, string, { signal?: AbortSignal }]>;
+    expect(exportCalls[0]?.[2]?.signal?.aborted).toBe(true);
+    expect(exportCalls[1]?.[2]?.signal?.aborted).toBe(false);
 
     await act(async () => {
       firstExport.resolve({
@@ -525,6 +653,11 @@ describe("EvidenceWorkbenchScreen", () => {
       "/strategy?runId=run-1"
     );
     expect(screen.getByRole("region", { name: "Evidence packet actions" })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: /evidence lineage edges for momentum strategy run/i })).toBeInTheDocument();
+    expect(screen.getAllByText("Requires").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole("region", { name: "Selected lineage edge: Requires" })).toHaveTextContent(
+      "Replay evidence supports the run."
+    );
     expect(screen.getByRole("link", { name: /open evidence packet for momentum strategy run/i })).toHaveAttribute(
       "href",
       "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1"
@@ -536,6 +669,40 @@ describe("EvidenceWorkbenchScreen", () => {
     await user.click(screen.getByRole("button", { name: /export selected evidence manifest for momentum strategy run/i }));
     expect(await screen.findByText("Manifest retained")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/strategy-run/run-1/manifest.json")).toBeInTheDocument();
+  });
+
+  it("lets keyboard and pointer users inspect lineage edge detail", async () => {
+    const packetWithTwoEdges: EvidencePacket = {
+      ...packet,
+      edges: [
+        ...packet.edges,
+        {
+          fromId: blockedNode.evidenceId,
+          toId: "strategy-run:run-1:promotion",
+          relationship: "blocks_readiness",
+          reason: "Provider evidence must be reviewed first."
+        }
+      ]
+    };
+    vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
+    vi.mocked(getEvidencePacket).mockResolvedValue(packetWithTwoEdges);
+    const user = userEvent.setup();
+
+    renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
+
+    const secondEdge = await screen.findByRole("row", {
+      name: /inspect lineage edge: blocks readiness from strategy-run:run-1:provider-trust/i
+    });
+    expect(secondEdge).toHaveAttribute("aria-controls", "evidence-lineage-selected-edge-detail");
+    expect(secondEdge).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(secondEdge);
+
+    expect(secondEdge).toHaveAttribute("aria-selected", "true");
+    expect(secondEdge).toHaveAttribute("aria-expanded", "true");
+    const detail = screen.getByRole("region", { name: "Selected lineage edge: Blocks Readiness" });
+    expect(detail).toHaveTextContent("Provider evidence must be reviewed first.");
+    expect(detail).toHaveTextContent("strategy-run:run-1:provider-trust");
   });
 
   it("renders broad subject selection route without loading a packet", async () => {

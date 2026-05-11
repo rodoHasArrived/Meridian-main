@@ -313,7 +313,9 @@ describe("watchlist-screen view model", () => {
     api.getLiveQuotesSnapshot = vi.fn().mockReturnValue(slowQuote.promise);
 
     const { result } = renderHook(() => useWatchlistScreenViewModel(api));
-    await waitFor(() => expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["AAPL"]));
+    await waitFor(() => expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["AAPL"], expect.objectContaining({
+      signal: expect.any(AbortSignal)
+    })));
 
     await act(async () => {
       await result.current.refresh();
@@ -342,7 +344,9 @@ describe("watchlist-screen view model", () => {
       .mockReturnValueOnce(latestQuote.promise);
 
     const { result } = renderHook(() => useWatchlistScreenViewModel(api));
-    await waitFor(() => expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["AAPL"]));
+    await waitFor(() => expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["AAPL"], expect.objectContaining({
+      signal: expect.any(AbortSignal)
+    })));
 
     await act(async () => {
       await result.current.refresh();
@@ -354,7 +358,9 @@ describe("watchlist-screen view model", () => {
       await slowQuote.promise;
     });
 
-    await waitFor(() => expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["MSFT"]));
+    await waitFor(() => expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["MSFT"], expect.objectContaining({
+      signal: expect.any(AbortSignal)
+    })));
 
     await act(async () => {
       latestQuote.resolve({ quotes: [{ ...quote, symbol: "MSFT" }] });

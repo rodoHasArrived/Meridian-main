@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ApiRequestOptions } from "@/lib/api";
 import type { MetricSnapshot, QuotesSnapshotItem, SymbolRecord, SymbolStatistics } from "@/types";
 
 export type WatchlistBadgeVariant = "default" | "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research";
@@ -11,9 +12,9 @@ const QUOTE_POLL_INTERVAL_MS = 2000;
 const QUOTE_STALE_THRESHOLD_MS = 15_000;
 
 export interface WatchlistApi {
-  getSymbols: () => Promise<SymbolRecord[]>;
-  getSymbolsStatistics: () => Promise<SymbolStatistics>;
-  getLiveQuotesSnapshot: (symbols?: readonly string[]) => Promise<{ quotes: QuotesSnapshotItem[] }>;
+  getSymbols: (options?: ApiRequestOptions) => Promise<SymbolRecord[]>;
+  getSymbolsStatistics: (options?: ApiRequestOptions) => Promise<SymbolStatistics>;
+  getLiveQuotesSnapshot: (symbols?: readonly string[], options?: ApiRequestOptions) => Promise<{ quotes: QuotesSnapshotItem[] }>;
   addSymbol: (symbol: string) => Promise<{ success: boolean; symbol: string }>;
   bulkAddSymbols: (symbols: string[]) => Promise<{ added: number; skipped: number; errors: string[] }>;
   removeSymbol: (symbol: string) => Promise<{ success: boolean; symbol: string }>;
@@ -138,6 +139,7 @@ export interface WatchlistScreenViewModel {
   selectedSymbol: string | null;
   selectedRowId: string | null;
   selectedDetail: WatchlistSelectedDetail | null;
+  detailPanelId: string;
   detailPanelTitle: string;
   detailPanelDescription: string;
   detailPanelEmptyText: string;
@@ -173,7 +175,9 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const mountedRef = useRef(true);
   const refreshRevisionRef = useRef(0);
+  const refreshAbortRef = useRef<AbortController | null>(null);
   const currentQuoteSymbolsKeyRef = useRef("");
+  const quoteAbortRef = useRef<AbortController | null>(null);
   const previousMidRef = useRef<Record<string, number>>({});
   const quoteInFlightRef = useRef(false);
   const pendingQuoteSymbolsRef = useRef<readonly string[] | null>(null);
@@ -181,18 +185,23 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   useEffect(() => () => {
     mountedRef.current = false;
     refreshRevisionRef.current += 1;
+    refreshAbortRef.current?.abort();
+    quoteAbortRef.current?.abort();
     currentQuoteSymbolsKeyRef.current = "";
     pendingQuoteSymbolsRef.current = null;
   }, []);
 
   const refresh = useCallback(async () => {
+    refreshAbortRef.current?.abort();
     const revision = refreshRevisionRef.current + 1;
     refreshRevisionRef.current = revision;
+    const controller = new AbortController();
+    refreshAbortRef.current = controller;
     setRefreshing(true);
     try {
       const [symbolResult, statsResult] = await Promise.allSettled([
-        api.getSymbols(),
-        api.getSymbolsStatistics()
+        api.getSymbols({ signal: controller.signal }),
+        api.getSymbolsStatistics({ signal: controller.signal })
       ]);
 
       if (!mountedRef.current || refreshRevisionRef.current !== revision) {
@@ -202,7 +211,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
       if (symbolResult.status === "fulfilled") {
         setSymbols(symbolResult.value);
         setLoadError(null);
-      } else {
+      } else if (!isAbortError(symbolResult.reason)) {
         setLoadError(messageFromError(symbolResult.reason, "Failed to load symbols"));
       }
 
@@ -210,6 +219,9 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         setStats(statsResult.value);
       }
     } finally {
+      if (refreshAbortRef.current === controller) {
+        refreshAbortRef.current = null;
+      }
       if (mountedRef.current && refreshRevisionRef.current === revision) {
         setRefreshing(false);
       }
@@ -327,7 +339,11 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   const removeSymbol = useCallback(async (symbol: string) => {
     setRemoving((current) => ({ ...current, [symbol]: true }));
     try {
-      await api.removeSymbol(symbol);
+      const result = await api.removeSymbol(symbol);
+      if (!result.success) {
+        throw new Error(`Could not remove ${symbol}.`);
+      }
+
       await refresh();
     } catch (error) {
       if (!mountedRef.current) {
@@ -359,9 +375,12 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     }
 
     const requestKey = buildQuoteSymbolsKey(currentSymbols);
+    const controller = new AbortController();
+    quoteAbortRef.current?.abort();
+    quoteAbortRef.current = controller;
     quoteInFlightRef.current = true;
     try {
-      const response = await api.getLiveQuotesSnapshot(currentSymbols);
+      const response = await api.getLiveQuotesSnapshot(currentSymbols, { signal: controller.signal });
       if (!mountedRef.current || currentQuoteSymbolsKeyRef.current !== requestKey) {
         return;
       }
@@ -385,9 +404,14 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
       setQuoteError(null);
     } catch (error) {
       if (mountedRef.current && currentQuoteSymbolsKeyRef.current === requestKey) {
-        setQuoteError(messageFromError(error, "Failed to load live quotes"));
+        if (!isAbortError(error)) {
+          setQuoteError(messageFromError(error, "Failed to load live quotes"));
+        }
       }
     } finally {
+      if (quoteAbortRef.current === controller) {
+        quoteAbortRef.current = null;
+      }
       quoteInFlightRef.current = false;
       const pendingSymbols = pendingQuoteSymbolsRef.current;
       pendingQuoteSymbolsRef.current = null;
@@ -400,6 +424,8 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   useEffect(() => {
     currentQuoteSymbolsKeyRef.current = buildQuoteSymbolsKey(subscribedSymbols);
     if (subscribedSymbols.length === 0) {
+      quoteAbortRef.current?.abort();
+      pendingQuoteSymbolsRef.current = null;
       setQuotes({});
       setQuoteError(null);
       setQuoteFetchedAt(null);
@@ -409,7 +435,10 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
 
     void fetchQuotes(subscribedSymbols);
     const interval = window.setInterval(() => void fetchQuotes(subscribedSymbols), QUOTE_POLL_INTERVAL_MS);
-    return () => window.clearInterval(interval);
+    return () => {
+      quoteAbortRef.current?.abort();
+      window.clearInterval(interval);
+    };
   }, [fetchQuotes, subscribedSymbols]);
 
   const refreshQuotes = useCallback(async () => {
@@ -499,6 +528,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     selectedSymbol: selectedRow?.symbol ?? null,
     selectedRowId: selectedRow?.symbol ?? null,
     selectedDetail: buildWatchlistSelectedDetail(selectedRow),
+    detailPanelId: "watchlist-selected-symbol-detail",
     detailPanelTitle: "Selected symbol inspector",
     detailPanelDescription: "Inspect the active watchlist row without leaving the Data lane.",
     detailPanelEmptyText: "No symbol is selected. Add a symbol or wait for the watchlist to load.",
@@ -933,6 +963,12 @@ function formatCount(value: number): string {
 
 function messageFromError(error: unknown, fallback: string): string {
   return error instanceof Error && error.message ? error.message : fallback;
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException
+    ? error.name === "AbortError"
+    : error instanceof Error && error.name === "AbortError";
 }
 
 function formatPrice(value: number | null | undefined): string {

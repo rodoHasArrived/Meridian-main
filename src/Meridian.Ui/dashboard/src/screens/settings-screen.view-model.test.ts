@@ -267,6 +267,37 @@ describe("buildSettingsScreenViewModel", () => {
     });
   });
 
+  it("keeps pristine Alpaca credential readiness neutral before submit", () => {
+    const pristineState = buildAlpacaConnectionCommandState({
+      canClear: false,
+      form: {
+        keyId: "",
+        secretKey: "",
+        environment: "paper",
+        busyAction: null,
+        submitted: false,
+        actionMessage: null,
+        actionTone: "default"
+      }
+    });
+
+    expect(pristineState).toMatchObject({
+      canSubmit: false,
+      canEdit: true,
+      keyIdError: false,
+      secretKeyError: false,
+      formPanelTitle: "Enter Alpaca credentials",
+      formPanelTone: "default",
+      formPanelRole: "status",
+      submitLabel: "Connect and test"
+    });
+    expect(pristineState.requirements).toEqual([
+      expect.objectContaining({ id: "alpaca-key-id-requirement", value: "Needed", met: false, tone: "muted" }),
+      expect.objectContaining({ id: "alpaca-secret-key-requirement", value: "Needed", met: false, tone: "muted" }),
+      expect.objectContaining({ id: "alpaca-environment-requirement", value: "PAPER", met: true, tone: "success" })
+    ]);
+  });
+
   it("derives Alpaca credential command disabled and validation state", () => {
     const emptyState = buildAlpacaConnectionCommandState({
       canClear: false,

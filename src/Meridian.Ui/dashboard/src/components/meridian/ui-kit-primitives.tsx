@@ -49,6 +49,8 @@ export function DenseDataTable<T>({
   rows,
   getRowId,
   getRowAriaLabel,
+  getRowAriaControls,
+  getRowAriaExpanded,
   getRowSelectAriaLabel,
   onRowSelect,
   selectedRowId,
@@ -60,6 +62,8 @@ export function DenseDataTable<T>({
   rows: T[];
   getRowId: (row: T) => string;
   getRowAriaLabel?: (row: T) => string;
+  getRowAriaControls?: (row: T) => string | undefined;
+  getRowAriaExpanded?: (row: T) => boolean | undefined;
   getRowSelectAriaLabel?: (row: T) => string;
   onRowSelect?: (row: T) => void;
   selectedRowId?: string | null;
@@ -92,10 +96,13 @@ export function DenseDataTable<T>({
             const rowAriaLabel = selectable
               ? getRowSelectAriaLabel?.(row) ?? getRowAriaLabel?.(row)
               : getRowAriaLabel?.(row);
+            const rowAriaExpanded = selectable ? getRowAriaExpanded?.(row) : undefined;
             return (
               <tr
                 key={rowId}
                 aria-label={rowAriaLabel}
+                aria-controls={selectable ? getRowAriaControls?.(row) : undefined}
+                aria-expanded={rowAriaExpanded}
                 aria-selected={selected || undefined}
                 tabIndex={selectable ? 0 : undefined}
                 data-selectable={selectable ? "true" : undefined}

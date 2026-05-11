@@ -1,142 +1,56 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, LineChart, Loader2 } from "lucide-react";
+import { AlertCircle, LineChart, Loader2, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getHistoricalBars } from "@/lib/api";
-import type { HistoricalBarPoint } from "@/types";
 import { cn } from "@/lib/utils";
+import {
+  HISTORICAL_CHART_TIMEFRAMES,
+  computeChartStats,
+  formatIntervalLabel,
+  useHistoricalChartViewModel,
+  type HistoricalChartSparklineViewModel,
+  type HistoricalChartStatePanel,
+  type HistoricalChartStatTile
+} from "@/components/meridian/historical-chart.view-model";
 
-export interface HistoricalChartTimeframe {
-  readonly id: string;
-  readonly label: string;
-  readonly intervalMinutes: number;
-  readonly lookbackDays: number;
-}
-
-export const HISTORICAL_CHART_TIMEFRAMES: readonly HistoricalChartTimeframe[] = [
-  { id: "1D", label: "1D", intervalMinutes: 5, lookbackDays: 1 },
-  { id: "5D", label: "5D", intervalMinutes: 15, lookbackDays: 5 },
-  { id: "1M", label: "1M", intervalMinutes: 60, lookbackDays: 30 },
-  { id: "3M", label: "3M", intervalMinutes: 240, lookbackDays: 90 },
-  { id: "1Y", label: "1Y", intervalMinutes: 1440, lookbackDays: 365 }
-];
+export {
+  HISTORICAL_CHART_TIMEFRAMES,
+  computeChartStats,
+  formatIntervalLabel
+} from "@/components/meridian/historical-chart.view-model";
 
 interface HistoricalChartCardProps {
   symbol: string;
   className?: string;
 }
 
-interface FetchState {
-  status: "idle" | "loading" | "ready" | "error";
-  bars: HistoricalBarPoint[];
-  errorMessage: string | null;
-  appliedTimeframeId: string | null;
-}
-
-const initialFetchState: FetchState = {
-  status: "idle",
-  bars: [],
-  errorMessage: null,
-  appliedTimeframeId: null
-};
+const statePanelClass = {
+  idle: "border-border/70 bg-secondary/20 text-muted-foreground",
+  loading: "border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)] text-[var(--state-pending-fg)]",
+  error: "border-danger/40 bg-danger/10 text-danger",
+  empty: "border-warning/35 bg-warning/10 text-warning"
+} as const;
 
 export function HistoricalChartCard({ symbol, className }: HistoricalChartCardProps) {
-  const [activeTimeframe, setActiveTimeframe] = useState<HistoricalChartTimeframe>(
-    HISTORICAL_CHART_TIMEFRAMES[0]!
-  );
-  const [state, setState] = useState<FetchState>(initialFetchState);
-  const inFlight = useRef<{ symbol: string; timeframeId: string } | null>(null);
-
-  const fetchBars = useCallback(async (sym: string, tf: HistoricalChartTimeframe) => {
-    inFlight.current = { symbol: sym, timeframeId: tf.id };
-    setState((prev) => ({ ...prev, status: "loading", errorMessage: null }));
-
-    const today = new Date();
-    const fromDate = new Date(today);
-    fromDate.setDate(fromDate.getDate() - tf.lookbackDays);
-
-    const fmt = (d: Date) => d.toISOString().slice(0, 10);
-
-    try {
-      const response = await getHistoricalBars(sym, {
-        intervalMinutes: tf.intervalMinutes,
-        from: fmt(fromDate),
-        to: fmt(today),
-        maxBars: 1500
-      });
-
-      if (
-        inFlight.current?.symbol !== sym ||
-        inFlight.current?.timeframeId !== tf.id
-      ) {
-        // A newer request superseded this one.
-        return;
-      }
-
-      setState({
-        status: "ready",
-        bars: response.bars ?? [],
-        errorMessage: null,
-        appliedTimeframeId: tf.id
-      });
-    } catch (err) {
-      if (
-        inFlight.current?.symbol !== sym ||
-        inFlight.current?.timeframeId !== tf.id
-      ) {
-        return;
-      }
-      setState({
-        status: "error",
-        bars: [],
-        errorMessage: (err as Error)?.message ?? "Failed to load historical bars",
-        appliedTimeframeId: tf.id
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!symbol) return;
-    fetchBars(symbol, activeTimeframe);
-  }, [symbol, activeTimeframe, fetchBars]);
-
-  const stats = useMemo(() => computeChartStats(state.bars), [state.bars]);
-  const stroke = stats.change === null
-    ? "var(--chart-bench)"
-    : stats.change > 0
-      ? "var(--chart-up)"
-      : stats.change < 0
-        ? "var(--chart-dn)"
-        : "var(--chart-bench)";
-  const tone = stats.change === null
-    ? "text-foreground"
-    : stats.change > 0
-      ? "text-positive"
-      : stats.change < 0
-        ? "text-danger"
-        : "text-foreground";
+  const vm = useHistoricalChartViewModel(symbol);
 
   return (
     <Card className={className}>
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="eyebrow-label">Historical price</div>
+            <div className="eyebrow-label">{vm.eyebrow}</div>
             <CardTitle className="flex items-center gap-2 text-base">
               <LineChart className="h-4 w-4 text-primary" aria-hidden="true" />
-              {symbol} · {activeTimeframe.label}
+              {vm.title}
             </CardTitle>
-            <CardDescription>
-              OHLCV bars aggregated from stored trade events. Each bar covers{" "}
-              {formatIntervalLabel(activeTimeframe.intervalMinutes)}.
-            </CardDescription>
+            <CardDescription>{vm.description}</CardDescription>
           </div>
           <div className="flex flex-col items-start gap-1 sm:items-end">
             <span className="font-mono text-2xl text-foreground">
-              {formatPrice(stats.last)}
+              {vm.lastPriceText}
             </span>
-            <span className={cn("font-mono text-xs", tone)}>
-              {formatChange(stats.change)} ({formatChangePct(stats.changePct)})
+            <span className={cn("font-mono text-xs", vm.changeToneClass)}>
+              {vm.changeText}
             </span>
           </div>
         </div>
@@ -145,257 +59,161 @@ export function HistoricalChartCard({ symbol, className }: HistoricalChartCardPr
           role="group"
           aria-label="Select chart timeframe"
         >
-          {HISTORICAL_CHART_TIMEFRAMES.map((tf) => (
+          {vm.timeframeOptions.map((timeframe) => (
             <Button
-              key={tf.id}
+              key={timeframe.id}
               size="sm"
-              variant={tf.id === activeTimeframe.id ? "default" : "outline"}
-              onClick={() => setActiveTimeframe(tf)}
-              aria-pressed={tf.id === activeTimeframe.id}
-              data-testid={`historical-chart-timeframe-${tf.id}`}
+              variant={timeframe.buttonVariant}
+              onClick={timeframe.select}
+              aria-pressed={timeframe.ariaPressed}
+              aria-label={timeframe.ariaLabel}
+              data-testid={timeframe.testId}
             >
-              {tf.label}
+              {timeframe.label}
             </Button>
           ))}
         </div>
       </CardHeader>
       <CardContent>
-        {state.status === "loading" ? (
-          <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-            Loading {activeTimeframe.label} bars for {symbol}…
-          </div>
-        ) : state.status === "error" ? (
-          <div role="alert" className="flex items-start gap-2 rounded-md border border-danger/40 bg-danger/5 px-3 py-2 text-sm text-danger">
-            <AlertCircle className="mt-0.5 h-4 w-4" aria-hidden="true" />
-            <span>{state.errorMessage}</span>
-          </div>
-        ) : state.bars.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No stored trades found for {symbol} over the last{" "}
-            {activeTimeframe.lookbackDays}d. Backfill historical data or stream live trades to populate the chart.
-          </p>
-        ) : (
+        {vm.statePanel ? (
+          <HistoricalChartStatePanelView panel={vm.statePanel} onRetry={vm.retry} />
+        ) : vm.chart ? (
           <div className="space-y-3">
-            <BarChartSparkline
-              bars={state.bars}
-              stroke={stroke}
-              high={stats.high}
-              low={stats.low}
-              symbol={symbol}
-              timeframe={activeTimeframe.label}
-            />
+            <BarChartSparkline viewModel={vm.chart} />
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-              <ChartStat label="Open" value={formatPrice(stats.open)} />
-              <ChartStat label="High" value={formatPrice(stats.high)} />
-              <ChartStat label="Low" value={formatPrice(stats.low)} />
-              <ChartStat label="VWAP" value={formatPrice(stats.vwap)} />
-              <ChartStat label="Volume" value={formatVolume(stats.volume)} />
+              {vm.statTiles.map((stat) => <ChartStat key={stat.id} stat={stat} />)}
             </div>
           </div>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );
 }
 
-interface BarChartSparklineProps {
-  bars: HistoricalBarPoint[];
-  stroke: string;
-  high: number | null;
-  low: number | null;
-  symbol: string;
-  timeframe: string;
-}
-
-function BarChartSparkline({ bars, stroke, high, low, symbol, timeframe }: BarChartSparklineProps) {
-  const width = 900;
-  const height = 220;
-  const padX = 12;
-  const padY = 16;
-
-  if (bars.length === 0 || high === null || low === null) {
-    return null;
-  }
-
-  const startMs = new Date(bars[0]!.start).getTime();
-  const endMs = new Date(bars[bars.length - 1]!.start).getTime();
-  const tsSpan = Math.max(1, endMs - startMs);
-  const priceSpan = Math.max(high - low, Math.max(high * 0.0005, 0.01));
-  const xFor = (ms: number) => padX + ((ms - startMs) / tsSpan) * (width - padX * 2);
-  const yFor = (price: number) => padY + (1 - (price - low) / priceSpan) * (height - padY * 2);
-
-  const points = bars.map((b) => `${xFor(new Date(b.start).getTime()).toFixed(2)},${yFor(b.close).toFixed(2)}`).join(" ");
-  const last = bars[bars.length - 1]!;
-  const lastX = xFor(new Date(last.start).getTime());
-  const lastY = yFor(last.close);
-  const baseY = (height - padY).toFixed(2);
-
-  const areaSegments = [`M ${xFor(new Date(bars[0]!.start).getTime()).toFixed(2)} ${baseY}`];
-  for (const bar of bars) {
-    areaSegments.push(`L ${xFor(new Date(bar.start).getTime()).toFixed(2)} ${yFor(bar.close).toFixed(2)}`);
-  }
-  areaSegments.push(`L ${lastX.toFixed(2)} ${baseY} Z`);
-  const areaPath = areaSegments.join(" ");
+function HistoricalChartStatePanelView({
+  panel,
+  onRetry
+}: {
+  panel: HistoricalChartStatePanel;
+  onRetry: () => void;
+}) {
+  const Icon = panel.kind === "loading" ? Loader2 : AlertCircle;
 
   return (
+    <div
+      role={panel.role}
+      aria-live={panel.ariaLive}
+      className={cn(
+        "flex flex-col gap-3 rounded-md border px-3 py-3 text-sm sm:flex-row sm:items-start sm:justify-between",
+        statePanelClass[panel.kind]
+      )}
+    >
+      <div className="flex min-w-0 items-start gap-2">
+        <Icon
+          className={cn("mt-0.5 h-4 w-4 shrink-0", panel.kind === "loading" ? "animate-spin" : "")}
+          aria-hidden="true"
+        />
+        <div className="min-w-0">
+          <div className="font-semibold text-foreground">{panel.title}</div>
+          <div className="mt-1 text-muted-foreground">{panel.detail}</div>
+        </div>
+      </div>
+      {panel.retryLabel ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={onRetry}
+          disabled={panel.retryDisabled}
+          busy={panel.retryBusy}
+          busyLabel={panel.retryLabel}
+          aria-label={panel.retryAriaLabel ?? panel.retryLabel}
+          className="self-start"
+        >
+          <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
+          {panel.retryLabel}
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
+function BarChartSparkline({ viewModel }: { viewModel: HistoricalChartSparklineViewModel }) {
+  return (
     <svg
-      viewBox={`0 0 ${width} ${height}`}
+      viewBox={viewModel.viewBox}
       preserveAspectRatio="none"
       className="block h-56 w-full overflow-visible"
       role="img"
-      aria-label={`${symbol} ${timeframe} closing prices, ${bars.length} bars from ${formatPrice(low)} to ${formatPrice(high)}.`}
+      aria-label={viewModel.ariaLabel}
     >
       <line
-        x1={padX}
-        x2={width - padX}
-        y1={yFor(high)}
-        y2={yFor(high)}
-        stroke="currentColor"
-        strokeOpacity="0.15"
+        x1={viewModel.guideX1}
+        x2={viewModel.guideX2}
+        y1={viewModel.highGuideY}
+        y2={viewModel.highGuideY}
+        stroke="var(--chart-grid)"
+        strokeOpacity="0.85"
         strokeDasharray="4 4"
       />
       <line
-        x1={padX}
-        x2={width - padX}
-        y1={yFor(low)}
-        y2={yFor(low)}
-        stroke="currentColor"
-        strokeOpacity="0.15"
+        x1={viewModel.guideX1}
+        x2={viewModel.guideX2}
+        y1={viewModel.lowGuideY}
+        y2={viewModel.lowGuideY}
+        stroke="var(--chart-grid)"
+        strokeOpacity="0.85"
         strokeDasharray="4 4"
       />
-      <path d={areaPath} fill={stroke} fillOpacity="0.12" stroke="none" />
+      <path d={viewModel.areaPath} fill={viewModel.stroke} fillOpacity="0.12" stroke="none" />
       <polyline
         fill="none"
-        stroke={stroke}
+        stroke={viewModel.stroke}
         strokeWidth="1.75"
         strokeLinejoin="round"
         strokeLinecap="round"
-        points={points}
+        points={viewModel.points}
       />
-      <circle cx={lastX} cy={lastY} r="3.25" fill={stroke} stroke="currentColor" strokeOpacity="0.4" strokeWidth="1" />
+      <circle
+        cx={viewModel.lastPoint.x}
+        cy={viewModel.lastPoint.y}
+        r="3.25"
+        fill={viewModel.stroke}
+        stroke="var(--chart-grid-major)"
+        strokeOpacity="0.8"
+        strokeWidth="1"
+      />
       <text
-        x={width - padX}
-        y={Math.max(yFor(high) - 4, 12)}
+        x={viewModel.highLabel.x}
+        y={viewModel.highLabel.y}
         textAnchor="end"
         fontFamily="IBM Plex Mono, ui-monospace"
         fontSize="10"
         fill="currentColor"
         fillOpacity="0.55"
       >
-        {formatPrice(high)}
+        {viewModel.highLabel.value}
       </text>
       <text
-        x={width - padX}
-        y={Math.min(yFor(low) + 12, height - 4)}
+        x={viewModel.lowLabel.x}
+        y={viewModel.lowLabel.y}
         textAnchor="end"
         fontFamily="IBM Plex Mono, ui-monospace"
         fontSize="10"
         fill="currentColor"
         fillOpacity="0.55"
       >
-        {formatPrice(low)}
+        {viewModel.lowLabel.value}
       </text>
     </svg>
   );
 }
 
-function ChartStat({ label, value }: { label: string; value: string }) {
+function ChartStat({ stat }: { stat: HistoricalChartStatTile }) {
   return (
     <div className="rounded-md border border-border/60 bg-secondary/25 px-2.5 py-1.5">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="mt-0.5 font-mono text-sm text-foreground">{value}</div>
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{stat.label}</div>
+      <div className="mt-0.5 font-mono text-sm text-foreground">{stat.value}</div>
     </div>
   );
-}
-
-export interface HistoricalChartStats {
-  open: number | null;
-  high: number | null;
-  low: number | null;
-  last: number | null;
-  vwap: number | null;
-  volume: number;
-  change: number | null;
-  changePct: number | null;
-}
-
-export function computeChartStats(bars: readonly HistoricalBarPoint[]): HistoricalChartStats {
-  if (bars.length === 0) {
-    return {
-      open: null,
-      high: null,
-      low: null,
-      last: null,
-      vwap: null,
-      volume: 0,
-      change: null,
-      changePct: null
-    };
-  }
-
-  const open = bars[0]!.open;
-  const last = bars[bars.length - 1]!.close;
-  let high = -Infinity;
-  let low = Infinity;
-  let volume = 0;
-  let pxVolume = 0;
-
-  for (const bar of bars) {
-    if (bar.high > high) high = bar.high;
-    if (bar.low < low) low = bar.low;
-    if (bar.volume > 0) {
-      volume += bar.volume;
-      // Use bar VWAP if present, otherwise close price
-      const vw = Number.isFinite(bar.vwap) && bar.vwap > 0 ? bar.vwap : bar.close;
-      pxVolume += vw * bar.volume;
-    }
-  }
-
-  const change = last - open;
-  const changePct = open !== 0 ? (change / open) * 100 : null;
-  const vwap = volume > 0 ? pxVolume / volume : null;
-
-  return {
-    open,
-    high: Number.isFinite(high) ? high : null,
-    low: Number.isFinite(low) ? low : null,
-    last,
-    vwap,
-    volume,
-    change,
-    changePct
-  };
-}
-
-function formatPrice(value: number | null | undefined): string {
-  if (value === null || value === undefined || !Number.isFinite(value)) return "—";
-  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
-}
-
-function formatChange(value: number | null): string {
-  if (value === null || !Number.isFinite(value)) return "—";
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
-}
-
-function formatChangePct(value: number | null): string {
-  if (value === null || !Number.isFinite(value)) return "—";
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
-}
-
-function formatVolume(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "—";
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-  return value.toLocaleString();
-}
-
-export function formatIntervalLabel(intervalMinutes: number): string {
-  if (intervalMinutes < 60) return `${intervalMinutes}m`;
-  if (intervalMinutes === 60) return `1h`;
-  if (intervalMinutes < 1440) return `${intervalMinutes / 60}h`;
-  if (intervalMinutes === 1440) return `1d`;
-  return `${(intervalMinutes / 1440).toFixed(1)}d`;
 }

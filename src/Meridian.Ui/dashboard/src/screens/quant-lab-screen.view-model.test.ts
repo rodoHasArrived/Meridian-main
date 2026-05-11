@@ -12,6 +12,7 @@ import {
   buildTemplatePanelState,
   buildToolbarItems,
   initializeNewParameterValues,
+  markQuantRunSourceDrift,
   mergeQuantParameters,
   useQuantLabScreenViewModel,
   validateQuantSource,
@@ -177,6 +178,32 @@ describe("Quant Lab view model helpers", () => {
     });
   });
 
+  it("marks submitted run evidence stale when the editor source changes", () => {
+    const runningRun: QuantRunState = {
+      phase: "running",
+      result: null,
+      error: null,
+      submittedSource: "Print(\"old\");",
+      sourceChangedSinceRun: false
+    };
+
+    const driftedRun = markQuantRunSourceDrift(runningRun, "Print(\"new\");");
+
+    expect(driftedRun).toMatchObject({
+      sourceChangedSinceRun: true
+    });
+    expect(buildRunCommandState("Print(\"new\");", "ready", true)).toMatchObject({
+      label: "Run current source",
+      ariaLabel: "Run current edited script source",
+      disabled: false
+    });
+    expect(buildRunResultPanelState(driftedRun)).toMatchObject({
+      sourceDrifted: true,
+      sourceDriftTitle: "Editor changed during this run",
+      sourceDriftDetail: expect.stringMatching(/submitted/i)
+    });
+  });
+
   it("keeps starter-template action labels in the view model layer", () => {
     const template = {
       id: "mean-reversion",
@@ -268,6 +295,18 @@ describe("Quant Lab view model helpers", () => {
       hasPlots: true
     });
 
+    expect(buildRunResultPanelState({
+      ...successfulRunState,
+      submittedSource: "Print(\"old\");",
+      sourceChangedSinceRun: true
+    })).toMatchObject({
+      role: "region",
+      title: "Run succeeded for previous source",
+      description: "Runtime evidence returned by the previously submitted source.",
+      sourceDrifted: true,
+      sourceDriftTitle: "Evidence is for previous source"
+    });
+
     expect(buildRunResultPanelState(noEvidenceSuccessfulRunState)).toMatchObject({
       role: "region",
       ariaLive: "polite",
@@ -342,5 +381,60 @@ describe("Quant Lab view model helpers", () => {
       inputType: "checkbox"
     });
     expect(result.current.parameterPhase).toBe("ready");
+  });
+
+  it("keeps completed run evidence labeled when source changes before completion", async () => {
+    const deferredRun = createDeferred<QuantRunResponse>();
+    const services: QuantLabServices = {
+      getTemplates: vi.fn().mockResolvedValue({ templates: [] }),
+      extractParameters: vi.fn().mockResolvedValue({ parameters: [] }),
+      runScript: vi.fn<QuantLabServices["runScript"]>().mockReturnValue(deferredRun.promise)
+    };
+
+    const { result } = renderHook(() => useQuantLabScreenViewModel(services));
+    let runPromise: Promise<void> | undefined;
+
+    await act(async () => {
+      result.current.setSource("Print(\"submitted\");");
+    });
+
+    await act(async () => {
+      runPromise = result.current.runScript();
+      await Promise.resolve();
+    });
+
+    expect(result.current.resultPanel).toMatchObject({
+      phase: "running",
+      sourceDrifted: false
+    });
+
+    await act(async () => {
+      result.current.setSource("Print(\"edited\");");
+    });
+
+    expect(result.current.resultPanel).toMatchObject({
+      phase: "running",
+      sourceDrifted: true,
+      sourceDriftTitle: "Editor changed during this run"
+    });
+
+    await act(async () => {
+      deferredRun.resolve(successfulRunState.result!);
+      await runPromise;
+    });
+
+    expect(services.runScript).toHaveBeenCalledWith({
+      source: "Print(\"submitted\");",
+      parameters: {}
+    });
+    expect(result.current.resultPanel).toMatchObject({
+      phase: "ready",
+      title: "Run succeeded for previous source",
+      sourceDrifted: true
+    });
+    expect(result.current.runCommand).toMatchObject({
+      label: "Run current source",
+      disabled: false
+    });
   });
 });

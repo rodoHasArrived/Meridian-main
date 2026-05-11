@@ -30,6 +30,30 @@ public sealed class SystemHealthServiceTests
     }
 
     [Fact]
+    public void RouteBuilders_ShouldUseCanonicalEncodedHealthRoutes()
+    {
+        SystemHealthService.BuildProviderDiagnosticsRoute("alpaca paper/1")
+            .Should()
+            .Be("/api/health/providers/alpaca%20paper%2F1/diagnostics");
+
+        SystemHealthService.BuildRecentEventsRoute(25)
+            .Should()
+            .Be("/api/health/events?limit=25");
+
+        SystemHealthService.BuildProviderTestRoute("alpaca paper/1")
+            .Should()
+            .Be("/api/health/providers/alpaca%20paper%2F1/test");
+    }
+
+    [Fact]
+    public void RouteBuilders_ShouldRejectBlankProviderNames()
+    {
+        Action act = () => SystemHealthService.BuildProviderDiagnosticsRoute("   ");
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
     public async Task GetHealthSummaryAsync_WithCancellation_SupportsCancellationToken()
     {
         // Arrange

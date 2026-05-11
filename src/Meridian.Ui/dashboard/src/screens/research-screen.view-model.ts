@@ -313,6 +313,7 @@ export interface ResearchPlotWorkspaceState {
   xTicks: ResearchPlotAxisTick[];
   yTicks: ResearchPlotAxisTick[];
   points: ResearchPlotScatterPoint[];
+  scatterChart: ResearchPlotScatterChartState;
   studySummary: ResearchPlotWorkspaceField[];
   legendItems: ResearchPlotLegendItem[];
   focusPoint: ResearchPlotFocusPointState;
@@ -329,6 +330,7 @@ export interface ResearchPlotStatisticsState {
   description: string;
   summaryTiles: ResearchPlotSummaryTile[];
   distributionBars: number[];
+  distributionChart: ResearchPlotDistributionChartState;
   distributionSummary: string;
   distributionFootnote: string;
   moments: ResearchPlotMomentRow[];
@@ -345,6 +347,85 @@ export interface ResearchPlotScatterPoint {
   x: number;
   y: number;
   emphasis: boolean;
+}
+
+export interface ResearchPlotScatterChartState {
+  ariaLabel: string;
+  titleId: string;
+  descriptionId: string;
+  title: string;
+  description: string;
+  viewBox: string;
+  gridLines: ResearchPlotChartLine[];
+  xTicks: ResearchPlotAxisTick[];
+  yTicks: ResearchPlotAxisTick[];
+  xAxisLabel: string;
+  yAxisLabel: string;
+  trendLine: ResearchPlotTrendLineState;
+  points: ResearchPlotScatterPointMark[];
+  marker: ResearchPlotMarkerState;
+}
+
+export interface ResearchPlotChartLine {
+  id: string;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  stroke: string;
+  strokeWidth: number;
+  opacity?: number;
+  strokeDasharray?: string;
+}
+
+export interface ResearchPlotTrendLineState {
+  points: string;
+  stroke: string;
+  strokeWidth: number;
+  strokeDasharray: string;
+}
+
+export interface ResearchPlotScatterPointMark {
+  id: string;
+  x: number;
+  y: number;
+  radius: number;
+  fill: string;
+  fillOpacity: number;
+  ariaLabel: string;
+}
+
+export interface ResearchPlotMarkerState {
+  x: number;
+  y: number;
+  radius: number;
+  fill: string;
+  stroke: string;
+  strokeWidth: number;
+  labelX: number;
+  labelY: number;
+  labelTextX: number;
+  labelTextY: number;
+  labelWidth: number;
+  labelHeight: number;
+  labelRadius: number;
+  labelFill: string;
+  labelStroke: string;
+  labelText: string;
+  verticalGuide: ResearchPlotChartLine;
+  horizontalGuide: ResearchPlotChartLine;
+}
+
+export interface ResearchPlotDistributionChartState {
+  ariaLabel: string;
+  bars: ResearchPlotDistributionBar[];
+}
+
+export interface ResearchPlotDistributionBar {
+  id: string;
+  heightPercent: number;
+  tone: "selected" | "base";
+  ariaLabel: string;
 }
 
 export interface ResearchPlotWorkspaceField {
@@ -1147,10 +1228,13 @@ function buildPlotToolStateFromApiOrFallback(
   }
 ): ResearchPlotToolState {
   if (plotToolFromApi?.workspace && plotToolFromApi.statistics) {
+    const workspace = plotToolFromApi.workspace as ResearchPlotWorkspaceState;
+    const statistics = plotToolFromApi.statistics as ResearchPlotStatisticsState;
+
     return {
       studies: (plotToolFromApi.studies as ResearchPlotStudyItem[]) ?? [],
-      workspace: plotToolFromApi.workspace as ResearchPlotWorkspaceState,
-      statistics: plotToolFromApi.statistics as ResearchPlotStatisticsState
+      workspace: ensurePlotToolWorkspaceChartState(workspace),
+      statistics: ensurePlotToolStatisticsChartState(statistics)
     };
   }
 
@@ -1195,6 +1279,14 @@ export function buildPlotToolState({
   const chartStudyLabel = companionName ? `${studyName} vs ${companionName}` : studyName;
   const latestObservation = plotToolSampleRows[0];
   const focusPoint = findLastPlotPoint(plotToolScatterPoints, (point) => point.emphasis) ?? plotToolScatterPoints[plotToolScatterPoints.length - 1];
+  const xAxisLabel = "Spread (bps)";
+  const yAxisLabel = "3m implied vol";
+  const focusPointState: ResearchPlotFocusPointState = {
+    label: "Current marker",
+    xValueText: latestObservation.spreadText,
+    yValueText: latestObservation.impliedVolText,
+    detail: `${latestObservation.signalText} · highlighted at ${formatText(activeRun?.lastUpdated ?? "2m ago")} · x ${focusPoint.x}, y ${focusPoint.y}`
+  };
 
   return {
     studies: runs.map((run, index) => ({
@@ -1228,11 +1320,21 @@ export function buildPlotToolState({
         `R² ${rSquared.toFixed(2)}`,
         `ρ ${correlation.toFixed(2)}`
       ],
-      xAxisLabel: "Spread (bps)",
-      yAxisLabel: "3m implied vol",
+      xAxisLabel,
+      yAxisLabel,
       xTicks: plotToolXTicks,
       yTicks: plotToolYTicks,
       points: plotToolScatterPoints,
+      scatterChart: buildPlotToolScatterChartState({
+        points: plotToolScatterPoints,
+        xTicks: plotToolXTicks,
+        yTicks: plotToolYTicks,
+        xAxisLabel,
+        yAxisLabel,
+        markerPoint: focusPoint,
+        focusPoint: focusPointState,
+        chartStudyLabel
+      }),
       studySummary: [
         { id: "primary", label: "Primary notebook", value: studyName },
         { id: "companion", label: "Pair target", value: companionName ?? "Select a second run" },
@@ -1247,12 +1349,7 @@ export function buildPlotToolState({
         { id: "trend", label: "OLS fit", detail: "y = 0.48x + 39.31", tone: "trend" },
         { id: "refresh", label: "Refresh", detail: formatText(activeRun?.lastUpdated ?? "2m ago"), tone: "muted" }
       ],
-      focusPoint: {
-        label: "Current marker",
-        xValueText: latestObservation.spreadText,
-        yValueText: latestObservation.impliedVolText,
-        detail: `${latestObservation.signalText} · highlighted at ${formatText(activeRun?.lastUpdated ?? "2m ago")} · x ${focusPoint.x}, y ${focusPoint.y}`
-      },
+      focusPoint: focusPointState,
       signalCards: [
         {
           id: "correlation",
@@ -1364,6 +1461,7 @@ export function buildPlotToolState({
         }
       ],
       distributionBars: plotToolDistributionBars,
+      distributionChart: buildPlotToolDistributionChartState(plotToolDistributionBars),
       distributionSummary: `${observationCount.toLocaleString()} samples centered on spread ${meanX.toFixed(2)} and IV ${meanY.toFixed(2)}.`,
       distributionFootnote: `Latest observation ${latestObservation.timestamp} · ${latestObservation.signalText} · z-score ${latestObservation.zScoreText}.`,
       moments: [
@@ -1758,6 +1856,183 @@ function buildComparisonEvidenceText(row: RunComparisonRow): string {
   const ledgerText = row.hasLedger ? "Ledger linked" : "Ledger missing";
   const auditText = row.hasAuditTrail ? "Audit linked" : "Audit missing";
   return `${ledgerText}; ${auditText}`;
+}
+
+function ensurePlotToolWorkspaceChartState(workspace: ResearchPlotWorkspaceState): ResearchPlotWorkspaceState {
+  if (workspace.scatterChart) {
+    return workspace;
+  }
+
+  const points = workspace.points?.length ? workspace.points : plotToolScatterPoints;
+  const markerPoint = findLastPlotPoint(points, (point) => point.emphasis) ?? points[points.length - 1] ?? plotToolScatterPoints[0];
+  const focusPoint = workspace.focusPoint ?? {
+    label: "Current marker",
+    xValueText: "Unavailable",
+    yValueText: "Unavailable",
+    detail: `Selected PlotTool marker at x ${markerPoint.x}, y ${markerPoint.y}.`
+  };
+
+  return {
+    ...workspace,
+    xTicks: workspace.xTicks ?? plotToolXTicks,
+    yTicks: workspace.yTicks ?? plotToolYTicks,
+    xAxisLabel: workspace.xAxisLabel ?? "Spread (bps)",
+    yAxisLabel: workspace.yAxisLabel ?? "3m implied vol",
+    points,
+    focusPoint,
+    scatterChart: buildPlotToolScatterChartState({
+      points,
+      xTicks: workspace.xTicks ?? plotToolXTicks,
+      yTicks: workspace.yTicks ?? plotToolYTicks,
+      xAxisLabel: workspace.xAxisLabel ?? "Spread (bps)",
+      yAxisLabel: workspace.yAxisLabel ?? "3m implied vol",
+      markerPoint,
+      focusPoint,
+      chartStudyLabel: workspace.title ?? "PlotTool"
+    })
+  };
+}
+
+function ensurePlotToolStatisticsChartState(statistics: ResearchPlotStatisticsState): ResearchPlotStatisticsState {
+  if (statistics.distributionChart) {
+    return statistics;
+  }
+
+  const distributionBars = statistics.distributionBars?.length ? statistics.distributionBars : plotToolDistributionBars;
+
+  return {
+    ...statistics,
+    distributionBars,
+    distributionChart: buildPlotToolDistributionChartState(distributionBars)
+  };
+}
+
+function buildPlotToolScatterChartState({
+  points,
+  xTicks,
+  yTicks,
+  xAxisLabel,
+  yAxisLabel,
+  markerPoint,
+  focusPoint,
+  chartStudyLabel
+}: {
+  points: ResearchPlotScatterPoint[];
+  xTicks: ResearchPlotAxisTick[];
+  yTicks: ResearchPlotAxisTick[];
+  xAxisLabel: string;
+  yAxisLabel: string;
+  markerPoint: ResearchPlotScatterPoint;
+  focusPoint: ResearchPlotFocusPointState;
+  chartStudyLabel: string;
+}): ResearchPlotScatterChartState {
+  const labelX = Math.min(markerPoint.x + 10, 512);
+  const labelY = Math.max(markerPoint.y - 26, 52);
+  const labelText = `${focusPoint.xValueText}, ${focusPoint.yValueText}`;
+
+  return {
+    ariaLabel: `${chartStudyLabel} PlotTool scatter chart. Current marker ${labelText}.`,
+    titleId: "plottool-scatter-title",
+    descriptionId: "plottool-scatter-description",
+    title: `${chartStudyLabel} scatter`,
+    description: `${xAxisLabel} against ${yAxisLabel}. ${focusPoint.detail}`,
+    viewBox: "0 0 640 320",
+    gridLines: buildPlotToolGridLines(),
+    xTicks,
+    yTicks,
+    xAxisLabel,
+    yAxisLabel,
+    trendLine: {
+      points: "90,250 150,222 210,198 270,170 330,142 390,114 450,88 510,66 564,54",
+      stroke: "var(--chart-up)",
+      strokeWidth: 2,
+      strokeDasharray: "5 4"
+    },
+    points: points.map((point, index) => ({
+      id: `plot-point-${index}`,
+      x: point.x,
+      y: point.y,
+      radius: point.emphasis ? 5 : 3.25,
+      fill: point.emphasis ? "var(--chart-up)" : "var(--chart-ma20)",
+      fillOpacity: point.emphasis ? 0.95 : 0.65,
+      ariaLabel: `${point.emphasis ? "Emphasized" : "History"} observation ${index + 1}, x ${point.x}, y ${point.y}`
+    })),
+    marker: {
+      x: markerPoint.x,
+      y: markerPoint.y,
+      radius: 6,
+      fill: "var(--state-warn-fg)",
+      stroke: "var(--surface-topbar)",
+      strokeWidth: 2,
+      labelX,
+      labelY,
+      labelTextX: labelX + 8,
+      labelTextY: labelY + 14,
+      labelWidth: 96,
+      labelHeight: 22,
+      labelRadius: 4,
+      labelFill: "var(--surface-input)",
+      labelStroke: "var(--state-warn-fg)",
+      labelText,
+      verticalGuide: {
+        id: "current-marker-x",
+        x1: markerPoint.x,
+        y1: 40,
+        x2: markerPoint.x,
+        y2: 290,
+        stroke: "var(--state-warn-fg)",
+        strokeWidth: 1,
+        strokeDasharray: "4 4",
+        opacity: 0.55
+      },
+      horizontalGuide: {
+        id: "current-marker-y",
+        x1: 50,
+        y1: markerPoint.y,
+        x2: 610,
+        y2: markerPoint.y,
+        stroke: "var(--state-warn-fg)",
+        strokeWidth: 1,
+        strokeDasharray: "4 4",
+        opacity: 0.55
+      }
+    }
+  };
+}
+
+function buildPlotToolGridLines(): ResearchPlotChartLine[] {
+  const horizontal = [40, 90, 140, 190, 240, 290].map((y) => ({
+    id: `h-${y}`,
+    x1: 50,
+    y1: y,
+    x2: 610,
+    y2: y,
+    stroke: y === 290 ? "var(--chart-grid-major)" : "var(--chart-grid)",
+    strokeWidth: 1
+  }));
+  const vertical = [50, 130, 210, 290, 370, 450, 530, 610].map((x) => ({
+    id: `v-${x}`,
+    x1: x,
+    y1: 40,
+    x2: x,
+    y2: 290,
+    stroke: x === 50 ? "var(--chart-grid-major)" : "var(--chart-grid)",
+    strokeWidth: 1
+  }));
+
+  return [...horizontal, ...vertical];
+}
+
+function buildPlotToolDistributionChartState(bars: number[]): ResearchPlotDistributionChartState {
+  return {
+    ariaLabel: "PlotTool residual distribution chart",
+    bars: bars.map((bar, index) => ({
+      id: `distribution-bar-${index}`,
+      heightPercent: Math.max(bar, 4),
+      tone: index >= 8 && index <= 14 ? "selected" : "base",
+      ariaLabel: `Distribution bucket ${index + 1}: ${bar}% density`
+    }))
+  };
 }
 
 const plotToolXTicks: ResearchPlotAxisTick[] = [

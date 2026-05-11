@@ -1,6 +1,8 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import * as workstationApi from "@/lib/api";
 import {
+  DATA_BACKFILL_DETAIL_PANEL_ID,
   buildBackfillSection,
   buildBackfillDialogState,
   buildBackfillNarrative,
@@ -132,7 +134,7 @@ describe("data-operations-screen view model", () => {
       backfillDetailEmptyState: null
     });
     expect(backfillFocus).toMatchObject({
-      id: "backfill-detail-bf-1044",
+      id: DATA_BACKFILL_DETAIL_PANEL_ID,
       role: "region",
       eyebrow: "Backfill Detail",
       title: "Backfill queue focus",
@@ -372,10 +374,13 @@ describe("data-operations-screen view model", () => {
 
     const backfillSection = buildBackfillSection(backfills, "BF-1044", "backfills");
     expect(backfillSection.rows[1].selected).toBe(true);
+    expect(backfillSection.rows[1].expanded).toBe(true);
+    expect(backfillSection.rows[0].expanded).toBe(false);
     expect(backfillSection.rows[1].rowId).toBe("backfill-row-bf-1044");
-    expect(backfillSection.rows[1].detailPanelId).toBe("backfill-detail-bf-1044");
+    expect(backfillSection.rows[1].detailPanelId).toBe(DATA_BACKFILL_DETAIL_PANEL_ID);
+    expect(backfillSection.rows[0].detailPanelId).toBe(DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(backfillSection.rows[1].ariaLabel).toContain("Selected backfill BF-1044");
-    expect(backfillSection.rows[0].detailDescription).toContain("details will replace the current backfill detail panel");
+    expect(backfillSection.rows[0].detailDescription).toContain("updates the shared backfill detail panel");
     expect(buildBackfillSection([], null, "backfills").emptyState.description).toContain("Trigger backfill");
 
     const exportSection = buildExportSection(exports);
@@ -424,6 +429,82 @@ describe("data-operations-screen view model", () => {
 
     expect(yahooDialog.credentialFields).toHaveLength(0);
     expect(yahooDialog.submitAction.disabled).toBe(false);
+
+    const submittingDialog = buildProviderSetupDialogState("submitting", {
+      kind: "alpaca",
+      displayName: "Alpaca",
+      apiKey: "key-123",
+      apiSecret: "secret-456",
+      endpoint: "",
+      capabilities: ["streaming", "brokerage"]
+    });
+
+    expect(submittingDialog.providerKindField.disabled).toBe(true);
+    expect(submittingDialog.displayNameField.disabled).toBe(true);
+    expect(submittingDialog.credentialFields.every((field) => field.disabled)).toBe(true);
+    expect(submittingDialog.capabilityOptions.every((option) => option.disabled)).toBe(true);
+    expect(submittingDialog.providerKindField.disabledReason).toBe("Provider setup is in progress; wait before editing.");
+  });
+
+  it("ignores stale provider setup responses after a newer submission settles", async () => {
+    const setupRequests: Array<{
+      resolve: (value: Awaited<ReturnType<typeof workstationApi.setupProvider>>) => void;
+    }> = [];
+    const setupProvider = vi.spyOn(workstationApi, "setupProvider").mockImplementation(() => (
+      new Promise((resolve) => {
+        setupRequests.push({ resolve });
+      })
+    ));
+
+    try {
+      const { result } = renderHook(() => useDataOperationsViewModel(null, "/data"));
+
+      act(() => {
+        result.current.updateProviderForm("kind", "alpaca");
+        result.current.updateProviderForm("apiKey", "key-123");
+        result.current.updateProviderForm("apiSecret", "secret-456");
+      });
+
+      let firstSubmit!: Promise<void>;
+      let secondSubmit!: Promise<void>;
+      act(() => {
+        firstSubmit = result.current.submitProviderSetup();
+        secondSubmit = result.current.submitProviderSetup();
+      });
+
+      await waitFor(() => expect(setupRequests).toHaveLength(2));
+
+      await act(async () => {
+        setupRequests[1].resolve({
+          success: true,
+          providerId: "provider-alpaca-paper",
+          providerName: "Alpaca paper",
+          message: "Provider configured.",
+          error: null
+        });
+        await secondSubmit;
+      });
+
+      expect(result.current.providerPhase).toBe("success");
+      expect(result.current.providerSetupResult?.providerName).toBe("Alpaca paper");
+
+      await act(async () => {
+        setupRequests[0].resolve({
+          success: false,
+          providerId: "provider-alpaca-old",
+          providerName: "Old Alpaca",
+          message: "Old provider response.",
+          error: "Old response failed."
+        });
+        await firstSubmit;
+      });
+
+      expect(result.current.providerPhase).toBe("success");
+      expect(result.current.providerSetupResult?.providerName).toBe("Alpaca paper");
+      expect(result.current.providerSetupError).toBeNull();
+    } finally {
+      setupProvider.mockRestore();
+    }
   });
 
   it("clears provider setup secrets while preserving non-secret form context", () => {
@@ -522,7 +603,7 @@ describe("data-operations-screen view model", () => {
   it("derives selected backfill detail panel state with stable linkage ids", () => {
     const detail = buildSelectedBackfillDetail(backfills, "BF-1044");
 
-    expect(detail?.id).toBe("backfill-detail-bf-1044");
+    expect(detail?.id).toBe(DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(detail?.title).toBe("Options chains / 7d");
     expect(detail?.description).toContain("waiting on operator review");
     expect(detail?.ariaLabel).toContain("Backfill detail for BF-1044");

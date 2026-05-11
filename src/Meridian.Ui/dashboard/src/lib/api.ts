@@ -151,6 +151,10 @@ import {
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
 
+export interface ApiRequestOptions {
+  signal?: AbortSignal;
+}
+
 let developmentFixtureUsage = false;
 
 export function resetDevelopmentFixtureUsage() {
@@ -161,8 +165,9 @@ export function hasDevelopmentFixtureUsage() {
   return developmentFixtureUsage;
 }
 
-async function getJson<T>(path: string): Promise<T> {
+async function getJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const response = await fetch(path, {
+    signal: options.signal,
     headers: {
       Accept: "application/json"
     }
@@ -175,14 +180,14 @@ async function getJson<T>(path: string): Promise<T> {
       return fixture;
     }
 
-    throw new Error(`Request failed for ${path} (${response.status})`);
+    throw new Error(await buildRequestFailureMessage(path, response));
   }
 
   if (response.headers?.get?.(developmentFixtureHeader) === "true") {
     markDevelopmentFixtureUsage();
   }
 
-  return response.json() as Promise<T>;
+  return readJsonResponse<T>(path, response);
 }
 
 const developmentFallbackStatuses = new Set([404, 500, 502, 503, 504]);
@@ -200,9 +205,10 @@ function markDevelopmentFixtureUsage() {
   developmentFixtureUsage = true;
 }
 
-async function postJson<T>(path: string, body?: unknown): Promise<T> {
+async function postJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
   const response = await fetch(path, {
     method: "POST",
+    signal: options.signal,
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json"
@@ -211,24 +217,16 @@ async function postJson<T>(path: string, body?: unknown): Promise<T> {
   });
 
   if (!response.ok) {
-    let errorDetail = "";
-    try {
-      const errBody = await response.text();
-      errorDetail = errBody ? ` — ${errBody}` : "";
-    } catch {
-      // ignore parse failures
-    }
-
-    throw new Error(`Request failed for ${path} (${response.status})${errorDetail}`);
+    throw new Error(await buildRequestFailureMessage(path, response));
   }
 
-  const text = await response.text();
-  return (text ? JSON.parse(text) : null) as T;
+  return readJsonResponse<T>(path, response);
 }
 
-async function putJson<T>(path: string, body?: unknown): Promise<T> {
+async function putJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
   const response = await fetch(path, {
     method: "PUT",
+    signal: options.signal,
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json"
@@ -237,27 +235,139 @@ async function putJson<T>(path: string, body?: unknown): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed for ${path} (${response.status})`);
+    throw new Error(await buildRequestFailureMessage(path, response));
   }
 
-  const text = await response.text();
-  return (text ? JSON.parse(text) : null) as T;
+  return readJsonResponse<T>(path, response);
 }
 
-async function deleteJson<T>(path: string): Promise<T> {
+async function deleteJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const response = await fetch(path, {
     method: "DELETE",
+    signal: options.signal,
     headers: {
       Accept: "application/json"
     }
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed for ${path} (${response.status})`);
+    throw new Error(await buildRequestFailureMessage(path, response));
   }
 
-  const text = await response.text();
-  return (text ? JSON.parse(text) : null) as T;
+  return readJsonResponse<T>(path, response);
+}
+
+async function readJsonResponse<T>(path: string, response: Response): Promise<T> {
+  if (response.status === 204 || response.status === 205) {
+    return null as T;
+  }
+
+  const textFallback = typeof response.clone === "function" ? response.clone() : response;
+  try {
+    if (typeof response.json === "function") {
+      return await response.json() as T;
+    }
+  } catch (error) {
+    const text = await readResponseSuccessBody(textFallback);
+    if (!text.trim()) {
+      return null as T;
+    }
+
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      const detail = error instanceof Error && error.message ? ` ${error.message}` : "";
+      throw new Error(`Response from ${path} was not valid JSON.${detail}`);
+    }
+  }
+
+  const text = await readResponseSuccessBody(response);
+  if (!text.trim()) {
+    return null as T;
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch (error) {
+    const detail = error instanceof Error && error.message ? ` ${error.message}` : "";
+    throw new Error(`Response from ${path} was not valid JSON.${detail}`);
+  }
+}
+
+async function readResponseSuccessBody(response: Response): Promise<string> {
+  if (typeof response.text !== "function") {
+    return "";
+  }
+
+  try {
+    return await response.text();
+  } catch {
+    return "";
+  }
+}
+
+async function buildRequestFailureMessage(path: string, response: Response): Promise<string> {
+  const detail = formatErrorDetail(await readResponseErrorBody(response));
+  return `Request failed for ${path} (${response.status})${detail ? ` - ${detail}` : ""}`;
+}
+
+async function readResponseErrorBody(response: Response): Promise<string> {
+  try {
+    return await response.text();
+  } catch {
+    return "";
+  }
+}
+
+function formatErrorDetail(body: string): string {
+  const trimmed = body.trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed) as unknown;
+    if (isRecord(parsed)) {
+      const detail = readString(parsed.detail) ?? readString(parsed.message) ?? readString(parsed.title);
+      const validationErrors = formatValidationErrors(parsed.errors);
+      if (detail && validationErrors) {
+        return `${detail} ${validationErrors}`;
+      }
+      if (validationErrors) {
+        return validationErrors;
+      }
+      if (detail) {
+        return detail;
+      }
+    }
+  } catch {
+    // Plain-text error bodies are already useful operator diagnostics.
+  }
+
+  return trimmed;
+}
+
+function formatValidationErrors(value: unknown): string {
+  if (!isRecord(value)) {
+    return "";
+  }
+
+  return Object.entries(value)
+    .flatMap(([field, messages]) => formatValidationErrorField(field, messages))
+    .join("; ");
+}
+
+function formatValidationErrorField(field: string, messages: unknown): string[] {
+  const label = field.trim() || "request";
+  if (Array.isArray(messages)) {
+    return messages
+      .map(readString)
+      .filter((message): message is string => message !== null)
+      .map((message) => `${label}: ${message}`);
+  }
+
+  const message = readString(messages);
+  return message ? [`${label}: ${message}`] : [];
 }
 
 async function getDevelopmentSearchFallback(query: string, take: number, activeOnly: boolean) {
@@ -269,28 +379,28 @@ async function getDevelopmentSearchFallback(query: string, take: number, activeO
   return searchDevSecurityMasterEntries(query, take, activeOnly);
 }
 
-export function getSession() {
-  return getJson<SessionInfo>(WORKSTATION_API_ENDPOINTS.session);
+export function getSession(options: ApiRequestOptions = {}) {
+  return getJson<SessionInfo>(WORKSTATION_API_ENDPOINTS.session, options);
 }
 
-export function getStrategyWorkspace() {
-  return getJson<ResearchWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.strategy);
+export function getStrategyWorkspace(options: ApiRequestOptions = {}) {
+  return getJson<ResearchWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.strategy, options);
 }
 
 export function getResearchWorkspace() {
   return getStrategyWorkspace();
 }
 
-export function getTradingWorkspace() {
-  return getJson<TradingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.trading);
+export function getTradingWorkspace(options: ApiRequestOptions = {}) {
+  return getJson<TradingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.trading, options);
 }
 
-export function getTradingReadiness() {
-  return getJson<TradingOperatorReadiness>(WORKSTATION_API_ENDPOINTS.tradingReadiness);
+export function getTradingReadiness(options: ApiRequestOptions = {}) {
+  return getJson<TradingOperatorReadiness>(WORKSTATION_API_ENDPOINTS.tradingReadiness, options);
 }
 
-export function getOperatorInbox(fundAccountId?: string) {
-  return getJson<OperatorInbox>(workstationOperatorInboxEndpoint(fundAccountId));
+export function getOperatorInbox(fundAccountId?: string, options: ApiRequestOptions = {}) {
+  return getJson<OperatorInbox>(workstationOperatorInboxEndpoint(fundAccountId), options);
 }
 
 export function getWorkstationWorkflowSummary(options: {
@@ -302,40 +412,41 @@ export function getWorkstationWorkflowSummary(options: {
   return getJson<unknown>(workstationWorkflowSummaryEndpoint(options));
 }
 
-export function getWorkflowLibrary() {
-  return getJson<WorkflowLibrary>(WORKSTATION_API_ENDPOINTS.workflowLibrary);
+export function getWorkflowLibrary(options: ApiRequestOptions = {}) {
+  return getJson<WorkflowLibrary>(WORKSTATION_API_ENDPOINTS.workflowLibrary, options);
 }
 
-export function getWorkflowPresets() {
-  return getJson<WorkflowPresetLibrary>(WORKSTATION_API_ENDPOINTS.workflowPresets);
+export function getWorkflowPresets(options: ApiRequestOptions = {}) {
+  return getJson<WorkflowPresetLibrary>(WORKSTATION_API_ENDPOINTS.workflowPresets, options);
 }
 
-export function getEvidenceSubjects() {
-  return getJson<EvidenceSubject[]>(WORKSTATION_API_ENDPOINTS.evidenceSubjects);
+export function getEvidenceSubjects(options: ApiRequestOptions = {}) {
+  return getJson<EvidenceSubject[]>(WORKSTATION_API_ENDPOINTS.evidenceSubjects, options);
 }
 
-export function getEvidencePacket(subjectKind: string, subjectId: string) {
-  return getJson<EvidencePacket>(workstationEvidencePacketEndpoint(subjectKind, subjectId));
+export function getEvidencePacket(subjectKind: string, subjectId: string, options: ApiRequestOptions = {}) {
+  return getJson<EvidencePacket>(workstationEvidencePacketEndpoint(subjectKind, subjectId), options);
 }
 
-export function getEvidenceGraph(subjectKind: string, subjectId: string) {
-  return getJson<EvidenceGraph>(workstationEvidenceGraphEndpoint(subjectKind, subjectId));
+export function getEvidenceGraph(subjectKind: string, subjectId: string, options: ApiRequestOptions = {}) {
+  return getJson<EvidenceGraph>(workstationEvidenceGraphEndpoint(subjectKind, subjectId), options);
 }
 
-export function validateEvidencePacket(subjectKind: string, subjectId: string) {
-  return postJson<EvidenceCompleteness>(workstationEvidenceValidateEndpoint(subjectKind, subjectId));
+export function validateEvidencePacket(subjectKind: string, subjectId: string, options: ApiRequestOptions = {}) {
+  return postJson<EvidenceCompleteness>(workstationEvidenceValidateEndpoint(subjectKind, subjectId), undefined, options);
 }
 
 export function exportEvidenceManifest(
   subjectKind: string,
   subjectId: string,
-  request: EvidencePacketExportRequest = { includeWarnings: true }
+  request: EvidencePacketExportRequest = { includeWarnings: true },
+  options: ApiRequestOptions = {}
 ) {
-  return postJson<EvidencePacketExportResponse>(workstationEvidenceExportManifestEndpoint(subjectKind, subjectId), request);
+  return postJson<EvidencePacketExportResponse>(workstationEvidenceExportManifestEndpoint(subjectKind, subjectId), request, options);
 }
 
-export function getEvidenceTemplates() {
-  return getJson<EvidenceTemplate[]>(WORKSTATION_API_ENDPOINTS.evidenceTemplates);
+export function getEvidenceTemplates(options: ApiRequestOptions = {}) {
+  return getJson<EvidenceTemplate[]>(WORKSTATION_API_ENDPOINTS.evidenceTemplates, options);
 }
 
 export function saveWorkflowPreset(request: WorkflowPresetSaveRequest) {
@@ -358,20 +469,20 @@ export function deleteWorkflowPreset(presetId: string) {
   return deleteJson<void>(workstationWorkflowPresetEndpoint(presetId));
 }
 
-export function getDataWorkspace() {
-  return getJson<DataOperationsWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.data);
+export function getDataWorkspace(options: ApiRequestOptions = {}) {
+  return getJson<DataOperationsWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.data, options);
 }
 
 export function getDataOperationsWorkspace() {
   return getDataWorkspace();
 }
 
-export function getGovernanceWorkspace() {
-  return getJson<GovernanceWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.accounting);
+export function getGovernanceWorkspace(options: ApiRequestOptions = {}) {
+  return getJson<GovernanceWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.accounting, options);
 }
 
-export function getReportingWorkspace() {
-  return getJson<GovernanceWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.reporting);
+export function getReportingWorkspace(options: ApiRequestOptions = {}) {
+  return getJson<GovernanceWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.reporting, options);
 }
 
 export function runAnalysisExport(profileId: string) {
@@ -426,8 +537,8 @@ export function cancelAllOrders() {
   return postJson<TradingActionResult>(EXECUTION_API_ENDPOINTS.ordersCancelAll);
 }
 
-export function closePosition(symbol: string) {
-  return postJson<TradingActionResult>(executionPositionCloseEndpoint(symbol));
+export function closePosition(positionKey: string) {
+  return postJson<TradingActionResult>(executionPositionCloseEndpoint(), { positionKey });
 }
 
 // --- Paper session management ---
@@ -743,8 +854,8 @@ export function testProviderConnection(providerId: string) {
 
 // --- System overview ---
 
-export function getSystemStatus() {
-  return getJson<unknown>(WORKSTATION_API_ENDPOINTS.systemStatus).then(normalizeSystemOverviewResponse);
+export function getSystemStatus(options: ApiRequestOptions = {}) {
+  return getJson<unknown>(WORKSTATION_API_ENDPOINTS.systemStatus, options).then(normalizeSystemOverviewResponse);
 }
 
 function normalizeSystemOverviewResponse(payload: unknown): SystemOverviewResponse {
@@ -943,16 +1054,16 @@ function formatMetricNumber(value: number): string {
 
 // --- Symbol management ---
 
-export function getSymbols() {
-  return getJson<import("@/types").SymbolRecord[]>(SYMBOL_API_ENDPOINTS.symbols);
+export function getSymbols(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").SymbolRecord[]>(SYMBOL_API_ENDPOINTS.symbols, options);
 }
 
-export function getSymbolsStatistics() {
-  return getJson<import("@/types").SymbolStatistics>(SYMBOL_API_ENDPOINTS.statistics);
+export function getSymbolsStatistics(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").SymbolStatistics>(SYMBOL_API_ENDPOINTS.statistics, options);
 }
 
-export function searchSymbolsQuery(query: string) {
-  return getJson<import("@/types").SymbolRecord[]>(symbolSearchEndpoint(query));
+export function searchSymbolsQuery(query: string, options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").SymbolRecord[]>(symbolSearchEndpoint(query), options);
 }
 
 export function addSymbol(symbol: string, provider?: string) {
@@ -1005,12 +1116,12 @@ export function revokeRobinhoodConnection() {
   return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("robinhood"));
 }
 
-export function getPortfolioWorkspace() {
-  return getJson<import("@/types").PortfolioWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.portfolio);
+export function getPortfolioWorkspace(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").PortfolioWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.portfolio, options);
 }
 
-export function getAlpacaConnectionStatus() {
-  return getJson<BrokerageConnectionStatus>(brokerageConnectionStatusEndpoint("alpaca"));
+export function getAlpacaConnectionStatus(options: ApiRequestOptions = {}) {
+  return getJson<BrokerageConnectionStatus>(brokerageConnectionStatusEndpoint("alpaca"), options);
 }
 
 export function connectAlpacaConnection(request: AlpacaBrokerageConnectionRequest) {
@@ -1021,8 +1132,8 @@ export function revokeAlpacaConnection() {
   return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("alpaca"));
 }
 
-export function getBrokerageHouseholdPortfolio(provider = "alpaca") {
-  return getJson<BrokerageHouseholdPortfolio>(portfolioHouseholdEndpoint(provider));
+export function getBrokerageHouseholdPortfolio(provider = "alpaca", options: ApiRequestOptions = {}) {
+  return getJson<BrokerageHouseholdPortfolio>(portfolioHouseholdEndpoint(provider), options);
 }
 
 export function getPortfolioAggregate() {
@@ -1039,20 +1150,20 @@ export function getPortfolioSymbolExposure(symbol: string) {
 
 // --- Live market data ---
 
-export function getLiveQuote(symbol: string) {
-  return getJson<import("@/types").QuotesResponse>(marketDataQuoteEndpoint(symbol));
+export function getLiveQuote(symbol: string, options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").QuotesResponse>(marketDataQuoteEndpoint(symbol), options);
 }
 
-export function getLiveTrades(symbol: string, limit = 25) {
-  return getJson<import("@/types").TradesResponse>(marketDataTradesEndpoint(symbol, limit));
+export function getLiveTrades(symbol: string, limit = 25, options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").TradesResponse>(marketDataTradesEndpoint(symbol, limit), options);
 }
 
-export function getLiveOrderbook(symbol: string, levels = 10) {
-  return getJson<import("@/types").OrderBookResponse>(marketDataOrderbookEndpoint(symbol, levels));
+export function getLiveOrderbook(symbol: string, levels = 10, options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").OrderBookResponse>(marketDataOrderbookEndpoint(symbol, levels), options);
 }
 
-export function getLiveQuotesSnapshot(symbols?: readonly string[]) {
-  return getJson<import("@/types").QuotesSnapshotResponse>(marketDataQuotesSnapshotEndpoint(symbols));
+export function getLiveQuotesSnapshot(symbols?: readonly string[], options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").QuotesSnapshotResponse>(marketDataQuotesSnapshotEndpoint(symbols), options);
 }
 
 export interface HistoricalBarsRequest {
@@ -1062,8 +1173,8 @@ export interface HistoricalBarsRequest {
   maxBars?: number;
 }
 
-export function getHistoricalBars(symbol: string, request: HistoricalBarsRequest) {
-  return getJson<import("@/types").HistoricalBarsResponse>(historicalBarsEndpoint(symbol, request));
+export function getHistoricalBars(symbol: string, request: HistoricalBarsRequest, options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").HistoricalBarsResponse>(historicalBarsEndpoint(symbol, request), options);
 }
 
 // --- Quant Lab ---

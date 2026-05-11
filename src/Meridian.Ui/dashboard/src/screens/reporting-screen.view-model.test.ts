@@ -81,11 +81,61 @@ describe("useReportingScreenViewModel", () => {
       "Dictionary only",
       "Loader only"
     ]);
+    expect(result.current.selectedProfile?.title).toBe("Excel");
+    expect(result.current.rows.find((row) => row.id === "excel")?.isSelected).toBe(true);
+    expect(result.current.workflowTaskPanel?.selectedSummary).toBe(
+      "Excel is selected for report-pack approval using Xlsx output to Excel."
+    );
     expect(result.current.workflowTaskPanel?.backendLinks.map((link) => link.href)).toEqual([
       "/api/fund-structure/report-packs",
-      "/api/export/preview",
+      "/api/export/preview?profile=excel",
       "/api/export/analysis"
     ]);
+  });
+
+  it("lets operators clear the default report-pack profile selection", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/report-packs"));
+
+    expect(result.current.selectedProfile?.title).toBe("Excel");
+
+    act(() => { result.current.selectProfile("excel"); });
+
+    expect(result.current.selectedProfile).toBeNull();
+    expect(result.current.workflowTaskPanel?.selectedSummary).toBe(
+      "Select a profile to enable packet preview and export actions."
+    );
+  });
+
+  it("prefers a fully wired report-pack profile when no profile is recommended", () => {
+    const noRecommendation: GovernanceReportingSummary = {
+      ...reporting,
+      recommendedProfiles: [],
+      profiles: [
+        {
+          id: "csv",
+          name: "CSV",
+          targetTool: "Generic",
+          format: "Csv",
+          description: "Flat file export for bulk ingestion.",
+          loaderScript: true,
+          dataDictionary: false
+        },
+        {
+          id: "board-packet",
+          name: "Board Packet",
+          targetTool: "Board portal",
+          format: "Markdown",
+          description: "Governed board packet.",
+          loaderScript: true,
+          dataDictionary: true
+        }
+      ]
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(noRecommendation, undefined, "/reporting/report-packs"));
+
+    expect(result.current.selectedProfile?.title).toBe("Board Packet");
+    expect(result.current.rows.find((row) => row.id === "board-packet")?.isSelected).toBe(true);
   });
 
   it("keeps report-pack approval empty-state copy in the view model", () => {
@@ -113,14 +163,14 @@ describe("useReportingScreenViewModel", () => {
   it("scopes report-pack preview backend links to the selected profile", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/report-packs"));
 
-    act(() => { result.current.selectProfile("excel"); });
+    act(() => { result.current.selectProfile("csv"); });
 
     expect(result.current.workflowTaskPanel?.selectedSummary).toBe(
-      "Excel is selected for report-pack approval using Xlsx output to Excel."
+      "CSV is selected for report-pack approval using Csv output to Generic."
     );
     expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "export-preview")).toMatchObject({
-      href: "/api/export/preview?profile=excel",
-      ariaLabel: "Preview Excel export payload"
+      href: "/api/export/preview?profile=csv",
+      ariaLabel: "Preview CSV export payload"
     });
   });
 
@@ -153,12 +203,28 @@ describe("useReportingScreenViewModel", () => {
         ariaLabel: "Open current report-pack evidence"
       }
     ]);
+    expect(result.current.statusBadgeLabel).toBe("Waiting");
+    expect(result.current.statusBadgeVariant).toBe("outline");
+    expect(result.current.rows.map((row) => ({
+      id: row.id,
+      controlsId: row.controlsId,
+      isExpanded: row.isExpanded
+    }))).toEqual([
+      { id: "excel", controlsId: "reporting-profile-detail", isExpanded: false },
+      { id: "csv", controlsId: "reporting-profile-detail", isExpanded: false }
+    ]);
   });
 
   it("shows no profile selected state initially", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
     expect(result.current.selectedProfile).toBeNull();
     expect(result.current.statusTitle).toBe("No profile selected");
+  });
+
+  it("keeps missing reporting data recovery copy scoped to Reporting", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(null));
+
+    expect(result.current.statusDetail).toBe("Reporting data is unavailable. Check the Reporting workspace API connection.");
   });
 
   it("updates selected profile on selectProfile call", () => {
@@ -189,6 +255,10 @@ describe("useReportingScreenViewModel", () => {
       variant: "default"
     });
     expect(result.current.rows.find((r) => r.id === "excel")?.isSelected).toBe(true);
+    expect(result.current.rows.find((r) => r.id === "excel")?.isExpanded).toBe(true);
+    expect(result.current.rows.find((r) => r.id === "csv")?.isExpanded).toBe(false);
+    expect(result.current.statusBadgeLabel).toBe("Selected");
+    expect(result.current.statusBadgeVariant).toBe("default");
     expect(result.current.workbenchActions).toEqual([
       {
         id: "evidence",

@@ -332,6 +332,16 @@ export interface GovernanceCashFlowViewState {
   statusAnnouncement: string;
 }
 
+export interface GovernanceLoadingViewState {
+  role: "status";
+  ariaBusy: true;
+  ariaLive: "polite";
+  titleId: string;
+  detailId: string;
+  title: string;
+  detail: string;
+}
+
 export interface ReportingProfileBadgeViewModel {
   label: string;
   tone: "primary" | "success" | "warning" | "muted";
@@ -453,6 +463,22 @@ export function useGovernanceCashFlowViewModel(
     () => buildGovernanceCashFlowViewState(cashFlow, pathname, workstream),
     [cashFlow, pathname, workstream]
   );
+}
+
+export function buildGovernanceLoadingViewState(pathname: string): GovernanceLoadingViewState {
+  const workspaceLabel = pathname.startsWith("/reporting") ? "Reporting" : "Accounting";
+  const slug = workspaceLabel.toLowerCase();
+  return {
+    role: "status",
+    ariaBusy: true,
+    ariaLive: "polite",
+    titleId: `${slug}-workspace-loading-title`,
+    detailId: `${slug}-workspace-loading-detail`,
+    title: `Loading ${workspaceLabel}`,
+    detail: workspaceLabel === "Reporting"
+      ? "Waiting for report-pack, governed export, and approval summaries from the workstation bootstrap payload."
+      : "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from the workstation bootstrap payload."
+  };
 }
 
 export function useGovernanceReportingViewModel(

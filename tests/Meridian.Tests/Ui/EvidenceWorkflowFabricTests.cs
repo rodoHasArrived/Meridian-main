@@ -144,7 +144,7 @@ public sealed class EvidenceWorkflowFabricTests
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
         var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
-        var subject = Subject("report-pack", "Review:Jan/../2026");
+        var subject = Subject("report-pack", "Review Jan/../2026");
         var packet = new EvidencePacketDto(
             Subject: subject,
             GeneratedAt: DateTimeOffset.UtcNow,
@@ -158,8 +158,8 @@ public sealed class EvidenceWorkflowFabricTests
         var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
         var manifestJson = await File.ReadAllTextAsync(manifestPath);
 
-        response.ManifestPath.Should().Contain("review-jan-..-2026");
-        response.ManifestRoute.Should().Contain("/workstation/evidence/report-pack/review-jan-..-2026/");
+        response.ManifestPath.Should().Contain("review jan-..-2026");
+        response.ManifestRoute.Should().Contain("/workstation/evidence/report-pack/review%20jan-..-2026/");
         response.WarningCount.Should().Be(0);
         manifestJson.Should().Contain("\"schemaVersion\": 1");
         manifestJson.Should().NotContain("This warning should be excluded.");

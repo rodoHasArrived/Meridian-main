@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { getOperatorInbox } from "@/lib/api";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getOperatorInbox, type ApiRequestOptions } from "@/lib/api";
 import { normalizeLocalWorkstationRoute } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
@@ -90,7 +90,7 @@ export type ReadinessConsolePanelId =
   | "provider-trust"
   | "reconciliation-breaks"
   | "promotion-blockers"
-  | "governance-report-packs";
+  | "reporting-report-packs";
 
 export interface ReadinessConsolePanel {
   id: ReadinessConsolePanelId;
@@ -119,6 +119,11 @@ export interface ReadinessConsoleState {
   inboxSummary: string;
   inboxLoadingLabel: string | null;
   inboxErrorText: string | null;
+  inboxRefreshLabel: string;
+  inboxRefreshAriaLabel: string;
+  inboxRefreshDisabled: boolean;
+  inboxRefreshDisabledReason: string | null;
+  inboxRefreshBusy: boolean;
   nextAction: ReadinessConsoleNextAction;
   metrics: ReadinessConsoleMetric[];
   metricsLabel: string;
@@ -138,9 +143,11 @@ export interface ReadinessConsoleState {
   workItemsListLabel: string;
   workItemsTableLabel: string;
   workItemsDetailLabel: string;
+  workItemsDetailPanelId: string;
   selectedWorkItemId: string | null;
   selectedWorkItemDetail: ReadinessConsoleSelectedWorkItemDetail | null;
   selectWorkItem: (id: string) => void;
+  refreshInbox: () => Promise<void>;
 }
 
 export interface BuildOperatorReadinessConsoleStateOptions {
@@ -154,14 +161,15 @@ export interface BuildOperatorReadinessConsoleStateOptions {
   inboxError: string | null;
   selectedWorkItemId?: string | null;
   selectWorkItem?: (id: string) => void;
+  refreshInbox?: () => Promise<void>;
 }
 
 export interface OperatorReadinessConsoleServices {
-  getOperatorInbox: (fundAccountId?: string) => Promise<OperatorInbox>;
+  getOperatorInbox: (fundAccountId?: string, options?: ApiRequestOptions) => Promise<OperatorInbox>;
 }
 
 const defaultServices: OperatorReadinessConsoleServices = {
-  getOperatorInbox: (fundAccountId?: string) => getOperatorInbox(fundAccountId)
+  getOperatorInbox: (fundAccountId?: string, options?: ApiRequestOptions) => getOperatorInbox(fundAccountId, options)
 };
 
 export function useOperatorReadinessConsoleViewModel(
@@ -172,6 +180,9 @@ export function useOperatorReadinessConsoleViewModel(
   const [inboxLoading, setInboxLoading] = useState(true);
   const [inboxError, setInboxError] = useState<string | null>(null);
   const [selectedWorkItemId, setSelectedWorkItemId] = useState<string | null>(null);
+  const mountedRef = useRef(true);
+  const refreshRevisionRef = useRef(0);
+  const inboxAbortRef = useRef<AbortController | null>(null);
 
   const activeFundAccountId = payload.trading?.readiness?.brokerageSync?.fundAccountId;
   const selectWorkItem = useCallback((id: string) => {
@@ -179,33 +190,56 @@ export function useOperatorReadinessConsoleViewModel(
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      refreshRevisionRef.current += 1;
+      inboxAbortRef.current?.abort();
+    };
+  }, []);
+
+  const refreshInbox = useCallback(async () => {
+    if (!mountedRef.current) {
+      return;
+    }
+
+    const revision = refreshRevisionRef.current + 1;
+    refreshRevisionRef.current = revision;
+    inboxAbortRef.current?.abort();
+    const controller = new AbortController();
+    inboxAbortRef.current = controller;
     setInboxLoading(true);
     setInboxError(null);
     setOperatorInbox(null);
 
-    Promise.resolve(services.getOperatorInbox(activeFundAccountId))
-      .then((inbox) => {
-        if (!cancelled) {
-          setOperatorInbox(inbox ?? null);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setOperatorInbox(null);
-          setInboxError(toErrorMessage(err, "Operator inbox failed to load."));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setInboxLoading(false);
-        }
-      });
+    try {
+      const inbox = await services.getOperatorInbox(activeFundAccountId, { signal: controller.signal });
+      if (!mountedRef.current || refreshRevisionRef.current !== revision) {
+        return;
+      }
 
-    return () => {
-      cancelled = true;
-    };
+      setOperatorInbox(inbox ?? null);
+    } catch (err) {
+      if (!mountedRef.current || refreshRevisionRef.current !== revision) {
+        return;
+      }
+
+      setOperatorInbox(null);
+      setInboxError(toErrorMessage(err, "Operator inbox failed to load."));
+    } finally {
+      if (mountedRef.current && refreshRevisionRef.current === revision) {
+        if (inboxAbortRef.current === controller) {
+          inboxAbortRef.current = null;
+        }
+        setInboxLoading(false);
+      }
+    }
   }, [activeFundAccountId, services]);
+
+  useEffect(() => {
+    void refreshInbox();
+  }, [refreshInbox]);
 
   return useMemo(
     () => buildOperatorReadinessConsoleState({
@@ -214,9 +248,10 @@ export function useOperatorReadinessConsoleViewModel(
       inboxLoading,
       inboxError,
       selectedWorkItemId,
-      selectWorkItem
+      selectWorkItem,
+      refreshInbox
     }),
-    [inboxError, inboxLoading, operatorInbox, payload, selectedWorkItemId, selectWorkItem]
+    [inboxError, inboxLoading, operatorInbox, payload, selectedWorkItemId, selectWorkItem, refreshInbox]
   );
 }
 
@@ -230,7 +265,8 @@ export function buildOperatorReadinessConsoleState({
   inboxLoading,
   inboxError,
   selectedWorkItemId,
-  selectWorkItem
+  selectWorkItem,
+  refreshInbox
 }: BuildOperatorReadinessConsoleStateOptions): ReadinessConsoleState {
   const readiness = trading?.readiness ?? null;
   const workItems = operatorInbox?.items ?? readiness?.workItems ?? [];
@@ -293,6 +329,13 @@ export function buildOperatorReadinessConsoleState({
     inboxSummary: operatorInbox?.summary ?? "Operator inbox not loaded; using workstation payload fallbacks where available.",
     inboxLoadingLabel: inboxLoading ? "Loading operator inbox..." : null,
     inboxErrorText: inboxError,
+    inboxRefreshLabel: inboxLoading ? "Refreshing inbox" : "Refresh inbox",
+    inboxRefreshAriaLabel: inboxLoading
+      ? "Refreshing operator inbox work items"
+      : "Refresh operator inbox work items",
+    inboxRefreshDisabled: inboxLoading,
+    inboxRefreshDisabledReason: inboxLoading ? "Operator inbox is already refreshing." : null,
+    inboxRefreshBusy: inboxLoading,
     nextAction,
     metrics,
     metricsLabel: "Operator readiness metrics",
@@ -328,9 +371,11 @@ export function buildOperatorReadinessConsoleState({
     workItemsListLabel: "Prioritized operator work items",
     workItemsTableLabel: "Prioritized operator work items table",
     workItemsDetailLabel: "Selected operator work item detail",
+    workItemsDetailPanelId: "operator-readiness-selected-work-item-detail",
     selectedWorkItemId: selectedWorkItemDetail?.id ?? null,
     selectedWorkItemDetail,
-    selectWorkItem: selectWorkItem ?? (() => undefined)
+    selectWorkItem: selectWorkItem ?? (() => undefined),
+    refreshInbox: refreshInbox ?? (() => Promise.resolve())
   };
 }
 
@@ -409,8 +454,8 @@ function buildConsolePanels({
       rows: promotionRows
     }),
     buildConsolePanel({
-      id: "governance-report-packs",
-      title: "Governance report packs",
+      id: "reporting-report-packs",
+      title: "Reporting report packs",
       emptyText: "No reporting readiness payload loaded.",
       rows: reportPackFacts
     })
@@ -626,14 +671,14 @@ function buildAcceptanceGateRow(gate: TradingAcceptanceGate): ReadinessConsoleRo
   };
 }
 
-function buildReportPackFacts(governance: GovernanceWorkspaceResponse | null): ReadinessConsoleRowBase[] {
-  const reporting = governance?.reporting ?? null;
+function buildReportPackFacts(reportingPayload: GovernanceWorkspaceResponse | null): ReadinessConsoleRowBase[] {
+  const reporting = reportingPayload?.reporting ?? null;
   if (!reporting) {
     return [{
       id: "report-pack",
       label: "Report-pack readiness",
       value: "Unavailable",
-      detail: "Governance reporting payload has not loaded.",
+      detail: "Reporting payload has not loaded.",
       meta: "Wait for Accounting/Reporting bootstrap recovery.",
       level: "review"
     }];
@@ -1326,7 +1371,7 @@ function buildMissingReadinessDetail(
     return "Trading readiness has not loaded yet. The operator inbox is clean, but readiness cannot be accepted until the trading readiness payload loads.";
   }
 
-  return "Trading readiness has not loaded yet. The console can still show any available Strategy, Data, or Governance payloads.";
+  return "Trading readiness has not loaded yet. The console can still show any available Strategy, Data, Accounting, or Reporting payloads.";
 }
 
 function hasCriticalOperatorInbox(operatorInbox: OperatorInbox | null): boolean {

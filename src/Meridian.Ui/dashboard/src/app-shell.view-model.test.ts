@@ -122,7 +122,7 @@ describe("app shell view model", () => {
       secondaryActionLabel: "Review diagnostics",
       secondaryActionAriaLabel: "Review Settings capability coverage for failed workstation slices",
       secondaryActionHref: "/settings#backend-capability-coverage",
-      itemListLabel: "Failed workspace slices"
+      itemListLabel: "Failed workstation slices"
     });
     expect(state.statusPanel?.items).toEqual([
       {
@@ -189,6 +189,32 @@ describe("app shell view model", () => {
       ["quotes", true],
       ["readiness", false],
       ["connect", false]
+    ]);
+  });
+
+  it("includes workflow catalog failures in the shell degraded status", () => {
+    const state = buildAppShellViewState({
+      pathname: "/strategy",
+      loading: false,
+      error: null,
+      workflowError: "Workflow presets request failed.",
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(state.canRenderRoutes).toBe(true);
+    expect(state.statusPanel).toMatchObject({
+      tone: "warning",
+      title: "Workstation bootstrap is partially degraded",
+      detail: "1 workstation slice failed to load. Available routes remain open while that slice recovers."
+    });
+    expect(state.statusPanel?.items).toEqual([
+      {
+        key: "workflow-catalog",
+        label: "Workflow catalog",
+        detail: "Workflow presets request failed.",
+        ariaLabel: "Workflow catalog: Workflow presets request failed."
+      }
     ]);
   });
 

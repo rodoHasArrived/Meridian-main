@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   buildCalibrationSummaryViewState,
   buildGovernanceCashFlowViewState,
+  buildGovernanceLoadingViewState,
   buildGovernanceReportingViewState,
   buildGovernanceTrialBalanceViewState,
   formatReportingExportResult,
@@ -258,6 +259,25 @@ describe("governance-screen view model", () => {
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");
     expect(resolveSelectedReconciliation([], null)).toBeNull();
+  });
+
+  it("derives canonical Accounting and Reporting loading states", () => {
+    expect(buildGovernanceLoadingViewState("/accounting/reconciliation")).toMatchObject({
+      role: "status",
+      ariaBusy: true,
+      ariaLive: "polite",
+      titleId: "accounting-workspace-loading-title",
+      detailId: "accounting-workspace-loading-detail",
+      title: "Loading Accounting",
+      detail: "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from the workstation bootstrap payload."
+    });
+
+    expect(buildGovernanceLoadingViewState("/reporting")).toMatchObject({
+      titleId: "reporting-workspace-loading-title",
+      detailId: "reporting-workspace-loading-detail",
+      title: "Loading Reporting",
+      detail: "Waiting for report-pack, governed export, and approval summaries from the workstation bootstrap payload."
+    });
   });
 
   it("derives cash-flow evidence rows, route context, and variance posture", () => {

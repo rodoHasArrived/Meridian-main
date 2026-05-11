@@ -114,9 +114,12 @@ function RunResultPanel({ run, panel, consoleLines }: RunResultPanelProps) {
   if (panel.phase === "running") {
     return (
       <Card>
-        <CardContent className="flex items-center gap-2 py-10 text-sm text-muted-foreground" role={panel.role} aria-live={panel.ariaLive}>
-          <span className="h-4 w-4 animate-spin rounded-full border border-primary/30 border-t-primary" aria-hidden="true" />
-          {panel.description}
+        <CardContent className="space-y-3 py-10 text-sm text-muted-foreground" role={panel.role} aria-live={panel.ariaLive}>
+          <div className="flex items-center gap-2">
+            <span className="h-4 w-4 animate-spin rounded-full border border-primary/30 border-t-primary" aria-hidden="true" />
+            {panel.description}
+          </div>
+          <SourceDriftNotice panel={panel} />
         </CardContent>
       </Card>
     );
@@ -132,6 +135,11 @@ function RunResultPanel({ run, panel, consoleLines }: RunResultPanelProps) {
           </CardTitle>
           <CardDescription className="text-danger/80">{panel.description}</CardDescription>
         </CardHeader>
+        {panel.sourceDrifted ? (
+          <CardContent>
+            <SourceDriftNotice panel={panel} />
+          </CardContent>
+        ) : null}
       </Card>
     );
   }
@@ -159,6 +167,7 @@ function RunResultPanel({ run, panel, consoleLines }: RunResultPanelProps) {
           ) : null}
         </CardHeader>
         <CardContent className="space-y-3">
+          <SourceDriftNotice panel={panel} />
           {!panel.hasEvidence ? (
             <div
               role={panel.evidenceEmptyRole}
@@ -213,6 +222,23 @@ function RunResultPanel({ run, panel, consoleLines }: RunResultPanelProps) {
           </CardContent>
         </Card>
       ) : null}
+    </div>
+  );
+}
+
+function SourceDriftNotice({ panel }: { panel: QuantRunResultPanelState }) {
+  if (!panel.sourceDrifted || !panel.sourceDriftTitle || !panel.sourceDriftDetail) {
+    return null;
+  }
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning"
+    >
+      <div className="font-semibold">{panel.sourceDriftTitle}</div>
+      <p className="mt-1">{panel.sourceDriftDetail}</p>
     </div>
   );
 }

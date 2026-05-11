@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, screen, waitFor, within } from "@testing-library/react";
+import { act, renderHook, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useNavigate } from "react-router-dom";
 
@@ -11,10 +11,12 @@ import {
   buildOrderRequest,
   buildPriceSparklineViewModel,
   buildQuickTradeTicketViewModel,
+  useQuickTradeTicket,
   validateQuickTicket
 } from "@/screens/live-quotes-screen.view-model";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import * as api from "@/lib/api";
+import type { OrderResult } from "@/types";
 
 const quoteFixture = {
   symbol: "AAPL",
@@ -220,14 +222,27 @@ describe("validateQuickTicket", () => {
   it("keeps quick-ticket form fields and accessible copy in the view model", () => {
     const vm = buildQuickTradeTicketViewModel({
       activeSymbol: "AAPL",
-      ticket: { side: "Buy", type: "Limit", quantity: "", limitPrice: "", phase: "idle", message: null, orderId: null },
+      ticket: { side: "Buy", type: "Limit", quantity: "", limitPrice: "", phase: "idle", message: null, orderId: null, acknowledged: false },
       seedTicket: vi.fn(),
       updateField: vi.fn(),
+      setReviewAcknowledged: vi.fn(),
       submitTicket: vi.fn(),
       resetTicket: vi.fn()
     });
 
     expect(vm.formLabel).toBe("Quick trade ticket for AAPL");
+    expect(vm.quantityInvalid).toBe(false);
+    expect(vm.priceInvalid).toBe(false);
+    expect(vm.submitCommand).toMatchObject({
+      disabled: true,
+      disabledReason: "Enter a quantity greater than zero."
+    });
+    expect(vm.status).toMatchObject({
+      role: "status",
+      tone: "default",
+      message: "Enter a quantity to enable order submission.",
+      showErrorIcon: false
+    });
     expect(vm.fields.quantity).toMatchObject({
       id: "quick-ticket-quantity",
       label: "Quantity",
@@ -248,14 +263,64 @@ describe("validateQuickTicket", () => {
       min: 0,
       step: "0.01"
     });
+    expect(vm.reviewAcknowledgement).toMatchObject({
+      checked: false,
+      disabled: true,
+      disabledReason: "Enter a quantity greater than zero."
+    });
+  });
+
+  it("requires quick-ticket review acknowledgement after fields are valid", () => {
+    const vm = buildQuickTradeTicketViewModel({
+      activeSymbol: "AAPL",
+      ticket: { side: "Buy", type: "Limit", quantity: "10", limitPrice: "188.05", phase: "idle", message: null, orderId: null, acknowledged: false },
+      seedTicket: vi.fn(),
+      updateField: vi.fn(),
+      setReviewAcknowledged: vi.fn(),
+      submitTicket: vi.fn(),
+      resetTicket: vi.fn()
+    });
+
+    expect(vm.reviewAcknowledgement).toMatchObject({
+      label: "I reviewed this order ticket",
+      description: "Buy 10 AAPL as a limit order at 188.05.",
+      checked: false,
+      disabled: false,
+      disabledReason: null
+    });
+    expect(vm.submitCommand).toMatchObject({
+      disabled: true,
+      disabledReason: "Review and acknowledge the ticket before submitting."
+    });
+    expect(vm.status).toMatchObject({
+      role: "status",
+      message: "Review side, quantity, and price, then acknowledge before submitting."
+    });
+
+    const acknowledged = buildQuickTradeTicketViewModel({
+      activeSymbol: "AAPL",
+      ticket: { side: "Buy", type: "Limit", quantity: "10", limitPrice: "188.05", phase: "idle", message: null, orderId: null, acknowledged: true },
+      seedTicket: vi.fn(),
+      updateField: vi.fn(),
+      setReviewAcknowledged: vi.fn(),
+      submitTicket: vi.fn(),
+      resetTicket: vi.fn()
+    });
+
+    expect(acknowledged.submitCommand).toMatchObject({
+      disabled: false,
+      disabledReason: null
+    });
+    expect(acknowledged.status.message).toBe("Orders route through Meridian's pre-trade risk and execution controls.");
   });
 
   it("switches quick-ticket price metadata for market orders", () => {
     const vm = buildQuickTradeTicketViewModel({
       activeSymbol: "AAPL",
-      ticket: { side: "Buy", type: "Market", quantity: "10", limitPrice: "", phase: "idle", message: null, orderId: null },
+      ticket: { side: "Buy", type: "Market", quantity: "10", limitPrice: "", phase: "idle", message: null, orderId: null, acknowledged: false },
       seedTicket: vi.fn(),
       updateField: vi.fn(),
+      setReviewAcknowledged: vi.fn(),
       submitTicket: vi.fn(),
       resetTicket: vi.fn()
     });
@@ -263,9 +328,92 @@ describe("validateQuickTicket", () => {
     expect(vm.fields.limitPrice).toMatchObject({
       label: "Price (market)",
       ariaLabel: "Market order price",
-      placeholder: "Best available"
+      placeholder: "Best available",
+      disabled: true,
+      disabledReason: "Market orders route at the best available price."
     });
     expect(vm.priceDisabled).toBe(true);
+  });
+
+  it("locks quick-ticket fields while an order is submitting", () => {
+    const vm = buildQuickTradeTicketViewModel({
+      activeSymbol: "AAPL",
+      ticket: {
+        side: "Buy",
+        type: "Limit",
+        quantity: "10",
+        limitPrice: "188.05",
+        phase: "submitting",
+        message: null,
+        orderId: null,
+        acknowledged: false
+      },
+      seedTicket: vi.fn(),
+      updateField: vi.fn(),
+      setReviewAcknowledged: vi.fn(),
+      submitTicket: vi.fn(),
+      resetTicket: vi.fn()
+    });
+
+    expect(vm.submitting).toBe(true);
+    expect(vm.fields.side.disabledReason).toBe("Order submission is in progress; wait before editing the ticket.");
+    expect(vm.fields.type.disabled).toBe(true);
+    expect(vm.fields.quantity.disabled).toBe(true);
+    expect(vm.fields.limitPrice.disabled).toBe(true);
+    expect(vm.submitCommand).toMatchObject({
+      disabled: true,
+      disabledReason: "Order submission is already running.",
+      busy: true
+    });
+  });
+});
+
+describe("useQuickTradeTicket", () => {
+  it("ignores in-flight submit results after the active symbol changes", async () => {
+    const order = deferred<OrderResult>();
+    const submitOrder = vi.fn(() => order.promise);
+    const { result, rerender } = renderHook(
+      ({ symbol }: { symbol: string | null }) => useQuickTradeTicket(symbol, { submitOrder }),
+      { initialProps: { symbol: "AAPL" } }
+    );
+
+    act(() => {
+      result.current.updateField("quantity", "10");
+      result.current.updateField("limitPrice", "188.05");
+      result.current.setReviewAcknowledged(true);
+    });
+
+    let submitPromise!: Promise<void>;
+    act(() => {
+      submitPromise = result.current.submitTicket({
+        preventDefault: vi.fn()
+      } as unknown as Parameters<typeof result.current.submitTicket>[0]);
+    });
+
+    await waitFor(() => expect(result.current.ticket.phase).toBe("submitting"));
+    expect(submitOrder).toHaveBeenCalledWith({
+      symbol: "AAPL",
+      side: "Buy",
+      type: "Limit",
+      quantity: 10,
+      limitPrice: 188.05
+    });
+
+    rerender({ symbol: "MSFT" });
+    await waitFor(() => expect(result.current.ticket.phase).toBe("idle"));
+
+    await act(async () => {
+      order.resolve({
+        success: true,
+        orderId: "ORD-AAPL",
+        reason: null
+      });
+      await submitPromise;
+    });
+
+    expect(result.current.ticket.phase).toBe("idle");
+    expect(result.current.ticket.message).toBeNull();
+    expect(result.current.ticket.orderId).toBeNull();
   });
 });
 
@@ -603,8 +751,12 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(priceInput.value).toBe("188.07");
 
     await user.type(screen.getByLabelText("Order quantity in shares"), "100");
+    const submitButton = screen.getByRole("button", { name: /Submit buy order for AAPL/i });
+    expect(submitButton).toBeDisabled();
+    expect(submitButton).toHaveAttribute("title", "Review and acknowledge the ticket before submitting.");
+    await user.click(screen.getByRole("checkbox", { name: /I reviewed this order ticket/i }));
 
-    await user.click(screen.getByRole("button", { name: /Submit buy order for AAPL/i }));
+    await user.click(submitButton);
 
     await waitFor(() => expect(submitSpy).toHaveBeenCalledTimes(1));
     expect(submitSpy.mock.calls[0]?.[0]).toEqual({
@@ -632,12 +784,13 @@ describe("LiveQuotesScreen quick trade", () => {
 
     await user.click(await screen.findByRole("button", { name: /Sell AAPL at bid/i }));
     await user.type(screen.getByLabelText("Order quantity in shares"), "10");
+    await user.click(screen.getByRole("checkbox", { name: /I reviewed this order ticket/i }));
     await user.click(screen.getByRole("button", { name: /Submit sell order for AAPL/i }));
 
     expect(await screen.findByText(/Insufficient buying power/i)).toBeInTheDocument();
   });
 
-  it("blocks submission with an invalid quantity before the order command runs", async () => {
+  it("keeps initial quick-ticket validation as guidance and escalates invalid edited fields", async () => {
     const submitSpy = vi.spyOn(api, "submitOrder");
 
     const user = userEvent.setup();
@@ -650,8 +803,15 @@ describe("LiveQuotesScreen quick trade", () => {
 
     expect(submitButton).toBeDisabled();
     expect(submitButton).toHaveAttribute("title", "Enter a quantity greater than zero.");
+    expect(screen.getByText("Enter a quantity to enable order submission.")).toBeInTheDocument();
+    expect(screen.queryByText("Enter a quantity greater than zero.")).not.toBeInTheDocument();
+
+    const quantityInput = screen.getByLabelText("Order quantity in shares");
+    await user.type(quantityInput, "0");
+
+    expect(quantityInput).toHaveAttribute("aria-invalid", "true");
     expect(submitSpy).not.toHaveBeenCalled();
-    expect(await screen.findByText(/Enter a quantity greater than zero/i)).toBeInTheDocument();
+    expect(await screen.findByText("Enter a quantity greater than zero.")).toBeInTheDocument();
   });
 
   it("syncs the active symbol when the symbol query parameter changes", async () => {
@@ -669,11 +829,11 @@ describe("LiveQuotesScreen quick trade", () => {
 
     renderWithRouter(<Harness />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
 
-    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("AAPL"));
+    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("AAPL", expect.objectContaining({ signal: expect.any(Object) })));
 
     await user.click(screen.getByRole("button", { name: "Route to MSFT" }));
 
-    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("MSFT"));
+    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("MSFT", expect.objectContaining({ signal: expect.any(Object) })));
     expect(screen.getByDisplayValue("MSFT")).toBeInTheDocument();
   });
 
@@ -698,7 +858,7 @@ describe("LiveQuotesScreen quick trade", () => {
 
     renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
 
-    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("AAPL"));
+    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("AAPL", expect.objectContaining({ signal: expect.any(Object) })));
 
     expect(screen.getByText(/Loading quote data for AAPL/i)).toBeInTheDocument();
     expect(screen.getByText(/Loading depth for AAPL/i)).toBeInTheDocument();
@@ -747,27 +907,38 @@ describe("LiveQuotesScreen quick trade", () => {
     const msftQuote = deferred<typeof msftQuoteFixture>();
     const msftTrades = deferred<typeof msftTradesFixture>();
     const msftOrderbook = deferred<typeof msftOrderbookFixture>();
+    const quoteSignals: AbortSignal[] = [];
+    const tradeSignals: AbortSignal[] = [];
+    const orderbookSignals: AbortSignal[] = [];
 
-    vi.spyOn(api, "getLiveQuote").mockImplementation((symbol) => (
-      symbol === "AAPL" ? aaplQuote.promise : msftQuote.promise
-    ));
-    vi.spyOn(api, "getLiveTrades").mockImplementation((symbol) => (
-      symbol === "AAPL" ? aaplTrades.promise : msftTrades.promise
-    ));
-    vi.spyOn(api, "getLiveOrderbook").mockImplementation((symbol) => (
-      symbol === "AAPL" ? aaplOrderbook.promise : msftOrderbook.promise
-    ));
+    vi.spyOn(api, "getLiveQuote").mockImplementation((symbol, options) => {
+      quoteSignals.push(options?.signal as AbortSignal);
+      return symbol === "AAPL" ? aaplQuote.promise : msftQuote.promise;
+    });
+    vi.spyOn(api, "getLiveTrades").mockImplementation((symbol, _limit, options) => {
+      tradeSignals.push(options?.signal as AbortSignal);
+      return symbol === "AAPL" ? aaplTrades.promise : msftTrades.promise;
+    });
+    vi.spyOn(api, "getLiveOrderbook").mockImplementation((symbol, _depth, options) => {
+      orderbookSignals.push(options?.signal as AbortSignal);
+      return symbol === "AAPL" ? aaplOrderbook.promise : msftOrderbook.promise;
+    });
 
     const user = userEvent.setup();
     renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
 
-    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("AAPL"));
+    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("AAPL", expect.objectContaining({ signal: expect.any(Object) })));
+    expect(quoteSignals[0]?.aborted).toBe(false);
 
     await user.clear(screen.getByLabelText("Symbol"));
     await user.type(screen.getByLabelText("Symbol"), "MSFT");
     await user.click(screen.getByRole("button", { name: /View live quote for MSFT/i }));
 
-    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("MSFT"));
+    await waitFor(() => expect(api.getLiveQuote).toHaveBeenCalledWith("MSFT", expect.objectContaining({ signal: expect.any(Object) })));
+    expect(quoteSignals[0]?.aborted).toBe(true);
+    expect(tradeSignals[0]?.aborted).toBe(true);
+    expect(orderbookSignals[0]?.aborted).toBe(true);
+    expect(quoteSignals.at(-1)?.aborted).toBe(false);
 
     await act(async () => {
       msftQuote.resolve(msftQuoteFixture);
@@ -809,6 +980,7 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(priceInput.disabled).toBe(true);
 
     await user.type(screen.getByLabelText("Order quantity in shares"), "5");
+    await user.click(screen.getByRole("checkbox", { name: /I reviewed this order ticket/i }));
 
     await user.click(screen.getByRole("button", { name: /Submit buy order for AAPL/i }));
 

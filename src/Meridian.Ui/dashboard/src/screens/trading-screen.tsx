@@ -479,7 +479,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                         <td className="px-3 py-2 text-right">
                           <button
                             type="button"
-                            onClick={() => confirmVm.openConfirm({ kind: "close-position", symbol: position.symbol })}
+                            onClick={() => confirmVm.openConfirm({ kind: "close-position", positionKey: position.positionKey, symbol: position.symbol })}
                             className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                             aria-label={position.closeAriaLabel}
                             title="Close position"
@@ -1941,13 +1941,41 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
         )}
 
         {!vm.isCompleted && (
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" onClick={vm.closeConfirm} disabled={!vm.canClose}>
-              {vm.cancelButtonLabel}
-            </Button>
-            <Button onClick={() => { void vm.executeConfirm(); }} disabled={!vm.canConfirm} aria-label={vm.confirmAriaLabel}>
-              {vm.confirmButtonLabel}
-            </Button>
+          <div className="space-y-3 pt-2">
+            <label
+              htmlFor={vm.acknowledgement.id}
+              className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
+              title={vm.acknowledgement.disabledReason ?? undefined}
+            >
+              <input
+                id={vm.acknowledgement.id}
+                type="checkbox"
+                checked={vm.acknowledgement.checked}
+                disabled={vm.acknowledgement.disabled}
+                onChange={(event) => vm.setReviewAcknowledged(event.target.checked)}
+                aria-describedby={`${vm.acknowledgement.id}-description`}
+                className="mt-1 h-4 w-4 accent-primary"
+              />
+              <span>
+                <span className="block font-medium text-foreground">{vm.acknowledgement.label}</span>
+                <span id={`${vm.acknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
+                  {vm.acknowledgement.description}
+                </span>
+              </span>
+            </label>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={vm.closeConfirm} disabled={!vm.canClose}>
+                {vm.cancelButtonLabel}
+              </Button>
+              <Button
+                onClick={() => { void vm.executeConfirm(); }}
+                disabled={!vm.canConfirm}
+                disabledReason={vm.confirmDisabledReason}
+                aria-label={vm.confirmAriaLabel}
+              >
+                {vm.confirmButtonLabel}
+              </Button>
+            </div>
           </div>
         )}
 

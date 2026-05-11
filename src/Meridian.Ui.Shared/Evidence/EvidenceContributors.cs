@@ -56,7 +56,7 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
                 Artifact(
                     $"{detailId}:review-packet",
                     "review-packet-route",
-                    route: UiApiRoutes.RunsReviewPacket.Replace("{runId}", Uri.EscapeDataString(run.Summary.RunId), StringComparison.Ordinal),
+                    route: UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", run.Summary.RunId),
                     generatedAt: generatedAt)
             ]));
         required.Add(detailId);
@@ -180,18 +180,17 @@ public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
         string runId,
         DateTimeOffset generatedAt)
     {
-        var encodedRunId = Uri.EscapeDataString(runId);
         return
         [
             Artifact(
                 $"{ledgerId}:journal",
                 "ledger-journal",
-                route: $"/api/workstation/runs/{encodedRunId}/ledger/journal",
+                route: UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerJournal, "runId", runId),
                 generatedAt: generatedAt),
             Artifact(
                 $"{ledgerId}:trial-balance",
                 "ledger-trial-balance",
-                route: $"/api/workstation/runs/{encodedRunId}/ledger/trial-balance",
+                route: UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerTrialBalance, "runId", runId),
                 generatedAt: generatedAt)
         ];
     }

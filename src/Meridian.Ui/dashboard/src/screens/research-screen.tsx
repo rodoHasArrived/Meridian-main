@@ -11,7 +11,7 @@ import { useResearchRunLibraryViewModel } from "@/screens/research-screen.view-m
 import type {
   ResearchPlotLegendItem,
   ResearchPlotSampleRow,
-  ResearchPlotScatterPoint,
+  ResearchPlotScatterChartState,
   ResearchPlotStatisticsState,
   ResearchPlotStudyItem,
   ResearchPlotWorkspaceState
@@ -46,6 +46,11 @@ const plotLegendToneClass = {
   current: "bg-warning",
   trend: "bg-danger",
   muted: "bg-muted-foreground/70"
+} as const;
+
+const distributionBarToneClass = {
+  selected: "bg-primary",
+  base: "bg-primary/65"
 } as const;
 
 const promotionTitleToneClass = {
@@ -686,12 +691,7 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
         <CardContent className="space-y-4">
           <div className="plottool-chart-shell">
             <PlotToolScatterChart
-              points={vm.points}
-              xTicks={vm.xTicks}
-              yTicks={vm.yTicks}
-              xAxisLabel={vm.xAxisLabel}
-              yAxisLabel={vm.yAxisLabel}
-              focusPoint={vm.focusPoint}
+              chart={vm.scatterChart}
             />
           </div>
           <div className="plottool-chart-legend" aria-label="PlotTool chart legend">
@@ -800,12 +800,13 @@ function PlotToolStatisticsPanel({ vm }: { vm: ResearchPlotStatisticsState }) {
               <div className="font-mono uppercase tracking-[0.14em] text-foreground">Residual distribution</div>
               <p className="mt-2 leading-5">{vm.distributionSummary}</p>
             </div>
-            <div className="flex h-56 items-end gap-1 rounded-lg border border-border/70 bg-[#05101B] px-3 py-4" aria-label="PlotTool distribution chart">
-              {vm.distributionBars.map((bar, index) => (
+            <div className="plottool-distribution-chart" aria-label={vm.distributionChart.ariaLabel}>
+              {vm.distributionChart.bars.map((bar) => (
                 <div
-                  key={`${bar}-${index}`}
-                  className={cn("flex-1 rounded-t-sm", index >= 8 && index <= 14 ? "bg-primary" : "bg-primary/65")}
-                  style={{ height: `${Math.max(bar, 4)}%` }}
+                  key={bar.id}
+                  className={cn("flex-1 rounded-t-sm", distributionBarToneClass[bar.tone])}
+                  style={{ height: `${bar.heightPercent}%` }}
+                  aria-label={bar.ariaLabel}
                 />
               ))}
             </div>
@@ -893,65 +894,105 @@ function PlotToolStatisticsPanel({ vm }: { vm: ResearchPlotStatisticsState }) {
 }
 
 function PlotToolScatterChart({
-  points,
-  xTicks,
-  yTicks,
-  xAxisLabel,
-  yAxisLabel,
-  focusPoint
+  chart
 }: {
-  points: ResearchPlotScatterPoint[];
-  xTicks: ResearchPlotWorkspaceState["xTicks"];
-  yTicks: ResearchPlotWorkspaceState["yTicks"];
-  xAxisLabel: string;
-  yAxisLabel: string;
-  focusPoint: ResearchPlotWorkspaceState["focusPoint"];
+  chart: ResearchPlotScatterChartState;
 }) {
-  const markerPoint = findLastPlotPoint(points, (point) => point.emphasis) ?? points[points.length - 1];
-
   return (
-    <svg viewBox="0 0 640 320" className="h-[320px] w-full" role="img" aria-label="PlotTool scatter chart">
-      <g stroke="#18283C" strokeWidth="1">
-        {[40, 90, 140, 190, 240, 290].map((y) => <line key={`h-${y}`} x1="50" y1={y} x2="610" y2={y} />)}
-        {[50, 130, 210, 290, 370, 450, 530, 610].map((x) => <line key={`v-${x}`} x1={x} y1="40" x2={x} y2="290" />)}
+    <svg
+      viewBox={chart.viewBox}
+      className="h-[320px] w-full"
+      role="img"
+      aria-labelledby={chart.titleId}
+      aria-describedby={chart.descriptionId}
+    >
+      <title id={chart.titleId}>{chart.title}</title>
+      <desc id={chart.descriptionId}>{chart.description}</desc>
+      <g>
+        {chart.gridLines.map((line) => (
+          <line
+            key={line.id}
+            x1={line.x1}
+            y1={line.y1}
+            x2={line.x2}
+            y2={line.y2}
+            stroke={line.stroke}
+            strokeWidth={line.strokeWidth}
+            strokeDasharray={line.strokeDasharray}
+            opacity={line.opacity}
+          />
+        ))}
       </g>
-      <g fill="#A8B5C4" fontFamily="IBM Plex Mono" fontSize="10">
-        {yTicks.map((tick) => (
+      <g fill="var(--fg-muted)" fontFamily="IBM Plex Mono" fontSize="10">
+        {chart.yTicks.map((tick) => (
           <text key={`y-${tick.value}`} x="44" y={tick.value} textAnchor="end">
             {tick.label}
           </text>
         ))}
-        {xTicks.map((tick) => (
+        {chart.xTicks.map((tick) => (
           <text key={`x-${tick.value}`} x={tick.value + 20} y="304" textAnchor="middle">
             {tick.label}
           </text>
         ))}
-        <text x="330" y="318" textAnchor="middle">{xAxisLabel}</text>
-        <text x="16" y="170" textAnchor="middle" transform="rotate(-90 16 170)">{yAxisLabel}</text>
+        <text x="330" y="318" textAnchor="middle">{chart.xAxisLabel}</text>
+        <text x="16" y="170" textAnchor="middle" transform="rotate(-90 16 170)">{chart.yAxisLabel}</text>
       </g>
       <polyline
         fill="none"
-        stroke="#26BF86"
-        strokeWidth="2"
-        strokeDasharray="5 4"
-        points="90,250 150,222 210,198 270,170 330,142 390,114 450,88 510,66 564,54"
+        stroke={chart.trendLine.stroke}
+        strokeWidth={chart.trendLine.strokeWidth}
+        strokeDasharray={chart.trendLine.strokeDasharray}
+        points={chart.trendLine.points}
       />
-      <line x1={markerPoint.x} y1="40" x2={markerPoint.x} y2="290" stroke="#E6A93C" strokeDasharray="4 4" opacity="0.55" />
-      <line x1="50" y1={markerPoint.y} x2="610" y2={markerPoint.y} stroke="#E6A93C" strokeDasharray="4 4" opacity="0.55" />
-      {points.map((point, index) => (
+      <line
+        x1={chart.marker.verticalGuide.x1}
+        y1={chart.marker.verticalGuide.y1}
+        x2={chart.marker.verticalGuide.x2}
+        y2={chart.marker.verticalGuide.y2}
+        stroke={chart.marker.verticalGuide.stroke}
+        strokeWidth={chart.marker.verticalGuide.strokeWidth}
+        strokeDasharray={chart.marker.verticalGuide.strokeDasharray}
+        opacity={chart.marker.verticalGuide.opacity}
+      />
+      <line
+        x1={chart.marker.horizontalGuide.x1}
+        y1={chart.marker.horizontalGuide.y1}
+        x2={chart.marker.horizontalGuide.x2}
+        y2={chart.marker.horizontalGuide.y2}
+        stroke={chart.marker.horizontalGuide.stroke}
+        strokeWidth={chart.marker.horizontalGuide.strokeWidth}
+        strokeDasharray={chart.marker.horizontalGuide.strokeDasharray}
+        opacity={chart.marker.horizontalGuide.opacity}
+      />
+      {chart.points.map((point) => (
         <circle
-          key={`${point.x}-${point.y}-${index}`}
+          key={point.id}
           cx={point.x}
           cy={point.y}
-          r={point.emphasis ? 5 : 3.25}
-          fill={point.emphasis ? "#26BF86" : "#2AB2D4"}
-          fillOpacity={point.emphasis ? 0.95 : 0.65}
+          r={point.radius}
+          fill={point.fill}
+          fillOpacity={point.fillOpacity}
         />
       ))}
-      <circle cx={markerPoint.x} cy={markerPoint.y} r="6" fill="#E6A93C" stroke="#05101B" strokeWidth="2" />
-      <rect x={Math.min(markerPoint.x + 10, 512)} y={Math.max(markerPoint.y - 26, 52)} width="96" height="22" rx="4" fill="#0B1520" stroke="#E6A93C" />
-      <text x={Math.min(markerPoint.x + 18, 520)} y={Math.max(markerPoint.y - 12, 66)} fill="#E6A93C" fontFamily="IBM Plex Mono" fontSize="10">
-        {focusPoint.xValueText}, {focusPoint.yValueText}
+      <circle
+        cx={chart.marker.x}
+        cy={chart.marker.y}
+        r={chart.marker.radius}
+        fill={chart.marker.fill}
+        stroke={chart.marker.stroke}
+        strokeWidth={chart.marker.strokeWidth}
+      />
+      <rect
+        x={chart.marker.labelX}
+        y={chart.marker.labelY}
+        width={chart.marker.labelWidth}
+        height={chart.marker.labelHeight}
+        rx={chart.marker.labelRadius}
+        fill={chart.marker.labelFill}
+        stroke={chart.marker.labelStroke}
+      />
+      <text x={chart.marker.labelTextX} y={chart.marker.labelTextY} fill={chart.marker.labelStroke} fontFamily="IBM Plex Mono" fontSize="10">
+        {chart.marker.labelText}
       </text>
     </svg>
   );

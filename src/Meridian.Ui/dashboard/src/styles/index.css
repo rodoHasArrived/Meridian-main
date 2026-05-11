@@ -891,6 +891,17 @@
     gap: 0.75rem;
   }
 
+  .plottool-distribution-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.25rem;
+    height: 14rem;
+    padding: 1rem 0.75rem;
+    border: 1px solid rgba(31, 52, 76, 0.95);
+    border-radius: var(--radius-lg);
+    background: var(--surface-topbar);
+  }
+
   .plottool-legend-card {
     min-width: 0;
     padding: 0.75rem 0.875rem;

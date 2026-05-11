@@ -628,11 +628,16 @@ describe("TradingScreen", () => {
   });
 
   it("opens confirmation dialog when Cancel order button is clicked", async () => {
+    const user = userEvent.setup();
     await renderTradingScreen();
-    fireEvent.click(screen.getByTitle("Cancel order"));
+    await user.click(screen.getByTitle("Cancel order"));
     const dialog = screen.getByRole("dialog", { name: /cancel order PO-1/i });
     expect(dialog).toHaveAccessibleDescription("This will request cancellation of the selected order. Partial fills that already occurred are not reversed.");
-    expect(screen.getByRole("button", { name: /confirm cancel order po-1/i })).toBeEnabled();
+    const confirmButton = screen.getByRole("button", { name: /confirm cancel order po-1/i });
+    expect(confirmButton).toBeDisabled();
+    expect(confirmButton).toHaveAttribute("title", "Review and acknowledge the trading action before confirming.");
+    await user.click(screen.getByRole("checkbox", { name: /I reviewed this trading action/i }));
+    expect(confirmButton).toBeEnabled();
   });
 
   it("keeps strategy lifecycle commands disabled until the view model has a strategy ID", async () => {

@@ -161,7 +161,7 @@ describe("GovernanceScreen", () => {
   it("renders reconciliation, cash-flow, and reporting summaries", async () => {
     await renderGovernanceScreen();
 
-    expect(screen.getByRole("region", { name: "Governance workbench context" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
     expect(screen.getByText("Reporting profiles")).toBeInTheDocument();
     expect(screen.getByText("Cash-flow coverage is available for 4 runs; 1 run needs variance review.")).toBeInTheDocument();

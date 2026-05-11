@@ -27,10 +27,13 @@ import {
   validateOrderTicketForm,
   validatePromotionApproval,
   validatePromotionRejection,
+  useTradingConfirmViewModel,
   useTradingReadinessViewModel,
-  usePromotionGateViewModel
+  usePromotionGateViewModel,
+  type TradingConfirmServices,
+  type TradingReadinessServices
 } from "@/screens/trading-screen.view-model";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionPortfolioSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingOperatorReadiness, TradingPosition, TradingRiskState, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionPortfolioSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingOperatorReadiness, TradingPosition, TradingRiskState, TradingWorkspaceResponse } from "@/types";
 
 const eligibleEvaluation: PromotionEvaluationResult = {
   runId: "run-1",
@@ -749,8 +752,9 @@ describe("trading readiness view model", () => {
 
   it("ignores stale readiness refresh results after the initial payload changes", async () => {
     const staleRefresh = createDeferred<TradingOperatorReadiness | null>();
-    const services = {
-      getTradingReadiness: vi.fn(() => staleRefresh.promise)
+    const getTradingReadiness = vi.fn<TradingReadinessServices["getTradingReadiness"]>().mockReturnValue(staleRefresh.promise);
+    const services: TradingReadinessServices = {
+      getTradingReadiness
     };
     const nextReadiness: TradingOperatorReadiness = {
       ...blockedReadiness,
@@ -766,10 +770,13 @@ describe("trading readiness view model", () => {
       void result.current.refresh();
     });
 
+    const refreshSignal = getTradingReadiness.mock.calls[0]?.[0]?.signal;
+    expect(refreshSignal?.aborted).toBe(false);
     expect(result.current.refreshing).toBe(true);
 
     rerender({ initialReadiness: nextReadiness });
 
+    expect(refreshSignal?.aborted).toBe(true);
     expect(result.current.refreshing).toBe(false);
     expect(result.current.readiness?.asOf).toBe("2026-04-26T16:10:00Z");
 
@@ -832,12 +839,25 @@ describe("trading confirmation view model", () => {
     expect(state.confirmButtonLabel).toBe("Confirm");
     expect(state.confirmAriaLabel).toBe("Confirm cancel order po-1");
     expect(state.canClose).toBe(true);
-    expect(state.canConfirm).toBe(true);
+    expect(state.canConfirm).toBe(false);
+    expect(state.confirmDisabledReason).toBe("Review and acknowledge the trading action before confirming.");
+    expect(state.acknowledgement).toEqual({
+      id: "trading-confirm-cancel-order-po-1-acknowledgement",
+      label: "I reviewed this trading action",
+      description: "Cancel order PO-1 after reviewing partial-fill risk.",
+      checked: false,
+      disabled: false,
+      disabledReason: null
+    });
     expect(state.statusAnnouncement).toBe("Cancel order PO-1 confirmation open.");
+
+    const acknowledged = buildTradingConfirmDialogState(createTradingConfirmState({ kind: "cancel-order", orderId: "PO-1" }, true));
+    expect(acknowledged.canConfirm).toBe(true);
+    expect(acknowledged.confirmDisabledReason).toBeNull();
   });
 
   it("derives busy and completed states for assistive feedback", () => {
-    const action = { kind: "close-position" as const, symbol: "AAPL" };
+    const action = { kind: "close-position" as const, positionKey: "acct-1:AAPL", symbol: "AAPL" };
     const busy = buildTradingConfirmDialogState({
       ...createTradingConfirmState(action),
       busy: true
@@ -897,6 +917,56 @@ describe("trading confirmation view model", () => {
       tone: "warning",
       ariaLabel: "Action rejected: Strategy already stopped."
     }));
+  });
+
+  it("requires acknowledgement before executing the selected trading action", async () => {
+    const completedResult: TradingActionResult = {
+      actionId: "act-1",
+      status: "Completed",
+      message: "Order cancelled.",
+      occurredAt: "2026-04-26T16:00:00Z"
+    };
+    const services: TradingConfirmServices = {
+      cancelOrder: vi.fn().mockResolvedValue(completedResult),
+      cancelAllOrders: vi.fn(),
+      closePosition: vi.fn(),
+      pauseStrategy: vi.fn(),
+      stopStrategy: vi.fn()
+    };
+    const { result } = renderHook(() => useTradingConfirmViewModel({ services }));
+
+    act(() => {
+      result.current.openConfirm({ kind: "cancel-order", orderId: "PO-1" });
+    });
+
+    expect(result.current.canConfirm).toBe(false);
+    await act(async () => {
+      await result.current.executeConfirm();
+    });
+    expect(services.cancelOrder).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.setReviewAcknowledged(true);
+    });
+    expect(result.current.canConfirm).toBe(true);
+
+    await act(async () => {
+      await result.current.executeConfirm();
+    });
+
+    expect(services.cancelOrder).toHaveBeenCalledWith("PO-1");
+    expect(result.current.resultPanel).toEqual(expect.objectContaining({
+      status: "Completed",
+      message: "Order cancelled."
+    }));
+
+    act(() => {
+      result.current.closeConfirm();
+      result.current.openConfirm({ kind: "cancel-all" });
+    });
+
+    expect(result.current.acknowledgement.checked).toBe(false);
+    expect(result.current.canConfirm).toBe(false);
   });
 });
 

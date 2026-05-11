@@ -178,6 +178,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
                 aria-label={backfill.ariaLabel}
                 aria-pressed={backfill.selected}
                 aria-controls={backfill.detailPanelId}
+                aria-expanded={backfill.expanded}
                 aria-describedby={`${backfill.rowId}-detail`}
                 className={cn(
                   "w-full rounded-lg border px-3 py-3 text-left text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
@@ -379,6 +380,8 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                   className="rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   value={vm.providerForm.kind}
                   aria-label={vm.providerSetupDialogState.providerKindField.ariaLabel}
+                  disabled={vm.providerSetupDialogState.providerKindField.disabled}
+                  title={vm.providerSetupDialogState.providerKindField.disabledReason ?? undefined}
                   onChange={(e) => vm.updateProviderForm("kind", e.target.value)}
                 >
                   {vm.providerSetupDialogState.providerKindField.options.map((p) => (
@@ -397,6 +400,8 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                   className="rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   value={vm.providerSetupDialogState.displayNameField.value}
                   aria-label={vm.providerSetupDialogState.displayNameField.ariaLabel}
+                  disabled={vm.providerSetupDialogState.displayNameField.disabled}
+                  title={vm.providerSetupDialogState.displayNameField.disabledReason ?? undefined}
                   onChange={(e) => vm.updateProviderForm(vm.providerSetupDialogState.displayNameField.field, e.target.value)}
                 />
               </label>
@@ -412,6 +417,8 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                     value={field.value}
                     aria-label={field.ariaLabel}
                     placeholder={field.placeholder ?? undefined}
+                    disabled={field.disabled}
+                    title={field.disabledReason ?? undefined}
                     onChange={(e) => vm.updateProviderForm(field.field, e.target.value)}
                   />
                 </label>
@@ -434,6 +441,8 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                         type="checkbox"
                         className="mt-0.5 shrink-0 accent-[hsl(var(--primary))]"
                         checked={cap.selected}
+                        disabled={cap.disabled}
+                        title={cap.disabledReason ?? undefined}
                         onChange={() => vm.toggleProviderCapability(cap.id)}
                         aria-label={cap.label}
                       />

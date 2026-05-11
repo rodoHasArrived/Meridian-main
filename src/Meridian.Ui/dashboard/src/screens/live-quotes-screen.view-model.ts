@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import type { ApiRequestOptions } from "@/lib/api";
 import type {
   OrderBookLevelDto,
   OrderBookResponse,
@@ -26,6 +27,8 @@ export interface QuickTicketState extends QuickTicketForm {
   phase: QuickTicketPhase;
   message: string | null;
   orderId: string | null;
+  validationVisible?: boolean;
+  acknowledged: boolean;
 }
 
 export interface QuickTicketStatusViewModel {
@@ -47,6 +50,15 @@ export interface QuickTicketCommandViewModel {
   variant: "default" | "destructive";
 }
 
+export interface QuickTicketReviewAcknowledgementViewModel {
+  id: string;
+  label: string;
+  description: string;
+  checked: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
 export type QuickTicketField = "side" | "type" | "quantity" | "limitPrice";
 
 export interface QuickTicketFieldViewModel {
@@ -59,6 +71,8 @@ export interface QuickTicketFieldViewModel {
   inputMode: "numeric" | "decimal" | null;
   min: number | null;
   step: number | string | null;
+  disabled: boolean;
+  disabledReason: string | null;
 }
 
 export interface QuickTradeTicketViewModel {
@@ -70,10 +84,12 @@ export interface QuickTradeTicketViewModel {
   quantityInvalid: boolean;
   priceInvalid: boolean;
   sideToneClass: string;
+  reviewAcknowledgement: QuickTicketReviewAcknowledgementViewModel;
   submitCommand: QuickTicketCommandViewModel;
   status: QuickTicketStatusViewModel;
   seedTicket: (side: "Buy" | "Sell", price: number) => void;
   updateField: <K extends keyof QuickTicketForm>(field: K, value: QuickTicketForm[K]) => void;
+  setReviewAcknowledged: (value: boolean) => void;
   submitTicket: (event: FormEvent) => Promise<void>;
   resetTicket: () => void;
 }
@@ -241,9 +257,9 @@ export interface LiveQuotesMarketDataViewModel {
 }
 
 export interface LiveQuotesApi {
-  getLiveQuote: (symbol: string) => Promise<QuotesResponse>;
-  getLiveTrades: (symbol: string, limit: number) => Promise<TradesResponse>;
-  getLiveOrderbook: (symbol: string, depth: number) => Promise<OrderBookResponse>;
+  getLiveQuote: (symbol: string, options?: ApiRequestOptions) => Promise<QuotesResponse>;
+  getLiveTrades: (symbol: string, limit: number, options?: ApiRequestOptions) => Promise<TradesResponse>;
+  getLiveOrderbook: (symbol: string, depth: number, options?: ApiRequestOptions) => Promise<OrderBookResponse>;
   submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
 }
 
@@ -280,7 +296,9 @@ export const initialQuickTicketState: QuickTicketState = {
   limitPrice: "",
   phase: "idle",
   message: null,
-  orderId: null
+  orderId: null,
+  validationVisible: false,
+  acknowledged: false
 };
 
 export function useLiveQuotesScreenViewModel(
@@ -298,6 +316,7 @@ export function useLiveQuotesScreenViewModel(
   const requestIdRef = useRef(0);
   const inFlightSymbolRef = useRef<string | null>(null);
   const mountedRef = useRef(true);
+  const marketAbortRef = useRef<AbortController | null>(null);
   const quickTrade = useQuickTradeTicket(activeSymbol, { submitOrder: api.submitOrder });
 
   useEffect(() => {
@@ -307,6 +326,7 @@ export function useLiveQuotesScreenViewModel(
       mountedRef.current = false;
       requestIdRef.current += 1;
       inFlightSymbolRef.current = null;
+      marketAbortRef.current?.abort();
     };
   }, []);
 
@@ -324,14 +344,18 @@ export function useLiveQuotesScreenViewModel(
 
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
+    marketAbortRef.current?.abort();
+    const controller = new AbortController();
+    marketAbortRef.current = controller;
+    const requestOptions = { signal: controller.signal };
     inFlightSymbolRef.current = requestedSymbol;
     setRefreshing(true);
 
     try {
       const [quoteResult, tradesResult, orderbookResult] = await Promise.allSettled([
-        api.getLiveQuote(requestedSymbol),
-        api.getLiveTrades(requestedSymbol, LIVE_QUOTES_TRADE_HISTORY_LIMIT),
-        api.getLiveOrderbook(requestedSymbol, 10)
+        api.getLiveQuote(requestedSymbol, requestOptions),
+        api.getLiveTrades(requestedSymbol, LIVE_QUOTES_TRADE_HISTORY_LIMIT, requestOptions),
+        api.getLiveOrderbook(requestedSymbol, 10, requestOptions)
       ]);
 
       if (!mountedRef.current || requestIdRef.current !== requestId) {
@@ -343,6 +367,9 @@ export function useLiveQuotesScreenViewModel(
       setOrderbook((current) => mergeLiveQuotesLoadState(orderbookResult, current, "Failed to load order book"));
     } finally {
       if (mountedRef.current && requestIdRef.current === requestId) {
+        if (marketAbortRef.current === controller) {
+          marketAbortRef.current = null;
+        }
         inFlightSymbolRef.current = null;
         setRefreshing(false);
       }
@@ -580,9 +607,23 @@ export function useQuickTradeTicket(
   api: QuickTradeTicketApi
 ): QuickTradeTicketViewModel {
   const [ticket, setTicket] = useState<QuickTicketState>(initialQuickTicketState);
+  const activeSymbolRef = useRef(activeSymbol);
+  const submitRevisionRef = useRef(0);
+
+  activeSymbolRef.current = activeSymbol;
 
   const resetTicket = useCallback(() => {
+    submitRevisionRef.current += 1;
     setTicket(initialQuickTicketState);
+  }, []);
+
+  useEffect(() => {
+    submitRevisionRef.current += 1;
+    setTicket(initialQuickTicketState);
+  }, [activeSymbol]);
+
+  useEffect(() => () => {
+    submitRevisionRef.current += 1;
   }, []);
 
   const seedTicket = useCallback((side: "Buy" | "Sell", price: number) => {
@@ -593,7 +634,9 @@ export function useQuickTradeTicket(
       limitPrice: formatTicketPrice(price),
       phase: "idle",
       message: null,
-      orderId: null
+      orderId: null,
+      validationVisible: false,
+      acknowledged: false
     }));
   }, []);
 
@@ -602,48 +645,89 @@ export function useQuickTradeTicket(
       ...current,
       [field]: value,
       phase: current.phase === "submitted" ? "idle" : current.phase,
-      message: current.phase === "error" ? null : current.message
+      message: current.phase === "error" ? null : current.message,
+      validationVisible: true,
+      acknowledged: false
+    }));
+  }, []);
+
+  const setReviewAcknowledged = useCallback((value: boolean) => {
+    setTicket((current) => ({
+      ...current,
+      acknowledged: value,
+      phase: current.phase === "submitted" ? "idle" : current.phase
     }));
   }, []);
 
   const submitTicket = useCallback(async (event: FormEvent) => {
     event.preventDefault();
-    if (!activeSymbol) {
+    const submitSymbol = activeSymbol;
+    if (!submitSymbol) {
       return;
     }
 
     const validation = validateQuickTicket(ticket);
     if (validation) {
-      setTicket((current) => ({ ...current, phase: "error", message: validation, orderId: null }));
+      setTicket((current) => ({
+        ...current,
+        phase: "error",
+        message: validation,
+        orderId: null,
+        validationVisible: true
+      }));
       return;
     }
 
-    const request = buildOrderRequest(activeSymbol, ticket);
+    if (!ticket.acknowledged) {
+      setTicket((current) => ({
+        ...current,
+        phase: "error",
+        message: "Review and acknowledge the ticket before submitting.",
+        orderId: null,
+        validationVisible: false
+      }));
+      return;
+    }
+
+    const request = buildOrderRequest(submitSymbol, ticket);
+    const submitRevision = submitRevisionRef.current + 1;
+    submitRevisionRef.current = submitRevision;
+    const applyCurrentSubmission = (update: (current: QuickTicketState) => QuickTicketState) => {
+      if (submitRevisionRef.current === submitRevision && activeSymbolRef.current === submitSymbol) {
+        setTicket(update);
+      }
+    };
 
     setTicket((current) => ({ ...current, phase: "submitting", message: null, orderId: null }));
     try {
       const result = await api.submitOrder(request);
       if (result.success) {
-        setTicket((current) => ({
+        applyCurrentSubmission((current) => ({
           ...current,
           phase: "submitted",
           message: result.orderId ? `Order ${result.orderId} accepted.` : "Order accepted.",
-          orderId: result.orderId
+          orderId: result.orderId,
+          validationVisible: false,
+          acknowledged: false
         }));
       } else {
-        setTicket((current) => ({
+        applyCurrentSubmission((current) => ({
           ...current,
           phase: "error",
           message: result.reason ?? "Order rejected.",
-          orderId: null
+          orderId: null,
+          validationVisible: false,
+          acknowledged: false
         }));
       }
     } catch (error) {
-      setTicket((current) => ({
+      applyCurrentSubmission((current) => ({
         ...current,
         phase: "error",
         message: error instanceof Error && error.message ? error.message : "Order submission failed.",
-        orderId: null
+        orderId: null,
+        validationVisible: false,
+        acknowledged: false
       }));
     }
   }, [activeSymbol, api, ticket]);
@@ -654,10 +738,11 @@ export function useQuickTradeTicket(
       ticket,
       seedTicket,
       updateField,
+      setReviewAcknowledged,
       submitTicket,
       resetTicket
     }),
-    [activeSymbol, resetTicket, seedTicket, submitTicket, ticket, updateField]
+    [activeSymbol, resetTicket, seedTicket, setReviewAcknowledged, submitTicket, ticket, updateField]
   );
 }
 
@@ -666,6 +751,7 @@ export function buildQuickTradeTicketViewModel({
   ticket,
   seedTicket,
   updateField,
+  setReviewAcknowledged,
   submitTicket,
   resetTicket
 }: {
@@ -673,11 +759,13 @@ export function buildQuickTradeTicketViewModel({
   ticket: QuickTicketState;
   seedTicket: QuickTradeTicketViewModel["seedTicket"];
   updateField: QuickTradeTicketViewModel["updateField"];
+  setReviewAcknowledged: QuickTradeTicketViewModel["setReviewAcknowledged"];
   submitTicket: QuickTradeTicketViewModel["submitTicket"];
   resetTicket: QuickTradeTicketViewModel["resetTicket"];
 }): QuickTradeTicketViewModel {
   const validation = validateQuickTicket(ticket);
   const submitting = ticket.phase === "submitting";
+  const surfaceValidation = shouldSurfaceQuickTicketValidation(ticket, validation);
   const symbolLabel = activeSymbol ?? "selected symbol";
   const submitLabel = buildSubmitLabel(ticket, symbolLabel);
   const statusId = "quick-ticket-status";
@@ -685,19 +773,25 @@ export function buildQuickTradeTicketViewModel({
     ? "Order submission is already running."
     : activeSymbol === null
       ? "Select a symbol before submitting an order."
-      : validation;
+      : validation ?? (ticket.acknowledged ? null : "Review and acknowledge the ticket before submitting.");
 
   return {
     ticket,
     formLabel: `Quick trade ticket for ${symbolLabel}`,
-    fields: buildQuickTicketFields(ticket, statusId),
+    fields: buildQuickTicketFields(ticket, statusId, submitting),
     submitting,
-    priceDisabled: ticket.type === "Market",
-    quantityInvalid: validation !== null && validation.toLowerCase().includes("quantity"),
-    priceInvalid: validation !== null && validation.toLowerCase().includes("limit price"),
+    priceDisabled: submitting || ticket.type === "Market",
+    quantityInvalid: surfaceValidation && validation !== null && validation.toLowerCase().includes("quantity"),
+    priceInvalid: surfaceValidation && validation !== null && validation.toLowerCase().includes("limit price"),
     sideToneClass: ticket.side === "Buy"
       ? "bg-positive/10 text-positive border-positive/30"
       : "bg-danger/10 text-danger border-danger/30",
+    reviewAcknowledgement: buildQuickTicketReviewAcknowledgement({
+      activeSymbol,
+      ticket,
+      validation,
+      submitting
+    }),
     submitCommand: {
       label: submitLabel,
       ariaLabel: activeSymbol
@@ -709,9 +803,10 @@ export function buildQuickTradeTicketViewModel({
       busyLabel: "Submitting...",
       variant: ticket.side === "Buy" ? "default" : "destructive"
     },
-    status: buildQuickTicketStatus(ticket, validation),
+    status: buildQuickTicketStatus(ticket, validation, surfaceValidation),
     seedTicket,
     updateField,
+    setReviewAcknowledged,
     submitTicket,
     resetTicket
   };
@@ -719,8 +814,13 @@ export function buildQuickTradeTicketViewModel({
 
 export function buildQuickTicketFields(
   ticket: QuickTicketForm,
-  statusId = "quick-ticket-status"
+  statusId = "quick-ticket-status",
+  submitting = false
 ): Record<QuickTicketField, QuickTicketFieldViewModel> {
+  const submittingReason = submitting
+    ? "Order submission is in progress; wait before editing the ticket."
+    : null;
+
   return {
     side: {
       field: "side",
@@ -731,7 +831,9 @@ export function buildQuickTicketFields(
       describedBy: statusId,
       inputMode: null,
       min: null,
-      step: null
+      step: null,
+      disabled: submitting,
+      disabledReason: submittingReason
     },
     type: {
       field: "type",
@@ -742,7 +844,9 @@ export function buildQuickTicketFields(
       describedBy: statusId,
       inputMode: null,
       min: null,
-      step: null
+      step: null,
+      disabled: submitting,
+      disabledReason: submittingReason
     },
     quantity: {
       field: "quantity",
@@ -753,7 +857,9 @@ export function buildQuickTicketFields(
       describedBy: statusId,
       inputMode: "numeric",
       min: 1,
-      step: 1
+      step: 1,
+      disabled: submitting,
+      disabledReason: submittingReason
     },
     limitPrice: {
       field: "limitPrice",
@@ -764,7 +870,11 @@ export function buildQuickTicketFields(
       describedBy: statusId,
       inputMode: "decimal",
       min: 0,
-      step: "0.01"
+      step: "0.01",
+      disabled: submitting || ticket.type === "Market",
+      disabledReason: submittingReason ?? (ticket.type === "Market"
+        ? "Market orders route at the best available price."
+        : null)
     }
   };
 }
@@ -793,6 +903,37 @@ export function buildOrderRequest(symbol: string, ticket: QuickTicketForm): Orde
     type: ticket.type,
     quantity: Number(ticket.quantity),
     limitPrice: ticket.type === "Market" ? null : Number(ticket.limitPrice)
+  };
+}
+
+function buildQuickTicketReviewAcknowledgement({
+  activeSymbol,
+  ticket,
+  validation,
+  submitting
+}: {
+  activeSymbol: string | null;
+  ticket: QuickTicketState;
+  validation: string | null;
+  submitting: boolean;
+}): QuickTicketReviewAcknowledgementViewModel {
+  const disabledReason = submitting
+    ? "Order submission is in progress."
+    : activeSymbol === null
+      ? "Select a symbol before acknowledging the ticket."
+      : validation;
+  const symbolLabel = activeSymbol ?? "selected symbol";
+  const orderDescription = validation
+    ? "Complete the required ticket fields before acknowledging the order."
+    : `${ticket.side} ${ticket.quantity} ${symbolLabel} as a ${ticket.type.toLowerCase()} order${ticket.type === "Limit" ? ` at ${ticket.limitPrice}` : " at market"}.`;
+
+  return {
+    id: "quick-ticket-review-acknowledgement",
+    label: "I reviewed this order ticket",
+    description: orderDescription,
+    checked: ticket.acknowledged,
+    disabled: disabledReason !== null,
+    disabledReason
   };
 }
 
@@ -1183,7 +1324,11 @@ function buildSubmitLabel(ticket: QuickTicketState, symbol: string): string {
   return `${ticket.side} ${symbol}${ticket.type === "Limit" && ticket.limitPrice ? ` @ ${ticket.limitPrice}` : ""}`;
 }
 
-function buildQuickTicketStatus(ticket: QuickTicketState, validation: string | null): QuickTicketStatusViewModel {
+function buildQuickTicketStatus(
+  ticket: QuickTicketState,
+  validation: string | null,
+  surfaceValidation: boolean
+): QuickTicketStatusViewModel {
   if (ticket.phase === "submitted" && ticket.message) {
     return {
       id: "quick-ticket-status",
@@ -1206,14 +1351,56 @@ function buildQuickTicketStatus(ticket: QuickTicketState, validation: string | n
     };
   }
 
+  if (surfaceValidation && validation) {
+    return {
+      id: "quick-ticket-status",
+      role: "alert",
+      tone: "danger",
+      message: validation,
+      showSuccessIcon: false,
+      showErrorIcon: true
+    };
+  }
+
   return {
     id: "quick-ticket-status",
-    role: validation ? "alert" : "status",
-    tone: validation ? "danger" : "default",
-    message: validation ?? "Orders route through Meridian's pre-trade risk and execution controls.",
+    role: "status",
+    tone: "default",
+    message: buildQuickTicketGuidance(ticket, validation),
     showSuccessIcon: false,
-    showErrorIcon: validation !== null
+    showErrorIcon: false
   };
+}
+
+function shouldSurfaceQuickTicketValidation(ticket: QuickTicketState, validation: string | null): boolean {
+  if (!validation) {
+    return false;
+  }
+
+  return ticket.validationVisible === true || (ticket.phase === "error" && ticket.message === validation);
+}
+
+function buildQuickTicketGuidance(ticket: QuickTicketState, validation: string | null): string {
+  if (ticket.phase === "submitting") {
+    return "Submitting order to Meridian execution controls.";
+  }
+
+  if (!validation) {
+    return ticket.acknowledged
+      ? "Orders route through Meridian's pre-trade risk and execution controls."
+      : "Review side, quantity, and price, then acknowledge before submitting.";
+  }
+
+  const lower = validation.toLowerCase();
+  if (lower.includes("quantity")) {
+    return "Enter a quantity to enable order submission.";
+  }
+
+  if (lower.includes("limit price")) {
+    return "Enter a limit price to enable order submission.";
+  }
+
+  return "Complete the required ticket fields to enable order submission.";
 }
 
 function buildLiveQuoteSymbolLookupStatus({

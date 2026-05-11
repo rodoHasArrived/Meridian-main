@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   Database,
@@ -40,19 +40,20 @@ import {
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { markWorkflowPresetUsed } from "@/lib/api";
 import { legacyWorkspaceRedirect } from "@/lib/workspace";
-import { DataOperationsScreen } from "@/screens/data-operations-screen";
-import { LiveQuotesScreen } from "@/screens/live-quotes-screen";
-import { WatchlistScreen } from "@/screens/watchlist-screen";
-import { EvidenceWorkbenchScreen } from "@/screens/evidence-workbench-screen";
-import { GovernanceScreen } from "@/screens/governance-screen";
-import { OperatorReadinessConsole } from "@/screens/operator-readiness-console";
-import { OverviewScreen } from "@/screens/overview-screen";
-import { PortfolioScreen } from "@/screens/portfolio-screen";
-import { QuantLabScreen } from "@/screens/quant-lab-screen";
-import { ReportingScreen } from "@/screens/reporting-screen";
-import { ResearchScreen } from "@/screens/research-screen";
-import { SettingsScreen } from "@/screens/settings-screen";
-import { TradingScreen } from "@/screens/trading-screen";
+
+const DataOperationsScreen = lazy(() => import("@/screens/data-operations-screen").then((module) => ({ default: module.DataOperationsScreen })));
+const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
+const GovernanceScreen = lazy(() => import("@/screens/governance-screen").then((module) => ({ default: module.GovernanceScreen })));
+const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
+const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: module.OperatorReadinessConsole })));
+const OverviewScreen = lazy(() => import("@/screens/overview-screen").then((module) => ({ default: module.OverviewScreen })));
+const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: module.PortfolioScreen })));
+const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
+const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: module.ReportingScreen })));
+const ResearchScreen = lazy(() => import("@/screens/research-screen").then((module) => ({ default: module.ResearchScreen })));
+const SettingsScreen = lazy(() => import("@/screens/settings-screen").then((module) => ({ default: module.SettingsScreen })));
+const TradingScreen = lazy(() => import("@/screens/trading-screen").then((module) => ({ default: module.TradingScreen })));
+const WatchlistScreen = lazy(() => import("@/screens/watchlist-screen").then((module) => ({ default: module.WatchlistScreen })));
 
 export function App() {
   const [commandOpen, setCommandOpen] = useState(false);
@@ -116,6 +117,7 @@ export function App() {
     commandPaletteOpen: commandOpen,
     loading,
     error,
+    workflowError,
     workspaceErrors,
     payload: {
       session,
@@ -155,17 +157,14 @@ export function App() {
     setRouteAnnouncement(shell.routeFocus.announcement);
     document.title = shell.routeFocus.documentTitle;
 
-    const focusRouteTarget = () => {
-      focusElementById(shell.routeFocus.targetElementId ?? shell.routeFocus.fallbackElementId, workbenchRef.current);
+    const cleanupFocusWatcher = focusRouteTargetWhenReady(
+      workbenchRef.current,
+      shell.routeFocus.targetElementId,
+      shell.routeFocus.fallbackElementId
+    );
+    return () => {
+      cleanupFocusWatcher();
     };
-    focusRouteTarget();
-    if (typeof window.requestAnimationFrame === "function") {
-      const frame = window.requestAnimationFrame(focusRouteTarget);
-      return () => window.cancelAnimationFrame(frame);
-    }
-
-    const timeout = window.setTimeout(focusRouteTarget, 0);
-    return () => window.clearTimeout(timeout);
   }, [
     shell.canRenderRoutes,
     shell.routeFocus.announcement,
@@ -251,61 +250,63 @@ export function App() {
             {usingDevelopmentFixtures ? <DevelopmentFixtureNotice refreshing={loading} onRetry={refresh} /> : null}
             {shell.statusPanel ? <ShellStatus panel={shell.statusPanel} onRetry={refresh} /> : null}
             {shell.canRenderRoutes ? (
-              <Routes>
-                <Route path="/" element={<OverviewScreen data={overview} session={session} />} />
-                <Route path="/trading/readiness" element={(
-                  <OperatorReadinessConsole
-                    research={research}
-                    trading={trading}
-                    dataOperations={dataOperations}
-                    governance={governance}
-                    reporting={reporting}
-                  />
-                )} />
-                <Route path="/trading/*" element={<TradingScreen data={trading} />} />
-                <Route path="/portfolio/*" element={(
-                  <PortfolioScreen
-                    portfolio={portfolio}
-                    trading={trading}
-                    research={research}
-                    governance={governance}
-                    brokerageConnection={brokerageConnection}
-                    brokeragePortfolio={brokeragePortfolio}
-                  />
-                )} />
-                <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />
-                <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
-                <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
-                <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
-                <Route path="/strategy/*" element={<ResearchScreen data={research} />} />
-                <Route path="/data/quotes" element={<LiveQuotesScreen />} />
-                <Route path="/data/watchlist" element={<WatchlistScreen />} />
-                <Route path="/data/security-master" element={<LegacyWorkspaceRedirect />} />
-                <Route path="/data/security-master/*" element={<LegacyWorkspaceRedirect />} />
-                <Route path="/data/*" element={<DataOperationsScreen data={dataOperations} />} />
-                <Route path="/settings/*" element={(
-                  <SettingsScreen
-                    session={session}
-                    overview={overview}
-                    research={research}
-                    trading={trading}
-                    portfolio={portfolio}
-                    dataOperations={dataOperations}
-                    governance={governance}
-                    reporting={reporting}
-                    brokerageConnection={brokerageConnection}
-                    onRefresh={refresh}
-                    loading={loading}
-                    error={error}
-                    workspaceErrors={workspaceErrors}
-                  />
-                )} />
-                <Route path="/overview/*" element={<LegacyWorkspaceRedirect />} />
-                <Route path="/research/*" element={<LegacyWorkspaceRedirect />} />
-                <Route path="/data-operations/*" element={<LegacyWorkspaceRedirect />} />
-                <Route path="/governance/*" element={<LegacyWorkspaceRedirect />} />
-                <Route path="*" element={<Navigate to="/trading" replace />} />
-              </Routes>
+              <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
+                <Routes>
+                  <Route path="/" element={<OverviewScreen data={overview} session={session} />} />
+                  <Route path="/trading/readiness" element={(
+                    <OperatorReadinessConsole
+                      research={research}
+                      trading={trading}
+                      dataOperations={dataOperations}
+                      governance={governance}
+                      reporting={reporting}
+                    />
+                  )} />
+                  <Route path="/trading/*" element={<TradingScreen data={trading} />} />
+                  <Route path="/portfolio/*" element={(
+                    <PortfolioScreen
+                      portfolio={portfolio}
+                      trading={trading}
+                      research={research}
+                      governance={governance}
+                      brokerageConnection={brokerageConnection}
+                      brokeragePortfolio={brokeragePortfolio}
+                    />
+                  )} />
+                  <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />
+                  <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
+                  <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
+                  <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
+                  <Route path="/strategy/*" element={<ResearchScreen data={research} />} />
+                  <Route path="/data/quotes" element={<LiveQuotesScreen />} />
+                  <Route path="/data/watchlist" element={<WatchlistScreen />} />
+                  <Route path="/data/security-master" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/data/security-master/*" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/data/*" element={<DataOperationsScreen data={dataOperations} />} />
+                  <Route path="/settings/*" element={(
+                    <SettingsScreen
+                      session={session}
+                      overview={overview}
+                      research={research}
+                      trading={trading}
+                      portfolio={portfolio}
+                      dataOperations={dataOperations}
+                      governance={governance}
+                      reporting={reporting}
+                      brokerageConnection={brokerageConnection}
+                      onRefresh={refresh}
+                      loading={loading}
+                      error={error}
+                      workspaceErrors={workspaceErrors}
+                    />
+                  )} />
+                  <Route path="/overview/*" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/research/*" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/data-operations/*" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/governance/*" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="*" element={<Navigate to="/trading" replace />} />
+                </Routes>
+              </Suspense>
             ) : null}
           </div>
         </main>
@@ -342,9 +343,74 @@ export function App() {
   );
 }
 
+function focusRouteTargetWhenReady(
+  root: HTMLElement | null,
+  targetElementId: string | null,
+  fallbackElementId: string
+): () => void {
+  const requestedTargetId = targetElementId;
+  if (!requestedTargetId) {
+    focusElementById(fallbackElementId, root);
+    return () => undefined;
+  }
+
+  if (focusElementById(requestedTargetId, root, false)) {
+    return () => undefined;
+  }
+
+  let complete = false;
+  let fallbackTimeout: number | null = null;
+  let observer: MutationObserver | null = null;
+
+  const cleanup = () => {
+    complete = true;
+    if (fallbackTimeout !== null) {
+      window.clearTimeout(fallbackTimeout);
+      fallbackTimeout = null;
+    }
+
+    observer?.disconnect();
+    observer = null;
+  };
+
+  const focusRequestedTarget = () => {
+    if (complete || !focusElementById(requestedTargetId, root, false)) {
+      return;
+    }
+
+    cleanup();
+  };
+
+  observer = new MutationObserver(focusRequestedTarget);
+  observer.observe(root ?? document.body, { childList: true, subtree: true });
+
+  fallbackTimeout = window.setTimeout(() => {
+    if (complete) {
+      return;
+    }
+
+    focusElementById(fallbackElementId, root);
+    cleanup();
+  }, 1500);
+
+  return cleanup;
+}
+
 function LegacyWorkspaceRedirect() {
   const location = useLocation();
   return <Navigate to={legacyWorkspaceRedirect(location.pathname, location.search, location.hash) ?? "/trading"} replace />;
+}
+
+function WorkspaceRouteFallback({ title }: { title: string }) {
+  return (
+    <section role="status" aria-live="polite" className="panel-surface flex items-center gap-3 p-4">
+      <LoaderCircle className="h-4 w-4 animate-spin text-primary" aria-hidden="true" />
+      <div>
+        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+        <p className="mt-1 text-xs text-muted-foreground">Preparing the workstation route.</p>
+      </div>
+    </section>
+  );
 }
 
 function DevelopmentFixtureNotice({
@@ -423,10 +489,10 @@ function DevelopmentFixtureNotice({
   );
 }
 
-function focusElementById(targetElementId: string, fallbackElement: HTMLElement | null): void {
-  const target = document.getElementById(targetElementId) ?? fallbackElement;
+function focusElementById(targetElementId: string, fallbackElement: HTMLElement | null, allowFallback = true): boolean {
+  const target = document.getElementById(targetElementId) ?? (allowFallback ? fallbackElement : null);
   if (!target) {
-    return;
+    return false;
   }
 
   const previousTabIndex = target.getAttribute("tabindex");
@@ -446,6 +512,8 @@ function focusElementById(targetElementId: string, fallbackElement: HTMLElement 
   if (previousTabIndex === null) {
     target.addEventListener("blur", () => target.removeAttribute("tabindex"), { once: true });
   }
+
+  return true;
 }
 
 const developmentFixtureDemoIcons: Record<DevelopmentFixtureNoticeStep["id"], LucideIcon> = {

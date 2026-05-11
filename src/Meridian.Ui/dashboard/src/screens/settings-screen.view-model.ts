@@ -141,8 +141,11 @@ export function buildAlpacaConnectionCommandState({
   const secretKeyMissing = form.secretKey.trim().length === 0;
   const hasValidationErrors = keyIdMissing || secretKeyMissing;
   const busy = form.busyAction !== null;
-  const keyIdError = form.submitted && keyIdMissing;
-  const secretKeyError = form.submitted && secretKeyMissing;
+  const validationVisible = form.submitted || form.actionTone === "danger";
+  const keyIdError = validationVisible && keyIdMissing;
+  const secretKeyError = validationVisible && secretKeyMissing;
+  const missingCredentialValue = validationVisible ? "Required" : "Needed";
+  const missingCredentialTone = validationVisible ? "warning" : "muted";
   const environmentOptions: SettingsAlpacaEnvironmentOption[] = [
     {
       id: "alpaca-environment-paper",
@@ -173,16 +176,16 @@ export function buildAlpacaConnectionCommandState({
     {
       id: "alpaca-key-id-requirement",
       label: "Key ID",
-      value: keyIdMissing ? "Required" : "Ready",
+      value: keyIdMissing ? missingCredentialValue : "Ready",
       met: !keyIdMissing,
-      tone: keyIdMissing ? "warning" : "success"
+      tone: keyIdMissing ? missingCredentialTone : "success"
     },
     {
       id: "alpaca-secret-key-requirement",
       label: "Secret key",
-      value: secretKeyMissing ? "Required" : "Ready",
+      value: secretKeyMissing ? missingCredentialValue : "Ready",
       met: !secretKeyMissing,
-      tone: secretKeyMissing ? "warning" : "success"
+      tone: secretKeyMissing ? missingCredentialTone : "success"
     },
     {
       id: "alpaca-environment-requirement",
@@ -198,27 +201,31 @@ export function buildAlpacaConnectionCommandState({
       ? "danger"
       : form.actionTone === "success"
         ? "success"
-        : hasValidationErrors
+        : hasValidationErrors && validationVisible
           ? "warning"
-          : "success";
+          : "default";
   const formPanelTitle = busy
     ? form.busyAction === "clear"
       ? "Clearing Alpaca credentials"
       : "Testing Alpaca credentials"
     : form.actionMessage
       ? form.actionMessage
-      : hasValidationErrors
+      : hasValidationErrors && validationVisible
         ? "Credentials incomplete"
-        : "Credentials ready for test";
+        : hasValidationErrors
+          ? "Enter Alpaca credentials"
+          : "Credentials ready for test";
   const formPanelDetail = busy
     ? "Meridian is waiting on the brokerage connection request."
     : form.actionMessage
       ? hasValidationErrors
         ? "Review the required fields before the next connection test."
         : "Credential readiness has been recalculated from the current form state."
-      : hasValidationErrors
+      : hasValidationErrors && validationVisible
         ? "Enter the required Alpaca API values before Meridian can call /v2/account."
-        : "Submitting will test the account and clear the secret key from the form after the response.";
+        : hasValidationErrors
+          ? "Paste the paper key ID and secret key to enable account verification."
+          : "Submitting will test the account and clear the secret key from the form after the response.";
 
   return {
     keyIdError,

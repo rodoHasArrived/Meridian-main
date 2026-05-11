@@ -5,10 +5,12 @@ import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { cn } from "@/lib/utils";
 import {
   resolveBrokerageAccountFilterKeyCommand,
+  type PortfolioBrokeragePositionRow,
   usePortfolioScreenViewModel
 } from "@/screens/portfolio-screen.view-model";
 import type {
@@ -49,6 +51,63 @@ const cashFlowBorderClass = {
   warning: "border-warning/30",
   danger: "border-danger/30"
 } as const;
+
+const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionRow>[] = [
+  {
+    id: "account",
+    label: "Account",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.accountKind}</span>
+        <span className="block truncate text-xs text-muted-foreground">{row.accountLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "symbol",
+    label: "Symbol",
+    render: (row) => <span className="font-mono font-semibold text-foreground">{row.symbol}</span>
+  },
+  {
+    id: "quantity",
+    label: "Qty",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.quantity}</span>
+  },
+  {
+    id: "average",
+    label: "Avg",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.averagePrice}</span>
+  },
+  {
+    id: "mark",
+    label: "Mark",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.markPrice}</span>
+  },
+  {
+    id: "market-value",
+    label: "Market value",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.marketValue}</span>
+  },
+  {
+    id: "unrealized-pnl",
+    label: "Unrealized P&L",
+    align: "right",
+    render: (row) => <span className={cn("font-mono font-semibold", pnlToneClass[row.pnlTone])}>{row.unrealizedPnl}</span>
+  },
+  {
+    id: "coverage",
+    label: "Coverage",
+    render: (row) => (
+      <Badge variant={row.securityCoverage === "Covered" ? "success" : "warning"}>
+        {row.securityCoverage}
+      </Badge>
+    )
+  }
+];
 
 export function PortfolioScreen({
   portfolio,
@@ -194,6 +253,45 @@ export function PortfolioScreen({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          <section
+            role="region"
+            aria-label={vm.brokerageTrustSnapshot.regionLabel}
+            className={cn("rounded-lg border bg-secondary/15 px-4 py-3", cashFlowBorderClass[vm.brokerageTrustSnapshot.statusTone])}
+          >
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <div className="eyebrow-label">Sync trust</div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <h3 className="text-base font-semibold text-foreground">{vm.brokerageTrustSnapshot.title}</h3>
+                  <Badge variant={workflowStatusVariant(vm.brokerageTrustSnapshot.statusTone)}>
+                    {vm.brokerageTrustSnapshot.statusLabel}
+                  </Badge>
+                </div>
+                <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">
+                  {vm.brokerageTrustSnapshot.summary}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                {vm.brokerageTrustSnapshot.chips.map((chip) => (
+                  <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
+                ))}
+              </div>
+            </div>
+            <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {vm.brokerageTrustSnapshot.fields.map((field) => (
+                <div
+                  key={field.label}
+                  className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/20 px-3 py-2"
+                >
+                  <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                  <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
+                    {field.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+
           <div
             className="flex flex-wrap items-center gap-2"
             role="group"
@@ -276,71 +374,20 @@ export function PortfolioScreen({
 
           {vm.hasBrokeragePositions ? (
             <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-              <div className="data-grid-surface overflow-x-auto">
-                <table
-                  className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm"
-                  aria-label={vm.brokeragePositionsTableLabel}
-                >
-                  <caption className="sr-only">
-                    Select a brokerage position to update the live brokerage position inspector.
-                  </caption>
-                  <thead className="bg-secondary/30">
-                    <tr>
-                      {["Account", "Symbol", "Qty", "Avg", "Mark", "Market value", "Unrealized P&L", "Coverage"].map((col) => (
-                        <th
-                          key={col}
-                          className={cn(
-                            "px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground",
-                            ["Qty", "Avg", "Mark", "Market value", "Unrealized P&L"].includes(col) ? "text-right" : ""
-                          )}
-                        >
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/50">
-                    {vm.brokeragePositionRows.map((row) => (
-                      <tr
-                        key={row.id}
-                        aria-label={row.ariaLabel}
-                        aria-selected={row.isSelected}
-                        className={cn(
-                          "bg-background/20 transition-colors",
-                          row.isSelected ? "bg-primary/10" : "hover:bg-secondary/20"
-                        )}
-                      >
-                        <td className="px-3 py-2">
-                          <div className="font-semibold text-foreground">{row.accountKind}</div>
-                          <div className="text-xs text-muted-foreground">{row.accountLabel}</div>
-                        </td>
-                        <td className="px-3 py-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={row.isSelected ? "secondary" : "ghost"}
-                            aria-pressed={row.isSelected}
-                            aria-controls={vm.brokeragePositionDetailId}
-                            aria-label={row.selectAriaLabel}
-                            onClick={() => vm.selectBrokeragePosition(row.id)}
-                            className="justify-start px-2 font-mono font-semibold"
-                          >
-                            {row.symbol}
-                          </Button>
-                        </td>
-                        <td className="px-3 py-2 text-right font-mono text-foreground">{row.quantity}</td>
-                        <td className="px-3 py-2 text-right font-mono text-foreground">{row.averagePrice}</td>
-                        <td className="px-3 py-2 text-right font-mono text-foreground">{row.markPrice}</td>
-                        <td className="px-3 py-2 text-right font-mono text-foreground">{row.marketValue}</td>
-                        <td className={cn("px-3 py-2 text-right font-mono font-semibold", pnlToneClass[row.pnlTone])}>
-                          {row.unrealizedPnl}
-                        </td>
-                        <td className="px-3 py-2 text-muted-foreground">{row.securityCoverage}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DenseDataTable
+                columns={brokeragePositionColumns}
+                rows={vm.brokeragePositionRows}
+                getRowId={(row) => row.id}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                getRowAriaControls={(row) => row.detailPanelId}
+                getRowAriaExpanded={(row) => row.expanded}
+                onRowSelect={(row) => vm.selectBrokeragePosition(row.id)}
+                selectedRowId={vm.selectedBrokeragePositionId}
+                emptyText={vm.brokerageEmptyText}
+                ariaLabel={vm.brokeragePositionsTableLabel}
+                caption="Select a brokerage position row to update the live brokerage position inspector."
+              />
               <aside
                 id={vm.brokeragePositionDetailId}
                 role="complementary"

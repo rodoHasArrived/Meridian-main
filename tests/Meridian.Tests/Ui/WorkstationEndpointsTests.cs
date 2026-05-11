@@ -359,6 +359,50 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldEncodeRunDrillInRoutes()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run latest/encoded",
+            strategyId: "carry-encoded",
+            strategyName: "Encoded Carry",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 18, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/fx/spot",
+            feedReference: "synthetic:fx"));
+
+        var client = app.GetTestClient();
+        using var research = await ReadJsonAsync(client, "/api/workstation/research");
+
+        var run = research.RootElement.GetProperty("runs")[0];
+        run.GetProperty("id").GetString().Should().Be("run latest/encoded");
+        run.GetProperty("drillIn").GetProperty("equityCurve").GetString()
+            .Should()
+            .Be("/api/workstation/runs/run%20latest%2Fencoded/equity-curve");
+        run.GetProperty("drillIn").GetProperty("fills").GetString()
+            .Should()
+            .Be("/api/workstation/runs/run%20latest%2Fencoded/fills");
+        run.GetProperty("drillIn").GetProperty("cashFlows").GetString()
+            .Should()
+            .Be("/api/portfolio/run%20latest%2Fencoded/cash-flows");
+
+        var response = await client.GetAsync("/api/workstation/research/briefing");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
+        briefing.Should().NotBeNull();
+        briefing!.InsightFeed.Widgets[0].DrillInRoute.Should()
+            .Be("/api/workstation/runs/run%20latest%2Fencoded/equity-curve");
+        briefing.RecentRuns[0].DrillIn.Continuity.Should()
+            .Be("/api/workstation/runs/run%20latest%2Fencoded/continuity");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnFallbackResearchBriefing()
     {
         await using var app = await CreateAppAsync();
@@ -1012,7 +1056,7 @@ public sealed class WorkstationEndpointsTests
             readiness.WorkItems.Should().Contain(item =>
                 item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
                 item.FundAccountId == fundAccountId &&
-                item.TargetRoute == UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.ToString(), StringComparison.Ordinal));
+                item.TargetRoute == UiApiRoutes.WithParam(UiApiRoutes.FundAccountBrokerageSyncStatus, "accountId", fundAccountId.ToString()));
         }
         finally
         {
@@ -1127,12 +1171,12 @@ public sealed class WorkstationEndpointsTests
         newestReviewItem.Tone.Should().Be(OperatorWorkItemToneDto.Warning);
         newestReviewItem.Workspace.Should().Be("Trading");
         newestReviewItem.RunId.Should().Be(newestRunId);
-        newestReviewItem.TargetRoute.Should().Be(UiApiRoutes.RunsReviewPacket.Replace("{runId}", newestRunId, StringComparison.Ordinal));
+        newestReviewItem.TargetRoute.Should().Be(UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", newestRunId));
         newestReviewItem.TargetPageTag.Should().Be("TradingShell");
         olderReviewItem.Tone.Should().Be(OperatorWorkItemToneDto.Warning);
         olderReviewItem.Workspace.Should().Be("Trading");
         olderReviewItem.RunId.Should().Be(olderRunId);
-        olderReviewItem.TargetRoute.Should().Be(UiApiRoutes.RunsReviewPacket.Replace("{runId}", olderRunId, StringComparison.Ordinal));
+        olderReviewItem.TargetRoute.Should().Be(UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", olderRunId));
         olderReviewItem.TargetPageTag.Should().Be("TradingShell");
         inbox.Items.Should().OnlyContain(item =>
             !item.WorkItemId.StartsWith("promotion-review-", StringComparison.OrdinalIgnoreCase) ||
@@ -1173,7 +1217,7 @@ public sealed class WorkstationEndpointsTests
                 .Which;
             syncItem.Tone.Should().Be(OperatorWorkItemToneDto.Critical);
             syncItem.Workspace.Should().Be("Trading");
-            syncItem.TargetRoute.Should().Be(UiApiRoutes.FundAccountBrokerageSyncStatus.Replace("{accountId}", fundAccountId.ToString(), StringComparison.Ordinal));
+            syncItem.TargetRoute.Should().Be(UiApiRoutes.WithParam(UiApiRoutes.FundAccountBrokerageSyncStatus, "accountId", fundAccountId.ToString()));
             syncItem.TargetPageTag.Should().Be("AccountPortfolio");
             syncItem.Detail.Should().Contain("Alpaca credentials are missing.");
         }
@@ -2127,7 +2171,7 @@ public sealed class WorkstationEndpointsTests
             item.WorkItemId == $"promotion-review-{runId.ToLowerInvariant()}" &&
             item.Kind == OperatorWorkItemKindDto.PromotionReview &&
             item.Workspace == "Trading" &&
-            item.TargetRoute == UiApiRoutes.RunsReviewPacket.Replace("{runId}", runId, StringComparison.Ordinal) &&
+            item.TargetRoute == UiApiRoutes.WithParam(UiApiRoutes.RunsReviewPacket, "runId", runId) &&
             item.TargetPageTag == "TradingShell");
         first.WorkItems.Should().NotContain(static item =>
             item.WorkItemId.StartsWith("operator-", StringComparison.OrdinalIgnoreCase));
@@ -2918,6 +2962,7 @@ public sealed class WorkstationEndpointsTests
         var rows = trading.RootElement.GetProperty("positions").EnumerateArray().ToArray();
         rows.Should().NotBeEmpty();
         var row = rows[0];
+        row.GetProperty("positionKey").GetString().Should().Be("AAPL");
         row.GetProperty("symbol").GetString().Should().Be("AAPL");
 
         // Mid of (199.90, 200.10) = 200.00

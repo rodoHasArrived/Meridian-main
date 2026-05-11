@@ -5,9 +5,11 @@ import {
   getEvidenceSubjects,
   validateEvidencePacket
 } from "@/lib/api";
+import type { ApiRequestOptions } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, workflowTargetPath } from "@/lib/workspace";
 import type {
   EvidenceCompleteness,
+  EvidenceEdge,
   EvidenceNode,
   EvidencePacket,
   EvidencePacketExportResponse,
@@ -17,10 +19,10 @@ import type {
 } from "@/types";
 
 export interface EvidenceWorkbenchServices {
-  getSubjects: () => Promise<EvidenceSubject[]>;
-  getPacket: (subjectKind: string, subjectId: string) => Promise<EvidencePacket>;
-  validatePacket: (subjectKind: string, subjectId: string) => Promise<EvidenceCompleteness>;
-  exportManifest: (subjectKind: string, subjectId: string) => Promise<EvidencePacketExportResponse>;
+  getSubjects: (options?: ApiRequestOptions) => Promise<EvidenceSubject[]>;
+  getPacket: (subjectKind: string, subjectId: string, options?: ApiRequestOptions) => Promise<EvidencePacket>;
+  validatePacket: (subjectKind: string, subjectId: string, options?: ApiRequestOptions) => Promise<EvidenceCompleteness>;
+  exportManifest: (subjectKind: string, subjectId: string, options?: ApiRequestOptions) => Promise<EvidencePacketExportResponse>;
 }
 
 export interface EvidenceNodeGroupViewModel {
@@ -29,6 +31,52 @@ export interface EvidenceNodeGroupViewModel {
   readyCount: number;
   reviewCount: number;
   nodes: EvidenceNode[];
+}
+
+export interface EvidenceLineageRowViewModel {
+  id: string;
+  fromId: string;
+  relationshipLabel: string;
+  toId: string;
+  reason: string;
+  ariaLabel: string;
+  selectAriaLabel: string;
+}
+
+export interface EvidenceLineagePanelViewModel {
+  title: string;
+  description: string;
+  tableLabel: string;
+  summaryLabel: string;
+  detailPanelId: string;
+  hasRows: boolean;
+  defaultSelectedRowId: string | null;
+  rows: EvidenceLineageRowViewModel[];
+  emptyTitle: string;
+  emptyDetail: string;
+  emptyRole: "status";
+  emptyAriaLive: "polite";
+}
+
+export interface EvidenceLineageDetailFieldViewModel {
+  label: string;
+  value: string;
+}
+
+export interface EvidenceLineageDetailViewModel {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  ariaLabel: string;
+  fields: EvidenceLineageDetailFieldViewModel[];
+}
+
+export interface EvidenceLineageSelectionViewModel {
+  selectedRowId: string | null;
+  selectedDetail: EvidenceLineageDetailViewModel | null;
+  selectRow: (rowId: string) => void;
 }
 
 export type EvidencePacketActionControl = "link" | "validate" | "export";
@@ -88,6 +136,7 @@ export interface EvidenceWorkbenchViewModel {
   statusLabel: string;
   statusTone: EvidenceStatusTone;
   generatedLabel: string;
+  lineagePanel: EvidenceLineagePanelViewModel;
   nodeGroups: EvidenceNodeGroupViewModel[];
   hasPacketActions: boolean;
   packetActionsLabel: string;
@@ -117,7 +166,7 @@ const defaultServices: EvidenceWorkbenchServices = {
   getSubjects: getEvidenceSubjects,
   getPacket: getEvidencePacket,
   validatePacket: validateEvidencePacket,
-  exportManifest: (subjectKind, subjectId) => exportEvidenceManifest(subjectKind, subjectId)
+  exportManifest: (subjectKind, subjectId, options) => exportEvidenceManifest(subjectKind, subjectId, { includeWarnings: true }, options)
 };
 
 const noopReloadEvidence = () => {};
@@ -141,12 +190,20 @@ export function useEvidenceWorkbenchViewModel(
   const requestRevisionRef = useRef(0);
   const validateCommandRevisionRef = useRef(0);
   const exportCommandRevisionRef = useRef(0);
+  const loadAbortRef = useRef<AbortController | null>(null);
+  const validateAbortRef = useRef<AbortController | null>(null);
+  const exportAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    loadAbortRef.current?.abort();
+    validateAbortRef.current?.abort();
+    exportAbortRef.current?.abort();
     const revision = requestRevisionRef.current + 1;
     requestRevisionRef.current = revision;
     validateCommandRevisionRef.current += 1;
     exportCommandRevisionRef.current += 1;
+    const controller = new AbortController();
+    loadAbortRef.current = controller;
     setLoading(true);
     setError(null);
     setPacket(null);
@@ -157,24 +214,27 @@ export function useEvidenceWorkbenchViewModel(
 
     const load = async () => {
       try {
-        const subjectList = await services.getSubjects();
+        const subjectList = await services.getSubjects({ signal: controller.signal });
         if (requestRevisionRef.current !== revision) {
           return;
         }
         setSubjects(subjectList);
 
         if (selectedSubjectKind && selectedSubjectId) {
-          const nextPacket = await services.getPacket(selectedSubjectKind, selectedSubjectId);
+          const nextPacket = await services.getPacket(selectedSubjectKind, selectedSubjectId, { signal: controller.signal });
           if (requestRevisionRef.current !== revision) {
             return;
           }
           setPacket(nextPacket);
         }
       } catch (loadError) {
-        if (requestRevisionRef.current === revision) {
+        if (requestRevisionRef.current === revision && !isAbortError(loadError)) {
           setError(loadError instanceof Error ? loadError.message : "Evidence workbench failed to load.");
         }
       } finally {
+        if (loadAbortRef.current === controller) {
+          loadAbortRef.current = null;
+        }
         if (requestRevisionRef.current === revision) {
           setLoading(false);
         }
@@ -184,6 +244,9 @@ export function useEvidenceWorkbenchViewModel(
     void load();
 
     return () => {
+      controller.abort();
+      validateAbortRef.current?.abort();
+      exportAbortRef.current?.abort();
       requestRevisionRef.current += 1;
       validateCommandRevisionRef.current += 1;
       exportCommandRevisionRef.current += 1;
@@ -198,19 +261,25 @@ export function useEvidenceWorkbenchViewModel(
     const revision = requestRevisionRef.current;
     const exportRevision = exportCommandRevisionRef.current + 1;
     exportCommandRevisionRef.current = exportRevision;
+    exportAbortRef.current?.abort();
+    const controller = new AbortController();
+    exportAbortRef.current = controller;
     setExportBusy(true);
     setError(null);
     setExportResult(null);
     try {
-      const result = await services.exportManifest(selectedSubjectKind, selectedSubjectId);
+      const result = await services.exportManifest(selectedSubjectKind, selectedSubjectId, { signal: controller.signal });
       if (requestRevisionRef.current === revision && exportCommandRevisionRef.current === exportRevision) {
         setExportResult(result);
       }
     } catch (exportError) {
-      if (requestRevisionRef.current === revision && exportCommandRevisionRef.current === exportRevision) {
+      if (requestRevisionRef.current === revision && exportCommandRevisionRef.current === exportRevision && !isAbortError(exportError)) {
         setError(exportError instanceof Error ? exportError.message : "Evidence manifest export failed.");
       }
     } finally {
+      if (exportAbortRef.current === controller) {
+        exportAbortRef.current = null;
+      }
       if (requestRevisionRef.current === revision && exportCommandRevisionRef.current === exportRevision) {
         setExportBusy(false);
       }
@@ -225,19 +294,25 @@ export function useEvidenceWorkbenchViewModel(
     const revision = requestRevisionRef.current;
     const validateRevision = validateCommandRevisionRef.current + 1;
     validateCommandRevisionRef.current = validateRevision;
+    validateAbortRef.current?.abort();
+    const controller = new AbortController();
+    validateAbortRef.current = controller;
     setValidateBusy(true);
     setError(null);
     setValidationResult(null);
     try {
-      const result = await services.validatePacket(selectedSubjectKind, selectedSubjectId);
+      const result = await services.validatePacket(selectedSubjectKind, selectedSubjectId, { signal: controller.signal });
       if (requestRevisionRef.current === revision && validateCommandRevisionRef.current === validateRevision) {
         setValidationResult(result);
       }
     } catch (validateError) {
-      if (requestRevisionRef.current === revision && validateCommandRevisionRef.current === validateRevision) {
+      if (requestRevisionRef.current === revision && validateCommandRevisionRef.current === validateRevision && !isAbortError(validateError)) {
         setError(validateError instanceof Error ? validateError.message : "Evidence validation failed.");
       }
     } finally {
+      if (validateAbortRef.current === controller) {
+        validateAbortRef.current = null;
+      }
       if (requestRevisionRef.current === revision && validateCommandRevisionRef.current === validateRevision) {
         setValidateBusy(false);
       }
@@ -347,6 +422,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     statusLabel: completeness ? formatStatus(completeness.status) : "Not loaded",
     statusTone: completeness ? mapStatusTone(completeness.status) : "muted",
     generatedLabel: input.packet ? formatDate(input.packet.generatedAt) : "Not generated",
+    lineagePanel: buildEvidenceLineagePanel(input.packet?.edges ?? [], input.packet?.subject ?? null),
     nodeGroups: groupNodes(input.packet?.nodes ?? []),
     hasPacketActions: packetActions.length > 0,
     packetActionsLabel: "Evidence packet actions",
@@ -369,6 +445,86 @@ export function buildEvidenceWorkbenchViewModel(input: {
     reloadEvidence: input.reloadEvidence ?? noopReloadEvidence,
     exportManifest: input.exportManifest,
     validatePacket: input.validatePacket
+  };
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException
+    ? error.name === "AbortError"
+    : error instanceof Error && error.name === "AbortError";
+}
+
+export function buildEvidenceLineagePanel(
+  edges: EvidenceEdge[],
+  subject: EvidenceSubject | null
+): EvidenceLineagePanelViewModel {
+  const subjectLabel = subject?.label ?? "selected evidence subject";
+  const rows = edges.map((edge, index) => {
+    const relationshipLabel = formatRelationship(edge.relationship);
+    return {
+      id: `${edge.fromId}:${edge.relationship}:${edge.toId}:${index}`,
+      fromId: edge.fromId,
+      relationshipLabel,
+      toId: edge.toId,
+      reason: edge.reason,
+      ariaLabel: `${relationshipLabel} from ${edge.fromId} to ${edge.toId}. ${edge.reason}`,
+      selectAriaLabel: `Inspect lineage edge: ${relationshipLabel} from ${edge.fromId} to ${edge.toId}`
+    };
+  });
+
+  return {
+    title: "Lineage",
+    description: `Graph edges show how evidence nodes support ${subjectLabel}.`,
+    tableLabel: `Evidence lineage edges for ${subjectLabel}`,
+    summaryLabel: rows.length === 1 ? "1 edge" : `${rows.length} edges`,
+    detailPanelId: "evidence-lineage-selected-edge-detail",
+    hasRows: rows.length > 0,
+    defaultSelectedRowId: rows[0]?.id ?? null,
+    rows,
+    emptyTitle: "No lineage edges",
+    emptyDetail: "This packet returned no graph edges, so the dependency path between evidence nodes is not available in this view.",
+    emptyRole: "status",
+    emptyAriaLive: "polite"
+  };
+}
+
+export function useEvidenceLineageSelectionViewModel(
+  panel: EvidenceLineagePanelViewModel
+): EvidenceLineageSelectionViewModel {
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(panel.defaultSelectedRowId);
+
+  useEffect(() => {
+    setSelectedRowId(panel.defaultSelectedRowId);
+  }, [panel.defaultSelectedRowId]);
+
+  const selectedRow = useMemo(
+    () => panel.rows.find((row) => row.id === selectedRowId) ?? panel.rows[0] ?? null,
+    [panel.rows, selectedRowId]
+  );
+
+  return {
+    selectedRowId: selectedRow?.id ?? null,
+    selectedDetail: selectedRow ? buildEvidenceLineageDetail(selectedRow) : null,
+    selectRow: setSelectedRowId
+  };
+}
+
+export function buildEvidenceLineageDetail(
+  row: EvidenceLineageRowViewModel
+): EvidenceLineageDetailViewModel {
+  return {
+    id: row.id,
+    eyebrow: "Selected lineage edge",
+    title: row.relationshipLabel,
+    subtitle: `${row.fromId} to ${row.toId}`,
+    description: row.reason,
+    ariaLabel: `Selected lineage edge: ${row.relationshipLabel}`,
+    fields: [
+      { label: "From node", value: row.fromId },
+      { label: "Relationship", value: row.relationshipLabel },
+      { label: "To node", value: row.toId },
+      { label: "Edge ID", value: row.id }
+    ]
   };
 }
 
@@ -486,12 +642,14 @@ function buildActionCommand(
         ariaLabel: `Validate evidence for ${subjectLabel}`,
         busy: validateBusy,
         busyLabel: "Validating",
-        disabled: validateBusy || !hasSubject,
+        disabled: validateBusy || exportBusy || !hasSubject,
         disabledReason: validateBusy
           ? "Evidence validation is already running."
-          : hasSubject
-            ? null
-            : "Select an evidence packet before validating."
+          : exportBusy
+            ? "Evidence export is already running."
+            : hasSubject
+              ? null
+              : "Select an evidence packet before validating."
       };
     case "export":
       return {
@@ -500,12 +658,14 @@ function buildActionCommand(
         ariaLabel: `Export evidence for ${subjectLabel}`,
         busy: exportBusy,
         busyLabel: "Exporting",
-        disabled: exportBusy || !hasSubject,
+        disabled: exportBusy || validateBusy || !hasSubject,
         disabledReason: exportBusy
           ? "Evidence export is already running."
-          : hasSubject
-            ? null
-            : "Select an evidence packet before exporting."
+          : validateBusy
+            ? "Evidence validation is already running."
+            : hasSubject
+              ? null
+              : "Select an evidence packet before exporting."
       };
     default:
       return {
@@ -585,6 +745,15 @@ function formatPageTag(value: string) {
   return value.replace(/([a-z])([A-Z])/g, "$1 $2");
 }
 
+function formatRelationship(value: string) {
+  return value
+    .replace(/[-_]+/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 function resolveSourceWorkflowHref(subject: EvidenceSubject | null) {
   const directRoute = normalizeLocalWorkstationRoute(subject?.route);
   if (directRoute) {
@@ -600,10 +769,11 @@ function formatDate(value: string) {
     return value;
   }
 
-  return new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  }).format(date);
+  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+}
+
+const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function padUtc(value: number) {
+  return value.toString().padStart(2, "0");
 }
