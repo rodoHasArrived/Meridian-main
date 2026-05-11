@@ -1,4 +1,5 @@
 using Meridian.Contracts.Domain.Enums;
+using System.Collections.ObjectModel;
 
 namespace Meridian.Application.SecurityMaster;
 
@@ -62,6 +63,31 @@ public static class SecurityKindMapping
             [InstrumentType.Deposit] = "Deposit",
         };
 
+    private static readonly IReadOnlyDictionary<string, string> CanonicalAssetClassLookup =
+        new ReadOnlyDictionary<string, string>(
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Equity"] = "Equity",
+                ["Option"] = "Option",
+                ["Future"] = "Future",
+                ["Bond"] = "Bond",
+                ["FxSpot"] = "FxSpot",
+                ["Deposit"] = "Deposit",
+                ["MoneyMarketFund"] = "MoneyMarketFund",
+                ["CertificateOfDeposit"] = "CertificateOfDeposit",
+                ["CommercialPaper"] = "CommercialPaper",
+                ["TreasuryBill"] = "TreasuryBill",
+                ["Repo"] = "Repo",
+                ["CashSweep"] = "CashSweep",
+                ["OtherSecurity"] = "OtherSecurity",
+                ["Swap"] = "Swap",
+                ["DirectLoan"] = "DirectLoan",
+                ["Commodity"] = "Commodity",
+                ["CryptoCurrency"] = "CryptoCurrency",
+                ["Cfd"] = "Cfd",
+                ["Warrant"] = "Warrant",
+            });
+
     /// <summary>
     /// Returns the canonical security master asset-class string for the given
     /// <paramref name="instrumentType"/>, or <c>null</c> when no mapping exists.
@@ -101,13 +127,10 @@ public static class SecurityKindMapping
             return false;
         }
 
-        foreach (var knownAssetClass in AssetClassToInstrumentTypes.Keys)
+        if (CanonicalAssetClassLookup.TryGetValue(assetClass, out var canonicalAssetClass))
         {
-            if (string.Equals(knownAssetClass, assetClass, StringComparison.OrdinalIgnoreCase))
-            {
-                normalizedAssetClass = knownAssetClass;
-                return true;
-            }
+            normalizedAssetClass = canonicalAssetClass;
+            return true;
         }
 
         normalizedAssetClass = string.Empty;
