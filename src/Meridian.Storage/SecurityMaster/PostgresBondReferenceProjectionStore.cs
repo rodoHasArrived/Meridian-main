@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
