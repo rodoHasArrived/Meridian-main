@@ -7,6 +7,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 REFRESH_SCREENSHOTS_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "refresh-screenshots.yml"
 DASHBOARD_LOCKFILE = REPO_ROOT / "src" / "Meridian.Ui" / "dashboard" / "package-lock.json"
 RUN_DESKTOP_WORKFLOW_SCRIPT = REPO_ROOT / "scripts" / "dev" / "run-desktop-workflow.ps1"
+WEB_SCREENSHOT_ROUTES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-routes.json"
 
 
 class RefreshScreenshotsWorkflowTests(unittest.TestCase):
@@ -15,6 +16,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         cls.workflow = REFRESH_SCREENSHOTS_WORKFLOW.read_text(encoding="utf-8")
         cls.dashboard_lock = json.loads(DASHBOARD_LOCKFILE.read_text(encoding="utf-8"))
         cls.run_desktop_workflow_script = RUN_DESKTOP_WORKFLOW_SCRIPT.read_text(encoding="utf-8")
+        cls.web_screenshot_routes = json.loads(WEB_SCREENSHOT_ROUTES.read_text(encoding="utf-8"))
 
     def test_web_screenshot_job_installs_optional_native_packages(self) -> None:
         self.assertIn("run: npm ci --include=optional", self.workflow)
@@ -33,6 +35,43 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("ContextSelectionHintButton", self.run_desktop_workflow_script)
         self.assertIn("SwitchContextButton", self.run_desktop_workflow_script)
         self.assertIn("Invoke-AutomationButton -Button $switchContextButton -Description 'switch context'", self.run_desktop_workflow_script)
+
+    def test_web_screenshot_routes_cover_workspace_mega_menu_links(self) -> None:
+        captures = self.web_screenshot_routes.get("captures", [])
+        captured_paths = {capture.get("path") for capture in captures if capture.get("path")}
+
+        expected_paths = {
+            "/trading",
+            "/trading/orders",
+            "/trading/positions",
+            "/trading/risk",
+            "/trading/readiness",
+            "/portfolio",
+            "/portfolio/attribution",
+            "/portfolio/brokerage-sync",
+            "/accounting",
+            "/accounting/reconciliation",
+            "/accounting/security-master",
+            "/accounting/approvals",
+            "/reporting",
+            "/reporting/report-packs",
+            "/reporting/evidence",
+            "/reporting/exports",
+            "/strategy",
+            "/strategy/promotions",
+            "/strategy/research",
+            "/strategy/quant-lab",
+            "/data",
+            "/data/watchlist",
+            "/data/quotes",
+            "/data/backfills",
+            "/settings",
+            "/settings/preferences",
+            "/settings/integrations",
+        }
+
+        missing_paths = sorted(expected_paths - captured_paths)
+        self.assertEqual([], missing_paths, f"Missing web screenshot routes: {missing_paths}")
 
 
 if __name__ == "__main__":
