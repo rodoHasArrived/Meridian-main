@@ -1,6 +1,17 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.CertificatesOfDeposit;
+using Meridian.Contracts.Commodities;
+using Meridian.Contracts.CryptoCurrency;
+using Meridian.Contracts.Deposits;
+using Meridian.Contracts.Derivatives;
+using Meridian.Contracts.Equity;
+using Meridian.Contracts.FixedIncome;
+using Meridian.Contracts.Futures;
+using Meridian.Contracts.FxSpot;
+using Meridian.Contracts.MoneyMarketFunds;
+using Meridian.Contracts.Options;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 
@@ -22,6 +33,49 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(List<SecurityIdentifierDto>))]
 [JsonSerializable(typeof(PreferredEquityTermsDto))]
 [JsonSerializable(typeof(ConvertibleEquityTermsDto))]
+[JsonSerializable(typeof(BondReferenceDto))]
+[JsonSerializable(typeof(BondReferenceDto[]))]
+[JsonSerializable(typeof(List<BondReferenceDto>))]
+[JsonSerializable(typeof(BondLifecycleDto))]
+[JsonSerializable(typeof(BondAccrualConventionDto))]
+[JsonSerializable(typeof(OptionContractReferenceDto))]
+[JsonSerializable(typeof(OptionContractReferenceDto[]))]
+[JsonSerializable(typeof(List<OptionContractReferenceDto>))]
+[JsonSerializable(typeof(OptionSeriesDto))]
+[JsonSerializable(typeof(OptionSeriesDto[]))]
+[JsonSerializable(typeof(List<OptionSeriesDto>))]
+[JsonSerializable(typeof(OptionChainSnapshotDto))]
+[JsonSerializable(typeof(EquityReferenceDto))]
+[JsonSerializable(typeof(EquityReferenceDto[]))]
+[JsonSerializable(typeof(List<EquityReferenceDto>))]
+[JsonSerializable(typeof(FutureReferenceDto))]
+[JsonSerializable(typeof(FutureReferenceDto[]))]
+[JsonSerializable(typeof(List<FutureReferenceDto>))]
+[JsonSerializable(typeof(FxSpotReferenceDto))]
+[JsonSerializable(typeof(FxSpotReferenceDto[]))]
+[JsonSerializable(typeof(List<FxSpotReferenceDto>))]
+[JsonSerializable(typeof(FxSpotPairsForCurrencyDto))]
+[JsonSerializable(typeof(SwapReferenceDto))]
+[JsonSerializable(typeof(SwapReferenceDto[]))]
+[JsonSerializable(typeof(List<SwapReferenceDto>))]
+[JsonSerializable(typeof(SwapLegDto))]
+[JsonSerializable(typeof(SwapLegDto[]))]
+[JsonSerializable(typeof(List<SwapLegDto>))]
+[JsonSerializable(typeof(CommodityReferenceDto))]
+[JsonSerializable(typeof(CommodityReferenceDto[]))]
+[JsonSerializable(typeof(List<CommodityReferenceDto>))]
+[JsonSerializable(typeof(CryptoReferenceDto))]
+[JsonSerializable(typeof(CryptoReferenceDto[]))]
+[JsonSerializable(typeof(List<CryptoReferenceDto>))]
+[JsonSerializable(typeof(DepositReferenceDto))]
+[JsonSerializable(typeof(DepositReferenceDto[]))]
+[JsonSerializable(typeof(List<DepositReferenceDto>))]
+[JsonSerializable(typeof(MoneyMarketFundReferenceDto))]
+[JsonSerializable(typeof(MoneyMarketFundReferenceDto[]))]
+[JsonSerializable(typeof(List<MoneyMarketFundReferenceDto>))]
+[JsonSerializable(typeof(CertificateOfDepositReferenceDto))]
+[JsonSerializable(typeof(CertificateOfDepositReferenceDto[]))]
+[JsonSerializable(typeof(List<CertificateOfDepositReferenceDto>))]
 [JsonSerializable(typeof(TradingParametersDto))]
 [JsonSerializable(typeof(CorporateActionDto))]
 [JsonSerializable(typeof(CorporateActionDto[]))]

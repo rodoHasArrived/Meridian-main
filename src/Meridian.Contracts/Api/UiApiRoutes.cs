@@ -322,6 +322,54 @@ public static class UiApiRoutes
     public const string ReferenceDataEdgarFiler = "/api/reference-data/edgar/filers/{cik}";
     public const string ReferenceDataEdgarFacts = "/api/reference-data/edgar/facts/{cik}";
     public const string ReferenceDataEdgarSecurityData = "/api/reference-data/edgar/security-data/{cik}";
+    public const string ReferenceDataBondReference = "/api/reference-data/bonds/{securityId:guid}";
+    public const string ReferenceDataBondLifecycle = "/api/reference-data/bonds/{securityId:guid}/lifecycle";
+    public const string ReferenceDataBondAccrualConvention = "/api/reference-data/bonds/{securityId:guid}/accrual-convention";
+    public const string ReferenceDataBondIssuerLadder = "/api/reference-data/bonds/issuer-ladder";
+    public const string ReferenceDataBondMaturityLadder = "/api/reference-data/bonds/maturity-ladder";
+    public const string ReferenceDataOptionContract = "/api/reference-data/options/contracts/{contractSymbol}";
+    public const string ReferenceDataOptionSeries = "/api/reference-data/options/series/{optionChainId}";
+    public const string ReferenceDataOptionUnderlyingLinkage = "/api/reference-data/options/contracts/{contractSymbol}/underlying-linkage";
+    public const string ReferenceDataOptionExpiryLadder = "/api/reference-data/options/expiry-ladder";
+    public const string ReferenceDataOptionChainImport = "/api/reference-data/options/chains/import";
+    public const string ReferenceDataOptionChainSnapshot = "/api/reference-data/options/chains/snapshot";
+
+    public const string ReferenceDataEquityReference = "/api/reference-data/equities/{securityId:guid}";
+    public const string ReferenceDataEquityByExchange = "/api/reference-data/equities/by-exchange";
+    public const string ReferenceDataEquityByIssuer = "/api/reference-data/equities/by-issuer";
+
+    public const string ReferenceDataFutureReference = "/api/reference-data/futures/{securityId:guid}";
+    public const string ReferenceDataFuturesByRoot = "/api/reference-data/futures/by-root";
+    public const string ReferenceDataFutureExpiryLadder = "/api/reference-data/futures/expiry-ladder";
+    public const string ReferenceDataFutureFrontMonth = "/api/reference-data/futures/front-month";
+
+    public const string ReferenceDataFxSpotReference = "/api/reference-data/fxspot/{securityId:guid}";
+    public const string ReferenceDataFxSpotByPairCode = "/api/reference-data/fxspot/pairs/{pairCode}";
+    public const string ReferenceDataFxSpotByCurrency = "/api/reference-data/fxspot/by-currency";
+
+    public const string ReferenceDataSwapReference = "/api/reference-data/swaps/{securityId:guid}";
+    public const string ReferenceDataSwapsByType = "/api/reference-data/swaps/by-type";
+    public const string ReferenceDataSwapsMaturingBefore = "/api/reference-data/swaps/maturing-before";
+
+    public const string ReferenceDataCommodityReference = "/api/reference-data/commodities/{securityId:guid}";
+    public const string ReferenceDataCommoditiesByType = "/api/reference-data/commodities/by-type";
+    public const string ReferenceDataCommoditiesByExchange = "/api/reference-data/commodities/by-exchange";
+
+    public const string ReferenceDataCryptoReference = "/api/reference-data/crypto/{securityId:guid}";
+    public const string ReferenceDataCryptoByNetwork = "/api/reference-data/crypto/by-network";
+    public const string ReferenceDataCryptoByBaseCurrency = "/api/reference-data/crypto/by-base-currency";
+
+    public const string ReferenceDataDepositReference = "/api/reference-data/deposits/{securityId:guid}";
+    public const string ReferenceDataDepositsByInstitution = "/api/reference-data/deposits/by-institution";
+    public const string ReferenceDataDepositsMaturingBefore = "/api/reference-data/deposits/maturing-before";
+
+    public const string ReferenceDataMoneyMarketFundReference = "/api/reference-data/money-market-funds/{securityId:guid}";
+    public const string ReferenceDataMoneyMarketFundsByFamily = "/api/reference-data/money-market-funds/by-family";
+    public const string ReferenceDataMoneyMarketFundsBySweepEligibility = "/api/reference-data/money-market-funds/by-sweep-eligibility";
+
+    public const string ReferenceDataCertificateOfDepositReference = "/api/reference-data/certificates-of-deposit/{securityId:guid}";
+    public const string ReferenceDataCertificatesOfDepositByIssuer = "/api/reference-data/certificates-of-deposit/by-issuer";
+    public const string ReferenceDataCertificatesOfDepositMaturingBefore = "/api/reference-data/certificates-of-deposit/maturing-before";
 
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";
