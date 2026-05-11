@@ -1433,7 +1433,8 @@ function buildFixtureQuote(symbol: string): QuotesResponse {
       spread: roundMarketPrice(profile.askPrice - profile.bidPrice),
       sequenceNumber: 42,
       streamId: profile.streamId,
-      venue: profile.venue
+      venue: profile.venue,
+      session: null
     }
   };
 }
@@ -1465,7 +1466,8 @@ function buildFixtureQuotesSnapshot(path: string): QuotesSnapshotResponse {
         lastTradeTimestamp: fixtureMarketTimestamp,
         sequenceNumber: 1000 + index,
         streamId: profile.streamId,
-        venue: profile.venue
+        venue: profile.venue,
+        session: null
       };
     })
   };
