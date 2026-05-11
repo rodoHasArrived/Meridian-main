@@ -3003,6 +3003,8 @@ public sealed class WorkstationEndpointsTests
         var risk = trading.RootElement.GetProperty("risk");
         risk.GetProperty("netExposure").GetString().Should().Be("+$20K");
         risk.GetProperty("grossExposure").GetString().Should().Be("+$20K");
+        // Buying power = Cash (100K, default) → 20,000 / 100,000 = 20% utilisation.
+        risk.GetProperty("buyingPowerUsed").GetString().Should().Be("+20.0%");
     }
 
     [Fact]
@@ -3113,6 +3115,8 @@ public sealed class WorkstationEndpointsTests
 
         var risk = portfolio.RootElement.GetProperty("risk");
         risk.GetProperty("grossExposure").GetString().Should().Be("+$21K");
+        // Buying power = Cash (100K, default) → 21,000 / 100,000 = 21% utilisation.
+        risk.GetProperty("buyingPowerUsed").GetString().Should().Be("+21.0%");
     }
 
     private sealed class LiveMarkTestPortfolioState : Meridian.Execution.Models.IPortfolioState

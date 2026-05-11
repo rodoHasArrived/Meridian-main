@@ -1683,6 +1683,10 @@ public static class WorkstationEndpoints
             ? FormatPercent(totalPnl / portfolio.PortfolioValue)
             : "—";
 
+        var buyingPowerUsedDisplay = portfolio is not null && portfolio.BuyingPower > 0m
+            ? FormatPercent(grossExposure / portfolio.BuyingPower)
+            : "—";
+
         // --- Fills (completed orders from OMS) — PR-03: typed rows ---
         WorkstationTradingFillRow[] fills;
         if (oms is not null)
@@ -1725,7 +1729,7 @@ public static class WorkstationEndpoints
                 GrossExposure: portfolio is not null ? FormatCurrency(grossExposure) : "—",
                 Var95: "—",
                 MaxDrawdown: maxDrawdownDisplay,
-                BuyingPowerUsed: "—",
+                BuyingPowerUsed: buyingPowerUsedDisplay,
                 ActiveGuardrails:
                 [
                     "Single-name concentration cap set at 30% notional.",
@@ -2516,7 +2520,9 @@ public static class WorkstationEndpoints
             MaxDrawdown: portfolio is not null && portfolio.PortfolioValue > 0m
                 ? FormatPercent(totalPnl / portfolio.PortfolioValue)
                 : "—",
-            BuyingPowerUsed: "—",
+            BuyingPowerUsed: portfolio is not null && portfolio.BuyingPower > 0m
+                ? FormatPercent(grossExposure / portfolio.BuyingPower)
+                : "—",
             ActiveGuardrails: []);
 
         // --- Brokerage state ---
