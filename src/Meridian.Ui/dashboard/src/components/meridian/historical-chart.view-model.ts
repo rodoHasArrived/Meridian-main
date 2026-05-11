@@ -129,12 +129,50 @@ export interface CandlestickSmaOverlay {
   points: string;
 }
 
+export interface CandlestickBollingerOverlay {
+  period: number;
+  multiplier: number;
+  label: string;
+  ariaLabel: string;
+  stroke: string;
+  upperPoints: string;
+  lowerPoints: string;
+  middlePoints: string;
+  bandPath: string;
+}
+
+export interface CandlestickRsiPanel {
+  period: number;
+  label: string;
+  ariaLabel: string;
+  areaTop: number;
+  areaHeight: number;
+  points: string;
+  overboughtY: number;
+  oversoldY: number;
+  midlineY: number;
+  guideX1: number;
+  guideX2: number;
+  overboughtLabel: { value: string; x: number; y: number };
+  oversoldLabel: { value: string; x: number; y: number };
+  lastValue: number | null;
+  lastValueLabel: string;
+  lastValueTone: "overbought" | "oversold" | "neutral";
+  lastValueY: number | null;
+}
+
 export interface CandlestickChartGeometry {
   width: number;
   height: number;
   padX: number;
   slotWidth: number;
   priceAreaHeight: number;
+}
+
+export interface CandlestickIndicatorVisibility {
+  sma: boolean;
+  bollinger: boolean;
+  rsi: boolean;
 }
 
 export interface CandlestickChartViewModel {
@@ -152,6 +190,8 @@ export interface CandlestickChartViewModel {
   volumeAreaTop: number;
   geometry: CandlestickChartGeometry;
   smaOverlays: CandlestickSmaOverlay[];
+  bollingerOverlay: CandlestickBollingerOverlay | null;
+  rsiPanel: CandlestickRsiPanel | null;
 }
 
 export interface ChartModeOption {
@@ -163,6 +203,17 @@ export interface ChartModeOption {
   select: () => void;
 }
 
+export type IndicatorId = "sma" | "bollinger" | "rsi";
+
+export interface IndicatorToggleOption {
+  id: IndicatorId;
+  label: string;
+  ariaLabel: string;
+  ariaPressed: boolean;
+  buttonVariant: "default" | "outline";
+  toggle: () => void;
+}
+
 export interface HistoricalChartViewModel {
   eyebrow: string;
   title: string;
@@ -171,6 +222,8 @@ export interface HistoricalChartViewModel {
   timeframeOptions: HistoricalChartTimeframeOption[];
   chartModeOptions: ChartModeOption[];
   activeChartMode: ChartMode;
+  indicatorOptions: IndicatorToggleOption[];
+  indicators: CandlestickIndicatorVisibility;
   lastPriceText: string;
   changeText: string;
   changeToneClass: string;
@@ -181,12 +234,19 @@ export interface HistoricalChartViewModel {
   retry: () => void;
 }
 
+const DEFAULT_INDICATOR_VISIBILITY: CandlestickIndicatorVisibility = {
+  sma: true,
+  bollinger: false,
+  rsi: false
+};
+
 export function useHistoricalChartViewModel(symbol: string): HistoricalChartViewModel {
   const [activeTimeframe, setActiveTimeframe] = useState<HistoricalChartTimeframe>(
     HISTORICAL_CHART_TIMEFRAMES[0]!
   );
   const [state, setState] = useState<FetchState>(initialFetchState);
   const [chartMode, setChartMode] = useState<ChartMode>("candles");
+  const [indicators, setIndicators] = useState<CandlestickIndicatorVisibility>(DEFAULT_INDICATOR_VISIBILITY);
   const requestRevision = useRef(0);
   const mounted = useRef(false);
   const requestAbortRef = useRef<AbortController | null>(null);
@@ -297,6 +357,37 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
     }
   ], [chartMode, symbol]);
 
+  const toggleIndicator = useCallback((id: IndicatorId) => {
+    setIndicators((prev) => ({ ...prev, [id]: !prev[id] }));
+  }, []);
+
+  const indicatorOptions = useMemo<IndicatorToggleOption[]>(() => [
+    {
+      id: "sma",
+      label: "SMA",
+      ariaLabel: `Toggle simple moving average overlays for ${symbol || "selected symbol"}`,
+      ariaPressed: indicators.sma,
+      buttonVariant: indicators.sma ? "default" : "outline",
+      toggle: () => toggleIndicator("sma")
+    },
+    {
+      id: "bollinger",
+      label: "Bollinger",
+      ariaLabel: `Toggle Bollinger Bands overlay for ${symbol || "selected symbol"}`,
+      ariaPressed: indicators.bollinger,
+      buttonVariant: indicators.bollinger ? "default" : "outline",
+      toggle: () => toggleIndicator("bollinger")
+    },
+    {
+      id: "rsi",
+      label: "RSI",
+      ariaLabel: `Toggle RSI sub-panel for ${symbol || "selected symbol"}`,
+      ariaPressed: indicators.rsi,
+      buttonVariant: indicators.rsi ? "default" : "outline",
+      toggle: () => toggleIndicator("rsi")
+    }
+  ], [indicators.sma, indicators.bollinger, indicators.rsi, symbol, toggleIndicator]);
+
   const statePanel = buildHistoricalChartStatePanel({
     status: state.status,
     bars: state.bars,
@@ -313,6 +404,8 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
     timeframeOptions,
     chartModeOptions,
     activeChartMode: chartMode,
+    indicatorOptions,
+    indicators,
     lastPriceText: formatPrice(stats.last),
     changeText: `${formatChange(stats.change)} (${formatChangePct(stats.changePct)})`,
     changeToneClass: chartChangeToneClass(stats.change),
@@ -327,7 +420,8 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
       bars: state.bars,
       stats,
       symbol,
-      timeframe: activeTimeframe.label
+      timeframe: activeTimeframe.label,
+      indicators
     }),
     statTiles: [
       { id: "open", label: "Open", value: formatPrice(stats.open) },
@@ -344,21 +438,31 @@ export function buildCandlestickChartViewModel({
   bars,
   stats,
   symbol,
-  timeframe
+  timeframe,
+  indicators
 }: {
   bars: readonly HistoricalBarPoint[];
   stats: HistoricalChartStats;
   symbol: string;
   timeframe: string;
+  indicators?: CandlestickIndicatorVisibility;
 }): CandlestickChartViewModel | null {
+  const visibility: CandlestickIndicatorVisibility = indicators ?? {
+    sma: true,
+    bollinger: false,
+    rsi: false
+  };
   const width = 900;
   const priceAreaHeight = 175;
   const volumeGap = 8;
   const volumeAreaHeight = 35;
-  const totalHeight = priceAreaHeight + volumeGap + volumeAreaHeight;
+  const rsiGap = visibility.rsi ? 10 : 0;
+  const rsiAreaHeight = visibility.rsi ? 60 : 0;
+  const totalHeight = priceAreaHeight + volumeGap + volumeAreaHeight + rsiGap + rsiAreaHeight;
   const padX = 12;
   const padY = 14;
   const volumeAreaTop = priceAreaHeight + volumeGap;
+  const rsiAreaTop = volumeAreaTop + volumeAreaHeight + rsiGap;
 
   if (bars.length === 0 || stats.high === null || stats.low === null) {
     return null;
@@ -371,10 +475,31 @@ export function buildCandlestickChartViewModel({
   const slotWidth = (width - padX * 2) / n;
   const bodyWidth = Math.max(1.5, slotWidth * 0.65);
 
-  const priceSpan = Math.max(stats.high - stats.low, Math.max(stats.high * 0.001, 0.01));
+  const closes = chartBars.map(({ bar }) => bar.close);
+
+  const bollingerExtremes = visibility.bollinger
+    ? computeBollingerBands(closes, 20, 2).reduce(
+        (acc, band) => {
+          if (band === null) return acc;
+          return {
+            min: Math.min(acc.min, band.lower),
+            max: Math.max(acc.max, band.upper)
+          };
+        },
+        { min: Infinity, max: -Infinity }
+      )
+    : { min: Infinity, max: -Infinity };
+
+  const lowerBound = Number.isFinite(bollingerExtremes.min)
+    ? Math.min(stats.low, bollingerExtremes.min)
+    : stats.low;
+  const upperBound = Number.isFinite(bollingerExtremes.max)
+    ? Math.max(stats.high, bollingerExtremes.max)
+    : stats.high;
+  const priceSpan = Math.max(upperBound - lowerBound, Math.max(upperBound * 0.001, 0.01));
   const plotH = priceAreaHeight - padY * 2;
   const yForPrice = (price: number): number =>
-    padY + (1 - (price - stats.low!) / priceSpan) * plotH;
+    padY + (1 - (price - lowerBound) / priceSpan) * plotH;
 
   const maxVolume = chartBars.reduce((m, { bar }) => Math.max(m, bar.volume), 0);
 
@@ -437,11 +562,26 @@ export function buildCandlestickChartViewModel({
     };
   });
 
-  const smaOverlays = buildSmaOverlays({
-    closes: chartBars.map(({ bar }) => bar.close),
-    midXs: candleBars.map((b) => b.midX),
-    yForPrice
-  });
+  const midXs = candleBars.map((b) => b.midX);
+
+  const smaOverlays = visibility.sma
+    ? buildSmaOverlays({ closes, midXs, yForPrice })
+    : [];
+
+  const bollingerOverlay = visibility.bollinger
+    ? buildBollingerOverlay({ closes, midXs, yForPrice })
+    : null;
+
+  const rsiPanel = visibility.rsi
+    ? buildRsiPanel({
+        closes,
+        midXs,
+        areaTop: rsiAreaTop,
+        areaHeight: rsiAreaHeight,
+        padX,
+        width
+      })
+    : null;
 
   return {
     viewBox: `0 0 ${width} ${totalHeight}`,
@@ -471,7 +611,9 @@ export function buildCandlestickChartViewModel({
       slotWidth,
       priceAreaHeight
     },
-    smaOverlays
+    smaOverlays,
+    bollingerOverlay,
+    rsiPanel
   };
 }
 
@@ -532,6 +674,195 @@ export function computeSimpleMovingAverage(
     result[i] = sum / period;
   }
   return result;
+}
+
+export interface BollingerBand {
+  middle: number;
+  upper: number;
+  lower: number;
+}
+
+export function computeBollingerBands(
+  values: readonly number[],
+  period: number,
+  multiplier: number
+): Array<BollingerBand | null> {
+  const result: Array<BollingerBand | null> = new Array(values.length).fill(null);
+  if (period <= 0 || values.length < period) return result;
+
+  let sum = 0;
+  let sumSq = 0;
+  for (let i = 0; i < period; i++) {
+    const v = values[i]!;
+    sum += v;
+    sumSq += v * v;
+  }
+  for (let i = period - 1; i < values.length; i++) {
+    if (i >= period) {
+      const out = values[i - period]!;
+      const incoming = values[i]!;
+      sum += incoming - out;
+      sumSq += incoming * incoming - out * out;
+    }
+    const mean = sum / period;
+    const variance = Math.max(0, sumSq / period - mean * mean);
+    const stddev = Math.sqrt(variance);
+    result[i] = {
+      middle: mean,
+      upper: mean + multiplier * stddev,
+      lower: mean - multiplier * stddev
+    };
+  }
+  return result;
+}
+
+export function computeRsi(values: readonly number[], period: number): Array<number | null> {
+  const result: Array<number | null> = new Array(values.length).fill(null);
+  if (period <= 0 || values.length <= period) return result;
+
+  let avgGain = 0;
+  let avgLoss = 0;
+  for (let i = 1; i <= period; i++) {
+    const change = values[i]! - values[i - 1]!;
+    if (change > 0) avgGain += change;
+    else avgLoss += -change;
+  }
+  avgGain /= period;
+  avgLoss /= period;
+  result[period] = computeRsiFromAverages(avgGain, avgLoss);
+
+  for (let i = period + 1; i < values.length; i++) {
+    const change = values[i]! - values[i - 1]!;
+    const gain = change > 0 ? change : 0;
+    const loss = change < 0 ? -change : 0;
+    avgGain = (avgGain * (period - 1) + gain) / period;
+    avgLoss = (avgLoss * (period - 1) + loss) / period;
+    result[i] = computeRsiFromAverages(avgGain, avgLoss);
+  }
+  return result;
+}
+
+function computeRsiFromAverages(avgGain: number, avgLoss: number): number {
+  if (avgLoss === 0) return 100;
+  const rs = avgGain / avgLoss;
+  return 100 - 100 / (1 + rs);
+}
+
+interface BuildBollingerOverlayInput {
+  closes: number[];
+  midXs: number[];
+  yForPrice: (price: number) => number;
+}
+
+function buildBollingerOverlay({ closes, midXs, yForPrice }: BuildBollingerOverlayInput): CandlestickBollingerOverlay | null {
+  const period = 20;
+  const multiplier = 2;
+  const bands = computeBollingerBands(closes, period, multiplier);
+
+  const upperPts: string[] = [];
+  const lowerPts: string[] = [];
+  const middlePts: string[] = [];
+  const upperPathSegments: string[] = [];
+  const lowerPathSegmentsReversed: string[] = [];
+
+  for (let i = 0; i < bands.length; i++) {
+    const band = bands[i];
+    if (!band) continue;
+    const x = midXs[i]!.toFixed(2);
+    const upperY = yForPrice(band.upper).toFixed(2);
+    const lowerY = yForPrice(band.lower).toFixed(2);
+    const middleY = yForPrice(band.middle).toFixed(2);
+    upperPts.push(`${x},${upperY}`);
+    lowerPts.push(`${x},${lowerY}`);
+    middlePts.push(`${x},${middleY}`);
+    upperPathSegments.push(`${upperPathSegments.length === 0 ? "M" : "L"} ${x} ${upperY}`);
+    lowerPathSegmentsReversed.unshift(`L ${x} ${lowerY}`);
+  }
+
+  if (upperPts.length === 0) return null;
+
+  const bandPath = `${upperPathSegments.join(" ")} ${lowerPathSegmentsReversed.join(" ")} Z`;
+
+  return {
+    period,
+    multiplier,
+    label: `Bollinger (${period}, ${multiplier})`,
+    ariaLabel: `${period}-period Bollinger Bands with ${multiplier} standard deviations`,
+    stroke: "var(--chart-bollinger, #38bdf8)",
+    upperPoints: upperPts.join(" "),
+    lowerPoints: lowerPts.join(" "),
+    middlePoints: middlePts.join(" "),
+    bandPath
+  };
+}
+
+interface BuildRsiPanelInput {
+  closes: number[];
+  midXs: number[];
+  areaTop: number;
+  areaHeight: number;
+  padX: number;
+  width: number;
+}
+
+function buildRsiPanel({
+  closes,
+  midXs,
+  areaTop,
+  areaHeight,
+  padX,
+  width
+}: BuildRsiPanelInput): CandlestickRsiPanel | null {
+  const period = 14;
+  if (areaHeight <= 0) return null;
+
+  const values = computeRsi(closes, period);
+  const yForRsi = (rsi: number): number => areaTop + (1 - rsi / 100) * areaHeight;
+
+  const pts: string[] = [];
+  let lastValue: number | null = null;
+  for (let i = 0; i < values.length; i++) {
+    const v = values[i];
+    if (v === null || !Number.isFinite(v)) continue;
+    pts.push(`${midXs[i]!.toFixed(2)},${yForRsi(v).toFixed(2)}`);
+    lastValue = v;
+  }
+
+  if (pts.length === 0) return null;
+
+  const overboughtY = yForRsi(70);
+  const oversoldY = yForRsi(30);
+  const midlineY = yForRsi(50);
+  const guideX1 = padX;
+  const guideX2 = width - padX;
+  const lastValueTone: CandlestickRsiPanel["lastValueTone"] =
+    lastValue === null
+      ? "neutral"
+      : lastValue >= 70
+        ? "overbought"
+        : lastValue <= 30
+          ? "oversold"
+          : "neutral";
+
+  return {
+    period,
+    label: `RSI ${period}`,
+    ariaLabel: `${period}-period Relative Strength Index sub-panel`,
+    areaTop,
+    areaHeight,
+    points: pts.join(" "),
+    overboughtY,
+    oversoldY,
+    midlineY,
+    guideX1,
+    guideX2,
+    overboughtLabel: { value: "70", x: width - padX, y: Math.max(overboughtY - 2, areaTop + 9) },
+    oversoldLabel: { value: "30", x: width - padX, y: Math.min(oversoldY + 9, areaTop + areaHeight - 2) },
+    lastValue,
+    lastValueLabel: lastValue === null ? "-" : lastValue.toFixed(1),
+    lastValueTone,
+    lastValueY: lastValue === null ? null : yForRsi(lastValue)
+  };
 }
 
 function formatBarTimeLabel(start: string): string {

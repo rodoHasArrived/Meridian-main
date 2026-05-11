@@ -6,7 +6,9 @@ import {
   buildCandlestickChartViewModel,
   buildHistoricalChartSparklineViewModel,
   buildHistoricalChartStatePanel,
+  computeBollingerBands,
   computeChartStats,
+  computeRsi,
   computeSimpleMovingAverage,
   useHistoricalChartViewModel
 } from "@/components/meridian/historical-chart.view-model";
@@ -330,6 +332,134 @@ describe("computeSimpleMovingAverage", () => {
   });
 });
 
+describe("computeBollingerBands", () => {
+  it("returns null until the period is reached, then a band per index", () => {
+    const bands = computeBollingerBands([1, 2, 3, 4, 5], 3, 2);
+    expect(bands[0]).toBeNull();
+    expect(bands[1]).toBeNull();
+    expect(bands[2]).not.toBeNull();
+    expect(bands[2]!.middle).toBeCloseTo(2, 5);
+    expect(bands[2]!.upper).toBeGreaterThan(bands[2]!.middle);
+    expect(bands[2]!.lower).toBeLessThan(bands[2]!.middle);
+  });
+
+  it("collapses to middle when all values are identical", () => {
+    const bands = computeBollingerBands([5, 5, 5, 5, 5], 3, 2);
+    const last = bands[bands.length - 1]!;
+    expect(last.middle).toBeCloseTo(5, 5);
+    expect(last.upper).toBeCloseTo(5, 5);
+    expect(last.lower).toBeCloseTo(5, 5);
+  });
+
+  it("returns all nulls when there are fewer values than the period", () => {
+    expect(computeBollingerBands([1, 2], 5, 2)).toEqual([null, null]);
+  });
+
+  it("guards against non-positive period without throwing", () => {
+    expect(computeBollingerBands([1, 2, 3], 0, 2)).toEqual([null, null, null]);
+  });
+});
+
+describe("computeRsi", () => {
+  it("returns 100 when every change is a gain (avgLoss zero)", () => {
+    const closes = [1, 2, 3, 4, 5, 6];
+    const rsi = computeRsi(closes, 3);
+    expect(rsi[0]).toBeNull();
+    expect(rsi[2]).toBeNull();
+    expect(rsi[3]).toBe(100);
+    expect(rsi[5]).toBe(100);
+  });
+
+  it("returns ~50 when alternating gains and losses cancel out", () => {
+    const closes = [10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10];
+    const rsi = computeRsi(closes, 14);
+    expect(rsi[14]).not.toBeNull();
+    expect(rsi[14]!).toBeGreaterThan(40);
+    expect(rsi[14]!).toBeLessThan(60);
+  });
+
+  it("returns all nulls when there are not enough values", () => {
+    expect(computeRsi([1, 2, 3], 5)).toEqual([null, null, null]);
+  });
+
+  it("guards against non-positive period without throwing", () => {
+    expect(computeRsi([1, 2, 3], 0)).toEqual([null, null, null]);
+  });
+});
+
+describe("candlestick indicators visibility", () => {
+  function buildClimbingBars(count: number) {
+    return Array.from({ length: count }, (_, i) =>
+      bar(
+        new Date(2026, 4, 1, 14, 30 + i).toISOString(),
+        100 + i - 0.5,
+        100 + i + 1,
+        100 + i - 1,
+        100 + i,
+        1000 + i
+      )
+    );
+  }
+
+  it("hides SMA when sma visibility is false", () => {
+    const bars = buildClimbingBars(25);
+    const vm = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "AAPL",
+      timeframe: "1D",
+      indicators: { sma: false, bollinger: false, rsi: false }
+    });
+    expect(vm?.smaOverlays).toHaveLength(0);
+    expect(vm?.bollingerOverlay).toBeNull();
+    expect(vm?.rsiPanel).toBeNull();
+  });
+
+  it("emits Bollinger overlay when bollinger visibility is true and enough bars exist", () => {
+    const bars = buildClimbingBars(25);
+    const vm = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "AAPL",
+      timeframe: "1D",
+      indicators: { sma: false, bollinger: true, rsi: false }
+    });
+    expect(vm?.bollingerOverlay).not.toBeNull();
+    expect(vm?.bollingerOverlay?.label).toContain("Bollinger");
+    expect(vm?.bollingerOverlay?.upperPoints.length).toBeGreaterThan(0);
+    expect(vm?.bollingerOverlay?.lowerPoints.length).toBeGreaterThan(0);
+    expect(vm?.bollingerOverlay?.bandPath).toContain("Z");
+  });
+
+  it("emits RSI panel with reference lines when rsi visibility is true", () => {
+    const bars = buildClimbingBars(25);
+    const vm = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "AAPL",
+      timeframe: "1D",
+      indicators: { sma: false, bollinger: false, rsi: true }
+    });
+    expect(vm?.rsiPanel).not.toBeNull();
+    expect(vm?.rsiPanel?.period).toBe(14);
+    expect(vm?.rsiPanel?.overboughtY).toBeLessThan(vm!.rsiPanel!.oversoldY);
+    expect(vm?.rsiPanel?.lastValue).not.toBeNull();
+    // Climbing series should reach overbought
+    expect(vm?.rsiPanel?.lastValueTone).toBe("overbought");
+    // Total chart viewBox grows when RSI is enabled
+    const heightWithRsi = Number(vm!.viewBox.split(" ")[3]);
+    const vmNoRsi = buildCandlestickChartViewModel({
+      bars,
+      stats: computeChartStats(bars),
+      symbol: "AAPL",
+      timeframe: "1D",
+      indicators: { sma: false, bollinger: false, rsi: false }
+    });
+    const heightNoRsi = Number(vmNoRsi!.viewBox.split(" ")[3]);
+    expect(heightWithRsi).toBeGreaterThan(heightNoRsi);
+  });
+});
+
 describe("useHistoricalChartViewModel", () => {
   it("defaults to candles chart mode and exposes a working toggle", async () => {
     vi.mocked(getHistoricalBars).mockResolvedValue({
@@ -353,6 +483,29 @@ describe("useHistoricalChartViewModel", () => {
     expect(result.current.activeChartMode).toBe("line");
     expect(result.current.chartModeOptions.find((o) => o.mode === "line")?.ariaPressed).toBe(true);
     expect(result.current.chartModeOptions.find((o) => o.mode === "candles")?.ariaPressed).toBe(false);
+  });
+
+  it("exposes indicator toggles defaulting to SMA on, Bollinger off, RSI off", async () => {
+    vi.mocked(getHistoricalBars).mockResolvedValue({
+      success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
+      from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
+      queryTimeMs: 0, bars: []
+    });
+
+    const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
+
+    expect(result.current.indicators).toEqual({ sma: true, bollinger: false, rsi: false });
+    expect(result.current.indicatorOptions.map((o) => o.id)).toEqual(["sma", "bollinger", "rsi"]);
+
+    const rsiOption = result.current.indicatorOptions.find((o) => o.id === "rsi");
+    expect(rsiOption?.ariaPressed).toBe(false);
+
+    await act(async () => {
+      rsiOption?.toggle();
+    });
+
+    expect(result.current.indicators.rsi).toBe(true);
+    expect(result.current.indicatorOptions.find((o) => o.id === "rsi")?.ariaPressed).toBe(true);
   });
 
   it("aborts superseded historical-bar requests", async () => {
