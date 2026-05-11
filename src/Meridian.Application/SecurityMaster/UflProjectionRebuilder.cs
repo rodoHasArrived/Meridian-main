@@ -7,29 +7,6 @@ namespace Meridian.Application.SecurityMaster;
 /// </summary>
 public sealed class UflProjectionRebuilder : IUflProjectionRebuilder
 {
-    private static readonly HashSet<string> SupportedAssetClasses = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Equity",
-        "Option",
-        "Future",
-        "Bond",
-        "FxSpot",
-        "Deposit",
-        "MoneyMarketFund",
-        "CertificateOfDeposit",
-        "CommercialPaper",
-        "TreasuryBill",
-        "Repo",
-        "CashSweep",
-        "OtherSecurity",
-        "Swap",
-        "DirectLoan",
-        "Commodity",
-        "CryptoCurrency",
-        "Cfd",
-        "Warrant"
-    };
-
     private readonly SecurityMasterRebuildOrchestrator _orchestrator;
     private readonly ILogger<UflProjectionRebuilder> _logger;
 
@@ -43,12 +20,7 @@ public sealed class UflProjectionRebuilder : IUflProjectionRebuilder
 
     public async Task RebuildAsync(string assetClass, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(assetClass))
-        {
-            throw new ArgumentException("Asset class is required.", nameof(assetClass));
-        }
-
-        if (!SupportedAssetClasses.Contains(assetClass))
+        if (!SecurityKindMapping.TryNormalizeAssetClass(assetClass, out var normalizedAssetClass))
         {
             throw new ArgumentOutOfRangeException(
                 nameof(assetClass),
@@ -57,10 +29,10 @@ public sealed class UflProjectionRebuilder : IUflProjectionRebuilder
         }
 
         _logger.LogInformation(
-            "Rebuilding UFL projections for asset class {AssetClass} via security master projection replay.",
-            assetClass);
+            "Rebuilding UFL projections for asset class {AssetClass}; current phase replays the shared security master projection pipeline.",
+            normalizedAssetClass);
 
-        await _orchestrator.RebuildAsync(assetClass, ct).ConfigureAwait(false);
+        await _orchestrator.RebuildAsync(ct).ConfigureAwait(false);
     }
 }
 

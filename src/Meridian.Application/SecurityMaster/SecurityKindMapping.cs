@@ -89,4 +89,28 @@ public static class SecurityKindMapping
         var types = ToInstrumentTypes(assetClass);
         return types.Count == 1 ? types[0] : null;
     }
+
+    /// <summary>
+    /// Normalizes an asset-class string to the canonical security master casing when it is known.
+    /// </summary>
+    public static bool TryNormalizeAssetClass(string assetClass, out string normalizedAssetClass)
+    {
+        if (string.IsNullOrWhiteSpace(assetClass))
+        {
+            normalizedAssetClass = string.Empty;
+            return false;
+        }
+
+        foreach (var knownAssetClass in AssetClassToInstrumentTypes.Keys)
+        {
+            if (string.Equals(knownAssetClass, assetClass, StringComparison.OrdinalIgnoreCase))
+            {
+                normalizedAssetClass = knownAssetClass;
+                return true;
+            }
+        }
+
+        normalizedAssetClass = string.Empty;
+        return false;
+    }
 }
