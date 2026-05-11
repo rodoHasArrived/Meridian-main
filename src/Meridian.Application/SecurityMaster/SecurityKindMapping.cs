@@ -1,5 +1,5 @@
 using Meridian.Contracts.Domain.Enums;
-using System.Collections.ObjectModel;
+using System.Collections.Frozen;
 
 namespace Meridian.Application.SecurityMaster;
 
@@ -63,9 +63,8 @@ public static class SecurityKindMapping
             [InstrumentType.Deposit] = "Deposit",
         };
 
-    private static readonly IReadOnlyDictionary<string, string> CanonicalAssetClassLookup =
-        new ReadOnlyDictionary<string, string>(
-            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    private static readonly FrozenDictionary<string, string> CanonicalAssetClassLookup =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["Equity"] = "Equity",
                 ["Option"] = "Option",
@@ -86,7 +85,7 @@ public static class SecurityKindMapping
                 ["CryptoCurrency"] = "CryptoCurrency",
                 ["Cfd"] = "Cfd",
                 ["Warrant"] = "Warrant",
-            });
+            }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Returns the canonical security master asset-class string for the given

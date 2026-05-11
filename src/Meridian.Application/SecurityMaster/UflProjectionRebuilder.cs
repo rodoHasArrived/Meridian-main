@@ -1,3 +1,4 @@
+using Meridian.Application.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster;
@@ -22,10 +23,7 @@ public sealed class UflProjectionRebuilder : IUflProjectionRebuilder
     {
         if (!SecurityKindMapping.TryNormalizeAssetClass(assetClass, out var normalizedAssetClass))
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(assetClass),
-                assetClass,
-                "Asset class is not supported by the UFL projection rebuild pipeline.");
+            throw new UnsupportedAssetClassException(assetClass);
         }
 
         _logger.LogInformation(
