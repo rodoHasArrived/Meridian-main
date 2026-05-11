@@ -276,6 +276,9 @@ public static class UiEndpoints
         app.MapBondReferenceEndpoints(jsonOptions);
         app.MapOptionReferenceEndpoints(jsonOptions);
         app.MapOptionChainEndpoints(jsonOptions);
+        app.MapEquityReferenceEndpoints(jsonOptions);
+        app.MapFutureReferenceEndpoints(jsonOptions);
+        app.MapFxSpotReferenceEndpoints(jsonOptions);
         app.MapEdgarReferenceDataEndpoints(jsonOptions);
 
         // Credential management endpoints
@@ -407,6 +410,12 @@ public static class UiEndpoints
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
+        app.MapBondReferenceEndpoints(jsonOptions);
+        app.MapOptionReferenceEndpoints(jsonOptions);
+        app.MapOptionChainEndpoints(jsonOptions);
+        app.MapEquityReferenceEndpoints(jsonOptions);
+        app.MapFutureReferenceEndpoints(jsonOptions);
+        app.MapFxSpotReferenceEndpoints(jsonOptions);
         app.MapEdgarReferenceDataEndpoints(jsonOptions);
 
         // Credential management endpoints

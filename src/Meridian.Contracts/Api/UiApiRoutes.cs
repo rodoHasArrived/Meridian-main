@@ -334,6 +334,19 @@ public static class UiApiRoutes
     public const string ReferenceDataOptionChainImport = "/api/reference-data/options/chains/import";
     public const string ReferenceDataOptionChainSnapshot = "/api/reference-data/options/chains/snapshot";
 
+    public const string ReferenceDataEquityReference = "/api/reference-data/equities/{securityId:guid}";
+    public const string ReferenceDataEquityByExchange = "/api/reference-data/equities/by-exchange";
+    public const string ReferenceDataEquityByIssuer = "/api/reference-data/equities/by-issuer";
+
+    public const string ReferenceDataFutureReference = "/api/reference-data/futures/{securityId:guid}";
+    public const string ReferenceDataFuturesByRoot = "/api/reference-data/futures/by-root";
+    public const string ReferenceDataFutureExpiryLadder = "/api/reference-data/futures/expiry-ladder";
+    public const string ReferenceDataFutureFrontMonth = "/api/reference-data/futures/front-month";
+
+    public const string ReferenceDataFxSpotReference = "/api/reference-data/fxspot/{securityId:guid}";
+    public const string ReferenceDataFxSpotByPairCode = "/api/reference-data/fxspot/pairs/{pairCode}";
+    public const string ReferenceDataFxSpotByCurrency = "/api/reference-data/fxspot/by-currency";
+
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";
     public const string MessagingStatus = "/api/messaging/status";

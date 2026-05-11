@@ -16,6 +16,9 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     private const string OptionSeriesProjectionTable = "option_series_projection";
     private const string OptionLifecycleProjectionTable = "option_lifecycle_projection";
     private const string OptionAliasProjectionTable = "option_alias_projection";
+    private const string EquityProjectionTable = "equity_projection";
+    private const string FutureProjectionTable = "future_projection";
+    private const string FxSpotProjectionTable = "fxspot_projection";
 
     private readonly SecurityMasterOptions _options;
 
@@ -301,6 +304,9 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
     await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
     await UpsertBondProjectionTablesAsync(connection, transaction, record, ct).ConfigureAwait(false);
     await UpsertOptionProjectionTablesAsync(connection, transaction, record, ct).ConfigureAwait(false);
+    await UpsertEquityProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+    await UpsertFutureProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+    await UpsertFxSpotProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
 }
 
     private async Task UpsertBondProjectionTablesAsync(
@@ -1103,6 +1109,196 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
 
     private static string BuildOptionChainId(string underlyingSymbol, DateOnly expiryDate)
         => $"{underlyingSymbol.Trim().ToUpperInvariant()}-{expiryDate:yyyyMMdd}";
+
+    private async Task UpsertEquityProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityProjectionRecord record,
+        CancellationToken ct)
+    {
+        if (!string.Equals(record.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
+        {
+            await using var del = connection.CreateCommand();
+            del.Transaction = transaction;
+            del.CommandText = $"delete from {Qualified(EquityProjectionTable)} where security_id = @security_id;";
+            del.Parameters.AddWithValue("security_id", record.SecurityId);
+            await del.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            return;
+        }
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified(EquityProjectionTable)} (
+                security_id, display_name, currency, share_class, voting_rights_cat,
+                classification, exchange_code, country_of_risk, issuer_name,
+                primary_identifier_value, version)
+            values (
+                @security_id, @display_name, @currency, @share_class, @voting_rights_cat,
+                @classification, @exchange_code, @country_of_risk, @issuer_name,
+                @primary_identifier_value, @version)
+            on conflict (security_id) do update set
+                display_name = excluded.display_name,
+                currency = excluded.currency,
+                share_class = excluded.share_class,
+                voting_rights_cat = excluded.voting_rights_cat,
+                classification = excluded.classification,
+                exchange_code = excluded.exchange_code,
+                country_of_risk = excluded.country_of_risk,
+                issuer_name = excluded.issuer_name,
+                primary_identifier_value = excluded.primary_identifier_value,
+                version = excluded.version;
+            """;
+        command.Parameters.AddWithValue("security_id", record.SecurityId);
+        command.Parameters.AddWithValue("display_name", record.DisplayName);
+        command.Parameters.AddWithValue("currency", record.Currency ?? string.Empty);
+        command.Parameters.AddWithValue("share_class", (object?)GetOptionalString(record.AssetSpecificTerms, "shareClass") ?? DBNull.Value);
+        command.Parameters.AddWithValue("voting_rights_cat", (object?)GetOptionalString(record.AssetSpecificTerms, "votingRightsCat") ?? DBNull.Value);
+        command.Parameters.AddWithValue("classification", (object?)GetOptionalString(record.AssetSpecificTerms, "classification") ?? DBNull.Value);
+        command.Parameters.AddWithValue("exchange_code", (object?)GetOptionalString(record.CommonTerms, "exchange") ?? DBNull.Value);
+        command.Parameters.AddWithValue("country_of_risk", (object?)GetOptionalString(record.CommonTerms, "countryOfRisk") ?? DBNull.Value);
+        command.Parameters.AddWithValue("issuer_name", (object?)GetOptionalString(record.CommonTerms, "issuerName") ?? DBNull.Value);
+        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
+        command.Parameters.AddWithValue("version", record.Version);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertFutureProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityProjectionRecord record,
+        CancellationToken ct)
+    {
+        if (!string.Equals(record.AssetClass, "Future", StringComparison.OrdinalIgnoreCase) ||
+            !TryGetOptionalDateOnly(record.AssetSpecificTerms, "expiry", out var expiryDate) ||
+            expiryDate is null)
+        {
+            await using var del = connection.CreateCommand();
+            del.Transaction = transaction;
+            del.CommandText = $"delete from {Qualified(FutureProjectionTable)} where security_id = @security_id;";
+            del.Parameters.AddWithValue("security_id", record.SecurityId);
+            await del.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            return;
+        }
+
+        var rootSymbol = (GetOptionalString(record.AssetSpecificTerms, "rootSymbol")
+            ?? record.PrimaryIdentifierValue.Trim().ToUpperInvariant());
+        var contractMonth = GetOptionalString(record.AssetSpecificTerms, "contractMonth") ?? string.Empty;
+        var multiplier = GetOptionalDecimal(record.AssetSpecificTerms, "multiplier") ?? 1m;
+        var isRollTarget = GetOptionalBool(record.AssetSpecificTerms, "isRollTarget") ?? false;
+        var lastTradingDate = GetOptionalDateOnly(record.AssetSpecificTerms, "lastTradingDt") ?? expiryDate;
+        var lifecycleStat =
+            record.EffectiveTo.HasValue ? "Retired" :
+            isRollTarget ? "RollTarget" :
+            expiryDate.Value < DateOnly.FromDateTime(DateTime.UtcNow) ? "Expired" :
+            "Active";
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified(FutureProjectionTable)} (
+                security_id, display_name, currency, root_symbol, contract_month, expiry_date,
+                multiplier, settlement_type, is_roll_target, roll_window_days, last_trading_dt,
+                first_notice_dt, delivery_month_dt, delivery_location_code, lifecycle_stat,
+                primary_identifier_value, version)
+            values (
+                @security_id, @display_name, @currency, @root_symbol, @contract_month, @expiry_date,
+                @multiplier, @settlement_type, @is_roll_target, @roll_window_days, @last_trading_dt,
+                @first_notice_dt, @delivery_month_dt, @delivery_location_code, @lifecycle_stat,
+                @primary_identifier_value, @version)
+            on conflict (security_id) do update set
+                display_name = excluded.display_name,
+                currency = excluded.currency,
+                root_symbol = excluded.root_symbol,
+                contract_month = excluded.contract_month,
+                expiry_date = excluded.expiry_date,
+                multiplier = excluded.multiplier,
+                settlement_type = excluded.settlement_type,
+                is_roll_target = excluded.is_roll_target,
+                roll_window_days = excluded.roll_window_days,
+                last_trading_dt = excluded.last_trading_dt,
+                first_notice_dt = excluded.first_notice_dt,
+                delivery_month_dt = excluded.delivery_month_dt,
+                delivery_location_code = excluded.delivery_location_code,
+                lifecycle_stat = excluded.lifecycle_stat,
+                primary_identifier_value = excluded.primary_identifier_value,
+                version = excluded.version;
+            """;
+        command.Parameters.AddWithValue("security_id", record.SecurityId);
+        command.Parameters.AddWithValue("display_name", record.DisplayName);
+        command.Parameters.AddWithValue("currency", record.Currency ?? string.Empty);
+        command.Parameters.AddWithValue("root_symbol", rootSymbol.Trim().ToUpperInvariant());
+        command.Parameters.AddWithValue("contract_month", contractMonth);
+        command.Parameters.AddWithValue("expiry_date", expiryDate.Value.ToDateTime(TimeOnly.MinValue));
+        command.Parameters.AddWithValue("multiplier", multiplier);
+        command.Parameters.AddWithValue("settlement_type", (object?)GetOptionalString(record.AssetSpecificTerms, "settlementType") ?? DBNull.Value);
+        command.Parameters.AddWithValue("is_roll_target", isRollTarget);
+        command.Parameters.AddWithValue("roll_window_days", (object?)GetOptionalInt(record.AssetSpecificTerms, "rollWindowDays") ?? DBNull.Value);
+        command.Parameters.AddWithValue("last_trading_dt", (object?)lastTradingDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
+        command.Parameters.AddWithValue("first_notice_dt", (object?)GetOptionalDateOnly(record.AssetSpecificTerms, "firstNoticeDt")?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
+        command.Parameters.AddWithValue("delivery_month_dt", (object?)GetOptionalDateOnly(record.AssetSpecificTerms, "deliveryMonthDt")?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
+        command.Parameters.AddWithValue("delivery_location_code", (object?)GetOptionalString(record.AssetSpecificTerms, "deliveryLocationCode") ?? DBNull.Value);
+        command.Parameters.AddWithValue("lifecycle_stat", lifecycleStat);
+        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
+        command.Parameters.AddWithValue("version", record.Version);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task UpsertFxSpotProjectionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityProjectionRecord record,
+        CancellationToken ct)
+    {
+        var baseCurrency = GetOptionalString(record.AssetSpecificTerms, "baseCurrency");
+        var quoteCurrency = GetOptionalString(record.AssetSpecificTerms, "quoteCurrency");
+
+        if (!string.Equals(record.AssetClass, "FxSpot", StringComparison.OrdinalIgnoreCase) ||
+            string.IsNullOrWhiteSpace(baseCurrency) ||
+            string.IsNullOrWhiteSpace(quoteCurrency))
+        {
+            await using var del = connection.CreateCommand();
+            del.Transaction = transaction;
+            del.CommandText = $"delete from {Qualified(FxSpotProjectionTable)} where security_id = @security_id;";
+            del.Parameters.AddWithValue("security_id", record.SecurityId);
+            await del.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            return;
+        }
+
+        var base_ = baseCurrency.Trim().ToUpperInvariant();
+        var quote = quoteCurrency.Trim().ToUpperInvariant();
+        var pairCode = $"{base_}{quote}";
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified(FxSpotProjectionTable)} (
+                security_id, display_name, base_currency, quote_currency, pair_code,
+                primary_identifier_value, version)
+            values (
+                @security_id, @display_name, @base_currency, @quote_currency, @pair_code,
+                @primary_identifier_value, @version)
+            on conflict (security_id) do update set
+                display_name = excluded.display_name,
+                base_currency = excluded.base_currency,
+                quote_currency = excluded.quote_currency,
+                pair_code = excluded.pair_code,
+                primary_identifier_value = excluded.primary_identifier_value,
+                version = excluded.version;
+            """;
+        command.Parameters.AddWithValue("security_id", record.SecurityId);
+        command.Parameters.AddWithValue("display_name", record.DisplayName);
+        command.Parameters.AddWithValue("base_currency", base_);
+        command.Parameters.AddWithValue("quote_currency", quote);
+        command.Parameters.AddWithValue("pair_code", pairCode);
+        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
+        command.Parameters.AddWithValue("version", record.Version);
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
 
     private static string? GetOptionalString(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
