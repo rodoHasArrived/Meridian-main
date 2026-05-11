@@ -5917,6 +5917,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterRuntimeStatus.cs
 │   │   │   ├── ISecurityMasterService.cs
+│   │   │   ├── OperatorOverrides.cs
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityDtos.cs
 │   │   │   ├── SecurityEvents.cs
@@ -6622,13 +6623,16 @@ Use these documents together when planning or implementing new work:
 │   │   ├── SecurityMaster
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IEdgarReferenceDataStore.cs
+│   │   │   ├── IOperatorOverridesStore.cs
 │   │   │   ├── ISecurityMasterEventStore.cs
 │   │   │   ├── ISecurityMasterSnapshotStore.cs
 │   │   │   ├── ISecurityMasterStore.cs
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_security_master.sql
 │   │   │   │   ├── 002_security_master_fts.sql
-│   │   │   │   └── 003_security_master_corp_actions.sql
+│   │   │   │   ├── 003_security_master_corp_actions.sql
+│   │   │   │   └── 004_security_master_operator_overrides.sql
+│   │   │   ├── PostgresOperatorOverridesStore.cs
 │   │   │   ├── PostgresSecurityMasterEventStore.cs
 │   │   │   ├── PostgresSecurityMasterSnapshotStore.cs
 │   │   │   ├── PostgresSecurityMasterStore.cs
@@ -6756,6 +6760,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── metric-card.view-model.ts
 │   │   │   │   │   │   ├── quant-plot.test.tsx
 │   │   │   │   │   │   ├── quant-plot.tsx
+│   │   │   │   │   │   ├── security-details-tracker.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
@@ -8461,6 +8466,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-677 directories, 7601 files
+677 directories, 7606 files
 ```
 <!-- readme-tree end -->
