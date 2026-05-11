@@ -5877,6 +5877,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── OrderFlowStatistics.cs
 │   │   │   │   ├── OrderModify.cs
 │   │   │   │   ├── OrderReplace.cs
+│   │   │   │   ├── SessionStats.cs
 │   │   │   │   └── Trade.cs
 │   │   │   ├── ProviderId.cs
 │   │   │   ├── ProviderSymbol.cs
@@ -6025,6 +6026,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── MarketDepthCollector.cs
 │   │   │   ├── OptionDataCollector.cs
 │   │   │   ├── QuoteCollector.cs
+│   │   │   ├── SessionStatsCollector.cs
 │   │   │   ├── SymbolSubscriptionTracker.cs
 │   │   │   └── TradeDataCollector.cs
 │   │   ├── Events
@@ -6886,6 +6888,7 @@ Use these documents together when planning or implementing new work:
 │   │           │   ├── governance-screen-B6AXwJwq.js
 │   │           │   ├── index-BNmcpdTI.css
 │   │           │   ├── index-DsiFM6_1.js
+│   │           │   ├── index-Mr6V-TkW.js
 │   │           │   ├── input-BVAOEZOw.js
 │   │           │   ├── live-quotes-screen-DBkDJTTz.js
 │   │           │   ├── metric-card-BeF5OxAZ.js
@@ -7936,6 +7939,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── MarketDepthCollectorTests.cs
 │   │   │   │   ├── OptionDataCollectorTests.cs
 │   │   │   │   ├── QuoteCollectorTests.cs
+│   │   │   │   ├── SessionStatsCollectorTests.cs
 │   │   │   │   └── TradeDataCollectorTests.cs
 │   │   │   ├── Models
 │   │   │   │   ├── AdjustedHistoricalBarTests.cs
@@ -8466,6 +8470,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-677 directories, 7606 files
+677 directories, 7610 files
 ```
 <!-- readme-tree end -->
