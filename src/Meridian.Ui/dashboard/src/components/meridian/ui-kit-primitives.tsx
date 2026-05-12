@@ -36,11 +36,20 @@ export function ToolbarStrip({
   );
 }
 
+export type DenseDataTableSortDirection = "asc" | "desc";
+
+export interface DenseDataTableSortState {
+  columnId: string;
+  direction: DenseDataTableSortDirection;
+}
+
 export interface DenseDataTableColumn<T> {
   id: string;
   label: string;
   align?: "left" | "right";
   className?: string;
+  sortable?: boolean;
+  sortAriaLabel?: (next: DenseDataTableSortDirection | "remove") => string;
   render: (row: T) => ReactNode;
 }
 
@@ -56,7 +65,9 @@ export function DenseDataTable<T>({
   selectedRowId,
   emptyText,
   ariaLabel,
-  caption
+  caption,
+  sort,
+  onToggleSort
 }: {
   columns: DenseDataTableColumn<T>[];
   rows: T[];
@@ -70,6 +81,8 @@ export function DenseDataTable<T>({
   emptyText: string;
   ariaLabel: string;
   caption?: string | null;
+  sort?: DenseDataTableSortState | null;
+  onToggleSort?: (columnId: string) => void;
 }) {
   return (
     <div className="dense-data-table-wrap">
@@ -77,15 +90,57 @@ export function DenseDataTable<T>({
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead>
           <tr>
-            {columns.map((column) => (
-              <th
-                key={column.id}
-                scope="col"
-                className={cn(column.align === "right" ? "text-right" : "text-left", column.className)}
-              >
-                {column.label}
-              </th>
-            ))}
+            {columns.map((column) => {
+              const isSorted = sort?.columnId === column.id;
+              const ariaSort: "ascending" | "descending" | "none" | undefined = column.sortable
+                ? isSorted
+                  ? sort?.direction === "asc"
+                    ? "ascending"
+                    : "descending"
+                  : "none"
+                : undefined;
+              const headerClass = cn(
+                column.align === "right" ? "text-right" : "text-left",
+                column.className,
+                column.sortable ? "dense-data-table-sortable" : undefined,
+                isSorted ? "dense-data-table-sorted" : undefined
+              );
+
+              if (!column.sortable || !onToggleSort) {
+                return (
+                  <th key={column.id} scope="col" className={headerClass} aria-sort={ariaSort}>
+                    {column.label}
+                  </th>
+                );
+              }
+
+              const nextDirection: DenseDataTableSortDirection | "remove" = isSorted
+                ? sort?.direction === "asc"
+                  ? "desc"
+                  : "remove"
+                : "asc";
+              const buttonAriaLabel = column.sortAriaLabel
+                ? column.sortAriaLabel(nextDirection)
+                : nextDirection === "remove"
+                  ? `Clear sort by ${column.label}`
+                  : `Sort by ${column.label} ${nextDirection === "asc" ? "ascending" : "descending"}`;
+
+              return (
+                <th key={column.id} scope="col" className={headerClass} aria-sort={ariaSort}>
+                  <button
+                    type="button"
+                    className="dense-data-table-sort-button"
+                    onClick={() => onToggleSort(column.id)}
+                    aria-label={buttonAriaLabel}
+                  >
+                    <span>{column.label}</span>
+                    <span aria-hidden="true" className="dense-data-table-sort-indicator">
+                      {isSorted ? (sort?.direction === "asc" ? "▲" : "▼") : "↕"}
+                    </span>
+                  </button>
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>

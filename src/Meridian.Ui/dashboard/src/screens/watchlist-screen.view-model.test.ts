@@ -5,6 +5,7 @@ import {
   buildProviderSetupHandoff,
   buildQuoteRefreshCommand,
   buildQuoteStatus,
+  buildStaleFilterCommand,
   buildStarterPackCommands,
   buildStarterPackFeedback,
   buildWatchlistSelectedDetail,
@@ -12,11 +13,13 @@ import {
   buildWatchlistStats,
   formatRelative,
   parseWatchlistSymbols,
+  sortAndFilterWatchlistRows,
+  toggleWatchlistSort,
   useWatchlistScreenViewModel,
   validatePendingSymbol
 } from "@/screens/watchlist-screen.view-model";
 import type { QuotesSnapshotItem, SymbolRecord, SymbolStatistics } from "@/types";
-import type { WatchlistApi } from "@/screens/watchlist-screen.view-model";
+import type { WatchlistApi, WatchlistSortState } from "@/screens/watchlist-screen.view-model";
 
 const symbols: SymbolRecord[] = [
   {
@@ -393,6 +396,149 @@ describe("watchlist-screen view model", () => {
     await waitFor(() => expect(result.current.selectedSymbol).toBe("MSFT"));
     expect(result.current.selectedRowId).toBe("MSFT");
     expect(result.current.selectedDetail?.title).toBe("MSFT");
+  });
+});
+
+describe("watchlist sort and filter", () => {
+  const sortSamples: SymbolRecord[] = [
+    { symbol: "AAA", status: "Active", provider: "Polygon", lastEventAt: null, eventCount: 0, hasHistoricalData: false },
+    { symbol: "BBB", status: "Active", provider: "Polygon", lastEventAt: null, eventCount: 0, hasHistoricalData: false },
+    { symbol: "CCC", status: "Active", provider: "Polygon", lastEventAt: null, eventCount: 0, hasHistoricalData: false },
+    { symbol: "DDD", status: "Active", provider: "Polygon", lastEventAt: null, eventCount: 0, hasHistoricalData: false }
+  ];
+
+  const now = Date.parse("2026-05-09T01:00:00.000Z");
+
+  function makeQuote(overrides: {
+    symbol: string;
+    timestamp?: string;
+    lastPrice: number;
+    spread: number;
+    midPrice: number;
+    change: number;
+    changePercent: number | null;
+    high: number;
+    low: number;
+  }): QuotesSnapshotItem {
+    return {
+      symbol: overrides.symbol,
+      timestamp: overrides.timestamp ?? "2026-05-09T00:59:55.000Z",
+      bidPrice: overrides.midPrice - overrides.spread / 2,
+      bidSize: 10,
+      askPrice: overrides.midPrice + overrides.spread / 2,
+      askSize: 10,
+      midPrice: overrides.midPrice,
+      spread: overrides.spread,
+      lastPrice: overrides.lastPrice,
+      lastSize: 1,
+      lastTradeTimestamp: overrides.timestamp ?? "2026-05-09T00:59:55.000Z",
+      sequenceNumber: 1,
+      streamId: null,
+      venue: null,
+      session: {
+        sessionDate: "2026-05-09",
+        open: overrides.lastPrice - overrides.change,
+        high: overrides.high,
+        low: overrides.low,
+        last: overrides.lastPrice,
+        volume: 1000,
+        vwap: overrides.midPrice,
+        tradeCount: 50,
+        change: overrides.change,
+        changePercent: overrides.changePercent,
+        firstTradeAt: "2026-05-09T13:30:00.000Z",
+        lastTradeAt: overrides.timestamp ?? "2026-05-09T00:59:55.000Z"
+      }
+    };
+  }
+
+  const baseRows = buildWatchlistRows(
+    sortSamples,
+    {},
+    {
+      AAA: makeQuote({ symbol: "AAA", lastPrice: 50, spread: 0.05, midPrice: 50, change: 1, changePercent: 2, high: 51, low: 48 }),
+      BBB: makeQuote({ symbol: "BBB", lastPrice: 200, spread: 0.10, midPrice: 200, change: -3, changePercent: -1.5, high: 205, low: 199 }),
+      CCC: makeQuote({
+        symbol: "CCC",
+        timestamp: "2026-05-09T00:59:00.000Z",
+        lastPrice: 75,
+        spread: 0.02,
+        midPrice: 75,
+        change: 5,
+        changePercent: 7.1,
+        high: 76,
+        low: 70
+      })
+      // DDD intentionally has no quote
+    },
+    {},
+    now
+  );
+
+  it("sorts by change percent descending (largest movers first) and pushes missing data to the bottom", () => {
+    const sorted = sortAndFilterWatchlistRows(
+      baseRows,
+      { columnId: "change-percent", direction: "desc" } as WatchlistSortState,
+      false
+    );
+    expect(sorted.map((row) => row.symbol)).toEqual(["CCC", "AAA", "BBB", "DDD"]);
+  });
+
+  it("sorts by spread ascending (tightest markets first)", () => {
+    const sorted = sortAndFilterWatchlistRows(
+      baseRows,
+      { columnId: "spread", direction: "asc" } as WatchlistSortState,
+      false
+    );
+    expect(sorted.map((row) => row.symbol)).toEqual(["CCC", "AAA", "BBB", "DDD"]);
+  });
+
+  it("hides stale rows when requested but keeps no-quote rows visible", () => {
+    const sorted = sortAndFilterWatchlistRows(
+      baseRows,
+      { columnId: "symbol", direction: "asc" } as WatchlistSortState,
+      true
+    );
+    // CCC's quote timestamp is 60s old; stale threshold is 15s, so CCC is stale.
+    // DDD has no quote, so quoteStale is false — it remains visible.
+    expect(sorted.map((row) => row.symbol)).toEqual(["AAA", "BBB", "DDD"]);
+  });
+
+  it("toggles sort direction: first click sets desc, second click sets asc, third resets to symbol", () => {
+    const initial: WatchlistSortState = { columnId: "symbol", direction: "asc" };
+    const afterFirst = toggleWatchlistSort(initial, "change-percent");
+    expect(afterFirst).toEqual({ columnId: "change-percent", direction: "desc" });
+    const afterSecond = toggleWatchlistSort(afterFirst, "change-percent");
+    expect(afterSecond).toEqual({ columnId: "change-percent", direction: "asc" });
+    const afterThird = toggleWatchlistSort(afterSecond, "change-percent");
+    expect(afterThird).toEqual({ columnId: "symbol", direction: "asc" });
+  });
+
+  it("builds the stale filter command, disabling when no stale rows exist", () => {
+    expect(buildStaleFilterCommand(0, 0, false)).toMatchObject({
+      disabled: true,
+      disabledReason: "Add a symbol before filtering stale quotes."
+    });
+    expect(buildStaleFilterCommand(5, 0, false)).toMatchObject({
+      disabled: true,
+      disabledReason: "No stale quotes to hide."
+    });
+    expect(buildStaleFilterCommand(5, 2, false)).toEqual({
+      label: "Hide stale (2)",
+      ariaLabel: "Hide 2 stale quotes.",
+      pressed: false,
+      disabled: false,
+      disabledReason: null,
+      hiddenCount: 0
+    });
+    expect(buildStaleFilterCommand(5, 2, true)).toEqual({
+      label: "Showing fresh only (2 hidden)",
+      ariaLabel: "Showing fresh quotes only. 2 stale rows hidden. Click to show all rows.",
+      pressed: true,
+      disabled: false,
+      disabledReason: null,
+      hiddenCount: 2
+    });
   });
 });
 

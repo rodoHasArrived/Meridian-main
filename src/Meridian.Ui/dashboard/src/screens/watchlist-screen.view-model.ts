@@ -7,6 +7,27 @@ export type WatchlistListState = "loading" | "error" | "empty" | "ready";
 export type WatchlistPriceTone = "default" | "success" | "danger";
 export type WatchlistQuoteStatusTone = "default" | "warning" | "danger";
 export type WatchlistDetailFieldTone = "default" | "success" | "warning" | "danger" | "muted";
+export type WatchlistSortColumn =
+  | "symbol"
+  | "status"
+  | "last"
+  | "change-percent"
+  | "spread"
+  | "quote-age";
+export type WatchlistSortDirection = "asc" | "desc";
+
+export interface WatchlistSortState {
+  columnId: WatchlistSortColumn;
+  direction: WatchlistSortDirection;
+}
+
+const DEFAULT_SORT: WatchlistSortState = { columnId: "symbol", direction: "asc" };
+const STATUS_RANK: Record<SymbolRecord["status"], number> = {
+  Error: 0,
+  Active: 1,
+  Monitored: 2,
+  Archived: 3
+};
 
 const QUOTE_POLL_INTERVAL_MS = 2000;
 const QUOTE_STALE_THRESHOLD_MS = 15_000;
@@ -64,6 +85,16 @@ export interface WatchlistRowViewModel {
   removeDisabledReason: string | null;
   rowSelectAriaLabel: string;
   ariaLabel: string;
+  /** Numeric sort key for last price; null when the row has no live quote. */
+  lastPriceValue: number | null;
+  /** Numeric sort key for absolute day change; null when no session is available. */
+  changeValue: number | null;
+  /** Numeric sort key for day change percent; null when no session is available. */
+  changePercentValue: number | null;
+  /** Numeric sort key for bid/ask spread; null when no live quote. */
+  spreadValue: number | null;
+  /** Numeric sort key for quote age in milliseconds; null when no live quote. */
+  quoteAgeMs: number | null;
 }
 
 export interface WatchlistQuoteRefreshCommandState {
@@ -106,6 +137,15 @@ export interface WatchlistSelectedDetail {
   fields: WatchlistSelectedDetailField[];
 }
 
+export interface WatchlistFilterCommandState {
+  label: string;
+  ariaLabel: string;
+  pressed: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
+  hiddenCount: number;
+}
+
 export interface WatchlistScreenViewModel {
   pendingSymbol: string;
   setPendingSymbol: (value: string) => void;
@@ -116,6 +156,11 @@ export interface WatchlistScreenViewModel {
   loadError: string | null;
   stats: MetricSnapshot[];
   rows: WatchlistRowViewModel[];
+  sort: WatchlistSortState;
+  toggleSort: (columnId: WatchlistSortColumn) => void;
+  hideStale: boolean;
+  setHideStale: (value: boolean) => void;
+  staleFilterCommand: WatchlistFilterCommandState;
   listState: WatchlistListState;
   listDescription: string;
   tableLabel: string;
@@ -177,6 +222,8 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   const [quoteRefreshing, setQuoteRefreshing] = useState(false);
   const [activeStarterPackId, setActiveStarterPackId] = useState<string | null>(null);
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const [sort, setSort] = useState<WatchlistSortState>(DEFAULT_SORT);
+  const [hideStale, setHideStale] = useState(false);
   const mountedRef = useRef(true);
   const refreshRevisionRef = useRef(0);
   const refreshAbortRef = useRef<AbortController | null>(null);
@@ -463,10 +510,18 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   const addValidation = validatePendingSymbol(pendingSymbol);
   const pendingSymbols = parseWatchlistSymbols(pendingSymbol);
   const submitError = submitFeedback?.tone === "danger" ? submitFeedback.message : null;
-  const rows = useMemo(
+  const allRows = useMemo(
     () => buildWatchlistRows(symbols ?? [], removing, quotes, previousMidRef.current),
     [symbols, removing, quotes]
   );
+  const rows = useMemo(
+    () => sortAndFilterWatchlistRows(allRows, sort, hideStale),
+    [allRows, sort, hideStale]
+  );
+  const toggleSort = useCallback((columnId: WatchlistSortColumn) => {
+    setSort((current) => toggleWatchlistSort(current, columnId));
+  }, []);
+
   useEffect(() => {
     if (rows.length === 0) {
       if (selectedSymbol !== null) {
@@ -482,14 +537,17 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
 
   const selectedRow = rows.find((row) => row.symbol === selectedSymbol) ?? rows[0] ?? null;
   const listState = buildListState(symbols, loadError);
+  const totalQuoteCount = allRows.filter((row) => row.hasQuote).length;
+  const totalStaleCount = allRows.filter((row) => row.quoteStale).length;
   const quoteStatus = buildQuoteStatus({
     listState,
-    rowCount: rows.length,
-    quoteCount: rows.filter((row) => row.hasQuote).length,
-    staleCount: rows.filter((row) => row.quoteStale).length,
+    rowCount: allRows.length,
+    quoteCount: totalQuoteCount,
+    staleCount: totalStaleCount,
     quoteError,
     quoteFetchedAt
   });
+  const staleFilterCommand = buildStaleFilterCommand(allRows.length, totalStaleCount, hideStale);
 
   return {
     pendingSymbol,
@@ -501,10 +559,15 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     loadError,
     stats: buildWatchlistStats(stats),
     rows,
+    sort,
+    toggleSort,
+    hideStale,
+    setHideStale,
+    staleFilterCommand,
     listState,
-    listDescription: buildListDescription(listState, rows.length, loadError),
+    listDescription: buildListDescription(listState, rows.length, allRows.length, hideStale, loadError),
     tableLabel: "Subscribed symbol watchlist",
-    tableCaption: "Subscribed symbols sorted alphabetically with status, live bid and ask, last price, day change, day high/low, spread, quote age, provider, and actions.",
+    tableCaption: buildTableCaption(sort, hideStale),
     formLabel: "Add symbols to the watchlist",
     inputId: "add-symbol-input",
     inputPlaceholder: "Add symbols (e.g. MSFT, SPY)",
@@ -602,9 +665,85 @@ export function buildWatchlistRows(
         removeAriaLabel: isRemoving ? `Removing ${record.symbol} from watchlist` : `Remove ${record.symbol} from watchlist`,
         removeDisabledReason: isRemoving ? `${record.symbol} removal is already running.` : null,
         rowSelectAriaLabel: `Select ${record.symbol} watchlist row. ${record.symbol}. Status ${record.status}.`,
-        ariaLabel: `${record.symbol}. Status ${record.status}. Bid ${quote ? formatPriceSize(quote.bidPrice, quote.bidSize) : "not available"}. Ask ${quote ? formatPriceSize(quote.askPrice, quote.askSize) : "not available"}. Last ${quote ? formatPrice(quote.lastPrice) : "not available"}. Change ${changeLabel}. Change percent ${changePercentLabel}. Day high low ${dayRangeLabel}. Provider ${providerLabel}. Last event ${lastEventLabel}. ${eventCountLabel} events. History ${historyLabel}.`
+        ariaLabel: `${record.symbol}. Status ${record.status}. Bid ${quote ? formatPriceSize(quote.bidPrice, quote.bidSize) : "not available"}. Ask ${quote ? formatPriceSize(quote.askPrice, quote.askSize) : "not available"}. Last ${quote ? formatPrice(quote.lastPrice) : "not available"}. Change ${changeLabel}. Change percent ${changePercentLabel}. Day high low ${dayRangeLabel}. Provider ${providerLabel}. Last event ${lastEventLabel}. ${eventCountLabel} events. History ${historyLabel}.`,
+        lastPriceValue: toFiniteNumber(quote?.lastPrice),
+        changeValue: toFiniteNumber(session?.change),
+        changePercentValue: toFiniteNumber(session?.changePercent),
+        spreadValue: toFiniteNumber(quote?.spread),
+        quoteAgeMs: quoteAgeMs ?? null
       };
     });
+}
+
+export function sortAndFilterWatchlistRows(
+  rows: WatchlistRowViewModel[],
+  sort: WatchlistSortState,
+  hideStale: boolean
+): WatchlistRowViewModel[] {
+  const filtered = hideStale ? rows.filter((row) => !row.quoteStale) : rows;
+  const direction = sort.direction === "asc" ? 1 : -1;
+  return [...filtered].sort((left, right) => {
+    const leftKey = sortKeyFor(left, sort.columnId);
+    const rightKey = sortKeyFor(right, sort.columnId);
+    const leftMissing = leftKey === null;
+    const rightMissing = rightKey === null;
+    if (leftMissing && rightMissing) {
+      return left.symbol.localeCompare(right.symbol);
+    }
+    if (leftMissing) return 1;
+    if (rightMissing) return -1;
+
+    const primary = compareSortKeys(leftKey as number | string, rightKey as number | string);
+    if (primary !== 0) {
+      return primary * direction;
+    }
+    return left.symbol.localeCompare(right.symbol);
+  });
+}
+
+function sortKeyFor(row: WatchlistRowViewModel, columnId: WatchlistSortColumn): number | string | null {
+  switch (columnId) {
+    case "symbol":
+      return row.symbol;
+    case "status":
+      return STATUS_RANK[row.status];
+    case "last":
+      return row.lastPriceValue;
+    case "change-percent":
+      return row.changePercentValue;
+    case "spread":
+      return row.spreadValue;
+    case "quote-age":
+      return row.quoteAgeMs;
+  }
+}
+
+function compareSortKeys(left: number | string, right: number | string): number {
+  if (typeof left === "string" && typeof right === "string") {
+    return left.localeCompare(right);
+  }
+  if (typeof left === "number" && typeof right === "number") {
+    return left - right;
+  }
+  return String(left).localeCompare(String(right));
+}
+
+function toFiniteNumber(value: number | null | undefined): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+export function toggleWatchlistSort(
+  current: WatchlistSortState,
+  columnId: WatchlistSortColumn,
+  defaultSort: WatchlistSortState = DEFAULT_SORT
+): WatchlistSortState {
+  if (current.columnId !== columnId) {
+    return { columnId, direction: columnId === "symbol" ? "asc" : "desc" };
+  }
+  if (current.direction === "desc") {
+    return { columnId, direction: "asc" };
+  }
+  return defaultSort;
 }
 
 export function buildWatchlistSelectedDetail(
@@ -833,7 +972,13 @@ function buildListState(symbols: SymbolRecord[] | null, loadError: string | null
   return "ready";
 }
 
-function buildListDescription(state: WatchlistListState, rowCount: number, loadError: string | null): string {
+function buildListDescription(
+  state: WatchlistListState,
+  visibleCount: number,
+  totalCount: number,
+  hideStale: boolean,
+  loadError: string | null
+): string {
   switch (state) {
     case "loading":
       return "Loading symbols...";
@@ -841,9 +986,70 @@ function buildListDescription(state: WatchlistListState, rowCount: number, loadE
       return loadError ?? "Symbol watchlist failed to load.";
     case "empty":
       return "No symbols configured. Add one above to start collecting live data.";
-    case "ready":
-      return `${rowCount} symbol${rowCount === 1 ? "" : "s"} configured.`;
+    case "ready": {
+      const hidden = totalCount - visibleCount;
+      if (hideStale && hidden > 0) {
+        return `${visibleCount} of ${totalCount} symbol${totalCount === 1 ? "" : "s"} shown; ${hidden} stale hidden.`;
+      }
+      return `${totalCount} symbol${totalCount === 1 ? "" : "s"} configured.`;
+    }
   }
+}
+
+const SORT_COLUMN_LABELS: Record<WatchlistSortColumn, string> = {
+  "symbol": "symbol",
+  "status": "status",
+  "last": "last price",
+  "change-percent": "day change percent",
+  "spread": "spread",
+  "quote-age": "quote age"
+};
+
+function buildTableCaption(sort: WatchlistSortState, hideStale: boolean): string {
+  const directionLabel = sort.direction === "asc" ? "ascending" : "descending";
+  const sortLabel = SORT_COLUMN_LABELS[sort.columnId];
+  const filterLabel = hideStale ? " Stale rows are hidden." : "";
+  return `Subscribed symbols sorted by ${sortLabel} ${directionLabel}.${filterLabel} Columns show status, live bid and ask, last price, day change, day high/low, spread, quote age, provider, and actions.`;
+}
+
+export function buildStaleFilterCommand(
+  rowCount: number,
+  staleCount: number,
+  hideStale: boolean
+): WatchlistFilterCommandState {
+  const hiddenCount = hideStale ? staleCount : 0;
+  if (rowCount === 0) {
+    return {
+      label: "Hide stale",
+      ariaLabel: "Hide stale quotes. Disabled because there are no symbols yet.",
+      pressed: false,
+      disabled: true,
+      disabledReason: "Add a symbol before filtering stale quotes.",
+      hiddenCount: 0
+    };
+  }
+
+  if (staleCount === 0 && !hideStale) {
+    return {
+      label: "Hide stale",
+      ariaLabel: "Hide stale quotes. No stale quotes detected.",
+      pressed: false,
+      disabled: true,
+      disabledReason: "No stale quotes to hide.",
+      hiddenCount: 0
+    };
+  }
+
+  return {
+    label: hideStale ? `Showing fresh only (${staleCount} hidden)` : `Hide stale (${staleCount})`,
+    ariaLabel: hideStale
+      ? `Showing fresh quotes only. ${staleCount} stale row${staleCount === 1 ? "" : "s"} hidden. Click to show all rows.`
+      : `Hide ${staleCount} stale quote${staleCount === 1 ? "" : "s"}.`,
+    pressed: hideStale,
+    disabled: false,
+    disabledReason: null,
+    hiddenCount
+  };
 }
 
 function buildToolbarItems(

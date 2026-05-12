@@ -801,6 +801,55 @@
     color: var(--fg-muted);
   }
 
+  .dense-data-table-sortable {
+    cursor: pointer;
+  }
+
+  .dense-data-table-sort-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    width: 100%;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .dense-data-table th.text-right .dense-data-table-sort-button {
+    justify-content: flex-end;
+  }
+
+  .dense-data-table-sort-button:hover,
+  .dense-data-table-sort-button:focus-visible {
+    color: var(--fg);
+  }
+
+  .dense-data-table-sort-button:focus-visible {
+    outline: 2px solid rgba(42, 178, 212, 0.45);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  .dense-data-table-sort-indicator {
+    opacity: 0.45;
+    font-size: 0.6875rem;
+    line-height: 1;
+  }
+
+  .dense-data-table-sorted .dense-data-table-sort-indicator {
+    opacity: 1;
+    color: var(--accent, #2ab2d4);
+  }
+
+  .dense-data-table-sorted .dense-data-table-sort-button {
+    color: var(--fg);
+  }
+
   .row-detail-panel {
     overflow: hidden;
     border: 1px solid rgba(31, 52, 76, 0.95);

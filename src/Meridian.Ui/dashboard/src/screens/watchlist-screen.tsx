@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Activity, AlertCircle, CheckCircle2, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
+import { Activity, AlertCircle, CheckCircle2, EyeOff, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +18,8 @@ import {
   useWatchlistScreenViewModel,
   type WatchlistDetailFieldTone,
   type WatchlistRowViewModel,
-  type WatchlistSelectedDetail
+  type WatchlistSelectedDetail,
+  type WatchlistSortColumn
 } from "@/screens/watchlist-screen.view-model";
 
 export function WatchlistScreen() {
@@ -155,20 +156,39 @@ export function WatchlistScreen() {
             items={vm.toolbarItems}
             ariaLabel="Symbol watchlist status"
             right={
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => void vm.refreshQuotes()}
-                disabled={vm.quoteRefreshCommand.disabled}
-                disabledReason={vm.quoteRefreshCommand.disabledReason}
-                busy={vm.quoteRefreshCommand.busy}
-                busyLabel={vm.quoteRefreshCommand.label}
-                aria-label={vm.quoteRefreshCommand.ariaLabel}
-              >
-                <RefreshCw className={`h-3.5 w-3.5 ${vm.quoteRefreshCommand.busy ? "animate-spin" : ""}`} aria-hidden="true" />
-                <span className="ml-1">{vm.quoteRefreshCommand.label}</span>
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant={vm.staleFilterCommand.pressed ? "secondary" : "outline"}
+                  size="sm"
+                  onClick={() => vm.setHideStale(!vm.hideStale)}
+                  disabled={vm.staleFilterCommand.disabled}
+                  disabledReason={vm.staleFilterCommand.disabledReason}
+                  aria-pressed={vm.staleFilterCommand.pressed}
+                  aria-label={vm.staleFilterCommand.ariaLabel}
+                >
+                  {vm.staleFilterCommand.pressed ? (
+                    <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                  )}
+                  <span className="ml-1">{vm.staleFilterCommand.label}</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void vm.refreshQuotes()}
+                  disabled={vm.quoteRefreshCommand.disabled}
+                  disabledReason={vm.quoteRefreshCommand.disabledReason}
+                  busy={vm.quoteRefreshCommand.busy}
+                  busyLabel={vm.quoteRefreshCommand.label}
+                  aria-label={vm.quoteRefreshCommand.ariaLabel}
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${vm.quoteRefreshCommand.busy ? "animate-spin" : ""}`} aria-hidden="true" />
+                  <span className="ml-1">{vm.quoteRefreshCommand.label}</span>
+                </Button>
+              </div>
             }
           />
           {vm.listState === "error" ? (
@@ -214,6 +234,8 @@ export function WatchlistScreen() {
                   emptyText={vm.listDescription}
                   ariaLabel={vm.tableLabel}
                   caption={vm.tableCaption}
+                  sort={vm.sort}
+                  onToggleSort={(columnId) => vm.toggleSort(columnId as WatchlistSortColumn)}
                 />
                 <WatchlistDetailPanel
                   title={vm.detailPanelTitle}
@@ -263,11 +285,13 @@ function buildColumns(
       id: "symbol",
       label: "Symbol",
       className: "font-mono font-semibold text-foreground",
+      sortable: true,
       render: (row) => row.symbol
     },
     {
       id: "status",
       label: "Status",
+      sortable: true,
       render: (row) => <Badge variant={row.statusVariant} dot>{row.status}</Badge>
     },
     {
@@ -289,6 +313,7 @@ function buildColumns(
       label: "Last",
       align: "right",
       className: `font-mono`,
+      sortable: true,
       render: (row) => <span className={lastToneClass[row.lastTone]}>{row.lastPriceLabel}</span>
     },
     {
@@ -303,6 +328,7 @@ function buildColumns(
       label: "Chg%",
       align: "right",
       className: "font-mono",
+      sortable: true,
       render: (row) => <span className={detailFieldToneClass[row.changeTone]}>{row.changePercentLabel}</span>
     },
     {
@@ -317,12 +343,14 @@ function buildColumns(
       label: "Spread",
       align: "right",
       className: "font-mono text-muted-foreground",
+      sortable: true,
       render: (row) => row.spreadLabel
     },
     {
       id: "quote-age",
       label: "Quote age",
       className: "text-muted-foreground",
+      sortable: true,
       render: (row) => <span className={row.quoteStale ? "text-warning" : undefined}>{row.quoteAgeLabel}</span>
     },
     {
