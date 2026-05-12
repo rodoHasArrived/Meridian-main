@@ -6843,9 +6843,24 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── artifacts
 │   │   │   │   └── automation
 │   │   │   │       └── progress
+│   │   │   │           ├── command-palette-alpaca-setup-smoke.png
+│   │   │   │           ├── command-palette-hash-aware-smoke.png
+│   │   │   │           ├── live-quotes-order-readiness-handoff-smoke.png
+│   │   │   │           ├── overview-utc-smoke.png
+│   │   │   │           ├── portfolio-brokerage-sync-actions-smoke.png
 │   │   │   │           ├── portfolio-sync-trust-smoke.png
 │   │   │   │           ├── readiness-inbox-refresh-smoke.png
+│   │   │   │           ├── report-pack-actions-smoke.png
+│   │   │   │           ├── report-pack-reference-smoke.png
+│   │   │   │           ├── security-lots-desktop-smoke.png
+│   │   │   │           ├── security-lots-mobile-smoke.png
+│   │   │   │           ├── security-master-conflicts-retry-smoke.png
 │   │   │   │           ├── settings-live-ack-smoke.png
+│   │   │   │           ├── settings-utc-smoke.png
+│   │   │   │           ├── strategy-plottool-statistics-desktop.png
+│   │   │   │           ├── strategy-plottool-statistics-mobile.png
+│   │   │   │           ├── watchlist-empty-value-mobile-smoke.png
+│   │   │   │           ├── watchlist-empty-value-smoke.png
 │   │   │   │           └── workstation-preview-smoke.png
 │   │   │   ├── index.html
 │   │   │   ├── package-lock.json
@@ -6881,9 +6896,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── metric-card.view-model.test.ts
 │   │   │   │   │   │   ├── metric-card.view-model.ts
 │   │   │   │   │   │   ├── quant-plot.test.tsx
-│   │   │   │   │   │   ├── quant-plot.view-model.ts
 │   │   │   │   │   │   ├── quant-plot.tsx
+│   │   │   │   │   │   ├── quant-plot.view-model.ts
 │   │   │   │   │   │   ├── security-details-tracker.tsx
+│   │   │   │   │   │   ├── security-details-tracker.view-model.test.ts
+│   │   │   │   │   │   ├── security-details-tracker.view-model.ts
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
@@ -7321,21 +7338,13 @@ Use these documents together when planning or implementing new work:
 │       │   └── StringToVisibilityConverter.cs
 │       ├── Copy
 │       │   └── WorkspaceCopyCatalog.cs
+│       ├── Features
+│       │   ├── DesktopFeatureModuleRegistry.cs
+│       │   └── IDesktopFeatureModule.cs
 │       ├── GlobalUsings.cs
 │       ├── MainWindow.xaml
 │       ├── MainWindow.xaml.cs
 │       ├── Meridian.Wpf.csproj
-│       ├── Features
-│       │   ├── Data
-│       │   │   ├── DataFeatureModule.cs
-│       │   │   └── Shell
-│       │   │       ├── DataWorkspaceShellPage.xaml
-│       │   │       ├── DataWorkspaceShellPage.xaml.cs
-│       │   │       ├── DataWorkspaceShellPresentationService.cs
-│       │   │       ├── DataWorkspaceShellSnapshotService.cs
-│       │   │       └── DataWorkspaceShellViewModel.cs
-│       │   ├── DesktopFeatureModuleRegistry.cs
-│       │   └── IDesktopFeatureModule.cs
 │       ├── Models
 │       │   ├── ActionEntry.cs
 │       │   ├── ActivityLogModels.cs
@@ -8371,8 +8380,8 @@ Use these documents together when planning or implementing new work:
 │   │       ├── AnalysisExportServiceBaseTests.cs
 │   │       ├── AnalysisExportWizardServiceTests.cs
 │   │       ├── ApiClientServiceTests.cs
-│   │       ├── AtomicPersistenceServiceTests.cs
 │   │       ├── ArchiveBrowserServiceTests.cs
+│   │       ├── AtomicPersistenceServiceTests.cs
 │   │       ├── BackendServiceManagerBaseTests.cs
 │   │       ├── BackfillApiServiceTests.cs
 │   │       ├── BackfillCheckpointServiceTests.cs
@@ -8600,6 +8609,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-709 directories, 7671 files
+710 directories, 7690 files
 ```
 <!-- readme-tree end -->
