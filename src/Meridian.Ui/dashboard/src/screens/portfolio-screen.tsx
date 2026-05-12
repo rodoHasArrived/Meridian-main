@@ -1,7 +1,9 @@
 import type { KeyboardEvent } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BriefcaseBusiness, LineChart, Network, Settings, Wallet } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { getPortfolioSymbolExposure } from "@/lib/api";
+import type { NetSymbolPosition } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -120,6 +122,9 @@ export function PortfolioScreen({
   const location = useLocation();
   const brokerageAccountButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusBrokerageAccount = useRef(false);
+  const [exposureSymbol, setExposureSymbol] = useState<string | null>(null);
+  const [exposure, setExposure] = useState<NetSymbolPosition | null>(null);
+  const [exposureLoading, setExposureLoading] = useState(false);
   const vm = usePortfolioScreenViewModel({
     portfolio,
     trading,
@@ -138,6 +143,17 @@ export function PortfolioScreen({
     shouldFocusBrokerageAccount.current = false;
     brokerageAccountButtonRefs.current[vm.selectedBrokerageAccountKey]?.focus();
   }, [vm.selectedBrokerageAccountKey]);
+
+  function loadExposure(symbol: string) {
+    if (exposureLoading) return;
+    setExposureSymbol(symbol);
+    setExposure(null);
+    setExposureLoading(true);
+    getPortfolioSymbolExposure(symbol)
+      .then((result) => { setExposure(result); })
+      .catch(() => { setExposure(null); })
+      .finally(() => { setExposureLoading(false); });
+  }
 
   function handleBrokerageAccountFilterKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const command = resolveBrokerageAccountFilterKeyCommand(event.key);
@@ -611,6 +627,43 @@ export function PortfolioScreen({
                   </div>
                 ))}
               </dl>
+              <div className="mt-4">
+                <div className="eyebrow-label mb-2">Cross-strategy exposure</div>
+                {exposureSymbol === vm.selectedPosition.title ? (
+                  exposureLoading ? (
+                    <div className="rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-xs text-muted-foreground">
+                      Loading…
+                    </div>
+                  ) : exposure ? (
+                    <dl className="grid gap-2">
+                      <div className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
+                        <dt className="text-xs text-muted-foreground">Net qty (all runs)</dt>
+                        <dd className={cn("text-right font-mono text-xs", exposure.netQuantity >= 0 ? "text-success" : "text-danger")}>
+                          {exposure.netQuantity >= 0 ? "+" : ""}{exposure.netQuantity}
+                        </dd>
+                      </div>
+                      <div className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
+                        <dt className="text-xs text-muted-foreground">Gross qty (all runs)</dt>
+                        <dd className="text-right font-mono text-xs text-foreground">{exposure.grossQuantity}</dd>
+                      </div>
+                    </dl>
+                  ) : (
+                    <div className="rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-xs text-muted-foreground">
+                      No cross-strategy exposure data available.
+                    </div>
+                  )
+                ) : (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => { loadExposure(vm.selectedPosition!.title); }}
+                  >
+                    Check cross-strategy exposure
+                  </Button>
+                )}
+              </div>
             </>
           ) : (
             <div role="status" className="text-sm leading-6 text-muted-foreground">
