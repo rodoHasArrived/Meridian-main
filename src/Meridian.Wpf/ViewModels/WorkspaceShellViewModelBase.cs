@@ -52,6 +52,14 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
     }
 }
 
+public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
+{
+    public DataWorkspaceShellViewModel()
+        : base(ShellNavigationCatalog.GetWorkspaceShell("data")!)
+    {
+    }
+}
+
 public sealed class SettingsWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     public SettingsWorkspaceShellViewModel()

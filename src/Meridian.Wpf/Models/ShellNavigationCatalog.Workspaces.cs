@@ -1,5 +1,4 @@
 using Meridian.Wpf.Copy;
-using Meridian.Wpf.Features.Data.Shell;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
