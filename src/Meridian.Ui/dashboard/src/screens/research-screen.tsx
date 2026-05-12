@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { getRunFills, getRunAttribution } from "@/lib/api";
+import type { RunFillSummary, RunAttributionSummary } from "@/types";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
@@ -526,52 +529,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
 
       <Dialog open={Boolean(vm.selectedRunDetail)} onOpenChange={(open) => { if (!open) vm.closeRunDetail(); }}>
         {vm.selectedRunDetail && (
-          <DialogContent
-            aria-labelledby={vm.selectedRunDetail.dialogTitleId}
-            aria-describedby={vm.selectedRunDetail.dialogDescriptionId}
-            className="max-w-2xl"
-          >
-            <DialogHeader className="mb-5 flex flex-row items-start justify-between gap-4 space-y-0">
-              <div className="min-w-0">
-                <div className="eyebrow-label">{vm.selectedRunDetail.eyebrow}</div>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <DialogTitle id={vm.selectedRunDetail.dialogTitleId}>
-                    {vm.selectedRunDetail.title}
-                  </DialogTitle>
-                  <Badge variant={vm.selectedRunDetail.modeBadgeVariant} dot>
-                    {vm.selectedRunDetail.modeBadgeLabel}
-                  </Badge>
-                </div>
-                <DialogDescription id={vm.selectedRunDetail.dialogDescriptionId} className="mt-2">
-                  {vm.selectedRunDetail.description}
-                </DialogDescription>
-                <p className="mt-1 text-xs font-mono text-muted-foreground">{vm.selectedRunDetail.subtitle}</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                autoFocus
-                aria-label={vm.selectedRunDetail.closeButtonAriaLabel}
-                onClick={vm.closeRunDetail}
-              >
-                {vm.selectedRunDetail.closeButtonLabel}
-              </Button>
-            </DialogHeader>
-
-            <section aria-label={vm.selectedRunDetail.summaryLabel} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {vm.selectedRunDetail.summaryRows.map((row) => (
-                <div key={row.id} className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3">
-                  <div className="eyebrow-label">{row.label}</div>
-                  <div className="mt-2 truncate font-mono text-sm text-foreground">{row.value}</div>
-                </div>
-              ))}
-            </section>
-
-            <section className="mt-4 rounded-md border border-border/70 bg-background/45 px-4 py-3">
-              <div className="eyebrow-label">{vm.selectedRunDetail.notesLabel}</div>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.selectedRunDetail.notesText}</p>
-            </section>
-          </DialogContent>
+          <RunDetailDialogContent detail={vm.selectedRunDetail} onClose={vm.closeRunDetail} />
         )}
       </Dialog>
     </div>
@@ -1031,5 +989,167 @@ function PlotToolObservationRow({ row }: { row: ResearchPlotSampleRow }) {
         <Badge variant={sampleToneBadgeVariant[row.tone]}>{row.signalText}</Badge>
       </td>
     </tr>
+  );
+}
+
+function RunDetailDialogContent({
+  detail,
+  onClose
+}: {
+  detail: import("@/screens/research-screen.view-model").ResearchRunDetailState;
+  onClose: () => void;
+}) {
+  const [fills, setFills] = useState<RunFillSummary | null>(null);
+  const [attribution, setAttribution] = useState<RunAttributionSummary | null>(null);
+  const [detailLoading, setDetailLoading] = useState(true);
+
+  useEffect(() => {
+    setFills(null);
+    setAttribution(null);
+    setDetailLoading(true);
+    let cancelled = false;
+
+    Promise.allSettled([
+      getRunFills(detail.runId),
+      getRunAttribution(detail.runId)
+    ]).then(([fillsResult, attrResult]) => {
+      if (cancelled) return;
+      if (fillsResult.status === "fulfilled") setFills(fillsResult.value);
+      if (attrResult.status === "fulfilled") setAttribution(attrResult.value);
+      setDetailLoading(false);
+    }).catch(() => { if (!cancelled) setDetailLoading(false); });
+
+    return () => { cancelled = true; };
+  }, [detail.runId]);
+
+  const currencyFmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 });
+  const pctFmt = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
+
+  return (
+    <DialogContent
+      aria-labelledby={detail.dialogTitleId}
+      aria-describedby={detail.dialogDescriptionId}
+      className="max-w-3xl max-h-[90vh] overflow-y-auto"
+    >
+      <DialogHeader className="mb-5 flex flex-row items-start justify-between gap-4 space-y-0">
+        <div className="min-w-0">
+          <div className="eyebrow-label">{detail.eyebrow}</div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <DialogTitle id={detail.dialogTitleId}>{detail.title}</DialogTitle>
+            <Badge variant={detail.modeBadgeVariant} dot>{detail.modeBadgeLabel}</Badge>
+          </div>
+          <DialogDescription id={detail.dialogDescriptionId} className="mt-2">
+            {detail.description}
+          </DialogDescription>
+          <p className="mt-1 font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+        </div>
+        <Button variant="ghost" size="sm" autoFocus aria-label={detail.closeButtonAriaLabel} onClick={onClose}>
+          {detail.closeButtonLabel}
+        </Button>
+      </DialogHeader>
+
+      <section aria-label={detail.summaryLabel} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {detail.summaryRows.map((row) => (
+          <div key={row.id} className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3">
+            <div className="eyebrow-label">{row.label}</div>
+            <div className="mt-2 truncate font-mono text-sm text-foreground">{row.value}</div>
+          </div>
+        ))}
+      </section>
+
+      <section className="mt-4 rounded-md border border-border/70 bg-background/45 px-4 py-3">
+        <div className="eyebrow-label">{detail.notesLabel}</div>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail.notesText}</p>
+      </section>
+
+      {detailLoading ? (
+        <div className="mt-4 rounded-md border border-border/60 bg-secondary/20 px-4 py-3 text-xs text-muted-foreground">
+          Loading fills and attribution…
+        </div>
+      ) : (
+        <>
+          {attribution && attribution.bySymbol.length > 0 && (
+            <section aria-label="Attribution by symbol" className="mt-4">
+              <div className="eyebrow-label mb-2">Attribution by symbol</div>
+              <div className="overflow-hidden rounded-lg border border-border/70">
+                <table className="min-w-full divide-y divide-border/60 text-left text-xs">
+                  <thead className="bg-secondary/30">
+                    <tr>
+                      {["Symbol", "Realized P&L", "Unrealized P&L", "Total P&L", "Commissions", "Trades"].map((col) => (
+                        <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">{col}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    {attribution.bySymbol.map((entry) => (
+                      <tr key={entry.symbol} className="bg-background/20">
+                        <td className="px-3 py-2 font-mono font-semibold text-foreground">{entry.symbol}</td>
+                        <td className={cn("px-3 py-2 font-mono", entry.realizedPnl >= 0 ? "text-success" : "text-danger")}>
+                          {currencyFmt.format(entry.realizedPnl)}
+                        </td>
+                        <td className={cn("px-3 py-2 font-mono", entry.unrealizedPnl >= 0 ? "text-success" : "text-danger")}>
+                          {currencyFmt.format(entry.unrealizedPnl)}
+                        </td>
+                        <td className={cn("px-3 py-2 font-mono font-semibold", entry.totalPnl >= 0 ? "text-success" : "text-danger")}>
+                          {currencyFmt.format(entry.totalPnl)}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-muted-foreground">{currencyFmt.format(entry.commissions)}</td>
+                        <td className="px-3 py-2 font-mono text-foreground">{entry.tradeCount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-4 text-xs text-muted-foreground">
+                <span>Total realized: <span className="font-mono text-foreground">{currencyFmt.format(attribution.totalRealizedPnl)}</span></span>
+                <span>Total commissions: <span className="font-mono text-foreground">{currencyFmt.format(attribution.totalCommissions)}</span></span>
+              </div>
+            </section>
+          )}
+
+          {fills && fills.fills.length > 0 && (
+            <section aria-label="Recent fills" className="mt-4">
+              <div className="eyebrow-label mb-2">
+                Recent fills
+                <span className="ml-2 font-mono text-foreground">{fills.totalFills} total</span>
+              </div>
+              <div className="overflow-hidden rounded-lg border border-border/70">
+                <table className="min-w-full divide-y divide-border/60 text-left text-xs">
+                  <thead className="bg-secondary/30">
+                    <tr>
+                      {["Symbol", "Qty", "Price", "Commission", "Filled at"].map((col) => (
+                        <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">{col}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    {fills.fills.slice(0, 20).map((fill) => (
+                      <tr key={fill.fillId} className="bg-background/20">
+                        <td className="px-3 py-2 font-mono font-semibold text-foreground">{fill.symbol}</td>
+                        <td className={cn("px-3 py-2 font-mono", fill.filledQuantity >= 0 ? "text-success" : "text-danger")}>
+                          {fill.filledQuantity >= 0 ? "+" : ""}{fill.filledQuantity}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-foreground">{currencyFmt.format(fill.fillPrice)}</td>
+                        <td className="px-3 py-2 font-mono text-muted-foreground">{currencyFmt.format(fill.commission)}</td>
+                        <td className="px-3 py-2 text-muted-foreground">{new Date(fill.filledAt).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {fills.totalFills > 20 && (
+                <p className="mt-2 text-xs text-muted-foreground">Showing 20 of {fills.totalFills} fills.</p>
+              )}
+            </section>
+          )}
+
+          {attribution && attribution.bySymbol.length === 0 && fills && fills.fills.length === 0 && (
+            <div className="mt-4 rounded-md border border-dashed border-border/60 bg-secondary/15 px-4 py-3 text-xs text-muted-foreground">
+              No fills or attribution data available for this run.
+            </div>
+          )}
+        </>
+      )}
+    </DialogContent>
   );
 }

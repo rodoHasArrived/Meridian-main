@@ -177,6 +177,7 @@ export interface ResearchRunTableRow {
 }
 
 export interface ResearchRunDetailState {
+  runId: string;
   dialogTitleId: string;
   dialogDescriptionId: string;
   description: string;
@@ -1677,6 +1678,7 @@ export function buildRunDetail(run: ResearchRunRecord): ResearchRunDetailState {
   const statusText = formatText(run.status);
 
   return {
+    runId: run.id,
     dialogTitleId: `strategy-run-detail-${sanitizeDomId(run.id)}-title`,
     dialogDescriptionId: `strategy-run-detail-${sanitizeDomId(run.id)}-description`,
     description: `${title} is ${statusText} in ${modeLabel} mode.`,
