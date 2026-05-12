@@ -4,6 +4,7 @@ import {
   buildOverviewActivityRows,
   buildOverviewBriefingItems,
   buildOverviewPriorityRoutes,
+  buildOverviewRefreshCommand,
   buildOverviewStatusBanner,
   buildOverviewStatusState,
   buildOverviewValueBlockers,
@@ -52,8 +53,19 @@ describe("overview-screen view model", () => {
     expect(state.statusBanner.detailId).toBe("overview-status-detail");
     expect(state.statusBanner.ariaLabel).toContain("System Degraded");
     expect(state.statusBanner.detailText).toContain("2 of 4 providers online");
+    expect(state.statusBanner.detailParts).toEqual({
+      providerSummary: "2 of 4 providers online",
+      storageLabel: "Warning",
+      storageClassName: "text-warning",
+      lastHeartbeatLabel: state.lastHeartbeatLabel
+    });
+    expect(state.statusBanner.icon).toBe("warning");
+    expect(state.statusBanner.containerClassName).toBe("border-warning/30 bg-warning/10");
+    expect(state.statusBanner.iconClassName).toBe("text-warning");
+    expect(state.statusBanner.titleClassName).toBe("text-warning");
     expect(state.providerSummary).toBe("2 of 4 providers online");
     expect(state.storageLabel).toBe("Warning");
+    expect(state.lastHeartbeatLabel).toBe("Apr 28, 18:15 UTC");
     expect(state.hasMetrics).toBe(false);
     expect(state.hasEvents).toBe(false);
     expect(state.hasValueBlockers).toBe(true);
@@ -106,7 +118,16 @@ describe("overview-screen view model", () => {
     expect(state.refreshAnnouncement).toBe(state.refreshErrorText);
     expect(state.statusBanner.role).toBe("alert");
     expect(state.statusBanner.ariaLabel).toContain("Refresh failed: Provider offline");
+    expect(state.statusBanner.icon).toBe("offline");
+    expect(state.statusBanner.containerClassName).toBe("border-danger/35 bg-danger/10");
     expect(state.refreshButtonLabel).toBe("Refresh");
+    expect(state.refreshCommand).toMatchObject({
+      label: "Refresh",
+      ariaLabel: "Refresh system status",
+      busy: false,
+      disabled: false,
+      disabledReason: null
+    });
   });
 
   it("does not crash when the host status payload omits optional overview collections", () => {
@@ -143,10 +164,41 @@ describe("overview-screen view model", () => {
     expect(state.statusBanner.role).toBe("status");
     expect(state.statusBanner.ariaLive).toBe("polite");
     expect(state.statusBanner.detailText).toBe("Waiting for the workstation status payload.");
+    expect(state.statusBanner.detailParts).toBeNull();
+    expect(state.statusBanner.icon).toBe("pending");
+    expect(state.statusBanner.containerClassName).toBe("border-border/70 bg-secondary/25");
     expect(state.refreshButtonLabel).toBe("Refreshing...");
     expect(state.refreshAriaLabel).toBe("Refreshing system status");
+    expect(state.refreshCommand).toEqual({
+      label: "Refreshing...",
+      ariaLabel: "Refreshing system status",
+      busyLabel: "Refreshing...",
+      disabled: true,
+      disabledReason: "System status refresh is already in progress.",
+      busy: true
+    });
     expect(state.refreshAnnouncement).toBe("Refreshing system status.");
     expect(state.activityEmptyText).toBe("Loading activity feed...");
+  });
+
+  it("derives refresh command presentation state for idle and busy states", () => {
+    expect(buildOverviewRefreshCommand(false)).toEqual({
+      label: "Refresh",
+      ariaLabel: "Refresh system status",
+      busyLabel: null,
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
+
+    expect(buildOverviewRefreshCommand(true)).toEqual({
+      label: "Refreshing...",
+      ariaLabel: "Refreshing system status",
+      busyLabel: "Refreshing...",
+      disabled: true,
+      disabledReason: "System status refresh is already in progress.",
+      busy: true
+    });
   });
 
   it("builds canonical workspace links instead of legacy overview cards", () => {
@@ -343,8 +395,10 @@ describe("overview-screen view model", () => {
       statusCode: "ERR",
       badgeVariant: "danger",
       tone: "danger",
-      source: "Unknown source"
+      source: "Unknown source",
+      timestampLabel: "Apr 28, 18:15 UTC"
     });
+    expect(rows[1].ariaLabel).toBe("Error event from Unknown source at Apr 28, 18:15 UTC: Storage verification failed.");
   });
 
   it("derives healthy status banner semantics as a polite status region", () => {
@@ -360,6 +414,15 @@ describe("overview-screen view model", () => {
     expect(healthy.role).toBe("status");
     expect(healthy.ariaLive).toBe("polite");
     expect(healthy.detailText).toBe("4 of 4 providers online. Storage Healthy. Last heartbeat 10:15 AM.");
+    expect(healthy.detailParts).toEqual({
+      providerSummary: "4 of 4 providers online",
+      storageLabel: "Healthy",
+      storageClassName: "text-success",
+      lastHeartbeatLabel: "10:15 AM"
+    });
+    expect(healthy.icon).toBe("healthy");
+    expect(healthy.containerClassName).toBe("border-success/30 bg-success/10");
+    expect(healthy.titleClassName).toBe("text-success");
     expect(healthy.ariaLabel).toContain("All Systems Healthy");
   });
 

@@ -136,9 +136,19 @@ describe("ReportingScreen", () => {
     expect(task).toBeInTheDocument();
     expect(within(task).getByText("Report-pack approval")).toBeInTheDocument();
     expect(within(task).getByRole("list", { name: "Report-pack approval targets" })).toBeInTheDocument();
-    expect(within(task).getByLabelText("Open report-pack catalog backend endpoint")).toHaveAttribute(
+    expect(within(task).getByRole("list", { name: "Selected report-pack export actions" })).toBeInTheDocument();
+    expect(within(task).getByRole("link", { name: "Preview Excel export payload" })).toHaveAttribute(
+      "href",
+      "/api/export/preview?profile=excel"
+    );
+    expect(within(task).getByRole("button", { name: "Run Excel export analysis" })).toBeEnabled();
+    expect(within(task).getByRole("link", { name: "GET /api/fund-structure/report-packs for Report-pack catalog" })).toHaveAttribute(
       "href",
       "/api/fund-structure/report-packs"
+    );
+    expect(within(task).queryByRole("link", { name: "POST /api/export/analysis for Excel export analysis" })).toBeNull();
+    expect(within(task).getByRole("group", { name: "Reference-only POST /api/export/analysis for Excel export analysis" })).toHaveTextContent(
+      "Reference"
     );
 
     await user.click(within(task).getByRole("button", { name: "Select Audit Pack for report-pack approval" }));
@@ -146,9 +156,26 @@ describe("ReportingScreen", () => {
     expect(within(task).getByRole("status", { name: "Selected report-pack profile" })).toHaveTextContent(
       "Audit Pack is selected for report-pack approval using Markdown output to Audit portal."
     );
-    expect(within(task).getByLabelText("Preview Audit Pack export payload")).toHaveAttribute(
+    expect(within(task).getByRole("link", { name: "GET /api/export/preview?profile=audit-pack for Audit Pack export preview" })).toHaveAttribute(
       "href",
       "/api/export/preview?profile=audit-pack"
+    );
+    expect(within(task).getByRole("link", { name: "Preview Audit Pack export payload" })).toHaveAttribute(
+      "href",
+      "/api/export/preview?profile=audit-pack"
+    );
+    expect(within(task).getByRole("group", { name: "Reference-only POST /api/export/analysis for Audit Pack export analysis" })).toHaveTextContent(
+      "Reference"
+    );
+
+    await user.click(within(task).getByRole("button", { name: "Run Audit Pack export analysis" }));
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/export/analysis",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ profileId: "audit-pack" })
+      })
     );
   });
 

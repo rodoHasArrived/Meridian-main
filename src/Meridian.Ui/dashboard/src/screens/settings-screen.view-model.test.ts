@@ -83,6 +83,7 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.systemItems.some((i) => i.label === "Status" && i.value === "Healthy")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Active runs" && i.value === "2")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Symbols monitored" && i.value === "120")).toBe(true);
+    expect(vm.systemItems.some((i) => i.label === "Last heartbeat" && i.value === "May 1, 00:00 UTC")).toBe(true);
   });
 
   it("returns success tone for healthy system", () => {
@@ -112,7 +113,9 @@ describe("buildSettingsScreenViewModel", () => {
       message: "Backfill completed.",
       statusCode: "INFO",
       badgeVariant: "default",
-      tone: "default"
+      tone: "default",
+      timestamp: "May 1, 00:00 UTC",
+      ariaLabel: "INFO event from DataPipeline at May 1, 00:00 UTC. Backfill completed."
     });
   });
 
@@ -196,7 +199,7 @@ describe("buildSettingsScreenViewModel", () => {
       { label: "Environment", value: "PAPER" },
       { label: "Workspace", value: "settings" },
       { label: "Diagnostics", value: "All reachable" },
-      { label: "Heartbeat", value: "2026-05-01T00:00:00Z" }
+      { label: "Heartbeat", value: "May 1, 00:00 UTC" }
     ]);
     expect(vm.diagnosticCounts).toMatchObject({
       loaded: 7,

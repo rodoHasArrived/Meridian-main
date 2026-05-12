@@ -100,6 +100,7 @@ export type WorkspaceErrorMap = Partial<Record<WorkspaceKey, string>>;
 
 export interface BuildAppShellViewStateOptions {
   pathname: string;
+  search?: string;
   hash?: string;
   commandPaletteOpen?: boolean;
   loading: boolean;
@@ -125,6 +126,7 @@ export const COMMAND_PALETTE_DIALOG_ID = "command-palette-dialog";
 
 export function buildAppShellViewState({
   pathname,
+  search = "",
   hash = "",
   commandPaletteOpen = false,
   loading,
@@ -147,7 +149,7 @@ export function buildAppShellViewState({
       bootstrapFailed
     }),
     canRenderRoutes: !loading && !bootstrapFailed,
-    routeFocus: buildRouteFocusState(pathname, hash, activeWorkspace),
+    routeFocus: buildRouteFocusState(pathname, search, hash, activeWorkspace),
     commandPaletteTrigger: buildCommandPaletteTriggerState(commandPaletteOpen)
   };
 }
@@ -240,6 +242,7 @@ export function buildDevelopmentFixtureNoticeViewModel({
 
 export function buildRouteFocusState(
   pathname: string,
+  search: string,
   hash: string,
   activeWorkspace: WorkspaceSummary
 ): AppShellRouteFocusState {
@@ -248,7 +251,7 @@ export function buildRouteFocusState(
   const targetLabel = targetElementId ? formatHashTargetLabel(targetElementId) : null;
 
   return {
-    routeKey: `${pathname}${hash}`,
+    routeKey: `${pathname}${search}${hash}`,
     announcement: targetLabel
       ? `${workspaceTitle} loaded. Jumping to ${targetLabel}.`
       : `${workspaceTitle} loaded.`,

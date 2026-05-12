@@ -121,6 +121,8 @@ export interface ReportingWorkflowBackendLink {
   label: string;
   href: string;
   ariaLabel: string;
+  isBrowserNavigable: boolean;
+  interactionLabel: "Open" | "Reference";
 }
 
 export interface ReportingWorkflowTaskPanel {
@@ -143,6 +145,11 @@ export interface ReportingWorkflowTaskPanel {
   profilesEmptyText: string;
   profilesEmptyAriaLabel: string;
   selectedSummary: string;
+  actionListLabel: string;
+  actions: ReportingProfileAction[];
+  hasActions: boolean;
+  actionsEmptyText: string;
+  actionsEmptyAriaLabel: string;
   backendLinksLabel: string;
   backendLinks: ReportingWorkflowBackendLink[];
 }
@@ -357,6 +364,7 @@ export function useReportingScreenViewModel(
     rows,
     packTargets,
     selectedProfile: selectedProfileData,
+    selectedProfileActions: detail?.actions ?? [],
     pathname
   });
 
@@ -487,12 +495,14 @@ function buildWorkflowTaskPanel({
   rows,
   packTargets,
   selectedProfile,
+  selectedProfileActions,
   pathname
 }: {
   reporting: GovernanceReportingSummary;
   rows: ReportingProfileRow[];
   packTargets: ReportingPackTargetRow[];
   selectedProfile: GovernanceReportingProfile | null;
+  selectedProfileActions: ReportingProfileAction[];
   pathname: string;
 }): ReportingWorkflowTaskPanel | null {
   if (!isReportPackRoute(pathname)) {
@@ -562,34 +572,58 @@ function buildWorkflowTaskPanel({
     selectedSummary: selectedProfile
       ? `${selectedProfile.name} is selected for report-pack approval using ${selectedProfile.format} output to ${selectedProfile.targetTool}.`
       : "Select a profile to enable packet preview and export actions.",
+    actionListLabel: "Selected report-pack export actions",
+    actions: selectedProfileActions,
+    hasActions: selectedProfileActions.length > 0,
+    actionsEmptyText: "Select a report-pack profile before previewing or running export analysis.",
+    actionsEmptyAriaLabel: "No selected report-pack export actions",
     backendLinksLabel: "Report-pack backend endpoints",
     backendLinks: [
-      {
+      buildWorkflowBackendLink({
         id: "report-pack-catalog",
         method: "GET",
         label: "Report-pack catalog",
-        href: EXPORT_API_ENDPOINTS.reportPacks,
-        ariaLabel: "Open report-pack catalog backend endpoint"
-      },
-      {
+        href: EXPORT_API_ENDPOINTS.reportPacks
+      }),
+      buildWorkflowBackendLink({
         id: "export-preview",
         method: "GET",
-        label: "Export preview",
-        href: exportPreviewEndpoint(selectedProfile?.id),
-        ariaLabel: selectedProfile
-          ? `Preview ${selectedProfile.name} export payload`
-          : "Open export preview backend endpoint"
-      },
-      {
+        label: selectedProfile ? `${selectedProfile.name} export preview` : "Export preview",
+        href: exportPreviewEndpoint(selectedProfile?.id)
+      }),
+      buildWorkflowBackendLink({
         id: "export-run",
         method: "POST",
-        label: "Run export",
-        href: EXPORT_API_ENDPOINTS.analysis,
-        ariaLabel: selectedProfile
-          ? `Run ${selectedProfile.name} export analysis`
-          : "Run export analysis backend endpoint"
-      }
+        label: selectedProfile ? `${selectedProfile.name} export analysis` : "Run export",
+        href: EXPORT_API_ENDPOINTS.analysis
+      })
     ]
+  };
+}
+
+function buildWorkflowBackendLink({
+  id,
+  method,
+  label,
+  href
+}: {
+  id: string;
+  method: ReportingWorkflowBackendLink["method"];
+  label: string;
+  href: string;
+}): ReportingWorkflowBackendLink {
+  const isBrowserNavigable = method === "GET" && !href.includes("{");
+
+  return {
+    id,
+    method,
+    label,
+    href,
+    isBrowserNavigable,
+    interactionLabel: isBrowserNavigable ? "Open" : "Reference",
+    ariaLabel: isBrowserNavigable
+      ? `${method} ${href} for ${label}`
+      : `Reference-only ${method} ${href} for ${label}`
   };
 }
 

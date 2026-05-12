@@ -1,6 +1,6 @@
 # Meridian Shared Project Context
 
-> Last verified: 2026-04-29
+> Last verified: 2026-05-12
 > Canonical deep reference: `.claude/skills/_shared/project-context.md`
 
 Use this file as the common source of truth for Meridian-specific terminology, current product
@@ -48,7 +48,6 @@ dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=tru
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 make test
-make desktop-run
 pwsh ./scripts/dev/run-desktop.ps1
 python3 build/scripts/ai-repo-updater.py known-errors
 ```

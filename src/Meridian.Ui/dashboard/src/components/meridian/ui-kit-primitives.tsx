@@ -56,6 +56,7 @@ export function DenseDataTable<T>({
   selectedRowId,
   emptyText,
   ariaLabel,
+  tableId,
   caption
 }: {
   columns: DenseDataTableColumn<T>[];
@@ -69,11 +70,12 @@ export function DenseDataTable<T>({
   selectedRowId?: string | null;
   emptyText: string;
   ariaLabel: string;
+  tableId?: string;
   caption?: string | null;
 }) {
   return (
     <div className="dense-data-table-wrap">
-      <table className="dense-data-table" aria-label={ariaLabel}>
+      <table id={tableId} className="dense-data-table" aria-label={ariaLabel}>
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead>
           <tr>

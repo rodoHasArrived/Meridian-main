@@ -146,6 +146,14 @@ describe("DataOperationsScreen", () => {
     })));
 
     expect(await screen.findByText("Alpaca paper configured")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Provider setup next validation" }))
+      .toHaveTextContent("Next validation");
+    expect(screen.getByRole("link", { name: "Validate live quotes after configuring Alpaca" }))
+      .toHaveAttribute("href", "/data/quotes?symbol=AAPL");
+    expect(screen.getByRole("link", { name: "Preview a historical backfill after configuring Alpaca" }))
+      .toHaveAttribute("href", "/data/backfills");
+    expect(screen.getByRole("link", { name: "Check Trading readiness after configuring Alpaca" }))
+      .toHaveAttribute("href", "/trading/readiness");
 
     await user.click(screen.getByRole("button", { name: "Configure another" }));
 

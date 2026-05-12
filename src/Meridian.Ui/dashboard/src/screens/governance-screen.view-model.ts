@@ -141,6 +141,8 @@ export interface SecuritySearchResultColumnViewModel {
 export interface SecuritySearchResultRowViewModel extends SecurityMasterEntry {
   rowId: string;
   isSelected: boolean;
+  detailPanelId: string;
+  isExpanded: boolean;
   selectAriaLabel: string;
   primaryIdentifierLabel: string;
   statusTone: "success" | "warning";
@@ -185,6 +187,7 @@ export interface SecurityIdentityAliasRowViewModel extends SecurityAliasEntry {
 }
 
 export interface SecurityIdentityDrillInViewState {
+  panelId: string;
   title: string;
   subtitle: string;
   description: string;
@@ -208,6 +211,15 @@ export interface SecurityConflictActionViewModel {
   ariaLabel: string;
   variant: "outline" | "ghost";
   disabled: boolean;
+}
+
+export interface SecurityConflictRefreshCommandViewModel {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
+  busyLabel: string | null;
 }
 
 export interface SecurityConflictRowViewModel extends SecurityMasterConflict {
@@ -308,6 +320,38 @@ export interface ReconciliationDetailViewState {
   narrative: string;
   narrativeLabel: string;
   fields: ReconciliationDetailFieldViewModel[];
+}
+
+export type ReconciliationQueueRunTone = "muted" | "warning" | "success" | "primary";
+
+export interface ReconciliationQueueRunRowViewModel {
+  runId: string;
+  strategyName: string;
+  modeLabel: string;
+  runStatusLabel: string;
+  reconciliationStatusLabel: string;
+  reconciliationTone: ReconciliationQueueRunTone;
+  breakCountLabel: string;
+  openBreakLabel: string;
+  lastUpdatedLabel: string;
+  isSelected: boolean;
+  isExpanded: boolean;
+  controlsId: string;
+  ariaLabel: string;
+  selectAriaLabel: string;
+}
+
+export interface ReconciliationQueuePanelViewState {
+  title: string;
+  description: string;
+  listLabel: string;
+  emptyText: string;
+  detailPanelId: string;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  detailEmptyAriaLabel: string;
+  hasRows: boolean;
+  rows: ReconciliationQueueRunRowViewModel[];
 }
 
 export interface GovernanceCashFlowRowViewModel {
@@ -569,6 +613,7 @@ export function useSecurityMasterViewModel(
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchGenerationRef = useRef(0);
   const identityGenerationRef = useRef(0);
+  const conflictGenerationRef = useRef(0);
 
   useEffect(() => () => {
     if (searchTimerRef.current) {
@@ -576,6 +621,7 @@ export function useSecurityMasterViewModel(
     }
     searchGenerationRef.current += 1;
     identityGenerationRef.current += 1;
+    conflictGenerationRef.current += 1;
   }, []);
 
   useEffect(() => {
@@ -590,11 +636,16 @@ export function useSecurityMasterViewModel(
 
     searchGenerationRef.current += 1;
     identityGenerationRef.current += 1;
+    conflictGenerationRef.current += 1;
     setSearching(false);
     setSelectedSecurityId(null);
     setIdentity(null);
     setIdentityLoading(false);
     setIdentityError(null);
+    setConflictsLoading(false);
+    setConflictsError(null);
+    setConflictResolvingId(null);
+    setConflictActionError(null);
     setCorporateActions(null);
     setCorporateActionsLoading(false);
     setCorporateActionsError(null);
@@ -603,37 +654,36 @@ export function useSecurityMasterViewModel(
     setTradingParametersError(null);
   }, [active]);
 
-  useEffect(() => {
+  const refreshConflicts = useCallback(async () => {
     if (!active) {
       return;
     }
 
-    let cancelled = false;
+    const generation = conflictGenerationRef.current + 1;
+    conflictGenerationRef.current = generation;
     setConflictsLoading(true);
     setConflictsError(null);
 
-    services.getConflicts()
-      .then((rows) => {
-        if (!cancelled) {
-          setConflicts(rows);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setConflicts([]);
-          setConflictsError(toErrorMessage(err, "Identifier conflicts failed to load."));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setConflictsLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
+    try {
+      const rows = await services.getConflicts();
+      if (conflictGenerationRef.current === generation) {
+        setConflicts(rows);
+      }
+    } catch (err) {
+      if (conflictGenerationRef.current === generation) {
+        setConflicts([]);
+        setConflictsError(toErrorMessage(err, "Identifier conflicts failed to load."));
+      }
+    } finally {
+      if (conflictGenerationRef.current === generation) {
+        setConflictsLoading(false);
+      }
+    }
   }, [active, services]);
+
+  useEffect(() => {
+    void refreshConflicts();
+  }, [refreshConflicts]);
 
   useEffect(() => {
     if (!active || !selectedSecurityId) {
@@ -819,6 +869,10 @@ export function useSecurityMasterViewModel(
     [tradingParameters, tradingParametersLoading, tradingParametersError]
   );
   const openConflictCount = countOpenSecurityConflicts(conflicts);
+  const conflictRefreshCommand = useMemo(
+    () => buildSecurityConflictRefreshCommand(conflictsLoading, conflictsError),
+    [conflictsError, conflictsLoading]
+  );
 
   return {
     query,
@@ -840,6 +894,8 @@ export function useSecurityMasterViewModel(
     conflictsErrorText: conflictsError,
     conflictResolvingId,
     conflictActionErrorText: conflictActionError,
+    conflictRefreshCommand,
+    refreshConflicts,
     resolveConflict,
     openConflictCount,
     conflictCountLabel: `${openConflictCount} open`,
@@ -1069,6 +1125,10 @@ export function useGovernanceReconciliationViewModel(
     () => selectedReconciliation ? buildReconciliationDetailViewState(selectedReconciliation) : null,
     [selectedReconciliation]
   );
+  const queuePanelView = useMemo(
+    () => buildReconciliationQueuePanelViewState(reconciliationQueue, selectedReconciliation?.runId ?? null),
+    [reconciliationQueue, selectedReconciliation?.runId]
+  );
 
   return {
     reconciliationQueue,
@@ -1077,6 +1137,7 @@ export function useGovernanceReconciliationViewModel(
     selectRun: setSelectedRunId,
     detailActions,
     detailView,
+    queuePanelView,
     trialBalance,
     trialBalanceLoading,
     trialBalanceErrorText: trialBalanceError,
@@ -1203,6 +1264,63 @@ export function buildReconciliationDetailViewState(
   };
 }
 
+export function buildReconciliationQueuePanelViewState(
+  queue: GovernanceWorkspaceResponse["reconciliationQueue"],
+  selectedRunId: string | null
+): ReconciliationQueuePanelViewState {
+  const detailPanelId = "reconciliation-run-detail-panel";
+  const effectiveSelectedRunId = selectedRunId ?? queue[0]?.runId ?? null;
+
+  return {
+    title: "Reconciliation detail queue",
+    description: "Select a run to inspect its active reconciliation detail panel.",
+    listLabel: "Reconciliation runs",
+    emptyText: "No reconciliation runs are available for this accounting scope.",
+    detailPanelId,
+    detailEmptyTitle: "No reconciliation run selected",
+    detailEmptyText: "Reconciliation evidence is unavailable until the workspace payload includes at least one run.",
+    detailEmptyAriaLabel: "No reconciliation run selected",
+    hasRows: queue.length > 0,
+    rows: queue.map((item) => {
+      const isSelected = item.runId === effectiveSelectedRunId;
+      return {
+        runId: item.runId,
+        strategyName: item.strategyName,
+        modeLabel: item.mode.toUpperCase(),
+        runStatusLabel: item.status,
+        reconciliationStatusLabel: item.reconciliationStatus,
+        reconciliationTone: reconciliationStatusTone(item.reconciliationStatus),
+        breakCountLabel: `${item.breakCount} break${item.breakCount === 1 ? "" : "s"}`,
+        openBreakLabel: `${item.openBreakCount} open`,
+        lastUpdatedLabel: item.lastUpdated,
+        isSelected,
+        isExpanded: isSelected,
+        controlsId: detailPanelId,
+        ariaLabel: `${item.strategyName}. ${item.reconciliationStatus}. ${item.openBreakCount} open breaks. Updated ${item.lastUpdated}.`,
+        selectAriaLabel: `Inspect reconciliation run ${item.strategyName}`
+      };
+    })
+  };
+}
+
+function reconciliationStatusTone(
+  status: GovernanceWorkspaceResponse["reconciliationQueue"][number]["reconciliationStatus"]
+): ReconciliationQueueRunTone {
+  if (status === "Balanced") {
+    return "success";
+  }
+
+  if (status === "Resolved") {
+    return "primary";
+  }
+
+  if (status === "NotStarted") {
+    return "muted";
+  }
+
+  return "warning";
+}
+
 function buildReconciliationDetailField(
   label: string,
   value: string,
@@ -1223,6 +1341,8 @@ const securitySearchResultColumns: SecuritySearchResultColumnViewModel[] = [
   { id: "currency", label: "Currency" },
   { id: "status", label: "Status" }
 ];
+
+export const SECURITY_IDENTITY_DETAIL_PANEL_ID = "security-master-identity-detail";
 
 export function buildSecuritySearchState({
   query,
@@ -1291,6 +1411,24 @@ export function countOpenSecurityConflicts(conflicts: SecurityMasterConflict[] |
   return conflicts?.filter((conflict) => conflict.status === "Open").length ?? 0;
 }
 
+export function buildSecurityConflictRefreshCommand(
+  loading: boolean,
+  errorText: string | null
+): SecurityConflictRefreshCommandViewModel {
+  return {
+    label: loading ? "Refreshing..." : errorText ? "Retry conflicts" : "Refresh conflicts",
+    ariaLabel: loading
+      ? "Refreshing Security Master identifier conflicts"
+      : errorText
+        ? "Retry loading Security Master identifier conflicts"
+        : "Refresh Security Master identifier conflicts",
+    disabled: loading,
+    disabledReason: loading ? "Identifier conflicts are already loading." : null,
+    busy: loading,
+    busyLabel: loading ? "Refreshing..." : null
+  };
+}
+
 export function buildSecuritySearchResultRows(
   results: SecurityMasterEntry[] | null,
   selectedSecurityId: string | null
@@ -1305,6 +1443,8 @@ export function buildSecuritySearchResultRows(
       ...entry,
       rowId: `security-result-${entry.securityId}`,
       isSelected,
+      detailPanelId: SECURITY_IDENTITY_DETAIL_PANEL_ID,
+      isExpanded: isSelected,
       selectAriaLabel: `Open identity drill-in for ${entry.displayName}`,
       primaryIdentifierLabel,
       statusTone: entry.status === "Active" ? "success" : "warning",
@@ -1325,6 +1465,7 @@ export function buildSecurityIdentityDrillInState(
   const aliases = identity.aliases.map(buildSecurityIdentityAliasRow);
 
   return {
+    panelId: SECURITY_IDENTITY_DETAIL_PANEL_ID,
     title: `Identity drill-in · ${identity.displayName}`,
     subtitle: `${identity.securityId} · v${identity.version} · ${identity.assetClass || "—"}`,
     description: `${formatCount(identifiers.length, "identifier")} · ${formatCount(aliases.length, "alias")} · effective ${effectiveRange}`,

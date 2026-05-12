@@ -28,8 +28,11 @@ export interface ResearchRunLibraryServices {
 }
 
 export type PromoteState = "idle" | "evaluating" | "evaluated" | "creating" | "done";
+export const RESEARCH_RUN_DETAIL_PANEL_ID = "strategy-run-library-selected-run-detail";
+export const RESEARCH_PROMOTION_HISTORY_DETAIL_PANEL_ID = "strategy-promotion-history-selected-detail";
 
 export interface ResearchRunLibraryState {
+  loadingState: ResearchLoadingState;
   runs: ResearchRunRecord[];
   runTable: ResearchResultTableState<ResearchRunTableRow>;
   plotTool: ResearchPlotToolState;
@@ -37,6 +40,9 @@ export interface ResearchRunLibraryState {
   plotToolTabs: ResearchPlotToolTab[];
   selectedIds: string[];
   selectedRuns: ResearchRunRecord[];
+  selectedRunDetailPanelId: string;
+  inspectedRunId: string | null;
+  inspectedRunDetail: ResearchRunInlineDetailState | null;
   selectedRun: ResearchRunRecord | null;
   selectedRunDetail: ResearchRunDetailState | null;
   comparison: RunComparisonRow[];
@@ -45,6 +51,9 @@ export interface ResearchRunLibraryState {
   diffPanel: ResearchDiffPanelState;
   promotionHistory: PromotionRecord[];
   promotionHistoryTable: ResearchResultTableState<ResearchPromotionHistoryRow>;
+  selectedPromotionHistoryId: string | null;
+  selectedPromotionHistoryDetailPanelId: string;
+  selectedPromotionHistoryDetail: ResearchPromotionHistoryDetailState | null;
   showComparisonPanel: boolean;
   showDiffPanel: boolean;
   showPromotionHistoryPanel: boolean;
@@ -73,6 +82,18 @@ export interface ResearchRunLibraryState {
   promotionHistoryButtonLabel: string;
   promoteButtonLabel: string;
   statusAnnouncement: string;
+}
+
+export interface ResearchLoadingState {
+  role: "status";
+  ariaBusy: boolean;
+  ariaLive: "polite";
+  titleId: string;
+  detailId: string;
+  title: string;
+  detail: string;
+  badgeLabel: string;
+  routeLabel: string;
 }
 
 export interface ResearchCommandState {
@@ -166,14 +187,35 @@ export interface ResearchRunTableRow {
   strategyName: string;
   engineText: string;
   mode: ResearchRunRecord["mode"];
+  modeBadgeVariant: ResearchRunDetailBadgeVariant;
   modeLabel: string;
   statusText: string;
   pnlText: string;
   sharpeText: string;
   lastUpdatedText: string;
+  selectedForComparison: boolean;
+  detailPanelId: string;
+  detailExpanded: boolean;
+  rowAriaLabel: string;
+  rowSelectAriaLabel: string;
   selectAriaLabel: string;
   openDetailLabel: string;
   raw: ResearchRunRecord;
+}
+
+export interface ResearchRunInlineDetailState {
+  id: string;
+  panelId: string;
+  ariaLabel: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: ResearchRunDetailBadgeVariant;
+  evidenceAction: ResearchEvidenceAction;
+  openDetailLabel: string;
+  fields: ResearchRunDetailSummaryRow[];
 }
 
 export interface ResearchRunDetailState {
@@ -275,10 +317,34 @@ export type ResearchDiffMetricTone = "success" | "danger" | "muted";
 
 export interface ResearchPromotionHistoryRow {
   promotionId: string;
+  strategyIdText: string;
   strategyName: string;
   qualifyingSharpeText: string;
+  qualifyingMaxDrawdownText: string;
+  qualifyingTotalReturnText: string;
   routeText: string;
+  decisionText: string;
   promotedAtText: string;
+  detailPanelId: string;
+  detailExpanded: boolean;
+  ariaLabel: string;
+  rowSelectAriaLabel: string;
+  raw: PromotionRecord;
+}
+
+export type ResearchPromotionHistoryBadgeVariant = "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research";
+
+export interface ResearchPromotionHistoryDetailState {
+  id: string;
+  panelId: string;
+  ariaLabel: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: ResearchPromotionHistoryBadgeVariant;
+  fields: Array<{ label: string; value: string }>;
 }
 
 export interface ResearchPlotToolState {
@@ -505,10 +571,12 @@ export function useResearchRunLibraryViewModel(
   services: ResearchRunLibraryServices = defaultResearchServices
 ) {
   const [selectedRun, setSelectedRun] = useState<ResearchRunRecord | null>(null);
+  const [inspectedRunId, setInspectedRunId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [comparison, setComparison] = useState<RunComparisonRow[]>([]);
   const [runDiff, setRunDiff] = useState<RunDiff | null>(null);
   const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
+  const [selectedPromotionHistoryId, setSelectedPromotionHistoryId] = useState<string | null>(null);
   const [comparisonLoaded, setComparisonLoaded] = useState(false);
   const [runDiffLoaded, setRunDiffLoaded] = useState(false);
   const [promotionHistoryLoaded, setPromotionHistoryLoaded] = useState(false);
@@ -532,10 +600,12 @@ export function useResearchRunLibraryViewModel(
       runs,
       plotToolFromApi: data?.plotTool ?? null,
       selectedIds,
+      inspectedRunId,
       selectedRun,
       comparison,
       runDiff,
       promotionHistory,
+      selectedPromotionHistoryId,
       comparisonLoaded,
       runDiffLoaded,
       promotionHistoryLoaded,
@@ -554,6 +624,7 @@ export function useResearchRunLibraryViewModel(
       comparison,
       comparisonLoaded,
       promotionHistory,
+      selectedPromotionHistoryId,
       promotionHistoryLoaded,
       runDiff,
       runDiffLoaded,
@@ -561,6 +632,7 @@ export function useResearchRunLibraryViewModel(
       data?.plotTool,
       runs,
       selectedIds,
+      inspectedRunId,
       selectedRun,
       activePlotToolView,
       promoteState,
@@ -574,6 +646,7 @@ export function useResearchRunLibraryViewModel(
   const toggleRun = useCallback((runId: string) => {
     runScopedCommandRequestId.current += 1;
     promotionRequestId.current += 1;
+    setInspectedRunId(runId);
     setSelectedIds((current) => toggleRunSelection(current, runId));
     setComparison([]);
     setRunDiff(null);
@@ -591,6 +664,17 @@ export function useResearchRunLibraryViewModel(
   const openRunDetail = useCallback((run: ResearchRunRecord) => {
     setSelectedRun(run);
   }, []);
+
+  const selectRunDetail = useCallback((runId: string) => {
+    setInspectedRunId(runId);
+  }, []);
+
+  const openRunDetailById = useCallback((runId: string) => {
+    const run = runs.find((candidate) => candidate.id === runId);
+    if (run) {
+      setSelectedRun(run);
+    }
+  }, [runs]);
 
   const closeRunDetail = useCallback(() => {
     setSelectedRun(null);
@@ -622,6 +706,9 @@ export function useResearchRunLibraryViewModel(
     try {
       const rows = await services.getPromotionHistory();
       setPromotionHistory(rows);
+      setSelectedPromotionHistoryId((current) => rows.some((row) => row.promotionId === current)
+        ? current
+        : rows[0]?.promotionId ?? null);
       setPromotionHistoryLoaded(true);
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Promotion history failed.");
@@ -782,6 +869,9 @@ export function useResearchRunLibraryViewModel(
     promoteSelectedRun,
     confirmPromotion,
     cancelPromotion,
+    selectRunDetail,
+    openRunDetailById,
+    selectPromotionHistoryRecord: setSelectedPromotionHistoryId,
     setPromotionInitialCash: setPromotionInitialCashInput
   };
 }
@@ -791,10 +881,12 @@ export function buildResearchRunLibraryState({
   runs,
   plotToolFromApi = null,
   selectedIds,
+  inspectedRunId,
   selectedRun,
   comparison,
   runDiff,
   promotionHistory,
+  selectedPromotionHistoryId = null,
   comparisonLoaded = false,
   runDiffLoaded = false,
   promotionHistoryLoaded = false,
@@ -811,10 +903,12 @@ export function buildResearchRunLibraryState({
   runs: ResearchRunRecord[];
   plotToolFromApi?: ResearchPlotToolPayload | null;
   selectedIds: string[];
+  inspectedRunId?: string | null;
   selectedRun: ResearchRunRecord | null;
   comparison: RunComparisonRow[];
   runDiff: RunDiff | null;
   promotionHistory: PromotionRecord[];
+  selectedPromotionHistoryId?: string | null;
   comparisonLoaded?: boolean;
   runDiffLoaded?: boolean;
   promotionHistoryLoaded?: boolean;
@@ -830,6 +924,10 @@ export function buildResearchRunLibraryState({
   const selectedRuns = selectedIds
     .map((id) => runs.find((run) => run.id === id))
     .filter((run): run is ResearchRunRecord => run !== undefined);
+  const resolvedInspectedRunId = resolveInspectedRunId(runs, inspectedRunId ?? null, selectedRuns);
+  const inspectedRun = resolvedInspectedRunId
+    ? runs.find((run) => run.id === resolvedInspectedRunId) ?? null
+    : null;
   const hasTwoRuns = selectedIds.length === 2;
   const hasOneBacktestRun = selectedIds.length === 1 &&
     selectedRuns[0]?.mode === "backtest" &&
@@ -846,10 +944,18 @@ export function buildResearchRunLibraryState({
     promotionEval,
     promotionSession
   });
-  const runTable = buildRunTable(runs);
+  const runTable = buildRunTable(runs, {
+    selectedIds,
+    inspectedRunId: resolvedInspectedRunId,
+    detailPanelId: RESEARCH_RUN_DETAIL_PANEL_ID
+  });
   const comparisonTable = buildComparisonTable(comparison);
   const diffPanel = buildDiffPanel(runDiff);
-  const promotionHistoryTable = buildPromotionHistoryTable(promotionHistory);
+  const resolvedPromotionHistoryId = resolveSelectedPromotionHistoryId(promotionHistory, selectedPromotionHistoryId);
+  const selectedPromotionHistory = resolvedPromotionHistoryId
+    ? promotionHistory.find((record) => record.promotionId === resolvedPromotionHistoryId) ?? null
+    : null;
+  const promotionHistoryTable = buildPromotionHistoryTable(promotionHistory, resolvedPromotionHistoryId);
   const plotTool = buildPlotToolStateFromApiOrFallback(
     plotToolFromApi,
     {
@@ -871,6 +977,7 @@ export function buildResearchRunLibraryState({
   });
 
   return {
+    loadingState: buildResearchLoadingState(),
     runs,
     runTable,
     plotTool,
@@ -878,6 +985,9 @@ export function buildResearchRunLibraryState({
     plotToolTabs: buildPlotToolTabs(activePlotToolView),
     selectedIds,
     selectedRuns,
+    selectedRunDetailPanelId: RESEARCH_RUN_DETAIL_PANEL_ID,
+    inspectedRunId: resolvedInspectedRunId,
+    inspectedRunDetail: inspectedRun ? buildInlineRunDetail(inspectedRun, RESEARCH_RUN_DETAIL_PANEL_ID) : null,
     selectedRun,
     selectedRunDetail: selectedRun ? buildRunDetail(selectedRun) : null,
     comparison,
@@ -886,6 +996,11 @@ export function buildResearchRunLibraryState({
     diffPanel,
     promotionHistory,
     promotionHistoryTable,
+    selectedPromotionHistoryId: resolvedPromotionHistoryId,
+    selectedPromotionHistoryDetailPanelId: RESEARCH_PROMOTION_HISTORY_DETAIL_PANEL_ID,
+    selectedPromotionHistoryDetail: selectedPromotionHistory
+      ? buildPromotionHistoryDetail(selectedPromotionHistory, RESEARCH_PROMOTION_HISTORY_DETAIL_PANEL_ID)
+      : null,
     showComparisonPanel: comparisonLoaded || comparison.length > 0,
     showDiffPanel: runDiffLoaded || runDiff !== null,
     showPromotionHistoryPanel: promotionHistoryLoaded || promotionHistory.length > 0,
@@ -927,6 +1042,20 @@ export function buildResearchRunLibraryState({
       runDiffLoaded,
       promotionHistoryLoaded
     })
+  };
+}
+
+export function buildResearchLoadingState(): ResearchLoadingState {
+  return {
+    role: "status",
+    ariaBusy: true,
+    ariaLive: "polite",
+    titleId: "strategy-loading-title",
+    detailId: "strategy-loading-detail",
+    title: "Loading Strategy",
+    detail: "Waiting for run history, PlotTool state, and promotion evidence.",
+    badgeLabel: "Loading",
+    routeLabel: "Strategy"
   };
 }
 
@@ -1195,22 +1324,47 @@ export function nextPlotToolViewForKey(
   return null;
 }
 
-export function buildRunTable(runs: ResearchRunRecord[]): ResearchResultTableState<ResearchRunTableRow> {
+export function buildRunTable(
+  runs: ResearchRunRecord[],
+  options: {
+    selectedIds?: string[];
+    inspectedRunId?: string | null;
+    detailPanelId?: string;
+  } = {}
+): ResearchResultTableState<ResearchRunTableRow> {
+  const selectedIds = options.selectedIds ?? [];
+  const inspectedRunId = options.inspectedRunId ?? resolveInspectedRunId(runs, null, []);
+  const detailPanelId = options.detailPanelId ?? RESEARCH_RUN_DETAIL_PANEL_ID;
+
   return {
-    rows: runs.map((run) => ({
-      id: run.id,
-      strategyName: formatText(run.strategyName),
-      engineText: formatText(run.engine),
-      mode: run.mode,
-      modeLabel: formatText(run.mode).toUpperCase(),
-      statusText: formatText(run.status),
-      pnlText: formatText(run.pnl),
-      sharpeText: formatText(run.sharpe),
-      lastUpdatedText: formatText(run.lastUpdated),
-      selectAriaLabel: `Select ${formatText(run.strategyName)}`,
-      openDetailLabel: `Open ${formatText(run.strategyName)} run detail`,
-      raw: run
-    })),
+    rows: runs.map((run) => {
+      const strategyName = formatText(run.strategyName);
+      const modeLabel = formatText(run.mode).toUpperCase();
+      const statusText = formatText(run.status);
+      const selectedForComparison = selectedIds.includes(run.id);
+      const detailExpanded = run.id === inspectedRunId;
+
+      return {
+        id: run.id,
+        strategyName,
+        engineText: formatText(run.engine),
+        mode: run.mode,
+        modeBadgeVariant: modeBadgeVariantFor(run.mode),
+        modeLabel,
+        statusText,
+        pnlText: formatText(run.pnl),
+        sharpeText: formatText(run.sharpe),
+        lastUpdatedText: formatText(run.lastUpdated),
+        selectedForComparison,
+        detailPanelId,
+        detailExpanded,
+        rowAriaLabel: `${strategyName}: ${statusText}, ${modeLabel}, P&L ${formatText(run.pnl)}, Sharpe ${formatText(run.sharpe)}.`,
+        rowSelectAriaLabel: `Inspect ${strategyName} run detail`,
+        selectAriaLabel: `${selectedForComparison ? "Remove" : "Select"} ${strategyName} for compare and diff`,
+        openDetailLabel: `Open ${strategyName} run detail`,
+        raw: run
+      };
+    }),
     hasRows: runs.length > 0,
     caption: "Strategy runs available for compare, diff, and detail review.",
     emptyText: "No strategy runs available. Start a backtest or paper session, then refresh Strategy."
@@ -1655,20 +1809,141 @@ function badgeVariantForPositionChange(changeType: PositionDiffEntry["changeType
 }
 
 export function buildPromotionHistoryTable(
-  promotionHistory: PromotionRecord[]
+  promotionHistory: PromotionRecord[],
+  selectedPromotionId = resolveSelectedPromotionHistoryId(promotionHistory, null)
 ): ResearchResultTableState<ResearchPromotionHistoryRow> {
   return {
-    rows: promotionHistory.map((record) => ({
-      promotionId: record.promotionId,
-      strategyName: formatText(record.strategyName),
-      qualifyingSharpeText: formatNullableNumber(record.qualifyingSharpe, 3),
-      routeText: `${formatText(record.sourceRunType)} to ${formatText(record.targetRunType)}`,
-      promotedAtText: formatText(record.promotedAt)
-    })),
+    rows: promotionHistory.map((record) => buildPromotionHistoryRow(record, selectedPromotionId)),
     hasRows: promotionHistory.length > 0,
-    caption: "Promotion history decisions returned for Strategy runs.",
+    caption: "Promotion history decisions returned for Strategy runs. Select a row to inspect gate evidence.",
     emptyText: "No promotion history records returned."
   };
+}
+
+function buildPromotionHistoryRow(
+  record: PromotionRecord,
+  selectedPromotionId: string | null
+): ResearchPromotionHistoryRow {
+  const strategyName = formatText(record.strategyName);
+  const strategyIdText = formatText(record.strategyId);
+  const source = formatText(record.sourceRunType);
+  const target = formatText(record.targetRunType);
+  const routeText = `${source} to ${target}`;
+  const decisionText = formatPromotionDecision(record);
+  const qualifyingSharpeText = formatNullableNumber(record.qualifyingSharpe, 3);
+  const qualifyingMaxDrawdownText = formatPercent(record.qualifyingMaxDrawdownPercent, 1);
+  const qualifyingTotalReturnText = formatPercent(record.qualifyingTotalReturn, 1);
+  const promotedAtText = formatText(record.promotedAt);
+  const detailExpanded = record.promotionId === selectedPromotionId;
+
+  return {
+    promotionId: record.promotionId,
+    strategyIdText,
+    strategyName,
+    qualifyingSharpeText,
+    qualifyingMaxDrawdownText,
+    qualifyingTotalReturnText,
+    routeText,
+    decisionText,
+    promotedAtText,
+    detailPanelId: RESEARCH_PROMOTION_HISTORY_DETAIL_PANEL_ID,
+    detailExpanded,
+    ariaLabel: `${strategyName}: ${routeText}; decision ${decisionText}; Sharpe ${qualifyingSharpeText}; max drawdown ${qualifyingMaxDrawdownText}; return ${qualifyingTotalReturnText}; promoted ${promotedAtText}.`,
+    rowSelectAriaLabel: `Inspect ${strategyName} promotion decision`,
+    raw: record
+  };
+}
+
+export function buildPromotionHistoryDetail(
+  record: PromotionRecord,
+  panelId = RESEARCH_PROMOTION_HISTORY_DETAIL_PANEL_ID
+): ResearchPromotionHistoryDetailState {
+  const strategyName = formatText(record.strategyName);
+  const source = formatText(record.sourceRunType);
+  const target = formatText(record.targetRunType);
+  const decisionText = formatPromotionDecision(record);
+  const approvedBy = formatText(record.approvedBy);
+  const auditReference = formatText(record.auditReference);
+  const reason = formatOptionalPromotionReason(record.approvalReason ?? record.reviewNotes ?? null);
+
+  return {
+    id: record.promotionId,
+    panelId,
+    ariaLabel: `Selected promotion decision detail for ${strategyName}`,
+    eyebrow: "Selected promotion",
+    title: strategyName,
+    subtitle: `${source} to ${target} - ${formatText(record.promotedAt)}`,
+    description: `${decisionText} promotion decision with ${reason}`,
+    statusLabel: target.toUpperCase(),
+    statusVariant: badgeVariantForPromotionTarget(record.targetRunType),
+    fields: [
+      { label: "Promotion ID", value: formatText(record.promotionId) },
+      { label: "Strategy ID", value: formatText(record.strategyId) },
+      { label: "Source run", value: formatText(record.sourceRunId ?? record.runId ?? null) },
+      { label: "Target run", value: formatText(record.targetRunId ?? null) },
+      { label: "Decision", value: decisionText },
+      { label: "Sharpe", value: formatNullableNumber(record.qualifyingSharpe, 3) },
+      { label: "Max drawdown", value: formatPercent(record.qualifyingMaxDrawdownPercent, 1) },
+      { label: "Total return", value: formatPercent(record.qualifyingTotalReturn, 1) },
+      { label: "Approved by", value: approvedBy },
+      { label: "Audit ref", value: auditReference }
+    ]
+  };
+}
+
+function resolveSelectedPromotionHistoryId(
+  promotionHistory: PromotionRecord[],
+  selectedPromotionId: string | null
+): string | null {
+  if (promotionHistory.length === 0) {
+    return null;
+  }
+
+  if (selectedPromotionId && promotionHistory.some((record) => record.promotionId === selectedPromotionId)) {
+    return selectedPromotionId;
+  }
+
+  return promotionHistory[0].promotionId;
+}
+
+function formatPromotionDecision(record: PromotionRecord): string {
+  const decision = record.decision?.trim();
+  if (decision) {
+    return decision;
+  }
+
+  const target = record.targetRunType.trim().toLowerCase();
+  if (target === "live") {
+    return "Approved for live";
+  }
+
+  if (target === "paper") {
+    return "Approved for paper";
+  }
+
+  return "Promotion approved";
+}
+
+function badgeVariantForPromotionTarget(targetRunType: string): ResearchPromotionHistoryBadgeVariant {
+  const target = targetRunType.trim().toLowerCase();
+  if (target === "live") {
+    return "live";
+  }
+
+  if (target === "paper") {
+    return "paper";
+  }
+
+  if (target === "backtest" || target === "research") {
+    return "research";
+  }
+
+  return "outline";
+}
+
+function formatOptionalPromotionReason(value: string | null | undefined): string {
+  const trimmed = value?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : "No approval reason was recorded.";
 }
 
 export function buildRunDetail(run: ResearchRunRecord): ResearchRunDetailState {
@@ -1700,6 +1975,34 @@ export function buildRunDetail(run: ResearchRunRecord): ResearchRunDetailState {
   };
 }
 
+export function buildInlineRunDetail(run: ResearchRunRecord, panelId = RESEARCH_RUN_DETAIL_PANEL_ID): ResearchRunInlineDetailState {
+  const title = formatText(run.strategyName);
+  const modeLabel = formatText(run.mode).toUpperCase();
+  const statusText = formatText(run.status);
+
+  return {
+    id: run.id,
+    panelId,
+    ariaLabel: `Selected strategy run detail for ${title}`,
+    eyebrow: "Selected run",
+    title,
+    subtitle: `${formatText(run.engine)} - ${formatText(run.dataset)} - ${formatText(run.window)}`,
+    description: `${statusText} ${modeLabel} run retained for compare, diff, promotion, and evidence review.`,
+    statusLabel: modeLabel,
+    statusVariant: modeBadgeVariantFor(run.mode),
+    evidenceAction: buildResearchEvidenceAction(run)!,
+    openDetailLabel: `Open ${title} run detail dialog`,
+    fields: [
+      { id: "run-id", label: "Run ID", value: formatText(run.id) },
+      { id: "status", label: "Status", value: statusText },
+      { id: "pnl", label: "P&L", value: formatText(run.pnl) },
+      { id: "sharpe", label: "Sharpe", value: formatText(run.sharpe) },
+      { id: "updated", label: "Updated", value: formatText(run.lastUpdated) },
+      { id: "notes", label: "Notes", value: formatOptionalNotes(run.notes) }
+    ]
+  };
+}
+
 function buildResearchEvidenceAction(run: ResearchRunRecord | null): ResearchEvidenceAction | null {
   if (!run) {
     return null;
@@ -1710,6 +2013,18 @@ function buildResearchEvidenceAction(run: ResearchRunRecord | null): ResearchEvi
     href: evidenceWorkbenchPath("strategy-run", run.id),
     ariaLabel: `Open ${run.strategyName} evidence packet`
   };
+}
+
+function resolveInspectedRunId(
+  runs: ResearchRunRecord[],
+  requestedId: string | null,
+  selectedRuns: ResearchRunRecord[]
+): string | null {
+  if (requestedId && runs.some((run) => run.id === requestedId)) {
+    return requestedId;
+  }
+
+  return selectedRuns[0]?.id ?? runs[0]?.id ?? null;
 }
 
 export function toggleRunSelection(currentIds: string[], runId: string): string[] {

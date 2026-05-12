@@ -97,6 +97,25 @@ describe("app shell view model", () => {
     });
   });
 
+  it("includes query parameters in the route focus key for subject and symbol handoffs", () => {
+    const state = buildAppShellViewState({
+      pathname: "/data/quotes",
+      search: "?symbol=AAPL",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(state.routeFocus).toMatchObject({
+      routeKey: "/data/quotes?symbol=AAPL",
+      announcement: "Data Workstation loaded.",
+      documentTitle: "Data Workstation - Meridian",
+      targetElementId: null,
+      fallbackElementId: "workbench-content"
+    });
+  });
+
   it("keeps available routes open when only some workspace slices fail", () => {
     const state = buildAppShellViewState({
       pathname: "/accounting",

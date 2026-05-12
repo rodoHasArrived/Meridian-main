@@ -74,8 +74,14 @@ describe("useReportingScreenViewModel", () => {
       targetsLabel: "Report-pack approval targets",
       hasTargets: true,
       profileListLabel: "Report-pack export profiles",
-      hasProfiles: true
+      hasProfiles: true,
+      actionListLabel: "Selected report-pack export actions",
+      hasActions: true
     });
+    expect(result.current.workflowTaskPanel?.actions.map((action) => action.label)).toEqual([
+      "Preview payload",
+      "Run export"
+    ]);
     expect(result.current.workflowTaskPanel?.targets.map((target) => target.label)).toEqual(["board", "audit"]);
     expect(result.current.workflowTaskPanel?.profiles.map((profile) => profile.readinessLabel)).toEqual([
       "Dictionary only",
@@ -91,6 +97,15 @@ describe("useReportingScreenViewModel", () => {
       "/api/export/preview?profile=excel",
       "/api/export/analysis"
     ]);
+    expect(result.current.workflowTaskPanel?.backendLinks.map((link) => link.interactionLabel)).toEqual([
+      "Open",
+      "Open",
+      "Reference"
+    ]);
+    expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "export-run")).toMatchObject({
+      isBrowserNavigable: false,
+      ariaLabel: "Reference-only POST /api/export/analysis for Excel export analysis"
+    });
   });
 
   it("lets operators clear the default report-pack profile selection", () => {
@@ -103,6 +118,10 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.selectedProfile).toBeNull();
     expect(result.current.workflowTaskPanel?.selectedSummary).toBe(
       "Select a profile to enable packet preview and export actions."
+    );
+    expect(result.current.workflowTaskPanel?.hasActions).toBe(false);
+    expect(result.current.workflowTaskPanel?.actionsEmptyText).toBe(
+      "Select a report-pack profile before previewing or running export analysis."
     );
   });
 
@@ -169,6 +188,13 @@ describe("useReportingScreenViewModel", () => {
       "CSV is selected for report-pack approval using Csv output to Generic."
     );
     expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "export-preview")).toMatchObject({
+      href: "/api/export/preview?profile=csv",
+      isBrowserNavigable: true,
+      interactionLabel: "Open",
+      ariaLabel: "GET /api/export/preview?profile=csv for CSV export preview"
+    });
+    expect(result.current.workflowTaskPanel?.actions[0]).toMatchObject({
+      id: "preview",
       href: "/api/export/preview?profile=csv",
       ariaLabel: "Preview CSV export payload"
     });

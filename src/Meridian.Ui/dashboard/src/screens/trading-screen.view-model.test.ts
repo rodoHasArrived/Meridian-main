@@ -645,7 +645,7 @@ describe("trading readiness view model", () => {
       expect.objectContaining({ id: "overall", label: "Overall", value: "Blocked", level: "atRisk", ariaLabel: "Overall readiness: Blocked" }),
       expect.objectContaining({ id: "paper", label: "Paper", value: "Not paper ready", level: "review" }),
       expect.objectContaining({ id: "brokerage", label: "Brokerage", value: "Failed stale", level: "atRisk" }),
-      expect.objectContaining({ id: "as-of", label: "As of", value: "2026-04-26T16:05:00Z", level: "review" })
+      expect.objectContaining({ id: "as-of", label: "As of", value: "Apr 26, 16:05 UTC", level: "review", ariaLabel: "Readiness snapshot timestamp: Apr 26, 16:05 UTC" })
     ]);
     expect(state.workItems).toHaveLength(1);
     expect(state.warnings).toEqual(["Portfolio snapshot failed."]);
@@ -679,7 +679,7 @@ describe("trading readiness view model", () => {
         ariaLabel: "Trading readiness warning: Portfolio snapshot failed."
       }
     ]);
-    expect(state.statusAnnouncement).toBe("Trading readiness blocked as of 2026-04-26T16:05:00Z.");
+    expect(state.statusAnnouncement).toBe("Trading readiness blocked as of Apr 26, 16:05 UTC.");
   });
 
   it("limits displayed operator work items and warnings in the view model", () => {
@@ -790,7 +790,7 @@ describe("trading readiness view model", () => {
     });
 
     expect(result.current.readiness?.asOf).toBe("2026-04-26T16:10:00Z");
-    expect(result.current.statusAnnouncement).toBe("Trading readiness review required as of 2026-04-26T16:10:00Z.");
+    expect(result.current.statusAnnouncement).toBe("Trading readiness review required as of Apr 26, 16:10 UTC.");
   });
 
   it("normalizes readiness and brokerage status levels", () => {

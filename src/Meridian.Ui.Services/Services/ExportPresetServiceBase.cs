@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Export;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Ui.Services.Services;
 
@@ -104,7 +105,7 @@ public class ExportPresetServiceBase
         {
             var options = DesktopJsonOptions.PrettyPrint;
             var json = JsonSerializer.Serialize(_presets, options);
-            await File.WriteAllTextAsync(_presetsFilePath, json, cancellationToken);
+            await AtomicFileWriter.WriteAsync(_presetsFilePath, json, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -256,20 +257,15 @@ public class ExportPresetServiceBase
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var presetsToExport = _presets.Where(p => presetIds.Contains(p.Id)).ToList();
-
-        foreach (var preset in presetsToExport)
-        {
-            preset.Id = Guid.NewGuid().ToString();
-            preset.IsBuiltIn = false;
-            preset.UseCount = 0;
-            preset.LastUsedAt = null;
-        }
+        var presetsToExport = _presets
+            .Where(p => presetIds.Contains(p.Id))
+            .Select(CloneForExport)
+            .ToList();
 
         var options = DesktopJsonOptions.PrettyPrint;
         var json = JsonSerializer.Serialize(presetsToExport, options);
         var filePath = Path.Combine(destinationPath, $"export_presets_{DateTime.Now:yyyyMMdd_HHmmss}.json");
-        await File.WriteAllTextAsync(filePath, json, cancellationToken);
+        await AtomicFileWriter.WriteAsync(filePath, json, cancellationToken).ConfigureAwait(false);
 
         return filePath;
     }
@@ -319,6 +315,52 @@ public class ExportPresetServiceBase
                 _presets.Insert(0, builtIn);
             }
         }
+    }
+
+    private static ExportPreset CloneForExport(ExportPreset source)
+    {
+        return new ExportPreset
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = source.Name,
+            Description = source.Description,
+            Format = source.Format,
+            Compression = source.Compression,
+            Destination = source.Destination,
+            FilenamePattern = source.FilenamePattern,
+            Filters = new ExportPresetFilters
+            {
+                EventTypes = source.Filters.EventTypes.ToArray(),
+                Symbols = source.Filters.Symbols.ToArray(),
+                DateRangeType = source.Filters.DateRangeType,
+                CustomStartDate = source.Filters.CustomStartDate,
+                CustomEndDate = source.Filters.CustomEndDate,
+                SessionFilter = source.Filters.SessionFilter,
+                MinQualityScore = source.Filters.MinQualityScore
+            },
+            Schedule = source.Schedule,
+            ScheduleEnabled = source.ScheduleEnabled,
+            PostExportHook = source.PostExportHook,
+            NotifyOnComplete = source.NotifyOnComplete,
+            IncludeDataDictionary = source.IncludeDataDictionary,
+            IncludeLoaderScript = source.IncludeLoaderScript,
+            OverwriteExisting = source.OverwriteExisting,
+            CreatedAt = source.CreatedAt,
+            UpdatedAt = source.UpdatedAt,
+            LastUsedAt = null,
+            UseCount = 0,
+            IsBuiltIn = false,
+            Columns = source.Columns.ToArray(),
+            IncludeManifest = source.IncludeManifest,
+            Validation = source.Validation is null
+                ? null
+                : new ExportValidationRules
+                {
+                    DiskSpaceMultiplier = source.Validation.DiskSpaceMultiplier,
+                    RequireData = source.Validation.RequireData,
+                    WarnCsvComplexTypes = source.Validation.WarnCsvComplexTypes
+                }
+        };
     }
 
     private static string GetDefaultDestination(ExportPresetFormat format)

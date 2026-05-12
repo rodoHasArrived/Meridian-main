@@ -2,6 +2,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
   ArrowDown,
+  ArrowRight,
   ArrowUp,
   CheckCircle2,
   ListPlus,
@@ -15,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { HistoricalChartCard } from "@/components/meridian/historical-chart";
+import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getLiveOrderbook, getLiveQuote, getLiveTrades, submitOrder } from "@/lib/api";
@@ -24,6 +26,7 @@ import {
   useLiveQuotesScreenViewModel,
   type LiveQuotesBboPanelViewModel,
   type LiveQuotesDepthLadderViewModel,
+  type LiveQuotesMarketDataViewModel,
   type LiveQuotesPanelState,
   type LiveQuotesPriceChartViewModel,
   type LiveQuotesSparklineViewModel,
@@ -209,7 +212,7 @@ export function LiveQuotesScreen() {
               ) : (
                 <div className="space-y-3">
                   <PanelStateMessage state={marketVm.tradesState} />
-                  <TradesTable trades={marketVm.tradeDisplayRows} />
+                  <TradesTable market={marketVm} />
                 </div>
               )}
             </CardContent>
@@ -557,6 +560,18 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
             {status.showErrorIcon ? <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" /> : null}
             <span>{status.message}</span>
           </div>
+          {status.actions.length > 0 ? (
+            <div className="flex flex-wrap gap-2" aria-label="Quick trade next actions">
+              {status.actions.map((action) => (
+                <Button key={action.id} asChild variant="outline" size="sm" className="bg-background/40">
+                  <Link to={action.href} aria-label={action.ariaLabel}>
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>{action.label}</span>
+                  </Link>
+                </Button>
+              ))}
+            </div>
+          ) : null}
         </form>
       </CardContent>
     </Card>
@@ -569,31 +584,86 @@ const quickTicketStatusClass = {
   danger: "text-danger"
 } as const;
 
-function TradesTable({ trades }: { trades: LiveQuotesTradeRowViewModel[] }) {
+const tradeColumns: DenseDataTableColumn<LiveQuotesTradeRowViewModel>[] = [
+  {
+    id: "time",
+    label: "Time",
+    className: "font-mono",
+    render: (trade) => trade.timeLabel
+  },
+  {
+    id: "price",
+    label: "Price",
+    align: "right",
+    className: "font-mono",
+    render: (trade) => trade.priceLabel
+  },
+  {
+    id: "size",
+    label: "Size",
+    align: "right",
+    className: "font-mono",
+    render: (trade) => trade.sizeLabel
+  },
+  {
+    id: "aggressor",
+    label: "Aggressor",
+    className: "font-mono",
+    render: (trade) => (
+      <span className={tradeAggressorClass[trade.aggressorTone]}>{trade.aggressorLabel}</span>
+    )
+  },
+  {
+    id: "venue",
+    label: "Venue",
+    className: "font-mono text-muted-foreground",
+    render: (trade) => trade.venueLabel
+  }
+];
+
+function TradesTable({ market }: { market: LiveQuotesMarketDataViewModel }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full text-sm">
-        <thead>
-          <tr className="border-b border-border/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
-            <th className="px-2 py-2 font-medium">Time</th>
-            <th className="px-2 py-2 font-medium text-right">Price</th>
-            <th className="px-2 py-2 font-medium text-right">Size</th>
-            <th className="px-2 py-2 font-medium">Aggressor</th>
-            <th className="px-2 py-2 font-medium">Venue</th>
-          </tr>
-        </thead>
-        <tbody className="font-mono">
-          {trades.map((trade) => (
-              <tr key={trade.id} className="border-b border-border/30">
-                <td className="px-2 py-1.5">{trade.timeLabel}</td>
-                <td className="px-2 py-1.5 text-right">{trade.priceLabel}</td>
-                <td className="px-2 py-1.5 text-right">{trade.sizeLabel}</td>
-                <td className={`px-2 py-1.5 ${tradeAggressorClass[trade.aggressorTone]}`}>{trade.aggressorLabel}</td>
-                <td className="px-2 py-1.5 text-muted-foreground">{trade.venueLabel}</td>
-              </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.58fr)]">
+      <DenseDataTable
+        columns={tradeColumns}
+        rows={market.tradeDisplayRows}
+        getRowId={(trade) => trade.id}
+        getRowAriaLabel={(trade) => trade.ariaLabel}
+        getRowSelectAriaLabel={(trade) => trade.selectAriaLabel}
+        getRowAriaControls={(trade) => trade.detailPanelId}
+        getRowAriaExpanded={(trade) => trade.expanded}
+        onRowSelect={(trade) => market.selectTrade(trade.id)}
+        selectedRowId={market.selectedTradeId}
+        emptyText={market.tradesDetailEmptyText}
+        ariaLabel={market.tradesTableLabel}
+        caption={market.tradesTableCaption}
+      />
+      <div id={market.tradesDetailPanelId} aria-live="polite">
+        {market.selectedTradeDetail ? (
+          <EntitySummary
+            eyebrow={market.selectedTradeDetail.eyebrow}
+            title={market.selectedTradeDetail.title}
+            subtitle={market.selectedTradeDetail.subtitle}
+            description={market.selectedTradeDetail.description}
+            status={
+              <Badge variant={market.selectedTradeDetail.statusBadgeVariant}>
+                {market.selectedTradeDetail.statusLabel}
+              </Badge>
+            }
+            fields={market.selectedTradeDetail.fields}
+            ariaLabel={market.selectedTradeDetail.ariaLabel}
+          />
+        ) : (
+          <section
+            role="status"
+            className="panel-surface h-full min-h-40 rounded-lg border-border/70 p-4 text-sm text-muted-foreground"
+            aria-label={market.tradesDetailEmptyTitle}
+          >
+            <div className="eyebrow-label">{market.tradesDetailEmptyTitle}</div>
+            <p className="mt-2">{market.tradesDetailEmptyText}</p>
+          </section>
+        )}
+      </div>
     </div>
   );
 }

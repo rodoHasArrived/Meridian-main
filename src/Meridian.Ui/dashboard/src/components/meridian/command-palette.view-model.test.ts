@@ -5,12 +5,16 @@ import {
 } from "@/components/meridian/command-palette.view-model";
 
 describe("command palette view model", () => {
-  it("marks the current workspace from the active route", () => {
-    const model = buildCommandPaletteViewModel("/settings/integrations");
+  it("marks the current workspace and setup anchor from the active route", () => {
+    const model = buildCommandPaletteViewModel("/settings#alpaca-provider-setup");
 
     expect(model.itemCountLabel).toBe("7 workspaces - 11 quick routes");
     expect(model.commandListLabel).toBe("18 workstation commands");
     expect(model.filteredItemCountLabel).toBe("18 commands available");
+    expect(model.commandGroups.map((group) => `${group.label}:${group.countLabel}`)).toEqual([
+      "Workspaces:7 workspaces",
+      "Quick routes:11 quick routes"
+    ]);
     expect(model.activeWorkspaceLabel).toBe("Current: Settings");
     expect(model.routeSummary).toBe("Route to common operator workflows and canonical workspaces. Current: Settings.");
     expect(model.shortcutHint).toBe("Esc to close");
@@ -31,9 +35,9 @@ describe("command palette view model", () => {
     });
     expect(model.items.find((item) => item.id === "route:settings-integrations")).toMatchObject({
       kind: "route",
-      route: "/settings/integrations",
+      route: "/settings#alpaca-provider-setup",
       statusLabel: "Current",
-      commandLabel: "Stay on Provider integrations",
+      commandLabel: "Stay on Alpaca provider setup",
       active: true
     });
     expect(model.filteredItems).toHaveLength(18);
@@ -44,7 +48,37 @@ describe("command palette view model", () => {
 
     expect(model.filteredItemCountLabel).toBe("1 of 18 commands match");
     expect(model.filteredItems.map((item) => item.id)).toEqual(["portfolio"]);
+    expect(model.commandGroups).toEqual([
+      expect.objectContaining({
+        kind: "workspace",
+        label: "Workspaces",
+        countLabel: "1 workspace",
+        ariaLabel: "Workspaces: 1 workspace"
+      })
+    ]);
     expect(model.initialFocusItemId).toBe("portfolio");
+  });
+
+  it("does not mark hash-targeted setup commands active from other Settings panels", () => {
+    const model = buildCommandPaletteViewModel("/settings");
+
+    expect(model.initialFocusItemId).toBe("settings");
+    expect(model.items.find((item) => item.id === "route:settings-integrations")).toMatchObject({
+      route: "/settings#alpaca-provider-setup",
+      routeLabel: "/settings#alpaca-provider-setup",
+      statusLabel: "Route",
+      commandLabel: "Open Alpaca provider setup",
+      active: false
+    });
+
+    const capabilityModel = buildCommandPaletteViewModel("/settings#backend-capability-coverage");
+    expect(capabilityModel.initialFocusItemId).toBe("settings");
+    expect(capabilityModel.items.find((item) => item.id === "route:settings-integrations")).toMatchObject({
+      route: "/settings#alpaca-provider-setup",
+      statusLabel: "Route",
+      commandLabel: "Open Alpaca provider setup",
+      active: false
+    });
   });
 
   it("exposes a searchable empty state when commands do not match", () => {
@@ -52,6 +86,7 @@ describe("command palette view model", () => {
 
     expect(model.items).toHaveLength(18);
     expect(model.filteredItems).toEqual([]);
+    expect(model.commandGroups).toEqual([]);
     expect(model.filteredItemCountLabel).toBe("0 of 18 commands match");
     expect(model.emptyState).toEqual({
       title: "No matching commands",

@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, operations, and stakeholders
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-05-12
 **Status:** Active planning document; subordinate to the canonical wave model in [`../status/ROADMAP.md`](../status/ROADMAP.md)
 
 > Current-state refresh (2026-04-27): keep this matrix as a broad product-vision view, not a
@@ -17,6 +17,11 @@
 > Differentiation refresh (2026-04-29): the active product category is **evidence-backed
 > investment operations**. Read this matrix through the trusted data -> research -> paper ->
 > books -> reconciliation -> governed report path rather than as a generic front-to-back suite.
+>
+> UI lane refresh (2026-05-12): the visible operator shell is now the
+> browser-first seven-workspace model. WPF shell evidence remains valuable
+> retained desktop support, but it should not define new feature acceptance
+> unless a roadmap item explicitly targets desktop compatibility.
 
 ## 1. Product Vision
 
@@ -87,7 +92,7 @@ Status legend:
 | ------------ | -------- | --------------- | -------------- | ------- |
 | Market-data ingestion and storage | Cross-cutting platform | Implemented baseline | Phase 0 | Existing platform foundation |
 | Replay, export, diagnostics, observability | Cross-cutting platform | Implemented baseline | Phase 0 | Needed to support all later workflows |
-| Workspace shell (`Research`, `Trading`, `Data Operations`, `Governance`) | Cross-cutting platform | Implemented baseline | Phase 1 | WPF shell/navigation baseline, context strips, command/search metadata, Trading/Research/Data Operations desk briefing heroes, Trading Hours session briefing, OrderBook order-flow posture, Welcome readiness progress, Storage preview scope/guidance, compact shared deep-page command chrome, actionable shell-context attention detail, Provider Health posture, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage/export/clear support, Watchlist posture with pinned-first card ordering, StrategyRuns filter recovery, BatchBacktest results empty guidance, QuantScript local run-history handoffs, Security Master search recovery, Fund Accounts operator and balance-evidence briefing, Trading hero attention states for warning/critical shared work items, and route-aware operator-inbox attention cues are present; workflow acceptance remains active Wave 2-4 work |
+| Browser-first workspace shell (`Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Settings`) plus retained WPF compatibility shells | Cross-cutting platform | Implemented baseline | Phase 1 | The browser workstation now carries the visible seven-workspace model, shared workflow commands/presets, Overview portfolio-at-a-glance, dedicated Portfolio/Reporting/Data/Accounting task panels, live quotes/watchlists, Quant Lab with view-model-owned plot rendering, Evidence Workbench, Settings provider setup with next-validation handoffs, and menu-linked screenshot-route coverage. WPF shell/navigation evidence remains retained support with compatibility workspace groupings, context strips, command/search metadata, briefing heroes, feature-owned Data shell registration, deep-page chrome, and route-aware operator-inbox attention cues; workflow acceptance remains active Wave 2-4 work. |
 | Shared run model across backtest, paper, and live history | Front office | In progress | Phase 1 | First WPF run browser/detail/portfolio/ledger/cash-flow flow exists; StrategyRuns now shows visible-versus-recorded run scope and recovers filters that hide retained runs; BatchBacktest now distinguishes idle, validation-blocked, running, failed, cancelled, and populated sweep-result states; RunCashFlow now explains selected-run, missing-run, no-event, and loaded retained cash-flow evidence states |
 | Strategy research and backtesting | Front office | Implemented baseline | Phase 1 | Needs stronger shared-run UX and comparison flows |
 | Portfolio construction and implementation | Front office | In progress | Phase 2 | Needs stronger operator workflow, approvals, and cockpit UX |
@@ -98,7 +103,7 @@ Status legend:
 | Multi-ledger accounting | Back office | In progress | Phase 3 | Ledger-grouping rules and fund-structure assignment seams exist; consolidation and operator acceptance remain open |
 | Trial balance and account-summary analysis | Back office | In progress | Phase 3 | Fund Operations workspace and report-pack services expose trial-balance slices; broader account-summary UX remains open |
 | Cash-flow modeling and liquidity views | Middle office / Back office | In progress | Phase 3 | Cash-flow projection and governance cash-flow query seams exist; richer liquidity operator workflows remain open |
-| Reconciliation engine and break queues | Middle office / Back office | In progress | Phase 4 | Run-scoped reconciliation, a file-backed break queue, and calibration-summary rollups exist with seeded exception-route, tolerance, and sign-off metadata; position, cash, custodian, external-statement matching, and operator-approved calibration remain |
+| Reconciliation engine and break queues | Middle office / Back office | In progress | Phase 4 | Run-scoped reconciliation, a file-backed break queue, calibration-summary rollups, and browser Accounting detail-queue selection/empty-state projection exist with seeded exception-route, tolerance, and sign-off metadata; position, cash, custodian, external-statement matching, and operator-approved calibration remain |
 | NAV, attribution, and governance exception workflows | Middle office / Back office | In progress | Phase 4 | Shared portfolio, ledger, reconciliation, and governance exception seams exist; generalized durable casework remains open |
 | Investor, board, compliance, and fund-ops reporting | Back office | In progress | Phase 5 | Governed report-pack schema/version checks, manifest/provenance artifacts, history, and retrieval are present; publication controls and richer templates remain open |
 | Compliance and policy monitoring | Middle office / Back office | Future | Phase 5 | Rule evaluation, mandate monitoring, attestations |
@@ -122,7 +127,9 @@ Objective: turn the current workspace taxonomy into a real front-office operatin
 
 Primary outcomes:
 
-- durable `Research`, `Trading`, `Data Operations`, and `Governance` shells
+- durable browser-first `Data`, `Strategy`, `Trading`, `Portfolio`,
+  `Accounting`, `Reporting`, and `Settings` shells, with WPF compatibility
+  shells retained for support and regression evidence
 - shared run browser/detail/portfolio/ledger flows, including filter recovery for already-loaded run-browser rows
 - backtest, paper, and later live history converge toward one mental model
 
@@ -185,10 +192,28 @@ The current repository already supports parts of the target vision:
 
 - ingestion, replay, storage, diagnostics, and export are in place
 - shared run, portfolio, and ledger read services already exist
-- WPF exposes a four-workspace shell baseline, run/portfolio/ledger/cash-flow drill-ins, Governance/Fund Ops routes, Security Master workflows with search recovery, Fund Accounts account/provider-routing/balance-evidence briefing, Trading/Research/Data Operations briefing surfaces, Trading Hours session briefing, OrderBook order-flow posture, Welcome readiness progress, Storage preview scope/guidance, compact shared deep-page command chrome, actionable shell-context attention detail, Provider Health posture, System Health triage with pending-scan versus confirmed-empty guidance, Notification Center filter recovery, Activity Log triage/export/clear support, Watchlist posture with pinned-first card ordering, StrategyRuns filter recovery, BatchBacktest results empty guidance, QuantScript local run-history handoffs, Trading hero attention states for warning/critical shared work items, and route-aware account-scoped operator-inbox navigation with shell-context attention cues
+- the browser workstation exposes the visible seven-workspace shell with
+  workflow commands/presets, dedicated task panels for high-priority
+  Portfolio/Reporting/Data/Accounting flows, provider-setup validation
+  handoffs, Quant Lab plot-view-model support, and provider/evidence/readiness
+  handoffs; WPF still exposes a retained compatibility shell baseline with
+  run/portfolio/ledger/cash-flow drill-ins, Governance/Fund Ops routes,
+  Security Master workflows with search recovery, Fund Accounts
+  account/provider-routing/balance-evidence briefing, Trading/Research/Data
+  Operations briefing surfaces, Trading Hours session briefing, OrderBook
+  order-flow posture, Welcome readiness progress, Storage preview
+  scope/guidance, compact shared deep-page command chrome, actionable
+  shell-context attention detail, Provider Health posture, System Health
+  triage with pending-scan versus confirmed-empty guidance, Notification
+  Center filter recovery, Activity Log triage/export/clear support, Watchlist
+  posture with pinned-first card ordering, StrategyRuns filter recovery,
+  BatchBacktest results empty guidance, QuantScript local run-history
+  handoffs, Trading hero attention states for warning/critical shared work
+  items, and route-aware account-scoped operator-inbox navigation with
+  shell-context attention cues
 - Security Master has contracts, services, storage, migrations, F# domain anchors, WPF drill-ins, conflict handling, corporate actions, trading parameters, and shared coverage/provenance propagation
 - fund-structure, account/entity, ledger-group, cash-flow, and governed report-pack seams are in code, with focused tests around fund structure, report-pack schema/version behavior, and Fund Operations projections
-- reconciliation now includes a file-backed break queue with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, and calibration-summary profile rollups, while broader external-account/custodian matching and operator-approved calibrated casework remain open
+- reconciliation now includes a file-backed break queue with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, calibration-summary profile rollups, and browser Accounting detail-queue projection, while broader external-account/custodian matching and operator-approved calibrated casework remain open
 - export infrastructure already supports JSONL, Parquet, Arrow, XLSX, and CSV
 
 The main gap is operator-readiness and workflow cohesion, not a total absence of technical foundation.

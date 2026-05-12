@@ -80,6 +80,15 @@ export interface OverviewValueBlocker {
   ariaLabel: string;
 }
 
+export type OverviewStatusBannerIcon = "healthy" | "warning" | "offline" | "pending";
+
+export interface OverviewStatusBannerDetailParts {
+  providerSummary: string;
+  storageLabel: string;
+  storageClassName: string;
+  lastHeartbeatLabel: string;
+}
+
 export interface OverviewStatusBannerState {
   role: "status" | "alert";
   ariaLive: "polite" | "assertive";
@@ -87,7 +96,21 @@ export interface OverviewStatusBannerState {
   detailId: string | null;
   label: string;
   detailText: string | null;
+  detailParts: OverviewStatusBannerDetailParts | null;
   ariaLabel: string;
+  icon: OverviewStatusBannerIcon;
+  containerClassName: string;
+  iconClassName: string;
+  titleClassName: string;
+}
+
+export interface OverviewRefreshCommandState {
+  label: string;
+  ariaLabel: string;
+  busyLabel: string | null;
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
 }
 
 export interface OverviewStatusState {
@@ -113,6 +136,7 @@ export interface OverviewStatusState {
   storageLabel: string | null;
   lastHeartbeatLabel: string | null;
   activityEmptyText: string;
+  refreshCommand: OverviewRefreshCommandState;
   refreshButtonLabel: string;
   refreshAriaLabel: string;
   refreshErrorText: string | null;
@@ -147,6 +171,7 @@ export function buildOverviewStatusState({
   const storageLabel = current ? storageLabels[current.storageHealth] : null;
   const lastHeartbeatLabel = current ? formatTime(current.lastHeartbeatUtc) : null;
   const valueBlockers = buildOverviewValueBlockers(current, refreshErrorText);
+  const refreshCommand = buildOverviewRefreshCommand(refreshing);
 
   return {
     current,
@@ -185,12 +210,24 @@ export function buildOverviewStatusState({
     storageLabel,
     lastHeartbeatLabel,
     activityEmptyText: current ? "No recent events." : "Loading activity feed...",
-    refreshButtonLabel: refreshing ? "Refreshing..." : "Refresh",
-    refreshAriaLabel: refreshing ? "Refreshing system status" : "Refresh system status",
+    refreshCommand,
+    refreshButtonLabel: refreshCommand.label,
+    refreshAriaLabel: refreshCommand.ariaLabel,
     refreshErrorText,
     refreshAnnouncement: refreshing
       ? "Refreshing system status."
       : refreshErrorText ?? (refreshedAtLabel ? `System status refreshed at ${refreshedAtLabel}.` : "")
+  };
+}
+
+export function buildOverviewRefreshCommand(refreshing: boolean): OverviewRefreshCommandState {
+  return {
+    label: refreshing ? "Refreshing..." : "Refresh",
+    ariaLabel: refreshing ? "Refreshing system status" : "Refresh system status",
+    busyLabel: refreshing ? "Refreshing..." : null,
+    disabled: refreshing,
+    disabledReason: refreshing ? "System status refresh is already in progress." : null,
+    busy: refreshing
   };
 }
 
@@ -555,7 +592,16 @@ export function buildOverviewStatusBanner({
     : current
       ? "Status detail is unavailable."
       : "Waiting for the workstation status payload.";
+  const detailParts = current && providerSummary && storageLabel && lastHeartbeatLabel
+    ? {
+        providerSummary,
+        storageLabel,
+        storageClassName: storageHealthClassNames[current.storageHealth],
+        lastHeartbeatLabel
+      }
+    : null;
   const isInterruptive = refreshErrorText !== null || current?.systemStatus === "Degraded" || current?.systemStatus === "Offline";
+  const presentation = overviewStatusBannerPresentationFor(current, refreshErrorText);
 
   return {
     role: isInterruptive ? "alert" : "status",
@@ -564,7 +610,12 @@ export function buildOverviewStatusBanner({
     detailId: detailText ? "overview-status-detail" : null,
     label: statusLabel,
     detailText,
-    ariaLabel: `${statusLabel}. ${refreshErrorText ?? detailText}`
+    detailParts,
+    ariaLabel: `${statusLabel}. ${refreshErrorText ?? detailText}`,
+    icon: presentation.icon,
+    containerClassName: presentation.containerClassName,
+    iconClassName: presentation.iconClassName,
+    titleClassName: presentation.titleClassName
   };
 }
 
@@ -579,6 +630,67 @@ const storageLabels: Record<SystemOverviewResponse["storageHealth"], string> = {
   Warning: "Warning",
   Critical: "Critical"
 };
+
+const storageHealthClassNames: Record<SystemOverviewResponse["storageHealth"], string> = {
+  Healthy: "text-success",
+  Warning: "text-warning",
+  Critical: "text-danger"
+};
+
+type OverviewStatusBannerTone = "healthy" | "warning" | "danger" | "pending";
+
+const overviewStatusBannerPresentation: Record<
+  OverviewStatusBannerTone,
+  Pick<OverviewStatusBannerState, "icon" | "containerClassName" | "iconClassName" | "titleClassName">
+> = {
+  healthy: {
+    icon: "healthy",
+    containerClassName: "border-success/30 bg-success/10",
+    iconClassName: "text-success",
+    titleClassName: "text-success"
+  },
+  warning: {
+    icon: "warning",
+    containerClassName: "border-warning/30 bg-warning/10",
+    iconClassName: "text-warning",
+    titleClassName: "text-warning"
+  },
+  danger: {
+    icon: "offline",
+    containerClassName: "border-danger/35 bg-danger/10",
+    iconClassName: "text-danger",
+    titleClassName: "text-danger"
+  },
+  pending: {
+    icon: "pending",
+    containerClassName: "border-border/70 bg-secondary/25",
+    iconClassName: "text-muted-foreground",
+    titleClassName: "text-foreground"
+  }
+};
+
+function overviewStatusBannerPresentationFor(
+  current: SystemOverviewResponse | null,
+  refreshErrorText: string | null
+) {
+  if (refreshErrorText) {
+    return overviewStatusBannerPresentation.danger;
+  }
+
+  if (!current) {
+    return overviewStatusBannerPresentation.pending;
+  }
+
+  if (current.systemStatus === "Healthy") {
+    return overviewStatusBannerPresentation.healthy;
+  }
+
+  if (current.systemStatus === "Offline") {
+    return overviewStatusBannerPresentation.danger;
+  }
+
+  return overviewStatusBannerPresentation.warning;
+}
 
 const activityTypeState: Record<SystemEventRecord["type"], Pick<OverviewActivityRow, "typeLabel" | "statusCode" | "badgeVariant" | "tone">> = {
   info: {
@@ -770,7 +882,17 @@ function formatTime(value: string | Date | null | undefined): string {
   }
 
   const date = typeof value === "string" ? new Date(value) : value;
-  return Number.isNaN(date.getTime()) ? "Unavailable" : date.toLocaleTimeString();
+  return Number.isNaN(date.getTime()) ? "Unavailable" : formatUtcMinute(date);
+}
+
+function formatUtcMinute(date: Date): string {
+  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+}
+
+const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function padUtc(value: number): string {
+  return String(value).padStart(2, "0");
 }
 
 // --- Portfolio at-a-glance panel ---

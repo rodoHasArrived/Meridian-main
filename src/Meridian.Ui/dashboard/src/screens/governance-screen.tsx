@@ -1,4 +1,4 @@
-import { AlertCircle, BookCheck, CheckCircle2, Landmark, Network, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
+import { AlertCircle, BookCheck, CheckCircle2, Landmark, Network, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -11,6 +11,7 @@ import { workspaceForPath } from "@/lib/workspace";
 import {
   buildGovernanceLoadingViewState,
   resolveGovernanceWorkstream,
+  SECURITY_IDENTITY_DETAIL_PANEL_ID,
   useGovernanceCashFlowViewModel,
   useGovernanceReconciliationViewModel,
   useGovernanceReportingViewModel,
@@ -20,6 +21,8 @@ import {
 import type {
   CalibrationSummaryViewState,
   CorporateActionRowViewModel,
+  ReconciliationQueueRunTone,
+  SecuritySearchResultRowViewModel,
   TradingParametersViewState
 } from "@/screens/governance-screen.view-model";
 import type { GovernanceWorkspaceResponse } from "@/types";
@@ -34,6 +37,13 @@ const statusTone: Record<NonNullable<GovernanceWorkspaceResponse["reconciliation
   SecurityCoverageOpen: "text-warning",
   Resolved: "text-primary",
   Balanced: "text-success"
+};
+
+const reconciliationQueueToneClass: Record<ReconciliationQueueRunTone, string> = {
+  muted: "text-muted-foreground",
+  warning: "text-warning",
+  success: "text-success",
+  primary: "text-primary"
 };
 
 const focusCopy: Record<string, { title: string; description: string }> = {
@@ -93,6 +103,22 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
     { id: "scope", label: "Scope", render: (alias) => alias.scope },
     { id: "state", label: "State", render: (alias) => <Badge variant={alias.enabledBadgeVariant}>{alias.enabledLabel}</Badge> },
     { id: "range", label: "Valid range", render: (alias) => <span className="font-mono text-muted-foreground">{alias.validRangeLabel}</span> }
+  ];
+  const securityResultColumns: DenseDataTableColumn<SecuritySearchResultRowViewModel>[] = [
+    {
+      id: "name",
+      label: "Name",
+      render: (row) => (
+        <span className="block min-w-0">
+          <span className="block font-semibold text-foreground">{row.displayName}</span>
+          <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.securityId}</span>
+        </span>
+      )
+    },
+    { id: "assetClass", label: "Asset Class", render: (row) => row.classification.assetClass },
+    { id: "primaryId", label: "Primary ID", render: (row) => <span className="font-mono text-muted-foreground">{row.primaryIdentifierLabel}</span> },
+    { id: "currency", label: "Currency", render: (row) => <span className="font-mono text-muted-foreground">{row.economicDefinition.currency}</span> },
+    { id: "status", label: "Status", render: (row) => <Badge variant={row.statusTone === "success" ? "success" : "warning"}>{row.status}</Badge> }
   ];
 
   if (!data) {
@@ -210,100 +236,135 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
         </Card>
       </section>
 
-      {workstream === "reconciliation" && selectedReconciliation && selectedReconciliationDetail ? (
+      {workstream === "reconciliation" ? (
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <Card className="panel-surface">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <BookCheck className="h-4 w-4 text-primary" />
-                Reconciliation detail queue
+                {reconciliation.queuePanelView.title}
               </CardTitle>
-              <CardDescription>Select a run to inspect its active reconciliation detail panel.</CardDescription>
+              <CardDescription>{reconciliation.queuePanelView.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {data.reconciliationQueue.map((item) => (
-                <button
-                  key={item.runId}
-                  type="button"
-                  onClick={() => reconciliation.selectRun(item.runId)}
-                  className={cn(
-                    "w-full rounded-xl border px-4 py-4 text-left transition-colors",
-                    item.runId === selectedReconciliation.runId
-                      ? "border-primary/50 bg-primary/10"
-                      : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="font-semibold">{item.strategyName}</div>
-                    <div className={cn("font-mono text-xs uppercase tracking-[0.16em]", statusTone[item.reconciliationStatus])}>
-                      {item.reconciliationStatus}
+              {reconciliation.queuePanelView.hasRows ? (
+                <div role="list" aria-label={reconciliation.queuePanelView.listLabel} className="space-y-2">
+                  {reconciliation.queuePanelView.rows.map((row) => (
+                    <div key={row.runId} role="listitem" aria-label={row.ariaLabel}>
+                      <button
+                        type="button"
+                        aria-label={row.selectAriaLabel}
+                        aria-pressed={row.isSelected}
+                        aria-controls={row.controlsId}
+                        aria-expanded={row.isExpanded}
+                        onClick={() => reconciliation.selectRun(row.runId)}
+                        className={cn(
+                          "w-full rounded-lg border px-4 py-4 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
+                          row.isSelected
+                            ? "border-primary/50 bg-primary/10"
+                            : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
+                        )}
+                      >
+                        <span className="flex items-center justify-between gap-3">
+                          <span className="min-w-0 font-semibold text-foreground">{row.strategyName}</span>
+                          <span className={cn("shrink-0 font-mono text-xs uppercase tracking-[0.16em]", reconciliationQueueToneClass[row.reconciliationTone])}>
+                            {row.reconciliationStatusLabel}
+                          </span>
+                        </span>
+                        <span className="mt-2 block font-mono text-sm text-muted-foreground">{row.runId}</span>
+                        <span className="mt-3 flex items-center justify-between gap-4 text-sm">
+                          <span className="text-muted-foreground">{row.runStatusLabel}</span>
+                          <span className="font-mono text-foreground">{row.openBreakLabel}</span>
+                        </span>
+                        <span className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-muted-foreground">
+                          <span>{row.modeLabel}</span>
+                          <span>{row.breakCountLabel}</span>
+                          <span>{row.lastUpdatedLabel}</span>
+                        </span>
+                      </button>
                     </div>
-                  </div>
-                  <div className="mt-2 font-mono text-sm text-muted-foreground">{item.runId}</div>
-                  <div className="mt-3 flex items-center justify-between gap-4 text-sm">
-                    <span className="text-muted-foreground">{item.status}</span>
-                    <span className="font-mono">{item.openBreakCount} open</span>
-                  </div>
-                </button>
-              ))}
+                  ))}
+                </div>
+              ) : (
+                <div
+                  role="status"
+                  className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning"
+                >
+                  {reconciliation.queuePanelView.emptyText}
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card className="panel-surface-strong bg-panel-strong text-foreground" role="region" aria-label={selectedReconciliationDetail.ariaLabel}>
+          <Card
+            id={reconciliation.queuePanelView.detailPanelId}
+            className="panel-surface-strong bg-panel-strong text-foreground"
+            role="region"
+            aria-live="polite"
+            aria-label={selectedReconciliationDetail?.ariaLabel ?? reconciliation.queuePanelView.detailEmptyAriaLabel}
+          >
             <CardHeader>
-              <div className="eyebrow-label">{selectedReconciliationDetail.eyebrow}</div>
-              <CardTitle>{selectedReconciliationDetail.title}</CardTitle>
+              <div className="eyebrow-label">{selectedReconciliationDetail?.eyebrow ?? "Reconciliation detail"}</div>
+              <CardTitle>{selectedReconciliationDetail?.title ?? reconciliation.queuePanelView.detailEmptyTitle}</CardTitle>
               <CardDescription className="text-muted-foreground">
-                {selectedReconciliationDetail.description}
+                {selectedReconciliationDetail?.description ?? reconciliation.queuePanelView.detailEmptyText}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
-              {selectedReconciliationDetail.fields.map((field) => (
-                <GovernanceValue
-                  key={field.label}
-                  label={field.label}
-                  value={field.value}
-                  tone={cashFlowTextClass(field.tone)}
-                  ariaLabel={field.ariaLabel}
-                />
-              ))}
-              <div
-                aria-label={selectedReconciliationDetail.narrativeLabel}
-                className="rounded-lg border border-border/70 bg-background/70 p-4 text-muted-foreground"
-              >
-                {selectedReconciliationDetail.narrative}
-              </div>
-              {reconciliation.detailActions ? (
-                <div className="flex flex-wrap gap-3">
-                  <Button asChild variant="secondary">
-                    <Link
-                      to={reconciliation.detailActions.evidencePacketHref}
-                      aria-label={reconciliation.detailActions.evidencePacketAriaLabel}
-                    >
-                      <Network className="h-4 w-4" />
-                      {reconciliation.detailActions.evidencePacketLabel}
-                    </Link>
-                  </Button>
-                  <Button asChild variant="secondary">
-                    <a
-                      href={reconciliation.detailActions.breakChecklistHref}
-                      aria-label={reconciliation.detailActions.breakChecklistAriaLabel}
-                    >
-                      {reconciliation.detailActions.breakChecklistLabel}
-                    </a>
-                  </Button>
-                  <Button asChild variant="outline" className="border-border/70 bg-transparent text-foreground hover:bg-secondary/60">
-                    <a
-                      href={reconciliation.detailActions.auditPacketHref}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={reconciliation.detailActions.auditPacketAriaLabel}
-                    >
-                      {reconciliation.detailActions.auditPacketLabel}
-                    </a>
-                  </Button>
+              {selectedReconciliationDetail ? (
+                <>
+                  {selectedReconciliationDetail.fields.map((field) => (
+                    <GovernanceValue
+                      key={field.label}
+                      label={field.label}
+                      value={field.value}
+                      tone={cashFlowTextClass(field.tone)}
+                      ariaLabel={field.ariaLabel}
+                    />
+                  ))}
+                  <div
+                    aria-label={selectedReconciliationDetail.narrativeLabel}
+                    className="rounded-lg border border-border/70 bg-background/70 p-4 text-muted-foreground"
+                  >
+                    {selectedReconciliationDetail.narrative}
+                  </div>
+                  {reconciliation.detailActions ? (
+                    <div className="flex flex-wrap gap-3">
+                      <Button asChild variant="secondary">
+                        <Link
+                          to={reconciliation.detailActions.evidencePacketHref}
+                          aria-label={reconciliation.detailActions.evidencePacketAriaLabel}
+                        >
+                          <Network className="h-4 w-4" />
+                          {reconciliation.detailActions.evidencePacketLabel}
+                        </Link>
+                      </Button>
+                      <Button asChild variant="secondary">
+                        <a
+                          href={reconciliation.detailActions.breakChecklistHref}
+                          aria-label={reconciliation.detailActions.breakChecklistAriaLabel}
+                        >
+                          {reconciliation.detailActions.breakChecklistLabel}
+                        </a>
+                      </Button>
+                      <Button asChild variant="outline" className="border-border/70 bg-transparent text-foreground hover:bg-secondary/60">
+                        <a
+                          href={reconciliation.detailActions.auditPacketHref}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={reconciliation.detailActions.auditPacketAriaLabel}
+                        >
+                          {reconciliation.detailActions.auditPacketLabel}
+                        </a>
+                      </Button>
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <div role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+                  {reconciliation.queuePanelView.detailEmptyText}
                 </div>
-              ) : null}
+              )}
             </CardContent>
           </Card>
         </section>
@@ -623,55 +684,35 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               )}
 
               {securityMaster.hasResults && (
-                <div className="overflow-x-auto rounded-xl border border-border/70">
-                  <table id="security-master-results" aria-label={securityMaster.resultsTableLabel} className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
-                    <caption className="sr-only">{securityMaster.searchStatusText}</caption>
-                    <thead className="bg-secondary/30">
-                      <tr>
-                        {securityMaster.resultColumns.map((col) => (
-                          <th key={col.id} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">{col.label}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/50">
-                      {securityMaster.resultRows.map((s) => (
-                        <tr
-                          key={s.rowId}
-                          aria-label={s.ariaLabel}
-                          className={cn(
-                            "bg-background/20 transition-colors hover:bg-secondary/30",
-                            s.isSelected ? "bg-primary/10" : ""
-                          )}
-                        >
-                          <td className="px-3 py-2">
-                            <button
-                              type="button"
-                              className="rounded-sm text-left font-semibold text-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-                              aria-pressed={s.isSelected}
-                              aria-label={s.selectAriaLabel}
-                              onClick={() => void securityMaster.selectSecurity(s.securityId)}
-                            >
-                              {s.displayName}
-                            </button>
-                          </td>
-                          <td className="px-3 py-2 text-muted-foreground">{s.classification.assetClass}</td>
-                          <td className="px-3 py-2 font-mono text-muted-foreground">{s.primaryIdentifierLabel}</td>
-                          <td className="px-3 py-2 font-mono text-muted-foreground">{s.economicDefinition.currency}</td>
-                          <td className={cn("px-3 py-2 font-mono uppercase", s.statusTone === "success" ? "text-success" : "text-warning")}>{s.status}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <DenseDataTable
+                  columns={securityResultColumns}
+                  rows={securityMaster.resultRows}
+                  getRowId={(row) => row.rowId}
+                  getRowAriaLabel={(row) => row.ariaLabel}
+                  getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                  getRowAriaControls={(row) => row.detailPanelId}
+                  getRowAriaExpanded={(row) => row.isExpanded}
+                  onRowSelect={(row) => void securityMaster.selectSecurity(row.securityId)}
+                  selectedRowId={securityMaster.selectedSecurityId ? `security-result-${securityMaster.selectedSecurityId}` : null}
+                  emptyText={securityMaster.searchStatusText ?? "No Security Master results returned."}
+                  ariaLabel={securityMaster.resultsTableLabel}
+                  tableId="security-master-results"
+                  caption={securityMaster.searchStatusText}
+                />
               )}
-              {securityMaster.identityLoading && <p role="status" className="text-sm text-muted-foreground">Loading identity drill-in…</p>}
-              {securityMaster.identityErrorText && (
-                <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {securityMaster.identityErrorText}
-                </div>
-              )}
-              {identity && (
-                <div className="space-y-4">
+              <div id={identity?.panelId ?? SECURITY_IDENTITY_DETAIL_PANEL_ID} className="space-y-4">
+                {securityMaster.identityLoading && (
+                  <p role="status" className="rounded-md border border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)] px-3 py-3 text-sm text-[var(--state-pending-fg)]">
+                    Loading identity drill-in…
+                  </p>
+                )}
+                {securityMaster.identityErrorText && (
+                  <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                    {securityMaster.identityErrorText}
+                  </div>
+                )}
+                {identity && (
+                  <>
                   <EntitySummary
                     eyebrow="Identity drill-in"
                     title={identity.title}
@@ -726,26 +767,46 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                       />
                     )}
                   </div>
-                </div>
-              )}
+                  </>
+                )}
+              </div>
             </CardContent>
           </Card>
 
           {/* Conflicts panel */}
           <Card className="panel-surface">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-primary" />
-                Identifier conflicts
-                {securityMaster.openConflictCount > 0 && (
-                  <span className="ml-2 inline-flex items-center rounded-sm border border-warning/35 bg-warning/10 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-warning">
-                    {securityMaster.conflictCountLabel}
-                  </span>
-                )}
-              </CardTitle>
-              <CardDescription>
-                Identifier ambiguities detected when multiple providers map the same identifier to different securities.
-              </CardDescription>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <CardTitle className="flex flex-wrap items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-primary" />
+                    Identifier conflicts
+                    {securityMaster.openConflictCount > 0 && (
+                      <span className="inline-flex items-center rounded-sm border border-warning/35 bg-warning/10 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-warning">
+                        {securityMaster.conflictCountLabel}
+                      </span>
+                    )}
+                  </CardTitle>
+                  <CardDescription className="mt-2">
+                    Identifier ambiguities detected when multiple providers map the same identifier to different securities.
+                  </CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  busy={securityMaster.conflictRefreshCommand.busy}
+                  busyLabel={securityMaster.conflictRefreshCommand.busyLabel}
+                  disabled={securityMaster.conflictRefreshCommand.disabled}
+                  disabledReason={securityMaster.conflictRefreshCommand.disabledReason}
+                  aria-label={securityMaster.conflictRefreshCommand.ariaLabel}
+                  onClick={() => void securityMaster.refreshConflicts()}
+                  className="shrink-0"
+                >
+                  <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                  {securityMaster.conflictRefreshCommand.label}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {securityMaster.conflictsLoading && <p role="status" className="text-sm text-muted-foreground">Loading conflicts…</p>}

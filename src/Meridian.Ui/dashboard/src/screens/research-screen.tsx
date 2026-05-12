@@ -14,7 +14,9 @@ import type {
   ResearchPlotScatterChartState,
   ResearchPlotStatisticsState,
   ResearchPlotStudyItem,
-  ResearchPlotWorkspaceState
+  ResearchPlotWorkspaceState,
+  ResearchPromotionHistoryRow,
+  ResearchRunTableRow
 } from "@/screens/research-screen.view-model";
 import type { ResearchWorkspaceResponse } from "@/types";
 
@@ -71,14 +73,120 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
 
   if (!data) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Loading Strategy</CardTitle>
-          <CardDescription>Waiting for run history and comparison state.</CardDescription>
+      <Card
+        role={vm.loadingState.role}
+        aria-busy={vm.loadingState.ariaBusy}
+        aria-live={vm.loadingState.ariaLive}
+        aria-labelledby={vm.loadingState.titleId}
+        aria-describedby={vm.loadingState.detailId}
+        className="panel-surface border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)]"
+      >
+        <CardHeader className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)] text-[var(--state-pending-fg)]"
+              dot
+            >
+              {vm.loadingState.badgeLabel}
+            </Badge>
+            <span className="toolbar-chip" aria-label={`Route ${vm.loadingState.routeLabel}`}>
+              <span className="text-muted-foreground">Route</span>
+              <b>{vm.loadingState.routeLabel}</b>
+            </span>
+          </div>
+          <CardTitle id={vm.loadingState.titleId}>{vm.loadingState.title}</CardTitle>
+          <CardDescription id={vm.loadingState.detailId}>{vm.loadingState.detail}</CardDescription>
         </CardHeader>
       </Card>
     );
   }
+
+  const runColumns: DenseDataTableColumn<ResearchRunTableRow>[] = [
+    {
+      id: "compare",
+      label: "",
+      render: (run) => (
+        <input
+          type="checkbox"
+          aria-label={run.selectAriaLabel}
+          checked={run.selectedForComparison}
+          onChange={() => vm.toggleRun(run.id)}
+          className="h-4 w-4 rounded border-border bg-background text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        />
+      )
+    },
+    {
+      id: "strategy",
+      label: "Strategy",
+      render: (run) => <span className="font-semibold text-foreground">{run.strategyName}</span>
+    },
+    {
+      id: "mode",
+      label: "Mode",
+      render: (run) => <Badge variant={run.modeBadgeVariant}>{run.modeLabel}</Badge>
+    },
+    {
+      id: "engine",
+      label: "Engine",
+      render: (run) => run.engineText
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (run) => run.statusText
+    },
+    {
+      id: "pnl",
+      label: "P&L",
+      align: "right",
+      className: "font-mono",
+      render: (run) => run.pnlText
+    },
+    {
+      id: "sharpe",
+      label: "Sharpe",
+      align: "right",
+      className: "font-mono",
+      render: (run) => run.sharpeText
+    },
+    {
+      id: "updated",
+      label: "Updated",
+      render: (run) => <span className="font-mono text-xs text-muted-foreground">{run.lastUpdatedText}</span>
+    }
+  ];
+
+  const promotionHistoryColumns: DenseDataTableColumn<ResearchPromotionHistoryRow>[] = [
+    {
+      id: "strategy",
+      label: "Strategy",
+      render: (record) => (
+        <span className="font-semibold text-foreground">{record.strategyName}</span>
+      )
+    },
+    {
+      id: "route",
+      label: "Route",
+      render: (record) => record.routeText
+    },
+    {
+      id: "decision",
+      label: "Decision",
+      render: (record) => record.decisionText
+    },
+    {
+      id: "sharpe",
+      label: "Sharpe",
+      align: "right",
+      render: (record) => record.qualifyingSharpeText
+    },
+    {
+      id: "promoted",
+      label: "Promoted",
+      render: (record) => <span className="font-mono text-xs">{record.promotedAtText}</span>
+    }
+  ];
 
   return (
     <div className="space-y-8">
@@ -317,55 +425,60 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
           <CardDescription>Review retained runs, compare candidates, and open promotion history from the web workstation.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="overflow-x-auto rounded-lg border border-border/70">
-            <table className="min-w-full divide-y divide-border/60 text-left text-sm" aria-label="Strategy run library">
-              <caption className="sr-only">{vm.runTable.caption}</caption>
-              <thead className="bg-secondary/30">
-                <tr>
-                  {["", "Strategy", "Mode", "Engine", "Status", "P&L", "Sharpe", "Updated", ""].map((column, index) => (
-                    <th key={`${column || "action"}-${index}`} className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{column}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {vm.runTable.hasRows ? vm.runTable.rows.map((run) => (
-                  <tr key={run.id}>
-                    <td className="px-3 py-2">
-                      <input
-                        type="checkbox"
-                        aria-label={run.selectAriaLabel}
-                        checked={vm.selectedIds.includes(run.id)}
-                        onChange={() => vm.toggleRun(run.id)}
-                      />
-                    </td>
-                    <td className="px-3 py-2 font-semibold">{run.strategyName}</td>
-                    <td className="px-3 py-2"><Badge variant={run.mode === "paper" ? "paper" : run.mode === "live" ? "live" : "research"}>{run.modeLabel}</Badge></td>
-                    <td className="px-3 py-2">{run.engineText}</td>
-                    <td className="px-3 py-2">{run.statusText}</td>
-                    <td className="px-3 py-2 font-mono">{run.pnlText}</td>
-                    <td className="px-3 py-2 font-mono">{run.sharpeText}</td>
-                    <td className="px-3 py-2">{run.lastUpdatedText}</td>
-                    <td className="px-3 py-2">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+            <DenseDataTable
+              columns={runColumns}
+              rows={vm.runTable.rows}
+              getRowId={(run) => run.id}
+              getRowAriaLabel={(run) => run.rowAriaLabel}
+              getRowSelectAriaLabel={(run) => run.rowSelectAriaLabel}
+              getRowAriaControls={(run) => run.detailPanelId}
+              getRowAriaExpanded={(run) => run.detailExpanded}
+              selectedRowId={vm.inspectedRunId}
+              onRowSelect={(run) => vm.selectRunDetail(run.id)}
+              emptyText={vm.runTable.emptyText}
+              ariaLabel="Strategy run library"
+              caption={vm.runTable.caption}
+            />
+            {vm.inspectedRunDetail ? (
+              <div id={vm.inspectedRunDetail.panelId} className="min-w-0">
+                <EntitySummary
+                  eyebrow={vm.inspectedRunDetail.eyebrow}
+                  title={vm.inspectedRunDetail.title}
+                  subtitle={vm.inspectedRunDetail.subtitle}
+                  description={vm.inspectedRunDetail.description}
+                  fields={vm.inspectedRunDetail.fields}
+                  ariaLabel={vm.inspectedRunDetail.ariaLabel}
+                  status={<Badge variant={vm.inspectedRunDetail.statusVariant}>{vm.inspectedRunDetail.statusLabel}</Badge>}
+                  actions={(
+                    <>
                       <Button
                         size="sm"
                         variant="outline"
                         aria-haspopup="dialog"
-                        aria-label={run.openDetailLabel}
-                        onClick={() => vm.openRunDetail(run.raw)}
+                        aria-label={vm.inspectedRunDetail.openDetailLabel}
+                        onClick={() => vm.openRunDetailById(vm.inspectedRunDetail!.id)}
                       >
                         Open
                       </Button>
-                    </td>
-                  </tr>
-                )) : (
-                  <tr>
-                    <td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">
-                      {vm.runTable.emptyText}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                      <Button asChild size="sm" variant="ghost">
+                        <Link to={vm.inspectedRunDetail.evidenceAction.href} aria-label={vm.inspectedRunDetail.evidenceAction.ariaLabel}>
+                          {vm.inspectedRunDetail.evidenceAction.label}
+                        </Link>
+                      </Button>
+                    </>
+                  )}
+                />
+              </div>
+            ) : (
+              <div
+                id={vm.selectedRunDetailPanelId}
+                role="status"
+                className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
+              >
+                {vm.runTable.emptyText}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -495,30 +608,47 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
             <CardTitle>Promotion history</CardTitle>
             <CardDescription>Latest paper and live promotion decisions.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto rounded-lg border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-sm">
-                <caption className="sr-only">{vm.promotionHistoryTable.caption}</caption>
-                <thead className="bg-secondary/30">
-                  <tr>{["Strategy", "Route", "Sharpe", "Promoted"].map((column) => <th key={column} className="px-3 py-2">{column}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {vm.promotionHistoryTable.hasRows ? vm.promotionHistoryTable.rows.map((record) => (
-                    <tr key={record.promotionId}>
-                      <td className="px-3 py-2 font-semibold">{record.strategyName}</td>
-                      <td className="px-3 py-2">{record.routeText}</td>
-                      <td className="px-3 py-2 font-mono">{record.qualifyingSharpeText}</td>
-                      <td className="px-3 py-2">{record.promotedAtText}</td>
-                    </tr>
-                  )) : (
-                    <tr>
-                      <td colSpan={4} className="px-3 py-6 text-center text-muted-foreground">
-                        {vm.promotionHistoryTable.emptyText}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+              <DenseDataTable
+                columns={promotionHistoryColumns}
+                rows={vm.promotionHistoryTable.rows}
+                getRowId={(record) => record.promotionId}
+                getRowAriaLabel={(record) => record.ariaLabel}
+                getRowSelectAriaLabel={(record) => record.rowSelectAriaLabel}
+                getRowAriaControls={(record) => record.detailPanelId}
+                getRowAriaExpanded={(record) => record.detailExpanded}
+                selectedRowId={vm.selectedPromotionHistoryId}
+                onRowSelect={(record) => vm.selectPromotionHistoryRecord(record.promotionId)}
+                emptyText={vm.promotionHistoryTable.emptyText}
+                ariaLabel="Promotion history decisions"
+                caption={vm.promotionHistoryTable.caption}
+              />
+              {vm.selectedPromotionHistoryDetail ? (
+                <div id={vm.selectedPromotionHistoryDetail.panelId} className="min-w-0">
+                  <EntitySummary
+                    eyebrow={vm.selectedPromotionHistoryDetail.eyebrow}
+                    title={vm.selectedPromotionHistoryDetail.title}
+                    subtitle={vm.selectedPromotionHistoryDetail.subtitle}
+                    description={vm.selectedPromotionHistoryDetail.description}
+                    fields={vm.selectedPromotionHistoryDetail.fields}
+                    ariaLabel={vm.selectedPromotionHistoryDetail.ariaLabel}
+                    status={(
+                      <Badge variant={vm.selectedPromotionHistoryDetail.statusVariant}>
+                        {vm.selectedPromotionHistoryDetail.statusLabel}
+                      </Badge>
+                    )}
+                  />
+                </div>
+              ) : (
+                <div
+                  id={vm.selectedPromotionHistoryDetailPanelId}
+                  role="status"
+                  className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
+                >
+                  {vm.promotionHistoryTable.emptyText}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

@@ -35,6 +35,14 @@ export interface CommandPaletteItem {
   active: boolean;
 }
 
+export interface CommandPaletteGroup {
+  kind: CommandPaletteItemKind;
+  label: string;
+  countLabel: string;
+  ariaLabel: string;
+  items: CommandPaletteItem[];
+}
+
 export interface CommandPaletteEmptyState {
   title: string;
   detail: string;
@@ -69,9 +77,19 @@ export interface CommandPaletteViewModel {
   searchInputLabel: string;
   searchPlaceholder: string;
   filteredItems: CommandPaletteItem[];
+  commandGroups: CommandPaletteGroup[];
   filteredItemCountLabel: string;
   emptyState: CommandPaletteEmptyState | null;
 }
+
+const COMMAND_KIND_LABELS: Record<CommandPaletteItemKind, string> = {
+  workspace: "Workspaces",
+  route: "Quick routes",
+  preset: "Presets",
+  workflow: "Workflows"
+};
+
+const COMMAND_KIND_ORDER: CommandPaletteItemKind[] = ["workspace", "route", "preset", "workflow"];
 
 const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
   {
@@ -136,9 +154,9 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
   },
   {
     id: "settings-integrations",
-    label: "Provider integrations",
-    description: "Repair credentials, paper endpoints, and backend capability coverage.",
-    route: "/settings/integrations"
+    label: "Alpaca provider setup",
+    description: "Repair paper credentials, endpoint acknowledgements, and broker connection readiness.",
+    route: "/settings#alpaca-provider-setup"
   }
 ];
 
@@ -163,6 +181,7 @@ export function buildCommandPaletteViewModel(
   const items = [...workspaceItems, ...routeItems, ...presetItems, ...workflowItems];
   const normalizedQuery = query.trim();
   const filteredItems = filterCommandItems(items, normalizedQuery);
+  const commandGroups = buildCommandPaletteGroups(filteredItems);
 
   const activeWorkspace = workspaceItems.find((item) => item.active);
   const activeRoute = routeItems.find((item) => item.active);
@@ -199,6 +218,7 @@ export function buildCommandPaletteViewModel(
       ? "Search workflows, routes, presets, or workspaces"
       : "Search routes or workspaces",
     filteredItems,
+    commandGroups,
     filteredItemCountLabel: buildFilteredItemCountLabel(filteredItems.length, items.length, normalizedQuery),
     emptyState:
       items.length === 0
@@ -215,6 +235,24 @@ export function buildCommandPaletteViewModel(
             }
         : null
   };
+}
+
+export function buildCommandPaletteGroups(items: CommandPaletteItem[]): CommandPaletteGroup[] {
+  return COMMAND_KIND_ORDER
+    .map((kind) => {
+      const groupItems = items.filter((item) => item.kind === kind);
+      const label = COMMAND_KIND_LABELS[kind];
+      const countLabel = `${groupItems.length} ${label.toLowerCase().replace(/s$/, "")}${groupItems.length === 1 ? "" : "s"}`;
+
+      return {
+        kind,
+        label,
+        countLabel,
+        ariaLabel: `${label}: ${countLabel}`,
+        items: groupItems
+      };
+    })
+    .filter((group) => group.items.length > 0);
 }
 
 export function resolveCommandPaletteKeyCommand({
@@ -424,15 +462,52 @@ function filterCommandItems(items: CommandPaletteItem[], query: string) {
 }
 
 function isExactActivePath(pathname: string, route: string) {
-  const cleanPath = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/";
-  const cleanRoute = route.replace(/\/+$/, "") || "/";
-  return cleanPath === cleanRoute;
+  const current = splitActiveRoute(pathname);
+  const candidate = splitActiveRoute(route);
+  return current.pathname === candidate.pathname
+    && routeSearchMatches(current, candidate)
+    && routeHashMatches(current, candidate);
 }
 
 function isActiveRoute(pathname: string, route: string) {
-  const cleanPath = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/";
-  const cleanRoute = route.replace(/\/+$/, "") || "/";
-  return cleanPath === cleanRoute || cleanPath.startsWith(`${cleanRoute}/`);
+  const current = splitActiveRoute(pathname);
+  const candidate = splitActiveRoute(route);
+  const pathMatches = candidate.hash
+    ? current.pathname === candidate.pathname
+    : current.pathname === candidate.pathname || current.pathname.startsWith(`${candidate.pathname}/`);
+
+  return pathMatches
+    && routeSearchMatches(current, candidate)
+    && routeHashMatches(current, candidate);
+}
+
+function splitActiveRoute(route: string) {
+  const hashIndex = route.indexOf("#");
+  const routeWithoutHash = hashIndex >= 0 ? route.slice(0, hashIndex) : route;
+  const hash = hashIndex >= 0 ? route.slice(hashIndex) : "";
+  const searchIndex = routeWithoutHash.indexOf("?");
+  const pathname = searchIndex >= 0 ? routeWithoutHash.slice(0, searchIndex) : routeWithoutHash;
+  const search = searchIndex >= 0 ? routeWithoutHash.slice(searchIndex) : "";
+
+  return {
+    pathname: pathname.replace(/\/+$/, "") || "/",
+    search,
+    hash
+  };
+}
+
+function routeSearchMatches(
+  current: ReturnType<typeof splitActiveRoute>,
+  candidate: ReturnType<typeof splitActiveRoute>
+) {
+  return !candidate.search || current.search === candidate.search;
+}
+
+function routeHashMatches(
+  current: ReturnType<typeof splitActiveRoute>,
+  candidate: ReturnType<typeof splitActiveRoute>
+) {
+  return !candidate.hash || current.hash === candidate.hash;
 }
 
 function comparePresets(left: WorkflowPreset, right: WorkflowPreset) {

@@ -153,7 +153,7 @@ Content Frame
 
 **Storage archive posture** — `StoragePage` now places an archive-posture card above the configuration and preview panels. `StorageViewModel` projects daily growth, capacity horizon, last scan, and one operator handoff from the already-loaded `StorageAnalytics` snapshot, so capacity pressure and stalled archive growth are visible without adding another storage scan, timer, or persistence write.
 
-**Data Operations next-handoff card** — `DataOperationsWorkspaceShellPage` now turns the previously static right-side hero card into a priority handoff surface. Provider outages, storage blockers, resumable backfills, active exports, collection sessions, and steady-state readiness each project one explicit CTA with a target label, while the same hero shows compact provider, backfill, and storage health chips so operators can confirm the readiness posture before scanning the full workbench.
+**Data Operations next-handoff card** — `DataWorkspaceShellPage` turns the previously static right-side hero card into a priority handoff surface. Provider outages, storage blockers, resumable backfills, active exports, collection sessions, and steady-state readiness each project one explicit CTA with a target label, while the same hero shows compact provider, backfill, and storage health chips so operators can confirm the readiness posture before scanning the full workbench.
 
 **Backfill start readiness** — `BackfillPage` now shows an automation-addressable start-readiness card above the run controls. `BackfillViewModel` owns symbol normalization, date-range validation, request scope text, validation label visibility, and Start enablement so empty-symbol and invalid-date states are visible before an operator launches a historical backfill; the page code-behind only refreshes the VM from existing WPF controls and delegates the launch to the existing backfill command path.
 
@@ -440,10 +440,11 @@ Style resources in `Meridian.Wpf/Styles/`:
 
 ## Workspace Shells
 
-The WPF shell now projects seven root workspace capabilities: Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings. Strategy and Trading shells keep presentation state in view models backed by WPF-scoped presentation services; their pages handle WPF lifecycle, docking, tone resources, and navigation forwarding. Data uses a service-backed projection layer that folds provider, backfill, storage, session, notification, and export-job telemetry into a single operator shell.
+The WPF shell now projects seven root workspace capabilities: Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings. Strategy and Trading shells keep presentation state in view models backed by WPF-scoped presentation services; their pages handle WPF lifecycle, docking, tone resources, and navigation forwarding. Data now starts the feature-owned desktop module spine under `src/Meridian.Wpf/Features/Data/`: the Data shell view model owns loading/error state, queue summaries, hero state, action resolution, and shell-context refresh requests while WPF code-behind is limited to lifecycle, dock hosting, tone resource application, and navigation forwarding.
 
 Shell implementation now shares descriptor-driven infrastructure:
 
+- `src/Meridian.Wpf/Features/` owns feature module registration; `DataFeatureModule` registers the Data shell page, view model, snapshot service, and presentation adapter before catalog fallback registration fills in unmigrated pages
 - `src/Meridian.Wpf/Shell/` owns route registry, page-content factory, shell navigation coordinator, and pane-host view-model seams for the retained desktop shell
 - `WorkspaceShellPageBase<TStateProvider, TViewModel>` owns dock restore/save, fallback content, and pane opening
 - `WorkspaceShellViewModelBase` carries shell command state
@@ -484,15 +485,16 @@ handlers for toolbar selection, date validation, indicator state, or refresh rea
 
 Replay and collection-session review stay on their owning Data Operations and Governance pages until the trading shell has a proven need for another deep-review lane.
 
-### `DataOperationsWorkspaceShellPage` (`Views/DataOperationsWorkspaceShellPage.xaml`)
+### `DataWorkspaceShellPage` (`Features/Data/Shell/DataWorkspaceShellPage.xaml`)
 
 **Purpose**: Operational cockpit for provider readiness, backfill pressure, storage posture, collection sessions, and export delivery.
 
 **Data composition**:
 
-1. `DataOperationsWorkspaceShellPage.xaml.cs` loads provider catalog/status, backfill health, resumable checkpoints, execution history, schedules, storage stats/health, active and recent collection sessions, persisted export jobs, and notification history.
-2. `DataOperationsWorkspacePresentationBuilder` converts those service responses into shell context badges, a next-handoff hero card, queue cards, summary values, recent operations, and quick-action wiring.
-3. Primary actions route directly to `ProviderHealth`, `Backfill`, and `DataExport`; secondary actions keep `Providers`, `Storage`, `CollectionSessions`, `Schedules`, and `PackageManager` in the same shell flow.
+1. `DataWorkspaceShellSnapshotService` loads provider catalog/status, backfill health, resumable checkpoints, execution history, schedules, storage stats/health, active and recent collection sessions, persisted export jobs, and notification history.
+2. `DataWorkspaceShellPresentationService` adapts the retained `DataOperationsWorkspacePresentationBuilder` projection into immutable shell presentation state.
+3. `DataWorkspaceShellViewModel` owns loading/error states, command group, hero state, queue state, recent operations, summary values, and action resolution for retry, context switching, navigation commands, and dock-pane opens.
+4. `DataWorkspaceShellPage.xaml.cs` forwards view-model action requests to `NavigationService` or `OpenWorkspacePage` and applies WPF-only visual resources such as tone brushes and queue-state visibility.
 
 **Design zones**:
 

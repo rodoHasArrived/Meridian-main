@@ -218,7 +218,7 @@ describe("WatchlistScreen", () => {
     expect(await screen.findByText(/Live prices for 1 of 2 symbols/i, undefined, fullSuiteTimeout)).toBeInTheDocument();
     const table = screen.getByRole("table", { name: /subscribed symbol watchlist/i });
     expect(within(table).getByText("188.05 x 200")).toBeInTheDocument();
-    expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toHaveTextContent("Never");
+    expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toHaveTextContent("No quote");
   });
 
   it("normalizes symbols before add and refreshes after success", async () => {
@@ -230,6 +230,10 @@ describe("WatchlistScreen", () => {
     await user.click(screen.getByRole("button", { name: /Add SPY to watchlist/i }));
 
     await waitFor(() => expect(api.addSymbol).toHaveBeenCalledWith("SPY"));
+    expect(await screen.findByRole("link", { name: /Open live quotes for SPY from watchlist single-symbol-add/i })).toHaveAttribute(
+      "href",
+      "/data/quotes?symbol=SPY"
+    );
     expect(api.getSymbols).toHaveBeenCalledTimes(2);
   });
 
@@ -249,6 +253,10 @@ describe("WatchlistScreen", () => {
       "href",
       "/settings#alpaca-provider-setup"
     );
+    expect(screen.getByRole("link", { name: /Open live quotes for SPY from watchlist bulk-add/i })).toHaveAttribute(
+      "href",
+      "/data/quotes?symbol=SPY"
+    );
     expect(api.getSymbols).toHaveBeenCalledTimes(2);
   });
 
@@ -262,6 +270,10 @@ describe("WatchlistScreen", () => {
 
     await waitFor(() => expect(api.bulkAddSymbols).toHaveBeenCalledWith(["SPY", "QQQ", "AAPL", "MSFT"]));
     expect(await screen.findByText("US core: added 4 of 4 symbols.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open live quotes for SPY from watchlist starter-pack/i })).toHaveAttribute(
+      "href",
+      "/data/quotes?symbol=SPY"
+    );
     expect(api.getSymbols).toHaveBeenCalledTimes(2);
   });
 
@@ -338,7 +350,7 @@ describe("WatchlistScreen", () => {
   it("shows loading, empty, and initial error states", async () => {
     vi.mocked(api.getSymbols).mockReturnValue(new Promise(() => {}));
     const loadingRender = renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
-    expect(screen.getByRole("status")).toHaveTextContent("Loading symbols...");
+    expect(screen.getByRole("status")).toHaveTextContent("Loading symbols…");
     loadingRender.unmount();
 
     vi.mocked(api.getSymbols).mockResolvedValueOnce([]);

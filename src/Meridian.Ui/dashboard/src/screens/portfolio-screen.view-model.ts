@@ -42,6 +42,8 @@ export interface PortfolioPositionRow {
   exposure: string;
   pnlTone: "success" | "danger" | "default";
   isSelected: boolean;
+  expanded: boolean;
+  detailPanelId: string;
   selectAriaLabel: string;
   ariaLabel: string;
 }
@@ -62,6 +64,8 @@ export interface PortfolioRunRow {
   notes: string;
   promotionState: string | null | undefined;
   isSelected: boolean;
+  expanded: boolean;
+  detailPanelId: string;
   selectAriaLabel: string;
   ariaLabel: string;
 }
@@ -150,6 +154,15 @@ export interface PortfolioBackendLink {
   ariaLabel: string;
 }
 
+export interface PortfolioWorkflowTaskAction {
+  id: "provider-setup" | "trading-readiness" | "trading-cockpit";
+  label: string;
+  href: string;
+  ariaLabel: string;
+  detail: string;
+  variant: "default" | "outline";
+}
+
 export interface PortfolioWorkflowTaskPanel {
   regionLabel: string;
   eyebrow: string;
@@ -159,6 +172,7 @@ export interface PortfolioWorkflowTaskPanel {
   statusTone: "default" | "success" | "warning" | "danger";
   chips: PortfolioHeaderChip[];
   statusRows: PortfolioDetailField[];
+  actions: PortfolioWorkflowTaskAction[];
   backendLinks: PortfolioBackendLink[];
   selectedSummary: string;
 }
@@ -355,6 +369,7 @@ export function buildPortfolioScreenViewModel({
   const positionRows: PortfolioPositionRow[] = positions.map((p, index) => {
     const id = positionId(p.symbol, p.side, index);
     const tone = pnlTone(p.unrealizedPnl);
+    const isSelected = id === selectedId;
 
     return {
       id,
@@ -367,7 +382,9 @@ export function buildPortfolioScreenViewModel({
       unrealizedPnl: p.unrealizedPnl,
       exposure: p.exposure,
       pnlTone: tone,
-      isSelected: id === selectedId,
+      isSelected,
+      expanded: isSelected,
+      detailPanelId: "portfolio-position-detail",
       selectAriaLabel: `Inspect ${p.symbol} ${p.side} holding`,
       ariaLabel: `${p.symbol} ${p.side} position: ${p.quantity} shares, exposure ${p.exposure}, unrealized P&L ${p.unrealizedPnl}`
     };
@@ -375,6 +392,7 @@ export function buildPortfolioScreenViewModel({
 
   const runRows: PortfolioRunRow[] = runs.map((r) => {
     const tone = pnlTone(r.pnl);
+    const isSelected = r.id === selectedRunStableId;
 
     return {
       id: r.id,
@@ -391,7 +409,9 @@ export function buildPortfolioScreenViewModel({
       lastUpdated: r.lastUpdated,
       notes: r.notes,
       promotionState: r.promotionState,
-      isSelected: r.id === selectedRunStableId,
+      isSelected,
+      expanded: isSelected,
+      detailPanelId: "portfolio-run-detail",
       selectAriaLabel: `Inspect ${r.strategyName} run evidence`,
       ariaLabel: `${r.strategyName} ${r.mode} run: ${r.status}, P&L ${r.pnl}, Sharpe ${r.sharpe}`
     };
@@ -1134,6 +1154,12 @@ function buildWorkflowTaskPanel({
         tone: risk?.activeGuardrails.length ? "warning" : "success"
       }
     ],
+    actions: buildWorkflowTaskActions({
+      hasPosture,
+      connected,
+      feedsHealthy,
+      providerLabel
+    }),
     backendLinks: [
       buildPortfolioBackendLink("workstation-trading", "Trading workspace", WORKSTATION_API_ENDPOINTS.trading),
       buildPortfolioBackendLink("trading-readiness", "Trading readiness", WORKSTATION_API_ENDPOINTS.tradingReadiness),
@@ -1141,6 +1167,54 @@ function buildWorkflowTaskPanel({
       buildPortfolioBackendLink("portfolio-exposure", "Portfolio exposure", PORTFOLIO_API_ENDPOINTS.exposure)
     ]
   };
+}
+
+function buildWorkflowTaskActions({
+  hasPosture,
+  connected,
+  feedsHealthy,
+  providerLabel
+}: {
+  hasPosture: boolean;
+  connected: boolean;
+  feedsHealthy: boolean;
+  providerLabel: string;
+}): PortfolioWorkflowTaskAction[] {
+  const needsProviderRepair = !hasPosture || !connected || !feedsHealthy;
+  const providerSetupTarget =
+    providerLabel === "Provider unavailable" ? "provider setup" : `${providerLabel} provider setup`;
+  const actions: PortfolioWorkflowTaskAction[] = [];
+
+  if (needsProviderRepair) {
+    actions.push({
+      id: "provider-setup",
+      label: "Repair provider setup",
+      href: "/settings#alpaca-provider-setup",
+      ariaLabel: `Repair ${providerSetupTarget} from brokerage sync review`,
+      detail: "Verify credentials and connection posture before accepting brokerage-sync state.",
+      variant: "default"
+    });
+  }
+
+  actions.push({
+    id: "trading-readiness",
+    label: "Inspect readiness",
+    href: "/trading/readiness",
+    ariaLabel: "Open Trading readiness from brokerage sync review",
+    detail: "Check paper-session, replay, execution-control, and readiness evidence.",
+    variant: needsProviderRepair ? "outline" : "default"
+  });
+
+  actions.push({
+    id: "trading-cockpit",
+    label: "Open Trading cockpit",
+    href: "/trading",
+    ariaLabel: "Open Trading cockpit from brokerage sync review",
+    detail: "Review active positions, orders, and paper execution controls.",
+    variant: "outline"
+  });
+
+  return actions;
 }
 
 function buildPortfolioBackendLink(id: string, label: string, href: string): PortfolioBackendLink {

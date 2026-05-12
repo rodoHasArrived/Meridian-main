@@ -20,14 +20,6 @@ public abstract class WorkspaceShellViewModelBase : BindableBase
     }
 }
 
-public sealed class DataOperationsWorkspaceShellViewModel : WorkspaceShellViewModelBase
-{
-    public DataOperationsWorkspaceShellViewModel()
-        : base(ShellNavigationCatalog.GetWorkspaceShell("data")!)
-    {
-    }
-}
-
 public sealed class GovernanceWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     public GovernanceWorkspaceShellViewModel()

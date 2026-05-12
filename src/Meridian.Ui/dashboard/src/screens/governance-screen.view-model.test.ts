@@ -10,10 +10,12 @@ import {
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
   buildReconciliationDetailActions,
+  buildReconciliationQueuePanelViewState,
   buildReconciliationDetailViewState,
   buildReconciliationNarrative,
   buildReconciliationResolveDialogState,
   buildSecurityConflictRows,
+  buildSecurityConflictRefreshCommand,
   buildSecurityIdentityDrillInState,
   buildSecuritySearchResultRows,
   buildSecuritySearchState,
@@ -261,6 +263,38 @@ describe("governance-screen view model", () => {
     expect(resolveSelectedReconciliation([], null)).toBeNull();
   });
 
+  it("derives reconciliation detail queue row state and empty inspector copy", () => {
+    const state = buildReconciliationQueuePanelViewState(reconciliationQueue, "run-57");
+
+    expect(state).toMatchObject({
+      title: "Reconciliation detail queue",
+      listLabel: "Reconciliation runs",
+      detailPanelId: "reconciliation-run-detail-panel",
+      hasRows: true
+    });
+    expect(state.rows[0]).toMatchObject({
+      runId: "run-42",
+      isSelected: false,
+      isExpanded: false,
+      controlsId: "reconciliation-run-detail-panel",
+      reconciliationTone: "warning",
+      openBreakLabel: "1 open",
+      selectAriaLabel: "Inspect reconciliation run Paper Index Mean Reversion"
+    });
+    expect(state.rows[1]).toMatchObject({
+      runId: "run-57",
+      isSelected: true,
+      isExpanded: true,
+      reconciliationTone: "primary",
+      openBreakLabel: "0 open"
+    });
+
+    const emptyState = buildReconciliationQueuePanelViewState([], null);
+    expect(emptyState.hasRows).toBe(false);
+    expect(emptyState.rows).toEqual([]);
+    expect(emptyState.detailEmptyAriaLabel).toBe("No reconciliation run selected");
+  });
+
   it("derives canonical Accounting and Reporting loading states", () => {
     expect(buildGovernanceLoadingViewState("/accounting/reconciliation")).toMatchObject({
       role: "status",
@@ -493,6 +527,8 @@ describe("governance-screen view model", () => {
     expect(complete.resultRows[0]).toMatchObject({
       rowId: "security-result-sec-1",
       isSelected: false,
+      detailPanelId: "security-master-identity-detail",
+      isExpanded: false,
       selectAriaLabel: "Open identity drill-in for Apple Inc.",
       primaryIdentifierLabel: "Ticker: AAPL",
       statusTone: "success",
@@ -508,6 +544,8 @@ describe("governance-screen view model", () => {
     expect(rows[0]).toMatchObject({
       rowId: "security-result-sec-1",
       isSelected: true,
+      detailPanelId: "security-master-identity-detail",
+      isExpanded: true,
       selectAriaLabel: "Open identity drill-in for Apple Inc.",
       primaryIdentifierLabel: "Ticker: AAPL",
       statusTone: "success"
@@ -611,12 +649,73 @@ describe("governance-screen view model", () => {
     expect(failed.statusAnnouncement).toBe("Security search failed: Provider offline");
     expect(countOpenSecurityConflicts(conflicts)).toBe(1);
     expect(countOpenSecurityConflicts(null)).toBe(0);
+    expect(buildSecurityConflictRefreshCommand(false, null)).toEqual({
+      label: "Refresh conflicts",
+      ariaLabel: "Refresh Security Master identifier conflicts",
+      disabled: false,
+      disabledReason: null,
+      busy: false,
+      busyLabel: null
+    });
+    expect(buildSecurityConflictRefreshCommand(true, null)).toMatchObject({
+      label: "Refreshing...",
+      disabled: true,
+      disabledReason: "Identifier conflicts are already loading.",
+      busy: true,
+      busyLabel: "Refreshing..."
+    });
+    expect(buildSecurityConflictRefreshCommand(false, "Provider offline")).toMatchObject({
+      label: "Retry conflicts",
+      ariaLabel: "Retry loading Security Master identifier conflicts"
+    });
+  });
+
+  it("retries Security Master identifier conflicts through view-model command state", async () => {
+    const retryConflicts = deferred<SecurityMasterConflict[]>();
+    const services = createSecurityMasterServices({
+      getConflicts: vi.fn()
+        .mockRejectedValueOnce(new Error("Conflict API offline"))
+        .mockReturnValueOnce(retryConflicts.promise)
+    });
+    const drillInServices = createSecurityMasterDrillInServices();
+
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+
+    await waitFor(() => expect(result.current.conflictsErrorText).toBe("Conflict API offline"));
+    expect(result.current.conflictRefreshCommand).toMatchObject({
+      label: "Retry conflicts",
+      disabled: false
+    });
+
+    let retry!: Promise<void>;
+    act(() => {
+      retry = result.current.refreshConflicts();
+    });
+
+    await waitFor(() => expect(result.current.conflictRefreshCommand).toMatchObject({
+      label: "Refreshing...",
+      disabled: true,
+      busy: true
+    }));
+
+    await act(async () => {
+      retryConflicts.resolve(conflicts);
+      await retry;
+    });
+
+    expect(result.current.conflictsErrorText).toBeNull();
+    expect(result.current.conflictRows).toHaveLength(2);
+    expect(result.current.conflictRefreshCommand).toMatchObject({
+      label: "Refresh conflicts",
+      disabled: false
+    });
   });
 
   it("derives Security Master identity drill-in rows and accessible table labels", () => {
     const state = buildSecurityIdentityDrillInState(securityIdentity);
 
     expect(state).toMatchObject({
+      panelId: "security-master-identity-detail",
       title: "Identity drill-in · Apple Inc.",
       subtitle: "sec-1 · v3 · Equity",
       description: "1 identifier · 1 alias · effective 2024-01-01 -> active",

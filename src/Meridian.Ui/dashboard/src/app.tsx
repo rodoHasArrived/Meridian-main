@@ -61,7 +61,7 @@ export function App() {
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
   const workbenchRef = useRef<HTMLElement | null>(null);
   const previousRouteKeyRef = useRef<string | null>(null);
-  const { hash, pathname } = useLocation();
+  const { hash, pathname, search } = useLocation();
   const {
     session,
     overview,
@@ -113,6 +113,7 @@ export function App() {
 
   const shell = buildAppShellViewState({
     pathname,
+    search,
     hash,
     commandPaletteOpen: commandOpen,
     loading,

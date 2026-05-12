@@ -241,7 +241,7 @@ describe("PortfolioScreen", () => {
     renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
     expect(screen.getByRole("region", { name: /portfolio workbench context/i })).toBeDefined();
     expect(screen.getByRole("table", { name: /open positions/i })).toBeDefined();
-    expect(screen.getByRole("button", { name: /inspect aapl long holding/i })).toBeDefined();
+    expect(screen.getByRole("row", { name: /inspect aapl long holding/i })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("complementary", { name: /aapl holding detail/i })).toBeDefined();
     expect(screen.getByText(/\$18,900 exposure with \+\$90 unrealized p&l/i)).toBeDefined();
   });
@@ -255,14 +255,14 @@ describe("PortfolioScreen", () => {
     expect(within(positionsTable).getByText("NVDA")).toBeDefined();
     expect(within(positionsTable).queryByText("AAPL")).toBeNull();
     expect(screen.getByText("Portfolio workspace")).toBeDefined();
-    expect(screen.getByRole("button", { name: /inspect portfolio endpoint run run evidence/i })).toBeDefined();
+    expect(screen.getByRole("row", { name: /inspect portfolio endpoint run run evidence/i })).toBeDefined();
     expect(screen.getByText(/portfolio endpoint cash posture/i)).toBeDefined();
   });
 
   it("renders run-linked equity table with research data", () => {
     renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
     expect(screen.getByRole("table", { name: /run-linked equity/i })).toBeDefined();
-    expect(screen.getByRole("button", { name: /inspect mean reversion run evidence/i })).toBeDefined();
+    expect(screen.getByRole("row", { name: /inspect mean reversion run evidence/i })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("complementary", { name: /mean reversion run detail/i })).toBeDefined();
     expect(screen.getByText(/running paper run with \+4.2% p&l/i)).toBeDefined();
   });
@@ -442,11 +442,19 @@ describe("PortfolioScreen", () => {
     expect(within(panel).getByText(/brokerage sync review/i)).toBeDefined();
     expect(within(panel).getByText(/brokerage synced/i)).toBeDefined();
     expect(within(panel).getByText(/alpaca \/ paper account pa-demo/i)).toBeDefined();
+    expect(within(panel).getByRole("link", { name: /open trading readiness from brokerage sync review/i })).toHaveAttribute(
+      "href",
+      "/trading/readiness"
+    );
+    expect(within(panel).getByRole("link", { name: /open trading cockpit from brokerage sync review/i })).toHaveAttribute(
+      "href",
+      "/trading"
+    );
     expect(within(panel).getByRole("link", { name: /get \/api\/portfolio\/aggregate/i })).toBeDefined();
     expect(within(panel).getByRole("link", { name: /get \/api\/workstation\/trading\/readiness/i })).toBeDefined();
   });
 
-  it("updates the holding detail panel from the inspect control", async () => {
+  it("updates the holding detail panel from the selectable row", async () => {
     const user = userEvent.setup();
     const tradingWithTwoPositions: TradingWorkspaceResponse = {
       ...trading,
@@ -467,15 +475,18 @@ describe("PortfolioScreen", () => {
 
     renderWithRouter(<PortfolioScreen trading={tradingWithTwoPositions} research={research} governance={governance} />);
 
-    const msftButton = screen.getByRole("button", { name: /inspect msft short holding/i });
-    await user.click(msftButton);
+    const msftRow = screen.getByRole("row", { name: /inspect msft short holding/i });
+    expect(msftRow).toHaveAttribute("aria-controls", "portfolio-position-detail");
+    expect(msftRow).toHaveAttribute("aria-expanded", "false");
+    await user.click(msftRow);
 
-    expect(msftButton).toHaveAttribute("aria-pressed", "true");
+    expect(msftRow).toHaveAttribute("aria-selected", "true");
+    expect(msftRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("complementary", { name: /msft holding detail/i })).toBeDefined();
     expect(screen.getByText(/\$10,250 exposure with \+\$52.50 unrealized p&l/i)).toBeDefined();
   });
 
-  it("updates the run evidence detail panel from the inspect control", async () => {
+  it("updates the run evidence detail panel from the selectable row", async () => {
     const user = userEvent.setup();
     const researchWithTwoRuns: ResearchWorkspaceResponse = {
       ...research,
@@ -500,10 +511,13 @@ describe("PortfolioScreen", () => {
 
     renderWithRouter(<PortfolioScreen trading={trading} research={researchWithTwoRuns} governance={governance} />);
 
-    const volatilityButton = screen.getByRole("button", { name: /inspect volatility carry run evidence/i });
-    await user.click(volatilityButton);
+    const volatilityRow = screen.getByRole("row", { name: /inspect volatility carry run evidence/i });
+    expect(volatilityRow).toHaveAttribute("aria-controls", "portfolio-run-detail");
+    expect(volatilityRow).toHaveAttribute("aria-expanded", "false");
+    await user.click(volatilityRow);
 
-    expect(volatilityButton).toHaveAttribute("aria-pressed", "true");
+    expect(volatilityRow).toHaveAttribute("aria-selected", "true");
+    expect(volatilityRow).toHaveAttribute("aria-expanded", "true");
     const detail = screen.getByRole("complementary", { name: /volatility carry run detail/i });
     expect(detail).toBeDefined();
     expect(screen.getByText(/drawdown review required/i)).toBeDefined();

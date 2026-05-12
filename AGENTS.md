@@ -382,10 +382,6 @@ position-blotter route slice with isolated output and writes validation artifact
 operator-inbox route slice with isolated output and writes validation artifacts under
 `artifacts/wpf-validation/operator-inbox-route/`.
 
-TODO: `README.md` and `.codex/skills/_shared/project-context.md` mention `make desktop-run`,
-but the current `make/desktop.mk` does not define that target. Use
-`pwsh ./scripts/dev/run-desktop.ps1` unless the Make target is restored.
-
 TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-workflow`,
 `make desktop-manual`, and `make desktop-screenshots`, but the current `make/desktop.mk` does not
 define those targets. Use the PowerShell scripts directly unless the Make targets are added.
@@ -397,11 +393,6 @@ and `docs/development/wpf-implementation-notes.md` still reference `make build-w
 `make test-desktop-services`, and `make uwp-xaml-diagnose`. The current `make/*.mk` files do not
 define those targets. Prefer `pwsh ./scripts/dev/desktop-dev.ps1`, `make desktop-build`,
 `make desktop-test`, and `pwsh ./scripts/dev/diagnose-uwp-xaml.ps1`.
-
-TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but the current
-`make/*.mk` files do not define that target. Use
-`pwsh -File ./build/scripts/install/install.ps1 -Mode Desktop -SkipInstall` for desktop package
-builds unless the Make target is restored.
 
 `.github/workflows/refresh-screenshots.yml` refreshes both retained WPF desktop screenshots and
 browser workstation dashboard screenshots. Desktop captures run `screenshot-catalog` plus the

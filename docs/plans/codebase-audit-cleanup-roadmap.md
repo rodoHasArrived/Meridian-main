@@ -53,11 +53,11 @@ Primary anchors:
 
 ### 2. WPF workflow cleanup
 
-The app now has shared run surfaces and a delivered four-workspace shell baseline, including first-run readiness progress, Storage preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention details, and Trading shared-work-item attention handling. Workflow depth and implementation quality are still mixed across high-traffic pages.
+The app now has shared run surfaces, a browser-first seven-workspace operator lane, and a retained WPF compatibility shell baseline, including first-run readiness progress, Storage preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention details, and Trading shared-work-item attention handling. Workflow depth and implementation quality are still mixed across high-traffic pages.
 
 Open work:
 
-- validate the delivered workspace shells against real Research, Trading, Data Operations, and Governance journeys
+- validate the browser-first workspace shells and retained WPF compatibility shells against real Data, Strategy, Trading, Portfolio, Accounting, Reporting, and Settings journeys
 - identify placeholder or low-value pages and either strengthen them or label/re-scope them
 - keep business logic moving out of page code-behind and into shared services/view models
 - make run, portfolio, ledger, Position Blotter, and reconciliation flows feel like one workstation family rather than separate page islands
@@ -65,6 +65,7 @@ Open work:
 Primary anchors:
 
 - `src/Meridian.Wpf/Services/NavigationService.cs`
+- `src/Meridian.Ui/dashboard/`
 - `src/Meridian.Ui.Services/Services/WorkspaceModels.cs`
 - `src/Meridian.Wpf/ViewModels/`
 - `src/Meridian.Wpf/Views/`

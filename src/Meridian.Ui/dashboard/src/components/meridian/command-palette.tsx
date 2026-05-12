@@ -5,34 +5,11 @@ import {
   buildCommandPaletteViewModel,
   resolveCommandPaletteKeyCommand,
   type CommandPaletteFocusBoundary,
-  type CommandPaletteItemKind,
-  type CommandPaletteItem,
   type CommandPaletteFocusTarget
 } from "@/components/meridian/command-palette.view-model";
 import { COMMAND_PALETTE_DIALOG_ID } from "@/app-shell.view-model";
 import { cn } from "@/lib/utils";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
-
-const KIND_LABELS: Record<CommandPaletteItemKind, string> = {
-  workspace: "Workspaces",
-  route: "Quick routes",
-  preset: "Presets",
-  workflow: "Workflows"
-};
-
-const KIND_ORDER: CommandPaletteItemKind[] = ["workspace", "route", "preset", "workflow"];
-
-interface CommandGroup {
-  kind: CommandPaletteItemKind;
-  label: string;
-  items: CommandPaletteItem[];
-}
-
-function groupItems(items: CommandPaletteItem[]): CommandGroup[] {
-  return KIND_ORDER
-    .map((kind) => ({ kind, label: KIND_LABELS[kind], items: items.filter((item) => item.kind === kind) }))
-    .filter((group) => group.items.length > 0);
-}
 
 /**
  * Full-screen command palette overlay for quick workspace navigation.
@@ -70,14 +47,15 @@ export function CommandPalette({
   workflowError,
   onPresetUsed
 }: CommandPaletteProps) {
-  const { pathname } = useLocation();
+  const { pathname, search, hash } = useLocation();
   const [query, setQuery] = useState("");
   const dialogRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const initialCommandRef = useRef<HTMLAnchorElement | null>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const currentRoute = `${pathname}${search}${hash}`;
   const viewModel = buildCommandPaletteViewModel(
-    pathname,
+    currentRoute,
     undefined,
     {
       workflowLibrary,
@@ -222,9 +200,12 @@ export function CommandPalette({
               <div className="mt-1 text-muted-foreground">{viewModel.emptyState.detail}</div>
             </div>
           ) : null}
-          {groupItems(viewModel.filteredItems).map((group) => (
+          {viewModel.commandGroups.map((group) => (
             <div key={group.kind} className="command-palette-group">
-              <div className="command-palette-group-label">{group.label}</div>
+              <div className="command-palette-group-label" aria-label={group.ariaLabel}>
+                <span>{group.label}</span>
+                <span className="font-mono text-[10px] text-muted-foreground">{group.countLabel}</span>
+              </div>
               <div className="grid gap-1">
                 {group.items.map((item) => (
                   <Link

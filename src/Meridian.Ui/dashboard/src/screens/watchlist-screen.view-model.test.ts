@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   buildBulkAddFeedback,
+  buildLiveQuoteHandoff,
   buildProviderSetupHandoff,
   buildQuoteRefreshCommand,
   buildQuoteStatus,
@@ -13,7 +14,9 @@ import {
   formatRelative,
   parseWatchlistSymbols,
   useWatchlistScreenViewModel,
-  validatePendingSymbol
+  validatePendingSymbol,
+  WATCHLIST_EMPTY_VALUE,
+  WATCHLIST_NO_QUOTE_LABEL
 } from "@/screens/watchlist-screen.view-model";
 import type { QuotesSnapshotItem, SymbolRecord, SymbolStatistics } from "@/types";
 import type { WatchlistApi } from "@/screens/watchlist-screen.view-model";
@@ -78,7 +81,7 @@ describe("watchlist-screen view model", () => {
       inspectLabel: "Inspect",
       inspectAriaLabel: "Inspect AAPL watchlist detail",
       rowSelectAriaLabel: "Select AAPL watchlist row. AAPL. Status Active.",
-      removeLabel: "Removing...",
+      removeLabel: "Removing…",
       removeDisabledReason: "AAPL removal is already running."
     });
     expect(rows[1]).toMatchObject({
@@ -106,10 +109,10 @@ describe("watchlist-screen view model", () => {
     });
     expect(rows[1]).toMatchObject({
       symbol: "MSFT",
-      bidLabel: "-",
-      askLabel: "-",
+      bidLabel: WATCHLIST_EMPTY_VALUE,
+      askLabel: WATCHLIST_EMPTY_VALUE,
       hasQuote: false,
-      quoteAgeLabel: "Never"
+      quoteAgeLabel: WATCHLIST_NO_QUOTE_LABEL
     });
   });
 
@@ -141,18 +144,20 @@ describe("watchlist-screen view model", () => {
   });
 
   it("summarizes bulk-add outcomes for operator feedback", () => {
-    expect(buildBulkAddFeedback({ added: 3, skipped: 0, errors: [] }, 3)).toEqual({
+    expect(buildBulkAddFeedback({ added: 3, skipped: 0, errors: [] }, 3, ["SPY", "DIA", "QQQ"])).toEqual({
       tone: "success",
-      message: "Added 3 of 3 symbols."
+      message: "Added 3 of 3 symbols.",
+      nextActionHandoff: buildLiveQuoteHandoff(["SPY", "DIA", "QQQ"], "bulk-add")
     });
 
-    expect(buildBulkAddFeedback({ added: 2, skipped: 1, errors: ["QQQ rejected"] }, 4)).toEqual({
+    expect(buildBulkAddFeedback({ added: 2, skipped: 1, errors: ["QQQ rejected"] }, 4, ["SPY", "DIA", "QQQ"])).toEqual({
       tone: "warning",
       message: "Added 2 of 4 symbols; 1 skipped; QQQ rejected.",
-      providerSetupHandoff: buildProviderSetupHandoff("bulk-add-partial")
+      providerSetupHandoff: buildProviderSetupHandoff("bulk-add-partial"),
+      nextActionHandoff: buildLiveQuoteHandoff(["SPY", "DIA", "QQQ"], "bulk-add")
     });
 
-    expect(buildBulkAddFeedback({ added: 0, skipped: 0, errors: ["Provider offline"] }, 2)).toEqual({
+    expect(buildBulkAddFeedback({ added: 0, skipped: 0, errors: ["Provider offline"] }, 2, ["SPY", "DIA"])).toEqual({
       tone: "danger",
       message: "Added 0 of 2 symbols; Provider offline.",
       providerSetupHandoff: buildProviderSetupHandoff("bulk-add-errors")
@@ -188,7 +193,7 @@ describe("watchlist-screen view model", () => {
     expect(detail?.symbol).toBe("MSFT");
     expect(detail?.description).toContain("No live quote has been returned");
     expect(detail?.fields).toEqual(expect.arrayContaining([
-      { label: "Bid x size", value: "-", tone: "muted" },
+      { label: "Bid x size", value: WATCHLIST_EMPTY_VALUE, tone: "muted" },
       { label: "Provider", value: "No provider", tone: "warning" },
       { label: "History", value: "Missing", tone: "warning" }
     ]));
@@ -201,6 +206,7 @@ describe("watchlist-screen view model", () => {
       symbols: ["SPY", "QQQ", "AAPL", "MSFT"],
       symbolsLabel: "SPY, QQQ, AAPL, MSFT",
       ariaLabel: "Add US core starter pack: SPY, QQQ, AAPL, MSFT",
+      busyLabel: "Adding US core…",
       disabled: false,
       disabledReason: null,
       busy: false
@@ -213,10 +219,11 @@ describe("watchlist-screen view model", () => {
       busy: true
     });
 
-    expect(buildStarterPackFeedback("US core", { added: 3, skipped: 1, errors: ["MSFT already exists"] }, 4)).toEqual({
+    expect(buildStarterPackFeedback("US core", { added: 3, skipped: 1, errors: ["MSFT already exists"] }, 4, ["SPY", "QQQ", "AAPL", "MSFT"])).toEqual({
       tone: "warning",
       message: "US core: added 3 of 4 symbols; 1 skipped; MSFT already exists.",
-      providerSetupHandoff: buildProviderSetupHandoff("starter-pack-partial")
+      providerSetupHandoff: buildProviderSetupHandoff("starter-pack-partial"),
+      nextActionHandoff: buildLiveQuoteHandoff(["SPY", "QQQ", "AAPL", "MSFT"], "starter-pack")
     });
   });
 
@@ -227,6 +234,16 @@ describe("watchlist-screen view model", () => {
       ariaLabel: "Open provider setup from watchlist live-quotes",
       detail: "Review provider credentials and connection status in Settings."
     });
+  });
+
+  it("builds a live quote handoff after successful watchlist additions", () => {
+    expect(buildLiveQuoteHandoff(["brk/b"], "single-symbol-add")).toEqual({
+      href: "/data/quotes?symbol=BRK%2FB",
+      label: "Review live quote",
+      ariaLabel: "Open live quotes for BRK/B from watchlist single-symbol-add",
+      detail: "Review the BRK/B live quote, chart, and quick-trade ticket."
+    });
+    expect(buildLiveQuoteHandoff([], "bulk-add")).toBeUndefined();
   });
 
   it("warns when live quote coverage is partial or stale", () => {
@@ -274,7 +291,7 @@ describe("watchlist-screen view model", () => {
     });
 
     expect(buildQuoteRefreshCommand("ready", 2, true)).toEqual({
-      label: "Refreshing prices...",
+      label: "Refreshing prices…",
       ariaLabel: "Refreshing live prices",
       disabled: true,
       disabledReason: "Live price refresh is already running.",
@@ -329,7 +346,7 @@ describe("watchlist-screen view model", () => {
     });
 
     expect(result.current.rows).toEqual([
-      expect.objectContaining({ symbol: "MSFT", hasQuote: false, quoteAgeLabel: "Never" })
+      expect.objectContaining({ symbol: "MSFT", hasQuote: false, quoteAgeLabel: WATCHLIST_NO_QUOTE_LABEL })
     ]);
   });
 

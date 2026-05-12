@@ -2,10 +2,14 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-04-09
+**Last Updated:** 2026-05-12
 **Status:** Active execution roadmap aligned to Wave 5 Backtest Studio unification
 
-> **Retirement note (2026-04-09):** References in this roadmap to `src/Meridian.Ui/dashboard` or "web workstation" slices are historical remnants of the retired browser dashboard. Re-scope those slices to WPF or the retained desktop-local API surface before implementation.
+> **UI lane refresh (2026-05-12):** References in this roadmap to
+> `src/Meridian.Ui/dashboard` and the web workstation are active browser-first
+> implementation targets again. Treat WPF slices as retained desktop support,
+> shared-contract regression coverage, or compatibility work unless a roadmap
+> owner explicitly pulls a WPF-first operator workflow forward.
 
 ## Purpose
 

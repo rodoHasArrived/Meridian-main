@@ -255,6 +255,8 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.positionRows[0].symbol).toBe("AAPL");
     expect(vm.positionRows[0].pnlTone).toBe("success");
     expect(vm.positionRows[0].isSelected).toBe(true);
+    expect(vm.positionRows[0].expanded).toBe(true);
+    expect(vm.positionRows[0].detailPanelId).toBe(vm.positionDetailId);
     expect(vm.selectedPosition?.title).toBe("AAPL");
   });
 
@@ -267,6 +269,8 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.runRows[0].modeBadgeVariant).toBe("paper");
     expect(vm.runRows[0].pnlTone).toBe("success");
     expect(vm.runRows[0].isSelected).toBe(true);
+    expect(vm.runRows[0].expanded).toBe(true);
+    expect(vm.runRows[0].detailPanelId).toBe(vm.runDetailId);
     expect(vm.runRows[0].selectAriaLabel).toBe("Inspect Mean Reversion run evidence");
     expect(vm.selectedRun?.title).toBe("Mean Reversion");
     expect(vm.selectedRun?.statusDetail).toContain("Running paper run with +4.2% P&L");
@@ -407,6 +411,24 @@ describe("buildPortfolioScreenViewModel", () => {
       statusTone: "success",
       selectedSummary: expect.stringContaining("Alpaca / paper account PA-DEMO")
     });
+    expect(vm.workflowTaskPanel?.actions).toEqual([
+      {
+        id: "trading-readiness",
+        label: "Inspect readiness",
+        href: "/trading/readiness",
+        ariaLabel: "Open Trading readiness from brokerage sync review",
+        detail: "Check paper-session, replay, execution-control, and readiness evidence.",
+        variant: "default"
+      },
+      {
+        id: "trading-cockpit",
+        label: "Open Trading cockpit",
+        href: "/trading",
+        ariaLabel: "Open Trading cockpit from brokerage sync review",
+        detail: "Review active positions, orders, and paper execution controls.",
+        variant: "outline"
+      }
+    ]);
     expect(vm.workflowTaskPanel?.statusRows.find((row) => row.label === "Order ingress")).toMatchObject({
       value: "healthy",
       tone: "success"
@@ -456,6 +478,14 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.workflowTaskPanel?.statusLabel).toBe("Portfolio unavailable");
     expect(vm.workflowTaskPanel?.statusTone).toBe("danger");
     expect(vm.workflowTaskPanel?.selectedSummary).toContain("Portfolio workspace data is unavailable");
+    expect(vm.workflowTaskPanel?.actions[0]).toEqual({
+      id: "provider-setup",
+      label: "Repair provider setup",
+      href: "/settings#alpaca-provider-setup",
+      ariaLabel: "Repair provider setup from brokerage sync review",
+      detail: "Verify credentials and connection posture before accepting brokerage-sync state.",
+      variant: "default"
+    });
   });
 
   it("uses stable placeholder header chips when trading data is unavailable", () => {
@@ -497,6 +527,11 @@ describe("buildPortfolioScreenViewModel", () => {
     });
 
     expect(vm.positionRows.map((row) => row.isSelected)).toEqual([false, true]);
+    expect(vm.positionRows.map((row) => row.expanded)).toEqual([false, true]);
+    expect(vm.positionRows.map((row) => row.detailPanelId)).toEqual([
+      "portfolio-position-detail",
+      "portfolio-position-detail"
+    ]);
     expect(vm.positionRows[1].selectAriaLabel).toBe("Inspect MSFT Short holding");
     expect(vm.selectedPosition?.title).toBe("MSFT");
     expect(vm.selectedPositionChip).toEqual({ label: "Selected detail", value: "MSFT" });
@@ -534,6 +569,11 @@ describe("buildPortfolioScreenViewModel", () => {
     });
 
     expect(vm.runRows.map((row) => row.isSelected)).toEqual([false, true]);
+    expect(vm.runRows.map((row) => row.expanded)).toEqual([false, true]);
+    expect(vm.runRows.map((row) => row.detailPanelId)).toEqual([
+      "portfolio-run-detail",
+      "portfolio-run-detail"
+    ]);
     expect(vm.selectedRun?.title).toBe("Volatility Carry");
     expect(vm.selectedRun?.statusTone).toBe("warning");
     expect(vm.selectedRun?.statusBadgeLabel).toBe("Needs Review");

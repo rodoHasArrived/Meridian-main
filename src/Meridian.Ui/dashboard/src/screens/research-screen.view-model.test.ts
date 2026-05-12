@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   buildComparisonTable,
   buildDiffPanel,
+  buildResearchLoadingState,
   buildPlotToolState,
   buildPlotToolTabs,
   buildPromotionCashForm,
+  buildPromotionHistoryDetail,
   buildPromotionPanelState,
   buildPromotionHistoryTable,
   buildResearchCommandStates,
@@ -137,6 +139,20 @@ const metrics: MetricSnapshot[] = [
 ];
 
 describe("research-screen view model", () => {
+  it("derives the Strategy loading state outside the view", () => {
+    expect(buildResearchLoadingState()).toEqual({
+      role: "status",
+      ariaBusy: true,
+      ariaLive: "polite",
+      titleId: "strategy-loading-title",
+      detailId: "strategy-loading-detail",
+      title: "Loading Strategy",
+      detail: "Waiting for run history, PlotTool state, and promotion evidence.",
+      badgeLabel: "Loading",
+      routeLabel: "Strategy"
+    });
+  });
+
   it("keeps run selection capped to the latest two ids and supports deselection", () => {
     expect(toggleRunSelection([], "run-1")).toEqual(["run-1"]);
     expect(toggleRunSelection(["run-1"], "run-2")).toEqual(["run-1", "run-2"]);
@@ -179,7 +195,57 @@ describe("research-screen view model", () => {
       href: "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1",
       ariaLabel: "Open Mean Reversion FX evidence packet"
     });
-    expect(state.runTable.rows[0].selectAriaLabel).toBe("Select Mean Reversion FX");
+    expect(state.runTable.rows[0].selectAriaLabel).toBe("Remove Mean Reversion FX for compare and diff");
+    expect(state.inspectedRunId).toBe("run-1");
+    expect(state.inspectedRunDetail).toMatchObject({
+      id: "run-1",
+      panelId: "strategy-run-library-selected-run-detail",
+      ariaLabel: "Selected strategy run detail for Mean Reversion FX",
+      title: "Mean Reversion FX"
+    });
+    expect(state.runTable.rows[0]).toMatchObject({
+      selectedForComparison: true,
+      detailExpanded: true,
+      detailPanelId: "strategy-run-library-selected-run-detail",
+      rowSelectAriaLabel: "Inspect Mean Reversion FX run detail"
+    });
+  });
+
+  it("derives default and requested run detail state for the selected-row panel", () => {
+    const defaultState = buildResearchRunLibraryState({
+      runs,
+      selectedIds: [],
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(defaultState.inspectedRunId).toBe("run-1");
+    expect(defaultState.inspectedRunDetail?.title).toBe("Mean Reversion FX");
+    expect(defaultState.runTable.rows[0].detailExpanded).toBe(true);
+    expect(defaultState.runTable.rows[1].detailExpanded).toBe(false);
+
+    const requestedState = buildResearchRunLibraryState({
+      runs,
+      selectedIds: [],
+      inspectedRunId: "run-2",
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(requestedState.inspectedRunId).toBe("run-2");
+    expect(requestedState.inspectedRunDetail?.title).toBe("Index Momentum");
+    expect(requestedState.runTable.rows[1]).toMatchObject({
+      detailExpanded: true,
+      rowAriaLabel: "Index Momentum: Completed, BACKTEST, P&L +1.9%, Sharpe 0.91."
+    });
   });
 
   it("derives busy labels, errors, and result announcements", () => {
@@ -287,9 +353,46 @@ describe("research-screen view model", () => {
     expect(emptyDiff.parameterEmptyText).toBe("No parameter changes returned for this diff.");
 
     const historyTable = buildPromotionHistoryTable(history);
+    expect(historyTable.caption).toBe("Promotion history decisions returned for Strategy runs. Select a row to inspect gate evidence.");
     expect(historyTable.rows[0].routeText).toBe("backtest to paper");
     expect(historyTable.rows[0].qualifyingSharpeText).toBe("1.820");
+    expect(historyTable.rows[0]).toMatchObject({
+      detailPanelId: "strategy-promotion-history-selected-detail",
+      detailExpanded: true,
+      rowSelectAriaLabel: "Inspect Carry Pair FX promotion decision",
+      decisionText: "Approved for paper",
+      qualifyingMaxDrawdownText: "-3.2%",
+      qualifyingTotalReturnText: "6.5%"
+    });
+    expect(historyTable.rows[0].ariaLabel).toContain("Carry Pair FX: backtest to paper; decision Approved for paper");
     expect(buildPromotionHistoryTable([]).emptyText).toBe("No promotion history records returned.");
+
+    const selectedSecond = buildPromotionHistoryTable([
+      history[0],
+      { ...history[0], promotionId: "promo-2", strategyName: "Index Momentum", targetRunType: "live" }
+    ], "promo-2");
+    expect(selectedSecond.rows[0].detailExpanded).toBe(false);
+    expect(selectedSecond.rows[1].detailExpanded).toBe(true);
+
+    const detail = buildPromotionHistoryDetail({
+      ...history[0],
+      sourceRunId: "run-backtest-1",
+      targetRunId: "run-paper-1",
+      approvedBy: "risk-ops",
+      auditReference: "audit-42",
+      approvalReason: "Gate metrics passed."
+    });
+    expect(detail).toMatchObject({
+      id: "promo-1",
+      panelId: "strategy-promotion-history-selected-detail",
+      ariaLabel: "Selected promotion decision detail for Carry Pair FX",
+      title: "Carry Pair FX",
+      statusLabel: "PAPER",
+      statusVariant: "paper"
+    });
+    expect(detail.description).toBe("Approved for paper promotion decision with Gate metrics passed.");
+    expect(detail.fields).toContainEqual({ label: "Source run", value: "run-backtest-1" });
+    expect(detail.fields).toContainEqual({ label: "Target run", value: "run-paper-1" });
   });
 
   it("tracks empty command result panels after successful commands return no rows", () => {
@@ -311,7 +414,40 @@ describe("research-screen view model", () => {
     expect(compared.comparisonTable.hasRows).toBe(false);
     expect(compared.showPromotionHistoryPanel).toBe(true);
     expect(compared.promotionHistoryTable.emptyText).toBe("No promotion history records returned.");
+    expect(compared.selectedPromotionHistoryId).toBe(null);
+    expect(compared.selectedPromotionHistoryDetail).toBe(null);
     expect(compared.statusAnnouncement).toBe("No comparison rows returned for the selected pair.");
+  });
+
+  it("derives selected promotion-history detail state outside the view", () => {
+    const state = buildResearchRunLibraryState({
+      runs,
+      selectedIds: [],
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [
+        history[0],
+        { ...history[0], promotionId: "promo-2", strategyName: "Index Momentum", targetRunType: "live" }
+      ],
+      selectedPromotionHistoryId: "promo-2",
+      promotionHistoryLoaded: true,
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(state.selectedPromotionHistoryId).toBe("promo-2");
+    expect(state.selectedPromotionHistoryDetailPanelId).toBe("strategy-promotion-history-selected-detail");
+    expect(state.selectedPromotionHistoryDetail).toMatchObject({
+      id: "promo-2",
+      ariaLabel: "Selected promotion decision detail for Index Momentum",
+      statusLabel: "LIVE",
+      statusVariant: "live"
+    });
+    expect(state.promotionHistoryTable.rows[1]).toMatchObject({
+      detailExpanded: true,
+      rowSelectAriaLabel: "Inspect Index Momentum promotion decision"
+    });
   });
 
   it("derives modal detail copy with unavailable fallback", () => {

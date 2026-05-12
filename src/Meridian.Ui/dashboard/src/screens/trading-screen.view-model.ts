@@ -703,6 +703,7 @@ function buildTradingReadinessSummaryRows(readiness: TradingOperatorReadiness): 
   const brokerageValue = readiness.brokerageSync
     ? formatBrokerageSyncValue(readiness.brokerageSync)
     : "No account sync";
+  const asOfLabel = formatUtcDateTime(readiness.asOf);
 
   return [
     {
@@ -729,9 +730,9 @@ function buildTradingReadinessSummaryRows(readiness: TradingOperatorReadiness): 
     {
       id: "as-of",
       label: "As of",
-      value: readiness.asOf,
+      value: asOfLabel,
       level: "review",
-      ariaLabel: `Readiness snapshot timestamp: ${readiness.asOf}`
+      ariaLabel: `Readiness snapshot timestamp: ${asOfLabel}`
     }
   ];
 }
@@ -755,7 +756,7 @@ function buildTradingReadinessAnnouncement({
   }
 
   if (readiness) {
-    return `Trading readiness ${formatReadinessStatusValue(readiness.overallStatus).toLowerCase()} as of ${readiness.asOf}.`;
+    return `Trading readiness ${formatReadinessStatusValue(readiness.overallStatus).toLowerCase()} as of ${formatUtcDateTime(readiness.asOf)}.`;
   }
 
   return "";
@@ -3573,6 +3574,21 @@ function formatQuantity(value: number): string {
     return "0";
   }
   return Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 4 });
+}
+
+function formatUtcDateTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+}
+
+const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function padUtc(value: number): string {
+  return value.toString().padStart(2, "0");
 }
 
 export type PromotionGateField =

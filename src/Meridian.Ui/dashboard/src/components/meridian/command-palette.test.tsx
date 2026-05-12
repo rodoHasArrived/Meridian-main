@@ -15,6 +15,8 @@ describe("CommandPalette", () => {
     expect(screen.getByText("Esc to close")).toBeInTheDocument();
     expect(screen.getByRole("searchbox", { name: "Search command palette" })).toHaveFocus();
     expect(screen.getByText("18 commands available")).toBeInTheDocument();
+    expect(screen.getByLabelText("Workspaces: 7 workspaces")).toBeInTheDocument();
+    expect(screen.getByLabelText("Quick routes: 11 quick routes")).toBeInTheDocument();
     expect(screen.getByLabelText("Route /portfolio")).toBeInTheDocument();
     expect(screen.getByLabelText("Portfolio, current workspace")).toHaveAttribute("aria-current", "page");
   });
@@ -33,10 +35,10 @@ describe("CommandPalette", () => {
   it("keeps Tab focus inside the modal command surface", () => {
     const onOpenChange = vi.fn();
 
-    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/settings"] });
+    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/settings#alpaca-provider-setup"] });
 
     const closeButton = screen.getByRole("button", { name: "Close command palette" });
-    const lastCommand = screen.getByLabelText("Open Provider integrations route");
+    const lastCommand = screen.getByLabelText("Alpaca provider setup, current route");
 
     lastCommand.focus();
     fireEvent.keyDown(window, { key: "Tab" });
@@ -45,6 +47,19 @@ describe("CommandPalette", () => {
     fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
     expect(lastCommand).toHaveFocus();
     expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it("does not mark the Alpaca setup command current from another Settings anchor", () => {
+    renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, {
+      initialEntries: ["/settings#backend-capability-coverage"]
+    });
+
+    expect(screen.getByLabelText("Settings, current workspace")).toHaveAttribute("aria-current", "page");
+    expect(screen.getByLabelText("Open Alpaca provider setup route")).toHaveAttribute(
+      "href",
+      "/settings#alpaca-provider-setup"
+    );
+    expect(screen.queryByLabelText("Alpaca provider setup, current route")).not.toBeInTheDocument();
   });
 
   it("closes when a workspace command is selected", async () => {
@@ -66,8 +81,13 @@ describe("CommandPalette", () => {
     await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "settings");
 
     expect(screen.getByText("2 of 18 commands match")).toBeInTheDocument();
+    expect(screen.getByLabelText("Workspaces: 1 workspace")).toBeInTheDocument();
+    expect(screen.getByLabelText("Quick routes: 1 quick route")).toBeInTheDocument();
     expect(screen.getByLabelText("Open Settings workspace")).toBeInTheDocument();
-    expect(screen.getByLabelText("Open Provider integrations route")).toBeInTheDocument();
+    expect(screen.getByLabelText("Open Alpaca provider setup route")).toHaveAttribute(
+      "href",
+      "/settings#alpaca-provider-setup"
+    );
     expect(screen.queryByLabelText("Trading, current workspace")).not.toBeInTheDocument();
   });
 

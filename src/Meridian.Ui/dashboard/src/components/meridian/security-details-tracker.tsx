@@ -3,8 +3,15 @@ import { Briefcase, ClipboardList, Pencil, Plus, Save, Trash2, X } from "lucide-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getOperatorOverrides as defaultGetOperatorOverrides, patchOperatorOverrides as defaultPatchOperatorOverrides } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import {
+  buildLotsTrackerViewModel,
+  parseLotNumber,
+  type LotsTrackerRowViewModel,
+  type SecurityLot
+} from "./security-details-tracker.view-model";
 import type {
   OperatorOverridesDto,
   OperatorOverridesPatchRequest,
@@ -604,15 +611,6 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
   );
 }
 
-export interface SecurityLot {
-  lotId: string;
-  tradeDate: string;
-  quantity: number;
-  price: number;
-  fees: number;
-  note: string;
-}
-
 function loadLots(securityId: string): SecurityLot[] {
   const ls = safeLocalStorage();
   if (!ls) return [];
@@ -650,22 +648,6 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function parseNumber(value: string): number {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function formatNumber(value: number, fractionDigits = 4): string {
-  if (!Number.isFinite(value)) return "—";
-  return value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: fractionDigits });
-}
-
-function formatCurrency(value: number, currency: string | null): string {
-  if (!Number.isFinite(value)) return "—";
-  const text = value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return currency ? `${text} ${currency}` : text;
-}
-
 export interface LotsTrackerPanelProps {
   securityId: string | null;
   currency: string | null;
@@ -683,6 +665,7 @@ function readMarketPriceOverride(securityId: string | null): number | null {
 export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps) {
   const [lots, setLots] = useState<SecurityLot[]>([]);
   const [marketPriceOverride, setMarketPriceOverride] = useState<number | null>(null);
+  const [selectedLotId, setSelectedLotId] = useState<string | null>(null);
   const [draftDate, setDraftDate] = useState(todayIso());
   const [draftQty, setDraftQty] = useState("");
   const [draftPrice, setDraftPrice] = useState("");
@@ -693,9 +676,12 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
     if (!securityId) {
       setLots([]);
       setMarketPriceOverride(null);
+      setSelectedLotId(null);
       return;
     }
-    setLots(loadLots(securityId));
+    const loadedLots = loadLots(securityId);
+    setLots(loadedLots);
+    setSelectedLotId(loadedLots[0]?.lotId ?? null);
     setMarketPriceOverride(readMarketPriceOverride(securityId));
   }, [securityId]);
 
@@ -711,69 +697,123 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
     return () => window.removeEventListener(OVERRIDES_CHANGED_EVENT, handler);
   }, [securityId]);
 
-  const totals = useMemo(() => {
-    let qty = 0;
-    let cost = 0;
-    let fees = 0;
-    for (const lot of lots) {
-      qty += lot.quantity;
-      cost += lot.quantity * lot.price;
-      fees += lot.fees;
-    }
-    const totalCostWithFees = cost + fees;
-    const avgCost = qty !== 0 ? totalCostWithFees / qty : 0;
-    const marketValue = marketPriceOverride != null && Number.isFinite(marketPriceOverride) ? marketPriceOverride * qty : null;
-    const unrealisedPnl = marketValue != null ? marketValue - totalCostWithFees : null;
-    return { qty, cost, fees, totalCostWithFees, avgCost, marketValue, unrealisedPnl };
-  }, [lots, marketPriceOverride]);
+  const vm = useMemo(() => {
+    if (!securityId) return null;
+    return buildLotsTrackerViewModel({
+      securityId,
+      currency,
+      lots,
+      marketPriceOverride,
+      draft: {
+        tradeDate: draftDate,
+        quantity: draftQty,
+        price: draftPrice,
+        fees: draftFees,
+        note: draftNote
+      },
+      selectedLotId
+    });
+  }, [currency, draftDate, draftFees, draftNote, draftPrice, draftQty, lots, marketPriceOverride, securityId, selectedLotId]);
 
   const addLot = useCallback(() => {
-    if (!securityId) return;
-    const quantity = parseNumber(draftQty);
-    const price = parseNumber(draftPrice);
-    if (quantity === 0 || !draftDate) return;
+    if (!securityId || !vm || vm.addCommand.disabled) return;
+    const quantity = parseLotNumber(draftQty);
+    const price = parseLotNumber(draftPrice);
     const lot: SecurityLot = {
       lotId: newLotId(),
       tradeDate: draftDate,
       quantity,
       price,
-      fees: parseNumber(draftFees),
+      fees: parseLotNumber(draftFees),
       note: draftNote.trim()
     };
     const next = [...lots, lot].sort((a, b) => a.tradeDate.localeCompare(b.tradeDate));
     setLots(next);
+    setSelectedLotId(lot.lotId);
     saveLots(securityId, next);
     setDraftQty("");
     setDraftPrice("");
     setDraftFees("");
     setDraftNote("");
     setDraftDate(todayIso());
-  }, [draftDate, draftFees, draftNote, draftPrice, draftQty, lots, securityId]);
+  }, [draftDate, draftFees, draftNote, draftPrice, draftQty, lots, securityId, vm]);
 
   const removeLot = useCallback((lotId: string) => {
     if (!securityId) return;
     const next = lots.filter((l) => l.lotId !== lotId);
     setLots(next);
+    setSelectedLotId((current) => current === lotId ? next[0]?.lotId ?? null : current);
     saveLots(securityId, next);
   }, [lots, securityId]);
 
-  if (!securityId) {
+  if (!securityId || !vm) {
     return null;
   }
 
   const inputClass = "w-full rounded-md border border-border bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
   const labelClass = "text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground";
+  const lotColumns: DenseDataTableColumn<LotsTrackerRowViewModel>[] = [
+    {
+      id: "trade-date",
+      label: "Trade date",
+      render: (row) => <span className="font-mono text-muted-foreground">{row.tradeDateLabel}</span>
+    },
+    {
+      id: "quantity",
+      label: "Quantity",
+      align: "right",
+      render: (row) => <span className="font-mono tabular-nums text-foreground">{row.quantityLabel}</span>
+    },
+    {
+      id: "price",
+      label: "Price",
+      align: "right",
+      render: (row) => <span className="font-mono tabular-nums text-foreground">{row.priceLabel}</span>
+    },
+    {
+      id: "fees",
+      label: "Fees",
+      align: "right",
+      render: (row) => <span className="font-mono tabular-nums text-muted-foreground">{row.feesLabel}</span>
+    },
+    {
+      id: "cost",
+      label: "Cost",
+      align: "right",
+      render: (row) => <span className="font-mono tabular-nums text-foreground">{row.costLabel}</span>
+    },
+    {
+      id: "note",
+      label: "Note",
+      render: (row) => <span className="text-muted-foreground">{row.noteLabel}</span>
+    },
+    {
+      id: "actions",
+      label: "",
+      align: "right",
+      render: (row) => (
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          aria-label={row.removeAriaLabel}
+          onClick={() => removeLot(row.lotId)}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+      )
+    }
+  ];
 
   return (
     <Card className="panel-surface">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Briefcase className="h-4 w-4 text-primary" />
-          Lots tracker
+          {vm.title}
         </CardTitle>
         <CardDescription>
-          Record purchase lots for <span className="font-mono">{securityId}</span> to track quantity, cost basis, and
-          unrealised P/L. Lots are stored locally per security.
+          {vm.description}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -841,65 +881,55 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
             type="button"
             size="sm"
             onClick={addLot}
-            disabled={!draftDate || draftQty.trim() === "" || draftPrice.trim() === ""}
-            aria-label="Add lot"
+            disabled={vm.addCommand.disabled}
+            disabledReason={vm.addCommand.disabledReason}
+            aria-label={vm.addCommand.ariaLabel}
           >
             <Plus className="mr-1 h-3.5 w-3.5" />
-            Add lot
+            {vm.addCommand.label}
           </Button>
         </div>
 
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          <LotsMetric label="Total quantity" value={formatNumber(totals.qty)} />
-          <LotsMetric label="Average cost" value={formatCurrency(totals.avgCost, currency)} />
-          <LotsMetric label="Total cost (incl. fees)" value={formatCurrency(totals.totalCostWithFees, currency)} />
-          <LotsMetric
-            label="Unrealised P/L"
-            value={totals.unrealisedPnl == null ? "—" : formatCurrency(totals.unrealisedPnl, currency)}
-            tone={totals.unrealisedPnl == null ? undefined : totals.unrealisedPnl >= 0 ? "success" : "danger"}
-          />
+          {vm.metrics.map((metric) => (
+            <LotsMetric key={metric.id} label={metric.label} value={metric.value} tone={metric.tone} />
+          ))}
         </div>
 
-        {lots.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No lots recorded yet. Add a lot above to start tracking cost basis.</p>
+        {vm.rows.length === 0 ? (
+          <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
+            {vm.emptyText}
+          </p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-border/60">
-            <table aria-label={`Lots for ${securityId}`} className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
-              <thead className="bg-secondary/30">
-                <tr>
-                  {["Trade date", "Quantity", "Price", "Fees", "Cost", "Note", ""].map((col) => (
-                    <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.12em] text-muted-foreground">{col}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {lots.map((lot) => {
-                  const cost = lot.quantity * lot.price + lot.fees;
-                  return (
-                    <tr key={lot.lotId} className="hover:bg-secondary/20">
-                      <td className="px-3 py-2 font-mono text-muted-foreground">{lot.tradeDate}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{formatNumber(lot.quantity)}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{formatCurrency(lot.price, currency)}</td>
-                      <td className="px-3 py-2 font-mono text-muted-foreground">{formatCurrency(lot.fees, currency)}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{formatCurrency(cost, currency)}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{lot.note || "—"}</td>
-                      <td className="px-3 py-2 text-right">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          aria-label={`Remove lot from ${lot.tradeDate}`}
-                          onClick={() => removeLot(lot.lotId)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <DenseDataTable
+              columns={lotColumns}
+              rows={vm.rows}
+              getRowId={(row) => row.lotId}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+              getRowAriaControls={(row) => row.detailPanelId}
+              getRowAriaExpanded={(row) => row.expanded}
+              selectedRowId={vm.selectedLotId}
+              onRowSelect={(row) => setSelectedLotId(row.lotId)}
+              emptyText={vm.emptyText}
+              ariaLabel={vm.tableLabel}
+              caption={vm.tableCaption}
+            />
+            {vm.selectedDetail ? (
+              <div id={vm.selectedDetail.panelId}>
+                <EntitySummary
+                  eyebrow={vm.selectedDetail.eyebrow}
+                  title={vm.selectedDetail.title}
+                  subtitle={vm.selectedDetail.subtitle}
+                  description={vm.selectedDetail.description}
+                  status={<Badge variant={vm.selectedDetail.statusBadgeVariant} dot>{vm.selectedDetail.statusLabel}</Badge>}
+                  fields={vm.selectedDetail.fields}
+                  ariaLabel={vm.selectedDetail.ariaLabel}
+                />
+              </div>
+            ) : null}
+          </>
         )}
       </CardContent>
     </Card>

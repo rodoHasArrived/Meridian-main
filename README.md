@@ -98,12 +98,26 @@ APIs for subjects, packet/graph inspection, validation, and manifest export. Tre
 browser-visible support for run, readiness, reconciliation, report-pack, provider-trust, and export
 evidence, not as completion of the full Evidence Vault or report-line provenance roadmap.
 
-Current browser workstation support also includes Overview portfolio-at-a-glance, richer
-sidebar/menu/command grouping, browser Security Master details/lots and operator overrides, and
-expanded UFL/reference-data endpoints for bonds, options, equities, futures, FX spot, swaps,
-commodities, crypto, deposits, money-market funds, and certificates of deposit. Treat these as
-support evidence for Waves 3-4, not completion of reconciliation, report-pack, or live-readiness
-gates.
+Current browser workstation support also includes Overview portfolio-at-a-glance plus view-model
+owned status-banner and refresh-command presentation, Portfolio position and run-evidence tables
+that use shared dense row-selection/detail-panel semantics plus brokerage-sync next actions into
+provider repair, Trading readiness, and cockpit review, Live Quotes recent-trade rows with a
+selectable dense-table detail inspector, quick-trade accepted/rejected ticket states that hand off
+to Trading readiness, browser Watchlist empty/no-quote/busy labels owned by the view model, richer
+sidebar/menu/command grouping with grouped command-palette sections, app-shell query-string
+route focus for subject/symbol handoffs such as `/data/quotes?symbol=AAPL`, and hash-aware
+`/settings#alpaca-provider-setup` routing, browser Security Master details/lots/operator overrides
+with selectable lot-detail state plus a conflict refresh/retry command, provider-setup success
+handoffs into live quotes, backfill preview, Trading readiness, or Security Master coverage based on
+configured capabilities, Quant Lab plot rendering through a reusable view-model module, browser
+Accounting reconciliation detail-queue selection with accessible empty/detail states, Reporting
+report-pack profile actions for preview and export analysis plus endpoint links that separate
+concrete GET navigation from reference-only POST mutations, and expanded UFL/reference-data
+endpoints for bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits,
+money-market funds, and certificates of deposit. Shared
+UI-service JSON persistence now routes config, export preset, and quality archive writes through
+`AtomicFileWriter`. Treat these as support evidence for Waves 3-4, not completion of durable
+reconciliation casework, report-pack, or live-readiness gates.
 
 ### MCP server (minimal) — `src/Meridian.Mcp`
 
@@ -126,6 +140,8 @@ Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `con
 ### Retained Windows WPF desktop app — `src/Meridian.Wpf`
 
 The retained Windows workstation shell. Use it for compatibility support, regression fixes, and shared-contract validation. Requires Windows and the full WPF build flag. On non-Windows the project builds as a stub for CI compatibility.
+
+The retained shell is also moving compatibility work toward feature-owned modules: the Data shell now lives under `src/Meridian.Wpf/Features/Data/` with a feature registration module, snapshot service, presentation adapter, view model, and thin WPF page.
 
 ```bash
 pwsh ./scripts/dev/run-desktop.ps1
@@ -6861,6 +6877,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── metric-card.view-model.test.ts
 │   │   │   │   │   │   ├── metric-card.view-model.ts
 │   │   │   │   │   │   ├── quant-plot.test.tsx
+│   │   │   │   │   │   ├── quant-plot.view-model.ts
 │   │   │   │   │   │   ├── quant-plot.tsx
 │   │   │   │   │   │   ├── security-details-tracker.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
@@ -7342,6 +7359,17 @@ Use these documents together when planning or implementing new work:
 │       ├── MainWindow.xaml
 │       ├── MainWindow.xaml.cs
 │       ├── Meridian.Wpf.csproj
+│       ├── Features
+│       │   ├── Data
+│       │   │   ├── DataFeatureModule.cs
+│       │   │   └── Shell
+│       │   │       ├── DataWorkspaceShellPage.xaml
+│       │   │       ├── DataWorkspaceShellPage.xaml.cs
+│       │   │       ├── DataWorkspaceShellPresentationService.cs
+│       │   │       ├── DataWorkspaceShellSnapshotService.cs
+│       │   │       └── DataWorkspaceShellViewModel.cs
+│       │   ├── DesktopFeatureModuleRegistry.cs
+│       │   └── IDesktopFeatureModule.cs
 │       ├── Models
 │       │   ├── ActionEntry.cs
 │       │   ├── ActivityLogModels.cs
@@ -7642,8 +7670,6 @@ Use these documents together when planning or implementing new work:
 │           ├── DataCalendarPage.xaml.cs
 │           ├── DataExportPage.xaml
 │           ├── DataExportPage.xaml.cs
-│           ├── DataOperationsWorkspaceShellPage.xaml
-│           ├── DataOperationsWorkspaceShellPage.xaml.cs
 │           ├── DataQualityPage.xaml
 │           ├── DataQualityPage.xaml.cs
 │           ├── DataSamplingPage.xaml
@@ -8379,6 +8405,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── AnalysisExportServiceBaseTests.cs
 │   │       ├── AnalysisExportWizardServiceTests.cs
 │   │       ├── ApiClientServiceTests.cs
+│   │       ├── AtomicPersistenceServiceTests.cs
 │   │       ├── ArchiveBrowserServiceTests.cs
 │   │       ├── BackendServiceManagerBaseTests.cs
 │   │       ├── BackfillApiServiceTests.cs

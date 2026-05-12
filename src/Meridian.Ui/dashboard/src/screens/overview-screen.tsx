@@ -29,6 +29,7 @@ import {
   type OverviewBriefingBadgeVariant,
   type OverviewBriefingTone,
   type OverviewPortfolioPanel,
+  type OverviewStatusBannerIcon,
   type OverviewValueBlocker,
   type PortfolioPanelTone
 } from "@/screens/overview-screen.view-model";
@@ -47,29 +48,12 @@ interface OverviewScreenProps {
   portfolio?: PortfolioWorkspaceResponse | null;
 }
 
-const systemStatusConfig = {
-  Healthy: {
-    icon: CheckCircle2,
-    className: "text-success",
-    bannerClass: "border-success/30 bg-success/5"
-  },
-  Degraded: {
-    icon: AlertCircle,
-    className: "text-warning",
-    bannerClass: "border-warning/30 bg-warning/5"
-  },
-  Offline: {
-    icon: XCircle,
-    className: "text-danger",
-    bannerClass: "border-danger/30 bg-danger/5"
-  }
-} as const;
-
-const storageHealthConfig = {
-  Healthy: { className: "text-success" },
-  Warning: { className: "text-warning" },
-  Critical: { className: "text-danger" }
-} as const;
+const statusBannerIconConfig: Record<OverviewStatusBannerIcon, ElementType> = {
+  healthy: CheckCircle2,
+  warning: AlertCircle,
+  offline: XCircle,
+  pending: Radio
+};
 
 const activityToneConfig = {
   default: {
@@ -119,9 +103,7 @@ const workspaceIconConfig: Record<WorkspaceKey, { icon: ElementType; accent: str
 
 export function OverviewScreen({ data, session, trading = null, portfolio = null }: OverviewScreenProps) {
   const vm = useOverviewStatusViewModel(data, session);
-  const current = vm.current;
-  const statusConfig = current ? systemStatusConfig[current.systemStatus] : null;
-  const StatusIcon = statusConfig?.icon ?? Radio;
+  const StatusIcon = statusBannerIconConfig[vm.statusBanner.icon];
   const portfolioPanel = buildOverviewPortfolioPanel(trading, portfolio);
 
   return (
@@ -132,28 +114,24 @@ export function OverviewScreen({ data, session, trading = null, portfolio = null
         aria-live={vm.statusBanner.ariaLive}
         aria-labelledby={vm.statusBanner.titleId}
         aria-describedby={vm.statusBanner.detailId ?? undefined}
-        className={cn(
-          "flex items-center gap-3 rounded-lg border px-4 py-3",
-          statusConfig?.bannerClass ?? "border-border bg-muted/30"
-        )}
+        className={cn("flex items-center gap-3 rounded-lg border px-4 py-3", vm.statusBanner.containerClassName)}
       >
-        <StatusIcon aria-hidden="true" className={cn("size-5 shrink-0", statusConfig?.className)} />
+        <StatusIcon aria-hidden="true" className={cn("size-5 shrink-0", vm.statusBanner.iconClassName)} />
         <div className="flex-1">
-          <p id={vm.statusBanner.titleId} className={cn("text-sm font-medium", statusConfig?.className)}>
+          <p id={vm.statusBanner.titleId} className={cn("text-sm font-medium", vm.statusBanner.titleClassName)}>
             {vm.statusLabel}
           </p>
-          {current && vm.providerSummary && vm.storageLabel && vm.lastHeartbeatLabel && (
+          {vm.statusBanner.detailParts ? (
             <p id={vm.statusBanner.detailId ?? undefined} className="text-xs text-muted-foreground mt-0.5">
-              {vm.providerSummary}
+              {vm.statusBanner.detailParts.providerSummary}
               {" · "}
-              Storage: <span className={storageHealthConfig[current.storageHealth].className}>
-                {vm.storageLabel}
+              Storage: <span className={vm.statusBanner.detailParts.storageClassName}>
+                {vm.statusBanner.detailParts.storageLabel}
               </span>
               {" · "}
-              Last heartbeat: {vm.lastHeartbeatLabel}
+              Last heartbeat: {vm.statusBanner.detailParts.lastHeartbeatLabel}
             </p>
-          )}
-          {!current && vm.statusBanner.detailText ? (
+          ) : vm.statusBanner.detailText ? (
             <p id={vm.statusBanner.detailId ?? undefined} className="text-xs text-muted-foreground mt-0.5">
               {vm.statusBanner.detailText}
             </p>
@@ -163,12 +141,15 @@ export function OverviewScreen({ data, session, trading = null, portfolio = null
           variant="ghost"
           size="sm"
           onClick={() => { void vm.refresh(); }}
-          disabled={vm.refreshing}
-          aria-label={vm.refreshAriaLabel}
+          busy={vm.refreshCommand.busy}
+          busyLabel={vm.refreshCommand.busyLabel}
+          disabled={vm.refreshCommand.disabled}
+          disabledReason={vm.refreshCommand.disabledReason}
+          aria-label={vm.refreshCommand.ariaLabel}
           className="shrink-0"
         >
-          <RefreshCcw className={cn("size-4 mr-1.5", vm.refreshing && "animate-spin")} />
-          {vm.refreshButtonLabel}
+          <RefreshCcw className="size-4 mr-1.5" aria-hidden="true" />
+          {vm.refreshCommand.label}
         </Button>
       </div>
       <span className="sr-only" aria-live="polite">{vm.refreshAnnouncement}</span>

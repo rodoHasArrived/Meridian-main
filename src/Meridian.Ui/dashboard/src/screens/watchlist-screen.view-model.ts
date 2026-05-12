@@ -10,6 +10,8 @@ export type WatchlistDetailFieldTone = "default" | "success" | "warning" | "dang
 
 const QUOTE_POLL_INTERVAL_MS = 2000;
 const QUOTE_STALE_THRESHOLD_MS = 15_000;
+export const WATCHLIST_EMPTY_VALUE = "—";
+export const WATCHLIST_NO_QUOTE_LABEL = "No quote";
 
 export interface WatchlistApi {
   getSymbols: (options?: ApiRequestOptions) => Promise<SymbolRecord[]>;
@@ -24,14 +26,17 @@ export interface WatchlistSubmitFeedback {
   tone: "success" | "warning" | "danger";
   message: string;
   providerSetupHandoff?: WatchlistProviderSetupHandoff;
+  nextActionHandoff?: WatchlistRouteHandoff;
 }
 
-export interface WatchlistProviderSetupHandoff {
+export interface WatchlistRouteHandoff {
   href: string;
   label: string;
   ariaLabel: string;
   detail: string;
 }
+
+export type WatchlistProviderSetupHandoff = WatchlistRouteHandoff;
 
 export interface WatchlistRowViewModel {
   symbol: string;
@@ -80,6 +85,7 @@ export interface WatchlistStarterPackCommandState {
   symbols: string[];
   symbolsLabel: string;
   ariaLabel: string;
+  busyLabel: string;
   disabled: boolean;
   disabledReason: string | null;
   busy: boolean;
@@ -263,7 +269,11 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
           return;
         }
 
-        setSubmitFeedback({ tone: "success", message: `Added ${next} to the watchlist.` });
+        setSubmitFeedback({
+          tone: "success",
+          message: `Added ${next} to the watchlist.`,
+          nextActionHandoff: buildLiveQuoteHandoff([next], "single-symbol-add")
+        });
         setPendingSymbol("");
         await refresh();
       } else {
@@ -272,7 +282,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
           return;
         }
 
-        setSubmitFeedback(buildBulkAddFeedback(result, nextSymbols.length));
+        setSubmitFeedback(buildBulkAddFeedback(result, nextSymbols.length, nextSymbols));
         if (result.added > 0 || result.errors.length === 0) {
           setPendingSymbol("");
         }
@@ -314,7 +324,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         return;
       }
 
-      setSubmitFeedback(buildStarterPackFeedback(pack.label, result, pack.symbols.length));
+      setSubmitFeedback(buildStarterPackFeedback(pack.label, result, pack.symbols.length, pack.symbols));
       if (result.added > 0 || result.errors.length === 0) {
         setPendingSymbol("");
       }
@@ -510,7 +520,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     inputPlaceholder: "Add symbols (e.g. MSFT, SPY)",
     inputHelpId: submitFeedback ? "add-symbol-feedback add-symbol-help" : "add-symbol-help",
     inputHelpText: "Paste one or more symbols separated by spaces or commas. Meridian normalizes them to uppercase.",
-    addButtonLabel: submitting ? "Adding..." : pendingSymbols.length > 1 ? `Add ${pendingSymbols.length}` : "Add",
+    addButtonLabel: submitting ? "Adding…" : pendingSymbols.length > 1 ? `Add ${pendingSymbols.length}` : "Add",
     addButtonAriaLabel: addValidation
       ? `Add symbol unavailable: ${addValidation}`
       : pendingSymbols.length > 1
@@ -518,7 +528,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         : `Add ${pendingSymbols[0]} to watchlist`,
     addDisabled: submitting || addValidation !== null,
     addDisabledReason: submitting ? "Symbol add request is already running." : addValidation,
-    refreshButtonLabel: refreshing ? "Refreshing..." : "Refresh",
+    refreshButtonLabel: refreshing ? "Refreshing…" : "Refresh",
     refreshButtonAriaLabel: refreshing ? "Refreshing watchlist" : "Refresh watchlist",
     refreshDisabled: refreshing,
     toolbarItems: buildToolbarItems(stats, rows.length, listState),
@@ -567,9 +577,9 @@ export function buildWatchlistRows(
       const quoteStale = quoteAgeMs !== null && quoteAgeMs > QUOTE_STALE_THRESHOLD_MS;
       const lastTone = resolveLastTone(quote, priorMid);
       const session = quote?.session ?? null;
-      const changeLabel = session ? formatChange(session.change) : "-";
-      const changePercentLabel = session ? formatChangePercent(session.changePercent) : "-";
-      const dayRangeLabel = session ? formatDayRange(session.high, session.low) : "-";
+      const changeLabel = session ? formatChange(session.change) : WATCHLIST_EMPTY_VALUE;
+      const changePercentLabel = session ? formatChangePercent(session.changePercent) : WATCHLIST_EMPTY_VALUE;
+      const dayRangeLabel = session ? formatDayRange(session.high, session.low) : WATCHLIST_EMPTY_VALUE;
       const changeTone = resolveChangeTone(session?.change);
 
       return {
@@ -581,14 +591,14 @@ export function buildWatchlistRows(
         eventCountLabel,
         historyLabel,
         hasHistoricalData: record.hasHistoricalData,
-        bidLabel: quote ? formatPriceSize(quote.bidPrice, quote.bidSize) : "-",
-        askLabel: quote ? formatPriceSize(quote.askPrice, quote.askSize) : "-",
-        lastPriceLabel: quote ? formatPrice(quote.lastPrice) : "-",
+        bidLabel: quote ? formatPriceSize(quote.bidPrice, quote.bidSize) : WATCHLIST_EMPTY_VALUE,
+        askLabel: quote ? formatPriceSize(quote.askPrice, quote.askSize) : WATCHLIST_EMPTY_VALUE,
+        lastPriceLabel: quote ? formatPrice(quote.lastPrice) : WATCHLIST_EMPTY_VALUE,
         changeLabel,
         changePercentLabel,
         dayRangeLabel,
-        spreadLabel: quote ? formatSpread(quote.spread, quote.midPrice) : "-",
-        quoteAgeLabel: quote ? formatRelative(quote.timestamp, now) : "Never",
+        spreadLabel: quote ? formatSpread(quote.spread, quote.midPrice) : WATCHLIST_EMPTY_VALUE,
+        quoteAgeLabel: quote ? formatRelative(quote.timestamp, now) : WATCHLIST_NO_QUOTE_LABEL,
         hasQuote: quote !== undefined,
         quoteStale,
         lastTone,
@@ -598,7 +608,7 @@ export function buildWatchlistRows(
         quoteAriaLabel: `View live quotes for ${record.symbol}`,
         inspectLabel: "Inspect",
         inspectAriaLabel: `Inspect ${record.symbol} watchlist detail`,
-        removeLabel: isRemoving ? "Removing..." : "Remove",
+        removeLabel: isRemoving ? "Removing…" : "Remove",
         removeAriaLabel: isRemoving ? `Removing ${record.symbol} from watchlist` : `Remove ${record.symbol} from watchlist`,
         removeDisabledReason: isRemoving ? `${record.symbol} removal is already running.` : null,
         rowSelectAriaLabel: `Select ${record.symbol} watchlist row. ${record.symbol}. Status ${record.status}.`,
@@ -718,11 +728,13 @@ function buildQuoteSymbolsKey(symbols: readonly string[]): string {
 
 export function buildBulkAddFeedback(
   result: { added: number; skipped: number; errors: string[] },
-  requestedCount: number
+  requestedCount: number,
+  requestedSymbols: readonly string[] = []
 ): WatchlistSubmitFeedback {
   const base = `Added ${formatCount(result.added)} of ${formatCount(requestedCount)} symbol${requestedCount === 1 ? "" : "s"}`;
   const skipped = result.skipped > 0 ? `; ${formatCount(result.skipped)} skipped` : "";
   const errors = result.errors.length > 0 ? `; ${result.errors.join("; ")}` : "";
+  const nextActionHandoff = result.added > 0 ? buildLiveQuoteHandoff(requestedSymbols, "bulk-add") : undefined;
 
   if (result.errors.length > 0 && result.added === 0) {
     return {
@@ -736,21 +748,28 @@ export function buildBulkAddFeedback(
     return {
       tone: "warning",
       message: `${base}${skipped}${errors}.`,
-      providerSetupHandoff: result.errors.length > 0 ? buildProviderSetupHandoff("bulk-add-partial") : undefined
+      ...(result.errors.length > 0 ? { providerSetupHandoff: buildProviderSetupHandoff("bulk-add-partial") } : {}),
+      ...(nextActionHandoff ? { nextActionHandoff } : {})
     };
   }
 
-  return { tone: "success", message: `${base}.` };
+  return {
+    tone: "success",
+    message: `${base}.`,
+    ...(nextActionHandoff ? { nextActionHandoff } : {})
+  };
 }
 
 export function buildStarterPackFeedback(
   label: string,
   result: { added: number; skipped: number; errors: string[] },
-  requestedCount: number
+  requestedCount: number,
+  requestedSymbols: readonly string[] = []
 ): WatchlistSubmitFeedback {
   const base = `${label}: added ${formatCount(result.added)} of ${formatCount(requestedCount)} symbols`;
   const skipped = result.skipped > 0 ? `; ${formatCount(result.skipped)} skipped` : "";
   const errors = result.errors.length > 0 ? `; ${result.errors.join("; ")}` : "";
+  const nextActionHandoff = result.added > 0 ? buildLiveQuoteHandoff(requestedSymbols, "starter-pack") : undefined;
 
   if (result.errors.length > 0 && result.added === 0) {
     return {
@@ -764,11 +783,16 @@ export function buildStarterPackFeedback(
     return {
       tone: "warning",
       message: `${base}${skipped}${errors}.`,
-      providerSetupHandoff: result.errors.length > 0 ? buildProviderSetupHandoff("starter-pack-partial") : undefined
+      ...(result.errors.length > 0 ? { providerSetupHandoff: buildProviderSetupHandoff("starter-pack-partial") } : {}),
+      ...(nextActionHandoff ? { nextActionHandoff } : {})
     };
   }
 
-  return { tone: "success", message: `${base}.` };
+  return {
+    tone: "success",
+    message: `${base}.`,
+    ...(nextActionHandoff ? { nextActionHandoff } : {})
+  };
 }
 
 export function buildProviderSetupHandoff(reason: string): WatchlistProviderSetupHandoff {
@@ -777,6 +801,20 @@ export function buildProviderSetupHandoff(reason: string): WatchlistProviderSetu
     label: "Fix provider setup",
     ariaLabel: `Open provider setup from watchlist ${reason}`,
     detail: "Review provider credentials and connection status in Settings."
+  };
+}
+
+export function buildLiveQuoteHandoff(symbols: readonly string[], reason: string): WatchlistRouteHandoff | undefined {
+  const symbol = symbols.map((candidate) => normalizeSymbol(candidate)).find(Boolean);
+  if (!symbol) {
+    return undefined;
+  }
+
+  return {
+    href: `/data/quotes?symbol=${encodeURIComponent(symbol)}`,
+    label: "Review live quote",
+    ariaLabel: `Open live quotes for ${symbol} from watchlist ${reason}`,
+    detail: `Review the ${symbol} live quote, chart, and quick-trade ticket.`
   };
 }
 
@@ -794,6 +832,7 @@ export function buildStarterPackCommands(
       ariaLabel: busy
         ? `Adding ${pack.label} starter pack`
         : `Add ${pack.label} starter pack: ${pack.symbols.join(", ")}`,
+      busyLabel: `Adding ${pack.label}…`,
       disabled: submitting,
       disabledReason: submitting ? "Wait for the current symbol add request to finish." : null,
       busy
@@ -807,7 +846,7 @@ function buildStat(
   value: number | undefined,
   tone: MetricSnapshot["tone"] = "default"
 ): MetricSnapshot {
-  const displayValue = value === undefined ? "-" : formatCount(value);
+  const displayValue = value === undefined ? WATCHLIST_EMPTY_VALUE : formatCount(value);
   return {
     id,
     label,
@@ -836,7 +875,7 @@ function buildListState(symbols: SymbolRecord[] | null, loadError: string | null
 function buildListDescription(state: WatchlistListState, rowCount: number, loadError: string | null): string {
   switch (state) {
     case "loading":
-      return "Loading symbols...";
+      return "Loading symbols…";
     case "error":
       return loadError ?? "Symbol watchlist failed to load.";
     case "empty":
@@ -852,10 +891,10 @@ function buildToolbarItems(
   listState: WatchlistListState
 ): WatchlistScreenViewModel["toolbarItems"] {
   return [
-    { id: "visible", label: "Visible", value: listState === "ready" ? formatCount(rowCount) : "-" },
-    { id: "monitored", label: "Monitored", value: stats ? formatCount(stats.monitoredSymbols) : "-", active: Boolean(stats && stats.monitoredSymbols > 0) },
-    { id: "errors", label: "Errors", value: stats ? formatCount(stats.symbolsWithErrors) : "-", active: Boolean(stats && stats.symbolsWithErrors > 0) },
-    { id: "events", label: "24h events", value: stats ? formatCount(stats.totalEventsLast24h) : "-" }
+    { id: "visible", label: "Visible", value: listState === "ready" ? formatCount(rowCount) : WATCHLIST_EMPTY_VALUE },
+    { id: "monitored", label: "Monitored", value: stats ? formatCount(stats.monitoredSymbols) : WATCHLIST_EMPTY_VALUE, active: Boolean(stats && stats.monitoredSymbols > 0) },
+    { id: "errors", label: "Errors", value: stats ? formatCount(stats.symbolsWithErrors) : WATCHLIST_EMPTY_VALUE, active: Boolean(stats && stats.symbolsWithErrors > 0) },
+    { id: "events", label: "24h events", value: stats ? formatCount(stats.totalEventsLast24h) : WATCHLIST_EMPTY_VALUE }
   ];
 }
 
@@ -905,7 +944,7 @@ export function buildQuoteRefreshCommand(
   rowCount: number,
   refreshing: boolean
 ): WatchlistQuoteRefreshCommandState {
-  const label = refreshing ? "Refreshing prices..." : "Refresh prices";
+  const label = refreshing ? "Refreshing prices…" : "Refresh prices";
 
   if (refreshing) {
     return {
@@ -989,7 +1028,7 @@ function isAbortError(error: unknown): boolean {
 
 function formatPrice(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return "-";
+    return WATCHLIST_EMPTY_VALUE;
   }
 
   return value.toLocaleString(undefined, {
@@ -1000,7 +1039,7 @@ function formatPrice(value: number | null | undefined): string {
 
 function formatSize(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return "-";
+    return WATCHLIST_EMPTY_VALUE;
   }
 
   return value.toLocaleString();
@@ -1012,7 +1051,7 @@ function formatPriceSize(price: number | null | undefined, size: number | null |
 
 function formatSpread(spread: number | null | undefined, mid: number | null | undefined): string {
   if (spread === null || spread === undefined || Number.isNaN(spread)) {
-    return "-";
+    return WATCHLIST_EMPTY_VALUE;
   }
 
   if (mid && mid > 0) {
@@ -1025,7 +1064,7 @@ function formatSpread(spread: number | null | undefined, mid: number | null | un
 
 function formatChange(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) {
-    return "-";
+    return WATCHLIST_EMPTY_VALUE;
   }
 
   const sign = value > 0 ? "+" : "";
@@ -1034,7 +1073,7 @@ function formatChange(value: number | null | undefined): string {
 
 function formatChangePercent(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) {
-    return "-";
+    return WATCHLIST_EMPTY_VALUE;
   }
 
   const sign = value > 0 ? "+" : "";

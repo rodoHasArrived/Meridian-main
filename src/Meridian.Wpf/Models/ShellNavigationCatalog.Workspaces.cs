@@ -1,4 +1,5 @@
 using Meridian.Wpf.Copy;
+using Meridian.Wpf.Features.Data.Shell;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
@@ -179,7 +180,7 @@ public static partial class ShellNavigationCatalog
             PresetPanes: new Dictionary<string, IReadOnlyList<WorkspacePaneDefinition>>(StringComparer.OrdinalIgnoreCase),
             ContextlessPanes: Array.Empty<WorkspacePaneDefinition>(),
             StateProviderType: typeof(DataOperationsWorkspaceShellStateProvider),
-            ViewModelType: typeof(DataOperationsWorkspaceShellViewModel));
+            ViewModelType: typeof(DataWorkspaceShellViewModel));
 
     private static readonly WorkspaceShellDefinition SettingsWorkspaceShellDefinition =
         new(

@@ -15,6 +15,7 @@ import {
   buildProviderRow,
   buildProviderSection,
   buildProviderSetupDialogState,
+  buildProviderSetupSuccessActions,
   buildRouteFocusCardState,
   clearProviderSetupCredentials,
   buildSelectedBackfillDetail,
@@ -417,6 +418,11 @@ describe("data-operations-screen view model", () => {
     expect(alpacaDialog.credentialFields.map((field) => field.autoComplete)).toEqual(["new-password", "new-password"]);
     expect(alpacaDialog.capabilityOptions.find((option) => option.id === "brokerage")?.selected).toBe(true);
     expect(alpacaDialog.submitAction.disabledReason).toBe("An API key is required for Alpaca.");
+    expect(alpacaDialog.successPanel).toEqual({
+      title: "Next validation",
+      ariaLabel: "Provider setup next validation"
+    });
+    expect(alpacaDialog.successActions.map((action) => action.id)).toEqual(["live-quotes", "readiness"]);
 
     const yahooDialog = buildProviderSetupDialogState("idle", {
       kind: "yahoo",
@@ -429,6 +435,15 @@ describe("data-operations-screen view model", () => {
 
     expect(yahooDialog.credentialFields).toHaveLength(0);
     expect(yahooDialog.submitAction.disabled).toBe(false);
+    expect(yahooDialog.successActions).toEqual([
+      {
+        id: "backfill",
+        label: "Preview a backfill",
+        href: "/data/backfills",
+        ariaLabel: "Preview a historical backfill after configuring Yahoo Finance",
+        variant: "default"
+      }
+    ]);
 
     const submittingDialog = buildProviderSetupDialogState("submitting", {
       kind: "alpaca",
@@ -444,6 +459,56 @@ describe("data-operations-screen view model", () => {
     expect(submittingDialog.credentialFields.every((field) => field.disabled)).toBe(true);
     expect(submittingDialog.capabilityOptions.every((option) => option.disabled)).toBe(true);
     expect(submittingDialog.providerKindField.disabledReason).toBe("Provider setup is in progress; wait before editing.");
+  });
+
+  it("derives provider setup success actions from configured capabilities", () => {
+    expect(buildProviderSetupSuccessActions({
+      kind: "polygon",
+      displayName: "Polygon.io",
+      apiKey: "",
+      apiSecret: "",
+      endpoint: "",
+      capabilities: ["streaming", "backfill", "reference"]
+    })).toEqual([
+      {
+        id: "live-quotes",
+        label: "Validate live quotes",
+        href: "/data/quotes?symbol=AAPL",
+        ariaLabel: "Validate live quotes after configuring Polygon.io",
+        variant: "default"
+      },
+      {
+        id: "backfill",
+        label: "Preview a backfill",
+        href: "/data/backfills",
+        ariaLabel: "Preview a historical backfill after configuring Polygon.io",
+        variant: "outline"
+      },
+      {
+        id: "security-master",
+        label: "Review Security Master",
+        href: "/accounting/security-master",
+        ariaLabel: "Review Security Master coverage after configuring Polygon.io",
+        variant: "outline"
+      }
+    ]);
+
+    expect(buildProviderSetupSuccessActions({
+      kind: "custom",
+      displayName: "",
+      apiKey: "",
+      apiSecret: "",
+      endpoint: "https://providers.example.test",
+      capabilities: []
+    })).toEqual([
+      {
+        id: "security-master",
+        label: "Review Security Master",
+        href: "/accounting/security-master",
+        ariaLabel: "Review Security Master coverage after configuring Custom endpoint",
+        variant: "default"
+      }
+    ]);
   });
 
   it("ignores stale provider setup responses after a newer submission settles", async () => {

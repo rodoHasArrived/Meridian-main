@@ -74,6 +74,33 @@ const tradesWithPrintsFixture = {
   count: 1
 };
 
+const tradesWithTwoPrintsFixture = {
+  ...tradesFixture,
+  trades: [
+    {
+      symbol: "AAPL",
+      timestamp: "2026-05-08T15:00:01.000Z",
+      price: 188.08,
+      size: 125,
+      aggressor: "Sell",
+      sequenceNumber: 11,
+      streamId: "stream-1",
+      venue: "NASDAQ"
+    },
+    {
+      symbol: "AAPL",
+      timestamp: "2026-05-08T15:00:00.000Z",
+      price: 188.06,
+      size: 75,
+      aggressor: "Buy",
+      sequenceNumber: 10,
+      streamId: "stream-1",
+      venue: "NASDAQ"
+    }
+  ],
+  count: 2
+};
+
 const orderbookFixture = {
   symbol: "AAPL",
   timestamp: "2026-05-08T15:00:00.000Z",
@@ -255,7 +282,8 @@ describe("validateQuickTicket", () => {
       role: "status",
       tone: "default",
       message: "Enter a quantity to enable order submission.",
-      showErrorIcon: false
+      showErrorIcon: false,
+      actions: []
     });
     expect(vm.fields.quantity).toMatchObject({
       id: "quick-ticket-quantity",
@@ -326,6 +354,65 @@ describe("validateQuickTicket", () => {
       disabledReason: null
     });
     expect(acknowledged.status.message).toBe("Orders route through Meridian's pre-trade risk and execution controls.");
+    expect(acknowledged.status.actions).toEqual([]);
+  });
+
+  it("surfaces Trading readiness handoffs after accepted and rejected submissions", () => {
+    const accepted = buildQuickTradeTicketViewModel({
+      activeSymbol: "AAPL",
+      ticket: {
+        side: "Buy",
+        type: "Limit",
+        quantity: "10",
+        limitPrice: "188.05",
+        phase: "submitted",
+        message: "Order ORD-1 accepted.",
+        orderId: "ORD-1",
+        acknowledged: false
+      },
+      seedTicket: vi.fn(),
+      updateField: vi.fn(),
+      setReviewAcknowledged: vi.fn(),
+      submitTicket: vi.fn(),
+      resetTicket: vi.fn()
+    });
+
+    expect(accepted.status.actions).toEqual([
+      {
+        id: "trading-readiness",
+        label: "Review readiness",
+        href: "/trading/readiness",
+        ariaLabel: "Open Trading readiness after order ORD-1 was accepted"
+      }
+    ]);
+
+    const rejected = buildQuickTradeTicketViewModel({
+      activeSymbol: "AAPL",
+      ticket: {
+        side: "Sell",
+        type: "Market",
+        quantity: "10",
+        limitPrice: "",
+        phase: "error",
+        message: "Insufficient buying power",
+        orderId: null,
+        acknowledged: false
+      },
+      seedTicket: vi.fn(),
+      updateField: vi.fn(),
+      setReviewAcknowledged: vi.fn(),
+      submitTicket: vi.fn(),
+      resetTicket: vi.fn()
+    });
+
+    expect(rejected.status.actions).toEqual([
+      {
+        id: "trading-readiness",
+        label: "Review readiness",
+        href: "/trading/readiness",
+        ariaLabel: "Open Trading readiness after AAPL order submission failed"
+      }
+    ]);
   });
 
   it("switches quick-ticket price metadata for market orders", () => {
@@ -514,6 +601,49 @@ describe("buildLiveQuotesMarketViewModel", () => {
     });
     expect(vm.venueLabel).toBe("NASDAQ");
     expect(vm.lastUpdateLabel).not.toBe("Unavailable");
+  });
+
+  it("keeps recent-trade row selection and detail state in the view model", () => {
+    const selectTrade = vi.fn();
+    const selectedId = "11-2026-05-08T15:00:01.000Z";
+
+    const vm = buildLiveQuotesMarketViewModel({
+      activeSymbol: "AAPL",
+      quote: { data: quoteFixture, error: null },
+      trades: { data: tradesWithTwoPrintsFixture, error: null },
+      orderbook: { data: orderbookFixture, error: null },
+      refreshing: false,
+      selectedTradeId: selectedId,
+      selectTrade,
+      tradeTableLimit: 25
+    });
+
+    expect(vm.selectedTradeId).toBe(selectedId);
+    expect(vm.selectTrade).toBe(selectTrade);
+    expect(vm.tradeDisplayRows[0]).toMatchObject({
+      id: selectedId,
+      expanded: true,
+      detailPanelId: "live-quotes-trade-detail",
+      selectAriaLabel: "Inspect AAPL trade 11 at 188.08"
+    });
+    expect(vm.tradeDisplayRows[1]).toMatchObject({
+      expanded: false,
+      detailPanelId: "live-quotes-trade-detail"
+    });
+    expect(vm.selectedTradeDetail).toMatchObject({
+      title: "AAPL print 11",
+      statusLabel: "Sell",
+      statusBadgeVariant: "warning",
+      ariaLabel: "AAPL trade 11 detail"
+    });
+    expect(vm.selectedTradeDetail?.fields.map((field) => field.label)).toEqual([
+      "Price",
+      "Size",
+      "Sequence",
+      "Stream",
+      "Venue",
+      "Timestamp"
+    ]);
   });
 
   it("derives BBO, depth, quote metrics, and chart labels for the view", () => {
@@ -782,6 +912,10 @@ describe("LiveQuotesScreen quick trade", () => {
     });
 
     expect(await screen.findByText(/Order ORD-1 accepted/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Trading readiness after order ORD-1 was accepted" })).toHaveAttribute(
+      "href",
+      "/trading/readiness"
+    );
   });
 
   it("surfaces server-side rejection reason", async () => {
@@ -802,6 +936,10 @@ describe("LiveQuotesScreen quick trade", () => {
     await user.click(screen.getByRole("button", { name: /Submit sell order for AAPL/i }));
 
     expect(await screen.findByText(/Insufficient buying power/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Trading readiness after AAPL order submission failed" })).toHaveAttribute(
+      "href",
+      "/trading/readiness"
+    );
   });
 
   it("keeps initial quick-ticket validation as guidance and escalates invalid edited fields", async () => {
@@ -912,6 +1050,28 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(screen.getByRole("button", { name: /Buy AAPL at ask 188\.07/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Sell AAPL at 188\.05/i })).toBeInTheDocument();
     expect(screen.getAllByText("188.06").length).toBeGreaterThan(0);
+  });
+
+  it("renders recent trades as selectable rows with a linked detail inspector", async () => {
+    vi.spyOn(api, "getLiveTrades").mockResolvedValue(tradesWithTwoPrintsFixture);
+
+    const user = userEvent.setup();
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
+
+    const firstTrade = await screen.findByRole("row", { name: /Inspect AAPL trade 11 at 188\.08/i });
+    const secondTrade = await screen.findByRole("row", { name: /Inspect AAPL trade 10 at 188\.06/i });
+
+    expect(firstTrade).toHaveAttribute("aria-controls", "live-quotes-trade-detail");
+    expect(firstTrade).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "AAPL trade 11 detail" })).toBeInTheDocument();
+    expect(screen.getByText("AAPL print 11")).toBeInTheDocument();
+
+    await user.click(secondTrade);
+
+    expect(secondTrade).toHaveAttribute("aria-expanded", "true");
+    expect(firstTrade).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("region", { name: "AAPL trade 10 detail" })).toBeInTheDocument();
+    expect(screen.getByText("AAPL print 10")).toBeInTheDocument();
   });
 
   it("ignores stale quote responses after switching symbols", async () => {

@@ -113,6 +113,71 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
             >
               {vm.workflowTaskPanel.selectedSummary}
             </div>
+            <div>
+              <div className="eyebrow-label">Actions</div>
+              {vm.workflowTaskPanel.hasActions ? (
+                <div role="list" aria-label={vm.workflowTaskPanel.actionListLabel} className="mt-2 grid gap-2 sm:grid-cols-2">
+                  {vm.workflowTaskPanel.actions.map((action) => {
+                    const taskActionDescriptionId = `reporting-task-action-${action.profileId}-${action.id}-status`;
+
+                    return (
+                      <div
+                        key={action.id}
+                        role="listitem"
+                        className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
+                      >
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Button
+                            asChild={action.method === "GET" && !action.isDisabled}
+                            disabled={action.isDisabled}
+                            busy={action.isRunning}
+                            busyLabel={action.isRunning ? "Running export…" : null}
+                            size="sm"
+                            variant={action.variant}
+                            aria-label={action.ariaLabel}
+                            aria-describedby={taskActionDescriptionId}
+                            title={action.disabledReason ?? undefined}
+                            onClick={
+                              action.method === "POST" && vm.selectedProfile
+                                ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
+                                : undefined
+                            }
+                          >
+                            {action.isDisabled ? (
+                              action.label
+                            ) : action.method === "POST" ? (
+                              action.label
+                            ) : (
+                              <a href={action.href} target="_blank" rel="noreferrer" aria-label={action.ariaLabel}>
+                                {action.label}
+                              </a>
+                            )}
+                          </Button>
+                          {action.disabledReason ? (
+                            <Badge variant="warning">Disabled</Badge>
+                          ) : action.isRunning ? (
+                            <Badge variant="warning">Running</Badge>
+                          ) : (
+                            <Badge variant="outline">{action.method}</Badge>
+                          )}
+                        </div>
+                        <p id={taskActionDescriptionId} className="mt-2 text-xs leading-5 text-muted-foreground">
+                          {action.disabledReason ?? action.statusText}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p
+                  role="status"
+                  aria-label={vm.workflowTaskPanel.actionsEmptyAriaLabel}
+                  className="mt-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning"
+                >
+                  {vm.workflowTaskPanel.actionsEmptyText}
+                </p>
+              )}
+            </div>
             <div className="grid gap-3 md:grid-cols-2">
               <div>
                 <div className="eyebrow-label">Targets</div>
@@ -142,7 +207,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
               <div>
                 <div className="eyebrow-label">Backend</div>
                 <div aria-label={vm.workflowTaskPanel.backendLinksLabel} className="mt-2 grid gap-2">
-                  {vm.workflowTaskPanel.backendLinks.map((link) => (
+                  {vm.workflowTaskPanel.backendLinks.map((link) => link.isBrowserNavigable ? (
                     <a
                       key={link.id}
                       href={link.href}
@@ -151,12 +216,17 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       aria-label={link.ariaLabel}
                       className="flex min-w-0 items-center gap-2 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
-                      <Badge variant="outline">{link.method}</Badge>
-                      <span className="min-w-0">
-                        <span className="block font-semibold text-foreground">{link.label}</span>
-                        <span className="block break-all font-mono text-[11px] text-muted-foreground">{link.href}</span>
-                      </span>
+                      <ReportingBackendReference link={link} />
                     </a>
+                  ) : (
+                    <div
+                      key={link.id}
+                      role="group"
+                      aria-label={link.ariaLabel}
+                      className="flex min-w-0 items-center gap-2 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
+                    >
+                      <ReportingBackendReference link={link} />
+                    </div>
                   ))}
                 </div>
               </div>
@@ -522,6 +592,30 @@ function ReportingChip({ label, value }: { label: string; value: string }) {
       <span className="text-muted-foreground">{label}</span>
       <span className="font-mono text-foreground">{value}</span>
     </div>
+  );
+}
+
+function ReportingBackendReference({
+  link
+}: {
+  link: {
+    method: string;
+    label: string;
+    href: string;
+    interactionLabel: string;
+  };
+}) {
+  return (
+    <>
+      <Badge variant="outline">{link.method}</Badge>
+      <span className="min-w-0">
+        <span className="block font-semibold text-foreground">{link.label}</span>
+        <span className="block break-all font-mono text-[11px] text-muted-foreground">{link.href}</span>
+        <span className="mt-1 inline-flex rounded-sm border border-border/60 px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+          {link.interactionLabel}
+        </span>
+      </span>
+    </>
   );
 }
 

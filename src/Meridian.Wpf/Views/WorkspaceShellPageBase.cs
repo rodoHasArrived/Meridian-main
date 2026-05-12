@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Features.Data.Shell;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -228,12 +229,12 @@ public class TradingWorkspaceShellPageBase : WorkspaceShellPageBase<TradingWorks
     }
 }
 
-public class DataOperationsWorkspaceShellPageBase : WorkspaceShellPageBase<DataOperationsWorkspaceShellStateProvider, DataOperationsWorkspaceShellViewModel>
+public class DataOperationsWorkspaceShellPageBase : WorkspaceShellPageBase<DataOperationsWorkspaceShellStateProvider, DataWorkspaceShellViewModel>
 {
     protected DataOperationsWorkspaceShellPageBase(
         NavigationService navigationService,
         DataOperationsWorkspaceShellStateProvider stateProvider,
-        DataOperationsWorkspaceShellViewModel viewModel)
+        DataWorkspaceShellViewModel viewModel)
         : base(navigationService, stateProvider, viewModel)
     {
     }

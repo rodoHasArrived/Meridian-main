@@ -262,6 +262,19 @@ export interface ProviderSetupDialogState {
     busyLabel: string;
   };
   statusLabel: string;
+  successPanel: {
+    title: string;
+    ariaLabel: string;
+  };
+  successActions: ProviderSetupNextActionState[];
+}
+
+export interface ProviderSetupNextActionState {
+  id: "live-quotes" | "backfill" | "readiness" | "security-master";
+  label: string;
+  href: string;
+  ariaLabel: string;
+  variant: "default" | "outline";
 }
 
 export interface ProviderSetupKindOptionState {
@@ -1657,7 +1670,12 @@ export function buildProviderSetupDialogState(
       busy: submitting,
       busyLabel: "Configuring..."
     },
-    statusLabel: buildProviderSetupStatusLabel(phase, validationError)
+    statusLabel: buildProviderSetupStatusLabel(phase, validationError),
+    successPanel: {
+      title: "Next validation",
+      ariaLabel: "Provider setup next validation"
+    },
+    successActions: buildProviderSetupSuccessActions(form)
   };
 }
 
@@ -1680,6 +1698,54 @@ function isValidEndpointUrl(value: string): boolean {
 
 function resolveProviderKindMeta(kind: ProviderSetupFormState["kind"]): ProviderKindMeta | undefined {
   return PROVIDER_KIND_CATALOG.find((provider) => provider.kind === kind);
+}
+
+export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): ProviderSetupNextActionState[] {
+  const providerLabel = form.displayName.trim() || resolveProviderKindMeta(form.kind)?.label || "configured";
+  const capabilities = new Set(form.capabilities);
+  const actions: ProviderSetupNextActionState[] = [];
+
+  if (capabilities.has("streaming")) {
+    actions.push({
+      id: "live-quotes",
+      label: "Validate live quotes",
+      href: "/data/quotes?symbol=AAPL",
+      ariaLabel: `Validate live quotes after configuring ${providerLabel}`,
+      variant: "default"
+    });
+  }
+
+  if (capabilities.has("backfill")) {
+    actions.push({
+      id: "backfill",
+      label: "Preview a backfill",
+      href: "/data/backfills",
+      ariaLabel: `Preview a historical backfill after configuring ${providerLabel}`,
+      variant: actions.length === 0 ? "default" : "outline"
+    });
+  }
+
+  if (capabilities.has("brokerage")) {
+    actions.push({
+      id: "readiness",
+      label: "Check Trading readiness",
+      href: "/trading/readiness",
+      ariaLabel: `Check Trading readiness after configuring ${providerLabel}`,
+      variant: actions.length === 0 ? "default" : "outline"
+    });
+  }
+
+  if (actions.length === 0 || capabilities.has("reference")) {
+    actions.push({
+      id: "security-master",
+      label: "Review Security Master",
+      href: "/accounting/security-master",
+      ariaLabel: `Review Security Master coverage after configuring ${providerLabel}`,
+      variant: actions.length === 0 ? "default" : "outline"
+    });
+  }
+
+  return actions;
 }
 
 function buildProviderCredentialFields(

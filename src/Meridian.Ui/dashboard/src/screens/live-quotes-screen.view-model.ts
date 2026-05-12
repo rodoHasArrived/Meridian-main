@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type { ApiRequestOptions } from "@/lib/api";
+import { workflowTargetPath } from "@/lib/workspace";
 import type {
   OrderBookLevelDto,
   OrderBookResponse,
@@ -38,6 +39,14 @@ export interface QuickTicketStatusViewModel {
   message: string;
   showSuccessIcon: boolean;
   showErrorIcon: boolean;
+  actions: QuickTicketStatusActionViewModel[];
+}
+
+export interface QuickTicketStatusActionViewModel {
+  id: string;
+  label: string;
+  href: string;
+  ariaLabel: string;
 }
 
 export interface QuickTicketCommandViewModel {
@@ -194,6 +203,27 @@ export interface LiveQuotesTradeRowViewModel {
   aggressorLabel: string;
   aggressorTone: "positive" | "negative" | "muted";
   venueLabel: string;
+  detailPanelId: string;
+  expanded: boolean;
+  ariaLabel: string;
+  selectAriaLabel: string;
+}
+
+export interface LiveQuotesTradeDetailField {
+  label: string;
+  value: string;
+}
+
+export interface LiveQuotesTradeDetailViewModel {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusBadgeVariant: "outline" | "success" | "warning";
+  ariaLabel: string;
+  fields: LiveQuotesTradeDetailField[];
 }
 
 export interface LiveQuotesPriceChartViewModel {
@@ -241,11 +271,19 @@ export interface LiveQuotesMarketDataViewModel {
   tradeHistory: TradeDataResponse[];
   tradeRows: TradeDataResponse[];
   tradeDisplayRows: LiveQuotesTradeRowViewModel[];
+  selectedTradeId: string | null;
+  selectedTradeDetail: LiveQuotesTradeDetailViewModel | null;
+  selectTrade: (id: string) => void;
   intraday: IntradayMetrics;
   bboPanels: LiveQuotesBboPanelViewModel[];
   quoteMetrics: LiveQuotesMetricRowViewModel[];
   depthLadder: LiveQuotesDepthLadderViewModel;
   priceChart: LiveQuotesPriceChartViewModel;
+  tradesTableLabel: string;
+  tradesTableCaption: string;
+  tradesDetailPanelId: string;
+  tradesDetailEmptyTitle: string;
+  tradesDetailEmptyText: string;
   venueLabel: string | null;
   stale: boolean;
   lastUpdateLabel: string;
@@ -312,6 +350,7 @@ export function useLiveQuotesScreenViewModel(
   const [quote, setQuote] = useState<LiveQuotesLoadState<QuotesResponse>>({ data: null, error: null });
   const [trades, setTrades] = useState<LiveQuotesLoadState<TradesResponse>>({ data: null, error: null });
   const [orderbook, setOrderbook] = useState<LiveQuotesLoadState<OrderBookResponse>>({ data: null, error: null });
+  const [selectedTradeId, setSelectedTradeId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const requestIdRef = useRef(0);
   const inFlightSymbolRef = useRef<string | null>(null);
@@ -397,6 +436,7 @@ export function useLiveQuotesScreenViewModel(
     setActiveSymbol(nextSymbol || null);
     resetMarketState();
     quickTrade.resetTicket();
+    setSelectedTradeId(null);
   }, [activeSymbol, quickTrade, resetMarketState, route.routeSymbol]);
 
   const setSymbolInput = useCallback((value: string) => {
@@ -416,8 +456,10 @@ export function useLiveQuotesScreenViewModel(
     trades,
     orderbook,
     refreshing,
+    selectedTradeId,
+    selectTrade: setSelectedTradeId,
     tradeTableLimit: LIVE_QUOTES_TRADE_TABLE_LIMIT
-  }), [activeSymbol, orderbook, quote, refreshing, trades]);
+  }), [activeSymbol, orderbook, quote, refreshing, selectedTradeId, trades]);
 
   const submitLookup = useCallback((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -537,6 +579,8 @@ export function buildLiveQuotesMarketViewModel({
   trades,
   orderbook,
   refreshing,
+  selectedTradeId = null,
+  selectTrade = () => {},
   tradeTableLimit
 }: {
   activeSymbol: string | null;
@@ -544,11 +588,23 @@ export function buildLiveQuotesMarketViewModel({
   trades: LiveQuotesLoadState<TradesResponse>;
   orderbook: LiveQuotesLoadState<OrderBookResponse>;
   refreshing: boolean;
+  selectedTradeId?: string | null;
+  selectTrade?: (id: string) => void;
   tradeTableLimit: number;
 }): LiveQuotesMarketDataViewModel {
   const quoteRow = quote.data?.quote ?? null;
   const tradeHistory = trades.data?.trades ?? [];
   const tradeRows = tradeHistory.slice(0, tradeTableLimit);
+  const tradeDetailPanelId = "live-quotes-trade-detail";
+  const baseTradeRows = tradeRows.map((trade) => buildTradeRow(trade, tradeDetailPanelId));
+  const stableSelectedTradeId = baseTradeRows.some((row) => row.id === selectedTradeId)
+    ? selectedTradeId
+    : baseTradeRows[0]?.id ?? null;
+  const selectedTrade = tradeRows.find((trade) => liveQuoteTradeId(trade) === stableSelectedTradeId) ?? null;
+  const tradeDisplayRows = baseTradeRows.map((row) => ({
+    ...row,
+    expanded: row.id === stableSelectedTradeId
+  }));
   const intraday = computeIntradayMetrics(tradeHistory);
   const hasOrderbookRows = (orderbook.data?.bids.length ?? 0) > 0 || (orderbook.data?.asks.length ?? 0) > 0;
   const symbol = activeSymbol ?? "selected symbol";
@@ -564,7 +620,10 @@ export function buildLiveQuotesMarketViewModel({
     orderbook: orderbook.data,
     tradeHistory,
     tradeRows,
-    tradeDisplayRows: tradeRows.map(buildTradeRow),
+    tradeDisplayRows,
+    selectedTradeId: stableSelectedTradeId,
+    selectedTradeDetail: selectedTrade ? buildTradeDetail(selectedTrade) : null,
+    selectTrade,
     intraday,
     bboPanels: buildBboPanels(symbol, quoteRow),
     quoteMetrics: buildQuoteMetrics(quoteRow),
@@ -573,6 +632,13 @@ export function buildLiveQuotesMarketViewModel({
       asks: (orderbook.data?.asks ?? []).map((level) => buildDepthLevel(level, maxDepthSize, symbol, "Buy"))
     },
     priceChart: buildPriceChartViewModel(symbol, intraday, refreshing, trades.error),
+    tradesTableLabel: `Recent ${symbol} trade prints`,
+    tradesTableCaption: `Select a ${symbol} trade print to inspect sequence, stream, and venue evidence.`,
+    tradesDetailPanelId: tradeDetailPanelId,
+    tradesDetailEmptyTitle: "No trade selected",
+    tradesDetailEmptyText: tradeRows.length > 0
+      ? "Select a trade print to inspect tape evidence."
+      : `No recent trades for ${symbol}.`,
     venueLabel: quoteRow?.venue ?? orderbook.data?.venue ?? null,
     stale: orderbook.data?.isStale === true,
     lastUpdateLabel: formatMarketTimestamp(quoteRow?.timestamp ?? orderbook.data?.timestamp ?? null),
@@ -803,7 +869,7 @@ export function buildQuickTradeTicketViewModel({
       busyLabel: "Submitting...",
       variant: ticket.side === "Buy" ? "default" : "destructive"
     },
-    status: buildQuickTicketStatus(ticket, validation, surfaceValidation),
+    status: buildQuickTicketStatus(ticket, validation, surfaceValidation, activeSymbol),
     seedTicket,
     updateField,
     setReviewAcknowledged,
@@ -1092,16 +1158,63 @@ function buildDepthLevel(
   };
 }
 
-function buildTradeRow(trade: TradeDataResponse): LiveQuotesTradeRowViewModel {
+function liveQuoteTradeId(trade: TradeDataResponse): string {
+  return `${trade.sequenceNumber}-${trade.timestamp}`;
+}
+
+function buildTradeRow(trade: TradeDataResponse, detailPanelId: string): LiveQuotesTradeRowViewModel {
   const aggressor = trade.aggressor?.toLowerCase();
+  const id = liveQuoteTradeId(trade);
+  const priceLabel = formatMarketPrice(trade.price);
+  const sizeLabel = formatMarketSize(trade.size);
+  const aggressorLabel = trade.aggressor || "Unreported";
+  const venueLabel = trade.venue ?? "Unreported";
   return {
-    id: `${trade.sequenceNumber}-${trade.timestamp}`,
+    id,
     timeLabel: formatMarketTime(trade.timestamp),
-    priceLabel: formatMarketPrice(trade.price),
-    sizeLabel: formatMarketSize(trade.size),
-    aggressorLabel: trade.aggressor || "-",
+    priceLabel,
+    sizeLabel,
+    aggressorLabel,
     aggressorTone: aggressor === "buy" ? "positive" : aggressor === "sell" ? "negative" : "muted",
-    venueLabel: trade.venue ?? "-"
+    venueLabel,
+    detailPanelId,
+    expanded: false,
+    ariaLabel: `${trade.symbol} trade ${trade.sequenceNumber}: ${sizeLabel} shares at ${priceLabel}, ${aggressorLabel} aggressor, venue ${venueLabel}`,
+    selectAriaLabel: `Inspect ${trade.symbol} trade ${trade.sequenceNumber} at ${priceLabel}`
+  };
+}
+
+function buildTradeDetail(trade: TradeDataResponse): LiveQuotesTradeDetailViewModel {
+  const aggressor = trade.aggressor?.toLowerCase();
+  const aggressorLabel = trade.aggressor || "Unreported";
+  const venueLabel = trade.venue ?? "Unreported";
+  const streamLabel = trade.streamId ?? "Unreported";
+  const priceLabel = formatMarketPrice(trade.price);
+  const sizeLabel = formatMarketSize(trade.size);
+  const statusBadgeVariant: LiveQuotesTradeDetailViewModel["statusBadgeVariant"] =
+    aggressor === "buy"
+      ? "success"
+      : aggressor === "sell"
+        ? "warning"
+        : "outline";
+
+  return {
+    id: liveQuoteTradeId(trade),
+    eyebrow: "Selected trade",
+    title: `${trade.symbol} print ${trade.sequenceNumber}`,
+    subtitle: `${formatMarketTime(trade.timestamp)} · ${venueLabel}`,
+    description: `${sizeLabel} shares printed at ${priceLabel}. Aggressor: ${aggressorLabel}.`,
+    statusLabel: aggressorLabel,
+    statusBadgeVariant,
+    ariaLabel: `${trade.symbol} trade ${trade.sequenceNumber} detail`,
+    fields: [
+      { label: "Price", value: priceLabel },
+      { label: "Size", value: sizeLabel },
+      { label: "Sequence", value: String(trade.sequenceNumber) },
+      { label: "Stream", value: streamLabel },
+      { label: "Venue", value: venueLabel },
+      { label: "Timestamp", value: formatMarketTimestamp(trade.timestamp) }
+    ]
   };
 }
 
@@ -1327,7 +1440,8 @@ function buildSubmitLabel(ticket: QuickTicketState, symbol: string): string {
 function buildQuickTicketStatus(
   ticket: QuickTicketState,
   validation: string | null,
-  surfaceValidation: boolean
+  surfaceValidation: boolean,
+  activeSymbol: string | null
 ): QuickTicketStatusViewModel {
   if (ticket.phase === "submitted" && ticket.message) {
     return {
@@ -1336,7 +1450,8 @@ function buildQuickTicketStatus(
       tone: "success",
       message: ticket.message,
       showSuccessIcon: true,
-      showErrorIcon: false
+      showErrorIcon: false,
+      actions: [buildQuickTicketReadinessAction("accepted", activeSymbol, ticket.orderId)]
     };
   }
 
@@ -1347,7 +1462,10 @@ function buildQuickTicketStatus(
       tone: "danger",
       message: ticket.message,
       showSuccessIcon: false,
-      showErrorIcon: true
+      showErrorIcon: true,
+      actions: isQuickTicketSubmissionFailure(ticket, surfaceValidation)
+        ? [buildQuickTicketReadinessAction("rejected", activeSymbol, ticket.orderId)]
+        : []
     };
   }
 
@@ -1358,7 +1476,8 @@ function buildQuickTicketStatus(
       tone: "danger",
       message: validation,
       showSuccessIcon: false,
-      showErrorIcon: true
+      showErrorIcon: true,
+      actions: []
     };
   }
 
@@ -1368,8 +1487,38 @@ function buildQuickTicketStatus(
     tone: "default",
     message: buildQuickTicketGuidance(ticket, validation),
     showSuccessIcon: false,
-    showErrorIcon: false
+    showErrorIcon: false,
+    actions: []
   };
+}
+
+function buildQuickTicketReadinessAction(
+  outcome: "accepted" | "rejected",
+  activeSymbol: string | null,
+  orderId: string | null
+): QuickTicketStatusActionViewModel {
+  const symbolLabel = activeSymbol ?? "selected symbol";
+  const route = workflowTargetPath("TradingReadiness", "trading");
+  const orderLabel = orderId ? `order ${orderId}` : `${symbolLabel} order`;
+
+  return {
+    id: "trading-readiness",
+    label: "Review readiness",
+    href: route,
+    ariaLabel: outcome === "accepted"
+      ? `Open Trading readiness after ${orderLabel} was accepted`
+      : `Open Trading readiness after ${symbolLabel} order submission failed`
+  };
+}
+
+function isQuickTicketSubmissionFailure(
+  ticket: QuickTicketState,
+  surfaceValidation: boolean
+): boolean {
+  return ticket.phase === "error"
+    && ticket.message !== null
+    && !surfaceValidation
+    && ticket.message !== "Review and acknowledge the ticket before submitting.";
 }
 
 function shouldSurfaceQuickTicketValidation(ticket: QuickTicketState, validation: string | null): boolean {

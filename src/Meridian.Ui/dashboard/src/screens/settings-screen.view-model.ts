@@ -895,7 +895,7 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
   const events = overview.recentEvents ?? [];
   const rows = events.map((event) => {
     const source = event.source.trim() || "Unknown source";
-    const timestamp = event.timestamp.trim() || "Timestamp unavailable";
+    const timestamp = formatSettingsUtcMinute(event.timestamp, "Timestamp unavailable");
     const statusCode = eventStatusCode(event.type);
 
     return {
@@ -934,6 +934,28 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
     state: "ready",
     rows
   };
+}
+
+function formatSettingsUtcMinute(
+  value: string | Date | null | undefined,
+  unavailableLabel = "Unavailable"
+): string {
+  if (!value) {
+    return unavailableLabel;
+  }
+
+  const date = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) {
+    return unavailableLabel;
+  }
+
+  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+}
+
+const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function padUtc(value: number): string {
+  return String(value).padStart(2, "0");
 }
 
 function buildAlpacaConnectionPanel(connection: BrokerageConnectionStatus | null): SettingsAlpacaConnectionPanel {
@@ -1114,7 +1136,7 @@ export function buildSettingsScreenViewModel(
         { label: "Symbols monitored", value: String(overview.symbolsMonitored), tone: "default" },
         { label: "Active backfills", value: String(overview.activeBackfills), tone: "muted" },
         { label: "Storage health", value: overview.storageHealth, tone: storageTone(overview.storageHealth) },
-        { label: "Last heartbeat", value: overview.lastHeartbeatUtc, tone: "muted" }
+        { label: "Last heartbeat", value: formatSettingsUtcMinute(overview.lastHeartbeatUtc), tone: "muted" }
       ]
     : [];
 
@@ -1183,7 +1205,7 @@ function buildSettingsHeaderChips(
     { label: "Environment", value: session ? session.environment.toUpperCase() : "—" },
     { label: "Workspace", value: session?.activeWorkspace ?? "—" },
     { label: "Diagnostics", value: diagnosticStatusLabel },
-    { label: "Heartbeat", value: overview?.lastHeartbeatUtc ?? "—" }
+    { label: "Heartbeat", value: overview ? formatSettingsUtcMinute(overview.lastHeartbeatUtc) : "—" }
   ];
 }
 

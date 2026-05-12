@@ -29,18 +29,6 @@ The easiest way to build and install the Desktop App:
 
 ## Build MSIX Packages
 
-**Makefile (Windows):**
-
-```powershell
-make desktop-publish
-
-# Lower-disk local publish
-make desktop-publish DESKTOP_PUBLISH_READYTORUN=false
-
-# Release-style local publish
-make desktop-publish DESKTOP_PUBLISH_READYTORUN=true
-```
-
 **PowerShell install script:**
 
 ```powershell
@@ -53,12 +41,11 @@ make desktop-publish DESKTOP_PUBLISH_READYTORUN=true
 .\build\scripts\install\install.ps1 -Mode Desktop -EnableReadyToRun
 ```
 
-Both commands output MSIX packages under:
+The script outputs MSIX packages under:
 
 ```
 dist\win-x64\msix\    (install script, x64)
 dist\win-arm64\msix\  (install script, ARM64)
-publish\desktop\      (make target)
 ```
 
 ## Installation Options
@@ -99,12 +86,8 @@ To generate an AppInstaller alongside the MSIX package, provide the AppInstaller
 $env:MDC_APPINSTALLER_URI = "https://example.com/meridian/Meridian.appinstaller"
 ```
 
-For `make`:
-
-```powershell
-set APPINSTALLER_URI=https://example.com/meridian/Meridian.appinstaller
-make desktop-publish
-```
+The current repository does not define a `make desktop-publish` target; use the PowerShell install
+script for desktop package builds unless that target is restored.
 
 ## Signing for Development (Self-Signed)
 
@@ -150,13 +133,7 @@ $env:MDC_SIGNING_CERT_PFX = "C:\secure\Meridian.Release.pfx"
 $env:MDC_SIGNING_CERT_PASSWORD = "<secure-password>"
 ```
 
-For `make`, pass the same values:
-
-```powershell
-set SIGNING_CERT_PFX=C:\secure\Meridian.Release.pfx
-set SIGNING_CERT_PASSWORD=<secure-password>
-make desktop-publish
-```
+The install script reads the same signing environment variables when packaging.
 
 ## Notes
 

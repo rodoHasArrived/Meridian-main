@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from "react";
 import { useEffect, useRef } from "react";
-import { BriefcaseBusiness, LineChart, Network, Settings, Wallet } from "lucide-react";
+import { BriefcaseBusiness, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,9 @@ import { cn } from "@/lib/utils";
 import {
   resolveBrokerageAccountFilterKeyCommand,
   type PortfolioBrokeragePositionRow,
+  type PortfolioPositionRow,
+  type PortfolioWorkflowTaskAction,
+  type PortfolioRunRow,
   usePortfolioScreenViewModel
 } from "@/screens/portfolio-screen.view-model";
 import type {
@@ -51,6 +54,84 @@ const cashFlowBorderClass = {
   warning: "border-warning/30",
   danger: "border-danger/30"
 } as const;
+
+const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
+  {
+    id: "symbol",
+    label: "Symbol",
+    render: (row) => <span className="font-mono font-semibold text-foreground">{row.symbol}</span>
+  },
+  {
+    id: "side",
+    label: "Side",
+    render: (row) => <span className="font-mono text-foreground">{row.side}</span>
+  },
+  {
+    id: "quantity",
+    label: "Qty",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.quantity}</span>
+  },
+  {
+    id: "average",
+    label: "Avg",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.avgPrice}</span>
+  },
+  {
+    id: "mark",
+    label: "Mark",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.markPrice}</span>
+  },
+  {
+    id: "unrealized-pnl",
+    label: "Unrealized P&L",
+    align: "right",
+    render: (row) => <span className={cn("font-mono font-semibold", pnlToneClass[row.pnlTone])}>{row.unrealizedPnl}</span>
+  },
+  {
+    id: "exposure",
+    label: "Exposure",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.exposure}</span>
+  }
+];
+
+const runColumns: DenseDataTableColumn<PortfolioRunRow>[] = [
+  {
+    id: "strategy",
+    label: "Strategy",
+    render: (row) => <span className="font-semibold text-foreground">{row.strategyName}</span>
+  },
+  {
+    id: "mode",
+    label: "Mode",
+    render: (row) => <Badge variant={row.modeBadgeVariant}>{row.mode}</Badge>
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => <span className="text-foreground">{row.status}</span>
+  },
+  {
+    id: "pnl",
+    label: "P&L",
+    align: "right",
+    render: (row) => <span className={cn("font-mono font-semibold", pnlToneClass[row.pnlTone])}>{row.pnl}</span>
+  },
+  {
+    id: "sharpe",
+    label: "Sharpe",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.sharpe}</span>
+  },
+  {
+    id: "promotion",
+    label: "Promotion",
+    render: (row) => <span className="text-muted-foreground">{row.promotionState ?? "-"}</span>
+  }
+];
 
 const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionRow>[] = [
   {
@@ -192,6 +273,21 @@ export function PortfolioScreen({
                 {vm.workflowTaskPanel.description}
               </p>
               <p className="mt-3 text-sm leading-6 text-foreground">{vm.workflowTaskPanel.selectedSummary}</p>
+              <div className="mt-4 flex flex-wrap gap-2" aria-label="Brokerage sync next actions">
+                {vm.workflowTaskPanel.actions.map((action) => {
+                  const detailId = `portfolio-brokerage-sync-${action.id}-detail`;
+
+                  return (
+                    <Button key={action.id} asChild variant={action.variant} size="sm">
+                      <Link to={action.href} aria-label={action.ariaLabel} aria-describedby={detailId}>
+                        <PortfolioWorkflowTaskActionIcon actionId={action.id} />
+                        {action.label}
+                        <span id={detailId} className="sr-only">{action.detail}</span>
+                      </Link>
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 lg:justify-end">
               {vm.workflowTaskPanel.chips.map((chip) => (
@@ -498,70 +594,20 @@ export function PortfolioScreen({
               <PortfolioChip label={vm.runEvidenceChip.label} value={vm.runEvidenceChip.value} />
             </div>
             {vm.hasPositions ? (
-              <div className="data-grid-surface overflow-x-auto">
-                <table
-                  className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm"
-                  aria-label={vm.positionListLabel}
-                >
-                  <caption className="sr-only">
-                    Select a position to update the holding detail panel.
-                  </caption>
-                  <thead className="bg-secondary/30">
-                    <tr>
-                      <th className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Symbol
-                      </th>
-                      <th className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Side
-                      </th>
-                      {["Qty", "Avg", "Mark", "Unrealized P&L", "Exposure"].map((col) => (
-                        <th
-                          key={col}
-                          className="px-3 py-2 text-right font-semibold uppercase tracking-[0.14em] text-muted-foreground"
-                        >
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/50">
-                    {vm.positionRows.map((row) => (
-                      <tr
-                        key={row.id}
-                        aria-label={row.ariaLabel}
-                        aria-selected={row.isSelected}
-                        className={cn(
-                          "bg-background/20 transition-colors",
-                          row.isSelected ? "bg-primary/10" : "hover:bg-secondary/20"
-                        )}
-                      >
-                        <td className="px-3 py-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={row.isSelected ? "secondary" : "ghost"}
-                            aria-pressed={row.isSelected}
-                            aria-controls={vm.positionDetailId}
-                            aria-label={row.selectAriaLabel}
-                            onClick={() => vm.selectPosition(row.id)}
-                            className="justify-start px-2 font-mono font-semibold"
-                          >
-                            {row.symbol}
-                          </Button>
-                        </td>
-                        <td className="px-3 py-2 font-mono text-foreground">{row.side}</td>
-                        <td className="px-3 py-2 text-right font-mono text-foreground">{row.quantity}</td>
-                        <td className="px-3 py-2 text-right font-mono text-foreground">{row.avgPrice}</td>
-                        <td className="px-3 py-2 text-right font-mono text-foreground">{row.markPrice}</td>
-                        <td className={cn("px-3 py-2 text-right font-mono font-semibold", pnlToneClass[row.pnlTone])}>
-                          {row.unrealizedPnl}
-                        </td>
-                        <td className="px-3 py-2 text-right font-mono text-foreground">{row.exposure}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DenseDataTable
+                columns={positionColumns}
+                rows={vm.positionRows}
+                getRowId={(row) => row.id}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                getRowAriaControls={(row) => row.detailPanelId}
+                getRowAriaExpanded={(row) => row.expanded}
+                onRowSelect={(row) => vm.selectPosition(row.id)}
+                selectedRowId={vm.selectedPosition?.id ?? null}
+                emptyText={vm.positionEmptyText}
+                ariaLabel={vm.positionListLabel}
+                caption="Select a position row to update the holding detail panel."
+              />
             ) : (
               <div
                 role="status"
@@ -642,65 +688,20 @@ export function PortfolioScreen({
         <CardContent>
           {vm.hasRuns ? (
             <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-              <div className="data-grid-surface overflow-x-auto">
-                <table
-                  className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm"
-                  aria-label={vm.runListLabel}
-                >
-                  <caption className="sr-only">
-                    Select a run to update the run evidence detail panel.
-                  </caption>
-                  <thead className="bg-secondary/30">
-                    <tr>
-                      {["Strategy", "Mode", "Status", "P&L", "Sharpe", "Promotion"].map((col) => (
-                        <th
-                          key={col}
-                          className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground"
-                        >
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/50">
-                    {vm.runRows.map((row) => (
-                      <tr
-                        key={row.id}
-                        aria-label={row.ariaLabel}
-                        aria-selected={row.isSelected}
-                        className={cn(
-                          "bg-background/20 transition-colors",
-                          row.isSelected ? "bg-primary/10" : "hover:bg-secondary/20"
-                        )}
-                      >
-                        <td className="px-3 py-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={row.isSelected ? "secondary" : "ghost"}
-                            aria-pressed={row.isSelected}
-                            aria-controls={vm.runDetailId}
-                            aria-label={row.selectAriaLabel}
-                            onClick={() => vm.selectRun(row.id)}
-                            className="justify-start px-2 text-left font-semibold"
-                          >
-                            {row.strategyName}
-                          </Button>
-                        </td>
-                        <td className="px-3 py-2">
-                          <Badge variant={row.modeBadgeVariant}>{row.mode}</Badge>
-                        </td>
-                        <td className="px-3 py-2 text-foreground">{row.status}</td>
-                        <td className={cn("px-3 py-2 font-mono font-semibold", pnlToneClass[row.pnlTone])}>
-                          {row.pnl}
-                        </td>
-                        <td className="px-3 py-2 font-mono text-foreground">{row.sharpe}</td>
-                        <td className="px-3 py-2 text-muted-foreground">{row.promotionState ?? "—"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DenseDataTable
+                columns={runColumns}
+                rows={vm.runRows}
+                getRowId={(row) => row.id}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                getRowAriaControls={(row) => row.detailPanelId}
+                getRowAriaExpanded={(row) => row.expanded}
+                onRowSelect={(row) => vm.selectRun(row.id)}
+                selectedRowId={vm.selectedRun?.id ?? null}
+                emptyText={vm.runEmptyText}
+                ariaLabel={vm.runListLabel}
+                caption="Select a run row to update the run evidence detail panel."
+              />
               <aside
                 id={vm.runDetailId}
                 role="complementary"
@@ -802,6 +803,17 @@ function PortfolioChip({ label, value }: { label: string; value: string }) {
       <span className="font-mono text-foreground">{value}</span>
     </span>
   );
+}
+
+function PortfolioWorkflowTaskActionIcon({ actionId }: { actionId: PortfolioWorkflowTaskAction["id"] }) {
+  const Icon =
+    actionId === "provider-setup"
+      ? Settings
+      : actionId === "trading-readiness"
+        ? ShieldCheck
+        : BriefcaseBusiness;
+
+  return <Icon className="h-4 w-4" aria-hidden="true" />;
 }
 
 function workflowStatusVariant(statusTone: "default" | "success" | "warning" | "danger") {

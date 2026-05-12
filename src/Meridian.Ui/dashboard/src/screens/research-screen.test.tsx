@@ -52,6 +52,17 @@ describe("ResearchScreen", () => {
     restoreApiSpy(api.createPaperSession);
   });
 
+  it("renders the Strategy loading state with pending semantics", () => {
+    renderWithRouter(<ResearchScreen data={null} />);
+
+    const loading = screen.getByRole("status", { name: "Loading Strategy" });
+    expect(loading).toHaveAttribute("aria-busy", "true");
+    expect(loading).toHaveAccessibleDescription("Waiting for run history, PlotTool state, and promotion evidence.");
+    expect(loading).toHaveClass("border-[var(--state-pending-bd)]", "bg-[var(--state-pending-bg)]");
+    expect(screen.getByText("Loading")).toBeInTheDocument();
+    expect(screen.getByLabelText("Route Strategy")).toBeInTheDocument();
+  });
+
   it("opens a detail dialog with run notes when the Open button is clicked", async () => {
     const user = userEvent.setup();
     renderWithRouter(<ResearchScreen data={twoRuns} />);
@@ -62,7 +73,7 @@ describe("ResearchScreen", () => {
     expect(dialog).toHaveAccessibleDescription("Mean Reversion FX is Running in PAPER mode.");
     expect(dialog).toHaveTextContent("Primary paper candidate.");
     expect(screen.getByLabelText("Selected strategy run evidence")).toBeInTheDocument();
-    expect(screen.getByText("run-1")).toBeInTheDocument();
+    expect(screen.getAllByText("run-1").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Close Mean Reversion FX run detail" })).toBeInTheDocument();
   });
 
@@ -125,9 +136,35 @@ describe("ResearchScreen", () => {
   it("renders an empty run-library row when no strategy runs are available", () => {
     renderWithRouter(<ResearchScreen data={{ ...twoRuns, runs: [] }} />);
 
-    expect(screen.getByText("No strategy runs available. Start a backtest or paper session, then refresh Strategy."))
-      .toBeInTheDocument();
+    expect(screen.getAllByText("No strategy runs available. Start a backtest or paper session, then refresh Strategy.").length)
+      .toBeGreaterThanOrEqual(2);
     expect(screen.getByText("Strategy runs available for compare, diff, and detail review.")).toBeInTheDocument();
+  });
+
+  it("links strategy run rows to a visible detail panel for click and keyboard inspection", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
+
+    const firstRow = screen.getByRole("row", { name: "Inspect Mean Reversion FX run detail" });
+    const secondRow = screen.getByRole("row", { name: "Inspect Index Momentum run detail" });
+    expect(firstRow).toHaveAttribute("aria-controls", "strategy-run-library-selected-run-detail");
+    expect(firstRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected strategy run detail for Mean Reversion FX" })).toBeInTheDocument();
+
+    await user.click(secondRow);
+
+    expect(secondRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected strategy run detail for Index Momentum" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Index Momentum evidence packet" })).toHaveAttribute(
+      "href",
+      "/reporting/evidence?subjectKind=strategy-run&subjectId=run-2"
+    );
+
+    firstRow.focus();
+    await user.keyboard("{Enter}");
+
+    expect(firstRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected strategy run detail for Mean Reversion FX" })).toBeInTheDocument();
   });
 
   it("keeps compare and diff disabled until two runs are checked", async () => {
@@ -401,6 +438,23 @@ describe("ResearchScreen", () => {
         qualifyingMaxDrawdownPercent: -0.032,
         qualifyingTotalReturn: 0.065,
         promotedAt: "2026-03-25T12:00:00Z"
+      },
+      {
+        promotionId: "promo-2",
+        strategyId: "strat-2",
+        strategyName: "Index Momentum",
+        sourceRunType: "paper",
+        targetRunType: "live",
+        sourceRunId: "run-paper-2",
+        targetRunId: "run-live-2",
+        decision: "Approved for live",
+        approvedBy: "risk-ops",
+        approvalReason: "Manual override evidence accepted.",
+        auditReference: "audit-live-2",
+        qualifyingSharpe: 1.31,
+        qualifyingMaxDrawdownPercent: -0.044,
+        qualifyingTotalReturn: 0.088,
+        promotedAt: "2026-03-26T12:00:00Z"
       }
     ];
     vi.spyOn(api, "getPromotionHistory").mockResolvedValue(history);
@@ -411,9 +465,29 @@ describe("ResearchScreen", () => {
     await user.click(screen.getByRole("button", { name: /promotion history/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Carry Pair FX")).toBeInTheDocument();
+      expect(screen.getAllByText("Carry Pair FX").length).toBeGreaterThanOrEqual(1);
     });
-    expect(screen.getByText("1.820")).toBeInTheDocument();
+    expect(screen.getAllByText("1.820").length).toBeGreaterThanOrEqual(1);
+    const carryRow = screen.getByRole("row", { name: "Inspect Carry Pair FX promotion decision" });
+    const momentumRow = screen.getByRole("row", { name: "Inspect Index Momentum promotion decision" });
+    expect(carryRow).toHaveAttribute("aria-controls", "strategy-promotion-history-selected-detail");
+    expect(carryRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected promotion decision detail for Carry Pair FX" }))
+      .toHaveTextContent("Approved for paper promotion decision");
+
+    await user.click(momentumRow);
+
+    expect(momentumRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected promotion decision detail for Index Momentum" }))
+      .toHaveTextContent("Manual override evidence accepted.");
+    expect(screen.getByText("audit-live-2")).toBeInTheDocument();
+
+    carryRow.focus();
+    await user.keyboard("{Enter}");
+
+    expect(carryRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected promotion decision detail for Carry Pair FX" }))
+      .toBeInTheDocument();
     expect(api.getPromotionHistory).toHaveBeenCalledOnce();
   });
 
@@ -458,7 +532,7 @@ describe("ResearchScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<ResearchScreen data={twoRuns} />);
 
-    await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum for compare and diff" }));
     await user.click(screen.getByRole("button", { name: /promote to paper/i }));
 
     const cashInput = await screen.findByLabelText("Initial cash ($)");
@@ -489,12 +563,12 @@ describe("ResearchScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<ResearchScreen data={twoRuns} />);
 
-    await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum for compare and diff" }));
     await user.click(screen.getByRole("button", { name: /promote to paper/i }));
 
     expect(screen.getByRole("button", { name: /evaluating/i })).toBeDisabled();
 
-    await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum" }));
+    await user.click(screen.getByRole("checkbox", { name: "Remove Index Momentum for compare and diff" }));
 
     await act(async () => {
       pending.resolve({

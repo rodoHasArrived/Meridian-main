@@ -5,6 +5,7 @@ import {
   Plus,
   RadioTower,
   RefreshCcw,
+  ShieldCheck,
   TimerReset,
   XCircle
 } from "lucide-react";
@@ -26,7 +27,8 @@ import type {
   BackfillResultCardState,
   DataOperationsEmptyState,
   DataOperationsLoadingState,
-  DataOperationsRouteFocusCardState
+  DataOperationsRouteFocusCardState,
+  ProviderSetupNextActionState
 } from "@/screens/data-operations-screen.view-model";
 
 interface DataOperationsScreenProps {
@@ -365,7 +367,23 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                 <p className="mt-1 text-sm text-muted-foreground">{vm.providerSetupResult.message}</p>
               </div>
             </div>
-            <div className="mt-5 flex justify-end gap-2">
+            <div
+              className="mt-4 rounded-lg border border-border/70 bg-secondary/25 px-3 py-3"
+              role="region"
+              aria-label={vm.providerSetupDialogState.successPanel.ariaLabel}
+            >
+              <div className="eyebrow-label">{vm.providerSetupDialogState.successPanel.title}</div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {vm.providerSetupDialogState.successActions.map((action) => (
+                  <ProviderSetupNextAction
+                    key={action.id}
+                    action={action}
+                    onNavigate={vm.closeProviderSetup}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button variant="outline" onClick={vm.closeProviderSetup}>Done</Button>
               <Button onClick={vm.openProviderSetup}>Configure another</Button>
             </div>
@@ -493,6 +511,32 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
     </Dialog>
   );
 }
+
+function ProviderSetupNextAction({
+  action,
+  onNavigate
+}: {
+  action: ProviderSetupNextActionState;
+  onNavigate: () => void;
+}) {
+  const Icon = providerSetupNextActionIcons[action.id];
+
+  return (
+    <Button asChild variant={action.variant} size="sm" className="justify-start">
+      <Link to={action.href} aria-label={action.ariaLabel} onClick={onNavigate}>
+        <Icon className="h-4 w-4" aria-hidden="true" />
+        {action.label}
+      </Link>
+    </Button>
+  );
+}
+
+const providerSetupNextActionIcons: Record<ProviderSetupNextActionState["id"], LucideIcon> = {
+  "live-quotes": RadioTower,
+  backfill: TimerReset,
+  readiness: ShieldCheck,
+  "security-master": DatabaseZap
+};
 
 function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
   return (

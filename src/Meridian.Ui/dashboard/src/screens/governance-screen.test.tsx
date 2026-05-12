@@ -175,9 +175,38 @@ describe("GovernanceScreen", () => {
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
     expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
+    const selectedRun = screen.getByRole("button", { name: "Inspect reconciliation run Paper Index Mean Reversion" });
+    expect(selectedRun).toHaveAttribute("aria-pressed", "true");
+    expect(selectedRun).toHaveAttribute("aria-expanded", "true");
+    expect(selectedRun).toHaveAttribute("aria-controls", "reconciliation-run-detail-panel");
+    expect(selectedRun).toHaveClass("rounded-lg");
     expect(screen.getByLabelText("Open breaks: 1")).toHaveTextContent("1");
     expect(screen.getByLabelText("Reconciliation narrative for Paper Index Mean Reversion")).toHaveTextContent(
       "Open reconciliation breaks remain on this run."
+    );
+  });
+
+  it("updates reconciliation detail queue selection with accessible expanded state", async () => {
+    const user = userEvent.setup();
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
+
+    const nextRun = screen.getByRole("button", { name: "Inspect reconciliation run Intraday Vol Carry" });
+    expect(nextRun).toHaveAttribute("aria-pressed", "false");
+    expect(nextRun).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(nextRun);
+
+    expect(nextRun).toHaveAttribute("aria-pressed", "true");
+    expect(nextRun).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Reconciliation detail for Intraday Vol Carry" })).toBeInTheDocument();
+  });
+
+  it("renders reconciliation detail queue empty state when no runs are available", async () => {
+    await renderGovernanceScreen({ ...data, reconciliationQueue: [] }, "/accounting/reconciliation");
+
+    expect(screen.getByText("No reconciliation runs are available for this accounting scope.")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "No reconciliation run selected" })).toHaveTextContent(
+      "Reconciliation evidence is unavailable until the workspace payload includes at least one run."
     );
   });
 
@@ -352,9 +381,13 @@ describe("GovernanceScreen", () => {
     await renderGovernanceScreen(data, "/accounting/security-master");
 
     await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
-    const securityRow = await screen.findByText("Apple Inc.");
+    const securityRow = await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." });
+    expect(securityRow).toHaveAttribute("aria-controls", "security-master-identity-detail");
+    expect(securityRow).toHaveAttribute("aria-expanded", "false");
     await user.click(securityRow);
 
+    expect(securityRow).toHaveAttribute("aria-expanded", "true");
+    expect(securityRow).toHaveAttribute("aria-selected", "true");
     expect(await screen.findByText(/Identity drill-in · Apple Inc\./i)).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Security identity detail for Apple Inc." })).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Identifiers for Apple Inc." })).toBeInTheDocument();
@@ -364,6 +397,55 @@ describe("GovernanceScreen", () => {
     expect(screen.getByRole("table", { name: "Aliases for Apple Inc." })).toBeInTheDocument();
     expect(screen.getByText("AAPL.OQ")).toBeInTheDocument();
     expect(screen.getByText("Collector")).toBeInTheDocument();
+  });
+
+  it("selects Security Master search rows with keyboard-expanded detail linkage", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.searchSecurities).mockResolvedValueOnce([
+      {
+        securityId: "sec-1",
+        displayName: "Apple Inc.",
+        status: "Active",
+        classification: {
+          assetClass: "Equity",
+          subType: "CommonStock",
+          primaryIdentifierKind: "Ticker",
+          primaryIdentifierValue: "AAPL"
+        },
+        economicDefinition: {
+          currency: "USD",
+          version: 3,
+          effectiveFrom: "2024-01-01T00:00:00Z",
+          effectiveTo: null,
+          subType: "CommonStock",
+          assetFamily: "Equity",
+          issuerType: "Corporate"
+        }
+      }
+    ]);
+    vi.mocked(api.getSecurityIdentity).mockResolvedValueOnce({
+      securityId: "sec-1",
+      displayName: "Apple Inc.",
+      assetClass: "Equity",
+      status: "Active",
+      version: 3,
+      effectiveFrom: "2024-01-01T00:00:00Z",
+      effectiveTo: null,
+      identifiers: [],
+      aliases: []
+    });
+
+    await renderGovernanceScreen(data, "/accounting/security-master");
+
+    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
+    const securityRow = await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." });
+
+    securityRow.focus();
+    await user.keyboard("[Enter]");
+
+    expect(securityRow).toHaveAttribute("aria-controls", "security-master-identity-detail");
+    expect(securityRow).toHaveAttribute("aria-expanded", "true");
+    expect(await screen.findByRole("region", { name: "Security identity detail for Apple Inc." })).toBeInTheDocument();
   });
 
   it("renders provider-specific security conflict actions", async () => {
@@ -392,6 +474,24 @@ describe("GovernanceScreen", () => {
       resolution: "AcceptA",
       resolvedBy: "operator"
     });
+  });
+
+  it("recovers Security Master conflict loading failures with a retry command", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getSecurityConflicts)
+      .mockRejectedValueOnce(new Error("Conflict API offline"))
+      .mockResolvedValueOnce([securityConflict]);
+
+    await renderGovernanceScreen(data, "/accounting/security-master");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Conflict API offline");
+    const retry = screen.getByRole("button", { name: "Retry loading Security Master identifier conflicts" });
+    expect(retry).toHaveTextContent("Retry conflicts");
+
+    await user.click(retry);
+
+    expect(await screen.findByRole("group", { name: /Identifier conflict conflict-1/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Refresh Security Master identifier conflicts" })).toHaveTextContent("Refresh conflicts");
   });
 
   it("renders reconciliation detail on deep-link routes and updates selection", async () => {

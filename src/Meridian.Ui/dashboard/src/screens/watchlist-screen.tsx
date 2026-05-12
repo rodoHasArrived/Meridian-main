@@ -75,7 +75,7 @@ export function WatchlistScreen() {
               disabled={vm.addDisabled}
               disabledReason={vm.addDisabledReason}
               busy={vm.submitting}
-              busyLabel="Adding..."
+              busyLabel={vm.addButtonLabel}
               aria-label={vm.addButtonAriaLabel}
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
@@ -89,7 +89,7 @@ export function WatchlistScreen() {
               aria-label={vm.refreshButtonAriaLabel}
               disabled={vm.refreshDisabled}
               busy={vm.refreshing}
-              busyLabel="Refreshing..."
+              busyLabel={vm.refreshButtonLabel}
             >
               <RefreshCw className={`h-4 w-4 ${vm.refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
               <span className="ml-1.5">{vm.refreshButtonLabel}</span>
@@ -111,7 +111,7 @@ export function WatchlistScreen() {
                 disabled={pack.disabled}
                 disabledReason={pack.disabledReason}
                 busy={pack.busy}
-                busyLabel="Adding..."
+                busyLabel={pack.busyLabel}
                 aria-label={pack.ariaLabel}
               >
                 <Plus className="h-3.5 w-3.5" aria-hidden="true" />
@@ -135,6 +135,14 @@ export function WatchlistScreen() {
                   <Link to={vm.submitFeedback.providerSetupHandoff.href} aria-label={vm.submitFeedback.providerSetupHandoff.ariaLabel}>
                     <Settings className="h-3.5 w-3.5" aria-hidden="true" />
                     <span>{vm.submitFeedback.providerSetupHandoff.label}</span>
+                  </Link>
+                </Button>
+              ) : null}
+              {vm.submitFeedback.nextActionHandoff ? (
+                <Button asChild variant="outline" size="sm">
+                  <Link to={vm.submitFeedback.nextActionHandoff.href} aria-label={vm.submitFeedback.nextActionHandoff.ariaLabel}>
+                    <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span>{vm.submitFeedback.nextActionHandoff.label}</span>
                   </Link>
                 </Button>
               ) : null}
