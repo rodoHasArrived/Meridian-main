@@ -41,7 +41,13 @@ export interface DenseDataTableColumn<T> {
   label: string;
   align?: "left" | "right";
   className?: string;
+  sortable?: boolean;
   render: (row: T) => ReactNode;
+}
+
+export interface DenseDataTableSortState {
+  columnId: string;
+  direction: "asc" | "desc";
 }
 
 export function DenseDataTable<T>({
@@ -57,7 +63,9 @@ export function DenseDataTable<T>({
   emptyText,
   ariaLabel,
   tableId,
-  caption
+  caption,
+  sort,
+  onToggleSort
 }: {
   columns: DenseDataTableColumn<T>[];
   rows: T[];
@@ -72,6 +80,8 @@ export function DenseDataTable<T>({
   ariaLabel: string;
   tableId?: string;
   caption?: string | null;
+  sort?: DenseDataTableSortState;
+  onToggleSort?: (columnId: string) => void;
 }) {
   return (
     <div className="dense-data-table-wrap">
@@ -79,15 +89,44 @@ export function DenseDataTable<T>({
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead>
           <tr>
-            {columns.map((column) => (
-              <th
-                key={column.id}
-                scope="col"
-                className={cn(column.align === "right" ? "text-right" : "text-left", column.className)}
-              >
-                {column.label}
-              </th>
-            ))}
+            {columns.map((column) => {
+              const isSorted = sort?.columnId === column.id;
+              if (column.sortable && onToggleSort) {
+                return (
+                  <th
+                    key={column.id}
+                    scope="col"
+                    aria-sort={isSorted ? (sort!.direction === "asc" ? "ascending" : "descending") : "none"}
+                    className={cn(
+                      column.align === "right" ? "text-right" : "text-left",
+                      column.className,
+                      "dense-data-table-sortable",
+                      isSorted ? "dense-data-table-sorted" : undefined
+                    )}
+                  >
+                    <button
+                      type="button"
+                      className="dense-data-table-sort-button"
+                      onClick={() => onToggleSort(column.id)}
+                    >
+                      {column.label}
+                      <span className="dense-data-table-sort-indicator" aria-hidden="true">
+                        {isSorted ? (sort!.direction === "asc" ? "↑" : "↓") : "↕"}
+                      </span>
+                    </button>
+                  </th>
+                );
+              }
+              return (
+                <th
+                  key={column.id}
+                  scope="col"
+                  className={cn(column.align === "right" ? "text-right" : "text-left", column.className)}
+                >
+                  {column.label}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
