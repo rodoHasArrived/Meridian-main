@@ -108,6 +108,15 @@ export interface EvidenceWorkbenchCommandState {
   disabledReason: string | null;
 }
 
+export interface EvidenceExportResultViewModel {
+  title: string;
+  manifestPath: string;
+  summaryLabel: string;
+  routeHref: string | null;
+  routeLabel: string | null;
+  routeAriaLabel: string | null;
+}
+
 export interface EvidenceWorkbenchViewModel {
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
@@ -152,6 +161,7 @@ export interface EvidenceWorkbenchViewModel {
   exportCommand: EvidenceWorkbenchCommandState;
   exportBusy: boolean;
   exportResult: EvidencePacketExportResponse | null;
+  exportResultDetail: EvidenceExportResultViewModel | null;
   validateBusy: boolean;
   validationResult: EvidenceCompleteness | null;
   openSubjectHref: (subject: EvidenceSubject) => string;
@@ -438,6 +448,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     exportCommand,
     exportBusy: input.exportBusy,
     exportResult: input.exportResult,
+    exportResultDetail: buildExportResultViewModel(input.exportResult),
     validateBusy: input.validateBusy,
     validationResult: input.validationResult,
     openSubjectHref: (subject) =>
@@ -712,6 +723,33 @@ function buildPrimaryActionCommand(
       ? `Validate selected evidence packet for ${subjectLabel}`
       : `Export selected evidence manifest for ${subjectLabel}`
   };
+}
+
+function buildExportResultViewModel(result: EvidencePacketExportResponse | null): EvidenceExportResultViewModel | null {
+  if (!result) {
+    return null;
+  }
+
+  const routeHref = normalizeManifestRoute(result.manifestRoute);
+  const nodeLabel = result.evidenceCount === 1 ? "1 node" : `${result.evidenceCount} nodes`;
+  const warningLabel = result.warningCount === 1 ? "1 warning" : `${result.warningCount} warnings`;
+  return {
+    title: result.retained ? "Manifest retained" : "Manifest generated",
+    manifestPath: result.manifestPath,
+    summaryLabel: `${nodeLabel}, ${warningLabel}`,
+    routeHref,
+    routeLabel: routeHref ? "Open manifest" : null,
+    routeAriaLabel: routeHref ? `Open retained evidence manifest at ${result.manifestPath}` : null
+  };
+}
+
+function normalizeManifestRoute(value: string): string | null {
+  const route = value.trim();
+  if (!route.startsWith("/workstation/evidence/") || route.startsWith("//")) {
+    return null;
+  }
+
+  return route;
 }
 
 function mapWorkflowActionTone(tone: string): EvidencePacketActionTone {

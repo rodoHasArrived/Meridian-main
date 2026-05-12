@@ -13,6 +13,8 @@ import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
+import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +27,7 @@ import {
 import type { DataOperationsWorkspaceResponse } from "@/types";
 import type {
   BackfillResultCardState,
+  DataOperationsBackfillRow,
   DataOperationsEmptyState,
   DataOperationsLoadingState,
   DataOperationsRouteFocusCardState,
@@ -34,6 +37,52 @@ import type {
 interface DataOperationsScreenProps {
   data: DataOperationsWorkspaceResponse | null;
 }
+
+const backfillQueueColumns: DenseDataTableColumn<DataOperationsBackfillRow>[] = [
+  {
+    id: "job",
+    label: "Job",
+    render: (backfill) => (
+      <span className="block min-w-0">
+        <span className="block font-mono font-semibold text-foreground">{backfill.jobId}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{backfill.provider}</span>
+      </span>
+    )
+  },
+  {
+    id: "scope",
+    label: "Scope",
+    render: (backfill) => <span className="text-muted-foreground">{backfill.scope}</span>
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (backfill) => (
+      <Badge
+        variant={backfill.status === "Review" ? "warning" : backfill.status === "Running" ? "default" : "outline"}
+      >
+        {backfill.status}
+      </Badge>
+    )
+  },
+  {
+    id: "progress",
+    label: "Progress",
+    render: (backfill) => (
+      <span className="block min-w-[8rem]">
+        <span className="mb-1 block font-mono text-xs text-muted-foreground">{backfill.progress}</span>
+        <span className="block h-1 rounded-full bg-border/70">
+          <span className="block h-1 rounded-full bg-primary transition-all" style={{ width: backfill.progress }} />
+        </span>
+      </span>
+    )
+  },
+  {
+    id: "updated",
+    label: "Updated",
+    render: (backfill) => <span className="font-mono text-xs text-muted-foreground">{backfill.updatedAt}</span>
+  }
+];
 
 export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
   const { pathname } = useLocation();
@@ -172,40 +221,22 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {vm.backfillSection.hasRows ? vm.backfillSection.rows.map((backfill) => (
-              <button
-                key={backfill.jobId}
-                id={backfill.rowId}
-                type="button"
-                aria-label={backfill.ariaLabel}
-                aria-pressed={backfill.selected}
-                aria-controls={backfill.detailPanelId}
-                aria-expanded={backfill.expanded}
-                aria-describedby={`${backfill.rowId}-detail`}
-                className={cn(
-                  "w-full rounded-lg border px-3 py-3 text-left text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                  backfill.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/25"
-                )}
-                onClick={() => vm.selectBackfill(backfill.jobId)}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-mono font-semibold">{backfill.jobId}</span>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={backfill.status === "Review" ? "warning" : backfill.status === "Running" ? "default" : "outline"}
-                    >
-                      {backfill.status}
-                    </Badge>
-                    <span className="font-mono text-xs text-muted-foreground">{backfill.progress}</span>
-                  </div>
-                </div>
-                <p className="mt-1 text-muted-foreground">{backfill.scope}</p>
-                <div className="mt-2 h-1 rounded-full bg-border/70">
-                  <div className="h-1 rounded-full bg-primary transition-all" style={{ width: backfill.progress }} />
-                </div>
-                <span id={`${backfill.rowId}-detail`} className="sr-only">{backfill.detailDescription}</span>
-              </button>
-            )) : (
+            {vm.backfillSection.hasRows ? (
+              <DenseDataTable
+                columns={backfillQueueColumns}
+                rows={vm.backfillSection.rows}
+                getRowId={(backfill) => backfill.rowId}
+                getRowAriaLabel={(backfill) => backfill.ariaLabel}
+                getRowSelectAriaLabel={(backfill) => backfill.selectAriaLabel}
+                getRowAriaControls={(backfill) => backfill.detailPanelId}
+                getRowAriaExpanded={(backfill) => backfill.expanded}
+                selectedRowId={vm.selectedBackfillRowId}
+                onRowSelect={(backfill) => vm.selectBackfill(backfill.jobId)}
+                emptyText={vm.backfillSection.emptyState.description}
+                ariaLabel={vm.backfillSection.tableLabel}
+                caption={vm.backfillSection.description}
+              />
+            ) : (
               <EmptyState state={vm.backfillSection.emptyState} />
             )}
           </CardContent>

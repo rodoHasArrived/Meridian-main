@@ -63,8 +63,28 @@ export interface TradingWorkflowStripState {
   commands: TradingWorkflowCommandState[];
 }
 
+export interface TradingLoadingChipState {
+  label: string;
+  value: string;
+}
+
+export interface TradingLoadingState {
+  role: "status";
+  ariaBusy: true;
+  ariaLive: "polite";
+  regionLabel: string;
+  titleId: string;
+  detailId: string;
+  title: string;
+  detail: string;
+  statusLabel: string;
+  routeLabel: string;
+  chips: TradingLoadingChipState[];
+}
+
 export interface TradingScreenShellViewModel {
   route: TradingScreenRouteState;
+  loadingState: TradingLoadingState;
   headerChips: TradingScreenChipState[];
   workflowStrip: TradingWorkflowStripState;
   strategySheetOpen: boolean;
@@ -160,6 +180,7 @@ export function buildTradingScreenShellViewModel({
       title: routeCopy.title,
       description: routeCopy.description
     },
+    loadingState: buildTradingLoadingState(pathname),
     headerChips: [
       { label: "Route", value: pathname },
       { label: "Account", value: data?.brokerage.account ?? "-" },
@@ -191,6 +212,29 @@ export function buildTradingScreenShellViewModel({
     openWorkflowPanel,
     closeWorkflowPanel,
     setWorkflowPanelOpen
+  };
+}
+
+export function buildTradingLoadingState(pathname: string): TradingLoadingState {
+  const workstream = resolveTradingWorkstream(pathname);
+  const routeCopy = tradingRouteCopy[workstream];
+
+  return {
+    role: "status",
+    ariaBusy: true,
+    ariaLive: "polite",
+    regionLabel: "Trading cockpit loading state",
+    titleId: "trading-loading-title",
+    detailId: "trading-loading-detail",
+    title: "Loading Trading",
+    detail: "Waiting for paper-trading state, order flow, brokerage wiring, and risk guardrail snapshots.",
+    statusLabel: "Loading",
+    routeLabel: routeCopy.title,
+    chips: [
+      { label: "Route", value: pathname },
+      { label: "Workstream", value: routeCopy.title },
+      { label: "Snapshots", value: "Pending" }
+    ]
   };
 }
 

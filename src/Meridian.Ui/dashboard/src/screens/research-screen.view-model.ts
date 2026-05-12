@@ -400,8 +400,10 @@ export interface ResearchPlotStatisticsState {
   distributionSummary: string;
   distributionFootnote: string;
   moments: ResearchPlotMomentRow[];
+  momentsTable: ResearchResultTableState<ResearchPlotMomentRow>;
   regression: ResearchPlotRegressionState;
   sampleRows: ResearchPlotSampleRow[];
+  sampleTable: ResearchResultTableState<ResearchPlotSampleRow>;
 }
 
 export interface ResearchPlotAxisTick {
@@ -1441,6 +1443,15 @@ export function buildPlotToolState({
     yValueText: latestObservation.impliedVolText,
     detail: `${latestObservation.signalText} · highlighted at ${formatText(activeRun?.lastUpdated ?? "2m ago")} · x ${focusPoint.x}, y ${focusPoint.y}`
   };
+  const momentRows: ResearchPlotMomentRow[] = [
+    { id: "net-pnl", label: "Net P&L", value: formatMoney(comparison[0]?.netPnl ?? activeRun?.netPnl ?? 3200, true), benchmark: "Pair summary" },
+    { id: "return", label: "Total return", value: formatSignedPercent(parsedReturn), benchmark: "Run linked" },
+    { id: "sharpe", label: "Sharpe ratio", value: parsedSharpe.toFixed(3), benchmark: "Operator review" },
+    { id: "drawdown", label: "Max drawdown", value: formatSignedPercent(maxDrawdown), benchmark: "Distribution tail" },
+    { id: "promotion", label: "Promotion state", value: promotionCue, benchmark: "Strategy posture" },
+    { id: "evidence", label: "Evidence pack", value: evidenceCue, benchmark: "Ledger / audit" }
+  ];
+  const sampleRows = plotToolSampleRows;
 
   return {
     studies: runs.map((run, index) => ({
@@ -1618,14 +1629,8 @@ export function buildPlotToolState({
       distributionChart: buildPlotToolDistributionChartState(plotToolDistributionBars),
       distributionSummary: `${observationCount.toLocaleString()} samples centered on spread ${meanX.toFixed(2)} and IV ${meanY.toFixed(2)}.`,
       distributionFootnote: `Latest observation ${latestObservation.timestamp} · ${latestObservation.signalText} · z-score ${latestObservation.zScoreText}.`,
-      moments: [
-        { id: "net-pnl", label: "Net P&L", value: formatMoney(comparison[0]?.netPnl ?? activeRun?.netPnl ?? 3200, true), benchmark: "Pair summary" },
-        { id: "return", label: "Total return", value: formatSignedPercent(parsedReturn), benchmark: "Run linked" },
-        { id: "sharpe", label: "Sharpe ratio", value: parsedSharpe.toFixed(3), benchmark: "Operator review" },
-        { id: "drawdown", label: "Max drawdown", value: formatSignedPercent(maxDrawdown), benchmark: "Distribution tail" },
-        { id: "promotion", label: "Promotion state", value: promotionCue, benchmark: "Strategy posture" },
-        { id: "evidence", label: "Evidence pack", value: evidenceCue, benchmark: "Ledger / audit" }
-      ],
+      moments: momentRows,
+      momentsTable: buildPlotToolMomentsTable(momentRows),
       regression: {
         equation: "y = 0.48x + 39.31",
         detailItems: [
@@ -1634,8 +1639,31 @@ export function buildPlotToolState({
           diffCue
         ]
       },
-      sampleRows: plotToolSampleRows
+      sampleRows,
+      sampleTable: buildPlotToolSampleTable(sampleRows)
     }
+  };
+}
+
+export function buildPlotToolMomentsTable(
+  moments: ResearchPlotMomentRow[]
+): ResearchResultTableState<ResearchPlotMomentRow> {
+  return {
+    rows: moments,
+    hasRows: moments.length > 0,
+    caption: "PlotTool moments for the active strategy pair.",
+    emptyText: "No PlotTool moments are available for the active strategy context."
+  };
+}
+
+export function buildPlotToolSampleTable(
+  samples: ResearchPlotSampleRow[]
+): ResearchResultTableState<ResearchPlotSampleRow> {
+  return {
+    rows: samples,
+    hasRows: samples.length > 0,
+    caption: "Recent PlotTool observations with spread, implied volatility, z-score, and signal.",
+    emptyText: "No PlotTool observation rows are available for the active strategy context."
   };
 }
 

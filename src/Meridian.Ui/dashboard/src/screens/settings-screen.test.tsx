@@ -89,7 +89,7 @@ describe("SettingsScreen", () => {
     );
     const eventList = screen.getByRole("list", { name: "1 recent system event" });
     const eventRow = within(eventList).getByRole("group", {
-      name: /OBS event from Provider health at 2026-05-01T00:00:00Z\. Brokerage sync delayed\./i
+      name: /OBS event from Provider health at May 1, 00:00 UTC\. Brokerage sync delayed\./i
     });
 
     expect(within(eventRow).getByText("OBS")).toBeInTheDocument();

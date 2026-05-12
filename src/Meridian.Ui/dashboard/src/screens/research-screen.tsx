@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useResearchRunLibraryViewModel } from "@/screens/research-screen.view-model";
 import type {
   ResearchPlotLegendItem,
+  ResearchPlotMomentRow,
   ResearchPlotSampleRow,
   ResearchPlotScatterChartState,
   ResearchPlotStatisticsState,
@@ -66,6 +67,59 @@ const sampleToneBadgeVariant = {
   warning: "warning",
   danger: "danger"
 } as const;
+
+const plotToolMomentColumns: DenseDataTableColumn<ResearchPlotMomentRow>[] = [
+  {
+    id: "metric",
+    label: "Metric",
+    className: "text-muted-foreground",
+    render: (moment) => moment.label
+  },
+  {
+    id: "value",
+    label: "Value",
+    className: "font-mono",
+    render: (moment) => moment.value
+  },
+  {
+    id: "benchmark",
+    label: "Benchmark",
+    className: "text-muted-foreground",
+    render: (moment) => moment.benchmark
+  }
+];
+
+const plotToolObservationColumns: DenseDataTableColumn<ResearchPlotSampleRow>[] = [
+  {
+    id: "date",
+    label: "Date",
+    className: "text-muted-foreground",
+    render: (row) => row.timestamp
+  },
+  {
+    id: "spread",
+    label: "Spread",
+    className: "font-mono",
+    render: (row) => row.spreadText
+  },
+  {
+    id: "implied-vol",
+    label: "3m IV",
+    className: "font-mono",
+    render: (row) => row.impliedVolText
+  },
+  {
+    id: "z-score",
+    label: "Z-score",
+    className: "font-mono",
+    render: (row) => <span className={plotToneClass[row.tone]}>{row.zScoreText}</span>
+  },
+  {
+    id: "signal",
+    label: "Signal",
+    render: (row) => <Badge variant={sampleToneBadgeVariant[row.tone]}>{row.signalText}</Badge>
+  }
+];
 
 export function ResearchScreen({ data }: ResearchScreenProps) {
   const vm = useResearchRunLibraryViewModel(data);
@@ -971,26 +1025,15 @@ function PlotToolStatisticsPanel({ vm }: { vm: ResearchPlotStatisticsState }) {
             <CardDescription>Meridian-ready statistical readout with promotion and evidence cues.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-hidden rounded-lg border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-sm">
-                <thead className="bg-secondary/30">
-                  <tr>
-                    <th className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Metric</th>
-                    <th className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Value</th>
-                    <th className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Benchmark</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {vm.moments.map((moment) => (
-                    <tr key={moment.id}>
-                      <td className="px-3 py-2 text-muted-foreground">{moment.label}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{moment.value}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{moment.benchmark}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DenseDataTable
+              columns={plotToolMomentColumns}
+              rows={vm.momentsTable.rows}
+              getRowId={(moment) => moment.id}
+              getRowAriaLabel={(moment) => `${moment.label}: ${moment.value}. Benchmark ${moment.benchmark}.`}
+              emptyText={vm.momentsTable.emptyText}
+              ariaLabel="PlotTool moments table"
+              caption={vm.momentsTable.caption}
+            />
           </CardContent>
         </Card>
 
@@ -1000,22 +1043,15 @@ function PlotToolStatisticsPanel({ vm }: { vm: ResearchPlotStatisticsState }) {
             <CardDescription>Recent records packaged for analyst review without leaving the Strategy lane.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-hidden rounded-lg border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-sm">
-                <thead className="bg-secondary/30">
-                  <tr>
-                    {["Date", "Spread", "3m IV", "Z-score", "Signal"].map((column) => (
-                      <th key={column} className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        {column}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {vm.sampleRows.map((row) => <PlotToolObservationRow key={row.id} row={row} />)}
-                </tbody>
-              </table>
-            </div>
+            <DenseDataTable
+              columns={plotToolObservationColumns}
+              rows={vm.sampleTable.rows}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => `${row.timestamp}: spread ${row.spreadText}, implied volatility ${row.impliedVolText}, z-score ${row.zScoreText}, signal ${row.signalText}.`}
+              emptyText={vm.sampleTable.emptyText}
+              ariaLabel="PlotTool observation sheet"
+              caption={vm.sampleTable.caption}
+            />
           </CardContent>
         </Card>
       </div>
@@ -1150,16 +1186,3 @@ function findLastPlotPoint<T>(items: T[], predicate: (item: T) => boolean): T | 
   return undefined;
 }
 
-function PlotToolObservationRow({ row }: { row: ResearchPlotSampleRow }) {
-  return (
-    <tr>
-      <td className="px-3 py-2 text-muted-foreground">{row.timestamp}</td>
-      <td className="px-3 py-2 font-mono text-foreground">{row.spreadText}</td>
-      <td className="px-3 py-2 font-mono text-foreground">{row.impliedVolText}</td>
-      <td className={cn("px-3 py-2 font-mono", plotToneClass[row.tone])}>{row.zScoreText}</td>
-      <td className="px-3 py-2">
-        <Badge variant={sampleToneBadgeVariant[row.tone]}>{row.signalText}</Badge>
-      </td>
-    </tr>
-  );
-}

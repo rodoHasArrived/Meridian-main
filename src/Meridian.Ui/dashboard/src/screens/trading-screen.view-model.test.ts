@@ -14,6 +14,8 @@ import {
   buildPromotionGateState,
   buildPromotionRejectionRequest,
   buildTradingReadinessState,
+  buildTradingLoadingState,
+  buildTradingScreenShellViewModel,
   buildPromotionApprovalChecklist,
   createTradingConfirmState,
   emptyPaperSessionForm,
@@ -60,6 +62,40 @@ function createDeferred<T>() {
 
   return { promise, resolve, reject };
 }
+
+describe("trading shell loading state", () => {
+  it("projects route-aware pending state for the Trading loading branch", () => {
+    expect(buildTradingLoadingState("/trading/risk")).toEqual({
+      role: "status",
+      ariaBusy: true,
+      ariaLive: "polite",
+      regionLabel: "Trading cockpit loading state",
+      titleId: "trading-loading-title",
+      detailId: "trading-loading-detail",
+      title: "Loading Trading",
+      detail: "Waiting for paper-trading state, order flow, brokerage wiring, and risk guardrail snapshots.",
+      statusLabel: "Loading",
+      routeLabel: "Risk guardrails",
+      chips: [
+        { label: "Route", value: "/trading/risk" },
+        { label: "Workstream", value: "Risk guardrails" },
+        { label: "Snapshots", value: "Pending" }
+      ]
+    });
+  });
+
+  it("keeps loading state inside the shell view model when data is unavailable", () => {
+    const shell = buildTradingScreenShellViewModel({
+      pathname: "/trading/positions",
+      data: null,
+      activeWorkflowPanel: null
+    });
+
+    expect(shell.loadingState.routeLabel).toBe("Position book");
+    expect(shell.loadingState.chips).toContainEqual({ label: "Snapshots", value: "Pending" });
+    expect(shell.headerChips).toContainEqual({ label: "Account", value: "-" });
+  });
+});
 
 const blockedReadiness: TradingOperatorReadiness = {
   asOf: "2026-04-26T16:05:00Z",

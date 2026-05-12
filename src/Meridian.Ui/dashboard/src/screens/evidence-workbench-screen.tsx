@@ -203,12 +203,27 @@ export function EvidenceWorkbenchScreen() {
                     Validation returned {vm.validationResult.score}% completeness with {vm.validationResult.blockingWorkItemIds.length} blocking item(s).
                   </p>
                 ) : null}
-                {vm.exportResult ? (
+                {vm.exportResultDetail ? (
                   <div role="status" className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm leading-6 text-primary">
-                    <div className="font-semibold">Manifest retained</div>
-                    <div className="break-all font-mono text-xs">{vm.exportResult.manifestPath}</div>
-                    <div className="mt-1 text-xs">
-                      {vm.exportResult.evidenceCount} node(s), {vm.exportResult.warningCount} warning(s)
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="font-semibold">{vm.exportResultDetail.title}</div>
+                        <div className="mt-1 break-all font-mono text-xs">{vm.exportResultDetail.manifestPath}</div>
+                        <div className="mt-1 text-xs">{vm.exportResultDetail.summaryLabel}</div>
+                      </div>
+                      {vm.exportResultDetail.routeHref && vm.exportResultDetail.routeLabel && vm.exportResultDetail.routeAriaLabel ? (
+                        <Button asChild variant="outline" size="sm">
+                          <a
+                            href={vm.exportResultDetail.routeHref}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={vm.exportResultDetail.routeAriaLabel}
+                          >
+                            <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                            {vm.exportResultDetail.routeLabel}
+                          </a>
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                 ) : null}

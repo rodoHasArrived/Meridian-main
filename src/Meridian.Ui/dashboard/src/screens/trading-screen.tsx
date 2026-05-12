@@ -45,6 +45,7 @@ import {
   type PaperSessionDetailPanel,
   type PaperSessionReplayPanel,
   type PromotionOutcomeLevel,
+  type TradingLoadingState,
   type TradingBlotterDetail,
   type TradingDataTone,
   type TradingOrderRow,
@@ -301,6 +302,51 @@ const sessionReplayStatusPanelClass = {
   danger: "border-danger/30 bg-danger/10 text-danger"
 } as const;
 
+function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
+  return (
+    <Card
+      role={state.role}
+      aria-busy={state.ariaBusy}
+      aria-live={state.ariaLive}
+      aria-label={state.regionLabel}
+      aria-labelledby={state.titleId}
+      aria-describedby={state.detailId}
+      className="panel-surface border-[var(--state-pending-bd)] bg-[var(--state-pending-bg)]"
+    >
+      <CardHeader className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className="inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-[var(--state-pending-fg)]"
+              aria-hidden="true"
+            />
+            <span className="state-matrix-badge state-pending">{state.statusLabel}</span>
+            <span className="toolbar-chip" aria-label={`Route ${state.routeLabel}`}>
+              <span className="text-muted-foreground">Route</span>
+              <b>{state.routeLabel}</b>
+            </span>
+          </div>
+          <RotateCcw className="h-4 w-4 animate-spin text-[var(--state-pending-fg)]" aria-hidden="true" />
+        </div>
+        <div>
+          <CardTitle id={state.titleId}>{state.title}</CardTitle>
+          <CardDescription id={state.detailId} className="mt-2 max-w-3xl leading-6">
+            {state.detail}
+          </CardDescription>
+        </div>
+        <div className="flex flex-wrap gap-2" aria-label="Trading loading dependencies">
+          {state.chips.map((chip) => (
+            <span key={chip.label} className="toolbar-chip">
+              <span className="text-muted-foreground">{chip.label}</span>
+              <span className="font-mono text-[var(--state-pending-fg)]">{chip.value}</span>
+            </span>
+          ))}
+        </div>
+      </CardHeader>
+    </Card>
+  );
+}
+
 export function TradingScreen({ data }: TradingScreenProps) {
   const { pathname } = useLocation();
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
@@ -348,14 +394,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   }
 
   if (!data) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Loading trading cockpit</CardTitle>
-          <CardDescription>Waiting for paper-trading state, order flow, and brokerage wiring snapshots.</CardDescription>
-        </CardHeader>
-      </Card>
-    );
+    return <TradingLoadingPanel state={shellVm.loadingState} />;
   }
 
   const cockpitAcceptance = buildCockpitAcceptance({

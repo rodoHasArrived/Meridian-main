@@ -276,7 +276,7 @@ beforeEach(() => {
 });
 
 async function renderTradingScreen(
-  screenData: TradingWorkspaceResponse = data,
+  screenData: TradingWorkspaceResponse | null = data,
   initialEntry = "/trading"
 ) {
   const result = renderWithRouter(<TradingScreen data={screenData} />, { initialEntries: [initialEntry] });
@@ -300,6 +300,17 @@ async function openStrategyControls(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("TradingScreen", () => {
+  it("renders a VM-owned pending state while the cockpit data loads", async () => {
+    await renderTradingScreen(null, "/trading/positions");
+
+    const loading = screen.getByRole("status", { name: "Loading Trading" });
+    expect(loading).toHaveAttribute("aria-busy", "true");
+    expect(loading).toHaveAttribute("aria-live", "polite");
+    expect(within(loading).getByText("Loading Trading")).toBeInTheDocument();
+    expect(within(loading).getAllByText("Position book")).toHaveLength(2);
+    expect(within(loading).getByLabelText("Trading loading dependencies")).toHaveTextContent("SnapshotsPending");
+  });
+
   it("renders cockpit tables and wiring state", async () => {
     await renderTradingScreen();
     expect(screen.getByRole("region", { name: "Execution cockpit context" })).toBeInTheDocument();

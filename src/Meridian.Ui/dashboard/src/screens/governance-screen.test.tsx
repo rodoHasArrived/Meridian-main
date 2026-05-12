@@ -175,11 +175,11 @@ describe("GovernanceScreen", () => {
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
     expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
-    const selectedRun = screen.getByRole("button", { name: "Inspect reconciliation run Paper Index Mean Reversion" });
-    expect(selectedRun).toHaveAttribute("aria-pressed", "true");
+    const selectedRun = screen.getByRole("row", { name: "Inspect reconciliation run Paper Index Mean Reversion" });
+    expect(selectedRun).toHaveAttribute("aria-selected", "true");
     expect(selectedRun).toHaveAttribute("aria-expanded", "true");
     expect(selectedRun).toHaveAttribute("aria-controls", "reconciliation-run-detail-panel");
-    expect(selectedRun).toHaveClass("rounded-lg");
+    expect(screen.getByRole("table", { name: "Reconciliation runs" })).toBeInTheDocument();
     expect(screen.getByLabelText("Open breaks: 1")).toHaveTextContent("1");
     expect(screen.getByLabelText("Reconciliation narrative for Paper Index Mean Reversion")).toHaveTextContent(
       "Open reconciliation breaks remain on this run."
@@ -190,14 +190,27 @@ describe("GovernanceScreen", () => {
     const user = userEvent.setup();
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
-    const nextRun = screen.getByRole("button", { name: "Inspect reconciliation run Intraday Vol Carry" });
-    expect(nextRun).toHaveAttribute("aria-pressed", "false");
+    const nextRun = screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" });
+    expect(nextRun).not.toHaveAttribute("aria-selected");
     expect(nextRun).toHaveAttribute("aria-expanded", "false");
 
     await user.click(nextRun);
 
-    expect(nextRun).toHaveAttribute("aria-pressed", "true");
+    expect(nextRun).toHaveAttribute("aria-selected", "true");
     expect(nextRun).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Reconciliation detail for Intraday Vol Carry" })).toBeInTheDocument();
+  });
+
+  it("supports keyboard selection from the reconciliation detail queue table", async () => {
+    const user = userEvent.setup();
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
+
+    const nextRun = screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" });
+    nextRun.focus();
+
+    await user.keyboard("{Enter}");
+
+    expect(nextRun).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("region", { name: "Reconciliation detail for Intraday Vol Carry" })).toBeInTheDocument();
   });
 
@@ -510,7 +523,7 @@ describe("GovernanceScreen", () => {
     expect(screen.getByRole("region", { name: "Reconciliation break checklist" }))
       .toHaveAttribute("id", "reconciliation-break-queue");
 
-    await user.click(screen.getByRole("button", { name: /Intraday Vol Carry/i }));
+    await user.click(screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" }));
 
     expect(screen.getByText(/Historical breaks have been worked through/)).toBeInTheDocument();
   });

@@ -3,6 +3,8 @@ import {
   buildComparisonTable,
   buildDiffPanel,
   buildResearchLoadingState,
+  buildPlotToolMomentsTable,
+  buildPlotToolSampleTable,
   buildPlotToolState,
   buildPlotToolTabs,
   buildPromotionCashForm,
@@ -538,6 +540,33 @@ describe("research-screen view model", () => {
     expect(plotTool.statistics.summaryTiles[7]).toMatchObject({ label: "Sharpe (5d)", value: "1.41", tone: "success" });
     expect(plotTool.statistics.regression.detailItems[2]).toContain("position changes linked");
     expect(plotTool.statistics.sampleRows[0]).toMatchObject({ signalText: "Crowded vol", tone: "warning" });
+    expect(plotTool.statistics.momentsTable).toMatchObject({
+      hasRows: true,
+      caption: "PlotTool moments for the active strategy pair.",
+      emptyText: "No PlotTool moments are available for the active strategy context."
+    });
+    expect(plotTool.statistics.momentsTable.rows[0]).toMatchObject({ label: "Net P&L", benchmark: "Pair summary" });
+    expect(plotTool.statistics.sampleTable).toMatchObject({
+      hasRows: true,
+      caption: "Recent PlotTool observations with spread, implied volatility, z-score, and signal.",
+      emptyText: "No PlotTool observation rows are available for the active strategy context."
+    });
+    expect(plotTool.statistics.sampleTable.rows[0]).toMatchObject({ signalText: "Crowded vol", tone: "warning" });
+  });
+
+  it("builds PlotTool table states with explicit empty copy", () => {
+    expect(buildPlotToolMomentsTable([])).toEqual({
+      rows: [],
+      hasRows: false,
+      caption: "PlotTool moments for the active strategy pair.",
+      emptyText: "No PlotTool moments are available for the active strategy context."
+    });
+    expect(buildPlotToolSampleTable([])).toEqual({
+      rows: [],
+      hasRows: false,
+      caption: "Recent PlotTool observations with spread, implied volatility, z-score, and signal.",
+      emptyText: "No PlotTool observation rows are available for the active strategy context."
+    });
   });
 
   it("derives PlotTool tab selection and keyboard transitions outside the view", () => {

@@ -126,6 +126,16 @@ public sealed class EvidenceWorkflowFabricTests
         export!.Retained.Should().BeTrue();
         export.WarningCount.Should().Be(0);
         File.Exists(Path.Combine(root, export.ManifestPath.Replace('/', Path.DirectorySeparatorChar))).Should().BeTrue();
+
+        var manifestResponse = await client.GetAsync(export.ManifestRoute);
+        manifestResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        manifestResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
+        var manifestJson = await manifestResponse.Content.ReadAsStringAsync();
+        manifestJson.Should().Contain("\"manifestOnly\": true");
+        manifestJson.Should().Contain("\"requestedBy\": \"operator\"");
+
+        var traversalResponse = await client.GetAsync("/workstation/evidence/report-pack/current/..%2Fsecret-manifest.json");
+        traversalResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]

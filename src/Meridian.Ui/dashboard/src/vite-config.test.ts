@@ -14,6 +14,7 @@ import {
   EXECUTION_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   QUANT_API_ENDPOINTS,
+  RECONCILIATION_API_ENDPOINTS,
   REPLAY_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
@@ -66,6 +67,7 @@ describe("Vite Meridian API proxy", () => {
       isAvailable: async () => false
     });
     const response = new FakeResponse();
+    const breakQueueResponse = new FakeResponse();
 
     const result = await bypass(
       { method: "GET", url: WORKSTATION_API_ENDPOINTS.session, headers: { accept: "application/json" } } as IncomingMessage,
@@ -78,6 +80,18 @@ describe("Vite Meridian API proxy", () => {
     expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8");
     expect(response.headers.get(meridianDevFixtureHeader)).toBe("true");
     expect(JSON.parse(response.body)).toMatchObject({ displayName: "Ops Desk" });
+
+    await bypass(
+      { method: "GET", url: RECONCILIATION_API_ENDPOINTS.breakQueue, headers: { accept: "application/json" } } as IncomingMessage,
+      breakQueueResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(breakQueueResponse.statusCode).toBe(200);
+    expect(breakQueueResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(breakQueueResponse.body)).toEqual([
+      expect.objectContaining({ breakId: "run-42:cash", status: "Open" })
+    ]);
   });
 
   it("serves seeded market-data fixtures for the no-host quote demo path", async () => {

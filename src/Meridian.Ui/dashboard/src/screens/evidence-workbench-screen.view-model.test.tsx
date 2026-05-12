@@ -210,6 +210,7 @@ describe("Evidence Workbench view model", () => {
       disabled: false,
       disabledReason: null
     });
+    expect(vm.exportResultDetail).toBeNull();
     expect(vm.lineagePanel).toMatchObject({
       hasRows: true,
       defaultSelectedRowId: "strategy-run:run-1:detail:requires:strategy-run:run-1:replay:0",
@@ -621,6 +622,14 @@ describe("Evidence Workbench view model", () => {
       await secondExport.promise;
     });
     expect(result.current.exportResult?.manifestPath).toBe("fresh-manifest.json");
+    expect(result.current.exportResultDetail).toMatchObject({
+      title: "Manifest retained",
+      manifestPath: "fresh-manifest.json",
+      summaryLabel: "3 nodes, 1 warning",
+      routeHref: "/workstation/evidence/fresh-manifest.json",
+      routeLabel: "Open manifest",
+      routeAriaLabel: "Open retained evidence manifest at fresh-manifest.json"
+    });
     expect(result.current.exportBusy).toBe(false);
   });
 });
@@ -669,6 +678,11 @@ describe("EvidenceWorkbenchScreen", () => {
     await user.click(screen.getByRole("button", { name: /export selected evidence manifest for momentum strategy run/i }));
     expect(await screen.findByText("Manifest retained")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/strategy-run/run-1/manifest.json")).toBeInTheDocument();
+    expect(screen.getByText("3 nodes, 1 warning")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /open retained evidence manifest/i })).toHaveAttribute(
+      "href",
+      "/workstation/evidence/strategy-run/run-1/manifest.json"
+    );
   });
 
   it("lets keyboard and pointer users inspect lineage edge detail", async () => {

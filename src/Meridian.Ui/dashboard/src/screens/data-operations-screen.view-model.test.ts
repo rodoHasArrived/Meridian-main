@@ -374,6 +374,8 @@ describe("data-operations-screen view model", () => {
     expect(buildProviderSection([]).emptyState.title).toBe("No providers configured");
 
     const backfillSection = buildBackfillSection(backfills, "BF-1044", "backfills");
+    expect(backfillSection.tableLabel).toBe("Backfill queue");
+    expect(backfillSection.description).toBe("Queued and recently completed historical repair jobs");
     expect(backfillSection.rows[1].selected).toBe(true);
     expect(backfillSection.rows[1].expanded).toBe(true);
     expect(backfillSection.rows[0].expanded).toBe(false);
@@ -381,6 +383,7 @@ describe("data-operations-screen view model", () => {
     expect(backfillSection.rows[1].detailPanelId).toBe(DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(backfillSection.rows[0].detailPanelId).toBe(DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(backfillSection.rows[1].ariaLabel).toContain("Selected backfill BF-1044");
+    expect(backfillSection.rows[1].selectAriaLabel).toBe("Inspect backfill BF-1044");
     expect(backfillSection.rows[0].detailDescription).toContain("updates the shared backfill detail panel");
     expect(buildBackfillSection([], null, "backfills").emptyState.description).toContain("Trigger backfill");
 

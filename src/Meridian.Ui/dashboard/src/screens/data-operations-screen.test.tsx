@@ -182,10 +182,12 @@ describe("DataOperationsScreen", () => {
 
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
-    const reviewBackfill = screen.getByRole("button", { name: /BF-1044/i });
-    const runningBackfill = screen.getByRole("button", { name: /BF-1042/i });
+    expect(screen.getByRole("table", { name: "Backfill queue" })).toBeInTheDocument();
 
-    expect(runningBackfill).toHaveAttribute("aria-pressed", "true");
+    const reviewBackfill = screen.getByRole("row", { name: "Inspect backfill BF-1044" });
+    const runningBackfill = screen.getByRole("row", { name: "Inspect backfill BF-1042" });
+
+    expect(runningBackfill).toHaveAttribute("aria-selected", "true");
     expect(runningBackfill).toHaveAttribute("aria-expanded", "true");
     expect(runningBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(reviewBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
@@ -193,13 +195,27 @@ describe("DataOperationsScreen", () => {
 
     await user.click(reviewBackfill);
 
-    expect(reviewBackfill).toHaveAttribute("aria-pressed", "true");
+    expect(reviewBackfill).toHaveAttribute("aria-selected", "true");
     expect(reviewBackfill).toHaveAttribute("aria-expanded", "true");
     expect(runningBackfill).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("region", { name: /backfill detail for BF-1044/i })).toBeInTheDocument();
     expect(screen.getAllByText("Options chains / 7d").length).toBeGreaterThan(0);
     expect(screen.getByText(/waiting on operator review/i)).toBeInTheDocument();
-    expect(screen.getByText("5m ago")).toBeInTheDocument();
+    expect(screen.getAllByText("5m ago").length).toBeGreaterThan(0);
+  });
+
+  it("supports keyboard selection in the backfill queue table", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data/backfills"] });
+
+    const reviewBackfill = screen.getByRole("row", { name: "Inspect backfill BF-1044" });
+    reviewBackfill.focus();
+
+    await user.keyboard("{Enter}");
+
+    expect(reviewBackfill).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("region", { name: /backfill detail for BF-1044/i })).toBeInTheDocument();
   });
 
   it("opens the trigger backfill dialog when the Trigger backfill button is clicked", async () => {

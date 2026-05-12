@@ -119,7 +119,11 @@ describe("ResearchScreen", () => {
     expect(screen.getByText("Residual distribution")).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool residual distribution chart")).toBeInTheDocument();
     expect(screen.getByText("Regression frame")).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "PlotTool moments table" })).toBeInTheDocument();
+    expect(screen.getByText("PlotTool moments for the active strategy pair.")).toBeInTheDocument();
     expect(screen.getByText("Observation sheet")).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "PlotTool observation sheet" })).toBeInTheDocument();
+    expect(screen.getByText("Recent PlotTool observations with spread, implied volatility, z-score, and signal.")).toBeInTheDocument();
   });
 
   it("switches PlotTool tabs from keyboard navigation", async () => {

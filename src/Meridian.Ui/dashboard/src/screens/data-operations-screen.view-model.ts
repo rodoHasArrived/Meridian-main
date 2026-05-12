@@ -133,6 +133,11 @@ export interface DataOperationsSectionState<T> {
   emptyState: DataOperationsEmptyState;
 }
 
+export interface DataOperationsBackfillSectionState extends DataOperationsSectionState<DataOperationsBackfillRow> {
+  tableLabel: string;
+  description: string;
+}
+
 export interface DataOperationsProviderRow {
   provider: string;
   status: DataOperationsProviderRecord["status"];
@@ -168,6 +173,7 @@ export interface DataOperationsBackfillRow {
   expanded: boolean;
   detailText: string;
   ariaLabel: string;
+  selectAriaLabel: string;
   detailDescription: string;
 }
 
@@ -197,7 +203,7 @@ export interface DataOperationsExportRow {
 
 export interface DataOperationsPresentationState {
   providerSection: DataOperationsSectionState<DataOperationsProviderRow>;
-  backfillSection: DataOperationsSectionState<DataOperationsBackfillRow>;
+  backfillSection: DataOperationsBackfillSectionState;
   exportSection: DataOperationsSectionState<DataOperationsExportRow>;
   selectedBackfillDetail: DataOperationsBackfillDetailState | null;
   backfillDetailEmptyState: DataOperationsEmptyState | null;
@@ -684,6 +690,7 @@ export function useDataOperationsViewModel(
     loadingState,
     selectedBackfill,
     selectedBackfillId,
+    selectedBackfillRowId: selectedBackfill ? buildBackfillRowId(selectedBackfill.jobId) : null,
     selectBackfill: setSelectedBackfillId,
     ...presentation,
     dialogOpen,
@@ -918,7 +925,7 @@ export function buildBackfillSection(
   backfills: DataOperationsBackfillRecord[],
   selectedBackfillId: string | null,
   workstream: "overview" | "backfills" = "overview"
-): DataOperationsSectionState<DataOperationsBackfillRow> {
+): DataOperationsBackfillSectionState {
   return {
     rows: backfills.map((backfill) => {
       const detailText = `${backfill.scope}. ${backfill.status}; ${backfill.progress}; updated ${backfill.updatedAt}.`;
@@ -938,12 +945,15 @@ export function buildBackfillSection(
         expanded: selected,
         detailText,
         ariaLabel: `${selected ? "Selected" : "Inspect"} backfill ${backfill.jobId}: ${detailText}`,
+        selectAriaLabel: `Inspect backfill ${backfill.jobId}`,
         detailDescription: selected
           ? `Selected backfill ${backfill.jobId}; the backfill detail panel is expanded for this row.`
           : `Inspect backfill ${backfill.jobId}; activation updates the shared backfill detail panel.`
       };
     }),
     hasRows: backfills.length > 0,
+    tableLabel: "Backfill queue",
+    description: "Queued and recently completed historical repair jobs",
     emptyState: {
       title: "No backfills queued",
       description: workstream === "backfills"

@@ -1328,6 +1328,7 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.accounting]: fixtureGovernanceWorkspace,
   [WORKSTATION_API_ENDPOINTS.reporting]: fixtureGovernanceWorkspace,
   "/api/workstation/governance": fixtureGovernanceWorkspace,
+  [RECONCILIATION_API_ENDPOINTS.breakQueue]: fixtureGovernanceWorkspace.breakQueue,
   [RECONCILIATION_API_ENDPOINTS.calibrationSummary]: fixtureCalibrationSummary,
   [QUANT_API_ENDPOINTS.templates]: fixtureQuantTemplates,
   [QUANT_API_ENDPOINTS.parameters]: fixtureQuantParameters,

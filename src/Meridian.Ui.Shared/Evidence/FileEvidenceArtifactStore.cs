@@ -12,7 +12,19 @@ public interface IEvidenceArtifactStore
         EvidencePacketDto packet,
         EvidencePacketExportRequest request,
         CancellationToken ct = default);
+
+    Task<EvidenceManifestFile?> TryOpenManifestAsync(
+        string subjectKind,
+        string subjectId,
+        string fileName,
+        CancellationToken ct = default);
 }
+
+public sealed record EvidenceManifestFile(
+    Stream Content,
+    string ContentType,
+    string FileName,
+    DateTimeOffset LastModified);
 
 public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
 {
@@ -80,6 +92,49 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             Retained: true);
     }
 
+    public Task<EvidenceManifestFile?> TryOpenManifestAsync(
+        string subjectKind,
+        string subjectId,
+        string fileName,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        var safeFileName = ValidateManifestFileName(fileName);
+        if (safeFileName is null)
+        {
+            return Task.FromResult<EvidenceManifestFile?>(null);
+        }
+
+        var directory = Path.GetFullPath(Path.Combine(
+            _rootDirectory,
+            SanitizePathSegment(subjectKind),
+            SanitizePathSegment(subjectId)));
+        var filePath = Path.GetFullPath(Path.Combine(directory, safeFileName));
+        var directoryPrefix = directory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
+
+        if (!filePath.StartsWith(directoryPrefix, PathComparison) || !File.Exists(filePath))
+        {
+            return Task.FromResult<EvidenceManifestFile?>(null);
+        }
+
+        var info = new FileInfo(filePath);
+        Stream stream = new FileStream(
+            filePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            bufferSize: 64 * 1024,
+            useAsync: true);
+
+        return Task.FromResult<EvidenceManifestFile?>(new EvidenceManifestFile(
+            stream,
+            "application/json",
+            info.Name,
+            new DateTimeOffset(info.LastWriteTimeUtc)));
+    }
+
     public static string ResolveDataRoot(IServiceProvider services)
     {
         var applicationConfig = services.GetService<Meridian.Application.UI.ConfigStore>();
@@ -115,8 +170,33 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         return string.IsNullOrWhiteSpace(sanitized) ? "unknown" : sanitized;
     }
 
+    private static string? ValidateManifestFileName(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var fileName = value.Trim();
+        if (!string.Equals(Path.GetFileName(fileName), fileName, StringComparison.Ordinal)
+            || fileName.Contains('/')
+            || fileName.Contains('\\')
+            || fileName.Contains(':')
+            || fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
+            || !fileName.EndsWith("-manifest.json", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return fileName;
+    }
+
     private static string RouteSegment(string value)
         => Uri.EscapeDataString(value);
+
+    private static readonly StringComparison PathComparison = OperatingSystem.IsWindows()
+        ? StringComparison.OrdinalIgnoreCase
+        : StringComparison.Ordinal;
 
     private sealed record EvidenceManifestDto(
         int SchemaVersion,

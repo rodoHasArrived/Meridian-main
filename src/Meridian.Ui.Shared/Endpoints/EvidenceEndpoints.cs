@@ -13,6 +13,29 @@ public static class EvidenceEndpoints
         this WebApplication app,
         JsonSerializerOptions jsonOptions)
     {
+        app.MapGet("/workstation/evidence/{subjectKind}/{subjectId}/{fileName}", async (
+            string subjectKind,
+            string subjectId,
+            string fileName,
+            HttpContext context) =>
+        {
+            var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+            var manifest = await store
+                .TryOpenManifestAsync(subjectKind, subjectId, fileName, context.RequestAborted)
+                .ConfigureAwait(false);
+            return manifest is null
+                ? Results.NotFound(new { error = $"Evidence manifest '{subjectKind}/{subjectId}/{fileName}' was not found." })
+                : Results.File(
+                    manifest.Content,
+                    manifest.ContentType,
+                    manifest.FileName,
+                    manifest.LastModified,
+                    enableRangeProcessing: true);
+        })
+        .WithName("GetWorkstationEvidenceManifest")
+        .Produces(200, contentType: "application/json")
+        .Produces(404);
+
         var group = app.MapGroup("/api/workstation/evidence");
 
         group.MapGet("/subjects", async (HttpContext context) =>

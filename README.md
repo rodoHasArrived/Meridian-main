@@ -106,11 +106,14 @@ selectable dense-table detail inspector, quick-trade accepted/rejected ticket st
 to Trading readiness, browser Watchlist empty/no-quote/busy labels owned by the view model, richer
 sidebar/menu/command grouping with grouped command-palette sections, app-shell query-string
 route focus for subject/symbol handoffs such as `/data/quotes?symbol=AAPL`, and hash-aware
-`/settings#alpaca-provider-setup` routing, browser Security Master details/lots/operator overrides
-with selectable lot-detail state plus a conflict refresh/retry command, provider-setup success
-handoffs into live quotes, backfill preview, Trading readiness, or Security Master coverage based on
-configured capabilities, Quant Lab plot rendering through a reusable view-model module, browser
-Accounting reconciliation detail-queue selection with accessible empty/detail states, Reporting
+`/settings#alpaca-provider-setup` routing, browser Security Master search-result selection,
+identity drill-ins, details/lots/operator overrides with selectable lot-detail state plus a
+conflict refresh/retry command, provider-setup success handoffs into live quotes, backfill preview
+with dense-table queue selection, Trading readiness, or Security Master coverage based on
+configured capabilities, a view-model-owned Trading loading panel, Quant Lab plot rendering through
+a reusable view-model module, browser Accounting reconciliation detail-queue dense-table selection
+with keyboard-accessible expanded rows, seeded no-host break-queue fixtures, and accessible
+empty/detail states, Reporting
 report-pack profile actions for preview and export analysis plus endpoint links that separate
 concrete GET navigation from reference-only POST mutations, and expanded UFL/reference-data
 endpoints for bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits,

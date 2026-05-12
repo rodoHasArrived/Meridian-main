@@ -21,6 +21,7 @@ import {
 import type {
   CalibrationSummaryViewState,
   CorporateActionRowViewModel,
+  ReconciliationQueueRunRowViewModel,
   ReconciliationQueueRunTone,
   SecuritySearchResultRowViewModel,
   TradingParametersViewState
@@ -45,6 +46,33 @@ const reconciliationQueueToneClass: Record<ReconciliationQueueRunTone, string> =
   success: "text-success",
   primary: "text-primary"
 };
+
+const reconciliationQueueColumns: DenseDataTableColumn<ReconciliationQueueRunRowViewModel>[] = [
+  {
+    id: "run",
+    label: "Run",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.strategyName}</span>
+        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.runId}</span>
+      </span>
+    )
+  },
+  { id: "mode", label: "Mode", render: (row) => <span className="font-mono uppercase text-muted-foreground">{row.modeLabel}</span> },
+  { id: "status", label: "Status", render: (row) => row.runStatusLabel },
+  { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono">{row.breakCountLabel}</span> },
+  { id: "open", label: "Open", align: "right", render: (row) => <span className="font-mono">{row.openBreakLabel}</span> },
+  {
+    id: "reconciliation",
+    label: "Reconciliation",
+    render: (row) => (
+      <span className={cn("font-mono text-xs uppercase tracking-[0.14em]", reconciliationQueueToneClass[row.reconciliationTone])}>
+        {row.reconciliationStatusLabel}
+      </span>
+    )
+  },
+  { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedLabel}</span> }
+];
 
 const focusCopy: Record<string, { title: string; description: string }> = {
   ledger: {
@@ -248,43 +276,20 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             </CardHeader>
             <CardContent className="space-y-3">
               {reconciliation.queuePanelView.hasRows ? (
-                <div role="list" aria-label={reconciliation.queuePanelView.listLabel} className="space-y-2">
-                  {reconciliation.queuePanelView.rows.map((row) => (
-                    <div key={row.runId} role="listitem" aria-label={row.ariaLabel}>
-                      <button
-                        type="button"
-                        aria-label={row.selectAriaLabel}
-                        aria-pressed={row.isSelected}
-                        aria-controls={row.controlsId}
-                        aria-expanded={row.isExpanded}
-                        onClick={() => reconciliation.selectRun(row.runId)}
-                        className={cn(
-                          "w-full rounded-lg border px-4 py-4 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
-                          row.isSelected
-                            ? "border-primary/50 bg-primary/10"
-                            : "border-border/70 bg-secondary/30 hover:bg-secondary/45"
-                        )}
-                      >
-                        <span className="flex items-center justify-between gap-3">
-                          <span className="min-w-0 font-semibold text-foreground">{row.strategyName}</span>
-                          <span className={cn("shrink-0 font-mono text-xs uppercase tracking-[0.16em]", reconciliationQueueToneClass[row.reconciliationTone])}>
-                            {row.reconciliationStatusLabel}
-                          </span>
-                        </span>
-                        <span className="mt-2 block font-mono text-sm text-muted-foreground">{row.runId}</span>
-                        <span className="mt-3 flex items-center justify-between gap-4 text-sm">
-                          <span className="text-muted-foreground">{row.runStatusLabel}</span>
-                          <span className="font-mono text-foreground">{row.openBreakLabel}</span>
-                        </span>
-                        <span className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-muted-foreground">
-                          <span>{row.modeLabel}</span>
-                          <span>{row.breakCountLabel}</span>
-                          <span>{row.lastUpdatedLabel}</span>
-                        </span>
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                <DenseDataTable
+                  columns={reconciliationQueueColumns}
+                  rows={reconciliation.queuePanelView.rows}
+                  getRowId={(row) => row.runId}
+                  getRowAriaLabel={(row) => row.ariaLabel}
+                  getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                  getRowAriaControls={(row) => row.controlsId}
+                  getRowAriaExpanded={(row) => row.isExpanded}
+                  selectedRowId={selectedReconciliation?.runId ?? null}
+                  onRowSelect={(row) => reconciliation.selectRun(row.runId)}
+                  emptyText={reconciliation.queuePanelView.emptyText}
+                  ariaLabel={reconciliation.queuePanelView.listLabel}
+                  caption={reconciliation.queuePanelView.description}
+                />
               ) : (
                 <div
                   role="status"
