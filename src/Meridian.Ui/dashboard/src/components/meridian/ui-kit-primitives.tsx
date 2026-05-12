@@ -91,12 +91,13 @@ export function DenseDataTable<T>({
           <tr>
             {columns.map((column) => {
               const isSorted = sort?.columnId === column.id;
+              const sortDirection = isSorted ? sort?.direction : undefined;
               if (column.sortable && onToggleSort) {
                 return (
                   <th
                     key={column.id}
                     scope="col"
-                    aria-sort={isSorted ? (sort!.direction === "asc" ? "ascending" : "descending") : "none"}
+                    aria-sort={isSorted ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
                     className={cn(
                       column.align === "right" ? "text-right" : "text-left",
                       column.className,
@@ -111,7 +112,7 @@ export function DenseDataTable<T>({
                     >
                       {column.label}
                       <span className="dense-data-table-sort-indicator" aria-hidden="true">
-                        {isSorted ? (sort!.direction === "asc" ? "↑" : "↓") : "↕"}
+                        {isSorted ? (sortDirection === "asc" ? "↑" : "↓") : "↕"}
                       </span>
                     </button>
                   </th>
