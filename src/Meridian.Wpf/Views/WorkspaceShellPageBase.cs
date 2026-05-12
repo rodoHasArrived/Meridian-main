@@ -1,7 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Ui.Services;
-using Meridian.Wpf.Features.Data.Shell;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
