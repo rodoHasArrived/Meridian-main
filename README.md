@@ -7651,6 +7651,7 @@ Use these documents together when planning or implementing new work:
 │           ├── DataSamplingPage.xaml.cs
 │           ├── DataSourcesPage.xaml
 │           ├── DataSourcesPage.xaml.cs
+│           ├── DataWorkspaceShellPage.xaml.cs
 │           ├── DiagnosticsPage.xaml
 │           ├── DiagnosticsPage.xaml.cs
 │           ├── DirectLendingPage.xaml
@@ -8609,6 +8610,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-710 directories, 7690 files
+710 directories, 7691 files
 ```
 <!-- readme-tree end -->
