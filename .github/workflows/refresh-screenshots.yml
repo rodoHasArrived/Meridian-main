@@ -296,12 +296,13 @@ jobs:
         with:
           name: wpf-desktop-screenshots-${{ matrix.workflow.name }}
           path: |
-            ${{ inputs.output_root || 'docs/screenshots/desktop' }}/**/*.png
+            ${{ inputs.output_root || 'docs/screenshots/desktop' }}/**/*
             artifacts/desktop-workflows/${{ matrix.workflow.name }}/**/manifest.json
             artifacts/desktop-workflows/${{ matrix.workflow.name }}/**/logs/*.log
             wpf-startup-stdout.log
             wpf-startup-stderr.log
           if-no-files-found: warn
+          include-hidden-files: true
           retention-days: 7
 
   web-screenshots:
@@ -377,9 +378,10 @@ jobs:
         with:
           name: web-dashboard-screenshots
           path: |
-            ${{ inputs.web_output_root || 'docs/screenshots/web' }}/**/*.png
+            ${{ inputs.web_output_root || 'docs/screenshots/web' }}/**/*
             artifacts/web-screenshots/manifest.json
           if-no-files-found: warn
+          include-hidden-files: true
           retention-days: 7
 
   commit-screenshots:
@@ -1002,8 +1004,8 @@ jobs:
         with:
           commit_message: 'docs(screenshots): refresh UI screenshots'
           file_pattern: |
-            ${{ inputs.output_root || 'docs/screenshots/desktop' }}/**/*.png
-            ${{ inputs.web_output_root || 'docs/screenshots/web' }}/**/*.png
+            ${{ inputs.output_root || 'docs/screenshots/desktop' }}/**/*
+            ${{ inputs.web_output_root || 'docs/screenshots/web' }}/**/*
           commit_user_name: github-actions[bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
 
