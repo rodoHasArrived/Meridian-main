@@ -1045,6 +1045,12 @@ export interface WorkstationSecurityReference {
 
 // --- Portfolio types ---
 
+export interface NetSymbolPosition {
+  symbol: string;
+  netQuantity: number;
+  grossQuantity: number;
+}
+
 export interface PortfolioPositionSummary {
   symbol: string;
   quantity: number;

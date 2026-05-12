@@ -23,6 +23,7 @@ import type {
   LedgerSummary,
   LedgerTrialBalanceLine,
   MetricSnapshot,
+  NetSymbolPosition,
   OperatorInbox,
   OrderResult,
   OrderSubmitRequest,
@@ -1174,7 +1175,7 @@ export function getPortfolioExposure() {
 }
 
 export function getPortfolioSymbolExposure(symbol: string) {
-  return getJson<unknown>(portfolioSymbolExposureEndpoint(symbol));
+  return getJson<NetSymbolPosition>(portfolioSymbolExposureEndpoint(symbol));
 }
 
 // --- Live market data ---

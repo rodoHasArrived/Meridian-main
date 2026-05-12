@@ -256,6 +256,42 @@ export function useWorkstationData() {
     }
   }, []);
 
+  // Keep portfolio positions in sync with strategy execution.
+  const portfolioRefreshRevisionRef = useRef(0);
+  const portfolioRefreshAbortRef = useRef<AbortController | null>(null);
+  const refreshingPortfolio = useRef(false);
+  const refreshPortfolio = useCallback(async () => {
+    if (refreshingPortfolio.current || !mountedRef.current) return;
+    const revision = portfolioRefreshRevisionRef.current + 1;
+    portfolioRefreshRevisionRef.current = revision;
+    portfolioRefreshAbortRef.current?.abort();
+    const controller = new AbortController();
+    portfolioRefreshAbortRef.current = controller;
+    refreshingPortfolio.current = true;
+    try {
+      const [portfolio, brokeragePortfolio] = await Promise.allSettled([
+        getPortfolioWorkspace({ signal: controller.signal }),
+        getBrokerageHouseholdPortfolio("alpaca", { signal: controller.signal })
+      ]);
+      if (!mountedRef.current || portfolioRefreshRevisionRef.current !== revision) return;
+      setState((current) => {
+        let next = { ...current };
+        if (portfolio.status === "fulfilled") {
+          next = { ...next, portfolio: portfolio.value };
+        }
+        if (brokeragePortfolio.status === "fulfilled") {
+          next = { ...next, brokeragePortfolio: brokeragePortfolio.value };
+        }
+        return next;
+      });
+    } catch {
+      // silent — portfolio refresh is opportunistic
+    } finally {
+      if (portfolioRefreshAbortRef.current === controller) portfolioRefreshAbortRef.current = null;
+      refreshingPortfolio.current = false;
+    }
+  }, []);
+
   const upsertWorkflowPreset = useCallback((preset: WorkflowPreset) => {
     if (!mountedRef.current) {
       return;
@@ -289,7 +325,12 @@ export function useWorkstationData() {
     return () => clearInterval(id);
   }, [refreshTrading]);
 
-  return { ...state, refresh, refreshTrading, upsertWorkflowPreset };
+  useEffect(() => {
+    const id = setInterval(() => { void refreshPortfolio(); }, 60_000);
+    return () => clearInterval(id);
+  }, [refreshPortfolio]);
+
+  return { ...state, refresh, refreshTrading, refreshPortfolio, upsertWorkflowPreset };
 }
 
 function formatRequestError(reason: unknown, fallback: string): string {

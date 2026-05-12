@@ -945,13 +945,34 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               )}
               {reconciliation.rows.map((item) => (
                 <div key={item.breakId} className="rounded-lg border border-border/70 p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
                       <div className="font-semibold">{item.strategyName} · {item.category}</div>
-                      <div className="text-xs text-muted-foreground">{item.reason}</div>
+                      <div className="mt-0.5 text-xs text-muted-foreground">{item.reason}</div>
                     </div>
-                    <div className="font-mono text-xs">{item.status}</div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      {typeof item.variance === "number" && item.variance !== 0 && (
+                        <span className={cn("font-mono text-xs font-semibold", item.variance > 0 ? "text-success" : "text-danger")}>
+                          {item.variance > 0 ? "+" : ""}{item.variance.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 })}
+                        </span>
+                      )}
+                      <Badge variant={item.status === "Resolved" ? "success" : item.status === "InReview" ? "warning" : item.status === "Dismissed" ? "outline" : "danger"}>
+                        {item.status}
+                      </Badge>
+                    </div>
                   </div>
+                  {item.explainabilitySummary && (
+                    <div className="mt-2 rounded-md border border-border/50 bg-secondary/20 px-3 py-2 text-xs leading-5 text-muted-foreground">
+                      <span className="font-medium text-foreground">Analysis: </span>
+                      {item.explainabilitySummary}
+                    </div>
+                  )}
+                  {item.recommendedAction && (
+                    <div className="mt-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs leading-5">
+                      <span className="font-medium text-primary">Recommended: </span>
+                      <span className="text-foreground">{item.recommendedAction}</span>
+                    </div>
+                  )}
                   <div className="mt-2 flex flex-wrap gap-2">
                     <Button
                       size="sm"
