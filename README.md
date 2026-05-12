@@ -6826,6 +6826,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │       └── progress
 │   │   │   │           ├── portfolio-sync-trust-smoke.png
 │   │   │   │           ├── readiness-inbox-refresh-smoke.png
+│   │   │   │           ├── settings-live-ack-smoke.png
 │   │   │   │           └── workstation-preview-smoke.png
 │   │   │   ├── index.html
 │   │   │   ├── package-lock.json
@@ -6972,44 +6973,6 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── vite.config.ts
 │   │   └── wwwroot
 │   │       └── workstation
-│   │           ├── assets
-│   │           │   ├── activity-8mpD2SQ2.js
-│   │           │   ├── arrow-right-CET4sibV.js
-│   │           │   ├── briefcase-business-Bz7wiDca.js
-│   │           │   ├── circle-alert-Bv1VkIwn.js
-│   │           │   ├── circle-check-DtNQWFe2.js
-│   │           │   ├── circle-x-tTVMe1k7.js
-│   │           │   ├── clipboard-list-aJY7oUPY.js
-│   │           │   ├── data-operations-screen-BXuZCOAq.js
-│   │           │   ├── dialog-C6lsDnrY.js
-│   │           │   ├── evidence-workbench-screen-C2r9MVZR.js
-│   │           │   ├── external-link-CxODERj9.js
-│   │           │   ├── file-text-DeIW_9Uj.js
-│   │           │   ├── governance-screen-B6AXwJwq.js
-│   │           │   ├── index-BNmcpdTI.css
-│   │           │   ├── index-DsiFM6_1.js
-│   │           │   ├── index-Mr6V-TkW.js
-│   │           │   ├── input-BVAOEZOw.js
-│   │           │   ├── live-quotes-screen-DBkDJTTz.js
-│   │           │   ├── metric-card-BeF5OxAZ.js
-│   │           │   ├── network-D8HfbXYK.js
-│   │           │   ├── operator-readiness-console-ru28BOer.js
-│   │           │   ├── overview-screen-BnlTjiB9.js
-│   │           │   ├── plus-BYX-hUEF.js
-│   │           │   ├── portfolio-screen-B0jyAJDL.js
-│   │           │   ├── quant-lab-screen-ChAnWwGZ.js
-│   │           │   ├── refresh-cw-Cb49c0Ld.js
-│   │           │   ├── reporting-screen-Cuf-s1iT.js
-│   │           │   ├── research-screen-D-PNePPH.js
-│   │           │   ├── select-BO1SHnSu.js
-│   │           │   ├── settings-screen-CvN5nIEm.js
-│   │           │   ├── sparkles-BMiqlWAI.js
-│   │           │   ├── trading-screen-CTdcRFt9.js
-│   │           │   ├── trash-2-DR3e4Tn5.js
-│   │           │   ├── trending-up-pjj0xlpu.js
-│   │           │   ├── ui-kit-primitives-Kwr8Ql6U.js
-│   │           │   ├── wallet-D74uTNtF.js
-│   │           │   └── watchlist-screen-BOpUCBBj.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -8607,6 +8570,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-710 directories, 7707 files
+709 directories, 7671 files
 ```
 <!-- readme-tree end -->
