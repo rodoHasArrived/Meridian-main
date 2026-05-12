@@ -88,6 +88,7 @@ describe("App", () => {
       workspaceErrors: {},
       refresh: vi.fn(),
       refreshTrading: vi.fn(),
+      refreshPortfolio: vi.fn(),
       upsertWorkflowPreset: vi.fn()
     });
   });
@@ -155,6 +156,7 @@ describe("App", () => {
       workspaceErrors: {},
       refresh: vi.fn(),
       refreshTrading: vi.fn(),
+      refreshPortfolio: vi.fn(),
       upsertWorkflowPreset: vi.fn()
     });
 
@@ -212,6 +214,7 @@ describe("App", () => {
       workspaceErrors: {},
       refresh: vi.fn(),
       refreshTrading: vi.fn(),
+      refreshPortfolio: vi.fn(),
       upsertWorkflowPreset: vi.fn()
     });
 
@@ -289,6 +292,7 @@ describe("App", () => {
       workspaceErrors: {},
       refresh,
       refreshTrading: vi.fn(),
+      refreshPortfolio: vi.fn(),
       upsertWorkflowPreset: vi.fn()
     });
 
@@ -341,6 +345,7 @@ describe("App", () => {
       },
       refresh,
       refreshTrading: vi.fn(),
+      refreshPortfolio: vi.fn(),
       upsertWorkflowPreset: vi.fn()
     });
 
@@ -386,6 +391,7 @@ describe("App", () => {
       workspaceErrors: {},
       refresh: vi.fn(),
       refreshTrading: vi.fn(),
+      refreshPortfolio: vi.fn(),
       upsertWorkflowPreset: vi.fn()
     });
 
