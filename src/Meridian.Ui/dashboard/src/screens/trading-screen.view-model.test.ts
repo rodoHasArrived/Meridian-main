@@ -503,9 +503,17 @@ describe("paper session view model", () => {
         canVerify: false,
         canClose: false,
         verifyButtonLabel: "Verifying...",
+        restoreDisabledReason: "Paper session sess-1 verification is running.",
+        verifyDisabledReason: "Paper session sess-1 verification is running.",
+        closeDisabledReason: "Paper session sess-1 verification is running.",
+        verifyAriaLabel: "Verifying replay for paper session sess-1",
         ariaLabel: "sess-1, strat-1, Active, $100,000.00 initial cash"
       })
     ]);
+    expect(state.toggleCreateButtonAriaLabel).toBe("Open paper session creation form");
+    expect(state.toggleCreateButtonDisabledReason).toBe("Paper session sess-1 verification is running.");
+    expect(state.createButtonDisabledReason).toBe("Paper session sess-1 verification is running.");
+    expect(state.cancelCreateButtonDisabledReason).toBe("Paper session sess-1 verification is running.");
     expect(state.selectedSessionLabel).toBe("Selected session: sess-1");
     expect(state.detail).toEqual(expect.objectContaining({
       sessionId: "sess-1",
@@ -558,6 +566,8 @@ describe("paper session view model", () => {
     });
 
     expect(invalidState.canSubmitCreate).toBe(false);
+    expect(invalidState.createButtonDisabledReason).toBe("Enter initial cash of at least $1,000.");
+    expect(invalidState.cancelCreateButtonDisabledReason).toBeNull();
     expect(invalidState.formRequirementText).toBe("Enter initial cash of at least $1,000.");
     expect(invalidState.statusAnnouncement).toBe("Paper session workflow failed: Create failed");
   });

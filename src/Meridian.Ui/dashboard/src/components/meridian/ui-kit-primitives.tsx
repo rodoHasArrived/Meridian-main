@@ -41,7 +41,13 @@ export interface DenseDataTableColumn<T> {
   label: string;
   align?: "left" | "right";
   className?: string;
+  sortable?: boolean;
   render: (row: T) => ReactNode;
+}
+
+export interface DenseDataTableSortState {
+  columnId: string;
+  direction: "asc" | "desc";
 }
 
 export function DenseDataTable<T>({
@@ -57,7 +63,9 @@ export function DenseDataTable<T>({
   emptyText,
   ariaLabel,
   tableId,
-  caption
+  caption,
+  sort = null,
+  onToggleSort
 }: {
   columns: DenseDataTableColumn<T>[];
   rows: T[];
@@ -72,6 +80,8 @@ export function DenseDataTable<T>({
   ariaLabel: string;
   tableId?: string;
   caption?: string | null;
+  sort?: DenseDataTableSortState | null;
+  onToggleSort?: (columnId: string) => void;
 }) {
   return (
     <div className="dense-data-table-wrap">
@@ -79,15 +89,37 @@ export function DenseDataTable<T>({
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead>
           <tr>
-            {columns.map((column) => (
-              <th
-                key={column.id}
-                scope="col"
-                className={cn(column.align === "right" ? "text-right" : "text-left", column.className)}
-              >
-                {column.label}
-              </th>
-            ))}
+            {columns.map((column) => {
+              const sortable = Boolean(column.sortable && onToggleSort);
+              const sorted = sortable && sort?.columnId === column.id;
+              return (
+                <th
+                  key={column.id}
+                  scope="col"
+                  aria-sort={sortable ? sorted ? sort.direction === "asc" ? "ascending" : "descending" : "none" : undefined}
+                  className={cn(
+                    column.align === "right" ? "text-right" : "text-left",
+                    sortable ? "dense-data-table-sortable" : undefined,
+                    sorted ? "dense-data-table-sorted" : undefined,
+                    column.className
+                  )}
+                >
+                  {sortable ? (
+                    <button
+                      type="button"
+                      className="dense-data-table-sort-button"
+                      onClick={() => onToggleSort?.(column.id)}
+                      aria-label={buildSortButtonAriaLabel(column, sorted ? sort : null)}
+                    >
+                      <span>{column.label}</span>
+                      <span className="dense-data-table-sort-indicator" aria-hidden="true">
+                        {sorted ? sort.direction === "asc" ? "^" : "v" : "-"}
+                      </span>
+                    </button>
+                  ) : column.label}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
@@ -138,6 +170,17 @@ export function DenseDataTable<T>({
       </table>
     </div>
   );
+}
+
+function buildSortButtonAriaLabel<T>(
+  column: DenseDataTableColumn<T>,
+  sort: DenseDataTableSortState | null
+): string {
+  if (!sort) {
+    return `Sort by ${column.label}`;
+  }
+
+  return `${column.label} sorted ${sort.direction === "asc" ? "ascending" : "descending"}`;
 }
 
 function handleSelectableRowKeyDown<T>(
