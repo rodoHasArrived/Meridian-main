@@ -22,6 +22,7 @@ import {
   SheetTitle
 } from "@/components/ui/sheet";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import {
   formatReadinessStatusValue,
@@ -46,6 +47,8 @@ import {
   type PromotionOutcomeLevel,
   type TradingBlotterDetail,
   type TradingDataTone,
+  type TradingOrderRow,
+  type TradingPositionRow,
   type TradingWorkflowCommandState,
   type TradingConfirmViewModel,
   type TradingReadinessWorkItemRow,
@@ -136,6 +139,161 @@ const dataTonePanelClass: Record<TradingDataTone, string> = {
   muted: "border-border/70 bg-secondary/20"
 };
 
+function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingPositionRow>[] {
+  return [
+    {
+      id: "symbol",
+      label: "Symbol",
+      className: "font-mono font-semibold text-foreground",
+      render: (position) => position.symbol
+    },
+    {
+      id: "side",
+      label: "Side",
+      className: "font-mono text-foreground",
+      render: (position) => position.side
+    },
+    {
+      id: "quantity",
+      label: "Qty",
+      align: "right",
+      className: "font-mono text-foreground",
+      render: (position) => position.quantity
+    },
+    {
+      id: "average",
+      label: "Avg",
+      align: "right",
+      className: "font-mono text-muted-foreground",
+      render: (position) => position.averagePrice
+    },
+    {
+      id: "mark",
+      label: "Mark",
+      align: "right",
+      className: "font-mono text-muted-foreground",
+      render: (position) => position.markPrice
+    },
+    {
+      id: "day-pnl",
+      label: "Day P&L",
+      align: "right",
+      render: (position) => (
+        <span className={cn("font-mono font-semibold", dataToneClass[position.dayPnlTone])}>
+          {position.dayPnl}
+        </span>
+      )
+    },
+    {
+      id: "unrealized",
+      label: "Unrealized",
+      align: "right",
+      render: (position) => (
+        <span className={cn("font-mono font-semibold", dataToneClass[position.unrealizedPnlTone])}>
+          {position.unrealizedPnl}
+        </span>
+      )
+    },
+    {
+      id: "exposure",
+      label: "Exposure",
+      align: "right",
+      className: "font-mono text-foreground",
+      render: (position) => position.exposure
+    },
+    {
+      id: "actions",
+      label: "",
+      align: "right",
+      render: (position) => (
+        <button
+          type="button"
+          onClick={() => confirmVm.openConfirm({ kind: "close-position", positionKey: position.positionKey, symbol: position.symbol })}
+          className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          aria-label={position.closeAriaLabel}
+          title={position.closeTitleLabel}
+        >
+          {position.closeActionLabel}
+        </button>
+      )
+    }
+  ];
+}
+
+function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingOrderRow>[] {
+  return [
+    {
+      id: "order",
+      label: "Order",
+      className: "font-mono font-semibold text-foreground",
+      render: (order) => order.orderId
+    },
+    {
+      id: "symbol",
+      label: "Symbol",
+      className: "font-mono text-foreground",
+      render: (order) => order.symbol
+    },
+    {
+      id: "side",
+      label: "Side",
+      className: "font-mono text-foreground",
+      render: (order) => order.side
+    },
+    {
+      id: "type",
+      label: "Type",
+      className: "font-mono text-foreground",
+      render: (order) => order.type
+    },
+    {
+      id: "quantity",
+      label: "Qty",
+      align: "right",
+      className: "font-mono text-foreground",
+      render: (order) => order.quantity
+    },
+    {
+      id: "limit",
+      label: "Limit",
+      align: "right",
+      className: "font-mono text-muted-foreground",
+      render: (order) => order.limitPrice
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (order) => (
+        <span className={cn("font-mono font-semibold", dataToneClass[order.statusTone])}>
+          {order.status}
+        </span>
+      )
+    },
+    {
+      id: "submitted",
+      label: "Submitted",
+      className: "font-mono text-muted-foreground",
+      render: (order) => order.submittedAt
+    },
+    {
+      id: "actions",
+      label: "",
+      align: "right",
+      render: (order) => (
+        <button
+          type="button"
+          onClick={() => confirmVm.openConfirm({ kind: "cancel-order", orderId: order.orderId })}
+          className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          aria-label={order.cancelAriaLabel}
+          title={order.cancelTitleLabel}
+        >
+          {order.cancelActionLabel}
+        </button>
+      )
+    }
+  ];
+}
+
 const sessionReplayStatusPanelClass = {
   default: "border-border/70 bg-secondary/25 text-muted-foreground",
   success: "border-success/30 bg-success/10 text-success",
@@ -169,6 +327,8 @@ export function TradingScreen({ data }: TradingScreenProps) {
       ]);
     }
   });
+  const positionColumns = React.useMemo(() => buildPositionColumns(confirmVm), [confirmVm]);
+  const orderColumns = React.useMemo(() => buildOrderColumns(confirmVm), [confirmVm]);
 
   const paperSessions = usePaperSessionsViewModel({
     onSessionEvidenceChanged: refreshSessionEvidence
@@ -434,67 +594,20 @@ export function TradingScreen({ data }: TradingScreenProps) {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {blotterVm.hasPositions ? (
-              <div className="data-grid-surface overflow-x-auto">
-                <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm" aria-label={blotterVm.positionsTableLabel}>
-                  <caption className="sr-only">Select a position to update the position detail status window.</caption>
-                  <thead className="bg-secondary/30">
-                    <tr>
-                      {["Symbol", "Side", "Qty", "Avg", "Mark", "Day P&L", "Unrealized", "Exposure", ""].map((col) => (
-                        <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/50">
-                    {blotterVm.positionRows.map((position) => (
-                      <tr
-                        key={position.id}
-                        aria-label={position.ariaLabel}
-                        aria-selected={position.isSelected}
-                        className={cn("bg-background/20 transition-colors", position.isSelected ? "bg-primary/10" : "hover:bg-secondary/20")}
-                      >
-                        <td className="px-3 py-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={position.isSelected ? "secondary" : "ghost"}
-                            aria-pressed={position.isSelected}
-                            aria-controls={blotterVm.positionDetailId}
-                            aria-label={position.selectAriaLabel}
-                            onClick={() => blotterVm.selectPosition(position.id)}
-                            className="justify-start px-2 font-mono font-semibold"
-                          >
-                            {position.symbol}
-                          </Button>
-                        </td>
-                        <td className="px-3 py-2 font-mono text-foreground">{position.side}</td>
-                        <td className="px-3 py-2 font-mono text-foreground">{position.quantity}</td>
-                        <td className="px-3 py-2 font-mono text-muted-foreground">{position.averagePrice}</td>
-                        <td className="px-3 py-2 font-mono text-muted-foreground">{position.markPrice}</td>
-                        <td className={cn("px-3 py-2 font-mono font-semibold", dataToneClass[position.dayPnlTone])}>{position.dayPnl}</td>
-                        <td className={cn("px-3 py-2 font-mono font-semibold", dataToneClass[position.unrealizedPnlTone])}>{position.unrealizedPnl}</td>
-                        <td className="px-3 py-2 font-mono text-foreground">{position.exposure}</td>
-                        <td className="px-3 py-2 text-right">
-                          <button
-                            type="button"
-                            onClick={() => confirmVm.openConfirm({ kind: "close-position", positionKey: position.positionKey, symbol: position.symbol })}
-                            className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                            aria-label={position.closeAriaLabel}
-                            title="Close position"
-                          >
-                            Close
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <EmptyEvidenceState text={blotterVm.positionEmptyText} />
-            )}
+            <DenseDataTable
+              ariaLabel={blotterVm.positionsTableLabel}
+              caption="Select a position to update the position detail status window."
+              columns={positionColumns}
+              rows={blotterVm.positionRows}
+              getRowId={(position) => position.id}
+              getRowAriaLabel={(position) => position.ariaLabel}
+              getRowSelectAriaLabel={(position) => position.selectAriaLabel}
+              getRowAriaControls={(position) => position.detailPanelId}
+              getRowAriaExpanded={(position) => position.ariaExpanded}
+              selectedRowId={blotterVm.selectedPositionRowId}
+              onRowSelect={(position) => blotterVm.selectPosition(position.id)}
+              emptyText={blotterVm.positionEmptyText}
+            />
             <TradingBlotterDetailPanel id={blotterVm.positionDetailId} detail={blotterVm.selectedPosition} emptyText={blotterVm.positionEmptyText} />
           </CardContent>
         </Card>
@@ -665,67 +778,20 @@ export function TradingScreen({ data }: TradingScreenProps) {
             </CardContent>
           )}
           <CardContent className="space-y-3">
-            {blotterVm.hasOpenOrders ? (
-              <div className="data-grid-surface overflow-x-auto">
-                <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm" aria-label={blotterVm.ordersTableLabel}>
-                  <caption className="sr-only">Select an order to update the order detail status window.</caption>
-                  <thead className="bg-secondary/30">
-                    <tr>
-                      {["Order", "Symbol", "Side", "Type", "Qty", "Limit", "Status", "Submitted", ""].map((col) => (
-                        <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/50">
-                    {blotterVm.orderRows.map((order) => (
-                      <tr
-                        key={order.id}
-                        aria-label={order.ariaLabel}
-                        aria-selected={order.isSelected}
-                        className={cn("bg-background/20 transition-colors", order.isSelected ? "bg-primary/10" : "hover:bg-secondary/20")}
-                      >
-                        <td className="px-3 py-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={order.isSelected ? "secondary" : "ghost"}
-                            aria-pressed={order.isSelected}
-                            aria-controls={blotterVm.orderDetailId}
-                            aria-label={order.selectAriaLabel}
-                            onClick={() => blotterVm.selectOrder(order.id)}
-                            className="justify-start px-2 font-mono font-semibold"
-                          >
-                            {order.orderId}
-                          </Button>
-                        </td>
-                        <td className="px-3 py-2 font-mono text-foreground">{order.symbol}</td>
-                        <td className="px-3 py-2 font-mono text-foreground">{order.side}</td>
-                        <td className="px-3 py-2 font-mono text-foreground">{order.type}</td>
-                        <td className="px-3 py-2 font-mono text-foreground">{order.quantity}</td>
-                        <td className="px-3 py-2 font-mono text-muted-foreground">{order.limitPrice}</td>
-                        <td className={cn("px-3 py-2 font-mono font-semibold", dataToneClass[order.statusTone])}>{order.status}</td>
-                        <td className="px-3 py-2 font-mono text-muted-foreground">{order.submittedAt}</td>
-                        <td className="px-3 py-2 text-right">
-                          <button
-                            type="button"
-                            onClick={() => confirmVm.openConfirm({ kind: "cancel-order", orderId: order.orderId })}
-                            className="rounded-sm px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                            aria-label={order.cancelAriaLabel}
-                            title="Cancel order"
-                          >
-                            Cancel
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <EmptyEvidenceState text={blotterVm.orderEmptyText} />
-            )}
+            <DenseDataTable
+              ariaLabel={blotterVm.ordersTableLabel}
+              caption="Select an order to update the order detail status window."
+              columns={orderColumns}
+              rows={blotterVm.orderRows}
+              getRowId={(order) => order.id}
+              getRowAriaLabel={(order) => order.ariaLabel}
+              getRowSelectAriaLabel={(order) => order.selectAriaLabel}
+              getRowAriaControls={(order) => order.detailPanelId}
+              getRowAriaExpanded={(order) => order.ariaExpanded}
+              selectedRowId={blotterVm.selectedOrderRowId}
+              onRowSelect={(order) => blotterVm.selectOrder(order.id)}
+              emptyText={blotterVm.orderEmptyText}
+            />
             <TradingBlotterDetailPanel id={blotterVm.orderDetailId} detail={blotterVm.selectedOrder} emptyText={blotterVm.orderEmptyText} />
           </CardContent>
         </Card>

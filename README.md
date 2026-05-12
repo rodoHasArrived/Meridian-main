@@ -98,6 +98,13 @@ APIs for subjects, packet/graph inspection, validation, and manifest export. Tre
 browser-visible support for run, readiness, reconciliation, report-pack, provider-trust, and export
 evidence, not as completion of the full Evidence Vault or report-line provenance roadmap.
 
+Current browser workstation support also includes Overview portfolio-at-a-glance, richer
+sidebar/menu/command grouping, browser Security Master details/lots and operator overrides, and
+expanded UFL/reference-data endpoints for bonds, options, equities, futures, FX spot, swaps,
+commodities, crypto, deposits, money-market funds, and certificates of deposit. Treat these as
+support evidence for Waves 3-4, not completion of reconciliation, report-pack, or live-readiness
+gates.
+
 ### MCP server (minimal) — `src/Meridian.Mcp`
 
 A lightweight [Model Context Protocol](https://modelcontextprotocol.io/) server. Loads tools, prompts, and resources from the assembly and communicates over stdio. Intended for repo-navigation and code-review AI tooling. All diagnostic output goes to stderr; stdout is reserved for the MCP protocol.

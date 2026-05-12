@@ -1,4 +1,5 @@
 import { screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
@@ -176,6 +177,35 @@ describe("SettingsScreen", () => {
       "title",
       "Enter an Alpaca key ID before testing the connection."
     );
+  });
+
+  it("blocks live Alpaca credential testing until the live endpoint is acknowledged", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+      />
+    );
+
+    await user.click(screen.getByRole("radio", { name: "Use Alpaca live endpoint for production brokerage verification" }));
+    await user.type(screen.getByPlaceholderText("ALPACA_KEY_ID"), "AK-LIVE");
+    await user.type(screen.getByPlaceholderText("ALPACA_SECRET_KEY"), "secret");
+
+    const submit = screen.getByRole("button", { name: /connect and test/i });
+    expect(screen.getByRole("checkbox", { name: "Acknowledge live Alpaca endpoint before testing credentials" })).not.toBeChecked();
+    expect(screen.getByText("Live endpoint review required")).toBeInTheDocument();
+    expect(submit).toBeDisabled();
+    expect(submit).toHaveAttribute(
+      "title",
+      "Acknowledge the live Alpaca endpoint before testing live credentials."
+    );
+
+    await user.click(screen.getByRole("checkbox", { name: "Acknowledge live Alpaca endpoint before testing credentials" }));
+
+    expect(submit).toBeEnabled();
+    expect(screen.getByText("Credentials ready for test")).toBeInTheDocument();
   });
 
   it("renders backend capability groups with mapped API links", () => {

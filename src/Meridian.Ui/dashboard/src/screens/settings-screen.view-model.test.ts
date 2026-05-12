@@ -274,6 +274,7 @@ describe("buildSettingsScreenViewModel", () => {
         keyId: "",
         secretKey: "",
         environment: "paper",
+        liveAcknowledged: false,
         busyAction: null,
         submitted: false,
         actionMessage: null,
@@ -294,8 +295,14 @@ describe("buildSettingsScreenViewModel", () => {
     expect(pristineState.requirements).toEqual([
       expect.objectContaining({ id: "alpaca-key-id-requirement", value: "Needed", met: false, tone: "muted" }),
       expect.objectContaining({ id: "alpaca-secret-key-requirement", value: "Needed", met: false, tone: "muted" }),
-      expect.objectContaining({ id: "alpaca-environment-requirement", value: "PAPER", met: true, tone: "success" })
+      expect.objectContaining({ id: "alpaca-environment-requirement", value: "PAPER", met: true, tone: "success" }),
+      expect.objectContaining({ id: "alpaca-live-acknowledgement-requirement", value: "Not required", met: true, tone: "muted" })
     ]);
+    expect(pristineState.liveAcknowledgement).toMatchObject({
+      visible: false,
+      checked: false,
+      required: false
+    });
   });
 
   it("derives Alpaca credential command disabled and validation state", () => {
@@ -305,6 +312,7 @@ describe("buildSettingsScreenViewModel", () => {
         keyId: "",
         secretKey: "",
         environment: "paper",
+        liveAcknowledged: false,
         busyAction: null,
         submitted: true,
         actionMessage: null,
@@ -345,7 +353,8 @@ describe("buildSettingsScreenViewModel", () => {
     expect(emptyState.requirements).toEqual([
       expect.objectContaining({ id: "alpaca-key-id-requirement", value: "Required", met: false, tone: "warning" }),
       expect.objectContaining({ id: "alpaca-secret-key-requirement", value: "Required", met: false, tone: "warning" }),
-      expect.objectContaining({ id: "alpaca-environment-requirement", value: "PAPER", met: true, tone: "success" })
+      expect.objectContaining({ id: "alpaca-environment-requirement", value: "PAPER", met: true, tone: "success" }),
+      expect.objectContaining({ id: "alpaca-live-acknowledgement-requirement", value: "Not required", met: true, tone: "muted" })
     ]);
 
     const busyState = buildAlpacaConnectionCommandState({
@@ -354,6 +363,7 @@ describe("buildSettingsScreenViewModel", () => {
         keyId: "AK123",
         secretKey: "secret",
         environment: "live",
+        liveAcknowledged: true,
         busyAction: "connect",
         submitted: true,
         actionMessage: null,
@@ -373,6 +383,59 @@ describe("buildSettingsScreenViewModel", () => {
       expect.objectContaining({ value: "paper", isSelected: false, disabled: true }),
       expect.objectContaining({ value: "live", isSelected: true, disabled: true })
     ]);
+  });
+
+  it("requires explicit acknowledgement before testing live Alpaca credentials", () => {
+    const pendingLiveState = buildAlpacaConnectionCommandState({
+      canClear: true,
+      form: {
+        keyId: "AK123",
+        secretKey: "secret",
+        environment: "live",
+        liveAcknowledged: false,
+        busyAction: null,
+        submitted: false,
+        actionMessage: null,
+        actionTone: "default"
+      }
+    });
+
+    expect(pendingLiveState).toMatchObject({
+      canSubmit: false,
+      formPanelTitle: "Live endpoint review required",
+      formPanelTone: "warning",
+      submitDisabledReason: "Acknowledge the live Alpaca endpoint before testing live credentials."
+    });
+    expect(pendingLiveState.liveAcknowledgement).toMatchObject({
+      visible: true,
+      checked: false,
+      required: true,
+      disabled: false
+    });
+    expect(pendingLiveState.requirements).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "alpaca-live-acknowledgement-requirement", value: "Required", met: false, tone: "warning" })
+    ]));
+
+    const acknowledgedLiveState = buildAlpacaConnectionCommandState({
+      canClear: true,
+      form: {
+        keyId: "AK123",
+        secretKey: "secret",
+        environment: "live",
+        liveAcknowledged: true,
+        busyAction: null,
+        submitted: false,
+        actionMessage: null,
+        actionTone: "default"
+      }
+    });
+
+    expect(acknowledgedLiveState.canSubmit).toBe(true);
+    expect(acknowledgedLiveState.submitDisabledReason).toBeNull();
+    expect(acknowledgedLiveState.liveAcknowledgement.checked).toBe(true);
+    expect(acknowledgedLiveState.requirements).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "alpaca-live-acknowledgement-requirement", value: "Accepted", met: true, tone: "success" })
+    ]));
   });
 
   it("surfaces canonical backend capability groups with browser routes and mapped endpoints", () => {
@@ -540,6 +603,30 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.hasOverview).toBe(false);
     expect(vm.systemItems).toHaveLength(0);
     expect(vm.systemSummary).toContain("unavailable");
+  });
+
+  it("does not submit live Alpaca credentials before acknowledgement", async () => {
+    const connectConnection = vi.fn();
+    const { result } = renderHook(() => useAlpacaConnectionFormViewModel({
+      canClear: false,
+      connectConnection
+    }));
+
+    act(() => {
+      result.current.setEnvironment("live");
+      result.current.setKeyId("live-key");
+      result.current.setSecretKey("live-secret");
+    });
+
+    await act(async () => {
+      await result.current.connect({ preventDefault: vi.fn() } as never);
+    });
+
+    expect(connectConnection).not.toHaveBeenCalled();
+    expect(result.current.submitDisabledReason).toBe(
+      "Acknowledge the live Alpaca endpoint before testing live credentials."
+    );
+    expect(result.current.liveAcknowledgement.required).toBe(true);
   });
 
   it("does not refresh or update Alpaca credential state after unmount", async () => {

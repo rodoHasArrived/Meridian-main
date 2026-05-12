@@ -1,6 +1,6 @@
 # Governance and Fund Operations Blueprint
 
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-05-12
 
 This blueprint is subordinate to
 [`evidence-backed-investment-operations-plan.md`](evidence-backed-investment-operations-plan.md)
@@ -22,6 +22,7 @@ This blueprint starts from the current repository state:
 - Security Master contracts, services, storage, migrations, workstation propagation, and F# domain modules already exist as an authoritative instrument-definition seam
 - run-scoped reconciliation contracts, services, and workstation endpoints already exist
 - direct-lending services, migrations, projections, and `/api/loans/*` endpoints already exist as the first deep governance/UFL vertical slice
+- UFL/reference-data projection services, DTOs, Postgres stores, migrations, and `/api/reference-data/*` endpoint slices now cover bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit as support evidence for broader instrument and fund-ops depth
 - export infrastructure already exists for JSONL, Parquet, Arrow, XLSX, and CSV
 - `/api/workstation/operator/inbox` now includes open and in-review reconciliation breaks with Governance navigation targets, and the WPF shell queue button resolves the primary work item's route metadata into the concrete `FundReconciliation` workbench when applicable
 - `FundAccountsPage` now includes a stateful operator brief that projects fund-context, account-queue, provider-routing, blocked-route, shared-data-access, balance-evidence snapshot posture, and ready-for-reconciliation states from already-loaded account, provider, and balance-history evidence
@@ -69,6 +70,7 @@ The current repository now includes the first organization-rooted governance str
   - one reusable HTTP/service query path now consumed by the Governance WPF shell so workstation entry points stop rebuilding the same posture through parallel read services
 - Reconciliation break work items now flow into the shared operator inbox with stable scoped IDs, severity-derived tone, audit references, exception route, tolerance profile/band, required sign-off role, sign-off status, and Governance navigation hints, while WPF resolves the reconciliation route into `FundReconciliation` and preserves the active account context as `fundAccountId` so the queue surface no longer has to infer break posture from one-off page state. `/api/workstation/reconciliation/calibration-summary` now aggregates the same break metadata into Ready/ReviewRequired/Blocked profile posture for tolerance and sign-off review.
 - The WPF Fund Accounts workbench now turns the former static operator brief into a stateful account handoff by projecting fund context, empty queue, missing route evidence, blocked provider routes, shared-data access gaps, balance-evidence snapshot posture, and ready-for-reconciliation posture without another service read.
+- Security Master now also has UFL/reference-data projection support for bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit, plus browser details/lots tracking and server-side operator override storage. Treat those as governance inputs, not as completion of governed override approvals, instrument passports, or confidence scoring.
 
 This is intentionally still an early governance slice. Durable local-first persistence, shared Security Master/price/backfill accessibility summaries, governance cash-flow projection/variance views, a fund-scoped workspace/report-preview API baseline, the Fund Accounts operator and balance-evidence brief, the first governed report-pack artifact generation path, a file-backed reconciliation break queue for run-scoped breaks, seeded exception-route/tolerance/sign-off metadata, a calibration-summary rollup, and shared operator-inbox projection for those breaks are now in place. Postgres-backed governance persistence, deeper amortization/direct-loan schedule rules, generalized reconciliation across external statements/custodians, broader board/investor/compliance templates, operator-approved tolerance/severity calibration, end-to-end queue acceptance, and publication/readiness controls still remain future implementation waves.
 

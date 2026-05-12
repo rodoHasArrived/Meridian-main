@@ -333,6 +333,33 @@ export function SettingsScreen({
                 </span>
               </fieldset>
             </div>
+            {alpacaForm.liveAcknowledgement.visible ? (
+              <label
+                htmlFor={alpacaForm.liveAcknowledgement.id}
+                className={cn(
+                  "flex items-start gap-3 rounded-md border border-live-env/35 bg-live-env/10 px-3 py-3 text-sm text-live-env",
+                  alpacaForm.liveAcknowledgement.disabled && "opacity-60"
+                )}
+              >
+                <input
+                  id={alpacaForm.liveAcknowledgement.id}
+                  type="checkbox"
+                  checked={alpacaForm.liveAcknowledgement.checked}
+                  disabled={alpacaForm.liveAcknowledgement.disabled}
+                  required={alpacaForm.liveAcknowledgement.required}
+                  onChange={(event) => alpacaForm.setLiveAcknowledged(event.target.checked)}
+                  aria-label={alpacaForm.liveAcknowledgement.ariaLabel}
+                  aria-describedby={`${alpacaForm.liveAcknowledgement.descriptionId} ${alpacaForm.formPanelId}`}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--live-env))]"
+                />
+                <span className="min-w-0">
+                  <span className="block font-semibold text-foreground">{alpacaForm.liveAcknowledgement.label}</span>
+                  <span id={alpacaForm.liveAcknowledgement.descriptionId} className="mt-1 block text-xs leading-5 text-muted-foreground">
+                    {alpacaForm.liveAcknowledgement.detail}
+                  </span>
+                </span>
+              </label>
+            ) : null}
             <div
               id={alpacaForm.formPanelId}
               role={alpacaForm.formPanelRole}

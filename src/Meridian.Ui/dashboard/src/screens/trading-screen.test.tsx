@@ -312,6 +312,42 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Live positions")).toBeInTheDocument();
   });
 
+  it("links blotter dense-table rows to detail panels with keyboard selection", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen({
+      ...data,
+      positions: [
+        ...data.positions,
+        { symbol: "MSFT", side: "Short", quantity: "40", averagePrice: "414.20", markPrice: "410.00", dayPnl: "+$60", unrealizedPnl: "+$168", exposure: "$16,400" }
+      ],
+      openOrders: [
+        ...data.openOrders,
+        { orderId: "PO-2", symbol: "AAPL", side: "Sell", type: "Market", quantity: "10", limitPrice: "", status: "Pending Routing", submittedAt: "09:44:00 ET" }
+      ]
+    });
+
+    const msftPosition = screen.getByRole("row", { name: /inspect msft short position/i });
+    expect(msftPosition).toHaveAttribute("aria-controls", "trading-position-detail");
+    expect(msftPosition).toHaveAttribute("aria-expanded", "false");
+
+    msftPosition.focus();
+    await user.keyboard("{Enter}");
+
+    await waitFor(() => expect(msftPosition).toHaveAttribute("aria-selected", "true"));
+    expect(msftPosition).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: /position detail for msft/i })).toHaveAttribute("id", "trading-position-detail");
+
+    const queuedOrder = screen.getByRole("row", { name: /inspect order po-2/i });
+    expect(queuedOrder).toHaveAttribute("aria-controls", "trading-order-detail");
+    expect(queuedOrder).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(queuedOrder);
+
+    await waitFor(() => expect(queuedOrder).toHaveAttribute("aria-selected", "true"));
+    expect(queuedOrder).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: /order detail for po-2/i })).toHaveAttribute("id", "trading-order-detail");
+  });
+
   it("announces active workflow side panels from the trading shell view model", async () => {
     const user = userEvent.setup();
     await renderTradingScreen();

@@ -280,7 +280,11 @@ export interface TradingPositionRow {
   dayPnlTone: TradingDataTone;
   unrealizedPnlTone: TradingDataTone;
   isSelected: boolean;
+  detailPanelId: string;
+  ariaExpanded: boolean;
   selectAriaLabel: string;
+  closeActionLabel: string;
+  closeTitleLabel: string;
   closeAriaLabel: string;
   ariaLabel: string;
 }
@@ -297,7 +301,11 @@ export interface TradingOrderRow {
   submittedAt: string;
   statusTone: TradingDataTone;
   isSelected: boolean;
+  detailPanelId: string;
+  ariaExpanded: boolean;
   selectAriaLabel: string;
+  cancelActionLabel: string;
+  cancelTitleLabel: string;
   cancelAriaLabel: string;
   ariaLabel: string;
 }
@@ -325,6 +333,8 @@ export interface TradingBlotterViewModel {
   fillRows: TradingFillRow[];
   selectedPosition: TradingBlotterDetail | null;
   selectedOrder: TradingBlotterDetail | null;
+  selectedPositionRowId: string | null;
+  selectedOrderRowId: string | null;
   hasPositions: boolean;
   hasOpenOrders: boolean;
   hasFills: boolean;
@@ -424,6 +434,8 @@ const defaultTradingReadinessServices: TradingReadinessServices = {
 
 const visibleWorkItemLimit = 4;
 const visibleWarningLimit = 3;
+const tradingPositionDetailId = "trading-position-detail";
+const tradingOrderDetailId = "trading-order-detail";
 
 export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null): TradingBlotterViewModel {
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
@@ -472,14 +484,16 @@ export function buildTradingBlotterViewModel({
     fillRows,
     selectedPosition: selectedPositionRow ? buildPositionDetail(selectedPositionRow, data?.risk ?? null) : null,
     selectedOrder: selectedOrderRow ? buildOrderDetail(selectedOrderRow, data?.brokerage.provider ?? null) : null,
+    selectedPositionRowId: effectivePositionId,
+    selectedOrderRowId: effectiveOrderId,
     hasPositions: positionRows.length > 0,
     hasOpenOrders: orderRows.length > 0,
     hasFills: fillRows.length > 0,
     positionsTableLabel: "Live positions evidence",
     ordersTableLabel: "Open orders evidence",
     fillsTableLabel: "Recent fills evidence",
-    positionDetailId: "trading-position-detail",
-    orderDetailId: "trading-order-detail",
+    positionDetailId: tradingPositionDetailId,
+    orderDetailId: tradingOrderDetailId,
     positionEmptyText: data ? "No live positions in the active paper session." : "Trading workspace data unavailable.",
     orderEmptyText: data ? "No open orders require operator action." : "Trading workspace data unavailable.",
     fillEmptyText: data ? "No recent fills have been reported for this session." : "Trading workspace data unavailable.",
@@ -781,7 +795,11 @@ function buildPositionRow(
     dayPnlTone: pnlTextTone(position.dayPnl),
     unrealizedPnlTone: pnlTextTone(position.unrealizedPnl),
     isSelected: id === selectedId,
+    detailPanelId: tradingPositionDetailId,
+    ariaExpanded: id === selectedId,
     selectAriaLabel: `Inspect ${position.symbol} ${position.side.toLowerCase()} position`,
+    closeActionLabel: "Close",
+    closeTitleLabel: "Close position",
     closeAriaLabel: `Close ${position.symbol} position`,
     ariaLabel: `${position.symbol} ${position.side} position, ${position.quantity} quantity, ${position.exposure} exposure, ${position.unrealizedPnl} unrealized P&L`
   };
@@ -806,7 +824,11 @@ function buildOrderRow(
     submittedAt: order.submittedAt,
     statusTone: orderStatusTone(order.status),
     isSelected: id === selectedId,
+    detailPanelId: tradingOrderDetailId,
+    ariaExpanded: id === selectedId,
     selectAriaLabel: `Inspect order ${order.orderId}`,
+    cancelActionLabel: "Cancel",
+    cancelTitleLabel: "Cancel order",
     cancelAriaLabel: `Cancel order ${order.orderId}`,
     ariaLabel: `${order.orderId}, ${order.side} ${order.quantity} ${order.symbol} ${order.type}, ${order.status}, submitted ${order.submittedAt}`
   };

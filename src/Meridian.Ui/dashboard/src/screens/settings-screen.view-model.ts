@@ -36,6 +36,7 @@ export interface SettingsAlpacaConnectionFormState {
   keyId: string;
   secretKey: string;
   environment: AlpacaEnvironment;
+  liveAcknowledged: boolean;
   busyAction: "connect" | "clear" | null;
   submitted: boolean;
   actionMessage: string | null;
@@ -71,6 +72,7 @@ export interface SettingsAlpacaConnectionCommandState {
   environmentHelpText: string;
   environmentLegend: string;
   environmentOptions: SettingsAlpacaEnvironmentOption[];
+  liveAcknowledgement: SettingsAlpacaLiveAcknowledgementState;
   requirements: SettingsAlpacaRequirementRow[];
 }
 
@@ -95,6 +97,18 @@ export interface SettingsAlpacaRequirementRow {
   tone: "success" | "warning" | "muted";
 }
 
+export interface SettingsAlpacaLiveAcknowledgementState {
+  id: string;
+  descriptionId: string;
+  label: string;
+  detail: string;
+  checked: boolean;
+  visible: boolean;
+  disabled: boolean;
+  required: boolean;
+  ariaLabel: string;
+}
+
 export interface SettingsAlpacaSetupStep {
   id: string;
   label: string;
@@ -111,6 +125,7 @@ export interface SettingsAlpacaConnectionFormViewModel extends SettingsAlpacaCon
   setKeyId: (value: string) => void;
   setSecretKey: (value: string) => void;
   setEnvironment: (value: AlpacaEnvironment) => void;
+  setLiveAcknowledged: (value: boolean) => void;
   connect: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   clear: () => Promise<void>;
 }
@@ -124,6 +139,7 @@ const emptyAlpacaConnectionForm: SettingsAlpacaConnectionFormState = {
   keyId: "",
   secretKey: "",
   environment: "paper",
+  liveAcknowledged: false,
   busyAction: null,
   submitted: false,
   actionMessage: null,
@@ -141,6 +157,14 @@ export function buildAlpacaConnectionCommandState({
   const secretKeyMissing = form.secretKey.trim().length === 0;
   const hasValidationErrors = keyIdMissing || secretKeyMissing;
   const busy = form.busyAction !== null;
+  const liveSelected = form.environment === "live";
+  const liveAcknowledgementMissing = liveSelected && !form.liveAcknowledged;
+  const liveReviewValue = liveSelected ? form.liveAcknowledged ? "Accepted" : "Required" : "Not required";
+  const liveReviewTone: SettingsAlpacaRequirementRow["tone"] = liveAcknowledgementMissing
+    ? "warning"
+    : liveSelected
+      ? "success"
+      : "muted";
   const validationVisible = form.submitted || form.actionTone === "danger";
   const keyIdError = validationVisible && keyIdMissing;
   const secretKeyError = validationVisible && secretKeyMissing;
@@ -193,6 +217,13 @@ export function buildAlpacaConnectionCommandState({
       value: form.environment === "live" ? "LIVE" : "PAPER",
       met: true,
       tone: form.environment === "live" ? "warning" : "success"
+    },
+    {
+      id: "alpaca-live-acknowledgement-requirement",
+      label: "Live review",
+      value: liveReviewValue,
+      met: !liveAcknowledgementMissing,
+      tone: liveReviewTone
     }
   ];
   const formPanelTone: SettingsAlpacaConnectionCommandState["formPanelTone"] = busy
@@ -203,29 +234,35 @@ export function buildAlpacaConnectionCommandState({
         ? "success"
         : hasValidationErrors && validationVisible
           ? "warning"
-          : "default";
+          : liveAcknowledgementMissing
+            ? "warning"
+            : "default";
   const formPanelTitle = busy
     ? form.busyAction === "clear"
       ? "Clearing Alpaca credentials"
       : "Testing Alpaca credentials"
     : form.actionMessage
       ? form.actionMessage
-      : hasValidationErrors && validationVisible
-        ? "Credentials incomplete"
-        : hasValidationErrors
-          ? "Enter Alpaca credentials"
-          : "Credentials ready for test";
+      : liveAcknowledgementMissing && !hasValidationErrors
+        ? "Live endpoint review required"
+        : hasValidationErrors && validationVisible
+          ? "Credentials incomplete"
+          : hasValidationErrors
+            ? "Enter Alpaca credentials"
+            : "Credentials ready for test";
   const formPanelDetail = busy
     ? "Meridian is waiting on the brokerage connection request."
     : form.actionMessage
       ? hasValidationErrors
         ? "Review the required fields before the next connection test."
         : "Credential readiness has been recalculated from the current form state."
-      : hasValidationErrors && validationVisible
-        ? "Enter the required Alpaca API values before Meridian can call /v2/account."
-        : hasValidationErrors
-          ? "Paste the paper key ID and secret key to enable account verification."
-          : "Submitting will test the account and clear the secret key from the form after the response.";
+      : liveAcknowledgementMissing && !hasValidationErrors
+        ? "Acknowledge that Meridian will verify live Alpaca brokerage credentials before submitting."
+        : hasValidationErrors && validationVisible
+          ? "Enter the required Alpaca API values before Meridian can call /v2/account."
+          : hasValidationErrors
+            ? "Paste the paper key ID and secret key to enable account verification."
+            : "Submitting will test the account and clear the secret key from the form after the response.";
 
   return {
     keyIdError,
@@ -243,7 +280,7 @@ export function buildAlpacaConnectionCommandState({
     },
     submitLabel: "Connect and test",
     clearLabel: "Clear",
-    canSubmit: !busy && !hasValidationErrors,
+    canSubmit: !busy && !hasValidationErrors && !liveAcknowledgementMissing,
     canEdit: !busy,
     submitBusy: form.busyAction === "connect",
     clearBusy: form.busyAction === "clear",
@@ -253,7 +290,9 @@ export function buildAlpacaConnectionCommandState({
         ? "Enter an Alpaca key ID before testing the connection."
         : secretKeyMissing
           ? "Enter an Alpaca secret key before testing the connection."
-          : null,
+          : liveAcknowledgementMissing
+            ? "Acknowledge the live Alpaca endpoint before testing live credentials."
+            : null,
     clearDisabledReason: busy
       ? "Alpaca credential request is already running."
       : canClear
@@ -264,10 +303,21 @@ export function buildAlpacaConnectionCommandState({
     keyIdHelpText: keyIdError ? "Key ID is required before Meridian can test the Alpaca account." : "Stored values remain masked after refresh.",
     secretKeyHelpText: secretKeyError ? "Secret key is required and is cleared after a connection test." : "Secret key is never displayed after submit.",
     environmentHelpText: form.environment === "live"
-      ? "Live endpoint selected. Paper remains the default workstation path."
+      ? "Live endpoint selected. Acknowledgement is required before Meridian can test these credentials."
       : "Paper endpoint selected for workstation validation.",
     environmentLegend: "Alpaca trading environment",
     environmentOptions,
+    liveAcknowledgement: {
+      id: "alpaca-live-acknowledgement",
+      descriptionId: "alpaca-live-acknowledgement-detail",
+      label: "I understand this test uses the live Alpaca endpoint.",
+      detail: "Use this only for production brokerage verification; paper remains the default onboarding and demo path.",
+      checked: form.liveAcknowledged,
+      visible: liveSelected,
+      disabled: busy,
+      required: liveSelected,
+      ariaLabel: "Acknowledge live Alpaca endpoint before testing credentials"
+    },
     requirements
   };
 }
@@ -300,7 +350,17 @@ export function useAlpacaConnectionFormViewModel({
   };
 
   const setEnvironment = (environment: AlpacaEnvironment) => {
-    setForm((current) => ({ ...current, environment, actionMessage: null, actionTone: "default" }));
+    setForm((current) => ({
+      ...current,
+      environment,
+      liveAcknowledged: environment === "live" ? current.liveAcknowledged : false,
+      actionMessage: null,
+      actionTone: "default"
+    }));
+  };
+
+  const setLiveAcknowledged = (liveAcknowledged: boolean) => {
+    setForm((current) => ({ ...current, liveAcknowledged, actionMessage: null, actionTone: "default" }));
   };
 
   const connect = async (event: FormEvent<HTMLFormElement>) => {
@@ -402,6 +462,7 @@ export function useAlpacaConnectionFormViewModel({
     setKeyId,
     setSecretKey,
     setEnvironment,
+    setLiveAcknowledged,
     connect,
     clear
   };
