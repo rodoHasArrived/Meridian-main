@@ -268,6 +268,11 @@ describe("governance-screen view model", () => {
 
     expect(state).toMatchObject({
       title: "Reconciliation detail queue",
+      overviewTitle: "Reconciliation queue",
+      overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation workstream to inspect selected run detail.",
+      overviewActionHref: "/accounting/reconciliation",
+      overviewActionLabel: "Open reconciliation",
+      overviewActionAriaLabel: "Open Accounting reconciliation workstream",
       listLabel: "Reconciliation runs",
       detailPanelId: "reconciliation-run-detail-panel",
       hasRows: true

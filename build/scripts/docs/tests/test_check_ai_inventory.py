@@ -26,6 +26,16 @@ def write(path: Path, text: str = "placeholder\n") -> None:
 
 
 def write_required_docs(root: Path, body: str) -> None:
+    body_with_policy = "\n".join(
+        [
+            body,
+            "No mobile development lane",
+            (
+                "do not create mobile applications, mobile-specific product surfaces, native iOS/Android clients, "
+                "MAUI clients, React Native clients, Flutter clients, or mobile-first workflows"
+            ),
+        ]
+    )
     for rel_path in (
         "docs/ai/README.md",
         "docs/ai/assistant-workflow-contract.md",
@@ -36,15 +46,24 @@ def write_required_docs(root: Path, body: str) -> None:
         ".codex/skills/README.md",
         ".github/prompts/README.md",
     ):
-        write(root / rel_path, body)
+        write(root / rel_path, body_with_policy)
+
+
+def write_ui_platform_policy_docs(root: Path, body: str | None = None) -> None:
+    policy = body or (
+        "No mobile development lane\n"
+        "do not create mobile applications, mobile-specific product surfaces, native iOS/Android clients, "
+        "MAUI clients, React Native clients, Flutter clients, or mobile-first workflows\n"
+    )
+    for rel_path in check_ai_inventory.UI_PLATFORM_POLICY_FILES:
+        write(root / rel_path, policy)
 
 
 class CheckAiInventoryTests(unittest.TestCase):
     def test_collect_inventory_discovers_supported_ai_surfaces(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            write(root / "AGENTS.md")
-            write(root / "CLAUDE.md")
+            write_ui_platform_policy_docs(root)
             write(root / ".codex" / "config.toml")
             write(root / ".codex" / "environments" / "environment.toml")
             write(root / ".codex" / "skills" / "meridian-test" / "SKILL.md")
@@ -98,13 +117,21 @@ class CheckAiInventoryTests(unittest.TestCase):
     def test_check_catalog_drift_passes_when_indexes_reference_assets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            write(root / "AGENTS.md")
-            write(root / "CLAUDE.md")
+            policy = (
+                "No mobile development lane\n"
+                "do not create mobile applications, mobile-specific product surfaces, native iOS/Android clients, "
+                "MAUI clients, React Native clients, Flutter clients, or mobile-first workflows\n"
+            )
+            write(root / "AGENTS.md", policy)
+            write(root / "CLAUDE.md", policy)
             write(root / ".codex" / "config.toml")
             write(root / ".codex" / "skills" / "meridian-test" / "SKILL.md")
             write(root / ".claude" / "settings.json")
             write(root / ".claude" / "skills" / "meridian-test" / "SKILL.md")
-            write(root / ".github" / "copilot-instructions.md")
+            write(
+                root / ".github" / "copilot-instructions.md",
+                policy,
+            )
             write(root / ".github" / "agents" / "new-agent.md")
             write(root / ".github" / "prompts" / "sample.prompt.yml")
             write(root / ".github" / "instructions" / "sample.instructions.md")
@@ -164,6 +191,7 @@ class CheckAiInventoryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_required_docs(root, "Shared AI documentation docs/ai/")
+            write_ui_platform_policy_docs(root)
             write(
                 root / "docs" / "ai" / "copilot" / "instructions.md",
                 "\n".join(
@@ -189,6 +217,7 @@ class CheckAiInventoryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_required_docs(root, "Shared AI documentation docs/ai/")
+            write_ui_platform_policy_docs(root)
             write(
                 root / "CLAUDE.md",
                 "\n".join(
@@ -219,6 +248,7 @@ class CheckAiInventoryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_required_docs(root, "Shared AI documentation docs/ai/")
+            write_ui_platform_policy_docs(root)
             write(
                 root / "docs" / "ai" / "copilot" / "instructions.md",
                 "## Repository Navigation\nUse docs/ai/generated/repo-navigation.md for routing.\n",
@@ -228,6 +258,34 @@ class CheckAiInventoryTests(unittest.TestCase):
             findings = check_ai_inventory.check_catalog_drift(root, inventory)
 
             self.assertFalse(any(finding.kind == "duplicated-repository-tree" for finding in findings))
+
+    def test_check_catalog_drift_reports_missing_ui_platform_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write_ui_platform_policy_docs(root)
+            write(root / "CLAUDE.md", "Browser workstation only.\n")
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "ui-platform-policy" and finding.path == "CLAUDE.md"
+                    for finding in findings
+                )
+            )
+
+    def test_check_catalog_drift_passes_when_ui_platform_policy_is_mirrored(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+            write_ui_platform_policy_docs(root)
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertFalse(any(finding.kind == "ui-platform-policy" for finding in findings))
 
     def test_build_payload_uses_portable_repository_identity(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

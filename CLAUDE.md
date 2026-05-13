@@ -32,6 +32,9 @@ Meridian is a .NET 10 trading and fund-operations platform with:
   `src/Meridian.Ui.Shared/`.
 - New WPF feature work in `src/Meridian.Wpf/` is paused unless needed for shared contracts,
   regression fixes, or retained desktop support.
+- **No mobile development lane:** do not create mobile applications, mobile-specific product
+  surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
+  mobile-first workflows. Responsive browser validation may continue for the browser workstation.
 - Keep top-level operator navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`,
   `Strategy`, `Data`, and `Settings`.
 

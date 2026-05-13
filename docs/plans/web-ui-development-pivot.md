@@ -156,7 +156,9 @@ so heatmap/candlestick/line/bar/scatter/histogram support remains testable outsi
 Accounting reconciliation should follow the same view-model ownership rule: shared dense-table rows, keyboard selection, selected-run state,
 expanded row semantics, open-break copy, and no-run detail guidance belong in the reconciliation
 queue panel view state so the screen renders route-backed accounting evidence without JSX-local
-state contracts.
+state contracts. The Accounting overview reconciliation summary should stay read-only and expose a
+view-model-owned `/accounting/reconciliation` handoff, while the dedicated reconciliation route owns
+the selectable detail queue.
 The dashboard Vitest config caps forked workers so the jsdom-heavy component suite remains a
 repeatable `npm run test` gate on workstation machines without relying on serial-only runs.
 The shell should keep route screens behind dynamic imports so production builds split heavy

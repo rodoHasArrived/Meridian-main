@@ -344,6 +344,12 @@ export interface ReconciliationQueueRunRowViewModel {
 export interface ReconciliationQueuePanelViewState {
   title: string;
   description: string;
+  overviewTitle: string;
+  overviewDescription: string;
+  overviewCaption: string;
+  overviewActionHref: string;
+  overviewActionLabel: string;
+  overviewActionAriaLabel: string;
   listLabel: string;
   emptyText: string;
   detailPanelId: string;
@@ -1297,6 +1303,12 @@ export function buildReconciliationQueuePanelViewState(
   return {
     title: "Reconciliation detail queue",
     description: "Select a run to inspect its active reconciliation detail panel.",
+    overviewTitle: "Reconciliation queue",
+    overviewDescription: "Open breaks, timing drift, and balanced runs stay visible without leaving Accounting.",
+    overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation workstream to inspect selected run detail.",
+    overviewActionHref: "/accounting/reconciliation",
+    overviewActionLabel: "Open reconciliation",
+    overviewActionAriaLabel: "Open Accounting reconciliation workstream",
     listLabel: "Reconciliation runs",
     emptyText: "No reconciliation runs are available for this accounting scope.",
     detailPanelId,

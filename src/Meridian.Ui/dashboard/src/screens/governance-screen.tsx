@@ -21,6 +21,7 @@ import {
 import type {
   CalibrationSummaryViewState,
   CorporateActionRowViewModel,
+  ReconciliationQueuePanelViewState,
   ReconciliationQueueRunRowViewModel,
   ReconciliationQueueRunTone,
   GovernanceTrialBalanceRowViewModel,
@@ -32,14 +33,6 @@ import type { GovernanceWorkspaceResponse } from "@/types";
 interface GovernanceScreenProps {
   data: GovernanceWorkspaceResponse | null;
 }
-
-const statusTone: Record<NonNullable<GovernanceWorkspaceResponse["reconciliationQueue"][number]["reconciliationStatus"]>, string> = {
-  NotStarted: "text-muted-foreground",
-  BreaksOpen: "text-warning",
-  SecurityCoverageOpen: "text-warning",
-  Resolved: "text-primary",
-  Balanced: "text-success"
-};
 
 const reconciliationQueueToneClass: Record<ReconciliationQueueRunTone, string> = {
   muted: "text-muted-foreground",
@@ -527,44 +520,10 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
         </section>
       ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BookCheck className="h-4 w-4 text-primary" />
-              Reconciliation queue
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto rounded-xl border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm">
-                <thead className="bg-secondary/30">
-                  <tr>
-                    {["Run", "Strategy", "Mode", "Status", "Breaks", "Open", "Reconciliation", "Updated"].map((column) => (
-                      <th key={column} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        {column}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {data.reconciliationQueue.map((item) => (
-                    <tr key={item.runId} className="bg-background/20">
-                      <td className="px-3 py-2 font-mono text-foreground">{item.runId}</td>
-                      <td className="px-3 py-2 text-foreground">{item.strategyName}</td>
-                      <td className="px-3 py-2 font-mono uppercase text-muted-foreground">{item.mode}</td>
-                      <td className="px-3 py-2 text-foreground">{item.status}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{item.breakCount}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{item.openBreakCount}</td>
-                      <td className={cn("px-3 py-2 font-mono", statusTone[item.reconciliationStatus])}>{item.reconciliationStatus}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{item.lastUpdated}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+      <section className={cn("grid gap-4", workstream === "reconciliation" ? "xl:grid-cols-1" : "xl:grid-cols-[1.15fr_0.85fr]")}>
+        {workstream !== "reconciliation" ? (
+          <ReconciliationQueueSummaryCard view={reconciliation.queuePanelView} />
+        ) : null}
 
         <Card className="panel-surface">
           <CardHeader>
@@ -1260,6 +1219,40 @@ function TradingParametersPanel({ view }: { view: TradingParametersViewState }) 
             ))}
           </dl>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReconciliationQueueSummaryCard({ view }: { view: ReconciliationQueuePanelViewState }) {
+  return (
+    <Card className="panel-surface">
+      <CardHeader>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
+              {view.overviewTitle}
+            </CardTitle>
+            <CardDescription className="mt-2">{view.overviewDescription}</CardDescription>
+          </div>
+          <Button asChild variant="outline" size="sm" className="w-fit shrink-0">
+            <Link to={view.overviewActionHref} aria-label={view.overviewActionAriaLabel}>
+              {view.overviewActionLabel}
+            </Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <DenseDataTable
+          columns={reconciliationQueueColumns}
+          rows={view.rows}
+          getRowId={(row) => row.runId}
+          getRowAriaLabel={(row) => row.ariaLabel}
+          emptyText={view.emptyText}
+          ariaLabel={view.listLabel}
+          caption={view.overviewCaption}
+        />
       </CardContent>
     </Card>
   );

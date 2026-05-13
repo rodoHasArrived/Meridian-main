@@ -163,6 +163,14 @@ describe("GovernanceScreen", () => {
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Accounting reconciliation workstream" })).toHaveAttribute(
+      "href",
+      "/accounting/reconciliation"
+    );
+    expect(screen.getByRole("table", { name: "Reconciliation runs" })).toHaveTextContent("Paper Index Mean Reversion");
+    expect(screen.getByRole("row", { name: /Paper Index Mean Reversion.*BreaksOpen.*1 open/i })).not.toHaveAttribute(
+      "aria-controls"
+    );
     expect(screen.getByText("Reporting profiles")).toBeInTheDocument();
     expect(screen.getByText("Cash-flow coverage is available for 4 runs; 1 run needs variance review.")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Cash-flow evidence for Ledger context at /accounting" })).toBeInTheDocument();
@@ -174,6 +182,8 @@ describe("GovernanceScreen", () => {
   it("renders reconciliation strong panels with view-model presentation state", async () => {
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
+    expect(screen.getAllByRole("table", { name: "Reconciliation runs" })).toHaveLength(1);
+    expect(screen.queryByRole("link", { name: "Open Accounting reconciliation workstream" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
     const selectedRun = screen.getByRole("row", { name: "Inspect reconciliation run Paper Index Mean Reversion" });
     expect(selectedRun).toHaveAttribute("aria-selected", "true");
