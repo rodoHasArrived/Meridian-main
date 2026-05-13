@@ -892,6 +892,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── desktop-ui-alternatives-evaluation.md
 │       │   ├── high-impact-improvement-brainstorm-2026-03.md
 │       │   ├── high-impact-improvements-brainstorm.md
+│       │   ├── meridian-main-differentiation-report-2026-04-29.md
 │       │   └── ui-redesign.md
 │       ├── c4-context-legacy.png
 │       ├── c4-context-legacy.puml
@@ -905,8 +906,17 @@ Use these documents together when planning or implementing new work:
 │       │   ├── QUICKSTART_2026-01-08.md
 │       │   ├── REPOSITORY_REORGANIZATION_PLAN.md
 │       │   ├── WORKFLOW_IMPROVEMENTS_2026-01-08.md
+│       │   ├── backtesting-quantscript-improvement-plan-2026-04.md
 │       │   ├── consolidation.md
+│       │   ├── meridian-analytics-productization-blueprint.md
+│       │   ├── provider-reliability-data-confidence-wave-1-blueprint.md
+│       │   ├── quant-script-environment-blueprint.md
+│       │   ├── quant-script-page-implementation-guide.md
+│       │   ├── readability-refactor-baseline.md
+│       │   ├── readability-refactor-roadmap.md
+│       │   ├── readability-refactor-technical-design-pack.md
 │       │   ├── repository-cleanup-action-plan.md
+│       │   ├── security-master-productization-roadmap.md
 │       │   ├── workstation-release-readiness-blueprint.md
 │       │   └── workstation-sprint-1-implementation-backlog.md
 │       └── summaries
@@ -5104,6 +5114,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── environment-variables.md
 │   │   ├── export-preflight-rules.md
 │   │   ├── governance-report-packs.md
+│   │   ├── ledger-journal-store.md
 │   │   ├── open-source-references.md
 │   │   ├── reconciliation-break-taxonomy.md
 │   │   ├── research-briefing-workflow.md
@@ -6679,6 +6690,14 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── IStoragePolicy.cs
 │   │   │   ├── IStorageSink.cs
 │   │   │   └── ISymbolRegistryService.cs
+│   │   ├── Ledger
+│   │   │   ├── ILedgerJournalStore.cs
+│   │   │   ├── LedgerJournalStoreOptions.cs
+│   │   │   ├── LedgerStoreExtensions.cs
+│   │   │   ├── Migrations
+│   │   │   │   ├── V_ledger_001__journal_entries.sql
+│   │   │   │   └── V_ledger_002__accounting_periods.sql
+│   │   │   └── PostgresLedgerJournalStore.cs
 │   │   ├── Maintenance
 │   │   │   ├── ArchiveMaintenanceModels.cs
 │   │   │   ├── ArchiveMaintenanceScheduleManager.cs
@@ -7870,6 +7889,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── DomainTests.fs
 │   │   ├── LedgerKernelTests.fs
 │   │   ├── Meridian.FSharp.Tests.fsproj
+│   │   ├── PeriodManagementTests.fs
 │   │   ├── PipelineTests.fs
 │   │   ├── PromotionPolicyTests.fs
 │   │   ├── RiskPolicyTests.fs
@@ -8326,6 +8346,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── FilePermissionsServiceTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
 │   │   │   ├── JsonlReplayerTests.cs
+│   │   │   ├── LedgerJournalStoreTests.cs
 │   │   │   ├── LifecyclePolicyEngineTests.cs
 │   │   │   ├── MaintenancePersistenceTests.cs
 │   │   │   ├── MemoryMappedJsonlReaderTests.cs
@@ -8677,6 +8698,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-709 directories, 7766 files
+711 directories, 7775 files
 ```
 <!-- readme-tree end -->
