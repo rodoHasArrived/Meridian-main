@@ -51,6 +51,7 @@ const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((mo
 const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
 const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: module.ReportingScreen })));
 const ResearchScreen = lazy(() => import("@/screens/research-screen").then((module) => ({ default: module.ResearchScreen })));
+const StrategyDesignerScreen = lazy(() => import("@/screens/strategy-designer-screen").then((module) => ({ default: module.StrategyDesignerScreen })));
 const SettingsScreen = lazy(() => import("@/screens/settings-screen").then((module) => ({ default: module.SettingsScreen })));
 const TradingScreen = lazy(() => import("@/screens/trading-screen").then((module) => ({ default: module.TradingScreen })));
 const WatchlistScreen = lazy(() => import("@/screens/watchlist-screen").then((module) => ({ default: module.WatchlistScreen })));
@@ -277,6 +278,7 @@ export function App() {
                   <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
+                  <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                   <Route path="/strategy/*" element={<ResearchScreen data={research} />} />
                   <Route path="/data/quotes" element={<LiveQuotesScreen />} />
