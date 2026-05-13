@@ -52,6 +52,7 @@ The browser workstation is the primary UI lane for proving the commercial story:
    - The `/portfolio/brokerage-sync` task panel now exposes view-model-owned next actions for provider repair, Trading readiness, and the Trading cockpit, so a brokerage posture review moves operators into the next trust-building step instead of stopping at backend payload links.
    - The `/reporting/report-packs` task panel now starts with the strongest available export profile selected, preferring recommended and fully evidenced profiles, so report-pack preview/export actions are immediately visible without an extra discovery click.
    - The `/reporting/report-packs` backend endpoint panel now opens only concrete GET endpoints and renders the POST export mutation as reference-only, matching Settings capability semantics so operators do not accidentally browser-open a mutating route as a confusing GET.
+   - Research promotion-to-paper-session controls now expose view-model-owned disabled reasons for unevaluated runs, ineligible runs, missing/invalid initial cash, and in-flight session creation, so operators can understand why a paper validation step is blocked without trial-and-error.
    - Watchlist live-quote and bulk-add failures hand off directly to the Settings provider setup anchor, so operators can repair credentials or connection posture from the failing data workflow instead of stopping at an inline error.
    - Live Quotes quick-trade accepted and rejected submission states now expose a view-model-owned Trading readiness handoff, so operators can immediately inspect paper cockpit readiness and execution-control evidence after an order attempt instead of stopping at terminal ticket copy.
    - Dashboard API helpers preserve backend error details consistently across GET, POST, PUT, and DELETE, include field-level validation-problem details, tolerate HTTP 200/204 no-content success bodies, carry abort signals for superseded workstation bootstrap, trading readiness, operator-inbox, live market-data, and historical-chart refreshes, and keep Watchlist remove commands on the current row set when the backend returns an unsuccessful mutation result.
@@ -88,7 +89,7 @@ responses are used, with a route-aware evidence path linking to the watchlist, s
 quotes, readiness console, and Alpaca paper provider setup checklist plus a retry-live-data action
 that reruns workstation bootstrap, so operators can distinguish no-host demo data from live
 workstation state, review the same read-only evidence flow without credentials first, and then move
-directly to the live-data handoff. The Trading cockpit no-host path must also include fixture-backed paper-session,
+directly to the live-data handoff. The Strategy no-host path must include fixture-backed promotion evaluation GETs so `/strategy` can open the initial-cash paper-session handoff without a background 500. The Trading cockpit no-host path must also include fixture-backed paper-session,
 replay-file, replay-verification, execution-audit, execution-control, and promotion-history GETs so first-run demos
 do not show background 500s while the local API host is unavailable. Accounting reconciliation no-host routes must include the
 fixture-backed break-queue GET so `/accounting/reconciliation` opens without failed-resource noise. The quote demo path must include

@@ -508,6 +508,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     type="submit"
                     size="sm"
                     disabled={!vm.promotionCashForm.canSubmit}
+                    disabledReason={vm.promotionCashForm.disabledReason}
                     aria-label={vm.promotionCashForm.submitAriaLabel}
                   >
                     {vm.promotionCashForm.submitLabel}

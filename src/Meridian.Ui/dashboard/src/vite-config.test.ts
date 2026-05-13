@@ -24,6 +24,7 @@ import {
   historicalBarsEndpoint,
   marketDataQuoteEndpoint,
   marketDataQuotesSnapshotEndpoint,
+  promotionEvaluateEndpoint,
   securityMasterCorporateActionsEndpoint,
   securityMasterOperatorOverridesEndpoint,
   securityMasterTradingParametersEndpoint,
@@ -272,6 +273,7 @@ describe("Vite Meridian API proxy", () => {
     const replayFilesResponse = new FakeResponse();
     const auditResponse = new FakeResponse();
     const controlsResponse = new FakeResponse();
+    const promotionEvaluateResponse = new FakeResponse();
     const promotionHistoryResponse = new FakeResponse();
 
     await bypass(
@@ -305,6 +307,11 @@ describe("Vite Meridian API proxy", () => {
       {} as ProxyOptions
     );
     await bypass(
+      { method: "GET", url: promotionEvaluateEndpoint("run-dev-2"), headers: { accept: "application/json" } } as IncomingMessage,
+      promotionEvaluateResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
       { method: "GET", url: PROMOTION_API_ENDPOINTS.history, headers: { accept: "application/json" } } as IncomingMessage,
       promotionHistoryResponse as unknown as ServerResponse,
       {} as ProxyOptions
@@ -331,6 +338,11 @@ describe("Vite Meridian API proxy", () => {
     expect(JSON.parse(controlsResponse.body)).toMatchObject({
       circuitBreaker: { isOpen: false },
       manualOverrides: [expect.objectContaining({ overrideId: "override-fixture-1" })]
+    });
+    expect(JSON.parse(promotionEvaluateResponse.body)).toMatchObject({
+      runId: "run-dev-2",
+      isEligible: true,
+      reason: "Promotion gates passed."
     });
     expect(JSON.parse(promotionHistoryResponse.body)).toEqual([
       expect.objectContaining({ promotionId: "promo-dev-1", targetRunId: "paper-dev-42" })

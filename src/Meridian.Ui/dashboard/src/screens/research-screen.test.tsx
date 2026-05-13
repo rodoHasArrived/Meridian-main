@@ -592,11 +592,16 @@ describe("ResearchScreen", () => {
     expect(startButton).toBeEnabled();
 
     await user.clear(cashInput);
+    expect(screen.getByText("Enter initial paper capital of at least $1,000.")).toBeInTheDocument();
+    expect(startButton).toBeDisabled();
+    expect(startButton).toHaveAttribute("title", "Enter initial paper capital of at least $1,000.");
+
     await user.type(cashInput, "500");
 
     expect(cashInput).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByText("Enter at least $1,000 in whole dollars.")).toBeInTheDocument();
     expect(startButton).toBeDisabled();
+    expect(startButton).toHaveAttribute("title", "Enter at least $1,000 in whole-dollar paper capital.");
 
     await user.clear(cashInput);
     await user.type(cashInput, "125000");

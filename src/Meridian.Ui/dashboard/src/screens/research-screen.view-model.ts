@@ -169,6 +169,7 @@ export interface ResearchPromotionCashFormState {
   errorText: string | null;
   describedBy: string;
   canSubmit: boolean;
+  disabledReason: string | null;
   submitLabel: string;
   submitAriaLabel: string;
 }
@@ -1322,7 +1323,13 @@ export function buildPromotionCashForm({
   const errorText = shouldValidate && normalizedInput.length > 0 && parsed === null
     ? "Enter at least $1,000 in whole dollars."
     : null;
-  const helpText = errorText ?? "Minimum $1,000. Use whole-dollar paper capital.";
+  const disabledReason = buildPromotionCashFormDisabledReason({
+    eligible,
+    promoteState,
+    parsed,
+    normalizedInput
+  });
+  const helpText = errorText ?? disabledReason ?? "Minimum $1,000. Use whole-dollar paper capital.";
 
   return {
     inputId: "promote-initial-cash",
@@ -1334,9 +1341,44 @@ export function buildPromotionCashForm({
     errorText,
     describedBy: "promote-initial-cash-help",
     canSubmit: eligible && promoteState === "evaluated" && parsed !== null && !isCreating,
+    disabledReason,
     submitLabel: isCreating ? "Starting paper session..." : "Start paper session",
     submitAriaLabel: "Start paper session from selected strategy run"
   };
+}
+
+function buildPromotionCashFormDisabledReason({
+  eligible,
+  promoteState,
+  parsed,
+  normalizedInput
+}: {
+  eligible: boolean;
+  promoteState: PromoteState;
+  parsed: number | null;
+  normalizedInput: string;
+}): string | null {
+  if (promoteState === "creating") {
+    return "Paper-session creation is already running.";
+  }
+
+  if (promoteState !== "evaluated") {
+    return "Evaluate an eligible completed backtest before starting a paper session.";
+  }
+
+  if (!eligible) {
+    return "The selected strategy run is not eligible for paper-session promotion.";
+  }
+
+  if (normalizedInput.length === 0) {
+    return "Enter initial paper capital of at least $1,000.";
+  }
+
+  if (parsed === null) {
+    return "Enter at least $1,000 in whole-dollar paper capital.";
+  }
+
+  return null;
 }
 
 export function parsePromotionInitialCashInput(value: string): number | null {

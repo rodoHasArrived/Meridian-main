@@ -14,6 +14,7 @@ import type {
   PaperSessionReplayVerification,
   PaperSessionSummary,
   PortfolioWorkspaceResponse,
+  PromotionEvaluationResult,
   PromotionRecord,
   QuantParametersResponse,
   QuantTemplatesResponse,
@@ -446,6 +447,23 @@ const fixturePromotionHistory: PromotionRecord[] = [
     promotedAt: "2026-04-28T18:05:00Z"
   }
 ];
+
+const fixturePromotionEvaluations: Record<string, PromotionEvaluationResult> = {
+  "run-dev-2": {
+    runId: "run-dev-2",
+    strategyId: "run-dev-2",
+    strategyName: "Index Momentum",
+    sourceMode: "backtest",
+    targetMode: "paper",
+    isEligible: true,
+    sharpeRatio: 1.25,
+    maxDrawdownPercent: -0.04,
+    totalReturn: 0.08,
+    reason: "Promotion gates passed.",
+    found: true,
+    ready: true
+  }
+};
 
 const fixtureTradingWorkspace: TradingWorkspaceResponse = {
   metrics: [
@@ -1401,6 +1419,13 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
     resolve: (cleanPath, path) => buildFixtureHistoricalBars(readSymbolFromPath(cleanPath, 1), path)
   },
   { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.quotesSnapshot), resolve: (_cleanPath, path) => buildFixtureQuotesSnapshot(path) },
+  {
+    pattern: apiRoutePattern(PROMOTION_API_ENDPOINTS.evaluate, "/[^/]+"),
+    resolve: (cleanPath) => {
+      const runId = readDecodedPathSegment(cleanPath);
+      return runId ? fixturePromotionEvaluations[runId] : undefined;
+    }
+  },
   { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+"), resolve: () => fixturePaperSessionDetail },
   { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+/replay"), resolve: () => fixturePaperSessionReplayVerification }
 ];
@@ -1430,6 +1455,15 @@ function readSymbolFromPath(cleanPath: string, segmentFromEnd = 0): string {
     return decodeURIComponent(rawSymbol).trim().toUpperCase() || "AAPL";
   } catch {
     return rawSymbol.trim().toUpperCase() || "AAPL";
+  }
+}
+
+function readDecodedPathSegment(cleanPath: string, segmentFromEnd = 0): string {
+  const rawSegment = cleanPath.split("/").at(-1 - segmentFromEnd) ?? "";
+  try {
+    return decodeURIComponent(rawSegment).trim();
+  } catch {
+    return rawSegment.trim();
   }
 }
 

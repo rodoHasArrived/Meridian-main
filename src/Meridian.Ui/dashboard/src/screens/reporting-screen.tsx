@@ -1,3 +1,4 @@
+import { type KeyboardEvent, useEffect, useRef } from "react";
 import { FileText, Landmark, Network } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -5,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { cn } from "@/lib/utils";
-import { useReportingScreenViewModel } from "@/screens/reporting-screen.view-model";
+import {
+  resolveReportPackProfileKeyCommand,
+  useReportingScreenViewModel
+} from "@/screens/reporting-screen.view-model";
 import type { GovernanceWorkspaceResponse } from "@/types";
 
 interface ReportingScreenProps {
@@ -15,6 +19,31 @@ interface ReportingScreenProps {
 export function ReportingScreen({ data }: ReportingScreenProps) {
   const { pathname } = useLocation();
   const vm = useReportingScreenViewModel(data?.reporting ?? null, undefined, pathname);
+  const reportPackProfileButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const shouldFocusReportPackProfile = useRef(false);
+
+  useEffect(() => {
+    if (!shouldFocusReportPackProfile.current) {
+      return;
+    }
+
+    shouldFocusReportPackProfile.current = false;
+    const selectedProfileId = vm.workflowTaskPanel?.selectedProfileId;
+    if (selectedProfileId) {
+      reportPackProfileButtonRefs.current[selectedProfileId]?.focus();
+    }
+  }, [vm.workflowTaskPanel?.selectedProfileId]);
+
+  function handleReportPackProfileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const command = resolveReportPackProfileKeyCommand(event.key);
+    if (!command) {
+      return;
+    }
+
+    event.preventDefault();
+    shouldFocusReportPackProfile.current = true;
+    vm.selectAdjacentReportPackProfile(command);
+  }
 
   if (!data) {
     return (
@@ -108,6 +137,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
             </div>
             <div
               role="status"
+              id={vm.workflowTaskPanel.selectedSummaryId}
               aria-label="Selected report-pack profile"
               className="rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-sm leading-6 text-primary"
             >
@@ -116,7 +146,12 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
             <div>
               <div className="eyebrow-label">Actions</div>
               {vm.workflowTaskPanel.hasActions ? (
-                <div role="list" aria-label={vm.workflowTaskPanel.actionListLabel} className="mt-2 grid gap-2 sm:grid-cols-2">
+                <div
+                  id={vm.workflowTaskPanel.actionPanelId}
+                  role="list"
+                  aria-label={vm.workflowTaskPanel.actionListLabel}
+                  className="mt-2 grid gap-2 sm:grid-cols-2"
+                >
                   {vm.workflowTaskPanel.actions.map((action) => {
                     const taskActionDescriptionId = `reporting-task-action-${action.profileId}-${action.id}-status`;
 
@@ -166,6 +201,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                 </div>
               ) : (
                 <p
+                  id={vm.workflowTaskPanel.actionPanelId}
                   role="status"
                   aria-label={vm.workflowTaskPanel.actionsEmptyAriaLabel}
                   className="mt-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm leading-6 text-warning"
@@ -202,7 +238,11 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
               </div>
               <div>
                 <div className="eyebrow-label">Backend</div>
-                <div aria-label={vm.workflowTaskPanel.backendLinksLabel} className="mt-2 grid gap-2">
+                <div
+                  id={vm.workflowTaskPanel.backendPanelId}
+                  aria-label={vm.workflowTaskPanel.backendLinksLabel}
+                  className="mt-2 grid gap-2"
+                >
                   {vm.workflowTaskPanel.backendLinks.map((link) => link.isBrowserNavigable ? (
                     <a
                       key={link.id}
@@ -231,13 +271,29 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
           <div>
             <div className="eyebrow-label">Approval profile</div>
             {vm.workflowTaskPanel.hasProfiles ? (
-              <div role="list" aria-label={vm.workflowTaskPanel.profileListLabel} className="mt-3 grid gap-2">
+              <div
+                role="list"
+                aria-label={vm.workflowTaskPanel.profileListLabel}
+                aria-describedby={vm.workflowTaskPanel.profileKeyboardHelpId}
+                className="mt-3 grid gap-2"
+                onKeyDown={handleReportPackProfileKeyDown}
+              >
+                <span id={vm.workflowTaskPanel.profileKeyboardHelpId} className="sr-only">
+                  {vm.workflowTaskPanel.profileKeyboardHelpText}
+                </span>
                 {vm.workflowTaskPanel.profiles.map((profile) => (
                   <div key={profile.id} role="listitem">
                     <button
+                      ref={(node) => {
+                        reportPackProfileButtonRefs.current[profile.id] = node;
+                      }}
                       type="button"
                       aria-pressed={profile.isSelected}
+                      aria-controls={profile.controlsId}
+                      aria-expanded={profile.isExpanded}
+                      aria-describedby={profile.descriptionId}
                       aria-label={profile.selectAriaLabel}
+                      tabIndex={profile.tabIndex}
                       onClick={() => vm.selectProfile(profile.id)}
                       className={cn(
                         "w-full rounded-md border px-3 py-3 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40",
@@ -249,7 +305,9 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       <span className="flex items-start justify-between gap-3">
                         <span>
                           <span className="block font-semibold text-foreground">{profile.name}</span>
-                          <span className="mt-1 block text-xs text-muted-foreground">{profile.summary}</span>
+                          <span id={profile.descriptionId} className="mt-1 block text-xs text-muted-foreground">
+                            {profile.summary}
+                          </span>
                         </span>
                         <Badge variant={profile.readinessVariant}>{profile.readinessLabel}</Badge>
                       </span>

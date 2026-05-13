@@ -694,6 +694,7 @@ describe("research-screen view model", () => {
     });
 
     expect(valid.canSubmit).toBe(true);
+    expect(valid.disabledReason).toBeNull();
     expect(valid.errorText).toBeNull();
     expect(valid.helpText).toBe("Minimum $1,000. Use whole-dollar paper capital.");
     expect(valid.describedBy).toBe("promote-initial-cash-help");
@@ -705,7 +706,19 @@ describe("research-screen view model", () => {
     });
 
     expect(invalid.canSubmit).toBe(false);
+    expect(invalid.disabledReason).toBe("Enter at least $1,000 in whole-dollar paper capital.");
     expect(invalid.errorText).toBe("Enter at least $1,000 in whole dollars.");
+    expect(invalid.helpText).toBe("Enter at least $1,000 in whole dollars.");
+
+    const empty = buildPromotionCashForm({
+      input: "",
+      eligible: true,
+      promoteState: "evaluated"
+    });
+
+    expect(empty.canSubmit).toBe(false);
+    expect(empty.disabledReason).toBe("Enter initial paper capital of at least $1,000.");
+    expect(empty.helpText).toBe("Enter initial paper capital of at least $1,000.");
 
     const creating = buildPromotionCashForm({
       input: "100000",
@@ -714,6 +727,8 @@ describe("research-screen view model", () => {
     });
 
     expect(creating.canSubmit).toBe(false);
+    expect(creating.disabledReason).toBe("Paper-session creation is already running.");
+    expect(creating.helpText).toBe("Paper-session creation is already running.");
     expect(creating.submitLabel).toBe("Starting paper session...");
   });
 

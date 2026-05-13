@@ -141,6 +141,17 @@ describe("ReportingScreen", () => {
       "href",
       "/api/export/preview?profile=excel"
     );
+    const excelProfile = within(task).getByRole("button", { name: "Select Excel for report-pack approval" });
+    const auditProfile = within(task).getByRole("button", { name: "Select Audit Pack for report-pack approval" });
+    expect(excelProfile).toHaveAttribute(
+      "aria-controls",
+      "report-pack-profile-selected-summary report-pack-profile-actions report-pack-profile-backend-links"
+    );
+    expect(excelProfile).toHaveAttribute("aria-expanded", "true");
+    expect(excelProfile).toHaveAttribute("aria-describedby", "report-pack-profile-excel-description");
+    expect(excelProfile).toHaveAttribute("tabindex", "0");
+    expect(auditProfile).toHaveAttribute("aria-expanded", "false");
+    expect(auditProfile).toHaveAttribute("tabindex", "-1");
     expect(within(task).getByLabelText("Excel export preview uses GET")).toHaveTextContent("GET");
     expect(within(task).getByRole("button", { name: "Run Excel export analysis" })).toBeEnabled();
     expect(within(task).getByRole("link", { name: "GET /api/fund-structure/report-packs for Report-pack catalog" })).toHaveAttribute(
@@ -152,7 +163,15 @@ describe("ReportingScreen", () => {
       "Reference"
     );
 
-    await user.click(within(task).getByRole("button", { name: "Select Audit Pack for report-pack approval" }));
+    excelProfile.focus();
+    expect(excelProfile).toHaveFocus();
+    await user.keyboard("{ArrowRight}");
+
+    expect(auditProfile).toHaveFocus();
+    expect(auditProfile).toHaveAttribute("aria-pressed", "true");
+    expect(auditProfile).toHaveAttribute("aria-expanded", "true");
+    expect(excelProfile).toHaveAttribute("tabindex", "-1");
+    expect(auditProfile).toHaveAttribute("tabindex", "0");
 
     expect(within(task).getByRole("status", { name: "Selected report-pack profile" })).toHaveTextContent(
       "Audit Pack is selected for report-pack approval using Markdown output to Audit portal."
