@@ -7013,6 +7013,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── settings-screen.tsx
 │   │   │   │   │   ├── settings-screen.view-model.test.ts
 │   │   │   │   │   ├── settings-screen.view-model.ts
+│   │   │   │   │   ├── strategy-designer-screen.test.tsx
+│   │   │   │   │   ├── strategy-designer-screen.tsx
+│   │   │   │   │   ├── strategy-designer-screen.view-model.test.ts
+│   │   │   │   │   ├── strategy-designer-screen.view-model.ts
 │   │   │   │   │   ├── today-panel.view-model.test.ts
 │   │   │   │   │   ├── today-panel.view-model.ts
 │   │   │   │   │   ├── trading-screen.test.tsx
@@ -8638,6 +8642,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-711 directories, 7718 files
+711 directories, 7722 files
 ```
 <!-- readme-tree end -->
