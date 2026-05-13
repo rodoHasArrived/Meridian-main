@@ -807,8 +807,8 @@ export function buildDataOperationsLoadingState(
       {
         id: "settings",
         label: "Check provider setup",
-        href: "/settings",
-        ariaLabel: "Open Settings to check provider setup while Data workspace loads",
+        href: "/settings#alpaca-provider-setup",
+        ariaLabel: "Open Alpaca paper provider setup while Data workspace loads",
         variant: "default"
       },
       {

@@ -67,7 +67,8 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByText("Loading backfill queue")).toBeInTheDocument();
     expect(screen.getByText("Bootstrap pending")).toBeInTheDocument();
     expect(screen.getByText("Backfills")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /open settings to check provider setup/i })).toHaveAttribute("href", "/settings");
+    expect(screen.getByRole("link", { name: /open alpaca paper provider setup/i }))
+      .toHaveAttribute("href", "/settings#alpaca-provider-setup");
     expect(screen.getByRole("link", { name: /open live quotes while data workspace loads/i })).toHaveAttribute("href", "/data/quotes");
   });
 
