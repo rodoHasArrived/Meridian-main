@@ -6865,6 +6865,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │       │   ├── strategy-promotion-smoke.png
 │   │   │   │       │   ├── watchlist-empty-value-mobile-smoke.png
 │   │   │   │       │   ├── watchlist-empty-value-smoke.png
+│   │   │   │       │   ├── watchlist-retry-smoke.png
 │   │   │   │       │   └── workstation-preview-smoke.png
 │   │   │   │       ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
 │   │   │   │       ├── web-ui-report-pack-profile-keyboard-smoke.png
@@ -8637,6 +8638,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-711 directories, 7717 files
+711 directories, 7718 files
 ```
 <!-- readme-tree end -->
