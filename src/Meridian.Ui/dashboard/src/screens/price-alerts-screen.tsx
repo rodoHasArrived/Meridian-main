@@ -89,7 +89,7 @@ export function PriceAlertsScreen() {
             Price alerts
           </CardTitle>
           <CardDescription>
-            Get notified when a symbol crosses a price. Alerts are evaluated against live quotes every {Math.round(5_000 / 1000)}s while this tab is open.
+            Get notified when a symbol crosses a price. Alerts are evaluated against live quotes every {Math.round(PRICE_ALERTS_POLL_INTERVAL_MS / 1000)}s while this tab is open.
           </CardDescription>
         </CardHeader>
         <CardContent>
