@@ -5,6 +5,8 @@ import {
   buildResearchLoadingState,
   buildPlotToolMomentsTable,
   buildPlotToolSampleTable,
+  buildPlotStudyDetail,
+  buildPlotStudyRows,
   buildPlotToolState,
   buildPlotToolTabs,
   buildPromotionCashForm,
@@ -337,10 +339,34 @@ describe("research-screen view model", () => {
     expect(comparisonTable.rows[0].equityText).toBe("Equity Unavailable");
     expect(comparisonTable.rows[0].promotionStateText).toBe("Candidate for paper");
     expect(comparisonTable.rows[0].evidenceText).toBe("Ledger missing; Audit missing");
+    expect(comparisonTable.rows[0].detailExpanded).toBe(true);
+    expect(comparisonTable.rows[0].detailPanelId).toBe("strategy-run-comparison-selected-detail");
+    expect(comparisonTable.rows[0].rowSelectAriaLabel).toBe("Inspect Mean Reversion FX comparison evidence");
     expect(comparisonTable.rows[0].ariaLabel).toContain("Mean Reversion FX: Running; net P&L +$3,200");
     expect(comparisonTable.rows[0].sharpeRatioText).toBe("Unavailable");
     expect(comparisonTable.rows[0].fillCountText).toBe("Unavailable");
     expect(buildComparisonTable([]).emptyText).toBe("No comparison rows returned for the selected pair.");
+
+    const comparisonDetailState = buildResearchRunLibraryState({
+      runs,
+      selectedIds: ["run-1", "run-2"],
+      selectedRun: null,
+      comparison: [
+        comparison[0],
+        { ...comparison[0], runId: "run-2", strategyName: "Index Momentum" }
+      ],
+      selectedComparisonRowId: "run-2",
+      runDiff: null,
+      promotionHistory: [],
+      activeCommand: null,
+      actionError: null
+    });
+    expect(comparisonDetailState.selectedComparisonRowId).toBe("run-2");
+    expect(comparisonDetailState.selectedComparisonDetail).toMatchObject({
+      panelId: "strategy-run-comparison-selected-detail",
+      ariaLabel: "Selected comparison evidence for Index Momentum",
+      title: "Index Momentum"
+    });
 
     const emptyDiff = buildDiffPanel(diff);
     expect(emptyDiff.summaryLabel).toBe("Run diff metric summary");
@@ -505,6 +531,11 @@ describe("research-screen view model", () => {
     expect(plotTool.workspace.statusBadgeLabel).toBe("PAPER");
     expect(plotTool.workspace.expression).toContain("mean_reversion_fx.spread()");
     expect(plotTool.workspace.studySummary[0]).toMatchObject({ label: "Primary notebook", value: "Mean Reversion FX" });
+    expect(plotTool.studies[0]).toMatchObject({
+      id: "run-1",
+      detailPanelId: "plottool-selected-study-detail",
+      rowSelectAriaLabel: "Inspect Mean Reversion FX PlotTool study detail"
+    });
     expect(plotTool.workspace.legendItems[1]).toMatchObject({ label: "Current", detail: "88.40 / 73.80", tone: "current" });
     expect(plotTool.workspace.focusPoint).toMatchObject({ label: "Current marker", xValueText: "88.40", yValueText: "73.80" });
     expect(plotTool.workspace.scatterChart).toMatchObject({
@@ -569,6 +600,53 @@ describe("research-screen view model", () => {
     });
   });
 
+  it("derives PlotTool study row detail state outside the view", () => {
+    const plotTool = buildPlotToolState({
+      metrics,
+      runs,
+      selectedRuns: [runs[0], runs[1]],
+      comparison,
+      runDiff: diff
+    });
+    const rows = buildPlotStudyRows(plotTool.studies, "run-2");
+    const detail = buildPlotStudyDetail(rows[1]);
+
+    expect(rows[0]).toMatchObject({
+      detailExpanded: false,
+      detailPanelId: "plottool-selected-study-detail",
+      rowSelectAriaLabel: "Inspect Mean Reversion FX PlotTool study detail"
+    });
+    expect(rows[1]).toMatchObject({
+      detailExpanded: true,
+      ariaLabel: "Index Momentum PlotTool study. Completed. +1.9% · Sharpe 0.91."
+    });
+    expect(detail).toMatchObject({
+      id: "run-2",
+      panelId: "plottool-selected-study-detail",
+      ariaLabel: "Selected PlotTool study detail for Index Momentum",
+      title: "Index Momentum",
+      statusLabel: "BACKTEST",
+      statusVariant: "research"
+    });
+    expect(detail.fields).toContainEqual({ label: "Notebook", value: "Retained notebook" });
+
+    const state = buildResearchRunLibraryState({
+      runs,
+      selectedIds: [],
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      selectedPlotStudyId: "run-2",
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(state.selectedPlotStudyId).toBe("run-2");
+    expect(state.selectedPlotStudyDetail?.title).toBe("Index Momentum");
+    expect(state.plotTool.studies[1].detailExpanded).toBe(true);
+  });
+
   it("derives PlotTool tab selection and keyboard transitions outside the view", () => {
     const tabs = buildPlotToolTabs("statistics");
 
@@ -616,6 +694,7 @@ describe("research-screen view model", () => {
     });
 
     expect(valid.canSubmit).toBe(true);
+    expect(valid.disabledReason).toBeNull();
     expect(valid.errorText).toBeNull();
     expect(valid.helpText).toBe("Minimum $1,000. Use whole-dollar paper capital.");
     expect(valid.describedBy).toBe("promote-initial-cash-help");
@@ -627,7 +706,19 @@ describe("research-screen view model", () => {
     });
 
     expect(invalid.canSubmit).toBe(false);
+    expect(invalid.disabledReason).toBe("Enter at least $1,000 in whole-dollar paper capital.");
     expect(invalid.errorText).toBe("Enter at least $1,000 in whole dollars.");
+    expect(invalid.helpText).toBe("Enter at least $1,000 in whole dollars.");
+
+    const empty = buildPromotionCashForm({
+      input: "",
+      eligible: true,
+      promoteState: "evaluated"
+    });
+
+    expect(empty.canSubmit).toBe(false);
+    expect(empty.disabledReason).toBe("Enter initial paper capital of at least $1,000.");
+    expect(empty.helpText).toBe("Enter initial paper capital of at least $1,000.");
 
     const creating = buildPromotionCashForm({
       input: "100000",
@@ -636,6 +727,8 @@ describe("research-screen view model", () => {
     });
 
     expect(creating.canSubmit).toBe(false);
+    expect(creating.disabledReason).toBe("Paper-session creation is already running.");
+    expect(creating.helpText).toBe("Paper-session creation is already running.");
     expect(creating.submitLabel).toBe("Starting paper session...");
   });
 

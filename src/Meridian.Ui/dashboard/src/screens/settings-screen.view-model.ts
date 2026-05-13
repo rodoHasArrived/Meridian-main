@@ -822,6 +822,11 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
       { id: "data-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.data },
       { id: "provider-status", method: "GET", label: "Provider status", href: PROVIDER_API_ENDPOINTS.status },
       { id: "backfill-run", method: "POST", label: "Backfill run", href: BACKFILL_API_ENDPOINTS.run },
+      { id: "backfill-checkpoints", method: "GET", label: "Checkpoints", href: BACKFILL_API_ENDPOINTS.checkpoints },
+      { id: "backfill-resumable", method: "GET", label: "Resumable jobs", href: BACKFILL_API_ENDPOINTS.checkpointsResumable },
+      { id: "backfill-validation", method: "GET", label: "Checkpoint validation", href: BACKFILL_API_ENDPOINTS.checkpointsValidation },
+      { id: "backfill-pending", method: "GET", label: "Pending symbols", href: `${BACKFILL_API_ENDPOINTS.checkpoints}/{jobId}/pending` },
+      { id: "backfill-resume", method: "POST", label: "Resume checkpoint", href: `${BACKFILL_API_ENDPOINTS.checkpoints}/{jobId}/resume` },
       { id: "symbols", method: "GET", label: "Symbols", href: SYMBOL_API_ENDPOINTS.symbols },
       { id: "quality-dashboard", method: "GET", label: "Quality", href: QUALITY_API_ENDPOINTS.dashboard }
     ]

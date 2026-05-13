@@ -102,11 +102,35 @@ describe("ResearchScreen", () => {
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool study brief")).toBeInTheDocument();
     expect(screen.getByText("Strategy notebooks")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Selected PlotTool study detail for Mean Reversion FX" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Mean Reversion FX vs Index Momentum scatter" })).toBeInTheDocument();
     expect(screen.getByText(/Spread \(bps\) against 3m implied vol/)).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool chart legend")).toBeInTheDocument();
     expect(screen.getAllByText("Current marker").length).toBeGreaterThan(0);
     expect(screen.getByText("Meridian overlays")).toBeInTheDocument();
+  });
+
+  it("links PlotTool notebook rows to the selected study detail panel", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
+
+    const firstStudy = screen.getByRole("row", { name: "Inspect Mean Reversion FX PlotTool study detail" });
+    const secondStudy = screen.getByRole("row", { name: "Inspect Index Momentum PlotTool study detail" });
+    expect(firstStudy).toHaveAttribute("aria-controls", "plottool-selected-study-detail");
+    expect(firstStudy).toHaveAttribute("aria-expanded", "true");
+    expect(secondStudy).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(secondStudy);
+
+    expect(secondStudy).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected PlotTool study detail for Index Momentum" })).toBeInTheDocument();
+    expect(screen.getByText("Completed study retained in the PlotTool workstation. Completed backtest run.")).toBeInTheDocument();
+
+    firstStudy.focus();
+    await user.keyboard("{Enter}");
+
+    expect(firstStudy).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected PlotTool study detail for Mean Reversion FX" })).toBeInTheDocument();
   });
 
   it("switches to the PlotTool statistics view", async () => {
@@ -210,6 +234,23 @@ describe("ResearchScreen", () => {
         promotionState: "CandidateForPaper",
         hasLedger: false,
         hasAuditTrail: false
+      },
+      {
+        runId: "run-2",
+        strategyName: "Index Momentum",
+        mode: "backtest",
+        engine: "Lean",
+        status: "Completed",
+        netPnl: 4400,
+        totalReturn: 0.052,
+        finalEquity: 104400,
+        maxDrawdown: -0.02,
+        sharpeRatio: 1.52,
+        fillCount: 31,
+        lastUpdatedAt: "2026-03-26T10:00:00Z",
+        promotionState: "ResearchOnly",
+        hasLedger: true,
+        hasAuditTrail: true
       }
     ];
     vi.spyOn(api, "compareRuns").mockResolvedValue(comparisonRows);
@@ -228,7 +269,14 @@ describe("ResearchScreen", () => {
       expect(cells.some((el) => el.closest("td") !== null)).toBe(true);
     });
     expect(screen.getByRole("table", { name: "Strategy run comparison evidence" })).toBeInTheDocument();
-    expect(screen.getByRole("row", { name: /Carry Alpha: Running; net P&L \+\$3,200/ })).toBeInTheDocument();
+    const firstComparisonRow = screen.getByRole("row", { name: "Inspect Carry Alpha comparison evidence" });
+    const secondComparisonRow = screen.getByRole("row", { name: "Inspect Index Momentum comparison evidence" });
+    expect(firstComparisonRow).toHaveAttribute("aria-controls", "strategy-run-comparison-selected-detail");
+    expect(firstComparisonRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected comparison evidence for Carry Alpha" })).toBeInTheDocument();
+    await user.click(secondComparisonRow);
+    expect(secondComparisonRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected comparison evidence for Index Momentum" })).toBeInTheDocument();
     expect(screen.getByText("+4.20%")).toBeInTheDocument();
     expect(screen.getByText("-1.80%")).toBeInTheDocument();
     expect(screen.getAllByText("Ledger missing; Audit missing").length).toBeGreaterThanOrEqual(1);
@@ -544,11 +592,16 @@ describe("ResearchScreen", () => {
     expect(startButton).toBeEnabled();
 
     await user.clear(cashInput);
+    expect(screen.getByText("Enter initial paper capital of at least $1,000.")).toBeInTheDocument();
+    expect(startButton).toBeDisabled();
+    expect(startButton).toHaveAttribute("title", "Enter initial paper capital of at least $1,000.");
+
     await user.type(cashInput, "500");
 
     expect(cashInput).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByText("Enter at least $1,000 in whole dollars.")).toBeInTheDocument();
     expect(startButton).toBeDisabled();
+    expect(startButton).toHaveAttribute("title", "Enter at least $1,000 in whole-dollar paper capital.");
 
     await user.clear(cashInput);
     await user.type(cashInput, "125000");

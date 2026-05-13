@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildLotsTrackerViewModel, type SecurityLot } from "./security-details-tracker.view-model";
+import {
+  buildLotsTrackerViewModel,
+  buildSecurityDetailsViewModel,
+  SECURITY_DETAIL_GROUPS,
+  type SecurityLot
+} from "./security-details-tracker.view-model";
+import type { SecurityIdentityDrillIn, SecurityMasterEntry } from "@/types";
 
 const lots: SecurityLot[] = [
   {
@@ -36,6 +42,77 @@ function buildVm(overrides: Partial<Parameters<typeof buildLotsTrackerViewModel>
     selectedLotId: "lot-aapl-2",
     ...overrides
   });
+}
+
+const securityEntry: SecurityMasterEntry = {
+  securityId: "sec-1",
+  displayName: "Apple Inc.",
+  status: "Active",
+  classification: {
+    assetClass: "Equity",
+    subType: "CommonStock",
+    primaryIdentifierKind: "Ticker",
+    primaryIdentifierValue: "AAPL"
+  },
+  economicDefinition: {
+    currency: "USD",
+    version: 3,
+    effectiveFrom: "2024-01-01T00:00:00Z",
+    effectiveTo: null,
+    subType: "CommonStock",
+    assetFamily: "Equity",
+    issuerType: "Corporate"
+  }
+};
+
+const securityIdentity: SecurityIdentityDrillIn = {
+  securityId: "sec-1",
+  displayName: "Apple Inc.",
+  assetClass: "Equity",
+  status: "Active",
+  version: 3,
+  effectiveFrom: "2024-01-01T00:00:00Z",
+  effectiveTo: null,
+  identifiers: [
+    {
+      kind: "Ticker",
+      value: "AAPL",
+      isPrimary: true,
+      validFrom: "2024-01-01T00:00:00Z",
+      validTo: null,
+      provider: "Nasdaq"
+    }
+  ],
+  aliases: []
+};
+
+function buildSecurityDetailsVm(
+  options: {
+    assetClass?: string;
+    entry?: SecurityMasterEntry | null;
+    identity?: SecurityIdentityDrillIn | null;
+    overrides?: Record<string, string>;
+  } = {}
+) {
+  const assetClass = options.assetClass ?? "Equity";
+  return buildSecurityDetailsViewModel({
+    entry: options.entry === undefined
+      ? { ...securityEntry, classification: { ...securityEntry.classification, assetClass } }
+      : options.entry,
+    identity: options.identity === undefined
+      ? { ...securityIdentity, assetClass }
+      : options.identity,
+    tradingParameters: null,
+    overrides: options.overrides ?? {}
+  });
+}
+
+function visibleFieldKeys(vm: ReturnType<typeof buildSecurityDetailsViewModel>): string[] {
+  return vm.groups.flatMap((group) => group.fields.map((field) => field.key));
+}
+
+function visibleGroupIds(vm: ReturnType<typeof buildSecurityDetailsViewModel>): string[] {
+  return vm.groups.map((group) => group.id);
 }
 
 describe("buildLotsTrackerViewModel", () => {
@@ -100,5 +177,70 @@ describe("buildLotsTrackerViewModel", () => {
     expect(empty.rows).toEqual([]);
     expect(empty.selectedDetail).toBeNull();
     expect(empty.emptyText).toBe("No lots recorded yet. Add a lot above to start tracking cost basis.");
+  });
+});
+
+describe("buildSecurityDetailsViewModel", () => {
+  it("shows equity fields while hiding bond-only detail groups", () => {
+    const vm = buildSecurityDetailsVm({ assetClass: "Equity" });
+    const keys = visibleFieldKeys(vm);
+
+    expect(visibleGroupIds(vm)).toContain("issuer");
+    expect(keys).toEqual(expect.arrayContaining(["identifier", "assetClass", "currency", "issuer", "shareClass", "sharesOutstanding", "marketPrice", "fedTax"]));
+    expect(keys).not.toEqual(expect.arrayContaining(["couponRate", "finalMaturity", "spRating", "factor"]));
+    expect(visibleGroupIds(vm)).not.toEqual(expect.arrayContaining(["ratings", "coupon", "maturity", "conversion"]));
+  });
+
+  it("shows fixed-income ratings, coupon, maturity, and duration fields", () => {
+    const vm = buildSecurityDetailsVm({ assetClass: "FixedIncome" });
+    const keys = visibleFieldKeys(vm);
+
+    expect(visibleGroupIds(vm)).toEqual(expect.arrayContaining(["ratings", "coupon", "maturity", "pricing", "conversion", "regulatory"]));
+    expect(keys).toEqual(expect.arrayContaining(["spRating", "couponRate", "finalMaturity", "factor", "yield", "duration", "convexity"]));
+    expect(keys).not.toEqual(expect.arrayContaining(["shareClass", "sharesOutstanding", "contractSize"]));
+  });
+
+  it("keeps option and future assets to contract and pricing fields", () => {
+    for (const assetClass of ["Option", "Future"]) {
+      const vm = buildSecurityDetailsVm({ assetClass });
+      const keys = visibleFieldKeys(vm);
+
+      expect(keys).toEqual(expect.arrayContaining(["identifier", "assetClass", "currency", "marketPrice", "contractSize"]));
+      expect(keys).not.toEqual(expect.arrayContaining(["issuerConcentration", "couponRate", "finalMaturity", "spRating"]));
+      expect(visibleGroupIds(vm)).toContain("pricing");
+      expect(visibleGroupIds(vm)).not.toEqual(expect.arrayContaining(["issuer", "coupon", "ratings", "maturity"]));
+    }
+  });
+
+  it("keeps the full field set visible for unknown asset classes", () => {
+    const vm = buildSecurityDetailsVm({ assetClass: "StructuredNote" });
+    const allGroupIds = SECURITY_DETAIL_GROUPS.map((group) => group.id);
+    const allFieldKeys = SECURITY_DETAIL_GROUPS.flatMap((group) => group.fields.map((field) => field.key));
+
+    expect(visibleGroupIds(vm)).toEqual(allGroupIds);
+    expect(visibleFieldKeys(vm)).toEqual(allFieldKeys);
+  });
+
+  it("preserves hidden overrides in metadata without rendering them as visible fields", () => {
+    const vm = buildSecurityDetailsVm({
+      assetClass: "Equity",
+      overrides: {
+        assetClass: "Equity",
+        couponRate: "5.25",
+        finalMaturity: "2032-06-30",
+        issuer: "Apple Inc."
+      }
+    });
+    const keys = visibleFieldKeys(vm);
+    const issuer = vm.groups.flatMap((group) => group.fields).find((field) => field.key === "issuer");
+
+    expect(vm.overrideCount).toBe(4);
+    expect(vm.hiddenOverrideCount).toBe(2);
+    expect(keys).not.toEqual(expect.arrayContaining(["couponRate", "finalMaturity"]));
+    expect(issuer).toMatchObject({
+      value: "Apple Inc.",
+      displayValue: "Apple Inc.",
+      isOverridden: true
+    });
   });
 });

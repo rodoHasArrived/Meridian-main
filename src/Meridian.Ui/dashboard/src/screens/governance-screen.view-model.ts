@@ -115,6 +115,44 @@ export interface CorporateActionRowViewModel extends CorporateAction {
   payDateLabel: string;
   amountLabel: string;
   ariaLabel: string;
+  selectAriaLabel: string;
+  detailPanelId: string;
+  isExpanded: boolean;
+}
+
+export interface CorporateActionDetailFieldViewModel {
+  label: string;
+  value: string;
+  tone?: "default" | "warning";
+}
+
+export interface CorporateActionDetailViewState {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  ariaLabel: string;
+  statusLabel: string;
+  fields: CorporateActionDetailFieldViewModel[];
+}
+
+export interface CorporateActionsViewState {
+  securityId: string;
+  tableLabel: string;
+  tableCaption: string;
+  detailPanelId: string;
+  rows: CorporateActionRowViewModel[];
+  selectedRowId: string | null;
+  selectedDetail: CorporateActionDetailViewState | null;
+  emptyText: string;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  detailEmptyAriaLabel: string;
+  loadingText: string | null;
+  errorText: string | null;
+  hasRows: boolean;
+  statusAnnouncement: string;
 }
 
 export type TradingParametersField = { label: string; value: string; tone?: "default" | "warning" };
@@ -344,6 +382,12 @@ export interface ReconciliationQueueRunRowViewModel {
 export interface ReconciliationQueuePanelViewState {
   title: string;
   description: string;
+  overviewTitle: string;
+  overviewDescription: string;
+  overviewCaption: string;
+  overviewActionHref: string;
+  overviewActionLabel: string;
+  overviewActionAriaLabel: string;
   listLabel: string;
   emptyText: string;
   detailPanelId: string;
@@ -458,6 +502,20 @@ export interface GovernanceTrialBalanceRowViewModel extends LedgerTrialBalanceLi
   balanceTone: "default" | "success" | "danger";
   entryCountLabel: string;
   ariaLabel: string;
+  selectAriaLabel: string;
+  detailPanelId: string;
+  isExpanded: boolean;
+}
+
+export interface GovernanceTrialBalanceDetailViewState {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: "outline" | "success" | "danger";
+  ariaLabel: string;
+  fields: Array<{ label: string; value: string }>;
 }
 
 export interface GovernanceTrialBalanceViewState {
@@ -467,6 +525,12 @@ export interface GovernanceTrialBalanceViewState {
   state: GovernanceTrialBalanceState;
   rows: GovernanceTrialBalanceRowViewModel[];
   hasRows: boolean;
+  selectedRowId: string | null;
+  detailPanelId: string;
+  selectedDetail: GovernanceTrialBalanceDetailViewState | null;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  detailEmptyAriaLabel: string;
   loadingText: string | null;
   emptyTitle: string;
   emptyDetail: string;
@@ -607,6 +671,7 @@ export function useSecurityMasterViewModel(
   const [corporateActions, setCorporateActions] = useState<CorporateAction[] | null>(null);
   const [corporateActionsLoading, setCorporateActionsLoading] = useState(false);
   const [corporateActionsError, setCorporateActionsError] = useState<string | null>(null);
+  const [selectedCorporateActionId, setSelectedCorporateActionId] = useState<string | null>(null);
   const [tradingParameters, setTradingParameters] = useState<TradingParameters | null>(null);
   const [tradingParametersLoading, setTradingParametersLoading] = useState(false);
   const [tradingParametersError, setTradingParametersError] = useState<string | null>(null);
@@ -649,6 +714,7 @@ export function useSecurityMasterViewModel(
     setCorporateActions(null);
     setCorporateActionsLoading(false);
     setCorporateActionsError(null);
+    setSelectedCorporateActionId(null);
     setTradingParameters(null);
     setTradingParametersLoading(false);
     setTradingParametersError(null);
@@ -690,6 +756,7 @@ export function useSecurityMasterViewModel(
       setCorporateActions(null);
       setCorporateActionsLoading(false);
       setCorporateActionsError(null);
+      setSelectedCorporateActionId(null);
       setTradingParameters(null);
       setTradingParametersLoading(false);
       setTradingParametersError(null);
@@ -749,6 +816,7 @@ export function useSecurityMasterViewModel(
     setIdentity(null);
     setIdentityError(null);
     setSearchError(null);
+    setSelectedCorporateActionId(null);
     identityGenerationRef.current += 1;
 
     if (searchTimerRef.current) {
@@ -802,6 +870,7 @@ export function useSecurityMasterViewModel(
     setIdentityLoading(true);
     setCorporateActions(null);
     setCorporateActionsError(null);
+    setSelectedCorporateActionId(null);
     setTradingParameters(null);
     setTradingParametersError(null);
 
@@ -861,8 +930,30 @@ export function useSecurityMasterViewModel(
     [identity]
   );
   const corporateActionRows = useMemo(
-    () => buildCorporateActionRows(corporateActions),
-    [corporateActions]
+    () => buildCorporateActionRows(corporateActions, selectedCorporateActionId),
+    [corporateActions, selectedCorporateActionId]
+  );
+  useEffect(() => {
+    if (corporateActionRows.length === 0) {
+      if (selectedCorporateActionId !== null) {
+        setSelectedCorporateActionId(null);
+      }
+      return;
+    }
+
+    if (!selectedCorporateActionId || !corporateActionRows.some((row) => row.rowId === selectedCorporateActionId)) {
+      setSelectedCorporateActionId(corporateActionRows[0].rowId);
+    }
+  }, [corporateActionRows, selectedCorporateActionId]);
+  const corporateActionsView = useMemo(
+    () => buildCorporateActionsViewState(
+      selectedSecurityId,
+      corporateActions,
+      selectedCorporateActionId,
+      corporateActionsLoading,
+      corporateActionsError
+    ),
+    [corporateActions, corporateActionsError, corporateActionsLoading, selectedCorporateActionId, selectedSecurityId]
   );
   const tradingParametersView = useMemo(
     () => buildTradingParametersViewState(tradingParameters, tradingParametersLoading, tradingParametersError),
@@ -901,6 +992,8 @@ export function useSecurityMasterViewModel(
     conflictCountLabel: `${openConflictCount} open`,
     corporateActions,
     corporateActionRows,
+    corporateActionsView,
+    selectCorporateAction: setSelectedCorporateActionId,
     hasCorporateActions: (corporateActions?.length ?? 0) > 0,
     corporateActionsLoading,
     corporateActionsErrorText: corporateActionsError,
@@ -924,6 +1017,7 @@ export function useGovernanceReconciliationViewModel(
   const [breakAction, setBreakAction] = useState<ReconciliationBreakAction | null>(null);
   const [breakActionError, setBreakActionError] = useState<string | null>(null);
   const [trialBalance, setTrialBalance] = useState<LedgerTrialBalanceLine[]>([]);
+  const [selectedTrialBalanceRowId, setSelectedTrialBalanceRowId] = useState<string | null>(null);
   const [trialBalanceLoading, setTrialBalanceLoading] = useState(false);
   const [trialBalanceError, setTrialBalanceError] = useState<string | null>(null);
   const [calibrationSummary, setCalibrationSummary] = useState<ReconciliationCalibrationSummary | null>(null);
@@ -1108,10 +1202,11 @@ export function useGovernanceReconciliationViewModel(
     () => buildGovernanceTrialBalanceViewState({
       runId: selectedReconciliation?.runId ?? null,
       rows: trialBalance,
+      selectedRowId: selectedTrialBalanceRowId,
       loading: trialBalanceLoading,
       errorText: trialBalanceError
     }),
-    [selectedReconciliation?.runId, trialBalance, trialBalanceError, trialBalanceLoading]
+    [selectedReconciliation?.runId, selectedTrialBalanceRowId, trialBalance, trialBalanceError, trialBalanceLoading]
   );
   const calibrationView = useMemo(
     () => buildCalibrationSummaryViewState(calibrationSummary, calibrationLoading, calibrationError),
@@ -1142,6 +1237,7 @@ export function useGovernanceReconciliationViewModel(
     trialBalanceLoading,
     trialBalanceErrorText: trialBalanceError,
     trialBalanceView,
+    selectTrialBalanceRow: setSelectedTrialBalanceRowId,
     breakAction,
     assignBreak,
     resolveBreak,
@@ -1274,6 +1370,12 @@ export function buildReconciliationQueuePanelViewState(
   return {
     title: "Reconciliation detail queue",
     description: "Select a run to inspect its active reconciliation detail panel.",
+    overviewTitle: "Reconciliation queue",
+    overviewDescription: "Open breaks, timing drift, and balanced runs stay visible without leaving Accounting.",
+    overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation workstream to inspect selected run detail.",
+    overviewActionHref: "/accounting/reconciliation",
+    overviewActionLabel: "Open reconciliation",
+    overviewActionAriaLabel: "Open Accounting reconciliation workstream",
     listLabel: "Reconciliation runs",
     emptyText: "No reconciliation runs are available for this accounting scope.",
     detailPanelId,
@@ -1841,17 +1943,28 @@ function buildReportingProfileDetail(profile: ReportingProfileRowViewModel): Rep
 export function buildGovernanceTrialBalanceViewState({
   runId,
   rows,
+  selectedRowId,
   loading,
   errorText
 }: {
   runId: string | null;
   rows: LedgerTrialBalanceLine[];
+  selectedRowId?: string | null;
   loading: boolean;
   errorText: string | null;
 }): GovernanceTrialBalanceViewState {
+  const detailPanelId = "trial-balance-account-detail";
   const runLabel = runId ?? "selected run";
-  const viewRows = rows.map(buildTrialBalanceRow);
-  const hasRows = viewRows.length > 0;
+  const rawRows = rows.map((line) => buildTrialBalanceRow(line, detailPanelId));
+  const hasRows = rawRows.length > 0;
+  const resolvedSelectedRowId = rawRows.some((row) => row.rowId === selectedRowId)
+    ? selectedRowId ?? null
+    : rawRows[0]?.rowId ?? null;
+  const viewRows = rawRows.map((row) => ({
+    ...row,
+    isExpanded: row.rowId === resolvedSelectedRowId
+  }));
+  const selectedRow = viewRows.find((row) => row.rowId === resolvedSelectedRowId) ?? null;
   const state: GovernanceTrialBalanceState = errorText
     ? "error"
     : loading && !hasRows
@@ -1872,6 +1985,14 @@ export function buildGovernanceTrialBalanceViewState({
     state,
     rows: viewRows,
     hasRows,
+    selectedRowId: resolvedSelectedRowId,
+    detailPanelId,
+    selectedDetail: selectedRow ? buildTrialBalanceDetail(selectedRow, runLabel) : null,
+    detailEmptyTitle: "No account selected",
+    detailEmptyText: hasRows
+      ? "Select an account line to inspect balance evidence for report handoff."
+      : "Trial-balance account detail appears after ledger rows load.",
+    detailEmptyAriaLabel: "No trial-balance account selected",
     loadingText,
     emptyTitle: "No trial balance lines",
     emptyDetail: `Meridian did not return account-balance rows for ${runLabel}. Select another reconciliation run or refresh ledger evidence before report handoff.`,
@@ -1880,7 +2001,7 @@ export function buildGovernanceTrialBalanceViewState({
   };
 }
 
-function buildTrialBalanceRow(line: LedgerTrialBalanceLine): GovernanceTrialBalanceRowViewModel {
+function buildTrialBalanceRow(line: LedgerTrialBalanceLine, detailPanelId: string): GovernanceTrialBalanceRowViewModel {
   const accountLabel = line.accountName.trim() || "Unnamed account";
   const accountTypeLabel = line.accountType.trim() || "Unclassified";
   const balanceLabel = formatCurrency(line.balance);
@@ -1906,7 +2027,41 @@ function buildTrialBalanceRow(line: LedgerTrialBalanceLine): GovernanceTrialBala
       `Balance ${balanceLabel}`,
       `${entryCountLabel} entries`,
       securityLabel ? `Security ${securityLabel}` : null
-    ].filter(Boolean).join(". ")
+    ].filter(Boolean).join(". "),
+    selectAriaLabel: `Inspect trial-balance account ${accountLabel} for ${accountTypeLabel}`,
+    detailPanelId,
+    isExpanded: false
+  };
+}
+
+function buildTrialBalanceDetail(
+  line: GovernanceTrialBalanceRowViewModel,
+  runLabel: string
+): GovernanceTrialBalanceDetailViewState {
+  const securityLabel = line.security?.displayName?.trim()
+    || line.security?.primaryIdentifier?.trim()
+    || line.symbol?.trim()
+    || "No linked security";
+  const financialAccountId = line.financialAccountId?.trim() || "Unassigned";
+  const statusVariant = line.balanceTone === "danger" ? "danger" : line.balanceTone === "success" ? "success" : "outline";
+  const statusLabel = line.balanceTone === "danger" ? "Credit / payable" : line.balanceTone === "success" ? "Debit / asset" : "Flat";
+
+  return {
+    eyebrow: "Trial-balance detail",
+    title: line.accountLabel,
+    subtitle: `${line.accountTypeLabel} · ${financialAccountId}`,
+    description: `${line.accountLabel} contributes ${line.balanceLabel} across ${line.entryCountLabel} ledger entr${line.entryCount === 1 ? "y" : "ies"} for ${runLabel}.`,
+    statusLabel,
+    statusVariant,
+    ariaLabel: `Trial-balance detail for ${line.accountLabel}`,
+    fields: [
+      { label: "Account type", value: line.accountTypeLabel },
+      { label: "Balance", value: line.balanceLabel },
+      { label: "Entries", value: line.entryCountLabel },
+      { label: "Financial account", value: financialAccountId },
+      { label: "Security", value: securityLabel },
+      { label: "Run", value: runLabel }
+    ]
   };
 }
 
@@ -2393,21 +2548,97 @@ function calibrationStatusLabel(status: ReconciliationCalibrationStatus | null, 
 }
 
 export function buildCorporateActionRows(
-  actions: CorporateAction[] | null
+  actions: CorporateAction[] | null,
+  selectedRowId: string | null = null
 ): CorporateActionRowViewModel[] {
-  return (actions ?? []).map((action) => {
+  const detailPanelId = "corporate-action-detail-panel";
+  const rows = actions ?? [];
+  const effectiveSelectedRowId = selectedRowId && rows.some((action) => action.corpActId === selectedRowId)
+    ? selectedRowId
+    : rows[0]?.corpActId ?? null;
+
+  return rows.map((action) => {
     const amountLabel = formatCorpActAmount(action);
+    const eventTypeLabel = formatCorpActEventType(action.eventType);
+    const exDateLabel = formatSecurityDate(action.exDate);
+    const isSelected = action.corpActId === effectiveSelectedRowId;
 
     return {
       ...action,
       rowId: action.corpActId,
-      eventTypeLabel: formatCorpActEventType(action.eventType),
-      exDateLabel: formatSecurityDate(action.exDate),
+      eventTypeLabel,
+      exDateLabel,
       payDateLabel: action.payDate ? formatSecurityDate(action.payDate) : "—",
       amountLabel,
-      ariaLabel: `${formatCorpActEventType(action.eventType)} for ${action.securityId}, ex-date ${formatSecurityDate(action.exDate)}, ${amountLabel}`
+      ariaLabel: `${eventTypeLabel} for ${action.securityId}, ex-date ${exDateLabel}, ${amountLabel}`,
+      selectAriaLabel: `Inspect corporate action ${eventTypeLabel} for ${action.securityId}`,
+      detailPanelId,
+      isExpanded: isSelected
     };
   });
+}
+
+export function buildCorporateActionsViewState(
+  securityId: string | null,
+  actions: CorporateAction[] | null,
+  selectedRowId: string | null,
+  loading: boolean,
+  errorText: string | null
+): CorporateActionsViewState {
+  const rows = buildCorporateActionRows(actions, selectedRowId);
+  const effectiveSelectedRowId = rows.find((row) => row.rowId === selectedRowId)?.rowId ?? rows[0]?.rowId ?? null;
+  const selectedRow = rows.find((row) => row.rowId === effectiveSelectedRowId) ?? null;
+  const displaySecurityId = securityId ?? "selected security";
+  const detailPanelId = "corporate-action-detail-panel";
+
+  return {
+    securityId: displaySecurityId,
+    tableLabel: `Corporate actions for ${displaySecurityId}`,
+    tableCaption: `Corporate actions evidence for ${displaySecurityId}; select a row to inspect event detail.`,
+    detailPanelId,
+    rows,
+    selectedRowId: effectiveSelectedRowId,
+    selectedDetail: selectedRow ? buildCorporateActionDetailViewState(selectedRow, detailPanelId) : null,
+    emptyText: `No corporate actions recorded for ${displaySecurityId}.`,
+    detailEmptyTitle: "No corporate action selected",
+    detailEmptyText: "Select a corporate action row to inspect dates, ratios, securities, and cash terms.",
+    detailEmptyAriaLabel: "No corporate action selected",
+    loadingText: loading ? "Loading corporate actions..." : null,
+    errorText,
+    hasRows: rows.length > 0,
+    statusAnnouncement: errorText
+      ? `Corporate actions error: ${errorText}`
+      : loading
+        ? `Loading corporate actions for ${displaySecurityId}.`
+        : rows.length > 0
+          ? `${rows.length} corporate action${rows.length === 1 ? "" : "s"} loaded for ${displaySecurityId}.`
+          : ""
+  };
+}
+
+function buildCorporateActionDetailViewState(
+  row: CorporateActionRowViewModel,
+  detailPanelId: string
+): CorporateActionDetailViewState {
+  return {
+    id: detailPanelId,
+    eyebrow: "Corporate action detail",
+    title: row.eventTypeLabel,
+    subtitle: `${row.securityId} · ${row.corpActId}`,
+    description: `${row.eventTypeLabel} event with ex-date ${row.exDateLabel} and recorded amount ${row.amountLabel}.`,
+    ariaLabel: `Corporate action detail for ${row.eventTypeLabel} on ${row.securityId}`,
+    statusLabel: row.payDate ? "Pay date scheduled" : "Pay date unavailable",
+    fields: [
+      { label: "Corporate action ID", value: row.corpActId },
+      { label: "Event type", value: row.eventTypeLabel },
+      { label: "Ex-date", value: row.exDateLabel },
+      { label: "Pay date", value: row.payDateLabel, tone: row.payDate ? "default" : "warning" },
+      { label: "Amount or ratio", value: row.amountLabel, tone: row.amountLabel === "—" ? "warning" : "default" },
+      { label: "Currency", value: row.currency ?? "—", tone: row.currency ? "default" : "warning" },
+      { label: "New security", value: row.newSecurityId ?? "—" },
+      { label: "Acquirer security", value: row.acquirerSecurityId ?? "—" }
+    ]
+  };
 }
 
 export function buildTradingParametersViewState(

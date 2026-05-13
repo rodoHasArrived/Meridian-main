@@ -16,6 +16,10 @@ For each task, follow this sequence:
 4. Run targeted validation commands.
 5. Summarize what changed, why, and how it was validated.
 
+**No mobile development lane:** do not create mobile applications, mobile-specific product
+surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
+mobile-first workflows. Responsive browser validation may continue for the browser workstation.
+
 If the task request is ambiguous, document assumptions in the PR body.
 
 ## 1) Prefer well-scoped tasks

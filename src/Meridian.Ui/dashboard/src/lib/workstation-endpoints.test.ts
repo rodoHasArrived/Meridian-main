@@ -14,6 +14,9 @@ import {
   SYMBOL_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINT_TEMPLATES,
+  backfillCheckpointEndpoint,
+  backfillCheckpointPendingEndpoint,
+  backfillCheckpointResumeEndpoint,
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
   brokerageConnectionStatusEndpoint,
@@ -277,6 +280,12 @@ describe("workstation API endpoint catalog", () => {
 
   it("builds data, provider, symbol, quality, and quant endpoints from shared roots", () => {
     expect(BACKFILL_API_ENDPOINTS.runPreview).toBe("/api/backfill/run/preview");
+    expect(BACKFILL_API_ENDPOINTS.checkpoints).toBe("/api/backfill/checkpoints");
+    expect(BACKFILL_API_ENDPOINTS.checkpointsResumable).toBe("/api/backfill/checkpoints/resumable");
+    expect(BACKFILL_API_ENDPOINTS.checkpointsValidation).toBe("/api/backfill/checkpoints/validation");
+    expect(backfillCheckpointEndpoint("job / 1")).toBe("/api/backfill/checkpoints/job%20%2F%201");
+    expect(backfillCheckpointPendingEndpoint("job / 1")).toBe("/api/backfill/checkpoints/job%20%2F%201/pending");
+    expect(backfillCheckpointResumeEndpoint("job / 1")).toBe("/api/backfill/checkpoints/job%20%2F%201/resume");
     expect(PROVIDER_API_ENDPOINTS.configure).toBe("/api/providers/configure");
     expect(PROVIDER_API_ENDPOINTS.status).toBe("/api/providers/status");
     expect(providerRemoveEndpoint("provider / 1")).toBe("/api/providers/provider%20%2F%201/remove");

@@ -10,6 +10,7 @@ export type ReportingWorkflowTone = "success" | "warning" | "muted";
 export type ReportingDetailFieldTone = "default" | "success" | "warning" | "muted";
 export type ReportingExportStatusTone = "default" | "success" | "danger";
 export type ReportingFieldClassName = "text-foreground" | "text-success" | "text-warning" | "text-muted-foreground";
+export type ReportingProfileKeyCommand = "next" | "previous" | "first" | "last";
 export type ReportingExportStatusClassName =
   | "border-border/70 bg-secondary/25 text-muted-foreground"
   | "border-success/30 bg-success/10 text-success"
@@ -43,8 +44,13 @@ export interface ReportingProfileAction {
   ariaLabel: string;
   describedById: string;
   statusText: string;
+  descriptionText: string;
+  statusBadgeLabel: string;
+  statusBadgeAriaLabel: string;
+  statusBadgeVariant: ReportingBadgeVariant;
   isDisabled: boolean;
   disabledReason: string | null;
+  busyLabel: string | null;
   method: "GET" | "POST";
   profileId: string;
   isRunning: boolean;
@@ -112,6 +118,10 @@ export interface ReportingWorkflowProfileRow {
   readinessTone: ReportingWorkflowTone;
   readinessVariant: Exclude<ReportingBadgeVariant, "default">;
   isSelected: boolean;
+  isExpanded: boolean;
+  controlsId: string;
+  descriptionId: string;
+  tabIndex: 0 | -1;
   selectAriaLabel: string;
 }
 
@@ -140,17 +150,23 @@ export interface ReportingWorkflowTaskPanel {
   targetsEmptyText: string;
   targetsEmptyAriaLabel: string;
   profileListLabel: string;
+  profileKeyboardHelpId: string;
+  profileKeyboardHelpText: string;
+  selectedProfileId: string | null;
   profiles: ReportingWorkflowProfileRow[];
   hasProfiles: boolean;
   profilesEmptyText: string;
   profilesEmptyAriaLabel: string;
   selectedSummary: string;
+  selectedSummaryId: string;
   actionListLabel: string;
+  actionPanelId: string;
   actions: ReportingProfileAction[];
   hasActions: boolean;
   actionsEmptyText: string;
   actionsEmptyAriaLabel: string;
   backendLinksLabel: string;
+  backendPanelId: string;
   backendLinks: ReportingWorkflowBackendLink[];
 }
 
@@ -201,11 +217,17 @@ export interface ReportingScreenViewModel {
   runningProfileId: string | null;
   runExport: (profileId: string, profileName: string) => Promise<void>;
   selectProfile: (id: string) => void;
+  selectAdjacentReportPackProfile: (direction: ReportingProfileKeyCommand) => void;
 }
 
 const defaultReportingExportServices: ReportingExportServices = {
   runExport: (profileId) => runAnalysisExport(profileId)
 };
+
+const REPORT_PACK_PROFILE_ACTIONS_ID = "report-pack-profile-actions";
+const REPORT_PACK_PROFILE_BACKEND_ID = "report-pack-profile-backend-links";
+const REPORT_PACK_PROFILE_SUMMARY_ID = "report-pack-profile-selected-summary";
+const REPORT_PACK_PROFILE_KEYBOARD_HELP_ID = "report-pack-profile-keyboard-help";
 
 export function useReportingScreenViewModel(
   reporting: GovernanceReportingSummary | null,
@@ -228,6 +250,21 @@ export function useReportingScreenViewModel(
       const defaultProfileId = reporting ? defaultReportPackProfileId(reporting, pathname) : null;
       const activeId = prev === undefined ? defaultProfileId : prev;
       return activeId === id ? null : id;
+    });
+    setRunningProfileId(null);
+    setExportStatus(null);
+  };
+
+  const selectAdjacentReportPackProfile = (direction: ReportingProfileKeyCommand) => {
+    if (!reporting || reporting.profiles.length === 0) {
+      return;
+    }
+
+    exportCommandRevisionRef.current += 1;
+    setSelectedId((prev) => {
+      const defaultProfileId = defaultReportPackProfileId(reporting, pathname);
+      const activeId = prev === undefined ? defaultProfileId : prev;
+      return adjacentReportPackProfileId(reporting.profiles, activeId, direction);
     });
     setRunningProfileId(null);
     setExportStatus(null);
@@ -292,7 +329,8 @@ export function useReportingScreenViewModel(
       exportStatus,
       runningProfileId,
       runExport: runExportCommand,
-      selectProfile
+      selectProfile,
+      selectAdjacentReportPackProfile
     };
   }
 
@@ -410,7 +448,8 @@ export function useReportingScreenViewModel(
     exportStatus,
     runningProfileId,
     runExport: runExportCommand,
-    selectProfile
+    selectProfile,
+    selectAdjacentReportPackProfile
   };
 }
 
@@ -540,7 +579,10 @@ function buildWorkflowTaskPanel({
     targetsEmptyText: "No report-pack targets loaded. Configure governed targets before approving this packet.",
     targetsEmptyAriaLabel: "No report-pack approval targets",
     profileListLabel: "Report-pack export profiles",
-    profiles: rows.map((row) => {
+    profileKeyboardHelpId: REPORT_PACK_PROFILE_KEYBOARD_HELP_ID,
+    profileKeyboardHelpText: "Use arrow keys, Home, and End to move between report-pack profiles.",
+    selectedProfileId: selectedProfile?.id ?? null,
+    profiles: rows.map((row, index) => {
       const profile = reporting.profiles.find((item) => item.id === row.id);
       const loaderReady = profile?.loaderScript === true;
       const dictionaryReady = profile?.dataDictionary === true;
@@ -551,9 +593,10 @@ function buildWorkflowTaskPanel({
           ? "Packet evidence ready"
           : loaderReady
             ? "Loader only"
-            : dictionaryReady
-              ? "Dictionary only"
-              : "Evidence missing";
+          : dictionaryReady
+            ? "Dictionary only"
+            : "Evidence missing";
+      const isSelected = row.isSelected;
 
       return {
         id: row.id,
@@ -562,7 +605,11 @@ function buildWorkflowTaskPanel({
         readinessLabel,
         readinessTone,
         readinessVariant: workflowStatusVariant(readinessTone),
-        isSelected: row.isSelected,
+        isSelected,
+        isExpanded: isSelected,
+        controlsId: `${REPORT_PACK_PROFILE_SUMMARY_ID} ${REPORT_PACK_PROFILE_ACTIONS_ID} ${REPORT_PACK_PROFILE_BACKEND_ID}`,
+        descriptionId: `report-pack-profile-${sanitizeDomId(row.id)}-description`,
+        tabIndex: isSelected || (!selectedProfile && index === 0) ? 0 : -1,
         selectAriaLabel: `Select ${row.name} for report-pack approval`
       };
     }),
@@ -572,12 +619,15 @@ function buildWorkflowTaskPanel({
     selectedSummary: selectedProfile
       ? `${selectedProfile.name} is selected for report-pack approval using ${selectedProfile.format} output to ${selectedProfile.targetTool}.`
       : "Select a profile to enable packet preview and export actions.",
+    selectedSummaryId: REPORT_PACK_PROFILE_SUMMARY_ID,
     actionListLabel: "Selected report-pack export actions",
+    actionPanelId: REPORT_PACK_PROFILE_ACTIONS_ID,
     actions: selectedProfileActions,
     hasActions: selectedProfileActions.length > 0,
     actionsEmptyText: "Select a report-pack profile before previewing or running export analysis.",
     actionsEmptyAriaLabel: "No selected report-pack export actions",
     backendLinksLabel: "Report-pack backend endpoints",
+    backendPanelId: REPORT_PACK_PROFILE_BACKEND_ID,
     backendLinks: [
       buildWorkflowBackendLink({
         id: "report-pack-catalog",
@@ -599,6 +649,51 @@ function buildWorkflowTaskPanel({
       })
     ]
   };
+}
+
+export function resolveReportPackProfileKeyCommand(key: string): ReportingProfileKeyCommand | null {
+  if (key === "ArrowRight" || key === "ArrowDown") {
+    return "next";
+  }
+
+  if (key === "ArrowLeft" || key === "ArrowUp") {
+    return "previous";
+  }
+
+  if (key === "Home") {
+    return "first";
+  }
+
+  if (key === "End") {
+    return "last";
+  }
+
+  return null;
+}
+
+function adjacentReportPackProfileId(
+  profiles: GovernanceReportingProfile[],
+  activeId: string | null,
+  direction: ReportingProfileKeyCommand
+): string | null {
+  if (profiles.length === 0) {
+    return null;
+  }
+
+  if (direction === "first") {
+    return profiles[0].id;
+  }
+
+  if (direction === "last") {
+    return profiles[profiles.length - 1].id;
+  }
+
+  const currentIndex = Math.max(0, profiles.findIndex((profile) => profile.id === activeId));
+  const nextIndex = direction === "next"
+    ? (currentIndex + 1) % profiles.length
+    : (currentIndex - 1 + profiles.length) % profiles.length;
+
+  return profiles[nextIndex].id;
 }
 
 function buildWorkflowBackendLink({
@@ -679,6 +774,7 @@ function buildProfileActions(
   runningProfileId: string | null
 ): ReportingProfileAction[] {
   const isRunningThisProfile = runningProfileId === profile.id;
+  const runningReason = isRunningThisProfile ? `${profile.name} export is already running.` : null;
 
   return [
     {
@@ -689,8 +785,13 @@ function buildProfileActions(
       ariaLabel: `Preview ${profile.name} export payload`,
       describedById: `reporting-action-${profile.id}-preview-status`,
       statusText: "Opens the current export payload preview in a new browser tab.",
+      descriptionText: "Opens the current export payload preview in a new browser tab.",
+      statusBadgeLabel: "GET",
+      statusBadgeAriaLabel: `${profile.name} export preview uses GET`,
+      statusBadgeVariant: "outline",
       isDisabled: false,
       disabledReason: null,
+      busyLabel: null,
       method: "GET",
       profileId: profile.id,
       isRunning: false
@@ -705,8 +806,17 @@ function buildProfileActions(
       statusText: isRunningThisProfile
         ? `${profile.name} export is running. Wait for the result before starting another export.`
         : "Runs the governed export through the backend mutation and reports generated artifacts here.",
+      descriptionText: isRunningThisProfile
+        ? `${profile.name} export is running. Wait for the result before starting another export.`
+        : "Runs the governed export through the backend mutation and reports generated artifacts here.",
+      statusBadgeLabel: isRunningThisProfile ? "Running" : "POST",
+      statusBadgeAriaLabel: isRunningThisProfile
+        ? `${profile.name} export is running`
+        : `${profile.name} export analysis uses POST`,
+      statusBadgeVariant: isRunningThisProfile ? "warning" : "outline",
       isDisabled: isRunningThisProfile,
-      disabledReason: isRunningThisProfile ? `${profile.name} export is already running.` : null,
+      disabledReason: runningReason,
+      busyLabel: isRunningThisProfile ? "Running export…" : null,
       method: "POST",
       profileId: profile.id,
       isRunning: isRunningThisProfile
@@ -867,4 +977,14 @@ function formatBytes(value: number): string {
   }
 
   return `${amount.toLocaleString(undefined, { maximumFractionDigits: amount >= 10 ? 1 : 2 })} ${units[unitIndex]}`;
+}
+
+function sanitizeDomId(value: string): string {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return normalized || "profile";
 }

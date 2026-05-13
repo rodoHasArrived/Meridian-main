@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import * as api from "@/lib/api";
 import { GovernanceScreen } from "@/screens/governance-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
-import type { GovernanceWorkspaceResponse, LedgerTrialBalanceLine, SecurityMasterConflict } from "@/types";
+import type { CorporateAction, GovernanceWorkspaceResponse, LedgerTrialBalanceLine, SecurityMasterConflict } from "@/types";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -11,6 +11,13 @@ vi.mock("@/lib/api", async () => {
     ...actual,
     searchSecurities: vi.fn().mockResolvedValue([]),
     getSecurityIdentity: vi.fn().mockResolvedValue(null),
+    getOperatorOverrides: vi.fn().mockResolvedValue({
+      securityId: "sec-1",
+      values: {},
+      updatedBy: "",
+      updatedAt: ""
+    }),
+    patchOperatorOverrides: vi.fn(),
     getSecurityConflicts: vi.fn().mockResolvedValue([]),
     getReconciliationBreakQueue: vi.fn().mockResolvedValue([]),
     getReconciliationCalibrationSummary: vi.fn().mockResolvedValue({
@@ -33,6 +40,8 @@ vi.mock("@/lib/api", async () => {
     reviewReconciliationBreak: vi.fn(),
     runAnalysisExport: vi.fn(),
     getRunTrialBalance: vi.fn().mockResolvedValue([]),
+    getCorporateActions: vi.fn().mockResolvedValue([]),
+    getTradingParameters: vi.fn().mockResolvedValue(null),
     resolveSecurityConflict: vi.fn()
   };
 });
@@ -127,6 +136,41 @@ const securityConflict: SecurityMasterConflict = {
   status: "Open"
 };
 
+const corporateActions: CorporateAction[] = [
+  {
+    corpActId: "ca-div-1",
+    securityId: "sec-1",
+    eventType: "Dividend",
+    exDate: "2026-05-01T00:00:00Z",
+    payDate: "2026-05-15T00:00:00Z",
+    dividendPerShare: 0.24,
+    currency: "USD",
+    splitRatio: null,
+    newSecurityId: null,
+    distributionRatio: null,
+    acquirerSecurityId: null,
+    exchangeRatio: null,
+    subscriptionPricePerShare: null,
+    rightsPerShare: null
+  },
+  {
+    corpActId: "ca-split-1",
+    securityId: "sec-1",
+    eventType: "StockSplit",
+    exDate: "2026-06-01T00:00:00Z",
+    payDate: null,
+    dividendPerShare: null,
+    currency: null,
+    splitRatio: 4,
+    newSecurityId: null,
+    distributionRatio: null,
+    acquirerSecurityId: null,
+    exchangeRatio: null,
+    subscriptionPricePerShare: null,
+    rightsPerShare: null
+  }
+];
+
 const trialBalanceLines: LedgerTrialBalanceLine[] = [
   {
     accountName: "Cash",
@@ -163,6 +207,14 @@ describe("GovernanceScreen", () => {
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Accounting reconciliation workstream" })).toHaveAttribute(
+      "href",
+      "/accounting/reconciliation"
+    );
+    expect(screen.getByRole("table", { name: "Reconciliation runs" })).toHaveTextContent("Paper Index Mean Reversion");
+    expect(screen.getByRole("row", { name: /Paper Index Mean Reversion.*BreaksOpen.*1 open/i })).not.toHaveAttribute(
+      "aria-controls"
+    );
     expect(screen.getByText("Reporting profiles")).toBeInTheDocument();
     expect(screen.getByText("Cash-flow coverage is available for 4 runs; 1 run needs variance review.")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Cash-flow evidence for Ledger context at /accounting" })).toBeInTheDocument();
@@ -174,6 +226,8 @@ describe("GovernanceScreen", () => {
   it("renders reconciliation strong panels with view-model presentation state", async () => {
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
+    expect(screen.getAllByRole("table", { name: "Reconciliation runs" })).toHaveLength(1);
+    expect(screen.queryByRole("link", { name: "Open Accounting reconciliation workstream" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
     const selectedRun = screen.getByRole("row", { name: "Inspect reconciliation run Paper Index Mean Reversion" });
     expect(selectedRun).toHaveAttribute("aria-selected", "true");
@@ -224,15 +278,26 @@ describe("GovernanceScreen", () => {
   });
 
   it("renders trial-balance rows with accessible table evidence", async () => {
+    const user = userEvent.setup();
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
 
     await renderGovernanceScreen(data, "/accounting");
 
     const table = await screen.findByRole("table", { name: "Trial balance lines for run-42" });
     expect(table).toBeInTheDocument();
-    expect(screen.getByRole("row", { name: "Cash Asset. Balance $120,500. 12 entries" })).toBeInTheDocument();
-    expect(screen.getByRole("row", { name: "Financing payable Liability. Balance -$500. 2 entries" })).toBeInTheDocument();
+    const cashRow = screen.getByRole("row", { name: "Inspect trial-balance account Cash for Asset" });
+    const financingRow = screen.getByRole("row", { name: "Inspect trial-balance account Financing payable for Liability" });
+    expect(cashRow).toHaveAttribute("aria-selected", "true");
+    expect(cashRow).toHaveAttribute("aria-expanded", "true");
+    expect(cashRow).toHaveAttribute("aria-controls", "trial-balance-account-detail");
+    expect(screen.getByRole("region", { name: "Trial-balance detail for Cash" })).toHaveTextContent("$120,500");
+    expect(financingRow).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByText("-$500")).toHaveClass("text-danger");
+
+    await user.click(financingRow);
+
+    expect(screen.getByRole("region", { name: "Trial-balance detail for Financing payable" })).toHaveTextContent("Credit / payable");
+    expect(financingRow).toHaveAttribute("aria-selected", "true");
   });
 
   it("renders a useful trial-balance empty state instead of a blank table", async () => {
@@ -390,7 +455,6 @@ describe("GovernanceScreen", () => {
         }
       ]
     });
-
     await renderGovernanceScreen(data, "/accounting/security-master");
 
     await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
@@ -414,6 +478,16 @@ describe("GovernanceScreen", () => {
 
   it("selects Security Master search rows with keyboard-expanded detail linkage", async () => {
     const user = userEvent.setup();
+    vi.mocked(api.getOperatorOverrides).mockResolvedValueOnce({
+      securityId: "sec-1",
+      values: {
+        issuer: "Apple Inc.",
+        couponRate: "5.25",
+        finalMaturity: "2032-06-30"
+      },
+      updatedBy: "ops",
+      updatedAt: "2026-05-12T10:00:00Z"
+    });
     vi.mocked(api.searchSecurities).mockResolvedValueOnce([
       {
         securityId: "sec-1",
@@ -459,6 +533,70 @@ describe("GovernanceScreen", () => {
     expect(securityRow).toHaveAttribute("aria-controls", "security-master-identity-detail");
     expect(securityRow).toHaveAttribute("aria-expanded", "true");
     expect(await screen.findByRole("region", { name: "Security identity detail for Apple Inc." })).toBeInTheDocument();
+    expect(screen.getByText("Security details")).toBeInTheDocument();
+    expect(await screen.findByText("2 hidden overrides")).toBeInTheDocument();
+    expect(screen.queryByText("Coupon Rate (%)")).not.toBeInTheDocument();
+    expect(screen.queryByText("Final Maturity")).not.toBeInTheDocument();
+    expect(screen.queryByText("S&P Rating")).not.toBeInTheDocument();
+  });
+
+  it("renders corporate actions as selectable dense evidence with a detail panel", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.searchSecurities).mockResolvedValueOnce([
+      {
+        securityId: "sec-1",
+        displayName: "Apple Inc.",
+        status: "Active",
+        classification: {
+          assetClass: "Equity",
+          subType: "CommonStock",
+          primaryIdentifierKind: "Ticker",
+          primaryIdentifierValue: "AAPL"
+        },
+        economicDefinition: {
+          currency: "USD",
+          version: 3,
+          effectiveFrom: "2024-01-01T00:00:00Z",
+          effectiveTo: null,
+          subType: "CommonStock",
+          assetFamily: "Equity",
+          issuerType: "Corporate"
+        }
+      }
+    ]);
+    vi.mocked(api.getSecurityIdentity).mockResolvedValueOnce({
+      securityId: "sec-1",
+      displayName: "Apple Inc.",
+      assetClass: "Equity",
+      status: "Active",
+      version: 3,
+      effectiveFrom: "2024-01-01T00:00:00Z",
+      effectiveTo: null,
+      identifiers: [],
+      aliases: []
+    });
+    vi.mocked(api.getCorporateActions).mockResolvedValueOnce(corporateActions);
+
+    await renderGovernanceScreen(data, "/accounting/security-master");
+
+    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
+    await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
+
+    const table = await screen.findByRole("table", { name: "Corporate actions for sec-1" });
+    expect(table).toBeInTheDocument();
+    const dividendRow = screen.getByRole("row", { name: "Inspect corporate action Dividend for sec-1" });
+    const splitRow = screen.getByRole("row", { name: "Inspect corporate action Stock split for sec-1" });
+    expect(dividendRow).toHaveAttribute("aria-selected", "true");
+    expect(dividendRow).toHaveAttribute("aria-controls", "corporate-action-detail-panel");
+    expect(screen.getByRole("region", { name: "Corporate action detail for Dividend on sec-1" })).toHaveTextContent("0.24 USD / share");
+
+    splitRow.focus();
+    await user.keyboard("{Enter}");
+
+    expect(splitRow).toHaveAttribute("aria-selected", "true");
+    expect(splitRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Corporate action detail for Stock split on sec-1" })).toHaveTextContent("4:1 split");
+    expect(screen.getByRole("region", { name: "Corporate action detail for Stock split on sec-1" })).toHaveTextContent("Pay date unavailable");
   });
 
   it("renders provider-specific security conflict actions", async () => {

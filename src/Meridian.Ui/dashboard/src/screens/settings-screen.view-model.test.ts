@@ -506,6 +506,23 @@ describe("buildSettingsScreenViewModel", () => {
         expect.objectContaining({ href: "/api/workstation/security-master/securities" })
       ])
     );
+    expect(vm.backendCapabilityGroups.find((group) => group.id === "data")?.endpoints).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ href: "/api/backfill/checkpoints", method: "GET", isBrowserNavigable: true }),
+        expect.objectContaining({
+          href: "/api/backfill/checkpoints/{jobId}/pending",
+          method: "GET",
+          isBrowserNavigable: false,
+          interactionLabel: "Reference"
+        }),
+        expect.objectContaining({
+          href: "/api/backfill/checkpoints/{jobId}/resume",
+          method: "POST",
+          isBrowserNavigable: false,
+          interactionLabel: "Reference"
+        })
+      ])
+    );
     expect(vm.backendCapabilityGroups.find((group) => group.id === "settings")?.endpoints).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ href: "/api/workstation/workflows", isBrowserNavigable: true }),

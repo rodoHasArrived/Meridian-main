@@ -31,6 +31,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - New operator UI development is paused for `src/Meridian.Wpf/` unless needed for shared contracts, regression fixes, or retained desktop support.
 - `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets are the active web-based operator UI delivery lane.
 - Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for the web dashboard and retained desktop shell.
+- **No mobile development lane:** do not create mobile applications, mobile-specific product surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or mobile-first workflows; responsive browser validation is allowed only for the browser workstation.
 - Keep top-level operator navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 - Use the narrowest validation command that covers the files changed.
 

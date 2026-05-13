@@ -79,6 +79,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
   data: [
     { label: "Watchlist", route: "/data/watchlist" },
     { label: "Live quotes", route: "/data/quotes" },
+    { label: "Price alerts", route: "/data/alerts" },
     { label: "Backfill queues", route: "/data/backfills" }
   ],
   settings: [

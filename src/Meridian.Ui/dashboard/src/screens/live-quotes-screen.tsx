@@ -4,6 +4,7 @@ import {
   ArrowDown,
   ArrowRight,
   ArrowUp,
+  BellPlus,
   CheckCircle2,
   ListPlus,
   LineChart,
@@ -95,6 +96,17 @@ export function LiveQuotesScreen() {
                   <span className="ml-1.5">Watchlist</span>
                 </Link>
               </Button>
+              {activeSymbol ? (
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    to={`/data/alerts?symbol=${encodeURIComponent(activeSymbol)}`}
+                    aria-label={`Set a price alert for ${activeSymbol}`}
+                  >
+                    <BellPlus className="h-4 w-4" aria-hidden="true" />
+                    <span className="ml-1.5">Set alert</span>
+                  </Link>
+                </Button>
+              ) : null}
               {vm.refreshCommand ? (
                 <Button
                   type="button"
