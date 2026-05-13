@@ -1,6 +1,6 @@
 # Meridian Documentation
 
-**Last Reviewed:** 2026-05-01
+**Last Reviewed:** 2026-05-13
 **Scope:** Active hand-authored documentation plus generated status and reference entry points
 
 This index is the main entry point for the active `docs/` tree. It is organized around Meridian's current direction: an evidence-backed investment operations platform where browser-first operator workflows prove trusted data, research, paper validation, portfolio/accounting review, reconciliation, approvals, and governed reporting outcomes end-to-end.
@@ -110,6 +110,12 @@ Use the documents below to manage that path:
 14. [status/kernel-readiness-dashboard.md](status/kernel-readiness-dashboard.md) for DK gate status and operator sign-off posture
 15. [status/production-status.md](status/production-status.md) for current readiness caveats
 16. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
+
+The 2026-05-13 documentation refresh reconciles the active docs against the current browser
+workstation evidence set: Overview Today panel, `/data/alerts` Price Alerts, `/strategy/designer`
+Strategy Designer, full-console readiness checkpoint gates, and Meridian Design System reference
+workbench/tokenized-color support. These are support evidence for the Waves 2-4 path; they do not
+change the canonical wave statuses in `PROGRAM_STATE.md`.
 
 ## Verified Build And Run References
 

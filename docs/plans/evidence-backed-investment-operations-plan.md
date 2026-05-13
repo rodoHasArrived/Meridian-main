@@ -1,7 +1,7 @@
 # Evidence-Backed Investment Operations Plan
 
-**Date:** 2026-04-29
-**Status:** Active product-positioning and roadmap filter
+**Date:** 2026-05-13
+**Status:** Active product-positioning and roadmap filter, refreshed against current browser-workstation support evidence
 **Audience:** Product, roadmap, architecture, web dashboard, governance, and fund-operations contributors
 
 This plan incorporates the 2026-04-29 differentiation revision. Meridian should not be positioned
@@ -57,7 +57,13 @@ compatibility aliases or grouping language, not new root navigation.
 | 5 | Shadow Books and Shadow NAV | Wave 4 later slice | Planned on top of ledger, reconciliation, external-statement import, and report-pack foundations |
 | 6 | Strategy / Promotion Passport | Wave 2 into Wave 3 | Partial support through promotion checklist and review-packet state |
 | 7 | Data Trust Passport | Wave 1 maintenance into Wave 3 | Partial support through DK1 trust packets, validation evidence, and data-quality posture |
-| 8 | Operator Readiness Console | Wave 2 support surface | Partial browser support through `/trading/readiness`, shared readiness payloads, and evidence packet actions into `/reporting/evidence`; the shared readiness model now includes report-pack lineage and evidence-completeness posture |
+| 8 | Operator Readiness Console | Wave 2 support surface | Partial browser support through `/trading/readiness`, full-console checkpoint gates, shared readiness payloads, and evidence packet actions into `/reporting/evidence`; the shared readiness model now includes report-pack lineage and evidence-completeness posture |
+
+Current browser support evidence also includes the Overview Today panel, local Price Alerts,
+visual Strategy Designer, and Meridian Design System reference workbench/tokenized-color support.
+These strengthen the evidence-backed workflow lane, but they do not change the planned/completion
+status of Evidence Vault, report-line provenance, durable reconciliation casework, report-pack
+lifecycle acceptance, or live-readiness.
 
 Do not expand live-broker breadth, generic analytics, or bank-style governance frameworks ahead of
 these evidence-producing seams unless the roadmap explicitly pulls that work forward.

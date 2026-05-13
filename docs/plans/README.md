@@ -1,10 +1,10 @@
 # Plans
 
-**Last Reviewed:** 2026-04-29
+**Last Reviewed:** 2026-05-13
 
 This directory contains active blueprints, roadmaps, sprint backlogs, and target-state packages that support Meridian delivery. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); treat the documents here as subordinate execution plans, blueprints, or optional-track follow-ons rather than parallel strategy documents.
 
-Current roadmap refresh note: the 2026-04-29 direction positions Meridian as an evidence-backed investment operations platform. New operator UI work stays in the browser dashboard in `src/Meridian.Ui/dashboard/`; WPF plans and automation remain retained support unless a change is required for shared contracts, regression fixes, or compatibility evidence. Waves 2-4 still require cockpit, shared-model, accounting, reconciliation, and governed-report acceptance evidence, now with web-first UI delivery.
+Current roadmap refresh note: the 2026-05-13 direction still positions Meridian as an evidence-backed investment operations platform. New operator UI work stays in the browser dashboard in `src/Meridian.Ui/dashboard/`; WPF plans and automation remain retained support unless a change is required for shared contracts, regression fixes, or compatibility evidence. Current browser evidence now includes the Overview Today panel, Price Alerts, Strategy Designer, full-console readiness checkpoints, and Meridian Design System reference workbench/tokenized-color support, while Waves 2-4 still require cockpit, shared-model, accounting, reconciliation, and governed-report acceptance evidence.
 
 Deprecated, superseded, or historical plans belong under `archive/docs/` rather than in this active plans folder. Keep active plan references current, and point to archived files only for historical context.
 

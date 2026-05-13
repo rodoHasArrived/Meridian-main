@@ -98,20 +98,22 @@ APIs for subjects, packet/graph inspection, validation, and manifest export. Tre
 browser-visible support for run, readiness, reconciliation, report-pack, provider-trust, and export
 evidence, not as completion of the full Evidence Vault or report-line provenance roadmap.
 
-Current browser workstation support also includes Overview portfolio-at-a-glance plus view-model
-owned status-banner and refresh-command presentation, Portfolio position and run-evidence tables
+Current browser workstation support also includes Overview portfolio-at-a-glance and Today-panel
+market posture with view-model owned status-banner and refresh-command presentation, Portfolio position and run-evidence tables
 that use shared dense row-selection/detail-panel semantics plus brokerage-sync next actions into
 provider repair, Trading readiness, and cockpit review, Live Quotes recent-trade rows with a
 selectable dense-table detail inspector, quick-trade accepted/rejected ticket states that hand off
-to Trading readiness, browser Watchlist empty/no-quote/busy labels owned by the view model, richer
+to Trading readiness, browser Watchlist empty/no-quote/busy labels owned by the view model,
+local Price Alerts at `/data/alerts` with UTC trigger/poll timing, richer
 sidebar/menu/command grouping with grouped command-palette sections, app-shell query-string
 route focus for subject/symbol handoffs such as `/data/quotes?symbol=AAPL`, and hash-aware
 `/settings#alpaca-provider-setup` routing, browser Security Master search-result selection,
 identity drill-ins, details/lots/operator overrides with selectable lot-detail state plus a
 conflict refresh/retry command, provider-setup success handoffs into live quotes, backfill preview
 with dense-table queue selection, Trading readiness, or Security Master coverage based on
-configured capabilities, a view-model-owned Trading loading panel, Quant Lab plot rendering through
-a reusable view-model module, browser Accounting reconciliation detail-queue dense-table selection
+configured capabilities, a full-console Operator Readiness checkpoint gate, a view-model-owned
+Trading loading panel, Quant Lab plot rendering through a reusable view-model module, a visual
+Strategy Designer at `/strategy/designer`, browser Accounting reconciliation detail-queue dense-table selection
 with keyboard-accessible expanded rows, seeded no-host break-queue fixtures, and accessible
 empty/detail states, Reporting
 report-pack profile actions for preview and export analysis plus endpoint links that separate
@@ -119,8 +121,9 @@ concrete GET navigation from reference-only POST mutations, and expanded UFL/ref
 endpoints for bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits,
 money-market funds, and certificates of deposit. Shared
 UI-service JSON persistence now routes config, export preset, and quality archive writes through
-`AtomicFileWriter`. Treat these as support evidence for Waves 3-4, not completion of durable
-reconciliation casework, report-pack, or live-readiness gates.
+`AtomicFileWriter`, and the Meridian Design System now has reference workbench and tokenized-color
+support evidence. Treat these as support evidence for Waves 2-4, not completion of durable
+reconciliation casework, report-pack, cockpit, or live-readiness gates.
 
 ### MCP server (minimal) — `src/Meridian.Mcp`
 

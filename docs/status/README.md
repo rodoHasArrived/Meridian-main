@@ -1,6 +1,6 @@
 # Project Status Documentation
 
-**Last Reviewed:** 2026-04-29
+**Last Reviewed:** 2026-05-13
 **Current Delivery Theme:** Executing the DK1/DK2 implementation program on top of the closed Wave 1 trust gate while advancing the Wave 2-4 path to evidence-backed investment operations across cockpit hardening, shared-model continuity, accounting, reconciliation, and governed report productization
 
 This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/README.md](../plans/README.md) when you need both the current status snapshot and the active blueprint set.
@@ -94,7 +94,7 @@ When authoring or editing these doc categories, include the required section hea
 
 - **Platform state:** Development / pilot-ready baseline with strong ingestion, storage, replay, and export foundations
 - **Core delivery path:** Waves 1-4 define the core operator-ready baseline; Waves 5-6 deepen the product afterward
-- **Workstation state:** The web dashboard is the active operator UI lane, with retained WPF support evidence for workflow briefing, provider/activity triage, canonical launch/deep-link, single-instance forwarding, and automation; cockpit hardening, canonical web workspace navigation, and shared-model continuity still remain
+- **Workstation state:** The web dashboard is the active operator UI lane, now with support evidence for Overview Today panel, Price Alerts, Strategy Designer, full-console readiness checkpoints, and Meridian Design System reference workbench/tokenized-color work; retained WPF remains support evidence for workflow briefing, provider/activity triage, canonical launch/deep-link, single-instance forwarding, and automation; cockpit hardening, shared-model continuity, durable reconciliation, and governed-report acceptance still remain
 - **Governance state:** Security Master is a delivered baseline and governance is now in active productization on top of it
 - **Provider state:** The active Wave 1 gate is closed around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet proof; broader provider inventory remains deferred outside that closure claim
 - **Documentation state:** Status and plan navigation now centers the canonical roadmap, production-status posture, and subordinate execution plans
