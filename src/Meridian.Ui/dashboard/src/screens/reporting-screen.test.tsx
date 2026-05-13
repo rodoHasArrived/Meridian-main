@@ -141,6 +141,7 @@ describe("ReportingScreen", () => {
       "href",
       "/api/export/preview?profile=excel"
     );
+    expect(within(task).getByLabelText("Excel export preview uses GET")).toHaveTextContent("GET");
     expect(within(task).getByRole("button", { name: "Run Excel export analysis" })).toBeEnabled();
     expect(within(task).getByRole("link", { name: "GET /api/fund-structure/report-packs for Report-pack catalog" })).toHaveAttribute(
       "href",
@@ -218,6 +219,7 @@ describe("ReportingScreen", () => {
     expect(runningButton).toHaveAttribute("aria-busy", "true");
     expect(runningButton).toHaveAttribute("title", "Excel export is already running.");
     expect(runningButton).toHaveTextContent("Running export…");
+    expect(within(task).getByLabelText("Excel export is running")).toHaveTextContent("Running");
     expect(within(task).getByText("Excel export is running. Wait for the result before starting another export.")).toBeInTheDocument();
 
     releaseFetch();
@@ -294,6 +296,7 @@ describe("ReportingScreen", () => {
     expect(runningButton).toHaveAttribute("aria-busy", "true");
     expect(runningButton).toHaveAttribute("title", "Audit Pack export is already running.");
     expect(runningButton).toHaveTextContent("Running export…");
+    expect(within(inspector).getByLabelText("Audit Pack export is running")).toHaveTextContent("Running");
     expect(within(inspector).getByText("Audit Pack export is running. Wait for the result before starting another export.")).toBeInTheDocument();
 
     releaseFetch();

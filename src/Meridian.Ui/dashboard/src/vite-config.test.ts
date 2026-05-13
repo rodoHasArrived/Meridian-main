@@ -23,7 +23,12 @@ import {
   executionSessionReplayEndpoint,
   historicalBarsEndpoint,
   marketDataQuoteEndpoint,
-  marketDataQuotesSnapshotEndpoint
+  marketDataQuotesSnapshotEndpoint,
+  securityMasterCorporateActionsEndpoint,
+  securityMasterOperatorOverridesEndpoint,
+  securityMasterTradingParametersEndpoint,
+  workstationSecurityMasterIdentityEndpoint,
+  workstationSecurityMasterSearchEndpoint
 } from "./lib/workstation-endpoints";
 
 function getApiProxyTarget(proxy: Record<string, string | ProxyOptions> | undefined): string | undefined {
@@ -160,6 +165,65 @@ describe("Vite Meridian API proxy", () => {
         expect.objectContaining({ symbol: "MSFT", lastPrice: 421.15 })
       ]
     });
+  });
+
+  it("serves Security Master search and drill-in fixtures for no-host preview", async () => {
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
+      isAvailable: async () => false
+    });
+    const searchResponse = new FakeResponse();
+    const identityResponse = new FakeResponse();
+    const overridesResponse = new FakeResponse();
+    const actionsResponse = new FakeResponse();
+    const parametersResponse = new FakeResponse();
+
+    await bypass(
+      {
+        method: "GET",
+        url: workstationSecurityMasterSearchEndpoint({ query: "AAPL", take: 25, activeOnly: true }),
+        headers: { accept: "application/json" }
+      } as IncomingMessage,
+      searchResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: workstationSecurityMasterIdentityEndpoint("sec-dev-001"), headers: { accept: "application/json" } } as IncomingMessage,
+      identityResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: securityMasterOperatorOverridesEndpoint("sec-dev-001"), headers: { accept: "application/json" } } as IncomingMessage,
+      overridesResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: securityMasterCorporateActionsEndpoint("sec-dev-001"), headers: { accept: "application/json" } } as IncomingMessage,
+      actionsResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: securityMasterTradingParametersEndpoint("sec-dev-001"), headers: { accept: "application/json" } } as IncomingMessage,
+      parametersResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(searchResponse.statusCode).toBe(200);
+    expect(searchResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(searchResponse.body)).toEqual([
+      expect.objectContaining({ securityId: "sec-dev-001", displayName: "Apple Inc." })
+    ]);
+    expect(JSON.parse(identityResponse.body)).toMatchObject({
+      securityId: "sec-dev-001",
+      identifiers: expect.arrayContaining([expect.objectContaining({ kind: "Ticker", value: "AAPL" })])
+    });
+    expect(JSON.parse(overridesResponse.body)).toMatchObject({
+      securityId: "sec-dev-001",
+      values: expect.objectContaining({ issuer: "Apple Inc.", couponRate: "0.25" })
+    });
+    expect(JSON.parse(actionsResponse.body)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ securityId: "sec-dev-001", eventType: "Dividend" })
+    ]));
+    expect(JSON.parse(parametersResponse.body)).toMatchObject({ securityId: "sec-dev-001", lotSize: 1 });
   });
 
   it("serves Quant Lab bootstrap fixtures for no-host preview without opening mutation routes", async () => {

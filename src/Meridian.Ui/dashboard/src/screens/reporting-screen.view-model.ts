@@ -45,6 +45,7 @@ export interface ReportingProfileAction {
   statusText: string;
   descriptionText: string;
   statusBadgeLabel: string;
+  statusBadgeAriaLabel: string;
   statusBadgeVariant: ReportingBadgeVariant;
   isDisabled: boolean;
   disabledReason: string | null;
@@ -696,6 +697,7 @@ function buildProfileActions(
       statusText: "Opens the current export payload preview in a new browser tab.",
       descriptionText: "Opens the current export payload preview in a new browser tab.",
       statusBadgeLabel: "GET",
+      statusBadgeAriaLabel: `${profile.name} export preview uses GET`,
       statusBadgeVariant: "outline",
       isDisabled: false,
       disabledReason: null,
@@ -718,6 +720,9 @@ function buildProfileActions(
         ? `${profile.name} export is running. Wait for the result before starting another export.`
         : "Runs the governed export through the backend mutation and reports generated artifacts here.",
       statusBadgeLabel: isRunningThisProfile ? "Running" : "POST",
+      statusBadgeAriaLabel: isRunningThisProfile
+        ? `${profile.name} export is running`
+        : `${profile.name} export analysis uses POST`,
       statusBadgeVariant: isRunningThisProfile ? "warning" : "outline",
       isDisabled: isRunningThisProfile,
       disabledReason: runningReason,

@@ -99,7 +99,7 @@ chronologically, and drop malformed historical-bar rows before building chart st
 so one bad provider response cannot corrupt the visible trend. Keep browser workstation API route
 strings centralized in the dashboard endpoint catalog so Settings, brokerage connection actions,
 readiness, portfolio, run-history, workflow-summary, strategy-run drill-ins, Security Master,
-backfill preview/progress,
+backfill preview/progress/checkpoint recovery,
 reconciliation, reporting export, provider, backfill, symbol, quality, market-data, Quant Lab, and
 fetch helpers share the same current workspace contract. Dynamic route builders should reject blank
 required path segments before fetches are issued, and query-string construction should trim strings,
@@ -190,7 +190,9 @@ snapshot versions rather than loading unknown durable shapes.
 Shared backfill checkpoint resume endpoints should derive child routes from
 `UiApiRoutes.BackfillCheckpoints` and propagate `HttpContext.RequestAborted` into the resumed
 backfill run, so route constants and request cancellation stay coherent across the web and retained
-desktop clients.
+desktop clients. The Settings capability coverage panel should surface checkpoint history,
+resumable jobs, validation, pending-symbol, and resume routes so operators can find recovery
+evidence without leaving the browser workstation.
 Fixture fallback data must stay neutral; do not emit dashboard-dev fallback notices as
 operator-facing system events.
 

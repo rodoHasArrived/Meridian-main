@@ -153,7 +153,9 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                               </a>
                             )}
                           </Button>
-                          <Badge variant={action.statusBadgeVariant}>{action.statusBadgeLabel}</Badge>
+                          <Badge variant={action.statusBadgeVariant} aria-label={action.statusBadgeAriaLabel}>
+                            {action.statusBadgeLabel}
+                          </Badge>
                         </div>
                         <p id={taskActionDescriptionId} className="mt-2 text-xs leading-5 text-muted-foreground">
                           {action.descriptionText}
@@ -549,7 +551,9 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                           </a>
                         )}
                       </Button>
-                      <Badge variant={action.statusBadgeVariant}>{action.statusBadgeLabel}</Badge>
+                      <Badge variant={action.statusBadgeVariant} aria-label={action.statusBadgeAriaLabel}>
+                        {action.statusBadgeLabel}
+                      </Badge>
                     </div>
                     <p id={action.describedById} className="mt-2 text-xs leading-5 text-muted-foreground">
                       {action.descriptionText}
