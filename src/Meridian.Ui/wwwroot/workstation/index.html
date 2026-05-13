@@ -5,8 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="data:," />
     <title>Meridian Web Workstation</title>
-    <script type="module" crossorigin src="/workstation/assets/index-gNcIZ_UH.js"></script>
-    <link rel="stylesheet" crossorigin href="/workstation/assets/index-zCWx1VgY.css">
+    <script type="module">
+      const workstationCssCandidates = [
+        "./assets/index-zCWx1VgY.css",
+        "/assets/index-zCWx1VgY.css",
+        "./index-zCWx1VgY.css",
+        "/workstation/index-zCWx1VgY.css"
+      ];
+
+      const workstationJsCandidates = [
+        "./assets/index-gNcIZ_UH.js",
+        "/assets/index-gNcIZ_UH.js",
+        "./index-gNcIZ_UH.js",
+        "/workstation/index-gNcIZ_UH.js"
+      ];
+
+      async function findFirstAvailableAsset(candidates) {
+        for (const candidate of candidates) {
+          try {
+            const response = await fetch(candidate, { method: "HEAD" });
+            if (response.ok) {
+              return candidate;
+            }
+          } catch {
+            // Try the next candidate.
+          }
+        }
+
+        return null;
+      }
+
+      async function loadWorkstationAssets() {
+        const cssHref = await findFirstAvailableAsset(workstationCssCandidates);
+        if (cssHref) {
+          const stylesheet = document.createElement("link");
+          stylesheet.rel = "stylesheet";
+          stylesheet.crossOrigin = "";
+          stylesheet.href = cssHref;
+          document.head.appendChild(stylesheet);
+        }
+
+        const jsSrc = await findFirstAvailableAsset(workstationJsCandidates);
+        if (!jsSrc) {
+          throw new Error("Unable to locate the workstation JavaScript bundle.");
+        }
+
+        const moduleScript = document.createElement("script");
+        moduleScript.type = "module";
+        moduleScript.crossOrigin = "";
+        moduleScript.src = jsSrc;
+        document.head.appendChild(moduleScript);
+      }
+
+      loadWorkstationAssets().catch((error) => {
+        console.error("Failed to load workstation assets.", error);
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
