@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { PriceAlertsApi } from "@/lib/price-alerts/service";
 import { PRICE_ALERTS_POLL_INTERVAL_MS } from "@/lib/price-alerts/service";
 import { describeCondition } from "@/lib/price-alerts/evaluator";
@@ -166,12 +166,14 @@ export function usePriceAlertsScreenViewModel({
 }): PriceAlertsScreenViewModel {
   const [form, setForm] = useState<PriceAlertFormState>(() => readFormFromSeededSymbol(seededSymbol));
   const [submitFeedback, setSubmitFeedback] = useState<PriceAlertSubmitFeedback | null>(null);
+  const consumedSeedRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!seededSymbol) {
+    if (!seededSymbol || consumedSeedRef.current === seededSymbol) {
       return;
     }
 
+    consumedSeedRef.current = seededSymbol;
     setForm((current) => ({ ...current, symbol: seededSymbol.toUpperCase() }));
     setSubmitFeedback(null);
     onSeededSymbolConsumed();

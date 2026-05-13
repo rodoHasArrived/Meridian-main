@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { cleanup, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PriceAlertsProvider } from "@/lib/price-alerts/service";
 import type { StorageLike } from "@/lib/price-alerts/storage";
@@ -58,6 +58,7 @@ describe("PriceAlertsScreen", () => {
     (globalThis as { Notification?: unknown }).Notification = undefined;
   });
   afterEach(() => {
+    cleanup();
     delete (globalThis as { Notification?: unknown }).Notification;
   });
 
@@ -70,11 +71,11 @@ describe("PriceAlertsScreen", () => {
     expect(screen.getByText(/No alerts have triggered yet/i)).toBeInTheDocument();
   });
 
-  it("renders persisted alerts and identifies the active count", () => {
+  it("renders persisted alerts and identifies disabled and triggered states", () => {
     const storage = seedStorage({
       version: 1,
       alerts: [
-        buildAlert({ id: "a-1", symbol: "AAPL", threshold: 200 }),
+        buildAlert({ id: "a-1", symbol: "AAPL", threshold: 200, enabled: false }),
         buildAlert({ id: "a-2", symbol: "MSFT", threshold: 350, enabled: false, triggeredAt: new Date().toISOString() })
       ],
       triggers: []
@@ -83,7 +84,7 @@ describe("PriceAlertsScreen", () => {
     expect(screen.getByText("AAPL")).toBeInTheDocument();
     expect(screen.getByText("MSFT")).toBeInTheDocument();
     expect(screen.getByText(/2 alerts/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/Watching/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Disabled/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Triggered/i).length).toBeGreaterThan(0);
   });
 
@@ -98,6 +99,6 @@ describe("PriceAlertsScreen", () => {
       static requestPermission = vi.fn().mockResolvedValue("granted");
     };
     renderScreen(new MemoryStorage());
-    expect(screen.getByRole("button", { name: /Enable notifications/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Enable browser notifications for price alerts/i })).toBeInTheDocument();
   });
 });
