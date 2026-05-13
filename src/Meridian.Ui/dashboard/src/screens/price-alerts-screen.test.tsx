@@ -64,6 +64,7 @@ describe("PriceAlertsScreen", () => {
   it("renders the empty state and form when no alerts exist", () => {
     renderScreen(new MemoryStorage());
     expect(screen.getByText(/Price alerts/i)).toBeInTheDocument();
+    expect(screen.getByText(/evaluated against live quotes every 5s/i)).toBeInTheDocument();
     expect(screen.getByText(/No alerts set/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Create price alert/i })).toBeDisabled();
     expect(screen.getByText(/No alerts have triggered yet/i)).toBeInTheDocument();

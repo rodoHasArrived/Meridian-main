@@ -1,12 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildPriceAlertListSection,
+  buildPriceAlertMetrics,
+  buildPriceAlertSubmitAction,
+  buildPriceAlertTriggerSection,
   DEFAULT_PRICE_ALERT_FORM,
   formatPriceAlertPrice,
   formatPriceAlertTimestamp,
   parseThreshold,
   priceAlertDraftFromForm,
+  sortPriceAlerts,
   validatePriceAlertForm
 } from "./price-alerts-screen.view-model";
+import type { PriceAlert, PriceAlertTrigger } from "@/lib/price-alerts/types";
 
 describe("validatePriceAlertForm", () => {
   it("flags an empty symbol", () => {
@@ -113,3 +119,88 @@ describe("formatters", () => {
     expect(formatPriceAlertTimestamp("not-a-date")).toBe("—");
   });
 });
+
+describe("price alert presentation state", () => {
+  it("derives submit disabled reasons from validation", () => {
+    const validation = validatePriceAlertForm(DEFAULT_PRICE_ALERT_FORM);
+    const action = buildPriceAlertSubmitAction(validation);
+
+    expect(action.disabled).toBe(true);
+    expect(action.disabledReason).toContain("Enter a symbol");
+    expect(action.ariaLabel).toContain("unavailable");
+  });
+
+  it("maps alert service counters to design-system metric snapshots", () => {
+    const metrics = buildPriceAlertMetrics({
+      enabledCount: 2,
+      unacknowledgedCount: 1,
+      lastPollAt: "2026-05-12T14:02:37.000Z"
+    });
+
+    expect(metrics).toHaveLength(3);
+    expect(metrics[0]).toMatchObject({ label: "Active alerts", value: "2", tone: "default" });
+    expect(metrics[1]).toMatchObject({ label: "Unacknowledged", value: "1", tone: "warning" });
+    expect(metrics[2].delta).toBe("Refreshed");
+  });
+
+  it("sorts active alerts before disabled alerts and builds row actions", () => {
+    const sorted = sortPriceAlerts([
+      buildAlert({ id: "disabled", symbol: "MSFT", enabled: false }),
+      buildAlert({ id: "active-b", symbol: "TSLA", threshold: 180 }),
+      buildAlert({ id: "active-a", symbol: "AAPL", threshold: 200 })
+    ]);
+    const section = buildPriceAlertListSection(sorted, 2);
+
+    expect(section.summary).toContain("3 alerts");
+    expect(section.rows.map((row) => row.symbol)).toEqual(["AAPL", "TSLA", "MSFT"]);
+    expect(section.rows[0].primaryAction.id).toBe("snooze");
+    expect(section.rows[2].primaryAction.id).toBe("reset");
+    expect(section.rows[0].rowAriaLabel).toContain("AAPL price alert");
+  });
+
+  it("derives trigger rows with acknowledgement action state", () => {
+    const section = buildPriceAlertTriggerSection([
+      buildTrigger({ id: "trigger-new", acknowledged: false }),
+      buildTrigger({ id: "trigger-ack", acknowledged: true, symbol: "MSFT" })
+    ], 1);
+
+    expect(section.hasRows).toBe(true);
+    expect(section.acknowledgeAllAction.disabled).toBe(false);
+    expect(section.rows[0].acknowledgeAction?.ariaLabel).toContain("AAPL");
+    expect(section.rows[1].acknowledgeAction).toBeNull();
+  });
+});
+
+function buildAlert(overrides: Partial<PriceAlert> = {}): PriceAlert {
+  return {
+    id: "alert-fixture",
+    symbol: "AAPL",
+    condition: "above",
+    field: "last",
+    threshold: 200,
+    note: null,
+    createdAt: "2026-05-12T12:00:00.000Z",
+    snoozedUntil: null,
+    enabled: true,
+    triggeredAt: null,
+    lastObservedPrice: null,
+    lastObservedAt: null,
+    ...overrides
+  };
+}
+
+function buildTrigger(overrides: Partial<PriceAlertTrigger> = {}): PriceAlertTrigger {
+  return {
+    id: "trigger-fixture",
+    alertId: "alert-fixture",
+    symbol: "AAPL",
+    condition: "above",
+    field: "last",
+    threshold: 200,
+    triggeredPrice: 201.25,
+    triggeredAt: "2026-05-12T14:02:37.000Z",
+    acknowledged: false,
+    note: null,
+    ...overrides
+  };
+}

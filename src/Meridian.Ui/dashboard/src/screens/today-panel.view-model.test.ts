@@ -66,6 +66,8 @@ describe("today-panel view model", () => {
     expect(vm.hasMovers).toBe(false);
     expect(vm.hasOrders).toBe(false);
     expect(vm.hasFills).toBe(false);
+    expect(vm.emptyActionHref).toBe("/settings#alpaca-provider-setup");
+    expect(vm.emptyActionAriaLabel).toBe("Open Alpaca paper provider setup checklist to connect a brokerage account");
     expect(vm.quickActions.map((a) => a.id)).toEqual([
       "place-order",
       "add-symbol",

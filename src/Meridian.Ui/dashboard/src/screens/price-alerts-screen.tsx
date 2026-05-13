@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
   AlarmClock,
   Bell,
@@ -18,66 +19,138 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { describeCondition } from "@/lib/price-alerts/evaluator";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { MetricCard } from "@/components/meridian/metric-card";
 import { usePriceAlerts } from "@/lib/price-alerts/service";
-import type { PriceAlert, PriceAlertCondition, PriceAlertField } from "@/lib/price-alerts/types";
+import type { PriceAlertCondition, PriceAlertField } from "@/lib/price-alerts/types";
 import {
-  DEFAULT_PRICE_ALERT_FORM,
   PRICE_ALERT_CONDITION_OPTIONS,
   PRICE_ALERT_FIELD_OPTIONS,
-  formatPriceAlertPrice,
-  formatPriceAlertTimestamp,
-  priceAlertDraftFromForm,
-  validatePriceAlertForm,
-  type PriceAlertFormState
+  usePriceAlertsScreenViewModel,
+  type PriceAlertsScreenViewModel,
+  type PriceAlertRowAction,
+  type PriceAlertRowViewModel,
+  type PriceAlertsScreenViewModel,
+  type PriceAlertTriggerRowViewModel
 } from "@/screens/price-alerts-screen.view-model";
-
-const SNOOZE_MINUTES = 30;
 
 export function PriceAlertsScreen() {
   const alerts = usePriceAlerts();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [form, setForm] = useState<PriceAlertFormState>(() => readFormFromSearchParams(searchParams));
-  const [submitFeedback, setSubmitFeedback] = useState<string | null>(null);
-
-  useEffect(() => {
-    const seededSymbol = searchParams.get("symbol");
-    if (seededSymbol) {
-      setForm((current) => ({ ...current, symbol: seededSymbol.toUpperCase() }));
+  const vm = usePriceAlertsScreenViewModel({
+    alerts,
+    seededSymbol: searchParams.get("symbol"),
+    onSeededSymbolConsumed: () => {
       const next = new URLSearchParams(searchParams);
       next.delete("symbol");
       setSearchParams(next, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+  });
 
-  const validation = useMemo(() => validatePriceAlertForm(form), [form]);
-  const watchedSymbolCount = alerts.enabledCount;
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const draft = priceAlertDraftFromForm(form);
-    if (!draft) {
-      return;
+  const triggerColumns: DenseDataTableColumn<PriceAlertTriggerRowViewModel>[] = [
+    {
+      id: "trigger",
+      label: "Trigger",
+      render: (row) => (
+        <span className="block min-w-0">
+          <span className="block font-semibold text-foreground">{row.symbol}</span>
+          <span className="mt-1 block break-words text-[11px] text-muted-foreground">{row.conditionLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => <Badge variant={row.statusVariant} dot>{row.statusLabel}</Badge>
+    },
+    {
+      id: "price",
+      label: "Price",
+      align: "right",
+      render: (row) => <span>{row.priceLabel}</span>
+    },
+    {
+      id: "fired",
+      label: "Fired",
+      render: (row) => <span className="text-muted-foreground">{row.triggeredAtLabel}</span>
+    },
+    {
+      id: "note",
+      label: "Note",
+      render: (row) => <span className="block max-w-[18rem] truncate text-muted-foreground">{row.noteLabel}</span>
+    },
+    {
+      id: "actions",
+      label: "Actions",
+      render: (row) => (
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link to={row.quoteHref} aria-label={row.quoteAriaLabel}>
+              <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="ml-1">Quote</span>
+            </Link>
+          </Button>
+          {row.acknowledgeAction ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => vm.acknowledgeTrigger(row.id)}
+              aria-label={row.acknowledgeAction.ariaLabel}
+            >
+              <Check className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="ml-1">{row.acknowledgeAction.label}</span>
+            </Button>
+          ) : null}
+        </div>
+      )
     }
-    alerts.createAlert(draft);
-    setForm({ ...DEFAULT_PRICE_ALERT_FORM, condition: form.condition, field: form.field });
-    setSubmitFeedback(`Alert set: ${draft.symbol} ${describeCondition(draft.condition, draft.threshold, draft.field)}`);
-  };
+  ];
 
-  const handleRequestNotifications = async () => {
-    await alerts.requestNotificationPermission();
-  };
-
-  const sortedAlerts = useMemo(() => {
-    const list = [...alerts.state.alerts];
-    list.sort((a, b) => {
-      if (a.enabled !== b.enabled) {
-        return a.enabled ? -1 : 1;
-      }
-      return a.symbol.localeCompare(b.symbol) || a.threshold - b.threshold;
-    });
-    return list;
-  }, [alerts.state.alerts]);
+  const alertColumns: DenseDataTableColumn<PriceAlertRowViewModel>[] = [
+    {
+      id: "alert",
+      label: "Alert",
+      render: (row) => (
+        <span className="block min-w-0">
+          <span className="block font-semibold text-foreground">{row.symbol}</span>
+          <span className="mt-1 block break-words text-[11px] text-muted-foreground">{row.conditionLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => <Badge variant={row.statusVariant} dot>{row.statusLabel}</Badge>
+    },
+    {
+      id: "last",
+      label: "Last seen",
+      render: (row) => <span className="block min-w-[12rem] text-muted-foreground">{row.lastObservedLabel}</span>
+    },
+    {
+      id: "note",
+      label: "Note",
+      render: (row) => <span className="block max-w-[18rem] truncate text-muted-foreground">{row.noteLabel}</span>
+    },
+    {
+      id: "actions",
+      label: "Actions",
+      render: (row) => (
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link to={row.quoteHref} aria-label={row.quoteAriaLabel}>
+              <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="ml-1">Quote</span>
+            </Link>
+          </Button>
+          <AlertActionButton action={row.primaryAction} onClick={() => handleAlertAction(vm, row.primaryAction, row.id)} />
+          <AlertActionButton action={row.pauseAction} onClick={() => handleAlertAction(vm, row.pauseAction, row.id)} />
+          <AlertActionButton action={row.deleteAction} onClick={() => handleAlertAction(vm, row.deleteAction, row.id)} />
+        </div>
+      )
+    }
+  ];
 
   return (
     <div className="space-y-6">
@@ -89,33 +162,36 @@ export function PriceAlertsScreen() {
             Price alerts
           </CardTitle>
           <CardDescription>
-            Get notified when a symbol crosses a price. Alerts are evaluated against live quotes every {Math.round(PRICE_ALERTS_POLL_INTERVAL_MS / 1000)}s while this tab is open.
+            {vm.heroDescription}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-3">
-            <SummaryStat label="Active alerts" value={String(watchedSymbolCount)} tone={watchedSymbolCount > 0 ? "default" : "muted"} />
-            <SummaryStat label="Unacknowledged triggers" value={String(alerts.unacknowledgedCount)} tone={alerts.unacknowledgedCount > 0 ? "warning" : "muted"} />
-            <SummaryStat label="Last poll" value={formatPriceAlertTimestamp(alerts.lastPollAt)} tone="muted" />
+            {vm.summaryMetrics.map((metric) => <MetricCard key={metric.id} {...metric} />)}
           </div>
-          {alerts.pollErrorMessage ? (
-            <p role="alert" className="mt-3 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-              Quote refresh failed: {alerts.pollErrorMessage}
+          {vm.pollErrorPanel ? (
+            <p role={vm.pollErrorPanel.role} aria-live={vm.pollErrorPanel.ariaLive} className={vm.pollErrorPanel.className}>
+              {vm.pollErrorPanel.text}
             </p>
           ) : null}
-          {alerts.notificationPermission === "default" ? (
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-              <span>Browser notifications are off. You'll only see alerts when this tab is in the foreground.</span>
-              <Button type="button" variant="outline" size="sm" onClick={handleRequestNotifications}>
+          {vm.notificationPanel ? (
+            <div
+              id={vm.notificationPanel.id}
+              role={vm.notificationPanel.role}
+              className={`mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm ${
+                vm.notificationPanel.tone === "warning"
+                  ? "border-warning/30 bg-warning/10 text-warning"
+                  : "border-border/70 bg-secondary/25 text-muted-foreground"
+              }`}
+            >
+              <span>{vm.notificationPanel.text}</span>
+              {vm.notificationPanel.action ? (
+              <Button type="button" variant="outline" size="sm" onClick={() => void vm.requestNotifications()} aria-label={vm.notificationPanel.action.ariaLabel}>
                 <Bell className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="ml-1.5">Enable notifications</span>
+                <span className="ml-1.5">{vm.notificationPanel.action.label}</span>
               </Button>
+              ) : null}
             </div>
-          ) : null}
-          {alerts.notificationPermission === "denied" ? (
-            <p className="mt-3 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-xs text-muted-foreground">
-              Browser notifications are blocked. Triggered alerts still appear in this screen and the masthead bell.
-            </p>
           ) : null}
         </CardContent>
       </Card>
@@ -126,24 +202,31 @@ export function PriceAlertsScreen() {
           <CardDescription>Pick a symbol, condition, and threshold. The alert fires once and then waits to be reset.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="grid gap-3 md:grid-cols-[1fr_1.4fr_1fr_auto] md:items-end" aria-label="Create price alert">
-            <FormField label="Symbol" htmlFor="price-alert-symbol" error={form.symbol ? validation.symbolError : null}>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              vm.submit();
+            }}
+            className="grid gap-3 md:grid-cols-[1fr_1.4fr_1fr_auto] md:items-end"
+            aria-label="Create price alert"
+          >
+            <FormField label="Symbol" htmlFor="price-alert-symbol" error={vm.form.symbol ? vm.validation.symbolError : null}>
               <Input
                 id="price-alert-symbol"
-                value={form.symbol}
-                onChange={(event) => setForm((c) => ({ ...c, symbol: event.target.value.toUpperCase() }))}
+                value={vm.form.symbol}
+                onChange={(event) => vm.setSymbol(event.target.value)}
                 placeholder="e.g. AAPL"
                 autoComplete="off"
                 spellCheck={false}
-                error={Boolean(form.symbol && validation.symbolError)}
+                error={Boolean(vm.form.symbol && vm.validation.symbolError)}
               />
             </FormField>
             <FormField label="Condition" htmlFor="price-alert-condition">
               <div className="grid grid-cols-[1.4fr_0.9fr] gap-2">
                 <Select
                   id="price-alert-condition"
-                  value={form.condition}
-                  onChange={(event) => setForm((c) => ({ ...c, condition: event.target.value as PriceAlertCondition }))}
+                  value={vm.form.condition}
+                  onChange={(event) => vm.setCondition(event.target.value as PriceAlertCondition)}
                 >
                   {PRICE_ALERT_CONDITION_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
@@ -151,8 +234,8 @@ export function PriceAlertsScreen() {
                 </Select>
                 <Select
                   id="price-alert-field"
-                  value={form.field}
-                  onChange={(event) => setForm((c) => ({ ...c, field: event.target.value as PriceAlertField }))}
+                  value={vm.form.field}
+                  onChange={(event) => vm.setField(event.target.value as PriceAlertField)}
                   aria-label="Price field"
                 >
                   {PRICE_ALERT_FIELD_OPTIONS.map((option) => (
@@ -161,20 +244,25 @@ export function PriceAlertsScreen() {
                 </Select>
               </div>
             </FormField>
-            <FormField label="Threshold" htmlFor="price-alert-threshold" error={form.threshold ? validation.thresholdError : null}>
+            <FormField label="Threshold" htmlFor="price-alert-threshold" error={vm.form.threshold ? vm.validation.thresholdError : null}>
               <Input
                 id="price-alert-threshold"
                 type="text"
                 inputMode="decimal"
-                value={form.threshold}
-                onChange={(event) => setForm((c) => ({ ...c, threshold: event.target.value }))}
+                value={vm.form.threshold}
+                onChange={(event) => vm.setThreshold(event.target.value)}
                 placeholder="e.g. 200.50"
-                error={Boolean(form.threshold && validation.thresholdError)}
+                error={Boolean(vm.form.threshold && vm.validation.thresholdError)}
                 autoComplete="off"
                 spellCheck={false}
               />
             </FormField>
-            <Button type="submit" disabled={!validation.canSubmit} aria-label="Create price alert">
+            <Button
+              type="submit"
+              disabled={vm.submitAction.disabled}
+              disabledReason={vm.submitAction.disabledReason}
+              aria-label={vm.submitAction.ariaLabel}
+            >
               <Plus className="h-4 w-4" aria-hidden="true" />
               <span className="ml-1.5">Add alert</span>
             </Button>
@@ -182,17 +270,17 @@ export function PriceAlertsScreen() {
           <FormField label="Note (optional)" htmlFor="price-alert-note" className="mt-3">
             <Input
               id="price-alert-note"
-              value={form.note}
-              onChange={(event) => setForm((c) => ({ ...c, note: event.target.value }))}
+              value={vm.form.note}
+              onChange={(event) => vm.setNote(event.target.value)}
               placeholder="e.g. Watch for earnings call"
               maxLength={120}
               autoComplete="off"
             />
           </FormField>
-          {submitFeedback ? (
-            <p role="status" aria-live="polite" className="mt-3 flex items-center gap-1.5 text-xs text-positive">
+          {vm.submitFeedback ? (
+            <p role="status" aria-live="polite" aria-label={vm.submitFeedback.ariaLabel} className="mt-3 flex items-center gap-1.5 text-xs text-success">
               <Check className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>{submitFeedback}</span>
+              <span>{vm.submitFeedback.text}</span>
             </p>
           ) : null}
         </CardContent>
@@ -202,82 +290,78 @@ export function PriceAlertsScreen() {
         <CardHeader>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <div>
-              <CardTitle className="text-base">Triggered alerts</CardTitle>
-              <CardDescription>{alerts.state.triggers.length === 0 ? "No alerts have triggered yet." : `${alerts.state.triggers.length} historical trigger${alerts.state.triggers.length === 1 ? "" : "s"}.`}</CardDescription>
+              <CardTitle className="text-base">{vm.triggerSection.title}</CardTitle>
+              <CardDescription>{vm.triggerSection.summary}</CardDescription>
             </div>
-            {alerts.state.triggers.length > 0 ? (
+            {vm.triggerSection.hasRows ? (
               <div className="flex flex-wrap items-center gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={alerts.acknowledgeAllTriggers} disabled={alerts.unacknowledgedCount === 0}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={vm.acknowledgeAllTriggers}
+                  disabled={vm.triggerSection.acknowledgeAllAction.disabled}
+                  disabledReason={vm.triggerSection.acknowledgeAllAction.disabledReason}
+                  aria-label={vm.triggerSection.acknowledgeAllAction.ariaLabel}
+                >
                   <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                  <span className="ml-1.5">Acknowledge all</span>
+                  <span className="ml-1.5">{vm.triggerSection.acknowledgeAllAction.label}</span>
                 </Button>
-                <Button type="button" variant="outline" size="sm" onClick={alerts.clearTriggers}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={vm.clearTriggers}
+                  disabled={vm.triggerSection.clearHistoryAction.disabled}
+                  disabledReason={vm.triggerSection.clearHistoryAction.disabledReason}
+                  aria-label={vm.triggerSection.clearHistoryAction.ariaLabel}
+                >
                   <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                  <span className="ml-1.5">Clear history</span>
+                  <span className="ml-1.5">{vm.triggerSection.clearHistoryAction.label}</span>
                 </Button>
               </div>
             ) : null}
           </div>
         </CardHeader>
         <CardContent>
-          {alerts.state.triggers.length === 0 ? (
-            <p className="rounded-md border border-dashed border-border/70 bg-secondary/15 px-3 py-4 text-sm text-muted-foreground">
-              Triggered alerts will appear here. Each entry stays acknowledged once you confirm it.
-            </p>
+          {vm.triggerSection.hasRows ? (
+            <DenseDataTable
+              columns={triggerColumns}
+              rows={vm.triggerSection.rows}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.rowAriaLabel}
+              emptyText={vm.triggerSection.emptyText}
+              ariaLabel={vm.triggerSection.tableLabel}
+              caption={vm.triggerSection.caption}
+            />
           ) : (
-            <ul className="space-y-2">
-              {alerts.state.triggers.slice(0, 25).map((trigger) => (
-                <li
-                  key={trigger.id}
-                  className={`flex flex-wrap items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm ${trigger.acknowledged ? "border-border/60 bg-secondary/20 text-muted-foreground" : "border-warning/30 bg-warning/10"}`}
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-semibold text-foreground">{trigger.symbol}</span>
-                      <Badge variant={trigger.acknowledged ? "outline" : "warning"} dot>{describeCondition(trigger.condition, trigger.threshold, trigger.field)}</Badge>
-                    </div>
-                    <p className="mt-1 font-mono text-xs">
-                      Fired at {formatPriceAlertPrice(trigger.triggeredPrice)} · {formatPriceAlertTimestamp(trigger.triggeredAt)}
-                    </p>
-                    {trigger.note ? <p className="mt-1 text-xs text-muted-foreground">{trigger.note}</p> : null}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button asChild variant="outline" size="sm">
-                      <Link to={`/data/quotes?symbol=${encodeURIComponent(trigger.symbol)}`} aria-label={`Open live quotes for ${trigger.symbol}`}>
-                        <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
-                        <span className="ml-1">Quote</span>
-                      </Link>
-                    </Button>
-                    {!trigger.acknowledged ? (
-                      <Button type="button" variant="outline" size="sm" onClick={() => alerts.acknowledgeTrigger(trigger.id)}>
-                        <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                        <span className="ml-1">Acknowledge</span>
-                      </Button>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <p className="rounded-md border border-dashed border-border/70 bg-secondary/15 px-3 py-4 text-sm text-muted-foreground">
+              {vm.triggerSection.emptyText}
+            </p>
           )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">All alerts</CardTitle>
-          <CardDescription>{sortedAlerts.length === 0 ? "No alerts set." : `${sortedAlerts.length} alert${sortedAlerts.length === 1 ? "" : "s"} — ${watchedSymbolCount} watching live, the rest waiting to be reset.`}</CardDescription>
+          <CardTitle className="text-base">{vm.alertSection.title}</CardTitle>
+          <CardDescription>{vm.alertSection.summary}</CardDescription>
         </CardHeader>
         <CardContent>
-          {sortedAlerts.length === 0 ? (
-            <p className="rounded-md border border-dashed border-border/70 bg-secondary/15 px-3 py-4 text-sm text-muted-foreground">
-              Add your first alert above. You can also click "Set price alert" from any symbol on the Live quotes screen.
-            </p>
+          {vm.alertSection.hasRows ? (
+            <DenseDataTable
+              columns={alertColumns}
+              rows={vm.alertSection.rows}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.rowAriaLabel}
+              emptyText={vm.alertSection.emptyText}
+              ariaLabel={vm.alertSection.tableLabel}
+              caption={vm.alertSection.caption}
+            />
           ) : (
-            <ul className="space-y-2">
-              {sortedAlerts.map((alert) => (
-                <AlertRow key={alert.id} alert={alert} />
-              ))}
-            </ul>
+            <p className="rounded-md border border-dashed border-border/70 bg-secondary/15 px-3 py-4 text-sm text-muted-foreground">
+              {vm.alertSection.emptyText}
+            </p>
           )}
         </CardContent>
       </Card>
@@ -285,70 +369,51 @@ export function PriceAlertsScreen() {
   );
 }
 
-function AlertRow({ alert }: { alert: PriceAlert }) {
-  const alerts = usePriceAlerts();
-  const snoozedUntilMs = alert.snoozedUntil ? new Date(alert.snoozedUntil).getTime() : null;
-  const isSnoozed = snoozedUntilMs !== null && snoozedUntilMs > Date.now();
-  const variant: "default" | "warning" | "outline" = !alert.enabled ? "outline" : isSnoozed ? "warning" : "default";
-  const statusLabel = !alert.enabled ? (alert.triggeredAt ? "Triggered" : "Disabled") : isSnoozed ? "Snoozed" : "Watching";
+function AlertActionButton({ action, onClick }: { action: PriceAlertRowAction; onClick: () => void }) {
+  const Icon = action.id === "snooze"
+    ? AlarmClock
+    : action.id === "wake" || action.id === "resume"
+      ? Bell
+      : action.id === "reset"
+        ? RotateCcw
+        : action.id === "pause"
+          ? BellOff
+          : Trash2;
 
   return (
-    <li className={`flex flex-wrap items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm ${alert.enabled && !isSnoozed ? "border-border/70 bg-background/50" : "border-border/50 bg-secondary/25"}`}>
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-mono font-semibold text-foreground">{alert.symbol}</span>
-          <Badge variant={variant} dot>{statusLabel}</Badge>
-          <span className="font-mono text-xs text-muted-foreground">{describeCondition(alert.condition, alert.threshold, alert.field)}</span>
-        </div>
-        <p className="mt-1 font-mono text-[11px] text-muted-foreground">
-          Last seen {formatPriceAlertPrice(alert.lastObservedPrice)} · {formatPriceAlertTimestamp(alert.lastObservedAt)}
-          {isSnoozed ? ` · snoozed until ${formatPriceAlertTimestamp(alert.snoozedUntil)}` : ""}
-        </p>
-        {alert.note ? <p className="mt-1 text-xs text-muted-foreground">{alert.note}</p> : null}
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <Button asChild variant="outline" size="sm">
-          <Link to={`/data/quotes?symbol=${encodeURIComponent(alert.symbol)}`} aria-label={`Open live quotes for ${alert.symbol}`}>
-            <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="ml-1">Quote</span>
-          </Link>
-        </Button>
-        {alert.enabled ? (
-          isSnoozed ? (
-            <Button type="button" variant="outline" size="sm" onClick={() => alerts.snoozeAlert(alert.id, null)} aria-label={`Wake ${alert.symbol} alert`}>
-              <Bell className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="ml-1">Wake</span>
-            </Button>
-          ) : (
-            <Button type="button" variant="outline" size="sm" onClick={() => alerts.snoozeAlert(alert.id, new Date(Date.now() + SNOOZE_MINUTES * 60_000))} aria-label={`Snooze ${alert.symbol} alert for ${SNOOZE_MINUTES} minutes`}>
-              <AlarmClock className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="ml-1">Snooze {SNOOZE_MINUTES}m</span>
-            </Button>
-          )
-        ) : (
-          <Button type="button" variant="outline" size="sm" onClick={() => alerts.resetAlert(alert.id)} aria-label={`Re-enable ${alert.symbol} alert`}>
-            <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="ml-1">Reset</span>
-          </Button>
-        )}
-        <Button type="button" variant="outline" size="sm" onClick={() => alerts.updateAlertFields(alert.id, { enabled: !alert.enabled })} aria-label={alert.enabled ? `Pause ${alert.symbol} alert` : `Resume ${alert.symbol} alert`}>
-          {alert.enabled ? <BellOff className="h-3.5 w-3.5" aria-hidden="true" /> : <Bell className="h-3.5 w-3.5" aria-hidden="true" />}
-          <span className="ml-1">{alert.enabled ? "Pause" : "Resume"}</span>
-        </Button>
-        <Button type="button" variant="outline" size="sm" onClick={() => alerts.deleteAlert(alert.id)} aria-label={`Delete ${alert.symbol} alert`}>
-          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-          <span className="ml-1">Delete</span>
-        </Button>
-      </div>
-    </li>
+    <Button type="button" variant="outline" size="sm" onClick={onClick} aria-label={action.ariaLabel}>
+      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+      <span className="ml-1">{action.label}</span>
+    </Button>
   );
+}
+
+function handleAlertAction(vm: PriceAlertsScreenViewModel, action: PriceAlertRowAction, alertId: string) {
+  switch (action.id) {
+    case "wake":
+      vm.wakeAlert(alertId);
+      break;
+    case "snooze":
+      vm.snoozeAlert(alertId);
+      break;
+    case "reset":
+      vm.resetAlert(alertId);
+      break;
+    case "pause":
+    case "resume":
+      vm.toggleAlert(alertId);
+      break;
+    case "delete":
+      vm.deleteAlert(alertId);
+      break;
+  }
 }
 
 interface FormFieldProps {
   label: string;
   htmlFor: string;
   error?: string | null;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }
 
@@ -367,33 +432,4 @@ function FormField({ label, htmlFor, error, children, className }: FormFieldProp
       ) : null}
     </div>
   );
-}
-
-interface SummaryStatProps {
-  label: string;
-  value: string;
-  tone: "default" | "muted" | "warning";
-}
-
-function SummaryStat({ label, value, tone }: SummaryStatProps) {
-  const toneClass =
-    tone === "warning"
-      ? "border-warning/30 bg-warning/10 text-warning"
-      : tone === "default"
-        ? "border-primary/30 bg-primary/10 text-primary"
-        : "border-border/60 bg-secondary/25 text-muted-foreground";
-  return (
-    <div className={`rounded-md border px-3 py-2.5 ${toneClass}`}>
-      <div className="text-[10px] uppercase tracking-[0.14em]">{label}</div>
-      <div className="mt-1 font-mono text-base text-foreground">{value}</div>
-    </div>
-  );
-}
-
-function readFormFromSearchParams(searchParams: URLSearchParams): PriceAlertFormState {
-  const symbol = searchParams.get("symbol") ?? "";
-  return {
-    ...DEFAULT_PRICE_ALERT_FORM,
-    symbol: symbol.toUpperCase()
-  };
 }

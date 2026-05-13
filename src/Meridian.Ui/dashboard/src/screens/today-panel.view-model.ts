@@ -90,6 +90,7 @@ export interface TodayPanelViewModel {
 }
 
 const PREVIEW_LIMIT = 5;
+const BROKERAGE_SETUP_HREF = "/settings#alpaca-provider-setup";
 
 const QUICK_ACTIONS: TodayQuickAction[] = [
   {
@@ -134,9 +135,9 @@ export function buildTodayPanelViewModel(
       headline: "Today",
       subheadline: "Connect a brokerage account or start a paper session to see your day's activity.",
       emptyMessage: "No trading or portfolio data is available yet.",
-      emptyActionHref: "/settings",
+      emptyActionHref: BROKERAGE_SETUP_HREF,
       emptyActionLabel: "Connect a brokerage",
-      emptyActionAriaLabel: "Open settings to connect a brokerage account",
+      emptyActionAriaLabel: "Open Alpaca paper provider setup checklist to connect a brokerage account",
       metrics: emptyMetrics(),
       movers: [],
       moversTotal: 0,
@@ -241,9 +242,9 @@ export function buildTodayPanelViewModel(
     headline: "Today",
     subheadline,
     emptyMessage: "",
-    emptyActionHref: "/settings",
+    emptyActionHref: BROKERAGE_SETUP_HREF,
     emptyActionLabel: "Connect a brokerage",
-    emptyActionAriaLabel: "Open settings to connect a brokerage account",
+    emptyActionAriaLabel: "Open Alpaca paper provider setup checklist to connect a brokerage account",
     metrics,
     movers,
     moversTotal: positions.length,

@@ -442,6 +442,34 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                 </span>
               </label>
 
+              <div
+                className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-3"
+                role="region"
+                aria-label={`${vm.providerSetupDialogState.selectedProviderSummary.providerLabel} setup summary`}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="font-semibold">{vm.providerSetupDialogState.selectedProviderSummary.providerLabel}</div>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      {vm.providerSetupDialogState.selectedProviderSummary.description}
+                    </p>
+                  </div>
+                  {vm.providerSetupDialogState.selectedProviderSummary.noCredentialMessage ? (
+                    <Badge variant="success">No key needed</Badge>
+                  ) : null}
+                </div>
+                <dl className="mt-3 grid gap-2 sm:grid-cols-3">
+                  {vm.providerSetupDialogState.selectedProviderSummary.rows.map((row) => (
+                    <FieldTile key={row.id} field={row} />
+                  ))}
+                </dl>
+                {vm.providerSetupDialogState.selectedProviderSummary.noCredentialMessage ? (
+                  <p className="mt-3 rounded-md border border-success/30 bg-success/10 px-3 py-2 text-xs leading-5 text-success">
+                    {vm.providerSetupDialogState.selectedProviderSummary.noCredentialMessage}
+                  </p>
+                ) : null}
+              </div>
+
               <label htmlFor={vm.providerSetupDialogState.displayNameField.id} className="grid gap-1 text-sm">
                 {vm.providerSetupDialogState.displayNameField.label}
                 <input
@@ -607,16 +635,43 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
         <div className="mt-5 grid gap-4" role="group" aria-label={vm.dialogState.formLabel}>
           <label htmlFor={vm.dialogState.providerField.id} className="grid gap-1 text-sm">
             {vm.dialogState.providerField.label}
-            <input
+            <select
               id={vm.dialogState.providerField.id}
               className="min-h-11 rounded-md border border-border bg-background px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
               value={vm.form.provider}
               aria-label={vm.dialogState.providerField.ariaLabel}
-              placeholder={vm.dialogState.providerField.placeholder}
               disabled={vm.dialogState.providerField.disabled}
               title={vm.dialogState.providerField.disabledReason ?? undefined}
               onChange={(event) => vm.updateBackfillForm("provider", event.target.value)}
-            />
+            >
+              {vm.dialogState.providerOptions.map((provider) => (
+                <option key={provider.value} value={provider.value}>
+                  {provider.label}
+                </option>
+              ))}
+            </select>
+            <span className="text-xs leading-5 text-muted-foreground">{vm.dialogState.selectedProviderDetail}</span>
+            <div className="flex flex-wrap gap-2" aria-label="Backfill provider options">
+              {vm.dialogState.providerOptions.map((provider) => (
+                <button
+                  key={provider.value}
+                  type="button"
+                  className={cn(
+                    "rounded-md border px-2.5 py-1.5 text-left text-xs transition-colors",
+                    vm.form.provider === provider.value
+                      ? "border-primary/45 bg-primary/[0.08] text-foreground"
+                      : "border-border/70 bg-secondary/20 text-muted-foreground hover:bg-secondary/35"
+                  )}
+                  disabled={vm.dialogState.providerField.disabled}
+                  title={provider.description}
+                  aria-pressed={vm.form.provider === provider.value}
+                  onClick={() => vm.updateBackfillForm("provider", provider.value)}
+                >
+                  <span className="font-semibold">{provider.label}</span>
+                  <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.12em] text-primary">{provider.badge}</span>
+                </button>
+              ))}
+            </div>
           </label>
           <label htmlFor={vm.dialogState.symbolsField.id} className="grid gap-1 text-sm">
             {vm.dialogState.symbolsField.label}

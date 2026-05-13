@@ -49,6 +49,13 @@ export interface BackfillDialogFieldState {
   disabledReason: string | null;
 }
 
+export interface BackfillProviderOptionState {
+  value: string;
+  label: string;
+  description: string;
+  badge: string;
+}
+
 export interface BackfillDialogSummaryItemState {
   id: string;
   label: string;
@@ -73,6 +80,8 @@ export interface BackfillDialogState {
   closeButtonDisabledReason: string | null;
   summaryItems: BackfillDialogSummaryItemState[];
   providerField: BackfillDialogFieldState;
+  providerOptions: BackfillProviderOptionState[];
+  selectedProviderDetail: string;
   symbolsField: BackfillDialogFieldState;
   fromField: BackfillDialogFieldState;
   toField: BackfillDialogFieldState;
@@ -254,6 +263,7 @@ export interface ProviderSetupDialogState {
   descriptionId: string;
   formLabel: string;
   providerKindField: ProviderSetupSelectFieldState;
+  selectedProviderSummary: ProviderSetupSummaryState;
   displayNameField: ProviderSetupTextFieldState;
   credentialFields: ProviderSetupCredentialFieldState[];
   capabilityOptions: ProviderSetupCapabilityOptionState[];
@@ -273,6 +283,13 @@ export interface ProviderSetupDialogState {
     ariaLabel: string;
   };
   successActions: ProviderSetupNextActionState[];
+}
+
+export interface ProviderSetupSummaryState {
+  providerLabel: string;
+  description: string;
+  rows: DataOperationsDetailField[];
+  noCredentialMessage: string | null;
 }
 
 export interface ProviderSetupNextActionState {
@@ -395,15 +412,48 @@ export const ALL_CAPABILITIES: Array<{ id: string; label: string; description: s
 ];
 
 const defaultProviderSetupForm: ProviderSetupFormState = {
-  kind: "polygon",
-  displayName: "Polygon.io",
+  kind: "yahoo",
+  displayName: "Yahoo Finance",
   apiKey: "",
   apiSecret: "",
   endpoint: "",
-  capabilities: ["streaming", "backfill", "reference"]
+  capabilities: ["backfill"]
 };
 
 // --- Backfill setup defaults ---
+
+export const BACKFILL_PROVIDER_OPTIONS: BackfillProviderOptionState[] = [
+  {
+    value: "yahoo",
+    label: "Yahoo Finance",
+    description: "Credential-free daily and intraday historical bars; best first backfill path.",
+    badge: "No key"
+  },
+  {
+    value: "stooq",
+    label: "Stooq",
+    description: "Credential-free daily historical fallback with conservative rate limits.",
+    badge: "No key"
+  },
+  {
+    value: "alpaca",
+    label: "Alpaca",
+    description: "Historical bars through Alpaca; requires valid paper or live API keys.",
+    badge: "Key"
+  },
+  {
+    value: "polygon",
+    label: "Polygon.io",
+    description: "Historical and reference backfill for paid Polygon plans.",
+    badge: "Key"
+  },
+  {
+    value: "composite",
+    label: "Composite fallback",
+    description: "Let Meridian rotate across configured historical providers.",
+    badge: "Auto"
+  }
+];
 
 const defaultBackfillServices: BackfillTriggerServices = {
   preview: (request) => workstationApi.previewBackfill(request),
@@ -412,7 +462,7 @@ const defaultBackfillServices: BackfillTriggerServices = {
 };
 
 const defaultBackfillForm: BackfillFormState = {
-  provider: "polygon",
+  provider: "yahoo",
   symbols: "",
   from: "",
   to: ""
@@ -617,6 +667,9 @@ export function useDataOperationsViewModel(
           ...current,
           kind: value,
           displayName: meta?.label ?? current.displayName,
+          apiKey: "",
+          apiSecret: "",
+          endpoint: meta?.needsEndpoint ? current.endpoint : "",
           capabilities: meta?.defaultCapabilities ?? current.capabilities
         };
       }
@@ -1148,10 +1201,12 @@ export function buildBackfillDialogState({
       id: "backfill-provider",
       label: "Provider",
       ariaLabel: "Backfill provider",
-      placeholder: "Default provider",
+      placeholder: "Select a provider",
       disabled: busy,
       disabledReason: fieldDisabledReason
     },
+    providerOptions: buildBackfillProviderOptions(form.provider),
+    selectedProviderDetail: buildBackfillProviderDetail(form.provider),
     symbolsField: {
       id: "backfill-symbols",
       label: "Symbols",
@@ -1208,7 +1263,7 @@ export function buildBackfillDialogState({
 }
 
 export function buildBackfillDialogSummaryItems(form: BackfillFormState): BackfillDialogSummaryItemState[] {
-  const provider = form.provider.trim() || "Default provider";
+  const provider = resolveBackfillProviderLabel(form.provider);
   const symbols = parseSymbols(form.symbols);
   const range = formatBackfillRange(form.from.trim() || null, form.to.trim() || null);
 
@@ -1222,6 +1277,32 @@ export function buildBackfillDialogSummaryItems(form: BackfillFormState): Backfi
     },
     { id: "range", label: "Range", value: range, tone: "default" }
   ];
+}
+
+export function buildBackfillProviderOptions(selectedProvider: string): BackfillProviderOptionState[] {
+  const selected = selectedProvider.trim().toLowerCase();
+  const hasSelectedOption = BACKFILL_PROVIDER_OPTIONS.some((option) => option.value === selected);
+  const options = BACKFILL_PROVIDER_OPTIONS;
+
+  if (!selected || hasSelectedOption) {
+    return options;
+  }
+
+  return [
+    ...options,
+    {
+      value: selected,
+      label: selectedProvider.trim(),
+      description: "Custom provider id. Meridian will submit it exactly as selected.",
+      badge: "Custom"
+    }
+  ];
+}
+
+export function buildBackfillProviderDetail(provider: string): string {
+  const selected = provider.trim().toLowerCase();
+  const option = BACKFILL_PROVIDER_OPTIONS.find((item) => item.value === selected);
+  return option?.description ?? "Custom provider id. Use this only when the host is configured for that provider.";
 }
 
 export function resolveBackfillPreviewDisabledReason({
@@ -1650,6 +1731,7 @@ export function buildProviderSetupDialogState(
       disabled: submitting,
       disabledReason: fieldDisabledReason
     },
+    selectedProviderSummary: buildProviderSetupSummary(form, providerMeta),
     displayNameField: {
       id: "provider-setup-name",
       label: "Display name",
@@ -1694,7 +1776,37 @@ function buildProviderSetupStatusLabel(phase: ProviderSetupPhase, validationErro
   if (phase === "success") return "Provider configured successfully.";
   if (phase === "error") return "Provider setup encountered an error.";
   if (validationError) return validationError;
-  return "Fill in provider details and click Configure provider.";
+  return "Provider setup is ready to submit.";
+}
+
+export function buildProviderSetupSummary(
+  form: ProviderSetupFormState,
+  meta: ProviderKindMeta | undefined
+): ProviderSetupSummaryState {
+  const providerLabel = meta?.label ?? form.displayName.trim() || "Custom provider";
+  const credentialText = meta
+    ? [
+        meta.needsApiKey ? "API key" : null,
+        meta.needsApiSecret ? "secret" : null,
+        meta.needsEndpoint ? "endpoint URL" : null
+      ].filter(Boolean).join(" + ") || "No credentials required"
+    : "Depends on custom endpoint";
+  const capabilityText = form.capabilities.length > 0
+    ? form.capabilities.map(formatProviderCapabilityLabel).join(", ")
+    : "No capabilities selected";
+
+  return {
+    providerLabel,
+    description: meta?.description ?? "Custom provider type selected.",
+    rows: [
+      { id: "credentials", label: "Required", value: credentialText },
+      { id: "capabilities", label: "Enabled for", value: capabilityText },
+      { id: "next-step", label: "After save", value: resolveProviderSetupNextStep(form.capabilities) }
+    ],
+    noCredentialMessage: meta && !meta.needsApiKey && !meta.needsApiSecret && !meta.needsEndpoint
+      ? `${providerLabel} can be configured without pasting a secret.`
+      : null
+  };
 }
 
 function isValidEndpointUrl(value: string): boolean {
@@ -1708,6 +1820,30 @@ function isValidEndpointUrl(value: string): boolean {
 
 function resolveProviderKindMeta(kind: ProviderSetupFormState["kind"]): ProviderKindMeta | undefined {
   return PROVIDER_KIND_CATALOG.find((provider) => provider.kind === kind);
+}
+
+function formatProviderCapabilityLabel(capabilityId: string): string {
+  return ALL_CAPABILITIES.find((capability) => capability.id === capabilityId)?.label ?? capabilityId;
+}
+
+function resolveProviderSetupNextStep(capabilities: string[]): string {
+  if (capabilities.includes("backfill")) {
+    return "Preview a historical backfill";
+  }
+
+  if (capabilities.includes("streaming")) {
+    return "Validate live quotes";
+  }
+
+  if (capabilities.includes("brokerage")) {
+    return "Check Trading readiness";
+  }
+
+  if (capabilities.includes("reference")) {
+    return "Review Security Master";
+  }
+
+  return "Select a capability";
 }
 
 export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): ProviderSetupNextActionState[] {
