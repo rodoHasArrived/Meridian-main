@@ -8,6 +8,13 @@ using Meridian.Application.Pipeline;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
+using Meridian.Backtesting;
+using Meridian.Backtesting.Engine;
+using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
+using Meridian.Storage;
+using Meridian.Storage.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
@@ -15,6 +22,8 @@ using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Services.CoveredCall;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
@@ -170,6 +179,45 @@ public static class UiEndpoints
         });
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
+
+        RegisterCoveredCallServices(services);
+    }
+
+    /// <summary>
+    /// Registers covered-call backtest services (slice 1: backtest UI). Includes the
+    /// engine factory delegate, chain-provider factory, and the hosted backtest service.
+    /// </summary>
+    private static void RegisterCoveredCallServices(IServiceCollection services)
+    {
+        // CoveredCallBacktestOptions binds to "Strategies:CoveredCall" from IConfiguration when
+        // one is present in DI. Defaults from the type itself apply when the section is absent.
+        services.AddOptions<CoveredCallBacktestOptions>()
+            .BindConfiguration(CoveredCallBacktestOptions.SectionName);
+
+        services.TryAddSingleton<ICoveredCallChainProviderFactory, CoveredCallChainProviderFactory>();
+
+        // BacktestEngine factory — mirrors the WPF App.xaml.cs pattern: one engine per
+        // BacktestRequest because the catalog service is bound to request.DataRoot.
+        services.TryAddSingleton<Func<BacktestRequest, BacktestEngine>>(sp => request =>
+        {
+            var storageOptions = new StorageOptions { RootPath = request.DataRoot };
+            var catalogService = new StorageCatalogService(request.DataRoot, storageOptions);
+            return new BacktestEngine(
+                sp.GetRequiredService<ILogger<BacktestEngine>>(),
+                catalogService,
+                sp.GetService<ISecurityMasterQueryService>(),
+                sp.GetService<ICorporateActionAdjustmentService>(),
+                sp.GetService<IBacktestPreflightService>());
+        });
+
+        services.AddSingleton<ICoveredCallBacktestService>(sp => new CoveredCallBacktestService(
+            engineFactory: sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>(),
+            chainFactory: sp.GetRequiredService<ICoveredCallChainProviderFactory>(),
+            runRepository: sp.GetRequiredService<IStrategyRepository>(),
+            options: sp.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<CoveredCallBacktestOptions>>(),
+            resultCache: sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
+            loggerFactory: sp.GetRequiredService<ILoggerFactory>()));
+        services.AddHostedService(sp => (CoveredCallBacktestService)sp.GetRequiredService<ICoveredCallBacktestService>());
     }
 
 
@@ -330,6 +378,9 @@ public static class UiEndpoints
         // Strategy lifecycle control endpoints (pause/stop/status)
         app.MapStrategyLifecycleEndpoints(jsonOptions);
 
+        // Covered-call strategy backtest endpoints (slice 1)
+        app.MapCoveredCallEndpoints(jsonOptions);
+
         // Quant Lab (gated by host configuration "QuantLab:Enabled" — endpoints respond
         // 503 when the engine is not registered, so it is safe to map unconditionally).
         app.MapQuantLabEndpoints(jsonOptions);
@@ -472,6 +523,9 @@ public static class UiEndpoints
 
         // Strategy lifecycle control endpoints (pause/stop/status)
         app.MapStrategyLifecycleEndpoints(jsonOptions);
+
+        // Covered-call strategy backtest endpoints (slice 1)
+        app.MapCoveredCallEndpoints(jsonOptions);
 
         // Quant Lab (gated by host configuration "QuantLab:Enabled" — endpoints respond
         // 503 when the engine is not registered, so it is safe to map unconditionally).

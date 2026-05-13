@@ -655,4 +655,11 @@ public static class UiApiRoutes
     // Provider credential verification endpoints
     public const string ProviderCredentialsValidate = "/api/providers/{provider}/validate-credentials";
     public const string ProviderConnectionTest = "/api/providers/{provider}/test-connection";
+
+    // Covered-call strategy endpoints (slice 1: backtest UI)
+    public const string CoveredCallRuns = "/api/strategies/covered-call/runs";
+    public const string CoveredCallRunStatus = "/api/strategies/covered-call/runs/{runId}/status";
+    public const string CoveredCallRunResult = "/api/strategies/covered-call/runs/{runId}/result";
+    public const string CoveredCallRunCancel = "/api/strategies/covered-call/runs/{runId}/cancel";
+    public const string CoveredCallChainPreview = "/api/strategies/covered-call/chain-preview";
 }
