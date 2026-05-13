@@ -1,4 +1,5 @@
 using Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite;
+using Meridian.Infrastructure.Contracts;
 
 namespace Meridian.Ui.Shared.Services.CoveredCall;
 
@@ -6,6 +7,7 @@ namespace Meridian.Ui.Shared.Services.CoveredCall;
 /// Builds a snapshot-backed <see cref="IOptionChainProvider"/> for a single covered-call
 /// backtest run by eagerly materialising chain data for every trading date in the window.
 /// </summary>
+[ImplementsAdr("ADR-001", "Strategy-facing chain materialisation contract for covered-call slice 1 backtests")]
 public interface ICoveredCallChainProviderFactory
 {
     /// <summary>

@@ -1,4 +1,5 @@
 using Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite;
+using Meridian.Infrastructure.Contracts;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services.CoveredCall;
@@ -8,6 +9,7 @@ namespace Meridian.Ui.Shared.Services.CoveredCall;
 /// <see cref="IOptionChainProvider"/> contract that <see cref="CoveredCallOverwriteStrategy"/>
 /// expects. One instance per backtest run.
 /// </summary>
+[ImplementsAdr("ADR-001", "Bridges production async IOptionsChainProvider to the strategy's sync IOptionChainProvider contract for slice 1 covered-call backtests")]
 public sealed class CoveredCallChainProviderAdapter : IOptionChainProvider
 {
     private readonly IReadOnlyDictionary<DateOnly, IReadOnlyList<OptionCandidateInfo>> _snapshotsByDate;

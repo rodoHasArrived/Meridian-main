@@ -9,6 +9,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Ui.Shared.Contracts;
+using Meridian.Ui.Shared.Serialization;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -236,7 +237,8 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
 
         try
         {
-            return System.Text.Json.JsonSerializer.Deserialize<CoveredCallRunResult>(serializedResult);
+            // ADR-014: route deserialisation through the source-generated context, not reflection.
+            return System.Text.Json.JsonSerializer.Deserialize(serializedResult, CoveredCallJsonContext.Default.CoveredCallRunResult);
         }
         catch (System.Text.Json.JsonException ex)
         {
@@ -521,7 +523,8 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 ["cagr"] = result.Metrics.Cagr.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
                 ["sharpe"] = result.Metrics.SharpeRatio.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
                 ["winRate"] = result.Metrics.WinRate.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
-                [PersistedResultParameterKey] = System.Text.Json.JsonSerializer.Serialize(result)
+                // ADR-014: serialise via the source-generated context.
+                [PersistedResultParameterKey] = System.Text.Json.JsonSerializer.Serialize(result, CoveredCallJsonContext.Default.CoveredCallRunResult)
             };
             var completedEntry = (initialEntry with { ParameterSet = enrichedParams }).Complete(backtestResult);
             await _runRepository.RecordRunAsync(completedEntry, hostCt).ConfigureAwait(false);

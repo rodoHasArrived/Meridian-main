@@ -408,6 +408,11 @@ export function useCoveredCallScreenViewModel(
       return;
     }
 
+    // Stop any in-flight polling and invalidate the previous active run id so a stale poll that
+    // resolves during the startRun await can't push status/result into the new run's state.
+    stopPolling();
+    activeRunIdRef.current = null;
+
     setErrorBanner(null);
     setRun({ runId: null, status: null, result: null, selectedPositionIndex: 0 });
     setStage("run");
@@ -428,7 +433,7 @@ export function useCoveredCallScreenViewModel(
       setErrorBanner((error as Error).message);
       setStage("configure");
     }
-  }, [form, pollIntervalMs, pollOnce, services]);
+  }, [form, pollIntervalMs, pollOnce, services, stopPolling]);
 
   const cancelRun = useCallback(async () => {
     const runId = run.runId;

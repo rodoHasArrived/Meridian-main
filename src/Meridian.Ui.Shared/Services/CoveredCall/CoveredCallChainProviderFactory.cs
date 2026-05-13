@@ -2,6 +2,7 @@ using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
+using Meridian.Infrastructure.Contracts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -13,6 +14,7 @@ namespace Meridian.Ui.Shared.Services.CoveredCall;
 /// (which already aggregates across <c>IOptionsChainProvider</c> implementations) and
 /// converts them to <see cref="OptionCandidateInfo"/> instances.
 /// </summary>
+[ImplementsAdr("ADR-001", "Aggregates registered IOptionsChainProvider implementations to build the strategy-facing chain map for a covered-call backtest")]
 public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderFactory
 {
     private readonly OptionsChainService _chainService;

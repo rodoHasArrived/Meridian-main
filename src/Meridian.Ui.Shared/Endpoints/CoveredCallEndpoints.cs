@@ -100,6 +100,17 @@ public static class CoveredCallEndpoints
                 return Problem(503, "Covered-call backtest service is not registered.");
             }
 
+            // Try the persisted result first: GetResultAsync rehydrates from IStrategyRepository
+            // when the in-memory cache has expired, so a completed run that has fallen out of
+            // _runs (e.g. after a host restart) can still be opened from history.
+            var result = await service.GetResultAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            if (result is not null)
+            {
+                return Results.Json(result, jsonOptions);
+            }
+
+            // No result yet — consult the in-memory status to distinguish "still running" from
+            // "no such run" from "expired".
             var status = await service.GetStatusAsync(runId, context.RequestAborted).ConfigureAwait(false);
             if (status is null)
             {
@@ -111,13 +122,7 @@ public static class CoveredCallEndpoints
                 return Problem(409, $"Run '{runId}' is in phase '{status.Phase}'. Keep polling status until it completes.");
             }
 
-            var result = await service.GetResultAsync(runId, context.RequestAborted).ConfigureAwait(false);
-            if (result is null)
-            {
-                return Problem(410, $"Run '{runId}' completed but the cached result has expired.");
-            }
-
-            return Results.Json(result, jsonOptions);
+            return Problem(410, $"Run '{runId}' completed but the cached result has expired and no persisted result is available.");
         })
         .WithName("GetCoveredCallRunResult")
         .Produces<CoveredCallRunResult>(200)
