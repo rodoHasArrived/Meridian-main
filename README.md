@@ -6842,8 +6842,12 @@ Use these documents together when planning or implementing new work:
 │   │   └── dashboard
 │   │       ├── artifacts
 │   │       │   └── automation
+│   │       │       ├── price-alerts-dev-tables-smoke.png
+│   │       │       ├── price-alerts-final-smoke.png
+│   │       │       ├── price-alerts-fixture-tables-smoke.png
 │   │       │       ├── price-alerts-screen.json
 │   │       │       ├── price-alerts-seed.json
+│   │       │       ├── price-alerts-smoke.png
 │   │       │       ├── progress
 │   │       │       │   ├── command-palette-alpaca-setup-smoke.png
 │   │       │       │   ├── command-palette-hash-aware-smoke.png
@@ -8677,6 +8681,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-709 directories, 7759 files
+709 directories, 7763 files
 ```
 <!-- readme-tree end -->
