@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import type { ReactNode } from "react";
 import {
   AlarmClock,
   Bell,
@@ -30,7 +29,6 @@ import {
   type PriceAlertsScreenViewModel,
   type PriceAlertRowAction,
   type PriceAlertRowViewModel,
-  type PriceAlertsScreenViewModel,
   type PriceAlertTriggerRowViewModel
 } from "@/screens/price-alerts-screen.view-model";
 

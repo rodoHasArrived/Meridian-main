@@ -1305,6 +1305,12 @@ export function buildBackfillProviderDetail(provider: string): string {
   return option?.description ?? "Custom provider id. Use this only when the host is configured for that provider.";
 }
 
+function resolveBackfillProviderLabel(provider: string): string {
+  const trimmed = provider.trim();
+  const option = BACKFILL_PROVIDER_OPTIONS.find((item) => item.value === trimmed.toLowerCase());
+  return option?.label ?? (trimmed.length > 0 ? trimmed : "Default provider");
+}
+
 export function resolveBackfillPreviewDisabledReason({
   busy,
   phase,
@@ -1783,7 +1789,7 @@ export function buildProviderSetupSummary(
   form: ProviderSetupFormState,
   meta: ProviderKindMeta | undefined
 ): ProviderSetupSummaryState {
-  const providerLabel = meta?.label ?? form.displayName.trim() || "Custom provider";
+  const providerLabel = meta?.label ?? (form.displayName.trim() || "Custom provider");
   const credentialText = meta
     ? [
         meta.needsApiKey ? "API key" : null,

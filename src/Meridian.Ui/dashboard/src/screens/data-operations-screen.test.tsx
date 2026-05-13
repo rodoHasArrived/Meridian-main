@@ -128,6 +128,10 @@ describe("DataOperationsScreen", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
+
+    expect(screen.getByRole("region", { name: "Yahoo Finance setup summary" })).toHaveTextContent("No key needed");
+    expect(screen.getByRole("region", { name: "Yahoo Finance setup summary" })).toHaveTextContent("Preview a historical backfill");
+
     await user.selectOptions(screen.getByLabelText("Select provider type"), "alpaca");
 
     const apiKey = screen.getByLabelText("Provider API key");
@@ -229,6 +233,9 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByRole("heading", { name: "Trigger backfill" })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole("textbox", { name: "Backfill symbols" })).toHaveFocus());
     expect(screen.getByRole("group", { name: "Backfill request form" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Backfill provider" })).toHaveValue("yahoo");
+    expect(screen.getByRole("button", { name: /Yahoo Finance No key/i })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText(/Credential-free daily and intraday historical bars/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Close backfill dialog" })).toBeInTheDocument();
     expect(screen.getByText("Enter at least one symbol before previewing a backfill.")).toBeInTheDocument();
   });
@@ -314,7 +321,7 @@ describe("DataOperationsScreen", () => {
     await user.click(screen.getByRole("button", { name: "Preview backfill request" }));
 
     await waitFor(() => expect(screen.getByRole("textbox", { name: "Backfill symbols" })).toBeDisabled());
-    expect(screen.getByRole("textbox", { name: "Backfill provider" })).toBeDisabled();
+    expect(screen.getByRole("combobox", { name: "Backfill provider" })).toBeDisabled();
     expect(screen.getByLabelText("Backfill start date")).toBeDisabled();
     expect(screen.getByLabelText("Backfill end date")).toBeDisabled();
     expect(screen.getByRole("textbox", { name: "Backfill symbols" }))
