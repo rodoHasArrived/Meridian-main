@@ -6842,26 +6842,29 @@ Use these documents together when planning or implementing new work:
 │   │   ├── dashboard
 │   │   │   ├── artifacts
 │   │   │   │   └── automation
-│   │   │   │       └── progress
-│   │   │   │           ├── command-palette-alpaca-setup-smoke.png
-│   │   │   │           ├── command-palette-hash-aware-smoke.png
-│   │   │   │           ├── live-quotes-order-readiness-handoff-smoke.png
-│   │   │   │           ├── overview-utc-smoke.png
-│   │   │   │           ├── portfolio-brokerage-sync-actions-smoke.png
-│   │   │   │           ├── portfolio-sync-trust-smoke.png
-│   │   │   │           ├── readiness-inbox-refresh-smoke.png
-│   │   │   │           ├── report-pack-actions-smoke.png
-│   │   │   │           ├── report-pack-reference-smoke.png
-│   │   │   │           ├── security-lots-desktop-smoke.png
-│   │   │   │           ├── security-lots-mobile-smoke.png
-│   │   │   │           ├── security-master-conflicts-retry-smoke.png
-│   │   │   │           ├── settings-live-ack-smoke.png
-│   │   │   │           ├── settings-utc-smoke.png
-│   │   │   │           ├── strategy-plottool-statistics-desktop.png
-│   │   │   │           ├── strategy-plottool-statistics-mobile.png
-│   │   │   │           ├── watchlist-empty-value-mobile-smoke.png
-│   │   │   │           ├── watchlist-empty-value-smoke.png
-│   │   │   │           └── workstation-preview-smoke.png
+│   │   │   │       ├── progress
+│   │   │   │       │   ├── command-palette-alpaca-setup-smoke.png
+│   │   │   │       │   ├── command-palette-hash-aware-smoke.png
+│   │   │   │       │   ├── evidence-manifest-action-smoke.png
+│   │   │   │       │   ├── live-quotes-order-readiness-handoff-smoke.png
+│   │   │   │       │   ├── overview-utc-smoke.png
+│   │   │   │       │   ├── portfolio-brokerage-sync-actions-smoke.png
+│   │   │   │       │   ├── portfolio-sync-trust-smoke.png
+│   │   │   │       │   ├── readiness-inbox-refresh-smoke.png
+│   │   │   │       │   ├── report-pack-actions-smoke.png
+│   │   │   │       │   ├── report-pack-reference-smoke.png
+│   │   │   │       │   ├── security-lots-desktop-smoke.png
+│   │   │   │       │   ├── security-lots-mobile-smoke.png
+│   │   │   │       │   ├── security-master-conflicts-retry-smoke.png
+│   │   │   │       │   ├── settings-live-ack-smoke.png
+│   │   │   │       │   ├── settings-utc-smoke.png
+│   │   │   │       │   ├── strategy-plottool-statistics-desktop.png
+│   │   │   │       │   ├── strategy-plottool-statistics-mobile.png
+│   │   │   │       │   ├── watchlist-empty-value-mobile-smoke.png
+│   │   │   │       │   ├── watchlist-empty-value-smoke.png
+│   │   │   │       │   └── workstation-preview-smoke.png
+│   │   │   │       ├── web-ui-trading-paper-session-smoke.png
+│   │   │   │       └── web-ui-watchlist-sort-smoke.png
 │   │   │   ├── index.html
 │   │   │   ├── package-lock.json
 │   │   │   ├── package.json
@@ -8612,6 +8615,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-710 directories, 7693 files
+710 directories, 7696 files
 ```
 <!-- readme-tree end -->
