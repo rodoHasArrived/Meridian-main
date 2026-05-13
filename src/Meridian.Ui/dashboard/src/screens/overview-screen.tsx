@@ -12,6 +12,7 @@ import {
   RefreshCcw,
   Settings,
   Shield,
+  Sparkles,
   TrendingUp,
   XCircle
 } from "lucide-react";
@@ -33,6 +34,16 @@ import {
   type OverviewValueBlocker,
   type PortfolioPanelTone
 } from "@/screens/overview-screen.view-model";
+import {
+  buildTodayPanelViewModel,
+  type TodayFillRow,
+  type TodayMetric,
+  type TodayMoverRow,
+  type TodayOrderRow,
+  type TodayPanelViewModel,
+  type TodayQuickAction,
+  type TodayTone
+} from "@/screens/today-panel.view-model";
 import type {
   PortfolioWorkspaceResponse,
   SessionInfo,
@@ -105,6 +116,7 @@ export function OverviewScreen({ data, session, trading = null, portfolio = null
   const vm = useOverviewStatusViewModel(data, session);
   const StatusIcon = statusBannerIconConfig[vm.statusBanner.icon];
   const portfolioPanel = buildOverviewPortfolioPanel(trading, portfolio);
+  const todayPanel = buildTodayPanelViewModel(trading, portfolio);
 
   return (
     <div className="space-y-6">
@@ -158,6 +170,8 @@ export function OverviewScreen({ data, session, trading = null, portfolio = null
           {vm.refreshErrorText}
         </div>
       )}
+
+      <TodayPanel panel={todayPanel} />
 
       <PortfolioPanel panel={portfolioPanel} />
 
@@ -503,5 +517,291 @@ function EventRow({ event }: { event: OverviewActivityRow }) {
         </div>
       </div>
     </li>
+  );
+}
+
+const todayToneTextClass: Record<TodayTone, string> = {
+  default: "text-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger"
+};
+
+const todayMoverPnlToneClass: Record<TodayTone, string> = {
+  default: "text-muted-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger"
+};
+
+function TodayPanel({ panel }: { panel: TodayPanelViewModel }) {
+  return (
+    <Card className="border-border/70 bg-panel-strong">
+      <CardHeader className="pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="eyebrow-label">{panel.headline}</div>
+            <CardTitle className="mt-1 flex items-center gap-2 text-lg">
+              <Sparkles className="size-4 text-primary" aria-hidden="true" />
+              Your day at a glance
+            </CardTitle>
+            <CardDescription className="mt-1">{panel.subheadline}</CardDescription>
+          </div>
+          {panel.brokerageLabel ? (
+            <p className="font-mono text-[11px] text-muted-foreground">{panel.brokerageLabel}</p>
+          ) : null}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        {panel.hasData ? (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {panel.metrics.map((metric) => (
+                <TodayMetricTile key={metric.id} metric={metric} />
+              ))}
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-3">
+              <TodayMoversCard panel={panel} />
+              <TodayOrdersCard panel={panel} />
+              <TodayFillsCard panel={panel} />
+            </div>
+
+            <TodayQuickActions actions={panel.quickActions} />
+          </>
+        ) : (
+          <div className="rounded-md border border-border/60 bg-secondary/20 px-4 py-6 text-center text-sm text-muted-foreground">
+            <p>{panel.emptyMessage}</p>
+            <Button asChild variant="outline" size="sm" className="mt-3">
+              <Link to={panel.emptyActionHref} aria-label={panel.emptyActionAriaLabel}>
+                <Settings className="size-3.5" aria-hidden="true" />
+                <span className="ml-1.5">{panel.emptyActionLabel}</span>
+              </Link>
+            </Button>
+            <TodayQuickActions actions={panel.quickActions} />
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function TodayMetricTile({ metric }: { metric: TodayMetric }) {
+  return (
+    <div
+      role="group"
+      aria-label={metric.ariaLabel}
+      className="rounded-lg border border-border/70 bg-background/70 p-4"
+    >
+      <div className="eyebrow-label">{metric.label}</div>
+      <p className={cn("mt-2 text-xl font-semibold tabular-nums", todayToneTextClass[metric.tone])}>
+        {metric.value}
+      </p>
+      <p className="mt-1 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
+    </div>
+  );
+}
+
+function TodayMoversCard({ panel }: { panel: TodayPanelViewModel }) {
+  return (
+    <Card className="border-border/60 bg-background/60">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-sm font-semibold">Top movers</CardTitle>
+          <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
+            <Link to="/portfolio" aria-label="Open portfolio for all positions">
+              Portfolio
+              <ArrowRight className="size-3" aria-hidden="true" />
+            </Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2 pt-0">
+        {panel.hasMovers ? (
+          <ul className="space-y-1.5" aria-label="Top movers today">
+            {panel.movers.map((mover) => (
+              <TodayMoverRowView key={mover.key} row={mover} />
+            ))}
+            {panel.moversMoreLabel ? (
+              <li className="pt-1 text-[11px] text-muted-foreground">{panel.moversMoreLabel}</li>
+            ) : null}
+          </ul>
+        ) : (
+          <p className="rounded-md border border-dashed border-border/60 px-3 py-3 text-xs text-muted-foreground">
+            {panel.moversEmptyMessage}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function TodayMoverRowView({ row }: { row: TodayMoverRow }) {
+  return (
+    <li
+      role="group"
+      aria-label={row.ariaLabel}
+      className="flex items-center gap-x-3 rounded-md border border-border/55 bg-secondary/20 px-3 py-2 text-xs"
+    >
+      <span className="min-w-[3.5rem] font-mono font-semibold text-foreground">{row.symbol}</span>
+      <Badge variant={row.side === "Long" ? "outline" : "warning"} className="shrink-0 text-[10px]">
+        {row.side}
+      </Badge>
+      <span className="hidden font-mono text-muted-foreground sm:inline">{row.quantity}</span>
+      <span className="hidden font-mono text-muted-foreground md:inline">@{row.markPrice}</span>
+      <span className={cn("ml-auto font-mono font-medium tabular-nums", todayMoverPnlToneClass[row.dayPnlTone])}>
+        {row.dayPnl}
+      </span>
+    </li>
+  );
+}
+
+function TodayOrdersCard({ panel }: { panel: TodayPanelViewModel }) {
+  return (
+    <Card className="border-border/60 bg-background/60">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-sm font-semibold">
+            Open orders
+            {panel.ordersTotal > 0 ? (
+              <span className="ml-1.5 font-mono text-[11px] font-normal text-muted-foreground">
+                ({panel.ordersTotal})
+              </span>
+            ) : null}
+          </CardTitle>
+          <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
+            <Link to="/trading" aria-label="Open trading cockpit for all orders">
+              Trading
+              <ArrowRight className="size-3" aria-hidden="true" />
+            </Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2 pt-0">
+        {panel.hasOrders ? (
+          <ul className="space-y-1.5" aria-label="Open orders preview">
+            {panel.orders.map((order) => (
+              <TodayOrderRowView key={order.key} row={order} />
+            ))}
+            {panel.ordersMoreLabel ? (
+              <li className="pt-1 text-[11px] text-muted-foreground">{panel.ordersMoreLabel}</li>
+            ) : null}
+          </ul>
+        ) : (
+          <p className="rounded-md border border-dashed border-border/60 px-3 py-3 text-xs text-muted-foreground">
+            {panel.ordersEmptyMessage}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function TodayOrderRowView({ row }: { row: TodayOrderRow }) {
+  return (
+    <li
+      role="group"
+      aria-label={row.ariaLabel}
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-border/55 bg-secondary/20 px-3 py-2 text-xs"
+    >
+      <span className="min-w-[3.5rem] font-mono font-semibold text-foreground">{row.symbol}</span>
+      <Badge variant={row.side === "Buy" ? "success" : "warning"} className="shrink-0 text-[10px]">
+        {row.side}
+      </Badge>
+      <span className="font-mono text-muted-foreground">{row.quantity}</span>
+      <span className="font-mono text-muted-foreground">{row.priceLabel}</span>
+      <span className="ml-auto font-mono text-[11px] text-muted-foreground">{row.status}</span>
+    </li>
+  );
+}
+
+function TodayFillsCard({ panel }: { panel: TodayPanelViewModel }) {
+  return (
+    <Card className="border-border/60 bg-background/60">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="text-sm font-semibold">
+            Recent fills
+            {panel.fillsTotal > 0 ? (
+              <span className="ml-1.5 font-mono text-[11px] font-normal text-muted-foreground">
+                ({panel.fillsTotal})
+              </span>
+            ) : null}
+          </CardTitle>
+          <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
+            <Link to="/trading" aria-label="Open trading cockpit for all fills">
+              Trading
+              <ArrowRight className="size-3" aria-hidden="true" />
+            </Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2 pt-0">
+        {panel.hasFills ? (
+          <ul className="space-y-1.5" aria-label="Recent fills preview">
+            {panel.fills.map((fill) => (
+              <TodayFillRowView key={fill.key} row={fill} />
+            ))}
+            {panel.fillsMoreLabel ? (
+              <li className="pt-1 text-[11px] text-muted-foreground">{panel.fillsMoreLabel}</li>
+            ) : null}
+          </ul>
+        ) : (
+          <p className="rounded-md border border-dashed border-border/60 px-3 py-3 text-xs text-muted-foreground">
+            {panel.fillsEmptyMessage}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function TodayFillRowView({ row }: { row: TodayFillRow }) {
+  return (
+    <li
+      role="group"
+      aria-label={row.ariaLabel}
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-border/55 bg-secondary/20 px-3 py-2 text-xs"
+    >
+      <span className="min-w-[3.5rem] font-mono font-semibold text-foreground">{row.symbol}</span>
+      <Badge variant={row.side === "Buy" ? "success" : "warning"} className="shrink-0 text-[10px]">
+        {row.side}
+      </Badge>
+      <span className="font-mono text-muted-foreground">{row.quantity}</span>
+      <span className="font-mono text-muted-foreground">@{row.price}</span>
+      <span className="ml-auto font-mono text-[11px] text-muted-foreground">{row.timestampLabel}</span>
+    </li>
+  );
+}
+
+const todayQuickActionIcon: Record<TodayQuickAction["id"], ElementType> = {
+  "place-order": TrendingUp,
+  "add-symbol": Database,
+  "live-quote": LineChart,
+  reconcile: Shield
+};
+
+function TodayQuickActions({ actions }: { actions: TodayQuickAction[] }) {
+  return (
+    <div
+      aria-label="Quick actions"
+      className="flex flex-wrap items-center gap-2"
+      role="group"
+    >
+      <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">
+        Quick actions
+      </span>
+      {actions.map((action) => {
+        const Icon = todayQuickActionIcon[action.id];
+        return (
+          <Button asChild variant="outline" size="sm" key={action.id}>
+            <Link to={action.href} aria-label={action.ariaLabel}>
+              <Icon className="size-3.5" aria-hidden="true" />
+              <span className="ml-1.5">{action.label}</span>
+            </Link>
+          </Button>
+        );
+      })}
+    </div>
   );
 }
