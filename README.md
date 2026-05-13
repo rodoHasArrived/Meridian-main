@@ -6856,6 +6856,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │       │   ├── security-lots-desktop-smoke.png
 │   │   │   │       │   ├── security-lots-mobile-smoke.png
 │   │   │   │       │   ├── security-master-conflicts-retry-smoke.png
+│   │   │   │       │   ├── security-master-route-smoke.png
 │   │   │   │       │   ├── settings-live-ack-smoke.png
 │   │   │   │       │   ├── settings-utc-smoke.png
 │   │   │   │       │   ├── strategy-plottool-statistics-desktop.png
@@ -6863,6 +6864,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │       │   ├── watchlist-empty-value-mobile-smoke.png
 │   │   │   │       │   ├── watchlist-empty-value-smoke.png
 │   │   │   │       │   └── workstation-preview-smoke.png
+│   │   │   │       ├── web-ui-reporting-export-smoke.png
+│   │   │   │       ├── web-ui-reporting-mobile-smoke.png
 │   │   │   │       ├── web-ui-trading-paper-session-smoke.png
 │   │   │   │       └── web-ui-watchlist-sort-smoke.png
 │   │   │   ├── index.html
@@ -7010,6 +7013,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── vite-config.test.ts
 │   │   │   │   └── vite-env.d.ts
 │   │   │   ├── tailwind.config.ts
+│   │   │   ├── tsc-output.txt
 │   │   │   ├── tsconfig.json
 │   │   │   ├── tsconfig.node.json
 │   │   │   └── vite.config.ts
@@ -8615,6 +8619,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-710 directories, 7696 files
+710 directories, 7700 files
 ```
 <!-- readme-tree end -->
