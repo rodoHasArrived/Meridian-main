@@ -48,7 +48,13 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
     /// </summary>
     private readonly ConcurrentDictionary<string, Task> _activeRunTasks = new(StringComparer.Ordinal);
 
-    private SemaphoreSlim _concurrency;
+    // Marked volatile so a ResizeConcurrency that swaps in a new SemaphoreSlim is immediately
+    // visible to the drain loop (which reads _concurrency before each WaitAsync). Old instances
+    // are deliberately not disposed — runs that already acquired a ticket on a previous instance
+    // must be able to Release() it cleanly; the field is therefore intentionally allowed to leak
+    // a small constant number of SemaphoreSlim instances across the lifetime of the host (one per
+    // hot-reload of MaxConcurrentRuns).
+    private volatile SemaphoreSlim _concurrency;
     private int _configuredConcurrency;
     private CancellationTokenSource _hostCts = new();
     private Task? _drainLoop;
@@ -204,36 +210,26 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         return persistedResult;
     }
 
+    /// <summary>Key used to stash the serialised <see cref="CoveredCallRunResult"/> inside the run entry's <c>ParameterSet</c>.</summary>
+    internal const string PersistedResultParameterKey = "coveredCallResult";
+
     private async ValueTask<StrategyRunEntry?> TryGetRunEntryAsync(string runId, CancellationToken ct)
     {
-        var query = new StrategyRunRepositoryQuery(
-            StrategyId: StrategyId,
-            RunTypes: null,
-            Status: null,
-            Limit: 1);
-
-        var entries = await _runRepository.QueryRunsAsync(query, ct).ConfigureAwait(false);
-        foreach (var entry in entries)
-        {
-            if (string.Equals(entry.RunId, runId, StringComparison.Ordinal))
-            {
-                return entry;
-            }
-        }
-
-        return null;
+        // GetRunByIdAsync is keyed on runId across all strategies; QueryRunsAsync with Limit:1
+        // would return the most-recently-updated entry for the strategy and miss arbitrary runIds.
+        return await _runRepository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
     }
 
     private CoveredCallRunResult? TryReadPersistedResult(StrategyRunEntry entry)
     {
-        const string ResultMetadataKey = "coveredCallResult";
-
-        if (entry.Metadata is null)
+        // StrategyRunEntry has no Metadata bag — we use the existing ParameterSet for both
+        // headline metric strings (cagr/sharpe/winRate) and the full serialised result blob.
+        if (entry.ParameterSet is null)
         {
             return null;
         }
 
-        if (!entry.Metadata.TryGetValue(ResultMetadataKey, out var serializedResult) || string.IsNullOrWhiteSpace(serializedResult))
+        if (!entry.ParameterSet.TryGetValue(PersistedResultParameterKey, out var serializedResult) || string.IsNullOrWhiteSpace(serializedResult))
         {
             return null;
         }
@@ -246,7 +242,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         {
             _logger.LogWarning(
                 ex,
-                "Covered-call run {RunId} contains unreadable persisted result metadata",
+                "Covered-call run {RunId} contains unreadable persisted result data",
                 entry.RunId);
             return null;
         }
@@ -302,6 +298,14 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 cagr = cachedResult.Metrics.Cagr;
                 sharpe = cachedResult.Metrics.SharpeRatio;
                 winRate = cachedResult.Metrics.WinRate;
+            }
+            else if (entry.ParameterSet is not null)
+            {
+                // Fall back to the headline-metric strings stashed on completion so older runs
+                // still show their performance numbers after the cache window expires.
+                cagr = TryParseInvariantDouble(entry.ParameterSet, "cagr");
+                sharpe = TryParseInvariantDouble(entry.ParameterSet, "sharpe");
+                winRate = TryParseInvariantDouble(entry.ParameterSet, "winRate");
             }
 
             result.Add(new CoveredCallRunSummary(
@@ -510,12 +514,14 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             state.EndedAt = _timeProvider.GetUtcNow();
 
             // Persist headline metrics on the entry's parameter set so the history view still has
-            // them after the in-memory result cache expires.
+            // them after the in-memory result cache expires. Also persist the full serialised
+            // result so GetResultAsync can re-hydrate completed runs past the cache window.
             var enrichedParams = new Dictionary<string, string>(paramSet, StringComparer.Ordinal)
             {
                 ["cagr"] = result.Metrics.Cagr.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
                 ["sharpe"] = result.Metrics.SharpeRatio.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
-                ["winRate"] = result.Metrics.WinRate.ToString("R", System.Globalization.CultureInfo.InvariantCulture)
+                ["winRate"] = result.Metrics.WinRate.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
+                [PersistedResultParameterKey] = System.Text.Json.JsonSerializer.Serialize(result)
             };
             var completedEntry = (initialEntry with { ParameterSet = enrichedParams }).Complete(backtestResult);
             await _runRepository.RecordRunAsync(completedEntry, hostCt).ConfigureAwait(false);
@@ -581,6 +587,12 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
     // ------------------------------------------------------------------ //
 
     private static string CacheKey(string runId) => "covered-call-result:" + runId;
+
+    private static double? TryParseInvariantDouble(IReadOnlyDictionary<string, string> map, string key) =>
+        map.TryGetValue(key, out var raw)
+        && double.TryParse(raw, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value)
+            ? value
+            : null;
 
     private static void ValidateRequest(CoveredCallBacktestRequest request)
     {
