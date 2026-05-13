@@ -270,6 +270,9 @@ describe("useReportingScreenViewModel", () => {
       ariaLabel: "Preview Excel export payload",
       describedById: "reporting-action-excel-preview-status",
       statusText: "Opens the current export payload preview in a new browser tab.",
+      descriptionText: "Opens the current export payload preview in a new browser tab.",
+      statusBadgeLabel: "GET",
+      statusBadgeVariant: "outline",
       isDisabled: false,
       variant: "outline",
       method: "GET",
@@ -354,6 +357,9 @@ describe("useReportingScreenViewModel", () => {
         isRunning: true,
         busyLabel: "Running export…",
         disabledReason: "Excel export is already running.",
+        statusBadgeLabel: "Running",
+        statusBadgeVariant: "warning",
+        descriptionText: "Excel export is running. Wait for the result before starting another export.",
         describedById: "reporting-action-excel-run-status",
         statusText: "Excel export is running. Wait for the result before starting another export."
       });

@@ -153,16 +153,10 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                               </a>
                             )}
                           </Button>
-                          {action.isRunning ? (
-                            <Badge variant="warning">Running</Badge>
-                          ) : action.disabledReason ? (
-                            <Badge variant="warning">Disabled</Badge>
-                          ) : (
-                            <Badge variant="outline">{action.method}</Badge>
-                          )}
+                          <Badge variant={action.statusBadgeVariant}>{action.statusBadgeLabel}</Badge>
                         </div>
                         <p id={taskActionDescriptionId} className="mt-2 text-xs leading-5 text-muted-foreground">
-                          {action.isRunning ? action.statusText : action.disabledReason ?? action.statusText}
+                          {action.descriptionText}
                         </p>
                       </div>
                     );
@@ -555,16 +549,10 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                           </a>
                         )}
                       </Button>
-                      {action.isRunning ? (
-                        <Badge variant="warning">Running</Badge>
-                      ) : action.disabledReason ? (
-                        <Badge variant="warning">Disabled</Badge>
-                      ) : (
-                        <Badge variant="outline">{action.method}</Badge>
-                      )}
+                      <Badge variant={action.statusBadgeVariant}>{action.statusBadgeLabel}</Badge>
                     </div>
                     <p id={action.describedById} className="mt-2 text-xs leading-5 text-muted-foreground">
-                      {action.isRunning ? action.statusText : action.disabledReason ?? action.statusText}
+                      {action.descriptionText}
                     </p>
                   </div>
                 ))}
