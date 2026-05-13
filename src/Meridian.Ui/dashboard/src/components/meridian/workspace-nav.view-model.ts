@@ -71,6 +71,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
     { label: "Exports", route: "/reporting/exports" }
   ],
   strategy: [
+    { label: "Designer", route: "/strategy/designer" },
     { label: "Promotions", route: "/strategy/promotions" },
     { label: "Research", route: "/strategy/research" },
     { label: "Quant Lab", route: "/strategy/quant-lab" }
