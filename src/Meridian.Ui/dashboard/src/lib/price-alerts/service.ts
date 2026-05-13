@@ -194,7 +194,7 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
           return;
         }
         evaluateSnapshot(snapshot);
-        setLastPollAt(new Date().toISOString());
+        setLastPollAt(now().toISOString());
         setPollErrorMessage(null);
       } catch (error) {
         if (cancelled || isAbortError(error)) {
