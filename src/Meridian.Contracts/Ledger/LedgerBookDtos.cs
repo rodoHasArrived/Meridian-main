@@ -4,6 +4,16 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Contracts.Ledger;
 
+[JsonConverter(typeof(JsonStringEnumConverter<AccountingBasisKindDto>))]
+public enum AccountingBasisKindDto
+{
+    Primary = 0,
+    Gaap = 1,
+    Cash = 2,
+    Tax = 3,
+    Statutory = 4
+}
+
 [JsonConverter(typeof(JsonStringEnumConverter<LedgerPeriodStatusDto>))]
 public enum LedgerPeriodStatusDto
 {
@@ -28,13 +38,54 @@ public enum LedgerPeriodSignoffStatusDto
     Rejected = 3
 }
 
+public sealed record CreateAccountingPolicyRequest(
+    AccountingBasisKindDto AccountingBasis,
+    string PolicyId,
+    string Version,
+    string DisplayName,
+    DateOnly EffectiveFrom,
+    DateOnly? EffectiveTo = null,
+    bool IsDefault = false,
+    string RulesJson = "{}",
+    string? FundProfileId = null,
+    Guid? FundStructureNodeId = null,
+    string? InstrumentId = null,
+    Guid? SourceEventId = null);
+
+public sealed record AccountingPolicyDto(
+    string PolicyId,
+    AccountingBasisKindDto AccountingBasis,
+    string Version,
+    string DisplayName,
+    DateOnly EffectiveFrom,
+    DateOnly? EffectiveTo,
+    bool IsDefault,
+    string RulesJson,
+    DateTimeOffset CreatedAt,
+    string? FundProfileId = null,
+    Guid? FundStructureNodeId = null,
+    string? InstrumentId = null,
+    Guid? SourceEventId = null);
+
+public sealed record AccountingPolicyQuery(
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    DateOnly? EffectiveDate = null,
+    string? PolicyId = null,
+    string? FundProfileId = null,
+    Guid? FundStructureNodeId = null,
+    string? InstrumentId = null,
+    Guid? SourceEventId = null);
+
 public sealed record CreateLedgerBookRequest(
     string FundProfileId,
     Guid FundStructureNodeId,
     FundStructureNodeKindDto FundStructureNodeKind,
     string DisplayName,
     string BaseCurrency,
-    string? Description = null);
+    string? Description = null,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1");
 
 public sealed record LedgerBookDto(
     Guid LedgerBookId,
@@ -45,12 +96,16 @@ public sealed record LedgerBookDto(
     string BaseCurrency,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    string? Description = null);
+    string? Description = null,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1");
 
 public sealed record LedgerBookQuery(
     string? FundProfileId = null,
     Guid? FundStructureNodeId = null,
-    FundStructureNodeKindDto? FundStructureNodeKind = null);
+    FundStructureNodeKindDto? FundStructureNodeKind = null,
+    AccountingBasisKindDto? AccountingBasis = null);
 
 public sealed record CreateLedgerPeriodRequest(
     Guid LedgerBookId,
@@ -71,14 +126,18 @@ public sealed record LedgerPeriodDto(
     LedgerPeriodStatusDto Status,
     DateTimeOffset OpenedAt,
     DateTimeOffset? ClosedAt,
-    long Version);
+    long Version,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1");
 
 public sealed record LedgerPeriodQuery(
     Guid? LedgerBookId = null,
     string? FundProfileId = null,
     Guid? FundStructureNodeId = null,
     LedgerPeriodStatusDto? Status = null,
-    bool OpenOnly = false);
+    bool OpenOnly = false,
+    AccountingBasisKindDto? AccountingBasis = null);
 
 public sealed record CloseLedgerPeriodRequest(
     LedgerPeriodCloseKindDto CloseKind,
@@ -95,7 +154,14 @@ public sealed record LedgerPeriodTrialBalanceLineDto(
     decimal DebitTotal,
     decimal CreditTotal,
     decimal Balance,
-    int EntryCount);
+    int EntryCount,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1",
+    string? RuleId = null,
+    string? RuleVersion = null,
+    string? SourceEventId = null,
+    Guid? SourceJournalEntryId = null);
 
 public sealed record LedgerPeriodSummaryDto(
     Guid PeriodId,
@@ -110,7 +176,10 @@ public sealed record LedgerPeriodSummaryDto(
     decimal? PeriodOnPeriodVariance,
     int OpenBreakCount,
     LedgerPeriodSignoffStatusDto SignoffStatus,
-    DateTimeOffset CompletedAt);
+    DateTimeOffset CompletedAt,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1");
 
 public sealed record LedgerPeriodCloseResultDto(
     LedgerPeriodDto Period,

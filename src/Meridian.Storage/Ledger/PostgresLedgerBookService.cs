@@ -36,12 +36,16 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
         var displayName = RequireText(request.DisplayName, nameof(request.DisplayName));
         var baseCurrency = RequireText(request.BaseCurrency, nameof(request.BaseCurrency)).ToUpperInvariant();
+        var accountingBasis = request.AccountingBasis;
+        var accountingPolicyId = RequireText(request.AccountingPolicyId, nameof(request.AccountingPolicyId));
+        var accountingPolicyVersion = RequireText(request.AccountingPolicyVersion, nameof(request.AccountingPolicyVersion));
         var existing = await _store
             .ListLedgerBooksAsync(fundProfileId, request.FundStructureNodeId, request.FundStructureNodeKind, ct)
             .ConfigureAwait(false);
-        if (existing.Count > 0)
+        var existingForBasis = existing.FirstOrDefault(book => book.AccountingBasis == accountingBasis);
+        if (existingForBasis is not null)
         {
-            return MapBook(existing[0]);
+            return MapBook(existingForBasis);
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -54,7 +58,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             BaseCurrency: baseCurrency,
             CreatedAt: now,
             UpdatedAt: now,
-            Description: NormalizeOptional(request.Description));
+            Description: NormalizeOptional(request.Description),
+            AccountingBasis: accountingBasis,
+            AccountingPolicyId: accountingPolicyId,
+            AccountingPolicyVersion: accountingPolicyVersion);
 
         return MapBook(await _store.SaveLedgerBookAsync(record, ct).ConfigureAwait(false));
     }
@@ -83,6 +90,11 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
                 query.FundStructureNodeKind,
                 ct)
             .ConfigureAwait(false);
+        if (query.AccountingBasis.HasValue)
+        {
+            records = records.Where(book => book.AccountingBasis == query.AccountingBasis.Value).ToArray();
+        }
+
         return records.Select(MapBook).ToArray();
     }
 
@@ -111,7 +123,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             throw new LedgerBookValidationException("Period start date must be before or equal to the end date.");
         }
 
-        _ = await RequireBookAsync(request.LedgerBookId, ct).ConfigureAwait(false);
+        var book = await RequireBookAsync(request.LedgerBookId, ct).ConfigureAwait(false);
 
         var now = DateTimeOffset.UtcNow;
         var period = new LedgerAccountingPeriod(
@@ -128,7 +140,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             Version: 0);
 
         var saved = await _store.SavePeriodAsync(period, expectedVersion: 0, closeEvent: null, ct).ConfigureAwait(false);
-        return MapPeriod(saved);
+        return MapPeriod(saved, book);
     }
 
     public async Task<IReadOnlyList<LedgerPeriodDto>> ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default)
@@ -147,7 +159,22 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
                 query.FundStructureNodeId,
                 ct)
             .ConfigureAwait(false);
-        return periods.Select(MapPeriod).ToArray();
+        if (query.AccountingBasis.HasValue)
+        {
+            var books = await _store
+                .ListLedgerBooksAsync(query.FundProfileId, query.FundStructureNodeId, fundStructureNodeKind: null, ct)
+                .ConfigureAwait(false);
+            var matchingBookIds = books
+                .Where(book => book.AccountingBasis == query.AccountingBasis.Value)
+                .Select(static book => book.LedgerBookId)
+                .ToHashSet();
+            periods = periods
+                .Where(period => period.LedgerBookId is { } id && matchingBookIds.Contains(id))
+                .ToArray();
+        }
+
+        var bookById = await LoadBooksByIdAsync(periods, ct).ConfigureAwait(false);
+        return periods.Select(period => MapPeriod(period, bookById.GetValueOrDefault(RequireLedgerBookId(period)))).ToArray();
     }
 
     public async Task<IReadOnlyList<LedgerPeriodDto>> ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default)
@@ -157,7 +184,8 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         var periods = await _store
             .ListPeriodsAsync(ledgerBookId, OpenStatus, fundProfileId: null, fundStructureNodeId: null, ct)
             .ConfigureAwait(false);
-        return periods.Select(MapPeriod).ToArray();
+        var bookById = await LoadBooksByIdAsync(periods, ct).ConfigureAwait(false);
+        return periods.Select(period => MapPeriod(period, bookById.GetValueOrDefault(RequireLedgerBookId(period)))).ToArray();
     }
 
     public async Task<LedgerPeriodSummaryDto?> GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default)
@@ -169,13 +197,14 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             return null;
         }
 
-        _ = await RequireBookAsync(RequireLedgerBookId(period), ct).ConfigureAwait(false);
+        var book = await RequireBookAsync(RequireLedgerBookId(period), ct).ConfigureAwait(false);
         var financials = await BuildFinancialsAsync(period, ct).ConfigureAwait(false);
         var variance = await CalculatePeriodVarianceAsync(period, financials.NetIncome, ct).ConfigureAwait(false);
         var openBreakCount = await CountOpenBreaksAsync(ct).ConfigureAwait(false);
 
         return BuildSummary(
             period,
+            book,
             financials,
             variance,
             openBreakCount,
@@ -231,6 +260,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         var openBreakCount = await CountOpenBreaksAsync(ct).ConfigureAwait(false);
         var summary = BuildSummary(
             saved,
+            book,
             financials,
             variance,
             openBreakCount,
@@ -243,7 +273,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             await _operatorInbox.UpsertItemAsync(workItem, ct).ConfigureAwait(false);
         }
 
-        return new LedgerPeriodCloseResultDto(MapPeriod(saved), summary, workItem);
+        return new LedgerPeriodCloseResultDto(MapPeriod(saved, book), summary, workItem);
     }
 
     private async Task<LedgerBookRecord> RequireBookAsync(Guid ledgerBookId, CancellationToken ct)
@@ -312,6 +342,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
     private static LedgerPeriodSummaryDto BuildSummary(
         LedgerAccountingPeriod period,
+        LedgerBookRecord book,
         LedgerPeriodFinancials financials,
         decimal? variance,
         int openBreakCount,
@@ -323,14 +354,24 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             FiscalYear: period.FiscalYear,
             PeriodNo: period.PeriodNo,
             Label: period.Label,
-            TrialBalance: financials.TrialBalance,
+            TrialBalance: financials.TrialBalance
+                .Select(row => row with
+                {
+                    AccountingBasis = book.AccountingBasis,
+                    AccountingPolicyId = book.AccountingPolicyId,
+                    AccountingPolicyVersion = book.AccountingPolicyVersion
+                })
+                .ToArray(),
             TotalDebits: financials.TotalDebits,
             TotalCredits: financials.TotalCredits,
             NetIncome: financials.NetIncome,
             PeriodOnPeriodVariance: variance,
             OpenBreakCount: openBreakCount,
             SignoffStatus: signoffStatus,
-            CompletedAt: completedAt);
+            CompletedAt: completedAt,
+            AccountingBasis: book.AccountingBasis,
+            AccountingPolicyId: book.AccountingPolicyId,
+            AccountingPolicyVersion: book.AccountingPolicyVersion);
 
     private static OperatorWorkItemDto BuildPeriodCloseWorkItem(
         LedgerAccountingPeriod period,
@@ -342,8 +383,8 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         => new(
             WorkItemId: $"ledger-period-close-{period.PeriodId:N}",
             Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
-            Label: $"{targetStatus} sign-off required",
-            Detail: $"{book.DisplayName} {period.Label} is in {targetStatus}. Required sign-off role: {requiredRole}. Tolerance profile: {toleranceProfile}. Open FundReconciliation before approving the close.",
+            Label: $"{book.AccountingBasis} {targetStatus} sign-off required",
+            Detail: $"{book.DisplayName} {period.Label} ({book.AccountingBasis} basis, policy {book.AccountingPolicyId}/{book.AccountingPolicyVersion}) is in {targetStatus}. Required sign-off role: {requiredRole}. Tolerance profile: {toleranceProfile}. Open FundReconciliation before approving the close.",
             Tone: string.Equals(targetStatus, HardClosedStatus, StringComparison.Ordinal)
                 ? OperatorWorkItemToneDto.Critical
                 : OperatorWorkItemToneDto.Warning,
@@ -426,9 +467,12 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             record.BaseCurrency,
             record.CreatedAt,
             record.UpdatedAt,
-            record.Description);
+            record.Description,
+            record.AccountingBasis,
+            record.AccountingPolicyId,
+            record.AccountingPolicyVersion);
 
-    private static LedgerPeriodDto MapPeriod(LedgerAccountingPeriod period)
+    private static LedgerPeriodDto MapPeriod(LedgerAccountingPeriod period, LedgerBookRecord? book)
         => new(
             period.PeriodId,
             RequireLedgerBookId(period),
@@ -440,7 +484,25 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             ParseStatus(period.Status),
             period.OpenedAt,
             period.ClosedAt,
-            period.Version);
+            period.Version,
+            book?.AccountingBasis ?? AccountingBasisKindDto.Primary,
+            book?.AccountingPolicyId ?? "legacy-v1",
+            book?.AccountingPolicyVersion ?? "legacy-v1");
+
+    private async Task<IReadOnlyDictionary<Guid, LedgerBookRecord>> LoadBooksByIdAsync(
+        IReadOnlyList<LedgerAccountingPeriod> periods,
+        CancellationToken ct)
+    {
+        var result = new Dictionary<Guid, LedgerBookRecord>();
+        foreach (var ledgerBookId in periods
+                     .Select(RequireLedgerBookId)
+                     .Distinct())
+        {
+            result[ledgerBookId] = await RequireBookAsync(ledgerBookId, ct).ConfigureAwait(false);
+        }
+
+        return result;
+    }
 
     private static LedgerPeriodStatusDto ParseStatus(string status)
         => status switch

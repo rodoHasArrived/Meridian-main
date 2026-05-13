@@ -15,6 +15,7 @@ public static class LedgerEndpoints
         app.MapGet(UiApiRoutes.LedgerBooks, async (
             string? fundProfileId,
             Guid? fundStructureNodeId,
+            AccountingBasisKindDto? accountingBasis,
             HttpContext context) =>
         {
             var service = ResolveService(context);
@@ -24,7 +25,7 @@ public static class LedgerEndpoints
             }
 
             var books = await service
-                .ListBooksAsync(new LedgerBookQuery(fundProfileId, fundStructureNodeId), context.RequestAborted)
+                .ListBooksAsync(new LedgerBookQuery(fundProfileId, fundStructureNodeId, AccountingBasis: accountingBasis), context.RequestAborted)
                 .ConfigureAwait(false);
             return Results.Json(books, jsonOptions);
         })
@@ -80,6 +81,7 @@ public static class LedgerEndpoints
             Guid? fundStructureNodeId,
             LedgerPeriodStatusDto? status,
             bool? openOnly,
+            AccountingBasisKindDto? accountingBasis,
             HttpContext context) =>
         {
             var service = ResolveService(context);
@@ -95,7 +97,8 @@ public static class LedgerEndpoints
                         fundProfileId,
                         fundStructureNodeId,
                         status,
-                        OpenOnly: openOnly == true),
+                        OpenOnly: openOnly == true,
+                        AccountingBasis: accountingBasis),
                     context.RequestAborted)
                 .ConfigureAwait(false);
             return Results.Json(periods, jsonOptions);

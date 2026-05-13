@@ -1087,6 +1087,8 @@ export interface PortfolioSummary {
 
 // --- Ledger types ---
 
+export type AccountingBasisKind = "Primary" | "Gaap" | "Cash" | "Tax" | "Statutory";
+
 export interface LedgerTrialBalanceLine {
   accountName: string;
   accountType: string;
@@ -1095,6 +1097,13 @@ export interface LedgerTrialBalanceLine {
   balance: number;
   entryCount: number;
   security: WorkstationSecurityReference | null;
+  accountingBasis?: AccountingBasisKind;
+  accountingPolicyId?: string;
+  accountingPolicyVersion?: string;
+  ruleId?: string | null;
+  ruleVersion?: string | null;
+  sourceEventId?: string | null;
+  sourceJournalEntryId?: string | null;
 }
 
 export interface LedgerJournalLine {

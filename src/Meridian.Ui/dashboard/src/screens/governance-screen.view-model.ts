@@ -17,6 +17,7 @@ import {
 import { evidenceWorkbenchPath } from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
+  AccountingBasisKind,
   CorporateAction,
   ExportAnalysisResult,
   GovernanceCashFlowSummary,
@@ -527,10 +528,22 @@ export interface GovernanceReportingBackendLink {
 
 export type GovernanceTrialBalanceState = "ready" | "loading" | "empty" | "error";
 
+export interface GovernanceTrialBalanceBasisOption {
+  id: AccountingBasisKind;
+  label: string;
+  description: string;
+  rowCount: number;
+  rowCountLabel: string;
+  isSelected: boolean;
+}
+
 export interface GovernanceTrialBalanceRowViewModel extends LedgerTrialBalanceLine {
   rowId: string;
   accountLabel: string;
   accountTypeLabel: string;
+  basisLabel: string;
+  basisTone: "default" | "outline" | "success" | "warning" | "danger";
+  policyLabel: string;
   balanceLabel: string;
   balanceTone: "default" | "success" | "danger";
   entryCountLabel: string;
@@ -551,10 +564,36 @@ export interface GovernanceTrialBalanceDetailViewState {
   fields: Array<{ label: string; value: string }>;
 }
 
+export interface GovernanceBasisBridgeRowViewModel {
+  rowId: string;
+  accountLabel: string;
+  accountTypeLabel: string;
+  primaryBalanceLabel: string;
+  comparisonBalanceLabel: string;
+  varianceLabel: string;
+  varianceTone: "default" | "success" | "danger";
+  sourceLabel: string;
+  ariaLabel: string;
+}
+
+export interface GovernanceBasisBridgeViewState {
+  title: string;
+  description: string;
+  tableLabel: string;
+  fromBasis: AccountingBasisKind;
+  toBasis: AccountingBasisKind;
+  rows: GovernanceBasisBridgeRowViewModel[];
+  hasRows: boolean;
+  emptyText: string;
+}
+
 export interface GovernanceTrialBalanceViewState {
   title: string;
   description: string;
   tableLabel: string;
+  selectedBasis: AccountingBasisKind;
+  basisOptions: GovernanceTrialBalanceBasisOption[];
+  basisBridge: GovernanceBasisBridgeViewState;
   state: GovernanceTrialBalanceState;
   rows: GovernanceTrialBalanceRowViewModel[];
   hasRows: boolean;
@@ -570,6 +609,36 @@ export interface GovernanceTrialBalanceViewState {
   errorText: string | null;
   statusAnnouncement: string;
 }
+
+const DEFAULT_ACCOUNTING_BASIS: AccountingBasisKind = "Primary";
+
+const ACCOUNTING_BASIS_OPTIONS: Array<Pick<GovernanceTrialBalanceBasisOption, "id" | "label" | "description">> = [
+  {
+    id: "Primary",
+    label: "Primary",
+    description: "Legacy run evidence and current report-pack baseline."
+  },
+  {
+    id: "Gaap",
+    label: "GAAP",
+    description: "Accrual policy books and configured adjustment rules."
+  },
+  {
+    id: "Cash",
+    label: "Cash",
+    description: "Settlement and payment-driven recognition."
+  },
+  {
+    id: "Tax",
+    label: "Tax",
+    description: "Configured lot-relief and taxable recognition policy."
+  },
+  {
+    id: "Statutory",
+    label: "Statutory",
+    description: "Statutory-only presentation and adjustment policy."
+  }
+];
 
 const defaultSecurityMasterServices: SecurityMasterServices = {
   search: (query) => searchSecurities(query),
@@ -1084,6 +1153,7 @@ export function useGovernanceReconciliationViewModel(
   const [breakActionError, setBreakActionError] = useState<string | null>(null);
   const [trialBalance, setTrialBalance] = useState<LedgerTrialBalanceLine[]>([]);
   const [selectedTrialBalanceRowId, setSelectedTrialBalanceRowId] = useState<string | null>(null);
+  const [selectedAccountingBasis, setSelectedAccountingBasis] = useState<AccountingBasisKind>(DEFAULT_ACCOUNTING_BASIS);
   const [trialBalanceLoading, setTrialBalanceLoading] = useState(false);
   const [trialBalanceError, setTrialBalanceError] = useState<string | null>(null);
   const [calibrationSummary, setCalibrationSummary] = useState<ReconciliationCalibrationSummary | null>(null);
@@ -1269,11 +1339,16 @@ export function useGovernanceReconciliationViewModel(
       runId: selectedReconciliation?.runId ?? null,
       rows: trialBalance,
       selectedRowId: selectedTrialBalanceRowId,
+      selectedBasis: selectedAccountingBasis,
       loading: trialBalanceLoading,
       errorText: trialBalanceError
     }),
-    [selectedReconciliation?.runId, selectedTrialBalanceRowId, trialBalance, trialBalanceError, trialBalanceLoading]
+    [selectedAccountingBasis, selectedReconciliation?.runId, selectedTrialBalanceRowId, trialBalance, trialBalanceError, trialBalanceLoading]
   );
+  const selectAccountingBasis = useCallback((basis: AccountingBasisKind) => {
+    setSelectedAccountingBasis(basis);
+    setSelectedTrialBalanceRowId(null);
+  }, []);
   const calibrationView = useMemo(
     () => buildCalibrationSummaryViewState(calibrationSummary, calibrationLoading, calibrationError),
     [calibrationSummary, calibrationLoading, calibrationError]
@@ -1304,6 +1379,7 @@ export function useGovernanceReconciliationViewModel(
     trialBalanceErrorText: trialBalanceError,
     trialBalanceView,
     selectTrialBalanceRow: setSelectedTrialBalanceRowId,
+    selectAccountingBasis,
     breakAction,
     assignBreak,
     resolveBreak,
@@ -2116,18 +2192,26 @@ export function buildGovernanceTrialBalanceViewState({
   runId,
   rows,
   selectedRowId,
+  selectedBasis = DEFAULT_ACCOUNTING_BASIS,
   loading,
   errorText
 }: {
   runId: string | null;
   rows: LedgerTrialBalanceLine[];
   selectedRowId?: string | null;
+  selectedBasis?: AccountingBasisKind | null;
   loading: boolean;
   errorText: string | null;
 }): GovernanceTrialBalanceViewState {
   const detailPanelId = "trial-balance-account-detail";
   const runLabel = runId ?? "selected run";
-  const rawRows = rows.map((line) => buildTrialBalanceRow(line, detailPanelId));
+  const resolvedBasis = normalizeAccountingBasis(selectedBasis);
+  const normalizedRows = rows.map(normalizeTrialBalanceLine);
+  const basisOptions = buildTrialBalanceBasisOptions(normalizedRows, resolvedBasis);
+  const bridge = buildBasisBridgeViewState(normalizedRows, resolvedBasis, runLabel);
+  const rawRows = normalizedRows
+    .filter((line) => line.accountingBasis === resolvedBasis)
+    .map((line) => buildTrialBalanceRow(line, detailPanelId));
   const hasRows = rawRows.length > 0;
   const resolvedSelectedRowId = rawRows.some((row) => row.rowId === selectedRowId)
     ? selectedRowId ?? null
@@ -2151,9 +2235,12 @@ export function buildGovernanceTrialBalanceViewState({
     : null;
 
   return {
-    title: "Multi-ledger trial balance",
-    description: `Baseline ledger balances for ${runLabel} grouped by account type.`,
-    tableLabel: `Trial balance lines for ${runLabel}`,
+    title: `${accountingBasisDisplayName(resolvedBasis)} trial balance`,
+    description: `${accountingBasisDisplayName(resolvedBasis)} basis ledger balances for ${runLabel} grouped by account type. Values are basis per configured policy until accountant review.`,
+    tableLabel: `${accountingBasisDisplayName(resolvedBasis)} trial balance lines for ${runLabel}`,
+    selectedBasis: resolvedBasis,
+    basisOptions,
+    basisBridge: bridge,
     state,
     rows: viewRows,
     hasRows,
@@ -2173,13 +2260,26 @@ export function buildGovernanceTrialBalanceViewState({
   };
 }
 
-function buildTrialBalanceRow(line: LedgerTrialBalanceLine, detailPanelId: string): GovernanceTrialBalanceRowViewModel {
+type BasisAwareLedgerTrialBalanceLine = LedgerTrialBalanceLine & {
+  accountingBasis: AccountingBasisKind;
+  accountingPolicyId: string;
+  accountingPolicyVersion: string;
+};
+
+function buildTrialBalanceRow(
+  line: BasisAwareLedgerTrialBalanceLine,
+  detailPanelId: string
+): GovernanceTrialBalanceRowViewModel {
   const accountLabel = line.accountName.trim() || "Unnamed account";
   const accountTypeLabel = line.accountType.trim() || "Unclassified";
+  const basisName = accountingBasisDisplayName(line.accountingBasis);
+  const basisLabel = `${basisName} basis`;
+  const policyLabel = `${line.accountingPolicyId}/${line.accountingPolicyVersion}`;
   const balanceLabel = formatCurrency(line.balance);
   const entryCountLabel = line.entryCount.toLocaleString();
   const securityLabel = line.security?.primaryIdentifier?.trim() || line.symbol?.trim() || line.security?.displayName.trim() || null;
   const rowId = [
+    line.accountingBasis,
     accountLabel,
     accountTypeLabel,
     line.financialAccountId,
@@ -2191,11 +2291,16 @@ function buildTrialBalanceRow(line: LedgerTrialBalanceLine, detailPanelId: strin
     rowId,
     accountLabel,
     accountTypeLabel,
+    basisLabel,
+    basisTone: trialBalanceBasisTone(line.accountingBasis),
+    policyLabel,
     balanceLabel,
     balanceTone: line.balance < 0 ? "danger" : line.balance > 0 ? "success" : "default",
     entryCountLabel,
     ariaLabel: [
       `${accountLabel} ${accountTypeLabel}`,
+      basisLabel,
+      `Policy ${policyLabel}`,
       `Balance ${balanceLabel}`,
       `${entryCountLabel} entries`,
       securityLabel ? `Security ${securityLabel}` : null
@@ -2228,6 +2333,8 @@ function buildTrialBalanceDetail(
     ariaLabel: `Trial-balance detail for ${line.accountLabel}`,
     fields: [
       { label: "Account type", value: line.accountTypeLabel },
+      { label: "Basis", value: line.basisLabel },
+      { label: "Policy", value: line.policyLabel },
       { label: "Balance", value: line.balanceLabel },
       { label: "Entries", value: line.entryCountLabel },
       { label: "Financial account", value: financialAccountId },
@@ -2265,6 +2372,159 @@ function buildTrialBalanceAnnouncement({
   return rowCount === 1
     ? `1 trial balance line loaded for ${runLabel}.`
     : `${rowCount} trial balance lines loaded for ${runLabel}.`;
+}
+
+function normalizeTrialBalanceLine(line: LedgerTrialBalanceLine): BasisAwareLedgerTrialBalanceLine {
+  return {
+    ...line,
+    accountingBasis: normalizeAccountingBasis(line.accountingBasis),
+    accountingPolicyId: line.accountingPolicyId?.trim() || "legacy-v1",
+    accountingPolicyVersion: line.accountingPolicyVersion?.trim() || "legacy-v1"
+  };
+}
+
+function normalizeAccountingBasis(value: AccountingBasisKind | null | undefined): AccountingBasisKind {
+  return ACCOUNTING_BASIS_OPTIONS.some((option) => option.id === value)
+    ? value as AccountingBasisKind
+    : DEFAULT_ACCOUNTING_BASIS;
+}
+
+function buildTrialBalanceBasisOptions(
+  rows: BasisAwareLedgerTrialBalanceLine[],
+  selectedBasis: AccountingBasisKind
+): GovernanceTrialBalanceBasisOption[] {
+  const rowCounts = rows.reduce<Record<AccountingBasisKind, number>>((accumulator, row) => {
+    accumulator[row.accountingBasis] += 1;
+    return accumulator;
+  }, {
+    Primary: 0,
+    Gaap: 0,
+    Cash: 0,
+    Tax: 0,
+    Statutory: 0
+  });
+
+  return ACCOUNTING_BASIS_OPTIONS.map((option) => ({
+    ...option,
+    rowCount: rowCounts[option.id],
+    rowCountLabel: rowCounts[option.id] === 1 ? "1 row" : `${rowCounts[option.id]} rows`,
+    isSelected: option.id === selectedBasis
+  }));
+}
+
+function buildBasisBridgeViewState(
+  rows: BasisAwareLedgerTrialBalanceLine[],
+  selectedBasis: AccountingBasisKind,
+  runLabel: string
+): GovernanceBasisBridgeViewState {
+  const comparisonBasis = selectedBasis === "Primary"
+    ? rows.find((row) => row.accountingBasis !== "Primary")?.accountingBasis ?? "Gaap"
+    : selectedBasis;
+  const primaryRows = rows.filter((row) => row.accountingBasis === "Primary");
+  const comparisonRows = rows.filter((row) => row.accountingBasis === comparisonBasis);
+  const tableLabel = `${accountingBasisDisplayName(comparisonBasis)} to Primary basis bridge for ${runLabel}`;
+
+  if (comparisonBasis === "Primary" || primaryRows.length === 0 || comparisonRows.length === 0) {
+    return {
+      title: "Basis bridge",
+      description: `${accountingBasisDisplayName(comparisonBasis)} to Primary comparison grouped by source/rule/account where lineage is available.`,
+      tableLabel,
+      fromBasis: "Primary",
+      toBasis: comparisonBasis,
+      rows: [],
+      hasRows: false,
+      emptyText: "No non-primary basis rows are available for this run yet. The bridge will populate after GAAP, Cash, Tax, or Statutory projection posts journal lines."
+    };
+  }
+
+  const primaryByKey = new Map(primaryRows.map((row) => [basisBridgeKey(row), row]));
+  const comparisonByKey = new Map(comparisonRows.map((row) => [basisBridgeKey(row), row]));
+  const keys = [...new Set([...primaryByKey.keys(), ...comparisonByKey.keys()])].sort((left, right) => left.localeCompare(right));
+  const bridgeRows = keys.map((key) => {
+    const primary = primaryByKey.get(key) ?? null;
+    const comparison = comparisonByKey.get(key) ?? null;
+    const source = comparison ?? primary;
+    const primaryBalance = primary?.balance ?? 0;
+    const comparisonBalance = comparison?.balance ?? 0;
+    const variance = comparisonBalance - primaryBalance;
+    const sourceLabel = buildBasisBridgeSourceLabel(source);
+    const accountLabel = source?.accountName.trim() || "Unnamed account";
+    const accountTypeLabel = source?.accountType.trim() || "Unclassified";
+    const varianceLabel = formatCurrency(variance);
+
+    return {
+      rowId: `${comparisonBasis}-${key}`,
+      accountLabel,
+      accountTypeLabel,
+      primaryBalanceLabel: formatCurrency(primaryBalance),
+      comparisonBalanceLabel: formatCurrency(comparisonBalance),
+      varianceLabel,
+      varianceTone: variance < 0 ? "danger" : variance > 0 ? "success" : "default",
+      sourceLabel,
+      ariaLabel: `${accountLabel} ${accountTypeLabel}. Primary ${formatCurrency(primaryBalance)}. ${accountingBasisDisplayName(comparisonBasis)} ${formatCurrency(comparisonBalance)}. Variance ${varianceLabel}.`
+    } satisfies GovernanceBasisBridgeRowViewModel;
+  });
+
+  return {
+    title: "Basis bridge",
+    description: `${accountingBasisDisplayName(comparisonBasis)} compared with Primary for ${runLabel}, grouped by source/rule/account where lineage is available.`,
+    tableLabel,
+    fromBasis: "Primary",
+    toBasis: comparisonBasis,
+    rows: bridgeRows,
+    hasRows: bridgeRows.length > 0,
+    emptyText: "No bridge rows matched the selected basis pair."
+  };
+}
+
+function basisBridgeKey(line: BasisAwareLedgerTrialBalanceLine): string {
+  const sourceEventId = "sourceEventId" in line ? String(line.sourceEventId ?? "") : "";
+  const ruleId = "ruleId" in line ? String(line.ruleId ?? "") : "";
+  return [
+    sourceEventId,
+    ruleId,
+    line.accountName,
+    line.accountType,
+    line.symbol ?? "",
+    line.financialAccountId ?? ""
+  ].join("|");
+}
+
+function buildBasisBridgeSourceLabel(line: BasisAwareLedgerTrialBalanceLine | null): string {
+  if (!line) {
+    return "Missing source group";
+  }
+
+  const sourceEventId = "sourceEventId" in line ? String(line.sourceEventId ?? "").trim() : "";
+  const ruleId = "ruleId" in line ? String(line.ruleId ?? "").trim() : "";
+  if (sourceEventId || ruleId) {
+    return [
+      sourceEventId ? `Source ${sourceEventId}` : null,
+      ruleId ? `Rule ${ruleId}` : null
+    ].filter(Boolean).join(" / ");
+  }
+
+  return line.symbol?.trim() || line.financialAccountId?.trim() || "Account group";
+}
+
+function accountingBasisDisplayName(basis: AccountingBasisKind): string {
+  return basis === "Gaap" ? "GAAP" : basis;
+}
+
+function trialBalanceBasisTone(basis: AccountingBasisKind): GovernanceTrialBalanceRowViewModel["basisTone"] {
+  switch (basis) {
+    case "Gaap":
+      return "success";
+    case "Tax":
+      return "warning";
+    case "Statutory":
+      return "danger";
+    case "Cash":
+      return "default";
+    case "Primary":
+    default:
+      return "outline";
+  }
 }
 
 function formatReportPackTargets(targets: string[]): string {

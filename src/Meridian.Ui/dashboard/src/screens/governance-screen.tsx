@@ -81,6 +81,7 @@ const trialBalanceColumns: DenseDataTableColumn<GovernanceTrialBalanceRowViewMod
     )
   },
   { id: "type", label: "Type", render: (row) => <span className="font-mono text-muted-foreground">{row.accountTypeLabel}</span> },
+  { id: "basis", label: "Basis", render: (row) => <Badge variant={row.basisTone}>{row.basisLabel}</Badge> },
   {
     id: "balance",
     label: "Balance",
@@ -425,6 +426,22 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             </CardHeader>
             <CardContent>
               <span className="sr-only" aria-live="polite">{reconciliation.trialBalanceView.statusAnnouncement}</span>
+              <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Accounting basis">
+                {reconciliation.trialBalanceView.basisOptions.map((option) => (
+                  <Button
+                    key={option.id}
+                    type="button"
+                    size="sm"
+                    variant={option.isSelected ? "default" : "outline"}
+                    aria-pressed={option.isSelected}
+                    aria-label={`${option.label} basis, ${option.rowCountLabel}. ${option.description}`}
+                    onClick={() => reconciliation.selectAccountingBasis(option.id)}
+                  >
+                    <span>{option.label}</span>
+                    <span className="ml-2 font-mono text-[10px] opacity-75">{option.rowCount}</span>
+                  </Button>
+                ))}
+              </div>
               {reconciliation.trialBalanceView.hasRows ? (
                 <div className="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
                   <DenseDataTable
@@ -495,10 +512,39 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
           </Card>
           <Card className="panel-surface">
             <CardHeader>
-              <CardTitle>Reporting exports</CardTitle>
-              <CardDescription>Entry points for report/export handoff using existing export infrastructure.</CardDescription>
+              <CardTitle>{reconciliation.trialBalanceView.basisBridge.title}</CardTitle>
+              <CardDescription>{reconciliation.trialBalanceView.basisBridge.description}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
+              <div role="region" aria-label={reconciliation.trialBalanceView.basisBridge.tableLabel}>
+                {reconciliation.trialBalanceView.basisBridge.hasRows ? (
+                  <div className="space-y-2">
+                    {reconciliation.trialBalanceView.basisBridge.rows.map((row) => (
+                      <div key={row.rowId} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2" aria-label={row.ariaLabel}>
+                        <div className="flex items-start justify-between gap-3">
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-semibold text-foreground">{row.accountLabel}</span>
+                            <span className="mt-1 block text-xs text-muted-foreground">{row.sourceLabel}</span>
+                          </span>
+                          <Badge variant={row.varianceTone}>{row.varianceLabel}</Badge>
+                        </div>
+                        <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                          <span className="font-mono">Primary {row.primaryBalanceLabel}</span>
+                          <span className="font-mono">{row.comparisonBalanceLabel}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm leading-6 text-muted-foreground">
+                    {reconciliation.trialBalanceView.basisBridge.emptyText}
+                  </p>
+                )}
+              </div>
+              <div className="border-t border-border/70 pt-4">
+                <h3 className="text-sm font-semibold text-foreground">Reporting exports</h3>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">Entry points for report/export handoff using existing export infrastructure.</p>
+              </div>
               <Button asChild>
                 <a href={reporting.backendLinks[0].href} target="_blank" rel="noreferrer" aria-label={reporting.backendLinks[0].ariaLabel}>
                   {reporting.backendLinks[0].label}

@@ -283,7 +283,7 @@ describe("GovernanceScreen", () => {
 
     await renderGovernanceScreen(data, "/accounting");
 
-    const table = await screen.findByRole("table", { name: "Trial balance lines for run-42" });
+    const table = await screen.findByRole("table", { name: "Primary trial balance lines for run-42" });
     expect(table).toBeInTheDocument();
     const cashRow = screen.getByRole("row", { name: "Inspect trial-balance account Cash for Asset" });
     const financingRow = screen.getByRole("row", { name: "Inspect trial-balance account Financing payable for Liability" });
@@ -305,8 +305,8 @@ describe("GovernanceScreen", () => {
 
     await renderGovernanceScreen(data, "/accounting");
 
-    expect(await screen.findByRole("status")).toHaveTextContent("No trial balance lines");
-    expect(screen.queryByRole("table", { name: "Trial balance lines for run-42" })).not.toBeInTheDocument();
+    expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
+    expect(screen.queryByRole("table", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
   });
 
   it("runs ledger reporting export through the POST mutation instead of a GET link", async () => {

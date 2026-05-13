@@ -1,5 +1,6 @@
 using Meridian.Ledger;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Storage.Ledger;
 
@@ -42,7 +43,14 @@ public sealed record LedgerJournalEntryWrite(
     Guid AggregateId,
     Guid PeriodId,
     Guid? CommandId = null,
-    Guid? CorrelationId = null);
+    Guid? CorrelationId = null,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1",
+    string? RuleId = null,
+    string? RuleVersion = null,
+    Guid? SourceEventId = null,
+    Guid? SourceJournalEntryId = null);
 
 public sealed record LedgerJournalEntryRecord(
     JournalEntry Entry,
@@ -51,7 +59,14 @@ public sealed record LedgerJournalEntryRecord(
     Guid? CommandId,
     Guid? CorrelationId,
     long GlobalSequence,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1",
+    string? RuleId = null,
+    string? RuleVersion = null,
+    Guid? SourceEventId = null,
+    Guid? SourceJournalEntryId = null);
 
 public sealed record LedgerAccountingPeriod(
     Guid PeriodId,
@@ -75,7 +90,10 @@ public sealed record LedgerBookRecord(
     string BaseCurrency,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    string? Description = null);
+    string? Description = null,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1");
 
 public sealed record PeriodCloseEventRecord(
     Guid EventId,

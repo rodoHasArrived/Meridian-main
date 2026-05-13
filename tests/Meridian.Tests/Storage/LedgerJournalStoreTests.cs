@@ -83,6 +83,20 @@ public sealed class LedgerJournalStoreTests
         sql.Should().Contain("period_version bigint not null");
     }
 
+    [Fact]
+    public void LedgerBasisLineageMigration_DefinesJournalBasisColumnsAndIndexes()
+    {
+        var sql = ReadMigration("V_ledger_005__journal_basis_lineage.sql");
+
+        sql.Should().Contain("add column if not exists accounting_basis text not null default 'Primary'");
+        sql.Should().Contain("add column if not exists accounting_policy_id text not null default 'legacy-v1'");
+        sql.Should().Contain("add column if not exists rule_id text null");
+        sql.Should().Contain("add column if not exists source_event_id uuid null");
+        sql.Should().Contain("ix_journal_entries_basis_period");
+        sql.Should().Contain("ix_journal_entries_source_event");
+        sql.Should().Contain("ix_journal_legs_basis_account");
+    }
+
     private static JournalEntry BuildUnbalancedJournalEntry()
     {
         var journalEntryId = Guid.NewGuid();

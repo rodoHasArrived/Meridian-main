@@ -2,6 +2,7 @@ using System.Data;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Npgsql;
 
@@ -40,6 +41,7 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
+        await ValidateJournalBasisAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await InsertJournalLegsAsync(connection, transaction, entry, ct).ConfigureAwait(false);
 
@@ -225,6 +227,9 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                    fund_structure_node_kind,
                    display_name,
                    base_currency,
+                   accounting_basis,
+                   accounting_policy_id,
+                   accounting_policy_version,
                    description,
                    created_at,
                    updated_at
@@ -255,6 +260,9 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                    fund_structure_node_kind,
                    display_name,
                    base_currency,
+                   accounting_basis,
+                   accounting_policy_id,
+                   accounting_policy_version,
                    description,
                    created_at,
                    updated_at
@@ -312,6 +320,9 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                 fund_structure_node_kind,
                 display_name,
                 base_currency,
+                accounting_basis,
+                accounting_policy_id,
+                accounting_policy_version,
                 description,
                 created_at,
                 updated_at)
@@ -322,6 +333,9 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                 @fund_structure_node_kind,
                 @display_name,
                 @base_currency,
+                @accounting_basis,
+                @accounting_policy_id,
+                @accounting_policy_version,
                 @description,
                 @created_at,
                 @updated_at)
@@ -331,6 +345,9 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                 fund_structure_node_kind = excluded.fund_structure_node_kind,
                 display_name = excluded.display_name,
                 base_currency = excluded.base_currency,
+                accounting_basis = excluded.accounting_basis,
+                accounting_policy_id = excluded.accounting_policy_id,
+                accounting_policy_version = excluded.accounting_policy_version,
                 description = excluded.description,
                 updated_at = excluded.updated_at
             returning ledger_book_id,
@@ -339,6 +356,9 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                       fund_structure_node_kind,
                       display_name,
                       base_currency,
+                      accounting_basis,
+                      accounting_policy_id,
+                      accounting_policy_version,
                       description,
                       created_at,
                       updated_at;
@@ -349,6 +369,9 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
         command.Parameters.AddWithValue("fund_structure_node_kind", book.FundStructureNodeKind.ToString());
         command.Parameters.AddWithValue("display_name", book.DisplayName);
         command.Parameters.AddWithValue("base_currency", book.BaseCurrency);
+        command.Parameters.AddWithValue("accounting_basis", book.AccountingBasis.ToString());
+        command.Parameters.AddWithValue("accounting_policy_id", book.AccountingPolicyId);
+        command.Parameters.AddWithValue("accounting_policy_version", book.AccountingPolicyVersion);
         command.Parameters.AddWithValue("description", (object?)book.Description ?? DBNull.Value);
         command.Parameters.AddWithValue("created_at", book.CreatedAt.UtcDateTime);
         command.Parameters.AddWithValue("updated_at", book.UpdatedAt.UtcDateTime);
@@ -378,6 +401,13 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                 period_id,
                 command_id,
                 correlation_id,
+                accounting_basis,
+                accounting_policy_id,
+                accounting_policy_version,
+                rule_id,
+                rule_version,
+                source_event_id,
+                source_journal_entry_id,
                 occurred_at,
                 description,
                 metadata)
@@ -387,6 +417,13 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                 @period_id,
                 @command_id,
                 @correlation_id,
+                @accounting_basis,
+                @accounting_policy_id,
+                @accounting_policy_version,
+                @rule_id,
+                @rule_version,
+                @source_event_id,
+                @source_journal_entry_id,
                 @occurred_at,
                 @description,
                 cast(@metadata as jsonb));
@@ -396,10 +433,59 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
         command.Parameters.AddWithValue("period_id", entry.PeriodId);
         command.Parameters.AddWithValue("command_id", (object?)entry.CommandId ?? DBNull.Value);
         command.Parameters.AddWithValue("correlation_id", (object?)entry.CorrelationId ?? DBNull.Value);
+        command.Parameters.AddWithValue("accounting_basis", entry.AccountingBasis.ToString());
+        command.Parameters.AddWithValue("accounting_policy_id", RequireLineageText(entry.AccountingPolicyId, nameof(entry.AccountingPolicyId)));
+        command.Parameters.AddWithValue("accounting_policy_version", RequireLineageText(entry.AccountingPolicyVersion, nameof(entry.AccountingPolicyVersion)));
+        command.Parameters.AddWithValue("rule_id", (object?)NormalizeOptional(entry.RuleId) ?? DBNull.Value);
+        command.Parameters.AddWithValue("rule_version", (object?)NormalizeOptional(entry.RuleVersion) ?? DBNull.Value);
+        command.Parameters.AddWithValue("source_event_id", (object?)entry.SourceEventId ?? DBNull.Value);
+        command.Parameters.AddWithValue("source_journal_entry_id", (object?)entry.SourceJournalEntryId ?? DBNull.Value);
         command.Parameters.AddWithValue("occurred_at", entry.Entry.Timestamp.UtcDateTime);
         command.Parameters.AddWithValue("description", entry.Entry.Description);
         command.Parameters.AddWithValue("metadata", JsonSerializer.Serialize(entry.Entry.Metadata.Normalize(), JsonOptions));
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task ValidateJournalBasisAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        LedgerJournalEntryWrite entry,
+        CancellationToken ct)
+    {
+        _ = RequireLineageText(entry.AccountingPolicyId, nameof(entry.AccountingPolicyId));
+        _ = RequireLineageText(entry.AccountingPolicyVersion, nameof(entry.AccountingPolicyVersion));
+
+        var period = await LoadPeriodAsync(
+                connection,
+                transaction,
+                entry.PeriodId,
+                forUpdate: false,
+                ct)
+            .ConfigureAwait(false);
+        if (period is null)
+        {
+            throw new LedgerValidationException($"Ledger period '{entry.PeriodId}' was not found.");
+        }
+
+        if (period.LedgerBookId is not { } ledgerBookId)
+        {
+            if (entry.AccountingBasis != AccountingBasisKindDto.Primary)
+            {
+                throw new LedgerValidationException(
+                    $"Legacy period '{entry.PeriodId}' accepts only Primary basis postings.");
+            }
+
+            return;
+        }
+
+        var book = await LoadLedgerBookAsync(connection, transaction, ledgerBookId, ct).ConfigureAwait(false)
+            ?? throw new LedgerValidationException($"Ledger book '{ledgerBookId}' was not found for period '{entry.PeriodId}'.");
+
+        if (book.AccountingBasis != entry.AccountingBasis)
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{entry.Entry.JournalEntryId}' basis '{entry.AccountingBasis}' does not match ledger book '{book.DisplayName}' basis '{book.AccountingBasis}'.");
+        }
     }
 
     private async Task InsertJournalLegsAsync(
@@ -423,6 +509,13 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                     period_id,
                     command_id,
                     correlation_id,
+                    accounting_basis,
+                    accounting_policy_id,
+                    accounting_policy_version,
+                    rule_id,
+                    rule_version,
+                    source_event_id,
+                    source_journal_entry_id,
                     occurred_at,
                     account_name,
                     account_type,
@@ -439,6 +532,13 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                     @period_id,
                     @command_id,
                     @correlation_id,
+                    @accounting_basis,
+                    @accounting_policy_id,
+                    @accounting_policy_version,
+                    @rule_id,
+                    @rule_version,
+                    @source_event_id,
+                    @source_journal_entry_id,
                     @occurred_at,
                     @account_name,
                     @account_type,
@@ -455,6 +555,13 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
             command.Parameters.AddWithValue("period_id", entry.PeriodId);
             command.Parameters.AddWithValue("command_id", (object?)entry.CommandId ?? DBNull.Value);
             command.Parameters.AddWithValue("correlation_id", (object?)entry.CorrelationId ?? DBNull.Value);
+            command.Parameters.AddWithValue("accounting_basis", entry.AccountingBasis.ToString());
+            command.Parameters.AddWithValue("accounting_policy_id", RequireLineageText(entry.AccountingPolicyId, nameof(entry.AccountingPolicyId)));
+            command.Parameters.AddWithValue("accounting_policy_version", RequireLineageText(entry.AccountingPolicyVersion, nameof(entry.AccountingPolicyVersion)));
+            command.Parameters.AddWithValue("rule_id", (object?)NormalizeOptional(entry.RuleId) ?? DBNull.Value);
+            command.Parameters.AddWithValue("rule_version", (object?)NormalizeOptional(entry.RuleVersion) ?? DBNull.Value);
+            command.Parameters.AddWithValue("source_event_id", (object?)entry.SourceEventId ?? DBNull.Value);
+            command.Parameters.AddWithValue("source_journal_entry_id", (object?)entry.SourceJournalEntryId ?? DBNull.Value);
             command.Parameters.AddWithValue("occurred_at", leg.Timestamp.UtcDateTime);
             command.Parameters.AddWithValue("account_name", leg.Account.Name);
             command.Parameters.AddWithValue("account_type", leg.Account.AccountType.ToString());
@@ -478,6 +585,13 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                    je.period_id,
                    je.command_id,
                    je.correlation_id,
+                   je.accounting_basis,
+                   je.accounting_policy_id,
+                   je.accounting_policy_version,
+                   je.rule_id,
+                   je.rule_version,
+                   je.source_event_id,
+                   je.source_journal_entry_id,
                    je.occurred_at,
                    je.description,
                    je.metadata::text,
@@ -522,26 +636,33 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                     PeriodId: reader.GetGuid(3),
                     CommandId: reader.IsDBNull(4) ? null : reader.GetGuid(4),
                     CorrelationId: reader.IsDBNull(5) ? null : reader.GetGuid(5),
-                    Timestamp: ReadUtcDateTimeOffset(reader, 6),
-                    Description: reader.GetString(7),
-                    Metadata: DeserializeMetadata(reader.GetString(8)),
-                    CreatedAt: ReadUtcDateTimeOffset(reader, 9));
+                    AccountingBasis: Enum.Parse<AccountingBasisKindDto>(reader.GetString(6), ignoreCase: true),
+                    AccountingPolicyId: reader.GetString(7),
+                    AccountingPolicyVersion: reader.GetString(8),
+                    RuleId: reader.IsDBNull(9) ? null : reader.GetString(9),
+                    RuleVersion: reader.IsDBNull(10) ? null : reader.GetString(10),
+                    SourceEventId: reader.IsDBNull(11) ? null : reader.GetGuid(11),
+                    SourceJournalEntryId: reader.IsDBNull(12) ? null : reader.GetGuid(12),
+                    Timestamp: ReadUtcDateTimeOffset(reader, 13),
+                    Description: reader.GetString(14),
+                    Metadata: DeserializeMetadata(reader.GetString(15)),
+                    CreatedAt: ReadUtcDateTimeOffset(reader, 16));
             }
 
-            var accountType = Enum.Parse<LedgerAccountType>(reader.GetString(12), ignoreCase: true);
+            var accountType = Enum.Parse<LedgerAccountType>(reader.GetString(19), ignoreCase: true);
             var account = new LedgerAccount(
-                reader.GetString(11),
+                reader.GetString(18),
                 accountType,
-                reader.IsDBNull(13) ? null : reader.GetString(13),
-                reader.IsDBNull(14) ? null : reader.GetString(14));
+                reader.IsDBNull(20) ? null : reader.GetString(20),
+                reader.IsDBNull(21) ? null : reader.GetString(21));
             current.Lines.Add(new LedgerEntry(
-                reader.GetGuid(10),
+                reader.GetGuid(17),
                 journalEntryId,
-                ReadUtcDateTimeOffset(reader, 18),
+                ReadUtcDateTimeOffset(reader, 25),
                 account,
-                reader.GetDecimal(15),
-                reader.GetDecimal(16),
-                reader.GetString(17)));
+                reader.GetDecimal(22),
+                reader.GetDecimal(23),
+                reader.GetString(24)));
         }
 
         if (current is not null)
@@ -739,9 +860,45 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
             Enum.Parse<FundStructureNodeKindDto>(reader.GetString(3), ignoreCase: true),
             reader.GetString(4),
             reader.GetString(5),
-            ReadUtcDateTimeOffset(reader, 7),
-            ReadUtcDateTimeOffset(reader, 8),
-            reader.IsDBNull(6) ? null : reader.GetString(6));
+            ReadUtcDateTimeOffset(reader, 10),
+            ReadUtcDateTimeOffset(reader, 11),
+            reader.IsDBNull(9) ? null : reader.GetString(9),
+            Enum.Parse<AccountingBasisKindDto>(reader.GetString(6), ignoreCase: true),
+            reader.GetString(7),
+            reader.GetString(8));
+
+    private async Task<LedgerBookRecord?> LoadLedgerBookAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction,
+        Guid ledgerBookId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select ledger_book_id,
+                   fund_profile_id,
+                   fund_structure_node_id,
+                   fund_structure_node_kind,
+                   display_name,
+                   base_currency,
+                   accounting_basis,
+                   accounting_policy_id,
+                   accounting_policy_version,
+                   description,
+                   created_at,
+                   updated_at
+            from {Qualified("ledger_books")}
+            where ledger_book_id = @ledger_book_id;
+            """;
+        command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
+
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        return await reader.ReadAsync(ct).ConfigureAwait(false)
+            ? ReadLedgerBook(reader)
+            : null;
+    }
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
     {
@@ -795,6 +952,19 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
     private static JournalEntryMetadata DeserializeMetadata(string json)
         => JsonSerializer.Deserialize<JournalEntryMetadata>(json, JsonOptions) ?? new JournalEntryMetadata();
 
+    private static string RequireLineageText(string value, string parameterName)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new LedgerValidationException($"{parameterName} is required for basis-aware ledger lineage.");
+        }
+
+        return value.Trim();
+    }
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
     private static JsonSerializerOptions CreateJsonOptions()
     {
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
@@ -809,6 +979,13 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
         Guid PeriodId,
         Guid? CommandId,
         Guid? CorrelationId,
+        AccountingBasisKindDto AccountingBasis,
+        string AccountingPolicyId,
+        string AccountingPolicyVersion,
+        string? RuleId,
+        string? RuleVersion,
+        Guid? SourceEventId,
+        Guid? SourceJournalEntryId,
         DateTimeOffset Timestamp,
         string Description,
         JournalEntryMetadata Metadata,
@@ -824,6 +1001,13 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                 CommandId,
                 CorrelationId,
                 GlobalSequence,
-                CreatedAt);
+                CreatedAt,
+                AccountingBasis,
+                AccountingPolicyId,
+                AccountingPolicyVersion,
+                RuleId,
+                RuleVersion,
+                SourceEventId,
+                SourceJournalEntryId);
     }
 }

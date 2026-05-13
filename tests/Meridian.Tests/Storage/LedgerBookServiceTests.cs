@@ -51,6 +51,65 @@ public sealed class LedgerBookServiceTests
     }
 
     [Fact]
+    public async Task CreateBookAsync_AllowsParallelBooksForSameNodeByAccountingBasis()
+    {
+        var store = new InMemoryLedgerJournalStore();
+        var service = new PostgresLedgerBookService(store);
+        var nodeId = Guid.NewGuid();
+        var primary = await service.CreateBookAsync(new CreateLedgerBookRequest(
+            "alpha-fund",
+            nodeId,
+            FundStructureNodeKindDto.Fund,
+            "Alpha Fund",
+            "USD"));
+        var gaap = await service.CreateBookAsync(new CreateLedgerBookRequest(
+            "alpha-fund",
+            nodeId,
+            FundStructureNodeKindDto.Fund,
+            "Alpha Fund GAAP",
+            "USD",
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            AccountingPolicyId: "gaap-default-v1",
+            AccountingPolicyVersion: "v1"));
+
+        gaap.LedgerBookId.Should().NotBe(primary.LedgerBookId);
+        primary.AccountingBasis.Should().Be(AccountingBasisKindDto.Primary);
+        gaap.AccountingBasis.Should().Be(AccountingBasisKindDto.Gaap);
+        (await service.ListBooksAsync(new LedgerBookQuery("alpha-fund", nodeId))).Should().HaveCount(2);
+        (await service.ListBooksAsync(new LedgerBookQuery("alpha-fund", nodeId, AccountingBasis: AccountingBasisKindDto.Gaap)))
+            .Should()
+            .ContainSingle(book => book.LedgerBookId == gaap.LedgerBookId);
+    }
+
+    [Fact]
+    public async Task AppendAsync_WhenJournalBasisDiffersFromBookBasis_RejectsEntry()
+    {
+        var store = new InMemoryLedgerJournalStore();
+        var service = new PostgresLedgerBookService(store);
+        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
+            "alpha-fund",
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            "Alpha Fund GAAP",
+            "USD",
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            AccountingPolicyId: "gaap-default-v1",
+            AccountingPolicyVersion: "v1"));
+        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
+            book.LedgerBookId,
+            2026,
+            5,
+            "2026-P05",
+            new DateOnly(2026, 5, 1),
+            new DateOnly(2026, 5, 31)));
+
+        var act = () => store.AppendAsync(BuildBalancedEntry(period.PeriodId, revenue: 1_200m, expense: 300m));
+
+        await act.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*basis 'Primary'*basis 'Gaap'*");
+    }
+
+    [Fact]
     public async Task ClosePeriodAsync_SoftClose_PersistsSummaryAndPropagatesInboxWorkItem()
     {
         var store = new InMemoryLedgerJournalStore();
@@ -245,6 +304,58 @@ public sealed class LedgerBookServiceTests
     }
 
     [Fact]
+    public async Task LedgerEndpoints_ListBooksAndPeriods_FilterByAccountingBasis()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+        var nodeId = Guid.Parse("4b3b9f1f-9637-41a9-947e-42b4a4dc91fc");
+
+        await PostJsonAsync<LedgerBookDto>(
+            client,
+            UiApiRoutes.LedgerBooks,
+            new CreateLedgerBookRequest(
+                "alpha-fund",
+                nodeId,
+                FundStructureNodeKindDto.Fund,
+                "Alpha Fund",
+                "USD"));
+        var gaapBook = await PostJsonAsync<LedgerBookDto>(
+            client,
+            UiApiRoutes.LedgerBooks,
+            new CreateLedgerBookRequest(
+                "alpha-fund",
+                nodeId,
+                FundStructureNodeKindDto.Fund,
+                "Alpha Fund GAAP",
+                "USD",
+                AccountingBasis: AccountingBasisKindDto.Gaap,
+                AccountingPolicyId: "gaap-default-v1",
+                AccountingPolicyVersion: "v1"));
+        var gaapPeriod = await PostJsonAsync<LedgerPeriodDto>(
+            client,
+            UiApiRoutes.LedgerPeriods,
+            new CreateLedgerPeriodRequest(
+                gaapBook.LedgerBookId,
+                2026,
+                6,
+                "2026-P06",
+                new DateOnly(2026, 6, 1),
+                new DateOnly(2026, 6, 30)));
+
+        var books = await client.GetFromJsonAsync<IReadOnlyList<LedgerBookDto>>(
+            $"{UiApiRoutes.LedgerBooks}?fundProfileId=alpha-fund&fundStructureNodeId={nodeId:D}&accountingBasis=Gaap",
+            ServerJsonOptions);
+        var periods = await client.GetFromJsonAsync<IReadOnlyList<LedgerPeriodDto>>(
+            $"{UiApiRoutes.LedgerPeriods}?fundProfileId=alpha-fund&fundStructureNodeId={nodeId:D}&accountingBasis=Gaap",
+            ServerJsonOptions);
+
+        books.Should().NotBeNull();
+        books!.Should().ContainSingle(book => book.LedgerBookId == gaapBook.LedgerBookId && book.AccountingBasis == AccountingBasisKindDto.Gaap);
+        periods.Should().NotBeNull();
+        periods!.Should().ContainSingle(period => period.PeriodId == gaapPeriod.PeriodId && period.AccountingBasis == AccountingBasisKindDto.Gaap);
+    }
+
+    [Fact]
     public async Task OperatorInbox_ShouldAttachLedgerPeriodCloseNavigationWhenContributedItemIsSparse()
     {
         await using var app = await CreateAppAsync();
@@ -278,6 +389,24 @@ public sealed class LedgerBookServiceTests
         sql.Should().Contain("fund_structure_node_id uuid not null");
         sql.Should().Contain("add column if not exists ledger_book_id uuid null");
         sql.Should().Contain("ux_accounting_periods_book_fiscal_period");
+    }
+
+    [Fact]
+    public void AccountingBasisPolicyMigration_DefinesParallelBookPolicyShape()
+    {
+        var sql = ReadMigration("V_ledger_004__accounting_basis_policies.sql");
+
+        sql.Should().Contain("create table if not exists __SCHEMA__.accounting_policies");
+        sql.Should().Contain("fund_structure_node_id uuid null");
+        sql.Should().Contain("source_event_id uuid null");
+        sql.Should().Contain("add column if not exists accounting_basis text not null default 'Primary'");
+        sql.Should().Contain("add column if not exists accounting_policy_id text not null default 'legacy-v1'");
+        sql.Should().Contain("ux_ledger_books_fund_node_basis");
+        sql.Should().Contain("ix_accounting_policies_scope");
+        sql.Should().Contain("'Gaap', 'gaap-default-v1', 'v1'");
+        sql.Should().Contain("'Cash', 'cash-default-v1', 'v1'");
+        sql.Should().Contain("'Tax', 'tax-default-v1', 'v1'");
+        sql.Should().Contain("'Statutory', 'stat-default-v1', 'v1'");
     }
 
     private static async Task<T> PostJsonAsync<T>(HttpClient client, string route, object request)
@@ -395,6 +524,19 @@ public sealed class LedgerBookServiceTests
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            if (!_periods.TryGetValue(entry.PeriodId, out var period))
+            {
+                throw new LedgerValidationException($"Accounting period '{entry.PeriodId}' was not found.");
+            }
+
+            if (period.LedgerBookId is { } ledgerBookId &&
+                _books.TryGetValue(ledgerBookId, out var book) &&
+                book.AccountingBasis != entry.AccountingBasis)
+            {
+                throw new LedgerValidationException(
+                    $"Journal entry '{entry.Entry.JournalEntryId}' basis '{entry.AccountingBasis}' does not match ledger book '{book.DisplayName}' basis '{book.AccountingBasis}'.");
+            }
+
             if (!_entriesByPeriod.TryGetValue(entry.PeriodId, out var entries))
             {
                 entries = [];
@@ -408,7 +550,14 @@ public sealed class LedgerBookServiceTests
                 entry.CommandId,
                 entry.CorrelationId,
                 ++_sequence,
-                DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow,
+                entry.AccountingBasis,
+                entry.AccountingPolicyId,
+                entry.AccountingPolicyVersion,
+                entry.RuleId,
+                entry.RuleVersion,
+                entry.SourceEventId,
+                entry.SourceJournalEntryId));
             return Task.CompletedTask;
         }
 

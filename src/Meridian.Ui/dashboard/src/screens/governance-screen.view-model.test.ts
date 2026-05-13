@@ -462,26 +462,33 @@ describe("governance-screen view model", () => {
     });
 
     expect(state).toMatchObject({
-      title: "Multi-ledger trial balance",
-      description: "Baseline ledger balances for run-42 grouped by account type.",
-      tableLabel: "Trial balance lines for run-42",
+      title: "Primary trial balance",
+      description: "Primary basis ledger balances for run-42 grouped by account type. Values are basis per configured policy until accountant review.",
+      tableLabel: "Primary trial balance lines for run-42",
+      selectedBasis: "Primary",
       state: "ready",
       hasRows: true,
       statusAnnouncement: "2 trial balance lines loaded for run-42."
     });
+    expect(state.basisOptions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "Primary", rowCount: 2, rowCountLabel: "2 rows", isSelected: true }),
+      expect.objectContaining({ id: "Gaap", rowCount: 0, rowCountLabel: "0 rows", isSelected: false })
+    ]));
     expect(state.rows[0]).toMatchObject({
-      rowId: "Cash-Asset-acct-cash",
+      rowId: "Primary-Cash-Asset-acct-cash",
       accountLabel: "Cash",
       accountTypeLabel: "Asset",
+      basisLabel: "Primary basis",
+      policyLabel: "legacy-v1/legacy-v1",
       balanceLabel: "$120,500",
       balanceTone: "success",
       entryCountLabel: "12",
-      ariaLabel: "Cash Asset. Balance $120,500. 12 entries",
+      ariaLabel: "Cash Asset. Primary basis. Policy legacy-v1/legacy-v1. Balance $120,500. 12 entries",
       selectAriaLabel: "Inspect trial-balance account Cash for Asset",
       detailPanelId: "trial-balance-account-detail",
       isExpanded: true
     });
-    expect(state.selectedRowId).toBe("Cash-Asset-acct-cash");
+    expect(state.selectedRowId).toBe("Primary-Cash-Asset-acct-cash");
     expect(state.selectedDetail).toMatchObject({
       eyebrow: "Trial-balance detail",
       title: "Cash",
@@ -499,7 +506,7 @@ describe("governance-screen view model", () => {
     const selectedFinancing = buildGovernanceTrialBalanceViewState({
       runId: "run-42",
       rows: trialBalanceLines,
-      selectedRowId: "Financing payable-Liability-acct-financing",
+      selectedRowId: "Primary-Financing payable-Liability-acct-financing",
       loading: false,
       errorText: null
     });
@@ -508,6 +515,87 @@ describe("governance-screen view model", () => {
       statusLabel: "Credit / payable",
       statusVariant: "danger"
     });
+  });
+
+  it("filters trial-balance rows by basis and builds a basis bridge", () => {
+    const state = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      selectedBasis: "Gaap",
+      rows: [
+        {
+          accountName: "Cash",
+          accountType: "Asset",
+          symbol: null,
+          financialAccountId: "acct-cash",
+          balance: 120500,
+          entryCount: 12,
+          security: null,
+          accountingBasis: "Primary",
+          accountingPolicyId: "legacy-v1",
+          accountingPolicyVersion: "legacy-v1",
+          ruleId: "direct-lending.daily-accrual",
+          sourceEventId: "event-42"
+        },
+        {
+          accountName: "Cash",
+          accountType: "Asset",
+          symbol: null,
+          financialAccountId: "acct-cash",
+          balance: 119500,
+          entryCount: 10,
+          security: null,
+          accountingBasis: "Gaap",
+          accountingPolicyId: "gaap-default-v1",
+          accountingPolicyVersion: "v1",
+          ruleId: "direct-lending.daily-accrual",
+          sourceEventId: "event-42"
+        },
+        {
+          accountName: "Accrued interest receivable",
+          accountType: "Asset",
+          symbol: null,
+          financialAccountId: "acct-interest",
+          balance: 1000,
+          entryCount: 1,
+          security: null,
+          accountingBasis: "Gaap",
+          accountingPolicyId: "gaap-default-v1",
+          accountingPolicyVersion: "v1",
+          ruleId: "direct-lending.daily-accrual",
+          sourceEventId: "event-42"
+        }
+      ],
+      loading: false,
+      errorText: null
+    });
+
+    expect(state.selectedBasis).toBe("Gaap");
+    expect(state.rows).toHaveLength(2);
+    expect(state.rows[0]).toMatchObject({
+      basisLabel: "GAAP basis",
+      basisTone: "success",
+      policyLabel: "gaap-default-v1/v1"
+    });
+    expect(state.basisOptions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "Primary", rowCount: 1, isSelected: false }),
+      expect.objectContaining({ id: "Gaap", rowCount: 2, isSelected: true })
+    ]));
+    expect(state.basisBridge).toMatchObject({
+      title: "Basis bridge",
+      fromBasis: "Primary",
+      toBasis: "Gaap",
+      hasRows: true
+    });
+    expect(state.basisBridge.rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        accountLabel: "Cash",
+        primaryBalanceLabel: "$120,500",
+        comparisonBalanceLabel: "$119,500",
+        varianceLabel: "-$1,000",
+        varianceTone: "danger",
+        sourceLabel: "Source event-42 / Rule direct-lending.daily-accrual"
+      })
+    ]));
   });
 
   it("derives trial-balance loading, empty, and error states", () => {

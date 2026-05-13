@@ -28,14 +28,23 @@ assembly:
 | `V_ledger_001__journal_entries.sql` | `journal_entries`, `journal_legs` |
 | `V_ledger_002__accounting_periods.sql` | `accounting_periods`, `period_close_events` |
 | `V_ledger_003__ledger_books.sql` | `ledger_books`, `accounting_periods.ledger_book_id` |
+| `V_ledger_004__accounting_basis_policies.sql` | `accounting_policies`, basis and policy columns on `ledger_books` |
+| `V_ledger_005__journal_basis_lineage.sql` | basis, policy, rule, source-event, and source-journal lineage on `journal_entries` and `journal_legs` |
 
-`journal_entries` and `journal_legs` both carry `aggregate_id`, `period_id`, `command_id`, and
-`correlation_id` lineage columns. `journal_entries` has `UNIQUE (journal_entry_id)`.
+`journal_entries` and `journal_legs` both carry `aggregate_id`, `period_id`, `command_id`,
+`correlation_id`, `accounting_basis`, `accounting_policy_id`, `accounting_policy_version`,
+`rule_id`, `rule_version`, `source_event_id`, and `source_journal_entry_id` lineage columns.
+`journal_entries` has `UNIQUE (journal_entry_id)`.
 
 `ledger_books` scopes accounting periods to fund-structure nodes. `accounting_periods` uses
 `optimistic_version` for period updates and carries nullable `ledger_book_id` for compatibility
 with periods created before book scoping. `period_close_events` records the close audit event and
 the period version produced by that save.
+
+Basis-aware books use `Primary`, `Gaap`, `Cash`, `Tax`, or `Statutory` as the configured accounting
+basis. Existing books migrate as `Primary` with the `legacy-v1` policy. New books are unique by
+fund profile, fund-structure node, and basis, so a fund node can carry parallel books for different
+accounting policies without reclassifying historical primary evidence.
 
 ## Store Contract
 
@@ -43,7 +52,7 @@ the period version produced by that save.
 
 | Method | Behavior |
 | --- | --- |
-| `AppendAsync` | Appends one balanced `JournalEntry` plus lineage in a serializable transaction. |
+| `AppendAsync` | Appends one balanced `JournalEntry` plus basis/policy/rule/source lineage in a serializable transaction; rejects entries whose basis does not match the period's ledger book. |
 | `GetByPeriodAsync` | Reads journal entries ordered by occurrence and sequence for one period. |
 | `GetByAggregateAsync` | Reads journal entries ordered by occurrence and sequence for one aggregate. |
 | `GetPeriodAsync` | Loads one accounting period by `period_id`. |
@@ -57,12 +66,17 @@ The write path rejects unbalanced journal entries before opening a connection. P
 bounded single-row reads and updates; the store does not buffer beyond the requested result set for
 period or aggregate journal reads.
 
+Basis-aware postings are still policy-engine evidence, not certified GAAP, tax, cash, or statutory
+reporting. Operator-facing reports should describe balances as "basis per configured policy" until
+reviewed by a qualified accountant.
+
 ## Ledger Book Service
 
 `ILedgerBookService` is the application-facing contract for the multi-ledger workflow. The
 Postgres implementation is backed by `ILedgerJournalStore` and supports:
 
 - Creating, loading, and listing books scoped to fund-structure nodes.
+- Creating parallel books for `Primary`, `Gaap`, `Cash`, `Tax`, and `Statutory` basis policies.
 - Creating and listing accounting periods, including open-period enumeration.
 - Soft-close and hard-close period transitions with optimistic-version persistence.
 - Completed-period summaries containing trial balance rows, debit/credit totals, net income,
