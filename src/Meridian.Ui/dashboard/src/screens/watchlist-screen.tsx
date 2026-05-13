@@ -200,9 +200,27 @@ export function WatchlistScreen() {
             }
           />
           {vm.listState === "error" ? (
-            <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-              {vm.listDescription}
-            </p>
+            <div
+              role="alert"
+              className="flex flex-col gap-3 rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger sm:flex-row sm:items-center sm:justify-between"
+            >
+              <span>{vm.listDescription}</span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-fit bg-background/50"
+                onClick={() => void vm.refresh()}
+                disabled={vm.listRetryCommand.disabled}
+                disabledReason={vm.listRetryCommand.disabledReason}
+                busy={vm.listRetryCommand.busy}
+                busyLabel={vm.listRetryCommand.label}
+                aria-label={vm.listRetryCommand.ariaLabel}
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${vm.listRetryCommand.busy ? "animate-spin" : ""}`} aria-hidden="true" />
+                <span className="ml-1">{vm.listRetryCommand.label}</span>
+              </Button>
+            </div>
           ) : vm.listState === "loading" ? (
             <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-4 py-3 text-sm text-muted-foreground">
               {vm.listDescription}

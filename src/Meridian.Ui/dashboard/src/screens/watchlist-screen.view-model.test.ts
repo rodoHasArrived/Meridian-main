@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   buildBulkAddFeedback,
+  buildListRetryCommand,
   buildLiveQuoteHandoff,
   buildProviderSetupHandoff,
   buildQuoteRefreshCommand,
@@ -247,6 +248,24 @@ describe("watchlist-screen view model", () => {
       detail: "Review the BRK/B live quote, chart, and quick-trade ticket."
     });
     expect(buildLiveQuoteHandoff([], "bulk-add")).toBeUndefined();
+  });
+
+  it("derives the list retry command for recoverable symbol-load failures", () => {
+    expect(buildListRetryCommand(false)).toEqual({
+      label: "Retry watchlist",
+      ariaLabel: "Retry symbol watchlist load",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
+
+    expect(buildListRetryCommand(true)).toEqual({
+      label: "Retrying…",
+      ariaLabel: "Retrying symbol watchlist load",
+      disabled: true,
+      disabledReason: "Watchlist refresh is already running.",
+      busy: true
+    });
   });
 
   it("warns when live quote coverage is partial or stale", () => {
