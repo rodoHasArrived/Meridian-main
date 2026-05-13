@@ -6856,9 +6856,11 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── overview-utc-smoke.png
 │   │       │       │   ├── portfolio-brokerage-sync-actions-smoke.png
 │   │       │       │   ├── portfolio-sync-trust-smoke.png
+│   │       │       │   ├── price-alerts-utc-smoke.png
 │   │       │       │   ├── readiness-inbox-refresh-smoke.png
 │   │       │       │   ├── report-pack-actions-smoke.png
 │   │       │       │   ├── report-pack-reference-smoke.png
+│   │       │       │   ├── reporting-dense-table-smoke.png
 │   │       │       │   ├── security-lots-desktop-smoke.png
 │   │       │       │   ├── security-lots-mobile-smoke.png
 │   │       │       │   ├── security-master-conflicts-retry-smoke.png
@@ -8681,6 +8683,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-709 directories, 7763 files
+709 directories, 7765 files
 ```
 <!-- readme-tree end -->
