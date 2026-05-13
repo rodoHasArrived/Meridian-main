@@ -120,4 +120,21 @@ describe("DenseDataTable", () => {
 
     expect(onToggleSort).toHaveBeenCalledWith("status");
   });
+
+  it("applies view-model-owned row classes", () => {
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={rows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => `${row.symbol} ${row.status}`}
+        getRowClassName={(row) => row.id === "msft" ? "state-disabled" : undefined}
+        emptyText="No rows"
+        ariaLabel="State table"
+      />
+    );
+
+    expect(screen.getByRole("row", { name: "AAPL Active" })).not.toHaveClass("state-disabled");
+    expect(screen.getByRole("row", { name: "MSFT Monitored" })).toHaveClass("state-disabled");
+  });
 });

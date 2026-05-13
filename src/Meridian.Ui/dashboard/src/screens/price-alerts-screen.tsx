@@ -352,6 +352,7 @@ export function PriceAlertsScreen() {
               rows={vm.alertSection.rows}
               getRowId={(row) => row.id}
               getRowAriaLabel={(row) => row.rowAriaLabel}
+              getRowClassName={(row) => row.rowClassName}
               emptyText={vm.alertSection.emptyText}
               ariaLabel={vm.alertSection.tableLabel}
               caption={vm.alertSection.caption}
