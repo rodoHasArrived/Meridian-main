@@ -44,6 +44,10 @@ Every assistant and automation should use the same high-level flow:
    keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
    `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
    WPF names as retained compatibility aliases rather than new root workspaces.
+   **No mobile development lane:** do not create mobile applications, mobile-specific product
+   surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
+   mobile-first workflows. Existing responsive browser checks may continue only as validation for
+   the browser workstation.
 5. **Make the smallest safe change.** Avoid speculative rewrites, fake providers, unused agents,
    broad cleanup, and unrelated formatting churn.
 6. **Validate narrowly first.** Run the smallest build, test, docs, or skill-validation command
@@ -63,6 +67,9 @@ Every assistant and automation should use the same high-level flow:
 - Do not remove AI system support unless the obsolete surface is verified and documented.
 - Do not introduce new AI providers, tools, agents, models, or dependencies without repository
   evidence that they are needed.
+- Do not pursue mobile app development unless a future roadmap change explicitly creates and
+  documents a mobile product lane; keep operator UI work browser-workstation-first and retained
+  WPF support-only.
 - Do not duplicate long rule sets across provider-specific files. Link to the shared source of
   truth and keep host-specific files focused on host mechanics.
 - Do not embed full repository trees in host-specific guidance. Link to
@@ -106,6 +113,9 @@ Use this checklist when changing any AI-related asset:
 - [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard first,
       retained WPF support only when needed, and visible root workspaces limited to `Trading`,
       `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+- [ ] Keep the **No mobile development lane** policy mirrored in the root assistant entrypoints,
+      Copilot guide, and shared Codex/Claude project-context files so mobile clients are not
+      proposed by one assistant while another follows the browser-workstation plan.
 - [ ] Keep host-specific guides compact; route broad repository layout questions to generated
       navigation or structure artifacts instead of copying tree snapshots into assistant docs.
 - [ ] Keep `agents/openai.yaml` aligned with the corresponding Codex or Claude skill when skill
@@ -153,4 +163,4 @@ Before adding support for a new assistant, IDE, model provider, or automation:
 
 ---
 
-_Last Updated: 2026-04-29_
+_Last Updated: 2026-05-13_

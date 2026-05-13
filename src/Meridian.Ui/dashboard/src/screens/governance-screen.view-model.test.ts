@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   buildCalibrationSummaryViewState,
+  buildCorporateActionsViewState,
   buildGovernanceCashFlowViewState,
   buildGovernanceLoadingViewState,
   buildGovernanceReportingViewState,
@@ -131,6 +132,41 @@ const tradingParameters: TradingParameters = {
   circuitBreakerThresholdPct: 7,
   asOf: "2026-05-10T00:00:00Z"
 };
+
+const corporateActions: CorporateAction[] = [
+  {
+    corpActId: "ca-div-1",
+    securityId: "sec-1",
+    eventType: "Dividend",
+    exDate: "2026-05-01T00:00:00Z",
+    payDate: "2026-05-15T00:00:00Z",
+    dividendPerShare: 0.24,
+    currency: "USD",
+    splitRatio: null,
+    newSecurityId: null,
+    distributionRatio: null,
+    acquirerSecurityId: null,
+    exchangeRatio: null,
+    subscriptionPricePerShare: null,
+    rightsPerShare: null
+  },
+  {
+    corpActId: "ca-split-1",
+    securityId: "sec-1",
+    eventType: "StockSplit",
+    exDate: "2026-06-01T00:00:00Z",
+    payDate: null,
+    dividendPerShare: null,
+    currency: null,
+    splitRatio: 4,
+    newSecurityId: null,
+    distributionRatio: null,
+    acquirerSecurityId: null,
+    exchangeRatio: null,
+    subscriptionPricePerShare: null,
+    rightsPerShare: null
+  }
+];
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -268,6 +304,11 @@ describe("governance-screen view model", () => {
 
     expect(state).toMatchObject({
       title: "Reconciliation detail queue",
+      overviewTitle: "Reconciliation queue",
+      overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation workstream to inspect selected run detail.",
+      overviewActionHref: "/accounting/reconciliation",
+      overviewActionLabel: "Open reconciliation",
+      overviewActionAriaLabel: "Open Accounting reconciliation workstream",
       listLabel: "Reconciliation runs",
       detailPanelId: "reconciliation-run-detail-panel",
       hasRows: true
@@ -434,11 +475,37 @@ describe("governance-screen view model", () => {
       balanceLabel: "$120,500",
       balanceTone: "success",
       entryCountLabel: "12",
-      ariaLabel: "Cash Asset. Balance $120,500. 12 entries"
+      ariaLabel: "Cash Asset. Balance $120,500. 12 entries",
+      selectAriaLabel: "Inspect trial-balance account Cash for Asset",
+      detailPanelId: "trial-balance-account-detail",
+      isExpanded: true
+    });
+    expect(state.selectedRowId).toBe("Cash-Asset-acct-cash");
+    expect(state.selectedDetail).toMatchObject({
+      eyebrow: "Trial-balance detail",
+      title: "Cash",
+      subtitle: "Asset · acct-cash",
+      statusLabel: "Debit / asset",
+      statusVariant: "success",
+      ariaLabel: "Trial-balance detail for Cash"
     });
     expect(state.rows[1]).toMatchObject({
       balanceLabel: "-$500",
-      balanceTone: "danger"
+      balanceTone: "danger",
+      isExpanded: false
+    });
+
+    const selectedFinancing = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      selectedRowId: "Financing payable-Liability-acct-financing",
+      loading: false,
+      errorText: null
+    });
+    expect(selectedFinancing.selectedDetail).toMatchObject({
+      title: "Financing payable",
+      statusLabel: "Credit / payable",
+      statusVariant: "danger"
     });
   });
 
@@ -552,6 +619,56 @@ describe("governance-screen view model", () => {
     });
     expect(rows[0].ariaLabel).toContain("selected");
     expect(buildSecuritySearchResultRows(null, null)).toEqual([]);
+  });
+
+  it("derives selectable corporate-action rows with a detail panel", () => {
+    const state = buildCorporateActionsViewState("sec-1", corporateActions, "ca-split-1", false, null);
+
+    expect(state).toMatchObject({
+      tableLabel: "Corporate actions for sec-1",
+      detailPanelId: "corporate-action-detail-panel",
+      selectedRowId: "ca-split-1",
+      hasRows: true,
+      errorText: null,
+      loadingText: null
+    });
+    expect(state.rows[1]).toMatchObject({
+      rowId: "ca-split-1",
+      eventTypeLabel: "Stock split",
+      amountLabel: "4:1 split",
+      selectAriaLabel: "Inspect corporate action Stock split for sec-1",
+      detailPanelId: "corporate-action-detail-panel",
+      isExpanded: true
+    });
+    expect(state.selectedDetail).toMatchObject({
+      id: "corporate-action-detail-panel",
+      title: "Stock split",
+      ariaLabel: "Corporate action detail for Stock split on sec-1",
+      statusLabel: "Pay date unavailable"
+    });
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Amount or ratio", value: "4:1 split", tone: "default" },
+      { label: "Pay date", value: "—", tone: "warning" }
+    ]));
+  });
+
+  it("keeps corporate-action loading, empty, and error states in the view model", () => {
+    expect(buildCorporateActionsViewState("sec-1", null, null, true, null)).toMatchObject({
+      loadingText: "Loading corporate actions...",
+      statusAnnouncement: "Loading corporate actions for sec-1."
+    });
+
+    expect(buildCorporateActionsViewState("sec-1", [], null, false, null)).toMatchObject({
+      hasRows: false,
+      emptyText: "No corporate actions recorded for sec-1.",
+      selectedDetail: null,
+      detailEmptyAriaLabel: "No corporate action selected"
+    });
+
+    expect(buildCorporateActionsViewState("sec-1", [], null, false, "Corporate API offline")).toMatchObject({
+      errorText: "Corporate API offline",
+      statusAnnouncement: "Corporate actions error: Corporate API offline"
+    });
   });
 
   it("ignores stale Security Master identity responses after a newer selection settles", async () => {

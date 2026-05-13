@@ -29,7 +29,7 @@ export function buildButtonCommandViewModel({
     disabled: commandDisabled,
     ariaBusy: busy ? true : undefined,
     ariaDisabled: commandDisabled ? true : undefined,
-    title: busy && busyLabel ? busyLabel : commandDisabled && disabledReason ? disabledReason : title,
+    title: commandDisabled && disabledReason ? disabledReason : busy && busyLabel ? busyLabel : title,
     displayBusyLabel: busy && busyLabel ? busyLabel : null,
     showBusyIndicator: busy,
     iconAriaHidden: true

@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
-import type { TradingWorkspaceResponse } from "@/types";
+import type { PaperSessionSummary, TradingWorkspaceResponse } from "@/types";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -657,6 +657,36 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getPaperSessionDetail).toHaveBeenCalledWith("sess-1"));
     expect(screen.getByText(/Selected session: sess-1/i)).toBeInTheDocument();
     expect(screen.getByText("AAPL, MSFT")).toBeInTheDocument();
+  });
+
+  it("surfaces VM-owned disabled reasons while creating paper sessions", async () => {
+    let resolveCreate!: (value: PaperSessionSummary) => void;
+    vi.mocked(api.createPaperSession).mockImplementationOnce(() => new Promise((resolve) => {
+      resolveCreate = resolve;
+    }));
+
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    await user.click(screen.getByRole("button", { name: /open paper session creation form/i }));
+    await user.type(screen.getByLabelText("Strategy ID"), "strat-1");
+    await user.click(screen.getByRole("button", { name: /create paper session/i }));
+
+    const creatingButton = await screen.findByRole("button", { name: /creating paper session/i });
+    expect(creatingButton).toBeDisabled();
+    expect(creatingButton).toHaveAttribute("title", "Paper session creation is in progress.");
+    expect(screen.getByRole("button", { name: "Cancel" })).toHaveAttribute("title", "Paper session creation is in progress.");
+
+    resolveCreate({
+      sessionId: "sess-new",
+      strategyId: "strat-new",
+      strategyName: null,
+      initialCash: 100000,
+      createdAt: "2026-01-01",
+      closedAt: null,
+      isActive: true
+    });
+    await waitFor(() => expect(api.createPaperSession).toHaveBeenCalledWith("strat-1", null, 100000));
   });
 
   it("shows replay verification and execution audit for the selected session", async () => {

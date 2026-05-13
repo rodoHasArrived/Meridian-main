@@ -83,6 +83,9 @@ export const RECONCILIATION_API_ENDPOINTS = {
 } as const;
 
 export const BACKFILL_API_ENDPOINTS = {
+  checkpoints: "/api/backfill/checkpoints",
+  checkpointsResumable: "/api/backfill/checkpoints/resumable",
+  checkpointsValidation: "/api/backfill/checkpoints/validation",
   progress: "/api/backfill/progress",
   run: "/api/backfill/run",
   runPreview: "/api/backfill/run/preview"
@@ -400,6 +403,18 @@ export function reconciliationBreakReviewEndpoint(breakId: string): string {
 
 export function reconciliationBreakResolveEndpoint(breakId: string): string {
   return `${reconciliationBreakEndpoint(breakId)}/resolve`;
+}
+
+export function backfillCheckpointEndpoint(jobId: string): string {
+  return `${BACKFILL_API_ENDPOINTS.checkpoints}/${pathSegment(jobId, "jobId")}`;
+}
+
+export function backfillCheckpointPendingEndpoint(jobId: string): string {
+  return `${backfillCheckpointEndpoint(jobId)}/pending`;
+}
+
+export function backfillCheckpointResumeEndpoint(jobId: string): string {
+  return `${backfillCheckpointEndpoint(jobId)}/resume`;
 }
 
 export function providerEndpoint(providerId: string): string {

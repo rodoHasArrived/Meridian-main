@@ -868,7 +868,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 onClick={paperSessions.toggleCreateForm}
                 aria-expanded={paperSessions.showCreateForm}
                 aria-controls={paperSessions.formPanelId}
+                aria-label={paperSessions.toggleCreateButtonAriaLabel}
                 disabled={paperSessions.isBusy && !paperSessions.showCreateForm}
+                disabledReason={paperSessions.toggleCreateButtonDisabledReason}
               >
                 <PlusCircle className="mr-2 h-4 w-4" />
                 {paperSessions.toggleCreateButtonLabel}
@@ -935,6 +937,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     type="submit"
                     size="sm"
                     disabled={!paperSessions.canSubmitCreate}
+                    disabledReason={paperSessions.createButtonDisabledReason}
                     aria-label={paperSessions.createButtonAriaLabel}
                   >
                     {paperSessions.createButtonLabel}
@@ -945,6 +948,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     variant="outline"
                     onClick={paperSessions.closeCreateForm}
                     disabled={!paperSessions.canCloseCreateForm}
+                    disabledReason={paperSessions.cancelCreateButtonDisabledReason}
                   >
                     {paperSessions.cancelCreateButtonLabel}
                   </Button>
@@ -984,6 +988,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                         variant="outline"
                         onClick={() => { void paperSessions.restoreSession(session.sessionId); }}
                         disabled={!session.canRestore}
+                        disabledReason={session.restoreDisabledReason}
                         aria-label={session.restoreAriaLabel}
                       >
                         {session.restoreButtonLabel}
@@ -993,6 +998,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                         variant="outline"
                         onClick={() => { void paperSessions.verifySessionReplay(session.sessionId); }}
                         disabled={!session.canVerify}
+                        disabledReason={session.verifyDisabledReason}
                         aria-label={session.verifyAriaLabel}
                       >
                         {session.verifyButtonLabel}
@@ -1003,6 +1009,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                           variant="outline"
                           onClick={() => { void paperSessions.closeSession(session.sessionId); }}
                           disabled={!session.canClose}
+                          disabledReason={session.closeDisabledReason}
                           aria-label={session.closeAriaLabel}
                         >
                           {session.closeButtonLabel}

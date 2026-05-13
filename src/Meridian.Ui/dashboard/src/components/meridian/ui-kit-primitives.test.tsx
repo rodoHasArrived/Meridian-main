@@ -92,4 +92,32 @@ describe("DenseDataTable", () => {
     expect(onButtonClick).toHaveBeenCalledTimes(1);
     expect(onRowSelect).not.toHaveBeenCalled();
   });
+
+  it("renders sortable headers with aria-sort and toggle commands", async () => {
+    const user = userEvent.setup();
+    const onToggleSort = vi.fn();
+
+    render(
+      <DenseDataTable
+        columns={[
+          { id: "symbol", label: "Symbol", sortable: true, render: (row) => row.symbol },
+          { id: "status", label: "Status", sortable: true, render: (row) => row.status }
+        ]}
+        rows={rows}
+        getRowId={(row) => row.id}
+        emptyText="No rows"
+        ariaLabel="Sortable table"
+        sort={{ columnId: "symbol", direction: "asc" }}
+        onToggleSort={onToggleSort}
+      />
+    );
+
+    expect(screen.getByRole("columnheader", { name: /symbol/i })).toHaveAttribute("aria-sort", "ascending");
+    expect(screen.getByRole("columnheader", { name: /status/i })).toHaveAttribute("aria-sort", "none");
+    expect(screen.getByRole("button", { name: "Symbol sorted ascending. Activate to change sort." })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Sort by Status" }));
+
+    expect(onToggleSort).toHaveBeenCalledWith("status");
+  });
 });

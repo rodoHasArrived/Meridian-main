@@ -25,6 +25,10 @@
   assets built into `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` provide shared API/read-model layers
   that should support the web workstation first while preserving retained desktop compatibility.
+- **No mobile development lane:** do not create mobile applications, mobile-specific product
+  surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
+  mobile-first workflows. Responsive browser validation is allowed only to keep the browser
+  workstation usable at supported viewport sizes.
 - Keep top-level operator navigation to seven workspaces: `Trading`, `Portfolio`, `Accounting`,
   `Reporting`, `Strategy`, `Data`, and `Settings`. Legacy `Research`, `Data Operations`, and
   `Governance` names remain compatibility aliases, not visible root workspaces.
