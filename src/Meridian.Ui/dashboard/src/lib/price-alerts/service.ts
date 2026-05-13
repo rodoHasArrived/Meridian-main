@@ -102,7 +102,7 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
       if (!alert.enabled) {
         continue;
       }
-      if (alert.snoozedUntil && new Date(alert.snoozedUntil).getTime() > Date.now()) {
+      if (alert.snoozedUntil && new Date(alert.snoozedUntil).getTime() > now().getTime()) {
         continue;
       }
       const quote = bySymbol.get(alert.symbol);
