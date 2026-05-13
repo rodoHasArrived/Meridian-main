@@ -5302,6 +5302,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── run-wave1-provider-validation.ps1
 │   │   ├── screenshot-diff-config.json
 │   │   ├── screenshot_diff_report.py
+│   │   ├── screenshot_workflow_plan.py
 │   │   ├── shared
 │   │   │   └── retry.ps1
 │   │   ├── summarize-desktop-workflow-bundle.ps1
@@ -5556,6 +5557,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Indicators
 │   │   │   └── TechnicalIndicatorService.cs
 │   │   ├── Ledger
+│   │   │   ├── AccountingPolicyService.cs
 │   │   │   └── TextJournal
 │   │   │       ├── LedgerTextJournalDocument.cs
 │   │   │       ├── LedgerTextJournalException.cs
@@ -6701,7 +6703,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Migrations
 │   │   │   │   ├── V_ledger_001__journal_entries.sql
 │   │   │   │   ├── V_ledger_002__accounting_periods.sql
-│   │   │   │   └── V_ledger_003__ledger_books.sql
+│   │   │   │   ├── V_ledger_003__ledger_books.sql
+│   │   │   │   ├── V_ledger_004__accounting_basis_policies.sql
+│   │   │   │   └── V_ledger_005__journal_basis_lineage.sql
 │   │   │   ├── PostgresLedgerBookService.cs
 │   │   │   └── PostgresLedgerJournalStore.cs
 │   │   ├── Maintenance
@@ -8018,6 +8022,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
+│   │   │   ├── Ledger
+│   │   │   │   └── AccountingPolicyServiceTests.cs
 │   │   │   ├── Logging
 │   │   │   │   └── LoggingSetupTests.cs
 │   │   │   ├── Monitoring
@@ -8659,6 +8665,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── test_python_package_conda_dependencies.py
 │   │   ├── test_refresh_screenshots_workflow.py
 │   │   ├── test_screenshot_diff_report.py
+│   │   ├── test_screenshot_workflow_plan.py
 │   │   ├── test_setup_dotnet_cache_action.py
 │   │   └── test_shared_build_retention.py
 │   ├── setup-script-tests.md
@@ -8707,6 +8714,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-712 directories, 7783 files
+713 directories, 7789 files
 ```
 <!-- readme-tree end -->
