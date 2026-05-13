@@ -5986,6 +5986,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── FutureReferenceDtos.cs
 │   │   ├── FxSpot
 │   │   │   └── FxSpotReferenceDtos.cs
+│   │   ├── Ledger
+│   │   │   └── LedgerBookDtos.cs
 │   │   ├── Manifest
 │   │   │   └── DataManifest.cs
 │   │   ├── Meridian.Contracts.csproj
@@ -6030,6 +6032,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── FundLedgerDtos.cs
 │   │       ├── FundOperationsDtos.cs
 │   │       ├── FundOperationsWorkspaceDtos.cs
+│   │       ├── IOperatorInboxService.cs
 │   │       ├── PilotReadinessArtifactDtos.cs
 │   │       ├── ReconciliationDtos.cs
 │   │       ├── ResearchBriefingDtos.cs
@@ -6692,11 +6695,14 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── ISymbolRegistryService.cs
 │   │   ├── Ledger
 │   │   │   ├── ILedgerJournalStore.cs
+│   │   │   ├── LedgerBookServiceException.cs
 │   │   │   ├── LedgerJournalStoreOptions.cs
 │   │   │   ├── LedgerStoreExtensions.cs
 │   │   │   ├── Migrations
 │   │   │   │   ├── V_ledger_001__journal_entries.sql
-│   │   │   │   └── V_ledger_002__accounting_periods.sql
+│   │   │   │   ├── V_ledger_002__accounting_periods.sql
+│   │   │   │   └── V_ledger_003__ledger_books.sql
+│   │   │   ├── PostgresLedgerBookService.cs
 │   │   │   └── PostgresLedgerJournalStore.cs
 │   │   ├── Maintenance
 │   │   │   ├── ArchiveMaintenanceModels.cs
@@ -7232,6 +7238,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── IBEndpoints.cs
 │   │   │   ├── IngestionJobEndpoints.cs
 │   │   │   ├── LeanEndpoints.cs
+│   │   │   ├── LedgerEndpoints.cs
 │   │   │   ├── LiveDataEndpoints.cs
 │   │   │   ├── LoginSessionMiddleware.cs
 │   │   │   ├── MaintenanceScheduleEndpoints.cs
@@ -7290,6 +7297,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Dk1TrustGateReadinessService.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
 │   │   │   ├── GovernanceReportPackRepository.cs
+│   │   │   ├── InMemoryOperatorInboxService.cs
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── StrategyRunReviewPacketService.cs
@@ -8346,6 +8354,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── FilePermissionsServiceTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
 │   │   │   ├── JsonlReplayerTests.cs
+│   │   │   ├── LedgerBookServiceTests.cs
 │   │   │   ├── LedgerJournalStoreTests.cs
 │   │   │   ├── LifecyclePolicyEngineTests.cs
 │   │   │   ├── MaintenancePersistenceTests.cs
@@ -8698,6 +8707,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-711 directories, 7775 files
+712 directories, 7783 files
 ```
 <!-- readme-tree end -->
