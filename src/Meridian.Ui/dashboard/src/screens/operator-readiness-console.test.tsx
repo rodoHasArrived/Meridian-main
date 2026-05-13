@@ -166,6 +166,9 @@ describe("OperatorReadinessConsole", () => {
     expect(screen.getByRole("region", { name: "Readiness control strip" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Shared readiness API sources" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Latest runs readiness evidence" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Full-console readiness checkpoints" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Replay verified: Review required/i })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Brokerage sync healthy: Unavailable/i })).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Prioritized operator work items table" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Selected operator work item detail" })).toBeInTheDocument();
     expect(screen.getAllByRole("group", { name: /Promotion checklist incomplete: Warning/i }).length).toBeGreaterThan(0);

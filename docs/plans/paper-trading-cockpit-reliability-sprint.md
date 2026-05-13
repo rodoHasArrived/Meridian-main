@@ -162,9 +162,12 @@ beside the acceptance gates, so API diagnostics can show the same replay, promot
 brokerage-sync, reconciliation, and execution-control blockers that desktop operators see through
 the shared queue. The browser readiness console ranks those work items plus direct readiness rows
 into one route-backed primary next action, so an operator can resolve the highest-severity blocker
-before scanning every evidence panel. Critical operator-inbox items must keep the browser console
-headline blocked even when the trading-readiness payload is unavailable, so missing upstream
-readiness data does not visually soften known operator blockers.
+before scanning every evidence panel. It also normalizes the full-console checkpoint band in the
+view model: session active, replay verified, risk/control explainable, promotion trace complete,
+brokerage sync healthy, reconciliation clear, report-pack approval ready, and operator work items
+settled. Critical operator-inbox items must keep the browser console headline blocked even when
+the trading-readiness payload is unavailable, so missing upstream readiness data does not visually
+soften known operator blockers.
 If reconciliation break queue storage cannot seed or load, the endpoint keeps the trading-readiness
 items available and adds a stable `reconciliation-break-queue-unavailable` warning routed to
 `GovernanceShell` instead of failing the whole operator inbox.
@@ -194,6 +197,7 @@ explain why a decision was allowed, rejected, or manually overridden.
 Replay readiness is rebuilt from durable execution-audit evidence, so replay verification audit entries persist `isConsistent`, compared fill/order/ledger counts, last-persisted timestamps, and the primary mismatch reason. This keeps the shared readiness lane specific after restart and when verification was triggered through the service layer instead of the endpoint wrapper.
 The replay gate now treats those compared counts as a freshness contract: if the active session's fill, order, or ledger-entry counts diverge after verification, the gate drops back to review-required and emits a stable `paper-replay-stale-{sessionId}` work item until replay verification is run again.
 The WPF cockpit acceptance card now renders those stale replay counts beside session state, showing active-session order/fill/ledger counts and the latest verified replay counts instead of treating a count-stale but otherwise consistent replay audit as green.
+The shared readiness service now resolves the latest run and durable promotion trace before selecting an active paper session, so an unrelated active session cannot make the backtest-to-paper cockpit look ready. The API-backed acceptance path is `POST /api/promotion/approve` -> `POST /api/execution/sessions/create` -> `GET /api/execution/sessions/{sessionId}/replay` -> `GET /api/workstation/trading/readiness`; stale replay evidence is recovered by rerunning the replay endpoint, which writes the fresh audit reference consumed by the readiness contract.
 
 Reconciliation break queue items now carry calibrated governance routing metadata: exception route,
 tolerance profile, tolerance band, required sign-off role, and sign-off status. The operator inbox

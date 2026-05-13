@@ -216,6 +216,18 @@ export function OperatorReadinessConsole({
         </Card>
       </section>
 
+      <section
+        role="list"
+        aria-label={vm.checkpointGatesLabel}
+        className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
+      >
+        {vm.checkpointGates.map((gate) => (
+          <div key={gate.id} role="listitem">
+            <ReadinessRow row={gate} />
+          </div>
+        ))}
+      </section>
+
       <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-6" aria-label={vm.metricsLabel}>
         {vm.metrics.map((metric) => (
           <div
@@ -348,6 +360,32 @@ function SelectedWorkItemDetail({
 }
 
 function PrimaryNextAction({ action }: { action: ReadinessConsoleNextAction }) {
+  const actionButton = action.route ? (
+    <Button
+      asChild
+      variant={action.level === "blocked" ? "secondary" : "outline"}
+      size="sm"
+      className="shrink-0"
+    >
+      <Link to={action.route} aria-label={action.actionAriaLabel}>
+        {action.label}
+        <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+      </Link>
+    </Button>
+  ) : (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="shrink-0"
+      disabled
+      disabledReason={action.disabledReason}
+      aria-label={action.actionAriaLabel}
+    >
+      {action.label}
+    </Button>
+  );
+
   return (
     <div
       role="group"
@@ -361,17 +399,7 @@ function PrimaryNextAction({ action }: { action: ReadinessConsoleNextAction }) {
           <p className="mt-1 text-xs leading-5 text-foreground/80">{action.detail}</p>
           <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{action.meta}</p>
         </div>
-        <Button
-          asChild
-          variant={action.level === "blocked" ? "secondary" : "outline"}
-          size="sm"
-          className="shrink-0"
-        >
-          <Link to={action.route} aria-label={action.actionAriaLabel}>
-            {action.label}
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
-        </Button>
+        {actionButton}
       </div>
     </div>
   );

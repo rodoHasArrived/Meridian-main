@@ -40,22 +40,30 @@ public sealed class TradingOperatorReadinessService
         }
 
         var auditEntries = await ResolveAuditEntriesAsync(ct).ConfigureAwait(false);
+        var latestRun = await ResolveLatestRunAsync(ct).ConfigureAwait(false);
+        var promotionRecords = await ResolvePromotionRecordsAsync(ct).ConfigureAwait(false);
+        var promotion = BuildPromotion(latestRun, promotionRecords);
         var sessionSummaries = paperService?.GetSessions() ?? [];
         var sessions = sessionSummaries
             .Select(summary => MapSession(summary, paperService?.GetSession(summary.SessionId)))
             .ToArray();
-        var activeSession = sessions.FirstOrDefault(static session => session.IsActive);
+        var activeSession = SelectActiveSession(sessions, latestRun);
         var replay = BuildReplay(activeSession?.SessionId, auditEntries);
 
         if (activeSession is null)
         {
+            var mismatchDetail = BuildActiveSessionMismatchDetail(sessions, latestRun);
             AddWorkItem(
                 workItems,
                 OperatorWorkItemKindDto.PaperReplay,
-                "No active paper session",
-                "Start or restore a paper session before treating the cockpit as operator-ready.",
+                mismatchDetail is null ? "No active paper session" : "No matching paper session",
+                mismatchDetail
+                    ?? "Start or restore a paper session before treating the cockpit as operator-ready.",
                 OperatorWorkItemToneDto.Critical,
-                workItemId: "paper-session-missing");
+                latestRun?.Summary.RunId,
+                workItemId: mismatchDetail is null
+                    ? "paper-session-missing"
+                    : BuildWorkItemId("paper-session-mismatch", latestRun?.Summary.RunId ?? latestRun?.Summary.StrategyId));
         }
         else if (replay is null)
         {
@@ -144,9 +152,6 @@ public sealed class TradingOperatorReadinessService
                 workItemId: "execution-evidence-incomplete");
         }
 
-        var latestRun = await ResolveLatestRunAsync(ct).ConfigureAwait(false);
-        var promotionRecords = await ResolvePromotionRecordsAsync(ct).ConfigureAwait(false);
-        var promotion = BuildPromotion(latestRun, promotionRecords);
         var trustGate = await ResolveTrustGateReadinessAsync(ct).ConfigureAwait(false);
         var reportPack = await ResolveReportPackReadinessAsync(latestRun, promotion, ct).ConfigureAwait(false);
         var reconciliationGate = await ResolveReconciliationGateAsync(latestRun, ct).ConfigureAwait(false);
@@ -222,6 +227,7 @@ public sealed class TradingOperatorReadinessService
         var acceptanceGates = BuildAcceptanceGates(
             activeSession,
             sessions,
+            latestRun,
             replay,
             controls,
             promotion,
@@ -766,9 +772,45 @@ public sealed class TradingOperatorReadinessService
         => approvalChecklist is { Count: > 0 } &&
            approvalChecklist.All(static item => !string.IsNullOrWhiteSpace(item));
 
+    private static TradingPaperSessionReadinessDto? SelectActiveSession(
+        IReadOnlyList<TradingPaperSessionReadinessDto> sessions,
+        StrategyRunDetail? latestRun)
+    {
+        var expectedStrategyId = latestRun?.Summary.StrategyId;
+        if (string.IsNullOrWhiteSpace(expectedStrategyId))
+        {
+            return sessions.FirstOrDefault(static session => session.IsActive);
+        }
+
+        foreach (var session in sessions)
+        {
+            if (session.IsActive &&
+                string.Equals(session.StrategyId, expectedStrategyId, StringComparison.OrdinalIgnoreCase))
+            {
+                return session;
+            }
+        }
+
+        return null;
+    }
+
+    private static string? BuildActiveSessionMismatchDetail(
+        IReadOnlyList<TradingPaperSessionReadinessDto> sessions,
+        StrategyRunDetail? latestRun)
+    {
+        var expectedStrategyId = latestRun?.Summary.StrategyId;
+        if (string.IsNullOrWhiteSpace(expectedStrategyId) || sessions.All(static session => !session.IsActive))
+        {
+            return null;
+        }
+
+        return $"Active paper session(s) exist, but none match latest run {latestRun!.Summary.RunId} for strategy {expectedStrategyId}. Start or restore the promoted strategy session before accepting cockpit readiness.";
+    }
+
     private static IReadOnlyList<TradingAcceptanceGateDto> BuildAcceptanceGates(
         TradingPaperSessionReadinessDto? activeSession,
         IReadOnlyList<TradingPaperSessionReadinessDto> sessions,
+        StrategyRunDetail? latestRun,
         TradingReplayReadinessDto? replay,
         TradingControlReadinessDto controls,
         TradingPromotionReadinessDto? promotion,
@@ -779,7 +821,7 @@ public sealed class TradingOperatorReadinessService
         IReadOnlyList<ExecutionAuditEntry> auditEntries)
         =>
         [
-            BuildSessionGate(activeSession, sessions),
+            BuildSessionGate(activeSession, sessions, latestRun),
             BuildReplayGate(activeSession, replay),
             BuildAuditControlGate(controls, auditEntries),
             BuildPromotionGate(promotion),
@@ -820,7 +862,8 @@ public sealed class TradingOperatorReadinessService
 
     private static TradingAcceptanceGateDto BuildSessionGate(
         TradingPaperSessionReadinessDto? activeSession,
-        IReadOnlyList<TradingPaperSessionReadinessDto> sessions)
+        IReadOnlyList<TradingPaperSessionReadinessDto> sessions,
+        StrategyRunDetail? latestRun)
     {
         if (activeSession is { IsActive: true })
         {
@@ -830,6 +873,17 @@ public sealed class TradingOperatorReadinessService
                 Status: TradingAcceptanceGateStatusDto.Ready,
                 Detail: $"Active paper session {activeSession.SessionId} retains {activeSession.OrderCount} order(s) and {activeSession.PositionCount} position(s).",
                 SessionId: activeSession.SessionId);
+        }
+
+        var mismatchDetail = BuildActiveSessionMismatchDetail(sessions, latestRun);
+        if (mismatchDetail is not null)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "session",
+                Label: "Session active",
+                Status: TradingAcceptanceGateStatusDto.Blocked,
+                Detail: mismatchDetail,
+                RunId: latestRun?.Summary.RunId);
         }
 
         if (sessions.Count > 0)
@@ -1108,7 +1162,7 @@ public sealed class TradingOperatorReadinessService
 
         AddWorkItem(
             workItems,
-            OperatorWorkItemKindDto.PromotionReview,
+            OperatorWorkItemKindDto.ReconciliationBreak,
             "Reconciliation policy requires attention",
             evaluation.Detail,
             evaluation.Status == TradingAcceptanceGateStatusDto.Blocked ? OperatorWorkItemToneDto.Critical : OperatorWorkItemToneDto.Warning,
