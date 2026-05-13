@@ -6988,6 +6988,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── settings-screen.tsx
 │   │   │   │   │   ├── settings-screen.view-model.test.ts
 │   │   │   │   │   ├── settings-screen.view-model.ts
+│   │   │   │   │   ├── today-panel.view-model.test.ts
+│   │   │   │   │   ├── today-panel.view-model.ts
 │   │   │   │   │   ├── trading-screen.test.tsx
 │   │   │   │   │   ├── trading-screen.tsx
 │   │   │   │   │   ├── trading-screen.view-model.test.ts
@@ -8610,6 +8612,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-710 directories, 7691 files
+710 directories, 7693 files
 ```
 <!-- readme-tree end -->
