@@ -29,6 +29,7 @@ export interface ResearchRunLibraryServices {
 
 export type PromoteState = "idle" | "evaluating" | "evaluated" | "creating" | "done";
 export const RESEARCH_RUN_DETAIL_PANEL_ID = "strategy-run-library-selected-run-detail";
+export const RESEARCH_COMPARISON_DETAIL_PANEL_ID = "strategy-run-comparison-selected-detail";
 export const RESEARCH_PROMOTION_HISTORY_DETAIL_PANEL_ID = "strategy-promotion-history-selected-detail";
 
 export interface ResearchRunLibraryState {
@@ -47,6 +48,9 @@ export interface ResearchRunLibraryState {
   selectedRunDetail: ResearchRunDetailState | null;
   comparison: RunComparisonRow[];
   comparisonTable: ResearchResultTableState<ResearchComparisonTableRow>;
+  selectedComparisonRowId: string | null;
+  selectedComparisonDetailPanelId: string;
+  selectedComparisonDetail: ResearchComparisonDetailState | null;
   runDiff: RunDiff | null;
   diffPanel: ResearchDiffPanelState;
   promotionHistory: PromotionRecord[];
@@ -262,11 +266,27 @@ export interface ResearchComparisonTableRow {
   fillCountText: string;
   promotionStateText: string;
   evidenceText: string;
+  detailPanelId: string;
+  detailExpanded: boolean;
+  rowSelectAriaLabel: string;
   ariaLabel: string;
 }
 
 export type ResearchComparisonBadgeVariant = "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research";
 export type ResearchComparisonValueTone = "success" | "danger" | "muted";
+
+export interface ResearchComparisonDetailState {
+  id: string;
+  panelId: string;
+  ariaLabel: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: ResearchComparisonBadgeVariant;
+  fields: Array<{ label: string; value: string }>;
+}
 
 export interface ResearchDiffChangeRow {
   key: string;
@@ -577,6 +597,7 @@ export function useResearchRunLibraryViewModel(
   const [inspectedRunId, setInspectedRunId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [comparison, setComparison] = useState<RunComparisonRow[]>([]);
+  const [selectedComparisonRowId, setSelectedComparisonRowId] = useState<string | null>(null);
   const [runDiff, setRunDiff] = useState<RunDiff | null>(null);
   const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
   const [selectedPromotionHistoryId, setSelectedPromotionHistoryId] = useState<string | null>(null);
@@ -606,6 +627,7 @@ export function useResearchRunLibraryViewModel(
       inspectedRunId,
       selectedRun,
       comparison,
+      selectedComparisonRowId,
       runDiff,
       promotionHistory,
       selectedPromotionHistoryId,
@@ -625,6 +647,7 @@ export function useResearchRunLibraryViewModel(
       actionError,
       activeCommand,
       comparison,
+      selectedComparisonRowId,
       comparisonLoaded,
       promotionHistory,
       selectedPromotionHistoryId,
@@ -652,6 +675,7 @@ export function useResearchRunLibraryViewModel(
     setInspectedRunId(runId);
     setSelectedIds((current) => toggleRunSelection(current, runId));
     setComparison([]);
+    setSelectedComparisonRowId(null);
     setRunDiff(null);
     setComparisonLoaded(false);
     setRunDiffLoaded(false);
@@ -739,6 +763,7 @@ export function useResearchRunLibraryViewModel(
       }
 
       setComparison(rows);
+      setSelectedComparisonRowId(rows[0]?.runId ?? null);
       setRunDiff(null);
       setComparisonLoaded(true);
       setRunDiffLoaded(false);
@@ -775,6 +800,7 @@ export function useResearchRunLibraryViewModel(
 
       setRunDiff(result);
       setComparison([]);
+      setSelectedComparisonRowId(null);
       setRunDiffLoaded(true);
       setComparisonLoaded(false);
     } catch (err) {
@@ -874,6 +900,7 @@ export function useResearchRunLibraryViewModel(
     cancelPromotion,
     selectRunDetail,
     openRunDetailById,
+    selectComparisonRow: setSelectedComparisonRowId,
     selectPromotionHistoryRecord: setSelectedPromotionHistoryId,
     setPromotionInitialCash: setPromotionInitialCashInput
   };
@@ -887,6 +914,7 @@ export function buildResearchRunLibraryState({
   inspectedRunId,
   selectedRun,
   comparison,
+  selectedComparisonRowId = null,
   runDiff,
   promotionHistory,
   selectedPromotionHistoryId = null,
@@ -909,6 +937,7 @@ export function buildResearchRunLibraryState({
   inspectedRunId?: string | null;
   selectedRun: ResearchRunRecord | null;
   comparison: RunComparisonRow[];
+  selectedComparisonRowId?: string | null;
   runDiff: RunDiff | null;
   promotionHistory: PromotionRecord[];
   selectedPromotionHistoryId?: string | null;
@@ -952,7 +981,11 @@ export function buildResearchRunLibraryState({
     inspectedRunId: resolvedInspectedRunId,
     detailPanelId: RESEARCH_RUN_DETAIL_PANEL_ID
   });
-  const comparisonTable = buildComparisonTable(comparison);
+  const resolvedComparisonRowId = resolveSelectedComparisonRunId(comparison, selectedComparisonRowId);
+  const comparisonTable = buildComparisonTable(comparison, resolvedComparisonRowId);
+  const selectedComparisonRow = resolvedComparisonRowId
+    ? comparisonTable.rows.find((row) => row.runId === resolvedComparisonRowId) ?? null
+    : null;
   const diffPanel = buildDiffPanel(runDiff);
   const resolvedPromotionHistoryId = resolveSelectedPromotionHistoryId(promotionHistory, selectedPromotionHistoryId);
   const selectedPromotionHistory = resolvedPromotionHistoryId
@@ -995,6 +1028,11 @@ export function buildResearchRunLibraryState({
     selectedRunDetail: selectedRun ? buildRunDetail(selectedRun) : null,
     comparison,
     comparisonTable,
+    selectedComparisonRowId: resolvedComparisonRowId,
+    selectedComparisonDetailPanelId: RESEARCH_COMPARISON_DETAIL_PANEL_ID,
+    selectedComparisonDetail: selectedComparisonRow
+      ? buildComparisonDetail(selectedComparisonRow, RESEARCH_COMPARISON_DETAIL_PANEL_ID)
+      : null,
     runDiff,
     diffPanel,
     promotionHistory,
@@ -1669,17 +1707,23 @@ export function buildPlotToolSampleTable(
 }
 
 export function buildComparisonTable(
-  comparison: RunComparisonRow[]
+  comparison: RunComparisonRow[],
+  selectedRunId: string | null = null
 ): ResearchResultTableState<ResearchComparisonTableRow> {
+  const resolvedSelectedRunId = resolveSelectedComparisonRunId(comparison, selectedRunId);
   return {
-    rows: comparison.map(buildComparisonRow),
+    rows: comparison.map((row) => buildComparisonRow(row, resolvedSelectedRunId, RESEARCH_COMPARISON_DETAIL_PANEL_ID)),
     hasRows: comparison.length > 0,
     caption: "Run comparison evidence returned by the workstation API.",
     emptyText: "No comparison rows returned for the selected pair."
   };
 }
 
-export function buildComparisonRow(row: RunComparisonRow): ResearchComparisonTableRow {
+export function buildComparisonRow(
+  row: RunComparisonRow,
+  selectedRunId: string | null = null,
+  detailPanelId: string = RESEARCH_COMPARISON_DETAIL_PANEL_ID
+): ResearchComparisonTableRow {
   const strategyName = formatText(row.strategyName);
   const modeText = titleCase(formatText(row.mode));
   const statusText = formatText(row.status);
@@ -1709,7 +1753,38 @@ export function buildComparisonRow(row: RunComparisonRow): ResearchComparisonTab
     fillCountText,
     promotionStateText,
     evidenceText,
+    detailPanelId,
+    detailExpanded: selectedRunId === row.runId,
+    rowSelectAriaLabel: `Inspect ${strategyName} comparison evidence`,
     ariaLabel: `${strategyName}: ${statusText}; net P&L ${netPnlText}; return ${totalReturnText}; promotion ${promotionStateText}; ${evidenceText}.`
+  };
+}
+
+export function buildComparisonDetail(
+  row: ResearchComparisonTableRow,
+  panelId: string = RESEARCH_COMPARISON_DETAIL_PANEL_ID
+): ResearchComparisonDetailState {
+  return {
+    id: row.runId,
+    panelId,
+    ariaLabel: `Selected comparison evidence for ${row.strategyName}`,
+    eyebrow: "Comparison evidence",
+    title: row.strategyName,
+    subtitle: row.runId,
+    description: `${row.statusText} ${row.modeText} run with ${row.promotionStateText.toLowerCase()} posture.`,
+    statusLabel: row.statusText,
+    statusVariant: row.statusBadgeVariant,
+    fields: [
+      { label: "Mode", value: row.modeText },
+      { label: "Final equity", value: row.equityText.replace(/^Equity\s+/, "") },
+      { label: "Net P&L", value: row.netPnlText },
+      { label: "Return", value: row.totalReturnText },
+      { label: "Max drawdown", value: row.maxDrawdownText },
+      { label: "Sharpe", value: row.sharpeRatioText },
+      { label: "Fills", value: row.fillCountText },
+      { label: "Promotion", value: row.promotionStateText },
+      { label: "Evidence", value: row.evidenceText }
+    ]
   };
 }
 
@@ -1933,6 +2008,21 @@ function resolveSelectedPromotionHistoryId(
   }
 
   return promotionHistory[0].promotionId;
+}
+
+function resolveSelectedComparisonRunId(
+  comparison: RunComparisonRow[],
+  selectedRunId: string | null
+): string | null {
+  if (comparison.length === 0) {
+    return null;
+  }
+
+  if (selectedRunId && comparison.some((row) => row.runId === selectedRunId)) {
+    return selectedRunId;
+  }
+
+  return comparison[0].runId;
 }
 
 function formatPromotionDecision(record: PromotionRecord): string {

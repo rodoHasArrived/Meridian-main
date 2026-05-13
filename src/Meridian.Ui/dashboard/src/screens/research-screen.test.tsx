@@ -210,6 +210,23 @@ describe("ResearchScreen", () => {
         promotionState: "CandidateForPaper",
         hasLedger: false,
         hasAuditTrail: false
+      },
+      {
+        runId: "run-2",
+        strategyName: "Index Momentum",
+        mode: "backtest",
+        engine: "Lean",
+        status: "Completed",
+        netPnl: 4400,
+        totalReturn: 0.052,
+        finalEquity: 104400,
+        maxDrawdown: -0.02,
+        sharpeRatio: 1.52,
+        fillCount: 31,
+        lastUpdatedAt: "2026-03-26T10:00:00Z",
+        promotionState: "ResearchOnly",
+        hasLedger: true,
+        hasAuditTrail: true
       }
     ];
     vi.spyOn(api, "compareRuns").mockResolvedValue(comparisonRows);
@@ -228,7 +245,14 @@ describe("ResearchScreen", () => {
       expect(cells.some((el) => el.closest("td") !== null)).toBe(true);
     });
     expect(screen.getByRole("table", { name: "Strategy run comparison evidence" })).toBeInTheDocument();
-    expect(screen.getByRole("row", { name: /Carry Alpha: Running; net P&L \+\$3,200/ })).toBeInTheDocument();
+    const firstComparisonRow = screen.getByRole("row", { name: "Inspect Carry Alpha comparison evidence" });
+    const secondComparisonRow = screen.getByRole("row", { name: "Inspect Index Momentum comparison evidence" });
+    expect(firstComparisonRow).toHaveAttribute("aria-controls", "strategy-run-comparison-selected-detail");
+    expect(firstComparisonRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected comparison evidence for Carry Alpha" })).toBeInTheDocument();
+    await user.click(secondComparisonRow);
+    expect(secondComparisonRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected comparison evidence for Index Momentum" })).toBeInTheDocument();
     expect(screen.getByText("+4.20%")).toBeInTheDocument();
     expect(screen.getByText("-1.80%")).toBeInTheDocument();
     expect(screen.getAllByText("Ledger missing; Audit missing").length).toBeGreaterThanOrEqual(1);

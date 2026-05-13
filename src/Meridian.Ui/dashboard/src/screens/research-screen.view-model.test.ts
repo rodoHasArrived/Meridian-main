@@ -337,10 +337,34 @@ describe("research-screen view model", () => {
     expect(comparisonTable.rows[0].equityText).toBe("Equity Unavailable");
     expect(comparisonTable.rows[0].promotionStateText).toBe("Candidate for paper");
     expect(comparisonTable.rows[0].evidenceText).toBe("Ledger missing; Audit missing");
+    expect(comparisonTable.rows[0].detailExpanded).toBe(true);
+    expect(comparisonTable.rows[0].detailPanelId).toBe("strategy-run-comparison-selected-detail");
+    expect(comparisonTable.rows[0].rowSelectAriaLabel).toBe("Inspect Mean Reversion FX comparison evidence");
     expect(comparisonTable.rows[0].ariaLabel).toContain("Mean Reversion FX: Running; net P&L +$3,200");
     expect(comparisonTable.rows[0].sharpeRatioText).toBe("Unavailable");
     expect(comparisonTable.rows[0].fillCountText).toBe("Unavailable");
     expect(buildComparisonTable([]).emptyText).toBe("No comparison rows returned for the selected pair.");
+
+    const comparisonDetailState = buildResearchRunLibraryState({
+      runs,
+      selectedIds: ["run-1", "run-2"],
+      selectedRun: null,
+      comparison: [
+        comparison[0],
+        { ...comparison[0], runId: "run-2", strategyName: "Index Momentum" }
+      ],
+      selectedComparisonRowId: "run-2",
+      runDiff: null,
+      promotionHistory: [],
+      activeCommand: null,
+      actionError: null
+    });
+    expect(comparisonDetailState.selectedComparisonRowId).toBe("run-2");
+    expect(comparisonDetailState.selectedComparisonDetail).toMatchObject({
+      panelId: "strategy-run-comparison-selected-detail",
+      ariaLabel: "Selected comparison evidence for Index Momentum",
+      title: "Index Momentum"
+    });
 
     const emptyDiff = buildDiffPanel(diff);
     expect(emptyDiff.summaryLabel).toBe("Run diff metric summary");

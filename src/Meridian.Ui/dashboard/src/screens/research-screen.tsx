@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { cn } from "@/lib/utils";
 import { useResearchRunLibraryViewModel } from "@/screens/research-screen.view-model";
 import type {
+  ResearchComparisonTableRow,
   ResearchPlotLegendItem,
   ResearchPlotMomentRow,
   ResearchPlotSampleRow,
@@ -239,6 +240,61 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
       id: "promoted",
       label: "Promoted",
       render: (record) => <span className="font-mono text-xs">{record.promotedAtText}</span>
+    }
+  ];
+
+  const comparisonColumns: DenseDataTableColumn<ResearchComparisonTableRow>[] = [
+    {
+      id: "strategy",
+      label: "Strategy",
+      render: (row) => (
+        <span className="font-semibold text-foreground">{row.strategyName}</span>
+      )
+    },
+    {
+      id: "mode",
+      label: "Mode",
+      render: (row) => <Badge variant={row.modeBadgeVariant}>{row.modeText}</Badge>
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => <Badge variant={row.statusBadgeVariant} dot>{row.statusText}</Badge>
+    },
+    {
+      id: "net-pnl",
+      label: "Net P&L",
+      align: "right",
+      className: "font-mono",
+      render: (row) => <span className={comparisonValueToneClass[row.netPnlTone]}>{row.netPnlText}</span>
+    },
+    {
+      id: "return",
+      label: "Return",
+      align: "right",
+      className: "font-mono",
+      render: (row) => <span className={comparisonValueToneClass[row.totalReturnTone]}>{row.totalReturnText}</span>
+    },
+    {
+      id: "drawdown",
+      label: "Drawdown",
+      align: "right",
+      className: "font-mono",
+      render: (row) => <span className={comparisonValueToneClass[row.maxDrawdownTone]}>{row.maxDrawdownText}</span>
+    },
+    {
+      id: "sharpe",
+      label: "Sharpe",
+      align: "right",
+      className: "font-mono",
+      render: (row) => row.sharpeRatioText
+    },
+    {
+      id: "fills",
+      label: "Fills",
+      align: "right",
+      className: "font-mono",
+      render: (row) => row.fillCountText
     }
   ];
 
@@ -543,45 +599,43 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
             <CardTitle>Run comparison</CardTitle>
             <CardDescription>Shared comparison evidence returned by the workstation API.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto rounded-lg border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-sm" aria-label="Strategy run comparison evidence">
-                <caption className="sr-only">{vm.comparisonTable.caption}</caption>
-                <thead className="bg-secondary/30">
-                  <tr>
-                    {["Strategy", "Mode", "Status", "Net P&L", "Return", "Drawdown", "Sharpe", "Fills", "Evidence"].map((column) => (
-                      <th key={column} className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        {column}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {vm.comparisonTable.hasRows ? vm.comparisonTable.rows.map((row) => (
-                    <tr key={row.runId} aria-label={row.ariaLabel} className="align-top">
-                      <td className="px-3 py-2">
-                        <div className="font-semibold">{row.strategyName}</div>
-                        <div className="mt-1 font-mono text-xs text-muted-foreground">{row.promotionStateText}</div>
-                        <div className="mt-1 font-mono text-xs text-muted-foreground">{row.equityText}</div>
-                      </td>
-                      <td className="px-3 py-2"><Badge variant={row.modeBadgeVariant}>{row.modeText}</Badge></td>
-                      <td className="px-3 py-2"><Badge variant={row.statusBadgeVariant} dot>{row.statusText}</Badge></td>
-                      <td className={cn("px-3 py-2 font-mono", comparisonValueToneClass[row.netPnlTone])}>{row.netPnlText}</td>
-                      <td className={cn("px-3 py-2 font-mono", comparisonValueToneClass[row.totalReturnTone])}>{row.totalReturnText}</td>
-                      <td className={cn("px-3 py-2 font-mono", comparisonValueToneClass[row.maxDrawdownTone])}>{row.maxDrawdownText}</td>
-                      <td className="px-3 py-2 font-mono">{row.sharpeRatioText}</td>
-                      <td className="px-3 py-2 font-mono">{row.fillCountText}</td>
-                      <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{row.evidenceText}</td>
-                    </tr>
-                  )) : (
-                    <tr>
-                      <td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">
-                        {vm.comparisonTable.emptyText}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+              <DenseDataTable
+                columns={comparisonColumns}
+                rows={vm.comparisonTable.rows}
+                getRowId={(row) => row.runId}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+                getRowAriaControls={(row) => row.detailPanelId}
+                getRowAriaExpanded={(row) => row.detailExpanded}
+                selectedRowId={vm.selectedComparisonRowId}
+                onRowSelect={(row) => vm.selectComparisonRow(row.runId)}
+                emptyText={vm.comparisonTable.emptyText}
+                ariaLabel="Strategy run comparison evidence"
+                caption={vm.comparisonTable.caption}
+              />
+              {vm.selectedComparisonDetail ? (
+                <div id={vm.selectedComparisonDetail.panelId} className="min-w-0">
+                  <EntitySummary
+                    eyebrow={vm.selectedComparisonDetail.eyebrow}
+                    title={vm.selectedComparisonDetail.title}
+                    subtitle={vm.selectedComparisonDetail.subtitle}
+                    description={vm.selectedComparisonDetail.description}
+                    fields={vm.selectedComparisonDetail.fields}
+                    ariaLabel={vm.selectedComparisonDetail.ariaLabel}
+                    status={<Badge variant={vm.selectedComparisonDetail.statusVariant} dot>{vm.selectedComparisonDetail.statusLabel}</Badge>}
+                  />
+                </div>
+              ) : (
+                <div
+                  id={vm.selectedComparisonDetailPanelId}
+                  role="status"
+                  className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
+                >
+                  {vm.comparisonTable.emptyText}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
