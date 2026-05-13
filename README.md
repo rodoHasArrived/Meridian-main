@@ -841,6 +841,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── index.html
 │   │   ├── institutional-workstation.html
 │   │   ├── preview-common.css
+│   │   ├── reference-workbench.html
 │   │   ├── screen-recipes.html
 │   │   ├── spacing-radii.html
 │   │   ├── spacing-scale.html
@@ -8683,6 +8684,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-709 directories, 7765 files
+709 directories, 7766 files
 ```
 <!-- readme-tree end -->
