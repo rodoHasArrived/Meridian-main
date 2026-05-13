@@ -279,9 +279,11 @@ describe("OperatorReadinessConsole", () => {
       { initialEntries: ["/trading/readiness"] }
     );
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Operator inbox 503");
+    const recovery = await screen.findByRole("alert");
+    expect(recovery).toHaveTextContent("Operator inbox 503");
+    expect(within(recovery).getByRole("button", { name: "Retry loading operator inbox work items after failure" })).toHaveTextContent("Retry inbox");
 
-    fireEvent.click(screen.getByRole("button", { name: "Refresh operator inbox work items" }));
+    fireEvent.click(within(recovery).getByRole("button", { name: "Retry loading operator inbox work items after failure" }));
 
     await waitFor(() => expect(screen.getAllByText("1 review item needs attention.").length).toBeGreaterThan(0));
     await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledTimes(2));

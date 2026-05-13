@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildCanvasLegViewModels,
   buildLegFromPalette,
   buildDesignerSummaryMetrics,
   buildParticipationViewModel,
@@ -191,5 +192,28 @@ describe("strategy designer view-model", () => {
     expect(sample).toHaveLength(2);
     expect(sample[0].direction).toBe("Long");
     expect(sample[1].direction).toBe("Short");
+  });
+
+  it("projects canvas leg selection and field accessibility state", () => {
+    const rows = buildCanvasLegViewModels([longCall100, longStock], longStock.id);
+
+    expect(rows[0]).toMatchObject({
+      id: "leg-1",
+      isSelected: false,
+      selectButtonLabel: "Select",
+      directionTone: "success",
+      isOption: true,
+      strikeFieldLabel: "Strike",
+      premiumAriaLabel: "Premium for Long Call 100"
+    });
+    expect(rows[0].containerAriaLabel).toContain("leg 1 of 2");
+    expect(rows[1]).toMatchObject({
+      id: "stock-1",
+      isSelected: true,
+      selectButtonLabel: "Selected",
+      isOption: false,
+      strikeFieldLabel: "Entry price",
+      premiumUnavailableAriaLabel: "Premium not applicable for Long Stock"
+    });
   });
 });

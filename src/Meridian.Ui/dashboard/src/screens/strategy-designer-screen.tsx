@@ -1,4 +1,4 @@
-import { useCallback, useId, useState } from "react";
+import { useId, useState } from "react";
 import { GripVertical, LayoutGrid, Plus, Sparkles, Trash2 } from "lucide-react";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import {
   type ParticipationSliceViewModel,
   type ParticipationViewModel,
   type PayoffChartViewModel,
+  type StrategyCanvasLegViewModel,
   type StrategyDesignerViewModel,
   type StrategyLeg,
   type StrategyLegPaletteEntry
@@ -41,18 +42,27 @@ export function StrategyDesignerScreen() {
           <div className="flex flex-wrap items-center gap-3">
             <SpotPriceField vm={vm} />
             <div className="ml-auto flex flex-wrap items-center gap-2">
-              <Button type="button" variant="outline" onClick={vm.loadSample}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={vm.loadSample}
+                disabled={vm.loadSampleCommand.disabled}
+                disabledReason={vm.loadSampleCommand.disabledReason}
+                aria-label={vm.loadSampleCommand.ariaLabel}
+              >
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
-                <span className="ml-1.5">Load sample</span>
+                <span className="ml-1.5">{vm.loadSampleCommand.label}</span>
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={vm.clearCanvas}
-                disabled={vm.legs.length === 0}
+                disabled={vm.clearCanvasCommand.disabled}
+                disabledReason={vm.clearCanvasCommand.disabledReason}
+                aria-label={vm.clearCanvasCommand.ariaLabel}
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
-                <span className="ml-1.5">Clear canvas</span>
+                <span className="ml-1.5">{vm.clearCanvasCommand.label}</span>
               </Button>
             </div>
           </div>
@@ -90,35 +100,21 @@ interface SpotPriceFieldProps {
 
 function SpotPriceField({ vm }: SpotPriceFieldProps) {
   const id = useId();
-  const [draft, setDraft] = useState<string>(vm.spotPrice.toString());
-
-  const commit = useCallback(
-    (value: string) => {
-      const parsed = Number.parseFloat(value);
-      if (Number.isFinite(parsed) && parsed >= 0) {
-        vm.setSpotPrice(parsed);
-        setDraft(parsed.toString());
-      } else {
-        setDraft(vm.spotPrice.toString());
-      }
-    },
-    [vm]
-  );
 
   return (
     <label htmlFor={id} className="flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-      <span>Spot price</span>
+      <span>{vm.spotPriceField.label}</span>
       <Input
         id={id}
         type="number"
-        step="0.01"
-        min="0"
-        inputMode="decimal"
-        value={draft}
-        onChange={(event) => setDraft(event.target.value)}
-        onBlur={(event) => commit(event.target.value)}
+        step={vm.spotPriceField.step}
+        min={vm.spotPriceField.min}
+        inputMode={vm.spotPriceField.inputMode}
+        value={vm.spotPriceField.value}
+        onChange={(event) => vm.updateSpotPriceDraft(event.target.value)}
+        onBlur={(event) => vm.commitSpotPriceDraft(event.target.value)}
         className="w-32"
-        aria-label="Underlying spot price for payoff sampling"
+        aria-label={vm.spotPriceField.ariaLabel}
       />
     </label>
   );
@@ -210,17 +206,19 @@ function CanvasPanel({ vm, dropActive, setDropActive }: CanvasPanelProps) {
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
           <div>
-            <CardTitle className="text-base">Canvas · {vm.legs.length} leg{vm.legs.length === 1 ? "" : "s"}</CardTitle>
+            <CardTitle className="text-base">{vm.canvasTitle}</CardTitle>
             <CardDescription>Reorder legs by dragging; click to select and tune parameters.</CardDescription>
           </div>
           <Button
             type="button"
             variant="outline"
             onClick={() => vm.addLegFromPalette("long-call")}
-            aria-label="Append a default long call leg"
+            disabled={vm.addLongCallCommand.disabled}
+            disabledReason={vm.addLongCallCommand.disabledReason}
+            aria-label={vm.addLongCallCommand.ariaLabel}
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">Add long call</span>
+            <span className="ml-1.5">{vm.addLongCallCommand.label}</span>
           </Button>
         </div>
       </CardHeader>
@@ -242,11 +240,10 @@ function CanvasPanel({ vm, dropActive, setDropActive }: CanvasPanelProps) {
               {vm.emptyStateMessage}
             </div>
           ) : (
-            vm.legs.map((leg) => (
+            vm.canvasLegs.map((leg) => (
               <CanvasLeg
                 key={leg.id}
                 leg={leg}
-                selected={vm.selectedLegId === leg.id}
                 onSelect={() => vm.selectLeg(leg.id)}
                 onRemove={() => vm.removeLeg(leg.id)}
                 onUpdate={(patch) => vm.updateLeg(leg.id, patch)}
@@ -261,24 +258,24 @@ function CanvasPanel({ vm, dropActive, setDropActive }: CanvasPanelProps) {
 }
 
 interface CanvasLegProps {
-  leg: StrategyLeg;
-  selected: boolean;
+  leg: StrategyCanvasLegViewModel;
   onSelect: () => void;
   onRemove: () => void;
   onUpdate: (patch: Partial<Pick<StrategyLeg, "quantity" | "strike" | "premium" | "direction">>) => void;
   onReorder: (sourceLegId: string) => void;
 }
 
-function CanvasLeg({ leg, selected, onSelect, onRemove, onUpdate, onReorder }: CanvasLegProps) {
-  const directionTone = leg.direction === "Long" ? "success" : "warning";
-  const isOption = leg.instrument !== "Stock";
-
+function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder }: CanvasLegProps) {
   return (
     <div
       role="listitem"
+      aria-label={leg.containerAriaLabel}
       data-leg-id={leg.id}
-      data-selected={selected ? "true" : "false"}
-      onClick={onSelect}
+      data-selected={leg.isSelected ? "true" : "false"}
+      onClick={(event) => {
+        if (isInteractiveCanvasTarget(event.target)) return;
+        onSelect();
+      }}
       onDragOver={(event) => {
         if (event.dataTransfer.types.includes(LEG_DRAG_TYPE)) {
           event.preventDefault();
@@ -296,7 +293,7 @@ function CanvasLeg({ leg, selected, onSelect, onRemove, onUpdate, onReorder }: C
       className={cn(
         "flex flex-col gap-2 rounded-md border border-border/70 bg-card px-3 py-2 transition-colors",
         "focus-within:border-primary/60",
-        selected && "border-primary/60 ring-1 ring-primary/40"
+        leg.isSelected && "border-primary/60 ring-1 ring-primary/40"
       )}
     >
       <div className="flex items-center gap-2">
@@ -314,7 +311,7 @@ function CanvasLeg({ leg, selected, onSelect, onRemove, onUpdate, onReorder }: C
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-foreground">{leg.label}</span>
-            <Badge variant={directionTone} dot>
+            <Badge variant={leg.directionTone} dot>
               {leg.direction}
             </Badge>
             <Badge variant="outline">{leg.instrument}</Badge>
@@ -322,12 +319,22 @@ function CanvasLeg({ leg, selected, onSelect, onRemove, onUpdate, onReorder }: C
         </div>
         <Button
           type="button"
+          variant={leg.isSelected ? "secondary" : "ghost"}
+          size="sm"
+          onClick={onSelect}
+          aria-pressed={leg.isSelected}
+          aria-label={leg.selectButtonAriaLabel}
+        >
+          {leg.selectButtonLabel}
+        </Button>
+        <Button
+          type="button"
           variant="ghost"
           onClick={(event) => {
             event.stopPropagation();
             onRemove();
           }}
-          aria-label={`Remove ${leg.label}`}
+          aria-label={leg.removeButtonAriaLabel}
         >
           <Trash2 className="h-4 w-4" aria-hidden="true" />
         </Button>
@@ -339,7 +346,7 @@ function CanvasLeg({ leg, selected, onSelect, onRemove, onUpdate, onReorder }: C
             <Select
               value={leg.direction}
               onChange={(event) => onUpdate({ direction: event.target.value as "Long" | "Short" })}
-              aria-label={`Direction for ${leg.label}`}
+              aria-label={leg.directionAriaLabel}
               onClick={(event) => event.stopPropagation()}
             >
               <option value="Long">Long</option>
@@ -358,13 +365,13 @@ function CanvasLeg({ leg, selected, onSelect, onRemove, onUpdate, onReorder }: C
               onChange={(event) =>
                 onUpdate({ quantity: Number.parseFloat(event.target.value) })
               }
-              aria-label={`Quantity for ${leg.label}`}
+              aria-label={leg.quantityAriaLabel}
               onClick={(event) => event.stopPropagation()}
             />
           }
         />
         <LegField
-          label={isOption ? "Strike" : "Entry price"}
+          label={leg.strikeFieldLabel}
           control={
             <Input
               type="number"
@@ -374,12 +381,12 @@ function CanvasLeg({ leg, selected, onSelect, onRemove, onUpdate, onReorder }: C
               onChange={(event) =>
                 onUpdate({ strike: Number.parseFloat(event.target.value) })
               }
-              aria-label={`${isOption ? "Strike" : "Entry price"} for ${leg.label}`}
+              aria-label={leg.strikeAriaLabel}
               onClick={(event) => event.stopPropagation()}
             />
           }
         />
-        {isOption ? (
+        {leg.isOption ? (
           <LegField
             label="Premium"
             control={
@@ -391,17 +398,22 @@ function CanvasLeg({ leg, selected, onSelect, onRemove, onUpdate, onReorder }: C
                 onChange={(event) =>
                   onUpdate({ premium: Number.parseFloat(event.target.value) })
                 }
-                aria-label={`Premium for ${leg.label}`}
+                aria-label={leg.premiumAriaLabel}
                 onClick={(event) => event.stopPropagation()}
               />
             }
           />
         ) : (
-          <LegField label="Premium" control={<Input value="—" disabled aria-label="Premium not applicable for stock" />} />
+          <LegField label="Premium" control={<Input value="—" disabled aria-label={leg.premiumUnavailableAriaLabel} />} />
         )}
       </div>
     </div>
   );
+}
+
+function isInteractiveCanvasTarget(target: EventTarget): boolean {
+  if (!(target instanceof Element)) return false;
+  return target.closest("a,button,input,select,textarea,[role='button'],[role='link']") !== null;
 }
 
 function LegField({ label, control }: { label: string; control: React.ReactNode }) {

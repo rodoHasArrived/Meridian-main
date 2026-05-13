@@ -98,10 +98,46 @@ export interface DesignerSummaryMetric {
   tone: "default" | "success" | "warning" | "danger";
 }
 
+export interface StrategyDesignerCommandViewModel {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
+export interface StrategyDesignerSpotPriceFieldViewModel {
+  label: string;
+  value: string;
+  min: number;
+  step: string;
+  inputMode: "decimal";
+  ariaLabel: string;
+}
+
+export interface StrategyCanvasLegViewModel extends StrategyLeg {
+  isSelected: boolean;
+  directionTone: "success" | "warning";
+  isOption: boolean;
+  containerAriaLabel: string;
+  selectButtonLabel: string;
+  selectButtonAriaLabel: string;
+  removeButtonAriaLabel: string;
+  directionAriaLabel: string;
+  quantityAriaLabel: string;
+  strikeFieldLabel: string;
+  strikeAriaLabel: string;
+  premiumAriaLabel: string;
+  premiumUnavailableAriaLabel: string;
+}
+
 export interface StrategyDesignerViewModel {
   legs: StrategyLeg[];
+  canvasLegs: StrategyCanvasLegViewModel[];
   palette: StrategyLegPaletteEntry[];
   spotPrice: number;
+  spotPriceField: StrategyDesignerSpotPriceFieldViewModel;
+  updateSpotPriceDraft: (value: string) => void;
+  commitSpotPriceDraft: (value?: string) => void;
   setSpotPrice: (price: number) => void;
   addLegFromPalette: (kind: StrategyLegKind) => string;
   removeLeg: (id: string) => void;
@@ -109,6 +145,10 @@ export interface StrategyDesignerViewModel {
   reorderLeg: (sourceId: string, targetId: string) => void;
   clearCanvas: () => void;
   loadSample: () => void;
+  clearCanvasCommand: StrategyDesignerCommandViewModel;
+  loadSampleCommand: StrategyDesignerCommandViewModel;
+  addLongCallCommand: StrategyDesignerCommandViewModel;
+  canvasTitle: string;
   payoff: PayoffChartViewModel;
   participation: ParticipationViewModel;
   metrics: DesignerSummaryMetric[];
@@ -523,15 +563,60 @@ export function buildLegFromPalette(entry: StrategyLegPaletteEntry, existing: St
   };
 }
 
+export function buildCanvasLegViewModels(
+  legs: StrategyLeg[],
+  selectedLegId: string | null
+): StrategyCanvasLegViewModel[] {
+  return legs.map((leg, index) => {
+    const isSelected = selectedLegId === leg.id;
+    const isOption = leg.instrument !== "Stock";
+    const ordinal = index + 1;
+    return {
+      ...leg,
+      isSelected,
+      directionTone: leg.direction === "Long" ? "success" : "warning",
+      isOption,
+      containerAriaLabel: `${leg.label}, ${leg.direction} ${leg.instrument}, leg ${ordinal} of ${legs.length}`,
+      selectButtonLabel: isSelected ? "Selected" : "Select",
+      selectButtonAriaLabel: `${isSelected ? "Selected" : "Select"} ${leg.label}`,
+      removeButtonAriaLabel: `Remove ${leg.label}`,
+      directionAriaLabel: `Direction for ${leg.label}`,
+      quantityAriaLabel: `Quantity for ${leg.label}`,
+      strikeFieldLabel: isOption ? "Strike" : "Entry price",
+      strikeAriaLabel: `${isOption ? "Strike" : "Entry price"} for ${leg.label}`,
+      premiumAriaLabel: `Premium for ${leg.label}`,
+      premiumUnavailableAriaLabel: `Premium not applicable for ${leg.label}`
+    };
+  });
+}
+
 export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): StrategyDesignerViewModel {
   const [legs, setLegs] = useState<StrategyLeg[]>(initialLegs);
   const [spotPrice, setSpotPriceState] = useState<number>(100);
+  const [spotPriceDraft, setSpotPriceDraft] = useState<string>("100");
   const [selectedLegId, setSelectedLegId] = useState<string | null>(null);
 
   const setSpotPrice = useCallback((price: number) => {
     if (!Number.isFinite(price) || price < 0) return;
     setSpotPriceState(price);
+    setSpotPriceDraft(price.toString());
   }, []);
+
+  const updateSpotPriceDraft = useCallback((value: string) => {
+    setSpotPriceDraft(value);
+  }, []);
+
+  const commitSpotPriceDraft = useCallback((value?: string) => {
+    const nextDraft = value ?? spotPriceDraft;
+    const parsed = Number.parseFloat(nextDraft);
+    if (Number.isFinite(parsed) && parsed >= 0) {
+      setSpotPriceState(parsed);
+      setSpotPriceDraft(parsed.toString());
+      return;
+    }
+
+    setSpotPriceDraft(spotPrice.toString());
+  }, [spotPrice, spotPriceDraft]);
 
   const addLegFromPalette = useCallback((kind: StrategyLegKind): string => {
     const entry = PALETTE.find((item) => item.kind === kind);
@@ -598,15 +683,28 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
   const payoff = useMemo(() => buildPayoffChartViewModel(legs, spotPrice), [legs, spotPrice]);
   const participation = useMemo(() => buildParticipationViewModel(legs, spotPrice), [legs, spotPrice]);
   const metrics = useMemo(() => buildDesignerSummaryMetrics(payoff, participation), [payoff, participation]);
+  const canvasLegs = useMemo(() => buildCanvasLegViewModels(legs, selectedLegId), [legs, selectedLegId]);
   const selectedLeg = useMemo(
     () => legs.find((leg) => leg.id === selectedLegId) ?? null,
     [legs, selectedLegId]
   );
+  const clearCanvasDisabled = legs.length === 0;
 
   return {
     legs,
+    canvasLegs,
     palette: PALETTE,
     spotPrice,
+    spotPriceField: {
+      label: "Spot price",
+      value: spotPriceDraft,
+      min: 0,
+      step: "0.01",
+      inputMode: "decimal",
+      ariaLabel: "Underlying spot price for payoff sampling"
+    },
+    updateSpotPriceDraft,
+    commitSpotPriceDraft,
     setSpotPrice,
     addLegFromPalette,
     removeLeg,
@@ -614,6 +712,25 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
     reorderLeg,
     clearCanvas,
     loadSample,
+    clearCanvasCommand: {
+      label: "Clear canvas",
+      ariaLabel: "Clear strategy canvas",
+      disabled: clearCanvasDisabled,
+      disabledReason: clearCanvasDisabled ? "No strategy legs to clear." : null
+    },
+    loadSampleCommand: {
+      label: "Load sample",
+      ariaLabel: "Load sample bull call spread",
+      disabled: false,
+      disabledReason: null
+    },
+    addLongCallCommand: {
+      label: "Add long call",
+      ariaLabel: "Append a default long call leg",
+      disabled: false,
+      disabledReason: null
+    },
+    canvasTitle: `Canvas · ${legs.length} leg${legs.length === 1 ? "" : "s"}`,
     payoff,
     participation,
     metrics,

@@ -253,14 +253,15 @@ describe("ReportingScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting"] });
 
-    const auditButton = screen.getByRole("button", { name: /select audit pack export profile/i });
-    await user.click(auditButton);
+    const profileTable = screen.getByRole("table", { name: "Export profiles" });
+    const auditRow = within(profileTable).getByRole("row", { name: /select audit pack export profile/i });
+    await user.click(auditRow);
 
-    expect(auditButton).toHaveAttribute("aria-pressed", "true");
-    expect(auditButton).toHaveAttribute("aria-controls", "reporting-profile-detail");
-    expect(auditButton).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("button", { name: /select excel export profile/i })).toHaveAttribute("aria-expanded", "false");
-    const inspector = screen.getByRole("complementary", { name: /audit pack selected/i });
+    expect(auditRow).toHaveAttribute("aria-selected", "true");
+    expect(auditRow).toHaveAttribute("aria-controls", "reporting-profile-detail");
+    expect(auditRow).toHaveAttribute("aria-expanded", "true");
+    expect(within(profileTable).getByRole("row", { name: /select excel export profile/i })).toHaveAttribute("aria-expanded", "false");
+    const inspector = screen.getByRole("region", { name: /audit pack selected/i });
     expect(inspector).toBeInTheDocument();
     expect(screen.getByRole("status", { name: /audit pack readiness/i })).toHaveTextContent(
       "Loader and dictionary evidence are ready"
@@ -306,8 +307,8 @@ describe("ReportingScreen", () => {
 
     renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting"] });
 
-    await user.click(screen.getByRole("button", { name: /select audit pack export profile/i }));
-    const inspector = screen.getByRole("complementary", { name: /audit pack selected/i });
+    await user.click(screen.getByRole("row", { name: /select audit pack export profile/i }));
+    const inspector = screen.getByRole("region", { name: /audit pack selected/i });
     await user.click(within(inspector).getByRole("button", { name: "Run Audit Pack export analysis" }));
 
     const runningButton = within(inspector).getByRole("button", { name: "Run Audit Pack export analysis" });
@@ -330,7 +331,7 @@ describe("ReportingScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting"] });
 
-    await user.click(screen.getByRole("button", { name: /select audit pack export profile/i }));
+    await user.click(screen.getByRole("row", { name: /select audit pack export profile/i }));
     await user.click(screen.getByRole("button", { name: "Run Audit Pack export analysis" }));
 
     expect(fetchMock).toHaveBeenCalledWith(

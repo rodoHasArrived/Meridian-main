@@ -331,13 +331,15 @@ export function formatPriceAlertTimestamp(value: string | null | undefined): str
   if (Number.isNaN(date.getTime())) {
     return "—";
   }
-  return date.toLocaleString(undefined, {
+  return `${date.toLocaleString("en-US", {
+    timeZone: "UTC",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit"
-  });
+    second: "2-digit",
+    hour12: false
+  })} UTC`;
 }
 
 const SNOOZE_MINUTES = 30;

@@ -451,7 +451,7 @@ describe("operator readiness console view model", () => {
             fundAccountId: null,
             auditReference: null,
             workspace: "Data",
-            targetRoute: "/data/providers",
+            targetRoute: "/api/workstation/provider-validation/dk1",
             targetPageTag: "ProviderTrust"
           },
           {
@@ -550,7 +550,7 @@ describe("operator readiness console view model", () => {
     });
     expect(state.workItems.find((item) => item.id === "api-route")?.action).toEqual({
       label: "Open report packs",
-      route: "/reporting",
+      route: "/reporting/report-packs",
       ariaLabel: "Open report packs: API route should not render",
       variant: "outline"
     });
@@ -684,6 +684,17 @@ describe("operator readiness console view model", () => {
     expect(state.workItems).toHaveLength(1);
     expect(state.overallDetail).toContain("operator inbox failed to load");
     expect(state.statusAnnouncement).toContain("Operator inbox failed");
+    expect(state.inboxErrorRecovery).toEqual({
+      title: "Operator inbox unavailable",
+      detail: "Request failed for /api/workstation/operator/inbox (503). Retry the shared inbox before accepting readiness; fallback rows remain visible for triage.",
+      actionLabel: "Retry inbox",
+      actionAriaLabel: "Retry loading operator inbox work items after failure"
+    });
+    expect(state.workItemsEmptyText).toContain("Operator inbox work items are unavailable");
+    expect(state.workItemsEmptyAction).toEqual(expect.objectContaining({
+      label: "Open break queue",
+      route: "/accounting/reconciliation"
+    }));
   });
 
   it("keeps overall readiness in review while the operator inbox is still loading", () => {
@@ -734,6 +745,14 @@ describe("operator readiness console view model", () => {
       route: "/trading",
       level: "ready"
     }));
+    expect(readyState.workItems).toHaveLength(0);
+    expect(readyState.workItemsEmptyText).toContain("No operator work items need attention");
+    expect(readyState.workItemsEmptyAction).toEqual({
+      label: "Open Trading cockpit",
+      route: "/trading",
+      ariaLabel: "Open Trading cockpit from empty operator inbox",
+      variant: "outline"
+    });
   });
 
   it("keeps the headline in review when governed report-pack readiness is missing", () => {

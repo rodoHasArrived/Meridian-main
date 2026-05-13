@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getOperatorInbox, type ApiRequestOptions } from "@/lib/api";
-import { normalizeLocalWorkstationRoute } from "@/lib/workspace";
+import { normalizeLocalWorkstationRoute, workflowTargetPath } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   DataOperationsProviderRecord,
@@ -80,6 +80,13 @@ export interface ReadinessConsoleSelectedWorkItemDetail {
   action: ReadinessConsoleRowAction | null;
 }
 
+export interface ReadinessConsoleRecoveryState {
+  title: string;
+  detail: string;
+  actionLabel: string;
+  actionAriaLabel: string;
+}
+
 type ReadinessConsoleMetricBase = Omit<ReadinessConsoleMetric, "ariaLabel" | "statusAriaLabel" | "delta" | "tone" | "detailId">;
 type ReadinessConsoleApiSourceBase = Omit<ReadinessConsoleApiSource, "ariaLabel" | "statusAriaLabel">;
 type ReadinessConsoleRowBase = Omit<ReadinessConsoleRow, "ariaLabel" | "statusAriaLabel" | "detailId">;
@@ -124,6 +131,7 @@ export interface ReadinessConsoleState {
   inboxRefreshDisabled: boolean;
   inboxRefreshDisabledReason: string | null;
   inboxRefreshBusy: boolean;
+  inboxErrorRecovery: ReadinessConsoleRecoveryState | null;
   nextAction: ReadinessConsoleNextAction;
   metrics: ReadinessConsoleMetric[];
   metricsLabel: string;
@@ -139,6 +147,8 @@ export interface ReadinessConsoleState {
   workItems: ReadinessConsoleRow[];
   workItemsSummary: string;
   workItemsOverflowText: string | null;
+  workItemsEmptyText: string;
+  workItemsEmptyAction: ReadinessConsoleRowAction;
   workItemsRegionLabel: string;
   workItemsListLabel: string;
   workItemsTableLabel: string;
@@ -336,6 +346,7 @@ export function buildOperatorReadinessConsoleState({
     inboxRefreshDisabled: inboxLoading,
     inboxRefreshDisabledReason: inboxLoading ? "Operator inbox is already refreshing." : null,
     inboxRefreshBusy: inboxLoading,
+    inboxErrorRecovery: buildInboxErrorRecovery(inboxError),
     nextAction,
     metrics,
     metricsLabel: "Operator readiness metrics",
@@ -367,6 +378,8 @@ export function buildOperatorReadinessConsoleState({
     workItems: workItemRows,
     workItemsSummary: buildWorkItemsSummary(prioritizedWorkItems, workItemRows.length),
     workItemsOverflowText: buildWorkItemsOverflowText(prioritizedWorkItems.length, workItemRows.length),
+    workItemsEmptyText: buildWorkItemsEmptyText(operatorInbox, inboxLoading, inboxError),
+    workItemsEmptyAction: buildWorkItemsEmptyAction(nextAction),
     workItemsRegionLabel: "Operator inbox review work items",
     workItemsListLabel: "Prioritized operator work items",
     workItemsTableLabel: "Prioritized operator work items table",
@@ -742,7 +755,9 @@ function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): Readi
 }
 
 function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction | null {
-  const route = normalizeLocalWorkstationRoute(item.targetRoute) ?? fallbackRouteForWorkItemKind(item.kind);
+  const route = normalizeLocalWorkstationRoute(item.targetRoute)
+    ?? routeFromWorkItemTarget(item)
+    ?? fallbackRouteForWorkItemKind(item.kind);
   if (!route) {
     return null;
   }
@@ -754,6 +769,14 @@ function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction 
     ariaLabel: `${label}: ${item.label}`,
     variant: item.tone === "Critical" ? "secondary" : "outline"
   };
+}
+
+function routeFromWorkItemTarget(item: OperatorWorkItem): string | null {
+  if (!item.targetPageTag && !item.workspace) {
+    return null;
+  }
+
+  return workflowTargetPath(item.targetPageTag, item.workspace);
 }
 
 function fallbackRouteForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
@@ -821,6 +844,37 @@ function buildWorkItemsOverflowText(totalCount: number, visibleCount: number): s
   return `${formatCount(hiddenCount, "additional work item")} hidden from this view after priority sorting.`;
 }
 
+function buildWorkItemsEmptyText(
+  operatorInbox: OperatorInbox | null,
+  inboxLoading: boolean,
+  inboxError: string | null
+): string {
+  if (inboxLoading) {
+    return "Operator inbox work items are loading. The console will select the first actionable item when the queue arrives.";
+  }
+
+  if (inboxError) {
+    return "Operator inbox work items are unavailable. Use the retry action above, or continue from the primary next action while the console preserves fallback readiness evidence.";
+  }
+
+  if (operatorInbox) {
+    return "No operator work items need attention. Continue monitoring the paper cockpit and readiness evidence before accepting new live risk.";
+  }
+
+  return "No operator work items returned. Continue from the primary next action while shared readiness payloads finish loading.";
+}
+
+function buildWorkItemsEmptyAction(nextAction: ReadinessConsoleNextAction): ReadinessConsoleRowAction {
+  return {
+    label: nextAction.level === "ready" ? "Open Trading cockpit" : nextAction.label,
+    route: nextAction.level === "ready" ? "/trading" : nextAction.route,
+    ariaLabel: nextAction.level === "ready"
+      ? "Open Trading cockpit from empty operator inbox"
+      : `${nextAction.actionAriaLabel} from empty operator inbox`,
+    variant: nextAction.level === "blocked" ? "secondary" : "outline"
+  };
+}
+
 function buildSelectedWorkItemDetail(
   rows: ReadinessConsoleRow[],
   selectedWorkItemId: string | null
@@ -848,6 +902,19 @@ function buildSelectedWorkItemDetail(
       { label: "Evidence", value: selectedRow.meta }
     ],
     action: selectedRow.action ?? null
+  };
+}
+
+function buildInboxErrorRecovery(inboxError: string | null): ReadinessConsoleRecoveryState | null {
+  if (!inboxError) {
+    return null;
+  }
+
+  return {
+    title: "Operator inbox unavailable",
+    detail: `${inboxError}. Retry the shared inbox before accepting readiness; fallback rows remain visible for triage.`,
+    actionLabel: "Retry inbox",
+    actionAriaLabel: "Retry loading operator inbox work items after failure"
   };
 }
 

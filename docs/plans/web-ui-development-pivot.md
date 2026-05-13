@@ -181,9 +181,9 @@ deterministic UTC labels, and validation/export commands should serialize throug
 state so one packet mutation cannot race another.
 Portfolio brokerage-sync trust snapshots should also format generated/synced timestamps as explicit
 UTC labels so operators do not have to infer time zones when accepting account state.
-Overview control-tower heartbeat labels, recent activity timestamps, and Settings diagnostic
-heartbeat/event evidence should use the same explicit UTC minute format instead of raw ISO or
-browser-local time.
+Overview control-tower heartbeat labels, recent activity timestamps, Settings diagnostic
+heartbeat/event evidence, and Price Alerts trigger/last-poll timing should use explicit UTC labels
+instead of raw ISO or browser-local time.
 Workflow preset launches should merge the returned preset mutation into the shell's in-memory
 workflow catalog immediately, preserving pinned/last-used ordering without requiring a full
 workspace bootstrap reload. Persisted workflow preset snapshots are versioned under

@@ -28,6 +28,7 @@ import {
   securityMasterCorporateActionsEndpoint,
   securityMasterOperatorOverridesEndpoint,
   securityMasterTradingParametersEndpoint,
+  workstationOperatorInboxEndpoint,
   workstationSecurityMasterIdentityEndpoint,
   workstationSecurityMasterSearchEndpoint
 } from "./lib/workstation-endpoints";
@@ -74,6 +75,8 @@ describe("Vite Meridian API proxy", () => {
     });
     const response = new FakeResponse();
     const breakQueueResponse = new FakeResponse();
+    const readinessResponse = new FakeResponse();
+    const scopedInboxResponse = new FakeResponse();
 
     const result = await bypass(
       { method: "GET", url: WORKSTATION_API_ENDPOINTS.session, headers: { accept: "application/json" } } as IncomingMessage,
@@ -98,6 +101,36 @@ describe("Vite Meridian API proxy", () => {
     expect(JSON.parse(breakQueueResponse.body)).toEqual([
       expect.objectContaining({ breakId: "run-42:cash", status: "Open" })
     ]);
+
+    await bypass(
+      {
+        method: "GET",
+        url: `${WORKSTATION_API_ENDPOINTS.tradingReadiness}?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749`,
+        headers: { accept: "application/json" }
+      } as IncomingMessage,
+      readinessResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      {
+        method: "GET",
+        url: workstationOperatorInboxEndpoint("53bf0251-17f6-4fb7-8dbe-6fb4966e2749"),
+        headers: { accept: "application/json" }
+      } as IncomingMessage,
+      scopedInboxResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(readinessResponse.statusCode).toBe(200);
+    expect(readinessResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(readinessResponse.body)).toMatchObject({
+      activeSession: expect.objectContaining({ sessionId: "paper-dev-42" })
+    });
+    expect(scopedInboxResponse.statusCode).toBe(200);
+    expect(scopedInboxResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(scopedInboxResponse.body)).toMatchObject({
+      summary: expect.stringContaining("operator review items")
+    });
   });
 
   it("serves seeded market-data fixtures for the no-host quote demo path", async () => {

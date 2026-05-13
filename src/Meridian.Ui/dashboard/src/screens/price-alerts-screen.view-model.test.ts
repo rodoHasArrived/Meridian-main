@@ -118,6 +118,9 @@ describe("formatters", () => {
     expect(formatPriceAlertTimestamp(undefined)).toBe("—");
     expect(formatPriceAlertTimestamp("not-a-date")).toBe("—");
   });
+  it("formats timestamps with deterministic UTC labels", () => {
+    expect(formatPriceAlertTimestamp("2026-05-12T14:02:37.000Z")).toBe("May 12, 14:02:37 UTC");
+  });
 });
 
 describe("price alert presentation state", () => {
@@ -140,6 +143,7 @@ describe("price alert presentation state", () => {
     expect(metrics).toHaveLength(3);
     expect(metrics[0]).toMatchObject({ label: "Active alerts", value: "2", tone: "default" });
     expect(metrics[1]).toMatchObject({ label: "Unacknowledged", value: "1", tone: "warning" });
+    expect(metrics[2].value).toBe("May 12, 14:02:37 UTC");
     expect(metrics[2].delta).toBe("Refreshed");
   });
 
@@ -167,6 +171,7 @@ describe("price alert presentation state", () => {
     expect(section.hasRows).toBe(true);
     expect(section.acknowledgeAllAction.disabled).toBe(false);
     expect(section.rows[0].acknowledgeAction?.ariaLabel).toContain("AAPL");
+    expect(section.rows[0].triggeredAtLabel).toBe("May 12, 14:02:37 UTC");
     expect(section.rows[1].acknowledgeAction).toBeNull();
   });
 });
