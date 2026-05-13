@@ -6839,210 +6839,209 @@ Use these documents together when planning or implementing new work:
 │   │       ├── JsonlPromotionRecordStore.cs
 │   │       └── StrategyRunStore.cs
 │   ├── Meridian.Ui
-│   │   ├── dashboard
-│   │   │   ├── artifacts
-│   │   │   │   └── automation
-│   │   │   │       ├── progress
-│   │   │   │       │   ├── command-palette-alpaca-setup-smoke.png
-│   │   │   │       │   ├── command-palette-hash-aware-smoke.png
-│   │   │   │       │   ├── evidence-manifest-action-smoke.png
-│   │   │   │       │   ├── live-quotes-order-readiness-handoff-smoke.png
-│   │   │   │       │   ├── overview-utc-smoke.png
-│   │   │   │       │   ├── portfolio-brokerage-sync-actions-smoke.png
-│   │   │   │       │   ├── portfolio-sync-trust-smoke.png
-│   │   │   │       │   ├── readiness-inbox-refresh-smoke.png
-│   │   │   │       │   ├── report-pack-actions-smoke.png
-│   │   │   │       │   ├── report-pack-reference-smoke.png
-│   │   │   │       │   ├── security-lots-desktop-smoke.png
-│   │   │   │       │   ├── security-lots-mobile-smoke.png
-│   │   │   │       │   ├── security-master-conflicts-retry-smoke.png
-│   │   │   │       │   ├── security-master-route-smoke.png
-│   │   │   │       │   ├── settings-live-ack-smoke.png
-│   │   │   │       │   ├── settings-utc-smoke.png
-│   │   │   │       │   ├── strategy-plottool-statistics-desktop.png
-│   │   │   │       │   ├── strategy-plottool-statistics-mobile.png
-│   │   │   │       │   ├── strategy-promotion-disabled-reason-smoke.png
-│   │   │   │       │   ├── strategy-promotion-smoke.png
-│   │   │   │       │   ├── watchlist-empty-value-mobile-smoke.png
-│   │   │   │       │   ├── watchlist-empty-value-smoke.png
-│   │   │   │       │   ├── watchlist-retry-smoke.png
-│   │   │   │       │   └── workstation-preview-smoke.png
-│   │   │   │       ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
-│   │   │   │       ├── web-ui-report-pack-profile-keyboard-smoke.png
-│   │   │   │       ├── web-ui-reporting-export-smoke.png
-│   │   │   │       ├── web-ui-reporting-mobile-smoke.png
-│   │   │   │       ├── web-ui-research-cash-disabled-mobile-smoke.png
-│   │   │   │       ├── web-ui-research-cash-disabled-smoke.png
-│   │   │   │       ├── web-ui-trading-paper-session-smoke.png
-│   │   │   │       └── web-ui-watchlist-sort-smoke.png
-│   │   │   ├── index.html
-│   │   │   ├── package-lock.json
-│   │   │   ├── package.json
-│   │   │   ├── postcss.config.cjs
-│   │   │   ├── src
-│   │   │   │   ├── app-shell.view-model.test.ts
-│   │   │   │   ├── app-shell.view-model.ts
-│   │   │   │   ├── app.test.tsx
-│   │   │   │   ├── app.tsx
-│   │   │   │   ├── assets
-│   │   │   │   │   └── brand
-│   │   │   │   │       └── meridian-mark.svg
-│   │   │   │   ├── components
-│   │   │   │   │   ├── data
-│   │   │   │   │   │   ├── backfill-validation-dashboard.tsx
-│   │   │   │   │   │   └── symbol-universe-manager.tsx
-│   │   │   │   │   ├── meridian
-│   │   │   │   │   │   ├── command-palette.test.tsx
-│   │   │   │   │   │   ├── command-palette.tsx
-│   │   │   │   │   │   ├── command-palette.view-model.test.ts
-│   │   │   │   │   │   ├── command-palette.view-model.ts
-│   │   │   │   │   │   ├── historical-chart.test.tsx
-│   │   │   │   │   │   ├── historical-chart.tsx
-│   │   │   │   │   │   ├── historical-chart.view-model.test.ts
-│   │   │   │   │   │   ├── historical-chart.view-model.ts
-│   │   │   │   │   │   ├── mega-menu.test.tsx
-│   │   │   │   │   │   ├── mega-menu.tsx
-│   │   │   │   │   │   ├── mega-menu.view-model.test.ts
-│   │   │   │   │   │   ├── mega-menu.view-model.ts
-│   │   │   │   │   │   ├── metric-card.test.tsx
-│   │   │   │   │   │   ├── metric-card.tsx
-│   │   │   │   │   │   ├── metric-card.view-model.test.ts
-│   │   │   │   │   │   ├── metric-card.view-model.ts
-│   │   │   │   │   │   ├── quant-plot.test.tsx
-│   │   │   │   │   │   ├── quant-plot.tsx
-│   │   │   │   │   │   ├── quant-plot.view-model.ts
-│   │   │   │   │   │   ├── security-details-tracker.tsx
-│   │   │   │   │   │   ├── security-details-tracker.view-model.test.ts
-│   │   │   │   │   │   ├── security-details-tracker.view-model.ts
-│   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
-│   │   │   │   │   │   ├── ui-kit-primitives.tsx
-│   │   │   │   │   │   ├── workspace-header.test.tsx
-│   │   │   │   │   │   ├── workspace-header.tsx
-│   │   │   │   │   │   ├── workspace-header.view-model.test.ts
-│   │   │   │   │   │   ├── workspace-header.view-model.ts
-│   │   │   │   │   │   ├── workspace-nav.test.tsx
-│   │   │   │   │   │   ├── workspace-nav.tsx
-│   │   │   │   │   │   ├── workspace-nav.view-model.test.ts
-│   │   │   │   │   │   └── workspace-nav.view-model.ts
-│   │   │   │   │   ├── settings
-│   │   │   │   │   │   └── provider-credential-setup.tsx
-│   │   │   │   │   └── ui
-│   │   │   │   │       ├── badge.tsx
-│   │   │   │   │       ├── button.test.tsx
-│   │   │   │   │       ├── button.tsx
-│   │   │   │   │       ├── button.view-model.test.ts
-│   │   │   │   │       ├── button.view-model.ts
-│   │   │   │   │       ├── card.tsx
-│   │   │   │   │       ├── dialog.test.tsx
-│   │   │   │   │       ├── dialog.tsx
-│   │   │   │   │       ├── dialog.view-model.test.ts
-│   │   │   │   │       ├── dialog.view-model.ts
-│   │   │   │   │       ├── input.tsx
-│   │   │   │   │       ├── label.tsx
-│   │   │   │   │       ├── progress.tsx
-│   │   │   │   │       ├── select.tsx
-│   │   │   │   │       ├── sheet.test.tsx
-│   │   │   │   │       ├── sheet.tsx
-│   │   │   │   │       └── tooltip.tsx
-│   │   │   │   ├── design-system-contract.test.ts
-│   │   │   │   ├── hooks
-│   │   │   │   │   ├── use-workstation-data.test.ts
-│   │   │   │   │   └── use-workstation-data.ts
-│   │   │   │   ├── lib
-│   │   │   │   │   ├── api.trading.test.ts
-│   │   │   │   │   ├── api.ts
-│   │   │   │   │   ├── dev-fixtures.ts
-│   │   │   │   │   ├── price-alerts
-│   │   │   │   │   │   ├── evaluator.test.ts
-│   │   │   │   │   │   ├── evaluator.ts
-│   │   │   │   │   │   ├── service.test.tsx
-│   │   │   │   │   │   ├── service.ts
-│   │   │   │   │   │   ├── storage.test.ts
-│   │   │   │   │   │   ├── storage.ts
-│   │   │   │   │   │   └── types.ts
-│   │   │   │   │   ├── utils.ts
-│   │   │   │   │   ├── workspace.test.ts
-│   │   │   │   │   ├── workspace.ts
-│   │   │   │   │   ├── workstation-endpoints.test.ts
-│   │   │   │   │   └── workstation-endpoints.ts
-│   │   │   │   ├── main.tsx
-│   │   │   │   ├── screens
-│   │   │   │   │   ├── data-operations-screen.test.tsx
-│   │   │   │   │   ├── data-operations-screen.tsx
-│   │   │   │   │   ├── data-operations-screen.view-model.test.ts
-│   │   │   │   │   ├── data-operations-screen.view-model.ts
-│   │   │   │   │   ├── evidence-workbench-screen.tsx
-│   │   │   │   │   ├── evidence-workbench-screen.view-model.test.tsx
-│   │   │   │   │   ├── evidence-workbench-screen.view-model.ts
-│   │   │   │   │   ├── governance-screen.test.tsx
-│   │   │   │   │   ├── governance-screen.tsx
-│   │   │   │   │   ├── governance-screen.view-model.test.ts
-│   │   │   │   │   ├── governance-screen.view-model.ts
-│   │   │   │   │   ├── live-quotes-screen.test.tsx
-│   │   │   │   │   ├── live-quotes-screen.tsx
-│   │   │   │   │   ├── live-quotes-screen.view-model.ts
-│   │   │   │   │   ├── operator-readiness-console.test.tsx
-│   │   │   │   │   ├── operator-readiness-console.tsx
-│   │   │   │   │   ├── operator-readiness-console.view-model.test.ts
-│   │   │   │   │   ├── operator-readiness-console.view-model.ts
-│   │   │   │   │   ├── overview-screen.test.tsx
-│   │   │   │   │   ├── overview-screen.tsx
-│   │   │   │   │   ├── overview-screen.view-model.test.ts
-│   │   │   │   │   ├── overview-screen.view-model.ts
-│   │   │   │   │   ├── portfolio-screen.test.tsx
-│   │   │   │   │   ├── portfolio-screen.tsx
-│   │   │   │   │   ├── portfolio-screen.view-model.test.ts
-│   │   │   │   │   ├── portfolio-screen.view-model.ts
-│   │   │   │   │   ├── price-alerts-screen.test.tsx
-│   │   │   │   │   ├── price-alerts-screen.tsx
-│   │   │   │   │   ├── price-alerts-screen.view-model.test.ts
-│   │   │   │   │   ├── price-alerts-screen.view-model.ts
-│   │   │   │   │   ├── quant-lab-screen.test.tsx
-│   │   │   │   │   ├── quant-lab-screen.tsx
-│   │   │   │   │   ├── quant-lab-screen.view-model.test.ts
-│   │   │   │   │   ├── quant-lab-screen.view-model.ts
-│   │   │   │   │   ├── reporting-screen.test.tsx
-│   │   │   │   │   ├── reporting-screen.tsx
-│   │   │   │   │   ├── reporting-screen.view-model.test.ts
-│   │   │   │   │   ├── reporting-screen.view-model.ts
-│   │   │   │   │   ├── research-screen.test.tsx
-│   │   │   │   │   ├── research-screen.tsx
-│   │   │   │   │   ├── research-screen.view-model.test.ts
-│   │   │   │   │   ├── research-screen.view-model.ts
-│   │   │   │   │   ├── settings-screen.test.tsx
-│   │   │   │   │   ├── settings-screen.tsx
-│   │   │   │   │   ├── settings-screen.view-model.test.ts
-│   │   │   │   │   ├── settings-screen.view-model.ts
-│   │   │   │   │   ├── strategy-designer-screen.test.tsx
-│   │   │   │   │   ├── strategy-designer-screen.tsx
-│   │   │   │   │   ├── strategy-designer-screen.view-model.test.ts
-│   │   │   │   │   ├── strategy-designer-screen.view-model.ts
-│   │   │   │   │   ├── today-panel.view-model.test.ts
-│   │   │   │   │   ├── today-panel.view-model.ts
-│   │   │   │   │   ├── trading-screen.test.tsx
-│   │   │   │   │   ├── trading-screen.tsx
-│   │   │   │   │   ├── trading-screen.view-model.test.ts
-│   │   │   │   │   ├── trading-screen.view-model.ts
-│   │   │   │   │   ├── watchlist-screen.test.tsx
-│   │   │   │   │   ├── watchlist-screen.tsx
-│   │   │   │   │   ├── watchlist-screen.view-model.test.ts
-│   │   │   │   │   └── watchlist-screen.view-model.ts
-│   │   │   │   ├── styles
-│   │   │   │   │   └── index.css
-│   │   │   │   ├── test
-│   │   │   │   │   ├── render.tsx
-│   │   │   │   │   └── setup.ts
-│   │   │   │   ├── types.ts
-│   │   │   │   ├── vite-config.test.ts
-│   │   │   │   └── vite-env.d.ts
-│   │   │   ├── tailwind.config.ts
-│   │   │   ├── tsc-output.txt
-│   │   │   ├── tsconfig.json
-│   │   │   ├── tsconfig.node.json
-│   │   │   └── vite.config.ts
-│   │   └── wwwroot
-│   │       └── workstation
-│   │           └── index.html
+│   │   └── dashboard
+│   │       ├── artifacts
+│   │       │   └── automation
+│   │       │       ├── price-alerts-screen.json
+│   │       │       ├── price-alerts-seed.json
+│   │       │       ├── progress
+│   │       │       │   ├── command-palette-alpaca-setup-smoke.png
+│   │       │       │   ├── command-palette-hash-aware-smoke.png
+│   │       │       │   ├── evidence-manifest-action-smoke.png
+│   │       │       │   ├── live-quotes-order-readiness-handoff-smoke.png
+│   │       │       │   ├── overview-utc-smoke.png
+│   │       │       │   ├── portfolio-brokerage-sync-actions-smoke.png
+│   │       │       │   ├── portfolio-sync-trust-smoke.png
+│   │       │       │   ├── readiness-inbox-refresh-smoke.png
+│   │       │       │   ├── report-pack-actions-smoke.png
+│   │       │       │   ├── report-pack-reference-smoke.png
+│   │       │       │   ├── security-lots-desktop-smoke.png
+│   │       │       │   ├── security-lots-mobile-smoke.png
+│   │       │       │   ├── security-master-conflicts-retry-smoke.png
+│   │       │       │   ├── security-master-route-smoke.png
+│   │       │       │   ├── settings-live-ack-smoke.png
+│   │       │       │   ├── settings-utc-smoke.png
+│   │       │       │   ├── strategy-plottool-statistics-desktop.png
+│   │       │       │   ├── strategy-plottool-statistics-mobile.png
+│   │       │       │   ├── strategy-promotion-disabled-reason-smoke.png
+│   │       │       │   ├── strategy-promotion-smoke.png
+│   │       │       │   ├── watchlist-empty-value-mobile-smoke.png
+│   │       │       │   ├── watchlist-empty-value-smoke.png
+│   │       │       │   ├── watchlist-retry-smoke.png
+│   │       │       │   └── workstation-preview-smoke.png
+│   │       │       ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
+│   │       │       ├── web-ui-report-pack-profile-keyboard-smoke.png
+│   │       │       ├── web-ui-reporting-export-smoke.png
+│   │       │       ├── web-ui-reporting-mobile-smoke.png
+│   │       │       ├── web-ui-research-cash-disabled-mobile-smoke.png
+│   │       │       ├── web-ui-research-cash-disabled-smoke.png
+│   │       │       ├── web-ui-trading-paper-session-smoke.png
+│   │       │       └── web-ui-watchlist-sort-smoke.png
+│   │       ├── index.html
+│   │       ├── package-lock.json
+│   │       ├── package.json
+│   │       ├── postcss.config.cjs
+│   │       ├── src
+│   │       │   ├── app-shell.view-model.test.ts
+│   │       │   ├── app-shell.view-model.ts
+│   │       │   ├── app.test.tsx
+│   │       │   ├── app.tsx
+│   │       │   ├── assets
+│   │       │   │   └── brand
+│   │       │   │       └── meridian-mark.svg
+│   │       │   ├── components
+│   │       │   │   ├── data
+│   │       │   │   │   ├── backfill-validation-dashboard.tsx
+│   │       │   │   │   └── symbol-universe-manager.tsx
+│   │       │   │   ├── meridian
+│   │       │   │   │   ├── command-palette.test.tsx
+│   │       │   │   │   ├── command-palette.tsx
+│   │       │   │   │   ├── command-palette.view-model.test.ts
+│   │       │   │   │   ├── command-palette.view-model.ts
+│   │       │   │   │   ├── historical-chart.test.tsx
+│   │       │   │   │   ├── historical-chart.tsx
+│   │       │   │   │   ├── historical-chart.view-model.test.ts
+│   │       │   │   │   ├── historical-chart.view-model.ts
+│   │       │   │   │   ├── mega-menu.test.tsx
+│   │       │   │   │   ├── mega-menu.tsx
+│   │       │   │   │   ├── mega-menu.view-model.test.ts
+│   │       │   │   │   ├── mega-menu.view-model.ts
+│   │       │   │   │   ├── metric-card.test.tsx
+│   │       │   │   │   ├── metric-card.tsx
+│   │       │   │   │   ├── metric-card.view-model.test.ts
+│   │       │   │   │   ├── metric-card.view-model.ts
+│   │       │   │   │   ├── quant-plot.test.tsx
+│   │       │   │   │   ├── quant-plot.tsx
+│   │       │   │   │   ├── quant-plot.view-model.ts
+│   │       │   │   │   ├── security-details-tracker.tsx
+│   │       │   │   │   ├── security-details-tracker.view-model.test.ts
+│   │       │   │   │   ├── security-details-tracker.view-model.ts
+│   │       │   │   │   ├── ui-kit-primitives.test.tsx
+│   │       │   │   │   ├── ui-kit-primitives.tsx
+│   │       │   │   │   ├── workspace-header.test.tsx
+│   │       │   │   │   ├── workspace-header.tsx
+│   │       │   │   │   ├── workspace-header.view-model.test.ts
+│   │       │   │   │   ├── workspace-header.view-model.ts
+│   │       │   │   │   ├── workspace-nav.test.tsx
+│   │       │   │   │   ├── workspace-nav.tsx
+│   │       │   │   │   ├── workspace-nav.view-model.test.ts
+│   │       │   │   │   └── workspace-nav.view-model.ts
+│   │       │   │   ├── settings
+│   │       │   │   │   └── provider-credential-setup.tsx
+│   │       │   │   └── ui
+│   │       │   │       ├── badge.tsx
+│   │       │   │       ├── button.test.tsx
+│   │       │   │       ├── button.tsx
+│   │       │   │       ├── button.view-model.test.ts
+│   │       │   │       ├── button.view-model.ts
+│   │       │   │       ├── card.tsx
+│   │       │   │       ├── dialog.test.tsx
+│   │       │   │       ├── dialog.tsx
+│   │       │   │       ├── dialog.view-model.test.ts
+│   │       │   │       ├── dialog.view-model.ts
+│   │       │   │       ├── input.tsx
+│   │       │   │       ├── label.tsx
+│   │       │   │       ├── progress.tsx
+│   │       │   │       ├── select.tsx
+│   │       │   │       ├── sheet.test.tsx
+│   │       │   │       ├── sheet.tsx
+│   │       │   │       └── tooltip.tsx
+│   │       │   ├── design-system-contract.test.ts
+│   │       │   ├── hooks
+│   │       │   │   ├── use-workstation-data.test.ts
+│   │       │   │   └── use-workstation-data.ts
+│   │       │   ├── lib
+│   │       │   │   ├── api.trading.test.ts
+│   │       │   │   ├── api.ts
+│   │       │   │   ├── dev-fixtures.ts
+│   │       │   │   ├── price-alerts
+│   │       │   │   │   ├── evaluator.test.ts
+│   │       │   │   │   ├── evaluator.ts
+│   │       │   │   │   ├── service.test.tsx
+│   │       │   │   │   ├── service.ts
+│   │       │   │   │   ├── storage.test.ts
+│   │       │   │   │   ├── storage.ts
+│   │       │   │   │   └── types.ts
+│   │       │   │   ├── utils.ts
+│   │       │   │   ├── workspace.test.ts
+│   │       │   │   ├── workspace.ts
+│   │       │   │   ├── workstation-endpoints.test.ts
+│   │       │   │   └── workstation-endpoints.ts
+│   │       │   ├── main.tsx
+│   │       │   ├── screens
+│   │       │   │   ├── data-operations-screen.test.tsx
+│   │       │   │   ├── data-operations-screen.tsx
+│   │       │   │   ├── data-operations-screen.view-model.test.ts
+│   │       │   │   ├── data-operations-screen.view-model.ts
+│   │       │   │   ├── evidence-workbench-screen.tsx
+│   │       │   │   ├── evidence-workbench-screen.view-model.test.tsx
+│   │       │   │   ├── evidence-workbench-screen.view-model.ts
+│   │       │   │   ├── governance-screen.test.tsx
+│   │       │   │   ├── governance-screen.tsx
+│   │       │   │   ├── governance-screen.view-model.test.ts
+│   │       │   │   ├── governance-screen.view-model.ts
+│   │       │   │   ├── live-quotes-screen.test.tsx
+│   │       │   │   ├── live-quotes-screen.tsx
+│   │       │   │   ├── live-quotes-screen.view-model.ts
+│   │       │   │   ├── operator-readiness-console.test.tsx
+│   │       │   │   ├── operator-readiness-console.tsx
+│   │       │   │   ├── operator-readiness-console.view-model.test.ts
+│   │       │   │   ├── operator-readiness-console.view-model.ts
+│   │       │   │   ├── overview-screen.test.tsx
+│   │       │   │   ├── overview-screen.tsx
+│   │       │   │   ├── overview-screen.view-model.test.ts
+│   │       │   │   ├── overview-screen.view-model.ts
+│   │       │   │   ├── portfolio-screen.test.tsx
+│   │       │   │   ├── portfolio-screen.tsx
+│   │       │   │   ├── portfolio-screen.view-model.test.ts
+│   │       │   │   ├── portfolio-screen.view-model.ts
+│   │       │   │   ├── price-alerts-screen.test.tsx
+│   │       │   │   ├── price-alerts-screen.tsx
+│   │       │   │   ├── price-alerts-screen.view-model.test.ts
+│   │       │   │   ├── price-alerts-screen.view-model.ts
+│   │       │   │   ├── quant-lab-screen.test.tsx
+│   │       │   │   ├── quant-lab-screen.tsx
+│   │       │   │   ├── quant-lab-screen.view-model.test.ts
+│   │       │   │   ├── quant-lab-screen.view-model.ts
+│   │       │   │   ├── reporting-screen.test.tsx
+│   │       │   │   ├── reporting-screen.tsx
+│   │       │   │   ├── reporting-screen.view-model.test.ts
+│   │       │   │   ├── reporting-screen.view-model.ts
+│   │       │   │   ├── research-screen.test.tsx
+│   │       │   │   ├── research-screen.tsx
+│   │       │   │   ├── research-screen.view-model.test.ts
+│   │       │   │   ├── research-screen.view-model.ts
+│   │       │   │   ├── settings-screen.test.tsx
+│   │       │   │   ├── settings-screen.tsx
+│   │       │   │   ├── settings-screen.view-model.test.ts
+│   │       │   │   ├── settings-screen.view-model.ts
+│   │       │   │   ├── strategy-designer-screen.test.tsx
+│   │       │   │   ├── strategy-designer-screen.tsx
+│   │       │   │   ├── strategy-designer-screen.view-model.test.ts
+│   │       │   │   ├── strategy-designer-screen.view-model.ts
+│   │       │   │   ├── today-panel.view-model.test.ts
+│   │       │   │   ├── today-panel.view-model.ts
+│   │       │   │   ├── trading-screen.test.tsx
+│   │       │   │   ├── trading-screen.tsx
+│   │       │   │   ├── trading-screen.view-model.test.ts
+│   │       │   │   ├── trading-screen.view-model.ts
+│   │       │   │   ├── watchlist-screen.test.tsx
+│   │       │   │   ├── watchlist-screen.tsx
+│   │       │   │   ├── watchlist-screen.view-model.test.ts
+│   │       │   │   └── watchlist-screen.view-model.ts
+│   │       │   ├── styles
+│   │       │   │   └── index.css
+│   │       │   ├── test
+│   │       │   │   ├── render.tsx
+│   │       │   │   └── setup.ts
+│   │       │   ├── types.ts
+│   │       │   ├── vite-config.test.ts
+│   │       │   └── vite-env.d.ts
+│   │       ├── tailwind.config.ts
+│   │       ├── tsc-output.txt
+│   │       ├── tsconfig.json
+│   │       ├── tsconfig.node.json
+│   │       └── vite.config.ts
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
 │   │   │   ├── BoundedObservableCollection.cs
@@ -8638,10 +8637,46 @@ Use these documents together when planning or implementing new work:
 └── wwwroot
     └── workstation
         ├── assets
-        │   ├── index-B6vmAcIy.js
-        │   └── index-B6xPZbt9.css
+        │   ├── activity-DdzC2NHl.js
+        │   ├── arrow-right-BQMXU4Qj.js
+        │   ├── briefcase-business-TKfvxiVx.js
+        │   ├── circle-alert-HHMNSH16.js
+        │   ├── circle-check-DPF4ogK2.js
+        │   ├── circle-x-CMg0Qc3V.js
+        │   ├── clipboard-list-DAEDYX46.js
+        │   ├── data-operations-screen-B3QBwTVq.js
+        │   ├── dialog-DSdabj2S.js
+        │   ├── evidence-workbench-screen-eYN2-zbn.js
+        │   ├── external-link-BZXdW9W9.js
+        │   ├── file-text-N-hievbj.js
+        │   ├── governance-screen-DqY6ddBm.js
+        │   ├── index-C40I5Ro9.js
+        │   ├── index-aS_m2ekp.css
+        │   ├── input-Cy4wm2Ml.js
+        │   ├── live-quotes-screen--RkhoaOE.js
+        │   ├── metric-card-BbZrlC_6.js
+        │   ├── network-1U1oL-WT.js
+        │   ├── operator-readiness-console-BRtzgXL5.js
+        │   ├── overview-screen-BR5AraLj.js
+        │   ├── plus-Cw2iQHnA.js
+        │   ├── portfolio-screen-CSEy6zr5.js
+        │   ├── price-alerts-screen-COXY9m6l.js
+        │   ├── quant-lab-screen-Dpy7KWIY.js
+        │   ├── refresh-cw-Dp5Clkb9.js
+        │   ├── reporting-screen-BliDtXaE.js
+        │   ├── research-screen-Df8dFRgK.js
+        │   ├── rotate-ccw-DOv9SmtZ.js
+        │   ├── select-Dydh4qce.js
+        │   ├── settings-screen-DpB0U5fm.js
+        │   ├── sparkles-CPzvLarX.js
+        │   ├── trading-screen-DJVhwdT7.js
+        │   ├── trash-2-DG_-jE3C.js
+        │   ├── trending-up-CyiwhFqC.js
+        │   ├── ui-kit-primitives-1LSkXU-q.js
+        │   ├── wallet-SSwWmFz-.js
+        │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-711 directories, 7722 files
+709 directories, 7759 files
 ```
 <!-- readme-tree end -->
