@@ -1,4 +1,4 @@
-using Meridian.Wpf.Features.Data.Shell;
+using Meridian.Wpf.Services;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Models;
