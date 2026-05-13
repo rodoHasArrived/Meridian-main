@@ -179,16 +179,88 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             FailureMessage: state.Failure));
     }
 
-    public ValueTask<CoveredCallRunResult?> GetResultAsync(string runId, CancellationToken ct = default)
+    public async ValueTask<CoveredCallRunResult?> GetResultAsync(string runId, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
 
         if (_resultCache.TryGetValue(CacheKey(runId), out CoveredCallRunResult? cached) && cached is not null)
         {
-            return ValueTask.FromResult<CoveredCallRunResult?>(cached);
+            return cached;
         }
 
-        return ValueTask.FromResult<CoveredCallRunResult?>(null);
+        var entry = await TryGetRunEntryAsync(runId, ct).ConfigureAwait(false);
+        if (entry is null)
+        {
+            return null;
+        }
+
+        var persistedResult = TryReadPersistedResult(entry);
+        if (persistedResult is null)
+        {
+            return null;
+        }
+
+        CacheResult(runId, persistedResult);
+        return persistedResult;
+    }
+
+    private async ValueTask<StrategyRunEntry?> TryGetRunEntryAsync(string runId, CancellationToken ct)
+    {
+        var query = new StrategyRunRepositoryQuery(
+            StrategyId: StrategyId,
+            RunTypes: null,
+            Status: null,
+            Limit: 1);
+
+        var entries = await _runRepository.QueryRunsAsync(query, ct).ConfigureAwait(false);
+        foreach (var entry in entries)
+        {
+            if (string.Equals(entry.RunId, runId, StringComparison.Ordinal))
+            {
+                return entry;
+            }
+        }
+
+        return null;
+    }
+
+    private CoveredCallRunResult? TryReadPersistedResult(StrategyRunEntry entry)
+    {
+        const string ResultMetadataKey = "coveredCallResult";
+
+        if (entry.Metadata is null)
+        {
+            return null;
+        }
+
+        if (!entry.Metadata.TryGetValue(ResultMetadataKey, out var serializedResult) || string.IsNullOrWhiteSpace(serializedResult))
+        {
+            return null;
+        }
+
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<CoveredCallRunResult>(serializedResult);
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Covered-call run {RunId} contains unreadable persisted result metadata",
+                entry.RunId);
+            return null;
+        }
+    }
+
+    private void CacheResult(string runId, CoveredCallRunResult result)
+    {
+        _resultCache.Set(
+            CacheKey(runId),
+            result,
+            new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = _options.CurrentValue.ResultCacheDuration
+            });
     }
 
     public async ValueTask<IReadOnlyList<CoveredCallRunSummary>> ListRunsAsync(int limit = 50, CancellationToken ct = default)
