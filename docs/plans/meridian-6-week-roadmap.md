@@ -141,7 +141,7 @@ The six-week horizon remains the execution target, but detailed pre-work is requ
 
 ### Outcome 3: Wave 3 shared-model continuity is stronger across workspaces
 
-- `Research`, `Trading`, and `Governance` rely more consistently on the shared run, portfolio, and ledger model
+- `Strategy`, `Trading`, `Portfolio`, `Accounting`, and `Reporting` rely more consistently on the shared run, portfolio, and ledger model
 - run comparison, fills, attribution, ledger, cash-flow, and reconciliation flows feel more like one system than adjacent slices
 - brokerage/account posture, household portfolio rollups, performance, and cash-flow summaries reinforce the same shared model without becoming a live-readiness shortcut
 - WPF refinements in scope reinforce the same shared orchestration seams instead of introducing new page-local logic

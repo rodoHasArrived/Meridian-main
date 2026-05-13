@@ -112,6 +112,6 @@ These are optional research-depth improvements, not blockers for the current wor
 ## Related Documents
 
 - [QuantScript Page Implementation Guide](quant-script-page-implementation-guide.md)
-- [L3 Inference Implementation Plan](l3-inference-implementation-plan.md)
-- [QuantScript L3 Multi-instance Round 2 Roadmap](quantscript-l3-multiinstance-round2-roadmap.md)
-- [ROADMAP.md](../status/ROADMAP.md)
+- [L3 Inference Implementation Plan](../../../docs/plans/l3-inference-implementation-plan.md)
+- [QuantScript L3 Multi-instance Round 2 Roadmap](../../../docs/plans/quantscript-l3-multiinstance-round2-roadmap.md)
+- [ROADMAP.md](../../../docs/status/ROADMAP.md)

@@ -300,7 +300,7 @@ Welcome readiness progress, Storage preview scope/guidance, OrderBook order-flow
 
 - Register all existing trading/backtesting pages consistently in WPF navigation.
 - Add command palette entries for backtest, trading, and portfolio-ledger workflows.
-- Consolidate top-level navigation into `Research`, `Trading`, `Data Operations`, `Governance`.
+- Keep top-level navigation aligned to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`, with `Research`, `Data Operations`, and `Governance` retained only as compatibility aliases or planning shorthand.
 - Add cross-links between backtest, Lean, live viewer, and portfolio import flows.
 
 **Exit criteria**
@@ -455,7 +455,7 @@ The migration should be considered successful when the following are true:
 ## 11. Immediate Next Actions
 
 1. Align documentation and status reporting around this blueprint.
-2. Validate the implemented WPF shell baseline against real `Research`, `Trading`, `Data Operations`, and `Governance` workflows.
+2. Validate the browser-first workstation and retained WPF compatibility shell against real `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workflows.
 3. Keep shared `StrategyRun`, `PortfolioSummary`, `LedgerSummary`, reconciliation, and promotion contracts under the compatibility matrix.
 4. Tie cockpit acceptance to DK1 provider trust, replay/sample parity, promotion rationale, and session/replay reliability.
 5. Keep the Trading desk briefing hero consuming shared active-run, workflow-summary, and operator-readiness state, including risk/control audit explainability, rather than becoming a shell-local readiness model.

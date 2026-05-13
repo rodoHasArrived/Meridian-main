@@ -6,8 +6,8 @@
 **Status:** Proposed
 
 > Companion documents:
-> - [research-backtest-trust-and-velocity-blueprint.md](research-backtest-trust-and-velocity-blueprint.md)
-> - [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md)
+> - [research-backtest-trust-and-velocity-blueprint.md](../../../docs/plans/research-backtest-trust-and-velocity-blueprint.md)
+> - [backtest-studio-unification-blueprint.md](../../../docs/plans/backtest-studio-unification-blueprint.md)
 > - [quant-script-environment-blueprint.md](quant-script-environment-blueprint.md)
 > - [quant-script-page-implementation-guide.md](quant-script-page-implementation-guide.md)
 

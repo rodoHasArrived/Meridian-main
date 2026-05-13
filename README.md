@@ -204,7 +204,7 @@ Use these documents together when planning or implementing new work:
 - [docs/status/ROADMAP.md](docs/status/ROADMAP.md) for the canonical wave order: Wave 1 provider confidence and checkpoint evidence, Wave 2 paper-trading cockpit hardening, Wave 3 shared run / portfolio / ledger continuity, and Wave 4 governance and fund-operations productization on top of the delivered Security Master baseline
 - [docs/plans/evidence-backed-investment-operations-plan.md](docs/plans/evidence-backed-investment-operations-plan.md) for the product-category filter, commercial differentiation bets, sequencing rule, and archive-placement rule
 - [docs/plans/meridian-6-week-roadmap.md](docs/plans/meridian-6-week-roadmap.md) for the current time-boxed Waves 1-4 execution slice
-- [docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md](docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md) for the Wave 1 provider-confidence and checkpoint-evidence gate
+- [docs/status/provider-validation-matrix.md](docs/status/provider-validation-matrix.md) for the current provider-confidence evidence gate; the completed Wave 1 blueprint is archived at [archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md](archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md)
 - [docs/plans/trading-workstation-migration-blueprint.md](docs/plans/trading-workstation-migration-blueprint.md) for the Wave 2-3 workstation and shared-model implementation shape; the evidence-backed investment-operations plan supersedes older generic workstation positioning
 - [docs/plans/governance-fund-ops-blueprint.md](docs/plans/governance-fund-ops-blueprint.md) for Wave 4 governance and fund-operations depth on top of the delivered Security Master baseline
 - [docs/status/FEATURE_INVENTORY.md](docs/status/FEATURE_INVENTORY.md) for current-vs-target capability status
@@ -5038,7 +5038,6 @@ Use these documents together when planning or implementing new work:
 │   │   ├── assembly-performance-roadmap.md
 │   │   ├── backtest-studio-unification-blueprint.md
 │   │   ├── backtest-studio-unification-pr-sequenced-roadmap.md
-│   │   ├── backtesting-quantscript-improvement-plan-2026-04.md
 │   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── evidence-backed-investment-operations-plan.md
@@ -5050,23 +5049,14 @@ Use these documents together when planning or implementing new work:
 │   │   ├── l3-inference-implementation-plan.md
 │   │   ├── ledger.md
 │   │   ├── meridian-6-week-roadmap.md
-│   │   ├── meridian-analytics-productization-blueprint.md
 │   │   ├── meridian-database-blueprint.md
-│   │   ├── meridian-main-differentiation-report-2026-04-29.md
 │   │   ├── meridian-pilot-workflow.md
 │   │   ├── options-roadmap.md
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
 │   │   ├── portfolio-level-backtesting-composer-blueprint.md
-│   │   ├── provider-reliability-data-confidence-wave-1-blueprint.md
-│   │   ├── quant-script-environment-blueprint.md
-│   │   ├── quant-script-page-implementation-guide.md
 │   │   ├── quantscript-l3-multiinstance-round2-roadmap.md
-│   │   ├── readability-refactor-baseline.md
-│   │   ├── readability-refactor-roadmap.md
-│   │   ├── readability-refactor-technical-design-pack.md
 │   │   ├── research-backtest-trust-and-velocity-blueprint.md
 │   │   ├── runbook-template-registry-modernization-plan.md
-│   │   ├── security-master-productization-roadmap.md
 │   │   ├── trading-workstation-migration-blueprint.md
 │   │   ├── ufl-bond-target-state-v2.md
 │   │   ├── ufl-cash-sweep-target-state-v2.md

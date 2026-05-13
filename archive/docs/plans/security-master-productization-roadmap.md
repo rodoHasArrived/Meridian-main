@@ -10,7 +10,7 @@
 ## Naming Standard
 
 All new F# types and C# DTOs introduced by this roadmap must follow the
-[Meridian Domain Naming Standard](../ai/claude/CLAUDE.domain-naming.md).
+[Meridian Domain Naming Standard](../../../docs/ai/claude/CLAUDE.domain-naming.md).
 
 **Quick reference for types proposed in this roadmap:**
 
@@ -47,7 +47,7 @@ Security Master is no longer a future roadmap wave. In the canonical roadmap it 
 
 **Canonical status source note (2026-04-25):**
 
-- Treat [`../status/ROADMAP.md`](../status/ROADMAP.md) and [`../status/PROGRAM_STATE.md`](../status/PROGRAM_STATE.md) as the canonical wave status sources.
+- Treat [`ROADMAP.md`](../../../docs/status/ROADMAP.md) and [`PROGRAM_STATE.md`](../../../docs/status/PROGRAM_STATE.md) as the canonical wave status sources.
 - Treat this roadmap as the delivered-baseline reference for Security Master mechanics and the starting point for Wave 4 governance/fund-operations follow-ons.
 - `docs/status/FEATURE_INVENTORY.md` should mirror the delivered Security Master baseline without treating Security Master as a separate later-wave item.
 
@@ -232,5 +232,5 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 - `src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs`
 - `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs`
 - `tests/Meridian.Tests/SecurityMaster/`
-- [`ROADMAP.md`](../status/ROADMAP.md) — delivered Security Master baseline plus Wave 4 governance follow-ons
-- [`FEATURE_INVENTORY.md`](../status/FEATURE_INVENTORY.md) — Security Master section
+- [`ROADMAP.md`](../../../docs/status/ROADMAP.md) — delivered Security Master baseline plus Wave 4 governance follow-ons
+- [`FEATURE_INVENTORY.md`](../../../docs/status/FEATURE_INVENTORY.md) — Security Master section

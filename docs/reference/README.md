@@ -43,6 +43,7 @@ This directory contains lookup-oriented reference material: API endpoints, data 
 | [EDGAR Reference Data](edgar-reference-data.md) | EDGAR filer, ticker association, XBRL fact, filing-derived security data, CLI, API, and local storage reference |
 | [Export Preflight Rules](export-preflight-rules.md) | Export validation rule engine, rule IDs, and reuse pattern |
 | [Governance Report Packs](governance-report-packs.md) | Local-first fund-ops report-pack artifact routes, contracts, and storage layout |
+| [Ledger Journal Store](ledger-journal-store.md) | Postgres journal-entry, accounting-period, migration, and DI contract |
 | [Backtest Preflight & Stage Telemetry](backtest-preflight-and-stage-telemetry.md) | Backtest trust-gate DTOs/service contract and stage-aware progress telemetry fields |
 | [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) | Versioned canonical break classes and reason codes used by ledger reconciliation |
 | [Research Briefing Workflow](research-briefing-workflow.md) | Shared Research workspace briefing contracts, endpoint, and shell binding flow |

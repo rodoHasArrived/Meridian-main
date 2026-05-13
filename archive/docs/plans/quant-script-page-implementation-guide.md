@@ -4,7 +4,7 @@
 **Audience:** Implementers, architects, and product contributors
 **Last Updated:** 2026-04-21
 **Status:** Implemented — QuantScript page, ViewModel, compiler/runner, notebook document flow, async-first APIs, runtime parameters, local run history, shared Research run integration, templates, and tests delivered
-**Supersedes / extends:** `docs/plans/quant-script-environment-blueprint.md` (v1 blueprint, 2026-03-18)
+**Supersedes / extends:** `archive/docs/plans/quant-script-environment-blueprint.md` (v1 blueprint, 2026-03-18)
 
 ---
 
@@ -1296,5 +1296,5 @@ tests/
 
 *Reference documents:*
 *— [quant-script-environment-blueprint.md](quant-script-environment-blueprint.md) — v1 architectural blueprint*
-*— [quantscript-l3-multiinstance-round2-roadmap.md](quantscript-l3-multiinstance-round2-roadmap.md) — round 2 feature ideas*
-*— [quant-script-blueprint-brainstorm.md](../evaluations/quant-script-blueprint-brainstorm.md) — design evaluation and improvement ideas*
+*— [quantscript-l3-multiinstance-round2-roadmap.md](../../../docs/plans/quantscript-l3-multiinstance-round2-roadmap.md) — round 2 feature ideas*
+*— [quant-script-blueprint-brainstorm.md](../../../docs/evaluations/quant-script-blueprint-brainstorm.md) — design evaluation and improvement ideas*

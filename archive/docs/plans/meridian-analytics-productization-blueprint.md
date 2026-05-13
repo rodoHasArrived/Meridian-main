@@ -7,9 +7,9 @@
 
 > Companion to:
 >
-> - [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md)
-> - [research-backtest-trust-and-velocity-blueprint.md](research-backtest-trust-and-velocity-blueprint.md)
-> - [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md)
+> - [trading-workstation-migration-blueprint.md](../../../docs/plans/trading-workstation-migration-blueprint.md)
+> - [research-backtest-trust-and-velocity-blueprint.md](../../../docs/plans/research-backtest-trust-and-velocity-blueprint.md)
+> - [governance-fund-ops-blueprint.md](../../../docs/plans/governance-fund-ops-blueprint.md)
 
 ---
 

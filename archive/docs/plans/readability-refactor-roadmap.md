@@ -905,4 +905,4 @@ This roadmap is **not** intended to:
 
 ## Companion Document
 
-For concrete folder structure, interface proposals, DTO examples, and migration sketches, see `docs/plans/readability-refactor-technical-design-pack.md`.
+For concrete folder structure, interface proposals, DTO examples, and migration sketches, see `archive/docs/plans/readability-refactor-technical-design-pack.md`.

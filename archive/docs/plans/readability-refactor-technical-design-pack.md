@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-20
 **Status:** Draft target design
-**Companion to:** `docs/plans/readability-refactor-roadmap.md`
+**Companion to:** `archive/docs/plans/readability-refactor-roadmap.md`
 
 ---
 

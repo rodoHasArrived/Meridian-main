@@ -2,88 +2,87 @@
 
 **Last Reviewed:** 2026-05-13
 
-This directory contains active blueprints, roadmaps, sprint backlogs, and target-state packages that support Meridian delivery. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); treat the documents here as subordinate execution plans, blueprints, or optional-track follow-ons rather than parallel strategy documents.
+This directory contains current Meridian execution plans, blueprints, and target-state packages. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); the files here are subordinate implementation plans, optional-track designs, or asset-package specifications.
 
-Current roadmap refresh note: the 2026-05-13 direction still positions Meridian as an evidence-backed investment operations platform. New operator UI work stays in the browser dashboard in `src/Meridian.Ui/dashboard/`; WPF plans and automation remain retained support unless a change is required for shared contracts, regression fixes, or compatibility evidence. Current browser evidence now includes the Overview Today panel, Price Alerts, Strategy Designer, full-console readiness checkpoints, and Meridian Design System reference workbench/tokenized-color support, while Waves 2-4 still require cockpit, shared-model, accounting, reconciliation, and governed-report acceptance evidence.
+Active planning direction:
 
-Deprecated, superseded, or historical plans belong under `archive/docs/` rather than in this active plans folder. Keep active plan references current, and point to archived files only for historical context.
+- Meridian is being productized as an evidence-backed investment operations platform.
+- New operator UI work belongs in the browser workstation under `src/Meridian.Ui/dashboard/`.
+- Retained WPF work is limited to shared contracts, regression fixes, compatibility evidence, and retained desktop support.
+- Top-level operator navigation remains `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`; legacy `Research`, `Data Operations`, and `Governance` names are compatibility or planning shorthand.
+- Completed, superseded, or historical plans belong under `archive/docs/`, not this active folder.
 
-## Core Operator-Ready Path (Waves 1-4)
+## Core Operator-Ready Path
 
-These are the plan documents that directly support the current path to the core operator-ready baseline.
+These are the active documents for Waves 2-4 and the current short-horizon execution lane.
 
-| Document | Purpose |
+| Document | Current role |
 | --- | --- |
-| [evidence-backed-investment-operations-plan.md](evidence-backed-investment-operations-plan.md) | Active product-category filter: trusted data -> research -> paper -> books -> reconciliation -> governed report evidence |
-| [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current six-week execution slice for Waves 1-4 |
-| [waves-2-4-operator-readiness-addendum.md](waves-2-4-operator-readiness-addendum.md) | Owner-lane, dependency, and exit-criteria addendum for the active Waves 2-4 path |
-| [provider-reliability-data-confidence-wave-1-blueprint.md](provider-reliability-data-confidence-wave-1-blueprint.md) | Wave 1 provider-confidence and checkpoint-evidence blueprint |
-| [paper-trading-cockpit-reliability-sprint.md](paper-trading-cockpit-reliability-sprint.md) | Wave 2 reliability sprint blueprint for replay confidence, session persistence, risk auditability, and promotion traceability |
-| [web-ui-development-pivot.md](web-ui-development-pivot.md) | Active plan for pausing desktop feature work and making the browser dashboard the operator UI lane |
-| [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | Historical WPF-first migration blueprint; re-scope open items to web-first workstation delivery |
-| [meridian-analytics-productization-blueprint.md](meridian-analytics-productization-blueprint.md) | Research -> Trading -> Governance analytics productization blueprint for notebooks, comparison, exports, handoff, and governed artifacts |
-| [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md) | Governance, reconciliation, and reporting blueprint on top of shared seams |
-| [ledger.md](ledger.md) | Phased ledger implementation plan: period management, PostgreSQL persistence, multi-ledger model, accruals, and governed reporting |
-| [fund-management-pr-sequenced-roadmap.md](fund-management-pr-sequenced-roadmap.md) | PR-sequenced Wave 4 governance and fund-operations slices |
-| [security-master-productization-roadmap.md](security-master-productization-roadmap.md) | Delivered Security Master baseline plus Wave 4 follow-ons |
-| [ufl-direct-lending-implementation-roadmap.md](ufl-direct-lending-implementation-roadmap.md) | Direct-lending delivery path on top of the UFL target state |
+| [evidence-backed-investment-operations-plan.md](evidence-backed-investment-operations-plan.md) | Product-category filter and archive rule for the active investment-operations direction |
+| [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current time-boxed execution slice for Waves 2-4 and trust-gate maintenance |
+| [waves-2-4-operator-readiness-addendum.md](waves-2-4-operator-readiness-addendum.md) | Owner lanes, dependencies, and exit criteria for Waves 2-4 |
+| [web-ui-development-pivot.md](web-ui-development-pivot.md) | Browser-first operator UI direction and retained desktop policy |
+| [meridian-pilot-workflow.md](meridian-pilot-workflow.md) | Golden-path pilot workflow and productization filter |
+| [paper-trading-cockpit-reliability-sprint.md](paper-trading-cockpit-reliability-sprint.md) | Wave 2 paper-session, replay, risk, promotion, and cockpit reliability plan |
+| [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | Workstation/shared-model migration context interpreted through the browser-first pivot |
+| [brokerage-portfolio-sync-blueprint.md](brokerage-portfolio-sync-blueprint.md) | Brokerage and custodian account-sync design for Wave 3-4 continuity |
+| [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md) | Wave 4 governance, reconciliation, and report-pack blueprint |
+| [ledger.md](ledger.md) | Ledger execution roadmap for period management, persistence, multi-ledger depth, accruals, and reporting |
+| [fund-management-pr-sequenced-roadmap.md](fund-management-pr-sequenced-roadmap.md) | PR-sized governance and fund-operations implementation path |
+| [fund-management-module-implementation-backlog.md](fund-management-module-implementation-backlog.md) | Module-by-module fund-management implementation backlog |
+| [fund-management-product-vision-and-capability-matrix.md](fund-management-product-vision-and-capability-matrix.md) | Product vision and phased capability matrix for broader fund-management depth |
 
-## Later-Wave Productization (Wave 5+)
+## Later-Wave Productization
 
-These docs matter, but they normally follow the Wave 1-4 operator-readiness path unless explicitly pulled forward.
+These plans remain useful, but they normally follow the Wave 2-4 operator-readiness path unless explicitly pulled forward.
 
-| Document | Purpose |
+| Document | Current role |
 | --- | --- |
-| [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md) | Wave 5 blueprint for unifying native and Lean backtesting into one product |
-| [backtest-studio-unification-pr-sequenced-roadmap.md](backtest-studio-unification-pr-sequenced-roadmap.md) | PR-sized Wave 5 execution path for Backtest Studio unification |
-| [portfolio-level-backtesting-composer-blueprint.md](portfolio-level-backtesting-composer-blueprint.md) | Portfolio-level composition, capital contention, and risk analytics blueprint |
-| [fund-management-product-vision-and-capability-matrix.md](fund-management-product-vision-and-capability-matrix.md) | Product vision and phased capability view for broader fund-management depth |
-| [fund-management-module-implementation-backlog.md](fund-management-module-implementation-backlog.md) | Project-by-project backlog for fund-management modules |
-| [meridian-database-blueprint.md](meridian-database-blueprint.md) | Database architecture blueprint supporting the broader platform |
-| [options-roadmap.md](options-roadmap.md) | Options and derivatives roadmap outside the default core operator-ready path |
+| [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md) | Wave 5 blueprint for unifying native and Lean backtesting |
+| [backtest-studio-unification-pr-sequenced-roadmap.md](backtest-studio-unification-pr-sequenced-roadmap.md) | PR-sized Wave 5 Backtest Studio execution path |
+| [research-backtest-trust-and-velocity-blueprint.md](research-backtest-trust-and-velocity-blueprint.md) | Focused Research workflow hardening blueprint before full Backtest Studio unification |
+| [portfolio-level-backtesting-composer-blueprint.md](portfolio-level-backtesting-composer-blueprint.md) | Portfolio-level backtest composition, capital contention, and risk analytics design |
+| [options-roadmap.md](options-roadmap.md) | Options and derivatives roadmap outside the default core operator-ready gate |
+| [meridian-database-blueprint.md](meridian-database-blueprint.md) | Database architecture direction supporting platform depth |
+| [runbook-template-registry-modernization-plan.md](runbook-template-registry-modernization-plan.md) | Runbook/template registry modernization plan |
 
-## Optional Research And Scale Tracks
+## UFL And Asset Packages
 
-These plans can deepen Meridian's research and performance story, but they are not part of the default core operator-readiness gate.
+Start with [ufl-supported-assets-index.md](ufl-supported-assets-index.md). The individual target-state packages remain active reference designs for Security Master, ledger, accounting, and reporting work.
 
-| Document | Purpose |
+| Area | Documents |
 | --- | --- |
-| [quant-script-environment-blueprint.md](quant-script-environment-blueprint.md) | High-level QuantScript blueprint and product-placement reference |
-| [quant-script-page-implementation-guide.md](quant-script-page-implementation-guide.md) | Page-level implementation guidance for the QuantScript surface |
-| [backtesting-quantscript-improvement-plan-2026-04.md](backtesting-quantscript-improvement-plan-2026-04.md) | Integrated improvement plan for backtesting trust/velocity and QuantScript workflow continuity |
-| [l3-inference-implementation-plan.md](l3-inference-implementation-plan.md) | L3 inference implementation design and rollout plan |
-| [quantscript-l3-multiinstance-round2-roadmap.md](quantscript-l3-multiinstance-round2-roadmap.md) | Multi-instance and L3-focused optional follow-on roadmap |
+| Index and direct lending | [ufl-supported-assets-index.md](ufl-supported-assets-index.md), [ufl-direct-lending-implementation-roadmap.md](ufl-direct-lending-implementation-roadmap.md), [ufl-direct-lending-target-state-v2.md](ufl-direct-lending-target-state-v2.md) |
+| Listed and derivative instruments | [ufl-equity-target-state-v2.md](ufl-equity-target-state-v2.md), [ufl-option-target-state-v2.md](ufl-option-target-state-v2.md), [ufl-future-target-state-v2.md](ufl-future-target-state-v2.md), [ufl-warrant-target-state-v2.md](ufl-warrant-target-state-v2.md), [ufl-cfd-target-state-v2.md](ufl-cfd-target-state-v2.md), [ufl-swap-target-state-v2.md](ufl-swap-target-state-v2.md) |
+| Rates, cash, and credit | [ufl-bond-target-state-v2.md](ufl-bond-target-state-v2.md), [ufl-treasury-bill-target-state-v2.md](ufl-treasury-bill-target-state-v2.md), [ufl-commercial-paper-target-state-v2.md](ufl-commercial-paper-target-state-v2.md), [ufl-certificate-of-deposit-target-state-v2.md](ufl-certificate-of-deposit-target-state-v2.md), [ufl-deposit-target-state-v2.md](ufl-deposit-target-state-v2.md), [ufl-cash-sweep-target-state-v2.md](ufl-cash-sweep-target-state-v2.md), [ufl-money-market-fund-target-state-v2.md](ufl-money-market-fund-target-state-v2.md), [ufl-repo-target-state-v2.md](ufl-repo-target-state-v2.md) |
+| Other asset coverage | [ufl-fx-spot-target-state-v2.md](ufl-fx-spot-target-state-v2.md), [ufl-commodity-target-state-v2.md](ufl-commodity-target-state-v2.md), [ufl-crypto-target-state-v2.md](ufl-crypto-target-state-v2.md), [ufl-other-security-target-state-v2.md](ufl-other-security-target-state-v2.md) |
 
-## Unified Financial Ledger (UFL) Target States
+## Technical And Optional Tracks
 
-The `ufl-*` documents define target-state designs for each instrument type supported by Meridian's Unified Financial Ledger. Start with [ufl-supported-assets-index.md](ufl-supported-assets-index.md) for the full asset-package index.
+These are active or consciously deferred engineering tracks. They should not compete with the core operator-ready path unless a concrete blocker or explicit roadmap decision pulls them forward.
 
-Active UFL target-state references include direct lending, equity, options, futures, bonds, money market funds, repos, and swaps. Additional package docs in this folder cover FX spot, deposits, certificates of deposit, commercial paper, treasury bills, cash sweep, CFDs, commodities, crypto, warrants, and other-security fallback handling.
-
-## Technical Refactors And Platform Work
-
-| Document | Purpose |
+| Document | Current role |
 | --- | --- |
-| [readability-refactor-roadmap.md](readability-refactor-roadmap.md) | Readability refactor execution plan |
-| [readability-refactor-baseline.md](readability-refactor-baseline.md) | Baseline measurements before readability work |
-| [readability-refactor-technical-design-pack.md](readability-refactor-technical-design-pack.md) | Technical design pack for readability refactoring |
-| [codebase-audit-cleanup-roadmap.md](codebase-audit-cleanup-roadmap.md) | Cleanup and simplification roadmap informed by audits |
-| [assembly-performance-roadmap.md](assembly-performance-roadmap.md) | Optional advanced-performance track that normally follows the core operator-ready path |
+| [codebase-audit-cleanup-roadmap.md](codebase-audit-cleanup-roadmap.md) | Active cleanup and maintainability backlog |
+| [kernel-parity-migration-blueprint.md](kernel-parity-migration-blueprint.md) | C# to F# kernel parity fixture and CI-gate blueprint |
+| [l3-inference-implementation-plan.md](l3-inference-implementation-plan.md) | Optional L3 inference and queue-aware execution simulation plan |
+| [quantscript-l3-multiinstance-round2-roadmap.md](quantscript-l3-multiinstance-round2-roadmap.md) | Optional QuantScript, L3, and multi-instance follow-on roadmap |
+| [assembly-performance-roadmap.md](assembly-performance-roadmap.md) | Optional advanced-performance track after operator-readiness needs justify it |
 
-## Other Plans
+## Archived Or Superseded Planning Context
 
-| Document | Purpose |
+The following files were removed from the active plans tree because they are completed, superseded, or historical:
+
+| Archived document | Reason |
 | --- | --- |
-| [meridian-database-blueprint.md](meridian-database-blueprint.md) | Database architecture blueprint |
-| [ufl-direct-lending-implementation-roadmap.md](ufl-direct-lending-implementation-roadmap.md) | Direct lending implementation roadmap |
+| [../../archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md](../../archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md) | Wave 1 trust gate is closed; active evidence now lives in status/provider-validation docs and generated review packets |
+| [../../archive/docs/plans/security-master-productization-roadmap.md](../../archive/docs/plans/security-master-productization-roadmap.md) | Security Master productization baseline is delivered; Wave 4 follow-ons live in governance plans and status docs |
+| [../../archive/docs/plans/quant-script-environment-blueprint.md](../../archive/docs/plans/quant-script-environment-blueprint.md) | QuantScript baseline and follow-on wave are delivered |
+| [../../archive/docs/plans/quant-script-page-implementation-guide.md](../../archive/docs/plans/quant-script-page-implementation-guide.md) | Completed QuantScript page implementation guide retained as historical reference |
+| [../../archive/docs/plans/backtesting-quantscript-improvement-plan-2026-04.md](../../archive/docs/plans/backtesting-quantscript-improvement-plan-2026-04.md) | Superseded by the Research trust/velocity and Backtest Studio plans plus delivered QuantScript baseline |
+| [../../archive/docs/plans/meridian-analytics-productization-blueprint.md](../../archive/docs/plans/meridian-analytics-productization-blueprint.md) | Superseded by the evidence-backed investment-operations plan and browser-first productization path |
+| [../../archive/docs/plans/readability-refactor-baseline.md](../../archive/docs/plans/readability-refactor-baseline.md), [../../archive/docs/plans/readability-refactor-roadmap.md](../../archive/docs/plans/readability-refactor-roadmap.md), [../../archive/docs/plans/readability-refactor-technical-design-pack.md](../../archive/docs/plans/readability-refactor-technical-design-pack.md) | Historical readability baseline and draft design pack; active cleanup guidance now lives in the codebase cleanup roadmap |
+| [../../archive/docs/assessments/meridian-main-differentiation-report-2026-04-29.md](../../archive/docs/assessments/meridian-main-differentiation-report-2026-04-29.md) | Dated differentiation report superseded by the active evidence-backed investment-operations plan |
+| [../../archive/docs/plans/workstation-release-readiness-blueprint.md](../../archive/docs/plans/workstation-release-readiness-blueprint.md), [../../archive/docs/plans/workstation-sprint-1-implementation-backlog.md](../../archive/docs/plans/workstation-sprint-1-implementation-backlog.md) | Historical browser-workstation release checklist and sprint backlog |
 
-## Archived Planning Context
-
-The following prior planning files have been moved out of the active plans tree:
-
-- [`../../archive/docs/plans/workstation-release-readiness-blueprint.md`](../../archive/docs/plans/workstation-release-readiness-blueprint.md) - historical browser-workstation release checklist
-- [`../../archive/docs/plans/workstation-sprint-1-implementation-backlog.md`](../../archive/docs/plans/workstation-sprint-1-implementation-backlog.md) - historical sprint backlog tied to the retired release checklist
-
----
-
-For high-level project status and roadmap, see [docs/status/ROADMAP.md](../status/ROADMAP.md).
+For high-level project status, use [../status/ROADMAP.md](../status/ROADMAP.md), [../status/PROGRAM_STATE.md](../status/PROGRAM_STATE.md), and [../status/FEATURE_INVENTORY.md](../status/FEATURE_INVENTORY.md).

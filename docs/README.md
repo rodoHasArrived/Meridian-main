@@ -100,7 +100,7 @@ Use the documents below to manage that path:
 4. [plans/web-ui-development-pivot.md](plans/web-ui-development-pivot.md) for the browser-first operator UI lane and retained desktop policy
 5. [plans/waves-2-4-operator-readiness-addendum.md](plans/waves-2-4-operator-readiness-addendum.md) for owner lanes, dependencies, and wave exit criteria
 6. [plans/meridian-6-week-roadmap.md](plans/meridian-6-week-roadmap.md) for the current time-boxed execution plan
-7. [plans/provider-reliability-data-confidence-wave-1-blueprint.md](plans/provider-reliability-data-confidence-wave-1-blueprint.md) for the Wave 1 trust and checkpoint-evidence gate
+7. [status/provider-validation-matrix.md](status/provider-validation-matrix.md) for the current provider-confidence evidence gate; the completed Wave 1 blueprint is archived at [../archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md](../archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md)
 8. [plans/paper-trading-cockpit-reliability-sprint.md](plans/paper-trading-cockpit-reliability-sprint.md) for Wave 2 replay/session/risk reliability hardening
 9. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for migration context that should be interpreted through the active web pivot
 10. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Wave 4 governance, reconciliation, and reporting direction

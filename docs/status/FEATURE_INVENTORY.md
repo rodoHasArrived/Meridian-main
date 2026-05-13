@@ -649,7 +649,7 @@ This section inventories the workflow-centric product model that now sits above 
 - Validate the delivered workspace shells, command routing, and quick actions against high-traffic operator journeys instead of expanding shell taxonomy for its own sake.
 - Extend the shared run/portfolio/ledger model to paper/live history, cash-flow views, multi-ledger tracking, and richer reconciliation views.
 - Keep the delivered Security Master baseline central while Wave 4 governance work deepens account/entity, cash-flow, multi-ledger, reconciliation, and reporting workflows on top of it.
-- Treat [`docs/plans/security-master-productization-roadmap.md`](../plans/security-master-productization-roadmap.md) as the delivered-baseline reference for Security Master mechanics; canonical wave status remains in [`PROGRAM_STATE.md`](PROGRAM_STATE.md) and [`ROADMAP.md`](ROADMAP.md).
+- Treat [`archive/docs/plans/security-master-productization-roadmap.md`](../../archive/docs/plans/security-master-productization-roadmap.md) as the delivered-baseline reference for Security Master mechanics; canonical wave status remains in [`PROGRAM_STATE.md`](PROGRAM_STATE.md) and [`ROADMAP.md`](ROADMAP.md).
 - Expand the current reconciliation seam from the delivered run-scoped break queue into richer match rules, calibrated exception workflows, external-statement/custodian coverage, and non-run governance use cases.
 - Extend the direct-lending slice into governance-grade projections, reconciliation hooks, and reporting outputs.
 - Expand report generation tools beyond the delivered trial-balance artifact slice into cash-flow, reconciliation-detail, portfolio, board, investor, compliance, and publication workflows.
