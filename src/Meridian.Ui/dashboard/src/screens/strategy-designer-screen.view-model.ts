@@ -536,15 +536,12 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
   const addLegFromPalette = useCallback((kind: StrategyLegKind): string => {
     const entry = PALETTE.find((item) => item.kind === kind);
     if (!entry) return "";
-    let createdId = "";
-    setLegs((current) => {
-      const next = buildLegFromPalette(entry, current);
-      createdId = next.id;
-      return [...current, next];
-    });
-    if (createdId) setSelectedLegId(createdId);
-    return createdId;
-  }, []);
+
+    const next = buildLegFromPalette(entry, legs);
+    setLegs((current) => [...current, next]);
+    setSelectedLegId(next.id);
+    return next.id;
+  }, [legs]);
 
   const removeLeg = useCallback((id: string) => {
     setLegs((current) => current.filter((leg) => leg.id !== id));
