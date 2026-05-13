@@ -9,10 +9,12 @@ import type {
   HistoricalBarsResponse,
   OrderBookResponse,
   OperatorInbox,
+  OperatorOverridesDto,
   PaperSessionDetail,
   PaperSessionReplayVerification,
   PaperSessionSummary,
   PortfolioWorkspaceResponse,
+  PromotionEvaluationResult,
   PromotionRecord,
   QuantParametersResponse,
   QuantTemplatesResponse,
@@ -445,6 +447,23 @@ const fixturePromotionHistory: PromotionRecord[] = [
     promotedAt: "2026-04-28T18:05:00Z"
   }
 ];
+
+const fixturePromotionEvaluations: Record<string, PromotionEvaluationResult> = {
+  "run-dev-2": {
+    runId: "run-dev-2",
+    strategyId: "run-dev-2",
+    strategyName: "Index Momentum",
+    sourceMode: "backtest",
+    targetMode: "paper",
+    isEligible: true,
+    sharpeRatio: 1.25,
+    maxDrawdownPercent: -0.04,
+    totalReturn: 0.08,
+    reason: "Promotion gates passed.",
+    found: true,
+    ready: true
+  }
+};
 
 const fixtureTradingWorkspace: TradingWorkspaceResponse = {
   metrics: [
@@ -1269,6 +1288,19 @@ const fixtureTradingParameters: TradingParameters = {
   asOf: "2026-04-28T18:15:00Z"
 };
 
+const fixtureOperatorOverrides: Record<string, OperatorOverridesDto> = {
+  "sec-dev-001": {
+    securityId: "sec-dev-001",
+    values: {
+      issuer: "Apple Inc.",
+      couponRate: "0.25",
+      finalMaturity: "2032-06-30"
+    },
+    updatedBy: "dashboard-dev",
+    updatedAt: "2026-04-28T18:15:00Z"
+  }
+};
+
 interface FixtureMarketProfile {
   bidPrice: number;
   bidSize: number;
@@ -1344,6 +1376,19 @@ type DynamicFixturePattern = {
 
 const dynamicFixturePatterns: DynamicFixturePattern[] = [
   {
+    pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.workstationSecurities),
+    resolve: (_cleanPath, path) => {
+      const params = readFixtureSearchParams(path);
+      const take = Number(params.get("take") ?? 25);
+      const activeOnly = (params.get("activeOnly") ?? "true").toLowerCase() !== "false";
+      return searchDevSecurityMasterEntries(
+        params.get("query") ?? "",
+        Number.isFinite(take) && take > 0 ? take : 25,
+        activeOnly
+      );
+    }
+  },
+  {
     pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.workstationSecurities, "/[^/]+/identity"),
     resolve: (cleanPath) => {
       const securityId = cleanPath.split("/").at(-2);
@@ -1352,6 +1397,20 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
   },
   { pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/corporate-actions"), resolve: () => fixtureCorporateActions },
   { pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/trading-parameters"), resolve: () => fixtureTradingParameters },
+  {
+    pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/operator-overrides"),
+    resolve: (cleanPath) => {
+      const securityId = cleanPath.split("/").at(-2);
+      return securityId
+        ? fixtureOperatorOverrides[securityId] ?? {
+          securityId,
+          values: {},
+          updatedBy: "",
+          updatedAt: ""
+        }
+        : undefined;
+    }
+  },
   { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.quotes, "/[^/]+"), resolve: (cleanPath) => buildFixtureQuote(readSymbolFromPath(cleanPath)) },
   { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.trades, "/[^/]+"), resolve: (cleanPath) => buildFixtureTrades(readSymbolFromPath(cleanPath)) },
   { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.orderbook, "/[^/]+"), resolve: (cleanPath) => buildFixtureOrderbook(readSymbolFromPath(cleanPath)) },
@@ -1360,6 +1419,13 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
     resolve: (cleanPath, path) => buildFixtureHistoricalBars(readSymbolFromPath(cleanPath, 1), path)
   },
   { pattern: apiRoutePattern(MARKET_DATA_API_ENDPOINTS.quotesSnapshot), resolve: (_cleanPath, path) => buildFixtureQuotesSnapshot(path) },
+  {
+    pattern: apiRoutePattern(PROMOTION_API_ENDPOINTS.evaluate, "/[^/]+"),
+    resolve: (cleanPath) => {
+      const runId = readDecodedPathSegment(cleanPath);
+      return runId ? fixturePromotionEvaluations[runId] : undefined;
+    }
+  },
   { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+"), resolve: () => fixturePaperSessionDetail },
   { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+/replay"), resolve: () => fixturePaperSessionReplayVerification }
 ];
@@ -1389,6 +1455,15 @@ function readSymbolFromPath(cleanPath: string, segmentFromEnd = 0): string {
     return decodeURIComponent(rawSymbol).trim().toUpperCase() || "AAPL";
   } catch {
     return rawSymbol.trim().toUpperCase() || "AAPL";
+  }
+}
+
+function readDecodedPathSegment(cleanPath: string, segmentFromEnd = 0): string {
+  const rawSegment = cleanPath.split("/").at(-1 - segmentFromEnd) ?? "";
+  try {
+    return decodeURIComponent(rawSegment).trim();
+  } catch {
+    return rawSegment.trim();
   }
 }
 

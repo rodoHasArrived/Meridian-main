@@ -4,7 +4,7 @@
 
 ## Summary
 
-Add Meridian-native brokerage and custodian portfolio syncing that imports external account state such as accessible accounts, positions, balances, open orders, fills, and cash transactions into Meridian's existing `fund account`, `portfolio`, `ledger`, `reconciliation`, and `Governance` workflows without turning market-data providers into portfolio-domain services.
+Add Meridian-native brokerage and custodian portfolio syncing that imports external account state such as accessible accounts, positions, balances, open orders, fills, and cash transactions into Meridian's existing `fund account`, `portfolio`, `ledger`, `reconciliation`, `Accounting`, and `Reporting` workflows without turning market-data providers into portfolio-domain services.
 
 This should extend the existing execution and brokerage seams already present in:
 
@@ -136,7 +136,7 @@ Robinhood connection configuration is environment-backed and credential-store co
 - local persistence of sync snapshots and sync cursors
 - fund-account and governance projections that consume synced brokerage state
 - shared workstation DTOs and endpoints for operator review, freshness, and reconciliation
-- WPF and workstation read-model integration where it reinforces existing `Trading` and `Governance` workflows
+- Browser workstation and retained WPF read-model integration where it reinforces existing `Trading`, `Portfolio`, `Accounting`, and `Reporting` workflows
 
 ### Out of scope
 
@@ -298,7 +298,7 @@ Use the synced data to deepen existing workflows instead of creating a new root 
 Recommended integration points:
 
 - `Trading`: show broker-account freshness, synced positions, and open-order divergence against local strategy/paper state
-- `Governance`: show linked brokerage accounts, latest sync age, open breaks, and imported cash activity as part of fund-operations review
+- `Accounting` / `Reporting`: show linked brokerage accounts, latest sync age, open breaks, and imported cash activity as part of fund-operations review
 - `FundLedgerViewModel`: consume sync posture alongside current account, bank snapshot, reconciliation, and report-pack data
 
 The UI should answer:

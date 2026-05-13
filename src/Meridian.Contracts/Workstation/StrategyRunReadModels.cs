@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Contracts.Workstation;
@@ -327,7 +328,14 @@ public sealed record PortfolioSummary(
     [property: JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null,
     [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
     [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
-    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null);
+    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1",
+    string? RuleId = null,
+    string? RuleVersion = null,
+    string? SourceEventId = null,
+    Guid? SourceJournalEntryId = null);
 
 /// <summary>
 /// Shared position row for workstation portfolio views.

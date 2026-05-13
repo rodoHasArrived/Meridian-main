@@ -17,6 +17,7 @@ import {
 import { evidenceWorkbenchPath } from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
+  AccountingBasisKind,
   CorporateAction,
   ExportAnalysisResult,
   GovernanceCashFlowSummary,
@@ -115,6 +116,44 @@ export interface CorporateActionRowViewModel extends CorporateAction {
   payDateLabel: string;
   amountLabel: string;
   ariaLabel: string;
+  selectAriaLabel: string;
+  detailPanelId: string;
+  isExpanded: boolean;
+}
+
+export interface CorporateActionDetailFieldViewModel {
+  label: string;
+  value: string;
+  tone?: "default" | "warning";
+}
+
+export interface CorporateActionDetailViewState {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  ariaLabel: string;
+  statusLabel: string;
+  fields: CorporateActionDetailFieldViewModel[];
+}
+
+export interface CorporateActionsViewState {
+  securityId: string;
+  tableLabel: string;
+  tableCaption: string;
+  detailPanelId: string;
+  rows: CorporateActionRowViewModel[];
+  selectedRowId: string | null;
+  selectedDetail: CorporateActionDetailViewState | null;
+  emptyText: string;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  detailEmptyAriaLabel: string;
+  loadingText: string | null;
+  errorText: string | null;
+  hasRows: boolean;
+  statusAnnouncement: string;
 }
 
 export type TradingParametersField = { label: string; value: string; tone?: "default" | "warning" };
@@ -159,6 +198,39 @@ export interface SecuritySearchState {
   searchStatusText: string | null;
   searchErrorText: string | null;
   statusAnnouncement: string;
+}
+
+export type SecurityMasterPageMetricTone = "default" | "success" | "warning";
+
+export interface SecurityMasterPageMetricViewModel {
+  id: "results" | "selected" | "conflicts" | "detail";
+  label: string;
+  value: string;
+  detail: string;
+  tone: SecurityMasterPageMetricTone;
+}
+
+export interface SecurityMasterDetailSectionViewModel {
+  id: "overview" | "schedules" | "controls" | "audit";
+  label: string;
+  value: string;
+  active?: boolean;
+}
+
+export interface SecurityMasterPageViewState {
+  ariaLabel: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  metrics: SecurityMasterPageMetricViewModel[];
+  detailEyebrow: string;
+  detailTitle: string;
+  detailSubtitle: string;
+  detailDescription: string;
+  detailStatusLabel: string;
+  detailStatusBadgeVariant: "success" | "warning" | "outline";
+  detailToolbarAriaLabel: string;
+  detailSections: SecurityMasterDetailSectionViewModel[];
 }
 
 export interface SecurityIdentitySummaryFieldViewModel {
@@ -344,6 +416,12 @@ export interface ReconciliationQueueRunRowViewModel {
 export interface ReconciliationQueuePanelViewState {
   title: string;
   description: string;
+  overviewTitle: string;
+  overviewDescription: string;
+  overviewCaption: string;
+  overviewActionHref: string;
+  overviewActionLabel: string;
+  overviewActionAriaLabel: string;
   listLabel: string;
   emptyText: string;
   detailPanelId: string;
@@ -450,29 +528,117 @@ export interface GovernanceReportingBackendLink {
 
 export type GovernanceTrialBalanceState = "ready" | "loading" | "empty" | "error";
 
+export interface GovernanceTrialBalanceBasisOption {
+  id: AccountingBasisKind;
+  label: string;
+  description: string;
+  rowCount: number;
+  rowCountLabel: string;
+  isSelected: boolean;
+}
+
 export interface GovernanceTrialBalanceRowViewModel extends LedgerTrialBalanceLine {
   rowId: string;
   accountLabel: string;
   accountTypeLabel: string;
+  basisLabel: string;
+  basisTone: "default" | "outline" | "success" | "warning" | "danger";
+  policyLabel: string;
   balanceLabel: string;
   balanceTone: "default" | "success" | "danger";
   entryCountLabel: string;
   ariaLabel: string;
+  selectAriaLabel: string;
+  detailPanelId: string;
+  isExpanded: boolean;
+}
+
+export interface GovernanceTrialBalanceDetailViewState {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: "outline" | "success" | "danger";
+  ariaLabel: string;
+  fields: Array<{ label: string; value: string }>;
+}
+
+export interface GovernanceBasisBridgeRowViewModel {
+  rowId: string;
+  accountLabel: string;
+  accountTypeLabel: string;
+  primaryBalanceLabel: string;
+  comparisonBalanceLabel: string;
+  varianceLabel: string;
+  varianceTone: "default" | "success" | "danger";
+  sourceLabel: string;
+  ariaLabel: string;
+}
+
+export interface GovernanceBasisBridgeViewState {
+  title: string;
+  description: string;
+  tableLabel: string;
+  fromBasis: AccountingBasisKind;
+  toBasis: AccountingBasisKind;
+  rows: GovernanceBasisBridgeRowViewModel[];
+  hasRows: boolean;
+  emptyText: string;
 }
 
 export interface GovernanceTrialBalanceViewState {
   title: string;
   description: string;
   tableLabel: string;
+  selectedBasis: AccountingBasisKind;
+  basisOptions: GovernanceTrialBalanceBasisOption[];
+  basisBridge: GovernanceBasisBridgeViewState;
   state: GovernanceTrialBalanceState;
   rows: GovernanceTrialBalanceRowViewModel[];
   hasRows: boolean;
+  selectedRowId: string | null;
+  detailPanelId: string;
+  selectedDetail: GovernanceTrialBalanceDetailViewState | null;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  detailEmptyAriaLabel: string;
   loadingText: string | null;
   emptyTitle: string;
   emptyDetail: string;
   errorText: string | null;
   statusAnnouncement: string;
 }
+
+const DEFAULT_ACCOUNTING_BASIS: AccountingBasisKind = "Primary";
+
+const ACCOUNTING_BASIS_OPTIONS: Array<Pick<GovernanceTrialBalanceBasisOption, "id" | "label" | "description">> = [
+  {
+    id: "Primary",
+    label: "Primary",
+    description: "Legacy run evidence and current report-pack baseline."
+  },
+  {
+    id: "Gaap",
+    label: "GAAP",
+    description: "Accrual policy books and configured adjustment rules."
+  },
+  {
+    id: "Cash",
+    label: "Cash",
+    description: "Settlement and payment-driven recognition."
+  },
+  {
+    id: "Tax",
+    label: "Tax",
+    description: "Configured lot-relief and taxable recognition policy."
+  },
+  {
+    id: "Statutory",
+    label: "Statutory",
+    description: "Statutory-only presentation and adjustment policy."
+  }
+];
 
 const defaultSecurityMasterServices: SecurityMasterServices = {
   search: (query) => searchSecurities(query),
@@ -607,6 +773,7 @@ export function useSecurityMasterViewModel(
   const [corporateActions, setCorporateActions] = useState<CorporateAction[] | null>(null);
   const [corporateActionsLoading, setCorporateActionsLoading] = useState(false);
   const [corporateActionsError, setCorporateActionsError] = useState<string | null>(null);
+  const [selectedCorporateActionId, setSelectedCorporateActionId] = useState<string | null>(null);
   const [tradingParameters, setTradingParameters] = useState<TradingParameters | null>(null);
   const [tradingParametersLoading, setTradingParametersLoading] = useState(false);
   const [tradingParametersError, setTradingParametersError] = useState<string | null>(null);
@@ -649,6 +816,7 @@ export function useSecurityMasterViewModel(
     setCorporateActions(null);
     setCorporateActionsLoading(false);
     setCorporateActionsError(null);
+    setSelectedCorporateActionId(null);
     setTradingParameters(null);
     setTradingParametersLoading(false);
     setTradingParametersError(null);
@@ -690,6 +858,7 @@ export function useSecurityMasterViewModel(
       setCorporateActions(null);
       setCorporateActionsLoading(false);
       setCorporateActionsError(null);
+      setSelectedCorporateActionId(null);
       setTradingParameters(null);
       setTradingParametersLoading(false);
       setTradingParametersError(null);
@@ -749,6 +918,7 @@ export function useSecurityMasterViewModel(
     setIdentity(null);
     setIdentityError(null);
     setSearchError(null);
+    setSelectedCorporateActionId(null);
     identityGenerationRef.current += 1;
 
     if (searchTimerRef.current) {
@@ -802,6 +972,7 @@ export function useSecurityMasterViewModel(
     setIdentityLoading(true);
     setCorporateActions(null);
     setCorporateActionsError(null);
+    setSelectedCorporateActionId(null);
     setTradingParameters(null);
     setTradingParametersError(null);
 
@@ -861,8 +1032,30 @@ export function useSecurityMasterViewModel(
     [identity]
   );
   const corporateActionRows = useMemo(
-    () => buildCorporateActionRows(corporateActions),
-    [corporateActions]
+    () => buildCorporateActionRows(corporateActions, selectedCorporateActionId),
+    [corporateActions, selectedCorporateActionId]
+  );
+  useEffect(() => {
+    if (corporateActionRows.length === 0) {
+      if (selectedCorporateActionId !== null) {
+        setSelectedCorporateActionId(null);
+      }
+      return;
+    }
+
+    if (!selectedCorporateActionId || !corporateActionRows.some((row) => row.rowId === selectedCorporateActionId)) {
+      setSelectedCorporateActionId(corporateActionRows[0].rowId);
+    }
+  }, [corporateActionRows, selectedCorporateActionId]);
+  const corporateActionsView = useMemo(
+    () => buildCorporateActionsViewState(
+      selectedSecurityId,
+      corporateActions,
+      selectedCorporateActionId,
+      corporateActionsLoading,
+      corporateActionsError
+    ),
+    [corporateActions, corporateActionsError, corporateActionsLoading, selectedCorporateActionId, selectedSecurityId]
   );
   const tradingParametersView = useMemo(
     () => buildTradingParametersViewState(tradingParameters, tradingParametersLoading, tradingParametersError),
@@ -873,10 +1066,43 @@ export function useSecurityMasterViewModel(
     () => buildSecurityConflictRefreshCommand(conflictsLoading, conflictsError),
     [conflictsError, conflictsLoading]
   );
+  const selectedSearchResult = useMemo(
+    () => selectedSecurityId ? results?.find((entry) => entry.securityId === selectedSecurityId) ?? null : null,
+    [results, selectedSecurityId]
+  );
+  const pageView = useMemo(
+    () => buildSecurityMasterPageViewState({
+      query,
+      results,
+      selectedSecurityId,
+      selectedDisplayName: identity?.displayName ?? selectedSearchResult?.displayName ?? null,
+      selectedAssetClass: identity?.assetClass ?? selectedSearchResult?.classification.assetClass ?? null,
+      selectedStatus: identity?.status ?? selectedSearchResult?.status ?? null,
+      identity,
+      identityLoading,
+      conflicts,
+      conflictsLoading,
+      corporateActions,
+      tradingParameters
+    }),
+    [
+      conflicts,
+      conflictsLoading,
+      corporateActions,
+      identity,
+      identityLoading,
+      query,
+      results,
+      selectedSearchResult,
+      selectedSecurityId,
+      tradingParameters
+    ]
+  );
 
   return {
     query,
     updateQuery,
+    pageView,
     results,
     searching,
     selectedSecurityId,
@@ -901,6 +1127,8 @@ export function useSecurityMasterViewModel(
     conflictCountLabel: `${openConflictCount} open`,
     corporateActions,
     corporateActionRows,
+    corporateActionsView,
+    selectCorporateAction: setSelectedCorporateActionId,
     hasCorporateActions: (corporateActions?.length ?? 0) > 0,
     corporateActionsLoading,
     corporateActionsErrorText: corporateActionsError,
@@ -924,6 +1152,8 @@ export function useGovernanceReconciliationViewModel(
   const [breakAction, setBreakAction] = useState<ReconciliationBreakAction | null>(null);
   const [breakActionError, setBreakActionError] = useState<string | null>(null);
   const [trialBalance, setTrialBalance] = useState<LedgerTrialBalanceLine[]>([]);
+  const [selectedTrialBalanceRowId, setSelectedTrialBalanceRowId] = useState<string | null>(null);
+  const [selectedAccountingBasis, setSelectedAccountingBasis] = useState<AccountingBasisKind>(DEFAULT_ACCOUNTING_BASIS);
   const [trialBalanceLoading, setTrialBalanceLoading] = useState(false);
   const [trialBalanceError, setTrialBalanceError] = useState<string | null>(null);
   const [calibrationSummary, setCalibrationSummary] = useState<ReconciliationCalibrationSummary | null>(null);
@@ -1108,11 +1338,17 @@ export function useGovernanceReconciliationViewModel(
     () => buildGovernanceTrialBalanceViewState({
       runId: selectedReconciliation?.runId ?? null,
       rows: trialBalance,
+      selectedRowId: selectedTrialBalanceRowId,
+      selectedBasis: selectedAccountingBasis,
       loading: trialBalanceLoading,
       errorText: trialBalanceError
     }),
-    [selectedReconciliation?.runId, trialBalance, trialBalanceError, trialBalanceLoading]
+    [selectedAccountingBasis, selectedReconciliation?.runId, selectedTrialBalanceRowId, trialBalance, trialBalanceError, trialBalanceLoading]
   );
+  const selectAccountingBasis = useCallback((basis: AccountingBasisKind) => {
+    setSelectedAccountingBasis(basis);
+    setSelectedTrialBalanceRowId(null);
+  }, []);
   const calibrationView = useMemo(
     () => buildCalibrationSummaryViewState(calibrationSummary, calibrationLoading, calibrationError),
     [calibrationSummary, calibrationLoading, calibrationError]
@@ -1142,6 +1378,8 @@ export function useGovernanceReconciliationViewModel(
     trialBalanceLoading,
     trialBalanceErrorText: trialBalanceError,
     trialBalanceView,
+    selectTrialBalanceRow: setSelectedTrialBalanceRowId,
+    selectAccountingBasis,
     breakAction,
     assignBreak,
     resolveBreak,
@@ -1274,6 +1512,12 @@ export function buildReconciliationQueuePanelViewState(
   return {
     title: "Reconciliation detail queue",
     description: "Select a run to inspect its active reconciliation detail panel.",
+    overviewTitle: "Reconciliation queue",
+    overviewDescription: "Open breaks, timing drift, and balanced runs stay visible without leaving Accounting.",
+    overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation workstream to inspect selected run detail.",
+    overviewActionHref: "/accounting/reconciliation",
+    overviewActionLabel: "Open reconciliation",
+    overviewActionAriaLabel: "Open Accounting reconciliation workstream",
     listLabel: "Reconciliation runs",
     emptyText: "No reconciliation runs are available for this accounting scope.",
     detailPanelId,
@@ -1343,6 +1587,112 @@ const securitySearchResultColumns: SecuritySearchResultColumnViewModel[] = [
 ];
 
 export const SECURITY_IDENTITY_DETAIL_PANEL_ID = "security-master-identity-detail";
+
+export function buildSecurityMasterPageViewState({
+  query,
+  results,
+  selectedSecurityId,
+  selectedDisplayName,
+  selectedAssetClass,
+  selectedStatus,
+  identity,
+  identityLoading,
+  conflicts,
+  conflictsLoading,
+  corporateActions,
+  tradingParameters
+}: {
+  query: string;
+  results: SecurityMasterEntry[] | null;
+  selectedSecurityId: string | null;
+  selectedDisplayName: string | null;
+  selectedAssetClass: string | null;
+  selectedStatus: string | null;
+  identity: SecurityIdentityDrillIn | null;
+  identityLoading: boolean;
+  conflicts: SecurityMasterConflict[] | null;
+  conflictsLoading: boolean;
+  corporateActions: CorporateAction[] | null;
+  tradingParameters: TradingParameters | null;
+}): SecurityMasterPageViewState {
+  const hasQuery = query.trim().length > 0;
+  const resultCount = results?.length ?? 0;
+  const openConflictCount = countOpenSecurityConflicts(conflicts);
+  const selectedName = selectedDisplayName?.trim() || selectedSecurityId || "None selected";
+  const selectedClass = selectedAssetClass?.trim() || "Unclassified";
+  const statusLabel = selectedStatus?.trim() || (selectedSecurityId ? "Pending" : "No selection");
+  const identifiersLabel = identity
+    ? formatCount(identity.identifiers.length, "identifier")
+    : identityLoading
+      ? "Loading identifiers"
+      : "No identifiers loaded";
+  const aliasesLabel = identity ? formatCount(identity.aliases.length, "alias") : "No aliases loaded";
+  const corporateActionLabel = corporateActions
+    ? formatCount(corporateActions.length, "corporate action")
+    : selectedSecurityId
+      ? "Loading schedules"
+      : "No selection";
+
+  return {
+    ariaLabel: "Security Master command deck",
+    eyebrow: "Security Master",
+    title: "Security Master command deck",
+    description: "Search, inspect, and reconcile trusted security reference records from one dense master-detail page.",
+    metrics: [
+      {
+        id: "results",
+        label: "Search results",
+        value: hasQuery ? resultCount.toLocaleString() : "Search",
+        detail: hasQuery ? `${formatCount(resultCount, "security")} returned for the active query.` : "Search by ticker, ISIN, CUSIP, FIGI, or display name.",
+        tone: resultCount > 0 ? "success" : "default"
+      },
+      {
+        id: "selected",
+        label: "Selected detail",
+        value: selectedName,
+        detail: selectedSecurityId ? `Security ID ${selectedSecurityId}` : "Select a table row to open the security detail page.",
+        tone: selectedSecurityId ? "success" : "default"
+      },
+      {
+        id: "conflicts",
+        label: "Identifier conflicts",
+        value: conflictsLoading ? "Loading" : openConflictCount.toLocaleString(),
+        detail: conflictsLoading
+          ? "Refreshing provider conflict evidence."
+          : openConflictCount > 0
+            ? `${formatCount(openConflictCount, "open conflict")} requiring operator review.`
+            : "No open conflicts need operator review.",
+        tone: openConflictCount > 0 || conflictsLoading ? "warning" : "success"
+      },
+      {
+        id: "detail",
+        label: "Detail coverage",
+        value: selectedSecurityId ? statusLabel : "No selection",
+        detail: selectedSecurityId ? `${selectedClass} detail record with ${identifiersLabel}.` : "Overview, schedules, controls, lots, and audit cues stay attached to the selected security.",
+        tone: selectedSecurityId ? (statusLabel.toLowerCase() === "active" ? "success" : "warning") : "default"
+      }
+    ],
+    detailEyebrow: "Security detail",
+    detailTitle: "Security detail page",
+    detailSubtitle: selectedSecurityId ? `${selectedSecurityId} · ${selectedClass}` : "Select a security",
+    detailDescription: selectedSecurityId
+      ? `${selectedName} reference data, schedules, trading controls, lots, and audit evidence are grouped below the selected master row.`
+      : "Select a security from the master table to inspect its reference record.",
+    detailStatusLabel: statusLabel,
+    detailStatusBadgeVariant: selectedSecurityId
+      ? statusLabel.toLowerCase() === "active"
+        ? "success"
+        : "warning"
+      : "outline",
+    detailToolbarAriaLabel: selectedSecurityId ? `Security detail sections for ${selectedName}` : "Security detail sections",
+    detailSections: [
+      { id: "overview", label: "Overview", value: identifiersLabel, active: true },
+      { id: "schedules", label: "Schedules", value: corporateActionLabel },
+      { id: "controls", label: "Controls", value: tradingParameters ? "Trading set" : selectedSecurityId ? "Pending" : "No selection" },
+      { id: "audit", label: "Audit", value: openConflictCount > 0 ? formatCount(openConflictCount, "conflict") : aliasesLabel }
+    ]
+  };
+}
 
 export function buildSecuritySearchState({
   query,
@@ -1841,17 +2191,36 @@ function buildReportingProfileDetail(profile: ReportingProfileRowViewModel): Rep
 export function buildGovernanceTrialBalanceViewState({
   runId,
   rows,
+  selectedRowId,
+  selectedBasis = DEFAULT_ACCOUNTING_BASIS,
   loading,
   errorText
 }: {
   runId: string | null;
   rows: LedgerTrialBalanceLine[];
+  selectedRowId?: string | null;
+  selectedBasis?: AccountingBasisKind | null;
   loading: boolean;
   errorText: string | null;
 }): GovernanceTrialBalanceViewState {
+  const detailPanelId = "trial-balance-account-detail";
   const runLabel = runId ?? "selected run";
-  const viewRows = rows.map(buildTrialBalanceRow);
-  const hasRows = viewRows.length > 0;
+  const resolvedBasis = normalizeAccountingBasis(selectedBasis);
+  const normalizedRows = rows.map(normalizeTrialBalanceLine);
+  const basisOptions = buildTrialBalanceBasisOptions(normalizedRows, resolvedBasis);
+  const bridge = buildBasisBridgeViewState(normalizedRows, resolvedBasis, runLabel);
+  const rawRows = normalizedRows
+    .filter((line) => line.accountingBasis === resolvedBasis)
+    .map((line) => buildTrialBalanceRow(line, detailPanelId));
+  const hasRows = rawRows.length > 0;
+  const resolvedSelectedRowId = rawRows.some((row) => row.rowId === selectedRowId)
+    ? selectedRowId ?? null
+    : rawRows[0]?.rowId ?? null;
+  const viewRows = rawRows.map((row) => ({
+    ...row,
+    isExpanded: row.rowId === resolvedSelectedRowId
+  }));
+  const selectedRow = viewRows.find((row) => row.rowId === resolvedSelectedRowId) ?? null;
   const state: GovernanceTrialBalanceState = errorText
     ? "error"
     : loading && !hasRows
@@ -1866,12 +2235,23 @@ export function buildGovernanceTrialBalanceViewState({
     : null;
 
   return {
-    title: "Multi-ledger trial balance",
-    description: `Baseline ledger balances for ${runLabel} grouped by account type.`,
-    tableLabel: `Trial balance lines for ${runLabel}`,
+    title: `${accountingBasisDisplayName(resolvedBasis)} trial balance`,
+    description: `${accountingBasisDisplayName(resolvedBasis)} basis ledger balances for ${runLabel} grouped by account type. Values are basis per configured policy until accountant review.`,
+    tableLabel: `${accountingBasisDisplayName(resolvedBasis)} trial balance lines for ${runLabel}`,
+    selectedBasis: resolvedBasis,
+    basisOptions,
+    basisBridge: bridge,
     state,
     rows: viewRows,
     hasRows,
+    selectedRowId: resolvedSelectedRowId,
+    detailPanelId,
+    selectedDetail: selectedRow ? buildTrialBalanceDetail(selectedRow, runLabel) : null,
+    detailEmptyTitle: "No account selected",
+    detailEmptyText: hasRows
+      ? "Select an account line to inspect balance evidence for report handoff."
+      : "Trial-balance account detail appears after ledger rows load.",
+    detailEmptyAriaLabel: "No trial-balance account selected",
     loadingText,
     emptyTitle: "No trial balance lines",
     emptyDetail: `Meridian did not return account-balance rows for ${runLabel}. Select another reconciliation run or refresh ledger evidence before report handoff.`,
@@ -1880,13 +2260,26 @@ export function buildGovernanceTrialBalanceViewState({
   };
 }
 
-function buildTrialBalanceRow(line: LedgerTrialBalanceLine): GovernanceTrialBalanceRowViewModel {
+type BasisAwareLedgerTrialBalanceLine = LedgerTrialBalanceLine & {
+  accountingBasis: AccountingBasisKind;
+  accountingPolicyId: string;
+  accountingPolicyVersion: string;
+};
+
+function buildTrialBalanceRow(
+  line: BasisAwareLedgerTrialBalanceLine,
+  detailPanelId: string
+): GovernanceTrialBalanceRowViewModel {
   const accountLabel = line.accountName.trim() || "Unnamed account";
   const accountTypeLabel = line.accountType.trim() || "Unclassified";
+  const basisName = accountingBasisDisplayName(line.accountingBasis);
+  const basisLabel = `${basisName} basis`;
+  const policyLabel = `${line.accountingPolicyId}/${line.accountingPolicyVersion}`;
   const balanceLabel = formatCurrency(line.balance);
   const entryCountLabel = line.entryCount.toLocaleString();
   const securityLabel = line.security?.primaryIdentifier?.trim() || line.symbol?.trim() || line.security?.displayName.trim() || null;
   const rowId = [
+    line.accountingBasis,
     accountLabel,
     accountTypeLabel,
     line.financialAccountId,
@@ -1898,15 +2291,56 @@ function buildTrialBalanceRow(line: LedgerTrialBalanceLine): GovernanceTrialBala
     rowId,
     accountLabel,
     accountTypeLabel,
+    basisLabel,
+    basisTone: trialBalanceBasisTone(line.accountingBasis),
+    policyLabel,
     balanceLabel,
     balanceTone: line.balance < 0 ? "danger" : line.balance > 0 ? "success" : "default",
     entryCountLabel,
     ariaLabel: [
       `${accountLabel} ${accountTypeLabel}`,
+      basisLabel,
+      `Policy ${policyLabel}`,
       `Balance ${balanceLabel}`,
       `${entryCountLabel} entries`,
       securityLabel ? `Security ${securityLabel}` : null
-    ].filter(Boolean).join(". ")
+    ].filter(Boolean).join(". "),
+    selectAriaLabel: `Inspect trial-balance account ${accountLabel} for ${accountTypeLabel}`,
+    detailPanelId,
+    isExpanded: false
+  };
+}
+
+function buildTrialBalanceDetail(
+  line: GovernanceTrialBalanceRowViewModel,
+  runLabel: string
+): GovernanceTrialBalanceDetailViewState {
+  const securityLabel = line.security?.displayName?.trim()
+    || line.security?.primaryIdentifier?.trim()
+    || line.symbol?.trim()
+    || "No linked security";
+  const financialAccountId = line.financialAccountId?.trim() || "Unassigned";
+  const statusVariant = line.balanceTone === "danger" ? "danger" : line.balanceTone === "success" ? "success" : "outline";
+  const statusLabel = line.balanceTone === "danger" ? "Credit / payable" : line.balanceTone === "success" ? "Debit / asset" : "Flat";
+
+  return {
+    eyebrow: "Trial-balance detail",
+    title: line.accountLabel,
+    subtitle: `${line.accountTypeLabel} · ${financialAccountId}`,
+    description: `${line.accountLabel} contributes ${line.balanceLabel} across ${line.entryCountLabel} ledger entr${line.entryCount === 1 ? "y" : "ies"} for ${runLabel}.`,
+    statusLabel,
+    statusVariant,
+    ariaLabel: `Trial-balance detail for ${line.accountLabel}`,
+    fields: [
+      { label: "Account type", value: line.accountTypeLabel },
+      { label: "Basis", value: line.basisLabel },
+      { label: "Policy", value: line.policyLabel },
+      { label: "Balance", value: line.balanceLabel },
+      { label: "Entries", value: line.entryCountLabel },
+      { label: "Financial account", value: financialAccountId },
+      { label: "Security", value: securityLabel },
+      { label: "Run", value: runLabel }
+    ]
   };
 }
 
@@ -1938,6 +2372,159 @@ function buildTrialBalanceAnnouncement({
   return rowCount === 1
     ? `1 trial balance line loaded for ${runLabel}.`
     : `${rowCount} trial balance lines loaded for ${runLabel}.`;
+}
+
+function normalizeTrialBalanceLine(line: LedgerTrialBalanceLine): BasisAwareLedgerTrialBalanceLine {
+  return {
+    ...line,
+    accountingBasis: normalizeAccountingBasis(line.accountingBasis),
+    accountingPolicyId: line.accountingPolicyId?.trim() || "legacy-v1",
+    accountingPolicyVersion: line.accountingPolicyVersion?.trim() || "legacy-v1"
+  };
+}
+
+function normalizeAccountingBasis(value: AccountingBasisKind | null | undefined): AccountingBasisKind {
+  return ACCOUNTING_BASIS_OPTIONS.some((option) => option.id === value)
+    ? value as AccountingBasisKind
+    : DEFAULT_ACCOUNTING_BASIS;
+}
+
+function buildTrialBalanceBasisOptions(
+  rows: BasisAwareLedgerTrialBalanceLine[],
+  selectedBasis: AccountingBasisKind
+): GovernanceTrialBalanceBasisOption[] {
+  const rowCounts = rows.reduce<Record<AccountingBasisKind, number>>((accumulator, row) => {
+    accumulator[row.accountingBasis] += 1;
+    return accumulator;
+  }, {
+    Primary: 0,
+    Gaap: 0,
+    Cash: 0,
+    Tax: 0,
+    Statutory: 0
+  });
+
+  return ACCOUNTING_BASIS_OPTIONS.map((option) => ({
+    ...option,
+    rowCount: rowCounts[option.id],
+    rowCountLabel: rowCounts[option.id] === 1 ? "1 row" : `${rowCounts[option.id]} rows`,
+    isSelected: option.id === selectedBasis
+  }));
+}
+
+function buildBasisBridgeViewState(
+  rows: BasisAwareLedgerTrialBalanceLine[],
+  selectedBasis: AccountingBasisKind,
+  runLabel: string
+): GovernanceBasisBridgeViewState {
+  const comparisonBasis = selectedBasis === "Primary"
+    ? rows.find((row) => row.accountingBasis !== "Primary")?.accountingBasis ?? "Gaap"
+    : selectedBasis;
+  const primaryRows = rows.filter((row) => row.accountingBasis === "Primary");
+  const comparisonRows = rows.filter((row) => row.accountingBasis === comparisonBasis);
+  const tableLabel = `${accountingBasisDisplayName(comparisonBasis)} to Primary basis bridge for ${runLabel}`;
+
+  if (comparisonBasis === "Primary" || primaryRows.length === 0 || comparisonRows.length === 0) {
+    return {
+      title: "Basis bridge",
+      description: `${accountingBasisDisplayName(comparisonBasis)} to Primary comparison grouped by source/rule/account where lineage is available.`,
+      tableLabel,
+      fromBasis: "Primary",
+      toBasis: comparisonBasis,
+      rows: [],
+      hasRows: false,
+      emptyText: "No non-primary basis rows are available for this run yet. The bridge will populate after GAAP, Cash, Tax, or Statutory projection posts journal lines."
+    };
+  }
+
+  const primaryByKey = new Map(primaryRows.map((row) => [basisBridgeKey(row), row]));
+  const comparisonByKey = new Map(comparisonRows.map((row) => [basisBridgeKey(row), row]));
+  const keys = [...new Set([...primaryByKey.keys(), ...comparisonByKey.keys()])].sort((left, right) => left.localeCompare(right));
+  const bridgeRows = keys.map((key) => {
+    const primary = primaryByKey.get(key) ?? null;
+    const comparison = comparisonByKey.get(key) ?? null;
+    const source = comparison ?? primary;
+    const primaryBalance = primary?.balance ?? 0;
+    const comparisonBalance = comparison?.balance ?? 0;
+    const variance = comparisonBalance - primaryBalance;
+    const sourceLabel = buildBasisBridgeSourceLabel(source);
+    const accountLabel = source?.accountName.trim() || "Unnamed account";
+    const accountTypeLabel = source?.accountType.trim() || "Unclassified";
+    const varianceLabel = formatCurrency(variance);
+
+    return {
+      rowId: `${comparisonBasis}-${key}`,
+      accountLabel,
+      accountTypeLabel,
+      primaryBalanceLabel: formatCurrency(primaryBalance),
+      comparisonBalanceLabel: formatCurrency(comparisonBalance),
+      varianceLabel,
+      varianceTone: variance < 0 ? "danger" : variance > 0 ? "success" : "default",
+      sourceLabel,
+      ariaLabel: `${accountLabel} ${accountTypeLabel}. Primary ${formatCurrency(primaryBalance)}. ${accountingBasisDisplayName(comparisonBasis)} ${formatCurrency(comparisonBalance)}. Variance ${varianceLabel}.`
+    } satisfies GovernanceBasisBridgeRowViewModel;
+  });
+
+  return {
+    title: "Basis bridge",
+    description: `${accountingBasisDisplayName(comparisonBasis)} compared with Primary for ${runLabel}, grouped by source/rule/account where lineage is available.`,
+    tableLabel,
+    fromBasis: "Primary",
+    toBasis: comparisonBasis,
+    rows: bridgeRows,
+    hasRows: bridgeRows.length > 0,
+    emptyText: "No bridge rows matched the selected basis pair."
+  };
+}
+
+function basisBridgeKey(line: BasisAwareLedgerTrialBalanceLine): string {
+  const sourceEventId = "sourceEventId" in line ? String(line.sourceEventId ?? "") : "";
+  const ruleId = "ruleId" in line ? String(line.ruleId ?? "") : "";
+  return [
+    sourceEventId,
+    ruleId,
+    line.accountName,
+    line.accountType,
+    line.symbol ?? "",
+    line.financialAccountId ?? ""
+  ].join("|");
+}
+
+function buildBasisBridgeSourceLabel(line: BasisAwareLedgerTrialBalanceLine | null): string {
+  if (!line) {
+    return "Missing source group";
+  }
+
+  const sourceEventId = "sourceEventId" in line ? String(line.sourceEventId ?? "").trim() : "";
+  const ruleId = "ruleId" in line ? String(line.ruleId ?? "").trim() : "";
+  if (sourceEventId || ruleId) {
+    return [
+      sourceEventId ? `Source ${sourceEventId}` : null,
+      ruleId ? `Rule ${ruleId}` : null
+    ].filter(Boolean).join(" / ");
+  }
+
+  return line.symbol?.trim() || line.financialAccountId?.trim() || "Account group";
+}
+
+function accountingBasisDisplayName(basis: AccountingBasisKind): string {
+  return basis === "Gaap" ? "GAAP" : basis;
+}
+
+function trialBalanceBasisTone(basis: AccountingBasisKind): GovernanceTrialBalanceRowViewModel["basisTone"] {
+  switch (basis) {
+    case "Gaap":
+      return "success";
+    case "Tax":
+      return "warning";
+    case "Statutory":
+      return "danger";
+    case "Cash":
+      return "default";
+    case "Primary":
+    default:
+      return "outline";
+  }
 }
 
 function formatReportPackTargets(targets: string[]): string {
@@ -2393,21 +2980,97 @@ function calibrationStatusLabel(status: ReconciliationCalibrationStatus | null, 
 }
 
 export function buildCorporateActionRows(
-  actions: CorporateAction[] | null
+  actions: CorporateAction[] | null,
+  selectedRowId: string | null = null
 ): CorporateActionRowViewModel[] {
-  return (actions ?? []).map((action) => {
+  const detailPanelId = "corporate-action-detail-panel";
+  const rows = actions ?? [];
+  const effectiveSelectedRowId = selectedRowId && rows.some((action) => action.corpActId === selectedRowId)
+    ? selectedRowId
+    : rows[0]?.corpActId ?? null;
+
+  return rows.map((action) => {
     const amountLabel = formatCorpActAmount(action);
+    const eventTypeLabel = formatCorpActEventType(action.eventType);
+    const exDateLabel = formatSecurityDate(action.exDate);
+    const isSelected = action.corpActId === effectiveSelectedRowId;
 
     return {
       ...action,
       rowId: action.corpActId,
-      eventTypeLabel: formatCorpActEventType(action.eventType),
-      exDateLabel: formatSecurityDate(action.exDate),
+      eventTypeLabel,
+      exDateLabel,
       payDateLabel: action.payDate ? formatSecurityDate(action.payDate) : "—",
       amountLabel,
-      ariaLabel: `${formatCorpActEventType(action.eventType)} for ${action.securityId}, ex-date ${formatSecurityDate(action.exDate)}, ${amountLabel}`
+      ariaLabel: `${eventTypeLabel} for ${action.securityId}, ex-date ${exDateLabel}, ${amountLabel}`,
+      selectAriaLabel: `Inspect corporate action ${eventTypeLabel} for ${action.securityId}`,
+      detailPanelId,
+      isExpanded: isSelected
     };
   });
+}
+
+export function buildCorporateActionsViewState(
+  securityId: string | null,
+  actions: CorporateAction[] | null,
+  selectedRowId: string | null,
+  loading: boolean,
+  errorText: string | null
+): CorporateActionsViewState {
+  const rows = buildCorporateActionRows(actions, selectedRowId);
+  const effectiveSelectedRowId = rows.find((row) => row.rowId === selectedRowId)?.rowId ?? rows[0]?.rowId ?? null;
+  const selectedRow = rows.find((row) => row.rowId === effectiveSelectedRowId) ?? null;
+  const displaySecurityId = securityId ?? "selected security";
+  const detailPanelId = "corporate-action-detail-panel";
+
+  return {
+    securityId: displaySecurityId,
+    tableLabel: `Corporate actions for ${displaySecurityId}`,
+    tableCaption: `Corporate actions evidence for ${displaySecurityId}; select a row to inspect event detail.`,
+    detailPanelId,
+    rows,
+    selectedRowId: effectiveSelectedRowId,
+    selectedDetail: selectedRow ? buildCorporateActionDetailViewState(selectedRow, detailPanelId) : null,
+    emptyText: `No corporate actions recorded for ${displaySecurityId}.`,
+    detailEmptyTitle: "No corporate action selected",
+    detailEmptyText: "Select a corporate action row to inspect dates, ratios, securities, and cash terms.",
+    detailEmptyAriaLabel: "No corporate action selected",
+    loadingText: loading ? "Loading corporate actions..." : null,
+    errorText,
+    hasRows: rows.length > 0,
+    statusAnnouncement: errorText
+      ? `Corporate actions error: ${errorText}`
+      : loading
+        ? `Loading corporate actions for ${displaySecurityId}.`
+        : rows.length > 0
+          ? `${rows.length} corporate action${rows.length === 1 ? "" : "s"} loaded for ${displaySecurityId}.`
+          : ""
+  };
+}
+
+function buildCorporateActionDetailViewState(
+  row: CorporateActionRowViewModel,
+  detailPanelId: string
+): CorporateActionDetailViewState {
+  return {
+    id: detailPanelId,
+    eyebrow: "Corporate action detail",
+    title: row.eventTypeLabel,
+    subtitle: `${row.securityId} · ${row.corpActId}`,
+    description: `${row.eventTypeLabel} event with ex-date ${row.exDateLabel} and recorded amount ${row.amountLabel}.`,
+    ariaLabel: `Corporate action detail for ${row.eventTypeLabel} on ${row.securityId}`,
+    statusLabel: row.payDate ? "Pay date scheduled" : "Pay date unavailable",
+    fields: [
+      { label: "Corporate action ID", value: row.corpActId },
+      { label: "Event type", value: row.eventTypeLabel },
+      { label: "Ex-date", value: row.exDateLabel },
+      { label: "Pay date", value: row.payDateLabel, tone: row.payDate ? "default" : "warning" },
+      { label: "Amount or ratio", value: row.amountLabel, tone: row.amountLabel === "—" ? "warning" : "default" },
+      { label: "Currency", value: row.currency ?? "—", tone: row.currency ? "default" : "warning" },
+      { label: "New security", value: row.newSecurityId ?? "—" },
+      { label: "Acquirer security", value: row.acquirerSecurityId ?? "—" }
+    ]
+  };
 }
 
 export function buildTradingParametersViewState(

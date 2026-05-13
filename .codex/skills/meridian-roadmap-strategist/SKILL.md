@@ -28,9 +28,11 @@ Read `../_shared/project-context.md` first. Read `references/roadmap-source-map.
 
 - Prefer repository-grounded documents over memory.
 - Treat `docs/status/ROADMAP.md` as the primary active roadmap unless the user asks for a new artifact.
+- Treat `docs/plans/web-ui-development-pivot.md` as the browser-workstation implementation-direction companion to the roadmap.
 - Cross-check roadmap claims against nearby status, plan, audit, and architecture documents before marking work complete.
 - Distinguish shipping work from aspirational ideas.
 - Call out dependencies, blockers, and optional items explicitly.
+- Keep mobile development out of scope unless the roadmap or user explicitly reopens it.
 
 ## Opportunity Rules
 
@@ -61,6 +63,7 @@ Cover these areas when relevant:
 - the major workspaces or product surfaces
 - how research, backtesting, paper trading, live trading, portfolio, and ledger experiences connect
 - what is first-class versus supporting infrastructure
+- why new operator-facing UI should land in the browser workstation while WPF remains retained support
 - what optional capabilities remain optional
 
 ## Output Shapes

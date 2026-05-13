@@ -1500,6 +1500,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             return "FundReportPack";
         }
 
+        if (workItem.Kind == OperatorWorkItemKindDto.LedgerPeriodClose)
+        {
+            return "FundReconciliation";
+        }
+
         var routeTarget = ResolveOperatorInboxRoutePageTag(workItem.TargetRoute);
         if (!string.IsNullOrWhiteSpace(routeTarget))
         {
@@ -1543,6 +1548,12 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationSecurityMasterSearch))
         {
             return "SecurityMaster";
+        }
+
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerBooks) ||
+            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerPeriods))
+        {
+            return "FundTrialBalance";
         }
 
         if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.FundAccountBrokerageSyncAccounts) ||

@@ -4,8 +4,8 @@
 - **System:** Meridian — Integrated Trading Platform
 - **Scope:** Architecture, controls, operational posture, and readiness for controlled production use
 - **Audience:** Engineering leadership, risk/compliance stakeholders, and institutional reviewers
-- **Version:** 3.0
-- **Last Updated:** 2026-03-19
+- **Version:** 3.1
+- **Last Updated:** 2026-05-13
 
 ---
 
@@ -37,12 +37,14 @@ The system is suitable for controlled production deployment (data collection + b
 - **Data Governance:** Persist all data in audit-friendly formats (JSONL + Parquet) with stable, versioned schemas and integrity metadata.
 - **Architecture Clarity:** Maintain strict separation between vendor integration (provider-specific code), domain logic, and application orchestration.
 - **Operational Safety:** Provide runtime visibility (status dashboards), hot configuration reload, and predictable error handling.
+- **Browser Workstation Design:** Deliver new operator surfaces through the Meridian Design System in the browser workstation, using dense evidence-first workflows, view-model-owned state, accessible master/detail navigation, and shared route/API contracts.
 
 ### Non-Objectives (current phase)
 - Live order execution / risk management (paper trading only; live integration requires compliance approval).
 - Guaranteed zero loss under all circumstances (bounded channels may drop under extreme load by design).
 - Exchange-certified market data reconstruction (feed limitations and fallback chains acknowledged).
 - Real-time portfolio optimization or algorithmic order routing.
+- New WPF-first or mobile-specific operator surfaces. WPF remains retained support, and responsive browser validation is allowed only for the workstation route.
 
 ---
 
@@ -63,9 +65,22 @@ The system is suitable for controlled production deployment (data collection + b
 - **Portfolio Tracker** (`Meridian.Strategies`): Multi-run performance analytics, strategy registration and lifecycle management, comparative metrics across backtest/paper/live runs.
 
 **User Interfaces**
-- **Web Dashboard:** Browser-based UI for strategy management, backtest results, paper trading monitoring, and data export.
-- **WPF Desktop App:** Windows-only rich client for advanced operations, data visualization, and configuration (Windows only).
+- **Browser Workstation:** Primary operator UI lane under `/workstation/`, implemented in `src/Meridian.Ui/dashboard/` and governed by the Meridian Design System. The workstation uses the canonical `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces with shared route metadata and API-backed workflows.
+- **Retained WPF Desktop App:** Windows-only compatibility/support client for retained workflows, shared-contract regression checks, and desktop-specific support. It does not define new product-surface design while the browser pivot is active.
 - **Status Endpoints:** JSON API for programmatic integration and monitoring.
+
+### Reference Workbench Design Contract
+
+Security Master and schedule-heavy reference-data workflows must follow the reference-workbench pattern derived from the cash-flow/factor schedule prototype and the current browser Security Master implementation:
+
+- **Command deck first:** Start with a compact full-width operational summary, status metrics, and gated commands such as import, export, packet review, or bulk edit. Metrics, labels, disabled reasons, loading text, and live-region copy belong in the view model.
+- **Master/detail continuity:** Use a dense searchable/sortable master table with keyboard row selection, `aria-selected`, `aria-controls`, and a persistent selected-security detail frame. The selected instrument context must stay visible while reviewing overview fields, schedules, controls, lots, conflicts, notes, and audit evidence.
+- **Sectioned reference data:** Group detail content as `Overview`, `Schedules`, `Controls`, and `Audit`. Identifier evidence, classification, issuance, valuation, ESG, operational metadata, overrides, provider conflicts, alias history, and comments should be inspectable without sending the operator to a disconnected workflow.
+- **Schedule density:** Cash-flow, factor, corporate-action, conversion, redemption, lot, and trading-parameter schedules render as dense tables or compact metadata grids. They should not become loose card lists when row comparison or audit review is the primary task.
+- **Asset-class visibility:** Hide irrelevant asset-class fields visually, but preserve the underlying override and correction state so later classification fixes do not discard operator work.
+- **Safety and accessibility:** Live-like or destructive actions require explicit confirmation or disabled reasons until a real backing workflow exists. Every selection, empty, loading, failed, and recoverable state must be keyboard-accessible and surfaced through view-model-owned copy.
+
+The reusable component contract lives in [`../ui/components.md`](../ui/components.md#security-master-master-detail-pattern). Product planning for this lane lives in [`../plans/web-ui-development-pivot.md`](../plans/web-ui-development-pivot.md).
 
 ### Key Control: Unified Event Stream
 All market data outputs normalize to `MarketEvent(Type, Symbol, Timestamp, Payload)` with typed payload records (Trade, L2Snapshot, BboQuote, OrderFlow, IntegrityEvent). This provides:
@@ -145,13 +160,13 @@ This reduces restart risk and prevents partial-write corruption. Changes apply w
 - Consider encryption at rest for sensitive data (positions, fill prices, strategy parameters).
 
 ### User Interfaces
-- **Web Dashboard:** Intended for internal/local use. If network-exposed:
+- **Browser Workstation:** Intended for internal/local use. If network-exposed:
   - Add authentication (bearer token, OAuth, mTLS)
   - Restrict network binding to trusted networks
   - Add CSRF protections
   - Implement rate limiting for API endpoints
   - Log all administrative actions
-- **WPF Desktop:** Windows-only; relies on OS-level authentication. Accessible only to logged-in user.
+- **Retained WPF Desktop:** Windows-only; relies on OS-level authentication. Accessible only to logged-in user.
 
 ### Credentials Management
 - **Provider API keys:** Stored in `appsettings.json` (development only). For production:
@@ -239,6 +254,7 @@ This reduces restart risk and prevents partial-write corruption. Changes apply w
 | Multi-run reconciliation | Position and performance metrics diverge across runs | Reconcile via order history + fill history + maintain linkage to data snapshot (date/time) for each run |
 | **System-Wide** | | |
 | UI exposure | Dashboards exposed without authentication | Keep local-only by default or add auth if network-exposed |
+| Reference-data workflow fragmentation | Security Master, schedules, overrides, and audit evidence drift into disconnected pages | Keep the browser workstation on the master/detail reference-workbench pattern with selected context, view-model-owned state, and shared route contracts |
 | Credential leakage | API keys/secrets in logs or config files | Enforce environment variables + audit logging + avoid logging sensitive data |
 | Time synchronization | Clock skew breaks backtest/paper parity | Enforce NTP with <1ms tolerance + emit warnings on sync failures |
 
@@ -295,7 +311,7 @@ This reduces restart risk and prevents partial-write corruption. Changes apply w
 - ✅ Prometheus metrics endpoint and monitoring services
 - ✅ Polly-based WebSocket resilience policies
 - ✅ FluentValidation-based configuration validation
-- ✅ Web dashboard and WPF desktop app (Windows)
+- ✅ Browser workstation, retained WPF desktop app (Windows), and Security Master master/detail reference-workbench pattern
 - ✅ Configuration hot-reload without restart
 - ✅ Provider fallback chains and health monitoring
 

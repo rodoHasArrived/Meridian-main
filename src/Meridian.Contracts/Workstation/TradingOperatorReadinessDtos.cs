@@ -12,7 +12,8 @@ public enum OperatorWorkItemKindDto
     ReconciliationBreak = 4,
     ReportPackApproval = 5,
     ProviderTrustGate = 6,
-    ExecutionControl = 7
+    ExecutionControl = 7,
+    LedgerPeriodClose = 8
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<OperatorWorkItemToneDto>))]
@@ -47,7 +48,10 @@ public sealed record OperatorWorkItemDto(
     string? Workspace = null,
     string? TargetRoute = null,
     string? TargetPageTag = null,
-    string? Scope = null)
+    string? Scope = null,
+    string? RequiredSignoffRole = null,
+    string? ToleranceProfileId = null,
+    string? SignoffStatus = null)
 {
     /// <summary>Alias for <see cref="Label"/> to satisfy operator-triage surface naming.</summary>
     public string Title => Label;

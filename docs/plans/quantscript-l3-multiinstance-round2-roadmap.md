@@ -4,7 +4,7 @@
 **Last Updated:** 2026-04-26
 **Audience:** Quantitative researchers, core contributors, platform engineers, institutional operators
 **Related Plans:**
-- QuantScript v1 blueprint: [`docs/plans/quant-script-environment-blueprint.md`](quant-script-environment-blueprint.md)
+- QuantScript v1 blueprint: [`archive/docs/plans/quant-script-environment-blueprint.md`](../../archive/docs/plans/quant-script-environment-blueprint.md)
 - L3 inference implementation plan: [`docs/plans/l3-inference-implementation-plan.md`](l3-inference-implementation-plan.md)
 - Previous brainstorm (ideas #1–#18): [`docs/evaluations/quant-script-blueprint-brainstorm.md`](../evaluations/quant-script-blueprint-brainstorm.md)
 
@@ -106,7 +106,7 @@ rendered via `WatchTradeGridViewModel`.
 | Dependency | Status | Location |
 |---|---|---|
 | QuantScript v1 `IScriptRunner` | Implemented baseline | `src/Meridian.QuantScript/Compilation/IScriptRunner.cs` |
-| QuantScript v1 cell execution model (idea #1 from Round 1) | Implemented baseline | `src/Meridian.QuantScript/Compilation/ScriptRunner.cs`; `docs/plans/quant-script-environment-blueprint.md` |
+| QuantScript v1 cell execution model (idea #1 from Round 1) | Implemented baseline | `src/Meridian.QuantScript/Compilation/ScriptRunner.cs`; `archive/docs/plans/quant-script-environment-blueprint.md` |
 
 #### Tradeoffs
 
@@ -618,7 +618,7 @@ services.AddSingleton<HtmlReportWriter>();
 |---|---|---|
 | QuantScript v1 `QuantScriptGlobals` | Implemented baseline | `src/Meridian.QuantScript/Compilation/QuantScriptGlobals.cs` |
 | `AnalysisExportService` (Parquet/Excel) | Implemented | `src/Meridian.Storage/Export/AnalysisExportService.cs` |
-| ScottPlot (chart rendering) | Implemented baseline | `src/Meridian.Wpf/Views/QuantScriptPage.xaml`; `docs/plans/quant-script-environment-blueprint.md` |
+| ScottPlot (chart rendering) | Implemented baseline | `src/Meridian.Wpf/Views/QuantScriptPage.xaml`; `archive/docs/plans/quant-script-environment-blueprint.md` |
 
 #### Tradeoffs
 
@@ -1173,7 +1173,7 @@ services.AddSingleton<TcaHtmlReportWriter>();
 |---|---|---|
 | L3 fill tape (`fill-tape.jsonl`) | Planned | `docs/plans/l3-inference-implementation-plan.md` |
 | `BacktestMetricsEngine` | Planned | `src/Meridian.Backtesting/Metrics/` |
-| ScottPlot (chart rendering) | Implemented baseline | `src/Meridian.Wpf/Views/QuantScriptPage.xaml`; `docs/plans/quant-script-environment-blueprint.md` |
+| ScottPlot (chart rendering) | Implemented baseline | `src/Meridian.Wpf/Views/QuantScriptPage.xaml`; `archive/docs/plans/quant-script-environment-blueprint.md` |
 
 #### Tradeoffs
 
@@ -2191,7 +2191,7 @@ independently of Track H and Track I on top of the implemented QuantScript v1 fo
 
 ## Related Documents
 
-- **QuantScript v1 blueprint:** [`docs/plans/quant-script-environment-blueprint.md`](quant-script-environment-blueprint.md)
+- **QuantScript v1 blueprint:** [`archive/docs/plans/quant-script-environment-blueprint.md`](../../archive/docs/plans/quant-script-environment-blueprint.md)
 - **L3 inference implementation plan:** [`docs/plans/l3-inference-implementation-plan.md`](l3-inference-implementation-plan.md)
 - **Previous brainstorm (ideas #1–#18):** [`docs/evaluations/quant-script-blueprint-brainstorm.md`](../evaluations/quant-script-blueprint-brainstorm.md)
 - **Feature inventory:** [`docs/status/FEATURE_INVENTORY.md`](../status/FEATURE_INVENTORY.md)

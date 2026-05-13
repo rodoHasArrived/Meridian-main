@@ -1,4 +1,336 @@
 import type { EntitySummaryField } from "@/components/meridian/ui-kit-primitives";
+import type { SecurityIdentityDrillIn, SecurityMasterEntry, TradingParameters } from "@/types";
+
+export type SecurityDetailFieldKind = "text" | "number" | "date" | "select" | "boolean";
+
+export interface SecurityDetailFieldDef {
+  key: string;
+  label: string;
+  kind: SecurityDetailFieldKind;
+  options?: readonly string[];
+  placeholder?: string;
+  derive?: (ctx: SecurityDetailContext) => string | null | undefined;
+  format?: (value: string) => string;
+}
+
+export interface SecurityDetailGroupDef {
+  id: string;
+  title: string;
+  fields: readonly SecurityDetailFieldDef[];
+}
+
+export interface SecurityDetailContext {
+  entry: SecurityMasterEntry | null;
+  identity: SecurityIdentityDrillIn | null;
+  tradingParameters: TradingParameters | null;
+}
+
+export interface SecurityDetailFieldViewModel {
+  def: SecurityDetailFieldDef;
+  key: string;
+  label: string;
+  value: string;
+  displayValue: string;
+  isOverridden: boolean;
+  overrideValue: string | undefined;
+}
+
+export interface SecurityDetailGroupViewModel {
+  id: string;
+  title: string;
+  fields: SecurityDetailFieldViewModel[];
+}
+
+export interface SecurityDetailsViewModel {
+  assetClass: string | null;
+  assetClassVisibilityKey: string | null;
+  groups: SecurityDetailGroupViewModel[];
+  overrideCount: number;
+  hiddenOverrideCount: number;
+}
+
+export interface BuildSecurityDetailsViewModelInput {
+  entry: SecurityMasterEntry | null;
+  identity: SecurityIdentityDrillIn | null;
+  tradingParameters: TradingParameters | null;
+  overrides: Record<string, string>;
+}
+
+const RATING_OPTIONS = [
+  "AAA", "AA+", "AA", "AA-", "A+", "A", "A-",
+  "BBB+", "BBB", "BBB-", "BB+", "BB", "BB-",
+  "B+", "B", "B-", "CCC+", "CCC", "CCC-", "CC", "C", "D",
+  "NR"
+] as const;
+
+const MOODYS_RATING_OPTIONS = [
+  "Aaa", "Aa1", "Aa2", "Aa3", "A1", "A2", "A3",
+  "Baa1", "Baa2", "Baa3", "Ba1", "Ba2", "Ba3",
+  "B1", "B2", "B3", "Caa1", "Caa2", "Caa3", "Ca", "C",
+  "NR"
+] as const;
+
+const COUPON_TYPE_OPTIONS = [
+  "Fixed", "Floating", "Variable", "Step-Up", "Zero Coupon", "Inflation-Linked", "PIK"
+] as const;
+
+const COUPON_FREQUENCY_OPTIONS = [
+  "Annual", "Semi-Annual", "Quarterly", "Monthly", "At Maturity", "Irregular"
+] as const;
+
+const DAY_COUNT_OPTIONS = [
+  "30/360", "30E/360", "ACT/360", "ACT/365", "ACT/ACT", "NL/365"
+] as const;
+
+const PAY_CONVENTION_OPTIONS = [
+  "Following", "Modified Following", "Preceding", "Modified Preceding", "Unadjusted"
+] as const;
+
+const ASSET_CLASS_OPTIONS = [
+  "Equity", "FixedIncome", "Future", "Option", "Fund", "Currency", "Commodity", "Crypto", "Index"
+] as const;
+
+const yesNo = ["Yes", "No"] as const;
+
+function pickIdentifier(identity: SecurityIdentityDrillIn | null, kind: string): string | null {
+  if (!identity) return null;
+  const exact = identity.identifiers.find((i) => i.kind.toLowerCase() === kind.toLowerCase());
+  if (exact) return exact.value;
+  const alias = identity.aliases.find((a) => a.aliasKind.toLowerCase() === kind.toLowerCase());
+  return alias?.aliasValue ?? null;
+}
+
+export const SECURITY_DETAIL_GROUPS: readonly SecurityDetailGroupDef[] = [
+  {
+    id: "identification",
+    title: "Identification",
+    fields: [
+      { key: "identifier", label: "Identifier", kind: "text", derive: (c) => c.identity?.securityId ?? c.entry?.securityId ?? null },
+      { key: "description", label: "Description", kind: "text", derive: (c) => c.identity?.displayName ?? c.entry?.displayName ?? null },
+      { key: "ticker", label: "Ticker", kind: "text", derive: (c) => pickIdentifier(c.identity, "Ticker") },
+      { key: "isin", label: "ISIN", kind: "text", derive: (c) => pickIdentifier(c.identity, "ISIN") },
+      { key: "cusip", label: "CUSIP", kind: "text", derive: (c) => pickIdentifier(c.identity, "CUSIP") },
+      { key: "sedol", label: "SEDOL", kind: "text", derive: (c) => pickIdentifier(c.identity, "SEDOL") },
+      { key: "figi", label: "FIGI", kind: "text", derive: (c) => pickIdentifier(c.identity, "FIGI") },
+      { key: "securityId", label: "Security ID", kind: "text", derive: (c) => c.identity?.securityId ?? c.entry?.securityId ?? null }
+    ]
+  },
+  {
+    id: "issuer",
+    title: "Issuer & Concentration",
+    fields: [
+      { key: "issuer", label: "Issuer", kind: "text" },
+      { key: "issuerConcentration", label: "Issuer Concentration (%)", kind: "number", placeholder: "0.00" },
+      { key: "servicer", label: "Servicer", kind: "text" },
+      { key: "series", label: "Series", kind: "text" },
+      { key: "shareClass", label: "Share Class", kind: "text" },
+      { key: "sharesOutstanding", label: "Shares Outstanding", kind: "number" }
+    ]
+  },
+  {
+    id: "classification",
+    title: "Classification",
+    fields: [
+      { key: "assetClass", label: "Asset Class", kind: "select", options: ASSET_CLASS_OPTIONS, derive: (c) => c.identity?.assetClass ?? c.entry?.classification.assetClass ?? null },
+      { key: "securityType", label: "Security Type", kind: "text", derive: (c) => c.entry?.classification.subType ?? null },
+      { key: "securityTypeCategory", label: "Security Type Category", kind: "text" },
+      { key: "marketSector", label: "Market Sector", kind: "text" },
+      { key: "industrySector", label: "Industry Sector", kind: "text" },
+      { key: "industryGroup", label: "Industry Group", kind: "text" },
+      { key: "industrySubgroup", label: "Industry Subgroup", kind: "text" },
+      { key: "sicCode", label: "SIC Code", kind: "text" },
+      { key: "sicCodeDescription", label: "SIC Code Description", kind: "text" }
+    ]
+  },
+  {
+    id: "geography",
+    title: "Geography & Currency",
+    fields: [
+      { key: "countryOfHeadquarters", label: "Country of Headquarters", kind: "text" },
+      { key: "countryOfIncorporation", label: "Country of Incorporation", kind: "text" },
+      { key: "countryOfIssue", label: "Country of Issue", kind: "text" },
+      { key: "countryOfGovGuarantee", label: "Country of Gov Guarantee", kind: "text" },
+      { key: "currency", label: "Currency", kind: "text", derive: (c) => c.entry?.economicDefinition.currency ?? null }
+    ]
+  },
+  {
+    id: "ratings",
+    title: "Ratings",
+    fields: [
+      { key: "spRating", label: "S&P Rating", kind: "select", options: RATING_OPTIONS },
+      { key: "moodysRating", label: "Moody's Rating", kind: "select", options: MOODYS_RATING_OPTIONS },
+      { key: "fitchRating", label: "Fitch Rating", kind: "select", options: RATING_OPTIONS },
+      { key: "simpleCreditRating", label: "Simple Credit Rating", kind: "select", options: RATING_OPTIONS },
+      { key: "impliedRatingsEligible", label: "Implied Ratings Eligible", kind: "select", options: yesNo }
+    ]
+  },
+  {
+    id: "coupon",
+    title: "Coupon",
+    fields: [
+      { key: "couponRate", label: "Coupon Rate (%)", kind: "number" },
+      { key: "couponType", label: "Coupon Type", kind: "select", options: COUPON_TYPE_OPTIONS },
+      { key: "couponFrequency", label: "Coupon Frequency", kind: "select", options: COUPON_FREQUENCY_OPTIONS },
+      { key: "couponCurrency", label: "Coupon Currency", kind: "text" },
+      { key: "couponCap", label: "Coupon Cap (%)", kind: "number" },
+      { key: "couponFloor", label: "Coupon Floor (%)", kind: "number" },
+      { key: "couponEffectiveDate", label: "Coupon Effective Date", kind: "date" },
+      { key: "couponPayConvention", label: "Coupon Pay Convention", kind: "select", options: PAY_CONVENTION_OPTIONS },
+      { key: "couponPayDay", label: "Coupon Pay Day", kind: "text" },
+      { key: "couponResetFrequency", label: "Coupon Reset Frequency", kind: "select", options: COUPON_FREQUENCY_OPTIONS },
+      { key: "dayCount", label: "Day Count", kind: "select", options: DAY_COUNT_OPTIONS }
+    ]
+  },
+  {
+    id: "maturity",
+    title: "Maturity & Factor",
+    fields: [
+      { key: "finalMaturity", label: "Final Maturity", kind: "date" },
+      { key: "factor", label: "Factor", kind: "number" },
+      { key: "factorEffectiveDate", label: "Factor Effective Date", kind: "date" },
+      { key: "sinkable", label: "Sinkable", kind: "select", options: yesNo },
+      { key: "sequential", label: "Sequential", kind: "select", options: yesNo },
+      { key: "continuouslyCallable", label: "Continuously Callable", kind: "select", options: yesNo },
+      { key: "coveredBond", label: "Covered Bond", kind: "select", options: yesNo }
+    ]
+  },
+  {
+    id: "pricing",
+    title: "Pricing & Risk",
+    fields: [
+      { key: "marketPrice", label: "Market Price", kind: "number" },
+      { key: "yield", label: "Yield (%)", kind: "number" },
+      { key: "duration", label: "Duration", kind: "number" },
+      { key: "convexity", label: "Convexity", kind: "number" },
+      { key: "convexityGroup", label: "Convexity Group", kind: "text" },
+      { key: "contractSize", label: "Contract Size", kind: "number" }
+    ]
+  },
+  {
+    id: "conversion",
+    title: "Conversion (Convertibles)",
+    fields: [
+      { key: "convertible", label: "Convertible", kind: "select", options: yesNo },
+      { key: "conversionOption", label: "Conversion Option", kind: "text" },
+      { key: "conversionOptionEndDate", label: "Conversion Option End Date", kind: "date" },
+      { key: "conversionPrice", label: "Conversion Price", kind: "number" },
+      { key: "conversionRatio", label: "Conversion Ratio", kind: "number" }
+    ]
+  },
+  {
+    id: "regulatory",
+    title: "Regulatory & Tax",
+    fields: [
+      { key: "fdicNumber", label: "FDIC Number", kind: "text" },
+      { key: "fedTax", label: "Fed Tax", kind: "select", options: ["Taxable", "Tax-Exempt", "AMT"] }
+    ]
+  }
+] as const;
+
+const ALWAYS_VISIBLE_GROUPS = new Set(["identification", "classification", "geography"]);
+const EQUITY_FUND_VISIBLE_FIELDS = new Set([
+  "issuer", "shareClass", "sharesOutstanding", "marketPrice", "fedTax"
+]);
+const FIXED_INCOME_VISIBLE_FIELDS = new Set([
+  "issuer", "issuerConcentration", "servicer", "series",
+  "spRating", "moodysRating", "fitchRating", "simpleCreditRating", "impliedRatingsEligible",
+  "couponRate", "couponType", "couponFrequency", "couponCurrency", "couponCap", "couponFloor",
+  "couponEffectiveDate", "couponPayConvention", "couponPayDay", "couponResetFrequency", "dayCount",
+  "finalMaturity", "factor", "factorEffectiveDate", "sinkable", "sequential", "continuouslyCallable", "coveredBond",
+  "marketPrice", "yield", "duration", "convexity", "convexityGroup",
+  "convertible", "conversionOption", "conversionOptionEndDate", "conversionPrice", "conversionRatio",
+  "fdicNumber", "fedTax"
+]);
+const TRADING_ASSET_VISIBLE_FIELDS = new Set(["marketPrice", "contractSize"]);
+
+export function buildSecurityDetailsViewModel({
+  entry,
+  identity,
+  tradingParameters,
+  overrides
+}: BuildSecurityDetailsViewModelInput): SecurityDetailsViewModel {
+  const ctx: SecurityDetailContext = { entry, identity, tradingParameters };
+  const assetClass = resolveAssetClass(ctx, overrides);
+  const assetClassVisibilityKey = normalizeAssetClass(assetClass);
+  const visibleKeys = new Set<string>();
+  const groups = SECURITY_DETAIL_GROUPS
+    .map((group) => {
+      const visibleFields = group.fields
+        .filter((field) => isFieldVisible(group, field, assetClassVisibilityKey))
+        .map((field) => buildSecurityDetailFieldViewModel(field, ctx, overrides));
+      for (const field of visibleFields) {
+        visibleKeys.add(field.key);
+      }
+      return { id: group.id, title: group.title, fields: visibleFields };
+    })
+    .filter((group) => group.fields.length > 0);
+
+  return {
+    assetClass,
+    assetClassVisibilityKey,
+    groups,
+    overrideCount: Object.keys(overrides).length,
+    hiddenOverrideCount: Object.keys(overrides).filter((key) => !visibleKeys.has(key)).length
+  };
+}
+
+function resolveAssetClass(ctx: SecurityDetailContext, overrides: Record<string, string>): string | null {
+  return ctx.identity?.assetClass
+    ?? ctx.entry?.classification.assetClass
+    ?? normalizeBlank(overrides.assetClass);
+}
+
+function normalizeBlank(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+function normalizeAssetClass(value: string | null): string | null {
+  const normalized = value?.trim().toLowerCase().replace(/[\s_-]+/g, "");
+  if (!normalized) return null;
+  if (normalized === "fixedincome" || normalized === "fixedincomes" || normalized === "bond" || normalized === "bonds") return "fixedincome";
+  if (normalized === "equity" || normalized === "equities" || normalized === "stock" || normalized === "commonstock") return "equity";
+  if (normalized === "fund" || normalized === "funds" || normalized === "etf" || normalized === "mutualfund") return "fund";
+  if (normalized === "future" || normalized === "futures") return "future";
+  if (normalized === "option" || normalized === "options") return "option";
+  if (normalized === "commodity" || normalized === "commodities") return "commodity";
+  if (normalized === "currency" || normalized === "currencies" || normalized === "fx") return "currency";
+  if (normalized === "crypto" || normalized === "cryptocurrency") return "crypto";
+  if (normalized === "index" || normalized === "indices") return "index";
+  return "unknown";
+}
+
+function isFieldVisible(group: SecurityDetailGroupDef, field: SecurityDetailFieldDef, assetClassKey: string | null): boolean {
+  if (assetClassKey === null || assetClassKey === "unknown") return true;
+  if (ALWAYS_VISIBLE_GROUPS.has(group.id)) return true;
+  if (assetClassKey === "equity" || assetClassKey === "fund") {
+    return EQUITY_FUND_VISIBLE_FIELDS.has(field.key);
+  }
+  if (assetClassKey === "fixedincome") {
+    return FIXED_INCOME_VISIBLE_FIELDS.has(field.key);
+  }
+  return TRADING_ASSET_VISIBLE_FIELDS.has(field.key);
+}
+
+function buildSecurityDetailFieldViewModel(
+  field: SecurityDetailFieldDef,
+  ctx: SecurityDetailContext,
+  overrides: Record<string, string>
+): SecurityDetailFieldViewModel {
+  const derived = field.derive?.(ctx) ?? null;
+  const override = overrides[field.key];
+  const isOverridden = override !== undefined && override !== "";
+  const value = isOverridden ? override : (derived ?? "");
+  return {
+    def: field,
+    key: field.key,
+    label: field.label,
+    value,
+    displayValue: value === "" ? "—" : (field.format ? field.format(value) : value),
+    isOverridden,
+    overrideValue: override
+  };
+}
 
 export interface SecurityLot {
   lotId: string;

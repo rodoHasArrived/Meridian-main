@@ -11,7 +11,7 @@ Use this document with:
 - `docs/status/ROADMAP.md` for delivery-wave sequencing
 - `docs/status/IMPROVEMENTS.md` for completed improvement history
 - `docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md` for the broader non-assembly implementation backlog
-- `docs/plans/readability-refactor-roadmap.md` for deeper host/UI refactor sequencing
+- `archive/docs/plans/readability-refactor-roadmap.md` for historical host/UI refactor sequencing; keep current cleanup guidance in this document
 
 ---
 

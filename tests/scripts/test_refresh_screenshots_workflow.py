@@ -30,6 +30,13 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("name: wpf-build-binaries", self.workflow)
         self.assertIn("path: src", self.workflow)
 
+    def test_refresh_workflow_uses_dynamic_screenshot_plan(self) -> None:
+        self.assertIn("plan-screenshots:", self.workflow)
+        self.assertIn("scripts/dev/screenshot_workflow_plan.py", self.workflow)
+        self.assertIn("matrix: ${{ fromJson(needs.plan-screenshots.outputs.desktop_matrix) }}", self.workflow)
+        self.assertNotIn("name: manual-data-operations", self.workflow)
+        self.assertNotIn("name: manual-research-and-trading", self.workflow)
+
     def test_desktop_workflow_script_contains_context_selection_automation_elements(self) -> None:
         self.assertIn("ContextSelectionHint", self.run_desktop_workflow_script)
         self.assertIn("ContextSelectionHintButton", self.run_desktop_workflow_script)

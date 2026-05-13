@@ -169,6 +169,14 @@
       href: plans/ufl-other-security-target-state-v2.md
     - name: UFL Swap V2
       href: plans/ufl-swap-target-state-v2.md
+    - name: UFL Commodity V2
+      href: plans/ufl-commodity-target-state-v2.md
+    - name: UFL Crypto V2
+      href: plans/ufl-crypto-target-state-v2.md
+    - name: UFL CFD V2
+      href: plans/ufl-cfd-target-state-v2.md
+    - name: UFL Warrant V2
+      href: plans/ufl-warrant-target-state-v2.md
     - name: Roadmap
       href: status/ROADMAP.md
     - name: Feature Inventory

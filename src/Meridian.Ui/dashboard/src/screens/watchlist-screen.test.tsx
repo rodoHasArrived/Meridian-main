@@ -347,7 +347,7 @@ describe("WatchlistScreen", () => {
     expect(msftRow).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("shows loading, empty, and initial error states", async () => {
+  it("shows loading, empty, and retryable initial error states", async () => {
     vi.mocked(api.getSymbols).mockReturnValue(new Promise(() => {}));
     const loadingRender = renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
     expect(screen.getByRole("status")).toHaveTextContent("Loading symbols…");
@@ -358,10 +358,17 @@ describe("WatchlistScreen", () => {
     expect(await screen.findByRole("table", { name: /subscribed symbol watchlist/i })).toHaveTextContent(/No symbols configured/i);
     emptyRender.unmount();
     cleanup();
+    vi.mocked(api.getSymbols).mockClear();
 
     vi.mocked(api.getSymbols).mockRejectedValueOnce(new Error("Symbol API offline"));
+    vi.mocked(api.getSymbols).mockResolvedValueOnce(symbols);
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
     await waitForAsyncEffects();
     expect(await screen.findByRole("alert")).toHaveTextContent("Symbol API offline");
+
+    await userEvent.setup().click(screen.getByRole("button", { name: /Retry symbol watchlist load/i }));
+
+    expect(await screen.findByRole("table", { name: /subscribed symbol watchlist/i })).toBeInTheDocument();
+    expect(api.getSymbols).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -801,6 +802,207 @@ public sealed class WorkstationEndpointsTests
             .GetString()
             .Should()
             .Be(session.SessionId);
+    }
+
+    [Fact]
+    public async Task Scenario_BacktestToPaperCockpitReadiness_ApiPromotionSessionReplayAndStaleRecoveryStayTraceable()
+    {
+        var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-backtest-paper", Guid.NewGuid().ToString("N"));
+
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterRunReadServices(services);
+                services.AddSingleton(_ => new ExecutionAuditTrailService(
+                    new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+                    NullLogger<ExecutionAuditTrailService>.Instance));
+                services.AddSingleton<IPaperSessionStore>(_ => new JsonlFilePaperSessionStore(
+                    Path.Combine(rootPath, "sessions"),
+                    NullLogger<JsonlFilePaperSessionStore>.Instance));
+                services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
+                    NullLogger<PaperSessionPersistenceService>.Instance,
+                    sp.GetRequiredService<IPaperSessionStore>(),
+                    sp.GetRequiredService<ExecutionAuditTrailService>()));
+                services.AddSingleton<ExecutionOperatorControlService>(sp => new ExecutionOperatorControlService(
+                    new ExecutionOperatorControlOptions(Path.Combine(rootPath, "controls")),
+                    NullLogger<ExecutionOperatorControlService>.Instance,
+                    sp.GetRequiredService<ExecutionAuditTrailService>()));
+                services.AddSingleton<BacktestToLivePromoter>();
+                services.AddSingleton<IPromotionRecordStore>(_ => new JsonlPromotionRecordStore(
+                    Path.Combine(rootPath, "promotions"),
+                    NullLogger<JsonlPromotionRecordStore>.Instance));
+                services.AddSingleton<PromotionService>(sp => new PromotionService(
+                    sp.GetRequiredService<IStrategyRepository>(),
+                    sp.GetRequiredService<BacktestToLivePromoter>(),
+                    sp.GetRequiredService<IPromotionRecordStore>(),
+                    NullLogger<PromotionService>.Instance,
+                    operatorControls: sp.GetRequiredService<ExecutionOperatorControlService>(),
+                    auditTrail: sp.GetRequiredService<ExecutionAuditTrailService>()));
+            },
+            mapExecutionApi: true,
+            mapPromotionApi: true,
+            currentUserPermissions: UserPermission.ManageStrategies | UserPermission.ExecuteTrades | UserPermission.ManageOrders);
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-api-backtest",
+            strategyId: "strat-api-paper",
+            strategyName: "API Paper Continuity",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 4, 25, 14, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")) with
+            {
+                RunId = "run-api-backtest",
+                AuditReference = "audit-run-api-backtest"
+            });
+
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops.workflow");
+
+        var approveResponse = await client.PostAsync(
+            UiApiRoutes.PromotionApprove,
+            JsonContent(new PromotionApprovalRequest(
+                RunId: "run-api-backtest",
+                ReviewNotes: "Backtest qualifies for paper acceptance.",
+                ApprovedBy: "spoofed",
+                ApprovalReason: "Backtest evidence approved for paper cockpit validation.",
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper))));
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var approval = await ReadAsync<PromotionDecisionResult>(approveResponse);
+        approval.Success.Should().BeTrue();
+        approval.NewRunId.Should().NotBeNullOrWhiteSpace();
+        approval.ApprovedBy.Should().Be("ops.workflow");
+
+        var wrongSessionResponse = await client.PostAsync(
+            UiApiRoutes.ExecutionSessionCreate,
+            JsonContent(new CreatePaperSessionRequest(
+                StrategyId: "strat-other",
+                StrategyName: "Unrelated Strategy",
+                InitialCash: 100_000m,
+                Symbols: ["MSFT"])));
+        wrongSessionResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var mismatchReadiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+            UiApiRoutes.WorkstationTradingReadiness,
+            ServerJsonOptions);
+        mismatchReadiness.Should().NotBeNull();
+        mismatchReadiness!.ActiveSession.Should().BeNull();
+        mismatchReadiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "session" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Blocked &&
+            gate.RunId == approval.NewRunId);
+        mismatchReadiness.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == $"paper-session-mismatch-{approval.NewRunId!.ToLowerInvariant()}" &&
+            item.Tone == OperatorWorkItemToneDto.Critical &&
+            item.Detail.Contains("strat-api-paper", StringComparison.OrdinalIgnoreCase));
+
+        var sessionResponse = await client.PostAsync(
+            UiApiRoutes.ExecutionSessionCreate,
+            JsonContent(new CreatePaperSessionRequest(
+                StrategyId: "strat-api-paper",
+                StrategyName: "API Paper Continuity",
+                InitialCash: 125_000m,
+                Symbols: ["AAPL"])));
+        sessionResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var session = await ReadAsync<PaperSessionSummaryDto>(sessionResponse);
+
+        var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-api-1", "AAPL", 10m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-api-1", "AAPL", 10m, 190m));
+
+        var controls = app.Services.GetRequiredService<ExecutionOperatorControlService>();
+        await controls.SetDefaultPositionLimitAsync(
+            100_000m,
+            "risk.lead",
+            "Paper cockpit risk budget accepted for API workflow.");
+
+        var replayResponse = await client.GetAsync(
+            UiApiRoutes.ExecutionSessionReplay.Replace("{sessionId}", session.SessionId, StringComparison.Ordinal));
+        replayResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var replay = await ReadAsync<PaperSessionReplayVerificationDto>(replayResponse);
+        replay.IsConsistent.Should().BeTrue();
+        replay.ComparedFillCount.Should().Be(1);
+        replay.ComparedOrderCount.Should().Be(1);
+        replay.VerificationAuditId.Should().NotBeNullOrWhiteSpace();
+
+        var readyReadiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+            UiApiRoutes.WorkstationTradingReadiness,
+            ServerJsonOptions);
+        readyReadiness.Should().NotBeNull();
+        readyReadiness!.ActiveSession.Should().NotBeNull();
+        readyReadiness.ActiveSession!.SessionId.Should().Be(session.SessionId);
+        readyReadiness.Replay.Should().NotBeNull();
+        readyReadiness.Replay!.VerificationAuditId.Should().Be(replay.VerificationAuditId);
+        readyReadiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "replay" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready &&
+            gate.AuditReference == replay.VerificationAuditId);
+        readyReadiness.Controls.ExplainableEvidenceCount.Should().Be(1);
+        readyReadiness.Controls.UnexplainedEvidenceCount.Should().Be(0);
+        readyReadiness.Controls.RecentEvidence.Should().ContainSingle(evidence =>
+            evidence.Action == "DefaultPositionLimitUpdated" &&
+            evidence.Actor == "risk.lead" &&
+            evidence.Scope == "default-position-limit" &&
+            evidence.Reason.Contains("risk budget", StringComparison.OrdinalIgnoreCase) &&
+            evidence.IsExplained);
+        readyReadiness.Promotion.Should().NotBeNull();
+        readyReadiness.Promotion!.SourceRunId.Should().Be("run-api-backtest");
+        readyReadiness.Promotion.TargetRunId.Should().Be(approval.NewRunId);
+        readyReadiness.Promotion.ApprovedBy.Should().Be("ops.workflow");
+        readyReadiness.Promotion.AuditReference.Should().Be(approval.AuditReference);
+        readyReadiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "promotion" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready &&
+            gate.RunId == "run-api-backtest" &&
+            gate.AuditReference == approval.AuditReference);
+
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-api-2", "AAPL", 2m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-api-2", "AAPL", 2m, 191m));
+
+        var staleReadiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+            UiApiRoutes.WorkstationTradingReadiness,
+            ServerJsonOptions);
+        staleReadiness.Should().NotBeNull();
+        staleReadiness!.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "replay" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            gate.AuditReference == replay.VerificationAuditId &&
+            gate.Detail.Contains("stale", StringComparison.OrdinalIgnoreCase));
+        staleReadiness.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == $"paper-replay-stale-{session.SessionId.ToLowerInvariant()}" &&
+            item.Kind == OperatorWorkItemKindDto.PaperReplay &&
+            item.Tone == OperatorWorkItemToneDto.Warning);
+
+        var recoveryResponse = await client.GetAsync(
+            UiApiRoutes.ExecutionSessionReplay.Replace("{sessionId}", session.SessionId, StringComparison.Ordinal));
+        recoveryResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var recovery = await ReadAsync<PaperSessionReplayVerificationDto>(recoveryResponse);
+        recovery.IsConsistent.Should().BeTrue();
+        recovery.ComparedFillCount.Should().Be(2);
+        recovery.ComparedOrderCount.Should().Be(2);
+        recovery.VerificationAuditId.Should().NotBe(replay.VerificationAuditId);
+
+        var recoveredReadiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+            UiApiRoutes.WorkstationTradingReadiness,
+            ServerJsonOptions);
+        recoveredReadiness.Should().NotBeNull();
+        recoveredReadiness!.Replay.Should().NotBeNull();
+        recoveredReadiness.Replay!.VerificationAuditId.Should().Be(recovery.VerificationAuditId);
+        recoveredReadiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "replay" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready &&
+            gate.AuditReference == recovery.VerificationAuditId);
+        recoveredReadiness.WorkItems.Should().NotContain(item =>
+            item.WorkItemId == $"paper-replay-stale-{session.SessionId.ToLowerInvariant()}");
+
+        var detailResponse = await client.GetAsync(
+            UiApiRoutes.ExecutionSessionById.Replace("{sessionId}", session.SessionId, StringComparison.Ordinal));
+        detailResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var detail = await ReadAsync<PaperSessionDetailDto>(detailResponse);
+        detail.Symbols.Should().Equal("AAPL");
+        detail.OrderHistory.Should().HaveCount(2);
+        detail.LedgerEntryCount.Should().BeGreaterThan(0);
     }
 
     [Fact]
@@ -3138,7 +3340,11 @@ public sealed class WorkstationEndpointsTests
         public IReadOnlyDictionary<string, Meridian.Execution.Sdk.IPosition> Positions { get; }
     }
 
-    private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
+    private static async Task<WebApplication> CreateAppAsync(
+        Action<IServiceCollection>? configureServices = null,
+        bool mapExecutionApi = false,
+        bool mapPromotionApi = false,
+        UserPermission currentUserPermissions = UserPermission.ModifySecurityMaster)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -3155,15 +3361,27 @@ public sealed class WorkstationEndpointsTests
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "ops-user";
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ModifySecurityMaster;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
             await next();
         });
 
-        app.MapWorkstationEndpoints(new JsonSerializerOptions
+        var jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             Converters = { new JsonStringEnumConverter() }
-        });
+        };
+
+        if (mapExecutionApi)
+        {
+            app.MapExecutionEndpoints(jsonOptions);
+        }
+
+        if (mapPromotionApi)
+        {
+            app.MapPromotionEndpoints(jsonOptions);
+        }
+
+        app.MapWorkstationEndpoints(jsonOptions);
 
         await app.StartAsync();
         return app;
@@ -3653,6 +3871,17 @@ public sealed class WorkstationEndpointsTests
         var stream = await response.Content.ReadAsStreamAsync();
         return await JsonDocument.ParseAsync(stream);
     }
+
+    private static async Task<T> ReadAsync<T>(HttpResponseMessage response)
+    {
+        var json = await response.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize<T>(json, ServerJsonOptions);
+        result.Should().NotBeNull($"expected a {typeof(T).Name} in response body, but got: {json}");
+        return result!;
+    }
+
+    private static StringContent JsonContent(object payload) =>
+        new(JsonSerializer.Serialize(payload, ServerJsonOptions), Encoding.UTF8, "application/json");
 
     private static bool ContainsStringValue(JsonElement element, string expectedValue)
     {

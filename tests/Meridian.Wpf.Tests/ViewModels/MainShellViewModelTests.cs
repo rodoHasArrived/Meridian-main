@@ -689,6 +689,43 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void OperatorInboxPresentation_RoutesLedgerPeriodCloseToReconciliation()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "ledger-period-close-2026-p02",
+                        Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
+                        Label: "SoftClosed sign-off required",
+                        Detail: "Alpha Fund 2026-P02 requires controller sign-off.",
+                        Tone: OperatorWorkItemToneDto.Warning,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
+                        TargetPageTag: "GovernanceShell")
+                ],
+                CriticalCount: 0,
+                WarningCount: 1,
+                ReviewCount: 1,
+                Summary: "1 warning work item needs review.");
+            var inboxClient = new FakeOperatorInboxApiClient(inbox);
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: inboxClient);
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+
+            vm.OperatorInboxTargetText.Should().Be("FundReconciliation");
+
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            vm.CurrentWorkspace.Should().Be("accounting");
+            vm.CurrentPageTag.Should().Be("FundReconciliation");
+        });
+    }
+
+    [Fact]
     public void OperatorInboxPresentation_PromotesQueueAttentionIntoShellContext()
     {
         WpfTestThread.Run(async () =>

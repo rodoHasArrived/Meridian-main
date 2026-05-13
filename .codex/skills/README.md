@@ -2,7 +2,10 @@
 
 This folder contains Meridian's repo-local Codex skills. These are the primary project-scoped
 skills for the current AI workflow and should stay aligned with Meridian's browser-first operator
-workstation direction, retained WPF support, and fund-management/trading-platform scope.
+workstation direction, retained WPF support, fund-management/trading-platform scope, and no-mobile
+development policy.
+
+Last verified against `README.md` and `docs/status/ROADMAP.md`: 2026-05-13.
 
 ## Current Skills
 
@@ -29,9 +32,16 @@ workstation direction, retained WPF support, and fund-management/trading-platfor
 
 - Keep each skill's `description` aligned with the current `README.md` and
   `docs/status/ROADMAP.md`, not with older market-data-only phrasing.
+- Treat `src/Meridian.Ui/dashboard/` and `/workstation/` as the default operator UI surface for
+  new browser-facing work. WPF guidance is retained support unless the user explicitly asks for
+  desktop compatibility work.
+- Do not introduce mobile development guidance unless the roadmap or user explicitly reopens that
+  lane.
 - Keep `agents/openai.yaml` synchronized with the skill text so Codex UI metadata stays current.
 - Mirror shared workflow changes into the corresponding Claude and GitHub agent surfaces when a
   specialist workflow is meant to stay host-consistent.
+- Validate catalog drift with `python build/scripts/docs/check-ai-inventory.py --summary` after
+  changing Codex skill metadata or shared context.
 
 ## Recommended Flow
 

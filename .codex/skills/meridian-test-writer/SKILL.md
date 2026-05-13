@@ -4,8 +4,8 @@ description: >
   Write or expand Meridian tests grounded in real-world market scenarios that exercise complete
   code paths end-to-end, rather than arbitrarily calling individual methods. Use when the user
   asks for tests, coverage, missing unit tests, regression tests, integration tests, validation
-  for Meridian providers, storage, pipelines, services, WPF view models, UI services, execution
-  code, F# interop, or when they describe a market event (e.g. "flash crash", "session open",
+  for Meridian providers, storage, pipelines, services, browser dashboard view models/components,
+  retained WPF view models, UI services, execution code, F# interop, or when they describe a market event (e.g. "flash crash", "session open",
   "feed interruption") and want to know how the system handles it.
 ---
 
@@ -87,7 +87,8 @@ name the new scenario before proceeding.
   `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/` and the official provider docs in the
   Provider Wire-Format Catalog before constructing mock HTTP responses.
 - Storage, WAL, and pipeline code need stronger cleanup and flush assertions.
-- WPF and shared UI services should respect the existing test project's mocking style.
+- Browser workstation tests should use the existing Vitest and Testing Library patterns under `src/Meridian.Ui/dashboard/`.
+- Retained WPF and shared UI services should respect the existing test project's mocking style.
 - F# interop tests should focus on the boundary contract, not re-implementing the F# logic in C#.
 - Multi-layer scenario tests belong in `tests/Meridian.Tests/Integration/`.
 - Use `MarketScenarioBuilder` from `tests/Meridian.Tests/TestHelpers/MarketScenarioBuilder.cs`
@@ -104,6 +105,7 @@ name the new scenario before proceeding.
 | `IStorageSink` / WAL | C | Temp dir, FlushAsync, DisposeAsync, line count |
 | `EventPipeline` | D | FlushAsync before assert, DisposeAsync flushes |
 | Application service (pure) | E | `[Theory]` for multiple inputs, `[InlineData]` |
+| Browser dashboard | F1 | Vitest, view-model state, accessible labels, keyboard paths |
 | WPF / Ui.Services | F | API mock, null on error |
 | F# modules | G | F# test module style, `Result` type assertions |
 | Endpoint integration | H | `WebApplicationFactory`, JSON contract snapshots |

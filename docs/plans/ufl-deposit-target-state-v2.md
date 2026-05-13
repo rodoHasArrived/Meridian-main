@@ -70,7 +70,7 @@ flowchart TD
     Lifecycle --> Treasury["Treasury Operations"]
     Callable --> Alerts["Maturity / Callable Alerts"]
     Accrual --> Ledger["Ledger / Accrual Services"]
-    Institution --> Governance["Governance UI"]
+    Institution --> Governance["Accounting / Reporting workstation"]
 ```
 
 ## 1. Architecture Blueprint

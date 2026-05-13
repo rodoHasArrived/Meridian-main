@@ -96,6 +96,7 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     eyebrow: "Research & backtesting",
     links: [
       { label: "Backtest runs", route: "/strategy", description: "Strategy backtest results" },
+      { label: "Designer", route: "/strategy/designer", description: "Visual multi-leg strategy designer with payoff and participation visualizations" },
       { label: "Promotions", route: "/strategy/promotions", description: "Paper-to-live promotions" },
       { label: "Research", route: "/strategy/research", description: "Signal research workspace" },
       { label: "Quant Lab", route: "/strategy/quant-lab", description: "Run C# scripts with plots and metrics" }

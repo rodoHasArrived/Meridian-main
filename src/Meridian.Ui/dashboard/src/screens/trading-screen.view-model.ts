@@ -1287,6 +1287,9 @@ export interface PaperSessionRow {
   canRestore: boolean;
   canVerify: boolean;
   canClose: boolean;
+  restoreDisabledReason: string | null;
+  verifyDisabledReason: string | null;
+  closeDisabledReason: string | null;
 }
 
 export interface PaperSessionFieldRow {
@@ -1336,11 +1339,15 @@ export interface PaperSessionState {
   formDescriptionId: string;
   formRequirementText: string;
   toggleCreateButtonLabel: string;
+  toggleCreateButtonAriaLabel: string;
+  toggleCreateButtonDisabledReason: string | null;
   createButtonLabel: string;
   cancelCreateButtonLabel: string;
   createButtonAriaLabel: string;
   canSubmitCreate: boolean;
+  createButtonDisabledReason: string | null;
   canCloseCreateForm: boolean;
+  cancelCreateButtonDisabledReason: string | null;
   statusAnnouncement: string;
 }
 
@@ -1571,6 +1578,9 @@ export function buildPaperSessionState({
 }: BuildPaperSessionStateOptions): PaperSessionState {
   const validationError = validatePaperSessionForm(form);
   const isBusy = busyCommand !== null;
+  const busyReason = buildPaperSessionBusyReason(busyCommand);
+  const canSubmitCreate = !isBusy && validationError === null;
+  const canCloseCreateForm = !isBusy;
 
   return {
     sessions,
@@ -1594,11 +1604,15 @@ export function buildPaperSessionState({
     formDescriptionId: "paper-session-create-requirements",
     formRequirementText: validationError ?? "Strategy ID is optional. Initial cash must be at least $1,000.",
     toggleCreateButtonLabel: showCreateForm ? "Close form" : "New session",
+    toggleCreateButtonAriaLabel: showCreateForm ? "Close paper session creation form" : "Open paper session creation form",
+    toggleCreateButtonDisabledReason: isBusy && !showCreateForm ? busyReason : null,
     createButtonLabel: busyCommand?.kind === "creating" ? "Creating..." : "Create session",
     cancelCreateButtonLabel: "Cancel",
     createButtonAriaLabel: busyCommand?.kind === "creating" ? "Creating paper session" : "Create paper session",
-    canSubmitCreate: !isBusy && validationError === null,
-    canCloseCreateForm: !isBusy,
+    canSubmitCreate,
+    createButtonDisabledReason: canSubmitCreate ? null : busyReason ?? validationError,
+    canCloseCreateForm,
+    cancelCreateButtonDisabledReason: canCloseCreateForm ? null : busyReason,
     statusAnnouncement: buildPaperSessionAnnouncement({
       sessions,
       selectedSessionDetail,
@@ -1641,7 +1655,15 @@ function buildPaperSessionRows({
   return sessions.map((session) => {
     const rowBusy = busyCommand?.sessionId === session.sessionId;
     const anyBusy = busyCommand !== null;
+    const busyReason = buildPaperSessionBusyReason(busyCommand);
     const statusLabel = getPaperSessionStatus(session);
+    const restoreDisabledReason = anyBusy ? busyReason : null;
+    const verifyDisabledReason = anyBusy ? busyReason : null;
+    const closeDisabledReason = !session.isActive
+      ? "Only active paper sessions can be closed."
+      : anyBusy
+        ? busyReason
+        : null;
 
     return {
       sessionId: session.sessionId,
@@ -1654,14 +1676,42 @@ function buildPaperSessionRows({
       restoreButtonLabel: rowBusy && busyCommand?.kind === "restoring" ? "Restoring..." : "Restore",
       verifyButtonLabel: rowBusy && busyCommand?.kind === "verifying" ? "Verifying..." : "Verify replay",
       closeButtonLabel: rowBusy && busyCommand?.kind === "closing" ? "Closing..." : "Close",
-      restoreAriaLabel: `Restore paper session ${session.sessionId}`,
-      verifyAriaLabel: `Verify replay for paper session ${session.sessionId}`,
-      closeAriaLabel: `Close paper session ${session.sessionId}`,
+      restoreAriaLabel: rowBusy && busyCommand?.kind === "restoring"
+        ? `Restoring paper session ${session.sessionId}`
+        : `Restore paper session ${session.sessionId}`,
+      verifyAriaLabel: rowBusy && busyCommand?.kind === "verifying"
+        ? `Verifying replay for paper session ${session.sessionId}`
+        : `Verify replay for paper session ${session.sessionId}`,
+      closeAriaLabel: rowBusy && busyCommand?.kind === "closing"
+        ? `Closing paper session ${session.sessionId}`
+        : `Close paper session ${session.sessionId}`,
       canRestore: !anyBusy,
       canVerify: !anyBusy,
-      canClose: session.isActive && !anyBusy
+      canClose: session.isActive && !anyBusy,
+      restoreDisabledReason,
+      verifyDisabledReason,
+      closeDisabledReason
     };
   });
+}
+
+function buildPaperSessionBusyReason(busyCommand: PaperSessionBusyCommand | null): string | null {
+  if (!busyCommand) {
+    return null;
+  }
+
+  switch (busyCommand.kind) {
+    case "loading":
+      return "Paper sessions are still loading.";
+    case "creating":
+      return "Paper session creation is in progress.";
+    case "restoring":
+      return `Paper session ${busyCommand.sessionId ?? "restore"} is restoring.`;
+    case "verifying":
+      return `Paper session ${busyCommand.sessionId ?? "replay"} verification is running.`;
+    case "closing":
+      return `Paper session ${busyCommand.sessionId ?? "close"} is closing.`;
+  }
 }
 
 function buildPaperSessionDetailPanel(

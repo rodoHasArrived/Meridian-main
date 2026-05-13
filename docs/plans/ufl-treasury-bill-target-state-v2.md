@@ -67,7 +67,7 @@ flowchart TD
     Snapshot --> Auction["Auction Metadata Projection"]
 
     Lifecycle --> Treasury["Treasury Operations"]
-    Ladder --> Governance["Governance UI"]
+    Ladder --> Governance["Accounting / Reporting workstation"]
     Auction --> Reporting["Auction / Issuance Reporting"]
 ```
 

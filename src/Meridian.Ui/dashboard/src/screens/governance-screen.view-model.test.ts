@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   buildCalibrationSummaryViewState,
+  buildCorporateActionsViewState,
   buildGovernanceCashFlowViewState,
   buildGovernanceLoadingViewState,
   buildGovernanceReportingViewState,
@@ -17,6 +18,7 @@ import {
   buildSecurityConflictRows,
   buildSecurityConflictRefreshCommand,
   buildSecurityIdentityDrillInState,
+  buildSecurityMasterPageViewState,
   buildSecuritySearchResultRows,
   buildSecuritySearchState,
   countOpenSecurityConflicts,
@@ -131,6 +133,41 @@ const tradingParameters: TradingParameters = {
   circuitBreakerThresholdPct: 7,
   asOf: "2026-05-10T00:00:00Z"
 };
+
+const corporateActions: CorporateAction[] = [
+  {
+    corpActId: "ca-div-1",
+    securityId: "sec-1",
+    eventType: "Dividend",
+    exDate: "2026-05-01T00:00:00Z",
+    payDate: "2026-05-15T00:00:00Z",
+    dividendPerShare: 0.24,
+    currency: "USD",
+    splitRatio: null,
+    newSecurityId: null,
+    distributionRatio: null,
+    acquirerSecurityId: null,
+    exchangeRatio: null,
+    subscriptionPricePerShare: null,
+    rightsPerShare: null
+  },
+  {
+    corpActId: "ca-split-1",
+    securityId: "sec-1",
+    eventType: "StockSplit",
+    exDate: "2026-06-01T00:00:00Z",
+    payDate: null,
+    dividendPerShare: null,
+    currency: null,
+    splitRatio: 4,
+    newSecurityId: null,
+    distributionRatio: null,
+    acquirerSecurityId: null,
+    exchangeRatio: null,
+    subscriptionPricePerShare: null,
+    rightsPerShare: null
+  }
+];
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -268,6 +305,11 @@ describe("governance-screen view model", () => {
 
     expect(state).toMatchObject({
       title: "Reconciliation detail queue",
+      overviewTitle: "Reconciliation queue",
+      overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation workstream to inspect selected run detail.",
+      overviewActionHref: "/accounting/reconciliation",
+      overviewActionLabel: "Open reconciliation",
+      overviewActionAriaLabel: "Open Accounting reconciliation workstream",
       listLabel: "Reconciliation runs",
       detailPanelId: "reconciliation-run-detail-panel",
       hasRows: true
@@ -420,26 +462,140 @@ describe("governance-screen view model", () => {
     });
 
     expect(state).toMatchObject({
-      title: "Multi-ledger trial balance",
-      description: "Baseline ledger balances for run-42 grouped by account type.",
-      tableLabel: "Trial balance lines for run-42",
+      title: "Primary trial balance",
+      description: "Primary basis ledger balances for run-42 grouped by account type. Values are basis per configured policy until accountant review.",
+      tableLabel: "Primary trial balance lines for run-42",
+      selectedBasis: "Primary",
       state: "ready",
       hasRows: true,
       statusAnnouncement: "2 trial balance lines loaded for run-42."
     });
+    expect(state.basisOptions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "Primary", rowCount: 2, rowCountLabel: "2 rows", isSelected: true }),
+      expect.objectContaining({ id: "Gaap", rowCount: 0, rowCountLabel: "0 rows", isSelected: false })
+    ]));
     expect(state.rows[0]).toMatchObject({
-      rowId: "Cash-Asset-acct-cash",
+      rowId: "Primary-Cash-Asset-acct-cash",
       accountLabel: "Cash",
       accountTypeLabel: "Asset",
+      basisLabel: "Primary basis",
+      policyLabel: "legacy-v1/legacy-v1",
       balanceLabel: "$120,500",
       balanceTone: "success",
       entryCountLabel: "12",
-      ariaLabel: "Cash Asset. Balance $120,500. 12 entries"
+      ariaLabel: "Cash Asset. Primary basis. Policy legacy-v1/legacy-v1. Balance $120,500. 12 entries",
+      selectAriaLabel: "Inspect trial-balance account Cash for Asset",
+      detailPanelId: "trial-balance-account-detail",
+      isExpanded: true
+    });
+    expect(state.selectedRowId).toBe("Primary-Cash-Asset-acct-cash");
+    expect(state.selectedDetail).toMatchObject({
+      eyebrow: "Trial-balance detail",
+      title: "Cash",
+      subtitle: "Asset · acct-cash",
+      statusLabel: "Debit / asset",
+      statusVariant: "success",
+      ariaLabel: "Trial-balance detail for Cash"
     });
     expect(state.rows[1]).toMatchObject({
       balanceLabel: "-$500",
-      balanceTone: "danger"
+      balanceTone: "danger",
+      isExpanded: false
     });
+
+    const selectedFinancing = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      selectedRowId: "Primary-Financing payable-Liability-acct-financing",
+      loading: false,
+      errorText: null
+    });
+    expect(selectedFinancing.selectedDetail).toMatchObject({
+      title: "Financing payable",
+      statusLabel: "Credit / payable",
+      statusVariant: "danger"
+    });
+  });
+
+  it("filters trial-balance rows by basis and builds a basis bridge", () => {
+    const state = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      selectedBasis: "Gaap",
+      rows: [
+        {
+          accountName: "Cash",
+          accountType: "Asset",
+          symbol: null,
+          financialAccountId: "acct-cash",
+          balance: 120500,
+          entryCount: 12,
+          security: null,
+          accountingBasis: "Primary",
+          accountingPolicyId: "legacy-v1",
+          accountingPolicyVersion: "legacy-v1",
+          ruleId: "direct-lending.daily-accrual",
+          sourceEventId: "event-42"
+        },
+        {
+          accountName: "Cash",
+          accountType: "Asset",
+          symbol: null,
+          financialAccountId: "acct-cash",
+          balance: 119500,
+          entryCount: 10,
+          security: null,
+          accountingBasis: "Gaap",
+          accountingPolicyId: "gaap-default-v1",
+          accountingPolicyVersion: "v1",
+          ruleId: "direct-lending.daily-accrual",
+          sourceEventId: "event-42"
+        },
+        {
+          accountName: "Accrued interest receivable",
+          accountType: "Asset",
+          symbol: null,
+          financialAccountId: "acct-interest",
+          balance: 1000,
+          entryCount: 1,
+          security: null,
+          accountingBasis: "Gaap",
+          accountingPolicyId: "gaap-default-v1",
+          accountingPolicyVersion: "v1",
+          ruleId: "direct-lending.daily-accrual",
+          sourceEventId: "event-42"
+        }
+      ],
+      loading: false,
+      errorText: null
+    });
+
+    expect(state.selectedBasis).toBe("Gaap");
+    expect(state.rows).toHaveLength(2);
+    expect(state.rows[0]).toMatchObject({
+      basisLabel: "GAAP basis",
+      basisTone: "success",
+      policyLabel: "gaap-default-v1/v1"
+    });
+    expect(state.basisOptions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "Primary", rowCount: 1, isSelected: false }),
+      expect.objectContaining({ id: "Gaap", rowCount: 2, isSelected: true })
+    ]));
+    expect(state.basisBridge).toMatchObject({
+      title: "Basis bridge",
+      fromBasis: "Primary",
+      toBasis: "Gaap",
+      hasRows: true
+    });
+    expect(state.basisBridge.rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        accountLabel: "Cash",
+        primaryBalanceLabel: "$120,500",
+        comparisonBalanceLabel: "$119,500",
+        varianceLabel: "-$1,000",
+        varianceTone: "danger",
+        sourceLabel: "Source event-42 / Rule direct-lending.daily-accrual"
+      })
+    ]));
   });
 
   it("derives trial-balance loading, empty, and error states", () => {
@@ -552,6 +708,56 @@ describe("governance-screen view model", () => {
     });
     expect(rows[0].ariaLabel).toContain("selected");
     expect(buildSecuritySearchResultRows(null, null)).toEqual([]);
+  });
+
+  it("derives selectable corporate-action rows with a detail panel", () => {
+    const state = buildCorporateActionsViewState("sec-1", corporateActions, "ca-split-1", false, null);
+
+    expect(state).toMatchObject({
+      tableLabel: "Corporate actions for sec-1",
+      detailPanelId: "corporate-action-detail-panel",
+      selectedRowId: "ca-split-1",
+      hasRows: true,
+      errorText: null,
+      loadingText: null
+    });
+    expect(state.rows[1]).toMatchObject({
+      rowId: "ca-split-1",
+      eventTypeLabel: "Stock split",
+      amountLabel: "4:1 split",
+      selectAriaLabel: "Inspect corporate action Stock split for sec-1",
+      detailPanelId: "corporate-action-detail-panel",
+      isExpanded: true
+    });
+    expect(state.selectedDetail).toMatchObject({
+      id: "corporate-action-detail-panel",
+      title: "Stock split",
+      ariaLabel: "Corporate action detail for Stock split on sec-1",
+      statusLabel: "Pay date unavailable"
+    });
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Amount or ratio", value: "4:1 split", tone: "default" },
+      { label: "Pay date", value: "—", tone: "warning" }
+    ]));
+  });
+
+  it("keeps corporate-action loading, empty, and error states in the view model", () => {
+    expect(buildCorporateActionsViewState("sec-1", null, null, true, null)).toMatchObject({
+      loadingText: "Loading corporate actions...",
+      statusAnnouncement: "Loading corporate actions for sec-1."
+    });
+
+    expect(buildCorporateActionsViewState("sec-1", [], null, false, null)).toMatchObject({
+      hasRows: false,
+      emptyText: "No corporate actions recorded for sec-1.",
+      selectedDetail: null,
+      detailEmptyAriaLabel: "No corporate action selected"
+    });
+
+    expect(buildCorporateActionsViewState("sec-1", [], null, false, "Corporate API offline")).toMatchObject({
+      errorText: "Corporate API offline",
+      statusAnnouncement: "Corporate actions error: Corporate API offline"
+    });
   });
 
   it("ignores stale Security Master identity responses after a newer selection settles", async () => {
@@ -668,6 +874,43 @@ describe("governance-screen view model", () => {
       label: "Retry conflicts",
       ariaLabel: "Retry loading Security Master identifier conflicts"
     });
+  });
+
+  it("derives Security Master master-detail page summary from selected state", () => {
+    const state = buildSecurityMasterPageViewState({
+      query: "AAPL",
+      results: [securityResult],
+      selectedSecurityId: "sec-1",
+      selectedDisplayName: "Apple Inc.",
+      selectedAssetClass: "Equity",
+      selectedStatus: "Active",
+      identity: securityIdentity,
+      identityLoading: false,
+      conflicts,
+      conflictsLoading: false,
+      corporateActions,
+      tradingParameters
+    });
+
+    expect(state).toMatchObject({
+      ariaLabel: "Security Master command deck",
+      title: "Security Master command deck",
+      detailTitle: "Security detail page",
+      detailSubtitle: "sec-1 · Equity",
+      detailStatusLabel: "Active",
+      detailStatusBadgeVariant: "success"
+    });
+    expect(state.metrics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "results", value: "1", tone: "success" }),
+      expect.objectContaining({ id: "selected", value: "Apple Inc.", detail: "Security ID sec-1" }),
+      expect.objectContaining({ id: "conflicts", value: "1", tone: "warning" })
+    ]));
+    expect(state.detailSections).toEqual(expect.arrayContaining([
+      { id: "overview", label: "Overview", value: "1 identifier", active: true },
+      { id: "schedules", label: "Schedules", value: "2 corporate actions" },
+      { id: "controls", label: "Controls", value: "Trading set" },
+      { id: "audit", label: "Audit", value: "1 conflict" }
+    ]));
   });
 
   it("retries Security Master identifier conflicts through view-model command state", async () => {

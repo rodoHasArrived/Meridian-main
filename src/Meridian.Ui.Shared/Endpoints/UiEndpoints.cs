@@ -15,6 +15,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Storage;
 using Meridian.Storage.Services;
+using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
@@ -68,6 +69,7 @@ public static class UiEndpoints
 
         services.AddMutationRateLimiter();
         services.AddMemoryCache();
+        services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
 
         // Register LeanAutoExportService as a background hosted service
@@ -107,6 +109,7 @@ public static class UiEndpoints
         services.AddSingleton(statusHandlers);
         services.AddMutationRateLimiter();
         services.AddMemoryCache();
+        services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
 
         // Register LeanAutoExportService as a background hosted service
@@ -318,6 +321,7 @@ public static class UiEndpoints
 
         // Fund accounts (custodian and bank) endpoints
         app.MapFundAccountEndpoints(jsonOptions);
+        app.MapLedgerEndpoints(jsonOptions);
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
@@ -464,6 +468,7 @@ public static class UiEndpoints
 
         // Fund accounts (custodian and bank) endpoints
         app.MapFundAccountEndpoints(jsonOptions);
+        app.MapLedgerEndpoints(jsonOptions);
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);

@@ -1,36 +1,77 @@
-# Updated Content for ufl-equity-target-state-v2
+# UFL Equity Target-State Package V2
 
-**Last Updated:** 2026-04-01
-**Status:** active
-**Reviewed:** 2026-03-26 | **Phase 1.5 Added:** 2026-04-01
+**Owner:** Core Team
+**Audience:** Product, architecture, domain, storage, and application contributors
+**Last Updated:** 2026-05-13
+**Status:** active reference design
+**Reviewed:** 2026-05-13
 
 > **Naming standard:** All new F# types and DTOs in this package must follow the
 > [Domain Naming Standard](../ai/claude/CLAUDE.domain-naming.md).
-> For equities: common share definition → `ComShrDef`; preferred share definition → `PrefShrDef`;
-> convertible preferred → `ConvPrefDef`; convertible common → `ConvComDef`; voting/ownership trait → `OwnTr`;
-> income/dividend trait → `DivTr`; redemption trait → `RedTr`; callable trait → `CallTr`; convertibility trait → `ConvTr`;
-> boolean fields → `HasVoting: bool`, `IsRestricted: bool`, `IsCumulative: bool`, `IsCallable: bool`, `IsConvertible: bool`.
+> For equities: common share definition -> `ComShrDef`; preferred share definition -> `PrefShrDef`;
+> convertible preferred -> `ConvPrefDef`; convertible common -> `ConvComDef`;
+> voting/ownership trait -> `OwnTr`; dividend trait -> `DivTr`; redemption trait -> `RedTr`;
+> callable trait -> `CallTr`; convertibility trait -> `ConvTr`;
+> boolean fields -> `HasVoting: bool`, `IsRestricted: bool`, `IsCumulative: bool`,
+> `IsCallable: bool`, `IsConvertible: bool`.
 
-### 2.4 Preferred and Convertible Domain Shapes
+## Summary
 
-**Preferred Equity Terms:**
+This package defines the target-state equity surface for Meridian's UFL and Security Master work. It covers common equity, preferred equity, convertible equity, and convertible preferred equity.
+
+Current repository evidence already includes equity classification support in `src/Meridian.FSharp/Domain/SecurityMaster.fs`, interop/legacy-upgrade handling, and shared reference-data endpoints for canonical equity reads. The remaining work is mostly projection depth, preferred/convertible lifecycle workflows, accounting/reporting handoffs, and controlled workstation actions.
+
+Warrants are modeled as their own `SecurityKind.Warrant` package, not as an equity classification in this document.
+
+## Repo Fit
+
+### Verified Meridian constraints
+
+- `SecurityKind.Equity`, `EquityTerms`, `PreferredTerms`, `ConvertibleTerms`, and `EquityClassification` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- Common equity remains valid when `EquityTerms.Classification` is omitted.
+- Preferred and convertible-preferred shapes are covered by F# domain tests.
+- Shared reference endpoints currently expose equity reference reads through `/api/reference-data/equities/*`.
+- The browser workstation remains the active UI lane; retained WPF is compatibility support, not the place to introduce new equity UI surfaces first.
+
+### Target-state additions
+
+- equity lifecycle and alias-resolution projections
+- preferred-term and convertible-term projection tables
+- dividend schedule and conversion parity read models
+- conversion, redemption, and call execution workflows with explicit audit events
+- corporate-action accounting automation with preview, approval, journal posting, and reconciliation evidence
+- Accounting and Reporting workstation views for term inspection and downstream impact review
+
+### Suggested implementation locations
+
+- F# domain support: `src/Meridian.FSharp/Domain/`
+- application services: `src/Meridian.Application/SecurityMaster/`
+- contracts/DTOs: `src/Meridian.Contracts/SecurityMaster/` or an equity-specific contract folder if the surface grows
+- storage/projections: `src/Meridian.Storage/SecurityMaster/`
+- HTTP endpoints: `src/Meridian.Ui.Shared/Endpoints/`
+
+## Scope
+
+### In scope
+
+- canonical equity identity and common share-class metadata
+- preferred equity terms, dividend cadence, redemption, callability, and liquidation preference
+- convertible equity terms, underlying-security linkage, conversion ratio, and conversion windows
+- full corporate-action accounting automation for equity lifecycle events
+- projection rebuild safety for preferred and convertible reads
+- reference-data and workstation query surfaces for equity lifecycle inspection
+
+### Out of scope
+
+- warrant lifecycle, which belongs in [UFL Warrant Target-State Package V2](ufl-warrant-target-state-v2.md)
+- market-making, locate, borrow, margin, or short-sale workflows
+- native mobile or mobile-first workflows
+
+## Domain Shape
+
+The current F# baseline separates common, preferred, convertible, and convertible-preferred classification:
 
 ```fsharp
-type DividendType =
-    | Fixed
-    | Floating
-    | Cumulative
-
-type ParticipationTerms = {
-    ParticipatesInCommonDividends: bool
-    AdditionalDividendThreshold: decimal option
-}
-
-type LiquidationPreference =
-    | Pari  // Pari passu with common
-    | Senior of multiple: decimal  // Senior with specified multiple
-    | Subordinated
-
 type PreferredTerms = {
     DividendRate: decimal option
     DividendType: DividendType
@@ -41,19 +82,6 @@ type PreferredTerms = {
     LiquidationPreference: LiquidationPreference
 }
 
-type PreferredEquityProjection = {
-    SecurityId: SecurityId
-    DividendSchedule: (DateOnly * decimal) list
-    CallableWindow: (DateOnly * decimal) option
-    RedemptionWindow: (DateOnly * decimal) option
-    CurrentYield: decimal option
-    IsCumulative: bool
-}
-```
-
-**Convertible Equity Terms:**
-
-```fsharp
 type ConvertibleTerms = {
     UnderlyingSecurityId: SecurityId
     ConversionRatio: decimal
@@ -62,183 +90,266 @@ type ConvertibleTerms = {
     ConversionEndDate: DateOnly option
 }
 
-type ConversionProjection = {
-    SecurityId: SecurityId
-    UnderlyingSecurityId: SecurityId
-    ConversionRatio: decimal
-    ConversionPrice: decimal option
-    ConversionParity: decimal
-    IsInTheMoney: bool
-    ConversionDeadline: DateOnly option
-}
-```
-
-**Updated Equity Classification:**
-
-```fsharp
+[<RequireQualifiedAccess>]
 type EquityClassification =
     | Common
     | Preferred of PreferredTerms
     | Convertible of ConvertibleTerms
     | ConvertiblePreferred of PreferredTerms * ConvertibleTerms
-    | Warrant
-    | Right
     | Other of string
-```
 
-Update `EquityTerms` to include classification:
-
-```fsharp
 type EquityTerms = {
     ShareClass: string option
-    Classification: EquityClassification
+    VotingRightsCat: VotingRightsCat option
+    Classification: EquityClassification option
 }
 ```
 
-### 3.4 Equity-Type-Specific Domain Events
+## Corporate Action And Accounting Model
 
-- `PreferredTermsAmended` (dividend rate, redemption terms, callable terms)
-- `ConversionTermsAmended` (underlying security, conversion ratio, date windows)
-- `ConversionTriggered` (converted shares, effective date)
-- `RedemptionExecuted` (redemption price, date, shares)
-- `CallExercised` (call price, date, shares)
-- `DividendPaymentProcessed` (payment date, amount per share)
+Full corporate-action accounting automation is in scope for equity target state. The target flow is controlled and evidence-backed:
 
-### 5.5 Preferred Equity Service module
+1. Ingest or enter a corporate-action event with provider/source evidence, entitlement dates, affected security IDs, and economic terms.
+2. Normalize the event into an equity corporate-action record tied to the canonical Security Master identity.
+3. Produce an accounting-impact preview before any posting occurs.
+4. Generate a balanced draft journal with `JournalEntry` metadata linking back to the action, source event, security, fund account, and approval chain.
+5. Require Accounting workstation review for material or ambiguous actions.
+6. Post approved journals, then expose Reporting and reconciliation evidence that ties the corporate-action event to ledger impact.
 
-- owns dividend-schedule projections, redemption validation, and callable-window tracking
-- owns preferred-term amendments and dividend-payment recording
-- exposes queries for preferred terms, dividend schedules, and yields
+| Action | Core inputs | Accounting automation target | Required controls |
+| --- | --- | --- | --- |
+| Cash dividend | declaration, ex-date, record date, pay date, rate, withholding tax | dividend receivable, dividend income, tax withholding, cash settlement postings | accrual basis, tax classification, payable-date completeness |
+| Stock dividend or split | ratio, effective date, cash-in-lieu rule | quantity and basis adjustment, cash-in-lieu posting when applicable | lot-level rebuild, no unbalanced cash movement |
+| Return of capital | per-share amount, tax classification, pay date | cash receipt with cost-basis reduction and gain preview when basis is exhausted | basis availability, tax-lot evidence |
+| Spin-off | parent security, child security, allocation factor, fair-value evidence | child security lot creation and basis allocation | child security identity, valuation source, lot allocation proof |
+| Merger or exchange | old security, new security or cash consideration, exchange ratio | close old position, open new position or cash consideration, realized gain/loss preview | consideration completeness, fractional-share handling |
+| Rights distribution | right terms, subscription price, expiration, underlying security | create right entitlement, allocate basis or fair value, expire/exercise accounting | linked rights or warrant identity, expiry controls |
+| Preferred dividend | preferred terms, cumulative arrears, pay schedule | preferred dividend receivable/income and arrears state | cumulative arrears reconciliation |
+| Conversion, redemption, or call | conversion ratio, redemption/call price, effective date | close or transform preferred/convertible position, cash/security consideration, gain/loss preview | eligibility window, operator approval, replay-safe execution |
 
-### 5.6 Convertible Service module
+Automation must not silently post journals from raw provider payloads. Every posting needs normalized action terms, deterministic impact calculation, and retained evidence for replay and audit.
 
-- owns conversion-parity projections and conversion-eligibility validation
-- owns conversion-execution workflows and underlying-security dependencies
-- exposes queries for conversion terms, parity, and deadline tracking
+## Read Models
 
-### 6.6 Create Preferred Equity
+### Core equity reference
 
-1. create canonical security with `Preferred` classification
-2. persist `SecurityCreated` with preferred terms (dividend, redemption, callable)
-3. build dividend schedule projection
-4. calculate initial yield
-5. expose through trading-profile and reference APIs
+- equity identity and display metadata
+- issuer and primary listing venue
+- share class and voting-right category
+- lifecycle state for listed, suspended, delisted, inactive, or unknown status
+- alias and provider-symbol resolution
 
-### 6.7 Amend Preferred Terms
+### Preferred equity projections
 
-1. validate new dividend rate, redemption, and callable parameters
-2. persist `PreferredTermsAmended` event
-3. rebuild dividend schedule projection
-4. recalculate yield
-5. publish outbox event for downstream consumers
+- current preferred terms snapshot
+- dividend schedule rows
+- callable and redemption windows
+- liquidation preference and participation metadata
+- current-yield projection where price evidence is available
 
-### 6.8 Execute Conversion
+### Convertible equity projections
 
-1. validate conversion eligibility (within date window, valid underlying security)
-2. calculate converted shares: `shares × conversion_ratio`
-3. record `ConversionTriggered` event
-4. update `equity_corporate_action_execution` table
-5. rebuild conversion parity projection
-6. publish outbox event for position/accounting systems
+- underlying-security linkage
+- conversion ratio and price
+- conversion parity
+- conversion eligibility windows
+- conversion, redemption, and call execution history
 
-### 6.9 Execute Redemption
+### Accounting impact projections
 
-1. validate redemption-date window and share count
-2. record `RedemptionExecuted` event with price and date
-3. update `equity_corporate_action_execution` table
-4. if full redemption: rebuild lifecycle to mark terminated
-5. publish outbox event for downstream
+- current corporate-action event state
+- affected positions and tax lots
+- draft journal entries and balance status
+- realized/unrealized gain preview where applicable
+- approval status, reviewer, and posting timestamp
+- reconciliation status between source action, position impact, and ledger posting
 
-### 6.10 Exercise Call
+## API Surface
 
-1. validate call-date window and share count
-2. record `CallExercised` event with price and date
-3. update `equity_corporate_action_execution` table
-4. if full call: rebuild lifecycle to mark terminated
-5. publish outbox event for downstream
+### Implemented reference-data reads
 
-### 7.1B Phase 1.5 goal
+- `GET /api/reference-data/equities/{securityId:guid}`
+- `GET /api/reference-data/equities/by-exchange`
+- `GET /api/reference-data/equities/by-issuer`
 
-Deliver preferred and convertible equity support with dividend schedules, conversion parity, and execution workflows.
+### Target-state preferred/convertible reads
 
-### 7.1B Phase 1.5 implementation order
+- `GET /api/reference-data/equities/{securityId:guid}/preferred-terms`
+- `GET /api/reference-data/equities/{securityId:guid}/dividend-schedule?fromDate=X&toDate=Y`
+- `GET /api/reference-data/equities/{securityId:guid}/current-yield`
+- `GET /api/reference-data/equities/{securityId:guid}/conversion-parity`
+- `GET /api/reference-data/equities/{securityId:guid}/callable-windows`
+- `GET /api/reference-data/equities/{securityId:guid}/redemption-terms`
 
-1. Extend `EquityTerms` with `EquityClassification` discriminator
-2. Add `PreferredTerms` and `ConvertibleTerms` domain shapes
-3. Add new equity-type-specific domain events
-4. Create projection tables: `equity_preferred_terms`, `equity_convertible_terms`, `equity_dividend_schedule`, `equity_corporate_action_execution`
-5. Implement `DividendScheduleProjectionBuilder` service
-6. Implement `ConversionParityProjectionBuilder` service
-7. Extend `IEquityReferenceService` with preferred and convertible queries
-8. Expose new API endpoints for preferred and convertible data
-9. Implement `IConversionExecutionService` and `IRedemptionExecutionService`
-10. Add deterministic tests for all preferred and convertible workflows
-11. Implement workstation governance views for preferred equity lifecycle
+### Target-state controlled actions
 
-### 7.1B Phase 1.5 exit criteria
+Mutations such as preferred-term amendments, conversion, redemption, and call execution should remain behind explicit Security Master or Accounting/Reporting workstation actions with audit metadata. They should not be treated as browser-navigable reference-data reads.
 
-- Preferred and convertible equities can be created with full term definitions
-- Dividend schedules are projected and queryable
-- Conversion parity and eligibility are calculated and exposed
-- Conversion, redemption, and call execution workflows are tested and operational
-- Governance UI surfaces support preferred equity term management and execution
-- Phase 1.5 documentation is complete and up-to-date
+Target-state controlled endpoints:
 
-### 8.4 Preferred Equity Endpoints
+- `POST /api/accounting/equities/{securityId:guid}/corporate-actions/{actionId}/preview`
+- `POST /api/accounting/equities/{securityId:guid}/corporate-actions/{actionId}/approve`
+- `POST /api/accounting/equities/{securityId:guid}/corporate-actions/{actionId}/post`
+- `GET /api/accounting/equities/{securityId:guid}/corporate-actions/{actionId}/journal-draft`
+- `GET /api/reporting/equities/{securityId:guid}/corporate-action-ledger-impact`
 
-- `GET /api/security-master/equities/{securityId}/preferred-terms` → `PreferredEquityProjection`
-- `GET /api/security-master/equities/{securityId}/dividend-schedule?fromDate=X&toDate=Y` → `DividendScheduleRow[]`
-- `GET /api/security-master/equities/{securityId}/current-yield` → `{ yieldPercent: decimal }`
-- `PATCH /api/security-master/equities/{securityId}/preferred-terms` → update dividend/redemption/callable terms
+These routes are target-state API contracts. The currently implemented equity API surface is still limited to the reference-data reads listed above.
 
-### 8.5 Convertible Equity Endpoints
+## Interfaces And Contracts
 
-- `GET /api/security-master/equities/{securityId}/conversion-parity` → `ConversionProjection`
-- `GET /api/security-master/equities/{securityId}/callable-windows` → `CallableWindow[]`
-- `GET /api/security-master/equities/{securityId}/redemption-terms` → `RedemptionTerms`
-- `POST /api/security-master/equities/{securityId}/convert` → execute conversion
-- `POST /api/security-master/equities/{securityId}/redeem` → execute redemption
-- `POST /api/security-master/equities/{securityId}/call` → exercise call
+Existing implementation anchors:
 
-### 4.3 Preferred and Convertible Storage
+- `IEquityReferenceService` in `src/Meridian.Application/Equity/`
+- `EquityProjectionService` in `src/Meridian.Application/Equity/`
+- `IEquityReferenceProjectionStore` in `src/Meridian.Storage/SecurityMaster/`
+- `EquityReferenceDto` in `src/Meridian.Contracts/Equity/`
+- `EquityReferenceEndpoints` in `src/Meridian.Ui.Shared/Endpoints/`
 
-Additional table groups for Phase 1.5:
+Target-state service boundaries:
 
-- `equity_preferred_terms` - current preferred terms snapshot (security_id, dividend_rate, dividend_type, redemption_price, redemption_date, callable_date, is_cumulative, as_of)
-- `equity_convertible_terms` - current convertible terms snapshot (security_id, underlying_security_id, conversion_ratio, conversion_price, conversion_start_date, conversion_end_date, as_of)
-- `equity_dividend_schedule` - projected dividend payments (security_id, payment_date, amount, record_date, ex_date, created_at)
-- `equity_corporate_action_execution` - conversion/redemption/call history (execution_id, security_id, action_type, executed_date, detail_json, source_event_id)
+```csharp
+namespace Meridian.Application.Equity;
+
+public interface IEquityCorporateActionAccountingService
+{
+    Task<EquityAccountingImpactPreviewDto> PreviewAsync(
+        Guid securityId,
+        Guid actionId,
+        EquityAccountingImpactRequestDto request,
+        CancellationToken ct = default);
+
+    Task<EquityJournalDraftDto> CreateDraftJournalAsync(
+        Guid securityId,
+        Guid actionId,
+        EquityJournalDraftRequestDto request,
+        CancellationToken ct = default);
+
+    Task<EquityCorporateActionPostingDto> PostApprovedJournalAsync(
+        Guid securityId,
+        Guid actionId,
+        EquityJournalPostRequestDto request,
+        CancellationToken ct = default);
+}
+
+public interface IEquityCorporateActionStore
+{
+    Task<EquityCorporateActionDto?> GetAsync(Guid actionId, CancellationToken ct = default);
+    Task SaveAsync(EquityCorporateActionDto action, CancellationToken ct = default);
+    Task SaveAccountingImpactAsync(EquityAccountingImpactPreviewDto impact, CancellationToken ct = default);
+}
+```
+
+Suggested DTO families:
+
+- `EquityCorporateActionDto`
+- `EquityCorporateActionTermDto`
+- `EquityAccountingImpactRequestDto`
+- `EquityAccountingImpactPreviewDto`
+- `EquityJournalDraftDto`
+- `EquityJournalPostRequestDto`
+- `EquityCorporateActionPostingDto`
+- `EquityCorporateActionLedgerLinkDto`
+
+## Storage Design
+
+Additional projection tables for the preferred and convertible target state:
+
+- `equity_corporate_action_event` - normalized action terms, source evidence, action status
+- `equity_preferred_terms` - current preferred terms snapshot
+- `equity_convertible_terms` - current convertible terms snapshot
+- `equity_dividend_schedule` - projected dividend payments
+- `equity_corporate_action_execution` - conversion, redemption, and call execution history
+- `equity_accounting_impact_preview` - deterministic accounting impact before approval
+- `equity_journal_draft` - balanced draft journal and validation state
+- `equity_corporate_action_ledger_link` - final link between action, journal entry, fund account, and posting evidence
 
 Index strategy:
-- `equity_preferred_terms`: index on `(security_id, as_of)` for rebuild-safe slicing
-- `equity_convertible_terms`: index on `(security_id, as_of)` and `(underlying_security_id)` for parity lookups
-- `equity_dividend_schedule`: index on `(security_id, payment_date)` and `(ex_date)` for schedule queries
-- `equity_corporate_action_execution`: index on `(security_id, executed_date)` for execution history
 
-### 10. Implementation Roadmap
+- `equity_corporate_action_event`: `(security_id, effective_date)`, `(action_type, status)`, and `(source_system, source_event_id)`
+- `equity_preferred_terms`: `(security_id, as_of)` for rebuild-safe slicing
+- `equity_convertible_terms`: `(security_id, as_of)` and `(underlying_security_id)` for parity lookups
+- `equity_dividend_schedule`: `(security_id, payment_date)` and `(ex_date)` for schedule queries
+- `equity_corporate_action_execution`: `(security_id, executed_date)` for execution history
+- `equity_accounting_impact_preview`: `(action_id, preview_version)` for repeatable review
+- `equity_journal_draft`: `(action_id, approval_status)` for Accounting workstation queues
+- `equity_corporate_action_ledger_link`: `(journal_entry_id)` and `(action_id, fund_account_id)` for reconciliation drill-ins
 
-### Phase 1 Tickets (Core Equity)
-1. Add equity DTOs and query contracts.
-2. Add equity trading-profile projection storage.
-3. Add alias-resolution projection and rebuild path.
-4. Implement `IEquityReferenceService`.
-5. Expose equity reference endpoints.
-6. Add deterministic alias-resolution tests.
-7. Add lifecycle projection model for listed/suspended/delisted states.
-8. Implement corporate-action import record storage.
-9. Add rebuild orchestration for corporate actions.
-10. Add workstation governance views for equity lifecycle inspection.
+## Implementation Roadmap
 
-### Phase 1.5 Tickets (Preferred & Convertible Equity)
-1. Add EquityClassification discriminator and PreferredTerms domain model
-2. Extend event model for preferred and convertible equity mutations
-3. Add dividend schedule and conversion parity projection storage
-4. Implement dividend schedule projection builder
-5. Implement conversion parity projection builder
-6. Extend IEquityReferenceService with preferred and convertible lookups
-7. Add API endpoints for preferred and convertible equity queries
-8. Implement conversion execution workflow
-9. Implement redemption/call execution workflow
-10. Add deterministic tests for preferred and convertible flows
-11. Update target-state documentation with preferred/convertible expansion
-12. Add workstation governance views for preferred equity lifecycle
+### Delivered baseline evidence
+
+1. Add `EquityClassification`, `PreferredTerms`, and `ConvertibleTerms` to the F# security-master domain.
+2. Preserve common equity compatibility when classification is omitted.
+3. Add interop/legacy-upgrade handling for current equity payloads.
+4. Expose baseline equity reference-data reads.
+5. Cover preferred and convertible-preferred shapes in deterministic domain tests.
+
+### Remaining core equity work
+
+1. Add equity trading-profile projection storage.
+2. Add alias-resolution projection and rebuild path.
+3. Extend `IEquityReferenceService` with lifecycle and alias queries.
+4. Add lifecycle projection models for listed, suspended, delisted, inactive, and unknown states.
+5. Add corporate-action import record storage.
+6. Add rebuild orchestration for equity corporate actions.
+7. Add Data workspace views for equity lifecycle and identity inspection.
+
+### Remaining preferred and convertible work
+
+1. Add preferred and convertible projection storage.
+2. Implement dividend schedule projection builder.
+3. Implement conversion parity projection builder.
+4. Extend equity reference contracts with preferred and convertible read models.
+5. Add preferred and convertible read endpoints.
+6. Implement conversion execution workflow.
+7. Implement redemption and call execution workflows.
+8. Add deterministic tests for preferred and convertible flows.
+9. Add Accounting and Reporting workstation review views for preferred lifecycle and downstream impact.
+
+### Remaining corporate-action accounting automation
+
+1. Add normalized `EquityCorporateActionDto` contracts and source-evidence metadata.
+2. Add `IEquityCorporateActionStore` and replay-safe storage for normalized action terms.
+3. Implement accounting-impact previews for dividends, splits, return of capital, spin-offs, mergers, rights, conversions, redemptions, and calls.
+4. Generate balanced draft journals using the existing ledger model and validation path before posting.
+5. Add approval state and reviewer metadata for material or ambiguous actions.
+6. Link posted journals back to corporate-action events, affected lots, fund accounts, and source evidence.
+7. Surface Accounting workstation queues for pending impact previews, draft journals, failed validations, and posted evidence.
+8. Surface Reporting evidence for action-to-ledger lineage and restatement impact.
+9. Add reconciliation checks that compare provider/source action facts, projected position impact, and ledger postings.
+
+## Failure Modes And Controls
+
+- Missing child security for spin-offs or mergers blocks posting and creates a Data workspace identity-resolution task.
+- Ambiguous cash-in-lieu handling blocks posting until Accounting confirms fractional-share policy.
+- Unbalanced draft journal blocks approval and must expose the debit/credit variance.
+- Missing tax-lot basis blocks return-of-capital posting unless the operator explicitly approves a provisional basis workflow.
+- Duplicate provider action IDs collapse into one normalized action record with source-evidence history, not multiple postings.
+- Rebuilt projections must reproduce the same accounting-impact preview for the same normalized event version.
+- Posted journals are immutable; correction flows create reversing and replacement entries linked to the original action.
+
+## Test Plan
+
+- Add domain tests for each corporate-action type's normalized terms and validation failures.
+- Add service tests for `IEquityCorporateActionAccountingService` previews and balanced draft journals.
+- Add storage tests proving replay/rebuild stability for `equity_corporate_action_event`, preview, draft, and ledger-link rows.
+- Add endpoint tests for preview, approval, posting, and journal-draft routes once implemented.
+- Add browser view-model tests for Accounting queues: loading, empty, validation-error, approval-required, posted, and correction states.
+- Add reconciliation tests covering source action facts versus position impact versus ledger posting.
+
+Initial focused validation once this implementation starts:
+
+```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EquityProjectionServiceTests|FullyQualifiedName~SecurityMasterConvertibleEquityAmendmentTests" --logger "console;verbosity=normal"
+```
+
+## Final Target State
+
+Meridian treats every equity as a canonical instrument with explicit share-class, issuer, lifecycle, preferred-term, convertibility, and corporate-action accounting semantics. Data, Accounting, Reporting, ledger, and strategy consumers read one rebuilt equity reference surface and one retained action-to-ledger evidence trail instead of reinterpreting provider payloads independently.
+
+## Related Documents
+
+- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
+- [UFL Option Target-State Package V2](ufl-option-target-state-v2.md)
+- [UFL Warrant Target-State Package V2](ufl-warrant-target-state-v2.md)
+- [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)

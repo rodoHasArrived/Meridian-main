@@ -61,6 +61,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
     { label: "Brokerage sync", route: "/portfolio/brokerage-sync" }
   ],
   accounting: [
+    { label: "Ledger", route: "/accounting" },
     { label: "Reconciliation", route: "/accounting/reconciliation" },
     { label: "Security Master", route: "/accounting/security-master" },
     { label: "Approvals", route: "/accounting/approvals" }
@@ -71,6 +72,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
     { label: "Exports", route: "/reporting/exports" }
   ],
   strategy: [
+    { label: "Designer", route: "/strategy/designer" },
     { label: "Promotions", route: "/strategy/promotions" },
     { label: "Research", route: "/strategy/research" },
     { label: "Quant Lab", route: "/strategy/quant-lab" }
@@ -78,6 +80,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
   data: [
     { label: "Watchlist", route: "/data/watchlist" },
     { label: "Live quotes", route: "/data/quotes" },
+    { label: "Price alerts", route: "/data/alerts" },
     { label: "Backfill queues", route: "/data/backfills" }
   ],
   settings: [

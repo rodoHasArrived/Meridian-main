@@ -9,11 +9,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { cn } from "@/lib/utils";
 import { useResearchRunLibraryViewModel } from "@/screens/research-screen.view-model";
 import type {
+  ResearchComparisonTableRow,
   ResearchPlotLegendItem,
   ResearchPlotMomentRow,
   ResearchPlotSampleRow,
   ResearchPlotScatterChartState,
   ResearchPlotStatisticsState,
+  ResearchPlotStudyDetailState,
   ResearchPlotStudyItem,
   ResearchPlotWorkspaceState,
   ResearchPromotionHistoryRow,
@@ -242,6 +244,61 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
     }
   ];
 
+  const comparisonColumns: DenseDataTableColumn<ResearchComparisonTableRow>[] = [
+    {
+      id: "strategy",
+      label: "Strategy",
+      render: (row) => (
+        <span className="font-semibold text-foreground">{row.strategyName}</span>
+      )
+    },
+    {
+      id: "mode",
+      label: "Mode",
+      render: (row) => <Badge variant={row.modeBadgeVariant}>{row.modeText}</Badge>
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => <Badge variant={row.statusBadgeVariant} dot>{row.statusText}</Badge>
+    },
+    {
+      id: "net-pnl",
+      label: "Net P&L",
+      align: "right",
+      className: "font-mono",
+      render: (row) => <span className={comparisonValueToneClass[row.netPnlTone]}>{row.netPnlText}</span>
+    },
+    {
+      id: "return",
+      label: "Return",
+      align: "right",
+      className: "font-mono",
+      render: (row) => <span className={comparisonValueToneClass[row.totalReturnTone]}>{row.totalReturnText}</span>
+    },
+    {
+      id: "drawdown",
+      label: "Drawdown",
+      align: "right",
+      className: "font-mono",
+      render: (row) => <span className={comparisonValueToneClass[row.maxDrawdownTone]}>{row.maxDrawdownText}</span>
+    },
+    {
+      id: "sharpe",
+      label: "Sharpe",
+      align: "right",
+      className: "font-mono",
+      render: (row) => row.sharpeRatioText
+    },
+    {
+      id: "fills",
+      label: "Fills",
+      align: "right",
+      className: "font-mono",
+      render: (row) => row.fillCountText
+    }
+  ];
+
   return (
     <div className="space-y-8">
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -451,6 +508,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     type="submit"
                     size="sm"
                     disabled={!vm.promotionCashForm.canSubmit}
+                    disabledReason={vm.promotionCashForm.disabledReason}
                     aria-label={vm.promotionCashForm.submitAriaLabel}
                   >
                     {vm.promotionCashForm.submitLabel}
@@ -465,7 +523,14 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
           )}
 
           {vm.activePlotToolView === "workspace" ? (
-            <PlotToolWorkspacePanel vm={vm.plotTool.workspace} studies={vm.plotTool.studies} />
+            <PlotToolWorkspacePanel
+              vm={vm.plotTool.workspace}
+              studies={vm.plotTool.studies}
+              selectedStudyId={vm.selectedPlotStudyId}
+              selectedStudyDetail={vm.selectedPlotStudyDetail}
+              studyDetailPanelId={vm.selectedPlotStudyDetailPanelId}
+              onStudySelect={vm.selectPlotStudy}
+            />
           ) : (
             <PlotToolStatisticsPanel vm={vm.plotTool.statistics} />
           )}
@@ -543,45 +608,43 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
             <CardTitle>Run comparison</CardTitle>
             <CardDescription>Shared comparison evidence returned by the workstation API.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto rounded-lg border border-border/70">
-              <table className="min-w-full divide-y divide-border/60 text-left text-sm" aria-label="Strategy run comparison evidence">
-                <caption className="sr-only">{vm.comparisonTable.caption}</caption>
-                <thead className="bg-secondary/30">
-                  <tr>
-                    {["Strategy", "Mode", "Status", "Net P&L", "Return", "Drawdown", "Sharpe", "Fills", "Evidence"].map((column) => (
-                      <th key={column} className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        {column}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {vm.comparisonTable.hasRows ? vm.comparisonTable.rows.map((row) => (
-                    <tr key={row.runId} aria-label={row.ariaLabel} className="align-top">
-                      <td className="px-3 py-2">
-                        <div className="font-semibold">{row.strategyName}</div>
-                        <div className="mt-1 font-mono text-xs text-muted-foreground">{row.promotionStateText}</div>
-                        <div className="mt-1 font-mono text-xs text-muted-foreground">{row.equityText}</div>
-                      </td>
-                      <td className="px-3 py-2"><Badge variant={row.modeBadgeVariant}>{row.modeText}</Badge></td>
-                      <td className="px-3 py-2"><Badge variant={row.statusBadgeVariant} dot>{row.statusText}</Badge></td>
-                      <td className={cn("px-3 py-2 font-mono", comparisonValueToneClass[row.netPnlTone])}>{row.netPnlText}</td>
-                      <td className={cn("px-3 py-2 font-mono", comparisonValueToneClass[row.totalReturnTone])}>{row.totalReturnText}</td>
-                      <td className={cn("px-3 py-2 font-mono", comparisonValueToneClass[row.maxDrawdownTone])}>{row.maxDrawdownText}</td>
-                      <td className="px-3 py-2 font-mono">{row.sharpeRatioText}</td>
-                      <td className="px-3 py-2 font-mono">{row.fillCountText}</td>
-                      <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{row.evidenceText}</td>
-                    </tr>
-                  )) : (
-                    <tr>
-                      <td colSpan={9} className="px-3 py-6 text-center text-muted-foreground">
-                        {vm.comparisonTable.emptyText}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+              <DenseDataTable
+                columns={comparisonColumns}
+                rows={vm.comparisonTable.rows}
+                getRowId={(row) => row.runId}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+                getRowAriaControls={(row) => row.detailPanelId}
+                getRowAriaExpanded={(row) => row.detailExpanded}
+                selectedRowId={vm.selectedComparisonRowId}
+                onRowSelect={(row) => vm.selectComparisonRow(row.runId)}
+                emptyText={vm.comparisonTable.emptyText}
+                ariaLabel="Strategy run comparison evidence"
+                caption={vm.comparisonTable.caption}
+              />
+              {vm.selectedComparisonDetail ? (
+                <div id={vm.selectedComparisonDetail.panelId} className="min-w-0">
+                  <EntitySummary
+                    eyebrow={vm.selectedComparisonDetail.eyebrow}
+                    title={vm.selectedComparisonDetail.title}
+                    subtitle={vm.selectedComparisonDetail.subtitle}
+                    description={vm.selectedComparisonDetail.description}
+                    fields={vm.selectedComparisonDetail.fields}
+                    ariaLabel={vm.selectedComparisonDetail.ariaLabel}
+                    status={<Badge variant={vm.selectedComparisonDetail.statusVariant} dot>{vm.selectedComparisonDetail.statusLabel}</Badge>}
+                  />
+                </div>
+              ) : (
+                <div
+                  id={vm.selectedComparisonDetailPanelId}
+                  role="status"
+                  className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
+                >
+                  {vm.comparisonTable.emptyText}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -762,7 +825,21 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
   );
 }
 
-function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceState; studies: ResearchPlotStudyItem[] }) {
+function PlotToolWorkspacePanel({
+  vm,
+  studies,
+  selectedStudyId,
+  selectedStudyDetail,
+  studyDetailPanelId,
+  onStudySelect
+}: {
+  vm: ResearchPlotWorkspaceState;
+  studies: ResearchPlotStudyItem[];
+  selectedStudyId: string | null;
+  selectedStudyDetail: ResearchPlotStudyDetailState | null;
+  studyDetailPanelId: string;
+  onStudySelect: (id: string) => void;
+}) {
   const studyColumns: DenseDataTableColumn<ResearchPlotStudyItem>[] = [
     {
       id: "study",
@@ -826,16 +903,27 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
                 { id: "lane", label: "Lane", value: "Strategy" }
               ]}
             />
-            <DenseDataTable
-              columns={studyColumns}
-              rows={studies}
-              getRowId={(study) => study.id}
-              getRowAriaLabel={(study) => `${study.title}, ${study.statusText}, ${study.metricText}`}
-              selectedRowId={studies.find((study) => study.isActive)?.id ?? null}
-              emptyText="No retained PlotTool studies are available."
-              ariaLabel="Strategy notebooks"
-              caption="Retained strategy notebooks aligned to the active PlotTool workspace."
-            />
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.85fr)]">
+              <DenseDataTable
+                columns={studyColumns}
+                rows={studies}
+                getRowId={(study) => study.id}
+                getRowAriaLabel={(study) => study.ariaLabel}
+                getRowSelectAriaLabel={(study) => study.rowSelectAriaLabel}
+                getRowAriaControls={() => studyDetailPanelId}
+                getRowAriaExpanded={(study) => study.detailExpanded}
+                onRowSelect={(study) => onStudySelect(study.id)}
+                selectedRowId={selectedStudyId}
+                emptyText="No retained PlotTool studies are available."
+                ariaLabel="Strategy notebooks"
+                caption="Retained strategy notebooks aligned to the active PlotTool workspace. Select a row to inspect the notebook detail."
+              />
+              <SelectedPlotStudyDetail
+                id={studyDetailPanelId}
+                detail={selectedStudyDetail}
+                emptyText="No PlotTool study is selected."
+              />
+            </div>
           </CardContent>
         </Card>
 
@@ -942,6 +1030,60 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
         </Card>
       </div>
     </section>
+  );
+}
+
+function SelectedPlotStudyDetail({
+  id,
+  detail,
+  emptyText
+}: {
+  id: string;
+  detail: ResearchPlotStudyDetailState | null;
+  emptyText: string;
+}) {
+  if (!detail) {
+    return (
+      <aside
+        id={id}
+        role="status"
+        aria-live="polite"
+        className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
+      >
+        {emptyText}
+      </aside>
+    );
+  }
+
+  return (
+    <aside
+      id={id}
+      role="region"
+      aria-label={detail.ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="head flex items-center justify-between gap-3">
+        <span>{detail.eyebrow}</span>
+        <Badge variant={detail.statusVariant}>{detail.statusLabel}</Badge>
+      </div>
+      <div className="body">
+        <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
+        <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{detail.subtitle}</p>
+        <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.description}</p>
+        <dl className="mt-3 grid gap-2">
+          {detail.fields.map((field) => (
+            <div
+              key={field.label}
+              className="grid grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+            >
+              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+              <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </aside>
   );
 }
 

@@ -5,6 +5,7 @@ import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
   buildBackfillSection,
   buildBackfillDialogState,
+  buildBackfillProviderOptions,
   buildBackfillNarrative,
   buildBackfillRequest,
   buildBackfillResultCardState,
@@ -107,8 +108,8 @@ describe("data-operations-screen view model", () => {
     expect(overview.actions).toContainEqual({
       id: "settings",
       label: "Check provider setup",
-      href: "/settings",
-      ariaLabel: "Open Settings to check provider setup while Data workspace loads",
+      href: "/settings#alpaca-provider-setup",
+      ariaLabel: "Open Alpaca paper provider setup while Data workspace loads",
       variant: "default"
     });
 
@@ -244,10 +245,12 @@ describe("data-operations-screen view model", () => {
     expect(dialog.closeButtonLabel).toBe("Close backfill dialog");
     expect(dialog.closeButtonDisabledReason).toBeNull();
     expect(dialog.summaryItems).toEqual([
-      { id: "provider", label: "Provider", value: "polygon", tone: "default" },
+      { id: "provider", label: "Provider", value: "Polygon.io", tone: "default" },
       { id: "symbols", label: "Symbols", value: "None yet", tone: "warning" },
       { id: "range", label: "Range", value: "Full available history", tone: "default" }
     ]);
+    expect(dialog.providerOptions.map((provider) => provider.value)).toContain("yahoo");
+    expect(dialog.selectedProviderDetail).toContain("paid Polygon plans");
     expect(dialog.symbolsField).toMatchObject({
       id: "backfill-symbols",
       ariaLabel: "Backfill symbols",
@@ -266,6 +269,22 @@ describe("data-operations-screen view model", () => {
     expect(dialog.runAction.disabledReason).toBe("Enter at least one symbol before previewing a backfill.");
     expect(dialog.formStatusLabel).toBe("Enter at least one symbol before previewing a backfill.");
     expect(dialog.formStatusTone).toBe("warning");
+  });
+
+  it("derives guided provider options for credential-free backfill", () => {
+    const options = buildBackfillProviderOptions("yahoo");
+    expect(options[0]).toMatchObject({
+      value: "yahoo",
+      label: "Yahoo Finance",
+      badge: "No key"
+    });
+
+    const custom = buildBackfillProviderOptions("internal-feed");
+    expect(custom.at(-1)).toMatchObject({
+      value: "internal-feed",
+      label: "internal-feed",
+      badge: "Custom"
+    });
   });
 
   it("ignores stale backfill preview responses after a newer preview settles", async () => {
@@ -421,6 +440,11 @@ describe("data-operations-screen view model", () => {
     expect(alpacaDialog.credentialFields.map((field) => field.autoComplete)).toEqual(["new-password", "new-password"]);
     expect(alpacaDialog.capabilityOptions.find((option) => option.id === "brokerage")?.selected).toBe(true);
     expect(alpacaDialog.submitAction.disabledReason).toBe("An API key is required for Alpaca.");
+    expect(alpacaDialog.selectedProviderSummary.rows).toContainEqual({
+      id: "credentials",
+      label: "Required",
+      value: "API key + secret"
+    });
     expect(alpacaDialog.successPanel).toEqual({
       title: "Next validation",
       ariaLabel: "Provider setup next validation"
@@ -438,6 +462,12 @@ describe("data-operations-screen view model", () => {
 
     expect(yahooDialog.credentialFields).toHaveLength(0);
     expect(yahooDialog.submitAction.disabled).toBe(false);
+    expect(yahooDialog.selectedProviderSummary.noCredentialMessage).toBe("Yahoo Finance can be configured without pasting a secret.");
+    expect(yahooDialog.selectedProviderSummary.rows).toContainEqual({
+      id: "next-step",
+      label: "After save",
+      value: "Preview a historical backfill"
+    });
     expect(yahooDialog.successActions).toEqual([
       {
         id: "backfill",

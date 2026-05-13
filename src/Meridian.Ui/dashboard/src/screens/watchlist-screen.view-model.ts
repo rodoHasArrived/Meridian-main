@@ -152,6 +152,14 @@ export interface WatchlistFilterCommandState {
   hiddenCount: number;
 }
 
+export interface WatchlistListRetryCommandState {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
+}
+
 export interface WatchlistScreenViewModel {
   pendingSymbol: string;
   setPendingSymbol: (value: string) => void;
@@ -167,6 +175,7 @@ export interface WatchlistScreenViewModel {
   hideStale: boolean;
   setHideStale: (value: boolean) => void;
   staleFilterCommand: WatchlistFilterCommandState;
+  listRetryCommand: WatchlistListRetryCommandState;
   listState: WatchlistListState;
   listDescription: string;
   tableLabel: string;
@@ -574,6 +583,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     hideStale,
     setHideStale,
     staleFilterCommand,
+    listRetryCommand: buildListRetryCommand(refreshing),
     listState,
     listDescription: buildListDescription(listState, rows.length, allRows.length, hideStale, loadError),
     tableLabel: "Subscribed symbol watchlist",
@@ -992,6 +1002,18 @@ function buildStat(
     value: displayValue,
     delta: "",
     tone
+  };
+}
+
+export function buildListRetryCommand(refreshing: boolean): WatchlistListRetryCommandState {
+  const label = refreshing ? "Retrying…" : "Retry watchlist";
+
+  return {
+    label,
+    ariaLabel: refreshing ? "Retrying symbol watchlist load" : "Retry symbol watchlist load",
+    disabled: refreshing,
+    disabledReason: refreshing ? "Watchlist refresh is already running." : null,
+    busy: refreshing
   };
 }
 

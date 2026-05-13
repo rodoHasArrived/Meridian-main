@@ -68,7 +68,7 @@ flowchart TD
     Snapshot --> Accrual["Rate / Haircut Projection"]
 
     Lifecycle --> Treasury["Treasury Operations"]
-    Counterparty --> Governance["Governance UI"]
+    Counterparty --> Governance["Accounting / Reporting workstation"]
     Collateral --> Reporting["Collateral Reporting"]
     Accrual --> Recon["Reconciliation / Accounting"]
 ```

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useReportingScreenViewModel } from "@/screens/reporting-screen.view-model";
+import {
+  resolveReportPackProfileKeyCommand,
+  useReportingScreenViewModel
+} from "@/screens/reporting-screen.view-model";
 import type { ExportAnalysisResult, GovernanceReportingSummary } from "@/types";
 
 const reporting: GovernanceReportingSummary = {
@@ -87,6 +90,20 @@ describe("useReportingScreenViewModel", () => {
       "Dictionary only",
       "Loader only"
     ]);
+    expect(result.current.workflowTaskPanel?.profiles[0]).toMatchObject({
+      id: "excel",
+      isSelected: true,
+      isExpanded: true,
+      controlsId: "report-pack-profile-selected-summary report-pack-profile-actions report-pack-profile-backend-links",
+      descriptionId: "report-pack-profile-excel-description",
+      tabIndex: 0
+    });
+    expect(result.current.workflowTaskPanel?.profiles[1]).toMatchObject({
+      id: "csv",
+      isSelected: false,
+      isExpanded: false,
+      tabIndex: -1
+    });
     expect(result.current.selectedProfile?.title).toBe("Excel");
     expect(result.current.rows.find((row) => row.id === "excel")?.isSelected).toBe(true);
     expect(result.current.workflowTaskPanel?.selectedSummary).toBe(
@@ -123,6 +140,47 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.workflowTaskPanel?.actionsEmptyText).toBe(
       "Select a report-pack profile before previewing or running export analysis."
     );
+    expect(result.current.workflowTaskPanel?.profiles.map((profile) => ({
+      id: profile.id,
+      tabIndex: profile.tabIndex,
+      isExpanded: profile.isExpanded
+    }))).toEqual([
+      { id: "excel", tabIndex: 0, isExpanded: false },
+      { id: "csv", tabIndex: -1, isExpanded: false }
+    ]);
+  });
+
+  it("moves report-pack profile selection with VM-owned adjacent commands", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(reporting, undefined, "/reporting/report-packs"));
+
+    act(() => { result.current.selectAdjacentReportPackProfile("next"); });
+
+    expect(result.current.selectedProfile?.title).toBe("CSV");
+    expect(result.current.workflowTaskPanel?.selectedProfileId).toBe("csv");
+    expect(result.current.workflowTaskPanel?.profiles.map((profile) => ({
+      id: profile.id,
+      tabIndex: profile.tabIndex,
+      isExpanded: profile.isExpanded
+    }))).toEqual([
+      { id: "excel", tabIndex: -1, isExpanded: false },
+      { id: "csv", tabIndex: 0, isExpanded: true }
+    ]);
+
+    act(() => { result.current.selectAdjacentReportPackProfile("last"); });
+    expect(result.current.selectedProfile?.title).toBe("CSV");
+
+    act(() => { result.current.selectAdjacentReportPackProfile("previous"); });
+    expect(result.current.selectedProfile?.title).toBe("Excel");
+  });
+
+  it("resolves report-pack profile keyboard commands", () => {
+    expect(resolveReportPackProfileKeyCommand("ArrowRight")).toBe("next");
+    expect(resolveReportPackProfileKeyCommand("ArrowDown")).toBe("next");
+    expect(resolveReportPackProfileKeyCommand("ArrowLeft")).toBe("previous");
+    expect(resolveReportPackProfileKeyCommand("ArrowUp")).toBe("previous");
+    expect(resolveReportPackProfileKeyCommand("Home")).toBe("first");
+    expect(resolveReportPackProfileKeyCommand("End")).toBe("last");
+    expect(resolveReportPackProfileKeyCommand("Enter")).toBeNull();
   });
 
   it("prefers a fully wired report-pack profile when no profile is recommended", () => {
@@ -270,6 +328,10 @@ describe("useReportingScreenViewModel", () => {
       ariaLabel: "Preview Excel export payload",
       describedById: "reporting-action-excel-preview-status",
       statusText: "Opens the current export payload preview in a new browser tab.",
+      descriptionText: "Opens the current export payload preview in a new browser tab.",
+      statusBadgeLabel: "GET",
+      statusBadgeAriaLabel: "Excel export preview uses GET",
+      statusBadgeVariant: "outline",
       isDisabled: false,
       variant: "outline",
       method: "GET",
@@ -352,7 +414,12 @@ describe("useReportingScreenViewModel", () => {
         label: "Running export…",
         isDisabled: true,
         isRunning: true,
+        busyLabel: "Running export…",
         disabledReason: "Excel export is already running.",
+        statusBadgeLabel: "Running",
+        statusBadgeAriaLabel: "Excel export is running",
+        statusBadgeVariant: "warning",
+        descriptionText: "Excel export is running. Wait for the result before starting another export.",
         describedById: "reporting-action-excel-run-status",
         statusText: "Excel export is running. Wait for the result before starting another export."
       });

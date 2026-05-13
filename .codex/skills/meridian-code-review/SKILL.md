@@ -1,6 +1,6 @@
 ---
 name: meridian-code-review
-description: Review Meridian code for bugs, regressions, architecture drift, missing tests, and project-rule violations. Use when the user asks for a review, audit, refactor assessment, compliance check, bug-risk scan, or improvement pass on Meridian C#, F#, XAML, provider, storage, pipeline, execution, ledger, or WPF code.
+description: Review Meridian code for bugs, regressions, architecture drift, missing tests, and project-rule violations. Use when the user asks for a review, audit, refactor assessment, compliance check, bug-risk scan, or improvement pass on Meridian C#, F#, TypeScript/React, XAML, provider, storage, pipeline, execution, ledger, browser dashboard, or retained WPF code.
 ---
 
 # Meridian Code Review
@@ -21,6 +21,8 @@ Read `../_shared/project-context.md` before reviewing. If the change touches a h
 
 ### MVVM and UI
 
+- Flag browser dashboard React components that own workflow labels, disabled reasons, live-region copy, route trust, or empty/detail state that belongs in a view model or catalog.
+- Flag browser workstation regressions in keyboard selection, `aria-selected`, accessible names, hash/query deep links, and safe live-action gating.
 - Flag business logic in WPF code-behind.
 - Flag view code that manipulates controls directly instead of using bindings and commands.
 - Flag WPF-only dependencies leaking into shared UI services.
@@ -54,6 +56,7 @@ Read `../_shared/project-context.md` before reviewing. If the change touches a h
 - Flag missing coverage for happy path, error path, cancellation path, and disposal.
 - Flag flaky timing and `async void`.
 - Check whether the touched layer is validated in the right test project.
+- For `src/Meridian.Ui/dashboard/`, expect targeted Vitest, TypeScript, or build validation for user-visible UI behavior.
 
 ## Output Standards
 

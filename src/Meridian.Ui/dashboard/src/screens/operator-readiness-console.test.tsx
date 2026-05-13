@@ -166,6 +166,9 @@ describe("OperatorReadinessConsole", () => {
     expect(screen.getByRole("region", { name: "Readiness control strip" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Shared readiness API sources" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Latest runs readiness evidence" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Full-console readiness checkpoints" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Replay verified: Review required/i })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Brokerage sync healthy: Unavailable/i })).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Prioritized operator work items table" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Selected operator work item detail" })).toBeInTheDocument();
     expect(screen.getAllByRole("group", { name: /Promotion checklist incomplete: Warning/i }).length).toBeGreaterThan(0);
@@ -279,9 +282,11 @@ describe("OperatorReadinessConsole", () => {
       { initialEntries: ["/trading/readiness"] }
     );
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Operator inbox 503");
+    const recovery = await screen.findByRole("alert");
+    expect(recovery).toHaveTextContent("Operator inbox 503");
+    expect(within(recovery).getByRole("button", { name: "Retry loading operator inbox work items after failure" })).toHaveTextContent("Retry inbox");
 
-    fireEvent.click(screen.getByRole("button", { name: "Refresh operator inbox work items" }));
+    fireEvent.click(within(recovery).getByRole("button", { name: "Retry loading operator inbox work items after failure" }));
 
     await waitFor(() => expect(screen.getAllByText("1 review item needs attention.").length).toBeGreaterThan(0));
     await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledTimes(2));

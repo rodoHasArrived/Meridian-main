@@ -7,7 +7,7 @@
 
 ## Scope
 
-**In Scope:** A database blueprint that supports Meridian's intended end-state across `Research`, `Trading`, `Data Operations`, and `Governance`, while fitting the current archival-first storage architecture and existing workstation/security-master code.
+**In Scope:** A database blueprint that supports Meridian's intended end-state across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`, while fitting the current archival-first storage architecture and existing workstation/security-master code.
 
 **Out of Scope:** Replacing the existing WAL + JSONL + Parquet event archive, introducing cloud-only data services, or designing a pure timeseries database as the sole storage model for market events.
 

@@ -1,6 +1,6 @@
 # Meridian Documentation
 
-**Last Reviewed:** 2026-05-01
+**Last Reviewed:** 2026-05-13
 **Scope:** Active hand-authored documentation plus generated status and reference entry points
 
 This index is the main entry point for the active `docs/` tree. It is organized around Meridian's current direction: an evidence-backed investment operations platform where browser-first operator workflows prove trusted data, research, paper validation, portfolio/accounting review, reconciliation, approvals, and governed reporting outcomes end-to-end.
@@ -100,7 +100,7 @@ Use the documents below to manage that path:
 4. [plans/web-ui-development-pivot.md](plans/web-ui-development-pivot.md) for the browser-first operator UI lane and retained desktop policy
 5. [plans/waves-2-4-operator-readiness-addendum.md](plans/waves-2-4-operator-readiness-addendum.md) for owner lanes, dependencies, and wave exit criteria
 6. [plans/meridian-6-week-roadmap.md](plans/meridian-6-week-roadmap.md) for the current time-boxed execution plan
-7. [plans/provider-reliability-data-confidence-wave-1-blueprint.md](plans/provider-reliability-data-confidence-wave-1-blueprint.md) for the Wave 1 trust and checkpoint-evidence gate
+7. [status/provider-validation-matrix.md](status/provider-validation-matrix.md) for the current provider-confidence evidence gate; the completed Wave 1 blueprint is archived at [../archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md](../archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md)
 8. [plans/paper-trading-cockpit-reliability-sprint.md](plans/paper-trading-cockpit-reliability-sprint.md) for Wave 2 replay/session/risk reliability hardening
 9. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for migration context that should be interpreted through the active web pivot
 10. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Wave 4 governance, reconciliation, and reporting direction
@@ -110,6 +110,12 @@ Use the documents below to manage that path:
 14. [status/kernel-readiness-dashboard.md](status/kernel-readiness-dashboard.md) for DK gate status and operator sign-off posture
 15. [status/production-status.md](status/production-status.md) for current readiness caveats
 16. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
+
+The 2026-05-13 documentation refresh reconciles the active docs against the current browser
+workstation evidence set: Overview Today panel, `/data/alerts` Price Alerts, `/strategy/designer`
+Strategy Designer, full-console readiness checkpoint gates, and Meridian Design System reference
+workbench/tokenized-color support. These are support evidence for the Waves 2-4 path; they do not
+change the canonical wave statuses in `PROGRAM_STATE.md`.
 
 ## Verified Build And Run References
 

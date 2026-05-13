@@ -43,6 +43,10 @@ Meridian is a .NET 10 fund-management and trading platform. The active operator 
 [`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/) is retained for shared contracts,
 regression fixes, and desktop support rather than broad new UI feature work.
 
+**No mobile development lane:** do not create mobile applications, mobile-specific product
+surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
+mobile-first workflows. Responsive browser validation may continue for the browser workstation.
+
 Visible operator navigation should stay aligned to `Trading`, `Portfolio`, `Accounting`,
 `Reporting`, `Strategy`, `Data`, and `Settings`.
 
