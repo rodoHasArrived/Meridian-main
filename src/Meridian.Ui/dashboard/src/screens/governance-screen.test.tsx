@@ -224,15 +224,26 @@ describe("GovernanceScreen", () => {
   });
 
   it("renders trial-balance rows with accessible table evidence", async () => {
+    const user = userEvent.setup();
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
 
     await renderGovernanceScreen(data, "/accounting");
 
     const table = await screen.findByRole("table", { name: "Trial balance lines for run-42" });
     expect(table).toBeInTheDocument();
-    expect(screen.getByRole("row", { name: "Cash Asset. Balance $120,500. 12 entries" })).toBeInTheDocument();
-    expect(screen.getByRole("row", { name: "Financing payable Liability. Balance -$500. 2 entries" })).toBeInTheDocument();
+    const cashRow = screen.getByRole("row", { name: "Inspect trial-balance account Cash for Asset" });
+    const financingRow = screen.getByRole("row", { name: "Inspect trial-balance account Financing payable for Liability" });
+    expect(cashRow).toHaveAttribute("aria-selected", "true");
+    expect(cashRow).toHaveAttribute("aria-expanded", "true");
+    expect(cashRow).toHaveAttribute("aria-controls", "trial-balance-account-detail");
+    expect(screen.getByRole("region", { name: "Trial-balance detail for Cash" })).toHaveTextContent("$120,500");
+    expect(financingRow).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByText("-$500")).toHaveClass("text-danger");
+
+    await user.click(financingRow);
+
+    expect(screen.getByRole("region", { name: "Trial-balance detail for Financing payable" })).toHaveTextContent("Credit / payable");
+    expect(financingRow).toHaveAttribute("aria-selected", "true");
   });
 
   it("renders a useful trial-balance empty state instead of a blank table", async () => {

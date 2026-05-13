@@ -114,6 +114,7 @@ describe("DenseDataTable", () => {
 
     expect(screen.getByRole("columnheader", { name: /symbol/i })).toHaveAttribute("aria-sort", "ascending");
     expect(screen.getByRole("columnheader", { name: /status/i })).toHaveAttribute("aria-sort", "none");
+    expect(screen.getByRole("button", { name: "Symbol sorted ascending. Activate to change sort." })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Sort by Status" }));
 

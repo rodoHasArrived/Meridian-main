@@ -15,6 +15,7 @@ import type {
   ResearchPlotSampleRow,
   ResearchPlotScatterChartState,
   ResearchPlotStatisticsState,
+  ResearchPlotStudyDetailState,
   ResearchPlotStudyItem,
   ResearchPlotWorkspaceState,
   ResearchPromotionHistoryRow,
@@ -521,7 +522,14 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
           )}
 
           {vm.activePlotToolView === "workspace" ? (
-            <PlotToolWorkspacePanel vm={vm.plotTool.workspace} studies={vm.plotTool.studies} />
+            <PlotToolWorkspacePanel
+              vm={vm.plotTool.workspace}
+              studies={vm.plotTool.studies}
+              selectedStudyId={vm.selectedPlotStudyId}
+              selectedStudyDetail={vm.selectedPlotStudyDetail}
+              studyDetailPanelId={vm.selectedPlotStudyDetailPanelId}
+              onStudySelect={vm.selectPlotStudy}
+            />
           ) : (
             <PlotToolStatisticsPanel vm={vm.plotTool.statistics} />
           )}
@@ -816,7 +824,21 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
   );
 }
 
-function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceState; studies: ResearchPlotStudyItem[] }) {
+function PlotToolWorkspacePanel({
+  vm,
+  studies,
+  selectedStudyId,
+  selectedStudyDetail,
+  studyDetailPanelId,
+  onStudySelect
+}: {
+  vm: ResearchPlotWorkspaceState;
+  studies: ResearchPlotStudyItem[];
+  selectedStudyId: string | null;
+  selectedStudyDetail: ResearchPlotStudyDetailState | null;
+  studyDetailPanelId: string;
+  onStudySelect: (id: string) => void;
+}) {
   const studyColumns: DenseDataTableColumn<ResearchPlotStudyItem>[] = [
     {
       id: "study",
@@ -880,16 +902,27 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
                 { id: "lane", label: "Lane", value: "Strategy" }
               ]}
             />
-            <DenseDataTable
-              columns={studyColumns}
-              rows={studies}
-              getRowId={(study) => study.id}
-              getRowAriaLabel={(study) => `${study.title}, ${study.statusText}, ${study.metricText}`}
-              selectedRowId={studies.find((study) => study.isActive)?.id ?? null}
-              emptyText="No retained PlotTool studies are available."
-              ariaLabel="Strategy notebooks"
-              caption="Retained strategy notebooks aligned to the active PlotTool workspace."
-            />
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.85fr)]">
+              <DenseDataTable
+                columns={studyColumns}
+                rows={studies}
+                getRowId={(study) => study.id}
+                getRowAriaLabel={(study) => study.ariaLabel}
+                getRowSelectAriaLabel={(study) => study.rowSelectAriaLabel}
+                getRowAriaControls={() => studyDetailPanelId}
+                getRowAriaExpanded={(study) => study.detailExpanded}
+                onRowSelect={(study) => onStudySelect(study.id)}
+                selectedRowId={selectedStudyId}
+                emptyText="No retained PlotTool studies are available."
+                ariaLabel="Strategy notebooks"
+                caption="Retained strategy notebooks aligned to the active PlotTool workspace. Select a row to inspect the notebook detail."
+              />
+              <SelectedPlotStudyDetail
+                id={studyDetailPanelId}
+                detail={selectedStudyDetail}
+                emptyText="No PlotTool study is selected."
+              />
+            </div>
           </CardContent>
         </Card>
 
@@ -996,6 +1029,60 @@ function PlotToolWorkspacePanel({ vm, studies }: { vm: ResearchPlotWorkspaceStat
         </Card>
       </div>
     </section>
+  );
+}
+
+function SelectedPlotStudyDetail({
+  id,
+  detail,
+  emptyText
+}: {
+  id: string;
+  detail: ResearchPlotStudyDetailState | null;
+  emptyText: string;
+}) {
+  if (!detail) {
+    return (
+      <aside
+        id={id}
+        role="status"
+        aria-live="polite"
+        className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
+      >
+        {emptyText}
+      </aside>
+    );
+  }
+
+  return (
+    <aside
+      id={id}
+      role="region"
+      aria-label={detail.ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="head flex items-center justify-between gap-3">
+        <span>{detail.eyebrow}</span>
+        <Badge variant={detail.statusVariant}>{detail.statusLabel}</Badge>
+      </div>
+      <div className="body">
+        <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
+        <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{detail.subtitle}</p>
+        <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.description}</p>
+        <dl className="mt-3 grid gap-2">
+          {detail.fields.map((field) => (
+            <div
+              key={field.label}
+              className="grid grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+            >
+              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+              <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </aside>
   );
 }
 

@@ -5,6 +5,8 @@ import {
   buildResearchLoadingState,
   buildPlotToolMomentsTable,
   buildPlotToolSampleTable,
+  buildPlotStudyDetail,
+  buildPlotStudyRows,
   buildPlotToolState,
   buildPlotToolTabs,
   buildPromotionCashForm,
@@ -529,6 +531,11 @@ describe("research-screen view model", () => {
     expect(plotTool.workspace.statusBadgeLabel).toBe("PAPER");
     expect(plotTool.workspace.expression).toContain("mean_reversion_fx.spread()");
     expect(plotTool.workspace.studySummary[0]).toMatchObject({ label: "Primary notebook", value: "Mean Reversion FX" });
+    expect(plotTool.studies[0]).toMatchObject({
+      id: "run-1",
+      detailPanelId: "plottool-selected-study-detail",
+      rowSelectAriaLabel: "Inspect Mean Reversion FX PlotTool study detail"
+    });
     expect(plotTool.workspace.legendItems[1]).toMatchObject({ label: "Current", detail: "88.40 / 73.80", tone: "current" });
     expect(plotTool.workspace.focusPoint).toMatchObject({ label: "Current marker", xValueText: "88.40", yValueText: "73.80" });
     expect(plotTool.workspace.scatterChart).toMatchObject({
@@ -591,6 +598,53 @@ describe("research-screen view model", () => {
       caption: "Recent PlotTool observations with spread, implied volatility, z-score, and signal.",
       emptyText: "No PlotTool observation rows are available for the active strategy context."
     });
+  });
+
+  it("derives PlotTool study row detail state outside the view", () => {
+    const plotTool = buildPlotToolState({
+      metrics,
+      runs,
+      selectedRuns: [runs[0], runs[1]],
+      comparison,
+      runDiff: diff
+    });
+    const rows = buildPlotStudyRows(plotTool.studies, "run-2");
+    const detail = buildPlotStudyDetail(rows[1]);
+
+    expect(rows[0]).toMatchObject({
+      detailExpanded: false,
+      detailPanelId: "plottool-selected-study-detail",
+      rowSelectAriaLabel: "Inspect Mean Reversion FX PlotTool study detail"
+    });
+    expect(rows[1]).toMatchObject({
+      detailExpanded: true,
+      ariaLabel: "Index Momentum PlotTool study. Completed. +1.9% · Sharpe 0.91."
+    });
+    expect(detail).toMatchObject({
+      id: "run-2",
+      panelId: "plottool-selected-study-detail",
+      ariaLabel: "Selected PlotTool study detail for Index Momentum",
+      title: "Index Momentum",
+      statusLabel: "BACKTEST",
+      statusVariant: "research"
+    });
+    expect(detail.fields).toContainEqual({ label: "Notebook", value: "Retained notebook" });
+
+    const state = buildResearchRunLibraryState({
+      runs,
+      selectedIds: [],
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      selectedPlotStudyId: "run-2",
+      activeCommand: null,
+      actionError: null
+    });
+
+    expect(state.selectedPlotStudyId).toBe("run-2");
+    expect(state.selectedPlotStudyDetail?.title).toBe("Index Momentum");
+    expect(state.plotTool.studies[1].detailExpanded).toBe(true);
   });
 
   it("derives PlotTool tab selection and keyboard transitions outside the view", () => {

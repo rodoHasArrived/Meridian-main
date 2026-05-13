@@ -102,11 +102,35 @@ describe("ResearchScreen", () => {
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool study brief")).toBeInTheDocument();
     expect(screen.getByText("Strategy notebooks")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Selected PlotTool study detail for Mean Reversion FX" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Mean Reversion FX vs Index Momentum scatter" })).toBeInTheDocument();
     expect(screen.getByText(/Spread \(bps\) against 3m implied vol/)).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool chart legend")).toBeInTheDocument();
     expect(screen.getAllByText("Current marker").length).toBeGreaterThan(0);
     expect(screen.getByText("Meridian overlays")).toBeInTheDocument();
+  });
+
+  it("links PlotTool notebook rows to the selected study detail panel", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
+
+    const firstStudy = screen.getByRole("row", { name: "Inspect Mean Reversion FX PlotTool study detail" });
+    const secondStudy = screen.getByRole("row", { name: "Inspect Index Momentum PlotTool study detail" });
+    expect(firstStudy).toHaveAttribute("aria-controls", "plottool-selected-study-detail");
+    expect(firstStudy).toHaveAttribute("aria-expanded", "true");
+    expect(secondStudy).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(secondStudy);
+
+    expect(secondStudy).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected PlotTool study detail for Index Momentum" })).toBeInTheDocument();
+    expect(screen.getByText("Completed study retained in the PlotTool workstation. Completed backtest run.")).toBeInTheDocument();
+
+    firstStudy.focus();
+    await user.keyboard("{Enter}");
+
+    expect(firstStudy).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected PlotTool study detail for Mean Reversion FX" })).toBeInTheDocument();
   });
 
   it("switches to the PlotTool statistics view", async () => {

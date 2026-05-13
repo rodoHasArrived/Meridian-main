@@ -31,6 +31,7 @@ export type PromoteState = "idle" | "evaluating" | "evaluated" | "creating" | "d
 export const RESEARCH_RUN_DETAIL_PANEL_ID = "strategy-run-library-selected-run-detail";
 export const RESEARCH_COMPARISON_DETAIL_PANEL_ID = "strategy-run-comparison-selected-detail";
 export const RESEARCH_PROMOTION_HISTORY_DETAIL_PANEL_ID = "strategy-promotion-history-selected-detail";
+export const RESEARCH_PLOT_STUDY_DETAIL_PANEL_ID = "plottool-selected-study-detail";
 
 export interface ResearchRunLibraryState {
   loadingState: ResearchLoadingState;
@@ -39,6 +40,9 @@ export interface ResearchRunLibraryState {
   plotTool: ResearchPlotToolState;
   activePlotToolView: ResearchPlotToolView;
   plotToolTabs: ResearchPlotToolTab[];
+  selectedPlotStudyId: string | null;
+  selectedPlotStudyDetailPanelId: string;
+  selectedPlotStudyDetail: ResearchPlotStudyDetailState | null;
   selectedIds: string[];
   selectedRuns: ResearchRunRecord[];
   selectedRunDetailPanelId: string;
@@ -86,6 +90,7 @@ export interface ResearchRunLibraryState {
   promotionHistoryButtonLabel: string;
   promoteButtonLabel: string;
   statusAnnouncement: string;
+  selectPlotStudy: (id: string) => void;
 }
 
 export interface ResearchLoadingState {
@@ -384,6 +389,23 @@ export interface ResearchPlotStudyItem {
   metricText: string;
   noteText: string;
   isActive: boolean;
+  detailPanelId: string;
+  detailExpanded: boolean;
+  ariaLabel: string;
+  rowSelectAriaLabel: string;
+}
+
+export interface ResearchPlotStudyDetailState {
+  id: string;
+  panelId: string;
+  ariaLabel: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: ResearchComparisonBadgeVariant;
+  fields: Array<{ label: string; value: string }>;
 }
 
 export interface ResearchPlotWorkspaceState {
@@ -607,6 +629,7 @@ export function useResearchRunLibraryViewModel(
   const [activeCommand, setActiveCommand] = useState<ResearchCommand | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [activePlotToolView, setActivePlotToolView] = useState<ResearchPlotToolView>("workspace");
+  const [selectedPlotStudyId, setSelectedPlotStudyId] = useState<string | null>(null);
   const [promoteState, setPromoteState] = useState<PromoteState>("idle");
   const [promotionEval, setPromotionEval] = useState<PromotionEvaluationResult | null>(null);
   const [promotionSession, setPromotionSession] = useState<PaperSessionSummary | null>(null);
@@ -637,6 +660,7 @@ export function useResearchRunLibraryViewModel(
       activeCommand,
       actionError,
       activePlotToolView,
+      selectedPlotStudyId,
       promoteState,
       promotionEval,
       promotionSession,
@@ -661,6 +685,7 @@ export function useResearchRunLibraryViewModel(
       inspectedRunId,
       selectedRun,
       activePlotToolView,
+      selectedPlotStudyId,
       promoteState,
       promotionEval,
       promotionSession,
@@ -902,6 +927,7 @@ export function useResearchRunLibraryViewModel(
     openRunDetailById,
     selectComparisonRow: setSelectedComparisonRowId,
     selectPromotionHistoryRecord: setSelectedPromotionHistoryId,
+    selectPlotStudy: setSelectedPlotStudyId,
     setPromotionInitialCash: setPromotionInitialCashInput
   };
 }
@@ -924,6 +950,7 @@ export function buildResearchRunLibraryState({
   activeCommand,
   actionError,
   activePlotToolView = "workspace",
+  selectedPlotStudyId = null,
   promoteState = "idle",
   promotionEval = null,
   promotionSession = null,
@@ -947,6 +974,7 @@ export function buildResearchRunLibraryState({
   activeCommand: ResearchCommand | null;
   actionError: string | null;
   activePlotToolView?: ResearchPlotToolView;
+  selectedPlotStudyId?: string | null;
   promoteState?: PromoteState;
   promotionEval?: PromotionEvaluationResult | null;
   promotionSession?: PaperSessionSummary | null;
@@ -992,7 +1020,7 @@ export function buildResearchRunLibraryState({
     ? promotionHistory.find((record) => record.promotionId === resolvedPromotionHistoryId) ?? null
     : null;
   const promotionHistoryTable = buildPromotionHistoryTable(promotionHistory, resolvedPromotionHistoryId);
-  const plotTool = buildPlotToolStateFromApiOrFallback(
+  const basePlotTool = buildPlotToolStateFromApiOrFallback(
     plotToolFromApi,
     {
       metrics,
@@ -1002,6 +1030,14 @@ export function buildResearchRunLibraryState({
       runDiff
     }
   );
+  const resolvedPlotStudyId = resolveSelectedPlotStudyId(basePlotTool.studies, selectedPlotStudyId);
+  const plotTool: ResearchPlotToolState = {
+    ...basePlotTool,
+    studies: buildPlotStudyRows(basePlotTool.studies, resolvedPlotStudyId)
+  };
+  const selectedPlotStudy = resolvedPlotStudyId
+    ? plotTool.studies.find((study) => study.id === resolvedPlotStudyId) ?? null
+    : null;
   const commandStates = buildResearchCommandStates({
     selectedRuns,
     hasTwoRuns,
@@ -1019,6 +1055,9 @@ export function buildResearchRunLibraryState({
     plotTool,
     activePlotToolView,
     plotToolTabs: buildPlotToolTabs(activePlotToolView),
+    selectedPlotStudyId: resolvedPlotStudyId,
+    selectedPlotStudyDetailPanelId: RESEARCH_PLOT_STUDY_DETAIL_PANEL_ID,
+    selectedPlotStudyDetail: selectedPlotStudy ? buildPlotStudyDetail(selectedPlotStudy) : null,
     selectedIds,
     selectedRuns,
     selectedRunDetailPanelId: RESEARCH_RUN_DETAIL_PANEL_ID,
@@ -1082,7 +1121,8 @@ export function buildResearchRunLibraryState({
       comparisonLoaded,
       runDiffLoaded,
       promotionHistoryLoaded
-    })
+    }),
+    selectPlotStudy: () => undefined
   };
 }
 
@@ -1502,7 +1542,11 @@ export function buildPlotToolState({
       statusBadgeVariant: badgeVariantForMode(run.mode),
       metricText: `${formatText(run.pnl)} · Sharpe ${formatText(run.sharpe)}`,
       noteText: formatOptionalNotes(run.notes),
-      isActive: activeRun ? run.id === activeRun.id : index === 0
+      isActive: activeRun ? run.id === activeRun.id : index === 0,
+      detailPanelId: RESEARCH_PLOT_STUDY_DETAIL_PANEL_ID,
+      detailExpanded: false,
+      ariaLabel: `${formatText(run.strategyName)} PlotTool study. ${formatText(run.status)} ${formatText(run.mode)}. ${formatText(run.pnl)} and Sharpe ${formatText(run.sharpe)}.`,
+      rowSelectAriaLabel: `Inspect ${formatText(run.strategyName)} PlotTool study detail`
     })),
     workspace: {
       eyebrow: "Strategy Lane · PlotTool",
@@ -1682,6 +1726,69 @@ export function buildPlotToolState({
       sampleTable: buildPlotToolSampleTable(sampleRows)
     }
   };
+}
+
+export function buildPlotStudyRows(
+  studies: ResearchPlotStudyItem[],
+  selectedStudyId: string | null = resolveSelectedPlotStudyId(studies, null)
+): ResearchPlotStudyItem[] {
+  return studies.map((study) => {
+    const title = formatText(study.title);
+    const statusText = formatText(study.statusText);
+    const metricText = formatText(study.metricText);
+    const detailExpanded = study.id === selectedStudyId;
+
+    return {
+      ...study,
+      title,
+      subtitle: formatText(study.subtitle),
+      statusText,
+      statusBadgeLabel: formatText(study.statusBadgeLabel).toUpperCase(),
+      statusBadgeVariant: study.statusBadgeVariant ?? badgeVariantForMode(study.statusBadgeLabel),
+      metricText,
+      noteText: formatOptionalNotes(study.noteText),
+      detailPanelId: RESEARCH_PLOT_STUDY_DETAIL_PANEL_ID,
+      detailExpanded,
+      ariaLabel: `${title} PlotTool study. ${statusText}. ${metricText}.`,
+      rowSelectAriaLabel: `Inspect ${title} PlotTool study detail`
+    };
+  });
+}
+
+export function buildPlotStudyDetail(study: ResearchPlotStudyItem): ResearchPlotStudyDetailState {
+  return {
+    id: study.id,
+    panelId: RESEARCH_PLOT_STUDY_DETAIL_PANEL_ID,
+    ariaLabel: `Selected PlotTool study detail for ${study.title}`,
+    eyebrow: "Selected notebook",
+    title: study.title,
+    subtitle: study.subtitle,
+    description: `${study.statusText} study retained in the PlotTool workstation. ${study.noteText}`,
+    statusLabel: study.statusBadgeLabel,
+    statusVariant: study.statusBadgeVariant,
+    fields: [
+      { label: "Study ID", value: study.id },
+      { label: "Status", value: study.statusText },
+      { label: "Metric", value: study.metricText },
+      { label: "Notebook", value: study.isActive ? "Active PlotTool notebook" : "Retained notebook" },
+      { label: "Operator note", value: study.noteText }
+    ]
+  };
+}
+
+function resolveSelectedPlotStudyId(
+  studies: ResearchPlotStudyItem[],
+  selectedStudyId: string | null
+): string | null {
+  if (studies.length === 0) {
+    return null;
+  }
+
+  if (selectedStudyId && studies.some((study) => study.id === selectedStudyId)) {
+    return selectedStudyId;
+  }
+
+  return studies.find((study) => study.isActive)?.id ?? studies[0].id;
 }
 
 export function buildPlotToolMomentsTable(

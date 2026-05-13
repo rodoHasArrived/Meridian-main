@@ -23,6 +23,7 @@ import type {
   CorporateActionRowViewModel,
   ReconciliationQueueRunRowViewModel,
   ReconciliationQueueRunTone,
+  GovernanceTrialBalanceRowViewModel,
   SecuritySearchResultRowViewModel,
   TradingParametersViewState
 } from "@/screens/governance-screen.view-model";
@@ -72,6 +73,36 @@ const reconciliationQueueColumns: DenseDataTableColumn<ReconciliationQueueRunRow
     )
   },
   { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedLabel}</span> }
+];
+
+const trialBalanceColumns: DenseDataTableColumn<GovernanceTrialBalanceRowViewModel>[] = [
+  {
+    id: "account",
+    label: "Account",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.accountLabel}</span>
+        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.financialAccountId ?? "Unassigned"}</span>
+      </span>
+    )
+  },
+  { id: "type", label: "Type", render: (row) => <span className="font-mono text-muted-foreground">{row.accountTypeLabel}</span> },
+  {
+    id: "balance",
+    label: "Balance",
+    align: "right",
+    render: (row) => (
+      <span
+        className={cn(
+          "font-mono tabular-nums",
+          row.balanceTone === "success" ? "text-success" : row.balanceTone === "danger" ? "text-danger" : "text-foreground"
+        )}
+      >
+        {row.balanceLabel}
+      </span>
+    )
+  },
+  { id: "entries", label: "Entries", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.entryCountLabel}</span> }
 ];
 
 const focusCopy: Record<string, { title: string; description: string }> = {
@@ -385,47 +416,44 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             <CardContent>
               <span className="sr-only" aria-live="polite">{reconciliation.trialBalanceView.statusAnnouncement}</span>
               {reconciliation.trialBalanceView.hasRows ? (
-                <div className="overflow-x-auto rounded-lg border border-border/70">
-                  <table
-                    aria-label={reconciliation.trialBalanceView.tableLabel}
-                    className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm"
-                  >
-                    <thead className="bg-secondary/30">
-                      <tr>
-                        {["Account", "Type", "Balance", "Entries"].map((column) => (
-                          <th
-                            key={column}
-                            scope="col"
-                            className={cn("px-3 py-2", column === "Balance" || column === "Entries" ? "text-right" : undefined)}
-                          >
-                            {column}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/50">
-                      {reconciliation.trialBalanceView.rows.map((line) => (
-                        <tr key={line.rowId} aria-label={line.ariaLabel} className="hover:bg-secondary/20">
-                          <td className="px-3 py-2">{line.accountLabel}</td>
-                          <td className="px-3 py-2 font-mono">{line.accountTypeLabel}</td>
-                          <td className="px-3 py-2 text-right font-mono">
-                            <span
-                              className={cn(
-                                line.balanceTone === "success"
-                                  ? "text-success"
-                                  : line.balanceTone === "danger"
-                                    ? "text-danger"
-                                    : "text-foreground"
-                              )}
-                            >
-                              {line.balanceLabel}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2 text-right font-mono">{line.entryCountLabel}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
+                  <DenseDataTable
+                    columns={trialBalanceColumns}
+                    rows={reconciliation.trialBalanceView.rows}
+                    getRowId={(line) => line.rowId}
+                    getRowAriaLabel={(line) => line.ariaLabel}
+                    getRowSelectAriaLabel={(line) => line.selectAriaLabel}
+                    getRowAriaControls={(line) => line.detailPanelId}
+                    getRowAriaExpanded={(line) => line.isExpanded}
+                    selectedRowId={reconciliation.trialBalanceView.selectedRowId}
+                    onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
+                    emptyText={reconciliation.trialBalanceView.emptyDetail}
+                    ariaLabel={reconciliation.trialBalanceView.tableLabel}
+                  />
+                  {reconciliation.trialBalanceView.selectedDetail ? (
+                    <div id={reconciliation.trialBalanceView.detailPanelId} className="min-w-0">
+                      <EntitySummary
+                        eyebrow={reconciliation.trialBalanceView.selectedDetail.eyebrow}
+                        title={reconciliation.trialBalanceView.selectedDetail.title}
+                        subtitle={reconciliation.trialBalanceView.selectedDetail.subtitle}
+                        description={reconciliation.trialBalanceView.selectedDetail.description}
+                        status={<Badge variant={reconciliation.trialBalanceView.selectedDetail.statusVariant} dot>{reconciliation.trialBalanceView.selectedDetail.statusLabel}</Badge>}
+                        fields={reconciliation.trialBalanceView.selectedDetail.fields}
+                        ariaLabel={reconciliation.trialBalanceView.selectedDetail.ariaLabel}
+                      />
+                    </div>
+                  ) : (
+                    <aside
+                      id={reconciliation.trialBalanceView.detailPanelId}
+                      role="region"
+                      aria-label={reconciliation.trialBalanceView.detailEmptyAriaLabel}
+                      className="row-detail-panel h-fit min-w-0"
+                    >
+                      <div className="eyebrow-label">Trial-balance detail</div>
+                      <h3 className="mt-1 text-sm font-semibold text-foreground">{reconciliation.trialBalanceView.detailEmptyTitle}</h3>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">{reconciliation.trialBalanceView.detailEmptyText}</p>
+                    </aside>
+                  )}
                 </div>
               ) : (
                 <div

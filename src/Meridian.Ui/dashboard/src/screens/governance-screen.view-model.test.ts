@@ -434,11 +434,37 @@ describe("governance-screen view model", () => {
       balanceLabel: "$120,500",
       balanceTone: "success",
       entryCountLabel: "12",
-      ariaLabel: "Cash Asset. Balance $120,500. 12 entries"
+      ariaLabel: "Cash Asset. Balance $120,500. 12 entries",
+      selectAriaLabel: "Inspect trial-balance account Cash for Asset",
+      detailPanelId: "trial-balance-account-detail",
+      isExpanded: true
+    });
+    expect(state.selectedRowId).toBe("Cash-Asset-acct-cash");
+    expect(state.selectedDetail).toMatchObject({
+      eyebrow: "Trial-balance detail",
+      title: "Cash",
+      subtitle: "Asset · acct-cash",
+      statusLabel: "Debit / asset",
+      statusVariant: "success",
+      ariaLabel: "Trial-balance detail for Cash"
     });
     expect(state.rows[1]).toMatchObject({
       balanceLabel: "-$500",
-      balanceTone: "danger"
+      balanceTone: "danger",
+      isExpanded: false
+    });
+
+    const selectedFinancing = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      selectedRowId: "Financing payable-Liability-acct-financing",
+      loading: false,
+      errorText: null
+    });
+    expect(selectedFinancing.selectedDetail).toMatchObject({
+      title: "Financing payable",
+      statusLabel: "Credit / payable",
+      statusVariant: "danger"
     });
   });
 

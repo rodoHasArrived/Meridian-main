@@ -180,7 +180,7 @@ function buildSortButtonAriaLabel<T>(
     return `Sort by ${column.label}`;
   }
 
-  return `${column.label} sorted ${sort.direction === "asc" ? "ascending" : "descending"}`;
+  return `${column.label} sorted ${sort.direction === "asc" ? "ascending" : "descending"}. Activate to change sort.`;
 }
 
 function handleSelectableRowKeyDown<T>(

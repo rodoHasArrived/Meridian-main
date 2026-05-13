@@ -458,6 +458,20 @@ export interface GovernanceTrialBalanceRowViewModel extends LedgerTrialBalanceLi
   balanceTone: "default" | "success" | "danger";
   entryCountLabel: string;
   ariaLabel: string;
+  selectAriaLabel: string;
+  detailPanelId: string;
+  isExpanded: boolean;
+}
+
+export interface GovernanceTrialBalanceDetailViewState {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: "outline" | "success" | "danger";
+  ariaLabel: string;
+  fields: Array<{ label: string; value: string }>;
 }
 
 export interface GovernanceTrialBalanceViewState {
@@ -467,6 +481,12 @@ export interface GovernanceTrialBalanceViewState {
   state: GovernanceTrialBalanceState;
   rows: GovernanceTrialBalanceRowViewModel[];
   hasRows: boolean;
+  selectedRowId: string | null;
+  detailPanelId: string;
+  selectedDetail: GovernanceTrialBalanceDetailViewState | null;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  detailEmptyAriaLabel: string;
   loadingText: string | null;
   emptyTitle: string;
   emptyDetail: string;
@@ -924,6 +944,7 @@ export function useGovernanceReconciliationViewModel(
   const [breakAction, setBreakAction] = useState<ReconciliationBreakAction | null>(null);
   const [breakActionError, setBreakActionError] = useState<string | null>(null);
   const [trialBalance, setTrialBalance] = useState<LedgerTrialBalanceLine[]>([]);
+  const [selectedTrialBalanceRowId, setSelectedTrialBalanceRowId] = useState<string | null>(null);
   const [trialBalanceLoading, setTrialBalanceLoading] = useState(false);
   const [trialBalanceError, setTrialBalanceError] = useState<string | null>(null);
   const [calibrationSummary, setCalibrationSummary] = useState<ReconciliationCalibrationSummary | null>(null);
@@ -1108,10 +1129,11 @@ export function useGovernanceReconciliationViewModel(
     () => buildGovernanceTrialBalanceViewState({
       runId: selectedReconciliation?.runId ?? null,
       rows: trialBalance,
+      selectedRowId: selectedTrialBalanceRowId,
       loading: trialBalanceLoading,
       errorText: trialBalanceError
     }),
-    [selectedReconciliation?.runId, trialBalance, trialBalanceError, trialBalanceLoading]
+    [selectedReconciliation?.runId, selectedTrialBalanceRowId, trialBalance, trialBalanceError, trialBalanceLoading]
   );
   const calibrationView = useMemo(
     () => buildCalibrationSummaryViewState(calibrationSummary, calibrationLoading, calibrationError),
@@ -1142,6 +1164,7 @@ export function useGovernanceReconciliationViewModel(
     trialBalanceLoading,
     trialBalanceErrorText: trialBalanceError,
     trialBalanceView,
+    selectTrialBalanceRow: setSelectedTrialBalanceRowId,
     breakAction,
     assignBreak,
     resolveBreak,
@@ -1841,17 +1864,28 @@ function buildReportingProfileDetail(profile: ReportingProfileRowViewModel): Rep
 export function buildGovernanceTrialBalanceViewState({
   runId,
   rows,
+  selectedRowId,
   loading,
   errorText
 }: {
   runId: string | null;
   rows: LedgerTrialBalanceLine[];
+  selectedRowId?: string | null;
   loading: boolean;
   errorText: string | null;
 }): GovernanceTrialBalanceViewState {
+  const detailPanelId = "trial-balance-account-detail";
   const runLabel = runId ?? "selected run";
-  const viewRows = rows.map(buildTrialBalanceRow);
-  const hasRows = viewRows.length > 0;
+  const rawRows = rows.map((line) => buildTrialBalanceRow(line, detailPanelId));
+  const hasRows = rawRows.length > 0;
+  const resolvedSelectedRowId = rawRows.some((row) => row.rowId === selectedRowId)
+    ? selectedRowId ?? null
+    : rawRows[0]?.rowId ?? null;
+  const viewRows = rawRows.map((row) => ({
+    ...row,
+    isExpanded: row.rowId === resolvedSelectedRowId
+  }));
+  const selectedRow = viewRows.find((row) => row.rowId === resolvedSelectedRowId) ?? null;
   const state: GovernanceTrialBalanceState = errorText
     ? "error"
     : loading && !hasRows
@@ -1872,6 +1906,14 @@ export function buildGovernanceTrialBalanceViewState({
     state,
     rows: viewRows,
     hasRows,
+    selectedRowId: resolvedSelectedRowId,
+    detailPanelId,
+    selectedDetail: selectedRow ? buildTrialBalanceDetail(selectedRow, runLabel) : null,
+    detailEmptyTitle: "No account selected",
+    detailEmptyText: hasRows
+      ? "Select an account line to inspect balance evidence for report handoff."
+      : "Trial-balance account detail appears after ledger rows load.",
+    detailEmptyAriaLabel: "No trial-balance account selected",
     loadingText,
     emptyTitle: "No trial balance lines",
     emptyDetail: `Meridian did not return account-balance rows for ${runLabel}. Select another reconciliation run or refresh ledger evidence before report handoff.`,
@@ -1880,7 +1922,7 @@ export function buildGovernanceTrialBalanceViewState({
   };
 }
 
-function buildTrialBalanceRow(line: LedgerTrialBalanceLine): GovernanceTrialBalanceRowViewModel {
+function buildTrialBalanceRow(line: LedgerTrialBalanceLine, detailPanelId: string): GovernanceTrialBalanceRowViewModel {
   const accountLabel = line.accountName.trim() || "Unnamed account";
   const accountTypeLabel = line.accountType.trim() || "Unclassified";
   const balanceLabel = formatCurrency(line.balance);
@@ -1906,7 +1948,41 @@ function buildTrialBalanceRow(line: LedgerTrialBalanceLine): GovernanceTrialBala
       `Balance ${balanceLabel}`,
       `${entryCountLabel} entries`,
       securityLabel ? `Security ${securityLabel}` : null
-    ].filter(Boolean).join(". ")
+    ].filter(Boolean).join(". "),
+    selectAriaLabel: `Inspect trial-balance account ${accountLabel} for ${accountTypeLabel}`,
+    detailPanelId,
+    isExpanded: false
+  };
+}
+
+function buildTrialBalanceDetail(
+  line: GovernanceTrialBalanceRowViewModel,
+  runLabel: string
+): GovernanceTrialBalanceDetailViewState {
+  const securityLabel = line.security?.displayName?.trim()
+    || line.security?.primaryIdentifier?.trim()
+    || line.symbol?.trim()
+    || "No linked security";
+  const financialAccountId = line.financialAccountId?.trim() || "Unassigned";
+  const statusVariant = line.balanceTone === "danger" ? "danger" : line.balanceTone === "success" ? "success" : "outline";
+  const statusLabel = line.balanceTone === "danger" ? "Credit / payable" : line.balanceTone === "success" ? "Debit / asset" : "Flat";
+
+  return {
+    eyebrow: "Trial-balance detail",
+    title: line.accountLabel,
+    subtitle: `${line.accountTypeLabel} · ${financialAccountId}`,
+    description: `${line.accountLabel} contributes ${line.balanceLabel} across ${line.entryCountLabel} ledger entr${line.entryCount === 1 ? "y" : "ies"} for ${runLabel}.`,
+    statusLabel,
+    statusVariant,
+    ariaLabel: `Trial-balance detail for ${line.accountLabel}`,
+    fields: [
+      { label: "Account type", value: line.accountTypeLabel },
+      { label: "Balance", value: line.balanceLabel },
+      { label: "Entries", value: line.entryCountLabel },
+      { label: "Financial account", value: financialAccountId },
+      { label: "Security", value: securityLabel },
+      { label: "Run", value: runLabel }
+    ]
   };
 }
 
