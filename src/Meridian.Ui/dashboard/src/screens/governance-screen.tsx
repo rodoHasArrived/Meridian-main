@@ -643,6 +643,38 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
       {/* --- Security Master panel (shown when security-master workstream is active) --- */}
       {workstream === "security-master" && (
         <section className="space-y-6">
+          <section className="panel-surface-strong space-y-4 p-5" aria-label={securityMaster.pageView.ariaLabel}>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-3xl">
+                <div className="eyebrow-label">{securityMaster.pageView.eyebrow}</div>
+                <h2 className="mt-2 text-2xl font-semibold tracking-normal text-foreground">{securityMaster.pageView.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{securityMaster.pageView.description}</p>
+              </div>
+              <Button variant="outline" size="sm" asChild className="shrink-0">
+                <a href="#security-master-search" aria-label="Jump to Security Master search">
+                  <Search className="h-3.5 w-3.5" aria-hidden="true" />
+                  Search securities
+                </a>
+              </Button>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {securityMaster.pageView.metrics.map((metric) => (
+                <div key={metric.id} className="rounded-lg border border-border/60 bg-secondary/25 p-4">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{metric.label}</div>
+                  <div
+                    className={cn(
+                      "mt-2 min-w-0 break-words font-mono text-lg font-semibold tabular-nums",
+                      metric.tone === "success" ? "text-success" : metric.tone === "warning" ? "text-warning" : "text-foreground"
+                    )}
+                  >
+                    {metric.value}
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
           {/* Search panel */}
           <Card className="panel-surface">
             <CardHeader>
@@ -884,6 +916,32 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               )}
             </CardContent>
           </Card>
+
+          {securityMaster.selectedSecurityId && (
+            <section className="panel-surface-strong space-y-4 p-5" aria-labelledby="security-detail-page-title">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div className="min-w-0">
+                  <div className="eyebrow-label">{securityMaster.pageView.detailEyebrow}</div>
+                  <h2 id="security-detail-page-title" className="mt-2 text-xl font-semibold tracking-normal text-foreground">
+                    {securityMaster.pageView.detailTitle}
+                  </h2>
+                  <p className="mt-1 break-words font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">
+                    {securityMaster.pageView.detailSubtitle}
+                  </p>
+                  <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">
+                    {securityMaster.pageView.detailDescription}
+                  </p>
+                </div>
+                <Badge variant={securityMaster.pageView.detailStatusBadgeVariant} dot className="w-fit shrink-0">
+                  {securityMaster.pageView.detailStatusLabel}
+                </Badge>
+              </div>
+              <ToolbarStrip
+                ariaLabel={securityMaster.pageView.detailToolbarAriaLabel}
+                items={securityMaster.pageView.detailSections}
+              />
+            </section>
+          )}
 
           {/* Corporate actions and trading parameters — shown when a security is selected */}
           {securityMaster.selectedSecurityId && (

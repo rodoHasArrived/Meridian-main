@@ -199,6 +199,39 @@ export interface SecuritySearchState {
   statusAnnouncement: string;
 }
 
+export type SecurityMasterPageMetricTone = "default" | "success" | "warning";
+
+export interface SecurityMasterPageMetricViewModel {
+  id: "results" | "selected" | "conflicts" | "detail";
+  label: string;
+  value: string;
+  detail: string;
+  tone: SecurityMasterPageMetricTone;
+}
+
+export interface SecurityMasterDetailSectionViewModel {
+  id: "overview" | "schedules" | "controls" | "audit";
+  label: string;
+  value: string;
+  active?: boolean;
+}
+
+export interface SecurityMasterPageViewState {
+  ariaLabel: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  metrics: SecurityMasterPageMetricViewModel[];
+  detailEyebrow: string;
+  detailTitle: string;
+  detailSubtitle: string;
+  detailDescription: string;
+  detailStatusLabel: string;
+  detailStatusBadgeVariant: "success" | "warning" | "outline";
+  detailToolbarAriaLabel: string;
+  detailSections: SecurityMasterDetailSectionViewModel[];
+}
+
 export interface SecurityIdentitySummaryFieldViewModel {
   label: string;
   value: string;
@@ -964,10 +997,43 @@ export function useSecurityMasterViewModel(
     () => buildSecurityConflictRefreshCommand(conflictsLoading, conflictsError),
     [conflictsError, conflictsLoading]
   );
+  const selectedSearchResult = useMemo(
+    () => selectedSecurityId ? results?.find((entry) => entry.securityId === selectedSecurityId) ?? null : null,
+    [results, selectedSecurityId]
+  );
+  const pageView = useMemo(
+    () => buildSecurityMasterPageViewState({
+      query,
+      results,
+      selectedSecurityId,
+      selectedDisplayName: identity?.displayName ?? selectedSearchResult?.displayName ?? null,
+      selectedAssetClass: identity?.assetClass ?? selectedSearchResult?.classification.assetClass ?? null,
+      selectedStatus: identity?.status ?? selectedSearchResult?.status ?? null,
+      identity,
+      identityLoading,
+      conflicts,
+      conflictsLoading,
+      corporateActions,
+      tradingParameters
+    }),
+    [
+      conflicts,
+      conflictsLoading,
+      corporateActions,
+      identity,
+      identityLoading,
+      query,
+      results,
+      selectedSearchResult,
+      selectedSecurityId,
+      tradingParameters
+    ]
+  );
 
   return {
     query,
     updateQuery,
+    pageView,
     results,
     searching,
     selectedSecurityId,
@@ -1445,6 +1511,112 @@ const securitySearchResultColumns: SecuritySearchResultColumnViewModel[] = [
 ];
 
 export const SECURITY_IDENTITY_DETAIL_PANEL_ID = "security-master-identity-detail";
+
+export function buildSecurityMasterPageViewState({
+  query,
+  results,
+  selectedSecurityId,
+  selectedDisplayName,
+  selectedAssetClass,
+  selectedStatus,
+  identity,
+  identityLoading,
+  conflicts,
+  conflictsLoading,
+  corporateActions,
+  tradingParameters
+}: {
+  query: string;
+  results: SecurityMasterEntry[] | null;
+  selectedSecurityId: string | null;
+  selectedDisplayName: string | null;
+  selectedAssetClass: string | null;
+  selectedStatus: string | null;
+  identity: SecurityIdentityDrillIn | null;
+  identityLoading: boolean;
+  conflicts: SecurityMasterConflict[] | null;
+  conflictsLoading: boolean;
+  corporateActions: CorporateAction[] | null;
+  tradingParameters: TradingParameters | null;
+}): SecurityMasterPageViewState {
+  const hasQuery = query.trim().length > 0;
+  const resultCount = results?.length ?? 0;
+  const openConflictCount = countOpenSecurityConflicts(conflicts);
+  const selectedName = selectedDisplayName?.trim() || selectedSecurityId || "None selected";
+  const selectedClass = selectedAssetClass?.trim() || "Unclassified";
+  const statusLabel = selectedStatus?.trim() || (selectedSecurityId ? "Pending" : "No selection");
+  const identifiersLabel = identity
+    ? formatCount(identity.identifiers.length, "identifier")
+    : identityLoading
+      ? "Loading identifiers"
+      : "No identifiers loaded";
+  const aliasesLabel = identity ? formatCount(identity.aliases.length, "alias") : "No aliases loaded";
+  const corporateActionLabel = corporateActions
+    ? formatCount(corporateActions.length, "corporate action")
+    : selectedSecurityId
+      ? "Loading schedules"
+      : "No selection";
+
+  return {
+    ariaLabel: "Security Master command deck",
+    eyebrow: "Security Master",
+    title: "Security Master command deck",
+    description: "Search, inspect, and reconcile trusted security reference records from one dense master-detail page.",
+    metrics: [
+      {
+        id: "results",
+        label: "Search results",
+        value: hasQuery ? resultCount.toLocaleString() : "Search",
+        detail: hasQuery ? `${formatCount(resultCount, "security")} returned for the active query.` : "Search by ticker, ISIN, CUSIP, FIGI, or display name.",
+        tone: resultCount > 0 ? "success" : "default"
+      },
+      {
+        id: "selected",
+        label: "Selected detail",
+        value: selectedName,
+        detail: selectedSecurityId ? `Security ID ${selectedSecurityId}` : "Select a table row to open the security detail page.",
+        tone: selectedSecurityId ? "success" : "default"
+      },
+      {
+        id: "conflicts",
+        label: "Identifier conflicts",
+        value: conflictsLoading ? "Loading" : openConflictCount.toLocaleString(),
+        detail: conflictsLoading
+          ? "Refreshing provider conflict evidence."
+          : openConflictCount > 0
+            ? `${formatCount(openConflictCount, "open conflict")} requiring operator review.`
+            : "No open conflicts need operator review.",
+        tone: openConflictCount > 0 || conflictsLoading ? "warning" : "success"
+      },
+      {
+        id: "detail",
+        label: "Detail coverage",
+        value: selectedSecurityId ? statusLabel : "No selection",
+        detail: selectedSecurityId ? `${selectedClass} detail record with ${identifiersLabel}.` : "Overview, schedules, controls, lots, and audit cues stay attached to the selected security.",
+        tone: selectedSecurityId ? (statusLabel.toLowerCase() === "active" ? "success" : "warning") : "default"
+      }
+    ],
+    detailEyebrow: "Security detail",
+    detailTitle: "Security detail page",
+    detailSubtitle: selectedSecurityId ? `${selectedSecurityId} · ${selectedClass}` : "Select a security",
+    detailDescription: selectedSecurityId
+      ? `${selectedName} reference data, schedules, trading controls, lots, and audit evidence are grouped below the selected master row.`
+      : "Select a security from the master table to inspect its reference record.",
+    detailStatusLabel: statusLabel,
+    detailStatusBadgeVariant: selectedSecurityId
+      ? statusLabel.toLowerCase() === "active"
+        ? "success"
+        : "warning"
+      : "outline",
+    detailToolbarAriaLabel: selectedSecurityId ? `Security detail sections for ${selectedName}` : "Security detail sections",
+    detailSections: [
+      { id: "overview", label: "Overview", value: identifiersLabel, active: true },
+      { id: "schedules", label: "Schedules", value: corporateActionLabel },
+      { id: "controls", label: "Controls", value: tradingParameters ? "Trading set" : selectedSecurityId ? "Pending" : "No selection" },
+      { id: "audit", label: "Audit", value: openConflictCount > 0 ? formatCount(openConflictCount, "conflict") : aliasesLabel }
+    ]
+  };
+}
 
 export function buildSecuritySearchState({
   query,

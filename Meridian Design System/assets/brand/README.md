@@ -58,10 +58,10 @@ Use the simplified symbol for favicons and thumbnails:
 ## Design Specifications
 
 ### Colors
-- **Primary Neutral**: `#D8DFE8`
-- **Accent Cyan**: `#00D9FF`
-- **Data Green**: `#34D399`
-- **Dark Background**: `#060D16`
+- **Primary Neutral**: `hsl(var(--foreground))`
+- **Accent Cyan**: `var(--cyan-primary)`
+- **Data Green**: `var(--state-healthy-fg)`
+- **Dark Background**: `hsl(var(--background))`
 
 ### Typography
 - **Font**: Space Grotesk, IBM Plex Sans

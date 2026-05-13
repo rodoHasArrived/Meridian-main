@@ -18,6 +18,7 @@ import {
   buildSecurityConflictRows,
   buildSecurityConflictRefreshCommand,
   buildSecurityIdentityDrillInState,
+  buildSecurityMasterPageViewState,
   buildSecuritySearchResultRows,
   buildSecuritySearchState,
   countOpenSecurityConflicts,
@@ -785,6 +786,43 @@ describe("governance-screen view model", () => {
       label: "Retry conflicts",
       ariaLabel: "Retry loading Security Master identifier conflicts"
     });
+  });
+
+  it("derives Security Master master-detail page summary from selected state", () => {
+    const state = buildSecurityMasterPageViewState({
+      query: "AAPL",
+      results: [securityResult],
+      selectedSecurityId: "sec-1",
+      selectedDisplayName: "Apple Inc.",
+      selectedAssetClass: "Equity",
+      selectedStatus: "Active",
+      identity: securityIdentity,
+      identityLoading: false,
+      conflicts,
+      conflictsLoading: false,
+      corporateActions,
+      tradingParameters
+    });
+
+    expect(state).toMatchObject({
+      ariaLabel: "Security Master command deck",
+      title: "Security Master command deck",
+      detailTitle: "Security detail page",
+      detailSubtitle: "sec-1 · Equity",
+      detailStatusLabel: "Active",
+      detailStatusBadgeVariant: "success"
+    });
+    expect(state.metrics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "results", value: "1", tone: "success" }),
+      expect.objectContaining({ id: "selected", value: "Apple Inc.", detail: "Security ID sec-1" }),
+      expect.objectContaining({ id: "conflicts", value: "1", tone: "warning" })
+    ]));
+    expect(state.detailSections).toEqual(expect.arrayContaining([
+      { id: "overview", label: "Overview", value: "1 identifier", active: true },
+      { id: "schedules", label: "Schedules", value: "2 corporate actions" },
+      { id: "controls", label: "Controls", value: "Trading set" },
+      { id: "audit", label: "Audit", value: "1 conflict" }
+    ]));
   });
 
   it("retries Security Master identifier conflicts through view-model command state", async () => {

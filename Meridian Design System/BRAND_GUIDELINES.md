@@ -26,14 +26,14 @@ Meridian is a professional .NET trading and fund operations platform. Our brandi
 ## Color Palette
 
 ### Primary Colors
-- **Neutral Base**: `#D8DFE8` (light gray) - Primary text and borders
-- **Accent Cyan**: `#00D9FF` (bright cyan) - Interactive elements and highlights
-- **Data Green**: `#34D399` (bright green) - Success states and signals
+- **Neutral Base**: `hsl(var(--foreground))` - Primary text and borders
+- **Accent Cyan**: `var(--cyan-primary)` - Interactive elements and highlights
+- **Data Green**: `var(--state-healthy-fg)` - Success states and signals
 
 ### Background Colors
-- **Dark Background**: `#060D16` - Primary background color
-- **Deep Navy**: `#0D1620` - Secondary backgrounds
-- **Grid Line**: `#1E3A4C` - Subtle structural elements
+- **Dark Background**: `hsl(var(--background))` - Primary background color
+- **Deep Navy**: `hsl(var(--card))` - Secondary backgrounds
+- **Grid Line**: `var(--border-color)` - Subtle structural elements
 
 ### Gradients
 - **Signal Gradient**: Blue → Cyan → Green (representing data flow)
@@ -69,10 +69,10 @@ Meridian is a professional .NET trading and fund operations platform. Our brandi
 ### Recommended Pairings
 | Use Case | Primary | Accent |
 |----------|---------|--------|
-| Default | #D8DFE8 | #00D9FF |
-| Success | #34D399 | #00D9FF |
-| Neutral | #8A96A8 | #1E3A4C |
-| Inverted | #F5F7FA | #06F3FF |
+| Default | `hsl(var(--foreground))` | `var(--cyan-primary)` |
+| Success | `var(--state-healthy-fg)` | `var(--cyan-primary)` |
+| Neutral | `hsl(var(--muted-foreground))` | `var(--border-color)` |
+| Inverted | `hsl(var(--foreground))` | `var(--cyan-focus)` |
 
 ## Typography
 
@@ -139,10 +139,10 @@ Meridian is a professional .NET trading and fund operations platform. Our brandi
 Use the monochrome variant with CSS to support light/dark modes:
 ```css
 .dark .logo {
-  color: #F5F7FA;
+  color: hsl(var(--foreground));
 }
 .light .logo {
-  color: #0F1723;
+  color: hsl(var(--background));
 }
 ```
 

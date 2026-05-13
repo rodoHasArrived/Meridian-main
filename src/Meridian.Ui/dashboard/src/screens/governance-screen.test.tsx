@@ -533,6 +533,8 @@ describe("GovernanceScreen", () => {
     expect(securityRow).toHaveAttribute("aria-controls", "security-master-identity-detail");
     expect(securityRow).toHaveAttribute("aria-expanded", "true");
     expect(await screen.findByRole("region", { name: "Security identity detail for Apple Inc." })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Security detail page" })).toHaveTextContent("sec-1 · Equity");
+    expect(screen.getByRole("toolbar", { name: "Security detail sections for Apple Inc." })).toHaveTextContent("Schedules");
     expect(screen.getByText("Security details")).toBeInTheDocument();
     expect(await screen.findByText("2 hidden overrides")).toBeInTheDocument();
     expect(screen.queryByText("Coupon Rate (%)")).not.toBeInTheDocument();
