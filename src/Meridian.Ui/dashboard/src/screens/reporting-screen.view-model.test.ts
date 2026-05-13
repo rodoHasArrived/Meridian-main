@@ -352,6 +352,7 @@ describe("useReportingScreenViewModel", () => {
         label: "Running export…",
         isDisabled: true,
         isRunning: true,
+        busyLabel: "Running export…",
         disabledReason: "Excel export is already running.",
         describedById: "reporting-action-excel-run-status",
         statusText: "Excel export is running. Wait for the result before starting another export."

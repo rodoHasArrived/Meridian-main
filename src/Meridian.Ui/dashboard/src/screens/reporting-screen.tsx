@@ -131,12 +131,12 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                             asChild={action.method === "GET" && !action.isDisabled}
                             disabled={action.isDisabled}
                             busy={action.isRunning}
-                            busyLabel={action.isRunning ? "Running export…" : null}
+                            busyLabel={action.busyLabel}
+                            disabledReason={action.disabledReason}
                             size="sm"
                             variant={action.variant}
                             aria-label={action.ariaLabel}
                             aria-describedby={taskActionDescriptionId}
-                            title={action.disabledReason ?? undefined}
                             onClick={
                               action.method === "POST" && vm.selectedProfile
                                 ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
@@ -153,16 +153,16 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                               </a>
                             )}
                           </Button>
-                          {action.disabledReason ? (
-                            <Badge variant="warning">Disabled</Badge>
-                          ) : action.isRunning ? (
+                          {action.isRunning ? (
                             <Badge variant="warning">Running</Badge>
+                          ) : action.disabledReason ? (
+                            <Badge variant="warning">Disabled</Badge>
                           ) : (
                             <Badge variant="outline">{action.method}</Badge>
                           )}
                         </div>
                         <p id={taskActionDescriptionId} className="mt-2 text-xs leading-5 text-muted-foreground">
-                          {action.disabledReason ?? action.statusText}
+                          {action.isRunning ? action.statusText : action.disabledReason ?? action.statusText}
                         </p>
                       </div>
                     );
@@ -533,12 +533,12 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                         asChild={action.method === "GET" && !action.isDisabled}
                         disabled={action.isDisabled}
                         busy={action.isRunning}
-                        busyLabel={action.isRunning ? "Running export…" : null}
+                        busyLabel={action.busyLabel}
+                        disabledReason={action.disabledReason}
                         size="sm"
                         variant={action.variant}
                         aria-label={action.ariaLabel}
                         aria-describedby={action.describedById}
-                        title={action.disabledReason ?? undefined}
                         onClick={
                           action.method === "POST"
                             ? () => void vm.runExport(action.profileId, vm.selectedProfile!.title)
@@ -555,16 +555,16 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                           </a>
                         )}
                       </Button>
-                      {action.disabledReason ? (
-                        <Badge variant="warning">Disabled</Badge>
-                      ) : action.isRunning ? (
+                      {action.isRunning ? (
                         <Badge variant="warning">Running</Badge>
+                      ) : action.disabledReason ? (
+                        <Badge variant="warning">Disabled</Badge>
                       ) : (
                         <Badge variant="outline">{action.method}</Badge>
                       )}
                     </div>
                     <p id={action.describedById} className="mt-2 text-xs leading-5 text-muted-foreground">
-                      {action.disabledReason ?? action.statusText}
+                      {action.isRunning ? action.statusText : action.disabledReason ?? action.statusText}
                     </p>
                   </div>
                 ))}

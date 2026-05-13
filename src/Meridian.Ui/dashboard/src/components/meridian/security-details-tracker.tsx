@@ -7,8 +7,10 @@ import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/comp
 import { getOperatorOverrides as defaultGetOperatorOverrides, patchOperatorOverrides as defaultPatchOperatorOverrides } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import {
+  buildSecurityDetailsViewModel,
   buildLotsTrackerViewModel,
   parseLotNumber,
+  type SecurityDetailFieldDef,
   type LotsTrackerRowViewModel,
   type SecurityLot
 } from "./security-details-tracker.view-model";
@@ -29,201 +31,6 @@ const defaultOperatorOverridesService: OperatorOverridesService = {
   get: defaultGetOperatorOverrides,
   patch: defaultPatchOperatorOverrides
 };
-
-export type SecurityDetailFieldKind = "text" | "number" | "date" | "select" | "boolean";
-
-export interface SecurityDetailFieldDef {
-  key: string;
-  label: string;
-  kind: SecurityDetailFieldKind;
-  options?: readonly string[];
-  placeholder?: string;
-  derive?: (ctx: SecurityDetailContext) => string | null | undefined;
-  format?: (value: string) => string;
-}
-
-export interface SecurityDetailGroupDef {
-  id: string;
-  title: string;
-  fields: readonly SecurityDetailFieldDef[];
-}
-
-export interface SecurityDetailContext {
-  entry: SecurityMasterEntry | null;
-  identity: SecurityIdentityDrillIn | null;
-  tradingParameters: TradingParameters | null;
-}
-
-const RATING_OPTIONS = [
-  "AAA", "AA+", "AA", "AA-", "A+", "A", "A-",
-  "BBB+", "BBB", "BBB-", "BB+", "BB", "BB-",
-  "B+", "B", "B-", "CCC+", "CCC", "CCC-", "CC", "C", "D",
-  "NR"
-] as const;
-
-const MOODYS_RATING_OPTIONS = [
-  "Aaa", "Aa1", "Aa2", "Aa3", "A1", "A2", "A3",
-  "Baa1", "Baa2", "Baa3", "Ba1", "Ba2", "Ba3",
-  "B1", "B2", "B3", "Caa1", "Caa2", "Caa3", "Ca", "C",
-  "NR"
-] as const;
-
-const COUPON_TYPE_OPTIONS = [
-  "Fixed", "Floating", "Variable", "Step-Up", "Zero Coupon", "Inflation-Linked", "PIK"
-] as const;
-
-const COUPON_FREQUENCY_OPTIONS = [
-  "Annual", "Semi-Annual", "Quarterly", "Monthly", "At Maturity", "Irregular"
-] as const;
-
-const DAY_COUNT_OPTIONS = [
-  "30/360", "30E/360", "ACT/360", "ACT/365", "ACT/ACT", "NL/365"
-] as const;
-
-const PAY_CONVENTION_OPTIONS = [
-  "Following", "Modified Following", "Preceding", "Modified Preceding", "Unadjusted"
-] as const;
-
-const ASSET_CLASS_OPTIONS = [
-  "Equity", "FixedIncome", "Future", "Option", "Fund", "Currency", "Commodity", "Crypto", "Index"
-] as const;
-
-const yesNo = ["Yes", "No"] as const;
-
-function pickIdentifier(identity: SecurityIdentityDrillIn | null, kind: string): string | null {
-  if (!identity) return null;
-  const exact = identity.identifiers.find((i) => i.kind.toLowerCase() === kind.toLowerCase());
-  if (exact) return exact.value;
-  const alias = identity.aliases.find((a) => a.aliasKind.toLowerCase() === kind.toLowerCase());
-  return alias?.aliasValue ?? null;
-}
-
-export const SECURITY_DETAIL_GROUPS: readonly SecurityDetailGroupDef[] = [
-  {
-    id: "identification",
-    title: "Identification",
-    fields: [
-      { key: "identifier", label: "Identifier", kind: "text", derive: (c) => c.identity?.securityId ?? c.entry?.securityId ?? null },
-      { key: "description", label: "Description", kind: "text", derive: (c) => c.identity?.displayName ?? c.entry?.displayName ?? null },
-      { key: "ticker", label: "Ticker", kind: "text", derive: (c) => pickIdentifier(c.identity, "Ticker") },
-      { key: "isin", label: "ISIN", kind: "text", derive: (c) => pickIdentifier(c.identity, "ISIN") },
-      { key: "cusip", label: "CUSIP", kind: "text", derive: (c) => pickIdentifier(c.identity, "CUSIP") },
-      { key: "sedol", label: "SEDOL", kind: "text", derive: (c) => pickIdentifier(c.identity, "SEDOL") },
-      { key: "figi", label: "FIGI", kind: "text", derive: (c) => pickIdentifier(c.identity, "FIGI") },
-      { key: "securityId", label: "Security ID", kind: "text", derive: (c) => c.identity?.securityId ?? c.entry?.securityId ?? null }
-    ]
-  },
-  {
-    id: "issuer",
-    title: "Issuer & Concentration",
-    fields: [
-      { key: "issuer", label: "Issuer", kind: "text" },
-      { key: "issuerConcentration", label: "Issuer Concentration (%)", kind: "number", placeholder: "0.00" },
-      { key: "servicer", label: "Servicer", kind: "text" },
-      { key: "series", label: "Series", kind: "text" },
-      { key: "shareClass", label: "Share Class", kind: "text" },
-      { key: "sharesOutstanding", label: "Shares Outstanding", kind: "number" }
-    ]
-  },
-  {
-    id: "classification",
-    title: "Classification",
-    fields: [
-      { key: "assetClass", label: "Asset Class", kind: "select", options: ASSET_CLASS_OPTIONS, derive: (c) => c.identity?.assetClass ?? c.entry?.classification.assetClass ?? null },
-      { key: "securityType", label: "Security Type", kind: "text", derive: (c) => c.entry?.classification.subType ?? null },
-      { key: "securityTypeCategory", label: "Security Type Category", kind: "text" },
-      { key: "marketSector", label: "Market Sector", kind: "text" },
-      { key: "industrySector", label: "Industry Sector", kind: "text" },
-      { key: "industryGroup", label: "Industry Group", kind: "text" },
-      { key: "industrySubgroup", label: "Industry Subgroup", kind: "text" },
-      { key: "sicCode", label: "SIC Code", kind: "text" },
-      { key: "sicCodeDescription", label: "SIC Code Description", kind: "text" }
-    ]
-  },
-  {
-    id: "geography",
-    title: "Geography & Currency",
-    fields: [
-      { key: "countryOfHeadquarters", label: "Country of Headquarters", kind: "text" },
-      { key: "countryOfIncorporation", label: "Country of Incorporation", kind: "text" },
-      { key: "countryOfIssue", label: "Country of Issue", kind: "text" },
-      { key: "countryOfGovGuarantee", label: "Country of Gov Guarantee", kind: "text" },
-      { key: "currency", label: "Currency", kind: "text", derive: (c) => c.entry?.economicDefinition.currency ?? null }
-    ]
-  },
-  {
-    id: "ratings",
-    title: "Ratings",
-    fields: [
-      { key: "spRating", label: "S&P Rating", kind: "select", options: RATING_OPTIONS },
-      { key: "moodysRating", label: "Moody's Rating", kind: "select", options: MOODYS_RATING_OPTIONS },
-      { key: "fitchRating", label: "Fitch Rating", kind: "select", options: RATING_OPTIONS },
-      { key: "simpleCreditRating", label: "Simple Credit Rating", kind: "select", options: RATING_OPTIONS },
-      { key: "impliedRatingsEligible", label: "Implied Ratings Eligible", kind: "select", options: yesNo }
-    ]
-  },
-  {
-    id: "coupon",
-    title: "Coupon",
-    fields: [
-      { key: "couponRate", label: "Coupon Rate (%)", kind: "number" },
-      { key: "couponType", label: "Coupon Type", kind: "select", options: COUPON_TYPE_OPTIONS },
-      { key: "couponFrequency", label: "Coupon Frequency", kind: "select", options: COUPON_FREQUENCY_OPTIONS },
-      { key: "couponCurrency", label: "Coupon Currency", kind: "text" },
-      { key: "couponCap", label: "Coupon Cap (%)", kind: "number" },
-      { key: "couponFloor", label: "Coupon Floor (%)", kind: "number" },
-      { key: "couponEffectiveDate", label: "Coupon Effective Date", kind: "date" },
-      { key: "couponPayConvention", label: "Coupon Pay Convention", kind: "select", options: PAY_CONVENTION_OPTIONS },
-      { key: "couponPayDay", label: "Coupon Pay Day", kind: "text" },
-      { key: "couponResetFrequency", label: "Coupon Reset Frequency", kind: "select", options: COUPON_FREQUENCY_OPTIONS },
-      { key: "dayCount", label: "Day Count", kind: "select", options: DAY_COUNT_OPTIONS }
-    ]
-  },
-  {
-    id: "maturity",
-    title: "Maturity & Factor",
-    fields: [
-      { key: "finalMaturity", label: "Final Maturity", kind: "date" },
-      { key: "factor", label: "Factor", kind: "number" },
-      { key: "factorEffectiveDate", label: "Factor Effective Date", kind: "date" },
-      { key: "sinkable", label: "Sinkable", kind: "select", options: yesNo },
-      { key: "sequential", label: "Sequential", kind: "select", options: yesNo },
-      { key: "continuouslyCallable", label: "Continuously Callable", kind: "select", options: yesNo },
-      { key: "coveredBond", label: "Covered Bond", kind: "select", options: yesNo }
-    ]
-  },
-  {
-    id: "pricing",
-    title: "Pricing & Risk",
-    fields: [
-      { key: "marketPrice", label: "Market Price", kind: "number" },
-      { key: "yield", label: "Yield (%)", kind: "number" },
-      { key: "duration", label: "Duration", kind: "number" },
-      { key: "convexity", label: "Convexity", kind: "number" },
-      { key: "convexityGroup", label: "Convexity Group", kind: "text" },
-      { key: "contractSize", label: "Contract Size", kind: "number" }
-    ]
-  },
-  {
-    id: "conversion",
-    title: "Conversion (Convertibles)",
-    fields: [
-      { key: "convertible", label: "Convertible", kind: "select", options: yesNo },
-      { key: "conversionOption", label: "Conversion Option", kind: "text" },
-      { key: "conversionOptionEndDate", label: "Conversion Option End Date", kind: "date" },
-      { key: "conversionPrice", label: "Conversion Price", kind: "number" },
-      { key: "conversionRatio", label: "Conversion Ratio", kind: "number" }
-    ]
-  },
-  {
-    id: "regulatory",
-    title: "Regulatory & Tax",
-    fields: [
-      { key: "fdicNumber", label: "FDIC Number", kind: "text" },
-      { key: "fedTax", label: "Fed Tax", kind: "select", options: ["Taxable", "Tax-Exempt", "AMT"] }
-    ]
-  }
-] as const;
 
 const STORAGE_PREFIX_OVERRIDES = "meridian.security.overrides.";
 const STORAGE_PREFIX_LOTS = "meridian.security.lots.";
@@ -343,9 +150,9 @@ export function SecurityDetailsPanel({
       });
   }, [securityId, overridesService]);
 
-  const ctx = useMemo<SecurityDetailContext>(
-    () => ({ entry, identity, tradingParameters }),
-    [entry, identity, tradingParameters]
+  const vm = useMemo(
+    () => buildSecurityDetailsViewModel({ entry, identity, tradingParameters, overrides }),
+    [entry, identity, overrides, tradingParameters]
   );
 
   const beginEdit = useCallback((field: SecurityDetailFieldDef, currentValue: string) => {
@@ -409,7 +216,7 @@ export function SecurityDetailsPanel({
     return null;
   }
 
-  const overrideCount = Object.keys(overrides).length;
+  const overrideCount = vm.overrideCount;
 
   return (
     <Card className="panel-surface">
@@ -429,6 +236,14 @@ export function SecurityDetailsPanel({
         </CardDescription>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <ServerStatusBadge status={serverStatus} />
+          {vm.hiddenOverrideCount > 0 && (
+            <Badge
+              variant="warning"
+              title={`${vm.hiddenOverrideCount} override${vm.hiddenOverrideCount === 1 ? "" : "s"} belong to fields hidden for this security type.`}
+            >
+              {vm.hiddenOverrideCount} hidden override{vm.hiddenOverrideCount === 1 ? "" : "s"}
+            </Badge>
+          )}
           {updatedBy && updatedAt && (
             <span className="font-mono">
               last edit by {updatedBy} @ {updatedAt}
@@ -440,42 +255,37 @@ export function SecurityDetailsPanel({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {SECURITY_DETAIL_GROUPS.map((group) => (
+        {vm.groups.map((group) => (
           <section key={group.id} aria-label={group.title} className="space-y-2">
             <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{group.title}</div>
             <dl className="grid gap-2 sm:grid-cols-2">
               {group.fields.map((field) => {
-                const derived = field.derive?.(ctx) ?? null;
-                const override = overrides[field.key];
-                const isOverridden = override !== undefined && override !== "";
-                const value = isOverridden ? override : (derived ?? "");
-                const displayValue = value === "" ? "—" : (field.format ? field.format(value) : value);
                 const isEditing = editingKey === field.key;
                 return (
                   <div
                     key={field.key}
                     className={cn(
                       "grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)_auto] items-start gap-3 rounded-md border px-3 py-2",
-                      isOverridden ? "border-primary/40 bg-primary/5" : "border-border/60 bg-secondary/25"
+                      field.isOverridden ? "border-primary/40 bg-primary/5" : "border-border/60 bg-secondary/25"
                     )}
                   >
                     <dt className="min-w-0 text-xs text-muted-foreground">
                       {field.label}
-                      {isOverridden && (
+                      {field.isOverridden && (
                         <span className="ml-1 font-mono text-[9px] uppercase tracking-[0.12em] text-primary">override</span>
                       )}
                     </dt>
                     <dd className="min-w-0 break-words font-mono text-xs text-foreground">
                       {isEditing ? (
                         <SecurityDetailFieldEditor
-                          field={field}
+                          field={field.def}
                           value={draftValue}
                           onChange={setDraftValue}
-                          onSubmit={() => commitEdit(field)}
+                          onSubmit={() => commitEdit(field.def)}
                           onCancel={cancelEdit}
                         />
                       ) : (
-                        <span className={cn(value === "" ? "text-muted-foreground" : "")}>{displayValue}</span>
+                        <span className={cn(field.value === "" ? "text-muted-foreground" : "")}>{field.displayValue}</span>
                       )}
                     </dd>
                     <div className="flex shrink-0 items-center gap-1">
@@ -486,7 +296,7 @@ export function SecurityDetailsPanel({
                             size="sm"
                             variant="ghost"
                             aria-label={`Save ${field.label}`}
-                            onClick={() => commitEdit(field)}
+                            onClick={() => commitEdit(field.def)}
                           >
                             <Save className="h-3.5 w-3.5" />
                           </Button>
@@ -507,17 +317,17 @@ export function SecurityDetailsPanel({
                             size="sm"
                             variant="ghost"
                             aria-label={`Edit ${field.label}`}
-                            onClick={() => beginEdit(field, isOverridden ? override : "")}
+                            onClick={() => beginEdit(field.def, field.isOverridden ? field.overrideValue ?? "" : "")}
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                          {isOverridden && (
+                          {field.isOverridden && (
                             <Button
                               type="button"
                               size="sm"
                               variant="ghost"
                               aria-label={`Clear override for ${field.label}`}
-                              onClick={() => clearOverride(field)}
+                              onClick={() => clearOverride(field.def)}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>

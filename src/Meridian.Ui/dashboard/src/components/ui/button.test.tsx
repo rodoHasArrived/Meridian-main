@@ -30,6 +30,21 @@ describe("Button", () => {
     expect(button).toHaveAttribute("title", "Preview the request before running.");
   });
 
+  it("keeps busy labels visible while exposing disabled reasons as titles", () => {
+    render(
+      <Button busy busyLabel="Running..." disabledReason="Export is already running." aria-label="Run export">
+        Run export
+      </Button>
+    );
+
+    const button = screen.getByRole("button", { name: "Run export" });
+
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("aria-busy", "true");
+    expect(button).toHaveAttribute("title", "Export is already running.");
+    expect(button).toHaveTextContent("Running...");
+  });
+
   it("projects command state onto asChild links without adding invalid disabled attributes", () => {
     render(
       <Button asChild disabled disabledReason="Export is already running.">

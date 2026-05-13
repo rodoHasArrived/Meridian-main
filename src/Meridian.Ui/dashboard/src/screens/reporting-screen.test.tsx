@@ -179,6 +179,55 @@ describe("ReportingScreen", () => {
     );
   });
 
+  it("surfaces VM-owned running export feedback in the report-pack task", async () => {
+    const user = userEvent.setup();
+    let releaseFetch!: () => void;
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          releaseFetch = () =>
+            resolve({
+              ok: true,
+              text: async () => JSON.stringify({
+                jobId: "export-running",
+                success: true,
+                status: "completed",
+                profileId: "excel",
+                symbols: [],
+                filesGenerated: 1,
+                totalRecords: 1,
+                totalBytes: 1,
+                outputDirectory: "exports",
+                durationSeconds: 1,
+                error: null,
+                warnings: [],
+                files: [],
+                timestamp: "2026-05-01T00:00:00Z"
+              })
+            });
+        })
+    );
+
+    renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting/report-packs"] });
+
+    const task = screen.getByRole("region", { name: "Report-pack approval task" });
+    await user.click(within(task).getByRole("button", { name: "Run Excel export analysis" }));
+
+    const runningButton = within(task).getByRole("button", { name: "Run Excel export analysis" });
+    expect(runningButton).toBeDisabled();
+    expect(runningButton).toHaveAttribute("aria-busy", "true");
+    expect(runningButton).toHaveAttribute("title", "Excel export is already running.");
+    expect(runningButton).toHaveTextContent("Running export…");
+    expect(within(task).getByText("Excel export is running. Wait for the result before starting another export.")).toBeInTheDocument();
+
+    releaseFetch();
+    await waitFor(() => {
+      expect(screen.getByRole("status", { name: "Reporting export status" })).toHaveTextContent(
+        "Excel export completed — 1 file generated."
+      );
+    });
+  });
+
   it("updates selected profile detail and profile-scoped actions", async () => {
     const user = userEvent.setup();
     renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting"] });
@@ -203,6 +252,56 @@ describe("ReportingScreen", () => {
 
     expect(preview).toHaveAttribute("href", "/api/export/preview?profile=audit-pack");
     expect(run).toBeEnabled();
+  });
+
+  it("surfaces VM-owned running export feedback in the selected profile inspector", async () => {
+    const user = userEvent.setup();
+    let releaseFetch!: () => void;
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          releaseFetch = () =>
+            resolve({
+              ok: true,
+              text: async () => JSON.stringify({
+                jobId: "export-running",
+                success: true,
+                status: "completed",
+                profileId: "audit-pack",
+                symbols: [],
+                filesGenerated: 1,
+                totalRecords: 1,
+                totalBytes: 1,
+                outputDirectory: "exports",
+                durationSeconds: 1,
+                error: null,
+                warnings: [],
+                files: [],
+                timestamp: "2026-05-01T00:00:00Z"
+              })
+            });
+        })
+    );
+
+    renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting"] });
+
+    await user.click(screen.getByRole("button", { name: /select audit pack export profile/i }));
+    const inspector = screen.getByRole("complementary", { name: /audit pack selected/i });
+    await user.click(within(inspector).getByRole("button", { name: "Run Audit Pack export analysis" }));
+
+    const runningButton = within(inspector).getByRole("button", { name: "Run Audit Pack export analysis" });
+    expect(runningButton).toBeDisabled();
+    expect(runningButton).toHaveAttribute("aria-busy", "true");
+    expect(runningButton).toHaveAttribute("title", "Audit Pack export is already running.");
+    expect(runningButton).toHaveTextContent("Running export…");
+    expect(within(inspector).getByText("Audit Pack export is running. Wait for the result before starting another export.")).toBeInTheDocument();
+
+    releaseFetch();
+    await waitFor(() => {
+      expect(screen.getByRole("status", { name: "Reporting export status" })).toHaveTextContent(
+        "Audit Pack export completed — 1 file generated."
+      );
+    });
   });
 
   it("posts selected profile when running export analysis", async () => {

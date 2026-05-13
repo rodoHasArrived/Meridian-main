@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import * as api from "@/lib/api";
 import { GovernanceScreen } from "@/screens/governance-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
-import type { GovernanceWorkspaceResponse, LedgerTrialBalanceLine, SecurityMasterConflict } from "@/types";
+import type { CorporateAction, GovernanceWorkspaceResponse, LedgerTrialBalanceLine, SecurityMasterConflict } from "@/types";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -11,6 +11,13 @@ vi.mock("@/lib/api", async () => {
     ...actual,
     searchSecurities: vi.fn().mockResolvedValue([]),
     getSecurityIdentity: vi.fn().mockResolvedValue(null),
+    getOperatorOverrides: vi.fn().mockResolvedValue({
+      securityId: "sec-1",
+      values: {},
+      updatedBy: "",
+      updatedAt: ""
+    }),
+    patchOperatorOverrides: vi.fn(),
     getSecurityConflicts: vi.fn().mockResolvedValue([]),
     getReconciliationBreakQueue: vi.fn().mockResolvedValue([]),
     getReconciliationCalibrationSummary: vi.fn().mockResolvedValue({
@@ -33,6 +40,8 @@ vi.mock("@/lib/api", async () => {
     reviewReconciliationBreak: vi.fn(),
     runAnalysisExport: vi.fn(),
     getRunTrialBalance: vi.fn().mockResolvedValue([]),
+    getCorporateActions: vi.fn().mockResolvedValue([]),
+    getTradingParameters: vi.fn().mockResolvedValue(null),
     resolveSecurityConflict: vi.fn()
   };
 });
@@ -126,6 +135,41 @@ const securityConflict: SecurityMasterConflict = {
   detectedAt: "2026-01-01T00:00:00Z",
   status: "Open"
 };
+
+const corporateActions: CorporateAction[] = [
+  {
+    corpActId: "ca-div-1",
+    securityId: "sec-1",
+    eventType: "Dividend",
+    exDate: "2026-05-01T00:00:00Z",
+    payDate: "2026-05-15T00:00:00Z",
+    dividendPerShare: 0.24,
+    currency: "USD",
+    splitRatio: null,
+    newSecurityId: null,
+    distributionRatio: null,
+    acquirerSecurityId: null,
+    exchangeRatio: null,
+    subscriptionPricePerShare: null,
+    rightsPerShare: null
+  },
+  {
+    corpActId: "ca-split-1",
+    securityId: "sec-1",
+    eventType: "StockSplit",
+    exDate: "2026-06-01T00:00:00Z",
+    payDate: null,
+    dividendPerShare: null,
+    currency: null,
+    splitRatio: 4,
+    newSecurityId: null,
+    distributionRatio: null,
+    acquirerSecurityId: null,
+    exchangeRatio: null,
+    subscriptionPricePerShare: null,
+    rightsPerShare: null
+  }
+];
 
 const trialBalanceLines: LedgerTrialBalanceLine[] = [
   {
@@ -411,7 +455,6 @@ describe("GovernanceScreen", () => {
         }
       ]
     });
-
     await renderGovernanceScreen(data, "/accounting/security-master");
 
     await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
@@ -435,6 +478,16 @@ describe("GovernanceScreen", () => {
 
   it("selects Security Master search rows with keyboard-expanded detail linkage", async () => {
     const user = userEvent.setup();
+    vi.mocked(api.getOperatorOverrides).mockResolvedValueOnce({
+      securityId: "sec-1",
+      values: {
+        issuer: "Apple Inc.",
+        couponRate: "5.25",
+        finalMaturity: "2032-06-30"
+      },
+      updatedBy: "ops",
+      updatedAt: "2026-05-12T10:00:00Z"
+    });
     vi.mocked(api.searchSecurities).mockResolvedValueOnce([
       {
         securityId: "sec-1",
@@ -480,6 +533,70 @@ describe("GovernanceScreen", () => {
     expect(securityRow).toHaveAttribute("aria-controls", "security-master-identity-detail");
     expect(securityRow).toHaveAttribute("aria-expanded", "true");
     expect(await screen.findByRole("region", { name: "Security identity detail for Apple Inc." })).toBeInTheDocument();
+    expect(screen.getByText("Security details")).toBeInTheDocument();
+    expect(await screen.findByText("2 hidden overrides")).toBeInTheDocument();
+    expect(screen.queryByText("Coupon Rate (%)")).not.toBeInTheDocument();
+    expect(screen.queryByText("Final Maturity")).not.toBeInTheDocument();
+    expect(screen.queryByText("S&P Rating")).not.toBeInTheDocument();
+  });
+
+  it("renders corporate actions as selectable dense evidence with a detail panel", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.searchSecurities).mockResolvedValueOnce([
+      {
+        securityId: "sec-1",
+        displayName: "Apple Inc.",
+        status: "Active",
+        classification: {
+          assetClass: "Equity",
+          subType: "CommonStock",
+          primaryIdentifierKind: "Ticker",
+          primaryIdentifierValue: "AAPL"
+        },
+        economicDefinition: {
+          currency: "USD",
+          version: 3,
+          effectiveFrom: "2024-01-01T00:00:00Z",
+          effectiveTo: null,
+          subType: "CommonStock",
+          assetFamily: "Equity",
+          issuerType: "Corporate"
+        }
+      }
+    ]);
+    vi.mocked(api.getSecurityIdentity).mockResolvedValueOnce({
+      securityId: "sec-1",
+      displayName: "Apple Inc.",
+      assetClass: "Equity",
+      status: "Active",
+      version: 3,
+      effectiveFrom: "2024-01-01T00:00:00Z",
+      effectiveTo: null,
+      identifiers: [],
+      aliases: []
+    });
+    vi.mocked(api.getCorporateActions).mockResolvedValueOnce(corporateActions);
+
+    await renderGovernanceScreen(data, "/accounting/security-master");
+
+    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
+    await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
+
+    const table = await screen.findByRole("table", { name: "Corporate actions for sec-1" });
+    expect(table).toBeInTheDocument();
+    const dividendRow = screen.getByRole("row", { name: "Inspect corporate action Dividend for sec-1" });
+    const splitRow = screen.getByRole("row", { name: "Inspect corporate action Stock split for sec-1" });
+    expect(dividendRow).toHaveAttribute("aria-selected", "true");
+    expect(dividendRow).toHaveAttribute("aria-controls", "corporate-action-detail-panel");
+    expect(screen.getByRole("region", { name: "Corporate action detail for Dividend on sec-1" })).toHaveTextContent("0.24 USD / share");
+
+    splitRow.focus();
+    await user.keyboard("{Enter}");
+
+    expect(splitRow).toHaveAttribute("aria-selected", "true");
+    expect(splitRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Corporate action detail for Stock split on sec-1" })).toHaveTextContent("4:1 split");
+    expect(screen.getByRole("region", { name: "Corporate action detail for Stock split on sec-1" })).toHaveTextContent("Pay date unavailable");
   });
 
   it("renders provider-specific security conflict actions", async () => {

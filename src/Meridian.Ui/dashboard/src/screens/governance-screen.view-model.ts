@@ -115,6 +115,44 @@ export interface CorporateActionRowViewModel extends CorporateAction {
   payDateLabel: string;
   amountLabel: string;
   ariaLabel: string;
+  selectAriaLabel: string;
+  detailPanelId: string;
+  isExpanded: boolean;
+}
+
+export interface CorporateActionDetailFieldViewModel {
+  label: string;
+  value: string;
+  tone?: "default" | "warning";
+}
+
+export interface CorporateActionDetailViewState {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  ariaLabel: string;
+  statusLabel: string;
+  fields: CorporateActionDetailFieldViewModel[];
+}
+
+export interface CorporateActionsViewState {
+  securityId: string;
+  tableLabel: string;
+  tableCaption: string;
+  detailPanelId: string;
+  rows: CorporateActionRowViewModel[];
+  selectedRowId: string | null;
+  selectedDetail: CorporateActionDetailViewState | null;
+  emptyText: string;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  detailEmptyAriaLabel: string;
+  loadingText: string | null;
+  errorText: string | null;
+  hasRows: boolean;
+  statusAnnouncement: string;
 }
 
 export type TradingParametersField = { label: string; value: string; tone?: "default" | "warning" };
@@ -633,6 +671,7 @@ export function useSecurityMasterViewModel(
   const [corporateActions, setCorporateActions] = useState<CorporateAction[] | null>(null);
   const [corporateActionsLoading, setCorporateActionsLoading] = useState(false);
   const [corporateActionsError, setCorporateActionsError] = useState<string | null>(null);
+  const [selectedCorporateActionId, setSelectedCorporateActionId] = useState<string | null>(null);
   const [tradingParameters, setTradingParameters] = useState<TradingParameters | null>(null);
   const [tradingParametersLoading, setTradingParametersLoading] = useState(false);
   const [tradingParametersError, setTradingParametersError] = useState<string | null>(null);
@@ -675,6 +714,7 @@ export function useSecurityMasterViewModel(
     setCorporateActions(null);
     setCorporateActionsLoading(false);
     setCorporateActionsError(null);
+    setSelectedCorporateActionId(null);
     setTradingParameters(null);
     setTradingParametersLoading(false);
     setTradingParametersError(null);
@@ -716,6 +756,7 @@ export function useSecurityMasterViewModel(
       setCorporateActions(null);
       setCorporateActionsLoading(false);
       setCorporateActionsError(null);
+      setSelectedCorporateActionId(null);
       setTradingParameters(null);
       setTradingParametersLoading(false);
       setTradingParametersError(null);
@@ -775,6 +816,7 @@ export function useSecurityMasterViewModel(
     setIdentity(null);
     setIdentityError(null);
     setSearchError(null);
+    setSelectedCorporateActionId(null);
     identityGenerationRef.current += 1;
 
     if (searchTimerRef.current) {
@@ -828,6 +870,7 @@ export function useSecurityMasterViewModel(
     setIdentityLoading(true);
     setCorporateActions(null);
     setCorporateActionsError(null);
+    setSelectedCorporateActionId(null);
     setTradingParameters(null);
     setTradingParametersError(null);
 
@@ -887,8 +930,30 @@ export function useSecurityMasterViewModel(
     [identity]
   );
   const corporateActionRows = useMemo(
-    () => buildCorporateActionRows(corporateActions),
-    [corporateActions]
+    () => buildCorporateActionRows(corporateActions, selectedCorporateActionId),
+    [corporateActions, selectedCorporateActionId]
+  );
+  useEffect(() => {
+    if (corporateActionRows.length === 0) {
+      if (selectedCorporateActionId !== null) {
+        setSelectedCorporateActionId(null);
+      }
+      return;
+    }
+
+    if (!selectedCorporateActionId || !corporateActionRows.some((row) => row.rowId === selectedCorporateActionId)) {
+      setSelectedCorporateActionId(corporateActionRows[0].rowId);
+    }
+  }, [corporateActionRows, selectedCorporateActionId]);
+  const corporateActionsView = useMemo(
+    () => buildCorporateActionsViewState(
+      selectedSecurityId,
+      corporateActions,
+      selectedCorporateActionId,
+      corporateActionsLoading,
+      corporateActionsError
+    ),
+    [corporateActions, corporateActionsError, corporateActionsLoading, selectedCorporateActionId, selectedSecurityId]
   );
   const tradingParametersView = useMemo(
     () => buildTradingParametersViewState(tradingParameters, tradingParametersLoading, tradingParametersError),
@@ -927,6 +992,8 @@ export function useSecurityMasterViewModel(
     conflictCountLabel: `${openConflictCount} open`,
     corporateActions,
     corporateActionRows,
+    corporateActionsView,
+    selectCorporateAction: setSelectedCorporateActionId,
     hasCorporateActions: (corporateActions?.length ?? 0) > 0,
     corporateActionsLoading,
     corporateActionsErrorText: corporateActionsError,
@@ -2481,21 +2548,97 @@ function calibrationStatusLabel(status: ReconciliationCalibrationStatus | null, 
 }
 
 export function buildCorporateActionRows(
-  actions: CorporateAction[] | null
+  actions: CorporateAction[] | null,
+  selectedRowId: string | null = null
 ): CorporateActionRowViewModel[] {
-  return (actions ?? []).map((action) => {
+  const detailPanelId = "corporate-action-detail-panel";
+  const rows = actions ?? [];
+  const effectiveSelectedRowId = selectedRowId && rows.some((action) => action.corpActId === selectedRowId)
+    ? selectedRowId
+    : rows[0]?.corpActId ?? null;
+
+  return rows.map((action) => {
     const amountLabel = formatCorpActAmount(action);
+    const eventTypeLabel = formatCorpActEventType(action.eventType);
+    const exDateLabel = formatSecurityDate(action.exDate);
+    const isSelected = action.corpActId === effectiveSelectedRowId;
 
     return {
       ...action,
       rowId: action.corpActId,
-      eventTypeLabel: formatCorpActEventType(action.eventType),
-      exDateLabel: formatSecurityDate(action.exDate),
+      eventTypeLabel,
+      exDateLabel,
       payDateLabel: action.payDate ? formatSecurityDate(action.payDate) : "—",
       amountLabel,
-      ariaLabel: `${formatCorpActEventType(action.eventType)} for ${action.securityId}, ex-date ${formatSecurityDate(action.exDate)}, ${amountLabel}`
+      ariaLabel: `${eventTypeLabel} for ${action.securityId}, ex-date ${exDateLabel}, ${amountLabel}`,
+      selectAriaLabel: `Inspect corporate action ${eventTypeLabel} for ${action.securityId}`,
+      detailPanelId,
+      isExpanded: isSelected
     };
   });
+}
+
+export function buildCorporateActionsViewState(
+  securityId: string | null,
+  actions: CorporateAction[] | null,
+  selectedRowId: string | null,
+  loading: boolean,
+  errorText: string | null
+): CorporateActionsViewState {
+  const rows = buildCorporateActionRows(actions, selectedRowId);
+  const effectiveSelectedRowId = rows.find((row) => row.rowId === selectedRowId)?.rowId ?? rows[0]?.rowId ?? null;
+  const selectedRow = rows.find((row) => row.rowId === effectiveSelectedRowId) ?? null;
+  const displaySecurityId = securityId ?? "selected security";
+  const detailPanelId = "corporate-action-detail-panel";
+
+  return {
+    securityId: displaySecurityId,
+    tableLabel: `Corporate actions for ${displaySecurityId}`,
+    tableCaption: `Corporate actions evidence for ${displaySecurityId}; select a row to inspect event detail.`,
+    detailPanelId,
+    rows,
+    selectedRowId: effectiveSelectedRowId,
+    selectedDetail: selectedRow ? buildCorporateActionDetailViewState(selectedRow, detailPanelId) : null,
+    emptyText: `No corporate actions recorded for ${displaySecurityId}.`,
+    detailEmptyTitle: "No corporate action selected",
+    detailEmptyText: "Select a corporate action row to inspect dates, ratios, securities, and cash terms.",
+    detailEmptyAriaLabel: "No corporate action selected",
+    loadingText: loading ? "Loading corporate actions..." : null,
+    errorText,
+    hasRows: rows.length > 0,
+    statusAnnouncement: errorText
+      ? `Corporate actions error: ${errorText}`
+      : loading
+        ? `Loading corporate actions for ${displaySecurityId}.`
+        : rows.length > 0
+          ? `${rows.length} corporate action${rows.length === 1 ? "" : "s"} loaded for ${displaySecurityId}.`
+          : ""
+  };
+}
+
+function buildCorporateActionDetailViewState(
+  row: CorporateActionRowViewModel,
+  detailPanelId: string
+): CorporateActionDetailViewState {
+  return {
+    id: detailPanelId,
+    eyebrow: "Corporate action detail",
+    title: row.eventTypeLabel,
+    subtitle: `${row.securityId} · ${row.corpActId}`,
+    description: `${row.eventTypeLabel} event with ex-date ${row.exDateLabel} and recorded amount ${row.amountLabel}.`,
+    ariaLabel: `Corporate action detail for ${row.eventTypeLabel} on ${row.securityId}`,
+    statusLabel: row.payDate ? "Pay date scheduled" : "Pay date unavailable",
+    fields: [
+      { label: "Corporate action ID", value: row.corpActId },
+      { label: "Event type", value: row.eventTypeLabel },
+      { label: "Ex-date", value: row.exDateLabel },
+      { label: "Pay date", value: row.payDateLabel, tone: row.payDate ? "default" : "warning" },
+      { label: "Amount or ratio", value: row.amountLabel, tone: row.amountLabel === "—" ? "warning" : "default" },
+      { label: "Currency", value: row.currency ?? "—", tone: row.currency ? "default" : "warning" },
+      { label: "New security", value: row.newSecurityId ?? "—" },
+      { label: "Acquirer security", value: row.acquirerSecurityId ?? "—" }
+    ]
+  };
 }
 
 export function buildTradingParametersViewState(

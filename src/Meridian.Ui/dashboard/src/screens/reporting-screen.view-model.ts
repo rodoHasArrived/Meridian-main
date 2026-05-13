@@ -45,6 +45,7 @@ export interface ReportingProfileAction {
   statusText: string;
   isDisabled: boolean;
   disabledReason: string | null;
+  busyLabel: string | null;
   method: "GET" | "POST";
   profileId: string;
   isRunning: boolean;
@@ -679,6 +680,7 @@ function buildProfileActions(
   runningProfileId: string | null
 ): ReportingProfileAction[] {
   const isRunningThisProfile = runningProfileId === profile.id;
+  const runningReason = isRunningThisProfile ? `${profile.name} export is already running.` : null;
 
   return [
     {
@@ -691,6 +693,7 @@ function buildProfileActions(
       statusText: "Opens the current export payload preview in a new browser tab.",
       isDisabled: false,
       disabledReason: null,
+      busyLabel: null,
       method: "GET",
       profileId: profile.id,
       isRunning: false
@@ -706,7 +709,8 @@ function buildProfileActions(
         ? `${profile.name} export is running. Wait for the result before starting another export.`
         : "Runs the governed export through the backend mutation and reports generated artifacts here.",
       isDisabled: isRunningThisProfile,
-      disabledReason: isRunningThisProfile ? `${profile.name} export is already running.` : null,
+      disabledReason: runningReason,
+      busyLabel: isRunningThisProfile ? "Running export…" : null,
       method: "POST",
       profileId: profile.id,
       isRunning: isRunningThisProfile
