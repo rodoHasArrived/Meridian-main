@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,7 @@ public sealed class LedgerJournalStoreTests
         using var provider = services.BuildServiceProvider();
         provider.GetRequiredService<LedgerJournalStoreOptions>().ConnectionString.Should().Be(connectionString);
         provider.GetRequiredService<ILedgerJournalStore>().Should().BeOfType<PostgresLedgerJournalStore>();
+        provider.GetRequiredService<ILedgerBookService>().Should().BeOfType<PostgresLedgerBookService>();
     }
 
     [Fact]

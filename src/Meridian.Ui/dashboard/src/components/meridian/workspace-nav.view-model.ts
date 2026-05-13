@@ -61,6 +61,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
     { label: "Brokerage sync", route: "/portfolio/brokerage-sync" }
   ],
   accounting: [
+    { label: "Ledger", route: "/accounting" },
     { label: "Reconciliation", route: "/accounting/reconciliation" },
     { label: "Security Master", route: "/accounting/security-master" },
     { label: "Approvals", route: "/accounting/approvals" }

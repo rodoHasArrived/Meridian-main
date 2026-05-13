@@ -1,6 +1,7 @@
 using System.Data;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.FundStructure;
 using Meridian.Ledger;
 using Npgsql;
 
@@ -79,6 +80,69 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
         return await LoadPeriodAsync(connection, transaction: null, periodId, forUpdate: false, ct).ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+        Guid? ledgerBookId = null,
+        string? status = null,
+        string? fundProfileId = null,
+        Guid? fundStructureNodeId = null,
+        CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select p.period_id,
+                   p.ledger_book_id,
+                   p.fiscal_year,
+                   p.period_no,
+                   p.label,
+                   p.start_date,
+                   p.end_date,
+                   p.status,
+                   p.opened_at,
+                   p.closed_at,
+                   p.optimistic_version
+            from {Qualified("accounting_periods")} p
+            left join {Qualified("ledger_books")} b on b.ledger_book_id = p.ledger_book_id
+            where 1 = 1
+            """;
+
+        if (ledgerBookId.HasValue)
+        {
+            command.CommandText += " and p.ledger_book_id = @ledger_book_id";
+            command.Parameters.AddWithValue("ledger_book_id", ledgerBookId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            command.CommandText += " and p.status = @status";
+            command.Parameters.AddWithValue("status", status.Trim());
+        }
+
+        if (!string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            command.CommandText += " and b.fund_profile_id = @fund_profile_id";
+            command.Parameters.AddWithValue("fund_profile_id", fundProfileId.Trim());
+        }
+
+        if (fundStructureNodeId.HasValue)
+        {
+            command.CommandText += " and b.fund_structure_node_id = @fund_structure_node_id";
+            command.Parameters.AddWithValue("fund_structure_node_id", fundStructureNodeId.Value);
+        }
+
+        command.CommandText += " order by p.start_date, p.period_no;";
+
+        var periods = new List<LedgerAccountingPeriod>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            periods.Add(ReadPeriod(reader));
+        }
+
+        return periods;
+    }
+
     public async Task<LedgerAccountingPeriod> SavePeriodAsync(
         LedgerAccountingPeriod period,
         long expectedVersion,
@@ -147,6 +211,155 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return saved;
+    }
+
+    public async Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select ledger_book_id,
+                   fund_profile_id,
+                   fund_structure_node_id,
+                   fund_structure_node_kind,
+                   display_name,
+                   base_currency,
+                   description,
+                   created_at,
+                   updated_at
+            from {Qualified("ledger_books")}
+            where ledger_book_id = @ledger_book_id;
+            """;
+        command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
+
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        return await reader.ReadAsync(ct).ConfigureAwait(false)
+            ? ReadLedgerBook(reader)
+            : null;
+    }
+
+    public async Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+        string? fundProfileId = null,
+        Guid? fundStructureNodeId = null,
+        FundStructureNodeKindDto? fundStructureNodeKind = null,
+        CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select ledger_book_id,
+                   fund_profile_id,
+                   fund_structure_node_id,
+                   fund_structure_node_kind,
+                   display_name,
+                   base_currency,
+                   description,
+                   created_at,
+                   updated_at
+            from {Qualified("ledger_books")}
+            where 1 = 1
+            """;
+
+        if (!string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            command.CommandText += " and fund_profile_id = @fund_profile_id";
+            command.Parameters.AddWithValue("fund_profile_id", fundProfileId.Trim());
+        }
+
+        if (fundStructureNodeId.HasValue)
+        {
+            command.CommandText += " and fund_structure_node_id = @fund_structure_node_id";
+            command.Parameters.AddWithValue("fund_structure_node_id", fundStructureNodeId.Value);
+        }
+
+        if (fundStructureNodeKind.HasValue)
+        {
+            command.CommandText += " and fund_structure_node_kind = @fund_structure_node_kind";
+            command.Parameters.AddWithValue("fund_structure_node_kind", fundStructureNodeKind.Value.ToString());
+        }
+
+        command.CommandText += " order by fund_profile_id, display_name, ledger_book_id;";
+
+        var books = new List<LedgerBookRecord>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            books.Add(ReadLedgerBook(reader));
+        }
+
+        return books;
+    }
+
+    public async Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(book);
+
+        if (book.LedgerBookId == Guid.Empty)
+        {
+            throw new ArgumentException("Ledger book id is required.", nameof(book));
+        }
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            insert into {Qualified("ledger_books")} (
+                ledger_book_id,
+                fund_profile_id,
+                fund_structure_node_id,
+                fund_structure_node_kind,
+                display_name,
+                base_currency,
+                description,
+                created_at,
+                updated_at)
+            values (
+                @ledger_book_id,
+                @fund_profile_id,
+                @fund_structure_node_id,
+                @fund_structure_node_kind,
+                @display_name,
+                @base_currency,
+                @description,
+                @created_at,
+                @updated_at)
+            on conflict (ledger_book_id) do update
+            set fund_profile_id = excluded.fund_profile_id,
+                fund_structure_node_id = excluded.fund_structure_node_id,
+                fund_structure_node_kind = excluded.fund_structure_node_kind,
+                display_name = excluded.display_name,
+                base_currency = excluded.base_currency,
+                description = excluded.description,
+                updated_at = excluded.updated_at
+            returning ledger_book_id,
+                      fund_profile_id,
+                      fund_structure_node_id,
+                      fund_structure_node_kind,
+                      display_name,
+                      base_currency,
+                      description,
+                      created_at,
+                      updated_at;
+            """;
+        command.Parameters.AddWithValue("ledger_book_id", book.LedgerBookId);
+        command.Parameters.AddWithValue("fund_profile_id", book.FundProfileId);
+        command.Parameters.AddWithValue("fund_structure_node_id", book.FundStructureNodeId);
+        command.Parameters.AddWithValue("fund_structure_node_kind", book.FundStructureNodeKind.ToString());
+        command.Parameters.AddWithValue("display_name", book.DisplayName);
+        command.Parameters.AddWithValue("base_currency", book.BaseCurrency);
+        command.Parameters.AddWithValue("description", (object?)book.Description ?? DBNull.Value);
+        command.Parameters.AddWithValue("created_at", book.CreatedAt.UtcDateTime);
+        command.Parameters.AddWithValue("updated_at", book.UpdatedAt.UtcDateTime);
+
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            throw new InvalidOperationException($"Ledger book '{book.LedgerBookId}' was not saved.");
+        }
+
+        return ReadLedgerBook(reader);
     }
 
     private async Task InsertJournalEntryAsync(
@@ -351,6 +564,7 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
         command.CommandText =
             $"""
             select period_id,
+                   ledger_book_id,
                    fiscal_year,
                    period_no,
                    label,
@@ -372,17 +586,7 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
             return null;
         }
 
-        return new LedgerAccountingPeriod(
-            reader.GetGuid(0),
-            reader.GetInt32(1),
-            reader.GetInt32(2),
-            reader.GetString(3),
-            DateOnly.FromDateTime(reader.GetDateTime(4)),
-            DateOnly.FromDateTime(reader.GetDateTime(5)),
-            reader.GetString(6),
-            ReadUtcDateTimeOffset(reader, 7),
-            reader.IsDBNull(8) ? null : ReadUtcDateTimeOffset(reader, 8),
-            reader.GetInt64(9));
+        return ReadPeriod(reader);
     }
 
     private async Task InsertPeriodAsync(
@@ -397,6 +601,7 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
             $"""
             insert into {Qualified("accounting_periods")} (
                 period_id,
+                ledger_book_id,
                 fiscal_year,
                 period_no,
                 label,
@@ -409,6 +614,7 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
                 updated_at)
             values (
                 @period_id,
+                @ledger_book_id,
                 @fiscal_year,
                 @period_no,
                 @label,
@@ -437,6 +643,7 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
             $"""
             update {Qualified("accounting_periods")}
             set fiscal_year = @fiscal_year,
+                ledger_book_id = @ledger_book_id,
                 period_no = @period_no,
                 label = @label,
                 start_date = @start_date,
@@ -498,6 +705,7 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
     private static void AddPeriodParameters(NpgsqlCommand command, LedgerAccountingPeriod period)
     {
         command.Parameters.AddWithValue("period_id", period.PeriodId);
+        command.Parameters.AddWithValue("ledger_book_id", (object?)period.LedgerBookId ?? DBNull.Value);
         command.Parameters.AddWithValue("fiscal_year", period.FiscalYear);
         command.Parameters.AddWithValue("period_no", period.PeriodNo);
         command.Parameters.AddWithValue("label", period.Label);
@@ -508,6 +716,32 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
         command.Parameters.AddWithValue("closed_at", (object?)period.ClosedAt?.UtcDateTime ?? DBNull.Value);
         command.Parameters.AddWithValue("optimistic_version", period.Version);
     }
+
+    private static LedgerAccountingPeriod ReadPeriod(NpgsqlDataReader reader)
+        => new(
+            reader.GetGuid(0),
+            reader.IsDBNull(1) ? null : reader.GetGuid(1),
+            reader.GetInt32(2),
+            reader.GetInt32(3),
+            reader.GetString(4),
+            DateOnly.FromDateTime(reader.GetDateTime(5)),
+            DateOnly.FromDateTime(reader.GetDateTime(6)),
+            reader.GetString(7),
+            ReadUtcDateTimeOffset(reader, 8),
+            reader.IsDBNull(9) ? null : ReadUtcDateTimeOffset(reader, 9),
+            reader.GetInt64(10));
+
+    private static LedgerBookRecord ReadLedgerBook(NpgsqlDataReader reader)
+        => new(
+            reader.GetGuid(0),
+            reader.GetString(1),
+            reader.GetGuid(2),
+            Enum.Parse<FundStructureNodeKindDto>(reader.GetString(3), ignoreCase: true),
+            reader.GetString(4),
+            reader.GetString(5),
+            ReadUtcDateTimeOffset(reader, 7),
+            ReadUtcDateTimeOffset(reader, 8),
+            reader.IsDBNull(6) ? null : reader.GetString(6));
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
     {

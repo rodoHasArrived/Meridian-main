@@ -45,6 +45,8 @@ export interface PriceAlertsScreenViewModel {
   alertSection: PriceAlertListSectionViewModel;
   requestNotifications: () => Promise<void>;
   submit: () => void;
+  selectTrigger: (triggerId: string) => void;
+  selectAlert: (alertId: string) => void;
   acknowledgeTrigger: (triggerId: string) => void;
   acknowledgeAllTriggers: () => void;
   clearTriggers: () => void;
@@ -94,6 +96,10 @@ export interface PriceAlertTriggerSectionViewModel {
   caption: string;
   emptyText: string;
   hasRows: boolean;
+  detailPanelId: string;
+  selectedRowId: string | null;
+  selectedDetail: PriceAlertRowDetailViewModel | null;
+  detailEmptyState: PriceAlertDetailEmptyState;
   rows: PriceAlertTriggerRowViewModel[];
   acknowledgeAllAction: PriceAlertToolbarAction;
   clearHistoryAction: PriceAlertToolbarAction;
@@ -106,6 +112,10 @@ export interface PriceAlertListSectionViewModel {
   caption: string;
   emptyText: string;
   hasRows: boolean;
+  detailPanelId: string;
+  selectedRowId: string | null;
+  selectedDetail: PriceAlertRowDetailViewModel | null;
+  detailEmptyState: PriceAlertDetailEmptyState;
   rows: PriceAlertRowViewModel[];
 }
 
@@ -118,6 +128,8 @@ export interface PriceAlertToolbarAction {
 
 export interface PriceAlertTriggerRowViewModel {
   id: string;
+  detailPanelId: string;
+  expanded: boolean;
   symbol: string;
   conditionLabel: string;
   priceLabel: string;
@@ -127,6 +139,7 @@ export interface PriceAlertTriggerRowViewModel {
   statusLabel: string;
   statusVariant: "outline" | "warning";
   rowAriaLabel: string;
+  rowSelectAriaLabel: string;
   quoteHref: string;
   quoteAriaLabel: string;
   acknowledgeAction: PriceAlertToolbarAction | null;
@@ -134,6 +147,8 @@ export interface PriceAlertTriggerRowViewModel {
 
 export interface PriceAlertRowViewModel {
   id: string;
+  detailPanelId: string;
+  expanded: boolean;
   symbol: string;
   conditionLabel: string;
   lastObservedLabel: string;
@@ -142,6 +157,7 @@ export interface PriceAlertRowViewModel {
   statusVariant: "default" | "warning" | "outline";
   rowClassName: string;
   rowAriaLabel: string;
+  rowSelectAriaLabel: string;
   quoteHref: string;
   quoteAriaLabel: string;
   primaryAction: PriceAlertRowAction;
@@ -155,6 +171,47 @@ export interface PriceAlertRowAction {
   ariaLabel: string;
 }
 
+export interface PriceAlertDetailField {
+  id: string;
+  label: string;
+  value: string;
+  tone: "default" | "muted" | "warning" | "success";
+}
+
+export interface PriceAlertDetailAction {
+  id: PriceAlertRowAction["id"] | "acknowledge";
+  kind: "trigger" | "alert";
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
+export interface PriceAlertRowDetailViewModel {
+  id: string;
+  sourceId: string;
+  ariaLabel: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: "default" | "outline" | "warning";
+  fields: PriceAlertDetailField[];
+  quoteHref: string;
+  quoteAriaLabel: string;
+  action: PriceAlertDetailAction | null;
+}
+
+export interface PriceAlertDetailEmptyState {
+  title: string;
+  description: string;
+  ariaLabel: string;
+}
+
+export const PRICE_ALERT_TRIGGER_DETAIL_PANEL_ID = "price-alert-trigger-detail-panel";
+export const PRICE_ALERT_LIST_DETAIL_PANEL_ID = "price-alert-list-detail-panel";
+
 export function usePriceAlertsScreenViewModel({
   alerts,
   seededSymbol,
@@ -166,6 +223,8 @@ export function usePriceAlertsScreenViewModel({
 }): PriceAlertsScreenViewModel {
   const [form, setForm] = useState<PriceAlertFormState>(() => readFormFromSeededSymbol(seededSymbol));
   const [submitFeedback, setSubmitFeedback] = useState<PriceAlertSubmitFeedback | null>(null);
+  const [selectedTriggerId, setSelectedTriggerId] = useState<string | null>(null);
+  const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
   const consumedSeedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -189,12 +248,12 @@ export function usePriceAlertsScreenViewModel({
     [alerts.notificationPermission]
   );
   const triggerSection = useMemo(
-    () => buildPriceAlertTriggerSection(alerts.state.triggers, alerts.unacknowledgedCount),
-    [alerts.state.triggers, alerts.unacknowledgedCount]
+    () => buildPriceAlertTriggerSection(alerts.state.triggers, alerts.unacknowledgedCount, selectedTriggerId),
+    [alerts.state.triggers, alerts.unacknowledgedCount, selectedTriggerId]
   );
   const alertSection = useMemo(
-    () => buildPriceAlertListSection(sortedAlerts, alerts.enabledCount),
-    [alerts.enabledCount, sortedAlerts]
+    () => buildPriceAlertListSection(sortedAlerts, alerts.enabledCount, selectedAlertId),
+    [alerts.enabledCount, selectedAlertId, sortedAlerts]
   );
 
   function submit() {
@@ -233,6 +292,8 @@ export function usePriceAlertsScreenViewModel({
     alertSection,
     requestNotifications,
     submit,
+    selectTrigger: setSelectedTriggerId,
+    selectAlert: setSelectedAlertId,
     acknowledgeTrigger: alerts.acknowledgeTrigger,
     acknowledgeAllTriggers: alerts.acknowledgeAllTriggers,
     clearTriggers: alerts.clearTriggers,
@@ -440,8 +501,13 @@ function buildNotificationPanel(permission: NotificationPermission | "unsupporte
   return null;
 }
 
-export function buildPriceAlertTriggerSection(triggers: PriceAlertTrigger[], unacknowledgedCount: number): PriceAlertTriggerSectionViewModel {
-  const rows = triggers.slice(0, 25).map(buildTriggerRow);
+export function buildPriceAlertTriggerSection(
+  triggers: PriceAlertTrigger[],
+  unacknowledgedCount: number,
+  selectedTriggerId: string | null = null
+): PriceAlertTriggerSectionViewModel {
+  const selectedTrigger = resolveSelectedTrigger(triggers, selectedTriggerId);
+  const rows = triggers.slice(0, 25).map((trigger) => buildTriggerRow(trigger, selectedTrigger?.id ?? null));
   const count = triggers.length;
 
   return {
@@ -451,6 +517,16 @@ export function buildPriceAlertTriggerSection(triggers: PriceAlertTrigger[], una
     caption: "Triggered price alerts with acknowledgement state, trigger price, and quote links.",
     emptyText: "Triggered alerts will appear here. Each entry stays acknowledged once you confirm it.",
     hasRows: rows.length > 0,
+    detailPanelId: PRICE_ALERT_TRIGGER_DETAIL_PANEL_ID,
+    selectedRowId: selectedTrigger?.id ?? null,
+    selectedDetail: selectedTrigger ? buildTriggerDetail(selectedTrigger) : null,
+    detailEmptyState: {
+      title: "No triggered alert selected",
+      description: count === 0
+        ? "Triggered alerts will appear here once a watched price crosses its threshold."
+        : "Select a triggered alert row to inspect acknowledgement state, note, and quote handoff.",
+      ariaLabel: "Triggered price alert detail empty state"
+    },
     rows,
     acknowledgeAllAction: {
       label: "Acknowledge all",
@@ -467,14 +543,17 @@ export function buildPriceAlertTriggerSection(triggers: PriceAlertTrigger[], una
   };
 }
 
-function buildTriggerRow(trigger: PriceAlertTrigger): PriceAlertTriggerRowViewModel {
+function buildTriggerRow(trigger: PriceAlertTrigger, selectedTriggerId: string | null): PriceAlertTriggerRowViewModel {
   const conditionLabel = describeCondition(trigger.condition, trigger.threshold, trigger.field);
   const priceLabel = formatPriceAlertPrice(trigger.triggeredPrice);
   const triggeredAtLabel = formatPriceAlertTimestamp(trigger.triggeredAt);
   const noteLabel = trigger.note ?? "No operator note";
+  const expanded = selectedTriggerId === trigger.id;
 
   return {
     id: trigger.id,
+    detailPanelId: PRICE_ALERT_TRIGGER_DETAIL_PANEL_ID,
+    expanded,
     symbol: trigger.symbol,
     conditionLabel,
     priceLabel,
@@ -484,6 +563,7 @@ function buildTriggerRow(trigger: PriceAlertTrigger): PriceAlertTriggerRowViewMo
     statusLabel: trigger.acknowledged ? "Acknowledged" : "New",
     statusVariant: trigger.acknowledged ? "outline" : "warning",
     rowAriaLabel: `${trigger.symbol} triggered alert. ${conditionLabel}. Fired at ${priceLabel} on ${triggeredAtLabel}. ${trigger.acknowledged ? "Acknowledged." : "Needs acknowledgement."}`,
+    rowSelectAriaLabel: `Inspect triggered alert ${trigger.symbol}`,
     quoteHref: `/data/quotes?symbol=${encodeURIComponent(trigger.symbol)}`,
     quoteAriaLabel: `Open live quotes for ${trigger.symbol}`,
     acknowledgeAction: trigger.acknowledged
@@ -497,8 +577,13 @@ function buildTriggerRow(trigger: PriceAlertTrigger): PriceAlertTriggerRowViewMo
   };
 }
 
-export function buildPriceAlertListSection(alerts: PriceAlert[], enabledCount: number): PriceAlertListSectionViewModel {
-  const rows = alerts.map(buildAlertRow);
+export function buildPriceAlertListSection(
+  alerts: PriceAlert[],
+  enabledCount: number,
+  selectedAlertId: string | null = null
+): PriceAlertListSectionViewModel {
+  const selectedAlert = resolveSelectedAlert(alerts, selectedAlertId);
+  const rows = alerts.map((alert) => buildAlertRow(alert, selectedAlert?.id ?? null));
   const count = alerts.length;
 
   return {
@@ -508,11 +593,21 @@ export function buildPriceAlertListSection(alerts: PriceAlert[], enabledCount: n
     caption: "Configured price alerts with current state, condition, last observed price, and row actions.",
     emptyText: "Add your first alert above. You can also click Set price alert from any symbol on the Live quotes screen.",
     hasRows: rows.length > 0,
+    detailPanelId: PRICE_ALERT_LIST_DETAIL_PANEL_ID,
+    selectedRowId: selectedAlert?.id ?? null,
+    selectedDetail: selectedAlert ? buildAlertDetail(selectedAlert) : null,
+    detailEmptyState: {
+      title: "No configured alert selected",
+      description: count === 0
+        ? "Configured price alerts will appear here after you add a symbol, condition, and threshold."
+        : "Select a configured alert row to inspect last observation, snooze state, and available next action.",
+      ariaLabel: "Configured price alert detail empty state"
+    },
     rows
   };
 }
 
-function buildAlertRow(alert: PriceAlert): PriceAlertRowViewModel {
+function buildAlertRow(alert: PriceAlert, selectedAlertId: string | null): PriceAlertRowViewModel {
   const snoozedUntilMs = alert.snoozedUntil ? new Date(alert.snoozedUntil).getTime() : null;
   const isSnoozed = snoozedUntilMs !== null && snoozedUntilMs > Date.now();
   const statusLabel = !alert.enabled ? (alert.triggeredAt ? "Triggered" : "Disabled") : isSnoozed ? "Snoozed" : "Watching";
@@ -523,6 +618,8 @@ function buildAlertRow(alert: PriceAlert): PriceAlertRowViewModel {
 
   return {
     id: alert.id,
+    detailPanelId: PRICE_ALERT_LIST_DETAIL_PANEL_ID,
+    expanded: selectedAlertId === alert.id,
     symbol: alert.symbol,
     conditionLabel,
     lastObservedLabel,
@@ -531,6 +628,7 @@ function buildAlertRow(alert: PriceAlert): PriceAlertRowViewModel {
     statusVariant,
     rowClassName: alert.enabled && !isSnoozed ? "border-border/70 bg-background/50" : "border-border/50 bg-secondary/25",
     rowAriaLabel: `${alert.symbol} price alert. ${statusLabel}. ${conditionLabel}. ${lastObservedLabel}.`,
+    rowSelectAriaLabel: `Inspect configured alert ${alert.symbol}`,
     quoteHref: `/data/quotes?symbol=${encodeURIComponent(alert.symbol)}`,
     quoteAriaLabel: `Open live quotes for ${alert.symbol}`,
     primaryAction: buildPrimaryAlertAction(alert, isSnoozed),
@@ -545,6 +643,97 @@ function buildAlertRow(alert: PriceAlert): PriceAlertRowViewModel {
       ariaLabel: `Delete ${alert.symbol} alert`
     }
   };
+}
+
+function buildTriggerDetail(trigger: PriceAlertTrigger): PriceAlertRowDetailViewModel {
+  const conditionLabel = describeCondition(trigger.condition, trigger.threshold, trigger.field);
+  const priceLabel = formatPriceAlertPrice(trigger.triggeredPrice);
+  const triggeredAtLabel = formatPriceAlertTimestamp(trigger.triggeredAt);
+  const statusLabel = trigger.acknowledged ? "Acknowledged" : "New";
+
+  return {
+    id: PRICE_ALERT_TRIGGER_DETAIL_PANEL_ID,
+    sourceId: trigger.id,
+    ariaLabel: `Triggered price alert detail for ${trigger.symbol}`,
+    eyebrow: "Triggered alert",
+    title: trigger.symbol,
+    subtitle: conditionLabel,
+    description: trigger.acknowledged
+      ? "Alert trigger has been acknowledged and remains in the trigger history for audit review."
+      : "Alert trigger needs acknowledgement before the masthead price-alert count clears.",
+    statusLabel,
+    statusVariant: trigger.acknowledged ? "outline" : "warning",
+    fields: [
+      { id: "trigger-price", label: "Trigger price", value: priceLabel, tone: trigger.acknowledged ? "muted" : "warning" },
+      { id: "triggered-at", label: "Triggered at", value: triggeredAtLabel, tone: "muted" },
+      { id: "note", label: "Operator note", value: trigger.note ?? "No operator note", tone: trigger.note ? "default" : "muted" },
+      { id: "alert-id", label: "Alert ID", value: trigger.alertId, tone: "muted" }
+    ],
+    quoteHref: `/data/quotes?symbol=${encodeURIComponent(trigger.symbol)}`,
+    quoteAriaLabel: `Open live quotes for ${trigger.symbol}`,
+    action: trigger.acknowledged
+      ? null
+      : {
+        id: "acknowledge",
+        kind: "trigger",
+        label: "Acknowledge",
+        ariaLabel: `Acknowledge ${trigger.symbol} triggered alert`,
+        disabled: false,
+        disabledReason: null
+      }
+  };
+}
+
+function buildAlertDetail(alert: PriceAlert): PriceAlertRowDetailViewModel {
+  const snoozedUntilMs = alert.snoozedUntil ? new Date(alert.snoozedUntil).getTime() : null;
+  const isSnoozed = snoozedUntilMs !== null && snoozedUntilMs > Date.now();
+  const statusLabel = !alert.enabled ? (alert.triggeredAt ? "Triggered" : "Disabled") : isSnoozed ? "Snoozed" : "Watching";
+  const statusVariant: PriceAlertRowDetailViewModel["statusVariant"] = !alert.enabled ? "outline" : isSnoozed ? "warning" : "default";
+  const conditionLabel = describeCondition(alert.condition, alert.threshold, alert.field);
+  const primaryAction = buildPrimaryAlertAction(alert, isSnoozed);
+
+  return {
+    id: PRICE_ALERT_LIST_DETAIL_PANEL_ID,
+    sourceId: alert.id,
+    ariaLabel: `Configured price alert detail for ${alert.symbol}`,
+    eyebrow: "Configured alert",
+    title: alert.symbol,
+    subtitle: conditionLabel,
+    description: alert.enabled
+      ? "Alert is evaluated against live quotes while this browser tab is open."
+      : "Alert is not watching live quotes until it is reset or resumed.",
+    statusLabel,
+    statusVariant,
+    fields: [
+      { id: "last-observed-price", label: "Last observed", value: formatPriceAlertPrice(alert.lastObservedPrice), tone: alert.lastObservedPrice === null ? "muted" : "default" },
+      { id: "last-observed-at", label: "Observed at", value: formatPriceAlertTimestamp(alert.lastObservedAt), tone: "muted" },
+      { id: "created-at", label: "Created", value: formatPriceAlertTimestamp(alert.createdAt), tone: "muted" },
+      { id: "snoozed-until", label: "Snoozed until", value: isSnoozed ? formatPriceAlertTimestamp(alert.snoozedUntil) : "—", tone: isSnoozed ? "warning" : "muted" },
+      { id: "note", label: "Operator note", value: alert.note ?? "No operator note", tone: alert.note ? "default" : "muted" }
+    ],
+    quoteHref: `/data/quotes?symbol=${encodeURIComponent(alert.symbol)}`,
+    quoteAriaLabel: `Open live quotes for ${alert.symbol}`,
+    action: {
+      ...primaryAction,
+      kind: "alert",
+      disabled: false,
+      disabledReason: null
+    }
+  };
+}
+
+function resolveSelectedTrigger(
+  triggers: PriceAlertTrigger[],
+  selectedTriggerId: string | null
+): PriceAlertTrigger | null {
+  return triggers.find((trigger) => trigger.id === selectedTriggerId) ?? triggers[0] ?? null;
+}
+
+function resolveSelectedAlert(
+  alerts: PriceAlert[],
+  selectedAlertId: string | null
+): PriceAlert | null {
+  return alerts.find((alert) => alert.id === selectedAlertId) ?? alerts[0] ?? null;
 }
 
 function buildPrimaryAlertAction(alert: PriceAlert, isSnoozed: boolean): PriceAlertRowAction {

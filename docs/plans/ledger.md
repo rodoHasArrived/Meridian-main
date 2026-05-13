@@ -159,14 +159,15 @@ restarts and supports audit replay.
 **Goal:** Align ledger books to the fund-structure hierarchy and introduce operator-mediated
 period-close workflows surfaced through the operator inbox.
 
-- [ ] `ILedgerBookService` interface — create/get/list books scoped to fund-structure nodes;
+- [x] `ILedgerBookService` interface — create/get/list books scoped to fund-structure nodes;
   enumerate open periods; initiate soft-close and hard-close sequences
-- [ ] `PostgresLedgerBookService` — persisted implementation backed by `ILedgerJournalStore`
-- [ ] Period-close work items propagated to `IOperatorInboxService` with required sign-off role,
-  tolerance profile reference, and `FundReconciliation` navigation hint
-- [ ] `LedgerPeriodSummaryDto` — trial balance, debit/credit totals, net income, period-on-period
+- [x] `PostgresLedgerBookService` — persisted implementation backed by `ILedgerJournalStore`
+- [x] Period-close work items propagated to `IOperatorInboxService` with machine-readable required
+  sign-off role, tolerance profile reference, sign-off status, and `FundReconciliation` navigation
+  hint
+- [x] `LedgerPeriodSummaryDto` — trial balance, debit/credit totals, net income, period-on-period
   variance, open-break count, and sign-off status for a completed period
-- [ ] `/api/ledger/periods` (GET/POST) and `/api/ledger/periods/{id}/close` (POST) endpoints
+- [x] `/api/ledger/periods` (GET/POST) and `/api/ledger/periods/{id}/close` (POST) endpoints
 
 ## Phase 4 — Accrual Tracking and Direct Lending Integration
 
@@ -200,25 +201,34 @@ accrual schedule) that can be exported and attached to the operator report pack.
 
 ## Interface Contracts
 
-The following new interfaces are planned for Phases 2-4:
+The following core interfaces are used by Phases 2-4:
 
 ```csharp
 namespace Meridian.Application.Ledger;
 
 public interface ILedgerJournalStore
 {
-    Task AppendAsync(JournalEntry entry, Guid periodId, CancellationToken ct = default);
-    Task<IReadOnlyList<JournalEntry>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default);
-    Task<IReadOnlyList<JournalEntry>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default);
-    Task<AccountingPeriodDto?> GetPeriodAsync(Guid periodId, CancellationToken ct = default);
-    Task SavePeriodAsync(AccountingPeriodDto period, CancellationToken ct = default);
+    Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default);
+    Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default);
+    Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default);
+    Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default);
+    Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(Guid? ledgerBookId = null, string? status = null, string? fundProfileId = null, Guid? fundStructureNodeId = null, CancellationToken ct = default);
+    Task<LedgerAccountingPeriod> SavePeriodAsync(LedgerAccountingPeriod period, long expectedVersion, PeriodCloseEventRecord? closeEvent = null, CancellationToken ct = default);
+    Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default);
+    Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(string? fundProfileId = null, Guid? fundStructureNodeId = null, FundStructureNodeKindDto? fundStructureNodeKind = null, CancellationToken ct = default);
+    Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default);
 }
 
 public interface ILedgerBookService
 {
-    Task<LedgerPeriodSummaryDto> GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default);
-    Task<AccountingPeriodDto> SoftCloseAsync(Guid periodId, string closedBy, string notes, CancellationToken ct = default);
-    Task<AccountingPeriodDto> HardCloseAsync(Guid periodId, string closedBy, string notes, CancellationToken ct = default);
+    Task<LedgerBookDto> CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default);
+    Task<LedgerBookDto?> GetBookAsync(Guid ledgerBookId, CancellationToken ct = default);
+    Task<IReadOnlyList<LedgerBookDto>> ListBooksAsync(LedgerBookQuery query, CancellationToken ct = default);
+    Task<LedgerPeriodDto> CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default);
+    Task<IReadOnlyList<LedgerPeriodDto>> ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default);
+    Task<IReadOnlyList<LedgerPeriodDto>> ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default);
+    Task<LedgerPeriodSummaryDto?> GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default);
+    Task<LedgerPeriodCloseResultDto> ClosePeriodAsync(Guid periodId, CloseLedgerPeriodRequest request, CancellationToken ct = default);
 }
 
 public interface IAccrualLedgerService
@@ -236,11 +246,18 @@ Existing endpoints that feed ledger data:
 - `GET /api/fund-structure/workspace-view` — includes `fundLedgerJournalSummary` from existing
   `FundOperationsWorkspaceReadService`
 
-Planned new endpoints:
+Implemented ledger book and period endpoints:
 
+- `GET /api/ledger/books` — list ledger books scoped by fund profile or fund-structure node
+- `GET /api/ledger/books/{ledgerBookId}` — load one ledger book
+- `POST /api/ledger/books` — create or return the existing book for a fund-structure node scope
 - `GET /api/ledger/periods` — list accounting periods with status and coverage
 - `POST /api/ledger/periods` — create a new accounting period
-- `POST /api/ledger/periods/{id}/close` — initiate soft-close or hard-close
+- `POST /api/ledger/periods/{id}/close` — initiate soft-close or hard-close and propagate a
+  `LedgerPeriodClose` work item to the operator inbox with `FundReconciliation` navigation
+
+Planned reporting endpoints:
+
 - `GET /api/ledger/periods/{id}/trial-balance` — trial balance for a specific period
 - `GET /api/ledger/periods/{id}/pnl-summary` — P&L summary with prior-period comparatives
 - `GET /api/ledger/reports/trial-balance` — cross-period trial-balance export

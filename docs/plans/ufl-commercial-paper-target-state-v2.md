@@ -68,7 +68,7 @@ flowchart TD
     CPSnapshot --> AssetBacked["Asset-Backed Classification Projection"]
 
     Lifecycle --> Treasury["Treasury Operations"]
-    Ladder --> Governance["Governance UI"]
+    Ladder --> Governance["Accounting / Reporting workstation"]
     IssuerFunding --> Reporting["Issuer / Exposure Reporting"]
     AssetBacked --> Controls["Classification Controls"]
 ```

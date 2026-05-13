@@ -89,7 +89,7 @@ flowchart TD
     BaseProjection --> IssuerProjection["bond_issuer_projection"]
 
     SubclassProjection --> ReferenceApi["Reference APIs"]
-    LifecycleProjection --> GovernanceUi["Governance Workspace"]
+    LifecycleProjection --> GovernanceUi["Accounting / Reporting workstation"]
     AccrualProjection --> LedgerServices["Ledger / Accrual Services"]
     IssuerProjection --> Reporting["Reporting / Exposure Views"]
     Outbox --> Rebuild["Projection Rebuild Orchestration"]
@@ -325,7 +325,7 @@ For subclass events, include additionally:
 - `bond_projection(SecurityId)` unique.
 - `bond_subclass_projection(SecurityId)` unique current row + optional history table.
 - `bond_lifecycle_projection(SecurityId)` unique current row + optional history table.
-- index lifecycle by `(State, Maturity)` for sweeps and governance dashboards.
+- index lifecycle by `(State, Maturity)` for sweeps and fund-ops workstation dashboards.
 - index issuer ladder by `(IssuerNormalized, MaturityBucket)`.
 - index subclass lookups by `Subclass` on `bond_subclass_projection`; expose `(Subclass, Maturity, IssuerNormalized)` via a dedicated screening view/projection and index that view for screening APIs.
 - store event lineage columns (`EventId`, `EventSequence`, `SourceSystem`) on projection rows.
@@ -466,7 +466,7 @@ Deliver canonical bond identity, lifecycle projections, accrual read models, and
 ### Phase 2 (extensions)
 
 - callable/amortizing extensions via additive models,
-- expanded governance views and breach alerts,
+- expanded fund-ops workstation views and breach alerts,
 - deeper ledger integration for accrual scheduling orchestration,
 - subclass-specific accrual and lifecycle policy modules.
 
@@ -558,7 +558,7 @@ tests/
 
 ## Final Target State
 
-Meridian treats every bond as a canonical fixed-income identity with auditable issuer lineage, deterministic lifecycle state, explicit accrual conventions, and extensible subclass semantics. Governance, reporting, and ledger consumers read one rebuilt reference surface instead of reinterpreting provider payloads independently.
+Meridian treats every bond as a canonical fixed-income identity with auditable issuer lineage, deterministic lifecycle state, explicit accrual conventions, and extensible subclass semantics. Accounting, Reporting, and ledger consumers read one rebuilt reference surface instead of reinterpreting provider payloads independently.
 
 ## Related Documents
 

@@ -166,13 +166,51 @@ describe("price alert presentation state", () => {
     const section = buildPriceAlertTriggerSection([
       buildTrigger({ id: "trigger-new", acknowledged: false }),
       buildTrigger({ id: "trigger-ack", acknowledged: true, symbol: "MSFT" })
-    ], 1);
+    ], 1, "trigger-ack");
 
     expect(section.hasRows).toBe(true);
+    expect(section.selectedRowId).toBe("trigger-ack");
+    expect(section.selectedDetail).toEqual(expect.objectContaining({
+      ariaLabel: "Triggered price alert detail for MSFT",
+      statusLabel: "Acknowledged",
+      action: null
+    }));
     expect(section.acknowledgeAllAction.disabled).toBe(false);
     expect(section.rows[0].acknowledgeAction?.ariaLabel).toContain("AAPL");
+    expect(section.rows[0].expanded).toBe(false);
+    expect(section.rows[1].expanded).toBe(true);
+    expect(section.rows[1].detailPanelId).toBe("price-alert-trigger-detail-panel");
     expect(section.rows[0].triggeredAtLabel).toBe("May 12, 14:02:37 UTC");
     expect(section.rows[1].acknowledgeAction).toBeNull();
+  });
+
+  it("derives configured alert detail state with row linkage", () => {
+    const section = buildPriceAlertListSection([
+      buildAlert({ id: "a-1", symbol: "AAPL", note: "Earnings watch" }),
+      buildAlert({ id: "a-2", symbol: "MSFT", enabled: false, triggeredAt: "2026-05-12T15:00:00.000Z" })
+    ], 1, "a-2");
+
+    expect(section.selectedRowId).toBe("a-2");
+    expect(section.rows[0].expanded).toBe(false);
+    expect(section.rows[1].expanded).toBe(true);
+    expect(section.rows[1].detailPanelId).toBe("price-alert-list-detail-panel");
+    expect(section.rows[1].rowSelectAriaLabel).toBe("Inspect configured alert MSFT");
+    expect(section.selectedDetail).toEqual(expect.objectContaining({
+      ariaLabel: "Configured price alert detail for MSFT",
+      statusLabel: "Triggered",
+      statusVariant: "outline"
+    }));
+    expect(section.selectedDetail?.fields).toContainEqual({
+      id: "note",
+      label: "Operator note",
+      value: "No operator note",
+      tone: "muted"
+    });
+    expect(section.selectedDetail?.action).toEqual(expect.objectContaining({
+      id: "reset",
+      kind: "alert",
+      ariaLabel: "Re-enable MSFT alert"
+    }));
   });
 });
 

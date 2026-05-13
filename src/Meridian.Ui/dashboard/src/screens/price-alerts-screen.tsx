@@ -26,8 +26,12 @@ import {
   PRICE_ALERT_CONDITION_OPTIONS,
   PRICE_ALERT_FIELD_OPTIONS,
   usePriceAlertsScreenViewModel,
+  type PriceAlertDetailAction,
+  type PriceAlertDetailEmptyState,
+  type PriceAlertDetailField,
   type PriceAlertsScreenViewModel,
   type PriceAlertRowAction,
+  type PriceAlertRowDetailViewModel,
   type PriceAlertRowViewModel,
   type PriceAlertTriggerRowViewModel
 } from "@/screens/price-alerts-screen.view-model";
@@ -323,15 +327,28 @@ export function PriceAlertsScreen() {
         </CardHeader>
         <CardContent>
           {vm.triggerSection.hasRows ? (
-            <DenseDataTable
-              columns={triggerColumns}
-              rows={vm.triggerSection.rows}
-              getRowId={(row) => row.id}
-              getRowAriaLabel={(row) => row.rowAriaLabel}
-              emptyText={vm.triggerSection.emptyText}
-              ariaLabel={vm.triggerSection.tableLabel}
-              caption={vm.triggerSection.caption}
-            />
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)]">
+              <DenseDataTable
+                columns={triggerColumns}
+                rows={vm.triggerSection.rows}
+                getRowId={(row) => row.id}
+                getRowAriaLabel={(row) => row.rowAriaLabel}
+                getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+                getRowAriaControls={(row) => row.detailPanelId}
+                getRowAriaExpanded={(row) => row.expanded}
+                onRowSelect={(row) => vm.selectTrigger(row.id)}
+                selectedRowId={vm.triggerSection.selectedRowId}
+                emptyText={vm.triggerSection.emptyText}
+                ariaLabel={vm.triggerSection.tableLabel}
+                caption={vm.triggerSection.caption}
+              />
+              <PriceAlertDetailPanel
+                id={vm.triggerSection.detailPanelId}
+                detail={vm.triggerSection.selectedDetail}
+                emptyState={vm.triggerSection.detailEmptyState}
+                onAction={(action, sourceId) => handleDetailAction(vm, action, sourceId)}
+              />
+            </div>
           ) : (
             <p className="rounded-md border border-dashed border-border/70 bg-secondary/15 px-3 py-4 text-sm text-muted-foreground">
               {vm.triggerSection.emptyText}
@@ -347,16 +364,29 @@ export function PriceAlertsScreen() {
         </CardHeader>
         <CardContent>
           {vm.alertSection.hasRows ? (
-            <DenseDataTable
-              columns={alertColumns}
-              rows={vm.alertSection.rows}
-              getRowId={(row) => row.id}
-              getRowAriaLabel={(row) => row.rowAriaLabel}
-              getRowClassName={(row) => row.rowClassName}
-              emptyText={vm.alertSection.emptyText}
-              ariaLabel={vm.alertSection.tableLabel}
-              caption={vm.alertSection.caption}
-            />
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)]">
+              <DenseDataTable
+                columns={alertColumns}
+                rows={vm.alertSection.rows}
+                getRowId={(row) => row.id}
+                getRowAriaLabel={(row) => row.rowAriaLabel}
+                getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+                getRowAriaControls={(row) => row.detailPanelId}
+                getRowAriaExpanded={(row) => row.expanded}
+                getRowClassName={(row) => row.rowClassName}
+                onRowSelect={(row) => vm.selectAlert(row.id)}
+                selectedRowId={vm.alertSection.selectedRowId}
+                emptyText={vm.alertSection.emptyText}
+                ariaLabel={vm.alertSection.tableLabel}
+                caption={vm.alertSection.caption}
+              />
+              <PriceAlertDetailPanel
+                id={vm.alertSection.detailPanelId}
+                detail={vm.alertSection.selectedDetail}
+                emptyState={vm.alertSection.detailEmptyState}
+                onAction={(action, sourceId) => handleDetailAction(vm, action, sourceId)}
+              />
+            </div>
           ) : (
             <p className="rounded-md border border-dashed border-border/70 bg-secondary/15 px-3 py-4 text-sm text-muted-foreground">
               {vm.alertSection.emptyText}
@@ -364,6 +394,78 @@ export function PriceAlertsScreen() {
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function PriceAlertDetailPanel({
+  id,
+  detail,
+  emptyState,
+  onAction
+}: {
+  id: string;
+  detail: PriceAlertRowDetailViewModel | null;
+  emptyState: PriceAlertDetailEmptyState;
+  onAction: (action: PriceAlertDetailAction, sourceId: string) => void;
+}) {
+  return (
+    <aside
+      id={id}
+      className="row-detail-panel h-fit min-w-0"
+      role={detail ? "region" : "status"}
+      aria-label={detail?.ariaLabel ?? emptyState.ariaLabel}
+    >
+      <div className="head">{detail?.eyebrow ?? "Price alert detail"}</div>
+      <div className="body">
+        {detail ? (
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="break-words text-sm font-semibold text-foreground">{detail.title}</h3>
+                <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">{detail.description}</p>
+              </div>
+              <Badge variant={detail.statusVariant} dot={detail.statusVariant !== "outline"}>
+                {detail.statusLabel}
+              </Badge>
+            </div>
+            <dl className="grid gap-2">
+              {detail.fields.map((field) => (
+                <PriceAlertDetailFieldRow key={field.id} field={field} />
+              ))}
+            </dl>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <Button asChild variant="outline" size="sm">
+                <Link to={detail.quoteHref} aria-label={detail.quoteAriaLabel}>
+                  <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span className="ml-1">Quote</span>
+                </Link>
+              </Button>
+              {detail.action ? (
+                <DetailActionButton
+                  action={detail.action}
+                  onClick={() => onAction(detail.action!, detail.sourceId)}
+                />
+              ) : null}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-foreground">{emptyState.title}</h3>
+            <p className="text-xs leading-5 text-muted-foreground">{emptyState.description}</p>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+function PriceAlertDetailFieldRow({ field }: { field: PriceAlertDetailField }) {
+  return (
+    <div className="rounded-md border border-border/70 bg-background/45 px-3 py-2">
+      <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+      <dd className={`mt-1 break-words font-mono text-xs ${detailFieldToneClass[field.tone]}`}>{field.value}</dd>
     </div>
   );
 }
@@ -381,6 +483,35 @@ function AlertActionButton({ action, onClick }: { action: PriceAlertRowAction; o
 
   return (
     <Button type="button" variant="outline" size="sm" onClick={onClick} aria-label={action.ariaLabel}>
+      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+      <span className="ml-1">{action.label}</span>
+    </Button>
+  );
+}
+
+function DetailActionButton({ action, onClick }: { action: PriceAlertDetailAction; onClick: () => void }) {
+  const Icon = action.id === "acknowledge"
+    ? Check
+    : action.id === "snooze"
+      ? AlarmClock
+      : action.id === "wake" || action.id === "resume"
+        ? Bell
+        : action.id === "reset"
+          ? RotateCcw
+          : action.id === "pause"
+            ? BellOff
+            : Trash2;
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={onClick}
+      disabled={action.disabled}
+      disabledReason={action.disabledReason}
+      aria-label={action.ariaLabel}
+    >
       <Icon className="h-3.5 w-3.5" aria-hidden="true" />
       <span className="ml-1">{action.label}</span>
     </Button>
@@ -407,6 +538,41 @@ function handleAlertAction(vm: PriceAlertsScreenViewModel, action: PriceAlertRow
       break;
   }
 }
+
+function handleDetailAction(vm: PriceAlertsScreenViewModel, action: PriceAlertDetailAction, sourceId: string) {
+  if (action.kind === "trigger") {
+    vm.acknowledgeTrigger(sourceId);
+    return;
+  }
+
+  switch (action.id) {
+    case "wake":
+      vm.wakeAlert(sourceId);
+      break;
+    case "snooze":
+      vm.snoozeAlert(sourceId);
+      break;
+    case "reset":
+      vm.resetAlert(sourceId);
+      break;
+    case "pause":
+    case "resume":
+      vm.toggleAlert(sourceId);
+      break;
+    case "delete":
+      vm.deleteAlert(sourceId);
+      break;
+    case "acknowledge":
+      break;
+  }
+}
+
+const detailFieldToneClass: Record<PriceAlertDetailField["tone"], string> = {
+  default: "text-foreground",
+  muted: "text-muted-foreground",
+  warning: "text-warning",
+  success: "text-success"
+};
 
 interface FormFieldProps {
   label: string;

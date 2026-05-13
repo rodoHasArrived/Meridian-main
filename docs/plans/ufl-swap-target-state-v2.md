@@ -68,7 +68,7 @@ flowchart TD
     Snapshot --> Valuation["Valuation Reference Projection"]
 
     Legs --> Pricing["Pricing / Analytics"]
-    Lifecycle --> Governance["Governance UI"]
+    Lifecycle --> Governance["Accounting / Reporting workstation"]
     Exposure --> Recon["Reconciliation / Risk"]
     Valuation --> APIs["Derivative Reference APIs"]
 ```
@@ -342,7 +342,7 @@ tests/
 
 ## 11. Final Target State
 
-Meridian treats a swap as a canonical derivative identity with explainable leg structure, lifecycle state, and valuation-reference metadata. Governance, reconciliation, and pricing consumers all use the same rebuilt reference model.
+Meridian treats a swap as a canonical derivative identity with explainable leg structure, lifecycle state, and valuation-reference metadata. Accounting, reconciliation, and pricing consumers all use the same rebuilt reference model.
 
 ## Related Documents
 

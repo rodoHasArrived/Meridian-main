@@ -584,6 +584,65 @@ describe("operator readiness console view model", () => {
     });
   });
 
+  it("routes ledger-period close work items to the accounting reconciliation lane", () => {
+    const state = buildOperatorReadinessConsoleState({
+      research: null,
+      trading: null,
+      dataOperations: null,
+      governance: null,
+      operatorInbox: {
+        ...cleanInbox,
+        items: [
+          {
+            workItemId: "ledger-period-close-p02",
+            kind: "LedgerPeriodClose",
+            label: "SoftClosed sign-off required",
+            detail: "Alpha Fund 2026-P02 is in SoftClosed. Open FundReconciliation before approving the close.",
+            tone: "Warning",
+            createdAt: "2026-04-29T12:08:00Z",
+            runId: null,
+            fundAccountId: null,
+            auditReference: "period-p02",
+            workspace: "Accounting",
+            targetRoute: "/api/workstation/reconciliation/break-queue",
+            targetPageTag: "FundReconciliation",
+            scope: "ledger-period:p02",
+            requiredSignoffRole: "Fund Controller",
+            toleranceProfileId: "month-end-25bp",
+            signoffStatus: "Pending"
+          }
+        ],
+        warningCount: 1,
+        criticalCount: 0,
+        reviewCount: 1,
+        summary: "1 warning work item needs review."
+      },
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    expect(state.workItems[0].action).toEqual({
+      label: "Open reconciliation",
+      route: "/accounting/reconciliation",
+      ariaLabel: "Open reconciliation: SoftClosed sign-off required",
+      variant: "outline"
+    });
+    expect(state.selectedWorkItemDetail).toEqual(expect.objectContaining({
+      id: "ledger-period-close-p02",
+      action: expect.objectContaining({ route: "/accounting/reconciliation" })
+    }));
+    expect(state.selectedWorkItemDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Route", value: "/accounting/reconciliation" },
+      { label: "Evidence", value: "Accounting - FundReconciliation - period-p02" }
+    ]));
+    expect(state.nextAction).toEqual(expect.objectContaining({
+      title: "SoftClosed sign-off required",
+      label: "Open reconciliation",
+      route: "/accounting/reconciliation",
+      level: "review"
+    }));
+  });
+
   it("blocks the headline from a critical inbox item when trading readiness is missing", () => {
     const state = buildOperatorReadinessConsoleState({
       research: null,

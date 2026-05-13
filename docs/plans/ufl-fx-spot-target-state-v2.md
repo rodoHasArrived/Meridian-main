@@ -74,7 +74,7 @@ flowchart TD
 
     VenueRM --> Execution["Execution Routing"]
     VenueRM --> Treasury["Treasury Views"]
-    LifecycleRM --> Governance["Governance UI"]
+    LifecycleRM --> Governance["Accounting / Reporting workstation"]
     Search --> APIs["FX Reference APIs"]
 ```
 
@@ -276,7 +276,7 @@ Deliver canonical pair identity, alias resolution, venue-profile projections, an
 
 - richer session metadata
 - settlement and cutoff overlays
-- governance UI for tradability inspection
+- Accounting / Reporting workstation inspection for tradability and controls
 
 ## 8. Target API Surface
 

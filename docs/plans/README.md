@@ -48,7 +48,7 @@ These plans remain useful, but they normally follow the Wave 2-4 operator-readin
 
 ## UFL And Asset Packages
 
-Start with [ufl-supported-assets-index.md](ufl-supported-assets-index.md). The individual target-state packages remain active reference designs for Security Master, ledger, accounting, and reporting work.
+Start with [ufl-supported-assets-index.md](ufl-supported-assets-index.md). The individual target-state packages remain active reference designs for Security Master, ledger, Accounting, Reporting, Data, and controlled workstation work. Keep delivered baseline evidence separate from target-state additions; these packages are not readiness-closure documents.
 
 | Area | Documents |
 | --- | --- |

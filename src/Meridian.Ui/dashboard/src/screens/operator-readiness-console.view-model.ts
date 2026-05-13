@@ -1021,6 +1021,8 @@ function fallbackRouteForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
       return "/accounting/security-master";
     case "ReconciliationBreak":
       return "/accounting/reconciliation";
+    case "LedgerPeriodClose":
+      return "/accounting/reconciliation";
     case "ReportPackApproval":
       return "/reporting";
     case "ProviderTrustGate":
@@ -1040,6 +1042,8 @@ function actionLabelForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
       return "Open Security Master";
     case "ReconciliationBreak":
       return "Open break queue";
+    case "LedgerPeriodClose":
+      return "Open reconciliation";
     case "ReportPackApproval":
       return "Open report packs";
     case "ProviderTrustGate":

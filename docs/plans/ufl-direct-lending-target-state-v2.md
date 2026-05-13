@@ -54,7 +54,7 @@ If the team chooses not to introduce `src/Ufl.*` projects immediately, the close
 - contracts in `src/Meridian.Contracts/`
 - storage, migrations, and PostgreSQL integration in `src/Meridian.Storage/`
 - HTTP and workstation endpoints in `src/Meridian.Ui.Shared/`
-- governance UX in `src/Meridian.Wpf/`
+- browser workstation UX in `src/Meridian.Ui/dashboard/`, with retained WPF compatibility in `src/Meridian.Wpf/`
 
 ## Scope
 

@@ -1,4 +1,5 @@
 using Meridian.Ledger;
+using Meridian.Contracts.FundStructure;
 
 namespace Meridian.Storage.Ledger;
 
@@ -12,11 +13,28 @@ public interface ILedgerJournalStore
 
     Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default);
 
+    Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+        Guid? ledgerBookId = null,
+        string? status = null,
+        string? fundProfileId = null,
+        Guid? fundStructureNodeId = null,
+        CancellationToken ct = default);
+
     Task<LedgerAccountingPeriod> SavePeriodAsync(
         LedgerAccountingPeriod period,
         long expectedVersion,
         PeriodCloseEventRecord? closeEvent = null,
         CancellationToken ct = default);
+
+    Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+        string? fundProfileId = null,
+        Guid? fundStructureNodeId = null,
+        FundStructureNodeKindDto? fundStructureNodeKind = null,
+        CancellationToken ct = default);
+
+    Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default);
 }
 
 public sealed record LedgerJournalEntryWrite(
@@ -37,6 +55,7 @@ public sealed record LedgerJournalEntryRecord(
 
 public sealed record LedgerAccountingPeriod(
     Guid PeriodId,
+    Guid? LedgerBookId,
     int FiscalYear,
     int PeriodNo,
     string Label,
@@ -46,6 +65,17 @@ public sealed record LedgerAccountingPeriod(
     DateTimeOffset OpenedAt,
     DateTimeOffset? ClosedAt,
     long Version);
+
+public sealed record LedgerBookRecord(
+    Guid LedgerBookId,
+    string FundProfileId,
+    Guid FundStructureNodeId,
+    FundStructureNodeKindDto FundStructureNodeKind,
+    string DisplayName,
+    string BaseCurrency,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
+    string? Description = null);
 
 public sealed record PeriodCloseEventRecord(
     Guid EventId,

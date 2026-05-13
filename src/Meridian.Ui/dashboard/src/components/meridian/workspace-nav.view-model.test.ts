@@ -49,4 +49,22 @@ describe("workspace nav view model", () => {
       statusTone: "live"
     });
   });
+
+  it("surfaces the accounting ledger lane as a first-class subroute", () => {
+    const model = buildWorkspaceNavViewModel("/accounting");
+    const accounting = model.items.find((item) => item.key === "accounting");
+
+    expect(accounting?.subItems.map((item) => item.route)).toEqual([
+      "/accounting",
+      "/accounting/reconciliation",
+      "/accounting/security-master",
+      "/accounting/approvals"
+    ]);
+    expect(accounting?.subItems[0]).toMatchObject({
+      label: "Ledger",
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Ledger, current page"
+    });
+  });
 });

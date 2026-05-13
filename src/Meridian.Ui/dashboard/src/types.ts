@@ -220,7 +220,8 @@ export type OperatorWorkItemKind =
   | "ReconciliationBreak"
   | "ReportPackApproval"
   | "ProviderTrustGate"
-  | "ExecutionControl";
+  | "ExecutionControl"
+  | "LedgerPeriodClose";
 
 export type OperatorWorkItemTone = "Info" | "Success" | "Warning" | "Critical";
 export type TradingAcceptanceGateStatus = "Ready" | "ReviewRequired" | "Blocked";
@@ -238,6 +239,10 @@ export interface OperatorWorkItem {
   workspace?: string | null;
   targetRoute?: string | null;
   targetPageTag?: string | null;
+  scope?: string | null;
+  requiredSignoffRole?: string | null;
+  toleranceProfileId?: string | null;
+  signoffStatus?: string | null;
 }
 
 export interface OperatorInbox {

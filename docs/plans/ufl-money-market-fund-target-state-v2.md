@@ -69,7 +69,7 @@ flowchart TD
 
     Liquidity --> Treasury["Treasury Operations"]
     Sweep --> CashMgmt["Cash Management"]
-    Risk --> Governance["Governance UI"]
+    Risk --> Governance["Accounting / Reporting workstation"]
     Family --> Reporting["Reporting / Grouping"]
 ```
 
@@ -240,7 +240,7 @@ type MoneyMarketFundSweepProjection = {
 
 1. normalize family metadata
 2. rebuild family and reporting projections
-3. update governance views
+3. update fund-ops workstation views
 
 ### 6.5 Read-model rebuild
 

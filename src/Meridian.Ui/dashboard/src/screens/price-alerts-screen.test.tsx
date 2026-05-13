@@ -1,8 +1,8 @@
-import { cleanup, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PriceAlertsProvider } from "@/lib/price-alerts/service";
 import type { StorageLike } from "@/lib/price-alerts/storage";
-import { PRICE_ALERT_STORAGE_KEY, type PriceAlert, type PriceAlertStorageState } from "@/lib/price-alerts/types";
+import { PRICE_ALERT_STORAGE_KEY, type PriceAlert, type PriceAlertStorageState, type PriceAlertTrigger } from "@/lib/price-alerts/types";
 import { renderWithRouter } from "@/test/render";
 import { PriceAlertsScreen } from "./price-alerts-screen";
 
@@ -33,6 +33,22 @@ function buildAlert(overrides: Partial<PriceAlert> = {}): PriceAlert {
     triggeredAt: null,
     lastObservedPrice: null,
     lastObservedAt: null,
+    ...overrides
+  };
+}
+
+function buildTrigger(overrides: Partial<PriceAlertTrigger> = {}): PriceAlertTrigger {
+  return {
+    id: "trigger-fixture",
+    alertId: "alert-fixture",
+    symbol: "AAPL",
+    condition: "above",
+    field: "last",
+    threshold: 200,
+    triggeredPrice: 201.25,
+    triggeredAt: "2026-05-12T14:02:37.000Z",
+    acknowledged: false,
+    note: null,
     ...overrides
   };
 }
@@ -81,11 +97,75 @@ describe("PriceAlertsScreen", () => {
       triggers: []
     });
     renderScreen(storage);
-    expect(screen.getByText("AAPL")).toBeInTheDocument();
-    expect(screen.getByText("MSFT")).toBeInTheDocument();
+    expect(screen.getAllByText("AAPL").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("MSFT").length).toBeGreaterThan(0);
     expect(screen.getByText(/2 alerts/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Disabled/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Triggered/i).length).toBeGreaterThan(0);
+  });
+
+  it("links alert and trigger rows to visible detail panels", () => {
+    const storage = seedStorage({
+      version: 1,
+      alerts: [
+        buildAlert({ id: "a-1", symbol: "AAPL", threshold: 200, note: "Earnings watch", enabled: false }),
+        buildAlert({ id: "a-2", symbol: "MSFT", threshold: 350, enabled: false, triggeredAt: "2026-05-12T15:00:00.000Z" })
+      ],
+      triggers: [
+        buildTrigger({ id: "t-1", alertId: "a-1", symbol: "AAPL", acknowledged: false, note: "Gap through threshold" }),
+        buildTrigger({ id: "t-2", alertId: "a-2", symbol: "MSFT", acknowledged: true })
+      ]
+    });
+
+    renderScreen(storage);
+
+    const triggeredRow = screen.getByRole("row", { name: "Inspect triggered alert AAPL" });
+    expect(triggeredRow).toHaveAttribute("aria-selected", "true");
+    expect(triggeredRow).toHaveAttribute("aria-expanded", "true");
+    expect(triggeredRow).toHaveAttribute("aria-controls", "price-alert-trigger-detail-panel");
+    expect(screen.getByRole("region", { name: "Triggered price alert detail for AAPL" }))
+      .toHaveTextContent("Gap through threshold");
+
+    const configuredRow = screen.getByRole("row", { name: "Inspect configured alert AAPL" });
+    expect(configuredRow).toHaveAttribute("aria-selected", "true");
+    expect(configuredRow).toHaveAttribute("aria-controls", "price-alert-list-detail-panel");
+    expect(screen.getByRole("region", { name: "Configured price alert detail for AAPL" }))
+      .toHaveTextContent("Earnings watch");
+
+    const msftRow = screen.getByRole("row", { name: "Inspect configured alert MSFT" });
+    act(() => {
+      fireEvent.click(msftRow);
+    });
+
+    expect(msftRow).toHaveAttribute("aria-selected", "true");
+    expect(msftRow).toHaveAttribute("aria-expanded", "true");
+    expect(configuredRow).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("region", { name: "Configured price alert detail for MSFT" }))
+      .toHaveTextContent("Alert is not watching live quotes");
+  });
+
+  it("supports keyboard selection for configured alert detail", () => {
+    const storage = seedStorage({
+      version: 1,
+      alerts: [
+        buildAlert({ id: "a-1", symbol: "AAPL", enabled: false }),
+        buildAlert({ id: "a-2", symbol: "MSFT", note: "Review after open", enabled: false })
+      ],
+      triggers: []
+    });
+
+    renderScreen(storage);
+
+    const msftRow = screen.getByRole("row", { name: "Inspect configured alert MSFT" });
+    msftRow.focus();
+
+    act(() => {
+      fireEvent.keyDown(msftRow, { key: "Enter" });
+    });
+
+    expect(msftRow).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("region", { name: "Configured price alert detail for MSFT" }))
+      .toHaveTextContent("Review after open");
   });
 
   it("seeds the symbol from ?symbol= query string", () => {

@@ -545,6 +545,10 @@ public static class UiApiRoutes
     public const string RunsReviewPacket = "/api/workstation/runs/{runId}/review-packet";
     public const string RunsLedgerTrialBalance = "/api/workstation/runs/{runId}/ledger/trial-balance";
     public const string RunsLedgerJournal = "/api/workstation/runs/{runId}/ledger/journal";
+    public const string LedgerBooks = "/api/ledger/books";
+    public const string LedgerBookById = "/api/ledger/books/{ledgerBookId:guid}";
+    public const string LedgerPeriods = "/api/ledger/periods";
+    public const string LedgerPeriodClose = "/api/ledger/periods/{periodId:guid}/close";
     public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";
     public const string WorkstationSecurityMasterById = "/api/workstation/security-master/securities/{securityId:guid}";
     public const string WorkstationSecurityMasterHistory = "/api/workstation/security-master/securities/{securityId:guid}/history";

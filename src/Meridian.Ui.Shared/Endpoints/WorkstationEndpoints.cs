@@ -1776,6 +1776,12 @@ public static class WorkstationEndpoints
 
         await AddRunReviewPacketWorkItemsAsync(context, fundAccountId, workItems, asOf).ConfigureAwait(false);
         await AddReconciliationBreakWorkItemsAsync(context, workItems, asOf).ConfigureAwait(false);
+        var operatorInbox = context.RequestServices.GetService<IOperatorInboxService>();
+        if (operatorInbox is not null)
+        {
+            var contributedItems = await operatorInbox.GetItemsAsync(context.RequestAborted).ConfigureAwait(false);
+            workItems.AddRange(contributedItems.Select(AttachOperatorNavigation));
+        }
 
         var items = workItems
             .GroupBy(static item => item.WorkItemId, StringComparer.OrdinalIgnoreCase)
@@ -2005,6 +2011,10 @@ public static class WorkstationEndpoints
                 "Accounting",
                 UiApiRoutes.ReconciliationBreakQueue,
                 "AccountingShell"),
+            OperatorWorkItemKindDto.LedgerPeriodClose => (
+                "Accounting",
+                UiApiRoutes.ReconciliationBreakQueue,
+                "FundReconciliation"),
             OperatorWorkItemKindDto.ReportPackApproval => (
                 "Reporting",
                 UiApiRoutes.FundReportPacks,

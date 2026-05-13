@@ -1,0 +1,140 @@
+using System.Text.Json.Serialization;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Workstation;
+
+namespace Meridian.Contracts.Ledger;
+
+[JsonConverter(typeof(JsonStringEnumConverter<LedgerPeriodStatusDto>))]
+public enum LedgerPeriodStatusDto
+{
+    Open = 0,
+    SoftClosed = 1,
+    HardClosed = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<LedgerPeriodCloseKindDto>))]
+public enum LedgerPeriodCloseKindDto
+{
+    SoftClose = 0,
+    HardClose = 1
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<LedgerPeriodSignoffStatusDto>))]
+public enum LedgerPeriodSignoffStatusDto
+{
+    NotRequired = 0,
+    Pending = 1,
+    SignedOff = 2,
+    Rejected = 3
+}
+
+public sealed record CreateLedgerBookRequest(
+    string FundProfileId,
+    Guid FundStructureNodeId,
+    FundStructureNodeKindDto FundStructureNodeKind,
+    string DisplayName,
+    string BaseCurrency,
+    string? Description = null);
+
+public sealed record LedgerBookDto(
+    Guid LedgerBookId,
+    string FundProfileId,
+    Guid FundStructureNodeId,
+    FundStructureNodeKindDto FundStructureNodeKind,
+    string DisplayName,
+    string BaseCurrency,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
+    string? Description = null);
+
+public sealed record LedgerBookQuery(
+    string? FundProfileId = null,
+    Guid? FundStructureNodeId = null,
+    FundStructureNodeKindDto? FundStructureNodeKind = null);
+
+public sealed record CreateLedgerPeriodRequest(
+    Guid LedgerBookId,
+    int FiscalYear,
+    int PeriodNo,
+    string Label,
+    DateOnly StartDate,
+    DateOnly EndDate);
+
+public sealed record LedgerPeriodDto(
+    Guid PeriodId,
+    Guid LedgerBookId,
+    int FiscalYear,
+    int PeriodNo,
+    string Label,
+    DateOnly StartDate,
+    DateOnly EndDate,
+    LedgerPeriodStatusDto Status,
+    DateTimeOffset OpenedAt,
+    DateTimeOffset? ClosedAt,
+    long Version);
+
+public sealed record LedgerPeriodQuery(
+    Guid? LedgerBookId = null,
+    string? FundProfileId = null,
+    Guid? FundStructureNodeId = null,
+    LedgerPeriodStatusDto? Status = null,
+    bool OpenOnly = false);
+
+public sealed record CloseLedgerPeriodRequest(
+    LedgerPeriodCloseKindDto CloseKind,
+    string ClosedBy,
+    string? Notes = null,
+    string RequiredSignoffRole = "Fund Controller",
+    string ToleranceProfileId = "standard-recon-tolerance");
+
+public sealed record LedgerPeriodTrialBalanceLineDto(
+    string AccountName,
+    string AccountType,
+    string? Symbol,
+    string? FinancialAccountId,
+    decimal DebitTotal,
+    decimal CreditTotal,
+    decimal Balance,
+    int EntryCount);
+
+public sealed record LedgerPeriodSummaryDto(
+    Guid PeriodId,
+    Guid LedgerBookId,
+    int FiscalYear,
+    int PeriodNo,
+    string Label,
+    IReadOnlyList<LedgerPeriodTrialBalanceLineDto> TrialBalance,
+    decimal TotalDebits,
+    decimal TotalCredits,
+    decimal NetIncome,
+    decimal? PeriodOnPeriodVariance,
+    int OpenBreakCount,
+    LedgerPeriodSignoffStatusDto SignoffStatus,
+    DateTimeOffset CompletedAt);
+
+public sealed record LedgerPeriodCloseResultDto(
+    LedgerPeriodDto Period,
+    LedgerPeriodSummaryDto Summary,
+    OperatorWorkItemDto WorkItem);
+
+public interface ILedgerBookService
+{
+    Task<LedgerBookDto> CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default);
+
+    Task<LedgerBookDto?> GetBookAsync(Guid ledgerBookId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<LedgerBookDto>> ListBooksAsync(LedgerBookQuery query, CancellationToken ct = default);
+
+    Task<LedgerPeriodDto> CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default);
+
+    Task<IReadOnlyList<LedgerPeriodDto>> ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default);
+
+    Task<IReadOnlyList<LedgerPeriodDto>> ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default);
+
+    Task<LedgerPeriodSummaryDto?> GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default);
+
+    Task<LedgerPeriodCloseResultDto> ClosePeriodAsync(
+        Guid periodId,
+        CloseLedgerPeriodRequest request,
+        CancellationToken ct = default);
+}

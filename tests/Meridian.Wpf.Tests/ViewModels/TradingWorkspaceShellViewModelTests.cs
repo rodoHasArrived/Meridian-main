@@ -226,6 +226,24 @@ public sealed class TradingWorkspaceShellViewModelTests
     }
 
     [Fact]
+    public void ResolveOperatorWorkItemActionId_WithLedgerPeriodClose_OpensReconciliation()
+    {
+        var workItem = new OperatorWorkItemDto(
+            WorkItemId: "ledger-period-close-1",
+            Kind: OperatorWorkItemKindDto.LedgerPeriodClose,
+            Label: "SoftClosed sign-off required",
+            Detail: "Ledger period close requires controller sign-off.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: new DateTimeOffset(2026, 4, 27, 17, 5, 0, TimeSpan.Zero),
+            TargetRoute: UiApiRoutes.LedgerPeriods,
+            TargetPageTag: "TradingShell");
+
+        var actionId = TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(workItem);
+
+        actionId.Should().Be("FundReconciliation");
+    }
+
+    [Fact]
     public void ExecuteCommandAction_WithNoActiveRun_RaisesAccountPortfolioRequest()
     {
         var viewModel = new TradingWorkspaceShellViewModel();

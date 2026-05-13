@@ -69,7 +69,7 @@ flowchart TD
 
     Lifecycle --> Treasury["Treasury Operations"]
     Accrual --> Ledger["Ledger / Accrual Services"]
-    Ladder --> Governance["Governance UI"]
+    Ladder --> Governance["Accounting / Reporting workstation"]
     Callable --> Alerts["Maturity / Callable Alerts"]
 ```
 
@@ -243,7 +243,7 @@ type CdAccrualConventionProjection = {
 
 1. compare as-of date to maturity
 2. update lifecycle and ladder projections
-3. rebuild treasury and governance views
+3. rebuild treasury and fund-ops workstation views
 
 ### 6.5 Read-model rebuild
 

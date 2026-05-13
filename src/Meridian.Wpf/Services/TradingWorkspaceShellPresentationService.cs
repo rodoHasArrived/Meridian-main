@@ -495,6 +495,11 @@ public sealed class TradingWorkspaceShellPresentationService
 
     internal static string ResolveOperatorWorkItemActionId(OperatorWorkItemDto workItem)
     {
+        if (workItem.Kind == OperatorWorkItemKindDto.LedgerPeriodClose)
+        {
+            return "FundReconciliation";
+        }
+
         var routeActionId = ResolveOperatorWorkItemRouteActionId(workItem.TargetRoute);
         if (!string.IsNullOrWhiteSpace(routeActionId))
         {
@@ -941,6 +946,12 @@ public sealed class TradingWorkspaceShellPresentationService
         if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationSecurityMasterSearch))
         {
             return "SecurityMaster";
+        }
+
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerBooks) ||
+            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerPeriods))
+        {
+            return "FundTrialBalance";
         }
 
         if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.FundAccountBrokerageSyncAccounts) ||

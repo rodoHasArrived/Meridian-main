@@ -69,7 +69,7 @@ flowchart TD
 
     Routing --> Treasury["Treasury Operations"]
     Yield --> CashMgmt["Cash Management"]
-    Ops --> Governance["Governance UI"]
+    Ops --> Governance["Accounting / Reporting workstation"]
     Grouping --> Reporting["Program Reporting"]
 ```
 

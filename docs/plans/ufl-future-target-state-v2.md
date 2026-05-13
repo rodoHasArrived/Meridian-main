@@ -73,8 +73,8 @@ flowchart TD
     AliasRM --> Search["Resolution Views"]
 
     RollRM --> Trading["Trading Workspace"]
-    RollRM --> DataOps["Data Operations"]
-    LifecycleRM --> Governance["Governance UI"]
+    RollRM --> DataOps["Data workspace"]
+    LifecycleRM --> Governance["Accounting / Reporting workstation"]
     Search --> APIs["Reference APIs"]
 ```
 
