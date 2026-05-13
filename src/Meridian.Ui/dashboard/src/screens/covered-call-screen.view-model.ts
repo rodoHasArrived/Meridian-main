@@ -197,6 +197,7 @@ export interface CoveredCallScreenViewModel extends CoveredCallScreenState {
   startRun: () => Promise<void>;
   cancelRun: () => Promise<void>;
   loadHistory: () => Promise<void>;
+  openRun: (runId: string) => Promise<void>;
   selectOpenPosition: (index: number) => void;
   goToStage: (stage: CoveredCallStage) => void;
   dismissError: () => void;
@@ -220,7 +221,15 @@ const DEFAULT_SERVICES: CoveredCallScreenServices = {
 export function useCoveredCallScreenViewModel(
   options: UseCoveredCallScreenOptions = {}
 ): CoveredCallScreenViewModel {
-  const services: CoveredCallScreenServices = { ...DEFAULT_SERVICES, ...options.services };
+  const optionsServices = options.services;
+  // Stabilise the services ref across renders so dependent callbacks aren't invalidated and
+  // the chain-preview debounce isn't reset on every parent render.
+  const services: CoveredCallScreenServices = useMemo(
+    () => ({ ...DEFAULT_SERVICES, ...optionsServices }),
+    // We intentionally take optionsServices as-is; consumers passing a fresh literal each render
+    // accept that they bust the memo on purpose.
+    [optionsServices]
+  );
   const pollIntervalMs = options.pollIntervalMs ?? 1500;
   const chainDebounceMs = options.chainPreviewDebounceMs ?? 300;
 
@@ -442,6 +451,30 @@ export function useCoveredCallScreenViewModel(
     }
   }, [services]);
 
+  const openRun = useCallback(async (runId: string) => {
+    setErrorBanner(null);
+    try {
+      const result = await services.getResult(runId);
+      activeRunIdRef.current = runId;
+      stopPolling();
+      setRun({
+        runId,
+        status: {
+          runId,
+          phase: "Completed",
+          percentComplete: 1,
+          currentBacktestDate: null,
+          failureMessage: null
+        },
+        result,
+        selectedPositionIndex: 0
+      });
+      setStage("results");
+    } catch (error) {
+      setErrorBanner(`Could not load run ${runId}: ${(error as Error).message}`);
+    }
+  }, [services, stopPolling]);
+
   // Stop polling and abort in-flight requests on unmount.
   useEffect(() => () => {
     stopPolling();
@@ -465,6 +498,7 @@ export function useCoveredCallScreenViewModel(
     startRun,
     cancelRun,
     loadHistory,
+    openRun,
     selectOpenPosition,
     goToStage,
     dismissError
@@ -484,6 +518,7 @@ export function useCoveredCallScreenViewModel(
     startRun,
     cancelRun,
     loadHistory,
+    openRun,
     selectOpenPosition,
     goToStage,
     dismissError

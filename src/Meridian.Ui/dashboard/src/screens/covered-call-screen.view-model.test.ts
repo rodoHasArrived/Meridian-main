@@ -205,4 +205,34 @@ describe("useCoveredCallScreenViewModel", () => {
     expect(result.current.history).toHaveLength(1);
     expect(result.current.historyError).toBeNull();
   });
+
+  it("openRun fetches result and switches to results stage", async () => {
+    const services = makeServices();
+    const { result } = renderHook(() => useCoveredCallScreenViewModel({ services, pollIntervalMs: 1000000, chainPreviewDebounceMs: 100000 }));
+
+    await act(async () => {
+      await result.current.openRun("prior-run-id");
+    });
+
+    expect(services.getResult).toHaveBeenCalledWith("prior-run-id");
+    expect(result.current.stage).toBe("results");
+    expect(result.current.run.result).not.toBeNull();
+    expect(result.current.run.runId).toBe("prior-run-id");
+  });
+
+  it("openRun surfaces an error banner when result is gone (e.g. 410)", async () => {
+    const services = makeServices({
+      getResult: vi.fn(async () => {
+        throw new Error("Run completed but the cached result has expired.");
+      })
+    });
+    const { result } = renderHook(() => useCoveredCallScreenViewModel({ services, pollIntervalMs: 1000000, chainPreviewDebounceMs: 100000 }));
+
+    await act(async () => {
+      await result.current.openRun("expired-run");
+    });
+
+    expect(result.current.errorBanner).toContain("expired");
+    expect(result.current.stage).toBe("configure");
+  });
 });

@@ -98,3 +98,35 @@ export function coveredCallBreakEven(p: CoveredCallPayoffInputs): number {
   if (p.underlyingShares <= 0) return Number.NaN;
   return p.underlyingCostBasis - (p.entryCredit * p.contracts * p.multiplier) / p.underlyingShares;
 }
+
+/**
+ * Short-call break-even (writer P&L = 0): spot = strike + entryCredit.
+ * Above this spot the short call alone is unprofitable.
+ */
+export function shortCallBreakEven(p: ShortCallPayoffInputs): number {
+  return p.strike + p.entryCredit;
+}
+
+/**
+ * Builds payoff samples for the short-call leg alone (no underlying assumption).
+ * Used when the backend does not return the underlying cost basis so the covered structure
+ * cannot be drawn honestly.
+ */
+export function buildShortCallPayoffCurve(
+  p: ShortCallPayoffInputs,
+  spotMin: number,
+  spotMax: number,
+  steps = 100
+): PayoffSample[] {
+  if (!Number.isFinite(spotMin) || !Number.isFinite(spotMax) || spotMax <= spotMin) {
+    return [];
+  }
+  const n = Math.max(2, Math.floor(steps));
+  const stride = (spotMax - spotMin) / (n - 1);
+  const out: PayoffSample[] = [];
+  for (let i = 0; i < n; i++) {
+    const spot = spotMin + i * stride;
+    out.push({ spot, payoff: shortCallPayoff(spot, p) });
+  }
+  return out;
+}

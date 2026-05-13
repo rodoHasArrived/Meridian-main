@@ -210,14 +210,17 @@ public static class UiEndpoints
                 sp.GetService<IBacktestPreflightService>());
         });
 
-        services.AddSingleton<ICoveredCallBacktestService>(sp => new CoveredCallBacktestService(
+        // Register the concrete type so AddHostedService<T> doesn't need a cast. The interface
+        // is then served by the same instance.
+        services.TryAddSingleton<CoveredCallBacktestService>(sp => new CoveredCallBacktestService(
             engineFactory: sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>(),
             chainFactory: sp.GetRequiredService<ICoveredCallChainProviderFactory>(),
             runRepository: sp.GetRequiredService<IStrategyRepository>(),
             options: sp.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<CoveredCallBacktestOptions>>(),
             resultCache: sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
             loggerFactory: sp.GetRequiredService<ILoggerFactory>()));
-        services.AddHostedService(sp => (CoveredCallBacktestService)sp.GetRequiredService<ICoveredCallBacktestService>());
+        services.TryAddSingleton<ICoveredCallBacktestService>(sp => sp.GetRequiredService<CoveredCallBacktestService>());
+        services.AddHostedService(sp => sp.GetRequiredService<CoveredCallBacktestService>());
     }
 
 

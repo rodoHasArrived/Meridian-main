@@ -74,9 +74,14 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
                 _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>());
         }
 
-        // For each eligible expiry, fetch one snapshot. Each snapshot gives us a per-scan-date set
-        // of candidate calls. Multiple snapshots covering the same date are concatenated.
-        var byDate = new Dictionary<DateOnly, List<OptionCandidateInfo>>();
+        // Slice 1: production IOptionsChainProvider implementations return a live (current-time)
+        // snapshot — they do not accept an `asOf` parameter. To keep the strategy productive across
+        // historical scan dates we (1) collect today's available chain across all eligible expiries
+        // and (2) replicate the candidate set under every trading-day date in [from, to], adjusting
+        // DaysToExpiration per scan date. This is NOT point-in-time accurate; the dashboard surfaces
+        // a banner explaining that historical chain data is approximated. A historical chain-store
+        // is tracked as a slice 1.5 follow-up.
+        var liveCandidatesByExpiry = new Dictionary<DateOnly, List<OptionCandidateInfo>>();
 
         foreach (var expiry in eligibleExpiries)
         {
@@ -102,31 +107,47 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
                 continue;
             }
 
-            // Use snapshot timestamp date as the scan date. We assume the historical provider returns
-            // historical snapshots; if it returns a single recent snapshot we still index it so the
-            // backtest sees something on at least the snapshot's date.
-            var scanDate = DateOnly.FromDateTime(snapshot.Timestamp.UtcDateTime);
-            var candidates = ConvertCalls(snapshot, scanDate);
-
-            if (!byDate.TryGetValue(scanDate, out var bucket))
+            // Use the snapshot's *expiration* as the bucket key — we only need one bucket per expiry
+            // before fanning out per scan date below.
+            if (!liveCandidatesByExpiry.TryGetValue(expiry, out var bucket))
             {
-                bucket = new List<OptionCandidateInfo>(candidates.Count);
-                byDate[scanDate] = bucket;
+                bucket = new List<OptionCandidateInfo>(snapshot.Calls.Count);
+                liveCandidatesByExpiry[expiry] = bucket;
             }
-
-            bucket.AddRange(candidates);
+            bucket.AddRange(ConvertCalls(snapshot, asOf: from));
         }
 
-        if (byDate.Count == 0)
+        if (liveCandidatesByExpiry.Count == 0)
         {
             _logger.LogWarning(
                 "CoveredCallChainProviderFactory: no chain snapshots resolved for {Symbol} in [{From}, {To}]. Backtest will see an empty chain.",
                 normalisedSymbol, from, to);
+            return new CoveredCallChainProviderAdapter(
+                new Dictionary<DateOnly, IReadOnlyList<OptionCandidateInfo>>(),
+                _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>());
         }
 
-        var snapshotsByDate = byDate.ToDictionary(
-            kvp => kvp.Key,
-            kvp => (IReadOnlyList<OptionCandidateInfo>)kvp.Value);
+        // Fan the snapshot out across every trading-day date in [from, to]. Each scan date sees the
+        // same option set but with DaysToExpiration recomputed so the strategy's DTE filter behaves
+        // as expected as expiries approach.
+        var snapshotsByDate = new Dictionary<DateOnly, IReadOnlyList<OptionCandidateInfo>>();
+        for (var d = from; d <= to; d = d.AddDays(1))
+        {
+            var perDate = new List<OptionCandidateInfo>();
+            foreach (var (expiry, candidates) in liveCandidatesByExpiry)
+            {
+                if (expiry < d) continue;
+                var dte = expiry.DayNumber - d.DayNumber;
+                foreach (var c in candidates)
+                {
+                    perDate.Add(c with { DaysToExpiration = dte });
+                }
+            }
+            if (perDate.Count > 0)
+            {
+                snapshotsByDate[d] = perDate;
+            }
+        }
 
         return new CoveredCallChainProviderAdapter(
             snapshotsByDate,

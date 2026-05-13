@@ -4,6 +4,7 @@ using Meridian.Application.Pipeline;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -39,6 +40,13 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         EventPipelinePolicy.Default.CreateChannel<CoveredCallCommand>();
 
     private readonly ConcurrentDictionary<string, RunState> _runs = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Tracks the <see cref="Task"/> for each in-flight run so <see cref="StopAsync"/> can wait
+    /// for them to finish (or surface their cancellation) instead of returning while runs are
+    /// still mutating the repository.
+    /// </summary>
+    private readonly ConcurrentDictionary<string, Task> _activeRunTasks = new(StringComparer.Ordinal);
 
     private SemaphoreSlim _concurrency;
     private int _configuredConcurrency;
@@ -92,6 +100,19 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         {
             try { await _drainLoop.ConfigureAwait(false); }
             catch (OperationCanceledException) { }
+        }
+
+        // Wait for any in-flight runs to finish observing cancellation so they don't write to
+        // the repository after StopAsync returns.
+        var pending = _activeRunTasks.Values.ToArray();
+        if (pending.Length > 0)
+        {
+            try { await Task.WhenAll(pending).ConfigureAwait(false); }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Covered-call run task failed during shutdown");
+            }
         }
     }
 
@@ -299,8 +320,10 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             {
                 if (cmd is CoveredCallCommand.Start start)
                 {
-                    // Fire-and-forget each run task; concurrency is gated by the semaphore.
-                    _ = Task.Run(() => ExecuteRunAsync(start.RunId, ct), CancellationToken.None);
+                    // Track each run task so StopAsync can wait for graceful completion.
+                    var runId = start.RunId;
+                    var task = Task.Run(() => ExecuteRunAsync(runId, ct), CancellationToken.None);
+                    _activeRunTasks[runId] = task;
                 }
             }
         }
@@ -323,9 +346,13 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
 
         // Capture the active semaphore so a concurrent resize cannot make us Release the wrong one.
         var semaphore = _concurrency;
-        await semaphore.WaitAsync(state.Cts.Token).ConfigureAwait(false);
+        var acquired = false;
+        StrategyRunEntry? initialEntry = null;
         try
         {
+            await semaphore.WaitAsync(state.Cts.Token).ConfigureAwait(false);
+            acquired = true;
+
             state.StartedAt = _timeProvider.GetUtcNow();
             state.Phase = RunPhase.WarmingUp;
 
@@ -344,7 +371,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 paramSet["label"] = request.Label;
             }
 
-            var initialEntry = StrategyRunEntry.Start(
+            initialEntry = StrategyRunEntry.Start(
                 strategyId: StrategyId,
                 strategyName: $"CoveredCallOverwrite({request.UnderlyingSymbol.ToUpperInvariant()})",
                 runType: RunType.Backtest,
@@ -359,14 +386,19 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 .CreateAsync(request.UnderlyingSymbol, request.From, request.To, maxDteForWindow, state.Cts.Token)
                 .ConfigureAwait(false);
 
-            // Build strategy.
+            // Build strategy. The strategy assumes the underlying is pre-held in ctx.Positions, so
+            // we wrap it in a seeder that issues a market buy for InitialUnderlyingShares on the
+            // first bar — without this the strategy's chain-scan branch exits early on every day.
             var strategyParams = CoveredCallRunProjection.ToParams(request);
             var strategyLogger = _loggerFactory.CreateLogger<CoveredCallOverwriteStrategy>();
-            var strategy = new CoveredCallOverwriteStrategy(
+            var innerStrategy = new CoveredCallOverwriteStrategy(
                 underlyingSymbol: request.UnderlyingSymbol,
                 parameters: strategyParams,
                 chainProvider: chainProvider,
                 logger: strategyLogger);
+            var strategy = request.InitialUnderlyingShares > 0
+                ? (IBacktestStrategy)new UnderlyingSeedingStrategy(innerStrategy, request.UnderlyingSymbol, request.InitialUnderlyingShares)
+                : innerStrategy;
 
             // Build engine.
             var dataRoot = _options.CurrentValue.DataRootOverride ?? "./data";
@@ -405,7 +437,15 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             state.Percent = 1.0;
             state.EndedAt = _timeProvider.GetUtcNow();
 
-            var completedEntry = initialEntry.Complete(backtestResult);
+            // Persist headline metrics on the entry's parameter set so the history view still has
+            // them after the in-memory result cache expires.
+            var enrichedParams = new Dictionary<string, string>(paramSet, StringComparer.Ordinal)
+            {
+                ["cagr"] = result.Metrics.Cagr.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
+                ["sharpe"] = result.Metrics.SharpeRatio.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
+                ["winRate"] = result.Metrics.WinRate.ToString("R", System.Globalization.CultureInfo.InvariantCulture)
+            };
+            var completedEntry = (initialEntry with { ParameterSet = enrichedParams }).Complete(backtestResult);
             await _runRepository.RecordRunAsync(completedEntry, hostCt).ConfigureAwait(false);
 
             _logger.LogInformation(
@@ -418,10 +458,13 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             state.EndedAt = _timeProvider.GetUtcNow();
             try
             {
-                var cancelled = StrategyRunEntry
-                    .Start(StrategyId, $"CoveredCallOverwrite({state.Request.UnderlyingSymbol.ToUpperInvariant()})", RunType.Backtest, runId)
-                    .Cancel();
-                await _runRepository.RecordRunAsync(cancelled, CancellationToken.None).ConfigureAwait(false);
+                // Mutate the originally-persisted entry so StartedAt and ParameterSet survive.
+                var baseEntry = initialEntry ?? StrategyRunEntry.Start(
+                    StrategyId,
+                    $"CoveredCallOverwrite({state.Request.UnderlyingSymbol.ToUpperInvariant()})",
+                    RunType.Backtest,
+                    runId);
+                await _runRepository.RecordRunAsync(baseEntry.Cancel(), CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception persistEx)
             {
@@ -437,10 +480,12 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             _logger.LogError(ex, "Covered-call run {RunId} failed", runId);
             try
             {
-                var failed = StrategyRunEntry
-                    .Start(StrategyId, $"CoveredCallOverwrite({state.Request.UnderlyingSymbol.ToUpperInvariant()})", RunType.Backtest, runId)
-                    .Fail();
-                await _runRepository.RecordRunAsync(failed, CancellationToken.None).ConfigureAwait(false);
+                var baseEntry = initialEntry ?? StrategyRunEntry.Start(
+                    StrategyId,
+                    $"CoveredCallOverwrite({state.Request.UnderlyingSymbol.ToUpperInvariant()})",
+                    RunType.Backtest,
+                    runId);
+                await _runRepository.RecordRunAsync(baseEntry.Fail(), CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception persistEx)
             {
@@ -449,9 +494,13 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         }
         finally
         {
-            try { semaphore.Release(); }
-            catch (SemaphoreFullException) { /* benign during resize */ }
-            catch (ObjectDisposedException) { /* benign during resize */ }
+            _activeRunTasks.TryRemove(runId, out _);
+            if (acquired)
+            {
+                try { semaphore.Release(); }
+                catch (SemaphoreFullException) { /* benign during resize */ }
+                catch (ObjectDisposedException) { /* benign during resize */ }
+            }
         }
     }
 
@@ -549,5 +598,46 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
     private abstract record CoveredCallCommand(string RunId)
     {
         public sealed record Start(string RunId) : CoveredCallCommand(RunId);
+    }
+
+    /// <summary>
+    /// Decorates <see cref="CoveredCallOverwriteStrategy"/> with a single market buy of the
+    /// underlying on the first bar. The underlying strategy expects a pre-held position in
+    /// <see cref="IBacktestContext.Positions"/>; without seeding it never opens a short call.
+    /// </summary>
+    private sealed class UnderlyingSeedingStrategy : IBacktestStrategy
+    {
+        private readonly CoveredCallOverwriteStrategy _inner;
+        private readonly string _underlyingSymbol;
+        private readonly long _shares;
+        private bool _seeded;
+
+        public UnderlyingSeedingStrategy(CoveredCallOverwriteStrategy inner, string underlyingSymbol, long shares)
+        {
+            _inner = inner;
+            _underlyingSymbol = underlyingSymbol.Trim().ToUpperInvariant();
+            _shares = shares;
+        }
+
+        public string Name => _inner.Name;
+        public void Initialize(IBacktestContext ctx) => _inner.Initialize(ctx);
+        public void OnTrade(Trade trade, IBacktestContext ctx) => _inner.OnTrade(trade, ctx);
+        public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) => _inner.OnQuote(quote, ctx);
+
+        public void OnBar(HistoricalBar bar, IBacktestContext ctx)
+        {
+            if (!_seeded && _shares > 0 &&
+                bar.Symbol.Equals(_underlyingSymbol, StringComparison.OrdinalIgnoreCase))
+            {
+                ctx.PlaceMarketOrder(bar.Symbol, _shares);
+                _seeded = true;
+            }
+            _inner.OnBar(bar, ctx);
+        }
+
+        public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) => _inner.OnOrderBook(snapshot, ctx);
+        public void OnOrderFill(FillEvent fill, IBacktestContext ctx) => _inner.OnOrderFill(fill, ctx);
+        public void OnDayEnd(DateOnly date, IBacktestContext ctx) => _inner.OnDayEnd(date, ctx);
+        public void OnFinished(IBacktestContext ctx) => _inner.OnFinished(ctx);
     }
 }

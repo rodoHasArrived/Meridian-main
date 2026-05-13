@@ -1,5 +1,5 @@
-import { AlertCircle, ArrowLeft, ArrowRight, BarChart3, CircleX, Layers, Play, RotateCw } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { AlertCircle, ArrowLeft, ArrowRight, BarChart3, CircleX, Info, Layers, Play, RotateCw } from "lucide-react";
+import { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import {
   type CoveredCallScreenViewModel,
   type CoveredCallStage
 } from "@/screens/covered-call-screen.view-model";
-import { buildCoveredCallPayoffCurves, coveredCallBreakEven } from "@/lib/covered-call/payoff";
+import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
 
 const STAGE_LABEL: Record<CoveredCallStage, string> = {
   configure: "Configure",
@@ -59,12 +59,29 @@ export function CoveredCallScreen() {
         </Card>
       ) : null}
 
+      <ChainDataAdvisory />
+
       {vm.stage === "configure" ? <ConfigureStage vm={vm} /> : null}
       {vm.stage === "run" ? <RunStage vm={vm} /> : null}
       {vm.stage === "results" ? <ResultsStage vm={vm} /> : null}
 
       <HistoryPanel vm={vm} />
     </div>
+  );
+}
+
+function ChainDataAdvisory() {
+  return (
+    <Card>
+      <CardContent className="flex items-start gap-3 py-3 text-xs">
+        <Info className="h-4 w-4 flex-shrink-0 text-warning" aria-hidden="true" />
+        <p className="text-foreground/80">
+          <span className="font-semibold">Chain data is not point-in-time.</span>{" "}
+          Slice 1 uses the configured <code>IOptionsChainProvider</code>'s live snapshot replicated across each scan date with DTE recomputed.
+          Strike, IV, OI, and volume reflect today's market — not the historical date being backtested. A historical chain store is tracked as a slice 1.5 follow-up.
+        </p>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -461,24 +478,13 @@ function PositionTimeline({ vm }: { vm: CoveredCallScreenViewModel }) {
 function PayoffDiagramPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
   const openPositions = vm.run.result?.openPositionsAtEnd ?? [];
   const pos = openPositions[vm.run.selectedPositionIndex];
-  const inputs = useMemo(() => {
-    if (!pos) return null;
-    return {
-      strike: pos.strike,
-      entryCredit: pos.entryCredit,
-      contracts: pos.contracts,
-      multiplier: pos.multiplier,
-      underlyingShares: Number(vm.form.initialUnderlyingShares) || 100,
-      underlyingCostBasis: pos.strike * 0.95 // rough placeholder when basis isn't returned
-    };
-  }, [pos, vm.form.initialUnderlyingShares]);
 
-  if (!pos || !inputs) {
+  if (!pos) {
     return (
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Payoff diagram</CardTitle>
-          <CardDescription>Pick a position from the timeline to visualise its payoff.</CardDescription>
+          <CardDescription>Short-call payoff diagram for any open position at end of run.</CardDescription>
         </CardHeader>
         <CardContent className="py-10 text-center text-sm text-muted-foreground">
           No open positions at end of run.
@@ -487,35 +493,46 @@ function PayoffDiagramPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
     );
   }
 
+  // Slice 1 renders the short-call leg only; the backend does not yet thread the underlying
+  // cost basis through CoveredCallOpenPositionDto, so plotting a combined covered curve would
+  // require a fabricated basis. We surface that explicitly in the description.
+  const inputs = {
+    strike: pos.strike,
+    entryCredit: pos.entryCredit,
+    contracts: pos.contracts,
+    multiplier: pos.multiplier
+  };
   const spotMin = pos.strike * 0.75;
   const spotMax = pos.strike * 1.25;
-  const curves = buildCoveredCallPayoffCurves(inputs, spotMin, spotMax, 80);
-  const breakEven = coveredCallBreakEven(inputs);
+  const samples = buildShortCallPayoffCurve(inputs, spotMin, spotMax, 80);
+  const breakEven = shortCallBreakEven(inputs);
   const width = 320;
   const height = 180;
-  const allPayoffs = curves.covered.map((p) => p.payoff);
+  const allPayoffs = samples.map((p) => p.payoff);
   const yMin = Math.min(...allPayoffs);
   const yMax = Math.max(...allPayoffs);
   const xScale = (s: number) => ((s - spotMin) / Math.max(spotMax - spotMin, 1e-6)) * width;
   const yScale = (v: number) => height - ((v - yMin) / Math.max(yMax - yMin, 1e-6)) * height;
-  const path = curves.covered.map((p, i) => `${i === 0 ? "M" : "L"}${xScale(p.spot).toFixed(1)},${yScale(p.payoff).toFixed(1)}`).join(" ");
+  const path = samples
+    .map((p, i) => `${i === 0 ? "M" : "L"}${xScale(p.spot).toFixed(1)},${yScale(p.payoff).toFixed(1)}`)
+    .join(" ");
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Payoff diagram</CardTitle>
+        <CardTitle className="text-base">Payoff diagram (short call leg)</CardTitle>
         <CardDescription>
-          {pos.strike.toFixed(2)} call expiring {pos.expiration} · break-even ≈ ${breakEven.toFixed(2)}
+          {pos.contracts} × {pos.strike.toFixed(2)} call expiring {pos.expiration} · short-call break-even ≈ ${breakEven.toFixed(2)}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Covered call payoff diagram" className="h-44 w-full">
+        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Short call payoff diagram" className="h-44 w-full">
           <line x1={0} y1={yScale(0)} x2={width} y2={yScale(0)} stroke="currentColor" strokeOpacity={0.25} />
           <line x1={xScale(pos.strike)} y1={0} x2={xScale(pos.strike)} y2={height} stroke="currentColor" strokeOpacity={0.25} strokeDasharray="3 3" />
           <path d={path} fill="none" stroke="hsl(var(--primary))" strokeWidth={1.8} />
         </svg>
         <p className="mt-2 text-xs text-muted-foreground">
-          Curve = long {inputs.underlyingShares} shares (basis {inputs.underlyingCostBasis.toFixed(2)}) + short {pos.contracts} call @ {pos.strike.toFixed(2)}.
+          Covered-call net curve requires the underlying cost basis which is not yet threaded through the API — see slice 1.5.
         </p>
       </CardContent>
     </Card>
@@ -533,7 +550,7 @@ function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
         {vm.historyError ? (
           <CardDescription className="text-danger">Failed to load history: {vm.historyError}</CardDescription>
         ) : (
-          <CardDescription>Most recent first.</CardDescription>
+          <CardDescription>Most recent first. Click a row to reload its results (cached for 30 min).</CardDescription>
         )}
       </CardHeader>
       <CardContent>
@@ -551,7 +568,20 @@ function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
           </thead>
           <tbody>
             {vm.history.map((row) => (
-              <tr key={row.runId} className="border-t border-border/30">
+              <tr
+                key={row.runId}
+                className="cursor-pointer border-t border-border/30 hover:bg-secondary/30 focus-within:bg-secondary/30"
+                onClick={() => void vm.openRun(row.runId)}
+                tabIndex={0}
+                role="button"
+                aria-label={`Open run ${row.runId}`}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    void vm.openRun(row.runId);
+                  }
+                }}
+              >
                 <td className="py-1 pr-2 font-mono">{row.startedAt.replace("T", " ").slice(0, 16)}</td>
                 <td className="py-1 pr-2 font-mono">{row.underlyingSymbol}</td>
                 <td className="py-1 pr-2 font-mono">{row.from} → {row.to}</td>
