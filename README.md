@@ -6861,11 +6861,17 @@ Use these documents together when planning or implementing new work:
 │   │   │   │       │   ├── settings-utc-smoke.png
 │   │   │   │       │   ├── strategy-plottool-statistics-desktop.png
 │   │   │   │       │   ├── strategy-plottool-statistics-mobile.png
+│   │   │   │       │   ├── strategy-promotion-disabled-reason-smoke.png
+│   │   │   │       │   ├── strategy-promotion-smoke.png
 │   │   │   │       │   ├── watchlist-empty-value-mobile-smoke.png
 │   │   │   │       │   ├── watchlist-empty-value-smoke.png
 │   │   │   │       │   └── workstation-preview-smoke.png
+│   │   │   │       ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
+│   │   │   │       ├── web-ui-report-pack-profile-keyboard-smoke.png
 │   │   │   │       ├── web-ui-reporting-export-smoke.png
 │   │   │   │       ├── web-ui-reporting-mobile-smoke.png
+│   │   │   │       ├── web-ui-research-cash-disabled-mobile-smoke.png
+│   │   │   │       ├── web-ui-research-cash-disabled-smoke.png
 │   │   │   │       ├── web-ui-trading-paper-session-smoke.png
 │   │   │   │       └── web-ui-watchlist-sort-smoke.png
 │   │   │   ├── index.html
@@ -8619,6 +8625,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-710 directories, 7700 files
+710 directories, 7706 files
 ```
 <!-- readme-tree end -->
