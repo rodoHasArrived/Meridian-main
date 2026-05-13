@@ -57,6 +57,7 @@ export function DenseDataTable<T>({
   getRowAriaLabel,
   getRowAriaControls,
   getRowAriaExpanded,
+  getRowClassName,
   getRowSelectAriaLabel,
   onRowSelect,
   selectedRowId,
@@ -73,6 +74,7 @@ export function DenseDataTable<T>({
   getRowAriaLabel?: (row: T) => string;
   getRowAriaControls?: (row: T) => string | undefined;
   getRowAriaExpanded?: (row: T) => boolean | undefined;
+  getRowClassName?: (row: T) => string | undefined;
   getRowSelectAriaLabel?: (row: T) => string;
   onRowSelect?: (row: T) => void;
   selectedRowId?: string | null;
@@ -140,7 +142,7 @@ export function DenseDataTable<T>({
                 aria-selected={selected || undefined}
                 tabIndex={selectable ? 0 : undefined}
                 data-selectable={selectable ? "true" : undefined}
-                className={cn(selectable ? "selectable" : undefined, selected ? "selected" : undefined)}
+                className={cn(selectable ? "selectable" : undefined, selected ? "selected" : undefined, getRowClassName?.(row))}
                 onClick={selectable ? (event) => {
                   if (isInteractiveTableTarget(event.target)) return;
                   onRowSelect(row);
