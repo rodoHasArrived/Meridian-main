@@ -26,17 +26,41 @@ bash scripts/ai/cleanup.sh "$@"
 [[actions]]
 name = "Build"
 icon = "tool"
-command = "dotnet build Meridian.sln"
+command = "dotnet build Meridian.sln /p:EnableWindowsTargeting=true"
 platform = "win32"
 
 [[actions]]
 name = "Test"
 icon = "test"
-command = "dotnet test Meridian.sln"
+command = "dotnet test Meridian.sln /p:EnableWindowsTargeting=true"
 platform = "win32"
 
 [[actions]]
-name = "Run Desktop"
+name = "Run Web Workstation Host"
 icon = "run"
-command = "dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj"
+command = "dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080"
+platform = "win32"
+
+[[actions]]
+name = "Run Dashboard Dev"
+icon = "run"
+command = "npm --prefix src/Meridian.Ui/dashboard run dev"
+platform = "win32"
+
+[[actions]]
+name = "Dashboard Test"
+icon = "test"
+command = "npm --prefix src/Meridian.Ui/dashboard run test"
+platform = "win32"
+
+[[actions]]
+name = "Dashboard Build"
+icon = "tool"
+command = "npm --prefix src/Meridian.Ui/dashboard run build"
+platform = "win32"
+
+[[actions]]
+name = "Run Retained WPF"
+icon = "run"
+command = "dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true"
 platform = "win32"

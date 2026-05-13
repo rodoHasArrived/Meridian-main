@@ -1,6 +1,6 @@
 ---
 name: meridian-brainstorm
-description: Generate high-value ideas for Meridian features, UX improvements, architecture changes, onboarding, growth, or technical debt. Use when the user asks to brainstorm, wants ideas, explores what to build next, describes a pain point or persona, compares Meridian to competitors, or asks for quick wins, product bets, refactoring directions, or workstation migration opportunities.
+description: Generate high-value ideas for Meridian features, UX improvements, architecture changes, onboarding, growth, or technical debt. Use when the user asks to brainstorm, wants ideas, explores what to build next, describes a pain point or persona, compares Meridian to competitors, or asks for quick wins, product bets, refactoring directions, or browser workstation opportunities.
 ---
 
 # Meridian Brainstorm
@@ -45,10 +45,11 @@ Every strong idea should include:
 ## Meridian-Specific Guidance
 
 - Favor ideas that connect multiple existing pillars: collection, backtesting, execution, strategies, ledger, and UI.
-- For UI-facing ideas, describe screen hierarchy and operator flow, not just backend plumbing.
+- For UI-facing ideas, start from the active browser workstation in `src/Meridian.Ui/dashboard/`; describe screen hierarchy and operator flow, not just backend plumbing.
 - For workstation-related ideas, map them to the current visible operator workspaces: Trading, Portfolio, Accounting, Reporting, Strategy, Data, or Settings.
 - For refactoring ideas, reference real seams such as `BindableBase`, `EventPipeline`, `IStorageSink`, provider contracts, or orchestration services.
 - For competitive questions, focus on patterns Meridian can adapt naturally rather than cargo-culting product surfaces.
+- Exclude mobile app ideas unless the user or roadmap explicitly asks to reopen mobile product development.
 
 ## Avoid
 
