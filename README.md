@@ -6861,11 +6861,17 @@ Use these documents together when planning or implementing new work:
 │   │   │   │       │   ├── settings-utc-smoke.png
 │   │   │   │       │   ├── strategy-plottool-statistics-desktop.png
 │   │   │   │       │   ├── strategy-plottool-statistics-mobile.png
+│   │   │   │       │   ├── strategy-promotion-disabled-reason-smoke.png
+│   │   │   │       │   ├── strategy-promotion-smoke.png
 │   │   │   │       │   ├── watchlist-empty-value-mobile-smoke.png
 │   │   │   │       │   ├── watchlist-empty-value-smoke.png
 │   │   │   │       │   └── workstation-preview-smoke.png
+│   │   │   │       ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
+│   │   │   │       ├── web-ui-report-pack-profile-keyboard-smoke.png
 │   │   │   │       ├── web-ui-reporting-export-smoke.png
 │   │   │   │       ├── web-ui-reporting-mobile-smoke.png
+│   │   │   │       ├── web-ui-research-cash-disabled-mobile-smoke.png
+│   │   │   │       ├── web-ui-research-cash-disabled-smoke.png
 │   │   │   │       ├── web-ui-trading-paper-session-smoke.png
 │   │   │   │       └── web-ui-watchlist-sort-smoke.png
 │   │   │   ├── index.html
@@ -6945,6 +6951,14 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── api.trading.test.ts
 │   │   │   │   │   ├── api.ts
 │   │   │   │   │   ├── dev-fixtures.ts
+│   │   │   │   │   ├── price-alerts
+│   │   │   │   │   │   ├── evaluator.test.ts
+│   │   │   │   │   │   ├── evaluator.ts
+│   │   │   │   │   │   ├── service.test.tsx
+│   │   │   │   │   │   ├── service.ts
+│   │   │   │   │   │   ├── storage.test.ts
+│   │   │   │   │   │   ├── storage.ts
+│   │   │   │   │   │   └── types.ts
 │   │   │   │   │   ├── utils.ts
 │   │   │   │   │   ├── workspace.test.ts
 │   │   │   │   │   ├── workspace.ts
@@ -6978,6 +6992,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── portfolio-screen.tsx
 │   │   │   │   │   ├── portfolio-screen.view-model.test.ts
 │   │   │   │   │   ├── portfolio-screen.view-model.ts
+│   │   │   │   │   ├── price-alerts-screen.test.tsx
+│   │   │   │   │   ├── price-alerts-screen.tsx
+│   │   │   │   │   ├── price-alerts-screen.view-model.test.ts
+│   │   │   │   │   ├── price-alerts-screen.view-model.ts
 │   │   │   │   │   ├── quant-lab-screen.test.tsx
 │   │   │   │   │   ├── quant-lab-screen.tsx
 │   │   │   │   │   ├── quant-lab-screen.view-model.test.ts
@@ -8619,6 +8637,6 @@ Use these documents together when planning or implementing new work:
         │   └── index-B6xPZbt9.css
         └── index.html
 
-710 directories, 7700 files
+711 directories, 7717 files
 ```
 <!-- readme-tree end -->

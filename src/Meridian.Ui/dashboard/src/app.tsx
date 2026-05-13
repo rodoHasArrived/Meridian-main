@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
+  Bell,
   Database,
   KeyRound,
   LineChart,
@@ -39,6 +40,7 @@ import {
 } from "@/components/ui/sheet";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { markWorkflowPresetUsed } from "@/lib/api";
+import { PriceAlertsProvider, usePriceAlerts } from "@/lib/price-alerts/service";
 import { legacyWorkspaceRedirect } from "@/lib/workspace";
 
 const DataOperationsScreen = lazy(() => import("@/screens/data-operations-screen").then((module) => ({ default: module.DataOperationsScreen })));
@@ -48,6 +50,7 @@ const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then(
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: module.OperatorReadinessConsole })));
 const OverviewScreen = lazy(() => import("@/screens/overview-screen").then((module) => ({ default: module.OverviewScreen })));
 const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: module.PortfolioScreen })));
+const PriceAlertsScreen = lazy(() => import("@/screens/price-alerts-screen").then((module) => ({ default: module.PriceAlertsScreen })));
 const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
 const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: module.ReportingScreen })));
 const ResearchScreen = lazy(() => import("@/screens/research-screen").then((module) => ({ default: module.ResearchScreen })));
@@ -56,6 +59,14 @@ const TradingScreen = lazy(() => import("@/screens/trading-screen").then((module
 const WatchlistScreen = lazy(() => import("@/screens/watchlist-screen").then((module) => ({ default: module.WatchlistScreen })));
 
 export function App() {
+  return (
+    <PriceAlertsProvider>
+      <AppShell />
+    </PriceAlertsProvider>
+  );
+}
+
+function AppShell() {
   const [commandOpen, setCommandOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
@@ -217,6 +228,7 @@ export function App() {
         </button>
 
         <div className="workstation-actions">
+          <PriceAlertsBell />
           <MegaMenu />
           {session ? (
             <div className="workstation-session-card">
@@ -281,6 +293,7 @@ export function App() {
                   <Route path="/strategy/*" element={<ResearchScreen data={research} />} />
                   <Route path="/data/quotes" element={<LiveQuotesScreen />} />
                   <Route path="/data/watchlist" element={<WatchlistScreen />} />
+                  <Route path="/data/alerts" element={<PriceAlertsScreen />} />
                   <Route path="/data/security-master" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/*" element={<DataOperationsScreen data={dataOperations} />} />
@@ -395,6 +408,37 @@ function focusRouteTargetWhenReady(
   }, 1500);
 
   return cleanup;
+}
+
+function PriceAlertsBell() {
+  const { unacknowledgedCount, enabledCount } = usePriceAlerts();
+  const hasUnread = unacknowledgedCount > 0;
+  const label = hasUnread
+    ? `${unacknowledgedCount} unacknowledged price alert${unacknowledgedCount === 1 ? "" : "s"}`
+    : enabledCount > 0
+      ? `${enabledCount} active price alert${enabledCount === 1 ? "" : "s"}, none triggered`
+      : "Price alerts";
+
+  return (
+    <Link
+      to="/data/alerts"
+      aria-label={label}
+      title={label}
+      className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+    >
+      <Bell className="h-4 w-4" aria-hidden="true" />
+      {hasUnread ? (
+        <span
+          aria-hidden="true"
+          className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-background bg-warning px-1 font-mono text-[10px] font-semibold leading-none text-background"
+        >
+          {unacknowledgedCount > 99 ? "99+" : unacknowledgedCount}
+        </span>
+      ) : enabledCount > 0 ? (
+        <span aria-hidden="true" className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary" />
+      ) : null}
+    </Link>
+  );
 }
 
 function LegacyWorkspaceRedirect() {
