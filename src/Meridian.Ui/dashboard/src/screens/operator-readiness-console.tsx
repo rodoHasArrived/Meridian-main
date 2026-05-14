@@ -166,7 +166,7 @@ export function OperatorReadinessConsole({
                 <Link to="/accounting/reconciliation">Break queue</Link>
               </Button>
               <Button asChild variant="outline" size="sm">
-                <Link to="/reporting">Report packs</Link>
+                <Link to="/reporting/report-packs">Report packs</Link>
               </Button>
               <Button
                 type="button"

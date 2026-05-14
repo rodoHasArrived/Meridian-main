@@ -19,7 +19,8 @@ import {
   useSecurityMasterViewModel
 } from "@/screens/governance-screen.view-model";
 import type {
-  CalibrationSummaryViewState,
+  CalibrationProfileRowViewModel,
+  CalibrationSummaryViewModel,
   CorporateActionsViewState,
   CorporateActionRowViewModel,
   ReconciliationQueuePanelViewState,
@@ -35,12 +36,76 @@ interface GovernanceScreenProps {
   data: GovernanceWorkspaceResponse | null;
 }
 
+const calibrationProfileColumns: DenseDataTableColumn<CalibrationProfileRowViewModel>[] = [
+  {
+    id: "profile",
+    label: "Profile",
+    render: (row) => <span className="font-mono text-foreground">{row.toleranceProfileId}</span>
+  },
+  {
+    id: "route",
+    label: "Route",
+    render: (row) => <span className="text-muted-foreground">{row.exceptionRoute}</span>
+  },
+  {
+    id: "severity",
+    label: "Severity",
+    render: (row) => <span className={cn("font-mono", calibrationSeverityClass(row.highestSeverity))}>{row.highestSeverity}</span>
+  },
+  {
+    id: "open",
+    label: "Open",
+    align: "right",
+    render: (row) => <span className={cn("font-mono tabular-nums", row.openBreakCount > 0 ? "text-warning" : "text-foreground")}>{row.openBreakCount}</span>
+  },
+  {
+    id: "in-review",
+    label: "Review",
+    align: "right",
+    render: (row) => <span className="font-mono tabular-nums text-foreground">{row.inReviewBreakCount}</span>
+  },
+  {
+    id: "pending-signoff",
+    label: "Sign-off",
+    align: "right",
+    render: (row) => (
+      <span className={cn("font-mono tabular-nums", row.pendingSignoffCount > 0 ? "text-warning" : "text-foreground")}>
+        {row.pendingSignoffCount}
+      </span>
+    )
+  },
+  {
+    id: "tolerance",
+    label: "Tolerance",
+    align: "right",
+    render: (row) => <span className="font-mono text-muted-foreground">{row.maxToleranceBandLabel}</span>
+  },
+  {
+    id: "updated",
+    label: "Updated",
+    render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedLabel}</span>
+  }
+];
+
 const reconciliationQueueToneClass: Record<ReconciliationQueueRunTone, string> = {
   muted: "text-muted-foreground",
   warning: "text-warning",
   success: "text-success",
   primary: "text-primary"
 };
+
+function calibrationSeverityClass(severity: string): string {
+  const normalized = severity.trim().toLowerCase();
+  if (normalized === "critical") {
+    return "text-danger";
+  }
+
+  if (normalized === "warning" || normalized === "warn") {
+    return "text-warning";
+  }
+
+  return "text-foreground";
+}
 
 const reconciliationQueueColumns: DenseDataTableColumn<ReconciliationQueueRunRowViewModel>[] = [
   {
@@ -1164,17 +1229,32 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   );
 }
 
-function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewState }) {
+function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewModel }) {
   const StatusIcon = view.statusIcon === "check" ? CheckCircle2 : AlertCircle;
 
   return (
-          <Card className="panel-surface">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <BookCheck className="h-4 w-4 text-primary" />
-          Calibration summary
-        </CardTitle>
-        <CardDescription>Tolerance profile health across all active reconciliation break routes.</CardDescription>
+    <Card className="panel-surface">
+      <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <BookCheck className="h-4 w-4 text-primary" />
+            Calibration summary
+          </CardTitle>
+          <CardDescription>Tolerance profile health across all active reconciliation break routes.</CardDescription>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={view.refresh}
+          disabled={view.refreshCommand.disabled}
+          disabledReason={view.refreshCommand.disabledReason}
+          aria-label={view.refreshCommand.ariaLabel}
+          className="shrink-0"
+        >
+          <RefreshCcw className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
+          {view.refreshCommand.label}
+        </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
@@ -1209,35 +1289,47 @@ function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewState }
                 </div>
               ))}
             </div>
-            {view.hasProfiles && (
-              <div>
-                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{view.profilesLabel}</div>
-                <div className="overflow-x-auto rounded-lg border border-border/60">
-                  <table className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
-                    <thead className="bg-secondary/30">
-                      <tr>
-                        {["Profile", "Route", "Severity", "Open", "Resolved", "Pending sign-off", "Updated"].map((col) => (
-                          <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.12em] text-muted-foreground">{col}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/40">
-                      {view.profileRows.map((row) => (
-                        <tr key={row.toleranceProfileId} aria-label={row.ariaLabel} className="hover:bg-secondary/20">
-                          <td className="px-3 py-2 font-mono text-foreground">{row.toleranceProfileId}</td>
-                          <td className="px-3 py-2 text-muted-foreground">{row.exceptionRoute}</td>
-                          <td className="px-3 py-2 font-mono">{row.highestSeverity}</td>
-                          <td className={cn("px-3 py-2 font-mono", row.openBreakCount > 0 ? "text-warning" : "text-foreground")}>{row.openBreakCount}</td>
-                          <td className="px-3 py-2 font-mono text-foreground">{row.resolvedBreakCount}</td>
-                          <td className={cn("px-3 py-2 font-mono", row.pendingSignoffCount > 0 ? "text-warning" : "text-foreground")}>{row.pendingSignoffCount}</td>
-                          <td className="px-3 py-2 font-mono text-muted-foreground">{row.lastUpdatedLabel}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            <div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{view.profilesLabel}</div>
+              {view.hasProfiles ? (
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+                  <DenseDataTable
+                    columns={calibrationProfileColumns}
+                    rows={view.profileRows}
+                    getRowId={(row) => row.toleranceProfileId}
+                    getRowAriaLabel={(row) => row.ariaLabel}
+                    getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                    getRowAriaControls={(row) => row.detailPanelId}
+                    getRowAriaExpanded={(row) => row.isSelected}
+                    selectedRowId={view.selectedProfileId}
+                    onRowSelect={(row) => view.selectProfile(row.toleranceProfileId)}
+                    emptyText={view.emptyText}
+                    ariaLabel={view.tableAriaLabel}
+                  />
+                  <div id={view.detailPanelId} aria-live="polite">
+                    {view.selectedProfile ? (
+                      <EntitySummary
+                        eyebrow="Tolerance profile"
+                        title={view.selectedProfile.title}
+                        subtitle={view.selectedProfile.subtitle}
+                        description={view.selectedProfile.description}
+                        status={<Badge variant={view.selectedProfile.statusTone} dot>{view.selectedProfile.statusLabel}</Badge>}
+                        fields={view.selectedProfile.fields}
+                        ariaLabel={view.selectedProfile.ariaLabel}
+                      />
+                    ) : (
+                      <div role="status" className="rounded-lg border border-border/70 bg-secondary/25 px-4 py-3 text-sm text-muted-foreground">
+                        Select a tolerance profile to inspect its calibration posture.
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+                  {view.emptyText}
+                </div>
+              )}
+            </div>
           </>
         )}
       </CardContent>

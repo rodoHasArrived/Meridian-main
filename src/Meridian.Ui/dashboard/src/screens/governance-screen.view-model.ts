@@ -78,11 +78,41 @@ export interface CalibrationProfileRowViewModel {
   toleranceProfileId: string;
   exceptionRoute: string;
   highestSeverity: string;
+  maxToleranceBandLabel: string;
+  totalBreakCount: number;
   openBreakCount: number;
+  inReviewBreakCount: number;
   resolvedBreakCount: number;
   pendingSignoffCount: number;
+  signedOffCount: number;
   lastUpdatedLabel: string;
   ariaLabel: string;
+  selectAriaLabel: string;
+  detailPanelId: string;
+  isSelected: boolean;
+}
+
+export interface CalibrationProfileDetailFieldViewModel {
+  label: string;
+  value: string;
+}
+
+export interface CalibrationProfileDetailViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "danger";
+  ariaLabel: string;
+  fields: CalibrationProfileDetailFieldViewModel[];
+}
+
+export interface CalibrationSummaryRefreshCommandViewModel {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
 }
 
 export interface CalibrationSummaryViewState {
@@ -104,9 +134,20 @@ export interface CalibrationSummaryViewState {
   profileRows: CalibrationProfileRowViewModel[];
   hasProfiles: boolean;
   profilesLabel: string;
+  tableAriaLabel: string;
+  emptyText: string;
+  detailPanelId: string;
+  selectedProfileId: string | null;
+  selectedProfile: CalibrationProfileDetailViewModel | null;
+  refreshCommand: CalibrationSummaryRefreshCommandViewModel;
   errorText: string | null;
   loadingText: string | null;
   statusAnnouncement: string;
+}
+
+export interface CalibrationSummaryViewModel extends CalibrationSummaryViewState {
+  selectProfile: (profileId: string) => void;
+  refresh: () => void;
 }
 
 export interface CorporateActionRowViewModel extends CorporateAction {
@@ -620,6 +661,7 @@ export interface GovernanceTrialBalanceViewState {
 }
 
 const DEFAULT_ACCOUNTING_BASIS: AccountingBasisKind = "Primary";
+const CALIBRATION_PROFILE_DETAIL_PANEL_ID = "calibration-profile-detail-panel";
 
 const ACCOUNTING_BASIS_OPTIONS: Array<Pick<GovernanceTrialBalanceBasisOption, "id" | "label" | "description">> = [
   {
@@ -1168,6 +1210,8 @@ export function useGovernanceReconciliationViewModel(
   const [calibrationSummary, setCalibrationSummary] = useState<ReconciliationCalibrationSummary | null>(null);
   const [calibrationLoading, setCalibrationLoading] = useState(false);
   const [calibrationError, setCalibrationError] = useState<string | null>(null);
+  const [selectedCalibrationProfileId, setSelectedCalibrationProfileId] = useState<string | null>(null);
+  const calibrationRequestRevisionRef = useRef(0);
 
   const reconciliationQueue = data?.reconciliationQueue ?? [];
   const selectedReconciliation = useMemo(
@@ -1222,36 +1266,41 @@ export function useGovernanceReconciliationViewModel(
     };
   }, [data?.breakQueue, services, workstream]);
 
-  useEffect(() => {
-    if (workstream !== "reconciliation") {
-      return;
-    }
-
-    let cancelled = false;
+  const refreshCalibrationSummary = useCallback(() => {
+    const revision = calibrationRequestRevisionRef.current + 1;
+    calibrationRequestRevisionRef.current = revision;
     setCalibrationLoading(true);
     setCalibrationError(null);
 
     services.getCalibrationSummary()
       .then((summary) => {
-        if (!cancelled) {
+        if (calibrationRequestRevisionRef.current === revision) {
           setCalibrationSummary(summary);
         }
       })
       .catch((err) => {
-        if (!cancelled) {
+        if (calibrationRequestRevisionRef.current === revision) {
           setCalibrationError(toErrorMessage(err, "Calibration summary failed to load."));
         }
       })
       .finally(() => {
-        if (!cancelled) {
+        if (calibrationRequestRevisionRef.current === revision) {
           setCalibrationLoading(false);
         }
       });
+  }, [services]);
+
+  useEffect(() => {
+    if (workstream !== "reconciliation") {
+      return;
+    }
+
+    refreshCalibrationSummary();
 
     return () => {
-      cancelled = true;
+      calibrationRequestRevisionRef.current += 1;
     };
-  }, [services, workstream]);
+  }, [refreshCalibrationSummary, workstream]);
 
   useEffect(() => {
     if (!selectedReconciliation || workstream !== "ledger") {
@@ -1358,9 +1407,25 @@ export function useGovernanceReconciliationViewModel(
     setSelectedAccountingBasis(basis);
     setSelectedTrialBalanceRowId(null);
   }, []);
+  const calibrationViewState = useMemo(
+    () => buildCalibrationSummaryViewState(
+      calibrationSummary,
+      calibrationLoading,
+      calibrationError,
+      selectedCalibrationProfileId
+    ),
+    [calibrationSummary, calibrationLoading, calibrationError, selectedCalibrationProfileId]
+  );
+  const selectCalibrationProfile = useCallback((profileId: string) => {
+    setSelectedCalibrationProfileId(profileId);
+  }, []);
   const calibrationView = useMemo(
-    () => buildCalibrationSummaryViewState(calibrationSummary, calibrationLoading, calibrationError),
-    [calibrationSummary, calibrationLoading, calibrationError]
+    () => ({
+      ...calibrationViewState,
+      selectProfile: selectCalibrationProfile,
+      refresh: refreshCalibrationSummary
+    }),
+    [calibrationViewState, refreshCalibrationSummary, selectCalibrationProfile]
   );
   const detailActions = useMemo(
     () => selectedReconciliation ? buildReconciliationDetailActions(selectedReconciliation) : null,
@@ -2923,10 +2988,16 @@ function buildReconciliationBreakStatusAnnouncement({
 export function buildCalibrationSummaryViewState(
   summary: ReconciliationCalibrationSummary | null,
   loading: boolean,
-  errorText: string | null
+  errorText: string | null,
+  selectedProfileId: string | null = null
 ): CalibrationSummaryViewState {
   const statusTone = calibrationStatusTone(summary?.status ?? null);
-  const profileRows = (summary?.profiles ?? []).map(buildCalibrationProfileRow);
+  const profiles = summary?.profiles ?? [];
+  const effectiveSelectedProfileId = selectedProfileId && profiles.some((profile) => profile.toleranceProfileId === selectedProfileId)
+    ? selectedProfileId
+    : profiles[0]?.toleranceProfileId ?? null;
+  const profileRows = profiles.map((profile) => buildCalibrationProfileRow(profile, effectiveSelectedProfileId));
+  const selectedProfileRow = profileRows.find((profile) => profile.toleranceProfileId === effectiveSelectedProfileId) ?? null;
   const metricRows = buildCalibrationSummaryMetrics(summary);
 
   return {
@@ -2948,6 +3019,16 @@ export function buildCalibrationSummaryViewState(
     profileRows,
     hasProfiles: profileRows.length > 0,
     profilesLabel: profileRows.length === 1 ? "1 tolerance profile" : `${profileRows.length} tolerance profiles`,
+    tableAriaLabel: "Tolerance profile health by reconciliation route",
+    emptyText: loading
+      ? "Loading tolerance profiles..."
+      : errorText
+        ? "Tolerance profiles are unavailable until the calibration summary reloads."
+        : "No tolerance profiles loaded. Run provider calibration before accepting reconciliation readiness.",
+    detailPanelId: CALIBRATION_PROFILE_DETAIL_PANEL_ID,
+    selectedProfileId: selectedProfileRow?.toleranceProfileId ?? null,
+    selectedProfile: selectedProfileRow ? buildCalibrationProfileDetail(selectedProfileRow) : null,
+    refreshCommand: buildCalibrationSummaryRefreshCommand(loading, errorText),
     errorText,
     loadingText: loading ? "Loading calibration summary..." : null,
     statusAnnouncement: errorText
@@ -2957,6 +3038,27 @@ export function buildCalibrationSummaryViewState(
         : summary
           ? `Calibration status: ${calibrationStatusLabel(summary.status, false)}. ${summary.summary}`
           : ""
+  };
+}
+
+function buildCalibrationSummaryRefreshCommand(
+  loading: boolean,
+  errorText: string | null
+): CalibrationSummaryRefreshCommandViewModel {
+  if (loading) {
+    return {
+      label: "Refreshing...",
+      ariaLabel: "Calibration summary refresh is already running",
+      disabled: true,
+      disabledReason: "Calibration summary refresh is already running."
+    };
+  }
+
+  return {
+    label: errorText ? "Retry calibration summary" : "Refresh calibration",
+    ariaLabel: errorText ? "Retry calibration summary load" : "Refresh calibration summary",
+    disabled: false,
+    disabledReason: null
   };
 }
 
@@ -2996,18 +3098,84 @@ function buildCalibrationSummaryMetric(
 }
 
 function buildCalibrationProfileRow(
-  profile: ReconciliationCalibrationSummary["profiles"][number]
+  profile: ReconciliationCalibrationSummary["profiles"][number],
+  selectedProfileId: string | null
 ): CalibrationProfileRowViewModel {
+  const isSelected = profile.toleranceProfileId === selectedProfileId;
+  const statusLabel = calibrationProfileStatusLabel(profile);
+
   return {
     toleranceProfileId: profile.toleranceProfileId,
     exceptionRoute: profile.exceptionRoute,
     highestSeverity: profile.highestSeverity,
+    maxToleranceBandLabel: profile.maxToleranceBand === null ? "Policy default" : formatCurrency(profile.maxToleranceBand),
+    totalBreakCount: profile.totalBreakCount,
     openBreakCount: profile.openBreakCount,
+    inReviewBreakCount: profile.inReviewBreakCount,
     resolvedBreakCount: profile.resolvedBreakCount,
     pendingSignoffCount: profile.pendingSignoffCount,
+    signedOffCount: profile.signedOffCount,
     lastUpdatedLabel: formatSecurityDate(profile.lastUpdatedAt),
-    ariaLabel: `Profile ${profile.toleranceProfileId}: ${profile.openBreakCount} open, ${profile.pendingSignoffCount} pending sign-off, severity ${profile.highestSeverity}`
+    ariaLabel: `Profile ${profile.toleranceProfileId}: ${profile.openBreakCount} open, ${profile.pendingSignoffCount} pending sign-off, severity ${profile.highestSeverity}`,
+    selectAriaLabel: `Inspect tolerance profile ${profile.toleranceProfileId}: ${statusLabel}`,
+    detailPanelId: CALIBRATION_PROFILE_DETAIL_PANEL_ID,
+    isSelected
   };
+}
+
+function buildCalibrationProfileDetail(
+  profile: CalibrationProfileRowViewModel
+): CalibrationProfileDetailViewModel {
+  const statusLabel = calibrationProfileStatusLabel(profile);
+  const statusTone = calibrationProfileStatusTone(profile);
+
+  return {
+    id: `${CALIBRATION_PROFILE_DETAIL_PANEL_ID}-${toDomId(profile.toleranceProfileId)}`,
+    title: `Selected tolerance profile - ${profile.toleranceProfileId}`,
+    subtitle: `${profile.exceptionRoute} route - ${profile.highestSeverity} severity`,
+    description: `${statusLabel}. ${formatCount(profile.totalBreakCount, "break")} tracked for this exception route, with ${formatCount(profile.openBreakCount, "open break")} and ${formatCount(profile.pendingSignoffCount, "pending sign-off")}.`,
+    statusLabel,
+    statusTone,
+    ariaLabel: `Tolerance profile detail for ${profile.toleranceProfileId}`,
+    fields: [
+      { label: "Tolerance band", value: profile.maxToleranceBandLabel },
+      { label: "Total breaks", value: String(profile.totalBreakCount) },
+      { label: "Open", value: String(profile.openBreakCount) },
+      { label: "In review", value: String(profile.inReviewBreakCount) },
+      { label: "Resolved", value: String(profile.resolvedBreakCount) },
+      { label: "Pending sign-off", value: String(profile.pendingSignoffCount) },
+      { label: "Signed off", value: String(profile.signedOffCount) },
+      { label: "Last updated", value: profile.lastUpdatedLabel }
+    ]
+  };
+}
+
+function calibrationProfileStatusLabel(
+  profile: Pick<CalibrationProfileRowViewModel, "highestSeverity" | "openBreakCount" | "pendingSignoffCount">
+): string {
+  if (profile.highestSeverity.toLowerCase() === "critical" || profile.openBreakCount > 0) {
+    return "Operator review required";
+  }
+
+  if (profile.pendingSignoffCount > 0) {
+    return "Pending sign-off";
+  }
+
+  return "Within tolerance";
+}
+
+function calibrationProfileStatusTone(
+  profile: Pick<CalibrationProfileRowViewModel, "highestSeverity" | "openBreakCount" | "pendingSignoffCount">
+): CalibrationProfileDetailViewModel["statusTone"] {
+  if (profile.highestSeverity.toLowerCase() === "critical") {
+    return "danger";
+  }
+
+  if (profile.openBreakCount > 0 || profile.pendingSignoffCount > 0) {
+    return "warning";
+  }
+
+  return "success";
 }
 
 function calibrationStatusTone(status: ReconciliationCalibrationStatus | null): CalibrationStatusTone {

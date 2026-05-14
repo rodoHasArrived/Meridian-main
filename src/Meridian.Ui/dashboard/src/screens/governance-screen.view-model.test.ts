@@ -24,9 +24,11 @@ import {
   countOpenSecurityConflicts,
   resolveGovernanceWorkstream,
   resolveSelectedReconciliation,
+  useGovernanceReconciliationViewModel,
   useSecurityMasterViewModel
 } from "@/screens/governance-screen.view-model";
 import type {
+  GovernanceReconciliationServices,
   SecurityMasterDrillInServices,
   SecurityMasterServices
 } from "@/screens/governance-screen.view-model";
@@ -440,7 +442,15 @@ describe("governance-screen view model", () => {
       statusTextClassName: "text-warning",
       statusBannerClassName: "border-warning/30 bg-warning/5",
       profilesLabel: "1 tolerance profile",
-      hasProfiles: true
+      hasProfiles: true,
+      tableAriaLabel: "Tolerance profile health by reconciliation route",
+      selectedProfileId: "profile-cash",
+      refreshCommand: {
+        label: "Refresh calibration",
+        ariaLabel: "Refresh calibration summary",
+        disabled: false,
+        disabledReason: null
+      }
     });
     expect(state.metricRows).toEqual([
       expect.objectContaining({ id: "total", label: "Total breaks", value: 8, tone: "default", ariaLabel: "Total breaks: 8" }),
@@ -451,6 +461,182 @@ describe("governance-screen view model", () => {
       expect.objectContaining({ id: "missing-metadata", label: "Missing metadata", value: 1, tone: "warning" })
     ]);
     expect(state.profileRows[0].ariaLabel).toContain("profile-cash");
+    expect(state.profileRows[0]).toMatchObject({
+      maxToleranceBandLabel: "$250",
+      totalBreakCount: 8,
+      inReviewBreakCount: 3,
+      signedOffCount: 4,
+      selectAriaLabel: "Inspect tolerance profile profile-cash: Operator review required",
+      detailPanelId: "calibration-profile-detail-panel",
+      isSelected: true
+    });
+    expect(state.selectedProfile).toMatchObject({
+      title: "Selected tolerance profile - profile-cash",
+      statusLabel: "Operator review required",
+      statusTone: "danger",
+      ariaLabel: "Tolerance profile detail for profile-cash"
+    });
+    expect(state.selectedProfile?.fields).toEqual(expect.arrayContaining([
+      { label: "Tolerance band", value: "$250" },
+      { label: "Pending sign-off", value: "3" },
+      { label: "Last updated", value: "2026-05-09" }
+    ]));
+  });
+
+  it("selects requested calibration profile details and falls back to the first available row", () => {
+    const summary: ReconciliationCalibrationSummary = {
+      status: "Ready",
+      summary: "Profiles calibrated.",
+      asOf: "2026-05-09T14:30:00Z",
+      totalBreakCount: 2,
+      activeBreakCount: 0,
+      openBreakCount: 0,
+      inReviewBreakCount: 0,
+      resolvedBreakCount: 2,
+      dismissedBreakCount: 0,
+      criticalOpenBreakCount: 0,
+      pendingSignoffCount: 0,
+      signedOffCount: 2,
+      missingCalibrationMetadataCount: 0,
+      profiles: [
+        {
+          toleranceProfileId: "profile-a",
+          exceptionRoute: "cash",
+          highestSeverity: "Info",
+          maxToleranceBand: null,
+          totalBreakCount: 1,
+          openBreakCount: 0,
+          inReviewBreakCount: 0,
+          resolvedBreakCount: 1,
+          dismissedBreakCount: 0,
+          pendingSignoffCount: 0,
+          signedOffCount: 1,
+          lastUpdatedAt: "2026-05-09T14:00:00Z"
+        },
+        {
+          toleranceProfileId: "profile-b",
+          exceptionRoute: "settlement",
+          highestSeverity: "Warning",
+          maxToleranceBand: 125,
+          totalBreakCount: 1,
+          openBreakCount: 0,
+          inReviewBreakCount: 0,
+          resolvedBreakCount: 1,
+          dismissedBreakCount: 0,
+          pendingSignoffCount: 1,
+          signedOffCount: 1,
+          lastUpdatedAt: "2026-05-09T15:00:00Z"
+        }
+      ]
+    };
+
+    const selected = buildCalibrationSummaryViewState(summary, false, null, "profile-b");
+    expect(selected.selectedProfileId).toBe("profile-b");
+    expect(selected.profileRows.map((row) => [row.toleranceProfileId, row.isSelected])).toEqual([
+      ["profile-a", false],
+      ["profile-b", true]
+    ]);
+    expect(selected.selectedProfile).toMatchObject({
+      title: "Selected tolerance profile - profile-b",
+      statusLabel: "Pending sign-off",
+      statusTone: "warning"
+    });
+    expect(selected.selectedProfile?.fields).toEqual(expect.arrayContaining([
+      { label: "Tolerance band", value: "$125" }
+    ]));
+
+    const fallback = buildCalibrationSummaryViewState(summary, false, null, "missing-profile");
+    expect(fallback.selectedProfileId).toBe("profile-a");
+    expect(fallback.selectedProfile?.statusLabel).toBe("Within tolerance");
+  });
+
+  it("derives calibration refresh command states for loading and retry recovery", () => {
+    expect(buildCalibrationSummaryViewState(null, true, null).refreshCommand).toEqual({
+      label: "Refreshing...",
+      ariaLabel: "Calibration summary refresh is already running",
+      disabled: true,
+      disabledReason: "Calibration summary refresh is already running."
+    });
+    expect(buildCalibrationSummaryViewState(null, false, "Calibration API offline").refreshCommand).toEqual({
+      label: "Retry calibration summary",
+      ariaLabel: "Retry calibration summary load",
+      disabled: false,
+      disabledReason: null
+    });
+  });
+
+  it("retries calibration summary loads and ignores stale responses", async () => {
+    let resolveFirst!: (summary: ReconciliationCalibrationSummary) => void;
+    const firstLoad = new Promise<ReconciliationCalibrationSummary>((resolve) => {
+      resolveFirst = resolve;
+    });
+    const retrySummary: ReconciliationCalibrationSummary = {
+      status: "Ready",
+      summary: "Retry summary loaded.",
+      asOf: "2026-05-09T16:00:00Z",
+      totalBreakCount: 1,
+      activeBreakCount: 0,
+      openBreakCount: 0,
+      inReviewBreakCount: 0,
+      resolvedBreakCount: 1,
+      dismissedBreakCount: 0,
+      criticalOpenBreakCount: 0,
+      pendingSignoffCount: 0,
+      signedOffCount: 1,
+      missingCalibrationMetadataCount: 0,
+      profiles: [
+        {
+          toleranceProfileId: "retry-profile",
+          exceptionRoute: "cash",
+          highestSeverity: "Info",
+          maxToleranceBand: null,
+          totalBreakCount: 1,
+          openBreakCount: 0,
+          inReviewBreakCount: 0,
+          resolvedBreakCount: 1,
+          dismissedBreakCount: 0,
+          pendingSignoffCount: 0,
+          signedOffCount: 1,
+          lastUpdatedAt: "2026-05-09T16:00:00Z"
+        }
+      ]
+    };
+    const staleSummary: ReconciliationCalibrationSummary = {
+      ...retrySummary,
+      summary: "Stale first response.",
+      profiles: [
+        {
+          ...retrySummary.profiles[0],
+          toleranceProfileId: "stale-profile"
+        }
+      ]
+    };
+    const services: GovernanceReconciliationServices = {
+      getBreakQueue: vi.fn().mockResolvedValue([]),
+      reviewBreak: vi.fn(),
+      resolveBreak: vi.fn(),
+      getTrialBalance: vi.fn().mockResolvedValue([]),
+      getCalibrationSummary: vi.fn()
+        .mockReturnValueOnce(firstLoad)
+        .mockResolvedValueOnce(retrySummary)
+    };
+
+    const { result } = renderHook(() => useGovernanceReconciliationViewModel({
+      ...({ metrics: [], reconciliationQueue, breakQueue: [], cashFlow: null, reporting: null } as unknown as GovernanceWorkspaceResponse)
+    }, "reconciliation", services));
+
+    await waitFor(() => expect(result.current.calibrationView.refreshCommand.disabled).toBe(true));
+    act(() => {
+      result.current.calibrationView.refresh();
+    });
+    await waitFor(() => expect(result.current.calibrationView.selectedProfileId).toBe("retry-profile"));
+
+    act(() => {
+      resolveFirst(staleSummary);
+    });
+
+    await waitFor(() => expect(result.current.calibrationView.selectedProfileId).toBe("retry-profile"));
+    expect(result.current.calibrationView.selectedProfile?.title).toContain("retry-profile");
   });
 
   it("derives trial-balance table rows, labels, and status announcements", () => {
