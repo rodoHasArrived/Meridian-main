@@ -86,10 +86,17 @@ function buildRequest() {
     maxDelta: 0.35,
     minDte: 7,
     maxDte: 45,
+    minIvPercentile: 50,
     minOpenInterest: 100,
     minVolume: 25,
     maxSpreadPct: 0.1,
+    takeProfitCapture: 0.8,
+    rollDelta: 0.55,
+    exDivWindowDays: 7,
     scoringMode: "Basic" as const,
+    depthBonusWeight: 0.05,
+    riskFreeRate: 0.04,
+    initialUnderlyingShares: 100,
     label: null
   };
 }

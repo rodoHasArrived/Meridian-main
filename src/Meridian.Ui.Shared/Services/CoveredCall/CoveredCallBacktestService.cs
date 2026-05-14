@@ -502,8 +502,8 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 .ConfigureAwait(false);
 
             // Project results.
-            var equityCurve = strategy.Metrics?.EquityCurve ?? [];
-            var result = CoveredCallRunProjection.ToResult(runId, request, strategy, equityCurve);
+            var equityCurve = innerStrategy.Metrics?.EquityCurve ?? [];
+            var result = CoveredCallRunProjection.ToResult(runId, request, innerStrategy, equityCurve);
 
             // Cache full result.
             _resultCache.Set(CacheKey(runId), result, new MemoryCacheEntryOptions
@@ -531,7 +531,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
 
             _logger.LogInformation(
                 "Covered-call run {RunId} completed: {Trades} trades, sharpe={Sharpe:F2}",
-                runId, strategy.CompletedTrades.Count, strategy.Metrics?.SharpeRatio ?? double.NaN);
+                runId, innerStrategy.CompletedTrades.Count, innerStrategy.Metrics?.SharpeRatio ?? double.NaN);
         }
         catch (OperationCanceledException)
         {
