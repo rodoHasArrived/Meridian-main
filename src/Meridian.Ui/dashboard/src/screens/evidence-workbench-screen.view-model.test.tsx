@@ -12,6 +12,7 @@ import { EvidenceWorkbenchScreen } from "@/screens/evidence-workbench-screen";
 import {
   buildEvidenceLineageDetail,
   buildEvidenceLineagePanel,
+  buildEvidenceNodeDetail,
   buildEvidenceWorkbenchViewModel,
   groupNodes,
   mapStatusTone,
@@ -58,7 +59,17 @@ const readyNode: EvidenceNode = {
   freshness: { asOf: "2026-05-09T12:00:00Z", isStale: false, reason: null },
   sourceSystem: "StrategyRunReadService",
   summary: "Run detail is available.",
-  artifactRefs: [],
+  artifactRefs: [
+    {
+      artifactId: "artifact-run-detail",
+      kind: "json",
+      path: "artifacts/evidence/strategy-run/run-1/detail.json",
+      route: null,
+      generatedAt: "2026-05-09T12:01:00Z",
+      hash: "sha256:run-detail",
+      retained: true
+    }
+  ],
   relatedWorkItemIds: []
 };
 
@@ -185,6 +196,20 @@ describe("Evidence Workbench view model", () => {
     expect(vm.staleEvidence).toEqual([staleNode.evidenceId]);
     expect(vm.relatedWorkItemIds).toEqual(["provider-trust:sample-review"]);
     expect(vm.nodeGroups.map((group) => group.id)).toEqual(["run-lifecycle", "readiness", "provider-trust"]);
+    expect(vm.nodeGroups[0]).toMatchObject({
+      tableLabel: "Run Lifecycle evidence nodes",
+      detailPanelId: "evidence-node-run-lifecycle-selected-detail",
+      defaultSelectedNodeId: readyNode.evidenceId,
+      summaryLabel: "1 node; select a row to inspect retained artifacts, freshness, and work items."
+    });
+    expect(vm.nodeGroups[0].rows[0]).toMatchObject({
+      kindLabel: "Strategy Run Detail",
+      statusLabel: "Ready",
+      freshnessLabel: "Fresh as of May 9, 12:00 UTC",
+      artifactCountLabel: "1 artifact",
+      workItemCountLabel: "0 work items",
+      selectAriaLabel: "Inspect evidence node Strategy Run Detail strategy-run:run-1:detail"
+    });
     expect(vm.sourceWorkflowHref).toBe("/strategy?runId=run-1");
     expect(vm.packetActionsSummaryLabel).toBe("3 workflow actions");
     expect(vm.packetActions.map((action) => action.control)).toEqual(["link", "validate", "export"]);
@@ -378,9 +403,43 @@ describe("Evidence Workbench view model", () => {
     const groups = groupNodes([readyNode, blockedNode]);
 
     expect(groups).toEqual([
-      expect.objectContaining({ id: "run-lifecycle", readyCount: 1, reviewCount: 0 }),
-      expect.objectContaining({ id: "provider-trust", readyCount: 0, reviewCount: 1 })
+      expect.objectContaining({
+        id: "run-lifecycle",
+        readyCount: 1,
+        reviewCount: 0,
+        tableLabel: "Run Lifecycle evidence nodes",
+        hasRows: true,
+        defaultSelectedNodeId: readyNode.evidenceId
+      }),
+      expect.objectContaining({
+        id: "provider-trust",
+        readyCount: 0,
+        reviewCount: 1,
+        tableLabel: "Provider Trust evidence nodes",
+        hasRows: true,
+        defaultSelectedNodeId: blockedNode.evidenceId
+      })
     ]);
+
+    expect(groups[1].rows[0]).toMatchObject({
+      kindLabel: "Provider Trust",
+      statusLabel: "Review Required",
+      workItemCountLabel: "1 work item"
+    });
+    expect(buildEvidenceNodeDetail(groups[0].rows[0])).toMatchObject({
+      eyebrow: "Selected evidence node",
+      title: "Strategy Run Detail",
+      subtitle: readyNode.evidenceId,
+      artifactRows: [
+        expect.objectContaining({
+          kind: "Json",
+          target: "artifacts/evidence/strategy-run/run-1/detail.json",
+          retainedLabel: "Retained",
+          hashLabel: "sha256:run-detail"
+        })
+      ],
+      workItemEmptyText: "No related operator work items are attached to this node."
+    });
   });
 
   it("builds accessible empty and populated lineage presentation state", () => {
@@ -662,6 +721,11 @@ describe("EvidenceWorkbenchScreen", () => {
       "/strategy?runId=run-1"
     );
     expect(screen.getByRole("region", { name: "Evidence packet actions" })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Run Lifecycle evidence nodes" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Selected evidence node: Strategy Run Detail" })).toHaveTextContent(
+      "Run detail is available."
+    );
+    expect(screen.getByText("artifacts/evidence/strategy-run/run-1/detail.json")).toBeInTheDocument();
     expect(screen.getByRole("table", { name: /evidence lineage edges for momentum strategy run/i })).toBeInTheDocument();
     expect(screen.getAllByText("Requires").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("region", { name: "Selected lineage edge: Requires" })).toHaveTextContent(
@@ -717,6 +781,52 @@ describe("EvidenceWorkbenchScreen", () => {
     const detail = screen.getByRole("region", { name: "Selected lineage edge: Blocks Readiness" });
     expect(detail).toHaveTextContent("Provider evidence must be reviewed first.");
     expect(detail).toHaveTextContent("strategy-run:run-1:provider-trust");
+  });
+
+  it("lets keyboard and pointer users inspect evidence node detail", async () => {
+    const promotionNode: EvidenceNode = {
+      ...readyNode,
+      evidenceId: "strategy-run:run-1:promotion",
+      kind: "promotion-review",
+      status: "ReviewRequired",
+      summary: "Promotion review is waiting on provider trust evidence.",
+      artifactRefs: [],
+      relatedWorkItemIds: ["promotion:review"]
+    };
+    const packetWithTwoRunNodes: EvidencePacket = {
+      ...packet,
+      nodes: [readyNode, promotionNode, staleNode, blockedNode]
+    };
+    vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
+    vi.mocked(getEvidencePacket).mockResolvedValue(packetWithTwoRunNodes);
+    const user = userEvent.setup();
+
+    renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
+
+    const promotionRow = await screen.findByRole("row", {
+      name: /inspect evidence node promotion review strategy-run:run-1:promotion/i
+    });
+    expect(promotionRow).toHaveAttribute("aria-controls", "evidence-node-run-lifecycle-selected-detail");
+    expect(promotionRow).toHaveAttribute("aria-expanded", "false");
+
+    promotionRow.focus();
+    await user.keyboard("{Enter}");
+
+    expect(promotionRow).toHaveAttribute("aria-selected", "true");
+    expect(promotionRow).toHaveAttribute("aria-expanded", "true");
+    const promotionDetail = screen.getByRole("region", { name: "Selected evidence node: Promotion Review" });
+    expect(promotionDetail).toHaveTextContent("Promotion review is waiting on provider trust evidence.");
+    expect(promotionDetail).toHaveTextContent("promotion:review");
+
+    const readyRow = screen.getByRole("row", {
+      name: /inspect evidence node strategy run detail strategy-run:run-1:detail/i
+    });
+    await user.click(readyRow);
+
+    expect(readyRow).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("region", { name: "Selected evidence node: Strategy Run Detail" })).toHaveTextContent(
+      "artifacts/evidence/strategy-run/run-1/detail.json"
+    );
   });
 
   it("renders broad subject selection route without loading a packet", async () => {

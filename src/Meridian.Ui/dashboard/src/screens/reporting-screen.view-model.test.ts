@@ -85,6 +85,10 @@ describe("useReportingScreenViewModel", () => {
       "Preview payload",
       "Run export"
     ]);
+    expect(result.current.workflowTaskPanel?.actions.map((action) => action.describedById)).toEqual([
+      "reporting-action-excel-preview-status",
+      "reporting-action-excel-run-status"
+    ]);
     expect(result.current.workflowTaskPanel?.targets.map((target) => target.label)).toEqual(["board", "audit"]);
     expect(result.current.workflowTaskPanel?.profiles.map((profile) => profile.readinessLabel)).toEqual([
       "Dictionary only",

@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as api from "@/lib/api";
 import { GovernanceScreen } from "@/screens/governance-screen";
@@ -337,6 +337,48 @@ describe("GovernanceScreen", () => {
     expect(screen.queryByRole("link", { name: "Run reporting export" })).not.toBeInTheDocument();
   });
 
+  it("surfaces the reporting export busy reason on the command button", async () => {
+    const user = userEvent.setup();
+    let finishExport!: () => void;
+    vi.mocked(api.runAnalysisExport).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishExport = () => resolve({
+            jobId: "export-busy",
+            success: true,
+            status: "completed",
+            profileId: "excel",
+            symbols: [],
+            filesGenerated: 1,
+            totalRecords: 4,
+            totalBytes: 1024,
+            outputDirectory: "artifacts/exports/export-busy",
+            durationSeconds: 1,
+            error: null,
+            warnings: [],
+            files: [],
+            timestamp: "2026-01-01T00:00:00Z"
+          });
+        })
+    );
+
+    await renderGovernanceScreen(data, "/accounting");
+
+    await user.click(screen.getByRole("button", { name: "Run reporting export for Excel" }));
+
+    const busyButton = await screen.findByRole("button", { name: "Excel reporting export is already running" });
+    expect(busyButton).toBeDisabled();
+    expect(busyButton).toHaveAttribute("aria-busy", "true");
+    expect(busyButton).toHaveAttribute("title", "Excel reporting export is already running.");
+    expect(busyButton).toHaveTextContent("Export running...");
+
+    finishExport();
+
+    await waitFor(() => {
+      expect(screen.getByText("Export export-busy completed with 1 file(s), 4 record(s), and 1 KB. Output artifacts/exports/export-busy.")).toBeInTheDocument();
+    });
+  });
+
   it("renders reporting profile detail state and updates selected profile", async () => {
     const user = userEvent.setup();
     const reportingData: GovernanceWorkspaceResponse = {
@@ -626,6 +668,46 @@ describe("GovernanceScreen", () => {
       conflictId: "conflict-1",
       resolution: "AcceptA",
       resolvedBy: "operator"
+    });
+  });
+
+  it("surfaces Security Master conflict action disabled reasons while resolving", async () => {
+    const user = userEvent.setup();
+    let finishResolve!: () => void;
+    vi.mocked(api.getSecurityConflicts).mockResolvedValueOnce([securityConflict]);
+    vi.mocked(api.resolveSecurityConflict).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishResolve = () => resolve({
+            ...securityConflict,
+            status: "Resolved"
+          });
+        })
+    );
+
+    await renderGovernanceScreen(data, "/accounting/security-master");
+
+    const useBloomberg = await screen.findByRole("button", {
+      name: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Bloomberg value sec-1"
+    });
+
+    await user.click(useBloomberg);
+
+    const disabledReason = "Resolution is already in progress for identifier conflict conflict-1.";
+    const disabledUseBloomberg = await screen.findByRole("button", {
+      name: `Resolve identifier conflict conflict-1 on identifiers.CUSIP with Bloomberg value sec-1. Disabled: ${disabledReason}`
+    });
+    expect(disabledUseBloomberg).toBeDisabled();
+    expect(disabledUseBloomberg).toHaveAttribute("title", disabledReason);
+    expect(screen.getByRole("button", {
+      name: `Dismiss identifier conflict conflict-1 on identifiers.CUSIP. Disabled: ${disabledReason}`
+    })).toHaveAttribute("title", disabledReason);
+    expect(screen.getByText("Resolving identifier conflict conflict-1.")).toHaveAttribute("role", "status");
+
+    finishResolve();
+
+    await waitFor(() => {
+      expect(screen.queryByRole("button", { name: /Disabled: Resolution is already in progress/ })).not.toBeInTheDocument();
     });
   });
 

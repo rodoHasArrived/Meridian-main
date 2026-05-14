@@ -99,6 +99,51 @@ export interface CoveredCallRunState {
   status: CoveredCallRunStatus | null;
   result: CoveredCallRunResult | null;
   selectedPositionIndex: number;
+  isStarting: boolean;
+  isCancelling: boolean;
+}
+
+export interface CoveredCallActionCommandState {
+  label: string;
+  ariaLabel: string;
+  feedbackId: string;
+  feedbackText: string | null;
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
+  busyLabel: string;
+}
+
+export interface CoveredCallRunProgressPanelViewModel {
+  title: string;
+  description: string;
+  percentComplete: number;
+  ariaValueText: string;
+  ariaBusy: true | undefined;
+}
+
+export interface CoveredCallStageNavigationItemState {
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
+export type CoveredCallStageNavigationState = Record<CoveredCallStage, CoveredCallStageNavigationItemState> & {
+  feedbackId: string;
+  feedbackText: string | null;
+};
+
+export interface CoveredCallResultsActionViewModel {
+  id: string;
+  label: string;
+  description: string;
+  href: string;
+  ariaLabel: string;
+}
+
+export interface CoveredCallResultsActionPanelViewModel {
+  title: string;
+  description: string;
+  actions: CoveredCallResultsActionViewModel[];
 }
 
 export interface CoveredCallScreenServices {
@@ -225,6 +270,210 @@ export function formToRequest(form: CoveredCallFormState): CoveredCallBacktestRe
 
 export function isTerminalPhase(phase: CoveredCallRunPhase): boolean {
   return phase === "Completed" || phase === "Failed" || phase === "Cancelled";
+}
+
+const FORM_ERROR_PRIORITY: Array<keyof CoveredCallFormState> = [
+  "underlyingSymbol",
+  "from",
+  "to",
+  "minStrike",
+  "overwriteRatio",
+  "maxDelta",
+  "minDte",
+  "maxDte",
+  "initialCash",
+  "initialUnderlyingShares"
+];
+
+function firstFormError(errors: CoveredCallFormErrors): string | null {
+  for (const field of FORM_ERROR_PRIORITY) {
+    if (errors[field]) return errors[field] ?? null;
+  }
+  return Object.values(errors)[0] ?? null;
+}
+
+export function buildCoveredCallRunCommandState(
+  form: CoveredCallFormState,
+  isStarting: boolean
+): CoveredCallActionCommandState {
+  const feedbackId = "covered-call-run-command-feedback";
+  if (isStarting) {
+    return {
+      label: "Submitting...",
+      ariaLabel: "Submitting covered-call backtest",
+      feedbackId,
+      feedbackText: "Submitting covered-call run request.",
+      disabled: false,
+      disabledReason: null,
+      busy: true,
+      busyLabel: "Submitting..."
+    };
+  }
+
+  const disabledReason = firstFormError(validateForm(form));
+  return {
+    label: "Run backtest",
+    ariaLabel: "Run covered-call backtest",
+    feedbackId,
+    feedbackText: disabledReason ? `Cannot run yet: ${disabledReason}` : null,
+    disabled: Boolean(disabledReason),
+    disabledReason,
+    busy: false,
+    busyLabel: "Submitting..."
+  };
+}
+
+export function buildCoveredCallCancelCommandState(run: CoveredCallRunState): CoveredCallActionCommandState {
+  const feedbackId = "covered-call-cancel-command-feedback";
+  if (run.isCancelling) {
+    return {
+      label: "Cancelling run",
+      ariaLabel: "Cancelling covered-call backtest run",
+      feedbackId,
+      feedbackText: "Cancelling covered-call backtest run.",
+      disabled: false,
+      disabledReason: null,
+      busy: true,
+      busyLabel: "Cancelling..."
+    };
+  }
+
+  if (!run.runId) {
+    return {
+      label: "Cancel run",
+      ariaLabel: "Cancel covered-call backtest run",
+      feedbackId,
+      feedbackText: "Run ID is not available until the engine accepts the request.",
+      disabled: true,
+      disabledReason: "Run ID is not available until the engine accepts the request.",
+      busy: false,
+      busyLabel: "Cancelling..."
+    };
+  }
+
+  if (run.status && isTerminalPhase(run.status.phase)) {
+    const disabledReason = `Run is already ${run.status.phase.toLowerCase()}.`;
+    return {
+      label: "Cancel run",
+      ariaLabel: "Cancel covered-call backtest run",
+      feedbackId,
+      feedbackText: disabledReason,
+      disabled: true,
+      disabledReason,
+      busy: false,
+      busyLabel: "Cancelling..."
+    };
+  }
+
+  return {
+    label: "Cancel run",
+    ariaLabel: "Cancel covered-call backtest run",
+    feedbackId,
+    feedbackText: null,
+    disabled: false,
+    disabledReason: null,
+    busy: false,
+    busyLabel: "Cancelling..."
+  };
+}
+
+export function buildCoveredCallRunProgressPanel(run: CoveredCallRunState): CoveredCallRunProgressPanelViewModel {
+  if (run.isStarting) {
+    return {
+      title: "Submitting backtest",
+      description: "Submitting covered-call run request to the strategy engine.",
+      percentComplete: 0,
+      ariaValueText: "Submitting covered-call run request.",
+      ariaBusy: true
+    };
+  }
+
+  const status = run.status;
+  if (!status) {
+    return {
+      title: "Running backtest",
+      description: "Queued - waiting for the engine.",
+      percentComplete: 0,
+      ariaValueText: "Queued and waiting for the engine.",
+      ariaBusy: true
+    };
+  }
+
+  const percentComplete = Math.round(status.percentComplete * 100);
+  const currentDate = status.currentBacktestDate ? ` - ${status.currentBacktestDate}` : "";
+  const terminal = isTerminalPhase(status.phase);
+
+  return {
+    title: terminal ? "Backtest run finished" : "Running backtest",
+    description: `Phase: ${status.phase}${currentDate}`,
+    percentComplete,
+    ariaValueText: `${status.phase} ${percentComplete}% complete.`,
+    ariaBusy: terminal ? undefined : true
+  };
+}
+
+export function buildCoveredCallStageNavigationState(run: CoveredCallRunState): CoveredCallStageNavigationState {
+  const disabledReason = run.isStarting
+    ? "Wait until the strategy engine accepts the backtest request before leaving run progress."
+    : run.isCancelling
+      ? "Wait until cancellation completes before leaving run progress."
+      : null;
+
+  return {
+    feedbackId: "covered-call-stage-navigation-feedback",
+    feedbackText: disabledReason,
+    configure: {
+      disabled: disabledReason !== null,
+      disabledReason
+    },
+    run: {
+      disabled: false,
+      disabledReason: null
+    },
+    results: {
+      disabled: disabledReason !== null,
+      disabledReason
+    }
+  };
+}
+
+export function buildCoveredCallResultsActionPanel(
+  result: CoveredCallRunResult | null
+): CoveredCallResultsActionPanelViewModel {
+  const symbol = result?.underlyingSymbol?.trim().toUpperCase() || "the underlying";
+  const quoteSymbol = encodeURIComponent(symbol);
+
+  return {
+    title: "Next workflow",
+    description: result
+      ? `Use the ${symbol} backtest evidence while the context is fresh.`
+      : "Complete or load a covered-call run before moving evidence into the next workflow.",
+    actions: result
+      ? [
+          {
+            id: "live-quote",
+            label: "Validate live quote",
+            description: `Open ${symbol} quote, order book, trades, and chart evidence.`,
+            href: `/data/quotes?symbol=${quoteSymbol}`,
+            ariaLabel: `Validate live quote evidence for ${symbol}`
+          },
+          {
+            id: "strategy-designer",
+            label: "Refine payoff",
+            description: "Compare the covered-call shape against editable option-leg structures.",
+            href: "/strategy/designer",
+            ariaLabel: "Open Strategy Designer to refine covered-call payoff"
+          },
+          {
+            id: "report-pack",
+            label: "Package evidence",
+            description: "Move selected run evidence toward report-pack preview or export review.",
+            href: "/reporting/report-packs",
+            ariaLabel: "Open report packs to package covered-call run evidence"
+          }
+        ]
+      : []
+  };
 }
 
 export function buildChainPreviewPanelViewModel(
@@ -402,6 +651,11 @@ export interface CoveredCallScreenState {
   chainPreview: CoveredCallChainPreviewState;
   chainPreviewPanel: CoveredCallChainPreviewPanelViewModel;
   run: CoveredCallRunState;
+  runCommand: CoveredCallActionCommandState;
+  cancelRunCommand: CoveredCallActionCommandState;
+  runProgressPanel: CoveredCallRunProgressPanelViewModel;
+  stageNavigation: CoveredCallStageNavigationState;
+  resultsActionPanel: CoveredCallResultsActionPanelViewModel;
   history: CoveredCallRunSummary[];
   historyError: string | null;
   errorBanner: string | null;
@@ -464,7 +718,9 @@ export function useCoveredCallScreenViewModel(
     runId: null,
     status: null,
     result: null,
-    selectedPositionIndex: 0
+    selectedPositionIndex: 0,
+    isStarting: false,
+    isCancelling: false
   });
   const [history, setHistory] = useState<CoveredCallRunSummary[]>([]);
   const [historyError, setHistoryError] = useState<string | null>(null);
@@ -486,7 +742,13 @@ export function useCoveredCallScreenViewModel(
   }, []);
 
   const dismissError = useCallback(() => setErrorBanner(null), []);
-  const goToStage = useCallback((next: CoveredCallStage) => setStage(next), []);
+  const goToStage = useCallback((next: CoveredCallStage) => {
+    setStage((current) => {
+      const navigation = buildCoveredCallStageNavigationState(run);
+      if (navigation[next].disabled) return current;
+      return next;
+    });
+  }, [run]);
 
   // ---- Chain preview (debounced) -----------------------------------------
   const chainAbortRef = useRef<AbortController | null>(null);
@@ -590,7 +852,7 @@ export function useCoveredCallScreenViewModel(
     try {
       const status = await services.getStatus(runId, controller.signal);
       if (activeRunIdRef.current !== runId) return;
-      setRun((prev) => ({ ...prev, status }));
+      setRun((prev) => ({ ...prev, status, isStarting: false }));
 
       if (isTerminalPhase(status.phase)) {
         stopPolling();
@@ -598,7 +860,7 @@ export function useCoveredCallScreenViewModel(
           try {
             const result = await services.getResult(runId);
             if (activeRunIdRef.current !== runId) return;
-            setRun((prev) => ({ ...prev, result, selectedPositionIndex: 0 }));
+            setRun((prev) => ({ ...prev, result, selectedPositionIndex: 0, isStarting: false, isCancelling: false }));
             setStage("results");
           } catch (resultErr) {
             setErrorBanner(`Result fetch failed: ${(resultErr as Error).message}`);
@@ -619,6 +881,8 @@ export function useCoveredCallScreenViewModel(
   }, [pollIntervalMs, services, stopPolling]);
 
   const startRun = useCallback(async () => {
+    if (run.isStarting) return;
+
     const errors = validateForm(form);
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) {
@@ -632,7 +896,7 @@ export function useCoveredCallScreenViewModel(
     activeRunIdRef.current = null;
 
     setErrorBanner(null);
-    setRun({ runId: null, status: null, result: null, selectedPositionIndex: 0 });
+    setRun({ runId: null, status: null, result: null, selectedPositionIndex: 0, isStarting: true, isCancelling: false });
     setStage("run");
 
     try {
@@ -642,27 +906,32 @@ export function useCoveredCallScreenViewModel(
         runId: handle.runId,
         status: { runId: handle.runId, phase: "Queued", percentComplete: 0, currentBacktestDate: null, failureMessage: null },
         result: null,
-        selectedPositionIndex: 0
+        selectedPositionIndex: 0,
+        isStarting: false,
+        isCancelling: false
       });
       pollTimerRef.current = window.setTimeout(() => {
         void pollOnce(handle.runId);
       }, pollIntervalMs);
     } catch (error) {
       setErrorBanner((error as Error).message);
+      setRun({ runId: null, status: null, result: null, selectedPositionIndex: 0, isStarting: false, isCancelling: false });
       setStage("configure");
     }
-  }, [form, pollIntervalMs, pollOnce, services, stopPolling]);
+  }, [form, pollIntervalMs, pollOnce, run.isStarting, services, stopPolling]);
 
   const cancelRun = useCallback(async () => {
     const runId = run.runId;
-    if (!runId) return;
+    if (!runId || run.isCancelling) return;
+    setRun((prev) => ({ ...prev, isCancelling: true }));
     try {
       const status = await services.cancelRun(runId);
-      setRun((prev) => ({ ...prev, status }));
+      setRun((prev) => ({ ...prev, status, isCancelling: false }));
     } catch (error) {
       setErrorBanner(`Cancel failed: ${(error as Error).message}`);
+      setRun((prev) => ({ ...prev, isCancelling: false }));
     }
-  }, [run.runId, services]);
+  }, [run.isCancelling, run.runId, services]);
 
   const loadHistory = useCallback(async () => {
     setHistoryError(null);
@@ -690,13 +959,36 @@ export function useCoveredCallScreenViewModel(
           failureMessage: null
         },
         result,
-        selectedPositionIndex: 0
+        selectedPositionIndex: 0,
+        isStarting: false,
+        isCancelling: false
       });
       setStage("results");
     } catch (error) {
       setErrorBanner(`Could not load run ${runId}: ${(error as Error).message}`);
     }
   }, [services, stopPolling]);
+
+  const runCommand = useMemo(
+    () => buildCoveredCallRunCommandState(form, run.isStarting),
+    [form, run.isStarting]
+  );
+  const cancelRunCommand = useMemo(
+    () => buildCoveredCallCancelCommandState(run),
+    [run]
+  );
+  const runProgressPanel = useMemo(
+    () => buildCoveredCallRunProgressPanel(run),
+    [run]
+  );
+  const stageNavigation = useMemo(
+    () => buildCoveredCallStageNavigationState(run),
+    [run]
+  );
+  const resultsActionPanel = useMemo(
+    () => buildCoveredCallResultsActionPanel(run.result),
+    [run.result]
+  );
 
   // Stop polling and abort in-flight requests on unmount.
   useEffect(() => () => {
@@ -712,6 +1004,11 @@ export function useCoveredCallScreenViewModel(
     chainPreview,
     chainPreviewPanel: buildChainPreviewPanelViewModel(chainPreview),
     run,
+    runCommand,
+    cancelRunCommand,
+    runProgressPanel,
+    stageNavigation,
+    resultsActionPanel,
     history,
     historyError,
     errorBanner,
@@ -732,6 +1029,11 @@ export function useCoveredCallScreenViewModel(
     formErrors,
     chainPreview,
     run,
+    runCommand,
+    cancelRunCommand,
+    runProgressPanel,
+    stageNavigation,
+    resultsActionPanel,
     history,
     historyError,
     errorBanner,

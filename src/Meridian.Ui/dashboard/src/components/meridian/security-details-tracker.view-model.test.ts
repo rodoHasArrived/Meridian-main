@@ -178,6 +178,23 @@ describe("buildLotsTrackerViewModel", () => {
     expect(empty.selectedDetail).toBeNull();
     expect(empty.emptyText).toBe("No lots recorded yet. Add a lot above to start tracking cost basis.");
   });
+
+  it("projects pending lot removal as a row-owned confirmation action", () => {
+    const vm = buildVm({ pendingRemoveLotId: "lot-aapl-2" });
+
+    expect(vm.rows[1]).toMatchObject({
+      lotId: "lot-aapl-2",
+      removeLabel: "Confirm remove",
+      removeAriaLabel: "Confirm remove AAPL lot from 2026-04-15. This deletes the local cost-basis lot.",
+      removeConfirmationPending: true
+    });
+    expect(vm.rows[1]?.ariaLabel).toContain("Remove confirmation pending.");
+    expect(vm.rows[0]).toMatchObject({
+      removeLabel: "Remove",
+      removeAriaLabel: "Remove AAPL lot from 2026-04-01",
+      removeConfirmationPending: false
+    });
+  });
 });
 
 describe("buildSecurityDetailsViewModel", () => {

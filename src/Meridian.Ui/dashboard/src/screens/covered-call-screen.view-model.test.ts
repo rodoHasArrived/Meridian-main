@@ -3,11 +3,17 @@ import { describe, expect, it, vi } from "vitest";
 import {
   COVERED_CALL_CHAIN_DETAIL_PANEL_ID,
   buildChainPreviewPanelViewModel,
+  buildCoveredCallCancelCommandState,
+  buildCoveredCallRunCommandState,
+  buildCoveredCallRunProgressPanel,
+  buildCoveredCallResultsActionPanel,
+  buildCoveredCallStageNavigationState,
   DEFAULT_COVERED_CALL_FORM,
   formToRequest,
   isTerminalPhase,
   useCoveredCallScreenViewModel,
   validateForm,
+  type CoveredCallRunState,
   type CoveredCallScreenServices
 } from "@/screens/covered-call-screen.view-model";
 import type {
@@ -65,6 +71,188 @@ describe("isTerminalPhase", () => {
   });
   it.each(["Queued", "WarmingUp", "Running"] as const)("treats %s as non-terminal", (phase) => {
     expect(isTerminalPhase(phase)).toBe(false);
+  });
+});
+
+describe("covered-call run command view models", () => {
+  const idleRun: CoveredCallRunState = {
+    runId: null,
+    status: null,
+    result: null,
+    selectedPositionIndex: 0,
+    isStarting: false,
+    isCancelling: false
+  };
+
+  it("disables the run command until the required form fields are valid", () => {
+    expect(buildCoveredCallRunCommandState(DEFAULT_COVERED_CALL_FORM, false)).toMatchObject({
+      label: "Run backtest",
+      disabled: true,
+      disabledReason: "Minimum strike must be greater than zero.",
+      feedbackId: "covered-call-run-command-feedback",
+      feedbackText: "Cannot run yet: Minimum strike must be greater than zero.",
+      busy: false
+    });
+
+    expect(buildCoveredCallRunCommandState({ ...DEFAULT_COVERED_CALL_FORM, minStrike: "500" }, false)).toMatchObject({
+      label: "Run backtest",
+      ariaLabel: "Run covered-call backtest",
+      disabled: false,
+      disabledReason: null,
+      feedbackText: null,
+      busy: false
+    });
+  });
+
+  it("exposes submission and cancellation busy states for the shared button primitive", () => {
+    expect(buildCoveredCallRunCommandState({ ...DEFAULT_COVERED_CALL_FORM, minStrike: "500" }, true)).toMatchObject({
+      label: "Submitting...",
+      ariaLabel: "Submitting covered-call backtest",
+      disabled: false,
+      feedbackText: "Submitting covered-call run request.",
+      busy: true,
+      busyLabel: "Submitting..."
+    });
+
+    expect(buildCoveredCallCancelCommandState({ ...idleRun, runId: "run-1", isCancelling: true })).toMatchObject({
+      label: "Cancelling run",
+      ariaLabel: "Cancelling covered-call backtest run",
+      disabled: false,
+      feedbackText: "Cancelling covered-call backtest run.",
+      busy: true,
+      busyLabel: "Cancelling..."
+    });
+  });
+
+  it("keeps cancel disabled reasons and progress copy in the view model", () => {
+    expect(buildCoveredCallCancelCommandState(idleRun)).toMatchObject({
+      disabled: true,
+      disabledReason: "Run ID is not available until the engine accepts the request.",
+      feedbackId: "covered-call-cancel-command-feedback",
+      feedbackText: "Run ID is not available until the engine accepts the request."
+    });
+
+    expect(buildCoveredCallCancelCommandState({
+      ...idleRun,
+      runId: "run-1",
+      status: { runId: "run-1", phase: "Completed", percentComplete: 1, currentBacktestDate: null, failureMessage: null }
+    })).toMatchObject({
+      disabled: true,
+      disabledReason: "Run is already completed.",
+      feedbackText: "Run is already completed."
+    });
+
+    expect(buildCoveredCallRunProgressPanel({ ...idleRun, isStarting: true })).toMatchObject({
+      title: "Submitting backtest",
+      description: "Submitting covered-call run request to the strategy engine.",
+      percentComplete: 0,
+      ariaValueText: "Submitting covered-call run request.",
+      ariaBusy: true
+    });
+
+    expect(buildCoveredCallRunProgressPanel({
+      ...idleRun,
+      runId: "run-1",
+      status: { runId: "run-1", phase: "Running", percentComplete: 0.42, currentBacktestDate: "2024-03-01", failureMessage: null }
+    })).toMatchObject({
+      title: "Running backtest",
+      description: "Phase: Running - 2024-03-01",
+      percentComplete: 42,
+      ariaValueText: "Running 42% complete.",
+      ariaBusy: true
+    });
+  });
+
+  it("locks stage navigation while submit or cancel actions are unresolved", () => {
+    expect(buildCoveredCallStageNavigationState({ ...idleRun, isStarting: true })).toMatchObject({
+      feedbackId: "covered-call-stage-navigation-feedback",
+      feedbackText: "Wait until the strategy engine accepts the backtest request before leaving run progress.",
+      configure: {
+        disabled: true,
+        disabledReason: "Wait until the strategy engine accepts the backtest request before leaving run progress."
+      },
+      run: {
+        disabled: false,
+        disabledReason: null
+      },
+      results: {
+        disabled: true,
+        disabledReason: "Wait until the strategy engine accepts the backtest request before leaving run progress."
+      }
+    });
+
+    expect(buildCoveredCallStageNavigationState({ ...idleRun, runId: "run-1", isCancelling: true })).toMatchObject({
+      feedbackId: "covered-call-stage-navigation-feedback",
+      feedbackText: "Wait until cancellation completes before leaving run progress.",
+      configure: {
+        disabled: true,
+        disabledReason: "Wait until cancellation completes before leaving run progress."
+      },
+      run: {
+        disabled: false,
+        disabledReason: null
+      },
+      results: {
+        disabled: true,
+        disabledReason: "Wait until cancellation completes before leaving run progress."
+      }
+    });
+  });
+
+  it("builds post-run workflow handoffs from completed result evidence", () => {
+    const panel = buildCoveredCallResultsActionPanel({
+      runId: "abc",
+      underlyingSymbol: "spy",
+      from: "2024-01-01",
+      to: "2024-06-30",
+      label: null,
+      metrics: {
+        cagr: 0.1,
+        annualizedVolatility: 0.15,
+        sharpeRatio: 0.7,
+        sortinoRatio: 0.9,
+        calmarRatio: 1.8,
+        maxDrawdownPct: -0.05,
+        winRate: 0.7,
+        assignmentRate: 0.05,
+        averageHoldingDays: 20,
+        totalOptionTrades: 5,
+        assignedTrades: 0,
+        totalPremiumCollected: 1500,
+        totalOptionPnl: 800,
+        upCapture: 0.6,
+        downCapture: 0.9,
+        monthlyVar1Pct: -0.08,
+        monthlyVar5Pct: -0.05,
+        monthlyCVar5Pct: -0.06,
+        returnSkewness: 0,
+        returnKurtosis: 3,
+        annualizedTurnover: 8
+      },
+      equityCurve: [],
+      trades: [],
+      openPositionsAtEnd: []
+    });
+
+    expect(panel).toMatchObject({
+      title: "Next workflow",
+      description: "Use the SPY backtest evidence while the context is fresh."
+    });
+    expect(panel.actions).toEqual([
+      expect.objectContaining({
+        id: "live-quote",
+        href: "/data/quotes?symbol=SPY",
+        ariaLabel: "Validate live quote evidence for SPY"
+      }),
+      expect.objectContaining({
+        id: "strategy-designer",
+        href: "/strategy/designer"
+      }),
+      expect.objectContaining({
+        id: "report-pack",
+        href: "/reporting/report-packs"
+      })
+    ]);
   });
 });
 
@@ -273,6 +461,49 @@ describe("useCoveredCallScreenViewModel", () => {
 
     expect(services.getStatus).toHaveBeenCalled();
     expect(services.getResult).toHaveBeenCalled();
+  });
+
+  it("startRun exposes a submitting command state and blocks duplicate submissions", async () => {
+    let resolveStart: ((value: CoveredCallRunHandle) => void) | undefined;
+    const services = makeServices({
+      startRun: vi.fn(() => new Promise<CoveredCallRunHandle>((resolve) => {
+        resolveStart = resolve;
+      }))
+    });
+    const { result } = renderHook(() => useCoveredCallScreenViewModel({ services, pollIntervalMs: 1000000, chainPreviewDebounceMs: 100000 }));
+
+    act(() => result.current.setField("minStrike", "500"));
+
+    act(() => {
+      void result.current.startRun();
+    });
+
+    expect(result.current.stage).toBe("run");
+    expect(result.current.runCommand).toMatchObject({
+      label: "Submitting...",
+      busy: true
+    });
+    expect(result.current.cancelRunCommand).toMatchObject({
+      disabled: true,
+      disabledReason: "Run ID is not available until the engine accepts the request."
+    });
+
+    act(() => {
+      void result.current.startRun();
+    });
+    expect(services.startRun).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      result.current.goToStage("configure");
+    });
+    expect(result.current.stage).toBe("run");
+
+    await act(async () => {
+      resolveStart?.({ runId: "abc", queuedAt: new Date().toISOString() });
+    });
+
+    expect(result.current.runCommand.busy).toBe(false);
+    expect(result.current.cancelRunCommand.disabled).toBe(false);
   });
 
   it("cancelRun calls the cancel endpoint", async () => {

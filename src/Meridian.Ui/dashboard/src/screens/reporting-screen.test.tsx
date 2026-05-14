@@ -137,9 +137,12 @@ describe("ReportingScreen", () => {
     expect(within(task).getByText("Report-pack approval")).toBeInTheDocument();
     expect(within(task).getByRole("list", { name: "Report-pack approval targets" })).toBeInTheDocument();
     expect(within(task).getByRole("list", { name: "Selected report-pack export actions" })).toBeInTheDocument();
-    expect(within(task).getByRole("link", { name: "Preview Excel export payload" })).toHaveAttribute(
-      "href",
-      "/api/export/preview?profile=excel"
+    const excelPreviewLink = within(task).getByRole("link", { name: "Preview Excel export payload" });
+    expect(excelPreviewLink).toHaveAttribute("href", "/api/export/preview?profile=excel");
+    expect(excelPreviewLink).toHaveAttribute("aria-describedby", "reporting-action-excel-preview-status");
+    expect(within(task).getByText("Opens the current export payload preview in a new browser tab.")).toHaveAttribute(
+      "id",
+      "reporting-action-excel-preview-status"
     );
     const excelProfile = within(task).getByRole("button", { name: "Select Excel for report-pack approval" });
     const auditProfile = within(task).getByRole("button", { name: "Select Audit Pack for report-pack approval" });
@@ -180,10 +183,9 @@ describe("ReportingScreen", () => {
       "href",
       "/api/export/preview?profile=audit-pack"
     );
-    expect(within(task).getByRole("link", { name: "Preview Audit Pack export payload" })).toHaveAttribute(
-      "href",
-      "/api/export/preview?profile=audit-pack"
-    );
+    const auditPreviewLink = within(task).getByRole("link", { name: "Preview Audit Pack export payload" });
+    expect(auditPreviewLink).toHaveAttribute("href", "/api/export/preview?profile=audit-pack");
+    expect(auditPreviewLink).toHaveAttribute("aria-describedby", "reporting-action-audit-pack-preview-status");
     expect(within(task).getByRole("group", { name: "Reference-only POST /api/export/analysis for Audit Pack export analysis" })).toHaveTextContent(
       "Reference"
     );

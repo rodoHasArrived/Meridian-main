@@ -612,6 +612,34 @@ describe("useHistoricalChartViewModel", () => {
     expect(result.current.compareActive).toBe(false);
   });
 
+  it("keeps compare-control accessibility state in the view model", async () => {
+    vi.mocked(getHistoricalBars).mockResolvedValue({
+      success: true, message: null, symbol: "AAPL", intervalMinutes: 5,
+      from: null, to: null, totalBars: 0, filesProcessed: 0, totalFiles: 0,
+      queryTimeMs: 0, bars: []
+    });
+
+    const { result } = renderHook(() => useHistoricalChartViewModel("AAPL"));
+
+    expect(result.current.compareFormLabel).toBe("Compare additional symbols against AAPL");
+    expect(result.current.compareInputDescribedBy).toBe(result.current.compareFeedbackId);
+    expect(result.current.compareInputInvalid).toBe(false);
+    expect(result.current.compareFeedbackRole).toBeUndefined();
+    expect(result.current.compareFeedbackAriaLive).toBeUndefined();
+    expect(result.current.compareFeedbackMessage).toBe("0 of 3 comparison symbols active.");
+    expect(result.current.compareClearAriaLabel).toBe("Clear all comparison symbols for AAPL");
+    expect(result.current.compareChipsListLabel).toBe("Active comparison symbols for AAPL");
+
+    await act(async () => {
+      result.current.addCompareSymbol("AAPL");
+    });
+
+    expect(result.current.compareInputInvalid).toBe(true);
+    expect(result.current.compareFeedbackRole).toBe("alert");
+    expect(result.current.compareFeedbackAriaLive).toBe("assertive");
+    expect(result.current.compareFeedbackMessage).toContain("already the base symbol");
+  });
+
   it("assigns distinct colors to each compare symbol", async () => {
     vi.mocked(getHistoricalBars).mockResolvedValue({
       success: true, message: null, symbol: "AAPL", intervalMinutes: 5,

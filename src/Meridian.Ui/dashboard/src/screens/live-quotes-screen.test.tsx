@@ -361,6 +361,36 @@ describe("validateQuickTicket", () => {
     expect(acknowledged.status.actions).toEqual([]);
   });
 
+  it("keeps seeded ticket confirmation in the quick-ticket view model", () => {
+    const vm = buildQuickTradeTicketViewModel({
+      activeSymbol: "AAPL",
+      ticket: {
+        side: "Sell",
+        type: "Limit",
+        quantity: "",
+        limitPrice: "188.05",
+        phase: "seeded",
+        message: "Seeded sell AAPL limit ticket at 188.05. Enter quantity, then acknowledge before submitting.",
+        orderId: null,
+        acknowledged: false
+      },
+      seedTicket: vi.fn(),
+      updateField: vi.fn(),
+      setReviewAcknowledged: vi.fn(),
+      submitTicket: vi.fn(),
+      resetTicket: vi.fn()
+    });
+
+    expect(vm.status).toMatchObject({
+      role: "status",
+      tone: "success",
+      message: "Seeded sell AAPL limit ticket at 188.05. Enter quantity, then acknowledge before submitting.",
+      showSuccessIcon: true,
+      actions: []
+    });
+    expect(vm.submitCommand.disabledReason).toBe("Enter a quantity greater than zero.");
+  });
+
   it("surfaces Trading readiness handoffs after accepted and rejected submissions", () => {
     const accepted = buildQuickTradeTicketViewModel({
       activeSymbol: "AAPL",
@@ -474,6 +504,35 @@ describe("validateQuickTicket", () => {
 });
 
 describe("useQuickTradeTicket", () => {
+  it("announces a seeded limit ticket and clears seed feedback when edited", () => {
+    const submitOrder = vi.fn();
+    const { result } = renderHook(() => useQuickTradeTicket("AAPL", { submitOrder }));
+
+    act(() => {
+      result.current.seedTicket("Sell", 188.05);
+    });
+
+    expect(result.current.ticket).toMatchObject({
+      side: "Sell",
+      type: "Limit",
+      limitPrice: "188.05",
+      phase: "seeded",
+      message: "Seeded sell AAPL limit ticket at 188.05. Enter quantity, then acknowledge before submitting.",
+      acknowledged: false
+    });
+    expect(result.current.status.message).toBe(
+      "Seeded sell AAPL limit ticket at 188.05. Enter quantity, then acknowledge before submitting."
+    );
+
+    act(() => {
+      result.current.updateField("quantity", "25");
+    });
+
+    expect(result.current.ticket.phase).toBe("idle");
+    expect(result.current.ticket.message).toBeNull();
+    expect(result.current.status.message).toBe("Review side, quantity, and price, then acknowledge before submitting.");
+  });
+
   it("ignores in-flight submit results after the active symbol changes", async () => {
     const order = deferred<OrderResult>();
     const submitOrder = vi.fn(() => order.promise);
@@ -934,6 +993,8 @@ describe("LiveQuotesScreen quick trade", () => {
     const ask = await screen.findByRole("button", { name: /Buy AAPL at ask/i });
     await user.click(ask);
 
+    expect(screen.getByText("Seeded buy AAPL limit ticket at 188.07. Enter quantity, then acknowledge before submitting.")).toBeInTheDocument();
+
     const sideSelect = screen.getByLabelText("Order side") as HTMLSelectElement;
     expect(sideSelect.value).toBe("Buy");
 
@@ -988,7 +1049,7 @@ describe("LiveQuotesScreen quick trade", () => {
     );
   });
 
-  it("keeps initial quick-ticket validation as guidance and escalates invalid edited fields", async () => {
+  it("confirms seeded quick-ticket state and escalates invalid edited fields", async () => {
     const submitSpy = vi.spyOn(api, "submitOrder");
 
     const user = userEvent.setup();
@@ -1001,7 +1062,7 @@ describe("LiveQuotesScreen quick trade", () => {
 
     expect(submitButton).toBeDisabled();
     expect(submitButton).toHaveAttribute("title", "Enter a quantity greater than zero.");
-    expect(screen.getByText("Enter a quantity to enable order submission.")).toBeInTheDocument();
+    expect(screen.getByText("Seeded buy AAPL limit ticket at 188.07. Enter quantity, then acknowledge before submitting.")).toBeInTheDocument();
     expect(screen.queryByText("Enter a quantity greater than zero.")).not.toBeInTheDocument();
 
     const quantityInput = screen.getByLabelText("Order quantity in shares");

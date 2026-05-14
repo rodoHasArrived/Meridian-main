@@ -82,6 +82,19 @@ export interface ReadinessConsoleSelectedWorkItemDetail {
   action: ReadinessConsoleRowAction | null;
 }
 
+export interface ReadinessConsoleSelectedEvidenceDetail {
+  id: string;
+  title: string;
+  statusLabel: string;
+  statusAriaLabel: string;
+  detail: string;
+  meta: string;
+  level: ReadinessConsoleLevel;
+  ariaLabel: string;
+  fields: ReadinessConsoleDetailField[];
+  action: ReadinessConsoleRowAction | null;
+}
+
 export interface ReadinessConsoleRecoveryState {
   title: string;
   detail: string;
@@ -107,7 +120,13 @@ export interface ReadinessConsolePanel {
   emptyText: string;
   ariaLabel: string;
   listLabel: string;
+  tableLabel: string;
+  detailLabel: string;
+  detailPanelId: string;
+  selectedRowId: string | null;
+  selectedDetail: ReadinessConsoleSelectedEvidenceDetail | null;
   rows: ReadinessConsoleRow[];
+  selectRow: (id: string) => void;
 }
 
 export interface ReadinessConsoleRowAction {
@@ -174,7 +193,9 @@ export interface BuildOperatorReadinessConsoleStateOptions {
   inboxLoading: boolean;
   inboxError: string | null;
   selectedWorkItemId?: string | null;
+  selectedPanelRowIds?: Partial<Record<ReadinessConsolePanelId, string>>;
   selectWorkItem?: (id: string) => void;
+  selectPanelRow?: (panelId: ReadinessConsolePanelId, rowId: string) => void;
   refreshInbox?: () => Promise<void>;
 }
 
@@ -194,6 +215,7 @@ export function useOperatorReadinessConsoleViewModel(
   const [inboxLoading, setInboxLoading] = useState(true);
   const [inboxError, setInboxError] = useState<string | null>(null);
   const [selectedWorkItemId, setSelectedWorkItemId] = useState<string | null>(null);
+  const [selectedPanelRowIds, setSelectedPanelRowIds] = useState<Partial<Record<ReadinessConsolePanelId, string>>>({});
   const mountedRef = useRef(true);
   const refreshRevisionRef = useRef(0);
   const inboxAbortRef = useRef<AbortController | null>(null);
@@ -201,6 +223,12 @@ export function useOperatorReadinessConsoleViewModel(
   const activeFundAccountId = payload.trading?.readiness?.brokerageSync?.fundAccountId;
   const selectWorkItem = useCallback((id: string) => {
     setSelectedWorkItemId(id);
+  }, []);
+  const selectPanelRow = useCallback((panelId: ReadinessConsolePanelId, rowId: string) => {
+    setSelectedPanelRowIds((current) => current[panelId] === rowId ? current : {
+      ...current,
+      [panelId]: rowId
+    });
   }, []);
 
   useEffect(() => {
@@ -262,10 +290,12 @@ export function useOperatorReadinessConsoleViewModel(
       inboxLoading,
       inboxError,
       selectedWorkItemId,
+      selectedPanelRowIds,
       selectWorkItem,
+      selectPanelRow,
       refreshInbox
     }),
-    [inboxError, inboxLoading, operatorInbox, payload, selectedWorkItemId, selectWorkItem, refreshInbox]
+    [inboxError, inboxLoading, operatorInbox, payload, selectedPanelRowIds, selectedWorkItemId, selectPanelRow, selectWorkItem, refreshInbox]
   );
 }
 
@@ -279,7 +309,9 @@ export function buildOperatorReadinessConsoleState({
   inboxLoading,
   inboxError,
   selectedWorkItemId,
+  selectedPanelRowIds,
   selectWorkItem,
+  selectPanelRow,
   refreshInbox
 }: BuildOperatorReadinessConsoleStateOptions): ReadinessConsoleState {
   const readiness = trading?.readiness ?? null;
@@ -383,7 +415,9 @@ export function buildOperatorReadinessConsoleState({
       providerTrustRows,
       reconciliationRows,
       promotionRows,
-      reportPackFacts
+      reportPackFacts,
+      selectedPanelRowIds: selectedPanelRowIds ?? {},
+      selectPanelRow
     }),
     workItems: workItemRows,
     workItemsSummary: buildWorkItemsSummary(prioritizedWorkItems, workItemRows.length),
@@ -441,7 +475,9 @@ function buildConsolePanels({
   providerTrustRows,
   reconciliationRows,
   promotionRows,
-  reportPackFacts
+  reportPackFacts,
+  selectedPanelRowIds,
+  selectPanelRow
 }: {
   latestRuns: ReadinessConsoleRow[];
   activeSessionFacts: ReadinessConsoleRow[];
@@ -449,43 +485,57 @@ function buildConsolePanels({
   reconciliationRows: ReadinessConsoleRow[];
   promotionRows: ReadinessConsoleRow[];
   reportPackFacts: ReadinessConsoleRow[];
+  selectedPanelRowIds: Partial<Record<ReadinessConsolePanelId, string>>;
+  selectPanelRow?: (panelId: ReadinessConsolePanelId, rowId: string) => void;
 }): ReadinessConsolePanel[] {
   return [
     buildConsolePanel({
       id: "latest-runs",
       title: "Latest runs",
       emptyText: "No Strategy runs loaded.",
-      rows: latestRuns
+      rows: latestRuns,
+      selectedRowId: selectedPanelRowIds["latest-runs"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "active-paper-session",
       title: "Active paper session",
       emptyText: "No active paper session loaded.",
-      rows: activeSessionFacts
+      rows: activeSessionFacts,
+      selectedRowId: selectedPanelRowIds["active-paper-session"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "provider-trust",
       title: "Provider trust",
       emptyText: "No provider trust rows loaded.",
-      rows: providerTrustRows
+      rows: providerTrustRows,
+      selectedRowId: selectedPanelRowIds["provider-trust"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "reconciliation-breaks",
       title: "Reconciliation breaks",
       emptyText: "No open or in-review reconciliation breaks.",
-      rows: reconciliationRows
+      rows: reconciliationRows,
+      selectedRowId: selectedPanelRowIds["reconciliation-breaks"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "promotion-blockers",
       title: "Promotion blockers",
       emptyText: "No promotion blockers surfaced by readiness.",
-      rows: promotionRows
+      rows: promotionRows,
+      selectedRowId: selectedPanelRowIds["promotion-blockers"] ?? null,
+      selectPanelRow
     }),
     buildConsolePanel({
       id: "reporting-report-packs",
       title: "Reporting report packs",
       emptyText: "No reporting readiness payload loaded.",
-      rows: reportPackFacts
+      rows: reportPackFacts,
+      selectedRowId: selectedPanelRowIds["reporting-report-packs"] ?? null,
+      selectPanelRow
     })
   ];
 }
@@ -494,20 +544,67 @@ function buildConsolePanel({
   id,
   title,
   emptyText,
-  rows
+  rows,
+  selectedRowId,
+  selectPanelRow
 }: {
   id: ReadinessConsolePanelId;
   title: string;
   emptyText: string;
   rows: ReadinessConsoleRow[];
+  selectedRowId: string | null;
+  selectPanelRow?: (panelId: ReadinessConsolePanelId, rowId: string) => void;
 }): ReadinessConsolePanel {
+  const detailPanelId = `operator-readiness-${id}-evidence-detail`;
+  const selectedDetail = buildSelectedEvidenceDetail(rows, selectedRowId, title);
+
   return {
     id,
     title,
     emptyText,
     ariaLabel: `${title} readiness evidence`,
     listLabel: `${title} rows`,
-    rows
+    tableLabel: `${title} readiness evidence table`,
+    detailLabel: `Selected ${title.toLowerCase()} evidence detail`,
+    detailPanelId,
+    selectedRowId: selectedDetail?.id ?? null,
+    selectedDetail,
+    rows,
+    selectRow: (rowId: string) => {
+      selectPanelRow?.(id, rowId);
+    }
+  };
+}
+
+function buildSelectedEvidenceDetail(
+  rows: ReadinessConsoleRow[],
+  selectedRowId: string | null,
+  panelTitle: string
+): ReadinessConsoleSelectedEvidenceDetail | null {
+  if (rows.length === 0) {
+    return null;
+  }
+
+  const selectedRow = rows.find((row) => row.id === selectedRowId) ?? rows[0];
+  const actionRoute = selectedRow.action?.route ?? "No route action";
+
+  return {
+    id: selectedRow.id,
+    title: selectedRow.label,
+    statusLabel: selectedRow.value,
+    statusAriaLabel: selectedRow.statusAriaLabel,
+    detail: selectedRow.detail,
+    meta: selectedRow.meta,
+    level: selectedRow.level,
+    ariaLabel: `Selected ${panelTitle.toLowerCase()} evidence: ${selectedRow.label}`,
+    fields: [
+      { label: "Evidence ID", value: selectedRow.id },
+      { label: "Attention", value: formatLevelText(selectedRow.level) },
+      ...(selectedRow.createdAtLabel ? [{ label: "Created", value: selectedRow.createdAtLabel }] : []),
+      { label: "Route", value: actionRoute },
+      { label: "Evidence", value: selectedRow.meta }
+    ],
+    action: selectedRow.action ?? null
   };
 }
 
@@ -683,7 +780,7 @@ function buildPromotionRows(
 
   workItems
     .filter((item) => item.kind === "PromotionReview")
-    .forEach((item) => rows.push(buildWorkItemRow(item, false)));
+    .forEach((item) => rows.push(buildWorkItemRow(item, true)));
 
   return dedupeRows(rows).slice(0, 6);
 }

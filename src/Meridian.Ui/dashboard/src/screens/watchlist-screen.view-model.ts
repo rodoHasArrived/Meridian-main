@@ -237,6 +237,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   const [quoteRefreshing, setQuoteRefreshing] = useState(false);
   const [activeStarterPackId, setActiveStarterPackId] = useState<string | null>(null);
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const [pendingRemoveSymbol, setPendingRemoveSymbol] = useState<string | null>(null);
   const [sort, setSort] = useState<WatchlistSortState>(DEFAULT_SORT);
   const [hideStale, setHideStale] = useState(false);
   const mountedRef = useRef(true);
@@ -306,6 +307,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
       return;
     }
 
+    setPendingRemoveSymbol(null);
     setSubmitting(true);
     setSubmitFeedback(null);
     try {
@@ -370,6 +372,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
       return;
     }
 
+    setPendingRemoveSymbol(null);
     setSubmitting(true);
     setActiveStarterPackId(id);
     setSubmitFeedback(null);
@@ -407,6 +410,15 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   }, [api.bulkAddSymbols, refresh, submitting]);
 
   const removeSymbol = useCallback(async (symbol: string) => {
+    const normalizedSymbol = normalizeSymbol(symbol);
+    if (pendingRemoveSymbol !== normalizedSymbol) {
+      setPendingRemoveSymbol(normalizedSymbol);
+      setSelectedSymbol(normalizedSymbol);
+      setSubmitFeedback(null);
+      return;
+    }
+
+    setPendingRemoveSymbol(null);
     setRemoving((current) => ({ ...current, [symbol]: true }));
     try {
       const result = await api.removeSymbol(symbol);
@@ -429,7 +441,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         });
       }
     }
-  }, [api.removeSymbol, refresh]);
+  }, [api.removeSymbol, pendingRemoveSymbol, refresh]);
 
   const subscribedSymbols = useMemo(() => symbols?.map((symbol) => symbol.symbol) ?? [], [symbols]);
 
@@ -530,8 +542,8 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   const pendingSymbols = parseWatchlistSymbols(pendingSymbol);
   const submitError = submitFeedback?.tone === "danger" ? submitFeedback.message : null;
   const allRows = useMemo(
-    () => buildWatchlistRows(symbols ?? [], removing, quotes, previousMidRef.current),
-    [symbols, removing, quotes]
+    () => buildWatchlistRows(symbols ?? [], removing, quotes, previousMidRef.current, Date.now(), pendingRemoveSymbol),
+    [pendingRemoveSymbol, quotes, removing, symbols]
   );
   const rows = useMemo(
     () => sortAndFilterWatchlistRows(allRows, sort, hideStale),
@@ -546,13 +558,28 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
       if (selectedSymbol !== null) {
         setSelectedSymbol(null);
       }
+      if (pendingRemoveSymbol !== null) {
+        setPendingRemoveSymbol(null);
+      }
       return;
     }
 
     if (!selectedSymbol || !rows.some((row) => row.symbol === selectedSymbol)) {
       setSelectedSymbol(rows[0].symbol);
     }
-  }, [rows, selectedSymbol]);
+
+    if (pendingRemoveSymbol && !rows.some((row) => row.symbol === pendingRemoveSymbol)) {
+      setPendingRemoveSymbol(null);
+    }
+  }, [pendingRemoveSymbol, rows, selectedSymbol]);
+
+  const selectSymbol = useCallback((symbol: string) => {
+    const normalizedSymbol = normalizeSymbol(symbol);
+    setSelectedSymbol(normalizedSymbol);
+    if (pendingRemoveSymbol && pendingRemoveSymbol !== normalizedSymbol) {
+      setPendingRemoveSymbol(null);
+    }
+  }, [pendingRemoveSymbol]);
 
   const selectedRow = rows.find((row) => row.symbol === selectedSymbol) ?? rows[0] ?? null;
   const listState = buildListState(symbols, loadError);
@@ -581,7 +608,10 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     sort,
     toggleSort,
     hideStale,
-    setHideStale,
+    setHideStale: (value) => {
+      setPendingRemoveSymbol(null);
+      setHideStale(value);
+    },
     staleFilterCommand,
     listRetryCommand: buildListRetryCommand(refreshing),
     listState,
@@ -620,7 +650,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     detailPanelDescription: "Inspect the active watchlist row without leaving the Data lane.",
     detailPanelEmptyText: "No symbol is selected. Add a symbol or wait for the watchlist to load.",
     detailPanelAriaLabel: "Selected watchlist symbol detail",
-    selectSymbol: setSelectedSymbol,
+    selectSymbol,
     refresh,
     refreshQuotes,
     addPendingSymbol,
@@ -634,12 +664,15 @@ export function buildWatchlistRows(
   removing: Record<string, boolean> = {},
   quotes: Record<string, QuotesSnapshotItem> = {},
   previousMid: Record<string, number> = {},
-  now = Date.now()
+  now = Date.now(),
+  pendingRemoveSymbol: string | null = null
 ): WatchlistRowViewModel[] {
+  const pendingRemoveKey = pendingRemoveSymbol ? normalizeSymbol(pendingRemoveSymbol) : null;
   return [...symbols]
     .sort((left, right) => left.symbol.localeCompare(right.symbol))
     .map((record) => {
       const isRemoving = removing[record.symbol] === true;
+      const removeConfirmationPending = pendingRemoveKey === normalizeSymbol(record.symbol);
       const providerLabel = record.provider ?? "No provider";
       const lastEventLabel = formatRelative(record.lastEventAt);
       const eventCountLabel = formatCount(record.eventCount);
@@ -681,11 +714,15 @@ export function buildWatchlistRows(
         quoteAriaLabel: `View live quotes for ${record.symbol}`,
         inspectLabel: "Inspect",
         inspectAriaLabel: `Inspect ${record.symbol} watchlist detail`,
-        removeLabel: isRemoving ? "Removing…" : "Remove",
-        removeAriaLabel: isRemoving ? `Removing ${record.symbol} from watchlist` : `Remove ${record.symbol} from watchlist`,
+        removeLabel: isRemoving ? "Removing…" : removeConfirmationPending ? "Confirm remove" : "Remove",
+        removeAriaLabel: isRemoving
+          ? `Removing ${record.symbol} from watchlist`
+          : removeConfirmationPending
+            ? `Confirm remove ${record.symbol} from watchlist. This stops watchlist tracking for this row.`
+            : `Remove ${record.symbol} from watchlist`,
         removeDisabledReason: isRemoving ? `${record.symbol} removal is already running.` : null,
-        rowSelectAriaLabel: `Select ${record.symbol} watchlist row. ${record.symbol}. Status ${record.status}.`,
-        ariaLabel: `${record.symbol}. Status ${record.status}. Bid ${quote ? formatPriceSize(quote.bidPrice, quote.bidSize) : "not available"}. Ask ${quote ? formatPriceSize(quote.askPrice, quote.askSize) : "not available"}. Last ${quote ? formatPrice(quote.lastPrice) : "not available"}. Change ${changeLabel}. Change percent ${changePercentLabel}. Day high low ${dayRangeLabel}. Provider ${providerLabel}. Last event ${lastEventLabel}. ${eventCountLabel} events. History ${historyLabel}.`,
+        rowSelectAriaLabel: `Select ${record.symbol} watchlist row. ${record.symbol}. Status ${record.status}.${removeConfirmationPending ? " Remove confirmation pending." : ""}`,
+        ariaLabel: `${record.symbol}. Status ${record.status}. Bid ${quote ? formatPriceSize(quote.bidPrice, quote.bidSize) : "not available"}. Ask ${quote ? formatPriceSize(quote.askPrice, quote.askSize) : "not available"}. Last ${quote ? formatPrice(quote.lastPrice) : "not available"}. Change ${changeLabel}. Change percent ${changePercentLabel}. Day high low ${dayRangeLabel}. Provider ${providerLabel}. Last event ${lastEventLabel}. ${eventCountLabel} events. History ${historyLabel}.${removeConfirmationPending ? " Remove confirmation pending." : ""}`,
         lastPriceValue: toFiniteNumber(quote?.lastPrice),
         changeValue: toFiniteNumber(session?.change),
         changePercentValue: toFiniteNumber(session?.changePercent),

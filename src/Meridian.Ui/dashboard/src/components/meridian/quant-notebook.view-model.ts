@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import * as api from "@/lib/api";
 import type {
   CellExecuteResult,
@@ -97,13 +97,24 @@ export function markDownstreamStale(
 
 // ── View model hook ────────────────────────────────────────────────────────────
 
+export interface QuantNotebookCellViewModel extends NotebookCell {
+  deleteConfirmationPending: boolean;
+  deleteLabel: string;
+  deleteAriaLabel: string;
+  deleteDisabledReason: string | null;
+}
+
 export interface QuantNotebookViewModel {
-  cells: NotebookCell[];
+  cells: QuantNotebookCellViewModel[];
   context: CellExecutionContext;
   dataResult: DataFetchResult | null;
   dataFetchState: "idle" | "loading" | "done" | "error";
   fetchError: string | null;
   snippets: CellSnippet[];
+  clearOutputsLabel: string;
+  clearOutputsAriaLabel: string;
+  clearOutputsDisabledReason: string | null;
+  clearOutputsConfirmationPending: boolean;
   addCell: (kind?: CellKind) => void;
   insertSnippet: (snippetId: string) => void;
   setCellKind: (id: string, kind: CellKind) => void;
@@ -143,12 +154,20 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
   const [dataResult, setDataResult] = useState<DataFetchResult | null>(null);
   const [dataFetchState, setDataFetchState] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [pendingDeleteCellId, setPendingDeleteCellId] = useState<string | null>(null);
+  const [clearOutputsConfirmationPending, setClearOutputsConfirmationPending] = useState(false);
 
   const runningRef = useRef(false);
 
-  const addCell = useCallback((kind: CellKind = "code") => {
-    setCells((prev) => reordinal([...prev, makeCell(prev.length + 1, kind)]));
+  const clearPendingDestructiveAction = useCallback(() => {
+    setPendingDeleteCellId(null);
+    setClearOutputsConfirmationPending(false);
   }, []);
+
+  const addCell = useCallback((kind: CellKind = "code") => {
+    clearPendingDestructiveAction();
+    setCells((prev) => reordinal([...prev, makeCell(prev.length + 1, kind)]));
+  }, [clearPendingDestructiveAction]);
 
   const insertSnippet = useCallback((snippetId: string) => {
     const snippet = builtInSnippets.find((s) => s.id === snippetId);
@@ -156,10 +175,12 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
       return;
     }
 
+    clearPendingDestructiveAction();
     setCells((prev) => reordinal([...prev, makeCell(prev.length + 1, snippet.kind, snippet.source)]));
-  }, []);
+  }, [clearPendingDestructiveAction]);
 
   const setCellKind = useCallback((id: string, kind: CellKind) => {
+    clearPendingDestructiveAction();
     setCells((prev) =>
       prev.map((cell): NotebookCell =>
         cell.id === id
@@ -167,9 +188,19 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
           : cell
       )
     );
-  }, []);
+  }, [clearPendingDestructiveAction]);
 
   const removeCell = useCallback((id: string) => {
+    const target = cells.find((cell) => cell.id === id);
+    if (!target || cells.length <= 1 || target.state === "running") {
+      return;
+    }
+
+    if (pendingDeleteCellId !== id) {
+      setPendingDeleteCellId(id);
+      return;
+    }
+
     setCells((prev) => {
       if (prev.length <= 1) {
         return prev;
@@ -177,9 +208,11 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
 
       return reordinal(prev.filter((c) => c.id !== id));
     });
-  }, []);
+    setPendingDeleteCellId(null);
+  }, [cells, pendingDeleteCellId]);
 
   const updateCellSource = useCallback((id: string, source: string) => {
+    clearPendingDestructiveAction();
     setCells((prev) => {
       const index = prev.findIndex((c) => c.id === id);
       if (index === -1) {
@@ -196,15 +229,16 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
 
       return markDownstreamStale(updated, index);
     });
-  }, []);
+  }, [clearPendingDestructiveAction]);
 
   const toggleCellCollapse = useCallback((id: string) => {
+    clearPendingDestructiveAction();
     setCells((prev) =>
       prev.map((cell) =>
         cell.id === id ? { ...cell, collapsed: !cell.collapsed } : cell
       )
     );
-  }, []);
+  }, [clearPendingDestructiveAction]);
 
   const setCellState = useCallback(
     (id: string, state: CellExecutionState, statusText: string) => {
@@ -219,6 +253,7 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
 
   const runCell = useCallback(
     async (id: string) => {
+      clearPendingDestructiveAction();
       const cell = cells.find((c) => c.id === id);
       if (!cell) {
         return;
@@ -249,7 +284,7 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
         );
       }
     },
-    [cells, context, setCellState]
+    [cells, clearPendingDestructiveAction, context, setCellState]
   );
 
   const runAll = useCallback(async () => {
@@ -257,6 +292,7 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
       return;
     }
 
+    clearPendingDestructiveAction();
     runningRef.current = true;
 
     try {
@@ -294,9 +330,22 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
     } finally {
       runningRef.current = false;
     }
-  }, [cells, context, setCellState]);
+  }, [cells, clearPendingDestructiveAction, context, setCellState]);
 
   const clearOutputs = useCallback(() => {
+    const hasRunningCell = cells.some((cell) => cell.state === "running");
+    const hasClearableOutput = cells.some((cell) => cell.kind !== "markdown" && cell.output.length > 0);
+    if (hasRunningCell || !hasClearableOutput) {
+      setClearOutputsConfirmationPending(false);
+      return;
+    }
+
+    if (!clearOutputsConfirmationPending) {
+      setPendingDeleteCellId(null);
+      setClearOutputsConfirmationPending(true);
+      return;
+    }
+
     setCells((prev) =>
       prev.map((cell): NotebookCell =>
         cell.kind === "markdown"
@@ -304,9 +353,11 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
           : { ...cell, state: "idle", statusText: "Idle", output: [] }
       )
     );
-  }, []);
+    setClearOutputsConfirmationPending(false);
+  }, [cells, clearOutputsConfirmationPending]);
 
   const setContext = useCallback((patch: Partial<CellExecutionContext>) => {
+    clearPendingDestructiveAction();
     setContextState((prev) => ({ ...prev, ...patch }));
     setCells((prev) =>
       prev.map((cell): NotebookCell =>
@@ -315,9 +366,10 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
           : cell
       )
     );
-  }, []);
+  }, [clearPendingDestructiveAction]);
 
   const fetchData = useCallback(async () => {
+    clearPendingDestructiveAction();
     if (!context.symbol) {
       setFetchError("Symbol is required.");
       setDataFetchState("error");
@@ -342,21 +394,54 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
       setFetchError(err instanceof Error ? err.message : "Data fetch failed.");
       setDataFetchState("error");
     }
-  }, [context]);
+  }, [clearPendingDestructiveAction, context]);
 
   const dismissDataResult = useCallback(() => {
+    clearPendingDestructiveAction();
     setDataResult(null);
     setDataFetchState("idle");
     setFetchError(null);
-  }, []);
+  }, [clearPendingDestructiveAction]);
+
+  const hasRunningCell = cells.some((cell) => cell.state === "running");
+  const hasClearableOutput = cells.some((cell) => cell.kind !== "markdown" && cell.output.length > 0);
+  const clearOutputsDisabledReason = hasRunningCell
+    ? "Wait for running cells to finish before clearing outputs."
+    : hasClearableOutput
+      ? null
+      : "Run a cell before clearing outputs.";
+
+  const cellViewModels = useMemo<QuantNotebookCellViewModel[]>(
+    () =>
+      cells.map((cell) => {
+        const deleteConfirmationPending = pendingDeleteCellId === cell.id;
+        const isRunning = cell.state === "running";
+        return {
+          ...cell,
+          deleteConfirmationPending,
+          deleteLabel: deleteConfirmationPending ? "Confirm" : "Delete",
+          deleteAriaLabel: deleteConfirmationPending
+            ? `Confirm delete cell ${cell.ordinal.toString()}. This removes the cell source and output.`
+            : `Delete cell ${cell.ordinal.toString()}. Press again to confirm.`,
+          deleteDisabledReason: isRunning ? `Wait for cell ${cell.ordinal.toString()} to finish running before deleting it.` : null
+        };
+      }),
+    [cells, pendingDeleteCellId]
+  );
 
   return {
-    cells,
+    cells: cellViewModels,
     context,
     dataResult,
     dataFetchState,
     fetchError,
     snippets: builtInSnippets,
+    clearOutputsLabel: clearOutputsConfirmationPending ? "Confirm clear" : "Clear",
+    clearOutputsAriaLabel: clearOutputsConfirmationPending
+      ? "Confirm clear all notebook outputs. This removes displayed execution results."
+      : "Clear all notebook outputs. Press again to confirm.",
+    clearOutputsDisabledReason,
+    clearOutputsConfirmationPending,
     addCell,
     insertSnippet,
     setCellKind,

@@ -745,11 +745,11 @@ export function useResearchRunLibraryViewModel(
   const selectPlotToolViewForKey = useCallback((key: string) => {
     const nextView = nextPlotToolViewForKey(activePlotToolView, key);
     if (!nextView) {
-      return false;
+      return null;
     }
 
     setActivePlotToolView(nextView);
-    return true;
+    return plotToolTabIdForView(nextView);
   }, [activePlotToolView]);
 
   const loadPromotionHistory = useCallback(async () => {
@@ -1422,6 +1422,10 @@ export function buildPlotToolTabs(activeView: ResearchPlotToolView): ResearchPlo
       ariaLabel: tab.label
     };
   });
+}
+
+export function plotToolTabIdForView(view: ResearchPlotToolView): string {
+  return `plottool-${view}-tab`;
 }
 
 export function nextPlotToolViewForKey(

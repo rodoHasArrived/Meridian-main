@@ -1662,6 +1662,82 @@ export interface HistoricalBarsResponse {
 
 // --- Quant Lab ---
 
+export type CellKind = "code" | "markdown";
+
+export type CellExecutionState = "idle" | "running" | "done" | "error" | "stale";
+
+export interface CellExecutionContext {
+  symbol?: string;
+  from?: string;
+  to?: string;
+  interval?: "daily" | "hourly" | "minute" | string;
+}
+
+export interface CellOutput {
+  kind: "console" | "metric" | "signal" | "error";
+  text: string;
+  tone?: "default" | "success" | "warning" | "danger";
+  timestamp?: string | null;
+}
+
+export interface NotebookCell {
+  id: string;
+  ordinal: number;
+  kind: CellKind;
+  source: string;
+  state: CellExecutionState;
+  statusText: string;
+  collapsed: boolean;
+  output: CellOutput[];
+}
+
+export interface CellSnippet {
+  id: string;
+  label: string;
+  description: string;
+  kind: CellKind;
+  source: string;
+}
+
+export interface CellExecuteRequest {
+  cellId: string;
+  source: string;
+  context: CellExecutionContext;
+}
+
+export interface CellExecuteResult {
+  cellId: string;
+  success: boolean;
+  output: CellOutput[];
+  elapsedMs: number;
+  errorMessage: string | null;
+}
+
+export interface PriceBar {
+  timestamp: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface DataFetchRequest {
+  symbol: string;
+  from: string;
+  to: string;
+  interval: "daily" | "hourly" | "minute";
+}
+
+export interface DataFetchResult {
+  symbol: string;
+  from: string;
+  to: string;
+  interval: string;
+  bars: PriceBar[];
+  rowCount: number;
+}
+
 export type QuantPlotKind =
   | "Line"
   | "MultiLine"

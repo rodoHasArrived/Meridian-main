@@ -6,17 +6,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import {
-  mapStatusTone,
   useEvidenceLineageSelectionViewModel,
+  useEvidenceNodeSelectionViewModel,
   useEvidenceWorkbenchViewModel,
   type EvidenceLineageDetailViewModel,
   type EvidenceLineagePanelViewModel,
   type EvidenceLineageRowViewModel,
+  type EvidenceNodeDetailViewModel,
+  type EvidenceNodeGroupViewModel,
+  type EvidenceNodeRowViewModel,
   type EvidencePacketActionTone,
   type EvidencePacketActionViewModel,
   type EvidenceStatusTone
 } from "@/screens/evidence-workbench-screen.view-model";
-import type { EvidenceNode } from "@/types";
 
 const badgeVariant: Record<EvidenceStatusTone, "success" | "warning" | "danger" | "outline"> = {
   success: "success",
@@ -247,22 +249,7 @@ export function EvidenceWorkbenchScreen() {
           <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
             <div className="space-y-4">
               {vm.nodeGroups.map((group) => (
-                <Card key={group.id} className="panel-surface">
-                  <CardHeader>
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <CardTitle className="text-base">{group.label}</CardTitle>
-                        <CardDescription>
-                          {group.readyCount} ready, {group.reviewCount} needing review.
-                        </CardDescription>
-                      </div>
-                      <Badge variant="outline">{group.nodes.length} node(s)</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {group.nodes.map((node) => <EvidenceNodeRow key={node.evidenceId} node={node} />)}
-                  </CardContent>
-                </Card>
+                <EvidenceNodeGroupPanel key={group.id} group={group} />
               ))}
             </div>
 
@@ -392,41 +379,181 @@ function EvidenceMetric({ label, value, tone = "muted" }: { label: string; value
   );
 }
 
-function EvidenceNodeRow({ node }: { node: EvidenceNode }) {
-  const tone = mapStatusTone(node.status);
+function EvidenceNodeGroupPanel({ group }: { group: EvidenceNodeGroupViewModel }) {
+  const selection = useEvidenceNodeSelectionViewModel(group);
+
   return (
-    <div className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="font-semibold text-foreground">{node.kind}</div>
-          <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{node.evidenceId}</div>
+    <Card className="panel-surface">
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <CardTitle className="text-base">{group.label}</CardTitle>
+            <CardDescription>{group.summaryLabel}</CardDescription>
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Badge variant="success">{group.readyCount} ready</Badge>
+            <Badge variant={group.reviewCount ? "warning" : "outline"}>{group.reviewCount} review</Badge>
+          </div>
         </div>
-        <Badge variant={badgeVariant[tone]}>{node.status}</Badge>
+      </CardHeader>
+      <CardContent>
+        {group.hasRows ? (
+          <div className="grid gap-3 2xl:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
+            <DenseDataTable
+              columns={nodeColumns}
+              rows={group.rows}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+              getRowAriaControls={() => group.detailPanelId}
+              getRowAriaExpanded={(row) => row.id === selection.selectedRowId}
+              onRowSelect={(row) => selection.selectRow(row.id)}
+              selectedRowId={selection.selectedRowId}
+              emptyText={group.emptyTitle}
+              ariaLabel={group.tableLabel}
+              caption={group.summaryLabel}
+            />
+            {selection.selectedDetail ? (
+              <EvidenceNodeDetailPanel detail={selection.selectedDetail} id={group.detailPanelId} />
+            ) : null}
+          </div>
+        ) : (
+          <div
+            role="status"
+            aria-live="polite"
+            className="rounded-md border border-dashed border-border/80 bg-secondary/20 px-4 py-4 text-sm text-muted-foreground"
+          >
+            <div className="font-semibold text-foreground">{group.emptyTitle}</div>
+            <p className="mt-1 max-w-2xl leading-6">{group.emptyDetail}</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+const nodeColumns: DenseDataTableColumn<EvidenceNodeRowViewModel>[] = [
+  {
+    id: "node",
+    label: "Node",
+    className: "min-w-[14rem]",
+    render: (row) => (
+      <div className="min-w-0">
+        <div className="font-semibold text-foreground">{row.kindLabel}</div>
+        <div className="mt-1 break-all font-mono text-[0.7rem] text-muted-foreground">{row.evidenceId}</div>
       </div>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{node.summary}</p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Badge variant="outline">{node.sourceSystem}</Badge>
-        <Badge variant={node.freshness.isStale ? "warning" : "success"}>
-          {node.freshness.isStale ? "Stale" : "Fresh"}
-        </Badge>
-        {node.artifactRefs.length > 0 ? <Badge variant="outline">{node.artifactRefs.length} artifact(s)</Badge> : null}
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => <Badge variant={badgeVariant[row.statusTone]}>{row.statusLabel}</Badge>
+  },
+  {
+    id: "source",
+    label: "Source",
+    className: "max-w-[13rem] break-words text-muted-foreground",
+    render: (row) => row.sourceSystem
+  },
+  {
+    id: "freshness",
+    label: "Freshness",
+    className: "min-w-[9rem]",
+    render: (row) => <Badge variant={badgeVariant[row.freshnessTone]}>{row.freshnessLabel}</Badge>
+  },
+  {
+    id: "artifacts",
+    label: "Artifacts",
+    render: (row) => row.artifactCountLabel
+  },
+  {
+    id: "work-items",
+    label: "Work items",
+    render: (row) => row.workItemCountLabel
+  }
+];
+
+function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailViewModel; id: string }) {
+  return (
+    <aside
+      id={id}
+      className="row-detail-panel h-fit min-w-0"
+      role="region"
+      aria-label={detail.ariaLabel}
+      aria-live="polite"
+    >
+      <div className="head flex flex-wrap items-center justify-between gap-2">
+        <span>{detail.eyebrow}</span>
+        <span className="flex flex-wrap gap-2">
+          <Badge variant={badgeVariant[detail.statusTone]}>{detail.statusLabel}</Badge>
+          <Badge variant={badgeVariant[detail.freshnessTone]}>{detail.freshnessLabel}</Badge>
+        </span>
       </div>
-      {node.artifactRefs.length > 0 ? (
-        <div className="mt-3 grid gap-2">
-          {node.artifactRefs.map((artifact) => (
-            <div key={artifact.artifactId} className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2 text-xs">
-              <div className="flex items-center gap-2 font-semibold text-foreground">
-                <FileText className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                {artifact.kind}
-              </div>
-              <div className="mt-1 break-all font-mono text-muted-foreground">
-                {artifact.path ?? artifact.route ?? artifact.artifactId}
-              </div>
+      <div className="body space-y-4">
+        <div className="min-w-0">
+          <h3 className="font-semibold text-foreground">{detail.title}</h3>
+          <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail.description}</p>
+        </div>
+        <dl className="grid gap-2 sm:grid-cols-2">
+          {detail.fields.map((field) => (
+            <div key={field.label} className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
+              <dt className="eyebrow-label">{field.label}</dt>
+              <dd className="mt-1 break-all font-mono text-xs text-foreground">{field.value}</dd>
             </div>
           ))}
-        </div>
-      ) : null}
-    </div>
+        </dl>
+        <section aria-label="Selected evidence artifacts" className="space-y-2">
+          <div className="eyebrow-label">Artifacts</div>
+          {detail.artifactRows.length > 0 ? (
+            <ul className="grid gap-2">
+              {detail.artifactRows.map((artifact) => (
+                <li
+                  key={artifact.id}
+                  aria-label={artifact.ariaLabel}
+                  className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2 text-xs"
+                >
+                  <div className="flex flex-wrap items-center gap-2 font-semibold text-foreground">
+                    <FileText className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                    <span>{artifact.kind}</span>
+                    <Badge variant={artifact.retainedLabel === "Retained" ? "success" : "outline"}>{artifact.retainedLabel}</Badge>
+                  </div>
+                  <div className="mt-1 break-all font-mono text-muted-foreground">{artifact.target}</div>
+                  <div className="mt-2 grid gap-1 font-mono text-[0.7rem] text-muted-foreground sm:grid-cols-2">
+                    <span>{artifact.generatedLabel}</span>
+                    <span className="break-all">{artifact.hashLabel}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="rounded-sm border border-dashed border-border/70 bg-secondary/20 px-2.5 py-2 text-sm text-muted-foreground">
+              {detail.artifactEmptyText}
+            </p>
+          )}
+        </section>
+        <section aria-label="Selected evidence work items" className="space-y-2">
+          <div className="eyebrow-label">Work items</div>
+          {detail.workItemRows.length > 0 ? (
+            <ul className="grid gap-2">
+              {detail.workItemRows.map((item) => (
+                <li
+                  key={item.id}
+                  aria-label={item.ariaLabel}
+                  className="break-all rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2 font-mono text-xs"
+                >
+                  {item.label}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="rounded-sm border border-dashed border-border/70 bg-secondary/20 px-2.5 py-2 text-sm text-muted-foreground">
+              {detail.workItemEmptyText}
+            </p>
+          )}
+        </section>
+      </div>
+    </aside>
   );
 }
 

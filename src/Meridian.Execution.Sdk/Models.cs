@@ -30,7 +30,8 @@ public enum OrderType
     MarketOnOpen,
     MarketOnClose,
     LimitOnOpen,
-    LimitOnClose
+    LimitOnClose,
+    TrailingStop
 }
 
 /// <summary>Order time-in-force.</summary>
@@ -55,6 +56,15 @@ public enum OrderStatus
     Expired
 }
 
+/// <summary>Option leg position intent for option orders and multi-leg strategies.</summary>
+public enum PositionIntent
+{
+    BuyToOpen,
+    BuyToClose,
+    SellToOpen,
+    SellToClose
+}
+
 /// <summary>Execution report type.</summary>
 public enum ExecutionReportType
 {
@@ -76,10 +86,23 @@ public sealed record OrderRequest
     public required decimal Quantity { get; init; }
     public decimal? LimitPrice { get; init; }
     public decimal? StopPrice { get; init; }
+    public decimal? TrailPrice { get; init; }
+    public decimal? TrailPercent { get; init; }
     public TimeInForce TimeInForce { get; init; } = TimeInForce.Day;
     public string? ClientOrderId { get; init; }
     public string? StrategyId { get; init; }
+    public PositionIntent? PositionIntent { get; init; }
+    public IReadOnlyList<OrderLeg>? Legs { get; init; }
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+}
+
+/// <summary>One leg in a multi-leg options order.</summary>
+public sealed record OrderLeg
+{
+    public required string Symbol { get; init; }
+    public required OrderSide Side { get; init; }
+    public required decimal RatioQuantity { get; init; }
+    public PositionIntent? PositionIntent { get; init; }
 }
 
 /// <summary>Request to modify an existing order.</summary>
@@ -88,6 +111,7 @@ public sealed record OrderModification
     public decimal? NewQuantity { get; init; }
     public decimal? NewLimitPrice { get; init; }
     public decimal? NewStopPrice { get; init; }
+    public decimal? NewTrail { get; init; }
 }
 
 /// <summary>Report from the execution gateway about an order event.</summary>

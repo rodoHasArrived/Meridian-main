@@ -16,7 +16,7 @@ export const LIVE_QUOTES_TRADE_HISTORY_LIMIT = 200;
 export const LIVE_QUOTES_TRADE_TABLE_LIMIT = 25;
 export const LIVE_QUOTES_EMPTY_VALUE = "—";
 
-export type QuickTicketPhase = "idle" | "submitting" | "submitted" | "error";
+export type QuickTicketPhase = "idle" | "seeded" | "submitting" | "submitted" | "error";
 
 export interface QuickTicketForm {
   side: "Buy" | "Sell";
@@ -694,13 +694,15 @@ export function useQuickTradeTicket(
   }, []);
 
   const seedTicket = useCallback((side: "Buy" | "Sell", price: number) => {
+    const priceLabel = formatTicketPrice(price);
+    const symbolLabel = activeSymbolRef.current ?? "selected symbol";
     setTicket((current) => ({
       ...current,
       side,
       type: "Limit",
-      limitPrice: formatTicketPrice(price),
-      phase: "idle",
-      message: null,
+      limitPrice: priceLabel,
+      phase: "seeded",
+      message: buildQuickTicketSeededMessage(symbolLabel, side, priceLabel),
       orderId: null,
       validationVisible: false,
       acknowledged: false
@@ -711,8 +713,8 @@ export function useQuickTradeTicket(
     setTicket((current) => ({
       ...current,
       [field]: value,
-      phase: current.phase === "submitted" ? "idle" : current.phase,
-      message: current.phase === "error" ? null : current.message,
+      phase: resetQuickTicketFeedbackPhase(current.phase),
+      message: shouldClearQuickTicketFeedbackMessage(current.phase) ? null : current.message,
       validationVisible: true,
       acknowledged: false
     }));
@@ -722,7 +724,8 @@ export function useQuickTradeTicket(
     setTicket((current) => ({
       ...current,
       acknowledged: value,
-      phase: current.phase === "submitted" ? "idle" : current.phase
+      phase: value ? "idle" : resetQuickTicketFeedbackPhase(current.phase),
+      message: value || shouldClearQuickTicketFeedbackMessage(current.phase) ? null : current.message
     }));
   }, []);
 
@@ -1490,6 +1493,18 @@ function buildQuickTicketStatus(
     };
   }
 
+  if (ticket.phase === "seeded" && ticket.message) {
+    return {
+      id: "quick-ticket-status",
+      role: "status",
+      tone: "success",
+      message: ticket.message,
+      showSuccessIcon: true,
+      showErrorIcon: false,
+      actions: []
+    };
+  }
+
   return {
     id: "quick-ticket-status",
     role: "status",
@@ -1536,6 +1551,20 @@ function shouldSurfaceQuickTicketValidation(ticket: QuickTicketState, validation
   }
 
   return ticket.validationVisible === true || (ticket.phase === "error" && ticket.message === validation);
+}
+
+function resetQuickTicketFeedbackPhase(phase: QuickTicketPhase): QuickTicketPhase {
+  return phase === "seeded" || phase === "submitted" || phase === "error" ? "idle" : phase;
+}
+
+function shouldClearQuickTicketFeedbackMessage(phase: QuickTicketPhase): boolean {
+  return phase === "seeded" || phase === "submitted" || phase === "error";
+}
+
+function buildQuickTicketSeededMessage(symbol: string, side: "Buy" | "Sell", priceLabel: string): string {
+  const action = side.toLowerCase();
+  const renderedPrice = priceLabel || "the selected price";
+  return `Seeded ${action} ${symbol} limit ticket at ${renderedPrice}. Enter quantity, then acknowledge before submitting.`;
 }
 
 function buildQuickTicketGuidance(ticket: QuickTicketState, validation: string | null): string {

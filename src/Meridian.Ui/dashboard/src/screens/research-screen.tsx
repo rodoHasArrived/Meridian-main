@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
@@ -126,6 +127,7 @@ const plotToolObservationColumns: DenseDataTableColumn<ResearchPlotSampleRow>[] 
 export function ResearchScreen({ data }: ResearchScreenProps) {
   const vm = useResearchRunLibraryViewModel(data);
   const navigate = useNavigate();
+  const plotToolTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   if (!data) {
     return (
@@ -322,8 +324,10 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                 aria-label="PlotTool views"
                 className="inline-flex rounded-md border border-border/70 bg-secondary/25 p-1"
                 onKeyDown={(event) => {
-                  if (vm.selectPlotToolViewForKey(event.key)) {
+                  const focusTargetTabId = vm.selectPlotToolViewForKey(event.key);
+                  if (focusTargetTabId) {
                     event.preventDefault();
+                    plotToolTabRefs.current[focusTargetTabId]?.focus();
                   }
                 }}
               >
@@ -338,6 +342,9 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     aria-label={tab.ariaLabel}
                     tabIndex={tab.tabIndex}
                     id={tab.tabId}
+                    ref={(node) => {
+                      plotToolTabRefs.current[tab.tabId] = node;
+                    }}
                     onClick={() => vm.selectPlotToolView(tab.id)}
                   >
                     {tab.label}

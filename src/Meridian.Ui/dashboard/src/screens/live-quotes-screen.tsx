@@ -566,6 +566,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
             id={status.id}
             role={status.role}
             aria-live="polite"
+            aria-atomic="true"
             className={`flex min-h-[1.25rem] items-center gap-1.5 text-xs ${statusToneClass}`}
           >
             {status.showSuccessIcon ? <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> : null}

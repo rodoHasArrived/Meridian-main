@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { StrategyDesignerScreen } from "@/screens/strategy-designer-screen";
@@ -22,6 +22,7 @@ describe("StrategyDesignerScreen", () => {
       "title",
       "No strategy legs to clear."
     );
+    expect(screen.getByRole("status", { name: "Strategy leg detail empty state" })).toHaveTextContent("No legs on canvas");
   });
 
   it("appends a leg when a palette block is activated and renders payoff polyline", async () => {
@@ -33,6 +34,10 @@ describe("StrategyDesignerScreen", () => {
     expect(screen.getByText(/Canvas · 1 leg/)).toBeInTheDocument();
     expect(screen.getByTestId("strategy-designer-payoff-polyline")).toBeInTheDocument();
     expect(screen.getByTestId("strategy-designer-participation-list")).toBeInTheDocument();
+    const detail = screen.getByRole("region", { name: /selected strategy leg detail for long call/i });
+    expect(detail).toHaveTextContent("Selected leg");
+    expect(detail).toHaveTextContent("Break-even");
+    expect(detail).toHaveTextContent("Payoff at spot");
   });
 
   it("exposes keyboard-operable selection state for canvas legs", async () => {
@@ -44,13 +49,34 @@ describe("StrategyDesignerScreen", () => {
     const firstLeg = screen.getByRole("button", { name: /selected long call/i });
     const secondLeg = screen.getByRole("button", { name: /select short call/i });
     expect(firstLeg).toHaveAttribute("aria-pressed", "true");
+    expect(firstLeg).toHaveAttribute("aria-controls", "strategy-designer-selected-leg-detail");
+    expect(firstLeg).toHaveAttribute("aria-expanded", "true");
     expect(secondLeg).toHaveAttribute("aria-pressed", "false");
+    expect(secondLeg).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("region", { name: /selected strategy leg detail for long call/i })).toHaveTextContent("Long exposure");
 
     secondLeg.focus();
     await user.keyboard("{Enter}");
 
     expect(screen.getByRole("button", { name: /select long call/i })).toHaveAttribute("aria-pressed", "false");
     expect(screen.getByRole("button", { name: /selected short call/i })).toHaveAttribute("aria-pressed", "true");
+    const detail = screen.getByRole("region", { name: /selected strategy leg detail for short call/i });
+    expect(within(detail).getByText("Short exposure")).toBeInTheDocument();
+    expect(within(detail).getByText("Break-even")).toBeInTheDocument();
+  });
+
+  it("lets keyboard users select a canvas leg from the leg row and updates the detail panel", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyDesignerScreen />);
+
+    await user.click(screen.getByRole("button", { name: /load sample/i }));
+
+    const secondLegRow = screen.getByRole("listitem", { name: "Short Call · 110, Short Call, leg 2 of 2" });
+    secondLegRow.focus();
+    await user.keyboard(" ");
+
+    expect(screen.getByRole("button", { name: /selected short call/i })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: /selected strategy leg detail for short call/i })).toHaveTextContent("Short exposure");
   });
 
   it("associates canvas leg field labels with stable view-model ids", async () => {
@@ -120,10 +146,10 @@ describe("StrategyDesignerScreen", () => {
 
     expect(screen.getByText(/Canvas · 2 legs/)).toBeInTheDocument();
     expect(screen.getByTestId("strategy-designer-payoff-polyline")).toBeInTheDocument();
-    expect(screen.getByText(/Break-even/i)).toBeInTheDocument();
+    expect(screen.getByTestId("strategy-designer-payoff")).toHaveTextContent(/Break-even/i);
   });
 
-  it("clears the canvas back to the empty state", async () => {
+  it("requires confirmation before clearing the canvas back to the empty state", async () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyDesignerScreen />);
 
@@ -131,6 +157,12 @@ describe("StrategyDesignerScreen", () => {
     expect(screen.getByText(/Canvas · 2 legs/)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /clear strategy canvas/i }));
+    expect(screen.getByText(/Canvas · 2 legs/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /confirm clear strategy canvas and remove 2 legs/i })).toHaveTextContent(
+      "Confirm clear"
+    );
+
+    await user.click(screen.getByRole("button", { name: /confirm clear strategy canvas and remove 2 legs/i }));
 
     expect(screen.getByText(/Canvas · 0 legs/)).toBeInTheDocument();
     expect(screen.queryByTestId("strategy-designer-payoff-polyline")).toBeNull();

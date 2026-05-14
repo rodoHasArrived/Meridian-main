@@ -96,6 +96,18 @@ describe("watchlist-screen view model", () => {
     expect(rows[2].ariaLabel).toContain("Status Error");
   });
 
+  it("arms a row-owned confirmation state before symbol removal", () => {
+    const rows = buildWatchlistRows(symbols, {}, {}, {}, Date.parse("2026-05-09T01:00:00.000Z"), "MSFT");
+
+    expect(rows[1]).toMatchObject({
+      symbol: "MSFT",
+      removeLabel: "Confirm remove",
+      removeAriaLabel: "Confirm remove MSFT from watchlist. This stops watchlist tracking for this row.",
+      removeDisabledReason: null
+    });
+    expect(rows[1].ariaLabel).toContain("Remove confirmation pending.");
+  });
+
   it("derives live quote coverage, stale age, and price movement state", () => {
     const now = Date.parse("2026-05-09T01:00:00.000Z");
     const rows = buildWatchlistRows(symbols, {}, { AAPL: quote }, { AAPL: 187 }, now);
@@ -432,6 +444,30 @@ describe("watchlist-screen view model", () => {
     await waitFor(() => expect(result.current.selectedSymbol).toBe("MSFT"));
     expect(result.current.selectedRowId).toBe("MSFT");
     expect(result.current.selectedDetail?.title).toBe("MSFT");
+  });
+
+  it("requires a confirmation pass before removing a watchlist symbol", async () => {
+    const api = createWatchlistApi();
+    const { result } = renderHook(() => useWatchlistScreenViewModel(api));
+
+    await waitFor(() => expect(result.current.rows.length).toBeGreaterThan(0));
+
+    await act(async () => {
+      await result.current.removeSymbol("MSFT");
+    });
+
+    expect(api.removeSymbol).not.toHaveBeenCalled();
+    expect(result.current.selectedSymbol).toBe("MSFT");
+    expect(result.current.rows.find((row) => row.symbol === "MSFT")).toMatchObject({
+      removeLabel: "Confirm remove",
+      removeAriaLabel: "Confirm remove MSFT from watchlist. This stops watchlist tracking for this row."
+    });
+
+    await act(async () => {
+      await result.current.removeSymbol("MSFT");
+    });
+
+    expect(api.removeSymbol).toHaveBeenCalledWith("MSFT");
   });
 });
 

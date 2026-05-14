@@ -364,9 +364,11 @@ export interface LotsTrackerRowViewModel {
   feesLabel: string;
   costLabel: string;
   noteLabel: string;
+  removeLabel: string;
   ariaLabel: string;
   selectAriaLabel: string;
   removeAriaLabel: string;
+  removeConfirmationPending: boolean;
   detailPanelId: string;
   selected: boolean;
   expanded: boolean;
@@ -411,6 +413,7 @@ export interface BuildLotsTrackerViewModelInput {
   marketPriceOverride: number | null;
   draft: LotDraftInput;
   selectedLotId: string | null;
+  pendingRemoveLotId?: string | null;
 }
 
 export function buildLotsTrackerViewModel({
@@ -419,13 +422,21 @@ export function buildLotsTrackerViewModel({
   lots,
   marketPriceOverride,
   draft,
-  selectedLotId
+  selectedLotId,
+  pendingRemoveLotId = null
 }: BuildLotsTrackerViewModelInput): LotsTrackerViewModel {
   const selectedLot = lots.find((lot) => lot.lotId === selectedLotId) ?? lots[0] ?? null;
   const resolvedSelectedLotId = selectedLot?.lotId ?? null;
   const detailPanelId = `security-lots-detail-${stableDomId(securityId)}`;
   const total = buildLotTotals(lots, marketPriceOverride);
-  const rows = lots.map((lot) => buildLotRow(lot, currency, securityId, detailPanelId, lot.lotId === resolvedSelectedLotId));
+  const rows = lots.map((lot) => buildLotRow(
+    lot,
+    currency,
+    securityId,
+    detailPanelId,
+    lot.lotId === resolvedSelectedLotId,
+    lot.lotId === pendingRemoveLotId
+  ));
 
   return {
     title: "Lots tracker",
@@ -483,10 +494,12 @@ function buildLotRow(
   currency: string | null,
   securityId: string,
   detailPanelId: string,
-  selected: boolean
+  selected: boolean,
+  removeConfirmationPending: boolean
 ): LotsTrackerRowViewModel {
   const cost = calculateLotCost(lot);
   const noteLabel = lot.note.trim() || "-";
+  const removeLabel = removeConfirmationPending ? "Confirm remove" : "Remove";
   return {
     lotId: lot.lotId,
     tradeDateLabel: lot.tradeDate,
@@ -495,9 +508,13 @@ function buildLotRow(
     feesLabel: formatCurrency(lot.fees, currency),
     costLabel: formatCurrency(cost, currency),
     noteLabel,
-    ariaLabel: `${securityId} lot from ${lot.tradeDate}, quantity ${formatNumber(lot.quantity)}, cost ${formatCurrency(cost, currency)}`,
-    selectAriaLabel: `Inspect ${securityId} lot from ${lot.tradeDate}`,
-    removeAriaLabel: `Remove ${securityId} lot from ${lot.tradeDate}`,
+    removeLabel,
+    ariaLabel: `${securityId} lot from ${lot.tradeDate}, quantity ${formatNumber(lot.quantity)}, cost ${formatCurrency(cost, currency)}${removeConfirmationPending ? ". Remove confirmation pending." : ""}`,
+    selectAriaLabel: `Inspect ${securityId} lot from ${lot.tradeDate}${removeConfirmationPending ? ". Remove confirmation pending." : ""}`,
+    removeAriaLabel: removeConfirmationPending
+      ? `Confirm remove ${securityId} lot from ${lot.tradeDate}. This deletes the local cost-basis lot.`
+      : `Remove ${securityId} lot from ${lot.tradeDate}`,
+    removeConfirmationPending,
     detailPanelId,
     selected,
     expanded: selected

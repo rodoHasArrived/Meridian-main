@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import * as workstationApi from "@/lib/api";
 import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
+  DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
   buildBackfillSection,
   buildBackfillDialogState,
   buildBackfillProviderOptions,
@@ -18,13 +19,16 @@ import {
   buildProviderSetupDialogState,
   buildProviderSetupSuccessActions,
   buildRouteFocusCardState,
+  buildSelectedProviderDetail,
   clearProviderSetupCredentials,
   buildSelectedBackfillDetail,
   resolveDataOperationsWorkstream,
+  resolveSelectedProvider,
   resolveSelectedBackfill,
   useDataOperationsViewModel,
   validateBackfillForm,
-  validateProviderSetupForm
+  validateProviderSetupForm,
+  DATA_PROVIDER_DETAIL_PANEL_ID
 } from "@/screens/data-operations-screen.view-model";
 import type {
   BackfillProgressResponse,
@@ -136,8 +140,9 @@ describe("data-operations-screen view model", () => {
       backfillDetailEmptyState: null
     });
     expect(backfillFocus).toMatchObject({
-      id: DATA_BACKFILL_DETAIL_PANEL_ID,
+      id: DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
       role: "region",
+      ariaLabel: "Backfill route focus",
       eyebrow: "Backfill Detail",
       title: "Backfill queue focus",
       action: null
@@ -382,15 +387,29 @@ describe("data-operations-screen view model", () => {
   it("derives provider, backfill, and export section rows with empty guidance", () => {
     const providerSection = buildProviderSection(providers);
     expect(providerSection.hasRows).toBe(true);
+    expect(providerSection.tableLabel).toBe("Provider health");
+    expect(providerSection.description).toContain("Provider trust");
+    expect(providerSection.detailPanelId).toBe(DATA_PROVIDER_DETAIL_PANEL_ID);
+    expect(providerSection.selectedRowId).toBe("provider-row-polygon");
+    expect(providerSection.selectedDetail?.title).toBe("Polygon");
+    expect(providerSection.selectedDetail?.id).toBe(DATA_PROVIDER_DETAIL_PANEL_ID);
     expect(providerSection.rows[0].statusTone).toBe("success");
-    expect(providerSection.rows[0].ariaLabel).toContain("Polygon provider Healthy");
+    expect(providerSection.rows[0].rowId).toBe("provider-row-polygon");
+    expect(providerSection.rows[0].selected).toBe(true);
+    expect(providerSection.rows[0].expanded).toBe(true);
+    expect(providerSection.rows[0].detailPanelId).toBe(DATA_PROVIDER_DETAIL_PANEL_ID);
+    expect(providerSection.rows[0].ariaLabel).toContain("Selected provider Polygon");
+    expect(providerSection.rows[0].selectAriaLabel).toBe("Inspect provider Polygon");
     expect(providerSection.rows[0].trustFields).toContainEqual({
       id: "trust-score",
       label: "Trust score",
       value: "98%"
     });
     expect(providerSection.rows[0].recommendedActionText).toBe("Keep provider active.");
-    expect(buildProviderSection([]).emptyState.title).toBe("No providers configured");
+    expect(providerSection.rows[0].detailDescription).toContain("provider detail panel is expanded");
+    const emptyProviderSection = buildProviderSection([]);
+    expect(emptyProviderSection.emptyState.title).toBe("No providers configured");
+    expect(emptyProviderSection.detailEmptyState?.title).toBe("No provider selected");
 
     const backfillSection = buildBackfillSection(backfills, "BF-1044", "backfills");
     expect(backfillSection.tableLabel).toBe("Backfill queue");
@@ -419,6 +438,40 @@ describe("data-operations-screen view model", () => {
     expect(buildExportSection([]).emptyState.title).toBe("No exports available");
   });
 
+  it("selects provider detail rows by provider name or table row id", () => {
+    const providerRecords: DataOperationsProviderRecord[] = [
+      ...providers,
+      {
+        provider: "Databento",
+        status: "Degraded",
+        capability: "Historical futures",
+        latency: "2.4s p95",
+        note: "Backfill pressure is elevated.",
+        trustScore: "72%",
+        signalSource: "Replay audit",
+        reasonCode: "LATENCY_ELEVATED",
+        recommendedAction: "Route fresh requests to Polygon until replay clears.",
+        gateImpact: "Blocks promotion gates"
+      }
+    ];
+
+    expect(resolveSelectedProvider(providerRecords, "Databento")?.provider).toBe("Databento");
+    expect(resolveSelectedProvider(providerRecords, "provider-row-databento")?.provider).toBe("Databento");
+
+    const providerSection = buildProviderSection(providerRecords, "provider-row-databento");
+    expect(providerSection.selectedRowId).toBe("provider-row-databento");
+    expect(providerSection.rows[0].selected).toBe(false);
+    expect(providerSection.rows[1].selected).toBe(true);
+    expect(providerSection.rows[1].expanded).toBe(true);
+    expect(providerSection.rows[1].statusTone).toBe("danger");
+    expect(providerSection.rows[1].ariaLabel).toContain("Selected provider Databento");
+
+    const detail = buildSelectedProviderDetail(providerRecords, "provider-row-databento");
+    expect(detail?.ariaLabel).toContain("Provider detail for Databento");
+    expect(detail?.fields).toContainEqual({ id: "trust-score", label: "Trust score", value: "72%" });
+    expect(detail?.actionText).toContain("Route fresh requests");
+  });
+
   it("derives provider setup fields from the selected provider kind", () => {
     const alpacaDialog = buildProviderSetupDialogState("idle", {
       kind: "alpaca",
@@ -444,6 +497,12 @@ describe("data-operations-screen view model", () => {
       id: "credentials",
       label: "Required",
       value: "API key + secret"
+    });
+    expect(alpacaDialog.cancelAction).toEqual({
+      label: "Cancel",
+      ariaLabel: "Cancel provider setup",
+      disabled: false,
+      disabledReason: null
     });
     expect(alpacaDialog.successPanel).toEqual({
       title: "Next validation",
@@ -492,6 +551,12 @@ describe("data-operations-screen view model", () => {
     expect(submittingDialog.credentialFields.every((field) => field.disabled)).toBe(true);
     expect(submittingDialog.capabilityOptions.every((option) => option.disabled)).toBe(true);
     expect(submittingDialog.providerKindField.disabledReason).toBe("Provider setup is in progress; wait before editing.");
+    expect(submittingDialog.cancelAction).toEqual({
+      label: "Cancel",
+      ariaLabel: "Cancel provider setup unavailable: Provider setup is in progress; wait before closing.",
+      disabled: true,
+      disabledReason: "Provider setup is in progress; wait before closing."
+    });
   });
 
   it("derives provider setup success actions from configured capabilities", () => {
@@ -705,6 +770,8 @@ describe("data-operations-screen view model", () => {
     expect(detail?.title).toBe("Options chains / 7d");
     expect(detail?.description).toContain("waiting on operator review");
     expect(detail?.ariaLabel).toContain("Backfill detail for BF-1044");
+    expect(detail?.statusLabel).toBe("Review");
+    expect(detail?.statusVariant).toBe("warning");
     expect(detail?.rows).toContainEqual({ id: "updated", label: "Updated", value: "5m ago" });
     expect(buildSelectedBackfillDetail([], null)).toBeNull();
   });
@@ -728,7 +795,7 @@ describe("data-operations-screen view model", () => {
     expect(presentation.backfillDetailEmptyState?.title).toBe("No backfill activity yet");
     expect(presentation.routeFocusCard).toMatchObject({
       role: "status",
-      ariaLabel: "Backfill detail empty state",
+      ariaLabel: "Backfill route focus empty state",
       title: "No backfill activity yet",
       rows: []
     });

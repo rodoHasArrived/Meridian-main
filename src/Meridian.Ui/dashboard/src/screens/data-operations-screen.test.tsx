@@ -1,11 +1,14 @@
-import { act, fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import * as api from "@/lib/api";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
-import { DATA_BACKFILL_DETAIL_PANEL_ID } from "@/screens/data-operations-screen.view-model";
+import {
+  DATA_BACKFILL_DETAIL_PANEL_ID,
+  DATA_PROVIDER_DETAIL_PANEL_ID
+} from "@/screens/data-operations-screen.view-model";
 import { renderWithRouter } from "@/test/render";
-import type { BackfillProgressResponse, BackfillTriggerResult, DataOperationsWorkspaceResponse } from "@/types";
+import type { BackfillProgressResponse, BackfillTriggerResult, DataOperationsWorkspaceResponse, ProviderSetupResult } from "@/types";
 
 const data: DataOperationsWorkspaceResponse = {
   metrics: [
@@ -85,12 +88,24 @@ describe("DataOperationsScreen", () => {
     expect(screen.getAllByText("Provider health").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Recent exports").length).toBeGreaterThan(0);
-    expect(screen.getByText("Polygon")).toBeInTheDocument();
-    expect(screen.getByLabelText("Polygon trust evidence")).toBeInTheDocument();
-    expect(screen.getByText("Trust score")).toBeInTheDocument();
-    expect(screen.getByText("98%")).toBeInTheDocument();
-    expect(screen.getByText("Keep provider active.")).toBeInTheDocument();
-    expect(screen.getByText("Reason: TRUST_OK")).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Provider health" })).toBeInTheDocument();
+    const providerRow = screen.getByRole("row", { name: "Inspect provider Polygon" });
+    expect(providerRow).toHaveAttribute("aria-selected", "true");
+    expect(providerRow).toHaveAttribute("aria-expanded", "true");
+    expect(providerRow).toHaveAttribute("aria-controls", DATA_PROVIDER_DETAIL_PANEL_ID);
+    const providerDetail = screen.getByRole("region", { name: /provider detail for Polygon/i });
+    expect(providerDetail).toBeInTheDocument();
+    expect(within(providerDetail).getByText("Trust score")).toBeInTheDocument();
+    expect(within(providerDetail).getByText("98%")).toBeInTheDocument();
+    expect(within(providerDetail).getByText("Keep provider active.")).toBeInTheDocument();
+    expect(within(providerDetail).getByText("Reason: TRUST_OK")).toBeInTheDocument();
+    expect(within(providerDetail).getByText("Gate: No gate impact")).toBeInTheDocument();
+    const runningBackfill = screen.getByRole("row", { name: "Inspect backfill BF-1042" });
+    expect(runningBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
+    const backfillDetail = screen.getByRole("region", { name: /backfill detail for BF-1042/i });
+    expect(backfillDetail).toHaveAttribute("id", DATA_BACKFILL_DETAIL_PANEL_ID);
+    expect(within(backfillDetail).getByText("US equities / 30d")).toBeInTheDocument();
+    expect(within(backfillDetail).getByText(/Replay is currently advancing/i)).toBeInTheDocument();
     const exportRow = screen.getByRole("group", { name: /python-pandas export ready/i });
     expect(exportRow).toHaveTextContent("EX-2201");
     expect(exportRow).toHaveTextContent("research pack · 124k · 4m ago");
@@ -113,6 +128,45 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByText("No exports available")).toBeInTheDocument();
     expect(screen.getByRole("status", { name: "Backfill detail empty state" })).toHaveTextContent("No backfill activity yet");
     expect(screen.getAllByRole("status").length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("supports keyboard provider selection and updates the provider detail panel", async () => {
+    const user = userEvent.setup();
+    const providerData: DataOperationsWorkspaceResponse = {
+      ...data,
+      providers: [
+        ...data.providers,
+        {
+          provider: "Databento",
+          status: "Degraded",
+          capability: "Historical futures",
+          latency: "2.4s p95",
+          note: "Backfill pressure is elevated.",
+          trustScore: "72%",
+          signalSource: "Replay audit",
+          reasonCode: "LATENCY_ELEVATED",
+          recommendedAction: "Route fresh requests to Polygon until replay clears.",
+          gateImpact: "Blocks promotion gates"
+        }
+      ]
+    };
+
+    renderWithRouter(<DataOperationsScreen data={providerData} />, { initialEntries: ["/data"] });
+
+    const polygonProvider = screen.getByRole("row", { name: "Inspect provider Polygon" });
+    const databentoProvider = screen.getByRole("row", { name: "Inspect provider Databento" });
+
+    expect(polygonProvider).toHaveAttribute("aria-selected", "true");
+    expect(databentoProvider).toHaveAttribute("aria-expanded", "false");
+
+    databentoProvider.focus();
+    await user.keyboard("{Enter}");
+
+    expect(databentoProvider).toHaveAttribute("aria-selected", "true");
+    expect(databentoProvider).toHaveAttribute("aria-expanded", "true");
+    expect(polygonProvider).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("region", { name: /provider detail for Databento/i })).toHaveTextContent("Route fresh requests");
+    expect(screen.getByRole("region", { name: /provider detail for Databento/i })).toHaveTextContent("Reason: LATENCY_ELEVATED");
   });
 
   it("clears provider credentials after setup and suppresses browser autocomplete", async () => {
@@ -166,12 +220,43 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByLabelText("Provider API secret")).toHaveValue("");
   });
 
+  it("explains why provider setup cannot be cancelled while save is pending", async () => {
+    const user = userEvent.setup();
+    let resolveSetup!: (value: ProviderSetupResult) => void;
+
+    vi.spyOn(api, "setupProvider").mockReturnValueOnce(new Promise<ProviderSetupResult>((resolve) => {
+      resolveSetup = resolve;
+    }));
+
+    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+
+    await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
+    await user.selectOptions(screen.getByLabelText("Select provider type"), "alpaca");
+    await user.type(screen.getByLabelText("Provider API key"), "key-123");
+    await user.type(screen.getByLabelText("Provider API secret"), "secret-456");
+    await user.click(screen.getByRole("button", { name: /configure and register provider/i }));
+
+    const cancelButton = await screen.findByRole("button", { name: /cancel provider setup unavailable/i });
+    expect(cancelButton).toBeDisabled();
+    expect(cancelButton).toHaveAttribute("title", "Provider setup is in progress; wait before closing.");
+
+    await act(async () => {
+      resolveSetup({
+        success: true,
+        providerId: "provider-alpaca",
+        providerName: "Alpaca paper",
+        message: "Provider configured.",
+        error: null
+      });
+    });
+  });
+
   it("adapts the hero copy for deep-link routes", () => {
     renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
     expect(screen.getByText("Backfill queue focus")).toBeInTheDocument();
     expect(screen.getByText("Backfill Detail")).toBeInTheDocument();
-    expect(screen.getByText(/Replay is currently advancing/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Replay is currently advancing/).length).toBeGreaterThan(0);
   });
 
   it("keeps the old static Security Master workbench out of the Data route", () => {
@@ -205,7 +290,7 @@ describe("DataOperationsScreen", () => {
     expect(runningBackfill).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("region", { name: /backfill detail for BF-1044/i })).toBeInTheDocument();
     expect(screen.getAllByText("Options chains / 7d").length).toBeGreaterThan(0);
-    expect(screen.getByText(/waiting on operator review/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/waiting on operator review/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText("5m ago").length).toBeGreaterThan(0);
   });
 

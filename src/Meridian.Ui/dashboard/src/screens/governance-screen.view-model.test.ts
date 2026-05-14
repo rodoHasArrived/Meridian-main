@@ -1011,19 +1011,22 @@ describe("governance-screen view model", () => {
         resolution: "AcceptA",
         label: "Use Bloomberg",
         disabled: true,
-        ariaLabel: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Bloomberg value sec-1"
+        disabledReason: "Resolution is already in progress for identifier conflict conflict-1.",
+        ariaLabel: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Bloomberg value sec-1. Disabled: Resolution is already in progress for identifier conflict conflict-1."
       }),
       expect.objectContaining({
         resolution: "AcceptB",
         label: "Use Refinitiv",
         disabled: true,
-        ariaLabel: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Refinitiv value sec-2"
+        disabledReason: "Resolution is already in progress for identifier conflict conflict-1.",
+        ariaLabel: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Refinitiv value sec-2. Disabled: Resolution is already in progress for identifier conflict conflict-1."
       }),
       expect.objectContaining({
         resolution: "Dismiss",
         label: "Dismiss conflict",
         disabled: true,
-        ariaLabel: "Dismiss identifier conflict conflict-1 on identifiers.CUSIP"
+        disabledReason: "Resolution is already in progress for identifier conflict conflict-1.",
+        ariaLabel: "Dismiss identifier conflict conflict-1 on identifiers.CUSIP. Disabled: Resolution is already in progress for identifier conflict conflict-1."
       })
     ]);
     expect(rows[1]).toMatchObject({
@@ -1204,6 +1207,7 @@ describe("governance-screen view model", () => {
     expect(state.selectedExportProfileId).toBe("board");
     expect(state.exportCanRun).toBe(true);
     expect(state.exportAriaLabel).toBe("Run reporting export for Board packet");
+    expect(state.exportDisabledReason).toBeNull();
     expect(state.backendLinks).toEqual([
       {
         id: "preview",
@@ -1238,6 +1242,36 @@ describe("governance-screen view model", () => {
     expect(state.nextAction).toBe("Sync reporting profile metadata before packet generation.");
     expect(state.exportCanRun).toBe(false);
     expect(state.exportAriaLabel).toBe("Run reporting export unavailable until a reporting profile is loaded");
+    expect(state.exportDisabledReason).toBe("Load or select a reporting profile before running an export.");
+  });
+
+  it("surfaces reporting export busy state from the view model", () => {
+    const state = buildGovernanceReportingViewState({
+      reporting: {
+        profileCount: 1,
+        recommendedProfiles: ["excel"],
+        reportPackTargets: ["board"],
+        summary: "1 profile loaded.",
+        profiles: [
+          {
+            id: "excel",
+            name: "Excel",
+            targetTool: "Excel",
+            format: "Xlsx",
+            description: "Board-ready workbook export.",
+            loaderScript: false,
+            dataDictionary: true
+          }
+        ]
+      },
+      selectedProfileId: "excel",
+      exportBusy: true
+    });
+
+    expect(state.exportCanRun).toBe(false);
+    expect(state.exportButtonLabel).toBe("Export running...");
+    expect(state.exportAriaLabel).toBe("Excel reporting export is already running");
+    expect(state.exportDisabledReason).toBe("Excel reporting export is already running.");
   });
 
   it("formats reporting export command results for success and failure states", () => {

@@ -13,6 +13,9 @@ import {
   type ParticipationViewModel,
   type PayoffChartViewModel,
   type StrategyCanvasLegViewModel,
+  type StrategyLegDetailEmptyStateViewModel,
+  type StrategyLegDetailFieldViewModel,
+  type StrategyLegDetailViewModel,
   type StrategyDesignerViewModel,
   type StrategyLeg,
   type StrategyLegPaletteEntry
@@ -55,7 +58,7 @@ export function StrategyDesignerScreen() {
               </Button>
               <Button
                 type="button"
-                variant="outline"
+                variant={vm.clearCanvasCommand.confirmationPending ? "secondary" : "outline"}
                 onClick={vm.clearCanvas}
                 disabled={vm.clearCanvasCommand.disabled}
                 disabledReason={vm.clearCanvasCommand.disabledReason}
@@ -223,46 +226,53 @@ function CanvasPanel({ vm, dropActive, setDropActive }: CanvasPanelProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <div
-          role="list"
-          aria-label="Strategy legs canvas"
-          data-drop-active={dropActive ? "true" : "false"}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={cn(
-            "min-h-[260px] space-y-2 rounded-md border-2 border-dashed border-border/70 bg-secondary/15 p-3 transition-colors",
-            dropActive && "border-primary/60 bg-primary/10"
-          )}
-        >
-          {vm.legs.length === 0 ? (
-            <div className="flex h-full min-h-[220px] items-center justify-center text-center text-sm text-muted-foreground">
-              {vm.emptyStateMessage}
-            </div>
-          ) : (
-            vm.canvasLegs.map((leg, index) => (
-              <CanvasLeg
-                key={leg.id}
-                leg={leg}
-                onSelect={() => vm.selectLeg(leg.id)}
-                onRemove={() => vm.removeLeg(leg.id)}
-                onUpdate={(patch) => vm.updateLeg(leg.id, patch)}
-                onReorder={(sourceId) => vm.reorderLeg(sourceId, leg.id)}
-                onMoveUp={() => {
-                  const target = vm.canvasLegs[index - 1];
-                  if (target) {
-                    vm.reorderLeg(leg.id, target.id);
-                  }
-                }}
-                onMoveDown={() => {
-                  const target = vm.canvasLegs[index + 1];
-                  if (target) {
-                    vm.reorderLeg(leg.id, target.id);
-                  }
-                }}
-              />
-            ))
-          )}
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)]">
+          <div
+            role="list"
+            aria-label="Strategy legs canvas"
+            data-drop-active={dropActive ? "true" : "false"}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={cn(
+              "min-h-[260px] space-y-2 rounded-md border-2 border-dashed border-border/70 bg-secondary/15 p-3 transition-colors",
+              dropActive && "border-primary/60 bg-primary/10"
+            )}
+          >
+            {vm.legs.length === 0 ? (
+              <div className="flex h-full min-h-[220px] items-center justify-center text-center text-sm text-muted-foreground">
+                {vm.emptyStateMessage}
+              </div>
+            ) : (
+              vm.canvasLegs.map((leg, index) => (
+                <CanvasLeg
+                  key={leg.id}
+                  leg={leg}
+                  onSelect={() => vm.selectLeg(leg.id)}
+                  onRemove={() => vm.removeLeg(leg.id)}
+                  onUpdate={(patch) => vm.updateLeg(leg.id, patch)}
+                  onReorder={(sourceId) => vm.reorderLeg(sourceId, leg.id)}
+                  onMoveUp={() => {
+                    const target = vm.canvasLegs[index - 1];
+                    if (target) {
+                      vm.reorderLeg(leg.id, target.id);
+                    }
+                  }}
+                  onMoveDown={() => {
+                    const target = vm.canvasLegs[index + 1];
+                    if (target) {
+                      vm.reorderLeg(leg.id, target.id);
+                    }
+                  }}
+                />
+              ))
+            )}
+          </div>
+          <SelectedLegDetailPanel
+            id={vm.selectedLegDetailPanelId}
+            detail={vm.selectedLegDetail}
+            emptyState={vm.selectedLegDetailEmptyState}
+          />
         </div>
       </CardContent>
     </Card>
@@ -283,11 +293,18 @@ function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder, onMoveUp, onM
   return (
     <div
       role="listitem"
+      tabIndex={0}
       aria-label={leg.containerAriaLabel}
       data-leg-id={leg.id}
       data-selected={leg.isSelected ? "true" : "false"}
       onClick={(event) => {
         if (isInteractiveCanvasTarget(event.target)) return;
+        onSelect();
+      }}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
         onSelect();
       }}
       onDragOver={(event) => {
@@ -306,7 +323,7 @@ function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder, onMoveUp, onM
       }}
       className={cn(
         "flex flex-col gap-2 rounded-md border border-border/70 bg-card px-3 py-2 transition-colors",
-        "focus-within:border-primary/60",
+        "focus-within:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
         leg.isSelected && "border-primary/60 ring-1 ring-primary/40"
       )}
     >
@@ -337,6 +354,8 @@ function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder, onMoveUp, onM
           size="sm"
           onClick={onSelect}
           aria-pressed={leg.isSelected}
+          aria-controls={leg.selectButtonAriaControls}
+          aria-expanded={leg.selectButtonAriaExpanded}
           aria-label={leg.selectButtonAriaLabel}
         >
           {leg.selectButtonLabel}
@@ -464,6 +483,68 @@ function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder, onMoveUp, onM
     </div>
   );
 }
+
+interface SelectedLegDetailPanelProps {
+  id: string;
+  detail: StrategyLegDetailViewModel | null;
+  emptyState: StrategyLegDetailEmptyStateViewModel;
+}
+
+function SelectedLegDetailPanel({ id, detail, emptyState }: SelectedLegDetailPanelProps) {
+  return (
+    <aside
+      id={id}
+      className="row-detail-panel h-fit min-w-0"
+      role={detail ? "region" : "status"}
+      aria-label={detail?.ariaLabel ?? emptyState.ariaLabel}
+      aria-live="polite"
+      data-testid="strategy-designer-selected-leg-detail"
+    >
+      <div className="head flex items-center justify-between gap-3">
+        <span>{detail?.eyebrow ?? "Selected leg"}</span>
+        {detail ? <Badge variant={detail.statusVariant} dot>{detail.statusLabel}</Badge> : null}
+      </div>
+      <div className="body">
+        {detail ? (
+          <div className="space-y-3">
+            <div className="min-w-0">
+              <h3 className="break-words text-sm font-semibold text-foreground">{detail.title}</h3>
+              <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">{detail.description}</p>
+            </div>
+            <dl className="grid gap-2">
+              {detail.fields.map((field) => (
+                <StrategyLegDetailFieldRow key={field.id} field={field} />
+              ))}
+            </dl>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-foreground">{emptyState.title}</h3>
+            <p className="text-xs leading-5 text-muted-foreground">{emptyState.description}</p>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+function StrategyLegDetailFieldRow({ field }: { field: StrategyLegDetailFieldViewModel }) {
+  return (
+    <div className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2">
+      <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+      <dd className={cn("mt-1 break-words font-mono text-xs", detailToneClass[field.tone])}>{field.value}</dd>
+    </div>
+  );
+}
+
+const detailToneClass: Record<StrategyLegDetailFieldViewModel["tone"], string> = {
+  default: "text-foreground",
+  muted: "text-muted-foreground",
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger"
+};
 
 function isInteractiveCanvasTarget(target: EventTarget): boolean {
   if (!(target instanceof Element)) return false;

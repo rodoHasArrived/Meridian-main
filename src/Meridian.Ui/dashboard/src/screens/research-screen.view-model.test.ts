@@ -18,6 +18,7 @@ import {
   buildRunDetail,
   buildRunTable,
   nextPlotToolViewForKey,
+  plotToolTabIdForView,
   parsePromotionInitialCashInput,
   shouldCloseRunDetailForKey,
   toggleRunSelection
@@ -673,6 +674,8 @@ describe("research-screen view model", () => {
     expect(nextPlotToolViewForKey("statistics", "Home")).toBe("workspace");
     expect(nextPlotToolViewForKey("workspace", "End")).toBe("statistics");
     expect(nextPlotToolViewForKey("workspace", "Enter")).toBeNull();
+    expect(plotToolTabIdForView("workspace")).toBe("plottool-workspace-tab");
+    expect(plotToolTabIdForView("statistics")).toBe("plottool-statistics-tab");
   });
 
   it("keeps run detail keyboard-close decisions testable outside the view", () => {

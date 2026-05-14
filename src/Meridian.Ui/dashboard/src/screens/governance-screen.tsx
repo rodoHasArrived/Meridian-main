@@ -554,8 +554,10 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                 type="button"
                 variant="outline"
                 disabled={!reporting.exportCanRun}
+                disabledReason={reporting.exportDisabledReason}
+                busy={reporting.exportBusy}
+                busyLabel={reporting.exportButtonLabel}
                 aria-label={reporting.exportAriaLabel}
-                aria-busy={reporting.exportBusy}
                 onClick={() => void reporting.runExport()}
               >
                 {reporting.exportButtonLabel}
@@ -944,6 +946,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                                 size="sm"
                                 variant={action.variant}
                                 disabled={action.disabled}
+                                disabledReason={action.disabledReason}
                                 aria-label={action.ariaLabel}
                                 onClick={() => void securityMaster.resolveConflict(conflict.conflictId, action.resolution)}
                               >

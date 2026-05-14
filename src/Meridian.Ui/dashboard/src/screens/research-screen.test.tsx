@@ -157,8 +157,16 @@ describe("ResearchScreen", () => {
     screen.getByRole("tab", { name: "Workstation" }).focus();
     await user.keyboard("{ArrowRight}");
 
-    expect(screen.getByRole("tab", { name: "Statistics" })).toHaveAttribute("aria-selected", "true");
+    const statisticsTab = screen.getByRole("tab", { name: "Statistics" });
+    expect(statisticsTab).toHaveAttribute("aria-selected", "true");
+    expect(statisticsTab).toHaveFocus();
     expect(screen.getByText("Distribution profile")).toBeInTheDocument();
+
+    await user.keyboard("{Home}");
+
+    const workstationTab = screen.getByRole("tab", { name: "Workstation" });
+    expect(workstationTab).toHaveAttribute("aria-selected", "true");
+    expect(workstationTab).toHaveFocus();
   });
 
   it("renders an empty run-library row when no strategy runs are available", () => {

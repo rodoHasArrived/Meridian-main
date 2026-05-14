@@ -201,16 +201,21 @@ public static class UiEndpoints
 
         // BacktestEngine factory — mirrors the WPF App.xaml.cs pattern: one engine per
         // BacktestRequest because the catalog service is bound to request.DataRoot.
-        services.TryAddSingleton<Func<BacktestRequest, BacktestEngine>>(sp => request =>
+        services.TryAddSingleton<Func<BacktestRequest, BacktestEngine>>(sp =>
         {
-            var storageOptions = new StorageOptions { RootPath = request.DataRoot };
-            var catalogService = new StorageCatalogService(request.DataRoot, storageOptions);
-            return new BacktestEngine(
-                sp.GetRequiredService<ILogger<BacktestEngine>>(),
-                catalogService,
-                sp.GetService<ISecurityMasterQueryService>(),
-                sp.GetService<ICorporateActionAdjustmentService>(),
-                sp.GetService<IBacktestPreflightService>());
+            BacktestEngine CreateEngine(BacktestRequest request)
+            {
+                var storageOptions = new StorageOptions { RootPath = request.DataRoot };
+                var catalogService = new StorageCatalogService(request.DataRoot, storageOptions);
+                return new BacktestEngine(
+                    sp.GetRequiredService<ILogger<BacktestEngine>>(),
+                    catalogService,
+                    sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                    sp.GetService<ICorporateActionAdjustmentService>(),
+                    sp.GetService<IBacktestPreflightService>());
+            }
+
+            return CreateEngine;
         });
 
         // Register the concrete type so AddHostedService<T> doesn't need a cast. The interface

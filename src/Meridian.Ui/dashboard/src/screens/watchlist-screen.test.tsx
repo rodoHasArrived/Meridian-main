@@ -301,6 +301,8 @@ describe("WatchlistScreen", () => {
 
     await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
+    expect(api.removeSymbol).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Symbol remove failed");
     expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toBeInTheDocument();
@@ -314,10 +316,27 @@ describe("WatchlistScreen", () => {
 
     await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
     await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
+    await user.click(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Could not remove MSFT.");
     expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toBeInTheDocument();
     expect(api.getSymbols).toHaveBeenCalledTimes(1);
+  });
+
+  it("requires two clicks before removing a configured watchlist symbol", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
+
+    await screen.findByRole("table", { name: /subscribed symbol watchlist/i });
+    await user.click(screen.getByRole("button", { name: /Remove MSFT from watchlist/i }));
+
+    expect(api.removeSymbol).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /MSFT. Status Monitored/i })).toHaveAccessibleName(/Remove confirmation pending/i);
+
+    await user.click(screen.getByRole("button", { name: /Confirm remove MSFT from watchlist/i }));
+
+    await waitFor(() => expect(api.removeSymbol).toHaveBeenCalledWith("MSFT"));
   });
 
   it("selects watchlist rows with the shared dense-table keyboard command", async () => {

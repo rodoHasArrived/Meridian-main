@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import { OverviewScreen } from "@/screens/overview-screen";
 import { renderWithRouter } from "@/test/render";
-import type { SessionInfo, SystemOverviewResponse } from "@/types";
+import type { SessionInfo, SystemOverviewResponse, TradingWorkspaceResponse } from "@/types";
 
 const overview: SystemOverviewResponse = {
   systemStatus: "Degraded",
@@ -31,6 +31,33 @@ const session: SessionInfo = {
   environment: "paper",
   activeWorkspace: "trading",
   commandCount: 9
+};
+
+const tradingWorkspace: TradingWorkspaceResponse = {
+  metrics: [],
+  positions: [],
+  openOrders: [],
+  fills: [],
+  risk: {
+    state: "Healthy",
+    summary: "Paper account is inside guardrails.",
+    netExposure: "$0",
+    grossExposure: "$0",
+    var95: "$0",
+    maxDrawdown: "0%",
+    buyingPowerUsed: "0%",
+    activeGuardrails: []
+  },
+  brokerage: {
+    provider: "Alpaca",
+    account: "Paper",
+    environment: "paper",
+    connection: "Connected",
+    lastHeartbeat: "2026-04-28T18:15:00Z",
+    orderIngress: "Ready",
+    fillFeed: "Ready",
+    notes: "Ready for paper orders."
+  }
 };
 
 describe("OverviewScreen", () => {
@@ -126,5 +153,23 @@ describe("OverviewScreen", () => {
     expect(setupLink).toHaveAttribute("href", "/settings#alpaca-provider-setup");
     expect(screen.getByText("Connect provider baseline")).toBeInTheDocument();
     expect(screen.getByText(/No providers are configured yet/i)).toBeInTheDocument();
+  });
+
+  it("routes an unhydrated portfolio cockpit to provider setup", () => {
+    renderWithRouter(<OverviewScreen data={overview} session={session} />);
+
+    const setupLink = screen.getByRole("link", {
+      name: "Open Alpaca paper provider setup checklist from the empty portfolio panel"
+    });
+    expect(setupLink).toHaveAttribute("href", "/settings#alpaca-provider-setup");
+  });
+
+  it("routes an empty connected portfolio cockpit to the trading path", () => {
+    renderWithRouter(<OverviewScreen data={overview} session={session} trading={tradingWorkspace} />);
+
+    const tradingLink = screen.getByRole("link", {
+      name: "Open Trading cockpit from the empty portfolio positions panel"
+    });
+    expect(tradingLink).toHaveAttribute("href", "/trading");
   });
 });

@@ -386,7 +386,16 @@ describe("operator readiness console view model", () => {
     ]);
     expect(state.panels[0]).toEqual(expect.objectContaining({
       ariaLabel: "Latest runs readiness evidence",
-      listLabel: "Latest runs rows"
+      listLabel: "Latest runs rows",
+      tableLabel: "Latest runs readiness evidence table",
+      detailLabel: "Selected latest runs evidence detail",
+      detailPanelId: "operator-readiness-latest-runs-evidence-detail",
+      selectedRowId: "run-1",
+      selectedDetail: expect.objectContaining({
+        id: "run-1",
+        title: "Index Momentum",
+        ariaLabel: "Selected latest runs evidence: Index Momentum"
+      })
     }));
     expect(state.checkpointGatesLabel).toBe("Full-console readiness checkpoints");
     expect(state.checkpointGates.map((gate) => gate.label)).toEqual([
@@ -440,7 +449,9 @@ describe("operator readiness console view model", () => {
     expect(state.panels.find((panel) => panel.id === "reporting-report-packs")).toEqual(expect.objectContaining({
       title: "Reporting report packs",
       ariaLabel: "Reporting report packs readiness evidence",
-      listLabel: "Reporting report packs rows"
+      listLabel: "Reporting report packs rows",
+      tableLabel: "Reporting report packs readiness evidence table",
+      detailPanelId: "operator-readiness-reporting-report-packs-evidence-detail"
     }));
   });
 
@@ -1320,6 +1331,41 @@ describe("operator readiness console view model", () => {
       { label: "Attention", value: "Review" },
       { label: "Route", value: "/reporting" },
       { label: "Evidence", value: "Reporting - ReportPackApproval - audit-report-pack" }
+    ]));
+  });
+
+  it("keeps selected evidence-panel detail in the view model", () => {
+    const selectedRows: Partial<Record<"active-paper-session", string>> = {
+      "active-paper-session": "paper-equity"
+    };
+    const state = buildOperatorReadinessConsoleState({
+      research,
+      trading,
+      dataOperations,
+      governance,
+      operatorInbox: inbox,
+      inboxLoading: false,
+      inboxError: null,
+      selectedPanelRowIds: selectedRows
+    });
+
+    const activeSessionPanel = state.panels.find((panel) => panel.id === "active-paper-session");
+
+    expect(activeSessionPanel).toEqual(expect.objectContaining({
+      tableLabel: "Active paper session readiness evidence table",
+      detailLabel: "Selected active paper session evidence detail",
+      selectedRowId: "paper-equity"
+    }));
+    expect(activeSessionPanel?.selectedDetail).toEqual(expect.objectContaining({
+      id: "paper-equity",
+      title: "Paper portfolio value",
+      statusLabel: "$100,500.00",
+      ariaLabel: "Selected active paper session evidence: Paper portfolio value"
+    }));
+    expect(activeSessionPanel?.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Evidence ID", value: "paper-equity" },
+      { label: "Attention", value: "Ready" },
+      { label: "Evidence", value: "Created Apr 29, 11:00 UTC" }
     ]));
   });
 });

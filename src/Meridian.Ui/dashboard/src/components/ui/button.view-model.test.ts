@@ -6,6 +6,7 @@ describe("button command view model", () => {
       disabled: false,
       ariaBusy: undefined,
       ariaDisabled: undefined,
+      asChildTabIndex: undefined,
       title: undefined,
       displayBusyLabel: null,
       showBusyIndicator: false,
@@ -21,6 +22,7 @@ describe("button command view model", () => {
 
     expect(viewModel.disabled).toBe(true);
     expect(viewModel.ariaDisabled).toBe(true);
+    expect(viewModel.asChildTabIndex).toBe(-1);
     expect(viewModel.title).toBe("Preview the request before running.");
     expect(viewModel.showBusyIndicator).toBe(false);
   });

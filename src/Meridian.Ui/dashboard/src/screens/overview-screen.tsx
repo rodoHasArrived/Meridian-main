@@ -474,9 +474,15 @@ function PortfolioPanel({ panel }: { panel: OverviewPortfolioPanel }) {
                 </ul>
               </div>
             ) : (
-              <p className="rounded-md border border-border/60 bg-secondary/20 px-4 py-3 text-center text-xs text-muted-foreground">
-                {panel.emptyMessage}
-              </p>
+              <div className="rounded-md border border-border/60 bg-secondary/20 px-4 py-3 text-center text-xs text-muted-foreground">
+                <p>{panel.emptyMessage}</p>
+                <Button asChild variant="outline" size="sm" className="mt-3">
+                  <Link to={panel.emptyAction.href} aria-label={panel.emptyAction.ariaLabel}>
+                    {panel.emptyAction.label}
+                    <ArrowRight className="size-3.5" aria-hidden="true" />
+                  </Link>
+                </Button>
+              </div>
             )}
             {panel.riskSummary ? (
               <p className={cn("text-xs leading-5", portfolioPanelToneClass[panel.riskTone])}>
@@ -485,9 +491,15 @@ function PortfolioPanel({ panel }: { panel: OverviewPortfolioPanel }) {
             ) : null}
           </div>
         ) : (
-          <p className="rounded-md border border-border/60 bg-secondary/20 px-4 py-6 text-center text-sm text-muted-foreground">
-            {panel.emptyMessage}
-          </p>
+          <div className="rounded-md border border-border/60 bg-secondary/20 px-4 py-6 text-center text-sm text-muted-foreground">
+            <p>{panel.emptyMessage}</p>
+            <Button asChild variant="outline" size="sm" className="mt-3">
+              <Link to={panel.emptyAction.href} aria-label={panel.emptyAction.ariaLabel}>
+                {panel.emptyAction.label}
+                <ArrowRight className="size-3.5" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
         )}
       </CardContent>
     </Card>

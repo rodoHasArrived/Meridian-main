@@ -27,6 +27,27 @@ export interface PriceAlertFormValidation {
   canSubmit: boolean;
 }
 
+export type PriceAlertFormFieldKey = "symbol" | "threshold";
+
+export interface PriceAlertFormFieldViewModel {
+  id: string;
+  label: string;
+  helperId: string;
+  helperText: string;
+  errorId: string;
+  errorText: string | null;
+  invalid: boolean;
+  describedBy: string;
+  errorMessageId: string | undefined;
+}
+
+export interface PriceAlertFormFieldsViewModel {
+  symbol: PriceAlertFormFieldViewModel;
+  threshold: PriceAlertFormFieldViewModel;
+}
+
+export type PriceAlertFormValidationVisibility = Record<PriceAlertFormFieldKey, boolean>;
+
 export interface PriceAlertsScreenViewModel {
   form: PriceAlertFormState;
   setSymbol: (value: string) => void;
@@ -35,6 +56,7 @@ export interface PriceAlertsScreenViewModel {
   setThreshold: (value: string) => void;
   setNote: (value: string) => void;
   validation: PriceAlertFormValidation;
+  fields: PriceAlertFormFieldsViewModel;
   submitAction: PriceAlertSubmitAction;
   submitFeedback: PriceAlertSubmitFeedback | null;
   conditionOptions: PriceAlertConditionOption[];
@@ -189,6 +211,8 @@ export interface PriceAlertRowViewModel {
   primaryAction: PriceAlertRowAction;
   pauseAction: PriceAlertRowAction;
   deleteAction: PriceAlertRowAction;
+  deleteConfirmationStatusId: string | null;
+  deleteConfirmationStatus: string | null;
 }
 
 export interface PriceAlertRowAction {
@@ -249,8 +273,14 @@ export function usePriceAlertsScreenViewModel({
 }): PriceAlertsScreenViewModel {
   const [form, setForm] = useState<PriceAlertFormState>(() => readFormFromSeededSymbol(seededSymbol));
   const [submitFeedback, setSubmitFeedback] = useState<PriceAlertSubmitFeedback | null>(null);
+  const [validationRequested, setValidationRequested] = useState(false);
+  const [touchedFields, setTouchedFields] = useState<PriceAlertFormValidationVisibility>({
+    symbol: false,
+    threshold: false
+  });
   const [selectedTriggerId, setSelectedTriggerId] = useState<string | null>(null);
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
+  const [pendingDeleteAlertId, setPendingDeleteAlertId] = useState<string | null>(null);
   const consumedSeedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -265,6 +295,16 @@ export function usePriceAlertsScreenViewModel({
   }, [seededSymbol, onSeededSymbolConsumed]);
 
   const validation = useMemo(() => validatePriceAlertForm(form), [form]);
+  const fields = useMemo(
+    () => buildPriceAlertFormFields({
+      validation,
+      validationVisible: {
+        symbol: validationRequested || touchedFields.symbol,
+        threshold: validationRequested || touchedFields.threshold
+      }
+    }),
+    [touchedFields.symbol, touchedFields.threshold, validation, validationRequested]
+  );
   const submitAction = useMemo(() => buildPriceAlertSubmitAction(validation), [validation]);
   const sortedAlerts = useMemo(() => sortPriceAlerts(alerts.state.alerts), [alerts.state.alerts]);
   const summaryMetrics = useMemo(() => buildPriceAlertMetrics(alerts), [alerts.enabledCount, alerts.lastPollAt, alerts.unacknowledgedCount]);
@@ -278,19 +318,51 @@ export function usePriceAlertsScreenViewModel({
     [alerts.state.triggers, alerts.unacknowledgedCount, selectedTriggerId]
   );
   const alertSection = useMemo(
-    () => buildPriceAlertListSection(sortedAlerts, alerts.enabledCount, selectedAlertId),
-    [alerts.enabledCount, selectedAlertId, sortedAlerts]
+    () => buildPriceAlertListSection(sortedAlerts, alerts.enabledCount, selectedAlertId, pendingDeleteAlertId),
+    [alerts.enabledCount, pendingDeleteAlertId, selectedAlertId, sortedAlerts]
   );
+
+  useEffect(() => {
+    if (!pendingDeleteAlertId || alerts.state.alerts.some((alert) => alert.id === pendingDeleteAlertId)) {
+      return;
+    }
+
+    setPendingDeleteAlertId(null);
+  }, [alerts.state.alerts, pendingDeleteAlertId]);
 
   function submit() {
     const draft = priceAlertDraftFromForm(form);
     if (!draft) {
+      setValidationRequested(true);
       return;
     }
 
     alerts.createAlert(draft);
     setForm({ ...DEFAULT_PRICE_ALERT_FORM, condition: form.condition, field: form.field });
+    setTouchedFields({ symbol: false, threshold: false });
+    setValidationRequested(false);
+    setPendingDeleteAlertId(null);
     setSubmitFeedback(buildPriceAlertSubmitFeedback(draft));
+  }
+
+  function clearPendingDelete() {
+    if (pendingDeleteAlertId) {
+      setPendingDeleteAlertId(null);
+    }
+  }
+
+  function deleteAlert(alertId: string) {
+    if (pendingDeleteAlertId !== alertId) {
+      setPendingDeleteAlertId(alertId);
+      setSelectedAlertId(alertId);
+      return;
+    }
+
+    alerts.deleteAlert(alertId);
+    setPendingDeleteAlertId(null);
+    if (selectedAlertId === alertId) {
+      setSelectedAlertId(null);
+    }
   }
 
   async function requestNotifications() {
@@ -299,12 +371,19 @@ export function usePriceAlertsScreenViewModel({
 
   return {
     form,
-    setSymbol: (value) => setForm((current) => ({ ...current, symbol: value.toUpperCase() })),
+    setSymbol: (value) => {
+      setTouchedFields((current) => ({ ...current, symbol: true }));
+      setForm((current) => ({ ...current, symbol: value.toUpperCase() }));
+    },
     setCondition: (value) => setForm((current) => ({ ...current, condition: value })),
     setField: (value) => setForm((current) => ({ ...current, field: value })),
-    setThreshold: (value) => setForm((current) => ({ ...current, threshold: value })),
+    setThreshold: (value) => {
+      setTouchedFields((current) => ({ ...current, threshold: true }));
+      setForm((current) => ({ ...current, threshold: value }));
+    },
     setNote: (value) => setForm((current) => ({ ...current, note: value })),
     validation,
+    fields,
     submitAction,
     submitFeedback,
     conditionOptions: PRICE_ALERT_CONDITION_OPTIONS,
@@ -323,21 +402,36 @@ export function usePriceAlertsScreenViewModel({
     requestNotifications,
     submit,
     selectTrigger: setSelectedTriggerId,
-    selectAlert: setSelectedAlertId,
+    selectAlert: (alertId) => {
+      setSelectedAlertId(alertId);
+      if (pendingDeleteAlertId && pendingDeleteAlertId !== alertId) {
+        setPendingDeleteAlertId(null);
+      }
+    },
     acknowledgeTrigger: alerts.acknowledgeTrigger,
     acknowledgeAllTriggers: alerts.acknowledgeAllTriggers,
     clearTriggers: alerts.clearTriggers,
-    wakeAlert: (alertId) => alerts.snoozeAlert(alertId, null),
-    snoozeAlert: (alertId) => alerts.snoozeAlert(alertId, new Date(Date.now() + SNOOZE_MINUTES * 60_000)),
-    resetAlert: alerts.resetAlert,
+    wakeAlert: (alertId) => {
+      clearPendingDelete();
+      alerts.snoozeAlert(alertId, null);
+    },
+    snoozeAlert: (alertId) => {
+      clearPendingDelete();
+      alerts.snoozeAlert(alertId, new Date(Date.now() + SNOOZE_MINUTES * 60_000));
+    },
+    resetAlert: (alertId) => {
+      clearPendingDelete();
+      alerts.resetAlert(alertId);
+    },
     toggleAlert: (alertId) => {
+      clearPendingDelete();
       const alert = alerts.state.alerts.find((candidate) => candidate.id === alertId);
       if (!alert) {
         return;
       }
       alerts.updateAlertFields(alertId, { enabled: !alert.enabled });
     },
-    deleteAlert: alerts.deleteAlert
+    deleteAlert
   };
 }
 
@@ -360,6 +454,27 @@ export function validatePriceAlertForm(form: PriceAlertFormState): PriceAlertFor
     symbolError,
     thresholdError,
     canSubmit: !symbolError && !thresholdError
+  };
+}
+
+export function buildPriceAlertFormFields({
+  validation,
+  validationVisible
+}: {
+  validation: PriceAlertFormValidation;
+  validationVisible: PriceAlertFormValidationVisibility;
+}): PriceAlertFormFieldsViewModel {
+  return {
+    symbol: buildPriceAlertFormField(
+      PRICE_ALERT_FIELD_CONFIG.symbol,
+      validation.symbolError,
+      validationVisible.symbol
+    ),
+    threshold: buildPriceAlertFormField(
+      PRICE_ALERT_FIELD_CONFIG.threshold,
+      validation.thresholdError,
+      validationVisible.threshold
+    )
   };
 }
 
@@ -406,6 +521,54 @@ export const PRICE_ALERT_FIELD_OPTIONS: PriceAlertFieldOption[] = [
 
 const PRICE_ALERT_CONDITION_HELP_ID = "price-alert-condition-help";
 const PRICE_ALERT_FIELD_HELP_ID = "price-alert-field-help";
+const PRICE_ALERT_FIELD_CONFIG: Record<PriceAlertFormFieldKey, {
+  id: string;
+  label: string;
+  helperId: string;
+  helperText: string;
+  errorId: string;
+}> = {
+  symbol: {
+    id: "price-alert-symbol",
+    label: "Symbol",
+    helperId: "price-alert-symbol-help",
+    helperText: "Use a ticker or provider symbol, up to 16 letters, digits, or . / : _ -.",
+    errorId: "price-alert-symbol-error"
+  },
+  threshold: {
+    id: "price-alert-threshold",
+    label: "Threshold",
+    helperId: "price-alert-threshold-help",
+    helperText: "Enter a positive price threshold. Commas and decimals are allowed.",
+    errorId: "price-alert-threshold-error"
+  }
+};
+
+function buildPriceAlertFormField(
+  config: {
+    id: string;
+    label: string;
+    helperId: string;
+    helperText: string;
+    errorId: string;
+  },
+  errorText: string | null,
+  validationVisible: boolean
+): PriceAlertFormFieldViewModel {
+  const visibleError = validationVisible ? errorText : null;
+
+  return {
+    id: config.id,
+    label: config.label,
+    helperId: config.helperId,
+    helperText: config.helperText,
+    errorId: config.errorId,
+    errorText: visibleError,
+    invalid: visibleError !== null,
+    describedBy: visibleError ? `${config.helperId} ${config.errorId}` : config.helperId,
+    errorMessageId: visibleError ? config.errorId : undefined
+  };
+}
 
 export function buildPriceAlertConditionHelpText(condition: PriceAlertCondition): string {
   return PRICE_ALERT_CONDITION_OPTIONS.find((option) => option.value === condition)?.helper
@@ -635,10 +798,11 @@ function buildTriggerRow(trigger: PriceAlertTrigger, selectedTriggerId: string |
 export function buildPriceAlertListSection(
   alerts: PriceAlert[],
   enabledCount: number,
-  selectedAlertId: string | null = null
+  selectedAlertId: string | null = null,
+  pendingDeleteAlertId: string | null = null
 ): PriceAlertListSectionViewModel {
   const selectedAlert = resolveSelectedAlert(alerts, selectedAlertId);
-  const rows = alerts.map((alert) => buildAlertRow(alert, selectedAlert?.id ?? null));
+  const rows = alerts.map((alert) => buildAlertRow(alert, selectedAlert?.id ?? null, pendingDeleteAlertId));
   const count = alerts.length;
 
   return {
@@ -662,7 +826,7 @@ export function buildPriceAlertListSection(
   };
 }
 
-function buildAlertRow(alert: PriceAlert, selectedAlertId: string | null): PriceAlertRowViewModel {
+function buildAlertRow(alert: PriceAlert, selectedAlertId: string | null, pendingDeleteAlertId: string | null): PriceAlertRowViewModel {
   const snoozedUntilMs = alert.snoozedUntil ? new Date(alert.snoozedUntil).getTime() : null;
   const isSnoozed = snoozedUntilMs !== null && snoozedUntilMs > Date.now();
   const statusLabel = !alert.enabled ? (alert.triggeredAt ? "Triggered" : "Disabled") : isSnoozed ? "Snoozed" : "Watching";
@@ -670,6 +834,8 @@ function buildAlertRow(alert: PriceAlert, selectedAlertId: string | null): Price
   const conditionLabel = describeCondition(alert.condition, alert.threshold, alert.field);
   const snoozeLabel = isSnoozed ? ` · snoozed until ${formatPriceAlertTimestamp(alert.snoozedUntil)}` : "";
   const lastObservedLabel = `Last seen ${formatPriceAlertPrice(alert.lastObservedPrice)} · ${formatPriceAlertTimestamp(alert.lastObservedAt)}${snoozeLabel}`;
+  const deleteConfirmationPending = pendingDeleteAlertId === alert.id;
+  const deleteConfirmationStatusId = `price-alert-delete-${alert.id}-status`;
 
   return {
     id: alert.id,
@@ -682,7 +848,7 @@ function buildAlertRow(alert: PriceAlert, selectedAlertId: string | null): Price
     statusLabel,
     statusVariant,
     rowClassName: alert.enabled && !isSnoozed ? "border-border/70 bg-background/50" : "border-border/50 bg-secondary/25",
-    rowAriaLabel: `${alert.symbol} price alert. ${statusLabel}. ${conditionLabel}. ${lastObservedLabel}.`,
+    rowAriaLabel: `${alert.symbol} price alert. ${statusLabel}. ${conditionLabel}. ${lastObservedLabel}.${deleteConfirmationPending ? " Delete confirmation pending." : ""}`,
     rowSelectAriaLabel: `Inspect configured alert ${alert.symbol}`,
     quoteHref: `/data/quotes?symbol=${encodeURIComponent(alert.symbol)}`,
     quoteAriaLabel: `Open live quotes for ${alert.symbol}`,
@@ -694,9 +860,15 @@ function buildAlertRow(alert: PriceAlert, selectedAlertId: string | null): Price
     },
     deleteAction: {
       id: "delete",
-      label: "Delete",
-      ariaLabel: `Delete ${alert.symbol} alert`
-    }
+      label: deleteConfirmationPending ? "Confirm delete" : "Delete",
+      ariaLabel: deleteConfirmationPending
+        ? `Confirm delete ${alert.symbol} alert. This removes it from this browser.`
+        : `Delete ${alert.symbol} alert`
+    },
+    deleteConfirmationStatusId: deleteConfirmationPending ? deleteConfirmationStatusId : null,
+    deleteConfirmationStatus: deleteConfirmationPending
+      ? `Delete confirmation pending for ${alert.symbol}. Confirm delete removes it from this browser.`
+      : null
   };
 }
 

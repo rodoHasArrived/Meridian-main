@@ -137,7 +137,7 @@ describe("useQuantNotebookViewModel", () => {
     expect(result.current.cells[1].state).toBe("idle");
   });
 
-  it("removeCell removes the cell and reordinals the rest", () => {
+  it("removeCell requires confirmation before removing and reordinals the rest", () => {
     const { result } = renderHook(() => useQuantNotebookViewModel());
 
     act(() => {
@@ -151,8 +151,21 @@ describe("useQuantNotebookViewModel", () => {
       result.current.removeCell(middleId);
     });
 
+    expect(result.current.cells).toHaveLength(3);
+    expect(result.current.cells[1].deleteConfirmationPending).toBe(true);
+    expect(result.current.cells[1]).toMatchObject({
+      deleteLabel: "Confirm",
+      deleteAriaLabel: "Confirm delete cell 2. This removes the cell source and output.",
+      deleteDisabledReason: null
+    });
+
+    act(() => {
+      result.current.removeCell(middleId);
+    });
+
     expect(result.current.cells).toHaveLength(2);
     expect(result.current.cells.map((c) => c.ordinal)).toEqual([1, 2]);
+    expect(result.current.cells.every((cell) => !cell.deleteConfirmationPending)).toBe(true);
   });
 
   it("removeCell keeps at least one cell", () => {
@@ -165,6 +178,30 @@ describe("useQuantNotebookViewModel", () => {
     });
 
     expect(result.current.cells).toHaveLength(1);
+    expect(result.current.cells[0].deleteConfirmationPending).toBe(false);
+  });
+
+  it("clears a pending cell delete when the operator edits instead", () => {
+    const { result } = renderHook(() => useQuantNotebookViewModel());
+
+    act(() => {
+      result.current.addCell();
+    });
+
+    const secondId = result.current.cells[1].id;
+
+    act(() => {
+      result.current.removeCell(secondId);
+    });
+
+    expect(result.current.cells[1].deleteConfirmationPending).toBe(true);
+
+    act(() => {
+      result.current.updateCellSource(secondId, "// keep this cell");
+    });
+
+    expect(result.current.cells[1].deleteConfirmationPending).toBe(false);
+    expect(result.current.cells[1].source).toBe("// keep this cell");
   });
 
   it("updateCellSource marks the cell stale and stales downstream done cells", () => {
@@ -245,7 +282,47 @@ describe("useQuantNotebookViewModel", () => {
     expect(result.current.cells[0].output[0].text).toBe("network down");
   });
 
-  it("clearOutputs resets all cells to idle", async () => {
+  it("clearOutputs requires confirmation before resetting cells to idle", async () => {
+    const { result } = renderHook(() => useQuantNotebookViewModel());
+    const cellId = result.current.cells[0].id;
+
+    expect(result.current.clearOutputsDisabledReason).toBe("Run a cell before clearing outputs.");
+
+    vi.mocked(api.executeCell).mockResolvedValueOnce({
+      cellId,
+      success: true,
+      output: [{ kind: "console", text: "x" }],
+      elapsedMs: 1,
+      errorMessage: null
+    });
+
+    await act(async () => {
+      await result.current.runCell(cellId);
+    });
+
+    act(() => {
+      result.current.clearOutputs();
+    });
+
+    expect(result.current.clearOutputsConfirmationPending).toBe(true);
+    expect(result.current.clearOutputsLabel).toBe("Confirm clear");
+    expect(result.current.clearOutputsAriaLabel).toBe(
+      "Confirm clear all notebook outputs. This removes displayed execution results."
+    );
+    expect(result.current.cells[0].state).toBe("done");
+    expect(result.current.cells[0].output).toHaveLength(1);
+
+    act(() => {
+      result.current.clearOutputs();
+    });
+
+    expect(result.current.clearOutputsConfirmationPending).toBe(false);
+    expect(result.current.cells[0].state).toBe("idle");
+    expect(result.current.cells[0].output).toEqual([]);
+    expect(result.current.clearOutputsDisabledReason).toBe("Run a cell before clearing outputs.");
+  });
+
+  it("clearOutputs confirmation clears when the operator edits instead", async () => {
     const { result } = renderHook(() => useQuantNotebookViewModel());
     const cellId = result.current.cells[0].id;
 
@@ -265,8 +342,15 @@ describe("useQuantNotebookViewModel", () => {
       result.current.clearOutputs();
     });
 
-    expect(result.current.cells[0].state).toBe("idle");
-    expect(result.current.cells[0].output).toEqual([]);
+    expect(result.current.clearOutputsConfirmationPending).toBe(true);
+
+    act(() => {
+      result.current.updateCellSource(cellId, "// keep output until rerun");
+    });
+
+    expect(result.current.clearOutputsConfirmationPending).toBe(false);
+    expect(result.current.cells[0].source).toBe("// keep output until rerun");
+    expect(result.current.cells[0].output).toHaveLength(1);
   });
 
   it("setContext patches context and marks executed cells stale", async () => {

@@ -146,7 +146,21 @@ export function PriceAlertsScreen() {
           </Button>
           <AlertActionButton action={row.primaryAction} onClick={() => handleAlertAction(vm, row.primaryAction, row.id)} />
           <AlertActionButton action={row.pauseAction} onClick={() => handleAlertAction(vm, row.pauseAction, row.id)} />
-          <AlertActionButton action={row.deleteAction} onClick={() => handleAlertAction(vm, row.deleteAction, row.id)} />
+          <AlertActionButton
+            action={row.deleteAction}
+            onClick={() => handleAlertAction(vm, row.deleteAction, row.id)}
+            describedBy={row.deleteConfirmationStatusId}
+          />
+          {row.deleteConfirmationStatus ? (
+            <p
+              id={row.deleteConfirmationStatusId ?? undefined}
+              role="status"
+              aria-live="polite"
+              className="basis-full text-right text-[11px] leading-4 text-warning"
+            >
+              {row.deleteConfirmationStatus}
+            </p>
+          ) : null}
         </div>
       )
     }
@@ -210,15 +224,24 @@ export function PriceAlertsScreen() {
             className="grid gap-3 md:grid-cols-[1fr_1.4fr_1fr_auto] md:items-end"
             aria-label="Create price alert"
           >
-            <FormField label="Symbol" htmlFor="price-alert-symbol" error={vm.form.symbol ? vm.validation.symbolError : null}>
+            <FormField
+              label={vm.fields.symbol.label}
+              htmlFor={vm.fields.symbol.id}
+              helperId={vm.fields.symbol.helperId}
+              helperText={vm.fields.symbol.helperText}
+              error={vm.fields.symbol.errorText}
+              errorId={vm.fields.symbol.errorId}
+            >
               <Input
-                id="price-alert-symbol"
+                id={vm.fields.symbol.id}
                 value={vm.form.symbol}
                 onChange={(event) => vm.setSymbol(event.target.value)}
                 placeholder="e.g. AAPL"
                 autoComplete="off"
                 spellCheck={false}
-                error={Boolean(vm.form.symbol && vm.validation.symbolError)}
+                error={vm.fields.symbol.invalid}
+                aria-describedby={vm.fields.symbol.describedBy}
+                aria-errormessage={vm.fields.symbol.errorMessageId}
               />
             </FormField>
             <FormField label="Condition" htmlFor="price-alert-condition">
@@ -250,15 +273,24 @@ export function PriceAlertsScreen() {
                 <p id={vm.fieldHelpId}>{vm.fieldHelpText}</p>
               </div>
             </FormField>
-            <FormField label="Threshold" htmlFor="price-alert-threshold" error={vm.form.threshold ? vm.validation.thresholdError : null}>
+            <FormField
+              label={vm.fields.threshold.label}
+              htmlFor={vm.fields.threshold.id}
+              helperId={vm.fields.threshold.helperId}
+              helperText={vm.fields.threshold.helperText}
+              error={vm.fields.threshold.errorText}
+              errorId={vm.fields.threshold.errorId}
+            >
               <Input
-                id="price-alert-threshold"
+                id={vm.fields.threshold.id}
                 type="text"
                 inputMode="decimal"
                 value={vm.form.threshold}
                 onChange={(event) => vm.setThreshold(event.target.value)}
                 placeholder="e.g. 200.50"
-                error={Boolean(vm.form.threshold && vm.validation.thresholdError)}
+                error={vm.fields.threshold.invalid}
+                aria-describedby={vm.fields.threshold.describedBy}
+                aria-errormessage={vm.fields.threshold.errorMessageId}
                 autoComplete="off"
                 spellCheck={false}
               />
@@ -487,7 +519,15 @@ function PriceAlertDetailFieldRow({ field }: { field: PriceAlertDetailField }) {
   );
 }
 
-function AlertActionButton({ action, onClick }: { action: PriceAlertRowAction; onClick: () => void }) {
+function AlertActionButton({
+  action,
+  onClick,
+  describedBy
+}: {
+  action: PriceAlertRowAction;
+  onClick: () => void;
+  describedBy?: string | null;
+}) {
   const Icon = action.id === "snooze"
     ? AlarmClock
     : action.id === "wake" || action.id === "resume"
@@ -499,7 +539,14 @@ function AlertActionButton({ action, onClick }: { action: PriceAlertRowAction; o
           : Trash2;
 
   return (
-    <Button type="button" variant="outline" size="sm" onClick={onClick} aria-label={action.ariaLabel}>
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={onClick}
+      aria-label={action.ariaLabel}
+      aria-describedby={describedBy ?? undefined}
+    >
       <Icon className="h-3.5 w-3.5" aria-hidden="true" />
       <span className="ml-1">{action.label}</span>
     </Button>
@@ -594,20 +641,28 @@ const detailFieldToneClass: Record<PriceAlertDetailField["tone"], string> = {
 interface FormFieldProps {
   label: string;
   htmlFor: string;
+  helperId?: string;
+  helperText?: string;
   error?: string | null;
+  errorId?: string;
   children: ReactNode;
   className?: string;
 }
 
-function FormField({ label, htmlFor, error, children, className }: FormFieldProps) {
+function FormField({ label, htmlFor, helperId, helperText, error, errorId, children, className }: FormFieldProps) {
   return (
     <div className={`flex flex-col gap-1 ${className ?? ""}`}>
       <label htmlFor={htmlFor} className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </label>
       {children}
+      {helperText ? (
+        <p id={helperId} className="text-[11px] leading-4 text-muted-foreground">
+          {helperText}
+        </p>
+      ) : null}
       {error ? (
-        <p role="alert" className="text-[11px] text-danger">
+        <p id={errorId} role="alert" className="text-[11px] leading-4 text-danger">
           <X className="-mt-0.5 mr-1 inline h-3 w-3" aria-hidden="true" />
           {error}
         </p>

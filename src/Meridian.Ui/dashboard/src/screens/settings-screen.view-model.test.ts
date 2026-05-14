@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   buildAlpacaConnectionCommandState,
+  buildSettingsRecentEventsSelectionViewModel,
   buildSettingsScreenViewModel,
   useAlpacaConnectionFormViewModel
 } from "@/screens/settings-screen.view-model";
@@ -117,6 +118,34 @@ describe("buildSettingsScreenViewModel", () => {
       timestamp: "May 1, 00:00 UTC",
       ariaLabel: "INFO event from DataPipeline at May 1, 00:00 UTC. Backfill completed."
     });
+  });
+
+  it("builds selectable recent-event rows and detail state", () => {
+    const eventOverview: SystemOverviewResponse = {
+      ...overview,
+      recentEvents: [
+        { id: "w1", type: "warning", message: "Brokerage sync delayed.", source: "Provider health", timestamp: "2026-05-01T00:03:00Z" },
+        { id: "e1", type: "error", message: "Storage heartbeat missed.", source: "Storage", timestamp: "2026-05-01T00:05:00Z" }
+      ]
+    };
+    const baseVm = buildSettingsScreenViewModel(null, eventOverview);
+
+    const eventsVm = buildSettingsRecentEventsSelectionViewModel(baseVm.recentEventsSection, "e1");
+
+    expect(eventsVm.selectedRowId).toBe("e1");
+    expect(eventsVm.rows[1]).toMatchObject({
+      detailPanelId: "settings-recent-event-detail",
+      expanded: true,
+      selectAriaLabel: "Select event e1. CRIT event from Storage at May 1, 00:05 UTC. Storage heartbeat missed."
+    });
+    expect(eventsVm.selectedDetail).toMatchObject({
+      title: "Storage heartbeat missed.",
+      statusLabel: "Critical",
+      statusVariant: "danger",
+      ariaLabel: "CRIT event detail for e1"
+    });
+    expect(eventsVm.selectedDetail?.fields).toContainEqual({ label: "Source", value: "Storage", tone: "default" });
+    expect(eventsVm.selectedDetail?.fields).toContainEqual({ label: "Status code", value: "CRIT", tone: "danger" });
   });
 
   it("returns empty events when overview has none", () => {

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   buildOverviewActivityRows,
   buildOverviewBriefingItems,
+  buildOverviewPortfolioPanel,
   buildOverviewPriorityRoutes,
   buildOverviewRefreshCommand,
   buildOverviewStatusBanner,
@@ -12,7 +13,7 @@ import {
   useOverviewStatusViewModel,
   type OverviewRefreshFetcher
 } from "@/screens/overview-screen.view-model";
-import type { SessionInfo, SystemOverviewResponse } from "@/types";
+import type { SessionInfo, SystemOverviewResponse, TradingWorkspaceResponse } from "@/types";
 
 const overview: SystemOverviewResponse = {
   systemStatus: "Degraded",
@@ -34,6 +35,33 @@ const session: SessionInfo = {
   environment: "paper",
   activeWorkspace: "trading",
   commandCount: 9
+};
+
+const tradingWorkspace: TradingWorkspaceResponse = {
+  metrics: [],
+  positions: [],
+  openOrders: [],
+  fills: [],
+  risk: {
+    state: "Healthy",
+    summary: "Paper account is inside guardrails.",
+    netExposure: "$0",
+    grossExposure: "$0",
+    var95: "$0",
+    maxDrawdown: "0%",
+    buyingPowerUsed: "0%",
+    activeGuardrails: []
+  },
+  brokerage: {
+    provider: "Alpaca",
+    account: "Paper",
+    environment: "paper",
+    connection: "Connected",
+    lastHeartbeat: "2026-04-28T18:15:00Z",
+    orderIngress: "Ready",
+    fillFeed: "Ready",
+    notes: "Ready for paper orders."
+  }
 };
 
 describe("overview-screen view model", () => {
@@ -360,6 +388,20 @@ describe("overview-screen view model", () => {
     expect(state.valueBlockers).toEqual([]);
     expect(state.valueBlockerRegionLabel).toBe("0 readiness blockers");
     expect(state.valueBlockerSummary).toBe("No immediate readiness blockers detected. Continue with the priority routes below.");
+  });
+
+  it("projects route-backed portfolio empty-state actions", () => {
+    expect(buildOverviewPortfolioPanel(null, null).emptyAction).toEqual({
+      href: "/settings#alpaca-provider-setup",
+      label: "Connect provider",
+      ariaLabel: "Open Alpaca paper provider setup checklist from the empty portfolio panel"
+    });
+
+    expect(buildOverviewPortfolioPanel(tradingWorkspace, null).emptyAction).toEqual({
+      href: "/trading",
+      label: "Open trading cockpit",
+      ariaLabel: "Open Trading cockpit from the empty portfolio positions panel"
+    });
   });
 
   it("derives activity row status, fallback timestamps, and accessible summaries", () => {

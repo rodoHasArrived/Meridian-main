@@ -283,6 +283,7 @@ export interface SecurityConflictActionViewModel {
   ariaLabel: string;
   variant: "outline" | "ghost";
   disabled: boolean;
+  disabledReason: string | null;
 }
 
 export interface SecurityConflictRefreshCommandViewModel {
@@ -520,6 +521,7 @@ export interface GovernanceReportingViewState {
   selectedExportProfileId: string | null;
   exportButtonLabel: string;
   exportAriaLabel: string;
+  exportDisabledReason: string | null;
   exportStatusText: string | null;
   exportStatusTone: "neutral" | "success" | "danger";
   exportStatusRole: "status" | "alert";
@@ -1872,6 +1874,9 @@ export function buildSecurityConflictRows(
     const isOpen = conflict.status === "Open";
     const isResolving = resolvingConflictId === conflict.conflictId;
     const canResolve = isOpen && !isResolving;
+    const actionDisabledReason = isResolving
+      ? `Resolution is already in progress for identifier conflict ${conflict.conflictId}.`
+      : null;
     const providerASummary = `${conflict.providerA} -> security ${formatSecurityReferenceValue(conflict.valueA)}`;
     const providerBSummary = `${conflict.providerB} -> security ${formatSecurityReferenceValue(conflict.valueB)}`;
 
@@ -1889,9 +1894,9 @@ export function buildSecurityConflictRows(
       resolutionStatusText: isResolving ? `Resolving identifier conflict ${conflict.conflictId}.` : null,
       actions: isOpen
         ? [
-            buildSecurityConflictAction(conflict, "AcceptA", `Use ${conflict.providerA}`, canResolve, "outline"),
-            buildSecurityConflictAction(conflict, "AcceptB", `Use ${conflict.providerB}`, canResolve, "outline"),
-            buildSecurityConflictAction(conflict, "Dismiss", "Dismiss conflict", canResolve, "ghost")
+            buildSecurityConflictAction(conflict, "AcceptA", `Use ${conflict.providerA}`, canResolve, "outline", actionDisabledReason),
+            buildSecurityConflictAction(conflict, "AcceptB", `Use ${conflict.providerB}`, canResolve, "outline", actionDisabledReason),
+            buildSecurityConflictAction(conflict, "Dismiss", "Dismiss conflict", canResolve, "ghost", actionDisabledReason)
           ]
         : []
     };
@@ -2162,7 +2167,8 @@ export function buildGovernanceReportingViewState({
     ? `Showing ${rows.length} of ${profileCount} profiles.`
     : `${formatCount(rows.length, "profile")} loaded.`;
 
-  const exportCanRun = selectedRow !== null && !exportBusy;
+  const exportDisabledReason = buildReportingExportDisabledReason(selectedRow, exportBusy);
+  const exportCanRun = exportDisabledReason === null;
 
   return {
     title: "Reporting profiles",
@@ -2185,9 +2191,8 @@ export function buildGovernanceReportingViewState({
       : "Sync reporting profile metadata before packet generation.",
     selectedExportProfileId: selectedRow?.id ?? null,
     exportButtonLabel: exportBusy ? "Export running..." : "Run reporting export",
-    exportAriaLabel: selectedRow
-      ? `Run reporting export for ${selectedRow.name}`
-      : "Run reporting export unavailable until a reporting profile is loaded",
+    exportAriaLabel: buildReportingExportAriaLabel(selectedRow, exportBusy),
+    exportDisabledReason,
     exportStatusText: exportStatus?.text ?? null,
     exportStatusTone: exportStatus?.tone ?? "neutral",
     exportStatusRole: exportStatus?.role ?? "status",
@@ -2198,6 +2203,40 @@ export function buildGovernanceReportingViewState({
       buildGovernanceReportingBackendLink("formats", "List export formats", EXPORT_API_ENDPOINTS.formats)
     ]
   };
+}
+
+function buildReportingExportDisabledReason(
+  selectedRow: ReportingProfileRowViewModel | null,
+  exportBusy: boolean
+): string | null {
+  if (exportBusy) {
+    return selectedRow
+      ? `${selectedRow.name} reporting export is already running.`
+      : "Reporting export is already running.";
+  }
+
+  if (!selectedRow) {
+    return "Load or select a reporting profile before running an export.";
+  }
+
+  return null;
+}
+
+function buildReportingExportAriaLabel(
+  selectedRow: ReportingProfileRowViewModel | null,
+  exportBusy: boolean
+): string {
+  if (exportBusy && selectedRow) {
+    return `${selectedRow.name} reporting export is already running`;
+  }
+
+  if (exportBusy) {
+    return "Reporting export is already running";
+  }
+
+  return selectedRow
+    ? `Run reporting export for ${selectedRow.name}`
+    : "Run reporting export unavailable until a reporting profile is loaded";
 }
 
 function buildGovernanceReportingBackendLink(id: string, label: string, href: string): GovernanceReportingBackendLink {
@@ -2727,7 +2766,8 @@ function buildSecurityConflictAction(
   resolution: SecurityConflictResolution,
   label: string,
   enabled: boolean,
-  variant: "outline" | "ghost"
+  variant: "outline" | "ghost",
+  disabledReason: string | null
 ): SecurityConflictActionViewModel {
   const choice =
     resolution === "AcceptA"
@@ -2735,15 +2775,17 @@ function buildSecurityConflictAction(
       : resolution === "AcceptB"
         ? `${conflict.providerB} value ${formatSecurityReferenceValue(conflict.valueB)}`
         : "no provider value";
+  const baseAriaLabel = resolution === "Dismiss"
+    ? `Dismiss identifier conflict ${conflict.conflictId} on ${conflict.fieldPath}`
+    : `Resolve identifier conflict ${conflict.conflictId} on ${conflict.fieldPath} with ${choice}`;
 
   return {
     resolution,
     label,
-    ariaLabel: resolution === "Dismiss"
-      ? `Dismiss identifier conflict ${conflict.conflictId} on ${conflict.fieldPath}`
-      : `Resolve identifier conflict ${conflict.conflictId} on ${conflict.fieldPath} with ${choice}`,
+    ariaLabel: enabled || !disabledReason ? baseAriaLabel : `${baseAriaLabel}. Disabled: ${disabledReason}`,
     variant,
-    disabled: !enabled
+    disabled: !enabled,
+    disabledReason: enabled ? null : disabledReason
   };
 }
 

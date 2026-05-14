@@ -1,3 +1,4 @@
+import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import {
   buildCanvasLegViewModels,
@@ -6,12 +7,15 @@ import {
   buildParticipationViewModel,
   buildPayoffChartViewModel,
   buildPayoffSeries,
+  buildSelectedLegDetailEmptyState,
+  buildSelectedLegDetailViewModel,
   computeLegPayoff,
   computePortfolioPayoff,
   findBreakEvenPrices,
   getStrategyDesignerPalette,
   getStrategyDesignerSampleLegs,
   reorderLegs,
+  useStrategyDesignerViewModel,
   type StrategyLeg
 } from "@/screens/strategy-designer-screen.view-model";
 
@@ -210,6 +214,9 @@ describe("strategy designer view-model", () => {
         strike: "strategy-leg-leg-1-strike",
         premium: "strategy-leg-leg-1-premium"
       },
+      detailPanelId: "strategy-designer-selected-leg-detail",
+      selectButtonAriaControls: "strategy-designer-selected-leg-detail",
+      selectButtonAriaExpanded: false,
       premiumAriaLabel: "Premium for Long Call 100",
       moveUpCommand: {
         label: "Move up",
@@ -231,6 +238,8 @@ describe("strategy designer view-model", () => {
       selectButtonLabel: "Selected",
       isOption: false,
       strikeFieldLabel: "Entry price",
+      selectButtonAriaControls: "strategy-designer-selected-leg-detail",
+      selectButtonAriaExpanded: true,
       premiumUnavailableAriaLabel: "Premium not applicable for Long Stock",
       moveUpCommand: {
         label: "Move up",
@@ -244,6 +253,92 @@ describe("strategy designer view-model", () => {
         disabled: true,
         disabledReason: "Long Stock is already the last leg."
       }
+    });
+  });
+
+  it("builds selected-leg detail from payoff, break-even, and editable leg state", () => {
+    const detail = buildSelectedLegDetailViewModel(longCall100, 100, 2);
+
+    expect(detail).toMatchObject({
+      id: "strategy-designer-selected-leg-detail",
+      ariaLabel: "Selected strategy leg detail for Long Call 100",
+      eyebrow: "Selected leg",
+      title: "Long Call 100",
+      subtitle: "Long Call · 2 legs on canvas",
+      statusLabel: "Long exposure",
+      statusVariant: "success"
+    });
+    expect(detail?.description).toContain("payoff at spot is −$4.00");
+    expect(detail?.fields).toEqual([
+      { id: "leg-id", label: "Leg ID", value: "leg-1", tone: "muted" },
+      { id: "quantity", label: "Quantity", value: "1", tone: "default" },
+      { id: "strike", label: "Strike", value: "$100.00", tone: "default" },
+      { id: "premium", label: "Premium", value: "$4.00", tone: "default" },
+      { id: "break-even", label: "Break-even", value: "$104.00", tone: "default" },
+      { id: "payoff-at-spot", label: "Payoff at spot", value: "−$4.00", tone: "danger" }
+    ]);
+  });
+
+  it("keeps selected-leg detail empty state specific to empty and populated canvases", () => {
+    expect(buildSelectedLegDetailViewModel(null, 100, 0)).toBeNull();
+    expect(buildSelectedLegDetailEmptyState(0)).toMatchObject({
+      title: "No legs on canvas",
+      ariaLabel: "Strategy leg detail empty state"
+    });
+    expect(buildSelectedLegDetailEmptyState(2)).toMatchObject({
+      title: "No leg selected",
+      description: "Select a canvas leg to inspect payoff contribution, break-even, and editable parameters."
+    });
+  });
+
+  it("requires confirmation before clearing a populated canvas", () => {
+    const { result } = renderHook(() => useStrategyDesignerViewModel([longCall100, shortCall110]));
+
+    expect(result.current.clearCanvasCommand).toMatchObject({
+      label: "Clear canvas",
+      ariaLabel: "Clear strategy canvas. Press again to confirm removing 2 legs.",
+      confirmationPending: false
+    });
+
+    act(() => {
+      result.current.clearCanvas();
+    });
+
+    expect(result.current.legs).toHaveLength(2);
+    expect(result.current.clearCanvasCommand).toMatchObject({
+      label: "Confirm clear",
+      ariaLabel: "Confirm clear strategy canvas and remove 2 legs",
+      confirmationPending: true
+    });
+
+    act(() => {
+      result.current.clearCanvas();
+    });
+
+    expect(result.current.legs).toHaveLength(0);
+    expect(result.current.clearCanvasCommand).toMatchObject({
+      disabled: true,
+      disabledReason: "No strategy legs to clear.",
+      confirmationPending: false
+    });
+  });
+
+  it("clears pending canvas confirmation when the operator edits the strategy", () => {
+    const { result } = renderHook(() => useStrategyDesignerViewModel([longCall100]));
+
+    act(() => {
+      result.current.clearCanvas();
+    });
+    expect(result.current.clearCanvasCommand.confirmationPending).toBe(true);
+
+    act(() => {
+      result.current.addLegFromPalette("long-put");
+    });
+
+    expect(result.current.legs).toHaveLength(2);
+    expect(result.current.clearCanvasCommand).toMatchObject({
+      label: "Clear canvas",
+      confirmationPending: false
     });
   });
 });

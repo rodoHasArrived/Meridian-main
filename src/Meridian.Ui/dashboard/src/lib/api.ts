@@ -4,8 +4,14 @@ import type {
   BackfillTriggerResult,
   AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
+  CellExecuteRequest,
+  CellExecuteResult,
+  CellExecutionContext,
+  CellOutput,
   BrokerageHouseholdPortfolio,
   CorporateAction,
+  DataFetchRequest,
+  DataFetchResult,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
   EvidenceCompleteness,
@@ -1219,4 +1225,97 @@ export function extractQuantParameters(source: string) {
 
 export function runQuantScript(request: import("@/types").QuantRunRequest) {
   return postJson<import("@/types").QuantRunResponse>(QUANT_API_ENDPOINTS.run, request);
+}
+
+export async function executeCell(request: CellExecuteRequest): Promise<CellExecuteResult> {
+  const response = await runQuantScript({
+    source: request.source,
+    parameters: quantContextToParameters(request.context)
+  });
+
+  return mapQuantRunResponseToCellResult(request.cellId, response);
+}
+
+export async function fetchQuantData(request: DataFetchRequest, options: ApiRequestOptions = {}): Promise<DataFetchResult> {
+  const intervalMinutes = quantDataIntervalMinutes(request.interval);
+  const response = await getHistoricalBars(request.symbol, {
+    intervalMinutes,
+    from: request.from,
+    to: request.to
+  }, options);
+  const bars = response.bars.map((bar) => ({
+    timestamp: bar.start,
+    open: bar.open,
+    high: bar.high,
+    low: bar.low,
+    close: bar.close,
+    volume: bar.volume
+  }));
+
+  return {
+    symbol: response.symbol || request.symbol.trim().toUpperCase(),
+    from: response.from ?? request.from,
+    to: response.to ?? request.to,
+    interval: request.interval,
+    bars,
+    rowCount: response.totalBars || bars.length
+  };
+}
+
+function quantContextToParameters(context: CellExecutionContext): Record<string, string | number | boolean | null> {
+  return {
+    symbol: context.symbol ?? null,
+    from: context.from ?? null,
+    to: context.to ?? null,
+    interval: context.interval ?? null
+  };
+}
+
+function mapQuantRunResponseToCellResult(
+  cellId: string,
+  response: import("@/types").QuantRunResponse
+): CellExecuteResult {
+  const output: CellOutput[] = [];
+
+  for (const line of response.consoleOutput.split(/\r?\n/).map((value) => value.trim()).filter(Boolean)) {
+    output.push({ kind: "console", text: line, tone: "default" });
+  }
+
+  for (const metric of response.metrics) {
+    output.push({ kind: "metric", text: `${metric.label}: ${metric.value}`, tone: "default" });
+  }
+
+  for (const diagnostic of [...response.compilationErrors, ...response.runtimeDiagnostics]) {
+    output.push({
+      kind: "error",
+      text: diagnostic.line > 0
+        ? `${diagnostic.severity}: ${diagnostic.message} (${diagnostic.line}:${diagnostic.column})`
+        : `${diagnostic.severity}: ${diagnostic.message}`,
+      tone: diagnostic.severity.toLowerCase() === "warning" ? "warning" : "danger"
+    });
+  }
+
+  if (response.runtimeError) {
+    output.push({ kind: "error", text: response.runtimeError, tone: "danger" });
+  }
+
+  return {
+    cellId,
+    success: response.success,
+    output,
+    elapsedMs: response.elapsedMs,
+    errorMessage: response.runtimeError ?? response.compilationErrors[0]?.message ?? null
+  };
+}
+
+function quantDataIntervalMinutes(interval: DataFetchRequest["interval"]): number {
+  switch (interval) {
+    case "minute":
+      return 1;
+    case "hourly":
+      return 60;
+    case "daily":
+    default:
+      return 1440;
+  }
 }

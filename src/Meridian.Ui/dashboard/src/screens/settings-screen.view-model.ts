@@ -536,6 +536,30 @@ export interface SettingsEventRow {
   ariaLabel: string;
 }
 
+export interface SettingsRecentEventTableRow extends SettingsEventRow {
+  detailPanelId: string;
+  expanded: boolean;
+  selectAriaLabel: string;
+}
+
+export interface SettingsRecentEventDetailField {
+  label: string;
+  value: string;
+  tone: "default" | "warning" | "danger" | "muted";
+}
+
+export interface SettingsRecentEventDetail {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: "default" | "warning" | "danger";
+  ariaLabel: string;
+  fields: SettingsRecentEventDetailField[];
+}
+
 export interface SettingsRecentEventsSection {
   title: string;
   description: string;
@@ -546,6 +570,22 @@ export interface SettingsRecentEventsSection {
   state: "ready" | "empty" | "unavailable";
   rows: SettingsEventRow[];
 }
+
+export interface SettingsRecentEventsSelectionViewModel {
+  tableLabel: string;
+  tableCaption: string;
+  rows: SettingsRecentEventTableRow[];
+  selectedRowId: string | null;
+  detailPanelId: string;
+  detailPanelTitle: string;
+  detailPanelDescription: string;
+  detailPanelEmptyText: string;
+  detailPanelAriaLabel: string;
+  selectedDetail: SettingsRecentEventDetail | null;
+  selectRow: (rowId: string) => void;
+}
+
+export const SETTINGS_RECENT_EVENT_DETAIL_PANEL_ID = "settings-recent-event-detail";
 
 export interface SettingsAlpacaConnectionPanel {
   providerLabel: string;
@@ -618,6 +658,8 @@ export interface SettingsScreenPayload {
   error?: string | null;
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
 }
+
+const noopSelectRecentEvent = () => {};
 
 interface DiagnosticEndpointDefinition {
   id: string;
@@ -939,6 +981,97 @@ function buildRecentEventsSection(overview: SystemOverviewResponse | null): Sett
     state: "ready",
     rows
   };
+}
+
+export function useSettingsRecentEventsSelectionViewModel(
+  section: SettingsRecentEventsSection
+): SettingsRecentEventsSelectionViewModel {
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(section.rows[0]?.id ?? null);
+
+  useEffect(() => {
+    if (section.rows.length === 0) {
+      if (selectedRowId !== null) {
+        setSelectedRowId(null);
+      }
+      return;
+    }
+
+    if (!selectedRowId || !section.rows.some((row) => row.id === selectedRowId)) {
+      setSelectedRowId(section.rows[0].id);
+    }
+  }, [section.rows, selectedRowId]);
+
+  return buildSettingsRecentEventsSelectionViewModel(section, selectedRowId, setSelectedRowId);
+}
+
+export function buildSettingsRecentEventsSelectionViewModel(
+  section: SettingsRecentEventsSection,
+  selectedRowId: string | null,
+  selectRow: (rowId: string) => void = noopSelectRecentEvent
+): SettingsRecentEventsSelectionViewModel {
+  const selectedStableRow =
+    section.rows.find((row) => row.id === selectedRowId) ??
+    section.rows[0] ??
+    null;
+  const selectedStableRowId = selectedStableRow?.id ?? null;
+  const rows = section.rows.map((row) => ({
+    ...row,
+    detailPanelId: SETTINGS_RECENT_EVENT_DETAIL_PANEL_ID,
+    expanded: row.id === selectedStableRowId,
+    selectAriaLabel: `Select event ${row.id}. ${row.ariaLabel}`
+  }));
+
+  return {
+    tableLabel: section.listLabel,
+    tableCaption: "Select a recent event row to update the event detail panel.",
+    rows,
+    selectedRowId: selectedStableRowId,
+    detailPanelId: SETTINGS_RECENT_EVENT_DETAIL_PANEL_ID,
+    detailPanelTitle: "Selected event detail",
+    detailPanelDescription: "Inspect event source, timestamp, and severity without leaving Settings.",
+    detailPanelEmptyText: section.statusDetail,
+    detailPanelAriaLabel: "Selected recent event detail",
+    selectedDetail: selectedStableRow ? buildSettingsRecentEventDetail(selectedStableRow) : null,
+    selectRow
+  };
+}
+
+function buildSettingsRecentEventDetail(row: SettingsEventRow): SettingsRecentEventDetail {
+  return {
+    id: row.id,
+    eyebrow: `${row.statusCode} event`,
+    title: row.message,
+    subtitle: `${row.source} / ${row.id}`,
+    description: `${row.source} reported this event at ${row.timestamp}.`,
+    statusLabel: eventStatusLabel(row.type),
+    statusVariant: row.badgeVariant,
+    ariaLabel: `${row.statusCode} event detail for ${row.id}`,
+    fields: [
+      { label: "Event ID", value: row.id, tone: "muted" },
+      { label: "Source", value: row.source, tone: "default" },
+      { label: "Timestamp", value: row.timestamp, tone: row.timestamp === "Timestamp unavailable" ? "warning" : "muted" },
+      { label: "Type", value: eventTypeLabel(row.type), tone: eventDetailTone(row.type) },
+      { label: "Status code", value: row.statusCode, tone: eventDetailTone(row.type) }
+    ]
+  };
+}
+
+function eventTypeLabel(type: SettingsEventRow["type"]): string {
+  if (type === "error") return "Error";
+  if (type === "warning") return "Warning";
+  return "Info";
+}
+
+function eventStatusLabel(type: SettingsEventRow["type"]): string {
+  if (type === "error") return "Critical";
+  if (type === "warning") return "Observe";
+  return "Info";
+}
+
+function eventDetailTone(type: SettingsEventRow["type"]): SettingsRecentEventDetailField["tone"] {
+  if (type === "error") return "danger";
+  if (type === "warning") return "warning";
+  return "default";
 }
 
 function formatSettingsUtcMinute(

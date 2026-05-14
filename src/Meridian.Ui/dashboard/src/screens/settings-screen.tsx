@@ -4,8 +4,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
-import { buildSettingsScreenViewModel, useAlpacaConnectionFormViewModel } from "@/screens/settings-screen.view-model";
+import {
+  buildSettingsScreenViewModel,
+  useAlpacaConnectionFormViewModel,
+  useSettingsRecentEventsSelectionViewModel,
+  type SettingsRecentEventDetail,
+  type SettingsRecentEventTableRow
+} from "@/screens/settings-screen.view-model";
 import type {
   BrokerageConnectionStatus,
   DataOperationsWorkspaceResponse,
@@ -95,6 +102,32 @@ const setupStepToneClass = {
   muted: "border-border/70 bg-secondary/25"
 } as const;
 
+const recentEventColumns: DenseDataTableColumn<SettingsRecentEventTableRow>[] = [
+  {
+    id: "status",
+    label: "Status",
+    render: (event) => <Badge variant={event.badgeVariant}>{event.statusCode}</Badge>
+  },
+  {
+    id: "message",
+    label: "Message",
+    className: "min-w-[14rem]",
+    render: (event) => <span className="text-foreground">{event.message}</span>
+  },
+  {
+    id: "source",
+    label: "Source",
+    className: "font-mono text-muted-foreground",
+    render: (event) => event.source
+  },
+  {
+    id: "timestamp",
+    label: "Timestamp",
+    className: "font-mono text-muted-foreground",
+    render: (event) => event.timestamp
+  }
+];
+
 export function SettingsScreen({
   session,
   overview,
@@ -128,6 +161,7 @@ export function SettingsScreen({
     onRefresh,
     canClear: vm.alpacaConnectionPanel.canClear
   });
+  const recentEventsVm = useSettingsRecentEventsSelectionViewModel(vm.recentEventsSection);
 
   return (
     <div className="space-y-8">
@@ -498,28 +532,31 @@ export function SettingsScreen({
               <SettingsChip label="Heartbeat" value={overview?.lastHeartbeatUtc ?? "—"} />
               <SettingsChip label="Stream" value={vm.recentEventsSection.state} />
             </div>
-            {vm.recentEventsSection.rows.length > 0 ? (
-              <div role="list" aria-label={vm.recentEventsSection.listLabel} className="space-y-2">
-                {vm.recentEventsSection.rows.map((event) => (
-                  <div
-                    key={event.id}
-                    role="group"
-                    aria-label={event.ariaLabel}
-                    className={cn(
-                      "grid gap-3 rounded-md border px-3 py-3 sm:grid-cols-[auto_minmax(0,1fr)_auto]",
-                      eventToneClass[event.tone]
-                    )}
-                  >
-                    <Badge variant={event.badgeVariant} className="w-fit">
-                      {event.statusCode}
-                    </Badge>
-                    <div className="min-w-0">
-                      <p className="text-sm text-foreground">{event.message}</p>
-                      <p className="mt-1 font-mono text-xs text-muted-foreground">{event.source} · {event.id}</p>
-                    </div>
-                    <span className="font-mono text-xs text-muted-foreground sm:text-right">{event.timestamp}</span>
-                  </div>
-                ))}
+            {recentEventsVm.rows.length > 0 ? (
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.48fr)]">
+                <DenseDataTable
+                  columns={recentEventColumns}
+                  rows={recentEventsVm.rows}
+                  getRowId={(event) => event.id}
+                  getRowAriaLabel={(event) => event.ariaLabel}
+                  getRowSelectAriaLabel={(event) => event.selectAriaLabel}
+                  getRowAriaControls={(event) => event.detailPanelId}
+                  getRowAriaExpanded={(event) => event.expanded}
+                  getRowClassName={(event) => eventToneClass[event.tone]}
+                  onRowSelect={(event) => recentEventsVm.selectRow(event.id)}
+                  selectedRowId={recentEventsVm.selectedRowId}
+                  emptyText={vm.recentEventsSection.statusDetail}
+                  ariaLabel={recentEventsVm.tableLabel}
+                  caption={recentEventsVm.tableCaption}
+                />
+                <RecentEventDetailPanel
+                  id={recentEventsVm.detailPanelId}
+                  title={recentEventsVm.detailPanelTitle}
+                  description={recentEventsVm.detailPanelDescription}
+                  emptyText={recentEventsVm.detailPanelEmptyText}
+                  ariaLabel={recentEventsVm.detailPanelAriaLabel}
+                  detail={recentEventsVm.selectedDetail}
+                />
               </div>
             ) : (
               <div
@@ -693,6 +730,66 @@ function EndpointReference({
         </span>
       </span>
     </>
+  );
+}
+
+function RecentEventDetailPanel({
+  id,
+  title,
+  description,
+  emptyText,
+  ariaLabel,
+  detail
+}: {
+  id: string;
+  title: string;
+  description: string;
+  emptyText: string;
+  ariaLabel: string;
+  detail: SettingsRecentEventDetail | null;
+}) {
+  return (
+    <aside
+      id={id}
+      role="complementary"
+      aria-label={ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="head">{title}</div>
+      <div className="body">
+        {detail ? (
+          <div role="region" aria-label={detail.ariaLabel} className="space-y-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="eyebrow-label">{detail.eyebrow}</div>
+                <h3 className="mt-2 break-words text-sm font-semibold text-foreground">{detail.title}</h3>
+                <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+              </div>
+              <Badge variant={detail.statusVariant} className="shrink-0">
+                {detail.statusLabel}
+              </Badge>
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">{detail.description}</p>
+            <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+              {detail.fields.map((field) => (
+                <div key={field.label} className="rounded-sm border border-border/60 bg-background/35 px-2.5 py-2">
+                  <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                  <dd className={cn("mt-1 break-words font-mono text-xs", itemToneClass[field.tone])}>
+                    {field.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ) : (
+          <div role="status" className="rounded-md border border-dashed border-border/70 bg-secondary/20 px-3 py-3">
+            <div className="text-sm font-semibold text-foreground">{description}</div>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{emptyText}</p>
+          </div>
+        )}
+      </div>
+    </aside>
   );
 }
 

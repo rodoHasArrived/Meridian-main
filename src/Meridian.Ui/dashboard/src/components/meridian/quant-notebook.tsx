@@ -11,8 +11,11 @@ import {
   cellStateBadgeVariant,
   cellStateLabel
 } from "@/components/meridian/quant-notebook.view-model";
-import type { QuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
-import type { CellKind, CellOutput, NotebookCell, PriceBar } from "@/types";
+import type {
+  QuantNotebookCellViewModel,
+  QuantNotebookViewModel
+} from "@/components/meridian/quant-notebook.view-model";
+import type { CellKind, CellOutput, PriceBar } from "@/types";
 
 // ── Top-level notebook ─────────────────────────────────────────────────────────
 
@@ -45,12 +48,13 @@ export function QuantNotebook({ vm, studyChips }: QuantNotebookProps) {
             </Button>
             <Button
               size="sm"
-              variant="ghost"
+              variant={vm.clearOutputsConfirmationPending ? "secondary" : "ghost"}
               onClick={vm.clearOutputs}
-              disabled={anyRunning}
-              aria-label="Clear all outputs"
+              disabled={Boolean(vm.clearOutputsDisabledReason)}
+              disabledReason={vm.clearOutputsDisabledReason}
+              aria-label={vm.clearOutputsAriaLabel}
             >
-              Clear
+              {vm.clearOutputsLabel}
             </Button>
             <Button
               size="sm"
@@ -241,7 +245,7 @@ function DataResultTable({
 // ── Single notebook cell ───────────────────────────────────────────────────────
 
 interface NotebookCellItemProps {
-  cell: NotebookCell;
+  cell: QuantNotebookCellViewModel;
   canDelete: boolean;
   onRun: () => void;
   onDelete: () => void;
@@ -333,7 +337,7 @@ function CellHeader({
   onToggleCollapse,
   onKindChange
 }: {
-  cell: NotebookCell;
+  cell: QuantNotebookCellViewModel;
   canDelete: boolean;
   onRun: () => void;
   onDelete: () => void;
@@ -397,13 +401,22 @@ function CellHeader({
         {canDelete && (
           <Button
             size="sm"
-            variant="ghost"
+            variant={cell.deleteConfirmationPending ? "secondary" : "ghost"}
             onClick={onDelete}
             disabled={isRunning}
-            aria-label={`Delete cell ${cell.ordinal.toString()}`}
-            className="h-6 px-1.5 text-muted-foreground hover:text-danger"
+            disabledReason={cell.deleteDisabledReason}
+            aria-label={cell.deleteAriaLabel}
+            className={cn(
+              "h-6 px-1.5",
+              cell.deleteConfirmationPending
+                ? "text-danger hover:text-danger"
+                : "text-muted-foreground hover:text-danger"
+            )}
           >
             <Trash2 className="h-3 w-3" />
+            {cell.deleteConfirmationPending && (
+              <span className="ml-1 text-xs">{cell.deleteLabel}</span>
+            )}
           </Button>
         )}
       </div>

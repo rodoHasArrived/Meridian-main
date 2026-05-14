@@ -1,5 +1,6 @@
-import { AlertCircle, ArrowLeft, ArrowRight, BarChart3, CircleX, Info, Layers, Play, RotateCw } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, BarChart3, CircleX, FileText, Info, Layers, LineChart, Play, RotateCw, SlidersHorizontal } from "lucide-react";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,7 +90,7 @@ export function CoveredCallScreen() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <StageStepper currentStage={vm.stage} onSelect={vm.goToStage} />
+          <StageStepper currentStage={vm.stage} navigation={vm.stageNavigation} onSelect={vm.goToStage} />
         </CardContent>
       </Card>
 
@@ -136,37 +137,53 @@ function ChainDataAdvisory() {
 
 function StageStepper({
   currentStage,
+  navigation,
   onSelect
 }: {
   currentStage: CoveredCallStage;
+  navigation: CoveredCallScreenViewModel["stageNavigation"];
   onSelect: (s: CoveredCallStage) => void;
 }) {
   const stages: CoveredCallStage[] = ["configure", "run", "results"];
   return (
-    <ol className="flex items-center gap-2 text-sm" aria-label="Covered call wizard stages">
-      {stages.map((stage, idx) => {
-        const active = stage === currentStage;
-        return (
-          <li key={stage} className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onSelect(stage)}
-              className={`rounded-md border px-3 py-1.5 text-xs font-medium uppercase tracking-wide transition-colors ${
-                active
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border/60 bg-background/60 text-muted-foreground hover:text-foreground"
-              }`}
-              aria-current={active ? "step" : undefined}
-            >
-              {idx + 1}. {STAGE_LABEL[stage]}
-            </button>
-            {idx < stages.length - 1 ? (
-              <ArrowRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-            ) : null}
-          </li>
-        );
-      })}
-    </ol>
+    <div className="space-y-2">
+      <ol
+        className="flex items-center gap-2 text-sm"
+        aria-label="Covered call wizard stages"
+        aria-describedby={navigation.feedbackText ? navigation.feedbackId : undefined}
+      >
+        {stages.map((stage, idx) => {
+          const active = stage === currentStage;
+          const stageNavigation = navigation[stage];
+          return (
+            <li key={stage} className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={stageNavigation.disabled}
+                title={stageNavigation.disabledReason ?? undefined}
+                onClick={() => onSelect(stage)}
+                className={`rounded-md border px-3 py-1.5 text-xs font-medium uppercase tracking-wide transition-colors ${
+                  active
+                    ? "border-primary bg-primary/10 text-primary"
+                    : stageNavigation.disabled
+                      ? "border-border/50 bg-background/40 text-muted-foreground/60"
+                      : "border-border/60 bg-background/60 text-muted-foreground hover:text-foreground"
+                }`}
+                aria-describedby={stageNavigation.disabled && navigation.feedbackText ? navigation.feedbackId : undefined}
+                aria-disabled={stageNavigation.disabled ? "true" : undefined}
+                aria-current={active ? "step" : undefined}
+              >
+                {idx + 1}. {STAGE_LABEL[stage]}
+              </button>
+              {idx < stages.length - 1 ? (
+                <ArrowRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              ) : null}
+            </li>
+          );
+        })}
+      </ol>
+      <CommandFeedback id={navigation.feedbackId} message={navigation.feedbackText} />
+    </div>
   );
 }
 
@@ -216,9 +233,19 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
           <NumberField vm={vm} field="label" label="Run label (optional)" type="text" />
 
           <div className="flex items-center gap-2 pt-2">
-            <Button type="button" variant="default" onClick={() => void vm.startRun()}>
+            <Button
+              type="button"
+              variant="default"
+              onClick={() => void vm.startRun()}
+              disabled={vm.runCommand.disabled}
+              disabledReason={vm.runCommand.disabledReason}
+              busy={vm.runCommand.busy}
+              busyLabel={vm.runCommand.busyLabel}
+              aria-label={vm.runCommand.ariaLabel}
+              aria-describedby={vm.runCommand.feedbackText ? vm.runCommand.feedbackId : undefined}
+            >
               <Play className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">Run backtest</span>
+              <span className="ml-1.5">{vm.runCommand.label}</span>
             </Button>
             <Button type="button" variant="ghost" onClick={vm.resetForm}>
               Reset
@@ -228,6 +255,7 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
               <span className="ml-1.5">Refresh chain</span>
             </Button>
           </div>
+          <CommandFeedback id={vm.runCommand.feedbackId} message={vm.runCommand.feedbackText} />
         </CardContent>
       </Card>
 
@@ -330,34 +358,63 @@ function ChainPreviewTable({ vm }: { vm: CoveredCallScreenViewModel }) {
 }
 
 function RunStage({ vm }: { vm: CoveredCallScreenViewModel }) {
-  const status = vm.run.status;
-  const percent = status ? Math.round(status.percentComplete * 100) : 0;
+  const progress = vm.runProgressPanel;
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Running backtest</CardTitle>
-        <CardDescription>
-          {status
-            ? `Phase: ${status.phase}${status.currentBacktestDate ? ` · ${status.currentBacktestDate}` : ""}`
-            : "Queued — waiting for the engine."}
-        </CardDescription>
+        <CardTitle className="text-base">{progress.title}</CardTitle>
+        <CardDescription>{progress.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="h-2 w-full overflow-hidden rounded-full bg-secondary/40" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
-          <div className="h-full bg-primary transition-[width]" style={{ width: `${percent}%` }} />
+        <div
+          className="h-2 w-full overflow-hidden rounded-full bg-secondary/40"
+          role="progressbar"
+          aria-valuenow={progress.percentComplete}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuetext={progress.ariaValueText}
+          aria-busy={progress.ariaBusy}
+        >
+          <div className="h-full bg-primary transition-[width]" style={{ width: `${progress.percentComplete}%` }} />
         </div>
         <div className="flex items-center gap-2">
-          <Button type="button" variant="ghost" onClick={() => vm.goToStage("configure")}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => vm.goToStage("configure")}
+            disabled={vm.stageNavigation.configure.disabled}
+            disabledReason={vm.stageNavigation.configure.disabledReason}
+          >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             <span className="ml-1.5">Back</span>
           </Button>
-          <Button type="button" variant="ghost" onClick={() => void vm.cancelRun()}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => void vm.cancelRun()}
+            disabled={vm.cancelRunCommand.disabled}
+            disabledReason={vm.cancelRunCommand.disabledReason}
+            busy={vm.cancelRunCommand.busy}
+            busyLabel={vm.cancelRunCommand.busyLabel}
+            aria-label={vm.cancelRunCommand.ariaLabel}
+            aria-describedby={vm.cancelRunCommand.feedbackText ? vm.cancelRunCommand.feedbackId : undefined}
+          >
             <CircleX className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">Cancel run</span>
+            <span className="ml-1.5">{vm.cancelRunCommand.label}</span>
           </Button>
         </div>
+        <CommandFeedback id={vm.cancelRunCommand.feedbackId} message={vm.cancelRunCommand.feedbackText} />
       </CardContent>
     </Card>
+  );
+}
+
+function CommandFeedback({ id, message }: { id: string; message: string | null }) {
+  if (!message) return null;
+  return (
+    <p id={id} className="text-xs text-muted-foreground" aria-live="polite">
+      {message}
+    </p>
   );
 }
 
@@ -380,8 +437,47 @@ function ResultsStage({ vm }: { vm: CoveredCallScreenViewModel }) {
         <EquityCurve result={result} />
         <PositionTimeline vm={vm} />
       </div>
-      <PayoffDiagramPanel vm={vm} />
+      <div className="space-y-4">
+        <PayoffDiagramPanel vm={vm} />
+        <ResultsActionPanel vm={vm} />
+      </div>
     </div>
+  );
+}
+
+function ResultsActionPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
+  const panel = vm.resultsActionPanel;
+  const iconByAction: Record<string, typeof LineChart> = {
+    "live-quote": LineChart,
+    "strategy-designer": SlidersHorizontal,
+    "report-pack": FileText
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">{panel.title}</CardTitle>
+        <CardDescription>{panel.description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <nav className="grid gap-2" aria-label="Covered-call results next workflow">
+          {panel.actions.map((action) => {
+            const Icon = iconByAction[action.id] ?? ArrowRight;
+            return (
+              <Button key={action.id} asChild variant="outline" className="h-auto justify-start px-3 py-2 text-left">
+                <Link to={action.href} aria-label={action.ariaLabel}>
+                  <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-foreground">{action.label}</span>
+                    <span className="block text-xs font-normal leading-5 text-muted-foreground">{action.description}</span>
+                  </span>
+                </Link>
+              </Button>
+            );
+          })}
+        </nav>
+      </CardContent>
+    </Card>
   );
 }
 

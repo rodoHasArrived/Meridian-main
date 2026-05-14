@@ -147,18 +147,35 @@ export interface DataOperationsBackfillSectionState extends DataOperationsSectio
   description: string;
 }
 
+export interface DataOperationsProviderSectionState extends DataOperationsSectionState<DataOperationsProviderRow> {
+  tableLabel: string;
+  description: string;
+  detailPanelId: string;
+  selectedRowId: string | null;
+  selectedDetail: DataOperationsProviderDetailState | null;
+  detailEmptyState: DataOperationsEmptyState | null;
+}
+
 export interface DataOperationsProviderRow {
   provider: string;
+  rowId: string;
+  detailPanelId: string;
   status: DataOperationsProviderRecord["status"];
   capability: string;
   latencyText: string;
+  trustScoreText: string;
+  signalSourceText: string;
   note: string;
   statusTone: "success" | "warning" | "danger";
   trustFields: DataOperationsDetailField[];
   reasonCodeText: string;
   recommendedActionText: string;
   gateImpactText: string;
+  selected: boolean;
+  expanded: boolean;
   ariaLabel: string;
+  selectAriaLabel: string;
+  detailDescription: string;
 }
 
 export interface DataOperationsDetailField {
@@ -191,7 +208,23 @@ export interface DataOperationsBackfillDetailState {
   title: string;
   description: string;
   ariaLabel: string;
+  statusLabel: DataOperationsBackfillRecord["status"];
+  statusVariant: "default" | "outline" | "warning";
   rows: DataOperationsDetailField[];
+}
+
+export interface DataOperationsProviderDetailState {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  ariaLabel: string;
+  status: DataOperationsProviderRecord["status"];
+  statusTone: "success" | "warning" | "danger";
+  fields: DataOperationsDetailField[];
+  actionText: string;
+  reasonCodeText: string;
+  gateImpactText: string;
 }
 
 export interface DataOperationsExportRow {
@@ -211,7 +244,7 @@ export interface DataOperationsExportRow {
 }
 
 export interface DataOperationsPresentationState {
-  providerSection: DataOperationsSectionState<DataOperationsProviderRow>;
+  providerSection: DataOperationsProviderSectionState;
   backfillSection: DataOperationsBackfillSectionState;
   exportSection: DataOperationsSectionState<DataOperationsExportRow>;
   selectedBackfillDetail: DataOperationsBackfillDetailState | null;
@@ -269,6 +302,12 @@ export interface ProviderSetupDialogState {
   capabilityOptions: ProviderSetupCapabilityOptionState[];
   closeButtonLabel: string;
   closeButtonDisabledReason: string | null;
+  cancelAction: {
+    label: string;
+    ariaLabel: string;
+    disabled: boolean;
+    disabledReason: string | null;
+  };
   submitAction: {
     label: string;
     ariaLabel: string;
@@ -469,12 +508,15 @@ const defaultBackfillForm: BackfillFormState = {
 };
 
 export const DATA_BACKFILL_DETAIL_PANEL_ID = "data-backfill-detail-panel";
+export const DATA_BACKFILL_ROUTE_FOCUS_CARD_ID = "data-backfill-route-focus";
+export const DATA_PROVIDER_DETAIL_PANEL_ID = "data-provider-detail-panel";
 
 export function useDataOperationsViewModel(
   data: DataOperationsWorkspaceResponse | null,
   pathname: string,
   services: BackfillTriggerServices = defaultBackfillServices
 ) {
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [selectedBackfillId, setSelectedBackfillId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
@@ -519,13 +561,18 @@ export function useDataOperationsViewModel(
   }, []);
 
   const workstream = useMemo(() => resolveDataOperationsWorkstream(pathname), [pathname]);
+  const selectedProvider = useMemo(
+    () => resolveSelectedProvider(data?.providers ?? [], selectedProviderId),
+    [data, selectedProviderId]
+  );
+  const selectedProviderRowId = selectedProvider ? buildProviderRowId(selectedProvider.provider) : null;
   const selectedBackfill = useMemo(
     () => resolveSelectedBackfill(data?.backfills ?? [], selectedBackfillId),
     [data, selectedBackfillId]
   );
   const presentation = useMemo(
-    () => buildDataOperationsPresentationState(data, selectedBackfill?.jobId ?? null, workstream),
-    [data, selectedBackfill?.jobId, workstream]
+    () => buildDataOperationsPresentationState(data, selectedBackfill?.jobId ?? null, workstream, selectedProviderRowId),
+    [data, selectedBackfill?.jobId, selectedProviderRowId, workstream]
   );
   const loadingState = useMemo(
     () => buildDataOperationsLoadingState(workstream),
@@ -741,6 +788,10 @@ export function useDataOperationsViewModel(
   return {
     workstream,
     loadingState,
+    selectedProvider,
+    selectedProviderId,
+    selectedProviderRowId,
+    selectProvider: setSelectedProviderId,
     selectedBackfill,
     selectedBackfillId,
     selectedBackfillRowId: selectedBackfill ? buildBackfillRowId(selectedBackfill.jobId) : null,
@@ -825,7 +876,8 @@ export function buildDataOperationsLoadingState(
 export function buildDataOperationsPresentationState(
   data: DataOperationsWorkspaceResponse | null,
   selectedBackfillId: string | null,
-  workstream: "overview" | "backfills" = "overview"
+  workstream: "overview" | "backfills" = "overview",
+  selectedProviderId: string | null = null
 ): DataOperationsPresentationState {
   const providers = data?.providers ?? [];
   const backfills = data?.backfills ?? [];
@@ -839,7 +891,7 @@ export function buildDataOperationsPresentationState(
     : null;
 
   return {
-    providerSection: buildProviderSection(providers),
+    providerSection: buildProviderSection(providers, selectedProviderId),
     backfillSection: buildBackfillSection(backfills, selectedBackfillId, workstream),
     exportSection: buildExportSection(exports),
     selectedBackfillDetail,
@@ -864,9 +916,9 @@ export function buildRouteFocusCardState({
   if (workstream === "backfills") {
     if (selectedBackfillDetail) {
       return {
-        id: DATA_BACKFILL_DETAIL_PANEL_ID,
+        id: DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
         role: "region",
-        ariaLabel: selectedBackfillDetail.ariaLabel,
+        ariaLabel: "Backfill route focus",
         eyebrow: "Backfill Detail",
         title: "Backfill queue focus",
         description: selectedBackfillDetail.description,
@@ -878,9 +930,9 @@ export function buildRouteFocusCardState({
     const title = backfillDetailEmptyState?.title ?? "Backfill queue focus";
     const description = backfillDetailEmptyState?.description ?? "No backfill selected.";
     return {
-      id: DATA_BACKFILL_DETAIL_PANEL_ID,
+      id: DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
       role: "status",
-      ariaLabel: "Backfill detail empty state",
+      ariaLabel: "Backfill route focus empty state",
       eyebrow: "Backfill Detail",
       title,
       description,
@@ -910,11 +962,26 @@ export function buildRouteFocusCardState({
 }
 
 export function buildProviderSection(
-  providers: DataOperationsProviderRecord[]
-): DataOperationsSectionState<DataOperationsProviderRow> {
+  providers: DataOperationsProviderRecord[],
+  selectedProviderId: string | null = null
+): DataOperationsProviderSectionState {
+  const selectedProvider = resolveSelectedProvider(providers, selectedProviderId);
+  const selectedRowId = selectedProvider ? buildProviderRowId(selectedProvider.provider) : null;
+
   return {
-    rows: providers.map(buildProviderRow),
+    rows: providers.map((provider) => buildProviderRow(provider, selectedRowId)),
     hasRows: providers.length > 0,
+    tableLabel: "Provider health",
+    description: "Provider trust, latency, gate impact, and recommended recovery actions.",
+    detailPanelId: DATA_PROVIDER_DETAIL_PANEL_ID,
+    selectedRowId,
+    selectedDetail: buildSelectedProviderDetail(providers, selectedRowId),
+    detailEmptyState: providers.length === 0
+      ? {
+          title: "No provider selected",
+          description: "Configure a provider before inspecting trust evidence, latency, gate impact, or recovery actions."
+        }
+      : null,
     emptyState: {
       title: "No providers configured",
       description: "Check provider configuration or run provider detection before relying on live, backfill, or export data."
@@ -922,21 +989,31 @@ export function buildProviderSection(
   };
 }
 
-export function buildProviderRow(provider: DataOperationsProviderRecord): DataOperationsProviderRow {
+export function buildProviderRow(
+  provider: DataOperationsProviderRecord,
+  selectedProviderId: string | null = null
+): DataOperationsProviderRow {
+  const rowId = buildProviderRowId(provider.provider);
   const latencyText = formatProviderValue(provider.latency, "Latency not reported");
   const trustScoreText = formatProviderValue(provider.trustScore, "Trust score not reported");
   const signalSourceText = formatProviderValue(provider.signalSource, "Signal source not reported");
   const reasonCodeText = formatProviderValue(provider.reasonCode, "Reason code not reported");
   const recommendedActionText = formatProviderValue(provider.recommendedAction, "No operator action reported");
   const gateImpactText = formatProviderValue(provider.gateImpact, "No gate impact reported");
+  const selected = rowId === selectedProviderId;
+  const statusTone = resolveProviderStatusTone(provider.status);
 
   return {
     provider: provider.provider,
+    rowId,
+    detailPanelId: DATA_PROVIDER_DETAIL_PANEL_ID,
     status: provider.status,
     capability: provider.capability,
     latencyText,
+    trustScoreText,
+    signalSourceText,
     note: provider.note,
-    statusTone: provider.status === "Healthy" ? "success" : provider.status === "Degraded" ? "danger" : "warning",
+    statusTone,
     trustFields: [
       {
         id: "latency",
@@ -962,15 +1039,49 @@ export function buildProviderRow(provider: DataOperationsProviderRecord): DataOp
     reasonCodeText,
     recommendedActionText,
     gateImpactText,
+    selected,
+    expanded: selected,
     ariaLabel: [
-      `${provider.provider} provider ${provider.status}`,
+      `${selected ? "Selected" : "Inspect"} provider ${provider.provider}`,
+      `Status ${provider.status}`,
       provider.capability,
       provider.note,
       `Latency ${latencyText}`,
       `Trust score ${trustScoreText}`,
       `Gate impact ${gateImpactText}`,
       `Recommended action ${recommendedActionText}`
-    ].join(". ")
+    ].join(". "),
+    selectAriaLabel: `Inspect provider ${provider.provider}`,
+    detailDescription: selected
+      ? `Selected provider ${provider.provider}; the provider detail panel is expanded for this row.`
+      : `Inspect provider ${provider.provider}; activation updates the shared provider detail panel.`
+  };
+}
+
+export function buildSelectedProviderDetail(
+  providers: DataOperationsProviderRecord[],
+  selectedProviderId: string | null
+): DataOperationsProviderDetailState | null {
+  const selected = resolveSelectedProvider(providers, selectedProviderId);
+
+  if (!selected) {
+    return null;
+  }
+
+  const row = buildProviderRow(selected, buildProviderRowId(selected.provider));
+
+  return {
+    id: DATA_PROVIDER_DETAIL_PANEL_ID,
+    title: selected.provider,
+    subtitle: selected.capability,
+    description: `${selected.note} ${row.gateImpactText}.`,
+    ariaLabel: `Provider detail for ${selected.provider}: ${selected.status}. ${selected.capability}. ${row.recommendedActionText}`,
+    status: selected.status,
+    statusTone: row.statusTone,
+    fields: row.trustFields,
+    actionText: row.recommendedActionText,
+    reasonCodeText: row.reasonCodeText,
+    gateImpactText: row.gateImpactText
   };
 }
 
@@ -1033,6 +1144,8 @@ export function buildSelectedBackfillDetail(
     title: selected.scope,
     description,
     ariaLabel: `Backfill detail for ${selected.jobId}: ${selected.scope}. ${description}`,
+    statusLabel: selected.status,
+    statusVariant: selected.status === "Review" ? "warning" : selected.status === "Running" ? "default" : "outline",
     rows: [
       { id: "provider", label: "Provider", value: selected.provider },
       { id: "status", label: "Status", value: selected.status },
@@ -1109,6 +1222,15 @@ function exportActionText(status: DataOperationsExportRecord["status"]): string 
   }
 
   return "Review export profile and target before report-pack use.";
+}
+
+export function resolveSelectedProvider(
+  providers: DataOperationsProviderRecord[],
+  selectedProviderId: string | null
+): DataOperationsProviderRecord | null {
+  return providers.find((provider) => (
+    provider.provider === selectedProviderId || buildProviderRowId(provider.provider) === selectedProviderId
+  )) ?? providers[0] ?? null;
 }
 
 export function resolveSelectedBackfill(
@@ -1614,6 +1736,24 @@ function buildBackfillRowId(jobId: string): string {
   return `backfill-row-${toDomId(jobId)}`;
 }
 
+function buildProviderRowId(provider: string): string {
+  return `provider-row-${toDomId(provider)}`;
+}
+
+function resolveProviderStatusTone(
+  status: DataOperationsProviderRecord["status"]
+): DataOperationsProviderRow["statusTone"] {
+  if (status === "Healthy") {
+    return "success";
+  }
+
+  if (status === "Degraded") {
+    return "danger";
+  }
+
+  return "warning";
+}
+
 function toDomId(value: string): string {
   const normalized = value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   return normalized || "item";
@@ -1720,6 +1860,7 @@ export function buildProviderSetupDialogState(
   const validationError = phase === "submitting" ? null : validateProviderSetupForm(form);
   const providerMeta = resolveProviderKindMeta(form.kind);
   const fieldDisabledReason = submitting ? "Provider setup is in progress; wait before editing." : null;
+  const closeDisabledReason = submitting ? "Provider setup is in progress; wait before closing." : null;
 
   return {
     titleId: "provider-setup-dialog-title",
@@ -1755,7 +1896,15 @@ export function buildProviderSetupDialogState(
       disabledReason: fieldDisabledReason
     })),
     closeButtonLabel: "Close provider setup",
-    closeButtonDisabledReason: submitting ? "Provider setup is in progress; wait before closing." : null,
+    closeButtonDisabledReason: closeDisabledReason,
+    cancelAction: {
+      label: "Cancel",
+      ariaLabel: closeDisabledReason
+        ? `Cancel provider setup unavailable: ${closeDisabledReason}`
+        : "Cancel provider setup",
+      disabled: closeDisabledReason !== null,
+      disabledReason: closeDisabledReason
+    },
     submitAction: {
       label: submitting ? "Configuring..." : phase === "success" ? "Configure another" : "Configure provider",
       ariaLabel: submitting

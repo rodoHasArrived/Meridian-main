@@ -108,6 +108,31 @@ describe("PriceAlertsScreen", () => {
     expect(screen.getByText("Field: bid-ask midpoint.")).toBeInTheDocument();
   });
 
+  it("links symbol and threshold validation feedback to the invalid inputs", () => {
+    renderScreen(new MemoryStorage());
+
+    const symbol = screen.getByLabelText("Symbol");
+    const threshold = screen.getByLabelText("Threshold");
+
+    expect(symbol).toHaveAttribute("aria-describedby", "price-alert-symbol-help");
+    expect(symbol).not.toHaveAttribute("aria-errormessage");
+    expect(threshold).toHaveAttribute("aria-describedby", "price-alert-threshold-help");
+    expect(threshold).not.toHaveAttribute("aria-errormessage");
+
+    fireEvent.change(symbol, { target: { value: "bad symbol!" } });
+    fireEvent.change(threshold, { target: { value: "-1" } });
+
+    expect(symbol).toHaveAttribute("aria-invalid", "true");
+    expect(symbol).toHaveAttribute("aria-describedby", "price-alert-symbol-help price-alert-symbol-error");
+    expect(symbol).toHaveAttribute("aria-errormessage", "price-alert-symbol-error");
+    expect(screen.getByText("Use 1-16 letters, digits, or . / : _ -")).toHaveAttribute("id", "price-alert-symbol-error");
+
+    expect(threshold).toHaveAttribute("aria-invalid", "true");
+    expect(threshold).toHaveAttribute("aria-describedby", "price-alert-threshold-help price-alert-threshold-error");
+    expect(threshold).toHaveAttribute("aria-errormessage", "price-alert-threshold-error");
+    expect(screen.getByText("Threshold must be greater than 0.")).toHaveAttribute("id", "price-alert-threshold-error");
+  });
+
   it("renders persisted alerts and identifies disabled and triggered states", () => {
     const storage = seedStorage({
       version: 1,
@@ -187,6 +212,34 @@ describe("PriceAlertsScreen", () => {
     expect(msftRow).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("region", { name: "Configured price alert detail for MSFT" }))
       .toHaveTextContent("Review after open");
+  });
+
+  it("requires confirmation before deleting a configured alert", () => {
+    const storage = seedStorage({
+      version: 1,
+      alerts: [
+        buildAlert({ id: "a-1", symbol: "AAPL" })
+      ],
+      triggers: []
+    });
+
+    renderScreen(storage);
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete AAPL alert" }));
+
+    expect(screen.getAllByText("AAPL").length).toBeGreaterThan(0);
+    const confirmDelete = screen.getByRole("button", { name: "Confirm delete AAPL alert. This removes it from this browser." });
+    expect(confirmDelete).toBeInTheDocument();
+    expect(confirmDelete).toHaveAttribute("aria-describedby", "price-alert-delete-a-1-status");
+    expect(screen.getByText("Delete confirmation pending for AAPL. Confirm delete removes it from this browser."))
+      .toHaveAttribute("id", "price-alert-delete-a-1-status");
+    expect(screen.getByRole("row", { name: "Inspect configured alert AAPL" }))
+      .toHaveAttribute("aria-selected", "true");
+
+    fireEvent.click(confirmDelete);
+
+    expect(screen.queryByRole("row", { name: "Inspect configured alert AAPL" })).not.toBeInTheDocument();
+    expect(screen.getByText("No alerts set.")).toBeInTheDocument();
   });
 
   it("seeds the symbol from ?symbol= query string", () => {

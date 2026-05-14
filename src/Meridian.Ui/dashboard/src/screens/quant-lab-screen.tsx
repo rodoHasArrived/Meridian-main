@@ -10,17 +10,34 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuantPlotChart } from "@/components/meridian/quant-plot";
-import { ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
+import {
+  DenseDataTable,
+  EntitySummary,
+  ToolbarStrip,
+  type DenseDataTableColumn
+} from "@/components/meridian/ui-kit-primitives";
 import {
   useQuantLabScreenViewModel,
   type QuantParameterPanelState,
   type QuantParameterRow,
+  type QuantTradeLedgerState,
+  type QuantTradeRowViewModel,
   type QuantRunResultPanelState,
   type QuantRunState,
   type QuantTemplatePanelState,
   type QuantTemplateRow
 } from "@/screens/quant-lab-screen.view-model";
 import type { QuantDiagnostic } from "@/types";
+
+const quantTradeColumns: DenseDataTableColumn<QuantTradeRowViewModel>[] = [
+  { id: "timestamp", label: "Timestamp", render: (row) => <span className="font-mono">{row.timestamp}</span> },
+  { id: "symbol", label: "Symbol", render: (row) => <span className="font-mono text-foreground">{row.symbol}</span> },
+  { id: "side", label: "Side", render: (row) => <span className="font-mono">{row.side}</span> },
+  { id: "quantity", label: "Qty", align: "right", render: (row) => <span className="font-mono">{row.quantity}</span> },
+  { id: "price", label: "Price", align: "right", render: (row) => <span className="font-mono">{row.price}</span> },
+  { id: "notional", label: "Notional", align: "right", render: (row) => <span className="font-mono">{row.notional}</span> },
+  { id: "commission", label: "Comm.", align: "right", render: (row) => <span className="font-mono">{row.commission}</span> }
+];
 
 export function QuantLabScreen() {
   const vm = useQuantLabScreenViewModel();
@@ -79,7 +96,13 @@ export function QuantLabScreen() {
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-        <RunResultPanel run={vm.run} panel={vm.resultPanel} consoleLines={vm.consoleLines} />
+        <RunResultPanel
+          run={vm.run}
+          panel={vm.resultPanel}
+          consoleLines={vm.consoleLines}
+          tradeLedger={vm.tradeLedger}
+          onTradeSelect={vm.selectTradeRow}
+        />
         <div className="space-y-4">
           <ParametersSidePanel
             rows={vm.parameterRows}
@@ -98,9 +121,11 @@ interface RunResultPanelProps {
   run: QuantRunState;
   panel: QuantRunResultPanelState;
   consoleLines: string[];
+  tradeLedger: QuantTradeLedgerState;
+  onTradeSelect: (rowId: string) => void;
 }
 
-function RunResultPanel({ run, panel, consoleLines }: RunResultPanelProps) {
+function RunResultPanel({ run, panel, consoleLines, tradeLedger, onTradeSelect }: RunResultPanelProps) {
   if (panel.phase === "idle") {
     return (
       <Card>
@@ -201,6 +226,9 @@ function RunResultPanel({ run, panel, consoleLines }: RunResultPanelProps) {
               </pre>
             </div>
           ) : null}
+          {result.success || tradeLedger.hasTrades ? (
+            <TradeLedgerPanel ledger={tradeLedger} onSelect={onTradeSelect} />
+          ) : null}
           {panel.diagnosticSections.map((section) => (
             <DiagnosticsBlock key={section.id} label={section.label} entries={section.entries} tone={section.tone} />
           ))}
@@ -223,6 +251,73 @@ function RunResultPanel({ run, panel, consoleLines }: RunResultPanelProps) {
         </Card>
       ) : null}
     </div>
+  );
+}
+
+function TradeLedgerPanel({
+  ledger,
+  onSelect
+}: {
+  ledger: QuantTradeLedgerState;
+  onSelect: (rowId: string) => void;
+}) {
+  return (
+    <section className="space-y-3" aria-label={ledger.title}>
+      <div>
+        <div className="eyebrow-label mb-1">{ledger.title}</div>
+        <p className="text-xs text-muted-foreground">{ledger.description}</p>
+      </div>
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.42fr)]">
+        <DenseDataTable
+          columns={quantTradeColumns}
+          rows={ledger.rows}
+          getRowId={(row) => row.id}
+          getRowSelectAriaLabel={(row) => row.ariaLabel}
+          getRowAriaControls={() => ledger.detailPanelId}
+          getRowAriaExpanded={(row) => row.id === ledger.selectedRowId}
+          onRowSelect={(row) => onSelect(row.id)}
+          selectedRowId={ledger.selectedRowId}
+          emptyText={ledger.emptyText}
+          ariaLabel={ledger.tableLabel}
+          caption={ledger.tableCaption}
+        />
+        <div id={ledger.detailPanelId} aria-live="polite">
+          {ledger.selectedDetail ? (
+            <EntitySummary
+              eyebrow={ledger.selectedDetail.eyebrow}
+              title={ledger.selectedDetail.title}
+              subtitle={ledger.selectedDetail.subtitle}
+              description={ledger.selectedDetail.description}
+              ariaLabel={ledger.selectedDetail.ariaLabel}
+              fields={ledger.selectedDetail.fields}
+              status={
+                <Badge
+                  variant={
+                    ledger.selectedDetail.statusTone === "success"
+                      ? "success"
+                      : ledger.selectedDetail.statusTone === "warning"
+                        ? "warning"
+                        : "outline"
+                  }
+                  dot
+                >
+                  {ledger.selectedDetail.statusLabel}
+                </Badge>
+              }
+            />
+          ) : (
+            <aside
+              className="row-detail-panel h-fit min-w-0 border-dashed text-sm text-muted-foreground"
+              role="region"
+              aria-label={ledger.detailEmptyTitle}
+            >
+              <div className="eyebrow-label">{ledger.detailEmptyTitle}</div>
+              <p className="mt-2">{ledger.detailEmptyText}</p>
+            </aside>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
 

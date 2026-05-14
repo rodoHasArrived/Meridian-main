@@ -481,18 +481,21 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
   const [draftPrice, setDraftPrice] = useState("");
   const [draftFees, setDraftFees] = useState("");
   const [draftNote, setDraftNote] = useState("");
+  const [pendingRemoveLotId, setPendingRemoveLotId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!securityId) {
       setLots([]);
       setMarketPriceOverride(null);
       setSelectedLotId(null);
+      setPendingRemoveLotId(null);
       return;
     }
     const loadedLots = loadLots(securityId);
     setLots(loadedLots);
     setSelectedLotId(loadedLots[0]?.lotId ?? null);
     setMarketPriceOverride(readMarketPriceOverride(securityId));
+    setPendingRemoveLotId(null);
   }, [securityId]);
 
   useEffect(() => {
@@ -521,9 +524,10 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
         fees: draftFees,
         note: draftNote
       },
-      selectedLotId
+      selectedLotId,
+      pendingRemoveLotId
     });
-  }, [currency, draftDate, draftFees, draftNote, draftPrice, draftQty, lots, marketPriceOverride, securityId, selectedLotId]);
+  }, [currency, draftDate, draftFees, draftNote, draftPrice, draftQty, lots, marketPriceOverride, pendingRemoveLotId, securityId, selectedLotId]);
 
   const addLot = useCallback(() => {
     if (!securityId || !vm || vm.addCommand.disabled) return;
@@ -546,15 +550,22 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
     setDraftFees("");
     setDraftNote("");
     setDraftDate(todayIso());
+    setPendingRemoveLotId(null);
   }, [draftDate, draftFees, draftNote, draftPrice, draftQty, lots, securityId, vm]);
 
   const removeLot = useCallback((lotId: string) => {
     if (!securityId) return;
+    if (pendingRemoveLotId !== lotId) {
+      setPendingRemoveLotId(lotId);
+      setSelectedLotId(lotId);
+      return;
+    }
     const next = lots.filter((l) => l.lotId !== lotId);
     setLots(next);
     setSelectedLotId((current) => current === lotId ? next[0]?.lotId ?? null : current);
+    setPendingRemoveLotId(null);
     saveLots(securityId, next);
-  }, [lots, securityId]);
+  }, [lots, pendingRemoveLotId, securityId]);
 
   if (!securityId || !vm) {
     return null;
@@ -605,11 +616,12 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
         <Button
           type="button"
           size="sm"
-          variant="ghost"
+          variant={row.removeConfirmationPending ? "secondary" : "ghost"}
           aria-label={row.removeAriaLabel}
           onClick={() => removeLot(row.lotId)}
         >
           <Trash2 className="h-3.5 w-3.5" />
+          {row.removeConfirmationPending && <span className="ml-1">{row.removeLabel}</span>}
         </Button>
       )
     }
@@ -635,7 +647,10 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
               type="date"
               className={inputClass}
               value={draftDate}
-              onChange={(e) => setDraftDate(e.target.value)}
+              onChange={(e) => {
+                setDraftDate(e.target.value);
+                setPendingRemoveLotId(null);
+              }}
             />
           </div>
           <div className="sm:col-span-1">
@@ -646,7 +661,10 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
               step="any"
               className={inputClass}
               value={draftQty}
-              onChange={(e) => setDraftQty(e.target.value)}
+              onChange={(e) => {
+                setDraftQty(e.target.value);
+                setPendingRemoveLotId(null);
+              }}
               placeholder="100"
             />
           </div>
@@ -658,7 +676,10 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
               step="any"
               className={inputClass}
               value={draftPrice}
-              onChange={(e) => setDraftPrice(e.target.value)}
+              onChange={(e) => {
+                setDraftPrice(e.target.value);
+                setPendingRemoveLotId(null);
+              }}
               placeholder="0.00"
             />
           </div>
@@ -670,7 +691,10 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
               step="any"
               className={inputClass}
               value={draftFees}
-              onChange={(e) => setDraftFees(e.target.value)}
+              onChange={(e) => {
+                setDraftFees(e.target.value);
+                setPendingRemoveLotId(null);
+              }}
               placeholder="0.00"
             />
           </div>
@@ -681,7 +705,10 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
               type="text"
               className={inputClass}
               value={draftNote}
-              onChange={(e) => setDraftNote(e.target.value)}
+              onChange={(e) => {
+                setDraftNote(e.target.value);
+                setPendingRemoveLotId(null);
+              }}
               placeholder="Broker, strategy, etc."
             />
           </div>
@@ -721,7 +748,10 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
               getRowAriaControls={(row) => row.detailPanelId}
               getRowAriaExpanded={(row) => row.expanded}
               selectedRowId={vm.selectedLotId}
-              onRowSelect={(row) => setSelectedLotId(row.lotId)}
+              onRowSelect={(row) => {
+                setSelectedLotId(row.lotId);
+                setPendingRemoveLotId(null);
+              }}
               emptyText={vm.emptyText}
               ariaLabel={vm.tableLabel}
               caption={vm.tableCaption}

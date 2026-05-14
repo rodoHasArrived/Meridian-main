@@ -87,14 +87,56 @@ describe("SettingsScreen", () => {
     expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
       "Operator control posture"
     );
-    const eventList = screen.getByRole("list", { name: "1 recent system event" });
-    const eventRow = within(eventList).getByRole("group", {
-      name: /OBS event from Provider health at May 1, 00:00 UTC\. Brokerage sync delayed\./i
+    const eventTable = screen.getByRole("table", { name: "1 recent system event" });
+    const eventRow = within(eventTable).getByRole("row", {
+      name: /Select event evt-1\. OBS event from Provider health at May 1, 00:00 UTC\. Brokerage sync delayed\./i
     });
+    const eventDetail = screen.getByRole("complementary", { name: "Selected recent event detail" });
 
+    expect(eventRow).toHaveAttribute("aria-selected", "true");
+    expect(eventRow).toHaveAttribute("aria-controls", "settings-recent-event-detail");
+    expect(eventRow).toHaveAttribute("aria-expanded", "true");
     expect(within(eventRow).getByText("OBS")).toBeInTheDocument();
     expect(within(eventRow).getByText("Brokerage sync delayed.")).toBeInTheDocument();
-    expect(within(eventRow).getByText("Provider health · evt-1")).toBeInTheDocument();
+    expect(within(eventRow).getByText("Provider health")).toBeInTheDocument();
+    expect(within(eventDetail).getByText("Brokerage sync delayed.")).toBeInTheDocument();
+    expect(within(eventDetail).getByText("Provider health / evt-1")).toBeInTheDocument();
+  });
+
+  it("updates recent-event detail with keyboard row selection", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={{
+          ...overview,
+          recentEvents: [
+            ...overview.recentEvents,
+            {
+              id: "evt-2",
+              type: "error",
+              message: "Storage heartbeat missed.",
+              source: "Storage",
+              timestamp: "2026-05-01T00:04:00Z"
+            }
+          ]
+        }}
+      />
+    );
+
+    const storageRow = screen.getByRole("row", {
+      name: /Select event evt-2\. CRIT event from Storage at May 1, 00:04 UTC\. Storage heartbeat missed\./i
+    });
+
+    storageRow.focus();
+    await user.keyboard("{Enter}");
+
+    const eventDetail = screen.getByRole("complementary", { name: "Selected recent event detail" });
+    expect(storageRow).toHaveAttribute("aria-selected", "true");
+    expect(within(eventDetail).getByRole("region", { name: "CRIT event detail for evt-2" })).toHaveTextContent(
+      "Storage heartbeat missed."
+    );
+    expect(within(eventDetail).getByText("Critical")).toBeInTheDocument();
   });
 
   it("keeps the recent-events panel visible when there are no events", () => {

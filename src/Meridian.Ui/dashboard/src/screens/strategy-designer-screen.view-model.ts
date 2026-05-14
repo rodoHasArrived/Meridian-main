@@ -103,6 +103,7 @@ export interface StrategyDesignerCommandViewModel {
   ariaLabel: string;
   disabled: boolean;
   disabledReason: string | null;
+  confirmationPending?: boolean;
 }
 
 export interface StrategyDesignerSpotPriceFieldViewModel {
@@ -114,10 +115,36 @@ export interface StrategyDesignerSpotPriceFieldViewModel {
   ariaLabel: string;
 }
 
+export interface StrategyLegDetailFieldViewModel {
+  id: string;
+  label: string;
+  value: string;
+  tone: "default" | "muted" | "success" | "warning" | "danger";
+}
+
+export interface StrategyLegDetailEmptyStateViewModel {
+  title: string;
+  description: string;
+  ariaLabel: string;
+}
+
+export interface StrategyLegDetailViewModel {
+  id: string;
+  ariaLabel: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: "success" | "warning" | "outline";
+  fields: StrategyLegDetailFieldViewModel[];
+}
+
 export interface StrategyCanvasLegViewModel extends StrategyLeg {
   isSelected: boolean;
   directionTone: "success" | "warning";
   isOption: boolean;
+  detailPanelId: string;
   fieldIds: {
     direction: string;
     quantity: string;
@@ -127,6 +154,8 @@ export interface StrategyCanvasLegViewModel extends StrategyLeg {
   containerAriaLabel: string;
   selectButtonLabel: string;
   selectButtonAriaLabel: string;
+  selectButtonAriaControls: string;
+  selectButtonAriaExpanded: boolean;
   removeButtonAriaLabel: string;
   directionAriaLabel: string;
   quantityAriaLabel: string;
@@ -164,7 +193,12 @@ export interface StrategyDesignerViewModel {
   selectedLegId: string | null;
   selectLeg: (id: string | null) => void;
   selectedLeg: StrategyLeg | null;
+  selectedLegDetailPanelId: string;
+  selectedLegDetail: StrategyLegDetailViewModel | null;
+  selectedLegDetailEmptyState: StrategyLegDetailEmptyStateViewModel;
 }
+
+export const STRATEGY_DESIGNER_SELECTED_LEG_DETAIL_PANEL_ID = "strategy-designer-selected-leg-detail";
 
 const PALETTE: StrategyLegPaletteEntry[] = [
   {
@@ -549,6 +583,57 @@ export function buildDesignerSummaryMetrics(payoff: PayoffChartViewModel, partic
   ];
 }
 
+export function buildSelectedLegDetailViewModel(
+  leg: StrategyLeg | null,
+  spotPrice: number,
+  legCount: number
+): StrategyLegDetailViewModel | null {
+  if (!leg) {
+    return null;
+  }
+
+  const payoffAtSpot = computeLegPayoff(leg, spotPrice);
+  const isOption = leg.instrument !== "Stock";
+  const breakEven = isOption
+    ? leg.instrument === "Call"
+      ? leg.strike + leg.premium
+      : Math.max(0, leg.strike - leg.premium)
+    : leg.strike;
+  const statusVariant = leg.direction === "Long" ? "success" : "warning";
+  const exposureLabel = leg.direction === "Long" ? "Long exposure" : "Short exposure";
+
+  return {
+    id: STRATEGY_DESIGNER_SELECTED_LEG_DETAIL_PANEL_ID,
+    ariaLabel: `Selected strategy leg detail for ${leg.label}`,
+    eyebrow: "Selected leg",
+    title: leg.label,
+    subtitle: `${leg.direction} ${leg.instrument} · ${legCount} leg${legCount === 1 ? "" : "s"} on canvas`,
+    description: isOption
+      ? `${leg.direction} ${leg.instrument.toLowerCase()} sampled against spot ${formatPrice(spotPrice)}; payoff at spot is ${formatPnl(payoffAtSpot)}.`
+      : `${leg.direction} stock exposure uses entry ${formatPrice(leg.strike)} against spot ${formatPrice(spotPrice)}; payoff at spot is ${formatPnl(payoffAtSpot)}.`,
+    statusLabel: exposureLabel,
+    statusVariant,
+    fields: [
+      { id: "leg-id", label: "Leg ID", value: leg.id, tone: "muted" },
+      { id: "quantity", label: "Quantity", value: formatQuantity(leg.quantity), tone: "default" },
+      { id: "strike", label: isOption ? "Strike" : "Entry price", value: formatPrice(leg.strike), tone: "default" },
+      { id: "premium", label: "Premium", value: isOption ? formatPrice(leg.premium) : "Not applicable", tone: isOption ? "default" : "muted" },
+      { id: "break-even", label: isOption ? "Break-even" : "Reference price", value: formatPrice(breakEven), tone: "default" },
+      { id: "payoff-at-spot", label: "Payoff at spot", value: formatPnl(payoffAtSpot), tone: payoffAtSpot > 0 ? "success" : payoffAtSpot < 0 ? "danger" : "muted" }
+    ]
+  };
+}
+
+export function buildSelectedLegDetailEmptyState(legCount: number): StrategyLegDetailEmptyStateViewModel {
+  return {
+    title: legCount === 0 ? "No legs on canvas" : "No leg selected",
+    description: legCount === 0
+      ? "Add a leg from the palette or load the sample spread to inspect strategy evidence."
+      : "Select a canvas leg to inspect payoff contribution, break-even, and editable parameters.",
+    ariaLabel: "Strategy leg detail empty state"
+  };
+}
+
 export function reorderLegs(legs: StrategyLeg[], sourceId: string, targetId: string): StrategyLeg[] {
   if (sourceId === targetId) return legs;
   const sourceIndex = legs.findIndex((leg) => leg.id === sourceId);
@@ -587,6 +672,7 @@ export function buildCanvasLegViewModels(
       isSelected,
       directionTone: leg.direction === "Long" ? "success" : "warning",
       isOption,
+      detailPanelId: STRATEGY_DESIGNER_SELECTED_LEG_DETAIL_PANEL_ID,
       fieldIds: {
         direction: `${fieldIdPrefix}-direction`,
         quantity: `${fieldIdPrefix}-quantity`,
@@ -596,6 +682,8 @@ export function buildCanvasLegViewModels(
       containerAriaLabel: `${leg.label}, ${leg.direction} ${leg.instrument}, leg ${ordinal} of ${legs.length}`,
       selectButtonLabel: isSelected ? "Selected" : "Select",
       selectButtonAriaLabel: `${isSelected ? "Selected" : "Select"} ${leg.label}`,
+      selectButtonAriaControls: STRATEGY_DESIGNER_SELECTED_LEG_DETAIL_PANEL_ID,
+      selectButtonAriaExpanded: isSelected,
       removeButtonAriaLabel: `Remove ${leg.label}`,
       directionAriaLabel: `Direction for ${leg.label}`,
       quantityAriaLabel: `Quantity for ${leg.label}`,
@@ -624,18 +712,26 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
   const [spotPrice, setSpotPriceState] = useState<number>(100);
   const [spotPriceDraft, setSpotPriceDraft] = useState<string>("100");
   const [selectedLegId, setSelectedLegId] = useState<string | null>(null);
+  const [clearCanvasConfirmationPending, setClearCanvasConfirmationPending] = useState(false);
+
+  const clearPendingCanvasConfirmation = useCallback(() => {
+    setClearCanvasConfirmationPending(false);
+  }, []);
 
   const setSpotPrice = useCallback((price: number) => {
     if (!Number.isFinite(price) || price < 0) return;
+    clearPendingCanvasConfirmation();
     setSpotPriceState(price);
     setSpotPriceDraft(price.toString());
-  }, []);
+  }, [clearPendingCanvasConfirmation]);
 
   const updateSpotPriceDraft = useCallback((value: string) => {
+    clearPendingCanvasConfirmation();
     setSpotPriceDraft(value);
-  }, []);
+  }, [clearPendingCanvasConfirmation]);
 
   const commitSpotPriceDraft = useCallback((value?: string) => {
+    clearPendingCanvasConfirmation();
     const nextDraft = value ?? spotPriceDraft;
     const parsed = Number.parseFloat(nextDraft);
     if (Number.isFinite(parsed) && parsed >= 0) {
@@ -645,9 +741,10 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
     }
 
     setSpotPriceDraft(spotPrice.toString());
-  }, [spotPrice, spotPriceDraft]);
+  }, [clearPendingCanvasConfirmation, spotPrice, spotPriceDraft]);
 
   const addLegFromPalette = useCallback((kind: StrategyLegKind): string => {
+    clearPendingCanvasConfirmation();
     const entry = PALETTE.find((item) => item.kind === kind);
     if (!entry) return "";
 
@@ -655,15 +752,17 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
     setLegs((current) => [...current, next]);
     setSelectedLegId(next.id);
     return next.id;
-  }, [legs]);
+  }, [clearPendingCanvasConfirmation, legs]);
 
   const removeLeg = useCallback((id: string) => {
+    clearPendingCanvasConfirmation();
     setLegs((current) => current.filter((leg) => leg.id !== id));
     setSelectedLegId((current) => (current === id ? null : current));
-  }, []);
+  }, [clearPendingCanvasConfirmation]);
 
   const updateLeg = useCallback(
     (id: string, patch: Partial<Pick<StrategyLeg, "quantity" | "strike" | "premium" | "direction">>) => {
+      clearPendingCanvasConfirmation();
       setLegs((current) =>
         current.map((leg) => {
           if (leg.id !== id) return leg;
@@ -687,27 +786,41 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
         })
       );
     },
-    []
+    [clearPendingCanvasConfirmation]
   );
 
   const reorderLeg = useCallback((sourceId: string, targetId: string) => {
+    clearPendingCanvasConfirmation();
     setLegs((current) => reorderLegs(current, sourceId, targetId));
-  }, []);
+  }, [clearPendingCanvasConfirmation]);
 
   const clearCanvas = useCallback(() => {
+    if (legs.length === 0) {
+      setClearCanvasConfirmationPending(false);
+      return;
+    }
+
+    if (!clearCanvasConfirmationPending) {
+      setClearCanvasConfirmationPending(true);
+      return;
+    }
+
+    setClearCanvasConfirmationPending(false);
     setLegs([]);
     setSelectedLegId(null);
-  }, []);
+  }, [clearCanvasConfirmationPending, legs.length]);
 
   const loadSample = useCallback(() => {
+    clearPendingCanvasConfirmation();
     const sample = getStrategyDesignerSampleLegs();
     setLegs(sample);
     setSelectedLegId(sample[0]?.id ?? null);
-  }, []);
+  }, [clearPendingCanvasConfirmation]);
 
   const selectLeg = useCallback((id: string | null) => {
+    clearPendingCanvasConfirmation();
     setSelectedLegId(id);
-  }, []);
+  }, [clearPendingCanvasConfirmation]);
 
   const payoff = useMemo(() => buildPayoffChartViewModel(legs, spotPrice), [legs, spotPrice]);
   const participation = useMemo(() => buildParticipationViewModel(legs, spotPrice), [legs, spotPrice]);
@@ -717,7 +830,16 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
     () => legs.find((leg) => leg.id === selectedLegId) ?? null,
     [legs, selectedLegId]
   );
+  const selectedLegDetail = useMemo(
+    () => buildSelectedLegDetailViewModel(selectedLeg, spotPrice, legs.length),
+    [legs.length, selectedLeg, spotPrice]
+  );
+  const selectedLegDetailEmptyState = useMemo(
+    () => buildSelectedLegDetailEmptyState(legs.length),
+    [legs.length]
+  );
   const clearCanvasDisabled = legs.length === 0;
+  const clearCanvasLegCountLabel = `${legs.length} leg${legs.length === 1 ? "" : "s"}`;
 
   return {
     legs,
@@ -742,10 +864,13 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
     clearCanvas,
     loadSample,
     clearCanvasCommand: {
-      label: "Clear canvas",
-      ariaLabel: "Clear strategy canvas",
+      label: clearCanvasConfirmationPending ? "Confirm clear" : "Clear canvas",
+      ariaLabel: clearCanvasConfirmationPending
+        ? `Confirm clear strategy canvas and remove ${clearCanvasLegCountLabel}`
+        : `Clear strategy canvas. Press again to confirm removing ${clearCanvasLegCountLabel}.`,
       disabled: clearCanvasDisabled,
-      disabledReason: clearCanvasDisabled ? "No strategy legs to clear." : null
+      disabledReason: clearCanvasDisabled ? "No strategy legs to clear." : null,
+      confirmationPending: clearCanvasConfirmationPending
     },
     loadSampleCommand: {
       label: "Load sample",
@@ -767,7 +892,10 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
       "Drop a leg from the palette onto the canvas, or load the sample bull call spread to get started.",
     selectedLegId,
     selectLeg,
-    selectedLeg
+    selectedLeg,
+    selectedLegDetailPanelId: STRATEGY_DESIGNER_SELECTED_LEG_DETAIL_PANEL_ID,
+    selectedLegDetail,
+    selectedLegDetailEmptyState
   };
 }
 
@@ -800,6 +928,13 @@ function formatPnl(value: number): string {
   if (!Number.isFinite(value)) return "—";
   const sign = value > 0 ? "+" : value < 0 ? "−" : "";
   return `${sign}$${Math.abs(value).toFixed(2)}`;
+}
+
+function formatQuantity(value: number): string {
+  if (!Number.isFinite(value)) return "—";
+  return value.toLocaleString(undefined, {
+    maximumFractionDigits: 4
+  });
 }
 
 function formatCurrency(value: number): string {

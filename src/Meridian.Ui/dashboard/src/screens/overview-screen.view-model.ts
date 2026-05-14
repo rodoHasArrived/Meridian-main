@@ -911,6 +911,12 @@ export interface OverviewPositionRow {
   ariaLabel: string;
 }
 
+export interface OverviewPortfolioEmptyAction {
+  href: string;
+  label: string;
+  ariaLabel: string;
+}
+
 export interface OverviewPortfolioPanel {
   hasData: boolean;
   metrics: MetricSnapshot[];
@@ -921,6 +927,7 @@ export interface OverviewPortfolioPanel {
   brokerageLabel: string;
   openOrderCount: number;
   emptyMessage: string;
+  emptyAction: OverviewPortfolioEmptyAction;
 }
 
 export function buildOverviewPortfolioPanel(
@@ -939,7 +946,12 @@ export function buildOverviewPortfolioPanel(
       riskSummary: "",
       brokerageLabel: "—",
       openOrderCount: 0,
-      emptyMessage: "Connect a brokerage account or start a paper session to see your portfolio here."
+      emptyMessage: "Connect a brokerage account or start a paper session to see your portfolio here.",
+      emptyAction: {
+        href: "/settings#alpaca-provider-setup",
+        label: "Connect provider",
+        ariaLabel: "Open Alpaca paper provider setup checklist from the empty portfolio panel"
+      }
     };
   }
 
@@ -1009,6 +1021,11 @@ export function buildOverviewPortfolioPanel(
     riskSummary: source.risk?.summary ?? "",
     brokerageLabel,
     openOrderCount: trading?.openOrders.length ?? 0,
-    emptyMessage: "No open positions. Use the trading cockpit to place your first order."
+    emptyMessage: "No open positions. Use the trading cockpit to place your first order.",
+    emptyAction: {
+      href: "/trading",
+      label: "Open trading cockpit",
+      ariaLabel: "Open Trading cockpit from the empty portfolio positions panel"
+    }
   };
 }

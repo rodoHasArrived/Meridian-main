@@ -22,14 +22,19 @@ import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHead
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import {
+  DATA_BACKFILL_DETAIL_PANEL_ID,
+  DATA_PROVIDER_DETAIL_PANEL_ID,
   useDataOperationsViewModel
 } from "@/screens/data-operations-screen.view-model";
 import type { DataOperationsWorkspaceResponse } from "@/types";
 import type {
   BackfillResultCardState,
+  DataOperationsBackfillDetailState,
   DataOperationsBackfillRow,
   DataOperationsEmptyState,
   DataOperationsLoadingState,
+  DataOperationsProviderDetailState,
+  DataOperationsProviderRow,
   DataOperationsRouteFocusCardState,
   ProviderSetupNextActionState
 } from "@/screens/data-operations-screen.view-model";
@@ -37,6 +42,51 @@ import type {
 interface DataOperationsScreenProps {
   data: DataOperationsWorkspaceResponse | null;
 }
+
+const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] = [
+  {
+    id: "provider",
+    label: "Provider",
+    render: (provider) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{provider.provider}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{provider.capability}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (provider) => (
+      <Badge
+        variant={provider.statusTone === "danger" ? "danger" : provider.statusTone === "warning" ? "warning" : "success"}
+        dot
+      >
+        {provider.status}
+      </Badge>
+    )
+  },
+  {
+    id: "latency",
+    label: "Latency",
+    render: (provider) => <span className="font-mono text-xs text-muted-foreground">{provider.latencyText}</span>
+  },
+  {
+    id: "trust",
+    label: "Trust",
+    render: (provider) => (
+      <span className="block min-w-0">
+        <span className="block font-mono text-xs text-foreground">{provider.trustScoreText}</span>
+        <span className="mt-1 block truncate text-xs text-muted-foreground">{provider.signalSourceText}</span>
+      </span>
+    )
+  },
+  {
+    id: "gate",
+    label: "Gate impact",
+    render: (provider) => <span className="text-xs leading-5 text-muted-foreground">{provider.gateImpactText}</span>
+  }
+];
 
 const backfillQueueColumns: DenseDataTableColumn<DataOperationsBackfillRow>[] = [
   {
@@ -153,8 +203,8 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
         />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-3">
-        <Card aria-labelledby="data-provider-health-title">
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)]">
+        <Card aria-labelledby="data-provider-health-title" className="xl:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -168,41 +218,28 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {vm.providerSection.hasRows ? vm.providerSection.rows.map((provider) => (
-              <div
-                key={provider.provider}
-                role="group"
-                className={cn("rounded-lg border p-3", providerToneClass[provider.statusTone])}
-                aria-label={provider.ariaLabel}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-semibold">{provider.provider}</span>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={provider.statusTone === "danger" ? "danger" : provider.statusTone === "warning" ? "warning" : "success"}
-                      dot
-                    >
-                      {provider.status}
-                    </Badge>
-                    <span className={cn("font-mono text-xs", providerStatusTextClass[provider.statusTone])}>
-                      {provider.latencyText}
-                    </span>
-                  </div>
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">{provider.capability}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{provider.note}</p>
-                <div className="mt-3 grid grid-cols-2 gap-2" aria-label={`${provider.provider} trust evidence`}>
-                  {provider.trustFields.map((field) => (
-                    <FieldTile key={field.id} field={field} />
-                  ))}
-                </div>
-                <div className="mt-3 rounded-md border border-border/60 bg-background/40 px-3 py-2">
-                  <div className="eyebrow-label">Recommended action</div>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{provider.recommendedActionText}</p>
-                  <p className="mt-2 font-mono text-[11px] text-muted-foreground">Reason: {provider.reasonCodeText}</p>
-                </div>
+            {vm.providerSection.hasRows ? (
+              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.42fr)]">
+                <DenseDataTable
+                  columns={providerHealthColumns}
+                  rows={vm.providerSection.rows}
+                  getRowId={(provider) => provider.rowId}
+                  getRowAriaLabel={(provider) => provider.ariaLabel}
+                  getRowSelectAriaLabel={(provider) => provider.selectAriaLabel}
+                  getRowAriaControls={(provider) => provider.detailPanelId}
+                  getRowAriaExpanded={(provider) => provider.expanded}
+                  selectedRowId={vm.providerSection.selectedRowId}
+                  onRowSelect={(provider) => vm.selectProvider(provider.rowId)}
+                  emptyText={vm.providerSection.emptyState.description}
+                  ariaLabel={vm.providerSection.tableLabel}
+                  caption={vm.providerSection.description}
+                />
+                <ProviderDetailPanel
+                  detail={vm.providerSection.selectedDetail}
+                  emptyState={vm.providerSection.detailEmptyState}
+                />
               </div>
-            )) : (
+            ) : (
               <ProviderEmptyState state={vm.providerSection.emptyState} onSetup={vm.openProviderSetup} />
             )}
           </CardContent>
@@ -221,24 +258,30 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {vm.backfillSection.hasRows ? (
-              <DenseDataTable
-                columns={backfillQueueColumns}
-                rows={vm.backfillSection.rows}
-                getRowId={(backfill) => backfill.rowId}
-                getRowAriaLabel={(backfill) => backfill.ariaLabel}
-                getRowSelectAriaLabel={(backfill) => backfill.selectAriaLabel}
-                getRowAriaControls={(backfill) => backfill.detailPanelId}
-                getRowAriaExpanded={(backfill) => backfill.expanded}
-                selectedRowId={vm.selectedBackfillRowId}
-                onRowSelect={(backfill) => vm.selectBackfill(backfill.jobId)}
-                emptyText={vm.backfillSection.emptyState.description}
-                ariaLabel={vm.backfillSection.tableLabel}
-                caption={vm.backfillSection.description}
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.48fr)]">
+              {vm.backfillSection.hasRows ? (
+                <DenseDataTable
+                  columns={backfillQueueColumns}
+                  rows={vm.backfillSection.rows}
+                  getRowId={(backfill) => backfill.rowId}
+                  getRowAriaLabel={(backfill) => backfill.ariaLabel}
+                  getRowSelectAriaLabel={(backfill) => backfill.selectAriaLabel}
+                  getRowAriaControls={(backfill) => backfill.detailPanelId}
+                  getRowAriaExpanded={(backfill) => backfill.expanded}
+                  selectedRowId={vm.selectedBackfillRowId}
+                  onRowSelect={(backfill) => vm.selectBackfill(backfill.jobId)}
+                  emptyText={vm.backfillSection.emptyState.description}
+                  ariaLabel={vm.backfillSection.tableLabel}
+                  caption={vm.backfillSection.description}
+                />
+              ) : (
+                <EmptyState state={vm.backfillSection.emptyState} />
+              )}
+              <BackfillDetailPanel
+                detail={vm.selectedBackfillDetail}
+                emptyState={vm.backfillDetailEmptyState ?? vm.backfillSection.emptyState}
               />
-            ) : (
-              <EmptyState state={vm.backfillSection.emptyState} />
-            )}
+            </div>
           </CardContent>
         </Card>
 
@@ -354,6 +397,122 @@ function ProviderEmptyState({
         Add provider
       </Button>
     </div>
+  );
+}
+
+function ProviderDetailPanel({
+  detail,
+  emptyState
+}: {
+  detail: DataOperationsProviderDetailState | null;
+  emptyState: DataOperationsEmptyState | null;
+}) {
+  if (!detail) {
+    return (
+      <aside
+        id={DATA_PROVIDER_DETAIL_PANEL_ID}
+        role="status"
+        aria-label="Provider detail empty state"
+        className="row-detail-panel h-fit min-w-0"
+      >
+        <div className="eyebrow-label">Provider Detail</div>
+        <h3 className="mt-2 text-sm font-semibold text-foreground">
+          {emptyState?.title ?? "No provider selected"}
+        </h3>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          {emptyState?.description ?? "Select a provider row to inspect trust evidence and recovery guidance."}
+        </p>
+      </aside>
+    );
+  }
+
+  return (
+    <aside
+      id={detail.id}
+      role="region"
+      aria-label={detail.ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="eyebrow-label">Provider Detail</div>
+          <h3 className="mt-2 truncate text-sm font-semibold text-foreground">{detail.title}</h3>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.subtitle}</p>
+        </div>
+        <Badge
+          variant={detail.statusTone === "danger" ? "danger" : detail.statusTone === "warning" ? "warning" : "success"}
+          dot
+        >
+          {detail.status}
+        </Badge>
+      </div>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">{detail.description}</p>
+      <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        {detail.fields.map((field) => (
+          <FieldTile key={field.id} field={field} />
+        ))}
+      </dl>
+      <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
+        <div className="eyebrow-label">Recommended action</div>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.actionText}</p>
+        <p className="mt-2 font-mono text-[11px] text-muted-foreground">Reason: {detail.reasonCodeText}</p>
+        <p className="mt-1 font-mono text-[11px] text-muted-foreground">Gate: {detail.gateImpactText}</p>
+      </div>
+    </aside>
+  );
+}
+
+function BackfillDetailPanel({
+  detail,
+  emptyState
+}: {
+  detail: DataOperationsBackfillDetailState | null;
+  emptyState: DataOperationsEmptyState | null;
+}) {
+  if (!detail) {
+    return (
+      <aside
+        id={DATA_BACKFILL_DETAIL_PANEL_ID}
+        role="status"
+        aria-label="Backfill detail empty state"
+        className="row-detail-panel h-fit min-w-0"
+      >
+        <div className="eyebrow-label">Selected Backfill</div>
+        <h3 className="mt-2 text-sm font-semibold text-foreground">
+          {emptyState?.title ?? "No backfill selected"}
+        </h3>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          {emptyState?.description ?? "Select a backfill row to inspect repair scope, provider, progress, and update evidence."}
+        </p>
+      </aside>
+    );
+  }
+
+  return (
+    <aside
+      id={detail.id}
+      role="region"
+      aria-label={detail.ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="eyebrow-label">Selected Backfill</div>
+          <h3 className="mt-2 text-sm font-semibold text-foreground">{detail.title}</h3>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail.description}</p>
+        </div>
+        <Badge variant={detail.statusVariant} dot>
+          {detail.statusLabel}
+        </Badge>
+      </div>
+      <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        {detail.rows.map((field) => (
+          <FieldTile key={field.id} field={field} />
+        ))}
+      </dl>
+    </aside>
   );
 }
 
@@ -550,8 +709,14 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
             )}
 
             <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button variant="outline" onClick={vm.closeProviderSetup} disabled={vm.providerPhase === "submitting"}>
-                Cancel
+              <Button
+                variant="outline"
+                onClick={vm.closeProviderSetup}
+                disabled={vm.providerSetupDialogState.cancelAction.disabled}
+                disabledReason={vm.providerSetupDialogState.cancelAction.disabledReason}
+                aria-label={vm.providerSetupDialogState.cancelAction.ariaLabel}
+              >
+                {vm.providerSetupDialogState.cancelAction.label}
               </Button>
               <Button
                 onClick={() => void vm.submitProviderSetup()}
@@ -850,18 +1015,6 @@ function FieldTile({ field }: { field: { id: string; label: string; value: strin
     </div>
   );
 }
-
-const providerToneClass: Record<"success" | "warning" | "danger", string> = {
-  success: "border-border/70 bg-secondary/20",
-  warning: "border-warning/35 bg-warning/5",
-  danger: "border-danger/35 bg-danger/5",
-};
-
-const providerStatusTextClass: Record<"success" | "warning" | "danger", string> = {
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger",
-};
 
 const resultToneClass: Record<BackfillResultCardState["tone"], string> = {
   warning: "border-warning/35 bg-warning/10 text-warning",
