@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
-using Meridian.Core.Exceptions;
+using Meridian.Application.Exceptions;
 using Meridian.Ui.Shared.Contracts;
 using Meridian.Ui.Shared.Services.CoveredCall;
 using Microsoft.AspNetCore.Builder;
