@@ -238,13 +238,14 @@ describe("trading endpoint wiring", () => {
   });
 
   it("wires Alpaca brokerage connection endpoints", async () => {
+    const controller = new AbortController();
     await getAlpacaConnectionStatus();
     await connectAlpacaConnection({
       keyId: "paper-key",
       secretKey: "paper-secret",
       environment: "paper"
-    });
-    await revokeAlpacaConnection();
+    }, { signal: controller.signal });
+    await revokeAlpacaConnection({ signal: controller.signal });
     await getBrokerageHouseholdPortfolio();
 
     expect(fetchMock).toHaveBeenCalledWith("/api/brokerage-connections/alpaca/status", expect.anything());
@@ -252,6 +253,7 @@ describe("trading endpoint wiring", () => {
       "/api/brokerage-connections/alpaca/connect",
       expect.objectContaining({
         method: "POST",
+        signal: controller.signal,
         body: JSON.stringify({
           keyId: "paper-key",
           secretKey: "paper-secret",
@@ -261,7 +263,7 @@ describe("trading endpoint wiring", () => {
     );
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/brokerage-connections/alpaca",
-      expect.objectContaining({ method: "DELETE" })
+      expect.objectContaining({ method: "DELETE", signal: controller.signal })
     );
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/household?provider=alpaca", expect.anything());
   });

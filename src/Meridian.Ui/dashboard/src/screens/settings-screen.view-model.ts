@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { connectAlpacaConnection, revokeAlpacaConnection } from "@/lib/api";
+import type { ApiRequestOptions } from "@/lib/api";
 import {
   BACKFILL_API_ENDPOINTS,
   CONFIG_API_ENDPOINTS,
@@ -131,8 +132,8 @@ export interface SettingsAlpacaConnectionFormViewModel extends SettingsAlpacaCon
 }
 
 interface SettingsAlpacaConnectionDependencies {
-  connectConnection?: (request: AlpacaBrokerageConnectionRequest) => Promise<BrokerageConnectionStatus>;
-  revokeConnection?: () => Promise<BrokerageConnectionStatus>;
+  connectConnection?: (request: AlpacaBrokerageConnectionRequest, options?: ApiRequestOptions) => Promise<BrokerageConnectionStatus>;
+  revokeConnection?: (options?: ApiRequestOptions) => Promise<BrokerageConnectionStatus>;
 }
 
 const emptyAlpacaConnectionForm: SettingsAlpacaConnectionFormState = {
@@ -334,11 +335,13 @@ export function useAlpacaConnectionFormViewModel({
   const [form, setForm] = useState<SettingsAlpacaConnectionFormState>(emptyAlpacaConnectionForm);
   const mountedRef = useRef(true);
   const actionRevisionRef = useRef(0);
+  const actionAbortRef = useRef<AbortController | null>(null);
   const command = buildAlpacaConnectionCommandState({ form, canClear });
 
   useEffect(() => () => {
     mountedRef.current = false;
     actionRevisionRef.current += 1;
+    actionAbortRef.current?.abort();
   }, []);
 
   const setKeyId = (keyId: string) => {
@@ -375,6 +378,9 @@ export function useAlpacaConnectionFormViewModel({
 
     const revision = actionRevisionRef.current + 1;
     actionRevisionRef.current = revision;
+    actionAbortRef.current?.abort();
+    const controller = new AbortController();
+    actionAbortRef.current = controller;
     setForm({ ...submittedForm, busyAction: "connect" });
 
     try {
@@ -382,7 +388,7 @@ export function useAlpacaConnectionFormViewModel({
         keyId: form.keyId.trim(),
         secretKey: form.secretKey.trim(),
         environment: form.environment
-      });
+      }, { signal: controller.signal });
       if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
         return;
       }
@@ -413,6 +419,10 @@ export function useAlpacaConnectionFormViewModel({
         actionMessage: err instanceof Error ? err.message : "Alpaca connection request failed.",
         actionTone: "danger"
       }));
+    } finally {
+      if (actionAbortRef.current === controller) {
+        actionAbortRef.current = null;
+      }
     }
   };
 
@@ -424,10 +434,13 @@ export function useAlpacaConnectionFormViewModel({
 
     const revision = actionRevisionRef.current + 1;
     actionRevisionRef.current = revision;
+    actionAbortRef.current?.abort();
+    const controller = new AbortController();
+    actionAbortRef.current = controller;
     setForm((current) => ({ ...current, busyAction: "clear", actionMessage: null, actionTone: "default" }));
 
     try {
-      await revokeConnection();
+      await revokeConnection({ signal: controller.signal });
       if (!isActiveAction(mountedRef, actionRevisionRef, revision)) {
         return;
       }
@@ -453,6 +466,10 @@ export function useAlpacaConnectionFormViewModel({
         actionMessage: err instanceof Error ? err.message : "Alpaca clear request failed.",
         actionTone: "danger"
       }));
+    } finally {
+      if (actionAbortRef.current === controller) {
+        actionAbortRef.current = null;
+      }
     }
   };
 

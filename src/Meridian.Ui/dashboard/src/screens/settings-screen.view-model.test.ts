@@ -705,6 +705,54 @@ describe("buildSettingsScreenViewModel", () => {
 
     expect(onRefresh).not.toHaveBeenCalled();
   });
+
+  it("passes an abort signal through Alpaca credential connect and aborts it on unmount", async () => {
+    const connectResult = deferred<BrokerageConnectionStatus>();
+    const connectConnection = vi.fn().mockReturnValue(connectResult.promise);
+    const { result, unmount } = renderHook(() => useAlpacaConnectionFormViewModel({
+      canClear: false,
+      connectConnection
+    }));
+
+    act(() => {
+      result.current.setKeyId("paper-key");
+      result.current.setSecretKey("paper-secret");
+    });
+    await act(async () => {
+      void result.current.connect({ preventDefault: vi.fn() } as never);
+    });
+    await waitFor(() => expect(connectConnection).toHaveBeenCalledTimes(1));
+
+    const options = connectConnection.mock.calls[0]?.[1] as { signal?: AbortSignal };
+    expect(options.signal).toBeInstanceOf(AbortSignal);
+    expect(options.signal?.aborted).toBe(false);
+
+    unmount();
+
+    expect(options.signal?.aborted).toBe(true);
+  });
+
+  it("passes an abort signal through Alpaca credential clear and aborts it on unmount", async () => {
+    const clearResult = deferred<BrokerageConnectionStatus>();
+    const revokeConnection = vi.fn().mockReturnValue(clearResult.promise);
+    const { result, unmount } = renderHook(() => useAlpacaConnectionFormViewModel({
+      canClear: true,
+      revokeConnection
+    }));
+
+    await act(async () => {
+      void result.current.clear();
+    });
+    await waitFor(() => expect(revokeConnection).toHaveBeenCalledTimes(1));
+
+    const options = revokeConnection.mock.calls[0]?.[0] as { signal?: AbortSignal };
+    expect(options.signal).toBeInstanceOf(AbortSignal);
+    expect(options.signal?.aborted).toBe(false);
+
+    unmount();
+
+    expect(options.signal?.aborted).toBe(true);
+  });
 });
 
 function deferred<T>() {

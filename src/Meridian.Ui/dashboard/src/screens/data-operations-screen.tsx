@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
+  DATA_EXPORT_DETAIL_PANEL_ID,
   DATA_PROVIDER_DETAIL_PANEL_ID,
   useDataOperationsViewModel
 } from "@/screens/data-operations-screen.view-model";
@@ -32,6 +33,8 @@ import type {
   DataOperationsBackfillDetailState,
   DataOperationsBackfillRow,
   DataOperationsEmptyState,
+  DataOperationsExportDetailState,
+  DataOperationsExportRow,
   DataOperationsLoadingState,
   DataOperationsProviderDetailState,
   DataOperationsProviderRow,
@@ -131,6 +134,40 @@ const backfillQueueColumns: DenseDataTableColumn<DataOperationsBackfillRow>[] = 
     id: "updated",
     label: "Updated",
     render: (backfill) => <span className="font-mono text-xs text-muted-foreground">{backfill.updatedAt}</span>
+  }
+];
+
+const exportColumns: DenseDataTableColumn<DataOperationsExportRow>[] = [
+  {
+    id: "profile",
+    label: "Profile",
+    render: (item) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{item.profile}</span>
+        <span className="mt-1 block font-mono text-xs text-muted-foreground">{item.exportId}</span>
+      </span>
+    )
+  },
+  {
+    id: "target",
+    label: "Target",
+    render: (item) => <span className="text-muted-foreground">{item.target}</span>
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (item) => <Badge variant={item.statusVariant} dot>{item.statusLabel}</Badge>
+  },
+  {
+    id: "rows",
+    label: "Rows",
+    align: "right",
+    render: (item) => <span className="font-mono text-xs text-foreground">{item.rows}</span>
+  },
+  {
+    id: "updated",
+    label: "Updated",
+    render: (item) => <span className="font-mono text-xs text-muted-foreground">{item.updatedAt}</span>
   }
 ];
 
@@ -290,34 +327,31 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
             <CardTitle id="data-recent-exports-title">Recent exports</CardTitle>
             <CardDescription>Latest package and reporting outputs tied to data operations evidence.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {vm.exportSection.hasRows ? vm.exportSection.rows.map((item) => (
-              <div
-                key={item.exportId}
-                role="group"
-                className={cn("rounded-md border p-3", exportToneClass[item.statusTone])}
-                aria-label={item.ariaLabel}
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <span className="font-semibold">{item.profile}</span>
-                    <p className="mt-1 text-sm text-muted-foreground">{item.summaryText}</p>
-                  </div>
-                  <Badge variant={item.statusVariant} dot>{item.statusLabel}</Badge>
-                </div>
-                <dl className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {item.detailFields.map((field) => (
-                    <FieldTile key={field.id} field={field} />
-                  ))}
-                </dl>
-                <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
-                  <div className="eyebrow-label">Next action</div>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.actionText}</p>
-                </div>
-              </div>
-            )) : (
-              <EmptyState state={vm.exportSection.emptyState} />
-            )}
+          <CardContent>
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.48fr)]">
+              {vm.exportSection.hasRows ? (
+                <DenseDataTable
+                  columns={exportColumns}
+                  rows={vm.exportSection.rows}
+                  getRowId={(item) => item.rowId}
+                  getRowAriaLabel={(item) => item.ariaLabel}
+                  getRowSelectAriaLabel={(item) => item.selectAriaLabel}
+                  getRowAriaControls={(item) => item.detailPanelId}
+                  getRowAriaExpanded={(item) => item.expanded}
+                  selectedRowId={vm.exportSection.selectedRowId}
+                  onRowSelect={(item) => vm.selectExport(item.exportId)}
+                  emptyText={vm.exportSection.emptyState.description}
+                  ariaLabel={vm.exportSection.tableLabel}
+                  caption={vm.exportSection.description}
+                />
+              ) : (
+                <EmptyState state={vm.exportSection.emptyState} />
+              )}
+              <ExportDetailPanel
+                detail={vm.exportSection.selectedDetail}
+                emptyState={vm.exportSection.detailEmptyState ?? vm.exportSection.emptyState}
+              />
+            </div>
           </CardContent>
         </Card>
       </section>
@@ -512,6 +546,64 @@ function BackfillDetailPanel({
           <FieldTile key={field.id} field={field} />
         ))}
       </dl>
+    </aside>
+  );
+}
+
+function ExportDetailPanel({
+  detail,
+  emptyState
+}: {
+  detail: DataOperationsExportDetailState | null;
+  emptyState: DataOperationsEmptyState | null;
+}) {
+  if (!detail) {
+    return (
+      <aside
+        id={DATA_EXPORT_DETAIL_PANEL_ID}
+        role="status"
+        aria-label="Export detail empty state"
+        className="row-detail-panel h-fit min-w-0"
+      >
+        <div className="eyebrow-label">Selected Export</div>
+        <h3 className="mt-2 text-sm font-semibold text-foreground">
+          {emptyState?.title ?? "No export selected"}
+        </h3>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          {emptyState?.description ?? "Select an export row to inspect readiness, target, row count, and handoff guidance."}
+        </p>
+      </aside>
+    );
+  }
+
+  return (
+    <aside
+      id={detail.id}
+      role="region"
+      aria-label={detail.ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="eyebrow-label">Selected Export</div>
+          <h3 className="mt-2 truncate text-sm font-semibold text-foreground">{detail.title}</h3>
+          <p className="mt-1 break-words font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+        </div>
+        <Badge variant={detail.statusVariant} dot>
+          {detail.statusLabel}
+        </Badge>
+      </div>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">{detail.description}</p>
+      <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+        {detail.fields.map((field) => (
+          <FieldTile key={field.id} field={field} />
+        ))}
+      </dl>
+      <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
+        <div className="eyebrow-label">Next action</div>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.actionText}</p>
+      </div>
     </aside>
   );
 }
@@ -1021,12 +1113,6 @@ const resultToneClass: Record<BackfillResultCardState["tone"], string> = {
   success: "border-success/35 bg-success/10 text-success",
   danger: "border-danger/35 bg-danger/10 text-danger"
 };
-
-const exportToneClass = {
-  success: "border-success/30 bg-success/5",
-  warning: "border-warning/30 bg-warning/5",
-  paper: "border-paper/30 bg-paper/5"
-} as const;
 
 function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
   return (

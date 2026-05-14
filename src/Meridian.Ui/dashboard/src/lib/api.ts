@@ -233,6 +233,14 @@ async function postJson<T>(path: string, body?: unknown, options: ApiRequestOpti
   return readJsonResponse<T>(path, response);
 }
 
+export function apiGetJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  return getJson<T>(path, options);
+}
+
+export function apiPostJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
+  return postJson<T>(path, body, options);
+}
+
 async function putJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
   const response = await fetch(path, {
     method: "PUT",
@@ -1160,12 +1168,15 @@ export function getAlpacaConnectionStatus(options: ApiRequestOptions = {}) {
   return getJson<BrokerageConnectionStatus>(brokerageConnectionStatusEndpoint("alpaca"), options);
 }
 
-export function connectAlpacaConnection(request: AlpacaBrokerageConnectionRequest) {
-  return postJson<BrokerageConnectionStatus>(brokerageConnectionConnectEndpoint("alpaca"), request);
+export function connectAlpacaConnection(
+  request: AlpacaBrokerageConnectionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<BrokerageConnectionStatus>(brokerageConnectionConnectEndpoint("alpaca"), request, options);
 }
 
-export function revokeAlpacaConnection() {
-  return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("alpaca"));
+export function revokeAlpacaConnection(options: ApiRequestOptions = {}) {
+  return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("alpaca"), options);
 }
 
 export function getBrokerageHouseholdPortfolio(provider = "alpaca", options: ApiRequestOptions = {}) {

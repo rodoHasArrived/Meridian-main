@@ -147,6 +147,14 @@ export interface DataOperationsBackfillSectionState extends DataOperationsSectio
   description: string;
 }
 
+export interface DataOperationsExportSectionState extends DataOperationsSectionState<DataOperationsExportRow> {
+  tableLabel: string;
+  description: string;
+  selectedRowId: string | null;
+  selectedDetail: DataOperationsExportDetailState | null;
+  detailEmptyState: DataOperationsEmptyState | null;
+}
+
 export interface DataOperationsProviderSectionState extends DataOperationsSectionState<DataOperationsProviderRow> {
   tableLabel: string;
   description: string;
@@ -229,6 +237,8 @@ export interface DataOperationsProviderDetailState {
 
 export interface DataOperationsExportRow {
   exportId: string;
+  rowId: string;
+  detailPanelId: string;
   profile: string;
   target: string;
   status: DataOperationsExportRecord["status"];
@@ -240,13 +250,29 @@ export interface DataOperationsExportRow {
   summaryText: string;
   detailFields: DataOperationsDetailField[];
   actionText: string;
+  selected: boolean;
+  expanded: boolean;
   ariaLabel: string;
+  selectAriaLabel: string;
+  detailDescription: string;
+}
+
+export interface DataOperationsExportDetailState {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  ariaLabel: string;
+  statusLabel: DataOperationsExportRecord["status"];
+  statusVariant: "success" | "warning" | "paper";
+  fields: DataOperationsDetailField[];
+  actionText: string;
 }
 
 export interface DataOperationsPresentationState {
   providerSection: DataOperationsProviderSectionState;
   backfillSection: DataOperationsBackfillSectionState;
-  exportSection: DataOperationsSectionState<DataOperationsExportRow>;
+  exportSection: DataOperationsExportSectionState;
   selectedBackfillDetail: DataOperationsBackfillDetailState | null;
   backfillDetailEmptyState: DataOperationsEmptyState | null;
   routeFocusCard: DataOperationsRouteFocusCardState;
@@ -509,6 +535,7 @@ const defaultBackfillForm: BackfillFormState = {
 
 export const DATA_BACKFILL_DETAIL_PANEL_ID = "data-backfill-detail-panel";
 export const DATA_BACKFILL_ROUTE_FOCUS_CARD_ID = "data-backfill-route-focus";
+export const DATA_EXPORT_DETAIL_PANEL_ID = "data-export-detail-panel";
 export const DATA_PROVIDER_DETAIL_PANEL_ID = "data-provider-detail-panel";
 
 export function useDataOperationsViewModel(
@@ -518,6 +545,7 @@ export function useDataOperationsViewModel(
 ) {
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [selectedBackfillId, setSelectedBackfillId] = useState<string | null>(null);
+  const [selectedExportId, setSelectedExportId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
   const [preview, setPreview] = useState<BackfillTriggerResult | null>(null);
@@ -570,9 +598,19 @@ export function useDataOperationsViewModel(
     () => resolveSelectedBackfill(data?.backfills ?? [], selectedBackfillId),
     [data, selectedBackfillId]
   );
+  const selectedExport = useMemo(
+    () => resolveSelectedExport(data?.exports ?? [], selectedExportId),
+    [data, selectedExportId]
+  );
   const presentation = useMemo(
-    () => buildDataOperationsPresentationState(data, selectedBackfill?.jobId ?? null, workstream, selectedProviderRowId),
-    [data, selectedBackfill?.jobId, selectedProviderRowId, workstream]
+    () => buildDataOperationsPresentationState(
+      data,
+      selectedBackfill?.jobId ?? null,
+      workstream,
+      selectedProviderRowId,
+      selectedExport?.exportId ?? null
+    ),
+    [data, selectedBackfill?.jobId, selectedExport?.exportId, selectedProviderRowId, workstream]
   );
   const loadingState = useMemo(
     () => buildDataOperationsLoadingState(workstream),
@@ -796,6 +834,10 @@ export function useDataOperationsViewModel(
     selectedBackfillId,
     selectedBackfillRowId: selectedBackfill ? buildBackfillRowId(selectedBackfill.jobId) : null,
     selectBackfill: setSelectedBackfillId,
+    selectedExport,
+    selectedExportId,
+    selectedExportRowId: selectedExport ? buildExportRowId(selectedExport.exportId) : null,
+    selectExport: setSelectedExportId,
     ...presentation,
     dialogOpen,
     openBackfillDialog,
@@ -877,7 +919,8 @@ export function buildDataOperationsPresentationState(
   data: DataOperationsWorkspaceResponse | null,
   selectedBackfillId: string | null,
   workstream: "overview" | "backfills" = "overview",
-  selectedProviderId: string | null = null
+  selectedProviderId: string | null = null,
+  selectedExportId: string | null = null
 ): DataOperationsPresentationState {
   const providers = data?.providers ?? [];
   const backfills = data?.backfills ?? [];
@@ -893,7 +936,7 @@ export function buildDataOperationsPresentationState(
   return {
     providerSection: buildProviderSection(providers, selectedProviderId),
     backfillSection: buildBackfillSection(backfills, selectedBackfillId, workstream),
-    exportSection: buildExportSection(exports),
+    exportSection: buildExportSection(exports, selectedExportId),
     selectedBackfillDetail,
     backfillDetailEmptyState,
     routeFocusCard: buildRouteFocusCardState({
@@ -1156,13 +1199,19 @@ export function buildSelectedBackfillDetail(
 }
 
 export function buildExportSection(
-  exports: DataOperationsExportRecord[]
-): DataOperationsSectionState<DataOperationsExportRow> {
+  exports: DataOperationsExportRecord[],
+  selectedExportId: string | null = null
+): DataOperationsExportSectionState {
+  const selectedExport = resolveSelectedExport(exports, selectedExportId);
+  const selectedRowId = selectedExport ? buildExportRowId(selectedExport.exportId) : null;
+
   return {
     rows: exports.map((item) => {
       const statusVariant = exportStatusVariant(item.status);
       const actionText = exportActionText(item.status);
       const summaryText = `${item.target} · ${item.rows} · ${item.updatedAt}`;
+      const rowId = buildExportRowId(item.exportId);
+      const selected = rowId === selectedRowId;
       const detailFields = [
         { id: "export-id", label: "Export ID", value: item.exportId },
         { id: "target", label: "Target", value: item.target },
@@ -1172,6 +1221,8 @@ export function buildExportSection(
 
       return {
         exportId: item.exportId,
+        rowId,
+        detailPanelId: DATA_EXPORT_DETAIL_PANEL_ID,
         profile: item.profile,
         target: item.target,
         status: item.status,
@@ -1183,20 +1234,67 @@ export function buildExportSection(
         summaryText,
         detailFields,
         actionText,
+        selected,
+        expanded: selected,
         ariaLabel: [
-          `${item.profile} export ${item.status}`,
+          `${selected ? "Selected" : "Inspect"} export ${item.exportId}: ${item.profile} ${item.status}`,
           `Target ${item.target}`,
           `Rows ${item.rows}`,
           `Updated ${item.updatedAt}`,
           `Next action ${actionText}`
-        ].join(". ")
+        ].join(". "),
+        selectAriaLabel: `Inspect export ${item.exportId}`,
+        detailDescription: selected
+          ? "This export detail panel is expanded."
+          : "Select this export row to update the export detail panel."
       };
     }),
     hasRows: exports.length > 0,
     emptyState: {
       title: "No exports available",
       description: "Generated packages and reporting outputs will appear here with target, row count, and readiness status."
-    }
+    },
+    tableLabel: "Recent exports",
+    description: "Latest package and reporting outputs tied to data operations evidence",
+    selectedRowId,
+    selectedDetail: buildSelectedExportDetail(exports, selectedExport?.exportId ?? null),
+    detailEmptyState: exports.length === 0
+      ? {
+          title: "No export selected",
+          description: "Generated packages and governed export evidence will appear here after a report or package job runs."
+        }
+      : null
+  };
+}
+
+export function buildSelectedExportDetail(
+  exports: DataOperationsExportRecord[],
+  selectedExportId: string | null
+): DataOperationsExportDetailState | null {
+  const selected = resolveSelectedExport(exports, selectedExportId);
+
+  if (!selected) {
+    return null;
+  }
+
+  const actionText = exportActionText(selected.status);
+  const description = `${selected.profile} export targets ${selected.target} with ${selected.rows} rows. ${actionText}`;
+
+  return {
+    id: DATA_EXPORT_DETAIL_PANEL_ID,
+    title: selected.profile,
+    subtitle: `${selected.exportId} · ${selected.target}`,
+    description,
+    ariaLabel: `Export detail for ${selected.exportId}: ${selected.profile} ${selected.status}. ${actionText}`,
+    statusLabel: selected.status,
+    statusVariant: exportStatusVariant(selected.status),
+    fields: [
+      { id: "export-id", label: "Export ID", value: selected.exportId },
+      { id: "target", label: "Target", value: selected.target },
+      { id: "rows", label: "Rows", value: selected.rows },
+      { id: "updated", label: "Updated", value: selected.updatedAt }
+    ],
+    actionText
   };
 }
 
@@ -1238,6 +1336,15 @@ export function resolveSelectedBackfill(
   selectedBackfillId: string | null
 ): DataOperationsBackfillRecord | null {
   return backfills.find((job) => job.jobId === selectedBackfillId) ?? backfills[0] ?? null;
+}
+
+export function resolveSelectedExport(
+  exports: DataOperationsExportRecord[],
+  selectedExportId: string | null
+): DataOperationsExportRecord | null {
+  return exports.find((item) => (
+    item.exportId === selectedExportId || buildExportRowId(item.exportId) === selectedExportId
+  )) ?? exports[0] ?? null;
 }
 
 export function buildBackfillTriggerState({
@@ -1734,6 +1841,10 @@ function formatUtcMinute(date: Date): string {
 
 function buildBackfillRowId(jobId: string): string {
   return `backfill-row-${toDomId(jobId)}`;
+}
+
+function buildExportRowId(exportId: string): string {
+  return `export-row-${toDomId(exportId)}`;
 }
 
 function buildProviderRowId(provider: string): string {

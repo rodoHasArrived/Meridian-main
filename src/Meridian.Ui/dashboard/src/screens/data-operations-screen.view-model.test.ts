@@ -4,6 +4,7 @@ import * as workstationApi from "@/lib/api";
 import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
+  DATA_EXPORT_DETAIL_PANEL_ID,
   buildBackfillSection,
   buildBackfillDialogState,
   buildBackfillProviderOptions,
@@ -19,12 +20,14 @@ import {
   buildProviderSetupDialogState,
   buildProviderSetupSuccessActions,
   buildRouteFocusCardState,
+  buildSelectedExportDetail,
   buildSelectedProviderDetail,
   clearProviderSetupCredentials,
   buildSelectedBackfillDetail,
   resolveDataOperationsWorkstream,
   resolveSelectedProvider,
   resolveSelectedBackfill,
+  resolveSelectedExport,
   useDataOperationsViewModel,
   validateBackfillForm,
   validateProviderSetupForm,
@@ -426,8 +429,15 @@ describe("data-operations-screen view model", () => {
     expect(buildBackfillSection([], null, "backfills").emptyState.description).toContain("Trigger backfill");
 
     const exportSection = buildExportSection(exports);
+    expect(exportSection.tableLabel).toBe("Recent exports");
+    expect(exportSection.description).toBe("Latest package and reporting outputs tied to data operations evidence");
+    expect(exportSection.selectedRowId).toBe("export-row-ex-2201");
     expect(exportSection.rows[0].summaryText).toBe("research pack · 124k · 4m ago");
     expect(exportSection.rows[0].statusVariant).toBe("success");
+    expect(exportSection.rows[0].selected).toBe(true);
+    expect(exportSection.rows[0].expanded).toBe(true);
+    expect(exportSection.rows[0].detailPanelId).toBe(DATA_EXPORT_DETAIL_PANEL_ID);
+    expect(exportSection.rows[0].selectAriaLabel).toBe("Inspect export EX-2201");
     expect(exportSection.rows[0].detailFields).toContainEqual({
       id: "export-id",
       label: "Export ID",
@@ -435,7 +445,41 @@ describe("data-operations-screen view model", () => {
     });
     expect(exportSection.rows[0].actionText).toContain("Attach export");
     expect(exportSection.rows[0].ariaLabel).toContain("Next action Attach export");
+    expect(exportSection.selectedDetail?.id).toBe(DATA_EXPORT_DETAIL_PANEL_ID);
+    expect(exportSection.selectedDetail?.actionText).toContain("Attach export");
     expect(buildExportSection([]).emptyState.title).toBe("No exports available");
+    expect(buildExportSection([]).detailEmptyState?.title).toBe("No export selected");
+  });
+
+  it("selects export detail rows by export id or table row id", () => {
+    const exportRecords: DataOperationsExportRecord[] = [
+      ...exports,
+      {
+        exportId: "EX-2202",
+        profile: "report-pack",
+        target: "board packet",
+        status: "Attention",
+        rows: "42k",
+        updatedAt: "9m ago"
+      }
+    ];
+
+    expect(resolveSelectedExport(exportRecords, "EX-2202")?.profile).toBe("report-pack");
+    expect(resolveSelectedExport(exportRecords, "export-row-ex-2202")?.profile).toBe("report-pack");
+
+    const exportSection = buildExportSection(exportRecords, "export-row-ex-2202");
+    expect(exportSection.selectedRowId).toBe("export-row-ex-2202");
+    expect(exportSection.rows[0].selected).toBe(false);
+    expect(exportSection.rows[1].selected).toBe(true);
+    expect(exportSection.rows[1].expanded).toBe(true);
+    expect(exportSection.rows[1].ariaLabel).toContain("Selected export EX-2202");
+    expect(exportSection.rows[1].detailDescription).toContain("detail panel is expanded");
+
+    const detail = buildSelectedExportDetail(exportRecords, "export-row-ex-2202");
+    expect(detail?.ariaLabel).toContain("Export detail for EX-2202");
+    expect(detail?.statusVariant).toBe("warning");
+    expect(detail?.fields).toContainEqual({ id: "rows", label: "Rows", value: "42k" });
+    expect(detail?.actionText).toBe("Review export profile and target before report-pack use.");
   });
 
   it("selects provider detail rows by provider name or table row id", () => {
@@ -791,6 +835,8 @@ describe("data-operations-screen view model", () => {
     expect(presentation.providerSection.hasRows).toBe(false);
     expect(presentation.backfillSection.hasRows).toBe(false);
     expect(presentation.exportSection.hasRows).toBe(false);
+    expect(presentation.exportSection.selectedDetail).toBeNull();
+    expect(presentation.exportSection.detailEmptyState?.title).toBe("No export selected");
     expect(presentation.selectedBackfillDetail).toBeNull();
     expect(presentation.backfillDetailEmptyState?.title).toBe("No backfill activity yet");
     expect(presentation.routeFocusCard).toMatchObject({

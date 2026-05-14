@@ -5,6 +5,7 @@ import * as api from "@/lib/api";
 import { DataOperationsScreen } from "@/screens/data-operations-screen";
 import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
+  DATA_EXPORT_DETAIL_PANEL_ID,
   DATA_PROVIDER_DETAIL_PANEL_ID
 } from "@/screens/data-operations-screen.view-model";
 import { renderWithRouter } from "@/test/render";
@@ -106,11 +107,18 @@ describe("DataOperationsScreen", () => {
     expect(backfillDetail).toHaveAttribute("id", DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(within(backfillDetail).getByText("US equities / 30d")).toBeInTheDocument();
     expect(within(backfillDetail).getByText(/Replay is currently advancing/i)).toBeInTheDocument();
-    const exportRow = screen.getByRole("group", { name: /python-pandas export ready/i });
-    expect(exportRow).toHaveTextContent("EX-2201");
-    expect(exportRow).toHaveTextContent("research pack · 124k · 4m ago");
-    expect(exportRow).toHaveTextContent("Next action");
-    expect(exportRow).toHaveTextContent("Attach export to the report pack");
+    const exportTable = screen.getByRole("table", { name: "Recent exports" });
+    expect(exportTable).toBeInTheDocument();
+    const exportRow = screen.getByRole("row", { name: "Inspect export EX-2201" });
+    expect(exportRow).toHaveAttribute("aria-selected", "true");
+    expect(exportRow).toHaveAttribute("aria-expanded", "true");
+    expect(exportRow).toHaveAttribute("aria-controls", DATA_EXPORT_DETAIL_PANEL_ID);
+    const exportDetail = screen.getByRole("region", { name: /export detail for EX-2201/i });
+    expect(exportDetail).toHaveAttribute("id", DATA_EXPORT_DETAIL_PANEL_ID);
+    expect(within(exportDetail).getByText("python-pandas")).toBeInTheDocument();
+    expect(within(exportDetail).getByText("research pack")).toBeInTheDocument();
+    expect(within(exportDetail).getByText("Next action")).toBeInTheDocument();
+    expect(within(exportDetail).getByText("Attach export to the report pack or hand off the package.")).toBeInTheDocument();
   });
 
   it("renders explicit empty guidance when provider, backfill, and export arrays are empty", () => {
@@ -306,6 +314,43 @@ describe("DataOperationsScreen", () => {
 
     expect(reviewBackfill).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("region", { name: /backfill detail for BF-1044/i })).toBeInTheDocument();
+  });
+
+  it("switches the export detail panel from keyboard row selection", async () => {
+    const user = userEvent.setup();
+    const exportData: DataOperationsWorkspaceResponse = {
+      ...data,
+      exports: [
+        ...data.exports,
+        {
+          exportId: "EX-2202",
+          profile: "report-pack",
+          target: "board packet",
+          status: "Attention",
+          rows: "42k",
+          updatedAt: "9m ago"
+        }
+      ]
+    };
+
+    renderWithRouter(<DataOperationsScreen data={exportData} />, { initialEntries: ["/data"] });
+
+    const readyExport = screen.getByRole("row", { name: "Inspect export EX-2201" });
+    const attentionExport = screen.getByRole("row", { name: "Inspect export EX-2202" });
+
+    expect(readyExport).toHaveAttribute("aria-selected", "true");
+    expect(attentionExport).toHaveAttribute("aria-expanded", "false");
+    expect(attentionExport).toHaveAttribute("aria-controls", DATA_EXPORT_DETAIL_PANEL_ID);
+
+    attentionExport.focus();
+    await user.keyboard("{Enter}");
+
+    expect(attentionExport).toHaveAttribute("aria-selected", "true");
+    expect(attentionExport).toHaveAttribute("aria-expanded", "true");
+    expect(readyExport).toHaveAttribute("aria-expanded", "false");
+    const detail = screen.getByRole("region", { name: /export detail for EX-2202/i });
+    expect(detail).toHaveTextContent("report-pack");
+    expect(detail).toHaveTextContent("Review export profile and target before report-pack use.");
   });
 
   it("opens the trigger backfill dialog when the Trigger backfill button is clicked", async () => {
