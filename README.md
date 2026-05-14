@@ -6882,15 +6882,20 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── command-palette-alpaca-setup-smoke.png
 │   │       │       │   ├── command-palette-hash-aware-smoke.png
 │   │       │       │   ├── covered-call-chain-dense-table-smoke.png
+│   │       │       │   ├── covered-call-command-feedback-smoke.png
 │   │       │       │   ├── covered-call-history-dense-table-smoke.png
 │   │       │       │   ├── covered-call-history-loading-smoke.png
 │   │       │       │   ├── covered-call-history-open-guard-smoke.png
+│   │       │       │   ├── covered-call-results-handoff-smoke.png
+│   │       │       │   ├── covered-call-stage-navigation-smoke.png
 │   │       │       │   ├── evidence-manifest-action-smoke.png
 │   │       │       │   ├── live-quotes-order-readiness-handoff-smoke.png
 │   │       │       │   ├── operator-readiness-utc-smoke.png
+│   │       │       │   ├── overview-portfolio-empty-actions-smoke.png
 │   │       │       │   ├── overview-utc-smoke.png
 │   │       │       │   ├── portfolio-brokerage-sync-actions-smoke.png
 │   │       │       │   ├── portfolio-sync-trust-smoke.png
+│   │       │       │   ├── price-alert-delete-confirmation-smoke.png
 │   │       │       │   ├── price-alerts-handoff-smoke.png
 │   │       │       │   ├── price-alerts-utc-smoke.png
 │   │       │       │   ├── readiness-inbox-refresh-smoke.png
@@ -6921,7 +6926,23 @@ Use these documents together when planning or implementing new work:
 │   │       │       ├── strategy-designer-field-labels-smoke.png
 │   │       │       ├── web-ui
 │   │       │       │   ├── calibration-profile-detail-mobile-smoke.png
-│   │       │       │   └── calibration-profile-detail-smoke.png
+│   │       │       │   ├── calibration-profile-detail-smoke.png
+│   │       │       │   ├── data-backfill-detail-desktop.png
+│   │       │       │   ├── data-backfill-detail-mobile.png
+│   │       │       │   ├── data-provider-cancel-smoke-mobile.png
+│   │       │       │   ├── data-provider-cancel-smoke.png
+│   │       │       │   ├── live-quotes-seeded-desktop.png
+│   │       │       │   ├── live-quotes-seeded-mobile.png
+│   │       │       │   ├── operator-readiness-evidence-desktop.png
+│   │       │       │   ├── operator-readiness-evidence-mobile.png
+│   │       │       │   ├── quant-lab-trade-ledger-desktop.png
+│   │       │       │   ├── quant-lab-trade-ledger-mobile.png
+│   │       │       │   ├── research-tab-focus-desktop.png
+│   │       │       │   ├── research-tab-focus-mobile.png
+│   │       │       │   ├── security-master-conflict-actions-desktop.png
+│   │       │       │   ├── security-master-conflict-actions-mobile.png
+│   │       │       │   ├── strategy-designer-selected-leg-desktop.png
+│   │       │       │   └── strategy-designer-selected-leg-mobile.png
 │   │       │       ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
 │   │       │       ├── web-ui-report-pack-profile-keyboard-smoke.png
 │   │       │       ├── web-ui-reporting-export-smoke.png
@@ -6964,12 +6985,14 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   │   ├── metric-card.tsx
 │   │       │   │   │   ├── metric-card.view-model.test.ts
 │   │       │   │   │   ├── metric-card.view-model.ts
+│   │       │   │   │   ├── quant-notebook.test.tsx
 │   │       │   │   │   ├── quant-notebook.tsx
 │   │       │   │   │   ├── quant-notebook.view-model.test.ts
 │   │       │   │   │   ├── quant-notebook.view-model.ts
 │   │       │   │   │   ├── quant-plot.test.tsx
 │   │       │   │   │   ├── quant-plot.tsx
 │   │       │   │   │   ├── quant-plot.view-model.ts
+│   │       │   │   │   ├── security-details-tracker.test.tsx
 │   │       │   │   │   ├── security-details-tracker.tsx
 │   │       │   │   │   ├── security-details-tracker.view-model.test.ts
 │   │       │   │   │   ├── security-details-tracker.view-model.ts
@@ -8247,6 +8270,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
+│   │   │   │   ├── AlpacaHistoricalDataProviderTests.cs
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
@@ -8816,6 +8840,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-719 directories, 7883 files
+719 directories, 7907 files
 ```
 <!-- readme-tree end -->
