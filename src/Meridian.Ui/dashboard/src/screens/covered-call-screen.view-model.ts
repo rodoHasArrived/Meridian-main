@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as coveredCallApi from "@/lib/api/covered-call";
 import type {
   CoveredCallBacktestRequest,
+  CoveredCallChainRow,
   CoveredCallChainPreview,
   CoveredCallRunPhase,
   CoveredCallRunResult,
@@ -38,11 +39,59 @@ export interface CoveredCallFormState {
 
 export type CoveredCallFormErrors = Partial<Record<keyof CoveredCallFormState, string>>;
 
+export const COVERED_CALL_CHAIN_DETAIL_PANEL_ID = "covered-call-chain-candidate-detail";
+
+type CoveredCallBadgeVariant = "outline" | "success" | "warning" | "danger" | "paper" | "research" | "default";
+
 export interface CoveredCallChainPreviewState {
   status: "idle" | "loading" | "ready" | "error";
   data: CoveredCallChainPreview | null;
   error: string | null;
   selectedIndex: number;
+}
+
+export interface CoveredCallChainPreviewRowViewModel {
+  id: string;
+  index: number;
+  strikeLabel: string;
+  expirationLabel: string;
+  daysToExpirationLabel: string;
+  bidLabel: string;
+  deltaLabel: string;
+  openInterestLabel: string;
+  statusLabel: string;
+  statusBadgeVariant: CoveredCallBadgeVariant;
+  statusAriaLabel: string;
+  rowAriaLabel: string;
+  rowSelectAriaLabel: string;
+  detailPanelId: string;
+  ariaExpanded: boolean;
+}
+
+export interface CoveredCallChainPreviewDetailViewModel {
+  panelId: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusBadgeVariant: CoveredCallBadgeVariant;
+  fields: Array<{ label: string; value: string }>;
+  ariaLabel: string;
+}
+
+export interface CoveredCallChainPreviewPanelViewModel {
+  description: string;
+  tableLabel: string;
+  tableCaption: string;
+  emptyText: string;
+  detailPanelId: string;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  detailEmptyAriaLabel: string;
+  rows: CoveredCallChainPreviewRowViewModel[];
+  selectedRowId: string | null;
+  selectedDetail: CoveredCallChainPreviewDetailViewModel | null;
 }
 
 export interface CoveredCallRunState {
@@ -178,11 +227,180 @@ export function isTerminalPhase(phase: CoveredCallRunPhase): boolean {
   return phase === "Completed" || phase === "Failed" || phase === "Cancelled";
 }
 
+export function buildChainPreviewPanelViewModel(
+  chainPreview: CoveredCallChainPreviewState
+): CoveredCallChainPreviewPanelViewModel {
+  const base = {
+    tableLabel: "Covered-call chain preview candidates",
+    tableCaption: "Covered-call option-chain candidates with filter status.",
+    detailPanelId: COVERED_CALL_CHAIN_DETAIL_PANEL_ID
+  };
+
+  if (chainPreview.status === "loading") {
+    return {
+      ...base,
+      description: "Loading chain preview...",
+      emptyText: "Loading chain preview...",
+      detailEmptyTitle: "Chain preview loading",
+      detailEmptyText: "Candidate detail will appear after the option-chain preview finishes.",
+      detailEmptyAriaLabel: "Covered-call candidate detail loading",
+      rows: [],
+      selectedRowId: null,
+      selectedDetail: null
+    };
+  }
+
+  if (chainPreview.status === "error") {
+    const errorText = chainPreview.error ?? "Unknown error";
+    return {
+      ...base,
+      description: `Error: ${errorText}`,
+      emptyText: `Chain preview failed: ${errorText}`,
+      detailEmptyTitle: "Chain preview failed",
+      detailEmptyText: errorText,
+      detailEmptyAriaLabel: "Covered-call candidate detail unavailable",
+      rows: [],
+      selectedRowId: null,
+      selectedDetail: null
+    };
+  }
+
+  const data = chainPreview.data;
+  if (!data || data.candidates.length === 0) {
+    const readyEmpty = chainPreview.status === "ready";
+    return {
+      ...base,
+      description: readyEmpty
+        ? "No option candidates matched the current filters."
+        : "Set an underlying and a positive min strike to preview the chain.",
+      emptyText: readyEmpty ? "No candidates match the current filters." : "No candidates yet.",
+      detailEmptyTitle: readyEmpty ? "No candidate selected" : "Candidate detail",
+      detailEmptyText: readyEmpty
+        ? "Adjust strike, delta, DTE, liquidity, or spread filters to find covered-call candidates."
+        : "Set an underlying and a positive minimum strike to inspect candidate detail.",
+      detailEmptyAriaLabel: "Covered-call candidate detail empty",
+      rows: [],
+      selectedRowId: null,
+      selectedDetail: null
+    };
+  }
+
+  const selectedIndex = clampIndex(chainPreview.selectedIndex, data.candidates.length);
+  const rows = data.candidates.map((row, index) => buildChainPreviewRow(data, row, index, selectedIndex));
+  const selectedRow = data.candidates[selectedIndex];
+
+  return {
+    ...base,
+    description: `${formatCount(data.filtersPassed)} of ${formatCount(data.totalContractsScanned)} candidates pass filters.`,
+    emptyText: "No candidates match the current filters.",
+    detailEmptyTitle: "No candidate selected",
+    detailEmptyText: "Select a candidate row to inspect strike, liquidity, and filter evidence.",
+    detailEmptyAriaLabel: "Covered-call candidate detail empty",
+    rows,
+    selectedRowId: rows[selectedIndex]?.id ?? null,
+    selectedDetail: selectedRow ? buildChainPreviewDetail(data, selectedRow) : null
+  };
+}
+
+function buildChainPreviewRow(
+  preview: CoveredCallChainPreview,
+  row: CoveredCallChainRow,
+  index: number,
+  selectedIndex: number
+): CoveredCallChainPreviewRowViewModel {
+  const strikeLabel = formatPrice(row.strike);
+  const bidLabel = formatPrice(row.bid);
+  const deltaLabel = formatDecimal(row.delta, 2);
+  const statusLabel = row.meetsAllFilters ? "Pass" : row.rejectReason ?? "Reject";
+  const statusBadgeVariant: CoveredCallBadgeVariant = row.meetsAllFilters ? "success" : "outline";
+  const rowBase = `${preview.underlyingSymbol} ${strikeLabel} call expiring ${row.expiration}`;
+
+  return {
+    id: `covered-call-chain-row-${index}-${row.expiration}-${strikeLabel.replace(".", "-")}`,
+    index,
+    strikeLabel,
+    expirationLabel: row.expiration,
+    daysToExpirationLabel: formatCount(row.daysToExpiration),
+    bidLabel,
+    deltaLabel,
+    openInterestLabel: formatCount(row.openInterest),
+    statusLabel,
+    statusBadgeVariant,
+    statusAriaLabel: row.meetsAllFilters
+      ? "Candidate passes all configured filters"
+      : `Candidate rejected: ${statusLabel}`,
+    rowAriaLabel: `${rowBase}. Bid ${bidLabel}. Delta ${deltaLabel}. Status ${statusLabel}.`,
+    rowSelectAriaLabel: `Inspect ${rowBase}. Status ${statusLabel}.`,
+    detailPanelId: COVERED_CALL_CHAIN_DETAIL_PANEL_ID,
+    ariaExpanded: index === selectedIndex
+  };
+}
+
+function buildChainPreviewDetail(
+  preview: CoveredCallChainPreview,
+  row: CoveredCallChainRow
+): CoveredCallChainPreviewDetailViewModel {
+  const strikeLabel = formatPrice(row.strike);
+  const statusLabel = row.meetsAllFilters ? "Pass" : row.rejectReason ?? "Reject";
+  const statusBadgeVariant: CoveredCallBadgeVariant = row.meetsAllFilters ? "success" : "outline";
+
+  return {
+    panelId: COVERED_CALL_CHAIN_DETAIL_PANEL_ID,
+    eyebrow: "Selected candidate",
+    title: `${preview.underlyingSymbol} ${strikeLabel} call`,
+    subtitle: `${row.expiration} · ${formatCount(row.daysToExpiration)} DTE · bid ${formatPrice(row.bid)} / ask ${formatPrice(row.ask)}`,
+    description: row.meetsAllFilters
+      ? "This contract currently passes the configured strike, delta, DTE, liquidity, and spread filters."
+      : `This contract is excluded by the current filter set: ${statusLabel}.`,
+    statusLabel,
+    statusBadgeVariant,
+    fields: [
+      { label: "Underlying", value: `${preview.underlyingSymbol} @ ${formatPrice(preview.underlyingPrice)}` },
+      { label: "Strike", value: strikeLabel },
+      { label: "Expiration", value: row.expiration },
+      { label: "DTE", value: formatCount(row.daysToExpiration) },
+      { label: "Bid / Ask", value: `${formatPrice(row.bid)} / ${formatPrice(row.ask)}` },
+      { label: "Delta", value: formatDecimal(row.delta, 2) },
+      { label: "Implied volatility", value: row.impliedVolatility === null ? "—" : formatPercent(row.impliedVolatility) },
+      { label: "Open interest", value: formatCount(row.openInterest) },
+      { label: "Volume", value: formatCount(row.volume) }
+    ],
+    ariaLabel: `Selected covered-call candidate: ${preview.underlyingSymbol} ${strikeLabel} call expiring ${row.expiration}`
+  };
+}
+
+function clampIndex(index: number, length: number): number {
+  if (length <= 0) return -1;
+  if (!Number.isFinite(index)) return 0;
+  return Math.min(Math.max(Math.trunc(index), 0), length - 1);
+}
+
+function formatPrice(value: number): string {
+  if (!Number.isFinite(value)) return "—";
+  return value.toFixed(2);
+}
+
+function formatDecimal(value: number, digits: number): string {
+  if (!Number.isFinite(value)) return "—";
+  return value.toFixed(digits);
+}
+
+function formatPercent(value: number): string {
+  if (!Number.isFinite(value)) return "—";
+  return `${(value * 100).toFixed(1)}%`;
+}
+
+function formatCount(value: number): string {
+  if (!Number.isFinite(value)) return "—";
+  return Math.trunc(value).toLocaleString("en-US");
+}
+
 export interface CoveredCallScreenState {
   stage: CoveredCallStage;
   form: CoveredCallFormState;
   formErrors: CoveredCallFormErrors;
   chainPreview: CoveredCallChainPreviewState;
+  chainPreviewPanel: CoveredCallChainPreviewPanelViewModel;
   run: CoveredCallRunState;
   history: CoveredCallRunSummary[];
   historyError: string | null;
@@ -492,6 +710,7 @@ export function useCoveredCallScreenViewModel(
     form,
     formErrors,
     chainPreview,
+    chainPreviewPanel: buildChainPreviewPanelViewModel(chainPreview),
     run,
     history,
     historyError,

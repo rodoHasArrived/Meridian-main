@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 import type { ProxyOptions } from "vite";
 import { resolveDevFixture } from "./src/lib/dev-fixtures";
-import { QUANT_API_ENDPOINTS } from "./src/lib/workstation-endpoints";
+import { COVERED_CALL_API_ENDPOINTS, QUANT_API_ENDPOINTS } from "./src/lib/workstation-endpoints";
 
 export const defaultMeridianApiBaseUrl = "http://localhost:8080";
 export const meridianDevFixtureHeader = "x-meridian-dev-fixture";
@@ -121,7 +121,11 @@ function isDevelopmentFixtureRequest(req: IncomingMessage): boolean {
     return req.url?.startsWith("/api/") === true;
   }
 
-  return req.method === "POST" && req.url?.split("?")[0] === QUANT_API_ENDPOINTS.parameters;
+  const cleanPath = req.url?.split("?")[0];
+  return req.method === "POST" && (
+    cleanPath === QUANT_API_ENDPOINTS.parameters ||
+    cleanPath === COVERED_CALL_API_ENDPOINTS.chainPreview
+  );
 }
 
 function writeDevelopmentFixtureResponse(req: IncomingMessage, res: ServerResponse, fixture: unknown) {

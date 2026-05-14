@@ -67,4 +67,41 @@ describe("workspace nav view model", () => {
       ariaLabel: "Ledger, current page"
     });
   });
+
+  it("surfaces the implemented covered-call backtest route under Strategy", () => {
+    const model = buildWorkspaceNavViewModel("/strategy/covered-call");
+    const strategy = model.items.find((item) => item.key === "strategy");
+
+    expect(strategy?.subItems.map((item) => item.route)).toEqual([
+      "/strategy/designer",
+      "/strategy/covered-call",
+      "/strategy/promotions",
+      "/strategy/research",
+      "/strategy/quant-lab"
+    ]);
+    expect(strategy?.subItems.find((item) => item.route === "/strategy/covered-call")).toMatchObject({
+      label: "Covered call",
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Covered call, current page"
+    });
+  });
+
+  it("surfaces the implemented price-alerts route under Data", () => {
+    const model = buildWorkspaceNavViewModel("/data/alerts");
+    const data = model.items.find((item) => item.key === "data");
+
+    expect(data?.subItems.map((item) => item.route)).toEqual([
+      "/data/watchlist",
+      "/data/quotes",
+      "/data/alerts",
+      "/data/backfills"
+    ]);
+    expect(data?.subItems.find((item) => item.route === "/data/alerts")).toMatchObject({
+      label: "Price alerts",
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Price alerts, current page"
+    });
+  });
 });

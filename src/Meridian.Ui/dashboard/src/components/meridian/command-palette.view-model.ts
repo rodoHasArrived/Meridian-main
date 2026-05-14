@@ -135,6 +135,12 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     route: "/strategy/quant-lab"
   },
   {
+    id: "strategy-covered-call",
+    label: "Covered call backtest",
+    description: "Configure covered-call chain preview, run backtests, and review payoff evidence.",
+    route: "/strategy/covered-call"
+  },
+  {
     id: "data-watchlist",
     label: "Watchlist",
     description: "Add symbols and starter packs before validating live quotes.",
@@ -145,6 +151,12 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     label: "Live quotes",
     description: "Inspect quotes, trades, depth, charts, and staged tickets.",
     route: "/data/quotes"
+  },
+  {
+    id: "data-alerts",
+    label: "Price alerts",
+    description: "Create local quote-threshold alerts and review alert trigger state.",
+    route: "/data/alerts"
   },
   {
     id: "data-backfills",

@@ -1,6 +1,8 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
+  COVERED_CALL_CHAIN_DETAIL_PANEL_ID,
+  buildChainPreviewPanelViewModel,
   DEFAULT_COVERED_CALL_FORM,
   formToRequest,
   isTerminalPhase,
@@ -63,6 +65,105 @@ describe("isTerminalPhase", () => {
   });
   it.each(["Queued", "WarmingUp", "Running"] as const)("treats %s as non-terminal", (phase) => {
     expect(isTerminalPhase(phase)).toBe(false);
+  });
+});
+
+describe("buildChainPreviewPanelViewModel", () => {
+  const chainPreview: CoveredCallChainPreview = {
+    underlyingSymbol: "SPY",
+    asOf: "2024-01-01",
+    underlyingPrice: 500,
+    totalContractsScanned: 2,
+    filtersPassed: 1,
+    candidates: [
+      {
+        strike: 505,
+        expiration: "2024-02-16",
+        daysToExpiration: 32,
+        bid: 2.41,
+        ask: 2.58,
+        delta: 0.31,
+        impliedVolatility: 0.22,
+        openInterest: 1040,
+        volume: 122,
+        meetsAllFilters: true,
+        rejectReason: null
+      },
+      {
+        strike: 510,
+        expiration: "2024-02-16",
+        daysToExpiration: 32,
+        bid: 1.71,
+        ask: 1.95,
+        delta: 0.42,
+        impliedVolatility: null,
+        openInterest: 84,
+        volume: 12,
+        meetsAllFilters: false,
+        rejectReason: "Open interest below minimum"
+      }
+    ]
+  };
+
+  it("derives selectable chain rows and selected detail from preview data", () => {
+    const panel = buildChainPreviewPanelViewModel({
+      status: "ready",
+      data: chainPreview,
+      error: null,
+      selectedIndex: 1
+    });
+
+    expect(panel.description).toBe("1 of 2 candidates pass filters.");
+    expect(panel.detailPanelId).toBe(COVERED_CALL_CHAIN_DETAIL_PANEL_ID);
+    expect(panel.selectedRowId).toBe(panel.rows[1].id);
+    expect(panel.rows[1]).toMatchObject({
+      statusLabel: "Open interest below minimum",
+      statusBadgeVariant: "outline",
+      detailPanelId: COVERED_CALL_CHAIN_DETAIL_PANEL_ID,
+      ariaExpanded: true,
+      rowSelectAriaLabel: "Inspect SPY 510.00 call expiring 2024-02-16. Status Open interest below minimum."
+    });
+    expect(panel.selectedDetail).toMatchObject({
+      title: "SPY 510.00 call",
+      statusLabel: "Open interest below minimum",
+      ariaLabel: "Selected covered-call candidate: SPY 510.00 call expiring 2024-02-16"
+    });
+    expect(panel.selectedDetail?.fields).toContainEqual({ label: "Implied volatility", value: "—" });
+  });
+
+  it("keeps loading, empty, and error copy in the view model", () => {
+    expect(buildChainPreviewPanelViewModel({
+      status: "loading",
+      data: null,
+      error: null,
+      selectedIndex: 0
+    })).toMatchObject({
+      description: "Loading chain preview...",
+      emptyText: "Loading chain preview...",
+      selectedDetail: null
+    });
+
+    expect(buildChainPreviewPanelViewModel({
+      status: "ready",
+      data: { ...chainPreview, candidates: [], filtersPassed: 0 },
+      error: null,
+      selectedIndex: 0
+    })).toMatchObject({
+      description: "No option candidates matched the current filters.",
+      emptyText: "No candidates match the current filters.",
+      detailEmptyText: "Adjust strike, delta, DTE, liquidity, or spread filters to find covered-call candidates."
+    });
+
+    expect(buildChainPreviewPanelViewModel({
+      status: "error",
+      data: null,
+      error: "HTTP 503",
+      selectedIndex: 0
+    })).toMatchObject({
+      description: "Error: HTTP 503",
+      emptyText: "Chain preview failed: HTTP 503",
+      detailEmptyTitle: "Chain preview failed"
+    });
   });
 });
 

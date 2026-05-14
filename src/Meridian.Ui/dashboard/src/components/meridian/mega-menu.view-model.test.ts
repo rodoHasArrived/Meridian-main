@@ -69,6 +69,7 @@ describe("mega menu view model", () => {
     const portfolioSection = model.sections.find((section) => section.key === "portfolio");
     const accountingSection = model.sections.find((section) => section.key === "accounting");
     const reportingSection = model.sections.find((section) => section.key === "reporting");
+    const strategySection = model.sections.find((section) => section.key === "strategy");
     const dataSection = model.sections.find((section) => section.key === "data");
 
     expect(portfolioSection?.links.map((link) => link.route)).toContain("/portfolio/brokerage-sync");
@@ -79,10 +80,19 @@ describe("mega menu view model", () => {
       "/reporting/evidence",
       "/reporting/exports"
     ]);
+    expect(strategySection?.links.map((link) => link.route)).toEqual([
+      "/strategy",
+      "/strategy/designer",
+      "/strategy/covered-call",
+      "/strategy/promotions",
+      "/strategy/research",
+      "/strategy/quant-lab"
+    ]);
     expect(dataSection?.links.map((link) => link.route)).toEqual([
       "/data",
       "/data/watchlist",
       "/data/quotes",
+      "/data/alerts",
       "/data/backfills"
     ]);
     expect(reportingSection?.links.find((link) => link.route === "/reporting/evidence")).toMatchObject({
@@ -94,6 +104,44 @@ describe("mega menu view model", () => {
       active: false,
       ariaCurrent: undefined,
       ariaLabel: "Open Report packs, Reporting workspace"
+    });
+    expect(strategySection?.links.find((link) => link.route === "/strategy/covered-call")).toMatchObject({
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Covered call, Strategy workspace"
+    });
+    expect(dataSection?.links.find((link) => link.route === "/data/alerts")).toMatchObject({
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Price alerts, Data workspace"
+    });
+  });
+
+  it("marks covered call and price alerts as current route links", () => {
+    const strategyModel = buildMegaMenuViewModel({
+      pathname: "/strategy/covered-call",
+      open: true,
+      openMenu: vi.fn(),
+      closeMenu: vi.fn(),
+      toggleMenu: vi.fn()
+    });
+    const dataModel = buildMegaMenuViewModel({
+      pathname: "/data/alerts",
+      open: true,
+      openMenu: vi.fn(),
+      closeMenu: vi.fn(),
+      toggleMenu: vi.fn()
+    });
+
+    expect(strategyModel.sections.find((section) => section.key === "strategy")?.links.find((link) => link.route === "/strategy/covered-call")).toMatchObject({
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Covered call, current route, Strategy workspace"
+    });
+    expect(dataModel.sections.find((section) => section.key === "data")?.links.find((link) => link.route === "/data/alerts")).toMatchObject({
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Price alerts, current route, Data workspace"
     });
   });
 

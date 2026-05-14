@@ -2469,6 +2469,8 @@ export interface StrategyLifecycleControlsState {
   stopButtonLabel: string;
   pauseAriaLabel: string;
   stopAriaLabel: string;
+  pauseDisabledReason: string | null;
+  stopDisabledReason: string | null;
   pauseAction: TradingConfirmAction | null;
   stopAction: TradingConfirmAction | null;
 }
@@ -2510,6 +2512,7 @@ export function useStrategyLifecycleControlsViewModel({
 export function buildStrategyLifecycleControlsState(strategyId: string): StrategyLifecycleControlsState {
   const strategyIdValue = strategyId.trim();
   const hasStrategyId = strategyIdValue.length > 0;
+  const missingStrategyReason = "Enter a registered strategy ID before using lifecycle actions.";
   const pauseAction: TradingConfirmAction | null = hasStrategyId
     ? { kind: "pause-strategy", strategyId: strategyIdValue }
     : null;
@@ -2546,6 +2549,8 @@ export function buildStrategyLifecycleControlsState(strategyId: string): Strateg
     stopAriaLabel: hasStrategyId
       ? `Open stop confirmation for strategy ${strategyIdValue}`
       : "Enter a strategy ID before stopping a strategy",
+    pauseDisabledReason: hasStrategyId ? null : missingStrategyReason,
+    stopDisabledReason: hasStrategyId ? null : missingStrategyReason,
     pauseAction,
     stopAction
   };

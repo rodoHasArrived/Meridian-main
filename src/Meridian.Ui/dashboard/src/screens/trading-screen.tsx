@@ -1153,6 +1153,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 aria-label={strategyLifecycle.pauseAriaLabel}
                 onClick={strategyLifecycle.openPauseConfirm}
                 disabled={!strategyLifecycle.canPause}
+                disabledReason={strategyLifecycle.pauseDisabledReason}
               >
                 <PauseCircle className="mr-2 h-4 w-4" />
                 {strategyLifecycle.pauseButtonLabel}
@@ -1163,6 +1164,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 aria-label={strategyLifecycle.stopAriaLabel}
                 onClick={strategyLifecycle.openStopConfirm}
                 disabled={!strategyLifecycle.canStop}
+                disabledReason={strategyLifecycle.stopDisabledReason}
               >
                 <StopCircle className="mr-2 h-4 w-4" />
                 {strategyLifecycle.stopButtonLabel}

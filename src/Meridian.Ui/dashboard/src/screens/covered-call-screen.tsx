@@ -3,8 +3,10 @@ import { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   useCoveredCallScreenViewModel,
+  type CoveredCallChainPreviewRowViewModel,
   type CoveredCallFormState,
   type CoveredCallScreenViewModel,
   type CoveredCallStage
@@ -16,6 +18,53 @@ const STAGE_LABEL: Record<CoveredCallStage, string> = {
   run: "Run",
   results: "Results"
 };
+
+const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
+  {
+    id: "strike",
+    label: "Strike",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.strikeLabel}</span>
+  },
+  {
+    id: "expiry",
+    label: "Expiry",
+    render: (row) => <span className="font-mono text-muted-foreground">{row.expirationLabel}</span>
+  },
+  {
+    id: "dte",
+    label: "DTE",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.daysToExpirationLabel}</span>
+  },
+  {
+    id: "bid",
+    label: "Bid",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.bidLabel}</span>
+  },
+  {
+    id: "delta",
+    label: "Delta",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.deltaLabel}</span>
+  },
+  {
+    id: "open-interest",
+    label: "OI",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.openInterestLabel}</span>
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <Badge variant={row.statusBadgeVariant} dot aria-label={row.statusAriaLabel}>
+        {row.statusLabel}
+      </Badge>
+    )
+  }
+];
 
 export function CoveredCallScreen() {
   const vm = useCoveredCallScreenViewModel();
@@ -185,15 +234,7 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Chain preview</CardTitle>
-          <CardDescription>
-            {vm.chainPreview.status === "ready" && vm.chainPreview.data
-              ? `${vm.chainPreview.data.filtersPassed} of ${vm.chainPreview.data.totalContractsScanned} candidates pass filters.`
-              : vm.chainPreview.status === "loading"
-                ? "Loading..."
-                : vm.chainPreview.status === "error"
-                  ? `Error: ${vm.chainPreview.error}`
-                  : "Set an underlying and a positive min strike to preview the chain."}
-          </CardDescription>
+          <CardDescription>{vm.chainPreviewPanel.description}</CardDescription>
         </CardHeader>
         <CardContent>
           <ChainPreviewTable vm={vm} />
@@ -244,53 +285,46 @@ function NumberField({ vm, field, label, type, step, required }: NumberFieldProp
 }
 
 function ChainPreviewTable({ vm }: { vm: CoveredCallScreenViewModel }) {
-  const data = vm.chainPreview.data;
-  if (!data || data.candidates.length === 0) {
-    return (
-      <div className="rounded-md border border-border/60 bg-secondary/15 p-3 text-xs text-muted-foreground">
-        {vm.chainPreview.status === "loading" ? "Loading..." : "No candidates yet."}
-      </div>
-    );
-  }
+  const panel = vm.chainPreviewPanel;
 
   return (
-    <div className="max-h-80 overflow-auto">
-      <table className="w-full text-xs">
-        <thead className="sticky top-0 bg-background/95">
-          <tr className="text-left text-muted-foreground">
-            <th className="pb-1 pr-2 font-medium">Strike</th>
-            <th className="pb-1 pr-2 font-medium">Expiry</th>
-            <th className="pb-1 pr-2 font-medium">DTE</th>
-            <th className="pb-1 pr-2 font-medium">Bid</th>
-            <th className="pb-1 pr-2 font-medium">Δ</th>
-            <th className="pb-1 pr-2 font-medium">OI</th>
-            <th className="pb-1 pl-2 font-medium">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.candidates.map((row, idx) => (
-            <tr
-              key={`${row.strike}-${row.expiration}-${idx}`}
-              className={`cursor-pointer border-t border-border/30 ${idx === vm.chainPreview.selectedIndex ? "bg-primary/5" : ""}`}
-              onClick={() => vm.selectChainRow(idx)}
-            >
-              <td className="py-1 pr-2 font-mono">{row.strike.toFixed(2)}</td>
-              <td className="py-1 pr-2 font-mono">{row.expiration}</td>
-              <td className="py-1 pr-2 font-mono">{row.daysToExpiration}</td>
-              <td className="py-1 pr-2 font-mono">{row.bid.toFixed(2)}</td>
-              <td className="py-1 pr-2 font-mono">{row.delta.toFixed(2)}</td>
-              <td className="py-1 pr-2 font-mono">{row.openInterest}</td>
-              <td className="py-1 pl-2">
-                {row.meetsAllFilters ? (
-                  <Badge variant="success" dot>Pass</Badge>
-                ) : (
-                  <Badge variant="outline" dot>{row.rejectReason ?? "Reject"}</Badge>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="grid gap-3">
+      <DenseDataTable
+        columns={chainPreviewColumns}
+        rows={panel.rows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => row.rowAriaLabel}
+        getRowAriaControls={(row) => row.detailPanelId}
+        getRowAriaExpanded={(row) => row.ariaExpanded}
+        getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+        onRowSelect={(row) => vm.selectChainRow(row.index)}
+        selectedRowId={panel.selectedRowId}
+        emptyText={panel.emptyText}
+        ariaLabel={panel.tableLabel}
+        caption={panel.tableCaption}
+      />
+      {panel.selectedDetail ? (
+        <div id={panel.selectedDetail.panelId}>
+          <EntitySummary
+            eyebrow={panel.selectedDetail.eyebrow}
+            title={panel.selectedDetail.title}
+            subtitle={panel.selectedDetail.subtitle}
+            description={panel.selectedDetail.description}
+            status={<Badge variant={panel.selectedDetail.statusBadgeVariant} dot>{panel.selectedDetail.statusLabel}</Badge>}
+            fields={panel.selectedDetail.fields}
+            ariaLabel={panel.selectedDetail.ariaLabel}
+          />
+        </div>
+      ) : (
+        <section
+          id={panel.detailPanelId}
+          className="row-detail-panel"
+          aria-label={panel.detailEmptyAriaLabel}
+        >
+          <div className="head">{panel.detailEmptyTitle}</div>
+          <div className="body">{panel.detailEmptyText}</div>
+        </section>
+      )}
     </div>
   );
 }

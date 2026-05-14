@@ -73,6 +73,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
   ],
   strategy: [
     { label: "Designer", route: "/strategy/designer" },
+    { label: "Covered call", route: "/strategy/covered-call" },
     { label: "Promotions", route: "/strategy/promotions" },
     { label: "Research", route: "/strategy/research" },
     { label: "Quant Lab", route: "/strategy/quant-lab" }

@@ -11,6 +11,7 @@ import config, {
 import type { ProxyOptions, UserConfig } from "vite";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
+  COVERED_CALL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   QUANT_API_ENDPOINTS,
@@ -294,6 +295,49 @@ describe("Vite Meridian API proxy", () => {
         expect.objectContaining({ name: "includeFees", typeName: "bool" })
       ]
     });
+  });
+
+  it("serves Covered Call preview fixtures for no-host strategy demos without opening run mutations", async () => {
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
+      isAvailable: async () => false
+    });
+    const runsResponse = new FakeResponse();
+    const chainPreviewResponse = new FakeResponse();
+    const startRunResponse = new FakeResponse();
+
+    await bypass(
+      { method: "GET", url: `${COVERED_CALL_API_ENDPOINTS.runs}?limit=50`, headers: { accept: "application/json" } } as IncomingMessage,
+      runsResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "POST", url: COVERED_CALL_API_ENDPOINTS.chainPreview, headers: { accept: "application/json" } } as IncomingMessage,
+      chainPreviewResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    const mutationResult = await bypass(
+      { method: "POST", url: COVERED_CALL_API_ENDPOINTS.runs, headers: { accept: "application/json" } } as IncomingMessage,
+      startRunResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(runsResponse.statusCode).toBe(200);
+    expect(runsResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(runsResponse.body)).toEqual([
+      expect.objectContaining({ runId: "covered-call-dev-1", underlyingSymbol: "SPY" })
+    ]);
+    expect(chainPreviewResponse.statusCode).toBe(200);
+    expect(chainPreviewResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(chainPreviewResponse.body)).toMatchObject({
+      underlyingSymbol: "SPY",
+      filtersPassed: 2,
+      candidates: expect.arrayContaining([
+        expect.objectContaining({ strike: 515, meetsAllFilters: true }),
+        expect.objectContaining({ rejectReason: "Open interest below minimum" })
+      ])
+    });
+    expect(mutationResult).toBeUndefined();
+    expect(startRunResponse.writableEnded).toBe(false);
   });
 
   it("serves Trading cockpit support fixtures for no-host demo smoke", async () => {

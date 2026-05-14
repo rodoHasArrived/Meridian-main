@@ -1,4 +1,8 @@
 import type {
+  CoveredCallChainPreview,
+  CoveredCallRunSummary
+} from "../types/covered-call";
+import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   CorporateAction,
@@ -39,6 +43,7 @@ import type {
   WorkflowPresetLibrary
 } from "../types";
 import {
+  COVERED_CALL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   MARKET_DATA_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
@@ -1288,6 +1293,84 @@ const fixtureTradingParameters: TradingParameters = {
   asOf: "2026-04-28T18:15:00Z"
 };
 
+const fixtureCoveredCallRuns: CoveredCallRunSummary[] = [
+  {
+    runId: "covered-call-dev-1",
+    underlyingSymbol: "SPY",
+    from: "2025-05-01",
+    to: "2026-05-01",
+    label: "SPY overwrite fixture",
+    status: "Completed",
+    startedAt: "2026-05-08T15:00:00Z",
+    endedAt: "2026-05-08T15:02:30Z",
+    cagr: 0.083,
+    sharpeRatio: 1.18,
+    winRate: 0.64
+  }
+];
+
+const fixtureCoveredCallChainPreview: CoveredCallChainPreview = {
+  underlyingSymbol: "SPY",
+  asOf: "2026-05-08",
+  underlyingPrice: 512.46,
+  totalContractsScanned: 4,
+  filtersPassed: 2,
+  candidates: [
+    {
+      strike: 515,
+      expiration: "2026-06-19",
+      daysToExpiration: 42,
+      bid: 4.35,
+      ask: 4.55,
+      delta: 0.31,
+      impliedVolatility: 0.187,
+      openInterest: 1840,
+      volume: 312,
+      meetsAllFilters: true,
+      rejectReason: null
+    },
+    {
+      strike: 520,
+      expiration: "2026-06-19",
+      daysToExpiration: 42,
+      bid: 3.05,
+      ask: 3.25,
+      delta: 0.24,
+      impliedVolatility: 0.181,
+      openInterest: 1264,
+      volume: 206,
+      meetsAllFilters: true,
+      rejectReason: null
+    },
+    {
+      strike: 525,
+      expiration: "2026-07-17",
+      daysToExpiration: 70,
+      bid: 3.4,
+      ask: 3.9,
+      delta: 0.21,
+      impliedVolatility: null,
+      openInterest: 428,
+      volume: 64,
+      meetsAllFilters: false,
+      rejectReason: "Open interest below minimum"
+    },
+    {
+      strike: 510,
+      expiration: "2026-06-19",
+      daysToExpiration: 42,
+      bid: 7.1,
+      ask: 7.8,
+      delta: 0.43,
+      impliedVolatility: 0.205,
+      openInterest: 2240,
+      volume: 402,
+      meetsAllFilters: false,
+      rejectReason: "Delta above maximum"
+    }
+  ]
+};
+
 const fixtureOperatorOverrides: Record<string, OperatorOverridesDto> = {
   "sec-dev-001": {
     securityId: "sec-dev-001",
@@ -1364,6 +1447,8 @@ const fixtures = {
   [RECONCILIATION_API_ENDPOINTS.calibrationSummary]: fixtureCalibrationSummary,
   [QUANT_API_ENDPOINTS.templates]: fixtureQuantTemplates,
   [QUANT_API_ENDPOINTS.parameters]: fixtureQuantParameters,
+  [COVERED_CALL_API_ENDPOINTS.runs]: fixtureCoveredCallRuns,
+  [COVERED_CALL_API_ENDPOINTS.chainPreview]: fixtureCoveredCallChainPreview,
   [`${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`]: fixtureSecurityConflicts,
   [SYMBOL_API_ENDPOINTS.symbols]: fixtureSymbolRecords,
   [SYMBOL_API_ENDPOINTS.statistics]: fixtureSymbolStatistics

@@ -883,6 +883,8 @@ describe("strategy lifecycle controls view model", () => {
     expect(state.stopAction).toBeNull();
     expect(state.statusText).toBe("Enter a registered strategy ID to enable lifecycle actions.");
     expect(state.pauseAriaLabel).toBe("Enter a strategy ID before pausing a strategy");
+    expect(state.pauseDisabledReason).toBe("Enter a registered strategy ID before using lifecycle actions.");
+    expect(state.stopDisabledReason).toBe("Enter a registered strategy ID before using lifecycle actions.");
   });
 
   it("trims the strategy ID and derives confirmation actions", () => {
@@ -895,6 +897,8 @@ describe("strategy lifecycle controls view model", () => {
     expect(state.stopAction).toEqual({ kind: "stop-strategy", strategyId: "mean-reversion-fx-01" });
     expect(state.statusAnnouncement).toBe("Strategy lifecycle controls ready for mean-reversion-fx-01.");
     expect(state.stopAriaLabel).toBe("Open stop confirmation for strategy mean-reversion-fx-01");
+    expect(state.pauseDisabledReason).toBeNull();
+    expect(state.stopDisabledReason).toBeNull();
   });
 });
 

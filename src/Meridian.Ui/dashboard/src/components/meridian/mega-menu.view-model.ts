@@ -97,6 +97,7 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     links: [
       { label: "Backtest runs", route: "/strategy", description: "Strategy backtest results" },
       { label: "Designer", route: "/strategy/designer", description: "Visual multi-leg strategy designer with payoff and participation visualizations" },
+      { label: "Covered call", route: "/strategy/covered-call", description: "Run covered-call backtests with chain preview and payoff evidence" },
       { label: "Promotions", route: "/strategy/promotions", description: "Paper-to-live promotions" },
       { label: "Research", route: "/strategy/research", description: "Signal research workspace" },
       { label: "Quant Lab", route: "/strategy/quant-lab", description: "Run C# scripts with plots and metrics" }
@@ -110,6 +111,7 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
       { label: "Provider posture", route: "/data", description: "Data provider health" },
       { label: "Watchlist", route: "/data/watchlist", description: "Symbol subscription setup" },
       { label: "Live quotes", route: "/data/quotes", description: "Quote, trade, and depth workbench" },
+      { label: "Price alerts", route: "/data/alerts", description: "Local quote-threshold alerts and trigger review" },
       { label: "Backfill queues", route: "/data/backfills", description: "Historical data backfill" }
     ]
   },

@@ -374,6 +374,25 @@ describe("TradingScreen", () => {
     expect(within(workflowStrip).getByRole("button", { name: /strategy controls panel is open/i })).toHaveAttribute("aria-expanded", "true");
   });
 
+  it("surfaces VM-owned disabled reasons for strategy lifecycle controls", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    const strategyDialog = await openStrategyControls(user);
+    const pauseButton = within(strategyDialog).getByRole("button", { name: "Enter a strategy ID before pausing a strategy" });
+    const stopButton = within(strategyDialog).getByRole("button", { name: "Enter a strategy ID before stopping a strategy" });
+
+    expect(pauseButton).toBeDisabled();
+    expect(stopButton).toBeDisabled();
+    expect(pauseButton).toHaveAttribute("title", "Enter a registered strategy ID before using lifecycle actions.");
+    expect(stopButton).toHaveAttribute("title", "Enter a registered strategy ID before using lifecycle actions.");
+
+    await user.type(within(strategyDialog).getByLabelText("Strategy ID"), "strat-alpha");
+
+    expect(within(strategyDialog).getByRole("button", { name: "Open pause confirmation for strategy strat-alpha" })).toBeEnabled();
+    expect(within(strategyDialog).getByRole("button", { name: "Open stop confirmation for strategy strat-alpha" })).toBeEnabled();
+  });
+
   it("fetches and renders execution controls snapshot", async () => {
     await renderTradingScreen();
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalled());
