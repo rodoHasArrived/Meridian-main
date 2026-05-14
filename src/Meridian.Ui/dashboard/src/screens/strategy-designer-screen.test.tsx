@@ -53,6 +53,53 @@ describe("StrategyDesignerScreen", () => {
     expect(screen.getByRole("button", { name: /selected short call/i })).toHaveAttribute("aria-pressed", "true");
   });
 
+  it("associates canvas leg field labels with stable view-model ids", async () => {
+    const user = userEvent.setup();
+    const { container } = renderWithRouter(<StrategyDesignerScreen />);
+
+    await user.click(screen.getByRole("button", { name: /load sample/i }));
+
+    const directionLabel = container.querySelector('label[for="strategy-leg-sample-long-call-direction"]');
+    const directionInput = container.querySelector("#strategy-leg-sample-long-call-direction");
+    const quantityLabel = container.querySelector('label[for="strategy-leg-sample-long-call-quantity"]');
+    const quantityInput = container.querySelector("#strategy-leg-sample-long-call-quantity");
+    const premiumLabel = container.querySelector('label[for="strategy-leg-sample-long-call-premium"]');
+    const premiumInput = container.querySelector("#strategy-leg-sample-long-call-premium");
+
+    expect(directionLabel).toHaveTextContent("Direction");
+    expect(directionInput).toHaveAccessibleName("Direction for Long Call · 100");
+    expect(quantityLabel).toHaveTextContent("Quantity");
+    expect(quantityInput).toHaveAccessibleName("Quantity for Long Call · 100");
+    expect(premiumLabel).toHaveTextContent("Premium");
+    expect(premiumInput).toHaveAccessibleName("Premium for Long Call · 100");
+  });
+
+  it("reorders canvas legs with keyboard-operable move commands", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyDesignerScreen />);
+
+    await user.click(screen.getByRole("button", { name: /load sample/i }));
+
+    const moveFirstUp = screen.getByRole("button", { name: "Move Long Call · 100 up" });
+    expect(moveFirstUp).toBeDisabled();
+    expect(moveFirstUp).toHaveAttribute("title", "Long Call · 100 is already the first leg.");
+
+    await user.click(screen.getByRole("button", { name: "Move Long Call · 100 down" }));
+
+    const legs = screen.getAllByRole("listitem")
+      .filter((item) => item.hasAttribute("data-leg-id"))
+      .map((item) => item.getAttribute("aria-label"));
+    expect(legs).toEqual([
+      "Short Call · 110, Short Call, leg 1 of 2",
+      "Long Call · 100, Long Call, leg 2 of 2"
+    ]);
+    expect(screen.getByRole("button", { name: "Move Long Call · 100 down" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Move Long Call · 100 down" })).toHaveAttribute(
+      "title",
+      "Long Call · 100 is already the last leg."
+    );
+  });
+
   it("keeps spot price draft validation in the view model", async () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyDesignerScreen />);

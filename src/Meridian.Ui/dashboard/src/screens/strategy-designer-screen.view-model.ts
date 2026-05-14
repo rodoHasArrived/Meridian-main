@@ -118,6 +118,12 @@ export interface StrategyCanvasLegViewModel extends StrategyLeg {
   isSelected: boolean;
   directionTone: "success" | "warning";
   isOption: boolean;
+  fieldIds: {
+    direction: string;
+    quantity: string;
+    strike: string;
+    premium: string;
+  };
   containerAriaLabel: string;
   selectButtonLabel: string;
   selectButtonAriaLabel: string;
@@ -128,6 +134,8 @@ export interface StrategyCanvasLegViewModel extends StrategyLeg {
   strikeAriaLabel: string;
   premiumAriaLabel: string;
   premiumUnavailableAriaLabel: string;
+  moveUpCommand: StrategyDesignerCommandViewModel;
+  moveDownCommand: StrategyDesignerCommandViewModel;
 }
 
 export interface StrategyDesignerViewModel {
@@ -571,11 +579,20 @@ export function buildCanvasLegViewModels(
     const isSelected = selectedLegId === leg.id;
     const isOption = leg.instrument !== "Stock";
     const ordinal = index + 1;
+    const fieldIdPrefix = `strategy-leg-${slugifyId(leg.id)}`;
+    const first = index === 0;
+    const last = index === legs.length - 1;
     return {
       ...leg,
       isSelected,
       directionTone: leg.direction === "Long" ? "success" : "warning",
       isOption,
+      fieldIds: {
+        direction: `${fieldIdPrefix}-direction`,
+        quantity: `${fieldIdPrefix}-quantity`,
+        strike: `${fieldIdPrefix}-strike`,
+        premium: `${fieldIdPrefix}-premium`
+      },
       containerAriaLabel: `${leg.label}, ${leg.direction} ${leg.instrument}, leg ${ordinal} of ${legs.length}`,
       selectButtonLabel: isSelected ? "Selected" : "Select",
       selectButtonAriaLabel: `${isSelected ? "Selected" : "Select"} ${leg.label}`,
@@ -585,7 +602,19 @@ export function buildCanvasLegViewModels(
       strikeFieldLabel: isOption ? "Strike" : "Entry price",
       strikeAriaLabel: `${isOption ? "Strike" : "Entry price"} for ${leg.label}`,
       premiumAriaLabel: `Premium for ${leg.label}`,
-      premiumUnavailableAriaLabel: `Premium not applicable for ${leg.label}`
+      premiumUnavailableAriaLabel: `Premium not applicable for ${leg.label}`,
+      moveUpCommand: {
+        label: "Move up",
+        ariaLabel: `Move ${leg.label} up`,
+        disabled: first,
+        disabledReason: first ? `${leg.label} is already the first leg.` : null
+      },
+      moveDownCommand: {
+        label: "Move down",
+        ariaLabel: `Move ${leg.label} down`,
+        disabled: last,
+        disabledReason: last ? `${leg.label} is already the last leg.` : null
+      }
     };
   });
 }
@@ -776,4 +805,11 @@ function formatPnl(value: number): string {
 function formatCurrency(value: number): string {
   if (!Number.isFinite(value)) return "—";
   return `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+}
+
+function slugifyId(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "leg";
 }

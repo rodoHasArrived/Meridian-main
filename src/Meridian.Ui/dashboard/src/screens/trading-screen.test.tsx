@@ -513,9 +513,32 @@ describe("TradingScreen", () => {
     const quantityInput = screen.getAllByRole("spinbutton")[0];
     await user.clear(quantityInput);
     await user.type(quantityInput, "10");
-    await user.click(screen.getByRole("button", { name: /submit order/i }));
+    const submitButton = screen.getByRole("button", { name: /submit order/i });
+    expect(submitButton).toBeDisabled();
+    expect(submitButton).toHaveAttribute("title", "Review the order preview and acknowledge before submitting.");
+    await user.click(screen.getByRole("checkbox", { name: /i reviewed the order preview and risk warnings/i }));
+    expect(submitButton).toBeEnabled();
+    await user.click(submitButton);
 
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(2));
+  });
+
+  it("rejects direct order-ticket submits until the preview is acknowledged", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen();
+
+    await user.click(screen.getByRole("button", { name: /new order/i }));
+    await user.type(screen.getByPlaceholderText("AAPL"), "AAPL");
+    const quantityInput = screen.getAllByRole("spinbutton")[0];
+    await user.clear(quantityInput);
+    await user.type(quantityInput, "10");
+
+    const form = screen.getByRole("button", { name: /submit order/i }).closest("form");
+    expect(form).not.toBeNull();
+    fireEvent.submit(form!);
+
+    expect(api.submitOrder).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent("Review the order preview and acknowledge before submitting.");
   });
 
   it("renders the order ticket through shared labelled controls", async () => {
@@ -528,6 +551,7 @@ describe("TradingScreen", () => {
     expect(screen.getByRole("combobox", { name: "Order side" })).toHaveAccessibleDescription("Enter a symbol before submitting an order.");
     expect(screen.getByRole("combobox", { name: "Order type" })).toHaveAccessibleDescription("Enter a symbol before submitting an order.");
     expect(screen.getByLabelText("Order symbol")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByRole("checkbox", { name: /i reviewed the order preview and risk warnings/i })).toBeDisabled();
 
     await user.type(screen.getByLabelText("Order symbol"), "AAPL");
     expect(screen.getByLabelText("Order quantity")).toHaveAttribute("aria-invalid", "true");
@@ -670,12 +694,18 @@ describe("TradingScreen", () => {
 
     await user.click(screen.getByRole("button", { name: /open paper session creation form/i }));
     await user.type(screen.getByLabelText("Strategy ID"), "strat-1");
+    expect(screen.getByLabelText("Initial cash ($)")).not.toHaveAttribute("aria-invalid");
     await user.click(screen.getByRole("button", { name: /create paper session/i }));
 
     const creatingButton = await screen.findByRole("button", { name: /creating paper session/i });
     expect(creatingButton).toBeDisabled();
     expect(creatingButton).toHaveAttribute("title", "Paper session creation is in progress.");
     expect(screen.getByRole("button", { name: "Cancel" })).toHaveAttribute("title", "Paper session creation is in progress.");
+    expect(screen.getByLabelText("Strategy ID")).toBeDisabled();
+    expect(screen.getByLabelText("Strategy ID")).toHaveAttribute("title", "Paper session creation is in progress.");
+    expect(screen.getByLabelText("Initial cash ($)")).toBeDisabled();
+    expect(screen.getByLabelText("Initial cash ($)")).not.toHaveAttribute("aria-invalid");
+    expect(screen.getByLabelText("Initial cash ($)")).toHaveAccessibleDescription("Strategy ID is optional. Initial cash must be at least $1,000.");
 
     resolveCreate({
       sessionId: "sess-new",

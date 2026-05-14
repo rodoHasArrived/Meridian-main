@@ -1,16 +1,70 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  /* ─── Light mode — opt-in via [data-appearance="light"] ───────────────────
+     Follows cash-flow-factor-sch clean light palette while retaining Meridian's
+     blue-shifted identity. Meridian is dark-first (trading terminal); light is
+     an opt-in surface for reporting or embedded views.
+  ──────────────────────────────────────────────────────────────────────────*/
+  [data-appearance="light"] {
+    --background: 215 20% 96%;
+    --foreground: 215 30% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 30% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 30% 12%;
+    --primary: 198 72% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 18% 91%;
+    --secondary-foreground: 215 30% 12%;
+    --muted: 210 15% 91%;
+    --muted-foreground: 210 18% 42%;
+    --accent: 36 70% 46%;
+    --accent-foreground: 0 0% 100%;
+    --border: 210 22% 82%;
+    --input: 210 22% 85%;
+    --ring: 198 72% 38%;
+    --paper: 214 80% 55%;
+    --live: 198 72% 38%;
+    --live-env: 0 72% 50%;
+    --warning: 36 70% 46%;
+    --success: 158 55% 35%;
+    --danger: 354 60% 48%;
+    --panel-strong: 215 15% 92%;
+    --panel-soft: 215 12% 93%;
+    --surface-raise: 215 18% 87%;
+    --sidebar: 215 22% 94%;
+    --sidebar-foreground: 215 30% 12%;
+    --sidebar-primary: 198 72% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 18% 88%;
+    --sidebar-accent-foreground: 215 30% 12%;
+    --sidebar-border: 210 22% 80%;
+    --sidebar-ring: 198 72% 38%;
+    --chart-1: 198 72% 38%;
+    --chart-2: 158 55% 35%;
+    --chart-3: 354 60% 48%;
+    --chart-4: 36 70% 46%;
+    --chart-5: 214 80% 55%;
+    --shadow-color: 215 30% 12%;
+    --shadow-opacity: 0.08;
+    --shadow-blur: 0px;
+    --shadow-spread: 0px;
+    --shadow-offset-x: 3px;
+    --shadow-offset-y: 3px;
+  }
+
   :root {
     /* ─── Track A: HSL / Tailwind ─────────────────────────────────────────────
        These HSL channel variables feed Tailwind utility classes (bg-background,
        text-foreground, border-border, ring-primary, etc.). ALL components/ui/
        primitives consume ONLY these variables. Adjust here to change the
-       Tailwind palette. Changes here do NOT automatically update Track B.
+       Tailwind palette. Token architecture aligned with cash-flow-factor-sch.
+       Changes here do NOT automatically update Track B.
     ──────────────────────────────────────────────────────────────────────────*/
     --background: 215 42% 6%;
     --foreground: 210 30% 92%;
@@ -38,12 +92,48 @@
     --panel-strong: 213 48% 12%;
     --panel-soft: 213 36% 15%;
     --surface-raise: 213 40% 18%;
+    /* ─── Sidebar tokens — aligned with cash-flow-factor-sch ─────────────────
+       Maps the operator rail surface to the same sidebar token contract used
+       in the reference app. Consumed by sidebar.tsx and rail components.
+    ──────────────────────────────────────────────────────────────────────────*/
+    --sidebar: 215 50% 5%;
+    --sidebar-foreground: 210 30% 92%;
+    --sidebar-primary: 198 72% 50%;
+    --sidebar-primary-foreground: 213 54% 7%;
+    --sidebar-accent: 213 32% 16%;
+    --sidebar-accent-foreground: 207 44% 90%;
+    --sidebar-border: 208 38% 22%;
+    --sidebar-ring: 198 72% 50%;
+    /* ─── Chart tokens — aligned with cash-flow-factor-sch naming ────────────
+       Named --chart-1…5 to match the reference app's token contract.
+       Mapped to Meridian's semantic chart palette: cyan / green / red / amber / blue.
+    ──────────────────────────────────────────────────────────────────────────*/
+    --chart-1: 198 72% 50%;
+    --chart-2: 158 66% 44%;
+    --chart-3: 354 68% 62%;
+    --chart-4: 36 80% 58%;
+    --chart-5: 214 82% 68%;
+    /* ─── Border radii ───────────────────────────────────────────────────────
+       --radius is the base value (lg); all others are derived offsets following
+       cash-flow-factor-sch's scalable radius convention.
+    ──────────────────────────────────────────────────────────────────────────*/
+    --radius: 0.5rem;
     --radius-xl: 0.625rem;
     --radius-lg: 0.5rem;
     --radius-md: 0.375rem;
     --radius-sm: 0.25rem;
     --radius-xs: 0.1875rem;
     --space-panel: 1.5rem;
+    /* ─── Flat shadow tokens — aligned with cash-flow-factor-sch ─────────────
+       Hard-offset, zero-blur shadow system from the reference app.
+       Separate from the layered Meridian workstation shadows in Track B.
+    ──────────────────────────────────────────────────────────────────────────*/
+    --shadow-color: 215 30% 0%;
+    --shadow-opacity: 0.5;
+    --shadow-blur: 0px;
+    --shadow-spread: 0px;
+    --shadow-offset-x: 3px;
+    --shadow-offset-y: 3px;
     /* ─── Track B: Hex / custom CSS ───────────────────────────────────────────
        Raw hex values consumed by hand-authored .workstation-*, .operator-*,
        .toolbar-*, and .workbench classes. NOT referenced by Tailwind utilities.
@@ -115,6 +205,8 @@
 
   body {
     @apply min-h-screen bg-background font-sans text-foreground antialiased;
+    font-size: 13px;
+    line-height: 1.5;
     background-image:
       radial-gradient(ellipse at 6% 0%, rgba(42, 178, 212, 0.08) 0%, transparent 40%),
       radial-gradient(ellipse at 96% 96%, rgba(96, 165, 250, 0.05) 0%, transparent 38%),

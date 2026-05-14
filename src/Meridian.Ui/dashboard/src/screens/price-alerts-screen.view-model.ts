@@ -37,6 +37,13 @@ export interface PriceAlertsScreenViewModel {
   validation: PriceAlertFormValidation;
   submitAction: PriceAlertSubmitAction;
   submitFeedback: PriceAlertSubmitFeedback | null;
+  conditionOptions: PriceAlertConditionOption[];
+  fieldOptions: PriceAlertFieldOption[];
+  conditionHelpId: string;
+  conditionHelpText: string;
+  fieldHelpId: string;
+  fieldHelpText: string;
+  fieldSelectAriaLabel: string;
   summaryMetrics: MetricSnapshot[];
   heroDescription: string;
   pollErrorPanel: PriceAlertStatusPanel | null;
@@ -66,6 +73,25 @@ export interface PriceAlertSubmitAction {
 export interface PriceAlertSubmitFeedback {
   text: string;
   ariaLabel: string;
+  action: PriceAlertSubmitFeedbackAction;
+}
+
+export interface PriceAlertSubmitFeedbackAction {
+  label: string;
+  href: string;
+  ariaLabel: string;
+}
+
+export interface PriceAlertConditionOption {
+  value: PriceAlertCondition;
+  label: string;
+  helper: string;
+}
+
+export interface PriceAlertFieldOption {
+  value: PriceAlertField;
+  label: string;
+  helper: string;
 }
 
 export interface PriceAlertStatusPanel {
@@ -264,10 +290,7 @@ export function usePriceAlertsScreenViewModel({
 
     alerts.createAlert(draft);
     setForm({ ...DEFAULT_PRICE_ALERT_FORM, condition: form.condition, field: form.field });
-    setSubmitFeedback({
-      text: `Alert set: ${draft.symbol} ${describeCondition(draft.condition, draft.threshold, draft.field)}`,
-      ariaLabel: `Price alert created for ${draft.symbol}`
-    });
+    setSubmitFeedback(buildPriceAlertSubmitFeedback(draft));
   }
 
   async function requestNotifications() {
@@ -284,6 +307,13 @@ export function usePriceAlertsScreenViewModel({
     validation,
     submitAction,
     submitFeedback,
+    conditionOptions: PRICE_ALERT_CONDITION_OPTIONS,
+    fieldOptions: PRICE_ALERT_FIELD_OPTIONS,
+    conditionHelpId: PRICE_ALERT_CONDITION_HELP_ID,
+    conditionHelpText: buildPriceAlertConditionHelpText(form.condition),
+    fieldHelpId: PRICE_ALERT_FIELD_HELP_ID,
+    fieldHelpText: buildPriceAlertFieldHelpText(form.field),
+    fieldSelectAriaLabel: "Price field",
     summaryMetrics,
     heroDescription: `Get notified when a symbol crosses a price. Alerts are evaluated against live quotes every ${Math.round(PRICE_ALERTS_POLL_INTERVAL_MS / 1000)}s while this tab is open.`,
     pollErrorPanel,
@@ -360,19 +390,32 @@ export function parseThreshold(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-export const PRICE_ALERT_CONDITION_OPTIONS: Array<{ value: PriceAlertCondition; label: string; helper: string }> = [
+export const PRICE_ALERT_CONDITION_OPTIONS: PriceAlertConditionOption[] = [
   { value: "above", label: "At or above", helper: "Fires whenever price is at or above the threshold." },
   { value: "below", label: "At or below", helper: "Fires whenever price is at or below the threshold." },
   { value: "crosses-up", label: "Crosses up through", helper: "Fires once when price rises through the threshold." },
   { value: "crosses-down", label: "Crosses down through", helper: "Fires once when price falls through the threshold." }
 ];
 
-export const PRICE_ALERT_FIELD_OPTIONS: Array<{ value: PriceAlertField; label: string }> = [
-  { value: "last", label: "Last trade" },
-  { value: "bid", label: "Bid" },
-  { value: "ask", label: "Ask" },
-  { value: "mid", label: "Mid" }
+export const PRICE_ALERT_FIELD_OPTIONS: PriceAlertFieldOption[] = [
+  { value: "last", label: "Last trade", helper: "Field: last trade price." },
+  { value: "bid", label: "Bid", helper: "Field: best bid price." },
+  { value: "ask", label: "Ask", helper: "Field: best ask price." },
+  { value: "mid", label: "Mid", helper: "Field: bid-ask midpoint." }
 ];
+
+const PRICE_ALERT_CONDITION_HELP_ID = "price-alert-condition-help";
+const PRICE_ALERT_FIELD_HELP_ID = "price-alert-field-help";
+
+export function buildPriceAlertConditionHelpText(condition: PriceAlertCondition): string {
+  return PRICE_ALERT_CONDITION_OPTIONS.find((option) => option.value === condition)?.helper
+    ?? "Fires when the selected price condition is met.";
+}
+
+export function buildPriceAlertFieldHelpText(field: PriceAlertField): string {
+  return PRICE_ALERT_FIELD_OPTIONS.find((option) => option.value === field)?.helper
+    ?? "Field: selected quote price.";
+}
 
 export function formatPriceAlertPrice(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) {
@@ -421,6 +464,18 @@ export function buildPriceAlertSubmitAction(validation: PriceAlertFormValidation
     disabled: !validation.canSubmit,
     disabledReason,
     ariaLabel: validation.canSubmit ? "Create price alert" : `Create price alert unavailable: ${disabledReason}`
+  };
+}
+
+export function buildPriceAlertSubmitFeedback(draft: PriceAlertDraft): PriceAlertSubmitFeedback {
+  return {
+    text: `Alert set: ${draft.symbol} ${describeCondition(draft.condition, draft.threshold, draft.field)}`,
+    ariaLabel: `Price alert created for ${draft.symbol}`,
+    action: {
+      label: "Open live quotes",
+      href: `/data/quotes?symbol=${encodeURIComponent(draft.symbol)}`,
+      ariaLabel: `Open live quotes for ${draft.symbol} after creating price alert`
+    }
   };
 }
 

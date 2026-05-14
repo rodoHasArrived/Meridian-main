@@ -502,7 +502,7 @@ describe("paper session view model", () => {
         canRestore: false,
         canVerify: false,
         canClose: false,
-        verifyButtonLabel: "Verifying...",
+        verifyButtonLabel: "Verifying…",
         restoreDisabledReason: "Paper session sess-1 verification is running.",
         verifyDisabledReason: "Paper session sess-1 verification is running.",
         closeDisabledReason: "Paper session sess-1 verification is running.",
@@ -539,6 +539,28 @@ describe("paper session view model", () => {
     }));
     expect(state.detail?.replay?.rows).toContainEqual({ label: "Verification audit", value: "audit-verify-1" });
     expect(state.statusAnnouncement).toBe("Verifying paper session sess-1.");
+    expect(state.strategyIdField).toMatchObject({
+      id: "paper-session-strategy-id",
+      label: "Strategy ID",
+      field: "strategyId",
+      value: "",
+      describedBy: "paper-session-create-requirements",
+      disabled: true,
+      disabledReason: "Paper session sess-1 verification is running.",
+      invalid: false
+    });
+    expect(state.initialCashField).toMatchObject({
+      id: "paper-session-initial-cash",
+      label: "Initial cash ($)",
+      field: "initialCash",
+      value: "100000",
+      describedBy: "paper-session-create-requirements",
+      disabled: true,
+      disabledReason: "Paper session sess-1 verification is running.",
+      invalid: false,
+      min: 1000,
+      step: 1000
+    });
   });
 
   it("validates create-session cash and builds default strategy ids", () => {
@@ -569,6 +591,9 @@ describe("paper session view model", () => {
     expect(invalidState.createButtonDisabledReason).toBe("Enter initial cash of at least $1,000.");
     expect(invalidState.cancelCreateButtonDisabledReason).toBeNull();
     expect(invalidState.formRequirementText).toBe("Enter initial cash of at least $1,000.");
+    expect(invalidState.strategyIdField.invalid).toBe(false);
+    expect(invalidState.initialCashField.invalid).toBe(true);
+    expect(invalidState.initialCashField.disabled).toBe(false);
     expect(invalidState.statusAnnouncement).toBe("Paper session workflow failed: Create failed");
   });
 });
@@ -1064,6 +1089,14 @@ describe("trading order ticket view model", () => {
     expect(invalid.canSubmit).toBe(false);
     expect(invalid.invalidField).toBe("quantity");
     expect(invalid.requirementText).toBe("Enter an order quantity greater than zero.");
+    expect(invalid.submitDisabledReason).toBe("Enter an order quantity greater than zero.");
+    expect(invalid.acknowledgement).toMatchObject({
+      id: "order-ticket-review-acknowledgement",
+      label: "I reviewed the order preview and risk warnings",
+      checked: false,
+      disabled: true,
+      disabledReason: "Complete valid order fields before acknowledging the preview."
+    });
     expect(invalid.formId).toBe("trading-order-ticket");
     expect(invalid.requirementId).toBe("order-ticket-requirements");
     expect(invalid.controls.symbol).toMatchObject({
@@ -1094,18 +1127,36 @@ describe("trading order ticket view model", () => {
       errorText: null
     });
 
-    expect(submitting.submitButtonLabel).toBe("Submitting...");
+    expect(submitting.submitButtonLabel).toBe("Submitting…");
+    expect(submitting.submitBusy).toBe(true);
+    expect(submitting.submitDisabledReason).toBe("Order submission is already running.");
     expect(submitting.statusAnnouncement).toBe("Submitting order request.");
     expect(submitting.controls.limitPrice).toBeNull();
 
-    const limitOrder = buildOrderTicketState({
-      form: { ...emptyOrderTicketForm, symbol: "MSFT", type: "Limit", quantity: 2, limitPrice: 189.44 },
+    const validUnacknowledged = buildOrderTicketState({
+      form: { ...emptyOrderTicketForm, symbol: "MSFT", quantity: 2 },
       open: true,
       phase: "idle",
       orderId: null,
       errorText: null
     });
 
+    expect(validUnacknowledged.canSubmit).toBe(false);
+    expect(validUnacknowledged.submitDisabledReason).toBe("Review the order preview and acknowledge before submitting.");
+    expect(validUnacknowledged.acknowledgement.disabled).toBe(false);
+
+    const limitOrder = buildOrderTicketState({
+      form: { ...emptyOrderTicketForm, symbol: "MSFT", type: "Limit", quantity: 2, limitPrice: 189.44 },
+      open: true,
+      phase: "idle",
+      orderId: null,
+      errorText: null,
+      acknowledged: true
+    });
+
+    expect(limitOrder.canSubmit).toBe(true);
+    expect(limitOrder.submitDisabledReason).toBeNull();
+    expect(limitOrder.acknowledgement.checked).toBe(true);
     expect(limitOrder.controls.limitPrice).toMatchObject({
       id: "order-ticket-limit-price",
       label: "Limit price",

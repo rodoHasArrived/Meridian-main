@@ -339,8 +339,11 @@ describe("operator readiness console view model", () => {
     expect(state.title).toBe("Operator Readiness Console");
     expect(state.overallLevel).toBe("blocked");
     expect(state.overallLabel).toBe("Blocked");
+    expect(state.asOf).toBe("Apr 29, 12:01 UTC");
+    expect(state.statusAnnouncement).toContain("as of Apr 29, 12:01 UTC");
     expect(state.latestRuns[0]).toEqual(expect.objectContaining({ id: "run-1", value: "Needs Review" }));
     expect(state.activeSessionFacts[0]).toEqual(expect.objectContaining({ value: "paper-1", level: "ready" }));
+    expect(state.activeSessionFacts.find((row) => row.id === "paper-equity")?.meta).toBe("Created Apr 29, 11:00 UTC");
     expect(state.providerTrustRows.some((row) => row.label === "DK1 provider trust")).toBe(true);
     expect(state.reconciliationRows[0]).toEqual(expect.objectContaining({ id: "run-1:cash", level: "blocked" }));
     expect(state.promotionRows.some((row) => row.label === "Promotion checklist")).toBe(true);
@@ -413,6 +416,10 @@ describe("operator readiness console view model", () => {
       statusLabel: "Warning",
       action: expect.objectContaining({ route: "/accounting/reconciliation" })
     }));
+    expect(state.selectedWorkItemDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Created", value: "Apr 29, 12:01 UTC" }
+    ]));
+    expect(state.selectedWorkItemDetail?.ariaLabel).toBe("Selected operator work item: Cash break open");
     expect(state.nextAction).toEqual(expect.objectContaining({
       title: "Reconciliation clear",
       label: "Open break queue",
@@ -426,6 +433,10 @@ describe("operator readiness console view model", () => {
       ariaLabel: "Open promotion review: Promotion checklist incomplete",
       variant: "outline"
     });
+    expect(state.workItems.find((item) => item.id === "promotion-review-run-1")).toEqual(expect.objectContaining({
+      createdAtLabel: "Apr 29, 12:00 UTC",
+      ariaLabel: expect.stringContaining("Created Apr 29, 12:00 UTC")
+    }));
     expect(state.panels.find((panel) => panel.id === "reporting-report-packs")).toEqual(expect.objectContaining({
       title: "Reporting report packs",
       ariaLabel: "Reporting report packs readiness evidence",

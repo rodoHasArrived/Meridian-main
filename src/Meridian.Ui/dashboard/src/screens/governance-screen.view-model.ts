@@ -324,6 +324,9 @@ export interface ReconciliationBreakRowViewModel extends ReconciliationBreakQueu
   canAssign: boolean;
   canResolve: boolean;
   canDismiss: boolean;
+  assignDisabledReason: string | null;
+  resolveDisabledReason: string | null;
+  dismissDisabledReason: string | null;
 }
 
 export interface ReconciliationBreakQueueState {
@@ -348,6 +351,7 @@ export interface ReconciliationResolveDialogState {
   helpText: string;
   submitLabel: string;
   submitAriaLabel: string;
+  submitDisabledReason: string | null;
   cancelLabel: string;
   cancelAriaLabel: string;
   isSubmitDisabled: boolean;
@@ -360,6 +364,11 @@ export interface ReconciliationResolveDialogViewModel {
   updateRationale: (value: string) => void;
   submit: () => Promise<void>;
   isOpenFor: (breakId: string) => boolean;
+  getActionDisabledReason: (
+    breakId: string,
+    command: ReconciliationBreakCommand,
+    baseDisabledReason?: string | null
+  ) => string | null;
 }
 
 export interface ReconciliationDetailActionsViewModel {
@@ -1426,6 +1435,21 @@ export function useReconciliationResolveDialogViewModel(
   );
 
   const isOpenFor = useCallback((breakId: string) => dialog?.breakId === breakId, [dialog]);
+  const getActionDisabledReason = useCallback((
+    breakId: string,
+    command: ReconciliationBreakCommand,
+    baseDisabledReason: string | null = null
+  ) => {
+    if (baseDisabledReason) {
+      return baseDisabledReason;
+    }
+
+    if (dialog?.breakId === breakId && (command === "resolve" || command === "dismiss")) {
+      return "Enter the rationale or cancel the open queue action before choosing another action.";
+    }
+
+    return null;
+  }, [dialog]);
 
   return {
     active,
@@ -1433,7 +1457,8 @@ export function useReconciliationResolveDialogViewModel(
     close,
     updateRationale: setRationale,
     submit,
-    isOpenFor
+    isOpenFor,
+    getActionDisabledReason
   };
 }
 
@@ -1938,6 +1963,9 @@ export function buildReconciliationResolveDialogState(
     helpText: "A rationale is required before this queue action can be submitted.",
     submitLabel: `Confirm ${command}`,
     submitAriaLabel: `Confirm ${command} for reconciliation break ${breakId}`,
+    submitDisabledReason: rationale.trim()
+      ? null
+      : "Enter an operator rationale before confirming this queue action.",
     cancelLabel: "Cancel",
     cancelAriaLabel: `Cancel ${command} for reconciliation break ${breakId}`,
     isSubmitDisabled: !rationale.trim()
@@ -1953,6 +1981,9 @@ export function buildReconciliationBreakRows(
     const assignBusy = actionBusy && action?.command === "assign";
     const resolveBusy = actionBusy && action?.command === "resolve";
     const dismissBusy = actionBusy && action?.command === "dismiss";
+    const canAssign = !action && item.status === "Open";
+    const canResolve = !action && item.status !== "Resolved";
+    const canDismiss = !action && item.status !== "Dismissed";
 
     return {
       ...item,
@@ -1963,11 +1994,67 @@ export function buildReconciliationBreakRows(
       assignAriaLabel: `Assign reconciliation break ${item.breakId}`,
       resolveAriaLabel: `Resolve reconciliation break ${item.breakId}`,
       dismissAriaLabel: `Dismiss reconciliation break ${item.breakId}`,
-      canAssign: !action && item.status === "Open",
-      canResolve: !action && item.status !== "Resolved",
-      canDismiss: !action && item.status !== "Dismissed"
+      canAssign,
+      canResolve,
+      canDismiss,
+      assignDisabledReason: buildBreakActionDisabledReason({
+        item,
+        action,
+        busy: assignBusy,
+        alreadyComplete: item.status !== "Open",
+        busyReason: "Assignment is already in progress for this break.",
+        completeReason: `Only open breaks can be assigned; this break is ${item.status}.`
+      }),
+      resolveDisabledReason: buildBreakActionDisabledReason({
+        item,
+        action,
+        busy: resolveBusy,
+        alreadyComplete: item.status === "Resolved",
+        busyReason: "Resolution is already in progress for this break.",
+        completeReason: "This break is already resolved."
+      }),
+      dismissDisabledReason: buildBreakActionDisabledReason({
+        item,
+        action,
+        busy: dismissBusy,
+        alreadyComplete: item.status === "Dismissed",
+        busyReason: "Dismissal is already in progress for this break.",
+        completeReason: "This break is already dismissed."
+      })
     };
   });
+}
+
+function buildBreakActionDisabledReason({
+  item,
+  action,
+  busy,
+  alreadyComplete,
+  busyReason,
+  completeReason
+}: {
+  item: ReconciliationBreakQueueItem;
+  action: ReconciliationBreakAction | null;
+  busy: boolean;
+  alreadyComplete: boolean;
+  busyReason: string;
+  completeReason: string;
+}): string | null {
+  if (busy) {
+    return busyReason;
+  }
+
+  if (action) {
+    return action.breakId === item.breakId
+      ? "Another action is already running for this break."
+      : "Another reconciliation break action is in progress.";
+  }
+
+  if (alreadyComplete) {
+    return completeReason;
+  }
+
+  return null;
 }
 
 export function buildGovernanceCashFlowViewState(

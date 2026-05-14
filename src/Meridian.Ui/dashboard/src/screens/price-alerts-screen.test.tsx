@@ -53,8 +53,11 @@ function buildTrigger(overrides: Partial<PriceAlertTrigger> = {}): PriceAlertTri
   };
 }
 
-function renderScreen(storage: StorageLike, initialEntries: string[] = ["/data/alerts"]) {
-  const fetchSnapshot = vi.fn().mockResolvedValue({ timestamp: new Date().toISOString(), count: 0, quotes: [] });
+function renderScreen(
+  storage: StorageLike,
+  initialEntries: string[] = ["/data/alerts"],
+  fetchSnapshot = vi.fn().mockResolvedValue({ timestamp: new Date().toISOString(), count: 0, quotes: [] })
+) {
   return renderWithRouter(
     <PriceAlertsProvider options={{ storage, fetchSnapshot, pollIntervalMs: 100_000 }}>
       <PriceAlertsScreen />
@@ -85,6 +88,24 @@ describe("PriceAlertsScreen", () => {
     expect(screen.getByText(/No alerts set/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Create price alert/i })).toBeDisabled();
     expect(screen.getByText(/No alerts have triggered yet/i)).toBeInTheDocument();
+  });
+
+  it("renders VM-owned condition and field guidance in the alert form", () => {
+    renderScreen(new MemoryStorage());
+
+    const condition = screen.getByLabelText("Condition");
+    const priceField = screen.getByLabelText("Price field");
+
+    expect(condition).toHaveAttribute("aria-describedby", "price-alert-condition-help");
+    expect(priceField).toHaveAttribute("aria-describedby", "price-alert-field-help");
+    expect(screen.getByText("Fires whenever price is at or above the threshold.")).toBeInTheDocument();
+    expect(screen.getByText("Field: last trade price.")).toBeInTheDocument();
+
+    fireEvent.change(condition, { target: { value: "crosses-up" } });
+    fireEvent.change(priceField, { target: { value: "mid" } });
+
+    expect(screen.getByText("Fires once when price rises through the threshold.")).toBeInTheDocument();
+    expect(screen.getByText("Field: bid-ask midpoint.")).toBeInTheDocument();
   });
 
   it("renders persisted alerts and identifies disabled and triggered states", () => {
@@ -171,6 +192,20 @@ describe("PriceAlertsScreen", () => {
   it("seeds the symbol from ?symbol= query string", () => {
     renderScreen(new MemoryStorage(), ["/data/alerts?symbol=msft"]);
     expect((screen.getByLabelText("Symbol") as HTMLInputElement).value).toBe("MSFT");
+  });
+
+  it("links successful alert creation to live quote validation", () => {
+    const fetchSnapshot = vi.fn().mockImplementation(() => new Promise<never>(() => {}));
+    renderScreen(new MemoryStorage(), ["/data/alerts"], fetchSnapshot);
+
+    fireEvent.change(screen.getByLabelText("Symbol"), { target: { value: "brk/b" } });
+    fireEvent.change(screen.getByLabelText("Threshold"), { target: { value: "300" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create price alert" }));
+
+    expect(screen.getByRole("status", { name: "Price alert created for BRK/B" }))
+      .toHaveTextContent("Alert set: BRK/B last ≥ 300");
+    expect(screen.getByRole("link", { name: "Open live quotes for BRK/B after creating price alert" }))
+      .toHaveAttribute("href", "/data/quotes?symbol=BRK%2FB");
   });
 
   it("shows the notification CTA when permission is default", () => {

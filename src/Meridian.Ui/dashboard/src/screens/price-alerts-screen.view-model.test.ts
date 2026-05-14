@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildPriceAlertConditionHelpText,
+  buildPriceAlertFieldHelpText,
   buildPriceAlertListSection,
   buildPriceAlertMetrics,
   buildPriceAlertSubmitAction,
+  buildPriceAlertSubmitFeedback,
   buildPriceAlertTriggerSection,
   DEFAULT_PRICE_ALERT_FORM,
   formatPriceAlertPrice,
@@ -131,6 +134,30 @@ describe("price alert presentation state", () => {
     expect(action.disabled).toBe(true);
     expect(action.disabledReason).toContain("Enter a symbol");
     expect(action.ariaLabel).toContain("unavailable");
+  });
+
+  it("builds a live-quote handoff after creating an alert", () => {
+    const feedback = buildPriceAlertSubmitFeedback({
+      symbol: "BRK/B",
+      condition: "above",
+      field: "last",
+      threshold: 300,
+      note: null
+    });
+
+    expect(feedback.text).toBe("Alert set: BRK/B last ≥ 300");
+    expect(feedback.action).toEqual({
+      label: "Open live quotes",
+      href: "/data/quotes?symbol=BRK%2FB",
+      ariaLabel: "Open live quotes for BRK/B after creating price alert"
+    });
+  });
+
+  it("derives condition and field helper text for the alert form", () => {
+    expect(buildPriceAlertConditionHelpText("crosses-up")).toBe(
+      "Fires once when price rises through the threshold."
+    );
+    expect(buildPriceAlertFieldHelpText("mid")).toBe("Field: bid-ask midpoint.");
   });
 
   it("maps alert service counters to design-system metric snapshots", () => {

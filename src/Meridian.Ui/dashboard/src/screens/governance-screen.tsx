@@ -1083,6 +1083,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                       size="sm"
                       variant="outline"
                       disabled={!item.canAssign}
+                      disabledReason={item.assignDisabledReason}
                       aria-label={item.assignAriaLabel}
                       onClick={() => void reconciliation.assignBreak(item.breakId)}
                     >
@@ -1092,6 +1093,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                       size="sm"
                       variant="outline"
                       disabled={!item.canResolve || resolveDialog.isOpenFor(item.breakId)}
+                      disabledReason={resolveDialog.getActionDisabledReason(item.breakId, "resolve", item.resolveDisabledReason)}
                       aria-label={item.resolveAriaLabel}
                       onClick={() => resolveDialog.open(item.breakId, "Resolved")}
                     >
@@ -1101,6 +1103,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                       size="sm"
                       variant="ghost"
                       disabled={!item.canDismiss || resolveDialog.isOpenFor(item.breakId)}
+                      disabledReason={resolveDialog.getActionDisabledReason(item.breakId, "dismiss", item.dismissDisabledReason)}
                       aria-label={item.dismissAriaLabel}
                       onClick={() => resolveDialog.open(item.breakId, "Dismissed")}
                     >
@@ -1134,7 +1137,13 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                         {resolveDialog.active.helpText}
                       </p>
                       <div className="flex gap-2">
-                        <Button type="submit" size="sm" disabled={resolveDialog.active.isSubmitDisabled} aria-label={resolveDialog.active.submitAriaLabel}>
+                        <Button
+                          type="submit"
+                          size="sm"
+                          disabled={resolveDialog.active.isSubmitDisabled}
+                          disabledReason={resolveDialog.active.submitDisabledReason}
+                          aria-label={resolveDialog.active.submitAriaLabel}
+                        >
                           {resolveDialog.active.submitLabel}
                         </Button>
                         <Button type="button" size="sm" variant="ghost" aria-label={resolveDialog.active.cancelAriaLabel} onClick={resolveDialog.close}>

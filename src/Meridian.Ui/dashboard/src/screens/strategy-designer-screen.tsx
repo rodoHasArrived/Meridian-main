@@ -1,5 +1,5 @@
 import { useId, useState } from "react";
-import { GripVertical, LayoutGrid, Plus, Sparkles, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, GripVertical, LayoutGrid, Plus, Sparkles, Trash2 } from "lucide-react";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -240,7 +240,7 @@ function CanvasPanel({ vm, dropActive, setDropActive }: CanvasPanelProps) {
               {vm.emptyStateMessage}
             </div>
           ) : (
-            vm.canvasLegs.map((leg) => (
+            vm.canvasLegs.map((leg, index) => (
               <CanvasLeg
                 key={leg.id}
                 leg={leg}
@@ -248,6 +248,18 @@ function CanvasPanel({ vm, dropActive, setDropActive }: CanvasPanelProps) {
                 onRemove={() => vm.removeLeg(leg.id)}
                 onUpdate={(patch) => vm.updateLeg(leg.id, patch)}
                 onReorder={(sourceId) => vm.reorderLeg(sourceId, leg.id)}
+                onMoveUp={() => {
+                  const target = vm.canvasLegs[index - 1];
+                  if (target) {
+                    vm.reorderLeg(leg.id, target.id);
+                  }
+                }}
+                onMoveDown={() => {
+                  const target = vm.canvasLegs[index + 1];
+                  if (target) {
+                    vm.reorderLeg(leg.id, target.id);
+                  }
+                }}
               />
             ))
           )}
@@ -263,9 +275,11 @@ interface CanvasLegProps {
   onRemove: () => void;
   onUpdate: (patch: Partial<Pick<StrategyLeg, "quantity" | "strike" | "premium" | "direction">>) => void;
   onReorder: (sourceLegId: string) => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
 }
 
-function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder }: CanvasLegProps) {
+function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder, onMoveUp, onMoveDown }: CanvasLegProps) {
   return (
     <div
       role="listitem"
@@ -330,6 +344,34 @@ function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder }: CanvasLegPr
         <Button
           type="button"
           variant="ghost"
+          size="icon"
+          onClick={(event) => {
+            event.stopPropagation();
+            onMoveUp();
+          }}
+          disabled={leg.moveUpCommand.disabled}
+          disabledReason={leg.moveUpCommand.disabledReason}
+          aria-label={leg.moveUpCommand.ariaLabel}
+        >
+          <ArrowUp className="h-4 w-4" aria-hidden="true" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={(event) => {
+            event.stopPropagation();
+            onMoveDown();
+          }}
+          disabled={leg.moveDownCommand.disabled}
+          disabledReason={leg.moveDownCommand.disabledReason}
+          aria-label={leg.moveDownCommand.ariaLabel}
+        >
+          <ArrowDown className="h-4 w-4" aria-hidden="true" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
           onClick={(event) => {
             event.stopPropagation();
             onRemove();
@@ -341,9 +383,11 @@ function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder }: CanvasLegPr
       </div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <LegField
+          id={leg.fieldIds.direction}
           label="Direction"
           control={
             <Select
+              id={leg.fieldIds.direction}
               value={leg.direction}
               onChange={(event) => onUpdate({ direction: event.target.value as "Long" | "Short" })}
               aria-label={leg.directionAriaLabel}
@@ -355,9 +399,11 @@ function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder }: CanvasLegPr
           }
         />
         <LegField
+          id={leg.fieldIds.quantity}
           label="Quantity"
           control={
             <Input
+              id={leg.fieldIds.quantity}
               type="number"
               min={1}
               step={1}
@@ -371,9 +417,11 @@ function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder }: CanvasLegPr
           }
         />
         <LegField
+          id={leg.fieldIds.strike}
           label={leg.strikeFieldLabel}
           control={
             <Input
+              id={leg.fieldIds.strike}
               type="number"
               min={0}
               step="0.01"
@@ -388,9 +436,11 @@ function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder }: CanvasLegPr
         />
         {leg.isOption ? (
           <LegField
+            id={leg.fieldIds.premium}
             label="Premium"
             control={
               <Input
+                id={leg.fieldIds.premium}
                 type="number"
                 min={0}
                 step="0.01"
@@ -404,7 +454,11 @@ function CanvasLeg({ leg, onSelect, onRemove, onUpdate, onReorder }: CanvasLegPr
             }
           />
         ) : (
-          <LegField label="Premium" control={<Input value="—" disabled aria-label={leg.premiumUnavailableAriaLabel} />} />
+          <LegField
+            id={leg.fieldIds.premium}
+            label="Premium"
+            control={<Input id={leg.fieldIds.premium} value="—" disabled aria-label={leg.premiumUnavailableAriaLabel} />}
+          />
         )}
       </div>
     </div>
@@ -416,8 +470,7 @@ function isInteractiveCanvasTarget(target: EventTarget): boolean {
   return target.closest("a,button,input,select,textarea,[role='button'],[role='link']") !== null;
 }
 
-function LegField({ label, control }: { label: string; control: React.ReactNode }) {
-  const id = useId();
+function LegField({ id, label, control }: { id: string; label: string; control: React.ReactNode }) {
   return (
     <label htmlFor={id} className="flex flex-col gap-1 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
       {label}

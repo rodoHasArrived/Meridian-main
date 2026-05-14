@@ -23,8 +23,6 @@ import { MetricCard } from "@/components/meridian/metric-card";
 import { usePriceAlerts } from "@/lib/price-alerts/service";
 import type { PriceAlertCondition, PriceAlertField } from "@/lib/price-alerts/types";
 import {
-  PRICE_ALERT_CONDITION_OPTIONS,
-  PRICE_ALERT_FIELD_OPTIONS,
   usePriceAlertsScreenViewModel,
   type PriceAlertDetailAction,
   type PriceAlertDetailEmptyState,
@@ -229,8 +227,9 @@ export function PriceAlertsScreen() {
                   id="price-alert-condition"
                   value={vm.form.condition}
                   onChange={(event) => vm.setCondition(event.target.value as PriceAlertCondition)}
+                  aria-describedby={vm.conditionHelpId}
                 >
-                  {PRICE_ALERT_CONDITION_OPTIONS.map((option) => (
+                  {vm.conditionOptions.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </Select>
@@ -238,12 +237,17 @@ export function PriceAlertsScreen() {
                   id="price-alert-field"
                   value={vm.form.field}
                   onChange={(event) => vm.setField(event.target.value as PriceAlertField)}
-                  aria-label="Price field"
+                  aria-label={vm.fieldSelectAriaLabel}
+                  aria-describedby={vm.fieldHelpId}
                 >
-                  {PRICE_ALERT_FIELD_OPTIONS.map((option) => (
+                  {vm.fieldOptions.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </Select>
+              </div>
+              <div className="grid gap-1 text-[11px] leading-4 text-muted-foreground">
+                <p id={vm.conditionHelpId}>{vm.conditionHelpText}</p>
+                <p id={vm.fieldHelpId}>{vm.fieldHelpText}</p>
               </div>
             </FormField>
             <FormField label="Threshold" htmlFor="price-alert-threshold" error={vm.form.threshold ? vm.validation.thresholdError : null}>
@@ -280,10 +284,23 @@ export function PriceAlertsScreen() {
             />
           </FormField>
           {vm.submitFeedback ? (
-            <p role="status" aria-live="polite" aria-label={vm.submitFeedback.ariaLabel} className="mt-3 flex items-center gap-1.5 text-xs text-success">
-              <Check className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>{vm.submitFeedback.text}</span>
-            </p>
+            <div
+              role="status"
+              aria-live="polite"
+              aria-label={vm.submitFeedback.ariaLabel}
+              className="mt-3 flex flex-wrap items-center gap-2 text-xs text-success"
+            >
+              <span className="flex min-w-0 items-center gap-1.5">
+                <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>{vm.submitFeedback.text}</span>
+              </span>
+              <Button asChild variant="outline" size="sm">
+                <Link to={vm.submitFeedback.action.href} aria-label={vm.submitFeedback.action.ariaLabel}>
+                  <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span className="ml-1">{vm.submitFeedback.action.label}</span>
+                </Link>
+              </Button>
+            </div>
           ) : null}
         </CardContent>
       </Card>

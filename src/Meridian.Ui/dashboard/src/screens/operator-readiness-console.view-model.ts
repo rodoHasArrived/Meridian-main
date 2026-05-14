@@ -44,6 +44,7 @@ export interface ReadinessConsoleRow {
   value: string;
   detail: string;
   meta: string;
+  createdAtLabel?: string | null;
   level: ReadinessConsoleLevel;
   ariaLabel: string;
   statusAriaLabel: string;
@@ -327,7 +328,7 @@ export function buildOperatorReadinessConsoleState({
     ? formatReadinessStatusValue(readiness.overallStatus)
     : "Awaiting readiness payload";
   const overallLabel = formatEffectiveOverallLabel(readinessStatusLabel, overallLevel);
-  const asOf = operatorInbox?.asOf ?? readiness?.asOf ?? "Unavailable";
+  const asOf = formatReadinessUtcMinute(operatorInbox?.asOf ?? readiness?.asOf ?? null, "Unavailable");
 
   return {
     title: "Operator Readiness Console",
@@ -423,7 +424,12 @@ function withApiSourcePresentation(sources: ReadinessConsoleApiSourceBase[]): Re
 function withRowPresentation(rows: ReadinessConsoleRowBase[], collectionId: string): ReadinessConsoleRow[] {
   return rows.map((row) => ({
     ...row,
-    ariaLabel: `${row.label}: ${row.value}. ${row.detail} ${row.meta}`,
+    ariaLabel: [
+      `${row.label}: ${row.value}.`,
+      row.detail,
+      row.meta,
+      row.createdAtLabel ? `Created ${row.createdAtLabel}` : null
+    ].filter(Boolean).join(" "),
     statusAriaLabel: `${row.label} status ${row.value}`,
     detailId: `readiness-row-${slugifyId(collectionId)}-${slugifyId(row.id)}-detail`
   }));
@@ -543,7 +549,7 @@ function buildActiveSessionFacts(readiness: TradingOperatorReadiness | null): Re
       label: "Paper portfolio value",
       value: session.portfolioValue === null || session.portfolioValue === undefined ? "Unavailable" : formatCurrency(session.portfolioValue),
       detail: `Initial cash ${formatCurrency(session.initialCash)}`,
-      meta: `Created ${session.createdAt}`,
+      meta: `Created ${formatReadinessUtcMinute(session.createdAt, "timestamp unavailable")}`,
       level: session.portfolioValue === null || session.portfolioValue === undefined ? "review" : "ready"
     },
     {
@@ -972,6 +978,7 @@ function prioritizeWorkItems(workItems: OperatorWorkItem[]): OperatorWorkItem[] 
 
 function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): ReadinessConsoleRowBase {
   const action = includeAction ? buildWorkItemAction(item) : null;
+  const createdAtLabel = formatReadinessUtcMinute(item.createdAt, "Timestamp unavailable");
 
   return {
     id: item.workItemId,
@@ -979,6 +986,7 @@ function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): Readi
     value: item.tone,
     detail: item.detail,
     meta: [item.workspace, item.targetPageTag, item.runId, item.auditReference].filter(Boolean).join(" - ") || item.kind,
+    createdAtLabel,
     level: levelFromTone(item.tone),
     action
   };
@@ -1133,6 +1141,7 @@ function buildSelectedWorkItemDetail(
     fields: [
       { label: "Work item ID", value: selectedRow.id },
       { label: "Attention", value: formatLevelText(selectedRow.level) },
+      ...(selectedRow.createdAtLabel ? [{ label: "Created", value: selectedRow.createdAtLabel }] : []),
       { label: "Route", value: actionRoute },
       { label: "Evidence", value: selectedRow.meta }
     ],
@@ -1715,6 +1724,25 @@ function formatCurrency(value: number): string {
     maximumFractionDigits: 2
   });
 }
+
+function formatReadinessUtcMinute(value: string | null | undefined, fallback: string): string {
+  if (!value) {
+    return fallback;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return fallback;
+  }
+
+  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+}
+
+function padUtc(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function toErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof Error && err.message.trim()) {

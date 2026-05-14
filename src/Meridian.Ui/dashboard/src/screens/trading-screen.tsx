@@ -778,6 +778,28 @@ export function TradingScreen({ data }: TradingScreenProps) {
 
                 <OrderPreviewPanel preview={orderTicket.preview} />
 
+                <label
+                  htmlFor={orderTicket.acknowledgement.id}
+                  className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
+                  title={orderTicket.acknowledgement.disabledReason ?? undefined}
+                >
+                  <input
+                    id={orderTicket.acknowledgement.id}
+                    type="checkbox"
+                    checked={orderTicket.acknowledgement.checked}
+                    disabled={orderTicket.acknowledgement.disabled}
+                    onChange={(event) => orderTicket.setAcknowledged(event.target.checked)}
+                    aria-describedby={`${orderTicket.acknowledgement.id}-description`}
+                    className="mt-1 h-4 w-4 accent-primary"
+                  />
+                  <span>
+                    <span className="block font-medium text-foreground">{orderTicket.acknowledgement.label}</span>
+                    <span id={`${orderTicket.acknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
+                      {orderTicket.acknowledgement.description}
+                    </span>
+                  </span>
+                </label>
+
                 {orderTicket.errorText && (
                   <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
                     <XCircle className="h-4 w-4 shrink-0" />
@@ -790,6 +812,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     type="submit"
                     size="sm"
                     disabled={!orderTicket.canSubmit}
+                    disabledReason={orderTicket.submitDisabledReason}
+                    busy={orderTicket.submitBusy}
+                    busyLabel={orderTicket.submitBusyLabel}
                     aria-label={orderTicket.submitAriaLabel}
                     aria-describedby="order-ticket-requirements"
                   >
@@ -872,7 +897,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 disabled={paperSessions.isBusy && !paperSessions.showCreateForm}
                 disabledReason={paperSessions.toggleCreateButtonDisabledReason}
               >
-                <PlusCircle className="mr-2 h-4 w-4" />
+                <PlusCircle className="mr-2 h-4 w-4" aria-hidden="true" />
                 {paperSessions.toggleCreateButtonLabel}
               </Button>
             </div>
@@ -884,7 +909,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
           {paperSessions.errorText && (
             <CardContent className="pt-0 pb-2">
               <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
-                <XCircle className="h-4 w-4 shrink-0" />
+                <XCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
                 {paperSessions.errorText}
               </div>
             </CardContent>
@@ -899,32 +924,42 @@ export function TradingScreen({ data }: TradingScreenProps) {
               >
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <label htmlFor="paper-session-strategy-id" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                      Strategy ID
+                    <label htmlFor={paperSessions.strategyIdField.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      {paperSessions.strategyIdField.label}
                     </label>
-                    <input
-                      id="paper-session-strategy-id"
-                      type="text"
-                      placeholder="my-strategy-01"
-                      value={paperSessions.form.strategyId}
-                      onChange={(e) => paperSessions.updateField("strategyId", e.target.value)}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    <Input
+                      id={paperSessions.strategyIdField.id}
+                      type={paperSessions.strategyIdField.type}
+                      placeholder={paperSessions.strategyIdField.placeholder}
+                      value={paperSessions.strategyIdField.value}
+                      autoComplete={paperSessions.strategyIdField.autoComplete}
+                      aria-label={paperSessions.strategyIdField.ariaLabel}
+                      aria-describedby={paperSessions.strategyIdField.describedBy}
+                      disabled={paperSessions.strategyIdField.disabled}
+                      title={paperSessions.strategyIdField.disabledReason ?? undefined}
+                      error={paperSessions.strategyIdField.invalid}
+                      onChange={(e) => paperSessions.updateField(paperSessions.strategyIdField.field, e.target.value)}
+                      className="font-mono"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor="paper-session-initial-cash" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                      Initial cash ($)
+                    <label htmlFor={paperSessions.initialCashField.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      {paperSessions.initialCashField.label}
                     </label>
-                    <input
-                      id="paper-session-initial-cash"
-                      type="number"
-                      min={1000}
-                      step={1000}
-                      value={paperSessions.form.initialCash}
-                      onChange={(e) => paperSessions.updateField("initialCash", e.target.value)}
-                      aria-describedby={paperSessions.formDescriptionId}
-                      aria-invalid={!paperSessions.canSubmitCreate ? true : undefined}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    <Input
+                      id={paperSessions.initialCashField.id}
+                      type={paperSessions.initialCashField.type}
+                      min={paperSessions.initialCashField.min}
+                      step={paperSessions.initialCashField.step}
+                      value={paperSessions.initialCashField.value}
+                      autoComplete={paperSessions.initialCashField.autoComplete}
+                      aria-label={paperSessions.initialCashField.ariaLabel}
+                      aria-describedby={paperSessions.initialCashField.describedBy}
+                      disabled={paperSessions.initialCashField.disabled}
+                      title={paperSessions.initialCashField.disabledReason ?? undefined}
+                      error={paperSessions.initialCashField.invalid}
+                      onChange={(e) => paperSessions.updateField(paperSessions.initialCashField.field, e.target.value)}
+                      className="font-mono"
                       required
                     />
                   </div>
@@ -938,6 +973,8 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     size="sm"
                     disabled={!paperSessions.canSubmitCreate}
                     disabledReason={paperSessions.createButtonDisabledReason}
+                    busy={paperSessions.createButtonBusy}
+                    busyLabel={paperSessions.createButtonBusyLabel}
                     aria-label={paperSessions.createButtonAriaLabel}
                   >
                     {paperSessions.createButtonLabel}

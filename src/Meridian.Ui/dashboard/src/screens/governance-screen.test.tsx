@@ -693,6 +693,48 @@ describe("GovernanceScreen", () => {
     expect(await screen.findByText("InReview")).toBeInTheDocument();
   });
 
+  it("surfaces view-model disabled reasons for reconciliation queue actions", async () => {
+    const user = userEvent.setup();
+    const resolvedBreak = {
+      ...data.breakQueue[0],
+      breakId: "run-42:resolved",
+      status: "Resolved" as const,
+      resolvedBy: "ops.gov",
+      resolvedAt: "2026-01-01T00:10:00Z",
+      resolutionNote: "Matched ledger adjustment."
+    };
+    const dismissedBreak = {
+      ...data.breakQueue[0],
+      breakId: "run-42:dismissed",
+      status: "Dismissed" as const,
+      resolvedBy: "ops.gov",
+      resolvedAt: "2026-01-01T00:12:00Z",
+      resolutionNote: "Vendor duplicate ignored."
+    };
+
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce([
+      data.breakQueue[0],
+      resolvedBreak,
+      dismissedBreak
+    ]);
+
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
+
+    expect(await screen.findByRole("button", { name: "Assign reconciliation break run-42:resolved" }))
+      .toHaveAttribute("title", "Only open breaks can be assigned; this break is Resolved.");
+    expect(screen.getByRole("button", { name: "Resolve reconciliation break run-42:resolved" }))
+      .toHaveAttribute("title", "This break is already resolved.");
+    expect(screen.getByRole("button", { name: "Dismiss reconciliation break run-42:dismissed" }))
+      .toHaveAttribute("title", "This break is already dismissed.");
+
+    await user.click(screen.getByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
+
+    expect(screen.getByRole("button", { name: "Resolve reconciliation break run-42:cash" }))
+      .toHaveAttribute("title", "Enter the rationale or cancel the open queue action before choosing another action.");
+    expect(screen.getByRole("button", { name: "Confirm resolve for reconciliation break run-42:cash" }))
+      .toHaveAttribute("title", "Enter an operator rationale before confirming this queue action.");
+  });
+
   it("announces reconciliation break action failures", async () => {
     const user = userEvent.setup();
 

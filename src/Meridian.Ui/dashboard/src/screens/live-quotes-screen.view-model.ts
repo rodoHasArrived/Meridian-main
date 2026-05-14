@@ -14,6 +14,7 @@ import type {
 export const LIVE_QUOTES_POLL_INTERVAL_MS = 2000;
 export const LIVE_QUOTES_TRADE_HISTORY_LIMIT = 200;
 export const LIVE_QUOTES_TRADE_TABLE_LIMIT = 25;
+export const LIVE_QUOTES_EMPTY_VALUE = "—";
 
 export type QuickTicketPhase = "idle" | "submitting" | "submitted" | "error";
 
@@ -647,21 +648,21 @@ export function buildLiveQuotesMarketViewModel({
       error: quote.error,
       ready: quoteRow !== null,
       emptyMessage: `No quote data available for ${symbol}.`,
-      loadingMessage: `Loading quote data for ${symbol}...`
+      loadingMessage: `Loading quote data for ${symbol}…`
     }),
     orderbookState: buildPanelState({
       loading: refreshing && !orderbook.data && !orderbook.error,
       error: orderbook.error,
       ready: hasOrderbookRows,
       emptyMessage: `No depth data available for ${symbol}.`,
-      loadingMessage: `Loading depth for ${symbol}...`
+      loadingMessage: `Loading depth for ${symbol}…`
     }),
     tradesState: buildPanelState({
       loading: refreshing && !trades.data && !trades.error,
       error: trades.error,
       ready: tradeRows.length > 0,
       emptyMessage: `No recent trades for ${symbol}.`,
-      loadingMessage: `Loading recent trades for ${symbol}...`
+      loadingMessage: `Loading recent trades for ${symbol}…`
     }),
     orderbookDescription: `Top ${orderbook.data?.bids.length ?? 0} bids / ${orderbook.data?.asks.length ?? 0} asks`,
     tradesDescription: tradeRows.length > 0 ? `Last ${tradeRows.length} prints` : "Recent prints"
@@ -866,7 +867,7 @@ export function buildQuickTradeTicketViewModel({
       disabled: disabledReason !== null,
       disabledReason,
       busy: submitting,
-      busyLabel: "Submitting...",
+      busyLabel: "Submitting…",
       variant: ticket.side === "Buy" ? "default" : "destructive"
     },
     status: buildQuickTicketStatus(ticket, validation, surfaceValidation, activeSymbol),
@@ -1076,7 +1077,7 @@ export function formatTicketPrice(value: number): string {
 
 export function formatMarketPrice(value: number | null | undefined, fractionDigits = 4): string {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return "-";
+    return LIVE_QUOTES_EMPTY_VALUE;
   }
   return value.toLocaleString(undefined, {
     minimumFractionDigits: 2,
@@ -1086,16 +1087,16 @@ export function formatMarketPrice(value: number | null | undefined, fractionDigi
 
 export function formatMarketSize(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return "-";
+    return LIVE_QUOTES_EMPTY_VALUE;
   }
   return value.toLocaleString();
 }
 
 export function formatMarketTime(iso: string | null | undefined): string {
-  if (!iso) return "-";
+  if (!iso) return LIVE_QUOTES_EMPTY_VALUE;
   const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "-";
-  return date.toLocaleTimeString(undefined, { hour12: false }) + "." + String(date.getMilliseconds()).padStart(3, "0");
+  if (Number.isNaN(date.getTime())) return LIVE_QUOTES_EMPTY_VALUE;
+  return formatUtcTimeWithMilliseconds(date);
 }
 
 function buildBboPanels(symbol: string, quoteRow: QuotesResponse["quote"] | null): LiveQuotesBboPanelViewModel[] {
@@ -1136,7 +1137,7 @@ function buildQuoteMetrics(quoteRow: QuotesResponse["quote"] | null): LiveQuotes
     { id: "mid", label: "Mid", value: formatMarketPrice(quoteRow.midPrice) },
     { id: "spread", label: "Spread", value: formatMarketPrice(quoteRow.spread) },
     { id: "sequence", label: "Sequence", value: formatMarketSize(quoteRow.sequenceNumber) },
-    { id: "stream", label: "Stream", value: quoteRow.streamId ?? "-" }
+    { id: "stream", label: "Stream", value: quoteRow.streamId ?? LIVE_QUOTES_EMPTY_VALUE }
   ];
 }
 
@@ -1235,7 +1236,7 @@ function buildPriceChartViewModel(
     ? error
     : metrics.count === 0
       ? loading
-        ? `Waiting for prints from ${symbol}...`
+        ? `Waiting for prints from ${symbol}…`
         : `No recent prints available for ${symbol}.`
       : null;
   const ariaLabel = `Recent ${symbol} trade prices, ranging from ${formatMarketPrice(metrics.low)} to ${formatMarketPrice(metrics.high)}.`;
@@ -1391,26 +1392,34 @@ function buildPanelState({
 }
 
 function formatMarketTimestamp(iso: string | null | undefined): string {
-  if (!iso) return "Unavailable";
+  if (!iso) return LIVE_QUOTES_EMPTY_VALUE;
   const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "Unavailable";
-  return date.toLocaleTimeString(undefined, { hour12: false }) + "." + String(date.getMilliseconds()).padStart(3, "0");
+  if (Number.isNaN(date.getTime())) return LIVE_QUOTES_EMPTY_VALUE;
+  return formatUtcTimeWithMilliseconds(date);
+}
+
+function formatUtcTimeWithMilliseconds(date: Date): string {
+  return [
+    String(date.getUTCHours()).padStart(2, "0"),
+    String(date.getUTCMinutes()).padStart(2, "0"),
+    String(date.getUTCSeconds()).padStart(2, "0")
+  ].join(":") + `.${String(date.getUTCMilliseconds()).padStart(3, "0")} UTC`;
 }
 
 function formatChange(value: number | null): string {
-  if (value === null || !Number.isFinite(value)) return "-";
+  if (value === null || !Number.isFinite(value)) return LIVE_QUOTES_EMPTY_VALUE;
   const sign = value > 0 ? "+" : value < 0 ? "" : "";
   return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
 }
 
 function formatChangePct(value: number | null): string {
-  if (value === null || !Number.isFinite(value)) return "-";
+  if (value === null || !Number.isFinite(value)) return LIVE_QUOTES_EMPTY_VALUE;
   const sign = value > 0 ? "+" : value < 0 ? "" : "";
   return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 }
 
 function formatVolume(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "-";
+  if (!Number.isFinite(value) || value <= 0) return LIVE_QUOTES_EMPTY_VALUE;
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
   return value.toLocaleString();
@@ -1431,7 +1440,7 @@ function formatWindowSpan(startIso: string | null, endIso: string | null): strin
 
 function buildSubmitLabel(ticket: QuickTicketState, symbol: string): string {
   if (ticket.phase === "submitting") {
-    return "Submitting...";
+    return "Submitting…";
   }
 
   return `${ticket.side} ${symbol}${ticket.type === "Limit" && ticket.limitPrice ? ` @ ${ticket.limitPrice}` : ""}`;

@@ -1292,6 +1292,23 @@ export interface PaperSessionRow {
   closeDisabledReason: string | null;
 }
 
+export interface PaperSessionFormFieldState {
+  id: string;
+  label: string;
+  ariaLabel: string;
+  field: PaperSessionField;
+  value: string;
+  type: "text" | "number";
+  placeholder?: string;
+  autoComplete: string;
+  describedBy: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  invalid: boolean;
+  min?: number;
+  step?: number;
+}
+
 export interface PaperSessionFieldRow {
   label: string;
   value: string;
@@ -1337,11 +1354,15 @@ export interface PaperSessionState {
   selectedSessionLabel: string | null;
   formPanelId: string;
   formDescriptionId: string;
+  strategyIdField: PaperSessionFormFieldState;
+  initialCashField: PaperSessionFormFieldState;
   formRequirementText: string;
   toggleCreateButtonLabel: string;
   toggleCreateButtonAriaLabel: string;
   toggleCreateButtonDisabledReason: string | null;
   createButtonLabel: string;
+  createButtonBusy: boolean;
+  createButtonBusyLabel: string | null;
   cancelCreateButtonLabel: string;
   createButtonAriaLabel: string;
   canSubmitCreate: boolean;
@@ -1581,6 +1602,9 @@ export function buildPaperSessionState({
   const busyReason = buildPaperSessionBusyReason(busyCommand);
   const canSubmitCreate = !isBusy && validationError === null;
   const canCloseCreateForm = !isBusy;
+  const formPanelId = "paper-session-create-form";
+  const formDescriptionId = "paper-session-create-requirements";
+  const fieldDisabledReason = isBusy ? busyReason : null;
 
   return {
     sessions,
@@ -1600,13 +1624,44 @@ export function buildPaperSessionState({
       ? "Loading paper sessions."
       : "No paper sessions active. Create one above to start tracking execution.",
     selectedSessionLabel: selectedSessionId ? `Selected session: ${selectedSessionId}` : null,
-    formPanelId: "paper-session-create-form",
-    formDescriptionId: "paper-session-create-requirements",
+    formPanelId,
+    formDescriptionId,
+    strategyIdField: {
+      id: "paper-session-strategy-id",
+      label: "Strategy ID",
+      ariaLabel: "Strategy ID",
+      field: "strategyId",
+      value: form.strategyId,
+      type: "text",
+      placeholder: "my-strategy-01",
+      autoComplete: "off",
+      describedBy: formDescriptionId,
+      disabled: isBusy,
+      disabledReason: fieldDisabledReason,
+      invalid: false
+    },
+    initialCashField: {
+      id: "paper-session-initial-cash",
+      label: "Initial cash ($)",
+      ariaLabel: "Initial cash ($)",
+      field: "initialCash",
+      value: form.initialCash,
+      type: "number",
+      autoComplete: "off",
+      describedBy: formDescriptionId,
+      disabled: isBusy,
+      disabledReason: fieldDisabledReason,
+      invalid: validationError !== null,
+      min: 1000,
+      step: 1000
+    },
     formRequirementText: validationError ?? "Strategy ID is optional. Initial cash must be at least $1,000.",
     toggleCreateButtonLabel: showCreateForm ? "Close form" : "New session",
     toggleCreateButtonAriaLabel: showCreateForm ? "Close paper session creation form" : "Open paper session creation form",
     toggleCreateButtonDisabledReason: isBusy && !showCreateForm ? busyReason : null,
-    createButtonLabel: busyCommand?.kind === "creating" ? "Creating..." : "Create session",
+    createButtonLabel: busyCommand?.kind === "creating" ? "Creating…" : "Create session",
+    createButtonBusy: busyCommand?.kind === "creating",
+    createButtonBusyLabel: busyCommand?.kind === "creating" ? "Creating…" : null,
     cancelCreateButtonLabel: "Cancel",
     createButtonAriaLabel: busyCommand?.kind === "creating" ? "Creating paper session" : "Create paper session",
     canSubmitCreate,
@@ -1673,9 +1728,9 @@ function buildPaperSessionRows({
       isActive: session.isActive,
       isSelected: selectedSessionId === session.sessionId,
       ariaLabel: `${session.sessionId}, ${session.strategyId}, ${statusLabel}, ${formatUsdValue(session.initialCash)} initial cash`,
-      restoreButtonLabel: rowBusy && busyCommand?.kind === "restoring" ? "Restoring..." : "Restore",
-      verifyButtonLabel: rowBusy && busyCommand?.kind === "verifying" ? "Verifying..." : "Verify replay",
-      closeButtonLabel: rowBusy && busyCommand?.kind === "closing" ? "Closing..." : "Close",
+      restoreButtonLabel: rowBusy && busyCommand?.kind === "restoring" ? "Restoring…" : "Restore",
+      verifyButtonLabel: rowBusy && busyCommand?.kind === "verifying" ? "Verifying…" : "Verify replay",
+      closeButtonLabel: rowBusy && busyCommand?.kind === "closing" ? "Closing…" : "Close",
       restoreAriaLabel: rowBusy && busyCommand?.kind === "restoring"
         ? `Restoring paper session ${session.sessionId}`
         : `Restore paper session ${session.sessionId}`,
@@ -2882,6 +2937,15 @@ export interface OrderTicketControls {
   limitPrice: OrderTicketFieldControl | null;
 }
 
+export interface OrderTicketAcknowledgementState {
+  id: string;
+  label: string;
+  description: string;
+  checked: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
 export interface OrderTicketState {
   form: OrderSubmitRequest;
   open: boolean;
@@ -2900,6 +2964,10 @@ export interface OrderTicketState {
   openButtonLabel: string;
   submitButtonLabel: string;
   submitAriaLabel: string;
+  submitDisabledReason: string | null;
+  submitBusy: boolean;
+  submitBusyLabel: string | null;
+  acknowledgement: OrderTicketAcknowledgementState;
   requirementText: string;
   successText: string | null;
   statusAnnouncement: string;
@@ -2911,6 +2979,7 @@ export interface BuildOrderTicketStateOptions {
   phase: OrderTicketPhase;
   orderId: string | null;
   errorText: string | null;
+  acknowledged?: boolean;
 }
 
 export const emptyOrderTicketForm: OrderSubmitRequest = {
@@ -2941,10 +3010,11 @@ export function useOrderTicketViewModel({
   const [phase, setPhase] = useState<OrderTicketPhase>("idle");
   const [orderId, setOrderId] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const [acknowledged, setAcknowledged] = useState(false);
 
   const state = useMemo(
-    () => buildOrderTicketState({ form, open, phase, orderId, errorText }),
-    [errorText, form, open, orderId, phase]
+    () => buildOrderTicketState({ form, open, phase, orderId, errorText, acknowledged }),
+    [acknowledged, errorText, form, open, orderId, phase]
   );
 
   const preview = useMemo(
@@ -2972,6 +3042,7 @@ export function useOrderTicketViewModel({
     setPhase("idle");
     setOrderId(null);
     setErrorText(null);
+    setAcknowledged(false);
   }, [phase]);
 
   const toggleTicket = useCallback(() => {
@@ -2988,6 +3059,7 @@ export function useOrderTicketViewModel({
     setPhase((current) => current === "submitted" ? "idle" : current);
     setOrderId(null);
     setErrorText(null);
+    setAcknowledged(false);
   }, []);
 
   const normalizeSymbol = useCallback(() => {
@@ -3006,6 +3078,13 @@ export function useOrderTicketViewModel({
       return;
     }
 
+    if (!acknowledged) {
+      setPhase("error");
+      setOrderId(null);
+      setErrorText("Review the order preview and acknowledge before submitting.");
+      return;
+    }
+
     setPhase("submitting");
     setOrderId(null);
     setErrorText(null);
@@ -3017,6 +3096,7 @@ export function useOrderTicketViewModel({
         setOrderId(result.orderId);
         setErrorText(null);
         setOpen(false);
+        setAcknowledged(false);
         setForm(emptyOrderTicketForm);
         await onOrderAccepted?.();
         return;
@@ -3028,7 +3108,7 @@ export function useOrderTicketViewModel({
       setPhase("error");
       setErrorText(toErrorMessage(err, "Order submission failed."));
     }
-  }, [form, onOrderAccepted, services]);
+  }, [acknowledged, form, onOrderAccepted, services]);
 
   return {
     ...state,
@@ -3038,6 +3118,7 @@ export function useOrderTicketViewModel({
     toggleTicket,
     updateField,
     normalizeSymbol,
+    setAcknowledged,
     submitOrder: submitOrderTicket
   };
 }
@@ -3047,7 +3128,8 @@ export function buildOrderTicketState({
   open,
   phase,
   orderId,
-  errorText
+  errorText,
+  acknowledged = false
 }: BuildOrderTicketStateOptions): OrderTicketState {
   const validationError = validateOrderTicketForm(form);
   const requiresLimitPrice = orderTypeRequiresPrice(form.type);
@@ -3056,6 +3138,8 @@ export function buildOrderTicketState({
     : null;
   const invalidField = getOrderTicketInvalidField(form);
   const requirementId = "order-ticket-requirements";
+  const acknowledgement = buildOrderTicketAcknowledgementState(acknowledged, phase, validationError);
+  const submitDisabledReason = buildOrderTicketSubmitDisabledReason(phase, validationError, acknowledgement);
 
   return {
     form,
@@ -3065,7 +3149,7 @@ export function buildOrderTicketState({
     errorText,
     validationError,
     invalidField,
-    canSubmit: phase !== "submitting" && validationError === null,
+    canSubmit: submitDisabledReason === null,
     canClose: phase !== "submitting",
     requiresLimitPrice,
     priceLabel: `${form.type} price`,
@@ -3073,8 +3157,12 @@ export function buildOrderTicketState({
     requirementId,
     controls: buildOrderTicketControls(form, invalidField, requirementId),
     openButtonLabel: open ? "Close order ticket" : "New order",
-    submitButtonLabel: phase === "submitting" ? "Submitting..." : "Submit order",
+    submitButtonLabel: phase === "submitting" ? "Submitting…" : "Submit order",
     submitAriaLabel: phase === "submitting" ? "Submitting order request" : "Submit order request",
+    submitDisabledReason,
+    submitBusy: phase === "submitting",
+    submitBusyLabel: phase === "submitting" ? "Submitting…" : null,
+    acknowledgement,
     requirementText: buildOrderRequirementText(form, phase, validationError),
     successText,
     statusAnnouncement: buildOrderTicketStatusAnnouncement({ phase, errorText, orderId })
@@ -3245,6 +3333,47 @@ function buildOrderRequirementText(
     ? ` at ${form.limitPrice}`
     : "";
   return `${form.side} ${form.quantity} ${symbol} ${form.type.toLowerCase()}${priceText}.`;
+}
+
+function buildOrderTicketAcknowledgementState(
+  acknowledged: boolean,
+  phase: OrderTicketPhase,
+  validationError: string | null
+): OrderTicketAcknowledgementState {
+  const disabledReason = phase === "submitting"
+    ? "Order submission is already running."
+    : validationError
+      ? "Complete valid order fields before acknowledging the preview."
+      : null;
+
+  return {
+    id: "order-ticket-review-acknowledgement",
+    label: "I reviewed the order preview and risk warnings",
+    description: "Submit stays locked until the preview, position impact, and risk warnings have been reviewed.",
+    checked: acknowledged,
+    disabled: disabledReason !== null,
+    disabledReason
+  };
+}
+
+function buildOrderTicketSubmitDisabledReason(
+  phase: OrderTicketPhase,
+  validationError: string | null,
+  acknowledgement: OrderTicketAcknowledgementState
+): string | null {
+  if (phase === "submitting") {
+    return "Order submission is already running.";
+  }
+
+  if (validationError) {
+    return validationError;
+  }
+
+  if (!acknowledgement.checked) {
+    return "Review the order preview and acknowledge before submitting.";
+  }
+
+  return null;
 }
 
 function buildOrderTicketStatusAnnouncement({

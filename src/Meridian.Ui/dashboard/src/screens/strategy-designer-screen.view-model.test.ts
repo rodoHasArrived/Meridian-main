@@ -204,7 +204,25 @@ describe("strategy designer view-model", () => {
       directionTone: "success",
       isOption: true,
       strikeFieldLabel: "Strike",
-      premiumAriaLabel: "Premium for Long Call 100"
+      fieldIds: {
+        direction: "strategy-leg-leg-1-direction",
+        quantity: "strategy-leg-leg-1-quantity",
+        strike: "strategy-leg-leg-1-strike",
+        premium: "strategy-leg-leg-1-premium"
+      },
+      premiumAriaLabel: "Premium for Long Call 100",
+      moveUpCommand: {
+        label: "Move up",
+        ariaLabel: "Move Long Call 100 up",
+        disabled: true,
+        disabledReason: "Long Call 100 is already the first leg."
+      },
+      moveDownCommand: {
+        label: "Move down",
+        ariaLabel: "Move Long Call 100 down",
+        disabled: false,
+        disabledReason: null
+      }
     });
     expect(rows[0].containerAriaLabel).toContain("leg 1 of 2");
     expect(rows[1]).toMatchObject({
@@ -213,7 +231,19 @@ describe("strategy designer view-model", () => {
       selectButtonLabel: "Selected",
       isOption: false,
       strikeFieldLabel: "Entry price",
-      premiumUnavailableAriaLabel: "Premium not applicable for Long Stock"
+      premiumUnavailableAriaLabel: "Premium not applicable for Long Stock",
+      moveUpCommand: {
+        label: "Move up",
+        ariaLabel: "Move Long Stock up",
+        disabled: false,
+        disabledReason: null
+      },
+      moveDownCommand: {
+        label: "Move down",
+        ariaLabel: "Move Long Stock down",
+        disabled: true,
+        disabledReason: "Long Stock is already the last leg."
+      }
     });
   });
 });

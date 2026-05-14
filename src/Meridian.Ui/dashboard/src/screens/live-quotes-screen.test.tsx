@@ -5,12 +5,16 @@ import { useNavigate } from "react-router-dom";
 
 import { computeIntradayMetrics, LiveQuotesScreen } from "@/screens/live-quotes-screen";
 import {
+  LIVE_QUOTES_EMPTY_VALUE,
   buildLiveQuoteRefreshCommand,
   buildLiveQuoteSymbolLookupViewModel,
   buildLiveQuotesMarketViewModel,
   buildOrderRequest,
   buildPriceSparklineViewModel,
   buildQuickTradeTicketViewModel,
+  formatMarketPrice,
+  formatMarketSize,
+  formatMarketTime,
   useQuickTradeTicket,
   validateQuickTicket
 } from "@/screens/live-quotes-screen.view-model";
@@ -532,20 +536,60 @@ describe("buildLiveQuotesMarketViewModel", () => {
     expect(vm.quoteState).toMatchObject({
       status: "loading",
       role: "status",
-      message: "Loading quote data for AAPL...",
+      message: "Loading quote data for AAPL…",
       showData: false
     });
     expect(vm.orderbookState).toMatchObject({
       status: "loading",
       role: "status",
-      message: "Loading depth for AAPL...",
+      message: "Loading depth for AAPL…",
       showData: false
     });
     expect(vm.tradesState).toMatchObject({
       status: "loading",
       role: "status",
-      message: "Loading recent trades for AAPL...",
+      message: "Loading recent trades for AAPL…",
       showData: false
+    });
+  });
+
+  it("uses the design-system unavailable-value marker for missing market data", () => {
+    expect(formatMarketPrice(null)).toBe(LIVE_QUOTES_EMPTY_VALUE);
+    expect(formatMarketSize(undefined)).toBe(LIVE_QUOTES_EMPTY_VALUE);
+    expect(formatMarketTime("not-a-date")).toBe(LIVE_QUOTES_EMPTY_VALUE);
+    expect(formatMarketTime("2026-05-08T15:00:00.123Z")).toBe("15:00:00.123 UTC");
+
+    const vm = buildLiveQuotesMarketViewModel({
+      activeSymbol: "AAPL",
+      quote: {
+        data: {
+          ...quoteFixture,
+          quote: {
+            ...quoteFixture.quote,
+            midPrice: null,
+            spread: null,
+            sequenceNumber: Number.NaN,
+            streamId: null
+          }
+        },
+        error: null
+      },
+      trades: { data: tradesFixture, error: null },
+      orderbook: { data: { ...orderbookFixture, bids: [], asks: [] }, error: null },
+      refreshing: false,
+      tradeTableLimit: 25
+    });
+
+    expect(vm.quoteMetrics.map((metric) => [metric.label, metric.value])).toEqual([
+      ["Mid", LIVE_QUOTES_EMPTY_VALUE],
+      ["Spread", LIVE_QUOTES_EMPTY_VALUE],
+      ["Sequence", LIVE_QUOTES_EMPTY_VALUE],
+      ["Stream", LIVE_QUOTES_EMPTY_VALUE]
+    ]);
+    expect(vm.priceChart).toMatchObject({
+      lastPriceLabel: LIVE_QUOTES_EMPTY_VALUE,
+      changeLabel: `${LIVE_QUOTES_EMPTY_VALUE} (${LIVE_QUOTES_EMPTY_VALUE})`,
+      statusMessage: "No recent prints available for AAPL."
     });
   });
 
@@ -600,7 +644,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
       venueLabel: "NASDAQ"
     });
     expect(vm.venueLabel).toBe("NASDAQ");
-    expect(vm.lastUpdateLabel).not.toBe("Unavailable");
+    expect(vm.lastUpdateLabel).toBe("15:00:00.000 UTC");
   });
 
   it("keeps recent-trade row selection and detail state in the view model", () => {
@@ -644,6 +688,8 @@ describe("buildLiveQuotesMarketViewModel", () => {
       "Venue",
       "Timestamp"
     ]);
+    expect(vm.selectedTradeDetail?.fields.find((field) => field.label === "Timestamp")?.value)
+      .toBe("15:00:01.000 UTC");
   });
 
   it("derives BBO, depth, quote metrics, and chart labels for the view", () => {
@@ -698,7 +744,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
     expect(vm.tradeDisplayRows[0]).toMatchObject({
       aggressorLabel: "Sell",
       aggressorTone: "negative",
-      timeLabel: expect.stringMatching(/^\d{2}:\d{2}:\d{2}\.000$/)
+      timeLabel: "15:00:00.000 UTC"
     });
     expect(vm.priceChart).toMatchObject({
       title: "AAPL prints over 1s",
