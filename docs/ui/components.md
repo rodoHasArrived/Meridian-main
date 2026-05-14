@@ -101,6 +101,11 @@ evidence, overrides, and audit history.
 | Schedule modules | Cash-flow, factor, corporate-action, conversion, redemption, lot, and trading-parameter schedules must render as dense tables or compact metadata grids, not loose card lists. |
 | Audit modules | Provider identity conflicts, alias history, notes/comments, overrides, and audit history must remain attached to the selected security rather than sent to a separate workflow. |
 
+For the browser workstation v1, the Security Master `Schedules` module owns the cash-flow/factor
+reference pattern: asset-class-aware rows, expected and actual amounts, variance/posting state,
+selected-event detail, controls, validation posture, notes, and audit evidence stay in the selected
+security detail frame.
+
 ### Interaction rules
 
 - Search, selection, empty states, loading text, disabled reasons, and live-region copy belong in
@@ -119,7 +124,9 @@ evidence, overrides, and audit history.
 
 The browser workstation implements this pattern at `/accounting/security-master` in
 `src/Meridian.Ui/dashboard/src/screens/governance-screen.tsx`, with copy and summary state owned by
-`src/Meridian.Ui/dashboard/src/screens/governance-screen.view-model.ts`.
+`src/Meridian.Ui/dashboard/src/screens/governance-screen.view-model.ts`. The v1 schedule data is
+dashboard-local and fixture-backed; do not add a new shared API, persistence contract, WPF surface,
+mobile surface, or third-party chart/document dependency for this slice.
 
 ---
 

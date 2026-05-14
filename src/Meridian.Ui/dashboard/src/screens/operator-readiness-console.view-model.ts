@@ -186,6 +186,8 @@ const defaultServices: OperatorReadinessConsoleServices = {
   getOperatorInbox: (fundAccountId?: string, options?: ApiRequestOptions) => getOperatorInbox(fundAccountId, options)
 };
 
+const REPORT_PACKS_ROUTE = "/reporting/report-packs";
+
 export function useOperatorReadinessConsoleViewModel(
   payload: Omit<BuildOperatorReadinessConsoleStateOptions, "operatorInbox" | "inboxLoading" | "inboxError">,
   services: OperatorReadinessConsoleServices = defaultServices
@@ -870,7 +872,7 @@ function buildCockpitGateRows({
       fallbackLevel: reportPackReviewCount === 0 ? "ready" : "review",
       action: {
         label: "Open report packs",
-        route: "/reporting",
+        route: REPORT_PACKS_ROUTE,
         ariaLabel: "Open report packs for paper readiness",
         variant: "outline"
       }
@@ -993,9 +995,12 @@ function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): Readi
 }
 
 function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction | null {
-  const route = normalizeLocalWorkstationRoute(item.targetRoute)
+  const normalizedRoute = normalizeLocalWorkstationRoute(item.targetRoute)
     ?? routeFromWorkItemTarget(item)
     ?? fallbackRouteForWorkItemKind(item.kind);
+  const route = item.kind === "ReportPackApproval" && normalizedRoute === "/reporting"
+    ? REPORT_PACKS_ROUTE
+    : normalizedRoute;
   if (!route) {
     return null;
   }
@@ -1032,7 +1037,7 @@ function fallbackRouteForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
     case "LedgerPeriodClose":
       return "/accounting/reconciliation";
     case "ReportPackApproval":
-      return "/reporting";
+      return REPORT_PACKS_ROUTE;
     case "ProviderTrustGate":
       return "/data";
   }
@@ -1232,7 +1237,7 @@ function buildNextAction({
       .filter((row) => row.level === "blocked" || row.level === "review")
       .map((row, index) => nextActionCandidateFromRow(row, {
         label: "Open report packs",
-        route: "/reporting",
+        route: REPORT_PACKS_ROUTE,
         sourcePriority: 5,
         index
       })),

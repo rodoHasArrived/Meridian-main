@@ -188,7 +188,7 @@ public static class ExecutionEndpoints
         {
             if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             var oms = context.RequestServices.GetService<IOrderManager>();
@@ -304,7 +304,7 @@ public static class ExecutionEndpoints
         {
             if (!HasExecutionControlPermission(context))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
@@ -343,7 +343,7 @@ public static class ExecutionEndpoints
         {
             if (!HasExecutionControlPermission(context))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();

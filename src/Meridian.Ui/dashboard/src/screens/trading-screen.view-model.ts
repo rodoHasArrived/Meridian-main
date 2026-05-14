@@ -356,7 +356,19 @@ export interface TradingOrderRow {
 
 export interface TradingFillRow {
   id: string;
+  fillId: string;
+  orderId: string;
+  symbol: string;
+  side: string;
+  quantity: string;
+  price: string;
+  venue: string;
+  timestamp: string;
   cells: string[];
+  isSelected: boolean;
+  detailPanelId: string;
+  ariaExpanded: boolean;
+  selectAriaLabel: string;
   ariaLabel: string;
 }
 
@@ -377,8 +389,10 @@ export interface TradingBlotterViewModel {
   fillRows: TradingFillRow[];
   selectedPosition: TradingBlotterDetail | null;
   selectedOrder: TradingBlotterDetail | null;
+  selectedFill: TradingBlotterDetail | null;
   selectedPositionRowId: string | null;
   selectedOrderRowId: string | null;
+  selectedFillRowId: string | null;
   hasPositions: boolean;
   hasOpenOrders: boolean;
   hasFills: boolean;
@@ -387,6 +401,7 @@ export interface TradingBlotterViewModel {
   fillsTableLabel: string;
   positionDetailId: string;
   orderDetailId: string;
+  fillDetailId: string;
   positionEmptyText: string;
   orderEmptyText: string;
   fillEmptyText: string;
@@ -394,6 +409,7 @@ export interface TradingBlotterViewModel {
   cancelAllAriaLabel: string;
   selectPosition: (id: string) => void;
   selectOrder: (id: string) => void;
+  selectFill: (id: string) => void;
 }
 
 export interface TradingReadinessSummaryRow {
@@ -480,20 +496,24 @@ const visibleWorkItemLimit = 4;
 const visibleWarningLimit = 3;
 const tradingPositionDetailId = "trading-position-detail";
 const tradingOrderDetailId = "trading-order-detail";
+const tradingFillDetailId = "trading-fill-detail";
 
 export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null): TradingBlotterViewModel {
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedFillId, setSelectedFillId] = useState<string | null>(null);
 
   return useMemo(
     () => buildTradingBlotterViewModel({
       data,
       selectedPositionId,
       selectedOrderId,
+      selectedFillId,
       selectPosition: setSelectedPositionId,
-      selectOrder: setSelectedOrderId
+      selectOrder: setSelectedOrderId,
+      selectFill: setSelectedFillId
     }),
-    [data, selectedOrderId, selectedPositionId]
+    [data, selectedFillId, selectedOrderId, selectedPositionId]
   );
 }
 
@@ -501,26 +521,32 @@ export function buildTradingBlotterViewModel({
   data,
   selectedPositionId = null,
   selectedOrderId = null,
+  selectedFillId = null,
   selectPosition = () => {},
-  selectOrder = () => {}
+  selectOrder = () => {},
+  selectFill = () => {}
 }: {
   data: TradingWorkspaceResponse | null;
   selectedPositionId?: string | null;
   selectedOrderId?: string | null;
+  selectedFillId?: string | null;
   selectPosition?: (id: string) => void;
   selectOrder?: (id: string) => void;
+  selectFill?: (id: string) => void;
 }): TradingBlotterViewModel {
   const positions = data?.positions ?? [];
   const orders = data?.openOrders ?? [];
   const fills = data?.fills ?? [];
   const effectivePositionId = resolveSelectedId(positions, selectedPositionId, positionRowId);
   const effectiveOrderId = resolveSelectedId(orders, selectedOrderId, orderRowId);
+  const effectiveFillId = resolveSelectedId(fills, selectedFillId, fillRowId);
 
   const positionRows = positions.map((position, index) => buildPositionRow(position, index, effectivePositionId));
   const orderRows = orders.map((order, index) => buildOrderRow(order, index, effectiveOrderId));
-  const fillRows = fills.map(buildFillRow);
+  const fillRows = fills.map((fill, index) => buildFillRow(fill, index, effectiveFillId));
   const selectedPositionRow = positionRows.find((row) => row.id === effectivePositionId) ?? null;
   const selectedOrderRow = orderRows.find((row) => row.id === effectiveOrderId) ?? null;
+  const selectedFillRow = fillRows.find((row) => row.id === effectiveFillId) ?? null;
 
   return {
     positionRows,
@@ -528,8 +554,10 @@ export function buildTradingBlotterViewModel({
     fillRows,
     selectedPosition: selectedPositionRow ? buildPositionDetail(selectedPositionRow, data?.risk ?? null) : null,
     selectedOrder: selectedOrderRow ? buildOrderDetail(selectedOrderRow, data?.brokerage.provider ?? null) : null,
+    selectedFill: selectedFillRow ? buildFillDetail(selectedFillRow, data?.brokerage.provider ?? null) : null,
     selectedPositionRowId: effectivePositionId,
     selectedOrderRowId: effectiveOrderId,
+    selectedFillRowId: effectiveFillId,
     hasPositions: positionRows.length > 0,
     hasOpenOrders: orderRows.length > 0,
     hasFills: fillRows.length > 0,
@@ -538,13 +566,15 @@ export function buildTradingBlotterViewModel({
     fillsTableLabel: "Recent fills evidence",
     positionDetailId: tradingPositionDetailId,
     orderDetailId: tradingOrderDetailId,
+    fillDetailId: tradingFillDetailId,
     positionEmptyText: data ? "No live positions in the active paper session." : "Trading workspace data unavailable.",
     orderEmptyText: data ? "No open orders require operator action." : "Trading workspace data unavailable.",
     fillEmptyText: data ? "No recent fills have been reported for this session." : "Trading workspace data unavailable.",
     cancelAllDisabled: orderRows.length === 0,
     cancelAllAriaLabel: orderRows.length === 0 ? "No open orders to cancel" : `Cancel all ${orderRows.length} open orders`,
     selectPosition,
-    selectOrder
+    selectOrder,
+    selectFill
   };
 }
 
@@ -879,9 +909,24 @@ function buildOrderRow(
   };
 }
 
-function buildFillRow(fill: TradingFill): TradingFillRow {
+function buildFillRow(
+  fill: TradingFill,
+  index: number,
+  selectedId: string | null
+): TradingFillRow {
+  const id = fillRowId(fill, index);
+  const isSelected = id === selectedId;
+
   return {
-    id: fill.fillId,
+    id,
+    fillId: fill.fillId,
+    orderId: fill.orderId,
+    symbol: fill.symbol,
+    side: fill.side,
+    quantity: fill.quantity,
+    price: fill.price,
+    venue: fill.venue,
+    timestamp: fill.timestamp,
     cells: [
       fill.fillId,
       fill.orderId,
@@ -892,6 +937,10 @@ function buildFillRow(fill: TradingFill): TradingFillRow {
       fill.venue,
       fill.timestamp
     ],
+    isSelected,
+    detailPanelId: tradingFillDetailId,
+    ariaExpanded: isSelected,
+    selectAriaLabel: `Inspect fill ${fill.fillId}`,
     ariaLabel: `${fill.fillId}, ${fill.side} ${fill.quantity} ${fill.symbol} at ${fill.price} on ${fill.venue}, ${fill.timestamp}`
   };
 }
@@ -947,12 +996,38 @@ function buildOrderDetail(row: TradingOrderRow, provider: string | null): Tradin
   };
 }
 
+function buildFillDetail(row: TradingFillRow, provider: string | null): TradingBlotterDetail {
+  return {
+    id: "selected-fill",
+    title: row.fillId,
+    subtitle: `${row.side} ${row.quantity} ${row.symbol}`,
+    statusLabel: "Fill evidence",
+    statusTone: "success",
+    ariaLabel: `Fill detail for ${row.fillId}`,
+    detail: `${row.symbol} fill posted at ${row.price} on ${row.venue}. ${provider ? `${provider} supplied the execution adapter context.` : "Execution adapter context unavailable."}`,
+    fields: [
+      { label: "Order", value: row.orderId, tone: "muted" },
+      { label: "Symbol", value: row.symbol, tone: "default" },
+      { label: "Side", value: row.side, tone: row.side === "Buy" ? "success" : "warning" },
+      { label: "Quantity", value: row.quantity, tone: "default" },
+      { label: "Price", value: row.price, tone: "default" },
+      { label: "Venue", value: row.venue, tone: "muted" },
+      { label: "Timestamp", value: row.timestamp, tone: "muted" },
+      { label: "Provider", value: provider ?? "Unavailable", tone: "muted" }
+    ]
+  };
+}
+
 function positionRowId(position: TradingPosition, index: number): string {
   return `${position.symbol.toLowerCase()}-${position.side.toLowerCase()}-${index}`;
 }
 
 function orderRowId(order: TradingOrder, index: number): string {
   return `${order.orderId.toLowerCase()}-${index}`;
+}
+
+function fillRowId(fill: TradingFill, index: number): string {
+  return fill.fillId || `fill-${index}`;
 }
 
 function pnlTextTone(value: string): TradingDataTone {

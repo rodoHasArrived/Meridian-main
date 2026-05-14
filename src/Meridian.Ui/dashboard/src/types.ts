@@ -1767,3 +1767,80 @@ export interface QuantRunRequest {
   source: string;
   parameters: Record<string, string | number | boolean | null>;
 }
+
+// --- Quant Notebook ---
+
+export type CellKind = "code" | "markdown";
+export type CellExecutionState = "idle" | "running" | "done" | "error" | "stale";
+
+export interface CellExecutionContext {
+  symbol?: string;
+  from?: string;
+  to?: string;
+  interval?: DataFetchRequest["interval"];
+}
+
+export interface CellOutput {
+  kind: "console" | "metric" | "signal" | "error";
+  text: string;
+  tone?: "default" | "success" | "warning" | "danger";
+  timestamp?: string;
+}
+
+export interface NotebookCell {
+  id: string;
+  ordinal: number;
+  kind: CellKind;
+  source: string;
+  state: CellExecutionState;
+  statusText: string;
+  collapsed: boolean;
+  output: CellOutput[];
+}
+
+export interface CellSnippet {
+  id: string;
+  label: string;
+  description: string;
+  kind: CellKind;
+  source: string;
+}
+
+export interface CellExecuteRequest {
+  cellId: string;
+  source: string;
+  context: CellExecutionContext;
+}
+
+export interface CellExecuteResult {
+  cellId: string;
+  success: boolean;
+  output: CellOutput[];
+  elapsedMs: number;
+  errorMessage: string | null;
+}
+
+export interface PriceBar {
+  timestamp: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface DataFetchRequest {
+  symbol: string;
+  from: string;
+  to: string;
+  interval: "daily" | "hourly" | "minute";
+}
+
+export interface DataFetchResult {
+  symbol: string;
+  from: string;
+  to: string;
+  interval: DataFetchRequest["interval"];
+  bars: PriceBar[];
+  rowCount: number;
+}

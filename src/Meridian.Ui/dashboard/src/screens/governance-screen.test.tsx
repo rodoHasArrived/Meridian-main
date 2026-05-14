@@ -3,7 +3,13 @@ import userEvent from "@testing-library/user-event";
 import * as api from "@/lib/api";
 import { GovernanceScreen } from "@/screens/governance-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
-import type { CorporateAction, GovernanceWorkspaceResponse, LedgerTrialBalanceLine, SecurityMasterConflict } from "@/types";
+import type {
+  CorporateAction,
+  GovernanceWorkspaceResponse,
+  LedgerTrialBalanceLine,
+  ReconciliationCalibrationSummary,
+  SecurityMasterConflict
+} from "@/types";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -123,6 +129,52 @@ const data: GovernanceWorkspaceResponse = {
   }
 };
 
+const calibrationSummary: ReconciliationCalibrationSummary = {
+  asOf: "2026-01-01T00:00:00Z",
+  status: "ReviewRequired",
+  summary: "Two tolerance profiles loaded for operator review.",
+  totalBreakCount: 5,
+  activeBreakCount: 2,
+  openBreakCount: 1,
+  inReviewBreakCount: 1,
+  resolvedBreakCount: 3,
+  dismissedBreakCount: 0,
+  criticalOpenBreakCount: 1,
+  pendingSignoffCount: 1,
+  signedOffCount: 2,
+  missingCalibrationMetadataCount: 0,
+  profiles: [
+    {
+      toleranceProfileId: "tp-cash-variance",
+      exceptionRoute: "cash",
+      highestSeverity: "Critical",
+      maxToleranceBand: 250,
+      totalBreakCount: 2,
+      openBreakCount: 1,
+      inReviewBreakCount: 0,
+      resolvedBreakCount: 1,
+      dismissedBreakCount: 0,
+      pendingSignoffCount: 1,
+      signedOffCount: 1,
+      lastUpdatedAt: "2026-01-01T00:00:00Z"
+    },
+    {
+      toleranceProfileId: "tp-settlement-lag",
+      exceptionRoute: "settlement",
+      highestSeverity: "Info",
+      maxToleranceBand: null,
+      totalBreakCount: 3,
+      openBreakCount: 0,
+      inReviewBreakCount: 1,
+      resolvedBreakCount: 2,
+      dismissedBreakCount: 0,
+      pendingSignoffCount: 0,
+      signedOffCount: 1,
+      lastUpdatedAt: "2026-01-01T00:05:00Z"
+    }
+  ]
+};
+
 const securityConflict: SecurityMasterConflict = {
   conflictId: "conflict-1",
   securityId: "sec-1",
@@ -238,6 +290,72 @@ describe("GovernanceScreen", () => {
     expect(screen.getByLabelText("Reconciliation narrative for Paper Index Mean Reversion")).toHaveTextContent(
       "Open reconciliation breaks remain on this run."
     );
+  });
+
+  it("renders calibration tolerance profiles as selectable row-detail evidence", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getReconciliationCalibrationSummary).mockResolvedValueOnce(calibrationSummary);
+
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
+
+    const table = await screen.findByRole("table", { name: "Tolerance profile health by reconciliation route" });
+    expect(table).toHaveTextContent("tp-cash-variance");
+    const firstProfile = screen.getByRole("row", {
+      name: "Inspect tolerance profile tp-cash-variance: Operator review required"
+    });
+    expect(firstProfile).toHaveAttribute("aria-selected", "true");
+    expect(firstProfile).toHaveAttribute("aria-expanded", "true");
+    expect(firstProfile).toHaveAttribute("aria-controls", "calibration-profile-detail-panel");
+    expect(screen.getByRole("region", { name: "Tolerance profile detail for tp-cash-variance" })).toHaveTextContent(
+      "Selected tolerance profile - tp-cash-variance"
+    );
+
+    const nextProfile = screen.getByRole("row", {
+      name: "Inspect tolerance profile tp-settlement-lag: Within tolerance"
+    });
+    await user.click(nextProfile);
+
+    expect(firstProfile).not.toHaveAttribute("aria-selected");
+    expect(nextProfile).toHaveAttribute("aria-selected", "true");
+    expect(nextProfile).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Tolerance profile detail for tp-settlement-lag" })).toHaveTextContent(
+      "Policy default"
+    );
+  });
+
+  it("supports keyboard selection for calibration tolerance profiles", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getReconciliationCalibrationSummary).mockResolvedValueOnce(calibrationSummary);
+
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
+
+    const nextProfile = await screen.findByRole("row", {
+      name: "Inspect tolerance profile tp-settlement-lag: Within tolerance"
+    });
+    nextProfile.focus();
+    await user.keyboard(" ");
+
+    expect(nextProfile).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("region", { name: "Tolerance profile detail for tp-settlement-lag" })).toBeInTheDocument();
+  });
+
+  it("recovers calibration summary failures through the visible retry command", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getReconciliationCalibrationSummary)
+      .mockRejectedValueOnce(new Error("Calibration API offline"))
+      .mockResolvedValueOnce(calibrationSummary);
+
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Calibration API offline");
+    const retry = screen.getByRole("button", { name: "Retry calibration summary load" });
+
+    await user.click(retry);
+
+    expect(await screen.findByRole("table", { name: "Tolerance profile health by reconciliation route" })).toHaveTextContent(
+      "tp-cash-variance"
+    );
+    expect(screen.getByRole("button", { name: "Refresh calibration summary" })).toBeEnabled();
   });
 
   it("updates reconciliation detail queue selection with accessible expanded state", async () => {
@@ -540,6 +658,64 @@ describe("GovernanceScreen", () => {
     expect(screen.queryByText("Coupon Rate (%)")).not.toBeInTheDocument();
     expect(screen.queryByText("Final Maturity")).not.toBeInTheDocument();
     expect(screen.queryByText("S&P Rating")).not.toBeInTheDocument();
+  });
+
+  it("renders cash-flow schedules as selectable dense evidence with a detail panel", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.searchSecurities).mockResolvedValueOnce([
+      {
+        securityId: "sec-1",
+        displayName: "Apple Inc.",
+        status: "Active",
+        classification: {
+          assetClass: "Fixed Income",
+          subType: "CorporateBond",
+          primaryIdentifierKind: "CUSIP",
+          primaryIdentifierValue: "037833AB1"
+        },
+        economicDefinition: {
+          currency: "USD",
+          version: 3,
+          effectiveFrom: "2024-01-01T00:00:00Z",
+          effectiveTo: null,
+          subType: "CorporateBond",
+          assetFamily: "Credit",
+          issuerType: "Corporate"
+        }
+      }
+    ]);
+    vi.mocked(api.getSecurityIdentity).mockResolvedValueOnce({
+      securityId: "sec-1",
+      displayName: "Apple Inc.",
+      assetClass: "Fixed Income",
+      status: "Active",
+      version: 3,
+      effectiveFrom: "2024-01-01T00:00:00Z",
+      effectiveTo: null,
+      identifiers: [],
+      aliases: []
+    });
+
+    await renderGovernanceScreen(data, "/accounting/security-master");
+
+    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
+    await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
+
+    const table = await screen.findByRole("table", { name: "Cash-flow and factor schedules for sec-1" });
+    expect(table).toHaveTextContent("sched-sec-1-cpn-2026-05");
+    const couponRow = screen.getByRole("row", { name: "Inspect schedule event Coupon for sec-1 on 2026-05-15" });
+    const principalRow = screen.getByRole("row", { name: "Inspect schedule event Principal for sec-1 on 2026-11-15" });
+    expect(couponRow).toHaveAttribute("aria-selected", "true");
+    expect(couponRow).toHaveAttribute("aria-controls", "security-schedule-detail-panel");
+    expect(screen.getByRole("region", { name: "Cash-flow schedule detail for Coupon on sec-1" })).toHaveTextContent("Posted");
+
+    principalRow.focus();
+    await user.keyboard("{Enter}");
+
+    expect(principalRow).toHaveAttribute("aria-selected", "true");
+    expect(principalRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Cash-flow schedule detail for Principal on sec-1" })).toHaveTextContent("100,000 USD");
+    expect(screen.getByRole("toolbar", { name: "Cash-flow schedule status for sec-1" })).toHaveTextContent("2");
   });
 
   it("renders corporate actions as selectable dense evidence with a detail panel", async () => {

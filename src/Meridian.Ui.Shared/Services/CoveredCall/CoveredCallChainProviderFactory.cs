@@ -116,7 +116,7 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
                 bucket = new List<OptionCandidateInfo>(snapshot.Calls.Count);
                 liveCandidatesByExpiry[expiry] = bucket;
             }
-            bucket.AddRange(ConvertCalls(snapshot, asOf: from));
+            bucket.AddRange(ConvertCalls(snapshot, scanDate: from));
         }
 
         if (liveCandidatesByExpiry.Count == 0)

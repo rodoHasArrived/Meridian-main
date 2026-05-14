@@ -8,16 +8,11 @@ import {
   useCoveredCallScreenViewModel,
   type CoveredCallChainPreviewRowViewModel,
   type CoveredCallFormState,
+  type CoveredCallHistoryRowViewModel,
   type CoveredCallScreenViewModel,
-  type CoveredCallStage
+  type CoveredCallStageStepViewModel
 } from "@/screens/covered-call-screen.view-model";
 import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
-
-const STAGE_LABEL: Record<CoveredCallStage, string> = {
-  configure: "Configure",
-  run: "Run",
-  results: "Results"
-};
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
   {
@@ -66,6 +61,56 @@ const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewMo
   }
 ];
 
+const historyColumns: DenseDataTableColumn<CoveredCallHistoryRowViewModel>[] = [
+  {
+    id: "started",
+    label: "Started",
+    render: (row) => <span className="font-mono text-muted-foreground">{row.startedAtLabel}</span>
+  },
+  {
+    id: "underlying",
+    label: "Underlying",
+    render: (row) => <span className="font-mono">{row.underlyingLabel}</span>
+  },
+  {
+    id: "range",
+    label: "Range",
+    render: (row) => <span className="font-mono text-muted-foreground">{row.rangeLabel}</span>
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <Badge variant={row.statusBadgeVariant} dot>
+        {row.statusLabel}
+      </Badge>
+    )
+  },
+  {
+    id: "cagr",
+    label: "CAGR",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.cagrLabel}</span>
+  },
+  {
+    id: "sharpe",
+    label: "Sharpe",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.sharpeLabel}</span>
+  },
+  {
+    id: "win-rate",
+    label: "Win rate",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.winRateLabel}</span>
+  },
+  {
+    id: "label",
+    label: "Label",
+    render: (row) => <span>{row.labelText}</span>
+  }
+];
+
 export function CoveredCallScreen() {
   const vm = useCoveredCallScreenViewModel();
 
@@ -89,7 +134,7 @@ export function CoveredCallScreen() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <StageStepper currentStage={vm.stage} onSelect={vm.goToStage} />
+          <StageStepper steps={vm.stageSteps} onSelect={vm.goToStage} />
         </CardContent>
       </Card>
 
@@ -135,37 +180,36 @@ function ChainDataAdvisory() {
 }
 
 function StageStepper({
-  currentStage,
+  steps,
   onSelect
 }: {
-  currentStage: CoveredCallStage;
-  onSelect: (s: CoveredCallStage) => void;
+  steps: CoveredCallStageStepViewModel[];
+  onSelect: (s: CoveredCallStageStepViewModel["id"]) => void;
 }) {
-  const stages: CoveredCallStage[] = ["configure", "run", "results"];
   return (
     <ol className="flex items-center gap-2 text-sm" aria-label="Covered call wizard stages">
-      {stages.map((stage, idx) => {
-        const active = stage === currentStage;
-        return (
-          <li key={stage} className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onSelect(stage)}
-              className={`rounded-md border px-3 py-1.5 text-xs font-medium uppercase tracking-wide transition-colors ${
-                active
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border/60 bg-background/60 text-muted-foreground hover:text-foreground"
-              }`}
-              aria-current={active ? "step" : undefined}
-            >
-              {idx + 1}. {STAGE_LABEL[stage]}
-            </button>
-            {idx < stages.length - 1 ? (
-              <ArrowRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-            ) : null}
-          </li>
-        );
-      })}
+      {steps.map((step, idx) => (
+        <li key={step.id} className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onSelect(step.id)}
+            disabled={step.disabled}
+            title={step.disabledReason ?? undefined}
+            aria-label={step.ariaLabel}
+            aria-current={step.isCurrent ? "step" : undefined}
+            className={`rounded-md border px-3 py-1.5 text-xs font-medium uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 ${
+              step.isCurrent
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border/60 bg-background/60 text-muted-foreground hover:text-foreground disabled:hover:text-muted-foreground"
+            }`}
+          >
+            {step.buttonLabel}
+          </button>
+          {idx < steps.length - 1 ? (
+            <ArrowRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          ) : null}
+        </li>
+      ))}
     </ol>
   );
 }
@@ -574,59 +618,58 @@ function PayoffDiagramPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
 }
 
 function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
-  if (vm.history.length === 0 && !vm.historyError) {
+  const panel = vm.historyPanel;
+  if (panel.rows.length === 0 && !panel.errorDescription && !panel.isLoading) {
     return null;
   }
+
   return (
-    <Card>
+    <Card aria-busy={panel.isLoading}>
       <CardHeader>
-        <CardTitle className="text-base">Previous runs</CardTitle>
-        {vm.historyError ? (
-          <CardDescription className="text-danger">Failed to load history: {vm.historyError}</CardDescription>
-        ) : (
-          <CardDescription>Most recent first. Click a row to reload its results (cached for 30 min).</CardDescription>
-        )}
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <CardTitle className="text-base">{panel.title}</CardTitle>
+            <CardDescription className={panel.errorDescription ? "text-danger" : undefined}>
+              {panel.description}
+            </CardDescription>
+          </div>
+          {panel.errorDescription || panel.isLoading ? (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => void vm.loadHistory()}
+              aria-label={panel.retryAriaLabel}
+              disabled={panel.retryDisabled}
+            >
+              <RotateCw className="h-4 w-4" aria-hidden="true" />
+              <span className="ml-1.5">{panel.retryLabel}</span>
+            </Button>
+          ) : null}
+        </div>
       </CardHeader>
       <CardContent>
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="text-left text-muted-foreground">
-              <th className="pb-1 pr-2">Started</th>
-              <th className="pb-1 pr-2">Underlying</th>
-              <th className="pb-1 pr-2">Range</th>
-              <th className="pb-1 pr-2">Status</th>
-              <th className="pb-1 pr-2">CAGR</th>
-              <th className="pb-1 pr-2">Sharpe</th>
-              <th className="pb-1 pl-2">Label</th>
-            </tr>
-          </thead>
-          <tbody>
-            {vm.history.map((row) => (
-              <tr
-                key={row.runId}
-                className="cursor-pointer border-t border-border/30 hover:bg-secondary/30 focus-within:bg-secondary/30"
-                onClick={() => void vm.openRun(row.runId)}
-                tabIndex={0}
-                role="button"
-                aria-label={`Open run ${row.runId}`}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    void vm.openRun(row.runId);
-                  }
-                }}
-              >
-                <td className="py-1 pr-2 font-mono">{row.startedAt.replace("T", " ").slice(0, 16)}</td>
-                <td className="py-1 pr-2 font-mono">{row.underlyingSymbol}</td>
-                <td className="py-1 pr-2 font-mono">{row.from} → {row.to}</td>
-                <td className="py-1 pr-2">{row.status}</td>
-                <td className="py-1 pr-2 font-mono">{row.cagr !== null ? fmtPct(row.cagr) : "—"}</td>
-                <td className="py-1 pr-2 font-mono">{row.sharpeRatio !== null ? row.sharpeRatio.toFixed(2) : "—"}</td>
-                <td className="py-1 pl-2">{row.label ?? ""}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {panel.errorTitle ? (
+          <p role="alert" className="mb-3 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+            {panel.errorTitle}: {panel.errorDescription}
+          </p>
+        ) : null}
+        {panel.isLoading ? (
+          <p role="status" className="mb-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm text-muted-foreground">
+            Loading saved covered-call evidence...
+          </p>
+        ) : null}
+        <DenseDataTable
+          columns={historyColumns}
+          rows={panel.rows}
+          getRowId={(row) => row.id}
+          getRowAriaLabel={(row) => row.rowAriaLabel}
+          getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+          onRowSelect={(row) => void vm.openRun(row.runId)}
+          selectedRowId={panel.selectedRowId}
+          emptyText={panel.emptyText}
+          ariaLabel={panel.tableLabel}
+          caption={panel.tableCaption}
+        />
       </CardContent>
     </Card>
   );

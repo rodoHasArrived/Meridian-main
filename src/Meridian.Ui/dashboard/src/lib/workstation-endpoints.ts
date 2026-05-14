@@ -128,9 +128,9 @@ export const QUANT_API_ENDPOINTS = {
 export const COVERED_CALL_API_ENDPOINTS = {
   runs: "/api/strategies/covered-call/runs",
   chainPreview: "/api/strategies/covered-call/chain-preview",
-  runStatus: (runId: string) => `/api/strategies/covered-call/runs/${encodeURIComponent(runId)}/status`,
-  runResult: (runId: string) => `/api/strategies/covered-call/runs/${encodeURIComponent(runId)}/result`,
-  runCancel: (runId: string) => `/api/strategies/covered-call/runs/${encodeURIComponent(runId)}/cancel`
+  runStatus: coveredCallRunStatusEndpoint,
+  runResult: coveredCallRunResultEndpoint,
+  runCancel: coveredCallRunCancelEndpoint
 } as const;
 
 export const CONFIG_API_ENDPOINTS = {
@@ -236,6 +236,26 @@ export function workstationEvidenceValidateEndpoint(subjectKind: string, subject
 
 export function workstationEvidenceExportManifestEndpoint(subjectKind: string, subjectId: string): string {
   return `${workstationEvidenceSubjectBaseEndpoint(subjectKind, subjectId)}/export-manifest`;
+}
+
+export function coveredCallRunsEndpoint(limit?: number): string {
+  return `${COVERED_CALL_API_ENDPOINTS.runs}${queryString({ limit })}`;
+}
+
+export function coveredCallRunEndpoint(runId: string): string {
+  return `${COVERED_CALL_API_ENDPOINTS.runs}/${pathSegment(runId, "runId")}`;
+}
+
+export function coveredCallRunStatusEndpoint(runId: string): string {
+  return `${coveredCallRunEndpoint(runId)}/status`;
+}
+
+export function coveredCallRunResultEndpoint(runId: string): string {
+  return `${coveredCallRunEndpoint(runId)}/result`;
+}
+
+export function coveredCallRunCancelEndpoint(runId: string): string {
+  return `${coveredCallRunEndpoint(runId)}/cancel`;
 }
 
 export function promotionEvaluateEndpoint(runId: string): string {

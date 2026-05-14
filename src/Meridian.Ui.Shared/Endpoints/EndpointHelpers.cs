@@ -12,6 +12,15 @@ namespace Meridian.Ui.Shared.Endpoints;
 internal static class EndpointHelpers
 {
     /// <summary>
+    /// Returns a plain 403 result without invoking ASP.NET Core authentication handlers.
+    /// Minimal workstation test hosts and the desktop-local UI host store permissions in
+    /// <see cref="HttpContext.Items"/>, so endpoint-level authorization failures should not
+    /// depend on registered authentication services.
+    /// </summary>
+    internal static IResult Forbidden()
+        => Results.StatusCode(StatusCodes.Status403Forbidden);
+
+    /// <summary>
     /// Handles a synchronous endpoint handler with service null-check and error handling.
     /// </summary>
     internal static IResult HandleSync<TService>(
