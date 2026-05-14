@@ -10,6 +10,18 @@ function readTailwindConfig() {
   return readFileSync(resolve(process.cwd(), "tailwind.config.ts"), "utf8");
 }
 
+function readGovernanceScreen() {
+  return readFileSync(resolve(process.cwd(), "src/screens/governance-screen.tsx"), "utf8");
+}
+
+function readGovernanceViewModel() {
+  return readFileSync(resolve(process.cwd(), "src/screens/governance-screen.view-model.ts"), "utf8");
+}
+
+function readReferenceWorkbenchPreview() {
+  return readFileSync(resolve(process.cwd(), "../../../Meridian Design System/preview/reference-workbench.html"), "utf8");
+}
+
 describe("dashboard design-system contract", () => {
   it("keeps the cockpit color tokens aligned with the design-system source", () => {
     const styles = readDashboardStyles();
@@ -122,5 +134,31 @@ describe("dashboard design-system contract", () => {
 
     expect(styles).toContain("family=Inter");
     expect(styles).toContain("family=JetBrains+Mono");
+  });
+
+  it("keeps the reference workbench preview aligned with the schedule evidence pattern", () => {
+    const preview = readReferenceWorkbenchPreview();
+
+    expect(preview).toContain("Cash-flow and factor schedule");
+    expect(preview).toContain("Selected event detail");
+    expect(preview).toContain("Expected");
+    expect(preview).toContain("Actual");
+    expect(preview).toContain("Variance");
+    expect(preview).toContain("Controls and validation");
+  });
+
+  it("keeps Security Master schedules on shared workbench primitives with view-model copy", () => {
+    const screen = readGovernanceScreen();
+    const viewModel = readGovernanceViewModel();
+
+    expect(screen).toContain("function SecuritySchedulesPanel");
+    expect(screen).toContain("<DenseDataTable");
+    expect(screen).toContain("<ToolbarStrip");
+    expect(screen).toContain("<EntitySummary");
+    expect(viewModel).toContain("buildSecuritySchedulesViewState");
+    expect(viewModel).toContain("SecuritySchedulesViewState");
+    expect(viewModel).toContain("Cash-flow and factor schedules");
+    expect(viewModel).toContain("statusAnnouncement");
+    expect(viewModel).toContain("emptyText");
   });
 });

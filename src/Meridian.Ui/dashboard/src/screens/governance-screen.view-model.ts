@@ -78,11 +78,41 @@ export interface CalibrationProfileRowViewModel {
   toleranceProfileId: string;
   exceptionRoute: string;
   highestSeverity: string;
+  maxToleranceBandLabel: string;
+  totalBreakCount: number;
   openBreakCount: number;
+  inReviewBreakCount: number;
   resolvedBreakCount: number;
   pendingSignoffCount: number;
+  signedOffCount: number;
   lastUpdatedLabel: string;
   ariaLabel: string;
+  selectAriaLabel: string;
+  detailPanelId: string;
+  isSelected: boolean;
+}
+
+export interface CalibrationProfileDetailFieldViewModel {
+  label: string;
+  value: string;
+}
+
+export interface CalibrationProfileDetailViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "danger";
+  ariaLabel: string;
+  fields: CalibrationProfileDetailFieldViewModel[];
+}
+
+export interface CalibrationSummaryRefreshCommandViewModel {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
 }
 
 export interface CalibrationSummaryViewState {
@@ -104,9 +134,20 @@ export interface CalibrationSummaryViewState {
   profileRows: CalibrationProfileRowViewModel[];
   hasProfiles: boolean;
   profilesLabel: string;
+  tableAriaLabel: string;
+  emptyText: string;
+  detailPanelId: string;
+  selectedProfileId: string | null;
+  selectedProfile: CalibrationProfileDetailViewModel | null;
+  refreshCommand: CalibrationSummaryRefreshCommandViewModel;
   errorText: string | null;
   loadingText: string | null;
   statusAnnouncement: string;
+}
+
+export interface CalibrationSummaryViewModel extends CalibrationSummaryViewState {
+  selectProfile: (profileId: string) => void;
+  refresh: () => void;
 }
 
 export interface CorporateActionRowViewModel extends CorporateAction {
@@ -152,6 +193,99 @@ export interface CorporateActionsViewState {
   detailEmptyAriaLabel: string;
   loadingText: string | null;
   errorText: string | null;
+  hasRows: boolean;
+  statusAnnouncement: string;
+}
+
+export type SecurityScheduleFamily = "bond" | "structured" | "fund" | "derivative";
+export type SecurityScheduleEventType =
+  | "Coupon"
+  | "Principal"
+  | "Paydown"
+  | "Maturity"
+  | "Call"
+  | "Distribution"
+  | "FactorUpdate";
+export type SecuritySchedulePostingStatus = "Posted" | "Pending" | "Variance" | "Forecast";
+
+export interface SecurityCashFlowScheduleEvent {
+  eventId: string;
+  securityId: string;
+  scheduleFamily: SecurityScheduleFamily;
+  eventType: SecurityScheduleEventType;
+  paymentDate: string;
+  accrualStartDate: string | null;
+  accrualEndDate: string | null;
+  couponRatePct: number | null;
+  expectedAmount: number | null;
+  actualAmount: number | null;
+  principalAmount: number | null;
+  interestAmount: number | null;
+  factorStart: number | null;
+  factorEnd: number | null;
+  currency: string;
+  postingStatus: SecuritySchedulePostingStatus;
+  auditReference: string | null;
+  note: string | null;
+}
+
+export interface SecurityScheduleRowViewModel extends SecurityCashFlowScheduleEvent {
+  rowId: string;
+  eventTypeLabel: string;
+  paymentDateLabel: string;
+  expectedAmountLabel: string;
+  actualAmountLabel: string;
+  varianceLabel: string;
+  factorLabel: string;
+  postingStatusLabel: string;
+  postingStatusTone: "success" | "warning" | "danger" | "outline";
+  ariaLabel: string;
+  selectAriaLabel: string;
+  detailPanelId: string;
+  isExpanded: boolean;
+}
+
+export interface SecurityScheduleDetailFieldViewModel {
+  label: string;
+  value: string;
+  tone?: "default" | "success" | "warning" | "danger";
+}
+
+export interface SecurityScheduleDetailViewState {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  ariaLabel: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "danger" | "outline";
+  fields: SecurityScheduleDetailFieldViewModel[];
+}
+
+export interface SecurityScheduleToolbarItemViewModel {
+  id: string;
+  label: string;
+  value?: string;
+  active?: boolean;
+}
+
+export interface SecuritySchedulesViewState {
+  securityId: string;
+  title: string;
+  description: string;
+  tableLabel: string;
+  tableCaption: string;
+  detailPanelId: string;
+  toolbarAriaLabel: string;
+  toolbarItems: SecurityScheduleToolbarItemViewModel[];
+  rows: SecurityScheduleRowViewModel[];
+  selectedRowId: string | null;
+  selectedDetail: SecurityScheduleDetailViewState | null;
+  emptyText: string;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  detailEmptyAriaLabel: string;
   hasRows: boolean;
   statusAnnouncement: string;
 }
@@ -622,6 +756,7 @@ export interface GovernanceTrialBalanceViewState {
 }
 
 const DEFAULT_ACCOUNTING_BASIS: AccountingBasisKind = "Primary";
+const CALIBRATION_PROFILE_DETAIL_PANEL_ID = "calibration-profile-detail-panel";
 
 const ACCOUNTING_BASIS_OPTIONS: Array<Pick<GovernanceTrialBalanceBasisOption, "id" | "label" | "description">> = [
   {
@@ -673,6 +808,113 @@ const defaultGovernanceReportingServices: GovernanceReportingServices = {
 const defaultSecurityMasterDrillInServices: SecurityMasterDrillInServices = {
   getCorporateActions: (securityId) => getCorporateActions(securityId),
   getTradingParameters: (securityId) => getTradingParameters(securityId)
+};
+
+const securityScheduleFixtures: Record<string, SecurityCashFlowScheduleEvent[]> = {
+  "sec-dev-004": [
+    {
+      eventId: "sched-sec-dev-004-cpn-2026-06",
+      securityId: "sec-dev-004",
+      scheduleFamily: "bond",
+      eventType: "Coupon",
+      paymentDate: "2026-06-15",
+      accrualStartDate: "2025-12-15",
+      accrualEndDate: "2026-06-15",
+      couponRatePct: 5.875,
+      expectedAmount: 29375,
+      actualAmount: null,
+      principalAmount: null,
+      interestAmount: 29375,
+      factorStart: 1,
+      factorEnd: 1,
+      currency: "USD",
+      postingStatus: "Forecast",
+      auditReference: "fixture/security-master/cash-flow/sec-dev-004/cpn-2026-06",
+      note: "Semi-annual fixed coupon projected from the reference coupon schedule."
+    },
+    {
+      eventId: "sched-sec-dev-004-paydown-2026-09",
+      securityId: "sec-dev-004",
+      scheduleFamily: "structured",
+      eventType: "Paydown",
+      paymentDate: "2026-09-15",
+      accrualStartDate: "2026-06-15",
+      accrualEndDate: "2026-09-15",
+      couponRatePct: 5.875,
+      expectedAmount: 148750,
+      actualAmount: 147920,
+      principalAmount: 125000,
+      interestAmount: 23750,
+      factorStart: 1,
+      factorEnd: 0.875,
+      currency: "USD",
+      postingStatus: "Variance",
+      auditReference: "fixture/security-master/cash-flow/sec-dev-004/paydown-2026-09",
+      note: "Principal paydown carries a small expected-versus-actual variance for operator review."
+    },
+    {
+      eventId: "sched-sec-dev-004-maturity-2031-12",
+      securityId: "sec-dev-004",
+      scheduleFamily: "bond",
+      eventType: "Maturity",
+      paymentDate: "2031-12-15",
+      accrualStartDate: "2031-06-15",
+      accrualEndDate: "2031-12-15",
+      couponRatePct: 5.875,
+      expectedAmount: 529375,
+      actualAmount: null,
+      principalAmount: 500000,
+      interestAmount: 29375,
+      factorStart: 0.875,
+      factorEnd: 0,
+      currency: "USD",
+      postingStatus: "Pending",
+      auditReference: "fixture/security-master/cash-flow/sec-dev-004/maturity-2031-12",
+      note: "Final coupon and principal repayment remain pending until trustee schedule confirmation."
+    }
+  ],
+  "sec-1": [
+    {
+      eventId: "sched-sec-1-cpn-2026-05",
+      securityId: "sec-1",
+      scheduleFamily: "bond",
+      eventType: "Coupon",
+      paymentDate: "2026-05-15",
+      accrualStartDate: "2025-11-15",
+      accrualEndDate: "2026-05-15",
+      couponRatePct: 5.25,
+      expectedAmount: 26250,
+      actualAmount: 26250,
+      principalAmount: null,
+      interestAmount: 26250,
+      factorStart: 1,
+      factorEnd: 1,
+      currency: "USD",
+      postingStatus: "Posted",
+      auditReference: "fixture/security-master/cash-flow/sec-1/cpn-2026-05",
+      note: "Fixture coupon row used by browser workbench tests."
+    },
+    {
+      eventId: "sched-sec-1-principal-2026-11",
+      securityId: "sec-1",
+      scheduleFamily: "bond",
+      eventType: "Principal",
+      paymentDate: "2026-11-15",
+      accrualStartDate: "2026-05-15",
+      accrualEndDate: "2026-11-15",
+      couponRatePct: 5.25,
+      expectedAmount: 126250,
+      actualAmount: null,
+      principalAmount: 100000,
+      interestAmount: 26250,
+      factorStart: 1,
+      factorEnd: 0.9,
+      currency: "USD",
+      postingStatus: "Pending",
+      auditReference: "fixture/security-master/cash-flow/sec-1/principal-2026-11",
+      note: "Fixture amortization row keeps schedule selection deterministic."
+    }
+  ]
 };
 
 export function useGovernanceCashFlowViewModel(
@@ -785,6 +1027,7 @@ export function useSecurityMasterViewModel(
   const [corporateActionsLoading, setCorporateActionsLoading] = useState(false);
   const [corporateActionsError, setCorporateActionsError] = useState<string | null>(null);
   const [selectedCorporateActionId, setSelectedCorporateActionId] = useState<string | null>(null);
+  const [selectedScheduleEventId, setSelectedScheduleEventId] = useState<string | null>(null);
   const [tradingParameters, setTradingParameters] = useState<TradingParameters | null>(null);
   const [tradingParametersLoading, setTradingParametersLoading] = useState(false);
   const [tradingParametersError, setTradingParametersError] = useState<string | null>(null);
@@ -828,6 +1071,7 @@ export function useSecurityMasterViewModel(
     setCorporateActionsLoading(false);
     setCorporateActionsError(null);
     setSelectedCorporateActionId(null);
+    setSelectedScheduleEventId(null);
     setTradingParameters(null);
     setTradingParametersLoading(false);
     setTradingParametersError(null);
@@ -870,6 +1114,7 @@ export function useSecurityMasterViewModel(
       setCorporateActionsLoading(false);
       setCorporateActionsError(null);
       setSelectedCorporateActionId(null);
+      setSelectedScheduleEventId(null);
       setTradingParameters(null);
       setTradingParametersLoading(false);
       setTradingParametersError(null);
@@ -930,6 +1175,7 @@ export function useSecurityMasterViewModel(
     setIdentityError(null);
     setSearchError(null);
     setSelectedCorporateActionId(null);
+    setSelectedScheduleEventId(null);
     identityGenerationRef.current += 1;
 
     if (searchTimerRef.current) {
@@ -984,6 +1230,7 @@ export function useSecurityMasterViewModel(
     setCorporateActions(null);
     setCorporateActionsError(null);
     setSelectedCorporateActionId(null);
+    setSelectedScheduleEventId(null);
     setTradingParameters(null);
     setTradingParametersError(null);
 
@@ -1042,6 +1289,10 @@ export function useSecurityMasterViewModel(
     () => buildSecurityIdentityDrillInState(identity),
     [identity]
   );
+  const selectedSearchResult = useMemo(
+    () => selectedSecurityId ? results?.find((entry) => entry.securityId === selectedSecurityId) ?? null : null,
+    [results, selectedSecurityId]
+  );
   const corporateActionRows = useMemo(
     () => buildCorporateActionRows(corporateActions, selectedCorporateActionId),
     [corporateActions, selectedCorporateActionId]
@@ -1068,6 +1319,44 @@ export function useSecurityMasterViewModel(
     ),
     [corporateActions, corporateActionsError, corporateActionsLoading, selectedCorporateActionId, selectedSecurityId]
   );
+  const securitySchedules = useMemo(
+    () => resolveSecurityScheduleEvents(selectedSecurityId),
+    [selectedSecurityId]
+  );
+  const securityScheduleRows = useMemo(
+    () => buildSecurityScheduleRows(securitySchedules, selectedScheduleEventId),
+    [securitySchedules, selectedScheduleEventId]
+  );
+  useEffect(() => {
+    if (securityScheduleRows.length === 0) {
+      if (selectedScheduleEventId !== null) {
+        setSelectedScheduleEventId(null);
+      }
+      return;
+    }
+
+    if (!selectedScheduleEventId || !securityScheduleRows.some((row) => row.rowId === selectedScheduleEventId)) {
+      setSelectedScheduleEventId(securityScheduleRows[0].rowId);
+    }
+  }, [securityScheduleRows, selectedScheduleEventId]);
+  const schedulesView = useMemo(
+    () => buildSecuritySchedulesViewState({
+      securityId: selectedSecurityId,
+      displayName: identity?.displayName ?? selectedSearchResult?.displayName ?? null,
+      assetClass: identity?.assetClass ?? selectedSearchResult?.classification.assetClass ?? null,
+      schedules: securitySchedules,
+      selectedRowId: selectedScheduleEventId
+    }),
+    [
+      identity?.assetClass,
+      identity?.displayName,
+      securitySchedules,
+      selectedScheduleEventId,
+      selectedSearchResult?.classification.assetClass,
+      selectedSearchResult?.displayName,
+      selectedSecurityId
+    ]
+  );
   const tradingParametersView = useMemo(
     () => buildTradingParametersViewState(tradingParameters, tradingParametersLoading, tradingParametersError),
     [tradingParameters, tradingParametersLoading, tradingParametersError]
@@ -1076,10 +1365,6 @@ export function useSecurityMasterViewModel(
   const conflictRefreshCommand = useMemo(
     () => buildSecurityConflictRefreshCommand(conflictsLoading, conflictsError),
     [conflictsError, conflictsLoading]
-  );
-  const selectedSearchResult = useMemo(
-    () => selectedSecurityId ? results?.find((entry) => entry.securityId === selectedSecurityId) ?? null : null,
-    [results, selectedSecurityId]
   );
   const pageView = useMemo(
     () => buildSecurityMasterPageViewState({
@@ -1094,12 +1379,14 @@ export function useSecurityMasterViewModel(
       conflicts,
       conflictsLoading,
       corporateActions,
+      securitySchedules,
       tradingParameters
     }),
     [
       conflicts,
       conflictsLoading,
       corporateActions,
+      securitySchedules,
       identity,
       identityLoading,
       query,
@@ -1143,6 +1430,10 @@ export function useSecurityMasterViewModel(
     hasCorporateActions: (corporateActions?.length ?? 0) > 0,
     corporateActionsLoading,
     corporateActionsErrorText: corporateActionsError,
+    securitySchedules,
+    securityScheduleRows,
+    schedulesView,
+    selectScheduleEvent: setSelectedScheduleEventId,
     tradingParameters,
     tradingParametersView,
     tradingParametersLoading,
@@ -1170,6 +1461,8 @@ export function useGovernanceReconciliationViewModel(
   const [calibrationSummary, setCalibrationSummary] = useState<ReconciliationCalibrationSummary | null>(null);
   const [calibrationLoading, setCalibrationLoading] = useState(false);
   const [calibrationError, setCalibrationError] = useState<string | null>(null);
+  const [selectedCalibrationProfileId, setSelectedCalibrationProfileId] = useState<string | null>(null);
+  const calibrationRequestRevisionRef = useRef(0);
 
   const reconciliationQueue = data?.reconciliationQueue ?? [];
   const selectedReconciliation = useMemo(
@@ -1224,36 +1517,41 @@ export function useGovernanceReconciliationViewModel(
     };
   }, [data?.breakQueue, services, workstream]);
 
-  useEffect(() => {
-    if (workstream !== "reconciliation") {
-      return;
-    }
-
-    let cancelled = false;
+  const refreshCalibrationSummary = useCallback(() => {
+    const revision = calibrationRequestRevisionRef.current + 1;
+    calibrationRequestRevisionRef.current = revision;
     setCalibrationLoading(true);
     setCalibrationError(null);
 
     services.getCalibrationSummary()
       .then((summary) => {
-        if (!cancelled) {
+        if (calibrationRequestRevisionRef.current === revision) {
           setCalibrationSummary(summary);
         }
       })
       .catch((err) => {
-        if (!cancelled) {
+        if (calibrationRequestRevisionRef.current === revision) {
           setCalibrationError(toErrorMessage(err, "Calibration summary failed to load."));
         }
       })
       .finally(() => {
-        if (!cancelled) {
+        if (calibrationRequestRevisionRef.current === revision) {
           setCalibrationLoading(false);
         }
       });
+  }, [services]);
+
+  useEffect(() => {
+    if (workstream !== "reconciliation") {
+      return;
+    }
+
+    refreshCalibrationSummary();
 
     return () => {
-      cancelled = true;
+      calibrationRequestRevisionRef.current += 1;
     };
-  }, [services, workstream]);
+  }, [refreshCalibrationSummary, workstream]);
 
   useEffect(() => {
     if (!selectedReconciliation || workstream !== "ledger") {
@@ -1360,9 +1658,25 @@ export function useGovernanceReconciliationViewModel(
     setSelectedAccountingBasis(basis);
     setSelectedTrialBalanceRowId(null);
   }, []);
+  const calibrationViewState = useMemo(
+    () => buildCalibrationSummaryViewState(
+      calibrationSummary,
+      calibrationLoading,
+      calibrationError,
+      selectedCalibrationProfileId
+    ),
+    [calibrationSummary, calibrationLoading, calibrationError, selectedCalibrationProfileId]
+  );
+  const selectCalibrationProfile = useCallback((profileId: string) => {
+    setSelectedCalibrationProfileId(profileId);
+  }, []);
   const calibrationView = useMemo(
-    () => buildCalibrationSummaryViewState(calibrationSummary, calibrationLoading, calibrationError),
-    [calibrationSummary, calibrationLoading, calibrationError]
+    () => ({
+      ...calibrationViewState,
+      selectProfile: selectCalibrationProfile,
+      refresh: refreshCalibrationSummary
+    }),
+    [calibrationViewState, refreshCalibrationSummary, selectCalibrationProfile]
   );
   const detailActions = useMemo(
     () => selectedReconciliation ? buildReconciliationDetailActions(selectedReconciliation) : null,
@@ -1627,6 +1941,7 @@ export function buildSecurityMasterPageViewState({
   conflicts,
   conflictsLoading,
   corporateActions,
+  securitySchedules,
   tradingParameters
 }: {
   query: string;
@@ -1640,6 +1955,7 @@ export function buildSecurityMasterPageViewState({
   conflicts: SecurityMasterConflict[] | null;
   conflictsLoading: boolean;
   corporateActions: CorporateAction[] | null;
+  securitySchedules?: SecurityCashFlowScheduleEvent[] | null;
   tradingParameters: TradingParameters | null;
 }): SecurityMasterPageViewState {
   const hasQuery = query.trim().length > 0;
@@ -1659,6 +1975,11 @@ export function buildSecurityMasterPageViewState({
     : selectedSecurityId
       ? "Loading schedules"
       : "No selection";
+  const scheduleLabel = securitySchedules
+    ? securitySchedules.length > 0
+      ? formatCount(securitySchedules.length, "cash-flow event")
+      : corporateActionLabel
+    : corporateActionLabel;
 
   return {
     ariaLabel: "Security Master command deck",
@@ -1714,7 +2035,7 @@ export function buildSecurityMasterPageViewState({
     detailToolbarAriaLabel: selectedSecurityId ? `Security detail sections for ${selectedName}` : "Security detail sections",
     detailSections: [
       { id: "overview", label: "Overview", value: identifiersLabel, active: true },
-      { id: "schedules", label: "Schedules", value: corporateActionLabel },
+      { id: "schedules", label: "Schedules", value: scheduleLabel },
       { id: "controls", label: "Controls", value: tradingParameters ? "Trading set" : selectedSecurityId ? "Pending" : "No selection" },
       { id: "audit", label: "Audit", value: openConflictCount > 0 ? formatCount(openConflictCount, "conflict") : aliasesLabel }
     ]
@@ -2965,10 +3286,16 @@ function buildReconciliationBreakStatusAnnouncement({
 export function buildCalibrationSummaryViewState(
   summary: ReconciliationCalibrationSummary | null,
   loading: boolean,
-  errorText: string | null
+  errorText: string | null,
+  selectedProfileId: string | null = null
 ): CalibrationSummaryViewState {
   const statusTone = calibrationStatusTone(summary?.status ?? null);
-  const profileRows = (summary?.profiles ?? []).map(buildCalibrationProfileRow);
+  const profiles = summary?.profiles ?? [];
+  const effectiveSelectedProfileId = selectedProfileId && profiles.some((profile) => profile.toleranceProfileId === selectedProfileId)
+    ? selectedProfileId
+    : profiles[0]?.toleranceProfileId ?? null;
+  const profileRows = profiles.map((profile) => buildCalibrationProfileRow(profile, effectiveSelectedProfileId));
+  const selectedProfileRow = profileRows.find((profile) => profile.toleranceProfileId === effectiveSelectedProfileId) ?? null;
   const metricRows = buildCalibrationSummaryMetrics(summary);
 
   return {
@@ -2990,6 +3317,16 @@ export function buildCalibrationSummaryViewState(
     profileRows,
     hasProfiles: profileRows.length > 0,
     profilesLabel: profileRows.length === 1 ? "1 tolerance profile" : `${profileRows.length} tolerance profiles`,
+    tableAriaLabel: "Tolerance profile health by reconciliation route",
+    emptyText: loading
+      ? "Loading tolerance profiles..."
+      : errorText
+        ? "Tolerance profiles are unavailable until the calibration summary reloads."
+        : "No tolerance profiles loaded. Run provider calibration before accepting reconciliation readiness.",
+    detailPanelId: CALIBRATION_PROFILE_DETAIL_PANEL_ID,
+    selectedProfileId: selectedProfileRow?.toleranceProfileId ?? null,
+    selectedProfile: selectedProfileRow ? buildCalibrationProfileDetail(selectedProfileRow) : null,
+    refreshCommand: buildCalibrationSummaryRefreshCommand(loading, errorText),
     errorText,
     loadingText: loading ? "Loading calibration summary..." : null,
     statusAnnouncement: errorText
@@ -2999,6 +3336,27 @@ export function buildCalibrationSummaryViewState(
         : summary
           ? `Calibration status: ${calibrationStatusLabel(summary.status, false)}. ${summary.summary}`
           : ""
+  };
+}
+
+function buildCalibrationSummaryRefreshCommand(
+  loading: boolean,
+  errorText: string | null
+): CalibrationSummaryRefreshCommandViewModel {
+  if (loading) {
+    return {
+      label: "Refreshing...",
+      ariaLabel: "Calibration summary refresh is already running",
+      disabled: true,
+      disabledReason: "Calibration summary refresh is already running."
+    };
+  }
+
+  return {
+    label: errorText ? "Retry calibration summary" : "Refresh calibration",
+    ariaLabel: errorText ? "Retry calibration summary load" : "Refresh calibration summary",
+    disabled: false,
+    disabledReason: null
   };
 }
 
@@ -3038,18 +3396,84 @@ function buildCalibrationSummaryMetric(
 }
 
 function buildCalibrationProfileRow(
-  profile: ReconciliationCalibrationSummary["profiles"][number]
+  profile: ReconciliationCalibrationSummary["profiles"][number],
+  selectedProfileId: string | null
 ): CalibrationProfileRowViewModel {
+  const isSelected = profile.toleranceProfileId === selectedProfileId;
+  const statusLabel = calibrationProfileStatusLabel(profile);
+
   return {
     toleranceProfileId: profile.toleranceProfileId,
     exceptionRoute: profile.exceptionRoute,
     highestSeverity: profile.highestSeverity,
+    maxToleranceBandLabel: profile.maxToleranceBand === null ? "Policy default" : formatCurrency(profile.maxToleranceBand),
+    totalBreakCount: profile.totalBreakCount,
     openBreakCount: profile.openBreakCount,
+    inReviewBreakCount: profile.inReviewBreakCount,
     resolvedBreakCount: profile.resolvedBreakCount,
     pendingSignoffCount: profile.pendingSignoffCount,
+    signedOffCount: profile.signedOffCount,
     lastUpdatedLabel: formatSecurityDate(profile.lastUpdatedAt),
-    ariaLabel: `Profile ${profile.toleranceProfileId}: ${profile.openBreakCount} open, ${profile.pendingSignoffCount} pending sign-off, severity ${profile.highestSeverity}`
+    ariaLabel: `Profile ${profile.toleranceProfileId}: ${profile.openBreakCount} open, ${profile.pendingSignoffCount} pending sign-off, severity ${profile.highestSeverity}`,
+    selectAriaLabel: `Inspect tolerance profile ${profile.toleranceProfileId}: ${statusLabel}`,
+    detailPanelId: CALIBRATION_PROFILE_DETAIL_PANEL_ID,
+    isSelected
   };
+}
+
+function buildCalibrationProfileDetail(
+  profile: CalibrationProfileRowViewModel
+): CalibrationProfileDetailViewModel {
+  const statusLabel = calibrationProfileStatusLabel(profile);
+  const statusTone = calibrationProfileStatusTone(profile);
+
+  return {
+    id: `${CALIBRATION_PROFILE_DETAIL_PANEL_ID}-${toDomId(profile.toleranceProfileId)}`,
+    title: `Selected tolerance profile - ${profile.toleranceProfileId}`,
+    subtitle: `${profile.exceptionRoute} route - ${profile.highestSeverity} severity`,
+    description: `${statusLabel}. ${formatCount(profile.totalBreakCount, "break")} tracked for this exception route, with ${formatCount(profile.openBreakCount, "open break")} and ${formatCount(profile.pendingSignoffCount, "pending sign-off")}.`,
+    statusLabel,
+    statusTone,
+    ariaLabel: `Tolerance profile detail for ${profile.toleranceProfileId}`,
+    fields: [
+      { label: "Tolerance band", value: profile.maxToleranceBandLabel },
+      { label: "Total breaks", value: String(profile.totalBreakCount) },
+      { label: "Open", value: String(profile.openBreakCount) },
+      { label: "In review", value: String(profile.inReviewBreakCount) },
+      { label: "Resolved", value: String(profile.resolvedBreakCount) },
+      { label: "Pending sign-off", value: String(profile.pendingSignoffCount) },
+      { label: "Signed off", value: String(profile.signedOffCount) },
+      { label: "Last updated", value: profile.lastUpdatedLabel }
+    ]
+  };
+}
+
+function calibrationProfileStatusLabel(
+  profile: Pick<CalibrationProfileRowViewModel, "highestSeverity" | "openBreakCount" | "pendingSignoffCount">
+): string {
+  if (profile.highestSeverity.toLowerCase() === "critical" || profile.openBreakCount > 0) {
+    return "Operator review required";
+  }
+
+  if (profile.pendingSignoffCount > 0) {
+    return "Pending sign-off";
+  }
+
+  return "Within tolerance";
+}
+
+function calibrationProfileStatusTone(
+  profile: Pick<CalibrationProfileRowViewModel, "highestSeverity" | "openBreakCount" | "pendingSignoffCount">
+): CalibrationProfileDetailViewModel["statusTone"] {
+  if (profile.highestSeverity.toLowerCase() === "critical") {
+    return "danger";
+  }
+
+  if (profile.openBreakCount > 0 || profile.pendingSignoffCount > 0) {
+    return "warning";
+  }
+
+  return "success";
 }
 
 function calibrationStatusTone(status: ReconciliationCalibrationStatus | null): CalibrationStatusTone {
@@ -3106,6 +3530,136 @@ function calibrationStatusLabel(status: ReconciliationCalibrationStatus | null, 
   }
 
   return "Unknown";
+}
+
+export function resolveSecurityScheduleEvents(securityId: string | null): SecurityCashFlowScheduleEvent[] {
+  if (!securityId) {
+    return [];
+  }
+
+  return (securityScheduleFixtures[securityId] ?? []).map((event) => ({ ...event }));
+}
+
+export function buildSecurityScheduleRows(
+  schedules: SecurityCashFlowScheduleEvent[] | null,
+  selectedRowId: string | null = null
+): SecurityScheduleRowViewModel[] {
+  const detailPanelId = "security-schedule-detail-panel";
+  const rows = schedules ?? [];
+  const effectiveSelectedRowId = selectedRowId && rows.some((event) => event.eventId === selectedRowId)
+    ? selectedRowId
+    : rows[0]?.eventId ?? null;
+
+  return rows.map((event) => {
+    const isSelected = event.eventId === effectiveSelectedRowId;
+    const eventTypeLabel = formatSecurityScheduleEventType(event.eventType);
+    const paymentDateLabel = formatSecurityDate(event.paymentDate);
+    const expectedAmountLabel = formatScheduleAmount(event.expectedAmount, event.currency);
+    const actualAmountLabel = formatScheduleAmount(event.actualAmount, event.currency);
+    const varianceLabel = formatScheduleVariance(event.expectedAmount, event.actualAmount, event.currency);
+    const factorLabel = formatScheduleFactor(event.factorStart, event.factorEnd);
+    const postingStatusTone = securitySchedulePostingTone(event.postingStatus);
+
+    return {
+      ...event,
+      rowId: event.eventId,
+      eventTypeLabel,
+      paymentDateLabel,
+      expectedAmountLabel,
+      actualAmountLabel,
+      varianceLabel,
+      factorLabel,
+      postingStatusLabel: formatSecuritySchedulePostingStatus(event.postingStatus),
+      postingStatusTone,
+      ariaLabel: `${eventTypeLabel} for ${event.securityId}, payment ${paymentDateLabel}, expected ${expectedAmountLabel}, actual ${actualAmountLabel}, variance ${varianceLabel}, status ${event.postingStatus}`,
+      selectAriaLabel: `Inspect schedule event ${eventTypeLabel} for ${event.securityId} on ${paymentDateLabel}`,
+      detailPanelId,
+      isExpanded: isSelected
+    };
+  });
+}
+
+export function buildSecuritySchedulesViewState({
+  securityId,
+  displayName,
+  assetClass,
+  schedules,
+  selectedRowId
+}: {
+  securityId: string | null;
+  displayName: string | null;
+  assetClass: string | null;
+  schedules: SecurityCashFlowScheduleEvent[] | null;
+  selectedRowId: string | null;
+}): SecuritySchedulesViewState {
+  const displaySecurityId = securityId ?? "selected security";
+  const displayNameLabel = displayName?.trim() || displaySecurityId;
+  const displayAssetClass = assetClass?.trim() || "Unclassified";
+  const rows = buildSecurityScheduleRows(schedules, selectedRowId);
+  const effectiveSelectedRowId = rows.find((row) => row.rowId === selectedRowId)?.rowId ?? rows[0]?.rowId ?? null;
+  const selectedRow = rows.find((row) => row.rowId === effectiveSelectedRowId) ?? null;
+  const eventCount = rows.length;
+  const pendingCount = rows.filter((row) => row.postingStatus === "Pending" || row.postingStatus === "Forecast").length;
+  const varianceCount = rows.filter((row) => row.postingStatus === "Variance").length;
+  const factorCount = rows.filter((row) => row.factorStart !== null || row.factorEnd !== null).length;
+
+  return {
+    securityId: displaySecurityId,
+    title: "Cash-flow and factor schedules",
+    description: `${displayNameLabel} schedule events stay attached to the selected ${displayAssetClass} reference record for payment, posting, variance, and audit review.`,
+    tableLabel: `Cash-flow and factor schedules for ${displaySecurityId}`,
+    tableCaption: `Cash-flow and factor schedule evidence for ${displaySecurityId}; select a row to inspect event detail.`,
+    detailPanelId: "security-schedule-detail-panel",
+    toolbarAriaLabel: `Cash-flow schedule status for ${displaySecurityId}`,
+    toolbarItems: [
+      { id: "events", label: "Events", value: String(eventCount), active: eventCount > 0 },
+      { id: "pending", label: "Pending", value: String(pendingCount) },
+      { id: "variance", label: "Variance", value: String(varianceCount) },
+      { id: "factor", label: "Factor rows", value: String(factorCount) }
+    ],
+    rows,
+    selectedRowId: effectiveSelectedRowId,
+    selectedDetail: selectedRow ? buildSecurityScheduleDetailViewState(selectedRow) : null,
+    emptyText: `No cash-flow or factor schedule rows are available for ${displaySecurityId}.`,
+    detailEmptyTitle: "No schedule event selected",
+    detailEmptyText: "Select a schedule row to inspect payment dates, expected and actual amounts, factors, posting state, and audit evidence.",
+    detailEmptyAriaLabel: "No cash-flow schedule event selected",
+    hasRows: eventCount > 0,
+    statusAnnouncement: eventCount > 0
+      ? `${eventCount} cash-flow schedule ${eventCount === 1 ? "event" : "events"} loaded for ${displaySecurityId}.`
+      : ""
+  };
+}
+
+function buildSecurityScheduleDetailViewState(row: SecurityScheduleRowViewModel): SecurityScheduleDetailViewState {
+  const accrualWindow = `${formatSecurityDate(row.accrualStartDate)} -> ${formatSecurityDate(row.accrualEndDate)}`;
+  const varianceTone = scheduleVarianceTone(row.expectedAmount, row.actualAmount, row.postingStatus);
+
+  return {
+    id: row.detailPanelId,
+    eyebrow: "Schedule event detail",
+    title: row.eventTypeLabel,
+    subtitle: `${row.securityId} · ${row.paymentDateLabel}`,
+    description: `${row.eventTypeLabel} event expected at ${row.expectedAmountLabel}; posting state is ${row.postingStatusLabel}.`,
+    ariaLabel: `Cash-flow schedule detail for ${row.eventTypeLabel} on ${row.securityId}`,
+    statusLabel: row.postingStatusLabel,
+    statusTone: row.postingStatusTone,
+    fields: [
+      { label: "Schedule event ID", value: row.eventId },
+      { label: "Event type", value: row.eventTypeLabel },
+      { label: "Payment date", value: row.paymentDateLabel },
+      { label: "Accrual window", value: accrualWindow, tone: accrualWindow.includes("—") ? "warning" : "default" },
+      { label: "Coupon rate", value: row.couponRatePct !== null ? `${row.couponRatePct.toFixed(3)}%` : "—" },
+      { label: "Interest", value: formatScheduleAmount(row.interestAmount, row.currency) },
+      { label: "Principal", value: formatScheduleAmount(row.principalAmount, row.currency) },
+      { label: "Expected", value: row.expectedAmountLabel },
+      { label: "Actual", value: row.actualAmountLabel, tone: row.actualAmount === null ? "warning" : "default" },
+      { label: "Variance", value: row.varianceLabel, tone: varianceTone },
+      { label: "Factor", value: row.factorLabel },
+      { label: "Audit reference", value: row.auditReference ?? "—", tone: row.auditReference ? "default" : "warning" },
+      { label: "Note", value: row.note ?? "—" }
+    ]
+  };
 }
 
 export function buildCorporateActionRows(
@@ -3240,6 +3794,102 @@ export function buildTradingParametersViewState(
           ? `Trading parameters loaded for ${params.securityId}.`
           : ""
   };
+}
+
+function formatSecurityScheduleEventType(eventType: SecurityScheduleEventType): string {
+  const labels: Record<SecurityScheduleEventType, string> = {
+    Coupon: "Coupon",
+    Principal: "Principal",
+    Paydown: "Paydown",
+    Maturity: "Maturity",
+    Call: "Call",
+    Distribution: "Distribution",
+    FactorUpdate: "Factor update"
+  };
+
+  return labels[eventType];
+}
+
+function formatSecuritySchedulePostingStatus(status: SecuritySchedulePostingStatus): string {
+  const labels: Record<SecuritySchedulePostingStatus, string> = {
+    Posted: "Posted",
+    Pending: "Pending",
+    Variance: "Variance review",
+    Forecast: "Forecast"
+  };
+
+  return labels[status];
+}
+
+function securitySchedulePostingTone(
+  status: SecuritySchedulePostingStatus
+): SecurityScheduleRowViewModel["postingStatusTone"] {
+  if (status === "Posted") {
+    return "success";
+  }
+
+  if (status === "Variance") {
+    return "danger";
+  }
+
+  if (status === "Pending") {
+    return "warning";
+  }
+
+  return "outline";
+}
+
+function formatScheduleAmount(value: number | null, currency: string): string {
+  if (value === null || !Number.isFinite(value)) {
+    return "—";
+  }
+
+  const prefix = value >= 0 ? "" : "-";
+  const amount = Math.abs(value).toLocaleString(undefined, {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 0
+  });
+  return `${prefix}${amount} ${currency}`;
+}
+
+function formatScheduleVariance(expected: number | null, actual: number | null, currency: string): string {
+  if (expected === null || actual === null || !Number.isFinite(expected) || !Number.isFinite(actual)) {
+    return "—";
+  }
+
+  const variance = actual - expected;
+  if (variance === 0) {
+    return `0 ${currency}`;
+  }
+
+  const sign = variance > 0 ? "+" : "-";
+  return `${sign}${Math.abs(variance).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency}`;
+}
+
+function formatScheduleFactor(start: number | null, end: number | null): string {
+  if (start === null && end === null) {
+    return "—";
+  }
+
+  const startLabel = start === null ? "—" : start.toFixed(6);
+  const endLabel = end === null ? "—" : end.toFixed(6);
+  return `${startLabel} -> ${endLabel}`;
+}
+
+function scheduleVarianceTone(
+  expected: number | null,
+  actual: number | null,
+  postingStatus: SecuritySchedulePostingStatus
+): SecurityScheduleDetailFieldViewModel["tone"] {
+  if (postingStatus === "Variance") {
+    return "danger";
+  }
+
+  if (expected === null || actual === null) {
+    return "warning";
+  }
+
+  return Math.abs(actual - expected) > 0.0001 ? "warning" : "success";
 }
 
 function formatCorpActEventType(eventType: string): string {

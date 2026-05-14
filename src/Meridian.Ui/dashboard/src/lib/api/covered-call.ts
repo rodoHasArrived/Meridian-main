@@ -1,9 +1,17 @@
 /**
  * Client functions for the covered-call backtest endpoints (slice 1).
- * Thin fetch wrappers — error handling is centralised by the caller.
+ * Thin wrappers over the shared workstation API client so errors, aborts, and
+ * no-host fixture semantics stay aligned with the rest of the dashboard.
  */
 
-import { COVERED_CALL_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import { apiGetJson, apiPostJson } from "@/lib/api";
+import {
+  COVERED_CALL_API_ENDPOINTS,
+  coveredCallRunCancelEndpoint,
+  coveredCallRunResultEndpoint,
+  coveredCallRunStatusEndpoint,
+  coveredCallRunsEndpoint
+} from "@/lib/workstation-endpoints";
 import type {
   CoveredCallBacktestRequest,
   CoveredCallChainPreview,
@@ -14,89 +22,32 @@ import type {
   CoveredCallRunSummary
 } from "@/types/covered-call";
 
-async function readJson<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    let detail = `${response.status} ${response.statusText}`;
-    try {
-      const text = await response.text();
-      if (text) {
-        try {
-          const parsed = JSON.parse(text) as { detail?: string; title?: string };
-          if (parsed.detail) detail = parsed.detail;
-          else if (parsed.title) detail = parsed.title;
-          else detail = text;
-        } catch {
-          detail = text;
-        }
-      }
-    } catch {
-      // swallow body-read errors and fall back to status
-    }
-    throw new Error(`${detail} (status ${response.status})`);
-  }
-  return (await response.json()) as T;
-}
-
 export async function startCoveredCallBacktest(
   request: CoveredCallBacktestRequest,
   signal?: AbortSignal
 ): Promise<CoveredCallRunHandle> {
-  const response = await fetch(COVERED_CALL_API_ENDPOINTS.runs, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "same-origin",
-    body: JSON.stringify(request),
-    signal
-  });
-  return readJson<CoveredCallRunHandle>(response);
+  return apiPostJson<CoveredCallRunHandle>(COVERED_CALL_API_ENDPOINTS.runs, request, { signal });
 }
 
 export async function listCoveredCallRuns(limit = 50, signal?: AbortSignal): Promise<CoveredCallRunSummary[]> {
-  const response = await fetch(`${COVERED_CALL_API_ENDPOINTS.runs}?limit=${encodeURIComponent(limit)}`, {
-    method: "GET",
-    credentials: "same-origin",
-    signal
-  });
-  return readJson<CoveredCallRunSummary[]>(response);
+  return apiGetJson<CoveredCallRunSummary[]>(coveredCallRunsEndpoint(limit), { signal });
 }
 
 export async function getCoveredCallRunStatus(runId: string, signal?: AbortSignal): Promise<CoveredCallRunStatus> {
-  const response = await fetch(COVERED_CALL_API_ENDPOINTS.runStatus(runId), {
-    method: "GET",
-    credentials: "same-origin",
-    signal
-  });
-  return readJson<CoveredCallRunStatus>(response);
+  return apiGetJson<CoveredCallRunStatus>(coveredCallRunStatusEndpoint(runId), { signal });
 }
 
 export async function getCoveredCallRunResult(runId: string, signal?: AbortSignal): Promise<CoveredCallRunResult> {
-  const response = await fetch(COVERED_CALL_API_ENDPOINTS.runResult(runId), {
-    method: "GET",
-    credentials: "same-origin",
-    signal
-  });
-  return readJson<CoveredCallRunResult>(response);
+  return apiGetJson<CoveredCallRunResult>(coveredCallRunResultEndpoint(runId), { signal });
 }
 
 export async function cancelCoveredCallRun(runId: string, signal?: AbortSignal): Promise<CoveredCallRunStatus> {
-  const response = await fetch(COVERED_CALL_API_ENDPOINTS.runCancel(runId), {
-    method: "POST",
-    credentials: "same-origin",
-    signal
-  });
-  return readJson<CoveredCallRunStatus>(response);
+  return apiPostJson<CoveredCallRunStatus>(coveredCallRunCancelEndpoint(runId), undefined, { signal });
 }
 
 export async function previewCoveredCallChain(
   request: CoveredCallChainPreviewRequest,
   signal?: AbortSignal
 ): Promise<CoveredCallChainPreview> {
-  const response = await fetch(COVERED_CALL_API_ENDPOINTS.chainPreview, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "same-origin",
-    body: JSON.stringify(request),
-    signal
-  });
-  return readJson<CoveredCallChainPreview>(response);
+  return apiPostJson<CoveredCallChainPreview>(COVERED_CALL_API_ENDPOINTS.chainPreview, request, { signal });
 }

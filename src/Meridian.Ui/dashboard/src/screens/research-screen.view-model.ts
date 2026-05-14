@@ -165,6 +165,9 @@ export interface ResearchPromotionCashFormState {
   value: string;
   min: number;
   step: number;
+  acknowledgementId: string;
+  acknowledgementLabel: string;
+  acknowledgementChecked: boolean;
   helpText: string;
   errorText: string | null;
   describedBy: string;
@@ -636,6 +639,7 @@ export function useResearchRunLibraryViewModel(
   const [promotionSession, setPromotionSession] = useState<PaperSessionSummary | null>(null);
   const [promoteError, setPromoteError] = useState<string | null>(null);
   const [promotionInitialCashInput, setPromotionInitialCashInput] = useState("100000");
+  const [promotionAcknowledged, setPromotionAcknowledged] = useState(false);
   const runScopedCommandRequestId = useRef(0);
   const promotionRequestId = useRef(0);
 
@@ -666,7 +670,8 @@ export function useResearchRunLibraryViewModel(
       promotionEval,
       promotionSession,
       promoteError,
-      promotionInitialCashInput
+      promotionInitialCashInput,
+      promotionAcknowledged
     }),
     [
       actionError,
@@ -691,7 +696,8 @@ export function useResearchRunLibraryViewModel(
       promotionEval,
       promotionSession,
       promoteError,
-      promotionInitialCashInput
+      promotionInitialCashInput,
+      promotionAcknowledged
     ]
   );
 
@@ -710,6 +716,7 @@ export function useResearchRunLibraryViewModel(
     setPromotionSession(null);
     setPromoteError(null);
     setPromotionInitialCashInput("100000");
+    setPromotionAcknowledged(false);
     setActionError(null);
     setActiveCommand((current) => current === "history" ? current : null);
   }, []);
@@ -852,6 +859,7 @@ export function useResearchRunLibraryViewModel(
     setPromotionEval(null);
     setPromotionSession(null);
     setPromotionInitialCashInput("100000");
+    setPromotionAcknowledged(false);
     try {
       const result = await services.evaluatePromotion(run.id);
       if (promotionRequestId.current !== requestId) {
@@ -878,6 +886,10 @@ export function useResearchRunLibraryViewModel(
       setPromoteError("Enter initial cash of at least $1,000 before starting a paper session.");
       return;
     }
+    if (!promotionAcknowledged) {
+      setPromoteError("Acknowledge the evaluated gates and paper-capital impact before starting a paper session.");
+      return;
+    }
 
     const requestId = promotionRequestId.current + 1;
     promotionRequestId.current = requestId;
@@ -899,7 +911,7 @@ export function useResearchRunLibraryViewModel(
       setPromoteError(err instanceof Error ? err.message : "Paper session creation failed.");
       setPromoteState("evaluated");
     }
-  }, [services, state.selectedRuns, promotionEval, promotionInitialCashInput]);
+  }, [services, state.selectedRuns, promotionEval, promotionInitialCashInput, promotionAcknowledged]);
 
   const cancelPromotion = useCallback(() => {
     promotionRequestId.current += 1;
@@ -908,6 +920,12 @@ export function useResearchRunLibraryViewModel(
     setPromotionSession(null);
     setPromoteError(null);
     setPromotionInitialCashInput("100000");
+    setPromotionAcknowledged(false);
+  }, []);
+
+  const updatePromotionInitialCash = useCallback((value: string) => {
+    setPromotionInitialCashInput(value);
+    setPromotionAcknowledged(false);
   }, []);
 
   return {
@@ -929,7 +947,8 @@ export function useResearchRunLibraryViewModel(
     selectComparisonRow: setSelectedComparisonRowId,
     selectPromotionHistoryRecord: setSelectedPromotionHistoryId,
     selectPlotStudy: setSelectedPlotStudyId,
-    setPromotionInitialCash: setPromotionInitialCashInput
+    setPromotionInitialCash: updatePromotionInitialCash,
+    setPromotionAcknowledgement: setPromotionAcknowledged
   };
 }
 
@@ -956,7 +975,8 @@ export function buildResearchRunLibraryState({
   promotionEval = null,
   promotionSession = null,
   promoteError = null,
-  promotionInitialCashInput = "100000"
+  promotionInitialCashInput = "100000",
+  promotionAcknowledged = false
 }: {
   metrics?: MetricSnapshot[];
   runs: ResearchRunRecord[];
@@ -981,6 +1001,7 @@ export function buildResearchRunLibraryState({
   promotionSession?: PaperSessionSummary | null;
   promoteError?: string | null;
   promotionInitialCashInput?: string;
+  promotionAcknowledged?: boolean;
 }): ResearchRunLibraryState {
   const selectedRuns = selectedIds
     .map((id) => runs.find((run) => run.id === id))
@@ -998,7 +1019,8 @@ export function buildResearchRunLibraryState({
   const promotionCashForm = buildPromotionCashForm({
     input: promotionInitialCashInput,
     eligible: promotionEval?.isEligible === true,
-    promoteState
+    promoteState,
+    acknowledged: promotionAcknowledged
   });
   const promotionPanel = buildPromotionPanelState({
     promoteState,
@@ -1310,11 +1332,13 @@ export function buildPromotionEvaluationState(
 export function buildPromotionCashForm({
   input,
   eligible,
-  promoteState
+  promoteState,
+  acknowledged = false
 }: {
   input: string;
   eligible: boolean;
   promoteState: PromoteState;
+  acknowledged?: boolean;
 }): ResearchPromotionCashFormState {
   const normalizedInput = input.trim();
   const parsed = parsePromotionInitialCashInput(input);
@@ -1327,7 +1351,8 @@ export function buildPromotionCashForm({
     eligible,
     promoteState,
     parsed,
-    normalizedInput
+    normalizedInput,
+    acknowledged
   });
   const helpText = errorText ?? disabledReason ?? "Minimum $1,000. Use whole-dollar paper capital.";
 
@@ -1337,13 +1362,18 @@ export function buildPromotionCashForm({
     value: input,
     min: 1000,
     step: 1000,
+    acknowledgementId: "promote-paper-session-acknowledgement",
+    acknowledgementLabel: "I reviewed the promotion gates and paper-capital impact.",
+    acknowledgementChecked: acknowledged,
     helpText,
     errorText,
     describedBy: "promote-initial-cash-help",
-    canSubmit: eligible && promoteState === "evaluated" && parsed !== null && !isCreating,
+    canSubmit: eligible && promoteState === "evaluated" && parsed !== null && acknowledged && !isCreating,
     disabledReason,
     submitLabel: isCreating ? "Starting paper session..." : "Start paper session",
-    submitAriaLabel: "Start paper session from selected strategy run"
+    submitAriaLabel: disabledReason
+      ? `Start paper session unavailable: ${disabledReason}`
+      : "Start paper session from selected strategy run"
   };
 }
 
@@ -1351,12 +1381,14 @@ function buildPromotionCashFormDisabledReason({
   eligible,
   promoteState,
   parsed,
-  normalizedInput
+  normalizedInput,
+  acknowledged
 }: {
   eligible: boolean;
   promoteState: PromoteState;
   parsed: number | null;
   normalizedInput: string;
+  acknowledged: boolean;
 }): string | null {
   if (promoteState === "creating") {
     return "Paper-session creation is already running.";
@@ -1376,6 +1408,10 @@ function buildPromotionCashFormDisabledReason({
 
   if (parsed === null) {
     return "Enter at least $1,000 in whole-dollar paper capital.";
+  }
+
+  if (!acknowledged) {
+    return "Acknowledge the evaluated gates and paper-capital impact before starting a paper session.";
   }
 
   return null;

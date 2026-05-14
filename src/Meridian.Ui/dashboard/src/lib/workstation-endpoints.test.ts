@@ -20,6 +20,11 @@ import {
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
   brokerageConnectionStatusEndpoint,
+  coveredCallRunCancelEndpoint,
+  coveredCallRunEndpoint,
+  coveredCallRunResultEndpoint,
+  coveredCallRunStatusEndpoint,
+  coveredCallRunsEndpoint,
   exportPreviewEndpoint,
   executionAuditEndpoint,
   executionManualOverrideClearEndpoint,
@@ -308,6 +313,16 @@ describe("workstation API endpoint catalog", () => {
     expect(QUANT_API_ENDPOINTS.templates).toBe("/api/quant/templates");
     expect(QUANT_API_ENDPOINTS.parameters).toBe("/api/quant/parameters");
     expect(QUANT_API_ENDPOINTS.run).toBe("/api/quant/run");
+  });
+
+  it("builds covered-call dynamic endpoints from guarded path segments", () => {
+    expect(coveredCallRunsEndpoint()).toBe("/api/strategies/covered-call/runs");
+    expect(coveredCallRunsEndpoint(25)).toBe("/api/strategies/covered-call/runs?limit=25");
+    expect(coveredCallRunEndpoint("run / 1")).toBe("/api/strategies/covered-call/runs/run%20%2F%201");
+    expect(coveredCallRunStatusEndpoint("run / 1")).toBe("/api/strategies/covered-call/runs/run%20%2F%201/status");
+    expect(coveredCallRunResultEndpoint("run / 1")).toBe("/api/strategies/covered-call/runs/run%20%2F%201/result");
+    expect(coveredCallRunCancelEndpoint("run / 1")).toBe("/api/strategies/covered-call/runs/run%20%2F%201/cancel");
+    expect(() => coveredCallRunEndpoint("   ")).toThrow("runId is required");
   });
 
   it("builds brokerage connection endpoints from the shared catalog", () => {

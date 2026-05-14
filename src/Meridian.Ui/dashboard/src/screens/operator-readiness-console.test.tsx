@@ -264,7 +264,7 @@ describe("OperatorReadinessConsole", () => {
 
     expect(warningRow).toHaveAttribute("aria-expanded", "true");
     expect(within(detail).getByRole("heading", { name: "Warning item 5" })).toBeInTheDocument();
-    expect(within(detail).getByRole("link", { name: "Open report packs: Warning item 5" })).toHaveAttribute("href", "/reporting");
+    expect(within(detail).getByRole("link", { name: "Open report packs: Warning item 5" })).toHaveAttribute("href", "/reporting/report-packs");
   });
 
   it("uses selectable dense tables and detail panels for evidence panel rows", async () => {

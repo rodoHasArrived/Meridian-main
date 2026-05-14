@@ -596,7 +596,18 @@ describe("ResearchScreen", () => {
     await user.click(screen.getByRole("button", { name: /promote to paper/i }));
 
     const cashInput = await screen.findByLabelText("Initial cash ($)");
-    const startButton = screen.getByRole("button", { name: "Start paper session from selected strategy run" });
+    const acknowledgement = screen.getByRole("checkbox", {
+      name: "I reviewed the promotion gates and paper-capital impact."
+    });
+    let startButton = screen.getByRole("button", { name: /Start paper session unavailable:/i });
+    expect(startButton).toBeDisabled();
+    expect(startButton).toHaveAttribute(
+      "title",
+      "Acknowledge the evaluated gates and paper-capital impact before starting a paper session."
+    );
+
+    await user.click(acknowledgement);
+    startButton = screen.getByRole("button", { name: "Start paper session from selected strategy run" });
     expect(startButton).toBeEnabled();
 
     await user.clear(cashInput);
@@ -613,6 +624,9 @@ describe("ResearchScreen", () => {
 
     await user.clear(cashInput);
     await user.type(cashInput, "125000");
+    expect(screen.getByRole("button", { name: /Start paper session unavailable:/i })).toBeDisabled();
+    await user.click(acknowledgement);
+    startButton = screen.getByRole("button", { name: "Start paper session from selected strategy run" });
     await user.click(startButton);
 
     await waitFor(() => {

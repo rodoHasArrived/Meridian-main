@@ -154,7 +154,7 @@ function DataFetchPanel({ vm }: { vm: QuantNotebookViewModel }) {
         />
         <Select
           value={context.interval ?? "daily"}
-          onChange={(e) => vm.setContext({ interval: e.target.value })}
+          onChange={(e) => vm.setContext({ interval: e.target.value as "daily" | "hourly" | "minute" })}
           aria-label="Interval"
         >
           <option value="daily">Daily</option>

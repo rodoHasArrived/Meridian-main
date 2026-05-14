@@ -43,7 +43,7 @@ public static class CredentialEndpoints
         group.MapGet(global::Meridian.Contracts.Api.UiApiRoutes.Credentials, (HttpContext ctx) =>
         {
             if (!HasManageCredentialsPermission(ctx))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var result = KnownProviders.Select(p => BuildStatus(p));
             return Results.Json(result, jsonOptions);
@@ -53,7 +53,7 @@ public static class CredentialEndpoints
         group.MapGet(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, IResult (string provider, HttpContext ctx) =>
         {
             if (!HasManageCredentialsPermission(ctx))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var descriptor = FindProvider(provider);
             if (descriptor is null)
@@ -83,7 +83,7 @@ public static class CredentialEndpoints
         group.MapPost(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, async Task<IResult> (string provider, HttpContext ctx) =>
         {
             if (!HasManageCredentialsPermission(ctx))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var descriptor = FindProvider(provider);
             if (descriptor is null)
@@ -125,7 +125,7 @@ public static class CredentialEndpoints
         group.MapDelete(global::Meridian.Contracts.Api.UiApiRoutes.CredentialByProvider, IResult (string provider, HttpContext ctx) =>
         {
             if (!HasManageCredentialsPermission(ctx))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var descriptor = FindProvider(provider);
             if (descriptor is null)
@@ -153,7 +153,7 @@ public static class CredentialEndpoints
         group.MapPost(global::Meridian.Contracts.Api.UiApiRoutes.CredentialTest, IResult (string provider, HttpContext ctx) =>
         {
             if (!HasManageCredentialsPermission(ctx))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var descriptor = FindProvider(provider);
             if (descriptor is null)

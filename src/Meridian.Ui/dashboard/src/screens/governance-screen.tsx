@@ -19,13 +19,16 @@ import {
   useSecurityMasterViewModel
 } from "@/screens/governance-screen.view-model";
 import type {
-  CalibrationSummaryViewState,
+  CalibrationProfileRowViewModel,
+  CalibrationSummaryViewModel,
   CorporateActionsViewState,
   CorporateActionRowViewModel,
   ReconciliationQueuePanelViewState,
   ReconciliationQueueRunRowViewModel,
   ReconciliationQueueRunTone,
   GovernanceTrialBalanceRowViewModel,
+  SecuritySchedulesViewState,
+  SecurityScheduleRowViewModel,
   SecuritySearchResultRowViewModel,
   TradingParametersViewState
 } from "@/screens/governance-screen.view-model";
@@ -35,12 +38,76 @@ interface GovernanceScreenProps {
   data: GovernanceWorkspaceResponse | null;
 }
 
+const calibrationProfileColumns: DenseDataTableColumn<CalibrationProfileRowViewModel>[] = [
+  {
+    id: "profile",
+    label: "Profile",
+    render: (row) => <span className="font-mono text-foreground">{row.toleranceProfileId}</span>
+  },
+  {
+    id: "route",
+    label: "Route",
+    render: (row) => <span className="text-muted-foreground">{row.exceptionRoute}</span>
+  },
+  {
+    id: "severity",
+    label: "Severity",
+    render: (row) => <span className={cn("font-mono", calibrationSeverityClass(row.highestSeverity))}>{row.highestSeverity}</span>
+  },
+  {
+    id: "open",
+    label: "Open",
+    align: "right",
+    render: (row) => <span className={cn("font-mono tabular-nums", row.openBreakCount > 0 ? "text-warning" : "text-foreground")}>{row.openBreakCount}</span>
+  },
+  {
+    id: "in-review",
+    label: "Review",
+    align: "right",
+    render: (row) => <span className="font-mono tabular-nums text-foreground">{row.inReviewBreakCount}</span>
+  },
+  {
+    id: "pending-signoff",
+    label: "Sign-off",
+    align: "right",
+    render: (row) => (
+      <span className={cn("font-mono tabular-nums", row.pendingSignoffCount > 0 ? "text-warning" : "text-foreground")}>
+        {row.pendingSignoffCount}
+      </span>
+    )
+  },
+  {
+    id: "tolerance",
+    label: "Tolerance",
+    align: "right",
+    render: (row) => <span className="font-mono text-muted-foreground">{row.maxToleranceBandLabel}</span>
+  },
+  {
+    id: "updated",
+    label: "Updated",
+    render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedLabel}</span>
+  }
+];
+
 const reconciliationQueueToneClass: Record<ReconciliationQueueRunTone, string> = {
   muted: "text-muted-foreground",
   warning: "text-warning",
   success: "text-success",
   primary: "text-primary"
 };
+
+function calibrationSeverityClass(severity: string): string {
+  const normalized = severity.trim().toLowerCase();
+  if (normalized === "critical") {
+    return "text-danger";
+  }
+
+  if (normalized === "warning" || normalized === "warn") {
+    return "text-warning";
+  }
+
+  return "text-foreground";
+}
 
 const reconciliationQueueColumns: DenseDataTableColumn<ReconciliationQueueRunRowViewModel>[] = [
   {
@@ -114,6 +181,43 @@ const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[
   { id: "exDate", label: "Ex-date", render: (row) => <span className="font-mono text-muted-foreground">{row.exDateLabel}</span> },
   { id: "payDate", label: "Pay date", render: (row) => <span className="font-mono text-muted-foreground">{row.payDateLabel}</span> },
   { id: "amount", label: "Amount", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.amountLabel}</span> }
+];
+
+const securityScheduleColumns: DenseDataTableColumn<SecurityScheduleRowViewModel>[] = [
+  {
+    id: "eventType",
+    label: "Event",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.eventTypeLabel}</span>
+        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.eventId}</span>
+      </span>
+    )
+  },
+  { id: "paymentDate", label: "Payment date", render: (row) => <span className="font-mono text-muted-foreground">{row.paymentDateLabel}</span> },
+  { id: "expected", label: "Expected", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.expectedAmountLabel}</span> },
+  {
+    id: "actual",
+    label: "Actual",
+    align: "right",
+    render: (row) => (
+      <span className={cn("font-mono tabular-nums", row.actualAmount === null ? "text-muted-foreground" : "text-foreground")}>
+        {row.actualAmountLabel}
+      </span>
+    )
+  },
+  {
+    id: "variance",
+    label: "Variance",
+    align: "right",
+    render: (row) => (
+      <span className={cn("font-mono tabular-nums", row.postingStatus === "Variance" ? "text-danger" : "text-muted-foreground")}>
+        {row.varianceLabel}
+      </span>
+    )
+  },
+  { id: "factor", label: "Factor", align: "right", render: (row) => <span className="font-mono tabular-nums text-muted-foreground">{row.factorLabel}</span> },
+  { id: "status", label: "Status", render: (row) => <Badge variant={row.postingStatusTone}>{row.postingStatusLabel}</Badge> }
 ];
 
 const focusCopy: Record<string, { title: string; description: string }> = {
@@ -992,15 +1096,21 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             </section>
           )}
 
-          {/* Corporate actions and trading parameters — shown when a security is selected */}
+          {/* Schedule workbench, corporate actions, and trading controls — shown when a security is selected */}
           {securityMaster.selectedSecurityId && (
-            <div className="grid gap-4 xl:grid-cols-2">
-              <CorporateActionsPanel
-                view={securityMaster.corporateActionsView}
-                onSelect={securityMaster.selectCorporateAction}
+            <>
+              <SecuritySchedulesPanel
+                view={securityMaster.schedulesView}
+                onSelect={securityMaster.selectScheduleEvent}
               />
-              <TradingParametersPanel view={securityMaster.tradingParametersView} />
-            </div>
+              <div className="grid gap-4 xl:grid-cols-2">
+                <CorporateActionsPanel
+                  view={securityMaster.corporateActionsView}
+                  onSelect={securityMaster.selectCorporateAction}
+                />
+                <TradingParametersPanel view={securityMaster.tradingParametersView} />
+              </div>
+            </>
           )}
 
           {/* Extended security details & lots tracker — shown when a security is selected */}
@@ -1167,17 +1277,32 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   );
 }
 
-function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewState }) {
+function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewModel }) {
   const StatusIcon = view.statusIcon === "check" ? CheckCircle2 : AlertCircle;
 
   return (
-          <Card className="panel-surface">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <BookCheck className="h-4 w-4 text-primary" />
-          Calibration summary
-        </CardTitle>
-        <CardDescription>Tolerance profile health across all active reconciliation break routes.</CardDescription>
+    <Card className="panel-surface">
+      <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <BookCheck className="h-4 w-4 text-primary" />
+            Calibration summary
+          </CardTitle>
+          <CardDescription>Tolerance profile health across all active reconciliation break routes.</CardDescription>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={view.refresh}
+          disabled={view.refreshCommand.disabled}
+          disabledReason={view.refreshCommand.disabledReason}
+          aria-label={view.refreshCommand.ariaLabel}
+          className="shrink-0"
+        >
+          <RefreshCcw className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
+          {view.refreshCommand.label}
+        </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
@@ -1212,35 +1337,47 @@ function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewState }
                 </div>
               ))}
             </div>
-            {view.hasProfiles && (
-              <div>
-                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{view.profilesLabel}</div>
-                <div className="overflow-x-auto rounded-lg border border-border/60">
-                  <table className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
-                    <thead className="bg-secondary/30">
-                      <tr>
-                        {["Profile", "Route", "Severity", "Open", "Resolved", "Pending sign-off", "Updated"].map((col) => (
-                          <th key={col} className="px-3 py-2 font-semibold uppercase tracking-[0.12em] text-muted-foreground">{col}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/40">
-                      {view.profileRows.map((row) => (
-                        <tr key={row.toleranceProfileId} aria-label={row.ariaLabel} className="hover:bg-secondary/20">
-                          <td className="px-3 py-2 font-mono text-foreground">{row.toleranceProfileId}</td>
-                          <td className="px-3 py-2 text-muted-foreground">{row.exceptionRoute}</td>
-                          <td className="px-3 py-2 font-mono">{row.highestSeverity}</td>
-                          <td className={cn("px-3 py-2 font-mono", row.openBreakCount > 0 ? "text-warning" : "text-foreground")}>{row.openBreakCount}</td>
-                          <td className="px-3 py-2 font-mono text-foreground">{row.resolvedBreakCount}</td>
-                          <td className={cn("px-3 py-2 font-mono", row.pendingSignoffCount > 0 ? "text-warning" : "text-foreground")}>{row.pendingSignoffCount}</td>
-                          <td className="px-3 py-2 font-mono text-muted-foreground">{row.lastUpdatedLabel}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            <div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{view.profilesLabel}</div>
+              {view.hasProfiles ? (
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+                  <DenseDataTable
+                    columns={calibrationProfileColumns}
+                    rows={view.profileRows}
+                    getRowId={(row) => row.toleranceProfileId}
+                    getRowAriaLabel={(row) => row.ariaLabel}
+                    getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                    getRowAriaControls={(row) => row.detailPanelId}
+                    getRowAriaExpanded={(row) => row.isSelected}
+                    selectedRowId={view.selectedProfileId}
+                    onRowSelect={(row) => view.selectProfile(row.toleranceProfileId)}
+                    emptyText={view.emptyText}
+                    ariaLabel={view.tableAriaLabel}
+                  />
+                  <div id={view.detailPanelId} aria-live="polite">
+                    {view.selectedProfile ? (
+                      <EntitySummary
+                        eyebrow="Tolerance profile"
+                        title={view.selectedProfile.title}
+                        subtitle={view.selectedProfile.subtitle}
+                        description={view.selectedProfile.description}
+                        status={<Badge variant={view.selectedProfile.statusTone} dot>{view.selectedProfile.statusLabel}</Badge>}
+                        fields={view.selectedProfile.fields}
+                        ariaLabel={view.selectedProfile.ariaLabel}
+                      />
+                    ) : (
+                      <div role="status" className="rounded-lg border border-border/70 bg-secondary/25 px-4 py-3 text-sm text-muted-foreground">
+                        Select a tolerance profile to inspect its calibration posture.
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
+                  {view.emptyText}
+                </div>
+              )}
+            </div>
           </>
         )}
       </CardContent>
@@ -1314,6 +1451,71 @@ function CorporateActionsPanel({
             </div>
           </div>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function SecuritySchedulesPanel({
+  view,
+  onSelect
+}: {
+  view: SecuritySchedulesViewState;
+  onSelect: (rowId: string) => void;
+}) {
+  return (
+    <Card className="panel-surface">
+      <CardHeader>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Table2 className="h-4 w-4 text-primary" aria-hidden="true" />
+              {view.title}
+            </CardTitle>
+            <CardDescription className="mt-2">{view.description}</CardDescription>
+          </div>
+          <div className="min-w-0 lg:max-w-[28rem]">
+            <ToolbarStrip ariaLabel={view.toolbarAriaLabel} items={view.toolbarItems} />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
+        <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.55fr)]">
+          <DenseDataTable
+            columns={securityScheduleColumns}
+            rows={view.rows}
+            getRowId={(row) => row.rowId}
+            getRowAriaLabel={(row) => row.ariaLabel}
+            getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+            getRowAriaControls={(row) => row.detailPanelId}
+            getRowAriaExpanded={(row) => row.isExpanded}
+            onRowSelect={(row) => onSelect(row.rowId)}
+            selectedRowId={view.selectedRowId}
+            emptyText={view.emptyText}
+            ariaLabel={view.tableLabel}
+            caption={view.tableCaption}
+          />
+          <div id={view.detailPanelId} className="row-detail-panel h-fit min-w-0">
+            {view.selectedDetail ? (
+              <EntitySummary
+                eyebrow={view.selectedDetail.eyebrow}
+                title={view.selectedDetail.title}
+                subtitle={view.selectedDetail.subtitle}
+                description={view.selectedDetail.description}
+                ariaLabel={view.selectedDetail.ariaLabel}
+                status={<Badge variant={view.selectedDetail.statusTone}>{view.selectedDetail.statusLabel}</Badge>}
+                fields={view.selectedDetail.fields.map((field) => ({ label: field.label, value: field.value }))}
+              />
+            ) : (
+              <div role="region" aria-label={view.detailEmptyAriaLabel}>
+                <div className="eyebrow-label">Schedule event detail</div>
+                <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
+              </div>
+            )}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

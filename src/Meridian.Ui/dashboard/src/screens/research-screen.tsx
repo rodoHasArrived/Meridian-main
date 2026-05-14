@@ -511,6 +511,19 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                       {vm.promotionCashForm.helpText}
                     </p>
                   </div>
+                  <label
+                    htmlFor={vm.promotionCashForm.acknowledgementId}
+                    className="flex max-w-sm items-start gap-2 rounded-md border border-border/70 bg-background/45 px-3 py-2 text-xs leading-5 text-muted-foreground"
+                  >
+                    <input
+                      id={vm.promotionCashForm.acknowledgementId}
+                      type="checkbox"
+                      checked={vm.promotionCashForm.acknowledgementChecked}
+                      onChange={(e) => vm.setPromotionAcknowledgement(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-border bg-background text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    />
+                    <span>{vm.promotionCashForm.acknowledgementLabel}</span>
+                  </label>
                   <Button
                     type="submit"
                     size="sm"

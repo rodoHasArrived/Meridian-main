@@ -1084,6 +1084,10 @@ describe("operator readiness console view model", () => {
       value: "2 review",
       level: "review"
     }));
+    expect(state.checkpointGates.find((gate) => gate.id === "report-pack-ready")?.action).toEqual(expect.objectContaining({
+      label: "Open report packs",
+      route: "/reporting/report-packs"
+    }));
     expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({ value: "No targets", level: "review" }));
   });
 
@@ -1324,12 +1328,12 @@ describe("operator readiness console view model", () => {
       statusLabel: "Warning",
       action: expect.objectContaining({
         label: "Open report packs",
-        route: "/reporting"
+        route: "/reporting/report-packs"
       })
     }));
     expect(state.selectedWorkItemDetail?.fields).toEqual(expect.arrayContaining([
       { label: "Attention", value: "Review" },
-      { label: "Route", value: "/reporting" },
+      { label: "Route", value: "/reporting/report-packs" },
       { label: "Evidence", value: "Reporting - ReportPackApproval - audit-report-pack" }
     ]));
   });

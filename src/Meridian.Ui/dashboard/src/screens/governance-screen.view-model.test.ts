@@ -7,6 +7,8 @@ import {
   buildGovernanceLoadingViewState,
   buildGovernanceReportingViewState,
   buildGovernanceTrialBalanceViewState,
+  buildSecurityScheduleRows,
+  buildSecuritySchedulesViewState,
   formatReportingExportResult,
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
@@ -22,11 +24,15 @@ import {
   buildSecuritySearchResultRows,
   buildSecuritySearchState,
   countOpenSecurityConflicts,
+  resolveSecurityScheduleEvents,
   resolveGovernanceWorkstream,
   resolveSelectedReconciliation,
+  useGovernanceReconciliationViewModel,
   useSecurityMasterViewModel
 } from "@/screens/governance-screen.view-model";
 import type {
+  GovernanceReconciliationServices,
+  SecurityCashFlowScheduleEvent,
   SecurityMasterDrillInServices,
   SecurityMasterServices
 } from "@/screens/governance-screen.view-model";
@@ -166,6 +172,49 @@ const corporateActions: CorporateAction[] = [
     exchangeRatio: null,
     subscriptionPricePerShare: null,
     rightsPerShare: null
+  }
+];
+
+const cashFlowSchedules: SecurityCashFlowScheduleEvent[] = [
+  {
+    eventId: "sched-1-coupon",
+    securityId: "sec-1",
+    scheduleFamily: "bond",
+    eventType: "Coupon",
+    paymentDate: "2026-05-15T00:00:00Z",
+    accrualStartDate: "2025-11-15T00:00:00Z",
+    accrualEndDate: "2026-05-15T00:00:00Z",
+    couponRatePct: 5.25,
+    expectedAmount: 26250,
+    actualAmount: 26250,
+    principalAmount: null,
+    interestAmount: 26250,
+    factorStart: 1,
+    factorEnd: 1,
+    currency: "USD",
+    postingStatus: "Posted",
+    auditReference: "fixture/schedule/coupon",
+    note: "Coupon posted."
+  },
+  {
+    eventId: "sched-1-paydown",
+    securityId: "sec-1",
+    scheduleFamily: "structured",
+    eventType: "Paydown",
+    paymentDate: "2026-11-15T00:00:00Z",
+    accrualStartDate: "2026-05-15T00:00:00Z",
+    accrualEndDate: "2026-11-15T00:00:00Z",
+    couponRatePct: 5.25,
+    expectedAmount: 126250,
+    actualAmount: 124900,
+    principalAmount: 100000,
+    interestAmount: 26250,
+    factorStart: 1,
+    factorEnd: 0.9,
+    currency: "USD",
+    postingStatus: "Variance",
+    auditReference: "fixture/schedule/paydown",
+    note: "Expected-versus-actual variance."
   }
 ];
 
@@ -440,7 +489,15 @@ describe("governance-screen view model", () => {
       statusTextClassName: "text-warning",
       statusBannerClassName: "border-warning/30 bg-warning/5",
       profilesLabel: "1 tolerance profile",
-      hasProfiles: true
+      hasProfiles: true,
+      tableAriaLabel: "Tolerance profile health by reconciliation route",
+      selectedProfileId: "profile-cash",
+      refreshCommand: {
+        label: "Refresh calibration",
+        ariaLabel: "Refresh calibration summary",
+        disabled: false,
+        disabledReason: null
+      }
     });
     expect(state.metricRows).toEqual([
       expect.objectContaining({ id: "total", label: "Total breaks", value: 8, tone: "default", ariaLabel: "Total breaks: 8" }),
@@ -451,6 +508,182 @@ describe("governance-screen view model", () => {
       expect.objectContaining({ id: "missing-metadata", label: "Missing metadata", value: 1, tone: "warning" })
     ]);
     expect(state.profileRows[0].ariaLabel).toContain("profile-cash");
+    expect(state.profileRows[0]).toMatchObject({
+      maxToleranceBandLabel: "$250",
+      totalBreakCount: 8,
+      inReviewBreakCount: 3,
+      signedOffCount: 4,
+      selectAriaLabel: "Inspect tolerance profile profile-cash: Operator review required",
+      detailPanelId: "calibration-profile-detail-panel",
+      isSelected: true
+    });
+    expect(state.selectedProfile).toMatchObject({
+      title: "Selected tolerance profile - profile-cash",
+      statusLabel: "Operator review required",
+      statusTone: "danger",
+      ariaLabel: "Tolerance profile detail for profile-cash"
+    });
+    expect(state.selectedProfile?.fields).toEqual(expect.arrayContaining([
+      { label: "Tolerance band", value: "$250" },
+      { label: "Pending sign-off", value: "3" },
+      { label: "Last updated", value: "2026-05-09" }
+    ]));
+  });
+
+  it("selects requested calibration profile details and falls back to the first available row", () => {
+    const summary: ReconciliationCalibrationSummary = {
+      status: "Ready",
+      summary: "Profiles calibrated.",
+      asOf: "2026-05-09T14:30:00Z",
+      totalBreakCount: 2,
+      activeBreakCount: 0,
+      openBreakCount: 0,
+      inReviewBreakCount: 0,
+      resolvedBreakCount: 2,
+      dismissedBreakCount: 0,
+      criticalOpenBreakCount: 0,
+      pendingSignoffCount: 0,
+      signedOffCount: 2,
+      missingCalibrationMetadataCount: 0,
+      profiles: [
+        {
+          toleranceProfileId: "profile-a",
+          exceptionRoute: "cash",
+          highestSeverity: "Info",
+          maxToleranceBand: null,
+          totalBreakCount: 1,
+          openBreakCount: 0,
+          inReviewBreakCount: 0,
+          resolvedBreakCount: 1,
+          dismissedBreakCount: 0,
+          pendingSignoffCount: 0,
+          signedOffCount: 1,
+          lastUpdatedAt: "2026-05-09T14:00:00Z"
+        },
+        {
+          toleranceProfileId: "profile-b",
+          exceptionRoute: "settlement",
+          highestSeverity: "Warning",
+          maxToleranceBand: 125,
+          totalBreakCount: 1,
+          openBreakCount: 0,
+          inReviewBreakCount: 0,
+          resolvedBreakCount: 1,
+          dismissedBreakCount: 0,
+          pendingSignoffCount: 1,
+          signedOffCount: 1,
+          lastUpdatedAt: "2026-05-09T15:00:00Z"
+        }
+      ]
+    };
+
+    const selected = buildCalibrationSummaryViewState(summary, false, null, "profile-b");
+    expect(selected.selectedProfileId).toBe("profile-b");
+    expect(selected.profileRows.map((row) => [row.toleranceProfileId, row.isSelected])).toEqual([
+      ["profile-a", false],
+      ["profile-b", true]
+    ]);
+    expect(selected.selectedProfile).toMatchObject({
+      title: "Selected tolerance profile - profile-b",
+      statusLabel: "Pending sign-off",
+      statusTone: "warning"
+    });
+    expect(selected.selectedProfile?.fields).toEqual(expect.arrayContaining([
+      { label: "Tolerance band", value: "$125" }
+    ]));
+
+    const fallback = buildCalibrationSummaryViewState(summary, false, null, "missing-profile");
+    expect(fallback.selectedProfileId).toBe("profile-a");
+    expect(fallback.selectedProfile?.statusLabel).toBe("Within tolerance");
+  });
+
+  it("derives calibration refresh command states for loading and retry recovery", () => {
+    expect(buildCalibrationSummaryViewState(null, true, null).refreshCommand).toEqual({
+      label: "Refreshing...",
+      ariaLabel: "Calibration summary refresh is already running",
+      disabled: true,
+      disabledReason: "Calibration summary refresh is already running."
+    });
+    expect(buildCalibrationSummaryViewState(null, false, "Calibration API offline").refreshCommand).toEqual({
+      label: "Retry calibration summary",
+      ariaLabel: "Retry calibration summary load",
+      disabled: false,
+      disabledReason: null
+    });
+  });
+
+  it("retries calibration summary loads and ignores stale responses", async () => {
+    let resolveFirst!: (summary: ReconciliationCalibrationSummary) => void;
+    const firstLoad = new Promise<ReconciliationCalibrationSummary>((resolve) => {
+      resolveFirst = resolve;
+    });
+    const retrySummary: ReconciliationCalibrationSummary = {
+      status: "Ready",
+      summary: "Retry summary loaded.",
+      asOf: "2026-05-09T16:00:00Z",
+      totalBreakCount: 1,
+      activeBreakCount: 0,
+      openBreakCount: 0,
+      inReviewBreakCount: 0,
+      resolvedBreakCount: 1,
+      dismissedBreakCount: 0,
+      criticalOpenBreakCount: 0,
+      pendingSignoffCount: 0,
+      signedOffCount: 1,
+      missingCalibrationMetadataCount: 0,
+      profiles: [
+        {
+          toleranceProfileId: "retry-profile",
+          exceptionRoute: "cash",
+          highestSeverity: "Info",
+          maxToleranceBand: null,
+          totalBreakCount: 1,
+          openBreakCount: 0,
+          inReviewBreakCount: 0,
+          resolvedBreakCount: 1,
+          dismissedBreakCount: 0,
+          pendingSignoffCount: 0,
+          signedOffCount: 1,
+          lastUpdatedAt: "2026-05-09T16:00:00Z"
+        }
+      ]
+    };
+    const staleSummary: ReconciliationCalibrationSummary = {
+      ...retrySummary,
+      summary: "Stale first response.",
+      profiles: [
+        {
+          ...retrySummary.profiles[0],
+          toleranceProfileId: "stale-profile"
+        }
+      ]
+    };
+    const services: GovernanceReconciliationServices = {
+      getBreakQueue: vi.fn().mockResolvedValue([]),
+      reviewBreak: vi.fn(),
+      resolveBreak: vi.fn(),
+      getTrialBalance: vi.fn().mockResolvedValue([]),
+      getCalibrationSummary: vi.fn()
+        .mockReturnValueOnce(firstLoad)
+        .mockResolvedValueOnce(retrySummary)
+    };
+
+    const { result } = renderHook(() => useGovernanceReconciliationViewModel({
+      ...({ metrics: [], reconciliationQueue, breakQueue: [], cashFlow: null, reporting: null } as unknown as GovernanceWorkspaceResponse)
+    }, "reconciliation", services));
+
+    await waitFor(() => expect(result.current.calibrationView.refreshCommand.disabled).toBe(true));
+    act(() => {
+      result.current.calibrationView.refresh();
+    });
+    await waitFor(() => expect(result.current.calibrationView.selectedProfileId).toBe("retry-profile"));
+
+    act(() => {
+      resolveFirst(staleSummary);
+    });
+
+    await waitFor(() => expect(result.current.calibrationView.selectedProfileId).toBe("retry-profile"));
+    expect(result.current.calibrationView.selectedProfile?.title).toContain("retry-profile");
   });
 
   it("derives trial-balance table rows, labels, and status announcements", () => {
@@ -760,6 +993,77 @@ describe("governance-screen view model", () => {
     });
   });
 
+  it("derives cash-flow and factor schedule rows with selected detail state", () => {
+    const rows = buildSecurityScheduleRows(cashFlowSchedules, "sched-1-paydown");
+    const state = buildSecuritySchedulesViewState({
+      securityId: "sec-1",
+      displayName: "Apple Inc.",
+      assetClass: "Fixed Income",
+      schedules: cashFlowSchedules,
+      selectedRowId: "sched-1-paydown"
+    });
+
+    expect(rows[1]).toMatchObject({
+      rowId: "sched-1-paydown",
+      eventTypeLabel: "Paydown",
+      paymentDateLabel: "2026-11-15",
+      expectedAmountLabel: "126,250 USD",
+      actualAmountLabel: "124,900 USD",
+      varianceLabel: "-1,350 USD",
+      factorLabel: "1.000000 -> 0.900000",
+      postingStatusLabel: "Variance review",
+      postingStatusTone: "danger",
+      selectAriaLabel: "Inspect schedule event Paydown for sec-1 on 2026-11-15",
+      detailPanelId: "security-schedule-detail-panel",
+      isExpanded: true
+    });
+    expect(state).toMatchObject({
+      title: "Cash-flow and factor schedules",
+      tableLabel: "Cash-flow and factor schedules for sec-1",
+      selectedRowId: "sched-1-paydown",
+      hasRows: true,
+      statusAnnouncement: "2 cash-flow schedule events loaded for sec-1."
+    });
+    expect(state.toolbarItems).toEqual(expect.arrayContaining([
+      { id: "events", label: "Events", value: "2", active: true },
+      { id: "variance", label: "Variance", value: "1" }
+    ]));
+    expect(state.selectedDetail).toMatchObject({
+      id: "security-schedule-detail-panel",
+      title: "Paydown",
+      ariaLabel: "Cash-flow schedule detail for Paydown on sec-1",
+      statusLabel: "Variance review",
+      statusTone: "danger"
+    });
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Expected", value: "126,250 USD" },
+      { label: "Actual", value: "124,900 USD", tone: "default" },
+      { label: "Variance", value: "-1,350 USD", tone: "danger" },
+      { label: "Factor", value: "1.000000 -> 0.900000" }
+    ]));
+  });
+
+  it("keeps cash-flow schedule empty states and fixture resolution deterministic", () => {
+    expect(resolveSecurityScheduleEvents("sec-dev-004")).toHaveLength(3);
+    expect(resolveSecurityScheduleEvents("unknown-security")).toEqual([]);
+
+    const state = buildSecuritySchedulesViewState({
+      securityId: "unknown-security",
+      displayName: "Unknown security",
+      assetClass: "Unclassified",
+      schedules: [],
+      selectedRowId: null
+    });
+
+    expect(state).toMatchObject({
+      hasRows: false,
+      selectedDetail: null,
+      emptyText: "No cash-flow or factor schedule rows are available for unknown-security.",
+      detailEmptyAriaLabel: "No cash-flow schedule event selected",
+      statusAnnouncement: ""
+    });
+  });
+
   it("ignores stale Security Master identity responses after a newer selection settles", async () => {
     const staleIdentity = deferred<SecurityIdentityDrillIn>();
     const latestIdentity = deferred<SecurityIdentityDrillIn>();
@@ -889,6 +1193,7 @@ describe("governance-screen view model", () => {
       conflicts,
       conflictsLoading: false,
       corporateActions,
+      securitySchedules: cashFlowSchedules,
       tradingParameters
     });
 
@@ -907,7 +1212,7 @@ describe("governance-screen view model", () => {
     ]));
     expect(state.detailSections).toEqual(expect.arrayContaining([
       { id: "overview", label: "Overview", value: "1 identifier", active: true },
-      { id: "schedules", label: "Schedules", value: "2 corporate actions" },
+      { id: "schedules", label: "Schedules", value: "2 cash-flow events" },
       { id: "controls", label: "Controls", value: "Trading set" },
       { id: "audit", label: "Audit", value: "1 conflict" }
     ]));

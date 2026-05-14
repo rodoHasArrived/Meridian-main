@@ -112,8 +112,10 @@ identity drill-ins, details/lots/operator overrides with selectable lot-detail s
 conflict refresh/retry command, provider-setup success handoffs into live quotes, backfill preview
 with dense-table queue selection, Trading readiness, or Security Master coverage based on
 configured capabilities, a full-console Operator Readiness checkpoint gate, a view-model-owned
-Trading loading panel, Quant Lab plot rendering through a reusable view-model module, a visual
-Strategy Designer at `/strategy/designer`, browser Accounting reconciliation detail-queue dense-table selection
+Trading loading panel plus selectable Recent Fills detail state, Quant Lab plot rendering through
+a reusable view-model module, Quant Notebook cell/data-fetch helpers, a visual
+Strategy Designer at `/strategy/designer`, Covered Call support at `/strategy/covered-call`
+with dense chain preview and saved-run history, browser Accounting reconciliation detail-queue dense-table selection
 with keyboard-accessible expanded rows, seeded no-host break-queue fixtures, and accessible
 empty/detail states, Reporting
 report-pack profile actions for preview and export analysis plus endpoint links that separate
@@ -6879,6 +6881,10 @@ Use these documents together when planning or implementing new work:
 │   │       │       ├── progress
 │   │       │       │   ├── command-palette-alpaca-setup-smoke.png
 │   │       │       │   ├── command-palette-hash-aware-smoke.png
+│   │       │       │   ├── covered-call-chain-dense-table-smoke.png
+│   │       │       │   ├── covered-call-history-dense-table-smoke.png
+│   │       │       │   ├── covered-call-history-loading-smoke.png
+│   │       │       │   ├── covered-call-history-open-guard-smoke.png
 │   │       │       │   ├── evidence-manifest-action-smoke.png
 │   │       │       │   ├── live-quotes-order-readiness-handoff-smoke.png
 │   │       │       │   ├── operator-readiness-utc-smoke.png
@@ -6888,6 +6894,7 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── price-alerts-handoff-smoke.png
 │   │       │       │   ├── price-alerts-utc-smoke.png
 │   │       │       │   ├── readiness-inbox-refresh-smoke.png
+│   │       │       │   ├── readiness-report-pack-deeplink-smoke.png
 │   │       │       │   ├── report-pack-actions-smoke.png
 │   │       │       │   ├── report-pack-reference-smoke.png
 │   │       │       │   ├── reporting-dense-table-smoke.png
@@ -6900,14 +6907,21 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── strategy-designer-reorder-smoke.png
 │   │       │       │   ├── strategy-plottool-statistics-desktop.png
 │   │       │       │   ├── strategy-plottool-statistics-mobile.png
+│   │       │       │   ├── strategy-promotion-ack-smoke.png
 │   │       │       │   ├── strategy-promotion-disabled-reason-smoke.png
 │   │       │       │   ├── strategy-promotion-smoke.png
+│   │       │       │   ├── trading-fills-detail-mobile-smoke.png
+│   │       │       │   ├── trading-fills-detail-smoke-current.png
+│   │       │       │   ├── trading-fills-detail-smoke.png
 │   │       │       │   ├── trading-order-ticket-ack-smoke.png
 │   │       │       │   ├── watchlist-empty-value-mobile-smoke.png
 │   │       │       │   ├── watchlist-empty-value-smoke.png
 │   │       │       │   ├── watchlist-retry-smoke.png
 │   │       │       │   └── workstation-preview-smoke.png
 │   │       │       ├── strategy-designer-field-labels-smoke.png
+│   │       │       ├── web-ui
+│   │       │       │   ├── calibration-profile-detail-mobile-smoke.png
+│   │       │       │   └── calibration-profile-detail-smoke.png
 │   │       │       ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
 │   │       │       ├── web-ui-report-pack-profile-keyboard-smoke.png
 │   │       │       ├── web-ui-reporting-export-smoke.png
@@ -6915,6 +6929,7 @@ Use these documents together when planning or implementing new work:
 │   │       │       ├── web-ui-research-cash-disabled-mobile-smoke.png
 │   │       │       ├── web-ui-research-cash-disabled-smoke.png
 │   │       │       ├── web-ui-trading-paper-session-smoke.png
+│   │       │       ├── web-ui-trading-strategy-lifecycle-smoke.png
 │   │       │       └── web-ui-watchlist-sort-smoke.png
 │   │       ├── index.html
 │   │       ├── package-lock.json
@@ -6949,6 +6964,9 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   │   ├── metric-card.tsx
 │   │       │   │   │   ├── metric-card.view-model.test.ts
 │   │       │   │   │   ├── metric-card.view-model.ts
+│   │       │   │   │   ├── quant-notebook.tsx
+│   │       │   │   │   ├── quant-notebook.view-model.test.ts
+│   │       │   │   │   ├── quant-notebook.view-model.ts
 │   │       │   │   │   ├── quant-plot.test.tsx
 │   │       │   │   │   ├── quant-plot.tsx
 │   │       │   │   │   ├── quant-plot.view-model.ts
@@ -6991,6 +7009,7 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   └── use-workstation-data.ts
 │   │       │   ├── lib
 │   │       │   │   ├── api
+│   │       │   │   │   ├── covered-call.test.ts
 │   │       │   │   │   └── covered-call.ts
 │   │       │   │   ├── api.trading.test.ts
 │   │       │   │   ├── api.ts
@@ -7013,9 +7032,11 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   └── workstation-endpoints.ts
 │   │       │   ├── main.tsx
 │   │       │   ├── screens
+│   │       │   │   ├── covered-call-screen.test.tsx
 │   │       │   │   ├── covered-call-screen.tsx
 │   │       │   │   ├── covered-call-screen.view-model.test.ts
 │   │       │   │   ├── covered-call-screen.view-model.ts
+│   │       │   │   ├── data-operations-screen.security-master.ts
 │   │       │   │   ├── data-operations-screen.test.tsx
 │   │       │   │   ├── data-operations-screen.tsx
 │   │       │   │   ├── data-operations-screen.view-model.test.ts
@@ -7075,7 +7096,11 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   ├── watchlist-screen.test.tsx
 │   │       │   │   ├── watchlist-screen.tsx
 │   │       │   │   ├── watchlist-screen.view-model.test.ts
-│   │       │   │   └── watchlist-screen.view-model.ts
+│   │       │   │   ├── watchlist-screen.view-model.ts
+│   │       │   │   ├── workspace-placeholder-screen.test.tsx
+│   │       │   │   ├── workspace-placeholder-screen.tsx
+│   │       │   │   ├── workspace-placeholder-screen.view-model.test.ts
+│   │       │   │   └── workspace-placeholder-screen.view-model.ts
 │   │       │   ├── styles
 │   │       │   │   └── index.css
 │   │       │   ├── test
@@ -7526,6 +7551,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── PendingOperationsQueueService.cs
 │       │   ├── QuantScriptExecutionHistoryService.cs
 │       │   ├── QuantScriptLayoutService.cs
+│       │   ├── QuantScriptStorageJsonContext.cs
 │       │   ├── QuantScriptTemplateCatalogService.cs
 │       │   ├── ReconciliationReadService.cs
 │       │   ├── ResearchWorkspaceShellPresentationService.cs
@@ -7738,6 +7764,8 @@ Use these documents together when planning or implementing new work:
 │           ├── DataCalendarPage.xaml.cs
 │           ├── DataExportPage.xaml
 │           ├── DataExportPage.xaml.cs
+│           ├── DataOperationsWorkspaceShellPage.xaml
+│           ├── DataOperationsWorkspaceShellPage.xaml.cs
 │           ├── DataQualityPage.xaml
 │           ├── DataQualityPage.xaml.cs
 │           ├── DataSamplingPage.xaml
@@ -8788,6 +8816,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-718 directories, 7858 files
+719 directories, 7883 files
 ```
 <!-- readme-tree end -->

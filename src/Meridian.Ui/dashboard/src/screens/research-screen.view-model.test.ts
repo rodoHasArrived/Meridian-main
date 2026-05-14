@@ -693,7 +693,8 @@ describe("research-screen view model", () => {
     const valid = buildPromotionCashForm({
       input: "100000",
       eligible: true,
-      promoteState: "evaluated"
+      promoteState: "evaluated",
+      acknowledged: true
     });
 
     expect(valid.canSubmit).toBe(true);
@@ -701,11 +702,27 @@ describe("research-screen view model", () => {
     expect(valid.errorText).toBeNull();
     expect(valid.helpText).toBe("Minimum $1,000. Use whole-dollar paper capital.");
     expect(valid.describedBy).toBe("promote-initial-cash-help");
+    expect(valid.acknowledgementChecked).toBe(true);
+    expect(valid.acknowledgementLabel).toBe("I reviewed the promotion gates and paper-capital impact.");
+
+    const unacknowledged = buildPromotionCashForm({
+      input: "100000",
+      eligible: true,
+      promoteState: "evaluated",
+      acknowledged: false
+    });
+
+    expect(unacknowledged.canSubmit).toBe(false);
+    expect(unacknowledged.disabledReason).toBe(
+      "Acknowledge the evaluated gates and paper-capital impact before starting a paper session."
+    );
+    expect(unacknowledged.submitAriaLabel).toContain("unavailable");
 
     const invalid = buildPromotionCashForm({
       input: "500",
       eligible: true,
-      promoteState: "evaluated"
+      promoteState: "evaluated",
+      acknowledged: true
     });
 
     expect(invalid.canSubmit).toBe(false);
@@ -716,7 +733,8 @@ describe("research-screen view model", () => {
     const empty = buildPromotionCashForm({
       input: "",
       eligible: true,
-      promoteState: "evaluated"
+      promoteState: "evaluated",
+      acknowledged: true
     });
 
     expect(empty.canSubmit).toBe(false);
@@ -726,7 +744,8 @@ describe("research-screen view model", () => {
     const creating = buildPromotionCashForm({
       input: "100000",
       eligible: true,
-      promoteState: "creating"
+      promoteState: "creating",
+      acknowledged: true
     });
 
     expect(creating.canSubmit).toBe(false);
