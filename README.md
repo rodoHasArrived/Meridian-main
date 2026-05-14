@@ -6882,6 +6882,9 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── command-palette-alpaca-setup-smoke.png
 │   │       │       │   ├── command-palette-hash-aware-smoke.png
 │   │       │       │   ├── covered-call-chain-dense-table-smoke.png
+│   │       │       │   ├── covered-call-history-dense-table-smoke.png
+│   │       │       │   ├── covered-call-history-loading-smoke.png
+│   │       │       │   ├── covered-call-history-open-guard-smoke.png
 │   │       │       │   ├── evidence-manifest-action-smoke.png
 │   │       │       │   ├── live-quotes-order-readiness-handoff-smoke.png
 │   │       │       │   ├── operator-readiness-utc-smoke.png
@@ -6891,6 +6894,7 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── price-alerts-handoff-smoke.png
 │   │       │       │   ├── price-alerts-utc-smoke.png
 │   │       │       │   ├── readiness-inbox-refresh-smoke.png
+│   │       │       │   ├── readiness-report-pack-deeplink-smoke.png
 │   │       │       │   ├── report-pack-actions-smoke.png
 │   │       │       │   ├── report-pack-reference-smoke.png
 │   │       │       │   ├── reporting-dense-table-smoke.png
@@ -6903,14 +6907,21 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── strategy-designer-reorder-smoke.png
 │   │       │       │   ├── strategy-plottool-statistics-desktop.png
 │   │       │       │   ├── strategy-plottool-statistics-mobile.png
+│   │       │       │   ├── strategy-promotion-ack-smoke.png
 │   │       │       │   ├── strategy-promotion-disabled-reason-smoke.png
 │   │       │       │   ├── strategy-promotion-smoke.png
+│   │       │       │   ├── trading-fills-detail-mobile-smoke.png
+│   │       │       │   ├── trading-fills-detail-smoke-current.png
+│   │       │       │   ├── trading-fills-detail-smoke.png
 │   │       │       │   ├── trading-order-ticket-ack-smoke.png
 │   │       │       │   ├── watchlist-empty-value-mobile-smoke.png
 │   │       │       │   ├── watchlist-empty-value-smoke.png
 │   │       │       │   ├── watchlist-retry-smoke.png
 │   │       │       │   └── workstation-preview-smoke.png
 │   │       │       ├── strategy-designer-field-labels-smoke.png
+│   │       │       ├── web-ui
+│   │       │       │   ├── calibration-profile-detail-mobile-smoke.png
+│   │       │       │   └── calibration-profile-detail-smoke.png
 │   │       │       ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
 │   │       │       ├── web-ui-report-pack-profile-keyboard-smoke.png
 │   │       │       ├── web-ui-reporting-export-smoke.png
@@ -6918,6 +6929,7 @@ Use these documents together when planning or implementing new work:
 │   │       │       ├── web-ui-research-cash-disabled-mobile-smoke.png
 │   │       │       ├── web-ui-research-cash-disabled-smoke.png
 │   │       │       ├── web-ui-trading-paper-session-smoke.png
+│   │       │       ├── web-ui-trading-strategy-lifecycle-smoke.png
 │   │       │       └── web-ui-watchlist-sort-smoke.png
 │   │       ├── index.html
 │   │       ├── package-lock.json
@@ -6997,6 +7009,7 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   └── use-workstation-data.ts
 │   │       │   ├── lib
 │   │       │   │   ├── api
+│   │       │   │   │   ├── covered-call.test.ts
 │   │       │   │   │   └── covered-call.ts
 │   │       │   │   ├── api.trading.test.ts
 │   │       │   │   ├── api.ts
@@ -8803,6 +8816,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-718 directories, 7871 files
+719 directories, 7883 files
 ```
 <!-- readme-tree end -->
