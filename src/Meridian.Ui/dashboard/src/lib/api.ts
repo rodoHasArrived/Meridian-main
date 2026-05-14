@@ -209,6 +209,14 @@ function markDevelopmentFixtureUsage() {
   developmentFixtureUsage = true;
 }
 
+export function apiGetJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  return getJson<T>(path, options);
+}
+
+export function apiPostJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
+  return postJson<T>(path, body, options);
+}
+
 async function postJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
   const response = await fetch(path, {
     method: "POST",

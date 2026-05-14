@@ -13,6 +13,17 @@ import type {
 
 export type CoveredCallStage = "configure" | "run" | "results";
 
+export interface CoveredCallStageStepViewModel {
+  id: CoveredCallStage;
+  label: string;
+  positionLabel: string;
+  buttonLabel: string;
+  ariaLabel: string;
+  isCurrent: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
 export interface CoveredCallFormState {
   underlyingSymbol: string;
   from: string;
@@ -166,6 +177,30 @@ export const DEFAULT_COVERED_CALL_FORM: CoveredCallFormState = {
   initialUnderlyingShares: "100",
   label: ""
 };
+
+const COVERED_CALL_STAGE_SEQUENCE: CoveredCallStage[] = ["configure", "run", "results"];
+
+const COVERED_CALL_STAGE_LABELS: Record<CoveredCallStage, string> = {
+  configure: "Configure",
+  run: "Run",
+  results: "Results"
+};
+
+function coveredCallStageDisabledReason(stage: CoveredCallStage, run: CoveredCallRunState): string | null {
+  if (stage === "configure") {
+    return null;
+  }
+
+  if (stage === "run") {
+    return run.runId === null
+      ? "Start a covered-call backtest before opening run status."
+      : null;
+  }
+
+  return run.result === null
+    ? "Complete or open a covered-call run before opening results."
+    : null;
+}
 
 /** Returns an ISO yyyy-MM-dd date `daysOffset` days from today (UTC). */
 export function defaultIsoDate(daysOffset: number): string {
@@ -549,6 +584,33 @@ export function formatUtcMinute(value: string | null | undefined): string {
   return `${month} ${day}, ${year} ${hour}:${minute} UTC`;
 }
 
+export function buildCoveredCallStageSteps(
+  currentStage: CoveredCallStage,
+  run: CoveredCallRunState
+): CoveredCallStageStepViewModel[] {
+  return COVERED_CALL_STAGE_SEQUENCE.map((stage, index) => {
+    const disabledReason = coveredCallStageDisabledReason(stage, run);
+    const isCurrent = stage === currentStage;
+    const disabled = !isCurrent && disabledReason !== null;
+    const label = COVERED_CALL_STAGE_LABELS[stage];
+
+    return {
+      id: stage,
+      label,
+      positionLabel: String(index + 1),
+      buttonLabel: `${index + 1}. ${label}`,
+      ariaLabel: disabled
+        ? `${label} step unavailable: ${disabledReason}`
+        : isCurrent
+          ? `Current step: ${label}`
+          : `Open ${label} step`,
+      isCurrent,
+      disabled,
+      disabledReason: disabled ? disabledReason : null
+    };
+  });
+}
+
 function sanitizeDomId(value: string): string {
   const normalized = value.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
   return normalized || "run";
@@ -556,6 +618,7 @@ function sanitizeDomId(value: string): string {
 
 export interface CoveredCallScreenState {
   stage: CoveredCallStage;
+  stageSteps: CoveredCallStageStepViewModel[];
   form: CoveredCallFormState;
   formErrors: CoveredCallFormErrors;
   chainPreview: CoveredCallChainPreviewState;
@@ -650,7 +713,15 @@ export function useCoveredCallScreenViewModel(
   }, []);
 
   const dismissError = useCallback(() => setErrorBanner(null), []);
-  const goToStage = useCallback((next: CoveredCallStage) => setStage(next), []);
+  const goToStage = useCallback((next: CoveredCallStage) => {
+    const disabledReason = coveredCallStageDisabledReason(next, run);
+    if (disabledReason) {
+      setErrorBanner(disabledReason);
+      return;
+    }
+
+    setStage(next);
+  }, [run]);
 
   // ---- Chain preview (debounced) -----------------------------------------
   const chainAbortRef = useRef<AbortController | null>(null);
@@ -901,6 +972,7 @@ export function useCoveredCallScreenViewModel(
 
   return useMemo(() => ({
     stage,
+    stageSteps: buildCoveredCallStageSteps(stage, run),
     form,
     formErrors,
     chainPreview,
@@ -931,10 +1003,10 @@ export function useCoveredCallScreenViewModel(
     dismissError
   }), [
     stage,
+    run,
     form,
     formErrors,
     chainPreview,
-    run,
     history,
     historyError,
     historyLoading,

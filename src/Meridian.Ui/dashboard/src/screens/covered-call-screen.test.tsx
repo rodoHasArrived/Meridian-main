@@ -92,6 +92,22 @@ describe("CoveredCallScreen", () => {
     vi.mocked(coveredCallApi.getCoveredCallRunResult).mockResolvedValue(completedResult);
   });
 
+  it("disables unavailable wizard stages with view-model owned reasons", async () => {
+    render(<CoveredCallScreen />);
+
+    expect(screen.getByRole("button", { name: "Current step: Configure" })).toHaveAttribute("aria-current", "step");
+    expect(screen.getByRole("button", {
+      name: "Run step unavailable: Start a covered-call backtest before opening run status."
+    })).toBeDisabled();
+    expect(screen.getByRole("button", {
+      name: "Results step unavailable: Complete or open a covered-call run before opening results."
+    })).toBeDisabled();
+
+    await waitFor(() => {
+      expect(coveredCallApi.listCoveredCallRuns).toHaveBeenCalled();
+    });
+  });
+
   it("renders chain preview rows with keyboard selection and a linked detail panel", async () => {
     render(<CoveredCallScreen />);
 

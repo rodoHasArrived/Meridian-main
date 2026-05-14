@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   COVERED_CALL_CHAIN_DETAIL_PANEL_ID,
+  buildCoveredCallStageSteps,
   buildHistoryPanelViewModel,
   buildChainPreviewPanelViewModel,
   DEFAULT_COVERED_CALL_FORM,
@@ -68,6 +69,77 @@ describe("isTerminalPhase", () => {
   });
   it.each(["Queued", "WarmingUp", "Running"] as const)("treats %s as non-terminal", (phase) => {
     expect(isTerminalPhase(phase)).toBe(false);
+  });
+});
+
+describe("buildCoveredCallStageSteps", () => {
+  it("keeps unavailable run and results stages disabled until evidence exists", () => {
+    const steps = buildCoveredCallStageSteps("configure", {
+      runId: null,
+      status: null,
+      result: null,
+      selectedPositionIndex: 0
+    });
+
+    expect(steps.map((step) => step.buttonLabel)).toEqual(["1. Configure", "2. Run", "3. Results"]);
+    expect(steps[0]).toMatchObject({
+      id: "configure",
+      isCurrent: true,
+      disabled: false,
+      ariaLabel: "Current step: Configure"
+    });
+    expect(steps[1]).toMatchObject({
+      id: "run",
+      disabled: true,
+      disabledReason: "Start a covered-call backtest before opening run status.",
+      ariaLabel: "Run step unavailable: Start a covered-call backtest before opening run status."
+    });
+    expect(steps[2]).toMatchObject({
+      id: "results",
+      disabled: true,
+      disabledReason: "Complete or open a covered-call run before opening results.",
+      ariaLabel: "Results step unavailable: Complete or open a covered-call run before opening results."
+    });
+  });
+
+  it("enables run after submission and results after a completed result loads", () => {
+    const queuedSteps = buildCoveredCallStageSteps("configure", {
+      runId: "run-1",
+      status: null,
+      result: null,
+      selectedPositionIndex: 0
+    });
+    expect(queuedSteps[1]).toMatchObject({
+      id: "run",
+      disabled: false,
+      ariaLabel: "Open Run step"
+    });
+    expect(queuedSteps[2].disabled).toBe(true);
+
+    const completedSteps = buildCoveredCallStageSteps("results", {
+      runId: "run-1",
+      status: {
+        runId: "run-1",
+        phase: "Completed",
+        percentComplete: 1,
+        currentBacktestDate: null,
+        failureMessage: null
+      },
+      result: completedRunResult("run-1"),
+      selectedPositionIndex: 0
+    });
+
+    expect(completedSteps[1]).toMatchObject({
+      id: "run",
+      disabled: false,
+      ariaLabel: "Open Run step"
+    });
+    expect(completedSteps[2]).toMatchObject({
+      id: "results",
+      isCurrent: true,
+      disabled: false,
+      ariaLabel: "Current step: Results"
+    });
   });
 });
 
@@ -359,6 +431,15 @@ describe("useCoveredCallScreenViewModel", () => {
     expect(services.startRun).not.toHaveBeenCalled();
     expect(result.current.errorBanner).toBeTruthy();
     expect(result.current.stage).toBe("configure");
+  });
+
+  it("goToStage blocks unavailable stages through the view model", () => {
+    const { result } = renderHook(() => useCoveredCallScreenViewModel({ services: makeServices(), pollIntervalMs: 10, chainPreviewDebounceMs: 100000 }));
+
+    act(() => result.current.goToStage("results"));
+
+    expect(result.current.stage).toBe("configure");
+    expect(result.current.errorBanner).toBe("Complete or open a covered-call run before opening results.");
   });
 
   it("startRun transitions to run stage and reaches results on Completed status", async () => {

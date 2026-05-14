@@ -10,15 +10,9 @@ import {
   type CoveredCallFormState,
   type CoveredCallHistoryRowViewModel,
   type CoveredCallScreenViewModel,
-  type CoveredCallStage
+  type CoveredCallStageStepViewModel
 } from "@/screens/covered-call-screen.view-model";
 import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
-
-const STAGE_LABEL: Record<CoveredCallStage, string> = {
-  configure: "Configure",
-  run: "Run",
-  results: "Results"
-};
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
   {
@@ -140,7 +134,7 @@ export function CoveredCallScreen() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <StageStepper currentStage={vm.stage} onSelect={vm.goToStage} />
+          <StageStepper steps={vm.stageSteps} onSelect={vm.goToStage} />
         </CardContent>
       </Card>
 
@@ -186,37 +180,36 @@ function ChainDataAdvisory() {
 }
 
 function StageStepper({
-  currentStage,
+  steps,
   onSelect
 }: {
-  currentStage: CoveredCallStage;
-  onSelect: (s: CoveredCallStage) => void;
+  steps: CoveredCallStageStepViewModel[];
+  onSelect: (s: CoveredCallStageStepViewModel["id"]) => void;
 }) {
-  const stages: CoveredCallStage[] = ["configure", "run", "results"];
   return (
     <ol className="flex items-center gap-2 text-sm" aria-label="Covered call wizard stages">
-      {stages.map((stage, idx) => {
-        const active = stage === currentStage;
-        return (
-          <li key={stage} className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onSelect(stage)}
-              className={`rounded-md border px-3 py-1.5 text-xs font-medium uppercase tracking-wide transition-colors ${
-                active
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border/60 bg-background/60 text-muted-foreground hover:text-foreground"
-              }`}
-              aria-current={active ? "step" : undefined}
-            >
-              {idx + 1}. {STAGE_LABEL[stage]}
-            </button>
-            {idx < stages.length - 1 ? (
-              <ArrowRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-            ) : null}
-          </li>
-        );
-      })}
+      {steps.map((step, idx) => (
+        <li key={step.id} className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onSelect(step.id)}
+            disabled={step.disabled}
+            title={step.disabledReason ?? undefined}
+            aria-label={step.ariaLabel}
+            aria-current={step.isCurrent ? "step" : undefined}
+            className={`rounded-md border px-3 py-1.5 text-xs font-medium uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 ${
+              step.isCurrent
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border/60 bg-background/60 text-muted-foreground hover:text-foreground disabled:hover:text-muted-foreground"
+            }`}
+          >
+            {step.buttonLabel}
+          </button>
+          {idx < steps.length - 1 ? (
+            <ArrowRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          ) : null}
+        </li>
+      ))}
     </ol>
   );
 }

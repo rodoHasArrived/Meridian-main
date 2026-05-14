@@ -325,7 +325,7 @@ public static class SecurityMasterEndpoints
 
             if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             var currentTerms = await queryService.GetConvertibleEquityTermsAsync(securityId, ct).ConfigureAwait(false);
@@ -383,12 +383,12 @@ public static class SecurityMasterEndpoints
         {
             if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             if (dto.SecurityId != securityId)
@@ -514,7 +514,7 @@ public static class SecurityMasterEndpoints
 
             if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             var actor = ResolveActor(context);

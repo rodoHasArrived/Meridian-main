@@ -186,7 +186,7 @@ public static class FundAccountEndpoints
         group.MapGet("/brokerage-sync/accounts", async (HttpContext context) =>
         {
             if (!HasBrokerageSyncAccess(context))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -202,7 +202,7 @@ public static class FundAccountEndpoints
         app.MapGet("/api/portfolio/household", async (string? provider, HttpContext context) =>
         {
             if (!HasBrokerageSyncAccess(context))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -218,7 +218,7 @@ public static class FundAccountEndpoints
         group.MapGet("/{accountId:guid}/brokerage-sync/status", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -234,7 +234,7 @@ public static class FundAccountEndpoints
         group.MapPost("/{accountId:guid}/brokerage-sync/link", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context, requireWriteAccess: true).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -258,7 +258,7 @@ public static class FundAccountEndpoints
         group.MapPost("/{accountId:guid}/brokerage-sync/run", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context, requireWriteAccess: true).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -278,7 +278,7 @@ public static class FundAccountEndpoints
         group.MapGet("/{accountId:guid}/brokerage-sync/positions", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -294,7 +294,7 @@ public static class FundAccountEndpoints
         group.MapGet("/{accountId:guid}/brokerage-sync/activity", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -314,7 +314,7 @@ public static class FundAccountEndpoints
         group.MapGet("/{accountId:guid}/performance", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -333,7 +333,7 @@ public static class FundAccountEndpoints
         group.MapGet("/{accountId:guid}/cash-flow", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
 
             var sync = ResolveBrokerageSyncService(context);
             if (sync is null)
@@ -567,7 +567,7 @@ public static class FundAccountEndpoints
             return next(context);
         }
 
-        return ValueTask.FromResult<object?>(Results.Forbid());
+        return ValueTask.FromResult<object?>(EndpointHelpers.Forbidden());
     }
 
     private static bool TryGetCurrentRole(HttpContext context, out UserRole role)
