@@ -5050,6 +5050,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── backtest-studio-unification-pr-sequenced-roadmap.md
 │   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
+│   │   ├── covered-call-writing-slice-1-blueprint.md
 │   │   ├── evidence-backed-investment-operations-plan.md
 │   │   ├── fund-management-module-implementation-backlog.md
 │   │   ├── fund-management-pr-sequenced-roadmap.md
@@ -5302,6 +5303,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── run-wave1-provider-validation.ps1
 │   │   ├── screenshot-diff-config.json
 │   │   ├── screenshot_diff_report.py
+│   │   ├── screenshot_workflow_plan.py
 │   │   ├── shared
 │   │   │   └── retry.ps1
 │   │   ├── summarize-desktop-workflow-bundle.ps1
@@ -5556,6 +5558,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Indicators
 │   │   │   └── TechnicalIndicatorService.cs
 │   │   ├── Ledger
+│   │   │   ├── AccountingPolicyService.cs
 │   │   │   └── TextJournal
 │   │   │       ├── LedgerTextJournalDocument.cs
 │   │   │       ├── LedgerTextJournalException.cs
@@ -6701,7 +6704,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Migrations
 │   │   │   │   ├── V_ledger_001__journal_entries.sql
 │   │   │   │   ├── V_ledger_002__accounting_periods.sql
-│   │   │   │   └── V_ledger_003__ledger_books.sql
+│   │   │   │   ├── V_ledger_003__ledger_books.sql
+│   │   │   │   ├── V_ledger_004__accounting_basis_policies.sql
+│   │   │   │   └── V_ledger_005__journal_basis_lineage.sql
 │   │   │   ├── PostgresLedgerBookService.cs
 │   │   │   └── PostgresLedgerJournalStore.cs
 │   │   ├── Maintenance
@@ -6976,8 +6981,13 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   ├── use-workstation-data.test.ts
 │   │       │   │   └── use-workstation-data.ts
 │   │       │   ├── lib
+│   │       │   │   ├── api
+│   │       │   │   │   └── covered-call.ts
 │   │       │   │   ├── api.trading.test.ts
 │   │       │   │   ├── api.ts
+│   │       │   │   ├── covered-call
+│   │       │   │   │   ├── payoff.test.ts
+│   │       │   │   │   └── payoff.ts
 │   │       │   │   ├── dev-fixtures.ts
 │   │       │   │   ├── price-alerts
 │   │       │   │   │   ├── evaluator.test.ts
@@ -6994,6 +7004,9 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   └── workstation-endpoints.ts
 │   │       │   ├── main.tsx
 │   │       │   ├── screens
+│   │       │   │   ├── covered-call-screen.tsx
+│   │       │   │   ├── covered-call-screen.view-model.test.ts
+│   │       │   │   ├── covered-call-screen.view-model.ts
 │   │       │   │   ├── data-operations-screen.test.tsx
 │   │       │   │   ├── data-operations-screen.tsx
 │   │       │   │   ├── data-operations-screen.view-model.test.ts
@@ -7059,6 +7072,8 @@ Use these documents together when planning or implementing new work:
 │   │       │   ├── test
 │   │       │   │   ├── render.tsx
 │   │       │   │   └── setup.ts
+│   │       │   ├── types
+│   │       │   │   └── covered-call.ts
 │   │       │   ├── types.ts
 │   │       │   ├── vite-config.test.ts
 │   │       │   └── vite-env.d.ts
@@ -7191,6 +7206,7 @@ Use these documents together when planning or implementing new work:
 │   │       └── WorkspaceModels.cs
 │   ├── Meridian.Ui.Shared
 │   │   ├── Contracts
+│   │   │   ├── CoveredCallContracts.cs
 │   │   │   └── Reconciliation
 │   │   │       └── StatementImportContracts.cs
 │   │   ├── DtoExtensions.cs
@@ -7213,6 +7229,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CheckpointEndpoints.cs
 │   │   │   ├── CommodityReferenceEndpoints.cs
 │   │   │   ├── ConfigEndpoints.cs
+│   │   │   ├── CoveredCallEndpoints.cs
 │   │   │   ├── CppTraderEndpoints.cs
 │   │   │   ├── CredentialEndpoints.cs
 │   │   │   ├── CronEndpoints.cs
@@ -7287,6 +7304,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Meridian.Ui.Shared.csproj
 │   │   ├── ScoreExplanationProjection.cs
 │   │   ├── Serialization
+│   │   │   ├── CoveredCallJsonContext.cs
 │   │   │   └── DirectLendingJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── AlpacaBrokerageConnectionService.cs
@@ -7294,6 +7312,14 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
 │   │   │   ├── ConfigStore.cs
+│   │   │   ├── CoveredCall
+│   │   │   │   ├── CoveredCallBacktestOptions.cs
+│   │   │   │   ├── CoveredCallBacktestService.cs
+│   │   │   │   ├── CoveredCallChainProviderAdapter.cs
+│   │   │   │   ├── CoveredCallChainProviderFactory.cs
+│   │   │   │   ├── CoveredCallRunProjection.cs
+│   │   │   │   ├── ICoveredCallBacktestService.cs
+│   │   │   │   └── ICoveredCallChainProviderFactory.cs
 │   │   │   ├── Dk1TrustGateReadinessService.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
 │   │   │   ├── GovernanceReportPackRepository.cs
@@ -8018,6 +8044,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
+│   │   │   ├── Ledger
+│   │   │   │   └── AccountingPolicyServiceTests.cs
 │   │   │   ├── Logging
 │   │   │   │   └── LoggingSetupTests.cs
 │   │   │   ├── Monitoring
@@ -8377,6 +8405,10 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Strategies
 │   │   │   ├── AggregatePortfolioServiceTests.cs
 │   │   │   ├── CashFlowProjectionTests.cs
+│   │   │   ├── CoveredCall
+│   │   │   │   ├── CoveredCallChainProviderAdapterTests.cs
+│   │   │   │   ├── CoveredCallChainProviderFactoryConvertCallsTests.cs
+│   │   │   │   └── CoveredCallRunProjectionTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceLiveGovernanceTests.cs
@@ -8659,6 +8691,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── test_python_package_conda_dependencies.py
 │   │   ├── test_refresh_screenshots_workflow.py
 │   │   ├── test_screenshot_diff_report.py
+│   │   ├── test_screenshot_workflow_plan.py
 │   │   ├── test_setup_dotnet_cache_action.py
 │   │   └── test_shared_build_retention.py
 │   ├── setup-script-tests.md
@@ -8707,6 +8740,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-712 directories, 7783 files
+718 directories, 7810 files
 ```
 <!-- readme-tree end -->

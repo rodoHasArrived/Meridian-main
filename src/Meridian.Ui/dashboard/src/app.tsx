@@ -50,6 +50,7 @@ const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then(
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: module.OperatorReadinessConsole })));
 const OverviewScreen = lazy(() => import("@/screens/overview-screen").then((module) => ({ default: module.OverviewScreen })));
 const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: module.PortfolioScreen })));
+const CoveredCallScreen = lazy(() => import("@/screens/covered-call-screen").then((module) => ({ default: module.CoveredCallScreen })));
 const PriceAlertsScreen = lazy(() => import("@/screens/price-alerts-screen").then((module) => ({ default: module.PriceAlertsScreen })));
 const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
 const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: module.ReportingScreen })));
@@ -290,6 +291,9 @@ function AppShell() {
                   <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
+                  <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
+                  <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
+                  <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
                   <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                   <Route path="/strategy/*" element={<ResearchScreen data={research} />} />

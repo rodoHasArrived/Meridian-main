@@ -125,6 +125,14 @@ export const QUANT_API_ENDPOINTS = {
   run: "/api/quant/run"
 } as const;
 
+export const COVERED_CALL_API_ENDPOINTS = {
+  runs: "/api/strategies/covered-call/runs",
+  chainPreview: "/api/strategies/covered-call/chain-preview",
+  runStatus: (runId: string) => `/api/strategies/covered-call/runs/${encodeURIComponent(runId)}/status`,
+  runResult: (runId: string) => `/api/strategies/covered-call/runs/${encodeURIComponent(runId)}/result`,
+  runCancel: (runId: string) => `/api/strategies/covered-call/runs/${encodeURIComponent(runId)}/cancel`
+} as const;
+
 export const CONFIG_API_ENDPOINTS = {
   config: "/api/config"
 } as const;

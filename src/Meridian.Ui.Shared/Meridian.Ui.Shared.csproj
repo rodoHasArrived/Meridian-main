@@ -32,6 +32,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
+    <ProjectReference Include="..\Meridian.Backtesting\Meridian.Backtesting.csproj" />
+    <ProjectReference Include="..\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
     <ProjectReference Include="..\Meridian.Execution\Meridian.Execution.csproj" />
     <ProjectReference Include="..\Meridian.Infrastructure.CppTrader\Meridian.Infrastructure.CppTrader.csproj" />
     <ProjectReference Include="..\Meridian.QuantScript\Meridian.QuantScript.csproj" />
