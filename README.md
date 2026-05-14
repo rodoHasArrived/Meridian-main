@@ -6879,6 +6879,7 @@ Use these documents together when planning or implementing new work:
 │   │       │       ├── progress
 │   │       │       │   ├── command-palette-alpaca-setup-smoke.png
 │   │       │       │   ├── command-palette-hash-aware-smoke.png
+│   │       │       │   ├── covered-call-chain-dense-table-smoke.png
 │   │       │       │   ├── evidence-manifest-action-smoke.png
 │   │       │       │   ├── live-quotes-order-readiness-handoff-smoke.png
 │   │       │       │   ├── operator-readiness-utc-smoke.png
@@ -6949,6 +6950,9 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   │   ├── metric-card.tsx
 │   │       │   │   │   ├── metric-card.view-model.test.ts
 │   │       │   │   │   ├── metric-card.view-model.ts
+│   │       │   │   │   ├── quant-notebook.tsx
+│   │       │   │   │   ├── quant-notebook.view-model.test.ts
+│   │       │   │   │   ├── quant-notebook.view-model.ts
 │   │       │   │   │   ├── quant-plot.test.tsx
 │   │       │   │   │   ├── quant-plot.tsx
 │   │       │   │   │   ├── quant-plot.view-model.ts
@@ -7013,9 +7017,11 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   └── workstation-endpoints.ts
 │   │       │   ├── main.tsx
 │   │       │   ├── screens
+│   │       │   │   ├── covered-call-screen.test.tsx
 │   │       │   │   ├── covered-call-screen.tsx
 │   │       │   │   ├── covered-call-screen.view-model.test.ts
 │   │       │   │   ├── covered-call-screen.view-model.ts
+│   │       │   │   ├── data-operations-screen.security-master.ts
 │   │       │   │   ├── data-operations-screen.test.tsx
 │   │       │   │   ├── data-operations-screen.tsx
 │   │       │   │   ├── data-operations-screen.view-model.test.ts
@@ -7075,7 +7081,11 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   ├── watchlist-screen.test.tsx
 │   │       │   │   ├── watchlist-screen.tsx
 │   │       │   │   ├── watchlist-screen.view-model.test.ts
-│   │       │   │   └── watchlist-screen.view-model.ts
+│   │       │   │   ├── watchlist-screen.view-model.ts
+│   │       │   │   ├── workspace-placeholder-screen.test.tsx
+│   │       │   │   ├── workspace-placeholder-screen.tsx
+│   │       │   │   ├── workspace-placeholder-screen.view-model.test.ts
+│   │       │   │   └── workspace-placeholder-screen.view-model.ts
 │   │       │   ├── styles
 │   │       │   │   └── index.css
 │   │       │   ├── test
@@ -7526,6 +7536,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── PendingOperationsQueueService.cs
 │       │   ├── QuantScriptExecutionHistoryService.cs
 │       │   ├── QuantScriptLayoutService.cs
+│       │   ├── QuantScriptStorageJsonContext.cs
 │       │   ├── QuantScriptTemplateCatalogService.cs
 │       │   ├── ReconciliationReadService.cs
 │       │   ├── ResearchWorkspaceShellPresentationService.cs
@@ -7738,6 +7749,8 @@ Use these documents together when planning or implementing new work:
 │           ├── DataCalendarPage.xaml.cs
 │           ├── DataExportPage.xaml
 │           ├── DataExportPage.xaml.cs
+│           ├── DataOperationsWorkspaceShellPage.xaml
+│           ├── DataOperationsWorkspaceShellPage.xaml.cs
 │           ├── DataQualityPage.xaml
 │           ├── DataQualityPage.xaml.cs
 │           ├── DataSamplingPage.xaml
@@ -8788,6 +8801,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-718 directories, 7858 files
+718 directories, 7871 files
 ```
 <!-- readme-tree end -->
