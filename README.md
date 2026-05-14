@@ -6866,9 +6866,13 @@ Use these documents together when planning or implementing new work:
 │   │   └── dashboard
 │   │       ├── artifacts
 │   │       │   └── automation
+│   │       │       ├── governance-reconciliation-disabled-reasons-mobile-smoke.png
+│   │       │       ├── governance-reconciliation-disabled-reasons-smoke.png
 │   │       │       ├── price-alerts-dev-tables-smoke.png
 │   │       │       ├── price-alerts-final-smoke.png
 │   │       │       ├── price-alerts-fixture-tables-smoke.png
+│   │       │       ├── price-alerts-helper-desktop-smoke.png
+│   │       │       ├── price-alerts-helper-mobile-smoke.png
 │   │       │       ├── price-alerts-screen.json
 │   │       │       ├── price-alerts-seed.json
 │   │       │       ├── price-alerts-smoke.png
@@ -6877,9 +6881,11 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── command-palette-hash-aware-smoke.png
 │   │       │       │   ├── evidence-manifest-action-smoke.png
 │   │       │       │   ├── live-quotes-order-readiness-handoff-smoke.png
+│   │       │       │   ├── operator-readiness-utc-smoke.png
 │   │       │       │   ├── overview-utc-smoke.png
 │   │       │       │   ├── portfolio-brokerage-sync-actions-smoke.png
 │   │       │       │   ├── portfolio-sync-trust-smoke.png
+│   │       │       │   ├── price-alerts-handoff-smoke.png
 │   │       │       │   ├── price-alerts-utc-smoke.png
 │   │       │       │   ├── readiness-inbox-refresh-smoke.png
 │   │       │       │   ├── report-pack-actions-smoke.png
@@ -6891,14 +6897,17 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── security-master-route-smoke.png
 │   │       │       │   ├── settings-live-ack-smoke.png
 │   │       │       │   ├── settings-utc-smoke.png
+│   │       │       │   ├── strategy-designer-reorder-smoke.png
 │   │       │       │   ├── strategy-plottool-statistics-desktop.png
 │   │       │       │   ├── strategy-plottool-statistics-mobile.png
 │   │       │       │   ├── strategy-promotion-disabled-reason-smoke.png
 │   │       │       │   ├── strategy-promotion-smoke.png
+│   │       │       │   ├── trading-order-ticket-ack-smoke.png
 │   │       │       │   ├── watchlist-empty-value-mobile-smoke.png
 │   │       │       │   ├── watchlist-empty-value-smoke.png
 │   │       │       │   ├── watchlist-retry-smoke.png
 │   │       │       │   └── workstation-preview-smoke.png
+│   │       │       ├── strategy-designer-field-labels-smoke.png
 │   │       │       ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
 │   │       │       ├── web-ui-report-pack-profile-keyboard-smoke.png
 │   │       │       ├── web-ui-reporting-export-smoke.png
@@ -8700,46 +8709,85 @@ Use these documents together when planning or implementing new work:
 └── wwwroot
     └── workstation
         ├── assets
+        │   ├── activity-CtHpOVKp.js
         │   ├── activity-DdzC2NHl.js
         │   ├── arrow-right-BQMXU4Qj.js
+        │   ├── arrow-right-DVsZxtAC.js
+        │   ├── briefcase-business-CD4M7um3.js
         │   ├── briefcase-business-TKfvxiVx.js
+        │   ├── circle-alert-D7rSODdk.js
         │   ├── circle-alert-HHMNSH16.js
         │   ├── circle-check-DPF4ogK2.js
+        │   ├── circle-check-eX-lGLCP.js
         │   ├── circle-x-CMg0Qc3V.js
+        │   ├── circle-x-DY2RQmFF.js
         │   ├── clipboard-list-DAEDYX46.js
+        │   ├── clipboard-list-jTN-MPwF.js
         │   ├── data-operations-screen-B3QBwTVq.js
+        │   ├── data-operations-screen-D0lJrkiA.js
+        │   ├── dialog-CinaMm0v.js
         │   ├── dialog-DSdabj2S.js
+        │   ├── evidence-workbench-screen-ClQx7gzd.js
         │   ├── evidence-workbench-screen-eYN2-zbn.js
         │   ├── external-link-BZXdW9W9.js
+        │   ├── external-link-Grqr3LkX.js
+        │   ├── file-text-BlxlUqHd.js
         │   ├── file-text-N-hievbj.js
         │   ├── governance-screen-DqY6ddBm.js
+        │   ├── governance-screen-DrFPMbFb.js
         │   ├── index-C40I5Ro9.js
+        │   ├── index-Ch7FNJl9.js
+        │   ├── index-DRTDTLoU.css
         │   ├── index-aS_m2ekp.css
         │   ├── input-Cy4wm2Ml.js
+        │   ├── input-DH1caSqT.js
         │   ├── live-quotes-screen--RkhoaOE.js
+        │   ├── live-quotes-screen-D1hu0dqT.js
+        │   ├── metric-card-6FGqr-9F.js
         │   ├── metric-card-BbZrlC_6.js
         │   ├── network-1U1oL-WT.js
+        │   ├── network-CwsNwANB.js
         │   ├── operator-readiness-console-BRtzgXL5.js
+        │   ├── operator-readiness-console-BrBqInOx.js
         │   ├── overview-screen-BR5AraLj.js
+        │   ├── overview-screen-BeJxfrwP.js
         │   ├── plus-Cw2iQHnA.js
+        │   ├── plus-DSjajpe-.js
         │   ├── portfolio-screen-CSEy6zr5.js
+        │   ├── portfolio-screen-mIlILUNM.js
         │   ├── price-alerts-screen-COXY9m6l.js
+        │   ├── price-alerts-screen-njljCYiX.js
+        │   ├── quant-lab-screen-BOhDQUug.js
         │   ├── quant-lab-screen-Dpy7KWIY.js
+        │   ├── refresh-cw-DbBLAiPQ.js
         │   ├── refresh-cw-Dp5Clkb9.js
         │   ├── reporting-screen-BliDtXaE.js
+        │   ├── reporting-screen-nAqRD7ij.js
         │   ├── research-screen-Df8dFRgK.js
+        │   ├── research-screen-DwSDHbyl.js
+        │   ├── rotate-ccw-9wKbnWAt.js
         │   ├── rotate-ccw-DOv9SmtZ.js
+        │   ├── select-CoGQYu8S.js
         │   ├── select-Dydh4qce.js
         │   ├── settings-screen-DpB0U5fm.js
+        │   ├── settings-screen-paK4sHDZ.js
+        │   ├── sparkles-C72l2Ug0.js
         │   ├── sparkles-CPzvLarX.js
+        │   ├── strategy-designer-screen-DDl7I7Ey.js
+        │   ├── trading-screen-CEO2TrpK.js
         │   ├── trading-screen-DJVhwdT7.js
+        │   ├── trash-2-Br6Kw89A.js
         │   ├── trash-2-DG_-jE3C.js
         │   ├── trending-up-CyiwhFqC.js
+        │   ├── trending-up-Dm0UHjUd.js
         │   ├── ui-kit-primitives-1LSkXU-q.js
+        │   ├── ui-kit-primitives-HLPUYoNX.js
         │   ├── wallet-SSwWmFz-.js
+        │   ├── wallet-gTxB9uZO.js
+        │   ├── watchlist-screen-Z-X12prT.js
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-718 directories, 7810 files
+718 directories, 7858 files
 ```
 <!-- readme-tree end -->
