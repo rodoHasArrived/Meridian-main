@@ -52,6 +52,8 @@
 
     <!-- Globalization settings -->
     <InvariantGlobalization>false</InvariantGlobalization>
+    <!-- Avoid duplicate Json source-generator compilation in temporary WPF markup projects -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);**\System.Text.Json.SourceGeneration\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <!-- Windows-only package references -->
