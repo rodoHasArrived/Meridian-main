@@ -2,8 +2,10 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   COVERED_CALL_CHAIN_DETAIL_PANEL_ID,
+  buildHistoryPanelViewModel,
   buildChainPreviewPanelViewModel,
   DEFAULT_COVERED_CALL_FORM,
+  formatUtcMinute,
   formToRequest,
   isTerminalPhase,
   useCoveredCallScreenViewModel,
@@ -14,6 +16,7 @@ import type {
   CoveredCallChainPreview,
   CoveredCallRunHandle,
   CoveredCallRunResult,
+  CoveredCallRunSummary,
   CoveredCallRunStatus
 } from "@/types/covered-call";
 
@@ -167,6 +170,111 @@ describe("buildChainPreviewPanelViewModel", () => {
   });
 });
 
+describe("buildHistoryPanelViewModel", () => {
+  const history: CoveredCallRunSummary[] = [
+    {
+      runId: "run/dev-1",
+      underlyingSymbol: "SPY",
+      from: "2024-01-01",
+      to: "2024-06-30",
+      label: "Income sleeve",
+      status: "Completed",
+      startedAt: "2024-06-30T14:05:30Z",
+      endedAt: "2024-06-30T14:08:00Z",
+      cagr: 0.126,
+      sharpeRatio: 1.234,
+      winRate: 0.71
+    },
+    {
+      runId: "run-failed",
+      underlyingSymbol: "QQQ",
+      from: "2024-01-01",
+      to: "2024-06-30",
+      label: null,
+      status: "Failed",
+      startedAt: "not-a-date",
+      endedAt: null,
+      cagr: null,
+      sharpeRatio: null,
+      winRate: null
+    }
+  ];
+
+  it("builds UTC-labelled selectable rows with outcome metrics", () => {
+    const panel = buildHistoryPanelViewModel({ history, historyError: null, selectedRunId: "run/dev-1" });
+
+    expect(panel.tableLabel).toBe("Previous covered-call backtest runs");
+    expect(panel.selectedRowId).toBe("covered-call-history-run-dev-1");
+    expect(panel.rows[0]).toMatchObject({
+      isOpening: false,
+      startedAtLabel: "Jun 30, 2024 14:05 UTC",
+      rangeLabel: "2024-01-01 to 2024-06-30",
+      statusBadgeVariant: "success",
+      cagrLabel: "12.60%",
+      sharpeLabel: "1.23",
+      winRateLabel: "71.00%",
+      rowSelectAriaLabel: "Open covered-call run run/dev-1. SPY. Completed. Started Jun 30, 2024 14:05 UTC."
+    });
+    expect(panel.rows[1]).toMatchObject({
+      startedAtLabel: "Invalid timestamp",
+      statusBadgeVariant: "danger",
+      cagrLabel: "—",
+      labelText: "Unlabeled run"
+    });
+  });
+
+  it("marks the opening run with view-model owned selection and copy", () => {
+    const panel = buildHistoryPanelViewModel({
+      history,
+      historyError: null,
+      selectedRunId: "run-failed",
+      openingRunId: "run/dev-1"
+    });
+
+    expect(panel.description).toBe("Opening saved covered-call evidence. Late results from earlier selections are ignored.");
+    expect(panel.selectedRowId).toBe("covered-call-history-run-dev-1");
+    expect(panel.rows[0]).toMatchObject({
+      isOpening: true,
+      statusLabel: "Opening...",
+      statusBadgeVariant: "warning",
+      rowSelectAriaLabel: "Opening covered-call run run/dev-1. SPY. Started Jun 30, 2024 14:05 UTC."
+    });
+  });
+
+  it("keeps history load failures and retry labels in the view model", () => {
+    const panel = buildHistoryPanelViewModel({ history: [], historyError: "HTTP 503", selectedRunId: null });
+
+    expect(panel.description).toContain("Retry");
+    expect(panel.errorTitle).toBe("Run history failed to load");
+    expect(panel.errorDescription).toBe("HTTP 503");
+    expect(panel.retryAriaLabel).toBe("Retry covered-call run history");
+    expect(panel.emptyText).toBe("Run history failed to load.");
+  });
+
+  it("keeps history loading copy and disabled retry state in the view model", () => {
+    const panel = buildHistoryPanelViewModel({
+      history: [],
+      historyError: "HTTP 503",
+      historyLoading: true,
+      selectedRunId: null
+    });
+
+    expect(panel.description).toBe("Loading saved covered-call evidence...");
+    expect(panel.errorTitle).toBeNull();
+    expect(panel.errorDescription).toBeNull();
+    expect(panel.retryLabel).toBe("Loading history...");
+    expect(panel.retryAriaLabel).toBe("Loading covered-call run history");
+    expect(panel.retryDisabled).toBe(true);
+    expect(panel.emptyText).toBe("Loading run history...");
+  });
+
+  it("formats UTC minute labels defensively", () => {
+    expect(formatUtcMinute("2024-01-02T03:04:05Z")).toBe("Jan 02, 2024 03:04 UTC");
+    expect(formatUtcMinute(null)).toBe("Not recorded");
+    expect(formatUtcMinute("bad")).toBe("Invalid timestamp");
+  });
+});
+
 describe("useCoveredCallScreenViewModel", () => {
   function makeServices(overrides: Partial<CoveredCallScreenServices> = {}): CoveredCallScreenServices {
     return {
@@ -305,6 +413,48 @@ describe("useCoveredCallScreenViewModel", () => {
 
     expect(result.current.history).toHaveLength(1);
     expect(result.current.historyError).toBeNull();
+    expect(result.current.historyLoading).toBe(false);
+  });
+
+  it("tracks history loading and ignores stale history results", async () => {
+    const first = deferred<CoveredCallRunSummary[]>();
+    const second = deferred<CoveredCallRunSummary[]>();
+    const services = makeServices({
+      listRuns: vi.fn()
+        .mockReturnValueOnce(first.promise)
+        .mockReturnValueOnce(second.promise)
+    });
+    const { result } = renderHook(() => useCoveredCallScreenViewModel({ services, pollIntervalMs: 1000000, chainPreviewDebounceMs: 100000 }));
+
+    void act(() => {
+      void result.current.loadHistory();
+    });
+    expect(result.current.historyLoading).toBe(true);
+    expect(result.current.historyPanel.retryDisabled).toBe(true);
+
+    void act(() => {
+      void result.current.loadHistory();
+    });
+
+    await act(async () => {
+      first.resolve([
+        { runId: "stale", underlyingSymbol: "SPY", from: "2024-01-01", to: "2024-06-30", label: null, status: "Completed", startedAt: "2024-07-01T00:00:00Z", endedAt: null, cagr: 0.1, sharpeRatio: 0.5, winRate: 0.7 }
+      ]);
+      await first.promise;
+    });
+
+    expect(result.current.history).toHaveLength(0);
+    expect(result.current.historyLoading).toBe(true);
+
+    await act(async () => {
+      second.resolve([
+        { runId: "fresh", underlyingSymbol: "QQQ", from: "2024-01-01", to: "2024-06-30", label: null, status: "Completed", startedAt: "2024-07-01T00:00:00Z", endedAt: null, cagr: 0.2, sharpeRatio: 0.8, winRate: 0.6 }
+      ]);
+      await second.promise;
+    });
+
+    expect(result.current.history.map((run) => run.runId)).toEqual(["fresh"]);
+    expect(result.current.historyLoading).toBe(false);
   });
 
   it("openRun fetches result and switches to results stage", async () => {
@@ -319,6 +469,50 @@ describe("useCoveredCallScreenViewModel", () => {
     expect(result.current.stage).toBe("results");
     expect(result.current.run.result).not.toBeNull();
     expect(result.current.run.runId).toBe("prior-run-id");
+  });
+
+  it("ignores stale openRun results when a newer history row is selected", async () => {
+    const first = deferred<CoveredCallRunResult>();
+    const second = deferred<CoveredCallRunResult>();
+    const services = makeServices({
+      getResult: vi.fn((runId: string) => {
+        if (runId === "first-run") {
+          return first.promise;
+        }
+        if (runId === "second-run") {
+          return second.promise;
+        }
+        throw new Error(`Unexpected run ${runId}`);
+      })
+    });
+    const { result } = renderHook(() => useCoveredCallScreenViewModel({ services, pollIntervalMs: 1000000, chainPreviewDebounceMs: 100000 }));
+
+    void act(() => {
+      void result.current.openRun("first-run");
+    });
+    expect(result.current.historyOpeningRunId).toBe("first-run");
+
+    void act(() => {
+      void result.current.openRun("second-run");
+    });
+    expect(result.current.historyOpeningRunId).toBe("second-run");
+
+    await act(async () => {
+      second.resolve({ ...completedRunResult("second-run"), underlyingSymbol: "QQQ" });
+      await second.promise;
+    });
+
+    expect(result.current.run.runId).toBe("second-run");
+    expect(result.current.run.result?.underlyingSymbol).toBe("QQQ");
+    expect(result.current.historyOpeningRunId).toBeNull();
+
+    await act(async () => {
+      first.resolve({ ...completedRunResult("first-run"), underlyingSymbol: "SPY" });
+      await first.promise;
+    });
+
+    expect(result.current.run.runId).toBe("second-run");
+    expect(result.current.run.result?.underlyingSymbol).toBe("QQQ");
   });
 
   it("openRun surfaces an error banner when result is gone (e.g. 410)", async () => {
@@ -337,3 +531,49 @@ describe("useCoveredCallScreenViewModel", () => {
     expect(result.current.stage).toBe("configure");
   });
 });
+
+function completedRunResult(runId: string): CoveredCallRunResult {
+  return {
+    runId,
+    underlyingSymbol: "SPY",
+    from: "2024-01-01",
+    to: "2024-06-30",
+    label: null,
+    metrics: {
+      cagr: 0.1,
+      annualizedVolatility: 0.15,
+      sharpeRatio: 0.7,
+      sortinoRatio: 0.9,
+      calmarRatio: 1.8,
+      maxDrawdownPct: -0.05,
+      winRate: 0.7,
+      assignmentRate: 0.05,
+      averageHoldingDays: 20,
+      totalOptionTrades: 5,
+      assignedTrades: 0,
+      totalPremiumCollected: 1500,
+      totalOptionPnl: 800,
+      upCapture: 0.6,
+      downCapture: 0.9,
+      monthlyVar1Pct: -0.08,
+      monthlyVar5Pct: -0.05,
+      monthlyCVar5Pct: -0.06,
+      returnSkewness: 0,
+      returnKurtosis: 3,
+      annualizedTurnover: 8
+    },
+    equityCurve: [],
+    trades: [],
+    openPositionsAtEnd: []
+  };
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}

@@ -369,7 +369,8 @@ describe("trading blotter view model", () => {
     const state = buildTradingBlotterViewModel({
       data: tradingWorkspace,
       selectedPositionId: "tsla-short-1",
-      selectedOrderId: "po-1-0"
+      selectedOrderId: "po-1-0",
+      selectedFillId: "FL-1"
     });
 
     expect(state.hasPositions).toBe(true);
@@ -390,6 +391,13 @@ describe("trading blotter view model", () => {
       statusTone: "success",
       cancelAriaLabel: "Cancel order PO-1"
     });
+    expect(state.fillRows[0]).toMatchObject({
+      id: "FL-1",
+      isSelected: true,
+      detailPanelId: "trading-fill-detail",
+      ariaExpanded: true,
+      selectAriaLabel: "Inspect fill FL-1"
+    });
     expect(state.selectedPosition).toEqual(expect.objectContaining({
       title: "TSLA",
       statusLabel: "Observe",
@@ -403,6 +411,13 @@ describe("trading blotter view model", () => {
       statusTone: "success",
       ariaLabel: "Order detail for PO-1"
     }));
+    expect(state.selectedFill).toEqual(expect.objectContaining({
+      title: "FL-1",
+      statusLabel: "Fill evidence",
+      statusTone: "success",
+      ariaLabel: "Fill detail for FL-1"
+    }));
+    expect(state.selectedFill?.fields).toContainEqual({ label: "Provider", value: "Interactive Brokers", tone: "muted" });
     expect(state.fillRows[0].cells).toEqual(["FL-1", "PO-0", "NVDA", "Sell", "10", "948.20", "NASDAQ", "09:40:10 ET"]);
   });
 
@@ -414,6 +429,7 @@ describe("trading blotter view model", () => {
     expect(unavailable.hasFills).toBe(false);
     expect(unavailable.selectedPosition).toBeNull();
     expect(unavailable.selectedOrder).toBeNull();
+    expect(unavailable.selectedFill).toBeNull();
     expect(unavailable.cancelAllDisabled).toBe(true);
     expect(unavailable.positionEmptyText).toBe("Trading workspace data unavailable.");
     expect(unavailable.orderEmptyText).toBe("Trading workspace data unavailable.");

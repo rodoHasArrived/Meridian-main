@@ -302,12 +302,18 @@ describe("Vite Meridian API proxy", () => {
       isAvailable: async () => false
     });
     const runsResponse = new FakeResponse();
+    const runResultResponse = new FakeResponse();
     const chainPreviewResponse = new FakeResponse();
     const startRunResponse = new FakeResponse();
 
     await bypass(
       { method: "GET", url: `${COVERED_CALL_API_ENDPOINTS.runs}?limit=50`, headers: { accept: "application/json" } } as IncomingMessage,
       runsResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: COVERED_CALL_API_ENDPOINTS.runResult("covered-call-dev-1"), headers: { accept: "application/json" } } as IncomingMessage,
+      runResultResponse as unknown as ServerResponse,
       {} as ProxyOptions
     );
     await bypass(
@@ -326,6 +332,15 @@ describe("Vite Meridian API proxy", () => {
     expect(JSON.parse(runsResponse.body)).toEqual([
       expect.objectContaining({ runId: "covered-call-dev-1", underlyingSymbol: "SPY" })
     ]);
+    expect(runResultResponse.statusCode).toBe(200);
+    expect(runResultResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
+    expect(JSON.parse(runResultResponse.body)).toMatchObject({
+      runId: "covered-call-dev-1",
+      metrics: expect.objectContaining({ sharpeRatio: 1.18 }),
+      openPositionsAtEnd: expect.arrayContaining([
+        expect.objectContaining({ positionId: "covered-call-dev-open-1" })
+      ])
+    });
     expect(chainPreviewResponse.statusCode).toBe(200);
     expect(chainPreviewResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
     expect(JSON.parse(chainPreviewResponse.body)).toMatchObject({

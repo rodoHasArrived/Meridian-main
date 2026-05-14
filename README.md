@@ -112,8 +112,10 @@ identity drill-ins, details/lots/operator overrides with selectable lot-detail s
 conflict refresh/retry command, provider-setup success handoffs into live quotes, backfill preview
 with dense-table queue selection, Trading readiness, or Security Master coverage based on
 configured capabilities, a full-console Operator Readiness checkpoint gate, a view-model-owned
-Trading loading panel, Quant Lab plot rendering through a reusable view-model module, a visual
-Strategy Designer at `/strategy/designer`, browser Accounting reconciliation detail-queue dense-table selection
+Trading loading panel plus selectable Recent Fills detail state, Quant Lab plot rendering through
+a reusable view-model module, Quant Notebook cell/data-fetch helpers, a visual
+Strategy Designer at `/strategy/designer`, Covered Call support at `/strategy/covered-call`
+with dense chain preview and saved-run history, browser Accounting reconciliation detail-queue dense-table selection
 with keyboard-accessible expanded rows, seeded no-host break-queue fixtures, and accessible
 empty/detail states, Reporting
 report-pack profile actions for preview and export analysis plus endpoint links that separate

@@ -94,6 +94,39 @@ export interface CoveredCallChainPreviewPanelViewModel {
   selectedDetail: CoveredCallChainPreviewDetailViewModel | null;
 }
 
+export interface CoveredCallHistoryRowViewModel {
+  id: string;
+  runId: string;
+  isOpening: boolean;
+  startedAtLabel: string;
+  rangeLabel: string;
+  underlyingLabel: string;
+  statusLabel: string;
+  statusBadgeVariant: CoveredCallBadgeVariant;
+  cagrLabel: string;
+  sharpeLabel: string;
+  winRateLabel: string;
+  labelText: string;
+  rowAriaLabel: string;
+  rowSelectAriaLabel: string;
+}
+
+export interface CoveredCallHistoryPanelViewModel {
+  title: string;
+  description: string;
+  tableLabel: string;
+  tableCaption: string;
+  emptyText: string;
+  isLoading: boolean;
+  errorTitle: string | null;
+  errorDescription: string | null;
+  retryLabel: string;
+  retryAriaLabel: string;
+  retryDisabled: boolean;
+  rows: CoveredCallHistoryRowViewModel[];
+  selectedRowId: string | null;
+}
+
 export interface CoveredCallRunState {
   runId: string | null;
   status: CoveredCallRunStatus | null;
@@ -302,6 +335,102 @@ export function buildChainPreviewPanelViewModel(
   };
 }
 
+export function buildHistoryPanelViewModel({
+  history,
+  historyError,
+  historyLoading,
+  selectedRunId,
+  openingRunId
+}: {
+  history: CoveredCallRunSummary[];
+  historyError: string | null;
+  historyLoading?: boolean;
+  selectedRunId: string | null;
+  openingRunId?: string | null;
+}): CoveredCallHistoryPanelViewModel {
+  const rows = history.map((run) => buildHistoryRow(run, openingRunId === run.runId));
+  return {
+    title: "Previous runs",
+    description: historyLoading
+      ? "Loading saved covered-call evidence..."
+      : historyError
+      ? "Run history is unavailable. Retry to reload saved covered-call evidence."
+      : openingRunId
+        ? "Opening saved covered-call evidence. Late results from earlier selections are ignored."
+      : "Most recent first. Select a row to reload cached results and payoff evidence.",
+    tableLabel: "Previous covered-call backtest runs",
+    tableCaption: "Covered-call backtest run history with UTC start time, symbol, status, and outcome metrics.",
+    emptyText: historyLoading
+      ? "Loading run history..."
+      : historyError
+        ? "Run history failed to load."
+        : "No previous covered-call runs are available.",
+    isLoading: Boolean(historyLoading),
+    errorTitle: historyError && !historyLoading ? "Run history failed to load" : null,
+    errorDescription: historyLoading ? null : historyError,
+    retryLabel: historyLoading ? "Loading history..." : "Retry history",
+    retryAriaLabel: historyLoading ? "Loading covered-call run history" : "Retry covered-call run history",
+    retryDisabled: Boolean(historyLoading),
+    rows,
+    selectedRowId: (openingRunId ?? selectedRunId)
+      ? rows.find((row) => row.runId === (openingRunId ?? selectedRunId))?.id ?? null
+      : null
+  };
+}
+
+function buildHistoryRow(run: CoveredCallRunSummary, isOpening: boolean): CoveredCallHistoryRowViewModel {
+  const startedAtLabel = formatUtcMinute(run.startedAt);
+  const statusLabel = isOpening ? "Opening..." : run.status || "Unknown";
+  const labelText = run.label?.trim() || "Unlabeled run";
+  const rangeLabel = `${run.from} to ${run.to}`;
+  const cagrLabel = run.cagr !== null ? formatPct(run.cagr) : "—";
+  const sharpeLabel = run.sharpeRatio !== null && Number.isFinite(run.sharpeRatio) ? run.sharpeRatio.toFixed(2) : "—";
+  const winRateLabel = run.winRate !== null ? formatPct(run.winRate) : "—";
+  return {
+    id: `covered-call-history-${sanitizeDomId(run.runId)}`,
+    runId: run.runId,
+    isOpening,
+    startedAtLabel,
+    rangeLabel,
+    underlyingLabel: run.underlyingSymbol,
+    statusLabel,
+    statusBadgeVariant: isOpening ? "warning" : historyStatusBadgeVariant(statusLabel),
+    cagrLabel,
+    sharpeLabel,
+    winRateLabel,
+    labelText,
+    rowAriaLabel: isOpening
+      ? `Opening covered-call run ${run.runId}. ${run.underlyingSymbol}. Started ${startedAtLabel}.`
+      : `Covered-call run ${run.runId}. ${run.underlyingSymbol}. ${statusLabel}. Started ${startedAtLabel}.`,
+    rowSelectAriaLabel: isOpening
+      ? `Opening covered-call run ${run.runId}. ${run.underlyingSymbol}. Started ${startedAtLabel}.`
+      : `Open covered-call run ${run.runId}. ${run.underlyingSymbol}. ${statusLabel}. Started ${startedAtLabel}.`
+  };
+}
+
+function historyStatusBadgeVariant(status: string): CoveredCallBadgeVariant {
+  switch (status.trim().toLowerCase()) {
+    case "completed":
+    case "complete":
+    case "succeeded":
+    case "success":
+      return "success";
+    case "failed":
+    case "error":
+      return "danger";
+    case "cancelled":
+    case "canceled":
+      return "outline";
+    case "queued":
+    case "running":
+    case "warmingup":
+    case "warming up":
+      return "warning";
+    default:
+      return "default";
+  }
+}
+
 function buildChainPreviewRow(
   preview: CoveredCallChainPreview,
   row: CoveredCallChainRow,
@@ -390,9 +519,39 @@ function formatPercent(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
 }
 
+function formatPct(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) return "—";
+  return `${(value * 100).toFixed(2)}%`;
+}
+
 function formatCount(value: number): string {
   if (!Number.isFinite(value)) return "—";
   return Math.trunc(value).toLocaleString("en-US");
+}
+
+export function formatUtcMinute(value: string | null | undefined): string {
+  if (!value) {
+    return "Not recorded";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Invalid timestamp";
+  }
+
+  const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][
+    date.getUTCMonth()
+  ];
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const year = date.getUTCFullYear();
+  const hour = String(date.getUTCHours()).padStart(2, "0");
+  const minute = String(date.getUTCMinutes()).padStart(2, "0");
+  return `${month} ${day}, ${year} ${hour}:${minute} UTC`;
+}
+
+function sanitizeDomId(value: string): string {
+  const normalized = value.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  return normalized || "run";
 }
 
 export interface CoveredCallScreenState {
@@ -404,6 +563,9 @@ export interface CoveredCallScreenState {
   run: CoveredCallRunState;
   history: CoveredCallRunSummary[];
   historyError: string | null;
+  historyLoading: boolean;
+  historyOpeningRunId: string | null;
+  historyPanel: CoveredCallHistoryPanelViewModel;
   errorBanner: string | null;
 }
 
@@ -468,6 +630,8 @@ export function useCoveredCallScreenViewModel(
   });
   const [history, setHistory] = useState<CoveredCallRunSummary[]>([]);
   const [historyError, setHistoryError] = useState<string | null>(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyOpeningRunId, setHistoryOpeningRunId] = useState<string | null>(null);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
 
   const setField = useCallback(<K extends keyof CoveredCallFormState>(key: K, value: CoveredCallFormState[K]) => {
@@ -573,6 +737,8 @@ export function useCoveredCallScreenViewModel(
   const pollAbortRef = useRef<AbortController | null>(null);
   const pollTimerRef = useRef<number | null>(null);
   const activeRunIdRef = useRef<string | null>(null);
+  const historyLoadRevisionRef = useRef(0);
+  const historyOpenRevisionRef = useRef(0);
 
   const stopPolling = useCallback(() => {
     if (pollTimerRef.current !== null) {
@@ -630,6 +796,8 @@ export function useCoveredCallScreenViewModel(
     // resolves during the startRun await can't push status/result into the new run's state.
     stopPolling();
     activeRunIdRef.current = null;
+    historyOpenRevisionRef.current += 1;
+    setHistoryOpeningRunId(null);
 
     setErrorBanner(null);
     setRun({ runId: null, status: null, result: null, selectedPositionIndex: 0 });
@@ -665,19 +833,38 @@ export function useCoveredCallScreenViewModel(
   }, [run.runId, services]);
 
   const loadHistory = useCallback(async () => {
+    const revision = historyLoadRevisionRef.current + 1;
+    historyLoadRevisionRef.current = revision;
+    setHistoryLoading(true);
     setHistoryError(null);
     try {
       const items = await services.listRuns(50);
+      if (historyLoadRevisionRef.current !== revision) {
+        return;
+      }
       setHistory(items);
     } catch (error) {
+      if (historyLoadRevisionRef.current !== revision) {
+        return;
+      }
       setHistoryError((error as Error).message);
+    } finally {
+      if (historyLoadRevisionRef.current === revision) {
+        setHistoryLoading(false);
+      }
     }
   }, [services]);
 
   const openRun = useCallback(async (runId: string) => {
+    const revision = historyOpenRevisionRef.current + 1;
+    historyOpenRevisionRef.current = revision;
+    setHistoryOpeningRunId(runId);
     setErrorBanner(null);
     try {
       const result = await services.getResult(runId);
+      if (historyOpenRevisionRef.current !== revision) {
+        return;
+      }
       activeRunIdRef.current = runId;
       stopPolling();
       setRun({
@@ -694,7 +881,14 @@ export function useCoveredCallScreenViewModel(
       });
       setStage("results");
     } catch (error) {
+      if (historyOpenRevisionRef.current !== revision) {
+        return;
+      }
       setErrorBanner(`Could not load run ${runId}: ${(error as Error).message}`);
+    } finally {
+      if (historyOpenRevisionRef.current === revision) {
+        setHistoryOpeningRunId(null);
+      }
     }
   }, [services, stopPolling]);
 
@@ -714,6 +908,15 @@ export function useCoveredCallScreenViewModel(
     run,
     history,
     historyError,
+    historyLoading,
+    historyOpeningRunId,
+    historyPanel: buildHistoryPanelViewModel({
+      history,
+      historyError,
+      historyLoading,
+      selectedRunId: run.runId,
+      openingRunId: historyOpeningRunId
+    }),
     errorBanner,
     setField,
     resetForm,
@@ -734,6 +937,8 @@ export function useCoveredCallScreenViewModel(
     run,
     history,
     historyError,
+    historyLoading,
+    historyOpeningRunId,
     errorBanner,
     setField,
     resetForm,

@@ -1,5 +1,6 @@
 import type {
   CoveredCallChainPreview,
+  CoveredCallRunResult,
   CoveredCallRunSummary
 } from "../types/covered-call";
 import type {
@@ -1371,6 +1372,98 @@ const fixtureCoveredCallChainPreview: CoveredCallChainPreview = {
   ]
 };
 
+const fixtureCoveredCallResults: Record<string, CoveredCallRunResult> = {
+  "covered-call-dev-1": {
+    runId: "covered-call-dev-1",
+    underlyingSymbol: "SPY",
+    from: "2025-05-01",
+    to: "2026-05-01",
+    label: "SPY overwrite fixture",
+    metrics: {
+      cagr: 0.083,
+      annualizedVolatility: 0.142,
+      sharpeRatio: 1.18,
+      sortinoRatio: 1.42,
+      calmarRatio: 1.93,
+      maxDrawdownPct: -0.043,
+      winRate: 0.64,
+      assignmentRate: 0.08,
+      averageHoldingDays: 23,
+      totalOptionTrades: 14,
+      assignedTrades: 1,
+      totalPremiumCollected: 4280,
+      totalOptionPnl: 2760,
+      upCapture: 0.58,
+      downCapture: 0.72,
+      monthlyVar1Pct: -0.036,
+      monthlyVar5Pct: -0.024,
+      monthlyCVar5Pct: -0.031,
+      returnSkewness: -0.18,
+      returnKurtosis: 3.2,
+      annualizedTurnover: 5.4
+    },
+    equityCurve: [
+      { date: "2025-05-01", strategyEquity: 100000, underlyingEquity: 100000 },
+      { date: "2025-08-01", strategyEquity: 102750, underlyingEquity: 103200 },
+      { date: "2025-11-01", strategyEquity: 106100, underlyingEquity: 108450 },
+      { date: "2026-02-01", strategyEquity: 108250, underlyingEquity: 110700 },
+      { date: "2026-05-01", strategyEquity: 111020, underlyingEquity: 113400 }
+    ],
+    trades: [
+      {
+        strike: 515,
+        expiration: "2025-06-20",
+        contracts: 1,
+        multiplier: 100,
+        entryDate: "2025-05-02",
+        entryCredit: 4.35,
+        exitDate: "2025-06-14",
+        exitDebit: 1.2,
+        exitReason: "TakeProfit",
+        entryImpliedVolatility: 0.187,
+        netPnlPerContract: 315,
+        totalNetPnl: 315,
+        holdingDays: 43,
+        isWin: true,
+        wasAssigned: false
+      },
+      {
+        strike: 522,
+        expiration: "2025-09-19",
+        contracts: 1,
+        multiplier: 100,
+        entryDate: "2025-08-05",
+        entryCredit: 3.1,
+        exitDate: "2025-09-19",
+        exitDebit: 0,
+        exitReason: "Expired",
+        entryImpliedVolatility: 0.174,
+        netPnlPerContract: 310,
+        totalNetPnl: 310,
+        holdingDays: 45,
+        isWin: true,
+        wasAssigned: false
+      }
+    ],
+    openPositionsAtEnd: [
+      {
+        positionId: "covered-call-dev-open-1",
+        strike: 530,
+        expiration: "2026-06-19",
+        contracts: 1,
+        multiplier: 100,
+        entryDate: "2026-04-20",
+        entryCredit: 3.85,
+        markToClose: 1.55,
+        currentDelta: 0.24,
+        currentDte: 49,
+        unrealisedPnl: 230,
+        premiumCaptured: 0.597
+      }
+    ]
+  }
+};
+
 const fixtureOperatorOverrides: Record<string, OperatorOverridesDto> = {
   "sec-dev-001": {
     securityId: "sec-dev-001",
@@ -1460,6 +1553,13 @@ type DynamicFixturePattern = {
 };
 
 const dynamicFixturePatterns: DynamicFixturePattern[] = [
+  {
+    pattern: apiRoutePattern(COVERED_CALL_API_ENDPOINTS.runs, "/[^/]+/result"),
+    resolve: (cleanPath) => {
+      const runId = readDecodedPathSegment(cleanPath, 1);
+      return runId ? fixtureCoveredCallResults[runId] : undefined;
+    }
+  },
   {
     pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.workstationSecurities),
     resolve: (_cleanPath, path) => {

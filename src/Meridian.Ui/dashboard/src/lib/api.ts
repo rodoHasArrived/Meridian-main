@@ -1220,3 +1220,95 @@ export function extractQuantParameters(source: string) {
 export function runQuantScript(request: import("@/types").QuantRunRequest) {
   return postJson<import("@/types").QuantRunResponse>(QUANT_API_ENDPOINTS.run, request);
 }
+
+export async function executeCell(
+  request: import("@/types").CellExecuteRequest
+): Promise<import("@/types").CellExecuteResult> {
+  const result = await runQuantScript({ source: request.source, parameters: {} });
+  const output = buildCellOutputFromQuantRun(result);
+  const firstDiagnostic = result.compilationErrors[0] ?? result.runtimeDiagnostics[0] ?? null;
+  const errorMessage = result.success
+    ? null
+    : result.runtimeError ?? firstDiagnostic?.message ?? "Cell execution failed.";
+
+  return {
+    cellId: request.cellId,
+    success: result.success,
+    output,
+    elapsedMs: result.elapsedMs,
+    errorMessage
+  };
+}
+
+export async function fetchQuantData(
+  request: import("@/types").DataFetchRequest,
+  options: ApiRequestOptions = {}
+): Promise<import("@/types").DataFetchResult> {
+  const intervalMinutes = request.interval === "minute" ? 1 : request.interval === "hourly" ? 60 : 1440;
+  const response = await getHistoricalBars(request.symbol, {
+    intervalMinutes,
+    from: request.from,
+    to: request.to
+  }, options);
+
+  const bars = response.bars.map((bar): import("@/types").PriceBar => ({
+    timestamp: bar.start,
+    open: bar.open,
+    high: bar.high,
+    low: bar.low,
+    close: bar.close,
+    volume: bar.volume
+  }));
+
+  return {
+    symbol: response.symbol,
+    from: response.from ?? request.from,
+    to: response.to ?? request.to,
+    interval: request.interval,
+    bars,
+    rowCount: response.totalBars
+  };
+}
+
+function buildCellOutputFromQuantRun(result: import("@/types").QuantRunResponse): import("@/types").CellOutput[] {
+  const output: import("@/types").CellOutput[] = [];
+
+  if (result.consoleOutput.trim().length > 0) {
+    output.push(
+      ...result.consoleOutput
+        .split(/\r?\n/)
+        .filter((line) => line.trim().length > 0)
+        .map((line) => ({ kind: "console" as const, text: line, tone: "default" as const }))
+    );
+  }
+
+  output.push(
+    ...result.metrics.map((metric) => ({
+      kind: "metric" as const,
+      text: `${metric.label}: ${metric.value}`,
+      tone: "success" as const
+    }))
+  );
+
+  output.push(
+    ...result.compilationErrors.map((diagnostic) => ({
+      kind: "error" as const,
+      text: `${diagnostic.line}:${diagnostic.column} ${diagnostic.message}`,
+      tone: "danger" as const
+    }))
+  );
+
+  output.push(
+    ...result.runtimeDiagnostics.map((diagnostic) => ({
+      kind: "error" as const,
+      text: `${diagnostic.line}:${diagnostic.column} ${diagnostic.message}`,
+      tone: "danger" as const
+    }))
+  );
+
+  if (result.runtimeError) {
+    output.push({ kind: "error", text: result.runtimeError, tone: "danger" });
+  }
+
+  return output;
+}

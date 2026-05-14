@@ -48,6 +48,7 @@ import {
   type TradingLoadingState,
   type TradingBlotterDetail,
   type TradingDataTone,
+  type TradingFillRow,
   type TradingOrderRow,
   type TradingPositionRow,
   type TradingWorkflowCommandState,
@@ -294,6 +295,59 @@ function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableCo
     }
   ];
 }
+
+const fillColumns: DenseDataTableColumn<TradingFillRow>[] = [
+  {
+    id: "fill",
+    label: "Fill",
+    className: "font-mono font-semibold text-foreground",
+    render: (fill) => fill.fillId
+  },
+  {
+    id: "order",
+    label: "Order",
+    className: "font-mono text-muted-foreground",
+    render: (fill) => fill.orderId
+  },
+  {
+    id: "symbol",
+    label: "Symbol",
+    className: "font-mono text-foreground",
+    render: (fill) => fill.symbol
+  },
+  {
+    id: "side",
+    label: "Side",
+    className: "font-mono text-foreground",
+    render: (fill) => fill.side
+  },
+  {
+    id: "quantity",
+    label: "Qty",
+    align: "right",
+    className: "font-mono text-foreground",
+    render: (fill) => fill.quantity
+  },
+  {
+    id: "price",
+    label: "Price",
+    align: "right",
+    className: "font-mono text-foreground",
+    render: (fill) => fill.price
+  },
+  {
+    id: "venue",
+    label: "Venue",
+    className: "font-mono text-muted-foreground",
+    render: (fill) => fill.venue
+  },
+  {
+    id: "timestamp",
+    label: "Timestamp",
+    className: "font-mono text-muted-foreground",
+    render: (fill) => fill.timestamp
+  }
+];
 
 const sessionReplayStatusPanelClass = {
   default: "border-border/70 bg-secondary/25 text-muted-foreground",
@@ -863,18 +917,37 @@ export function TradingScreen({ data }: TradingScreenProps) {
 
       <Card className="panel-surface">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CandlestickChart className="h-4 w-4 text-primary" />
-            Recent fills
-          </CardTitle>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CandlestickChart className="h-4 w-4 text-primary" />
+                Recent fills
+              </CardTitle>
+              <CardDescription className="mt-2">
+                Select a fill to inspect execution venue, price, and linked order context.
+              </CardDescription>
+            </div>
+            <CockpitChip label="Rows" value={String(blotterVm.fillRows.length)} />
+          </div>
         </CardHeader>
-        <CardContent>
-          <TradingTable
-            ariaLabel={blotterVm.fillsTableLabel}
-            columns={["Fill", "Order", "Symbol", "Side", "Qty", "Price", "Venue", "Timestamp"]}
-            rows={blotterVm.fillRows}
-            emptyText={blotterVm.fillEmptyText}
-          />
+        <CardContent className="space-y-3">
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)]">
+            <DenseDataTable
+              ariaLabel={blotterVm.fillsTableLabel}
+              caption="Select a fill to update the fill detail status window."
+              columns={fillColumns}
+              rows={blotterVm.fillRows}
+              getRowId={(fill) => fill.id}
+              getRowAriaLabel={(fill) => fill.ariaLabel}
+              getRowSelectAriaLabel={(fill) => fill.selectAriaLabel}
+              getRowAriaControls={(fill) => fill.detailPanelId}
+              getRowAriaExpanded={(fill) => fill.ariaExpanded}
+              selectedRowId={blotterVm.selectedFillRowId}
+              onRowSelect={(fill) => blotterVm.selectFill(fill.id)}
+              emptyText={blotterVm.fillEmptyText}
+            />
+            <TradingBlotterDetailPanel id={blotterVm.fillDetailId} detail={blotterVm.selectedFill} emptyText={blotterVm.fillEmptyText} />
+          </div>
         </CardContent>
       </Card>
 
@@ -2139,49 +2212,6 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
         )}
       </DialogContent>
     </Dialog>
-  );
-}
-
-function TradingTable({
-  ariaLabel,
-  columns,
-  rows,
-  emptyText
-}: {
-  ariaLabel: string;
-  columns: string[];
-  rows: Array<{ id: string; cells: string[]; ariaLabel: string }>;
-  emptyText: string;
-}) {
-  if (rows.length === 0) {
-    return <EmptyEvidenceState text={emptyText} />;
-  }
-
-  return (
-    <div className="data-grid-surface overflow-x-auto">
-      <table className="min-w-full divide-y divide-border/60 text-left text-xs sm:text-sm" aria-label={ariaLabel}>
-        <thead className="bg-secondary/30">
-          <tr>
-            {columns.map((column) => (
-              <th key={column} className="px-3 py-2 font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                {column}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border/50">
-          {rows.map((row) => (
-            <tr key={row.id} className="bg-background/20 transition-colors hover:bg-secondary/20" aria-label={row.ariaLabel}>
-              {row.cells.map((value, valueIndex) => (
-                <td key={`cell-${row.id}-${valueIndex}`} className="px-3 py-2 font-mono text-foreground">
-                  {value}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
   );
 }
 
