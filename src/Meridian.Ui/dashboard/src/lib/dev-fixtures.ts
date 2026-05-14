@@ -1087,6 +1087,29 @@ const fixtureSecurityMasterEntries: SecurityMasterEntry[] = [
       assetFamily: "Software",
       issuerType: "Corporate"
     }
+  },
+  {
+    securityId: "sec-dev-004",
+    displayName: "Meridian 5.875% 2031 Corporate Bond",
+    status: "Active",
+    classification: {
+      assetClass: "Fixed Income",
+      subType: "Corporate Bond",
+      primaryIdentifierKind: "CUSIP",
+      primaryIdentifierValue: "589999AB4",
+      matchedIdentifierKind: "ISIN",
+      matchedIdentifierValue: "US589999AB47",
+      matchedProvider: "Reference fixture"
+    },
+    economicDefinition: {
+      currency: "USD",
+      version: 1,
+      effectiveFrom: "2025-12-15",
+      effectiveTo: null,
+      subType: "Corporate Bond",
+      assetFamily: "Credit",
+      issuerType: "Corporate"
+    }
   }
 ];
 
@@ -1196,6 +1219,49 @@ const fixtureSecurityIdentities: Record<string, SecurityIdentityDrillIn> = {
       }
     ],
     aliases: []
+  },
+  "sec-dev-004": {
+    securityId: "sec-dev-004",
+    displayName: "Meridian 5.875% 2031 Corporate Bond",
+    assetClass: "Fixed Income",
+    status: "Active",
+    version: 1,
+    effectiveFrom: "2025-12-15",
+    effectiveTo: null,
+    identifiers: [
+      {
+        kind: "CUSIP",
+        value: "589999AB4",
+        isPrimary: true,
+        validFrom: "2025-12-15",
+        validTo: null,
+        provider: "Reference fixture"
+      },
+      {
+        kind: "ISIN",
+        value: "US589999AB47",
+        isPrimary: false,
+        validFrom: "2025-12-15",
+        validTo: null,
+        provider: "Reference fixture"
+      }
+    ],
+    aliases: [
+      {
+        aliasId: "alias-dev-004",
+        securityId: "sec-dev-004",
+        aliasKind: "ProviderSymbol",
+        aliasValue: "MERIDIAN 5.875 12/31",
+        provider: "Bloomberg",
+        scope: "Operations",
+        reason: "Cash-flow/factor schedule fixture",
+        createdBy: "dashboard-dev",
+        createdAt: "2026-05-14T16:00:00Z",
+        validFrom: "2025-12-15",
+        validTo: null,
+        isEnabled: true
+      }
+    ]
   }
 };
 
@@ -1580,8 +1646,20 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
       return securityId ? fixtureSecurityIdentities[securityId] : undefined;
     }
   },
-  { pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/corporate-actions"), resolve: () => fixtureCorporateActions },
-  { pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/trading-parameters"), resolve: () => fixtureTradingParameters },
+  {
+    pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/corporate-actions"),
+    resolve: (cleanPath) => {
+      const securityId = cleanPath.split("/").at(-2);
+      return securityId ? fixtureCorporateActions.filter((action) => action.securityId === securityId) : fixtureCorporateActions;
+    }
+  },
+  {
+    pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/trading-parameters"),
+    resolve: (cleanPath) => {
+      const securityId = cleanPath.split("/").at(-2) ?? fixtureTradingParameters.securityId;
+      return { ...fixtureTradingParameters, securityId };
+    }
+  },
   {
     pattern: apiRoutePattern(SECURITY_MASTER_API_ENDPOINTS.base, "/[^/]+/operator-overrides"),
     resolve: (cleanPath) => {

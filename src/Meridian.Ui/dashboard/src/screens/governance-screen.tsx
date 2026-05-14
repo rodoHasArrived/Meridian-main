@@ -27,6 +27,8 @@ import type {
   ReconciliationQueueRunRowViewModel,
   ReconciliationQueueRunTone,
   GovernanceTrialBalanceRowViewModel,
+  SecuritySchedulesViewState,
+  SecurityScheduleRowViewModel,
   SecuritySearchResultRowViewModel,
   TradingParametersViewState
 } from "@/screens/governance-screen.view-model";
@@ -179,6 +181,43 @@ const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[
   { id: "exDate", label: "Ex-date", render: (row) => <span className="font-mono text-muted-foreground">{row.exDateLabel}</span> },
   { id: "payDate", label: "Pay date", render: (row) => <span className="font-mono text-muted-foreground">{row.payDateLabel}</span> },
   { id: "amount", label: "Amount", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.amountLabel}</span> }
+];
+
+const securityScheduleColumns: DenseDataTableColumn<SecurityScheduleRowViewModel>[] = [
+  {
+    id: "eventType",
+    label: "Event",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.eventTypeLabel}</span>
+        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.eventId}</span>
+      </span>
+    )
+  },
+  { id: "paymentDate", label: "Payment date", render: (row) => <span className="font-mono text-muted-foreground">{row.paymentDateLabel}</span> },
+  { id: "expected", label: "Expected", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.expectedAmountLabel}</span> },
+  {
+    id: "actual",
+    label: "Actual",
+    align: "right",
+    render: (row) => (
+      <span className={cn("font-mono tabular-nums", row.actualAmount === null ? "text-muted-foreground" : "text-foreground")}>
+        {row.actualAmountLabel}
+      </span>
+    )
+  },
+  {
+    id: "variance",
+    label: "Variance",
+    align: "right",
+    render: (row) => (
+      <span className={cn("font-mono tabular-nums", row.postingStatus === "Variance" ? "text-danger" : "text-muted-foreground")}>
+        {row.varianceLabel}
+      </span>
+    )
+  },
+  { id: "factor", label: "Factor", align: "right", render: (row) => <span className="font-mono tabular-nums text-muted-foreground">{row.factorLabel}</span> },
+  { id: "status", label: "Status", render: (row) => <Badge variant={row.postingStatusTone}>{row.postingStatusLabel}</Badge> }
 ];
 
 const focusCopy: Record<string, { title: string; description: string }> = {
@@ -1054,15 +1093,21 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
             </section>
           )}
 
-          {/* Corporate actions and trading parameters — shown when a security is selected */}
+          {/* Schedule workbench, corporate actions, and trading controls — shown when a security is selected */}
           {securityMaster.selectedSecurityId && (
-            <div className="grid gap-4 xl:grid-cols-2">
-              <CorporateActionsPanel
-                view={securityMaster.corporateActionsView}
-                onSelect={securityMaster.selectCorporateAction}
+            <>
+              <SecuritySchedulesPanel
+                view={securityMaster.schedulesView}
+                onSelect={securityMaster.selectScheduleEvent}
               />
-              <TradingParametersPanel view={securityMaster.tradingParametersView} />
-            </div>
+              <div className="grid gap-4 xl:grid-cols-2">
+                <CorporateActionsPanel
+                  view={securityMaster.corporateActionsView}
+                  onSelect={securityMaster.selectCorporateAction}
+                />
+                <TradingParametersPanel view={securityMaster.tradingParametersView} />
+              </div>
+            </>
           )}
 
           {/* Extended security details & lots tracker — shown when a security is selected */}
@@ -1403,6 +1448,71 @@ function CorporateActionsPanel({
             </div>
           </div>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function SecuritySchedulesPanel({
+  view,
+  onSelect
+}: {
+  view: SecuritySchedulesViewState;
+  onSelect: (rowId: string) => void;
+}) {
+  return (
+    <Card className="panel-surface">
+      <CardHeader>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Table2 className="h-4 w-4 text-primary" aria-hidden="true" />
+              {view.title}
+            </CardTitle>
+            <CardDescription className="mt-2">{view.description}</CardDescription>
+          </div>
+          <div className="min-w-0 lg:max-w-[28rem]">
+            <ToolbarStrip ariaLabel={view.toolbarAriaLabel} items={view.toolbarItems} />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
+        <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.55fr)]">
+          <DenseDataTable
+            columns={securityScheduleColumns}
+            rows={view.rows}
+            getRowId={(row) => row.rowId}
+            getRowAriaLabel={(row) => row.ariaLabel}
+            getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+            getRowAriaControls={(row) => row.detailPanelId}
+            getRowAriaExpanded={(row) => row.isExpanded}
+            onRowSelect={(row) => onSelect(row.rowId)}
+            selectedRowId={view.selectedRowId}
+            emptyText={view.emptyText}
+            ariaLabel={view.tableLabel}
+            caption={view.tableCaption}
+          />
+          <div id={view.detailPanelId} className="row-detail-panel h-fit min-w-0">
+            {view.selectedDetail ? (
+              <EntitySummary
+                eyebrow={view.selectedDetail.eyebrow}
+                title={view.selectedDetail.title}
+                subtitle={view.selectedDetail.subtitle}
+                description={view.selectedDetail.description}
+                ariaLabel={view.selectedDetail.ariaLabel}
+                status={<Badge variant={view.selectedDetail.statusTone}>{view.selectedDetail.statusLabel}</Badge>}
+                fields={view.selectedDetail.fields.map((field) => ({ label: field.label, value: field.value }))}
+              />
+            ) : (
+              <div role="region" aria-label={view.detailEmptyAriaLabel}>
+                <div className="eyebrow-label">Schedule event detail</div>
+                <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
+              </div>
+            )}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

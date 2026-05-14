@@ -660,6 +660,64 @@ describe("GovernanceScreen", () => {
     expect(screen.queryByText("S&P Rating")).not.toBeInTheDocument();
   });
 
+  it("renders cash-flow schedules as selectable dense evidence with a detail panel", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.searchSecurities).mockResolvedValueOnce([
+      {
+        securityId: "sec-1",
+        displayName: "Apple Inc.",
+        status: "Active",
+        classification: {
+          assetClass: "Fixed Income",
+          subType: "CorporateBond",
+          primaryIdentifierKind: "CUSIP",
+          primaryIdentifierValue: "037833AB1"
+        },
+        economicDefinition: {
+          currency: "USD",
+          version: 3,
+          effectiveFrom: "2024-01-01T00:00:00Z",
+          effectiveTo: null,
+          subType: "CorporateBond",
+          assetFamily: "Credit",
+          issuerType: "Corporate"
+        }
+      }
+    ]);
+    vi.mocked(api.getSecurityIdentity).mockResolvedValueOnce({
+      securityId: "sec-1",
+      displayName: "Apple Inc.",
+      assetClass: "Fixed Income",
+      status: "Active",
+      version: 3,
+      effectiveFrom: "2024-01-01T00:00:00Z",
+      effectiveTo: null,
+      identifiers: [],
+      aliases: []
+    });
+
+    await renderGovernanceScreen(data, "/accounting/security-master");
+
+    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
+    await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
+
+    const table = await screen.findByRole("table", { name: "Cash-flow and factor schedules for sec-1" });
+    expect(table).toHaveTextContent("sched-sec-1-cpn-2026-05");
+    const couponRow = screen.getByRole("row", { name: "Inspect schedule event Coupon for sec-1 on 2026-05-15" });
+    const principalRow = screen.getByRole("row", { name: "Inspect schedule event Principal for sec-1 on 2026-11-15" });
+    expect(couponRow).toHaveAttribute("aria-selected", "true");
+    expect(couponRow).toHaveAttribute("aria-controls", "security-schedule-detail-panel");
+    expect(screen.getByRole("region", { name: "Cash-flow schedule detail for Coupon on sec-1" })).toHaveTextContent("Posted");
+
+    principalRow.focus();
+    await user.keyboard("{Enter}");
+
+    expect(principalRow).toHaveAttribute("aria-selected", "true");
+    expect(principalRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Cash-flow schedule detail for Principal on sec-1" })).toHaveTextContent("100,000 USD");
+    expect(screen.getByRole("toolbar", { name: "Cash-flow schedule status for sec-1" })).toHaveTextContent("2");
+  });
+
   it("renders corporate actions as selectable dense evidence with a detail panel", async () => {
     const user = userEvent.setup();
     vi.mocked(api.searchSecurities).mockResolvedValueOnce([

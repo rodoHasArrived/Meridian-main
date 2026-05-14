@@ -7,6 +7,8 @@ import {
   buildGovernanceLoadingViewState,
   buildGovernanceReportingViewState,
   buildGovernanceTrialBalanceViewState,
+  buildSecurityScheduleRows,
+  buildSecuritySchedulesViewState,
   formatReportingExportResult,
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
@@ -22,6 +24,7 @@ import {
   buildSecuritySearchResultRows,
   buildSecuritySearchState,
   countOpenSecurityConflicts,
+  resolveSecurityScheduleEvents,
   resolveGovernanceWorkstream,
   resolveSelectedReconciliation,
   useGovernanceReconciliationViewModel,
@@ -29,6 +32,7 @@ import {
 } from "@/screens/governance-screen.view-model";
 import type {
   GovernanceReconciliationServices,
+  SecurityCashFlowScheduleEvent,
   SecurityMasterDrillInServices,
   SecurityMasterServices
 } from "@/screens/governance-screen.view-model";
@@ -168,6 +172,49 @@ const corporateActions: CorporateAction[] = [
     exchangeRatio: null,
     subscriptionPricePerShare: null,
     rightsPerShare: null
+  }
+];
+
+const cashFlowSchedules: SecurityCashFlowScheduleEvent[] = [
+  {
+    eventId: "sched-1-coupon",
+    securityId: "sec-1",
+    scheduleFamily: "bond",
+    eventType: "Coupon",
+    paymentDate: "2026-05-15T00:00:00Z",
+    accrualStartDate: "2025-11-15T00:00:00Z",
+    accrualEndDate: "2026-05-15T00:00:00Z",
+    couponRatePct: 5.25,
+    expectedAmount: 26250,
+    actualAmount: 26250,
+    principalAmount: null,
+    interestAmount: 26250,
+    factorStart: 1,
+    factorEnd: 1,
+    currency: "USD",
+    postingStatus: "Posted",
+    auditReference: "fixture/schedule/coupon",
+    note: "Coupon posted."
+  },
+  {
+    eventId: "sched-1-paydown",
+    securityId: "sec-1",
+    scheduleFamily: "structured",
+    eventType: "Paydown",
+    paymentDate: "2026-11-15T00:00:00Z",
+    accrualStartDate: "2026-05-15T00:00:00Z",
+    accrualEndDate: "2026-11-15T00:00:00Z",
+    couponRatePct: 5.25,
+    expectedAmount: 126250,
+    actualAmount: 124900,
+    principalAmount: 100000,
+    interestAmount: 26250,
+    factorStart: 1,
+    factorEnd: 0.9,
+    currency: "USD",
+    postingStatus: "Variance",
+    auditReference: "fixture/schedule/paydown",
+    note: "Expected-versus-actual variance."
   }
 ];
 
@@ -946,6 +993,77 @@ describe("governance-screen view model", () => {
     });
   });
 
+  it("derives cash-flow and factor schedule rows with selected detail state", () => {
+    const rows = buildSecurityScheduleRows(cashFlowSchedules, "sched-1-paydown");
+    const state = buildSecuritySchedulesViewState({
+      securityId: "sec-1",
+      displayName: "Apple Inc.",
+      assetClass: "Fixed Income",
+      schedules: cashFlowSchedules,
+      selectedRowId: "sched-1-paydown"
+    });
+
+    expect(rows[1]).toMatchObject({
+      rowId: "sched-1-paydown",
+      eventTypeLabel: "Paydown",
+      paymentDateLabel: "2026-11-15",
+      expectedAmountLabel: "126,250 USD",
+      actualAmountLabel: "124,900 USD",
+      varianceLabel: "-1,350 USD",
+      factorLabel: "1.000000 -> 0.900000",
+      postingStatusLabel: "Variance review",
+      postingStatusTone: "danger",
+      selectAriaLabel: "Inspect schedule event Paydown for sec-1 on 2026-11-15",
+      detailPanelId: "security-schedule-detail-panel",
+      isExpanded: true
+    });
+    expect(state).toMatchObject({
+      title: "Cash-flow and factor schedules",
+      tableLabel: "Cash-flow and factor schedules for sec-1",
+      selectedRowId: "sched-1-paydown",
+      hasRows: true,
+      statusAnnouncement: "2 cash-flow schedule events loaded for sec-1."
+    });
+    expect(state.toolbarItems).toEqual(expect.arrayContaining([
+      { id: "events", label: "Events", value: "2", active: true },
+      { id: "variance", label: "Variance", value: "1" }
+    ]));
+    expect(state.selectedDetail).toMatchObject({
+      id: "security-schedule-detail-panel",
+      title: "Paydown",
+      ariaLabel: "Cash-flow schedule detail for Paydown on sec-1",
+      statusLabel: "Variance review",
+      statusTone: "danger"
+    });
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Expected", value: "126,250 USD" },
+      { label: "Actual", value: "124,900 USD", tone: "default" },
+      { label: "Variance", value: "-1,350 USD", tone: "danger" },
+      { label: "Factor", value: "1.000000 -> 0.900000" }
+    ]));
+  });
+
+  it("keeps cash-flow schedule empty states and fixture resolution deterministic", () => {
+    expect(resolveSecurityScheduleEvents("sec-dev-004")).toHaveLength(3);
+    expect(resolveSecurityScheduleEvents("unknown-security")).toEqual([]);
+
+    const state = buildSecuritySchedulesViewState({
+      securityId: "unknown-security",
+      displayName: "Unknown security",
+      assetClass: "Unclassified",
+      schedules: [],
+      selectedRowId: null
+    });
+
+    expect(state).toMatchObject({
+      hasRows: false,
+      selectedDetail: null,
+      emptyText: "No cash-flow or factor schedule rows are available for unknown-security.",
+      detailEmptyAriaLabel: "No cash-flow schedule event selected",
+      statusAnnouncement: ""
+    });
+  });
+
   it("ignores stale Security Master identity responses after a newer selection settles", async () => {
     const staleIdentity = deferred<SecurityIdentityDrillIn>();
     const latestIdentity = deferred<SecurityIdentityDrillIn>();
@@ -1075,6 +1193,7 @@ describe("governance-screen view model", () => {
       conflicts,
       conflictsLoading: false,
       corporateActions,
+      securitySchedules: cashFlowSchedules,
       tradingParameters
     });
 
@@ -1093,7 +1212,7 @@ describe("governance-screen view model", () => {
     ]));
     expect(state.detailSections).toEqual(expect.arrayContaining([
       { id: "overview", label: "Overview", value: "1 identifier", active: true },
-      { id: "schedules", label: "Schedules", value: "2 corporate actions" },
+      { id: "schedules", label: "Schedules", value: "2 cash-flow events" },
       { id: "controls", label: "Controls", value: "Trading set" },
       { id: "audit", label: "Audit", value: "1 conflict" }
     ]));

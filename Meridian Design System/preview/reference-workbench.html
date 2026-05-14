@@ -521,10 +521,10 @@
               <tr>
                 <th>Event</th>
                 <th>Pay date</th>
-                <th class="r">Factor</th>
                 <th class="r">Expected</th>
                 <th class="r">Actual</th>
-                <th>Source</th>
+                <th class="r">Variance</th>
+                <th class="r">Factor</th>
                 <th>State</th>
               </tr>
             </thead>
@@ -532,28 +532,28 @@
               <tr class="selected">
                 <td>Coupon</td>
                 <td class="mono">2026-06-15</td>
+                <td class="r">$1,842,551.25</td>
+                <td class="r">$1,842,551.25</td>
+                <td class="r">$0.00</td>
                 <td class="r">1.000000</td>
-                <td class="r">$1,842,551.25</td>
-                <td class="r">$1,842,551.25</td>
-                <td class="mono">SM-PRIMARY</td>
                 <td><span class="state-badge good">Posted</span></td>
               </tr>
               <tr>
-                <td>Factor</td>
+                <td>Paydown</td>
                 <td class="mono">2026-07-15</td>
-                <td class="r">0.984512</td>
                 <td class="r">$1,814,013.08</td>
-                <td class="r">--</td>
-                <td class="mono">PX-VENDOR</td>
+                <td class="r">$1,812,650.22</td>
+                <td class="r">-$1,362.86</td>
+                <td class="r">1.000000 -> 0.984512</td>
                 <td><span class="state-badge pending">Pending</span></td>
               </tr>
               <tr>
                 <td>Redemption</td>
                 <td class="mono">2029-05-15</td>
-                <td class="r">0.000000</td>
                 <td class="r">$25,000,000.00</td>
                 <td class="r">--</td>
-                <td class="mono">TERM-SHEET</td>
+                <td class="r">--</td>
+                <td class="r">0.984512 -> 0.000000</td>
                 <td><span class="state-badge warn">Review</span></td>
               </tr>
             </tbody>
@@ -564,6 +564,10 @@
           <div class="detail-note">
             <div class="detail-label">Selection</div>
             <p>Rows must support keyboard activation and expose selected state to the detail frame.</p>
+          </div>
+          <div class="detail-note">
+            <div class="detail-label">Selected event detail</div>
+            <p>Expected, actual, variance, factor, posting state, notes, and audit references stay inspectable beside the table.</p>
           </div>
           <div class="detail-note">
             <div class="detail-label">Visibility</div>
@@ -586,6 +590,10 @@
     <article class="contract-card">
       <h2>Schedule density</h2>
       <p>Cash-flow, factor, redemption, conversion, lot, and corporate-action schedules render as tables or compact metadata grids.</p>
+    </article>
+    <article class="contract-card">
+      <h2>Controls and validation</h2>
+      <p>Selected event detail, validation posture, notes, disabled reasons, and audit evidence stay attached to the selected security.</p>
     </article>
     <article class="contract-card">
       <h2>Attached audit</h2>
