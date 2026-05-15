@@ -259,7 +259,8 @@ function toCanonicalEnumValue<T extends string>(value: string | undefined, valid
     return null;
   }
 
-  const canonical = validValues.find((candidate) => candidate.toLowerCase() === value.toLowerCase());
+  const normalizedValue = value.toLowerCase();
+  const canonical = validValues.find((candidate) => candidate.toLowerCase() === normalizedValue);
   return canonical ?? null;
 }
 

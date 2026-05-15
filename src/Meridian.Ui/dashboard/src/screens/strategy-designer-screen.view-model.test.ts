@@ -737,6 +737,8 @@ describe("strategy designer view-model", () => {
     const tradeCell = document.cells.find((c) => c.kind === "trade")!;
     tradeCell.parameters!["instrument"] = "Future";
     tradeCell.parameters!["sizingValue"] = "999";
+    expect(tradeCell.parameters?.["instrument"]).toBe("Future");
+    expect(tradeCell.parameters?.["sizingValue"]).toBe("999");
 
     const original = loadStrategyBuilderTemplate("trade-intent-strategy");
     expect(original.cells.find((c) => c.kind === "trade")?.parameters?.["instrument"]).toBe("Equity");

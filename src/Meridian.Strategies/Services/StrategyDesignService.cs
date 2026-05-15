@@ -489,7 +489,8 @@ public sealed class StrategyDesignService
             return false;
         }
 
-        canonical = validValues.FirstOrDefault(candidate => string.Equals(candidate, value.Trim(), StringComparison.OrdinalIgnoreCase)) ?? string.Empty;
+        var trimmed = value.Trim();
+        canonical = validValues.FirstOrDefault(candidate => string.Equals(candidate, trimmed, StringComparison.OrdinalIgnoreCase)) ?? string.Empty;
         return canonical.Length > 0;
     }
 
