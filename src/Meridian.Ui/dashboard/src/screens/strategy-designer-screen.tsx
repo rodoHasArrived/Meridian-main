@@ -1,4 +1,4 @@
-import { Database, Eye, FlaskConical, GitBranch, PlayCircle, Save, Search, ShieldCheck, Sparkles, Workflow } from "lucide-react";
+import { ArrowRightLeft, CircleDot, Database, Eye, FlaskConical, GitBranch, Layers, Network, PlayCircle, Save, Search, ShieldCheck, Sparkles, Workflow } from "lucide-react";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import {
   type ParticipationViewModel,
   type PayoffChartViewModel,
   type StrategyBuilderCellDetailViewModel,
+  type StrategyBuilderCellKind,
   type StrategyBuilderCellViewModel,
   type StrategyBuilderFieldCatalogItem,
   type StrategyBuilderTemplate,
@@ -20,6 +21,29 @@ import {
   type StrategyDesignerViewModel,
   type StrategyLegDetailFieldViewModel
 } from "@/screens/strategy-designer-screen.view-model";
+
+function cellKindBadgeVariant(kind: StrategyBuilderCellKind): "default" | "outline" | "success" | "warning" | "danger" | "research" {
+  switch (kind) {
+    case "governance":       return "warning";
+    case "code":             return "research";
+    case "state":            return "default";
+    case "concurrent":       return "success";
+    case "universe-builder": return "success";
+    case "trade":            return "danger";
+    case "options-payoff":   return "warning";
+    default:                 return "outline";
+  }
+}
+
+function CellKindIcon({ kind }: { kind: StrategyBuilderCellKind }) {
+  switch (kind) {
+    case "state":            return <CircleDot className="h-3 w-3 text-muted-foreground" aria-hidden="true" />;
+    case "concurrent":       return <Network className="h-3 w-3 text-muted-foreground" aria-hidden="true" />;
+    case "universe-builder": return <Layers className="h-3 w-3 text-muted-foreground" aria-hidden="true" />;
+    case "trade":            return <ArrowRightLeft className="h-3 w-3 text-muted-foreground" aria-hidden="true" />;
+    default:                 return null;
+  }
+}
 
 export function StrategyDesignerScreen() {
   const vm = useStrategyDesignerViewModel();
@@ -197,7 +221,11 @@ function CellCanvasPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
       render: (row) => (
         <div className="min-w-0">
           <div className="font-medium text-foreground">{row.label}</div>
-          <div className="mt-1 font-mono text-xs text-muted-foreground">{row.cellId}</div>
+          <div className="mt-1 flex items-center gap-1.5">
+            <CellKindIcon kind={row.kind} />
+            <Badge variant={cellKindBadgeVariant(row.kind)}>{row.kind}</Badge>
+            <span className="font-mono text-xs text-muted-foreground">{row.cellId}</span>
+          </div>
         </div>
       )
     },

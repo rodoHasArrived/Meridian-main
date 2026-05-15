@@ -87,6 +87,102 @@ public sealed class StrategyDesignServiceTests
         validation.Messages.Should().Contain(message => message.Code == "LoopRationaleRequired");
     }
 
+    [Fact]
+    public void Validate_StateCellMissingExitCondition_ShouldBlock()
+    {
+        var service = new StrategyDesignService();
+        var document = service.Normalize(BuildDocument(cells:
+        [
+            new("state-node", "Monitoring", "state", "state", "monitoring phase", [],
+                new Dictionary<string, string> { ["stateLabel"] = "Monitoring" }),
+            new("risk", "Risk guard", "governance", "risk", "VOLATILITY_20D < 0.3", ["VOLATILITY_20D"])
+        ]));
+
+        var result = service.Validate(document);
+
+        result.IsValid.Should().BeFalse();
+        result.Messages.Should().Contain(m => m.Code == "StateCellExitRequired");
+        result.Messages.Should().NotContain(m => m.Code == "StateCellLabelRequired");
+    }
+
+    [Fact]
+    public void Validate_TradeCellWithAllRequiredParameters_ShouldPass()
+    {
+        var service = new StrategyDesignService();
+        var document = service.Normalize(BuildDocument(cells:
+        [
+            new("filter", "Filter universe", "visual", "filter", "PRICE > 20", ["PRICE"]),
+            new("trade-cell", "Buy equities", "trade", "trade", "execute buy order", [],
+                new Dictionary<string, string>
+                {
+                    ["instrument"] = "Equity",
+                    ["direction"] = "Buy",
+                    ["sizingMethod"] = "EqualWeight",
+                    ["priceConstraint"] = "VWAP"
+                }),
+            new("risk", "Risk guard", "governance", "risk", "VOLATILITY_20D < 0.3", ["VOLATILITY_20D"])
+        ]));
+
+        var result = service.Validate(document);
+
+        result.IsValid.Should().BeTrue(result.Summary);
+        result.Messages.Should().NotContain(m =>
+            m.Code == "TradeCellInstrumentRequired" ||
+            m.Code == "TradeCellDirectionRequired" ||
+            m.Code == "TradeCellSizingRequired");
+    }
+
+    [Fact]
+    public void Validate_ConcurrentCellWithBadSemantics_ShouldBlock()
+    {
+        var service = new StrategyDesignService();
+        var document = service.Normalize(BuildDocument(cells:
+        [
+            new("parallel", "Parallel check", "concurrent", "concurrent", "parallel eval", [],
+                new Dictionary<string, string>
+                {
+                    ["branchIds"] = "cell-a,cell-b",
+                    ["semantics"] = "bad-value"
+                }),
+            new("risk", "Risk guard", "governance", "risk", "true", [])
+        ]));
+
+        var result = service.Validate(document);
+
+        result.IsValid.Should().BeFalse();
+        result.Messages.Should().Contain(m => m.Code == "ConcurrentCellSemanticsRequired");
+    }
+
+    [Fact]
+    public void Validate_UniverseBuilderCellMissingAssetClass_ShouldBlock()
+    {
+        var service = new StrategyDesignService();
+        var document = service.Normalize(BuildDocument(cells:
+        [
+            new("ub", "Universe", "universe-builder", "universe", "build universe", ["PRICE"],
+                new Dictionary<string, string> { ["includeRules"] = "PRICE > 10" }),
+            new("risk", "Risk guard", "governance", "risk", "true", [])
+        ]));
+
+        var result = service.Validate(document);
+
+        result.IsValid.Should().BeFalse();
+        result.Messages.Should().Contain(m => m.Code == "UniverseBuilderAssetClassRequired");
+        result.Messages.Should().NotContain(m => m.Code == "UniverseBuilderIncludeRulesRequired");
+    }
+
+    [Fact]
+    public void Validate_FullyPopulatedStateCellTemplate_ShouldPass()
+    {
+        var service = new StrategyDesignService();
+        var template = service.GetTemplates().Single(t => t.TemplateId == "state-machine-strategy");
+        var document = service.Normalize(template.Document);
+
+        var result = service.Validate(document);
+
+        result.IsValid.Should().BeTrue(result.Summary);
+    }
+
     private static StrategyDesignDocument BuildDocument(
         IReadOnlyList<StrategyDesignCell>? cells = null,
         IReadOnlyList<StrategyDesignTransition>? transitions = null)

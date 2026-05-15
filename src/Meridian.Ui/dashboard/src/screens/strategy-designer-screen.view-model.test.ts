@@ -18,12 +18,17 @@ import {
   findBreakEvenPrices,
   getStrategyBuilderFieldCatalog,
   getStrategyBuilderTemplates,
+  getStateCellParams,
+  getTradeCellParams,
+  getConcurrentCellParams,
+  getUniverseBuilderCellParams,
   getStrategyDesignerPalette,
   getStrategyDesignerSampleLegs,
   loadStrategyBuilderTemplate,
   reorderLegs,
   useStrategyDesignerViewModel,
   validateStrategyBuilderDocument,
+  type StrategyBuilderCell,
   type StrategyLeg
 } from "@/screens/strategy-designer-screen.view-model";
 
@@ -440,5 +445,165 @@ describe("strategy designer view-model", () => {
       label: "Clear canvas",
       confirmationPending: false
     });
+  });
+
+  it("validates state cell requires exitCondition and stateLabel parameters", () => {
+    const document = loadStrategyBuilderTemplate("equity-momentum-breakout");
+    const invalid = {
+      ...document,
+      cells: [
+        ...document.cells,
+        {
+          cellId: "monitoring-state",
+          label: "Monitoring state",
+          kind: "state" as const,
+          purpose: "state" as const,
+          source: "entry phase",
+          fieldRefs: [],
+          parameters: { stateLabel: "Monitoring" }
+        } satisfies StrategyBuilderCell
+      ]
+    };
+
+    const messages = validateStrategyBuilderDocument(invalid);
+    const codes = messages.map((m) => m.code);
+
+    expect(codes).toContain("StateCellExitRequired");
+    expect(codes).not.toContain("StateCellLabelRequired");
+  });
+
+  it("validates concurrent cell requires valid semantics", () => {
+    const document = loadStrategyBuilderTemplate("equity-momentum-breakout");
+    const invalid = {
+      ...document,
+      cells: [
+        ...document.cells,
+        {
+          cellId: "parallel-check",
+          label: "Parallel check",
+          kind: "concurrent" as const,
+          purpose: "concurrent" as const,
+          source: "parallel evaluation",
+          fieldRefs: [],
+          parameters: { branchIds: "cell-a,cell-b", semantics: "bad-value" }
+        } satisfies StrategyBuilderCell
+      ]
+    };
+
+    const messages = validateStrategyBuilderDocument(invalid);
+
+    expect(messages.map((m) => m.code)).toContain("ConcurrentCellSemanticsRequired");
+  });
+
+  it("passes validation for a fully populated universe-builder cell", () => {
+    const document = loadStrategyBuilderTemplate("structured-universe-strategy");
+    const messages = validateStrategyBuilderDocument(document);
+    const errors = messages.filter((m) => m.severity === "error");
+
+    expect(errors).toHaveLength(0);
+  });
+
+  it("validates trade cell requires instrument, direction, and sizingMethod", () => {
+    const document = loadStrategyBuilderTemplate("equity-momentum-breakout");
+    const invalid = {
+      ...document,
+      cells: [
+        ...document.cells,
+        {
+          cellId: "trade-cell",
+          label: "Buy equities",
+          kind: "trade" as const,
+          purpose: "trade" as const,
+          source: "execute trade",
+          fieldRefs: [],
+          parameters: {}
+        } satisfies StrategyBuilderCell
+      ]
+    };
+
+    const messages = validateStrategyBuilderDocument(invalid);
+    const codes = messages.map((m) => m.code);
+
+    expect(codes).toContain("TradeCellInstrumentRequired");
+    expect(codes).toContain("TradeCellDirectionRequired");
+    expect(codes).toContain("TradeCellSizingRequired");
+  });
+
+  it("typed parameter extractors return null for wrong kind or missing parameters", () => {
+    const formulaCell: StrategyBuilderCell = {
+      cellId: "c",
+      label: "C",
+      kind: "formula",
+      purpose: "rank",
+      source: "PRICE",
+      fieldRefs: []
+    };
+
+    expect(getStateCellParams(formulaCell)).toBeNull();
+    expect(getTradeCellParams(formulaCell)).toBeNull();
+    expect(getConcurrentCellParams(formulaCell)).toBeNull();
+    expect(getUniverseBuilderCellParams(formulaCell)).toBeNull();
+  });
+
+  it("getStateCellParams returns null when required keys are absent", () => {
+    const stateCell: StrategyBuilderCell = {
+      cellId: "s",
+      label: "S",
+      kind: "state",
+      purpose: "state",
+      source: "phase",
+      fieldRefs: [],
+      parameters: { stateLabel: "Watching" }
+    };
+
+    expect(getStateCellParams(stateCell)).toBeNull();
+  });
+
+  it("four new cell-kind templates appear in the template gallery", () => {
+    const templates = getStrategyBuilderTemplates();
+    const ids = templates.map((t) => t.templateId);
+
+    expect(ids).toContain("state-machine-strategy");
+    expect(ids).toContain("concurrent-branch-strategy");
+    expect(ids).toContain("structured-universe-strategy");
+    expect(ids).toContain("trade-intent-strategy");
+  });
+
+  it("buildStrategyBuilderWorkbenchViewModel surfaces typed trade parameters in inspector fields", () => {
+    const document = loadStrategyBuilderTemplate("trade-intent-strategy");
+    const tradeCell = document.cells.find((c) => c.kind === "trade");
+    const vm = buildStrategyBuilderWorkbenchViewModel({
+      document,
+      selectedCellId: tradeCell?.cellId
+    });
+
+    const fields = vm.selectedCellDetail?.fields ?? [];
+
+    expect(fields.some((f) => f.id === "instrument")).toBe(true);
+    expect(fields.some((f) => f.id === "direction")).toBe(true);
+    expect(fields.some((f) => f.id === "sizing-method")).toBe(true);
+  });
+
+  it("buildStrategyBuilderWorkbenchViewModel surfaces state cell parameters in inspector", () => {
+    const document = loadStrategyBuilderTemplate("state-machine-strategy");
+    const stateCell = document.cells.find((c) => c.kind === "state");
+    const vm = buildStrategyBuilderWorkbenchViewModel({
+      document,
+      selectedCellId: stateCell?.cellId
+    });
+
+    const fields = vm.selectedCellDetail?.fields ?? [];
+
+    expect(fields.some((f) => f.id === "state-label")).toBe(true);
+    expect(fields.some((f) => f.id === "exit-condition")).toBe(true);
+  });
+
+  it("cloneStrategyBuilderDocument deep-copies parameters so mutations do not leak", () => {
+    const document = loadStrategyBuilderTemplate("trade-intent-strategy");
+    const tradeCell = document.cells.find((c) => c.kind === "trade")!;
+
+    expect(tradeCell.parameters?.["instrument"]).toBe("Equity");
+    const original = loadStrategyBuilderTemplate("trade-intent-strategy");
+    expect(original.cells.find((c) => c.kind === "trade")?.parameters?.["instrument"]).toBe("Equity");
   });
 });
