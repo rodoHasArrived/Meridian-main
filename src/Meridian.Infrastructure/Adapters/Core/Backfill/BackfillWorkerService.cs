@@ -6,7 +6,6 @@ using Meridian.Application.Config;
 using Meridian.Application.Exceptions;
 using Meridian.Application.Logging;
 using Meridian.Application.Serialization;
-using Meridian.Application.Tracing;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Services;
 using Meridian.Domain.Events;
