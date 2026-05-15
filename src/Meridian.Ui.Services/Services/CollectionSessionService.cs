@@ -525,7 +525,8 @@ Verification: {(session.ManifestPath != null ? "✓ Manifest generated" : "Pendi
     private async Task<string> GetSessionsFilePathAsync(CancellationToken ct)
     {
         await EnsurePathsResolvedAsync(ct);
-        return _sessionsFilePath!;
+        return _sessionsFilePath
+            ?? throw new InvalidOperationException("Sessions file path was not initialized.");
     }
 
     private async Task EnsurePathsResolvedAsync(CancellationToken ct)

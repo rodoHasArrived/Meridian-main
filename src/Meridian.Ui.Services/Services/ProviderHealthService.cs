@@ -67,9 +67,9 @@ public sealed class ProviderHealthService : IDisposable
         {
             await RefreshHealthDataAsync();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Log error but don't crash - timer callbacks must handle their own exceptions
+            System.Diagnostics.Trace.TraceWarning("ProviderHealthService: unhandled error during health refresh: {0}", ex.Message);
         }
     }
 

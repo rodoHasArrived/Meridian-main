@@ -414,7 +414,8 @@ public sealed class SymbolMappingService
     private async Task<string> GetMappingsFilePathAsync(CancellationToken ct)
     {
         await EnsurePathsResolvedAsync(ct);
-        return _mappingsFilePath!;
+        return _mappingsFilePath
+            ?? throw new InvalidOperationException("Mappings file path was not initialized.");
     }
 
     private async Task EnsurePathsResolvedAsync(CancellationToken ct)
