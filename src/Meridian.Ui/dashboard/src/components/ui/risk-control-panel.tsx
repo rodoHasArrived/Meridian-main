@@ -135,8 +135,8 @@ export function RiskControlPanel() {
   );
 }
 
-function formatDrawdown(config: RiskRuleConfig): string {
-  if (typeof config.maxDrawdownPercent !== "number" || Number.isNaN(config.maxDrawdownPercent)) {
+function formatDrawdown(config: RiskRuleConfig | null | undefined): string {
+  if (!config || typeof config.maxDrawdownPercent !== "number" || Number.isNaN(config.maxDrawdownPercent)) {
     return "";
   }
 
