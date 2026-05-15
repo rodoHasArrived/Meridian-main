@@ -4,7 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import * as coveredCallApi from "@/lib/api/covered-call";
 import { CoveredCallScreen } from "@/screens/covered-call-screen";
 import { COVERED_CALL_CHAIN_DETAIL_PANEL_ID } from "@/screens/covered-call-screen.view-model";
-import type { CoveredCallChainPreview, CoveredCallRunHandle, CoveredCallRunResult } from "@/types/covered-call";
+import type { CoveredCallChainPreview, CoveredCallRunHandle, CoveredCallRunResult, CoveredCallRunSummary } from "@/types/covered-call";
 
 vi.mock("@/lib/api/covered-call", () => ({
   startCoveredCallBacktest: vi.fn(),
@@ -85,6 +85,20 @@ const completedRunResult: CoveredCallRunResult = {
   openPositionsAtEnd: []
 };
 
+const historicalRun: CoveredCallRunSummary = {
+  runId: "run-history-1",
+  underlyingSymbol: "SPY",
+  from: "2024-01-01",
+  to: "2024-06-30",
+  label: "Income sleeve",
+  status: "Completed",
+  startedAt: "2024-07-01T14:05:00Z",
+  endedAt: "2024-07-01T14:06:00Z",
+  cagr: 0.1234,
+  sharpeRatio: 1.42,
+  winRate: 0.73
+};
+
 function renderCoveredCallScreen() {
   return render(
     <MemoryRouter>
@@ -159,6 +173,37 @@ describe("CoveredCallScreen", () => {
     await waitFor(() => {
       expect(coveredCallApi.previewCoveredCallChain).toHaveBeenCalled();
     });
+  });
+
+  it("renders previous runs through dense-table rows and reloads a run from keyboard selection", async () => {
+    vi.mocked(coveredCallApi.listCoveredCallRuns).mockResolvedValue([historicalRun]);
+    vi.mocked(coveredCallApi.getCoveredCallRunResult).mockResolvedValue({
+      ...completedRunResult,
+      runId: historicalRun.runId,
+      underlyingSymbol: historicalRun.underlyingSymbol
+    });
+
+    renderCoveredCallScreen();
+
+    const historyTable = await screen.findByRole("table", { name: "Previous covered-call runs" });
+    const historyRow = await screen.findByRole("row", {
+      name: "Reload covered-call run run-history-1 for SPY"
+    });
+
+    expect(historyTable).toBeInTheDocument();
+    expect(historyRow).toHaveAttribute("tabindex", "0");
+    expect(screen.getByText("Jul 1, 14:05 UTC")).toBeInTheDocument();
+    expect(screen.getByText("12.3%")).toBeInTheDocument();
+    expect(screen.getByText("1.42")).toBeInTheDocument();
+
+    historyRow.focus();
+    fireEvent.keyDown(historyRow, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(coveredCallApi.getCoveredCallRunResult).toHaveBeenCalledWith("run-history-1");
+    });
+    await screen.findByRole("navigation", { name: "Covered-call results next workflow" });
+    expect(historyRow).toHaveAttribute("aria-selected", "true");
   });
 
   it("renders submitting progress and a disabled cancel reason while the engine accepts the run", async () => {

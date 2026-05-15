@@ -165,9 +165,13 @@ export interface ResearchPromotionCashFormState {
   value: string;
   min: number;
   step: number;
+  inputDisabled: boolean;
+  inputDisabledReason: string | null;
   acknowledgementId: string;
   acknowledgementLabel: string;
   acknowledgementChecked: boolean;
+  acknowledgementDisabled: boolean;
+  acknowledgementDisabledReason: string | null;
   helpText: string;
   errorText: string | null;
   describedBy: string;
@@ -175,6 +179,10 @@ export interface ResearchPromotionCashFormState {
   disabledReason: string | null;
   submitLabel: string;
   submitAriaLabel: string;
+  cancelLabel: string;
+  cancelAriaLabel: string;
+  cancelDisabled: boolean;
+  cancelDisabledReason: string | null;
 }
 
 export interface ResearchPlotToolTab {
@@ -642,6 +650,7 @@ export function useResearchRunLibraryViewModel(
   const [promotionAcknowledged, setPromotionAcknowledged] = useState(false);
   const runScopedCommandRequestId = useRef(0);
   const promotionRequestId = useRef(0);
+  const promotionCreateInFlightRef = useRef(false);
 
   const metrics = data?.metrics ?? [];
   const runs = data?.runs ?? [];
@@ -704,6 +713,7 @@ export function useResearchRunLibraryViewModel(
   const toggleRun = useCallback((runId: string) => {
     runScopedCommandRequestId.current += 1;
     promotionRequestId.current += 1;
+    promotionCreateInFlightRef.current = false;
     setInspectedRunId(runId);
     setSelectedIds((current) => toggleRunSelection(current, runId));
     setComparison([]);
@@ -854,6 +864,7 @@ export function useResearchRunLibraryViewModel(
     if (!run) return;
     const requestId = promotionRequestId.current + 1;
     promotionRequestId.current = requestId;
+    promotionCreateInFlightRef.current = false;
     setPromoteState("evaluating");
     setPromoteError(null);
     setPromotionEval(null);
@@ -879,6 +890,10 @@ export function useResearchRunLibraryViewModel(
   }, [services, state.selectedRuns]);
 
   const confirmPromotion = useCallback(async () => {
+    if (promotionCreateInFlightRef.current || promoteState === "creating") {
+      return;
+    }
+
     const run = state.selectedRuns[0];
     if (!run || !promotionEval?.isEligible) return;
     const initialCash = parsePromotionInitialCashInput(promotionInitialCashInput);
@@ -893,6 +908,7 @@ export function useResearchRunLibraryViewModel(
 
     const requestId = promotionRequestId.current + 1;
     promotionRequestId.current = requestId;
+    promotionCreateInFlightRef.current = true;
     setPromoteState("creating");
     setPromoteError(null);
     try {
@@ -910,22 +926,43 @@ export function useResearchRunLibraryViewModel(
 
       setPromoteError(err instanceof Error ? err.message : "Paper session creation failed.");
       setPromoteState("evaluated");
+    } finally {
+      if (promotionRequestId.current === requestId) {
+        promotionCreateInFlightRef.current = false;
+      }
     }
-  }, [services, state.selectedRuns, promotionEval, promotionInitialCashInput, promotionAcknowledged]);
+  }, [services, state.selectedRuns, promotionEval, promotionInitialCashInput, promotionAcknowledged, promoteState]);
 
   const cancelPromotion = useCallback(() => {
+    if (promotionCreateInFlightRef.current || promoteState === "creating") {
+      return;
+    }
+
     promotionRequestId.current += 1;
+    promotionCreateInFlightRef.current = false;
     setPromoteState("idle");
     setPromotionEval(null);
     setPromotionSession(null);
     setPromoteError(null);
     setPromotionInitialCashInput("100000");
     setPromotionAcknowledged(false);
-  }, []);
+  }, [promoteState]);
 
   const updatePromotionInitialCash = useCallback((value: string) => {
+    if (promotionCreateInFlightRef.current) {
+      return;
+    }
+
     setPromotionInitialCashInput(value);
     setPromotionAcknowledged(false);
+  }, []);
+
+  const updatePromotionAcknowledgement = useCallback((checked: boolean) => {
+    if (promotionCreateInFlightRef.current) {
+      return;
+    }
+
+    setPromotionAcknowledged(checked);
   }, []);
 
   return {
@@ -948,7 +985,7 @@ export function useResearchRunLibraryViewModel(
     selectPromotionHistoryRecord: setSelectedPromotionHistoryId,
     selectPlotStudy: setSelectedPlotStudyId,
     setPromotionInitialCash: updatePromotionInitialCash,
-    setPromotionAcknowledgement: setPromotionAcknowledged
+    setPromotionAcknowledgement: updatePromotionAcknowledgement
   };
 }
 
@@ -1190,7 +1227,7 @@ export function buildPromotionPanelState({
     statusLive: evaluation?.titleTone === "danger" ? "assertive" : "polite",
     evaluation,
     sessionCreated,
-    showCashForm: promoteState === "evaluated" && promotionEval?.isEligible === true,
+    showCashForm: (promoteState === "evaluated" || promoteState === "creating") && promotionEval?.isEligible === true,
     showIneligibleDismiss: promoteState === "evaluated" && promotionEval?.isEligible === false
   };
 }
@@ -1355,6 +1392,13 @@ export function buildPromotionCashForm({
     acknowledged
   });
   const helpText = errorText ?? disabledReason ?? "Minimum $1,000. Use whole-dollar paper capital.";
+  const inputDisabledReason = isCreating ? "Paper-session creation is already running; wait before changing capital." : null;
+  const acknowledgementDisabledReason = isCreating
+    ? "Paper-session creation is already running; wait before changing acknowledgement."
+    : null;
+  const cancelDisabledReason = isCreating
+    ? "Paper-session creation is already running; wait for the session result before closing setup."
+    : null;
 
   return {
     inputId: "promote-initial-cash",
@@ -1362,9 +1406,13 @@ export function buildPromotionCashForm({
     value: input,
     min: 1000,
     step: 1000,
+    inputDisabled: isCreating,
+    inputDisabledReason,
     acknowledgementId: "promote-paper-session-acknowledgement",
     acknowledgementLabel: "I reviewed the promotion gates and paper-capital impact.",
     acknowledgementChecked: acknowledged,
+    acknowledgementDisabled: isCreating,
+    acknowledgementDisabledReason,
     helpText,
     errorText,
     describedBy: "promote-initial-cash-help",
@@ -1373,7 +1421,11 @@ export function buildPromotionCashForm({
     submitLabel: isCreating ? "Starting paper session..." : "Start paper session",
     submitAriaLabel: disabledReason
       ? `Start paper session unavailable: ${disabledReason}`
-      : "Start paper session from selected strategy run"
+      : "Start paper session from selected strategy run",
+    cancelLabel: "Cancel",
+    cancelAriaLabel: cancelDisabledReason ?? "Cancel paper promotion setup",
+    cancelDisabled: isCreating,
+    cancelDisabledReason
   };
 }
 

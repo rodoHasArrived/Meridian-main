@@ -557,6 +557,14 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(2));
   });
 
+  it("renders VM-owned disabled reasons for blocked trading commands", async () => {
+    await renderTradingScreen({ ...data, openOrders: [] });
+
+    const cancelAll = screen.getByRole("button", { name: "No open orders to cancel" });
+    expect(cancelAll).toBeDisabled();
+    expect(cancelAll).toHaveAttribute("title", "No open orders require cancellation.");
+  });
+
   it("rejects direct order-ticket submits until the preview is acknowledged", async () => {
     const user = userEvent.setup();
     await renderTradingScreen();

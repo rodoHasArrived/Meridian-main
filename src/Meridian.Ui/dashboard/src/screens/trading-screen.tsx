@@ -609,7 +609,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     size="sm"
                     variant="outline"
                     onClick={() => { void executionEvidence.refresh(); }}
-                    disabled={executionEvidence.loading}
+                    disabled={executionEvidence.refreshDisabled}
+                    disabledReason={executionEvidence.refreshDisabledReason}
+                    busy={executionEvidence.loading}
+                    busyLabel={executionEvidence.refreshBusyLabel}
                     aria-label={executionEvidence.refreshAriaLabel}
                   >
                     {executionEvidence.refreshButtonLabel}
@@ -718,6 +721,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   variant="outline"
                   onClick={() => confirmVm.openConfirm({ kind: "cancel-all" })}
                   disabled={blotterVm.cancelAllDisabled}
+                  disabledReason={blotterVm.cancelAllDisabledReason}
                   aria-label={blotterVm.cancelAllAriaLabel}
                   title="Cancel all open orders"
                 >
@@ -880,8 +884,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     variant="outline"
                     onClick={orderTicket.closeTicket}
                     disabled={!orderTicket.canClose}
+                    disabledReason={orderTicket.closeDisabledReason}
+                    aria-label={orderTicket.closeAriaLabel}
                   >
-                    Cancel
+                    {orderTicket.closeButtonLabel}
                   </Button>
                 </div>
               </form>
@@ -1876,7 +1882,10 @@ function AcceptanceStatusCard({
               size="sm"
               variant="outline"
               onClick={() => { void readinessVm.refresh(); }}
-              disabled={readinessVm.refreshing}
+              disabled={readinessVm.refreshDisabled}
+              disabledReason={readinessVm.refreshDisabledReason}
+              busy={readinessVm.refreshing}
+              busyLabel={readinessVm.refreshBusyLabel}
               aria-label={readinessVm.refreshAriaLabel}
             >
               <RotateCcw className={cn("h-4 w-4", readinessVm.refreshing && "animate-spin")} />

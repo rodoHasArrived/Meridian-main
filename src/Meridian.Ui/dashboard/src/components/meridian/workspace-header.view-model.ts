@@ -22,6 +22,8 @@ export interface WorkspaceHeaderAction {
   ariaLabel: string;
   title: string;
   disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
 }
 
 export interface WorkspaceHeaderMetaItem {
@@ -71,6 +73,9 @@ export function buildWorkspaceHeaderViewModel({
 }: BuildWorkspaceHeaderViewModelOptions): WorkspaceHeaderViewModel {
   const isLiveEnvironment = session?.environment === "live";
   const refreshLabel = refreshing ? "Refreshing" : "Refresh";
+  const refreshDisabledReason = refreshing
+    ? `${workspace.label} workspace data is refreshing.`
+    : null;
 
   return {
     eyebrow: "Workspace",
@@ -99,14 +104,18 @@ export function buildWorkspaceHeaderViewModel({
           title: refreshing
             ? `${workspace.label} workspace data is refreshing`
             : `Refresh ${workspace.label} workspace data`,
-          disabled: refreshing
+          disabled: refreshing,
+          disabledReason: refreshDisabledReason,
+          busy: refreshing
         }
       : null,
     commandAction: {
       label: "Open command palette",
       ariaLabel: "Open workspace command palette",
       title: "Open workspace command palette",
-      disabled: false
+      disabled: false,
+      disabledReason: null,
+      busy: false
     },
     liveAnnouncement: refreshing ? `Refreshing ${workspace.label} workspace data.` : "",
     ariaBusy: refreshing,

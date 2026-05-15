@@ -244,24 +244,30 @@ export function PriceAlertsScreen() {
                 aria-errormessage={vm.fields.symbol.errorMessageId}
               />
             </FormField>
-            <FormField label="Condition" htmlFor="price-alert-condition">
+            <FormField
+              label={vm.fields.condition.label}
+              htmlFor={vm.fields.condition.id}
+              helperId={vm.fields.condition.helperId}
+              helperText={vm.fields.condition.helperText}
+            >
               <div className="grid grid-cols-[1.4fr_0.9fr] gap-2">
                 <Select
-                  id="price-alert-condition"
+                  id={vm.fields.condition.id}
                   value={vm.form.condition}
                   onChange={(event) => vm.setCondition(event.target.value as PriceAlertCondition)}
-                  aria-describedby={vm.conditionHelpId}
+                  aria-describedby={vm.fields.condition.describedBy}
                 >
                   {vm.conditionOptions.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </Select>
+                <label htmlFor={vm.fields.field.id} className="sr-only">{vm.fields.field.label}</label>
                 <Select
-                  id="price-alert-field"
+                  id={vm.fields.field.id}
                   value={vm.form.field}
                   onChange={(event) => vm.setField(event.target.value as PriceAlertField)}
-                  aria-label={vm.fieldSelectAriaLabel}
-                  aria-describedby={vm.fieldHelpId}
+                  aria-label={vm.fields.field.ariaLabel}
+                  aria-describedby={vm.fields.field.describedBy}
                 >
                   {vm.fieldOptions.map((option) => (
                     <option key={option.value} value={option.value}>{option.label}</option>
@@ -269,8 +275,7 @@ export function PriceAlertsScreen() {
                 </Select>
               </div>
               <div className="grid gap-1 text-[11px] leading-4 text-muted-foreground">
-                <p id={vm.conditionHelpId}>{vm.conditionHelpText}</p>
-                <p id={vm.fieldHelpId}>{vm.fieldHelpText}</p>
+                <p id={vm.fields.field.helperId}>{vm.fields.field.helperText}</p>
               </div>
             </FormField>
             <FormField
@@ -305,13 +310,20 @@ export function PriceAlertsScreen() {
               <span className="ml-1.5">Add alert</span>
             </Button>
           </form>
-          <FormField label="Note (optional)" htmlFor="price-alert-note" className="mt-3">
+          <FormField
+            label={vm.fields.note.label}
+            htmlFor={vm.fields.note.id}
+            helperId={vm.fields.note.helperId}
+            helperText={vm.fields.note.helperText}
+            className="mt-3"
+          >
             <Input
-              id="price-alert-note"
+              id={vm.fields.note.id}
               value={vm.form.note}
               onChange={(event) => vm.setNote(event.target.value)}
-              placeholder="e.g. Watch for earnings call"
-              maxLength={120}
+              placeholder={vm.fields.note.placeholder}
+              maxLength={vm.fields.note.maxLength}
+              aria-describedby={vm.fields.note.describedBy}
               autoComplete="off"
             />
           </FormField>

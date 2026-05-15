@@ -635,6 +635,70 @@ describe("ResearchScreen", () => {
     expect(screen.getByText("Paper session created - session session-1")).toBeInTheDocument();
   });
 
+  it("keeps paper-session setup visible and locked while creation is pending", async () => {
+    vi.spyOn(api, "evaluatePromotion").mockResolvedValue({
+      runId: "run-2",
+      strategyId: "run-2",
+      strategyName: "Index Momentum",
+      sourceMode: "backtest",
+      targetMode: "paper",
+      isEligible: true,
+      sharpeRatio: 1.25,
+      maxDrawdownPercent: -0.04,
+      totalReturn: 0.08,
+      reason: "Promotion gates passed.",
+      found: true,
+      ready: true
+    });
+    const pendingSession = createDeferred<Awaited<ReturnType<typeof api.createPaperSession>>>();
+    vi.spyOn(api, "createPaperSession").mockReturnValue(pendingSession.promise);
+
+    const user = userEvent.setup();
+    renderWithRouter(<ResearchScreen data={twoRuns} />);
+
+    await user.click(screen.getByRole("checkbox", { name: "Select Index Momentum for compare and diff" }));
+    await user.click(screen.getByRole("button", { name: /promote to paper/i }));
+
+    const cashInput = await screen.findByLabelText("Initial cash ($)");
+    const acknowledgement = screen.getByRole("checkbox", {
+      name: "I reviewed the promotion gates and paper-capital impact."
+    });
+    await user.click(acknowledgement);
+    await user.click(screen.getByRole("button", { name: "Start paper session from selected strategy run" }));
+
+    await waitFor(() => {
+      expect(api.createPaperSession).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.getByLabelText("Initial cash ($)")).toBeDisabled();
+    expect(screen.getByLabelText("Initial cash ($)")).toHaveAttribute(
+      "title",
+      "Paper-session creation is already running; wait before changing capital."
+    );
+    expect(acknowledgement).toBeDisabled();
+    expect(acknowledgement).toHaveAttribute(
+      "title",
+      "Paper-session creation is already running; wait before changing acknowledgement."
+    );
+    expect(screen.getByRole("button", { name: /Start paper session unavailable: Paper-session creation is already running/i }))
+      .toHaveTextContent("Starting paper session...");
+    expect(screen.getByRole("button", {
+      name: "Paper-session creation is already running; wait for the session result before closing setup."
+    })).toBeDisabled();
+
+    await act(async () => {
+      pendingSession.resolve({
+        sessionId: "session-pending",
+        strategyId: "run-2",
+        strategyName: "Index Momentum",
+        initialCash: 100000,
+        createdAt: "2026-05-09T00:00:00Z",
+        closedAt: null,
+        isActive: true
+      });
+      await pendingSession.promise;
+    });
+  });
+
   it("discards pending promotion evaluation when the selected run changes", async () => {
     const pending = createDeferred<PromotionEvaluationResult>();
     vi.spyOn(api, "evaluatePromotion").mockReturnValueOnce(pending.promise);

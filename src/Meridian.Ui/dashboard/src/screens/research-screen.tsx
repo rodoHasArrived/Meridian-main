@@ -494,6 +494,8 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                       step={vm.promotionCashForm.step}
                       value={vm.promotionCashForm.value}
                       onChange={(e) => vm.setPromotionInitialCash(e.target.value)}
+                      disabled={vm.promotionCashForm.inputDisabled}
+                      title={vm.promotionCashForm.inputDisabledReason ?? undefined}
                       aria-invalid={vm.promotionCashForm.errorText ? "true" : "false"}
                       aria-describedby={vm.promotionCashForm.describedBy}
                       className={cn(
@@ -520,6 +522,8 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                       type="checkbox"
                       checked={vm.promotionCashForm.acknowledgementChecked}
                       onChange={(e) => vm.setPromotionAcknowledgement(e.target.checked)}
+                      disabled={vm.promotionCashForm.acknowledgementDisabled}
+                      title={vm.promotionCashForm.acknowledgementDisabledReason ?? undefined}
                       className="mt-0.5 h-4 w-4 rounded border-border bg-background text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     />
                     <span>{vm.promotionCashForm.acknowledgementLabel}</span>
@@ -533,7 +537,17 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                   >
                     {vm.promotionCashForm.submitLabel}
                   </Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={vm.cancelPromotion}>Cancel</Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={vm.cancelPromotion}
+                    disabled={vm.promotionCashForm.cancelDisabled}
+                    disabledReason={vm.promotionCashForm.cancelDisabledReason}
+                    aria-label={vm.promotionCashForm.cancelAriaLabel}
+                  >
+                    {vm.promotionCashForm.cancelLabel}
+                  </Button>
                 </form>
               )}
               {vm.promotionPanel.showIneligibleDismiss && (

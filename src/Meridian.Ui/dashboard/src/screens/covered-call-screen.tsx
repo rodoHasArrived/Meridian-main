@@ -9,6 +9,7 @@ import {
   useCoveredCallScreenViewModel,
   type CoveredCallChainPreviewRowViewModel,
   type CoveredCallFormState,
+  type CoveredCallHistoryRowViewModel,
   type CoveredCallScreenViewModel,
   type CoveredCallStage
 } from "@/screens/covered-call-screen.view-model";
@@ -64,6 +65,46 @@ const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewMo
         {row.statusLabel}
       </Badge>
     )
+  }
+];
+
+const historyColumns: DenseDataTableColumn<CoveredCallHistoryRowViewModel>[] = [
+  {
+    id: "started",
+    label: "Started",
+    render: (row) => <span className="font-mono text-muted-foreground">{row.startedAtLabel}</span>
+  },
+  {
+    id: "underlying",
+    label: "Underlying",
+    render: (row) => <span className="font-mono font-semibold text-foreground">{row.underlyingSymbol}</span>
+  },
+  {
+    id: "range",
+    label: "Range",
+    render: (row) => <span className="font-mono text-foreground">{row.rangeLabel}</span>
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => <Badge variant={row.statusBadgeVariant}>{row.statusLabel}</Badge>
+  },
+  {
+    id: "cagr",
+    label: "CAGR",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.cagrLabel}</span>
+  },
+  {
+    id: "sharpe",
+    label: "Sharpe",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.sharpeRatioLabel}</span>
+  },
+  {
+    id: "label",
+    label: "Label",
+    render: (row) => <span className="text-muted-foreground">{row.labelText}</span>
   }
 ];
 
@@ -670,59 +711,54 @@ function PayoffDiagramPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
 }
 
 function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
-  if (vm.history.length === 0 && !vm.historyError) {
+  if (!vm.historyLoaded && !vm.historyLoading && vm.historyRows.length === 0 && !vm.historyError) {
     return null;
   }
+
+  const description = vm.historyLoading
+    ? "Loading previous covered-call runs from the strategy engine."
+    : vm.historyError
+      ? `Failed to load history: ${vm.historyError}`
+      : "Most recent first. Select a row to reload its results from the cached run store.";
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Previous runs</CardTitle>
-        {vm.historyError ? (
-          <CardDescription className="text-danger">Failed to load history: {vm.historyError}</CardDescription>
-        ) : (
-          <CardDescription>Most recent first. Click a row to reload its results (cached for 30 min).</CardDescription>
-        )}
+        <CardDescription className={vm.historyError ? "text-danger" : undefined}>
+          {description}
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="text-left text-muted-foreground">
-              <th className="pb-1 pr-2">Started</th>
-              <th className="pb-1 pr-2">Underlying</th>
-              <th className="pb-1 pr-2">Range</th>
-              <th className="pb-1 pr-2">Status</th>
-              <th className="pb-1 pr-2">CAGR</th>
-              <th className="pb-1 pr-2">Sharpe</th>
-              <th className="pb-1 pl-2">Label</th>
-            </tr>
-          </thead>
-          <tbody>
-            {vm.history.map((row) => (
-              <tr
-                key={row.runId}
-                className="cursor-pointer border-t border-border/30 hover:bg-secondary/30 focus-within:bg-secondary/30"
-                onClick={() => void vm.openRun(row.runId)}
-                tabIndex={0}
-                role="button"
-                aria-label={`Open run ${row.runId}`}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    void vm.openRun(row.runId);
-                  }
-                }}
-              >
-                <td className="py-1 pr-2 font-mono">{row.startedAt.replace("T", " ").slice(0, 16)}</td>
-                <td className="py-1 pr-2 font-mono">{row.underlyingSymbol}</td>
-                <td className="py-1 pr-2 font-mono">{row.from} → {row.to}</td>
-                <td className="py-1 pr-2">{row.status}</td>
-                <td className="py-1 pr-2 font-mono">{row.cagr !== null ? fmtPct(row.cagr) : "—"}</td>
-                <td className="py-1 pr-2 font-mono">{row.sharpeRatio !== null ? row.sharpeRatio.toFixed(2) : "—"}</td>
-                <td className="py-1 pl-2">{row.label ?? ""}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {vm.historyLoading ? (
+          <div
+            role="status"
+            aria-live="polite"
+            className="rounded-lg border border-primary/25 bg-primary/10 px-4 py-3 text-sm text-primary"
+          >
+            {vm.historyStatusText}
+          </div>
+        ) : vm.historyError && vm.historyRows.length === 0 ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger"
+          >
+            {vm.historyStatusText}
+          </div>
+        ) : (
+          <DenseDataTable
+            columns={historyColumns}
+            rows={vm.historyRows}
+            getRowId={(row) => row.runId}
+            getRowAriaLabel={(row) => row.rowAriaLabel}
+            getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+            onRowSelect={(row) => void vm.openRun(row.runId)}
+            selectedRowId={vm.run.runId}
+            emptyText={vm.historyEmptyText}
+            ariaLabel={vm.historyTableLabel}
+            caption={vm.historyCaption}
+          />
+        )}
       </CardContent>
     </Card>
   );

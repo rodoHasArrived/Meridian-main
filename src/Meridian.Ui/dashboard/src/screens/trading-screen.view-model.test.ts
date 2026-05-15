@@ -29,9 +29,11 @@ import {
   validateOrderTicketForm,
   validatePromotionApproval,
   validatePromotionRejection,
+  useOrderTicketViewModel,
   useTradingConfirmViewModel,
   useTradingReadinessViewModel,
   usePromotionGateViewModel,
+  type OrderTicketServices,
   type TradingConfirmServices,
   type TradingReadinessServices
 } from "@/screens/trading-screen.view-model";
@@ -377,6 +379,7 @@ describe("trading blotter view model", () => {
     expect(state.hasOpenOrders).toBe(true);
     expect(state.hasFills).toBe(true);
     expect(state.cancelAllDisabled).toBe(false);
+    expect(state.cancelAllDisabledReason).toBeNull();
     expect(state.cancelAllAriaLabel).toBe("Cancel all 1 open orders");
     expect(state.positionRows[1]).toMatchObject({
       id: "tsla-short-1",
@@ -434,6 +437,7 @@ describe("trading blotter view model", () => {
     expect(unavailable.positionEmptyText).toBe("Trading workspace data unavailable.");
     expect(unavailable.orderEmptyText).toBe("Trading workspace data unavailable.");
     expect(unavailable.fillEmptyText).toBe("Trading workspace data unavailable.");
+    expect(unavailable.cancelAllDisabledReason).toBe("No open orders require cancellation.");
 
     const empty = buildTradingBlotterViewModel({
       data: { ...tradingWorkspace, positions: [], openOrders: [], fills: [] }
@@ -443,6 +447,7 @@ describe("trading blotter view model", () => {
     expect(empty.orderEmptyText).toBe("No open orders require operator action.");
     expect(empty.fillEmptyText).toBe("No recent fills have been reported for this session.");
     expect(empty.cancelAllAriaLabel).toBe("No open orders to cancel");
+    expect(empty.cancelAllDisabledReason).toBe("No open orders require cancellation.");
   });
 });
 
@@ -482,6 +487,9 @@ describe("execution evidence view model", () => {
     expect(loading.auditEmptyText).toBe("Loading execution audit entries...");
     expect(loading.controlsEmptyText).toBe("Loading execution controls snapshot...");
     expect(loading.refreshButtonLabel).toBe("Refreshing...");
+    expect(loading.refreshBusyLabel).toBe("Refreshing evidence...");
+    expect(loading.refreshDisabled).toBe(true);
+    expect(loading.refreshDisabledReason).toBe("Execution evidence refresh is already running.");
 
     const failed = buildExecutionEvidenceState({
       auditEntries: [],
@@ -492,6 +500,8 @@ describe("execution evidence view model", () => {
 
     expect(failed.auditEmptyText).toBe("No execution audit entries available.");
     expect(failed.controlsEmptyText).toBe("Snapshot unavailable.");
+    expect(failed.refreshDisabled).toBe(false);
+    expect(failed.refreshDisabledReason).toBeNull();
     expect(failed.statusAnnouncement).toBe("Execution evidence refresh failed: Controls API unavailable.");
   });
 });
@@ -825,6 +835,9 @@ describe("trading readiness view model", () => {
 
     expect(refreshing.refreshButtonLabel).toBe("Refreshing...");
     expect(refreshing.refreshAriaLabel).toBe("Refreshing trading readiness");
+    expect(refreshing.refreshBusyLabel).toBe("Refreshing readiness...");
+    expect(refreshing.refreshDisabled).toBe(true);
+    expect(refreshing.refreshDisabledReason).toBe("Trading readiness refresh is already running.");
     expect(refreshing.statusAnnouncement).toBe("Refreshing trading readiness.");
 
     const failed = buildTradingReadinessState({
@@ -834,6 +847,8 @@ describe("trading readiness view model", () => {
     });
 
     expect(failed.summaryRows).toEqual([]);
+    expect(failed.refreshDisabled).toBe(false);
+    expect(failed.refreshDisabledReason).toBeNull();
     expect(failed.statusAnnouncement).toBe("Trading readiness refresh failed: Network failed.");
   });
 
@@ -1150,6 +1165,9 @@ describe("trading order ticket view model", () => {
     expect(submitting.submitButtonLabel).toBe("Submitting…");
     expect(submitting.submitBusy).toBe(true);
     expect(submitting.submitDisabledReason).toBe("Order submission is already running.");
+    expect(submitting.closeButtonLabel).toBe("Cancel");
+    expect(submitting.closeAriaLabel).toBe("Order submission is in progress.");
+    expect(submitting.closeDisabledReason).toBe("Order submission is in progress.");
     expect(submitting.statusAnnouncement).toBe("Submitting order request.");
     expect(submitting.controls.limitPrice).toBeNull();
 
@@ -1176,6 +1194,8 @@ describe("trading order ticket view model", () => {
 
     expect(limitOrder.canSubmit).toBe(true);
     expect(limitOrder.submitDisabledReason).toBeNull();
+    expect(limitOrder.closeAriaLabel).toBe("Close order ticket without submitting");
+    expect(limitOrder.closeDisabledReason).toBeNull();
     expect(limitOrder.acknowledgement.checked).toBe(true);
     expect(limitOrder.controls.limitPrice).toMatchObject({
       id: "order-ticket-limit-price",
@@ -1197,6 +1217,38 @@ describe("trading order ticket view model", () => {
 
     expect(submitted.successText).toBe("Order submitted - ord-42.");
     expect(submitted.statusAnnouncement).toBe("Order submitted with id ord-42.");
+  });
+
+  it("ignores duplicate order submits while the first request is still pending", async () => {
+    const deferred = createDeferred<Awaited<ReturnType<OrderTicketServices["submitOrder"]>>>();
+    const services: OrderTicketServices = {
+      submitOrder: vi.fn().mockReturnValue(deferred.promise)
+    };
+    const { result } = renderHook(() => useOrderTicketViewModel({ services }));
+
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", "MSFT");
+      result.current.updateField("quantity", "2");
+      result.current.setAcknowledged(true);
+    });
+
+    await act(async () => {
+      const firstSubmit = result.current.submitOrder();
+      const duplicateSubmit = result.current.submitOrder();
+
+      expect(services.submitOrder).toHaveBeenCalledTimes(1);
+      deferred.resolve({ success: true, orderId: "ord-42", reason: null });
+      await Promise.all([firstSubmit, duplicateSubmit]);
+    });
+
+    expect(services.submitOrder).toHaveBeenCalledWith({
+      symbol: "MSFT",
+      side: "Buy",
+      type: "Market",
+      quantity: 2
+    });
+    expect(result.current.successText).toBe("Order submitted - ord-42.");
   });
 });
 

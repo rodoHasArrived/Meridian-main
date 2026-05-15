@@ -94,6 +94,20 @@ export interface CoveredCallChainPreviewPanelViewModel {
   selectedDetail: CoveredCallChainPreviewDetailViewModel | null;
 }
 
+export interface CoveredCallHistoryRowViewModel {
+  runId: string;
+  startedAtLabel: string;
+  underlyingSymbol: string;
+  rangeLabel: string;
+  statusLabel: string;
+  statusBadgeVariant: CoveredCallBadgeVariant;
+  cagrLabel: string;
+  sharpeRatioLabel: string;
+  labelText: string;
+  rowAriaLabel: string;
+  rowSelectAriaLabel: string;
+}
+
 export interface CoveredCallRunState {
   runId: string | null;
   status: CoveredCallRunStatus | null;
@@ -644,6 +658,70 @@ function formatCount(value: number): string {
   return Math.trunc(value).toLocaleString("en-US");
 }
 
+export function buildCoveredCallHistoryRows(history: CoveredCallRunSummary[]): CoveredCallHistoryRowViewModel[] {
+  return history.map((row) => {
+    const startedAtLabel = formatUtcDateTime(row.startedAt);
+    const rangeLabel = `${row.from} to ${row.to}`;
+    const statusBadgeVariant = statusBadgeVariantForHistory(row.status);
+    const cagrLabel = row.cagr === null ? "—" : formatPercent(row.cagr);
+    const sharpeRatioLabel = row.sharpeRatio === null ? "—" : formatDecimal(row.sharpeRatio, 2);
+    const labelText = row.label?.trim() || "Unlabeled";
+
+    return {
+      runId: row.runId,
+      startedAtLabel,
+      underlyingSymbol: row.underlyingSymbol,
+      rangeLabel,
+      statusLabel: row.status,
+      statusBadgeVariant,
+      cagrLabel,
+      sharpeRatioLabel,
+      labelText,
+      rowAriaLabel: [
+        `Covered-call run ${row.runId}.`,
+        `${row.underlyingSymbol} from ${rangeLabel}.`,
+        `Started ${startedAtLabel}.`,
+        `Status ${row.status}.`,
+        `CAGR ${cagrLabel}.`,
+        `Sharpe ${sharpeRatioLabel}.`
+      ].join(" "),
+      rowSelectAriaLabel: `Reload covered-call run ${row.runId} for ${row.underlyingSymbol}`
+    };
+  });
+}
+
+function statusBadgeVariantForHistory(status: string): CoveredCallBadgeVariant {
+  const normalizedStatus = status.toLowerCase();
+  if (normalizedStatus === "completed" || normalizedStatus === "succeeded" || normalizedStatus === "success") {
+    return "success";
+  }
+
+  if (normalizedStatus === "failed" || normalizedStatus === "cancelled" || normalizedStatus === "canceled") {
+    return "danger";
+  }
+
+  if (normalizedStatus === "running" || normalizedStatus === "queued") {
+    return "warning";
+  }
+
+  return "outline";
+}
+
+function formatUtcDateTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Unavailable";
+  }
+
+  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+}
+
+function padUtc(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 export interface CoveredCallScreenState {
   stage: CoveredCallStage;
   form: CoveredCallFormState;
@@ -657,7 +735,14 @@ export interface CoveredCallScreenState {
   stageNavigation: CoveredCallStageNavigationState;
   resultsActionPanel: CoveredCallResultsActionPanelViewModel;
   history: CoveredCallRunSummary[];
+  historyRows: CoveredCallHistoryRowViewModel[];
+  historyLoading: boolean;
+  historyLoaded: boolean;
   historyError: string | null;
+  historyTableLabel: string;
+  historyCaption: string;
+  historyEmptyText: string;
+  historyStatusText: string;
   errorBanner: string | null;
 }
 
@@ -723,6 +808,8 @@ export function useCoveredCallScreenViewModel(
     isCancelling: false
   });
   const [history, setHistory] = useState<CoveredCallRunSummary[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
 
@@ -934,12 +1021,16 @@ export function useCoveredCallScreenViewModel(
   }, [run.isCancelling, run.runId, services]);
 
   const loadHistory = useCallback(async () => {
+    setHistoryLoading(true);
     setHistoryError(null);
     try {
       const items = await services.listRuns(50);
       setHistory(items);
     } catch (error) {
       setHistoryError((error as Error).message);
+    } finally {
+      setHistoryLoaded(true);
+      setHistoryLoading(false);
     }
   }, [services]);
 
@@ -989,6 +1080,10 @@ export function useCoveredCallScreenViewModel(
     () => buildCoveredCallResultsActionPanel(run.result),
     [run.result]
   );
+  const historyRows = useMemo(
+    () => buildCoveredCallHistoryRows(history),
+    [history]
+  );
 
   // Stop polling and abort in-flight requests on unmount.
   useEffect(() => () => {
@@ -1010,7 +1105,20 @@ export function useCoveredCallScreenViewModel(
     stageNavigation,
     resultsActionPanel,
     history,
+    historyRows,
+    historyLoading,
+    historyLoaded,
     historyError,
+    historyTableLabel: "Previous covered-call runs",
+    historyCaption: "Reload a previous covered-call run from the cached run history.",
+    historyEmptyText: historyLoaded ? "No previous covered-call runs are available." : "Previous covered-call runs have not loaded yet.",
+    historyStatusText: historyLoading
+      ? "Loading previous covered-call runs."
+      : historyError
+        ? `Previous covered-call runs failed to load: ${historyError}`
+        : historyRows.length === 0
+          ? "No previous covered-call runs are available."
+          : `${historyRows.length} previous covered-call runs loaded.`,
     errorBanner,
     setField,
     resetForm,
@@ -1035,6 +1143,9 @@ export function useCoveredCallScreenViewModel(
     stageNavigation,
     resultsActionPanel,
     history,
+    historyRows,
+    historyLoading,
+    historyLoaded,
     historyError,
     errorBanner,
     setField,

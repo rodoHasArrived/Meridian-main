@@ -406,6 +406,7 @@ export interface TradingBlotterViewModel {
   orderEmptyText: string;
   fillEmptyText: string;
   cancelAllDisabled: boolean;
+  cancelAllDisabledReason: string | null;
   cancelAllAriaLabel: string;
   selectPosition: (id: string) => void;
   selectOrder: (id: string) => void;
@@ -471,6 +472,9 @@ export interface TradingReadinessState {
   evidenceAction: TradingReadinessEvidenceAction;
   refreshButtonLabel: string;
   refreshAriaLabel: string;
+  refreshBusyLabel: string | null;
+  refreshDisabled: boolean;
+  refreshDisabledReason: string | null;
   statusAnnouncement: string;
 }
 
@@ -571,6 +575,7 @@ export function buildTradingBlotterViewModel({
     orderEmptyText: data ? "No open orders require operator action." : "Trading workspace data unavailable.",
     fillEmptyText: data ? "No recent fills have been reported for this session." : "Trading workspace data unavailable.",
     cancelAllDisabled: orderRows.length === 0,
+    cancelAllDisabledReason: orderRows.length === 0 ? "No open orders require cancellation." : null,
     cancelAllAriaLabel: orderRows.length === 0 ? "No open orders to cancel" : `Cancel all ${orderRows.length} open orders`,
     selectPosition,
     selectOrder,
@@ -687,6 +692,9 @@ export function buildTradingReadinessState({
     },
     refreshButtonLabel: refreshing ? "Refreshing..." : "Refresh readiness",
     refreshAriaLabel: refreshing ? "Refreshing trading readiness" : "Refresh trading readiness",
+    refreshBusyLabel: refreshing ? "Refreshing readiness..." : null,
+    refreshDisabled: refreshing,
+    refreshDisabledReason: refreshing ? "Trading readiness refresh is already running." : null,
     statusAnnouncement: buildTradingReadinessAnnouncement({ readiness, refreshing, errorText })
   };
 }
@@ -1099,6 +1107,9 @@ export interface ExecutionEvidenceState {
   controlsEmptyText: string;
   refreshButtonLabel: string;
   refreshAriaLabel: string;
+  refreshBusyLabel: string | null;
+  refreshDisabled: boolean;
+  refreshDisabledReason: string | null;
   statusAnnouncement: string;
 }
 
@@ -1204,6 +1215,9 @@ export function buildExecutionEvidenceState({
     controlsEmptyText: loading ? "Loading execution controls snapshot..." : "Snapshot unavailable.",
     refreshButtonLabel: loading ? "Refreshing..." : "Refresh evidence",
     refreshAriaLabel: loading ? "Refreshing execution evidence" : "Refresh execution audit and controls evidence",
+    refreshBusyLabel: loading ? "Refreshing evidence..." : null,
+    refreshDisabled: loading,
+    refreshDisabledReason: loading ? "Execution evidence refresh is already running." : null,
     statusAnnouncement: buildExecutionEvidenceAnnouncement({ auditRows, controlsPanel, loading, errorText })
   };
 }
@@ -3047,6 +3061,9 @@ export interface OrderTicketState {
   submitDisabledReason: string | null;
   submitBusy: boolean;
   submitBusyLabel: string | null;
+  closeButtonLabel: string;
+  closeAriaLabel: string;
+  closeDisabledReason: string | null;
   acknowledgement: OrderTicketAcknowledgementState;
   requirementText: string;
   successText: string | null;
@@ -3091,6 +3108,7 @@ export function useOrderTicketViewModel({
   const [orderId, setOrderId] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
+  const submittingRef = useRef(false);
 
   const state = useMemo(
     () => buildOrderTicketState({ form, open, phase, orderId, errorText, acknowledged }),
@@ -3150,6 +3168,10 @@ export function useOrderTicketViewModel({
   }, []);
 
   const submitOrderTicket = useCallback(async () => {
+    if (phase === "submitting" || submittingRef.current) {
+      return;
+    }
+
     const validationError = validateOrderTicketForm(form);
     if (validationError) {
       setPhase("error");
@@ -3165,6 +3187,7 @@ export function useOrderTicketViewModel({
       return;
     }
 
+    submittingRef.current = true;
     setPhase("submitting");
     setOrderId(null);
     setErrorText(null);
@@ -3187,8 +3210,10 @@ export function useOrderTicketViewModel({
     } catch (err) {
       setPhase("error");
       setErrorText(toErrorMessage(err, "Order submission failed."));
+    } finally {
+      submittingRef.current = false;
     }
-  }, [acknowledged, form, onOrderAccepted, services]);
+  }, [acknowledged, form, onOrderAccepted, phase, services]);
 
   return {
     ...state,
@@ -3220,6 +3245,7 @@ export function buildOrderTicketState({
   const requirementId = "order-ticket-requirements";
   const acknowledgement = buildOrderTicketAcknowledgementState(acknowledged, phase, validationError);
   const submitDisabledReason = buildOrderTicketSubmitDisabledReason(phase, validationError, acknowledgement);
+  const closeDisabledReason = phase === "submitting" ? "Order submission is in progress." : null;
 
   return {
     form,
@@ -3242,6 +3268,9 @@ export function buildOrderTicketState({
     submitDisabledReason,
     submitBusy: phase === "submitting",
     submitBusyLabel: phase === "submitting" ? "Submitting…" : null,
+    closeButtonLabel: "Cancel",
+    closeAriaLabel: closeDisabledReason ?? "Close order ticket without submitting",
+    closeDisabledReason,
     acknowledgement,
     requirementText: buildOrderRequirementText(form, phase, validationError),
     successText,

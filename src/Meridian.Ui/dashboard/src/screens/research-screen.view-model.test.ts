@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildComparisonTable,
   buildDiffPanel,
@@ -21,9 +22,11 @@ import {
   plotToolTabIdForView,
   parsePromotionInitialCashInput,
   shouldCloseRunDetailForKey,
-  toggleRunSelection
+  toggleRunSelection,
+  useResearchRunLibraryViewModel,
+  type ResearchRunLibraryServices
 } from "@/screens/research-screen.view-model";
-import type { MetricSnapshot, PromotionEvaluationResult, PromotionRecord, ResearchPlotToolPayload, ResearchRunRecord, RunDiff, RunComparisonRow } from "@/types";
+import type { MetricSnapshot, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ResearchPlotToolPayload, ResearchRunRecord, RunDiff, RunComparisonRow } from "@/types";
 
 const runs: ResearchRunRecord[] = [
   {
@@ -752,6 +755,19 @@ describe("research-screen view model", () => {
     expect(creating.disabledReason).toBe("Paper-session creation is already running.");
     expect(creating.helpText).toBe("Paper-session creation is already running.");
     expect(creating.submitLabel).toBe("Starting paper session...");
+    expect(creating.inputDisabled).toBe(true);
+    expect(creating.inputDisabledReason).toBe("Paper-session creation is already running; wait before changing capital.");
+    expect(creating.acknowledgementDisabled).toBe(true);
+    expect(creating.acknowledgementDisabledReason).toBe(
+      "Paper-session creation is already running; wait before changing acknowledgement."
+    );
+    expect(creating.cancelDisabled).toBe(true);
+    expect(creating.cancelDisabledReason).toBe(
+      "Paper-session creation is already running; wait for the session result before closing setup."
+    );
+    expect(creating.cancelAriaLabel).toBe(
+      "Paper-session creation is already running; wait for the session result before closing setup."
+    );
   });
 
   it("derives disabled command reasons for incomplete selections", () => {
@@ -831,6 +847,15 @@ describe("research-screen view model", () => {
     expect(eligible.evaluation?.reason).toBe("Promotion evaluation returned no reason.");
     expect(eligible.showCashForm).toBe(true);
     expect(eligible.showIneligibleDismiss).toBe(false);
+
+    const creating = buildPromotionPanelState({
+      promoteState: "creating",
+      promotionEval: { ...promotionEvaluation, isEligible: true, reason: "", blockingReasons: [] },
+      promotionSession: null
+    });
+
+    expect(creating.showCashForm).toBe(true);
+    expect(creating.sessionCreated).toBeNull();
 
     const done = buildPromotionPanelState({
       promoteState: "done",
@@ -956,4 +981,93 @@ describe("research-screen view model", () => {
     expect(state.plotTool.workspace.title).toBe("API workspace");
     expect(state.plotTool.statistics.title).toBe("API stats");
   });
+
+  it("ignores duplicate paper-session submit attempts while creation is unresolved", async () => {
+    const pendingSession = createDeferred<PaperSessionSummary>();
+    const services: ResearchRunLibraryServices = {
+      compareRuns: vi.fn(),
+      diffRuns: vi.fn(),
+      getPromotionHistory: vi.fn(),
+      evaluatePromotion: vi.fn().mockResolvedValue({
+        ...promotionEvaluation,
+        isEligible: true,
+        ready: true,
+        reason: "Promotion gates passed.",
+        blockingReasons: []
+      }),
+      createPaperSession: vi.fn().mockReturnValue(pendingSession.promise)
+    };
+
+    const { result } = renderHook(() =>
+      useResearchRunLibraryViewModel({ metrics, runs }, services)
+    );
+
+    act(() => {
+      result.current.toggleRun("run-2");
+    });
+
+    await act(async () => {
+      await result.current.promoteSelectedRun();
+    });
+
+    act(() => {
+      result.current.setPromotionInitialCash("150000");
+    });
+
+    act(() => {
+      result.current.setPromotionAcknowledgement(true);
+    });
+
+    act(() => {
+      void result.current.confirmPromotion();
+      void result.current.confirmPromotion();
+    });
+
+    await waitFor(() => {
+      expect(services.createPaperSession).toHaveBeenCalledTimes(1);
+    });
+    expect(services.createPaperSession).toHaveBeenCalledWith("run-2", "Index Momentum", 150000);
+
+    act(() => {
+      result.current.setPromotionInitialCash("900000");
+      result.current.setPromotionAcknowledgement(false);
+      result.current.cancelPromotion();
+    });
+
+    expect(result.current.showPromotePanel).toBe(true);
+    expect(result.current.promoteState).toBe("creating");
+    expect(result.current.promotionCashForm.value).toBe("150000");
+    expect(result.current.promotionCashForm.acknowledgementChecked).toBe(true);
+    expect(result.current.promotionCashForm.submitLabel).toBe("Starting paper session...");
+    expect(result.current.promotionCashForm.inputDisabled).toBe(true);
+    expect(result.current.promotionCashForm.acknowledgementDisabled).toBe(true);
+    expect(result.current.promotionCashForm.cancelDisabled).toBe(true);
+
+    await act(async () => {
+      pendingSession.resolve({
+        sessionId: "session-dup-guard",
+        strategyId: "run-2",
+        strategyName: "Index Momentum",
+        initialCash: 100000,
+        createdAt: "2026-05-14T00:00:00Z",
+        closedAt: null,
+        isActive: true
+      });
+      await pendingSession.promise;
+    });
+
+    expect(result.current.promoteState).toBe("done");
+    expect(result.current.promotionSession?.sessionId).toBe("session-dup-guard");
+  });
 });
+
+function createDeferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}

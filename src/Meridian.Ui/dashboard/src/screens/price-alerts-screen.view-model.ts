@@ -28,6 +28,7 @@ export interface PriceAlertFormValidation {
 }
 
 export type PriceAlertFormFieldKey = "symbol" | "threshold";
+export type PriceAlertStaticFormFieldKey = "condition" | "field" | "note";
 
 export interface PriceAlertFormFieldViewModel {
   id: string;
@@ -41,9 +42,23 @@ export interface PriceAlertFormFieldViewModel {
   errorMessageId: string | undefined;
 }
 
+export interface PriceAlertStaticFormFieldViewModel {
+  id: string;
+  label: string;
+  helperId: string;
+  helperText: string;
+  describedBy: string;
+  ariaLabel?: string;
+  placeholder?: string;
+  maxLength?: number;
+}
+
 export interface PriceAlertFormFieldsViewModel {
   symbol: PriceAlertFormFieldViewModel;
+  condition: PriceAlertStaticFormFieldViewModel;
+  field: PriceAlertStaticFormFieldViewModel;
   threshold: PriceAlertFormFieldViewModel;
+  note: PriceAlertStaticFormFieldViewModel;
 }
 
 export type PriceAlertFormValidationVisibility = Record<PriceAlertFormFieldKey, boolean>;
@@ -61,11 +76,6 @@ export interface PriceAlertsScreenViewModel {
   submitFeedback: PriceAlertSubmitFeedback | null;
   conditionOptions: PriceAlertConditionOption[];
   fieldOptions: PriceAlertFieldOption[];
-  conditionHelpId: string;
-  conditionHelpText: string;
-  fieldHelpId: string;
-  fieldHelpText: string;
-  fieldSelectAriaLabel: string;
   summaryMetrics: MetricSnapshot[];
   heroDescription: string;
   pollErrorPanel: PriceAlertStatusPanel | null;
@@ -301,9 +311,11 @@ export function usePriceAlertsScreenViewModel({
       validationVisible: {
         symbol: validationRequested || touchedFields.symbol,
         threshold: validationRequested || touchedFields.threshold
-      }
+      },
+      condition: form.condition,
+      field: form.field
     }),
-    [touchedFields.symbol, touchedFields.threshold, validation, validationRequested]
+    [form.condition, form.field, touchedFields.symbol, touchedFields.threshold, validation, validationRequested]
   );
   const submitAction = useMemo(() => buildPriceAlertSubmitAction(validation), [validation]);
   const sortedAlerts = useMemo(() => sortPriceAlerts(alerts.state.alerts), [alerts.state.alerts]);
@@ -388,11 +400,6 @@ export function usePriceAlertsScreenViewModel({
     submitFeedback,
     conditionOptions: PRICE_ALERT_CONDITION_OPTIONS,
     fieldOptions: PRICE_ALERT_FIELD_OPTIONS,
-    conditionHelpId: PRICE_ALERT_CONDITION_HELP_ID,
-    conditionHelpText: buildPriceAlertConditionHelpText(form.condition),
-    fieldHelpId: PRICE_ALERT_FIELD_HELP_ID,
-    fieldHelpText: buildPriceAlertFieldHelpText(form.field),
-    fieldSelectAriaLabel: "Price field",
     summaryMetrics,
     heroDescription: `Get notified when a symbol crosses a price. Alerts are evaluated against live quotes every ${Math.round(PRICE_ALERTS_POLL_INTERVAL_MS / 1000)}s while this tab is open.`,
     pollErrorPanel,
@@ -459,10 +466,14 @@ export function validatePriceAlertForm(form: PriceAlertFormState): PriceAlertFor
 
 export function buildPriceAlertFormFields({
   validation,
-  validationVisible
+  validationVisible,
+  condition = DEFAULT_PRICE_ALERT_FORM.condition,
+  field = DEFAULT_PRICE_ALERT_FORM.field
 }: {
   validation: PriceAlertFormValidation;
   validationVisible: PriceAlertFormValidationVisibility;
+  condition?: PriceAlertCondition;
+  field?: PriceAlertField;
 }): PriceAlertFormFieldsViewModel {
   return {
     symbol: buildPriceAlertFormField(
@@ -470,11 +481,20 @@ export function buildPriceAlertFormFields({
       validation.symbolError,
       validationVisible.symbol
     ),
+    condition: buildPriceAlertStaticFormField({
+      ...PRICE_ALERT_STATIC_FIELD_CONFIG.condition,
+      helperText: buildPriceAlertConditionHelpText(condition)
+    }),
+    field: buildPriceAlertStaticFormField({
+      ...PRICE_ALERT_STATIC_FIELD_CONFIG.field,
+      helperText: buildPriceAlertFieldHelpText(field)
+    }),
     threshold: buildPriceAlertFormField(
       PRICE_ALERT_FIELD_CONFIG.threshold,
       validation.thresholdError,
       validationVisible.threshold
-    )
+    ),
+    note: buildPriceAlertStaticFormField(PRICE_ALERT_STATIC_FIELD_CONFIG.note)
   };
 }
 
@@ -519,8 +539,6 @@ export const PRICE_ALERT_FIELD_OPTIONS: PriceAlertFieldOption[] = [
   { value: "mid", label: "Mid", helper: "Field: bid-ask midpoint." }
 ];
 
-const PRICE_ALERT_CONDITION_HELP_ID = "price-alert-condition-help";
-const PRICE_ALERT_FIELD_HELP_ID = "price-alert-field-help";
 const PRICE_ALERT_FIELD_CONFIG: Record<PriceAlertFormFieldKey, {
   id: string;
   label: string;
@@ -541,6 +559,38 @@ const PRICE_ALERT_FIELD_CONFIG: Record<PriceAlertFormFieldKey, {
     helperId: "price-alert-threshold-help",
     helperText: "Enter a positive price threshold. Commas and decimals are allowed.",
     errorId: "price-alert-threshold-error"
+  }
+};
+
+const PRICE_ALERT_STATIC_FIELD_CONFIG: Record<PriceAlertStaticFormFieldKey, {
+  id: string;
+  label: string;
+  helperId: string;
+  helperText: string;
+  ariaLabel?: string;
+  placeholder?: string;
+  maxLength?: number;
+}> = {
+  condition: {
+    id: "price-alert-condition",
+    label: "Condition",
+    helperId: "price-alert-condition-help",
+    helperText: "Fires whenever price is at or above the threshold."
+  },
+  field: {
+    id: "price-alert-field",
+    label: "Price field",
+    helperId: "price-alert-field-help",
+    helperText: "Field: last trade price.",
+    ariaLabel: "Price field"
+  },
+  note: {
+    id: "price-alert-note",
+    label: "Note (optional)",
+    helperId: "price-alert-note-help",
+    helperText: "Optional operator context, up to 120 characters.",
+    placeholder: "e.g. Watch for earnings call",
+    maxLength: 120
   }
 };
 
@@ -567,6 +617,29 @@ function buildPriceAlertFormField(
     invalid: visibleError !== null,
     describedBy: visibleError ? `${config.helperId} ${config.errorId}` : config.helperId,
     errorMessageId: visibleError ? config.errorId : undefined
+  };
+}
+
+function buildPriceAlertStaticFormField(
+  config: {
+    id: string;
+    label: string;
+    helperId: string;
+    helperText: string;
+    ariaLabel?: string;
+    placeholder?: string;
+    maxLength?: number;
+  }
+): PriceAlertStaticFormFieldViewModel {
+  return {
+    id: config.id,
+    label: config.label,
+    helperId: config.helperId,
+    helperText: config.helperText,
+    describedBy: config.helperId,
+    ...(config.ariaLabel ? { ariaLabel: config.ariaLabel } : {}),
+    ...(config.placeholder ? { placeholder: config.placeholder } : {}),
+    ...(config.maxLength !== undefined ? { maxLength: config.maxLength } : {})
   };
 }
 

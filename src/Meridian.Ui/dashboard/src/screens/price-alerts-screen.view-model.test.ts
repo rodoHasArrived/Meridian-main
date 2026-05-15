@@ -197,6 +197,40 @@ describe("price alert presentation state", () => {
     expect(buildPriceAlertFieldHelpText("mid")).toBe("Field: bid-ask midpoint.");
   });
 
+  it("keeps condition, field, and note field semantics in the view model", () => {
+    const fields = buildPriceAlertFormFields({
+      validation: validatePriceAlertForm({ ...DEFAULT_PRICE_ALERT_FORM, symbol: "AAPL", threshold: "200" }),
+      validationVisible: { symbol: false, threshold: false },
+      condition: "crosses-down",
+      field: "ask"
+    });
+
+    expect(fields.condition).toMatchObject({
+      id: "price-alert-condition",
+      label: "Condition",
+      helperId: "price-alert-condition-help",
+      helperText: "Fires once when price falls through the threshold.",
+      describedBy: "price-alert-condition-help"
+    });
+    expect(fields.field).toMatchObject({
+      id: "price-alert-field",
+      label: "Price field",
+      helperId: "price-alert-field-help",
+      helperText: "Field: best ask price.",
+      describedBy: "price-alert-field-help",
+      ariaLabel: "Price field"
+    });
+    expect(fields.note).toMatchObject({
+      id: "price-alert-note",
+      label: "Note (optional)",
+      helperId: "price-alert-note-help",
+      helperText: "Optional operator context, up to 120 characters.",
+      describedBy: "price-alert-note-help",
+      placeholder: "e.g. Watch for earnings call",
+      maxLength: 120
+    });
+  });
+
   it("maps alert service counters to design-system metric snapshots", () => {
     const metrics = buildPriceAlertMetrics({
       enabledCount: 2,

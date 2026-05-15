@@ -95,11 +95,15 @@ describe("PriceAlertsScreen", () => {
 
     const condition = screen.getByLabelText("Condition");
     const priceField = screen.getByLabelText("Price field");
+    const note = screen.getByLabelText("Note (optional)");
 
     expect(condition).toHaveAttribute("aria-describedby", "price-alert-condition-help");
     expect(priceField).toHaveAttribute("aria-describedby", "price-alert-field-help");
+    expect(note).toHaveAttribute("aria-describedby", "price-alert-note-help");
+    expect(note).toHaveAttribute("maxlength", "120");
     expect(screen.getByText("Fires whenever price is at or above the threshold.")).toBeInTheDocument();
     expect(screen.getByText("Field: last trade price.")).toBeInTheDocument();
+    expect(screen.getByText("Optional operator context, up to 120 characters.")).toBeInTheDocument();
 
     fireEvent.change(condition, { target: { value: "crosses-up" } });
     fireEvent.change(priceField, { target: { value: "mid" } });
