@@ -6883,6 +6883,7 @@ Use these documents together when planning or implementing new work:
 │   │       │       ├── progress
 │   │       │       │   ├── command-palette-alpaca-setup-smoke.png
 │   │       │       │   ├── command-palette-hash-aware-smoke.png
+│   │       │       │   ├── covered-call-cancel-confirm-smoke.png
 │   │       │       │   ├── covered-call-chain-dense-table-smoke.png
 │   │       │       │   ├── covered-call-command-feedback-smoke.png
 │   │       │       │   ├── covered-call-history-dense-table-smoke.png
@@ -6895,6 +6896,7 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── operator-readiness-utc-smoke.png
 │   │       │       │   ├── overview-portfolio-empty-actions-smoke.png
 │   │       │       │   ├── overview-utc-smoke.png
+│   │       │       │   ├── portfolio-brokerage-account-detail-smoke.png
 │   │       │       │   ├── portfolio-brokerage-sync-actions-smoke.png
 │   │       │       │   ├── portfolio-sync-trust-smoke.png
 │   │       │       │   ├── price-alert-delete-confirmation-smoke.png
@@ -6913,6 +6915,7 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── security-master-conflicts-retry-smoke.png
 │   │       │       │   ├── security-master-route-smoke.png
 │   │       │       │   ├── settings-alpaca-abort-smoke.png
+│   │       │       │   ├── settings-clear-confirm-smoke.png
 │   │       │       │   ├── settings-live-ack-smoke.png
 │   │       │       │   ├── settings-utc-smoke.png
 │   │       │       │   ├── strategy-designer-reorder-smoke.png
@@ -6946,8 +6949,12 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── operator-readiness-evidence-mobile.png
 │   │       │       │   ├── overview-activity-desktop.png
 │   │       │       │   ├── overview-activity-mobile.png
+│   │       │       │   ├── portfolio-account-table-desktop.png
+│   │       │       │   ├── portfolio-account-table-mobile.png
 │   │       │       │   ├── quant-lab-trade-ledger-desktop.png
 │   │       │       │   ├── quant-lab-trade-ledger-mobile.png
+│   │       │       │   ├── quant-notebook-desktop.png
+│   │       │       │   ├── quant-notebook-mobile.png
 │   │       │       │   ├── research-tab-focus-desktop.png
 │   │       │       │   ├── research-tab-focus-mobile.png
 │   │       │       │   ├── security-master-conflict-actions-desktop.png
@@ -8855,6 +8862,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-719 directories, 7922 files
+719 directories, 7929 files
 ```
 <!-- readme-tree end -->
