@@ -6907,6 +6907,7 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── security-lots-mobile-smoke.png
 │   │       │       │   ├── security-master-conflicts-retry-smoke.png
 │   │       │       │   ├── security-master-route-smoke.png
+│   │       │       │   ├── settings-alpaca-abort-smoke.png
 │   │       │       │   ├── settings-live-ack-smoke.png
 │   │       │       │   ├── settings-utc-smoke.png
 │   │       │       │   ├── strategy-designer-reorder-smoke.png
@@ -6929,6 +6930,8 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── calibration-profile-detail-smoke.png
 │   │       │       │   ├── data-backfill-detail-desktop.png
 │   │       │       │   ├── data-backfill-detail-mobile.png
+│   │       │       │   ├── data-export-detail-desktop.png
+│   │       │       │   ├── data-export-detail-mobile.png
 │   │       │       │   ├── data-provider-cancel-smoke-mobile.png
 │   │       │       │   ├── data-provider-cancel-smoke.png
 │   │       │       │   ├── live-quotes-seeded-desktop.png
@@ -8840,6 +8843,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-719 directories, 7907 files
+719 directories, 7910 files
 ```
 <!-- readme-tree end -->
