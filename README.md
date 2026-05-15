@@ -6898,6 +6898,7 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── portfolio-brokerage-sync-actions-smoke.png
 │   │       │       │   ├── portfolio-sync-trust-smoke.png
 │   │       │       │   ├── price-alert-delete-confirmation-smoke.png
+│   │       │       │   ├── price-alert-storage-warning-smoke.png
 │   │       │       │   ├── price-alerts-handoff-smoke.png
 │   │       │       │   ├── price-alerts-utc-smoke.png
 │   │       │       │   ├── readiness-inbox-refresh-smoke.png
@@ -6943,6 +6944,8 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── live-quotes-seeded-mobile.png
 │   │       │       │   ├── operator-readiness-evidence-desktop.png
 │   │       │       │   ├── operator-readiness-evidence-mobile.png
+│   │       │       │   ├── overview-activity-desktop.png
+│   │       │       │   ├── overview-activity-mobile.png
 │   │       │       │   ├── quant-lab-trade-ledger-desktop.png
 │   │       │       │   ├── quant-lab-trade-ledger-mobile.png
 │   │       │       │   ├── research-tab-focus-desktop.png
@@ -8852,6 +8855,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-719 directories, 7919 files
+719 directories, 7922 files
 ```
 <!-- readme-tree end -->
