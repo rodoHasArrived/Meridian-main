@@ -64,12 +64,16 @@ export function RiskControlPanel() {
     }
 
     setError(null);
-    await updateRiskRuleConfig("DrawdownCircuitBreaker", {
-      maxDrawdownPercent: parsed,
-      reason: "Updated from risk control panel."
-    });
-    const refreshed = await getRiskRules();
-    setStatuses(refreshed);
+    try {
+      await updateRiskRuleConfig("DrawdownCircuitBreaker", {
+        maxDrawdownPercent: parsed,
+        reason: "Updated from risk control panel."
+      });
+      const refreshed = await getRiskRules();
+      setStatuses(refreshed);
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Failed to update risk rule config.");
+    }
   }
 
   return (

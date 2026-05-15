@@ -40,7 +40,6 @@ import type {
   PromotionEvaluationResult,
   PromotionRecord,
   RiskRuleConfig,
-  RiskRuleConfigUpdateRequest,
   RiskRuleStatus,
   ReconciliationBreakQueueItem,
   ReconciliationCalibrationSummary,
@@ -657,24 +656,6 @@ export function createExecutionManualOverride(request: CreateExecutionManualOver
 
 export function clearExecutionManualOverride(overrideId: string) {
   return postJson<TradingActionResult>(executionManualOverrideClearEndpoint(overrideId));
-}
-
-// --- Risk rules ---
-
-export function getRiskRules() {
-  return getJson<RiskRuleStatus[]>(RISK_API_ENDPOINTS.rules);
-}
-
-export function getRiskRuleStatus(ruleName: string) {
-  return getJson<RiskRuleStatus>(riskRuleStatusEndpoint(ruleName));
-}
-
-export function getRiskRuleConfig(ruleName: string) {
-  return getJson<RiskRuleConfig>(riskRuleConfigEndpoint(ruleName));
-}
-
-export function updateRiskRuleConfig(ruleName: string, request: RiskRuleConfigUpdateRequest) {
-  return putJson<RiskRuleConfig>(riskRuleConfigEndpoint(ruleName), request);
 }
 
 // --- Strategy lifecycle ---

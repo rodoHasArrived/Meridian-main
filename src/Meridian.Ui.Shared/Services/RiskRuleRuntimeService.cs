@@ -132,12 +132,12 @@ public sealed class RiskRuleRuntimeService
                 await UpdatePositionLimitConfigAsync(request, actor, ct).ConfigureAwait(false);
                 break;
             case "DrawdownCircuitBreaker":
-                if (request.MaxDrawdownPercent is <= 0m)
+                if (!request.MaxDrawdownPercent.HasValue || request.MaxDrawdownPercent.Value <= 0m)
                 {
                     throw new ArgumentOutOfRangeException(nameof(request.MaxDrawdownPercent), "MaxDrawdownPercent must be greater than zero.");
                 }
 
-                var maxDrawdownPercent = request.MaxDrawdownPercent.GetValueOrDefault();
+                var maxDrawdownPercent = request.MaxDrawdownPercent.Value;
 
                 lock (_gate)
                 {
@@ -150,12 +150,12 @@ public sealed class RiskRuleRuntimeService
                     maxDrawdownPercent);
                 break;
             case "OrderRateThrottle":
-                if (request.MaxOrdersPerMinute is <= 0)
+                if (!request.MaxOrdersPerMinute.HasValue || request.MaxOrdersPerMinute.Value <= 0)
                 {
                     throw new ArgumentOutOfRangeException(nameof(request.MaxOrdersPerMinute), "MaxOrdersPerMinute must be greater than zero.");
                 }
 
-                var maxOrdersPerMinute = request.MaxOrdersPerMinute.GetValueOrDefault();
+                var maxOrdersPerMinute = request.MaxOrdersPerMinute.Value;
 
                 lock (_gate)
                 {
