@@ -6881,134 +6881,144 @@ Use these documents together when planning or implementing new work:
 │   ├── Meridian.Ui
 │   │   └── dashboard
 │   │       ├── artifacts
-│   │       │   └── automation
-│   │       │       ├── covered-call-history-1440.png
-│   │       │       ├── covered-call-history-390.png
-│   │       │       ├── covered-call-trade-timeline-smoke.png
-│   │       │       ├── governance-reconciliation-disabled-reasons-mobile-smoke.png
-│   │       │       ├── governance-reconciliation-disabled-reasons-smoke.png
-│   │       │       ├── price-alerts-dev-tables-smoke.png
-│   │       │       ├── price-alerts-final-smoke.png
-│   │       │       ├── price-alerts-fixture-tables-smoke.png
-│   │       │       ├── price-alerts-helper-desktop-smoke.png
-│   │       │       ├── price-alerts-helper-mobile-smoke.png
-│   │       │       ├── price-alerts-screen.json
-│   │       │       ├── price-alerts-seed.json
-│   │       │       ├── price-alerts-smoke.png
-│   │       │       ├── progress
-│   │       │       │   ├── command-palette-alpaca-setup-smoke.png
-│   │       │       │   ├── command-palette-hash-aware-smoke.png
-│   │       │       │   ├── covered-call-cancel-confirm-smoke.png
-│   │       │       │   ├── covered-call-chain-dense-table-smoke.png
-│   │       │       │   ├── covered-call-command-feedback-smoke.png
-│   │       │       │   ├── covered-call-history-dense-table-smoke.png
-│   │       │       │   ├── covered-call-history-loading-smoke.png
-│   │       │       │   ├── covered-call-history-open-guard-smoke.png
-│   │       │       │   ├── covered-call-results-handoff-smoke.png
-│   │       │       │   ├── covered-call-stage-navigation-smoke.png
-│   │       │       │   ├── covered-call-trade-timeline-smoke.png
-│   │       │       │   ├── evidence-manifest-action-smoke.png
-│   │       │       │   ├── live-quotes-order-readiness-handoff-smoke.png
-│   │       │       │   ├── operator-readiness-utc-smoke.png
-│   │       │       │   ├── overview-portfolio-empty-actions-smoke.png
-│   │       │       │   ├── overview-utc-smoke.png
-│   │       │       │   ├── portfolio-brokerage-account-detail-smoke.png
-│   │       │       │   ├── portfolio-brokerage-sync-actions-smoke.png
-│   │       │       │   ├── portfolio-readiness-debug.png
-│   │       │       │   ├── portfolio-readiness-handoff-smoke.png
-│   │       │       │   ├── portfolio-sync-trust-smoke.png
-│   │       │       │   ├── price-alert-delete-confirmation-smoke.png
-│   │       │       │   ├── price-alert-storage-warning-smoke.png
-│   │       │       │   ├── price-alerts-handoff-smoke.png
-│   │       │       │   ├── price-alerts-utc-smoke.png
-│   │       │       │   ├── readiness-inbox-refresh-smoke.png
-│   │       │       │   ├── readiness-provider-setup-handoff-smoke.png
-│   │       │       │   ├── readiness-report-pack-deeplink-smoke.png
-│   │       │       │   ├── report-pack-actions-smoke.png
-│   │       │       │   ├── report-pack-reference-smoke.png
-│   │       │       │   ├── reporting-dense-table-smoke.png
-│   │       │       │   ├── research-covered-call-smoke.png
-│   │       │       │   ├── research-promotion-cancel-smoke.png
-│   │       │       │   ├── security-lots-desktop-smoke.png
-│   │       │       │   ├── security-lots-mobile-smoke.png
-│   │       │       │   ├── security-master-conflicts-retry-smoke.png
-│   │       │       │   ├── security-master-route-smoke.png
-│   │       │       │   ├── settings-alpaca-abort-smoke.png
-│   │       │       │   ├── settings-clear-confirm-smoke.png
-│   │       │       │   ├── settings-live-ack-smoke.png
-│   │       │       │   ├── settings-utc-smoke.png
-│   │       │       │   ├── strategy-designer-reorder-smoke.png
-│   │       │       │   ├── strategy-plottool-statistics-desktop.png
-│   │       │       │   ├── strategy-plottool-statistics-mobile.png
-│   │       │       │   ├── strategy-promotion-ack-smoke.png
-│   │       │       │   ├── strategy-promotion-disabled-reason-smoke.png
-│   │       │       │   ├── strategy-promotion-smoke.png
-│   │       │       │   ├── trading-fills-detail-mobile-smoke.png
-│   │       │       │   ├── trading-fills-detail-smoke-current.png
-│   │       │       │   ├── trading-fills-detail-smoke.png
-│   │       │       │   ├── trading-order-ticket-ack-smoke.png
-│   │       │       │   ├── trading-order-ticket-duplicate-guard-smoke.png
-│   │       │       │   ├── watchlist-empty-value-mobile-smoke.png
-│   │       │       │   ├── watchlist-empty-value-smoke.png
-│   │       │       │   ├── watchlist-retry-smoke.png
-│   │       │       │   └── workstation-preview-smoke.png
-│   │       │       ├── strategy-designer-field-labels-smoke.png
-│   │       │       ├── strategy-designer-field-search-desktop.png
-│   │       │       ├── strategy-designer-field-search-mobile.png
-│   │       │       ├── user-test-and-implement-smoke
-│   │       │       │   ├── accounting.png
-│   │       │       │   ├── changed-routes-smoke.json
-│   │       │       │   ├── portfolio-readiness-preview.png
-│   │       │       │   ├── portfolio.png
-│   │       │       │   ├── reporting-export-gate-preview.png
-│   │       │       │   ├── smoke.json
-│   │       │       │   ├── strategy.png
-│   │       │       │   └── trading.png
-│   │       │       ├── web-ui
-│   │       │       │   ├── calibration-profile-detail-mobile-smoke.png
-│   │       │       │   ├── calibration-profile-detail-smoke.png
-│   │       │       │   ├── data-backfill-detail-desktop.png
-│   │       │       │   ├── data-backfill-detail-mobile.png
-│   │       │       │   ├── data-export-detail-desktop.png
-│   │       │       │   ├── data-export-detail-mobile.png
-│   │       │       │   ├── data-provider-cancel-smoke-mobile.png
-│   │       │       │   ├── data-provider-cancel-smoke.png
-│   │       │       │   ├── live-quotes-seeded-desktop.png
-│   │       │       │   ├── live-quotes-seeded-mobile.png
-│   │       │       │   ├── operator-readiness-evidence-desktop.png
-│   │       │       │   ├── operator-readiness-evidence-mobile.png
-│   │       │       │   ├── overview-activity-desktop.png
-│   │       │       │   ├── overview-activity-mobile.png
-│   │       │       │   ├── portfolio-account-table-desktop.png
-│   │       │       │   ├── portfolio-account-table-mobile.png
-│   │       │       │   ├── quant-lab-trade-ledger-desktop.png
-│   │       │       │   ├── quant-lab-trade-ledger-mobile.png
-│   │       │       │   ├── quant-notebook-desktop.png
-│   │       │       │   ├── quant-notebook-mobile.png
-│   │       │       │   ├── research-tab-focus-desktop.png
-│   │       │       │   ├── research-tab-focus-mobile.png
-│   │       │       │   ├── security-master-conflict-actions-desktop.png
-│   │       │       │   ├── security-master-conflict-actions-mobile.png
-│   │       │       │   ├── strategy-designer-selected-leg-desktop.png
-│   │       │       │   ├── strategy-designer-selected-leg-mobile.png
-│   │       │       │   ├── watchlist-add-field-clean-desktop.png
-│   │       │       │   ├── watchlist-add-field-clean-mobile.png
-│   │       │       │   ├── watchlist-add-field-desktop.png
-│   │       │       │   ├── watchlist-add-field-mobile.png
-│   │       │       │   ├── watchlist-clean-smoke-runner.mjs
-│   │       │       │   ├── workspace-header-desktop.png
-│   │       │       │   └── workspace-header-mobile.png
-│   │       │       ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
-│   │       │       ├── web-ui-report-pack-profile-keyboard-smoke.png
-│   │       │       ├── web-ui-reporting-export-smoke.png
-│   │       │       ├── web-ui-reporting-mobile-smoke.png
-│   │       │       ├── web-ui-research-cash-disabled-mobile-smoke.png
-│   │       │       ├── web-ui-research-cash-disabled-smoke.png
-│   │       │       ├── web-ui-trading-command-state-desktop.png
-│   │       │       ├── web-ui-trading-command-state-mobile.png
-│   │       │       ├── web-ui-trading-paper-session-smoke.png
-│   │       │       ├── web-ui-trading-strategy-lifecycle-smoke.png
-│   │       │       └── web-ui-watchlist-sort-smoke.png
+│   │       │   ├── automation
+│   │       │   │   ├── covered-call-history-1440.png
+│   │       │   │   ├── covered-call-history-390.png
+│   │       │   │   ├── covered-call-trade-timeline-smoke.png
+│   │       │   │   ├── governance-reconciliation-disabled-reasons-mobile-smoke.png
+│   │       │   │   ├── governance-reconciliation-disabled-reasons-smoke.png
+│   │       │   │   ├── price-alerts-dev-tables-smoke.png
+│   │       │   │   ├── price-alerts-final-smoke.png
+│   │       │   │   ├── price-alerts-fixture-tables-smoke.png
+│   │       │   │   ├── price-alerts-helper-desktop-smoke.png
+│   │       │   │   ├── price-alerts-helper-mobile-smoke.png
+│   │       │   │   ├── price-alerts-screen.json
+│   │       │   │   ├── price-alerts-seed.json
+│   │       │   │   ├── price-alerts-smoke.png
+│   │       │   │   ├── progress
+│   │       │   │   │   ├── command-palette-alpaca-setup-smoke.png
+│   │       │   │   │   ├── command-palette-hash-aware-smoke.png
+│   │       │   │   │   ├── covered-call-cancel-confirm-smoke.png
+│   │       │   │   │   ├── covered-call-chain-dense-table-smoke.png
+│   │       │   │   │   ├── covered-call-command-feedback-smoke.png
+│   │       │   │   │   ├── covered-call-history-dense-table-smoke.png
+│   │       │   │   │   ├── covered-call-history-loading-smoke.png
+│   │       │   │   │   ├── covered-call-history-open-guard-smoke.png
+│   │       │   │   │   ├── covered-call-results-handoff-smoke.png
+│   │       │   │   │   ├── covered-call-stage-navigation-smoke.png
+│   │       │   │   │   ├── covered-call-trade-timeline-smoke.png
+│   │       │   │   │   ├── evidence-manifest-action-smoke.png
+│   │       │   │   │   ├── live-quotes-order-readiness-handoff-smoke.png
+│   │       │   │   │   ├── operator-readiness-utc-smoke.png
+│   │       │   │   │   ├── overview-portfolio-empty-actions-smoke.png
+│   │       │   │   │   ├── overview-utc-smoke.png
+│   │       │   │   │   ├── portfolio-brokerage-account-detail-smoke.png
+│   │       │   │   │   ├── portfolio-brokerage-sync-actions-smoke.png
+│   │       │   │   │   ├── portfolio-readiness-debug.png
+│   │       │   │   │   ├── portfolio-readiness-handoff-smoke.png
+│   │       │   │   │   ├── portfolio-sync-trust-smoke.png
+│   │       │   │   │   ├── price-alert-delete-confirmation-smoke.png
+│   │       │   │   │   ├── price-alert-storage-warning-smoke.png
+│   │       │   │   │   ├── price-alerts-handoff-smoke.png
+│   │       │   │   │   ├── price-alerts-utc-smoke.png
+│   │       │   │   │   ├── readiness-inbox-refresh-smoke.png
+│   │       │   │   │   ├── readiness-provider-setup-handoff-smoke.png
+│   │       │   │   │   ├── readiness-report-pack-deeplink-smoke.png
+│   │       │   │   │   ├── report-pack-actions-smoke.png
+│   │       │   │   │   ├── report-pack-reference-smoke.png
+│   │       │   │   │   ├── reporting-dense-table-smoke.png
+│   │       │   │   │   ├── research-covered-call-smoke.png
+│   │       │   │   │   ├── research-promotion-cancel-smoke.png
+│   │       │   │   │   ├── security-lots-desktop-smoke.png
+│   │       │   │   │   ├── security-lots-mobile-smoke.png
+│   │       │   │   │   ├── security-master-conflicts-retry-smoke.png
+│   │       │   │   │   ├── security-master-route-smoke.png
+│   │       │   │   │   ├── settings-alpaca-abort-smoke.png
+│   │       │   │   │   ├── settings-clear-confirm-smoke.png
+│   │       │   │   │   ├── settings-live-ack-smoke.png
+│   │       │   │   │   ├── settings-utc-smoke.png
+│   │       │   │   │   ├── strategy-designer-reorder-smoke.png
+│   │       │   │   │   ├── strategy-plottool-statistics-desktop.png
+│   │       │   │   │   ├── strategy-plottool-statistics-mobile.png
+│   │       │   │   │   ├── strategy-promotion-ack-smoke.png
+│   │       │   │   │   ├── strategy-promotion-disabled-reason-smoke.png
+│   │       │   │   │   ├── strategy-promotion-smoke.png
+│   │       │   │   │   ├── trading-fills-detail-mobile-smoke.png
+│   │       │   │   │   ├── trading-fills-detail-smoke-current.png
+│   │       │   │   │   ├── trading-fills-detail-smoke.png
+│   │       │   │   │   ├── trading-order-ticket-ack-smoke.png
+│   │       │   │   │   ├── trading-order-ticket-duplicate-guard-smoke.png
+│   │       │   │   │   ├── watchlist-empty-value-mobile-smoke.png
+│   │       │   │   │   ├── watchlist-empty-value-smoke.png
+│   │       │   │   │   ├── watchlist-retry-smoke.png
+│   │       │   │   │   └── workstation-preview-smoke.png
+│   │       │   │   ├── strategy-designer-field-labels-smoke.png
+│   │       │   │   ├── strategy-designer-field-search-desktop.png
+│   │       │   │   ├── strategy-designer-field-search-mobile.png
+│   │       │   │   ├── user-test-and-implement-smoke
+│   │       │   │   │   ├── accounting.png
+│   │       │   │   │   ├── changed-routes-smoke.json
+│   │       │   │   │   ├── portfolio-readiness-preview.png
+│   │       │   │   │   ├── portfolio.png
+│   │       │   │   │   ├── reporting-export-gate-preview.png
+│   │       │   │   │   ├── smoke.json
+│   │       │   │   │   ├── strategy.png
+│   │       │   │   │   └── trading.png
+│   │       │   │   ├── web-ui
+│   │       │   │   │   ├── calibration-profile-detail-mobile-smoke.png
+│   │       │   │   │   ├── calibration-profile-detail-smoke.png
+│   │       │   │   │   ├── data-backfill-detail-desktop.png
+│   │       │   │   │   ├── data-backfill-detail-mobile.png
+│   │       │   │   │   ├── data-export-detail-desktop.png
+│   │       │   │   │   ├── data-export-detail-mobile.png
+│   │       │   │   │   ├── data-provider-cancel-smoke-mobile.png
+│   │       │   │   │   ├── data-provider-cancel-smoke.png
+│   │       │   │   │   ├── live-quotes-depth-debug.png
+│   │       │   │   │   ├── live-quotes-depth-detail-desktop.png
+│   │       │   │   │   ├── live-quotes-depth-detail-mobile.png
+│   │       │   │   │   ├── live-quotes-seeded-desktop.png
+│   │       │   │   │   ├── live-quotes-seeded-mobile.png
+│   │       │   │   │   ├── operator-readiness-evidence-desktop.png
+│   │       │   │   │   ├── operator-readiness-evidence-mobile.png
+│   │       │   │   │   ├── overview-activity-desktop.png
+│   │       │   │   │   ├── overview-activity-mobile.png
+│   │       │   │   │   ├── portfolio-account-table-desktop.png
+│   │       │   │   │   ├── portfolio-account-table-mobile.png
+│   │       │   │   │   ├── provider-setup-continuity-desktop.png
+│   │       │   │   │   ├── provider-setup-continuity-mobile.png
+│   │       │   │   │   ├── quant-lab-trade-ledger-desktop.png
+│   │       │   │   │   ├── quant-lab-trade-ledger-mobile.png
+│   │       │   │   │   ├── quant-notebook-desktop.png
+│   │       │   │   │   ├── quant-notebook-mobile.png
+│   │       │   │   │   ├── research-tab-focus-desktop.png
+│   │       │   │   │   ├── research-tab-focus-mobile.png
+│   │       │   │   │   ├── security-master-conflict-actions-desktop.png
+│   │       │   │   │   ├── security-master-conflict-actions-mobile.png
+│   │       │   │   │   ├── strategy-designer-selected-leg-desktop.png
+│   │       │   │   │   ├── strategy-designer-selected-leg-mobile.png
+│   │       │   │   │   ├── watchlist-add-field-clean-desktop.png
+│   │       │   │   │   ├── watchlist-add-field-clean-mobile.png
+│   │       │   │   │   ├── watchlist-add-field-desktop.png
+│   │       │   │   │   ├── watchlist-add-field-mobile.png
+│   │       │   │   │   ├── watchlist-clean-smoke-runner.mjs
+│   │       │   │   │   ├── workspace-header-desktop.png
+│   │       │   │   │   └── workspace-header-mobile.png
+│   │       │   │   ├── web-ui-quant-notebook-smoke.png
+│   │       │   │   ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
+│   │       │   │   ├── web-ui-report-pack-profile-keyboard-smoke.png
+│   │       │   │   ├── web-ui-reporting-export-smoke.png
+│   │       │   │   ├── web-ui-reporting-mobile-smoke.png
+│   │       │   │   ├── web-ui-research-cash-disabled-mobile-smoke.png
+│   │       │   │   ├── web-ui-research-cash-disabled-smoke.png
+│   │       │   │   ├── web-ui-trading-command-state-desktop.png
+│   │       │   │   ├── web-ui-trading-command-state-mobile.png
+│   │       │   │   ├── web-ui-trading-paper-session-smoke.png
+│   │       │   │   ├── web-ui-trading-strategy-lifecycle-smoke.png
+│   │       │   │   ├── web-ui-watchlist-sort-smoke.png
+│   │       │   │   └── web-ux
+│   │       │   │       ├── investment-operations-path-msedge.png
+│   │       │   │       └── workflow-continuity-msft.png
+│   │       │   └── workflow-continuity-msft.png
 │   │       ├── index.html
 │   │       ├── package-lock.json
 │   │       ├── package.json
@@ -8917,6 +8927,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-725 directories, 7976 files
+726 directories, 7985 files
 ```
 <!-- readme-tree end -->
