@@ -481,7 +481,7 @@ export function buildPortfolioScreenViewModel({
   const cashVarianceLabel = cashFlow !== null ? formatCurrency(cashFlow.netVariance) : null;
 
   return {
-    metricsFromTrading: portfolio != null || trading !== null,
+    metricsFromTrading: portfolio == null && trading !== null,
     metricCards: portfolio?.metrics ?? trading?.metrics ?? [],
     positionSourceLabel: portfolio ? "Portfolio workspace" : trading ? "Trading workspace" : "Unavailable",
     fallbackStats,
@@ -1378,7 +1378,7 @@ function buildPortfolioReadinessTaskPanel({
   const hasPosture = risk !== null || brokerage !== null || openPositionCount > 0;
   const connected = brokerage?.connection === "Connected";
   const feedsHealthy = brokerage?.orderIngress === "healthy" && brokerage?.fillFeed === "healthy";
-  const hasCashVariance = Boolean(cashVarianceLabel && cashVarianceLabel !== "$0");
+  const hasCashVariance = cashFlow !== null && cashFlow.netVariance !== 0;
   const needsReview = !connected || !feedsHealthy || hasCashVariance || !hasPosture;
   const statusTone: PortfolioWorkflowTaskPanel["statusTone"] = !hasPosture
     ? "danger"

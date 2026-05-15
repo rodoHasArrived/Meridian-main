@@ -101,8 +101,10 @@ export function useWorkstationData() {
     const revision = refreshRevisionRef.current + 1;
     refreshRevisionRef.current = revision;
     tradingRefreshRevisionRef.current += 1;
+    portfolioRefreshRevisionRef.current += 1;
     refreshAbortRef.current?.abort();
     tradingRefreshAbortRef.current?.abort();
+    portfolioRefreshAbortRef.current?.abort();
     const controller = new AbortController();
     refreshAbortRef.current = controller;
     const requestOptions = { signal: controller.signal };

@@ -133,7 +133,7 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
 
       if (fired) {
         const trigger: PriceAlertTrigger = {
-          id: `trigger-${alert.id}-${Date.now()}`,
+          id: `trigger-${alert.id}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
           alertId: alert.id,
           symbol: alert.symbol,
           condition: alert.condition,
