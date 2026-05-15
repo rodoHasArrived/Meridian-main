@@ -11,6 +11,11 @@ namespace Meridian.Strategies.Services;
 public sealed class StrategyDesignService
 {
     private const int MaxLoopIterations = 1_000;
+    private static readonly string[] ConcurrentCellSemantics = ["all-pass", "any-pass", "first-wins"];
+    private static readonly string[] TradeCellInstruments = ["Equity", "Option", "Future", "ETF"];
+    private static readonly string[] TradeCellDirections = ["Buy", "Sell", "SellShort", "BuyToCover"];
+    private static readonly string[] TradeCellSizingMethods = ["FixedShares", "FixedNotional", "PercentAUM", "EqualWeight"];
+    private static readonly string[] TradeCellSizingValueRequiredMethods = ["FixedShares", "FixedNotional", "PercentAUM"];
     private static readonly Regex FieldTokenRegex = new(
         @"\b[A-Z][A-Z0-9_]{2,}\b",
         RegexOptions.CultureInvariant | RegexOptions.Compiled,
@@ -81,6 +86,10 @@ public sealed class StrategyDesignService
         var messages = new List<StrategyDesignValidationMessage>();
         var cells = document.Cells ?? Array.Empty<StrategyDesignCell>();
         var transitions = document.Transitions ?? Array.Empty<StrategyDesignTransition>();
+        var cellIds = cells
+            .Where(static cell => !string.IsNullOrWhiteSpace(cell.CellId))
+            .Select(static cell => cell.CellId)
+            .ToHashSet(StringComparer.Ordinal);
 
         if (string.IsNullOrWhiteSpace(document.Name))
         {
@@ -136,6 +145,8 @@ public sealed class StrategyDesignService
                         $"{fieldRef} is visible in the field catalog but disabled: {field.DisabledReason}"));
                 }
             }
+
+            messages.AddRange(ValidateCellKindParameters(cell, cellIds));
         }
 
         var cellOrder = cells
@@ -343,6 +354,7 @@ public sealed class StrategyDesignService
 
     private static StrategyDesignCell NormalizeCell(StrategyDesignCell cell)
     {
+        var normalizedKind = string.IsNullOrWhiteSpace(cell.Kind) ? "formula" : cell.Kind.Trim().ToLowerInvariant();
         var normalizedRefs = NormalizeStringList(cell.FieldRefs)
             .Select(static field => field.ToUpperInvariant())
             .ToArray();
@@ -351,22 +363,26 @@ public sealed class StrategyDesignService
             normalizedRefs = ExtractSourceFieldRefs(cell.Source).ToArray();
         }
 
-        return cell with
-        {
-            CellId = string.IsNullOrWhiteSpace(cell.CellId) ? $"cell-{Guid.NewGuid():N}" : cell.CellId.Trim(),
-            Label = string.IsNullOrWhiteSpace(cell.Label) ? "Untitled cell" : cell.Label.Trim(),
-            Kind = string.IsNullOrWhiteSpace(cell.Kind) ? "formula" : cell.Kind.Trim().ToLowerInvariant(),
-            Purpose = string.IsNullOrWhiteSpace(cell.Purpose) ? "filter" : cell.Purpose.Trim().ToLowerInvariant(),
-            Source = cell.Source?.Trim() ?? string.Empty,
-            FieldRefs = normalizedRefs,
-            Parameters = cell.Parameters is null
-                ? null
-                : cell.Parameters
+        var normalizedParameters = cell.Parameters is null
+            ? null
+            : NormalizeCellParameters(
+                normalizedKind,
+                cell.Parameters
                     .Where(static item => !string.IsNullOrWhiteSpace(item.Key))
                     .ToDictionary(
                         static item => item.Key.Trim(),
                         static item => item.Value?.Trim() ?? string.Empty,
-                        StringComparer.OrdinalIgnoreCase),
+                        StringComparer.OrdinalIgnoreCase));
+
+        return cell with
+        {
+            CellId = string.IsNullOrWhiteSpace(cell.CellId) ? $"cell-{Guid.NewGuid():N}" : cell.CellId.Trim(),
+            Label = string.IsNullOrWhiteSpace(cell.Label) ? "Untitled cell" : cell.Label.Trim(),
+            Kind = normalizedKind,
+            Purpose = string.IsNullOrWhiteSpace(cell.Purpose) ? "filter" : cell.Purpose.Trim().ToLowerInvariant(),
+            Source = cell.Source?.Trim() ?? string.Empty,
+            FieldRefs = normalizedRefs,
+            Parameters = normalizedParameters,
             DisabledReason = string.IsNullOrWhiteSpace(cell.DisabledReason) ? null : cell.DisabledReason.Trim()
         };
     }
@@ -386,12 +402,23 @@ public sealed class StrategyDesignService
 
     private static IReadOnlyList<string> ResolveFieldRefs(StrategyDesignCell cell)
     {
-        if (cell.FieldRefs is { Count: > 0 })
+        var refs = cell.FieldRefs is { Count: > 0 }
+            ? NormalizeStringList(cell.FieldRefs).Select(static item => item.ToUpperInvariant()).ToArray()
+            : ExtractSourceFieldRefs(cell.Source).ToArray();
+
+        if (!string.Equals(cell.Kind, "universe-builder", StringComparison.OrdinalIgnoreCase) || cell.Parameters is null)
         {
-            return NormalizeStringList(cell.FieldRefs).Select(static item => item.ToUpperInvariant()).ToArray();
+            return refs;
         }
 
-        return ExtractSourceFieldRefs(cell.Source).ToArray();
+        var includeRules = cell.Parameters.TryGetValue("includeRules", out var include) ? include : null;
+        var excludeRules = cell.Parameters.TryGetValue("excludeRules", out var exclude) ? exclude : null;
+
+        return refs
+            .Concat(ExtractSourceFieldRefs(includeRules))
+            .Concat(ExtractSourceFieldRefs(excludeRules))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static IReadOnlyList<string> ExtractSourceFieldRefs(string? source)
@@ -416,6 +443,57 @@ public sealed class StrategyDesignService
             .ToArray()
         ?? [];
 
+    private static Dictionary<string, string> NormalizeCellParameters(string cellKind, Dictionary<string, string> parameters)
+    {
+        if (parameters.Count == 0)
+        {
+            return parameters;
+        }
+
+        if (string.Equals(cellKind, "concurrent", StringComparison.OrdinalIgnoreCase) &&
+            parameters.TryGetValue("semantics", out var semantics) &&
+            TryGetCanonicalValue(semantics, ConcurrentCellSemantics, out var canonicalSemantics))
+        {
+            parameters["semantics"] = canonicalSemantics;
+        }
+
+        if (string.Equals(cellKind, "trade", StringComparison.OrdinalIgnoreCase))
+        {
+            if (parameters.TryGetValue("instrument", out var instrument) &&
+                TryGetCanonicalValue(instrument, TradeCellInstruments, out var canonicalInstrument))
+            {
+                parameters["instrument"] = canonicalInstrument;
+            }
+
+            if (parameters.TryGetValue("direction", out var direction) &&
+                TryGetCanonicalValue(direction, TradeCellDirections, out var canonicalDirection))
+            {
+                parameters["direction"] = canonicalDirection;
+            }
+
+            if (parameters.TryGetValue("sizingMethod", out var sizingMethod) &&
+                TryGetCanonicalValue(sizingMethod, TradeCellSizingMethods, out var canonicalSizingMethod))
+            {
+                parameters["sizingMethod"] = canonicalSizingMethod;
+            }
+        }
+
+        return parameters;
+    }
+
+    private static bool TryGetCanonicalValue(string? value, IReadOnlyList<string> validValues, out string canonical)
+    {
+        canonical = string.Empty;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var trimmed = value.Trim();
+        canonical = validValues.FirstOrDefault(candidate => string.Equals(candidate, trimmed, StringComparison.OrdinalIgnoreCase)) ?? string.Empty;
+        return canonical.Length > 0;
+    }
+
     private static bool IsLoopTransition(StrategyDesignTransition transition, int fromIndex, int toIndex)
         => string.Equals(transition.Kind, "loop", StringComparison.OrdinalIgnoreCase)
            || fromIndex >= toIndex
@@ -430,12 +508,125 @@ public sealed class StrategyDesignService
     private static string SafeLabel(StrategyDesignCell cell)
         => string.IsNullOrWhiteSpace(cell.Label) ? cell.CellId : cell.Label;
 
+    private static IEnumerable<StrategyDesignValidationMessage> ValidateCellKindParameters(StrategyDesignCell cell, IReadOnlySet<string> cellIds)
+    {
+        var label = SafeLabel(cell);
+        var p = cell.Parameters;
+
+        switch (cell.Kind)
+        {
+            case "state":
+                if (p is null || !p.TryGetValue("exitCondition", out var exitCond) || string.IsNullOrWhiteSpace(exitCond))
+                    yield return Error("StateCellExitRequired", cell.CellId, $"{label} (state) must define an exitCondition parameter.");
+
+                if (p is null || !p.TryGetValue("stateLabel", out var stateLbl) || string.IsNullOrWhiteSpace(stateLbl))
+                    yield return Error("StateCellLabelRequired", cell.CellId, $"{label} (state) must define a stateLabel parameter.");
+                break;
+
+            case "concurrent":
+                var branchIds = p is null || !p.TryGetValue("branchIds", out var branches)
+                    ? []
+                    : branches
+                        .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                        .ToArray();
+
+                if (branchIds.Length == 0)
+                {
+                    yield return Error("ConcurrentCellBranchesRequired", cell.CellId, $"{label} (concurrent) must define a branchIds parameter.");
+                }
+                else
+                {
+                    var missingBranches = branchIds
+                        .Where(branchId => !cellIds.Contains(branchId))
+                        .ToArray();
+                    if (missingBranches.Length > 0)
+                    {
+                        yield return Error(
+                            "ConcurrentCellBranchMissing",
+                            cell.CellId,
+                            $"{label} (concurrent) references missing branch cell IDs: {string.Join(", ", missingBranches)}.");
+                    }
+                }
+
+                if (p is null || !p.TryGetValue("semantics", out var sem) || !ConcurrentCellSemantics.Contains(sem, StringComparer.OrdinalIgnoreCase))
+                    yield return Error("ConcurrentCellSemanticsRequired", cell.CellId, $"{label} (concurrent) semantics must be one of: all-pass, any-pass, first-wins.");
+                break;
+
+            case "universe-builder":
+                if (p is null || !p.TryGetValue("assetClass", out var assetClass) || string.IsNullOrWhiteSpace(assetClass))
+                    yield return Error("UniverseBuilderAssetClassRequired", cell.CellId, $"{label} (universe-builder) must define an assetClass parameter.");
+
+                if (p is null || !p.TryGetValue("includeRules", out var includeRules) || string.IsNullOrWhiteSpace(includeRules))
+                    yield return Error("UniverseBuilderIncludeRulesRequired", cell.CellId, $"{label} (universe-builder) must define at least one includeRules parameter.");
+
+                if (p is not null)
+                {
+                    var hasMinSize = p.TryGetValue("minSize", out var minSizeRaw) && !string.IsNullOrWhiteSpace(minSizeRaw);
+                    var hasMaxSize = p.TryGetValue("maxSize", out var maxSizeRaw) && !string.IsNullOrWhiteSpace(maxSizeRaw);
+
+                    var minSizeIsValid = !hasMinSize || (decimal.TryParse(minSizeRaw, out var minSize) && minSize >= 0);
+                    var maxSizeIsValid = !hasMaxSize || (decimal.TryParse(maxSizeRaw, out var maxSize) && maxSize >= 0);
+
+                    if (!minSizeIsValid)
+                    {
+                        yield return Error("UniverseBuilderMinSizeInvalid", cell.CellId, $"{label} (universe-builder) minSize must be a non-negative number.");
+                    }
+
+                    if (!maxSizeIsValid)
+                    {
+                        yield return Error("UniverseBuilderMaxSizeInvalid", cell.CellId, $"{label} (universe-builder) maxSize must be a non-negative number.");
+                    }
+
+                    if (hasMinSize && hasMaxSize && minSizeIsValid && maxSizeIsValid)
+                    {
+                        decimal.TryParse(minSizeRaw, out var parsedMinSize);
+                        decimal.TryParse(maxSizeRaw, out var parsedMaxSize);
+                        if (parsedMinSize > parsedMaxSize)
+                        {
+                            yield return Error("UniverseBuilderSizeRangeInvalid", cell.CellId, $"{label} (universe-builder) minSize cannot be greater than maxSize.");
+                        }
+                    }
+                }
+                break;
+
+            case "trade":
+                if (p is null || !p.TryGetValue("instrument", out var instr) || !TradeCellInstruments.Contains(instr, StringComparer.OrdinalIgnoreCase))
+                    yield return Error("TradeCellInstrumentRequired", cell.CellId, $"{label} (trade) instrument must be Equity, Option, Future, or ETF.");
+
+                if (p is null || !p.TryGetValue("direction", out var dir) || !TradeCellDirections.Contains(dir, StringComparer.OrdinalIgnoreCase))
+                    yield return Error("TradeCellDirectionRequired", cell.CellId, $"{label} (trade) direction must be Buy, Sell, SellShort, or BuyToCover.");
+
+                if (p is null || !p.TryGetValue("sizingMethod", out var sizing) || !TradeCellSizingMethods.Contains(sizing, StringComparer.OrdinalIgnoreCase))
+                {
+                    yield return Error("TradeCellSizingRequired", cell.CellId, $"{label} (trade) sizingMethod must be FixedShares, FixedNotional, PercentAUM, or EqualWeight.");
+                }
+                else if (TradeCellSizingValueRequiredMethods.Contains(sizing, StringComparer.OrdinalIgnoreCase))
+                {
+                    var hasSizingValue = p.TryGetValue("sizingValue", out var sizingValueRaw) && !string.IsNullOrWhiteSpace(sizingValueRaw);
+                    if (!hasSizingValue || !decimal.TryParse(sizingValueRaw, out _))
+                    {
+                        yield return Error("TradeCellSizingValueRequired", cell.CellId, $"{label} (trade) sizingValue must be numeric when sizingMethod is {sizing}.");
+                    }
+                }
+                break;
+        }
+    }
+
     private static string BuildCellTraceDetail(StrategyDesignCell cell)
     {
         var refs = ResolveFieldRefs(cell);
-        return refs.Count == 0
-            ? $"{cell.Kind} cell runs without catalog fields."
-            : $"{cell.Kind} cell uses {string.Join(", ", refs)}.";
+        var refsLabel = refs.Count == 0 ? "no catalog fields" : string.Join(", ", refs);
+        var p = cell.Parameters;
+        return cell.Kind switch
+        {
+            "state" => $"State '{p?.GetValueOrDefault("stateLabel", cell.CellId)}' exits on: {p?.GetValueOrDefault("exitCondition", "(none)")}.",
+            "concurrent" => $"Concurrent evaluation ({p?.GetValueOrDefault("semantics", "?")}) across: {p?.GetValueOrDefault("branchIds", "(none)")}.",
+            "universe-builder" => $"Builds {p?.GetValueOrDefault("assetClass", "?")} universe using {refsLabel}.",
+            "trade" => $"Trade intent: {p?.GetValueOrDefault("direction", "?")} {p?.GetValueOrDefault("instrument", "?")} via {p?.GetValueOrDefault("sizingMethod", "?")}.",
+            _ => refs.Count == 0
+                ? $"{cell.Kind} cell runs without catalog fields."
+                : $"{cell.Kind} cell uses {refsLabel}."
+        };
     }
 
     private static string ComputeDatasetFingerprint(StrategyDesignDocument document, IReadOnlyList<string> fieldRefs)
@@ -541,6 +732,122 @@ public sealed class StrategyDesignService
                         new("t2", "payoff-panel", "review-proof", "next", "payoff reviewed")
                     ],
                     new Dictionary<string, string> { ["prototypeCommit"] = "2826afc0dc5ca4590bf0860871acd45933088bad" },
+                    now,
+                    now))),
+            new(
+                "state-machine-strategy",
+                "State machine strategy",
+                "Named execution states with entry/exit conditions — model a strategy as a lifecycle state machine.",
+                "Advanced",
+                "Meridian extended cell kinds",
+                ["state", "lifecycle", "conditional"],
+                Normalize(new StrategyDesignDocument(
+                    "state-machine-strategy",
+                    "State machine strategy",
+                    "Strategy execution modelled as a state machine with named checkpoints.",
+                    "1",
+                    "provider-bars/equities/daily",
+                    ["SPY", "QQQ"],
+                    [
+                        new("watching-state", "Watching", "state", "state", "initial monitoring phase", ["MOMENTUM_63D"],
+                            new Dictionary<string, string> { ["stateLabel"] = "Watching", ["exitCondition"] = "MOMENTUM_63D > 0.05", ["entryCondition"] = "PORTFOLIO_WEIGHT == 0", ["isTerminal"] = "false" }),
+                        new("holding-state", "Holding", "state", "state", "active position phase", ["MOMENTUM_63D", "VOLATILITY_20D"],
+                            new Dictionary<string, string> { ["stateLabel"] = "Holding", ["exitCondition"] = "MOMENTUM_63D < 0 || VOLATILITY_20D > 0.35", ["isTerminal"] = "false" }),
+                        new("exiting-state", "Exiting", "state", "state", "position wind-down phase", ["PORTFOLIO_WEIGHT"],
+                            new Dictionary<string, string> { ["stateLabel"] = "Exiting", ["exitCondition"] = "PORTFOLIO_WEIGHT == 0", ["isTerminal"] = "true" }),
+                        new("state-risk-guard", "State risk guard", "governance", "risk", "VOLATILITY_20D < 0.40", ["VOLATILITY_20D"], null)
+                    ],
+                    [
+                        new("t1", "watching-state", "holding-state", "next", "exit: MOMENTUM_63D > 0.05"),
+                        new("t2", "holding-state", "exiting-state", "next", "exit: MOMENTUM_63D < 0 || VOLATILITY_20D > 0.35"),
+                        new("t3", "exiting-state", "state-risk-guard", "next", "position closed")
+                    ],
+                    null,
+                    now,
+                    now))),
+            new(
+                "concurrent-branch-strategy",
+                "Concurrent branch strategy",
+                "Parallel evaluation point — multiple signal branches run simultaneously with configurable pass semantics.",
+                "Advanced",
+                "Meridian extended cell kinds",
+                ["concurrent", "parallel", "multi-signal"],
+                Normalize(new StrategyDesignDocument(
+                    "concurrent-branch-strategy",
+                    "Concurrent branch strategy",
+                    "Parallel signal evaluation: equity momentum and volatility screens run concurrently.",
+                    "1",
+                    "provider-bars/equities/daily",
+                    ["SPY", "QQQ", "AAPL"],
+                    [
+                        new("momentum-branch", "Momentum signal", "formula", "filter", "MOMENTUM_63D > 0.05", ["MOMENTUM_63D"], null),
+                        new("volatility-branch", "Volatility filter", "formula", "filter", "VOLATILITY_20D < 0.30", ["VOLATILITY_20D"], null),
+                        new("concurrent-gate", "Concurrent signal gate", "concurrent", "concurrent", "parallel branch evaluation", [],
+                            new Dictionary<string, string> { ["branchIds"] = "momentum-branch,volatility-branch", ["semantics"] = "all-pass" }),
+                        new("concurrent-risk", "Risk guard", "governance", "risk", "all concurrent branches satisfied", ["PORTFOLIO_WEIGHT"], null)
+                    ],
+                    [
+                        new("t1", "momentum-branch", "concurrent-gate", "next", "branch ready"),
+                        new("t2", "volatility-branch", "concurrent-gate", "next", "branch ready"),
+                        new("t3", "concurrent-gate", "concurrent-risk", "next", "gate resolved")
+                    ],
+                    null,
+                    now,
+                    now))),
+            new(
+                "structured-universe-strategy",
+                "Structured universe strategy",
+                "Explicit asset class, include/exclude rules, and size constraints for disciplined universe construction.",
+                "Universe",
+                "Meridian extended cell kinds",
+                ["universe-builder", "structured", "equity"],
+                Normalize(new StrategyDesignDocument(
+                    "structured-universe-strategy",
+                    "Structured universe strategy",
+                    "Universe-builder cell with explicit asset class rules and size bounds.",
+                    "1",
+                    "provider-bars/equities/daily",
+                    ["SPY"],
+                    [
+                        new("equity-universe", "Liquid equity universe", "universe-builder", "universe", "structured universe definition", ["PRICE", "MOMENTUM_63D", "VOLATILITY_20D"],
+                            new Dictionary<string, string> { ["assetClass"] = "Equity", ["includeRules"] = "PRICE > 10, MOMENTUM_63D > 0", ["excludeRules"] = "VOLATILITY_20D > 0.40", ["minSize"] = "20", ["maxSize"] = "100" }),
+                        new("universe-rank", "Momentum rank", "formula", "rank", "MOMENTUM_63D - VOLATILITY_20D", ["MOMENTUM_63D", "VOLATILITY_20D"], null),
+                        new("universe-risk", "Universe risk guard", "governance", "risk", "VOLATILITY_20D < 0.30", ["VOLATILITY_20D"], null)
+                    ],
+                    [
+                        new("t1", "equity-universe", "universe-rank", "next", "universe built"),
+                        new("t2", "universe-rank", "universe-risk", "next", "rank complete")
+                    ],
+                    null,
+                    now,
+                    now))),
+            new(
+                "trade-intent-strategy",
+                "Trade intent strategy",
+                "Explicit trade definition cell — instrument type, direction, sizing method, and price constraint.",
+                "Execution",
+                "Meridian extended cell kinds",
+                ["trade", "execution", "sizing"],
+                Normalize(new StrategyDesignDocument(
+                    "trade-intent-strategy",
+                    "Trade intent strategy",
+                    "Strategy with an explicit trade cell defining instrument, direction, and sizing.",
+                    "1",
+                    "provider-bars/equities/daily",
+                    ["SPY", "QQQ"],
+                    [
+                        new("trade-universe", "Liquid equity filter", "visual", "universe", "PRICE > 20", ["PRICE"], null),
+                        new("trade-rank", "Momentum score", "formula", "rank", "MOMENTUM_63D - VOLATILITY_20D", ["MOMENTUM_63D", "VOLATILITY_20D"], null),
+                        new("buy-equities", "Buy equities", "trade", "trade", "execute buy order on ranked universe", [],
+                            new Dictionary<string, string> { ["instrument"] = "Equity", ["direction"] = "Buy", ["sizingMethod"] = "EqualWeight", ["priceConstraint"] = "VWAP", ["sizingValue"] = "0.05" }),
+                        new("trade-risk", "Execution risk guard", "governance", "risk", "VOLATILITY_20D < 0.30 && PORTFOLIO_WEIGHT <= 0.10", ["VOLATILITY_20D", "PORTFOLIO_WEIGHT"], null)
+                    ],
+                    [
+                        new("t1", "trade-universe", "trade-rank", "next", "universe ready"),
+                        new("t2", "trade-rank", "buy-equities", "next", "rank complete"),
+                        new("t3", "buy-equities", "trade-risk", "next", "trade submitted")
+                    ],
+                    null,
                     now,
                     now)))
         ];

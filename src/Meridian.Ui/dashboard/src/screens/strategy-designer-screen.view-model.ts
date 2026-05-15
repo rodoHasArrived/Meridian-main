@@ -140,7 +140,17 @@ export interface StrategyLegDetailViewModel {
   fields: StrategyLegDetailFieldViewModel[];
 }
 
-export type StrategyBuilderCellKind = "visual" | "formula" | "code" | "governance" | "options-payoff";
+export type StrategyBuilderCellKind =
+  | "visual"
+  | "formula"
+  | "code"
+  | "governance"
+  | "options-payoff"
+  | "state"
+  | "concurrent"
+  | "universe-builder"
+  | "trade";
+
 export type StrategyBuilderCellPurpose =
   | "universe"
   | "filter"
@@ -148,7 +158,10 @@ export type StrategyBuilderCellPurpose =
   | "risk"
   | "backtest"
   | "governance"
-  | "options-payoff";
+  | "options-payoff"
+  | "state"
+  | "concurrent"
+  | "trade";
 export type StrategyBuilderMessageSeverity = "error" | "warning" | "info";
 
 export interface StrategyBuilderFieldCatalogItem {
@@ -187,6 +200,157 @@ export interface StrategyBuilderCell {
   purpose: StrategyBuilderCellPurpose;
   source: string;
   fieldRefs: string[];
+  parameters?: Record<string, string>;
+}
+
+export interface StateCellParameters {
+  entryCondition?: string;
+  exitCondition: string;
+  stateLabel: string;
+  isTerminal?: string;
+}
+
+export type ConcurrentCellSemantics = "all-pass" | "any-pass" | "first-wins";
+
+export interface ConcurrentCellParameters {
+  branchIds: string;
+  semantics: ConcurrentCellSemantics;
+}
+
+export interface UniverseBuilderCellParameters {
+  assetClass: string;
+  includeRules: string;
+  excludeRules?: string;
+  minSize?: string;
+  maxSize?: string;
+}
+
+export type TradeCellInstrumentType = "Equity" | "Option" | "Future" | "ETF";
+export type TradeCellDirection = "Buy" | "Sell" | "SellShort" | "BuyToCover";
+export type TradeCellSizingMethod = "FixedShares" | "FixedNotional" | "PercentAUM" | "EqualWeight";
+
+const FIELD_TOKEN_REGEX = /\b[A-Z][A-Z0-9_]{2,}\b/g;
+const CONCURRENT_CELL_SEMANTICS: ConcurrentCellSemantics[] = ["all-pass", "any-pass", "first-wins"];
+const TRADE_CELL_INSTRUMENTS: TradeCellInstrumentType[] = ["Equity", "Option", "Future", "ETF"];
+const TRADE_CELL_DIRECTIONS: TradeCellDirection[] = ["Buy", "Sell", "SellShort", "BuyToCover"];
+const TRADE_CELL_SIZING_METHODS: TradeCellSizingMethod[] = ["FixedShares", "FixedNotional", "PercentAUM", "EqualWeight"];
+const TRADE_CELL_SIZING_VALUE_REQUIRED_METHODS: TradeCellSizingMethod[] = ["FixedShares", "FixedNotional", "PercentAUM"];
+
+export interface TradeCellParameters {
+  instrument: TradeCellInstrumentType;
+  direction: TradeCellDirection;
+  sizingMethod: TradeCellSizingMethod;
+  priceConstraint?: string;
+  sizingValue?: string;
+}
+
+function getTrimmedParameter(parameters: Record<string, string> | undefined, key: string): string | undefined {
+  const value = parameters?.[key];
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function toCanonicalEnumValue<T extends string>(value: string | undefined, validValues: readonly T[]): T | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalizedValue = value.toLowerCase();
+  const canonical = validValues.find((candidate) => candidate.toLowerCase() === normalizedValue);
+  return canonical ?? null;
+}
+
+function parseBranchIds(value: string | undefined): string[] {
+  if (!value) {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((branchId) => branchId.trim())
+    .filter((branchId) => branchId.length > 0);
+}
+
+function extractFieldTokens(source: string | undefined): string[] {
+  if (!source) {
+    return [];
+  }
+
+  const tokens = source.match(FIELD_TOKEN_REGEX) ?? [];
+  return [...new Set(tokens.map((token) => token.toUpperCase()))];
+}
+
+function resolveCellFieldRefs(cell: StrategyBuilderCell): string[] {
+  const refs = cell.fieldRefs.map((fieldRef) => fieldRef.trim().toUpperCase()).filter((fieldRef) => fieldRef.length > 0);
+  if (cell.kind !== "universe-builder") {
+    return [...new Set(refs)];
+  }
+
+  const includeRules = getTrimmedParameter(cell.parameters, "includeRules");
+  const excludeRules = getTrimmedParameter(cell.parameters, "excludeRules");
+  return [...new Set([...refs, ...extractFieldTokens(includeRules), ...extractFieldTokens(excludeRules)])];
+}
+
+export function getStateCellParams(cell: StrategyBuilderCell): StateCellParameters | null {
+  if (cell.kind !== "state" || !cell.parameters) return null;
+  const exitCondition = getTrimmedParameter(cell.parameters, "exitCondition");
+  const stateLabel = getTrimmedParameter(cell.parameters, "stateLabel");
+  if (!exitCondition || !stateLabel) return null;
+  return {
+    entryCondition: getTrimmedParameter(cell.parameters, "entryCondition"),
+    exitCondition,
+    stateLabel,
+    isTerminal: getTrimmedParameter(cell.parameters, "isTerminal")
+  };
+}
+
+export function getConcurrentCellParams(cell: StrategyBuilderCell): ConcurrentCellParameters | null {
+  if (cell.kind !== "concurrent" || !cell.parameters) return null;
+  const branchIds = getTrimmedParameter(cell.parameters, "branchIds");
+  const parsedBranchIds = parseBranchIds(branchIds);
+  const semantics = toCanonicalEnumValue(getTrimmedParameter(cell.parameters, "semantics"), CONCURRENT_CELL_SEMANTICS);
+  if (parsedBranchIds.length === 0 || !semantics) return null;
+  return { branchIds: parsedBranchIds.join(","), semantics };
+}
+
+export function getUniverseBuilderCellParams(cell: StrategyBuilderCell): UniverseBuilderCellParameters | null {
+  if (cell.kind !== "universe-builder" || !cell.parameters) return null;
+  const assetClass = getTrimmedParameter(cell.parameters, "assetClass");
+  const includeRules = getTrimmedParameter(cell.parameters, "includeRules");
+  if (!assetClass || !includeRules) return null;
+  return {
+    assetClass,
+    includeRules,
+    excludeRules: getTrimmedParameter(cell.parameters, "excludeRules"),
+    minSize: getTrimmedParameter(cell.parameters, "minSize"),
+    maxSize: getTrimmedParameter(cell.parameters, "maxSize")
+  };
+}
+
+export function getTradeCellParams(cell: StrategyBuilderCell): TradeCellParameters | null {
+  if (cell.kind !== "trade" || !cell.parameters) return null;
+  const instrument = toCanonicalEnumValue(getTrimmedParameter(cell.parameters, "instrument"), TRADE_CELL_INSTRUMENTS);
+  const direction = toCanonicalEnumValue(getTrimmedParameter(cell.parameters, "direction"), TRADE_CELL_DIRECTIONS);
+  const sizingMethod = toCanonicalEnumValue(getTrimmedParameter(cell.parameters, "sizingMethod"), TRADE_CELL_SIZING_METHODS);
+  const sizingValue = getTrimmedParameter(cell.parameters, "sizingValue");
+  if (
+    !instrument ||
+    !direction ||
+    !sizingMethod ||
+    (TRADE_CELL_SIZING_VALUE_REQUIRED_METHODS.includes(sizingMethod) &&
+      (!sizingValue || !Number.isFinite(Number(sizingValue))))
+  ) return null;
+  return {
+    instrument,
+    direction,
+    sizingMethod,
+    priceConstraint: getTrimmedParameter(cell.parameters, "priceConstraint"),
+    sizingValue
+  };
 }
 
 export interface StrategyBuilderTransition {
@@ -614,6 +778,184 @@ const STRATEGY_BUILDER_TEMPLATES: StrategyBuilderTemplate[] = [
       disabled: false,
       disabledReason: null
     }
+  },
+  {
+    templateId: "state-machine-strategy",
+    name: "State machine strategy",
+    description: "Named execution states with entry/exit conditions — model a strategy as a lifecycle state machine.",
+    category: "Advanced",
+    tags: ["state", "lifecycle", "conditional"],
+    document: {
+      documentId: "state-machine-strategy",
+      name: "State machine strategy",
+      description: "Strategy execution modelled as a state machine with named checkpoints.",
+      version: "1",
+      datasetReference: "provider-bars/equities/daily",
+      universe: ["SPY", "QQQ"],
+      cells: [
+        {
+          cellId: "watching-state",
+          label: "Watching",
+          kind: "state",
+          purpose: "state",
+          source: "initial monitoring phase",
+          fieldRefs: ["MOMENTUM_63D"],
+          parameters: { stateLabel: "Watching", exitCondition: "MOMENTUM_63D > 0.05", entryCondition: "PORTFOLIO_WEIGHT == 0", isTerminal: "false" }
+        },
+        {
+          cellId: "holding-state",
+          label: "Holding",
+          kind: "state",
+          purpose: "state",
+          source: "active position phase",
+          fieldRefs: ["MOMENTUM_63D", "VOLATILITY_20D"],
+          parameters: { stateLabel: "Holding", exitCondition: "MOMENTUM_63D < 0 || VOLATILITY_20D > 0.35", isTerminal: "false" }
+        },
+        {
+          cellId: "exiting-state",
+          label: "Exiting",
+          kind: "state",
+          purpose: "state",
+          source: "position wind-down phase",
+          fieldRefs: ["PORTFOLIO_WEIGHT"],
+          parameters: { stateLabel: "Exiting", exitCondition: "PORTFOLIO_WEIGHT == 0", isTerminal: "true" }
+        },
+        { cellId: "state-risk-guard", label: "State risk guard", kind: "governance", purpose: "risk", source: "VOLATILITY_20D < 0.40", fieldRefs: ["VOLATILITY_20D"] }
+      ],
+      transitions: [
+        { transitionId: "t1", fromCellId: "watching-state", toCellId: "holding-state", kind: "next", condition: "exit: MOMENTUM_63D > 0.05" },
+        { transitionId: "t2", fromCellId: "holding-state", toCellId: "exiting-state", kind: "next", condition: "exit: MOMENTUM_63D < 0 || VOLATILITY_20D > 0.35" },
+        { transitionId: "t3", fromCellId: "exiting-state", toCellId: "state-risk-guard", kind: "next", condition: "position closed" }
+      ],
+      updatedAt: "2026-05-15T00:00:00Z"
+    },
+    loadCommand: {
+      label: "Load",
+      ariaLabel: "Load State machine strategy template",
+      disabled: false,
+      disabledReason: null
+    }
+  },
+  {
+    templateId: "concurrent-branch-strategy",
+    name: "Concurrent branch strategy",
+    description: "Parallel evaluation point — multiple signal branches run simultaneously with configurable pass semantics.",
+    category: "Advanced",
+    tags: ["concurrent", "parallel", "multi-signal"],
+    document: {
+      documentId: "concurrent-branch-strategy",
+      name: "Concurrent branch strategy",
+      description: "Parallel signal evaluation: equity momentum and volatility screens run concurrently.",
+      version: "1",
+      datasetReference: "provider-bars/equities/daily",
+      universe: ["SPY", "QQQ", "AAPL"],
+      cells: [
+        { cellId: "momentum-branch", label: "Momentum signal", kind: "formula", purpose: "filter", source: "MOMENTUM_63D > 0.05", fieldRefs: ["MOMENTUM_63D"] },
+        { cellId: "volatility-branch", label: "Volatility filter", kind: "formula", purpose: "filter", source: "VOLATILITY_20D < 0.30", fieldRefs: ["VOLATILITY_20D"] },
+        {
+          cellId: "concurrent-gate",
+          label: "Concurrent signal gate",
+          kind: "concurrent",
+          purpose: "concurrent",
+          source: "parallel branch evaluation",
+          fieldRefs: [],
+          parameters: { branchIds: "momentum-branch,volatility-branch", semantics: "all-pass" }
+        },
+        { cellId: "concurrent-risk", label: "Risk guard", kind: "governance", purpose: "risk", source: "all concurrent branches satisfied", fieldRefs: ["PORTFOLIO_WEIGHT"] }
+      ],
+      transitions: [
+        { transitionId: "t1", fromCellId: "momentum-branch", toCellId: "concurrent-gate", kind: "next", condition: "branch ready" },
+        { transitionId: "t2", fromCellId: "volatility-branch", toCellId: "concurrent-gate", kind: "next", condition: "branch ready" },
+        { transitionId: "t3", fromCellId: "concurrent-gate", toCellId: "concurrent-risk", kind: "next", condition: "gate resolved" }
+      ],
+      updatedAt: "2026-05-15T00:00:00Z"
+    },
+    loadCommand: {
+      label: "Load",
+      ariaLabel: "Load Concurrent branch strategy template",
+      disabled: false,
+      disabledReason: null
+    }
+  },
+  {
+    templateId: "structured-universe-strategy",
+    name: "Structured universe strategy",
+    description: "Explicit asset class, include/exclude rules, and size constraints for disciplined universe construction.",
+    category: "Universe",
+    tags: ["universe-builder", "structured", "equity"],
+    document: {
+      documentId: "structured-universe-strategy",
+      name: "Structured universe strategy",
+      description: "Universe-builder cell with explicit asset class rules and size bounds.",
+      version: "1",
+      datasetReference: "provider-bars/equities/daily",
+      universe: ["SPY"],
+      cells: [
+        {
+          cellId: "equity-universe",
+          label: "Liquid equity universe",
+          kind: "universe-builder",
+          purpose: "universe",
+          source: "structured universe definition",
+          fieldRefs: ["PRICE", "MOMENTUM_63D", "VOLATILITY_20D"],
+          parameters: { assetClass: "Equity", includeRules: "PRICE > 10, MOMENTUM_63D > 0", excludeRules: "VOLATILITY_20D > 0.40", minSize: "20", maxSize: "100" }
+        },
+        { cellId: "universe-rank", label: "Momentum rank", kind: "formula", purpose: "rank", source: "MOMENTUM_63D - VOLATILITY_20D", fieldRefs: ["MOMENTUM_63D", "VOLATILITY_20D"] },
+        { cellId: "universe-risk", label: "Universe risk guard", kind: "governance", purpose: "risk", source: "VOLATILITY_20D < 0.30", fieldRefs: ["VOLATILITY_20D"] }
+      ],
+      transitions: [
+        { transitionId: "t1", fromCellId: "equity-universe", toCellId: "universe-rank", kind: "next", condition: "universe built" },
+        { transitionId: "t2", fromCellId: "universe-rank", toCellId: "universe-risk", kind: "next", condition: "rank complete" }
+      ],
+      updatedAt: "2026-05-15T00:00:00Z"
+    },
+    loadCommand: {
+      label: "Load",
+      ariaLabel: "Load Structured universe strategy template",
+      disabled: false,
+      disabledReason: null
+    }
+  },
+  {
+    templateId: "trade-intent-strategy",
+    name: "Trade intent strategy",
+    description: "Explicit trade definition cell — instrument type, direction, sizing method, and price constraint.",
+    category: "Execution",
+    tags: ["trade", "execution", "sizing"],
+    document: {
+      documentId: "trade-intent-strategy",
+      name: "Trade intent strategy",
+      description: "Strategy with an explicit trade cell defining instrument, direction, and sizing.",
+      version: "1",
+      datasetReference: "provider-bars/equities/daily",
+      universe: ["SPY", "QQQ"],
+      cells: [
+        { cellId: "trade-universe", label: "Liquid equity filter", kind: "visual", purpose: "universe", source: "PRICE > 20", fieldRefs: ["PRICE"] },
+        { cellId: "trade-rank", label: "Momentum score", kind: "formula", purpose: "rank", source: "MOMENTUM_63D - VOLATILITY_20D", fieldRefs: ["MOMENTUM_63D", "VOLATILITY_20D"] },
+        {
+          cellId: "buy-equities",
+          label: "Buy equities",
+          kind: "trade",
+          purpose: "trade",
+          source: "execute buy order on ranked universe",
+          fieldRefs: [],
+          parameters: { instrument: "Equity", direction: "Buy", sizingMethod: "EqualWeight", priceConstraint: "VWAP", sizingValue: "0.05" }
+        },
+        { cellId: "trade-risk", label: "Execution risk guard", kind: "governance", purpose: "risk", source: "VOLATILITY_20D < 0.30 && PORTFOLIO_WEIGHT <= 0.10", fieldRefs: ["VOLATILITY_20D", "PORTFOLIO_WEIGHT"] }
+      ],
+      transitions: [
+        { transitionId: "t1", fromCellId: "trade-universe", toCellId: "trade-rank", kind: "next", condition: "universe ready" },
+        { transitionId: "t2", fromCellId: "trade-rank", toCellId: "buy-equities", kind: "next", condition: "rank complete" },
+        { transitionId: "t3", fromCellId: "buy-equities", toCellId: "trade-risk", kind: "next", condition: "trade submitted" }
+      ],
+      updatedAt: "2026-05-15T00:00:00Z"
+    },
+    loadCommand: {
+      label: "Load",
+      ariaLabel: "Load Trade intent strategy template",
+      disabled: false,
+      disabledReason: null
+    }
   }
 ];
 
@@ -817,6 +1159,7 @@ export function validateStrategyBuilderDocument(
 ): StrategyBuilderValidationMessage[] {
   const messages: StrategyBuilderValidationMessage[] = [];
   const fieldMap = new Map(fieldCatalog.map((field) => [field.fieldId, field]));
+  const cellIds = new Set(document.cells.map((cell) => cell.cellId));
 
   if (!document.datasetReference.trim()) {
     messages.push({
@@ -855,7 +1198,9 @@ export function validateStrategyBuilderDocument(
       });
     }
 
-    for (const ref of cell.fieldRefs) {
+    messages.push(...validateCellKindParameters(cell, cellIds));
+
+    for (const ref of resolveCellFieldRefs(cell)) {
       const field = fieldMap.get(ref);
       if (!field) {
         messages.push({
@@ -919,6 +1264,88 @@ export function validateStrategyBuilderDocument(
       targetId: document.documentId,
       message: "Add a risk or governance cell before promotion review."
     });
+  }
+
+  return messages;
+}
+
+function validateCellKindParameters(cell: StrategyBuilderCell, cellIds: ReadonlySet<string>): StrategyBuilderValidationMessage[] {
+  const messages: StrategyBuilderValidationMessage[] = [];
+  const label = cell.label || cell.cellId;
+
+  if (cell.kind === "state") {
+    if (!getTrimmedParameter(cell.parameters, "exitCondition")) {
+      messages.push({ code: "StateCellExitRequired", severity: "error", targetId: cell.cellId, message: `${label} (state) must define an exitCondition parameter.` });
+    }
+    if (!getTrimmedParameter(cell.parameters, "stateLabel")) {
+      messages.push({ code: "StateCellLabelRequired", severity: "error", targetId: cell.cellId, message: `${label} (state) must define a stateLabel parameter.` });
+    }
+  }
+
+  if (cell.kind === "concurrent") {
+    const branchIds = parseBranchIds(getTrimmedParameter(cell.parameters, "branchIds"));
+    if (branchIds.length === 0) {
+      messages.push({ code: "ConcurrentCellBranchesRequired", severity: "error", targetId: cell.cellId, message: `${label} (concurrent) must define a branchIds parameter listing the parallel cell IDs.` });
+    } else {
+      const missing = branchIds.filter((branchId) => !cellIds.has(branchId));
+      if (missing.length > 0) {
+        messages.push({ code: "ConcurrentCellBranchMissing", severity: "error", targetId: cell.cellId, message: `${label} (concurrent) references missing branch cell IDs: ${missing.join(", ")}.` });
+      }
+    }
+    const sem = toCanonicalEnumValue(getTrimmedParameter(cell.parameters, "semantics"), CONCURRENT_CELL_SEMANTICS);
+    if (!sem) {
+      messages.push({ code: "ConcurrentCellSemanticsRequired", severity: "error", targetId: cell.cellId, message: `${label} (concurrent) semantics must be one of: all-pass, any-pass, first-wins.` });
+    }
+  }
+
+  if (cell.kind === "universe-builder") {
+    if (!getTrimmedParameter(cell.parameters, "assetClass")) {
+      messages.push({ code: "UniverseBuilderAssetClassRequired", severity: "error", targetId: cell.cellId, message: `${label} (universe-builder) must define an assetClass parameter.` });
+    }
+    if (!getTrimmedParameter(cell.parameters, "includeRules")) {
+      messages.push({ code: "UniverseBuilderIncludeRulesRequired", severity: "error", targetId: cell.cellId, message: `${label} (universe-builder) must define at least one includeRules parameter.` });
+    }
+
+    const minSize = getTrimmedParameter(cell.parameters, "minSize");
+    const maxSize = getTrimmedParameter(cell.parameters, "maxSize");
+    const parsedMinSize = minSize ? Number(minSize) : null;
+    const parsedMaxSize = maxSize ? Number(maxSize) : null;
+
+    if (minSize && (!Number.isFinite(parsedMinSize) || parsedMinSize < 0)) {
+      messages.push({ code: "UniverseBuilderMinSizeInvalid", severity: "error", targetId: cell.cellId, message: `${label} (universe-builder) minSize must be a non-negative number.` });
+    }
+    if (maxSize && (!Number.isFinite(parsedMaxSize) || parsedMaxSize < 0)) {
+      messages.push({ code: "UniverseBuilderMaxSizeInvalid", severity: "error", targetId: cell.cellId, message: `${label} (universe-builder) maxSize must be a non-negative number.` });
+    }
+    if (
+      parsedMinSize !== null &&
+      parsedMaxSize !== null &&
+      Number.isFinite(parsedMinSize) &&
+      Number.isFinite(parsedMaxSize) &&
+      parsedMinSize > parsedMaxSize
+    ) {
+      messages.push({ code: "UniverseBuilderSizeRangeInvalid", severity: "error", targetId: cell.cellId, message: `${label} (universe-builder) minSize cannot be greater than maxSize.` });
+    }
+  }
+
+  if (cell.kind === "trade") {
+    const instr = toCanonicalEnumValue(getTrimmedParameter(cell.parameters, "instrument"), TRADE_CELL_INSTRUMENTS);
+    const dir = toCanonicalEnumValue(getTrimmedParameter(cell.parameters, "direction"), TRADE_CELL_DIRECTIONS);
+    const sizing = toCanonicalEnumValue(getTrimmedParameter(cell.parameters, "sizingMethod"), TRADE_CELL_SIZING_METHODS);
+    if (!instr) {
+      messages.push({ code: "TradeCellInstrumentRequired", severity: "error", targetId: cell.cellId, message: `${label} (trade) instrument must be Equity, Option, Future, or ETF.` });
+    }
+    if (!dir) {
+      messages.push({ code: "TradeCellDirectionRequired", severity: "error", targetId: cell.cellId, message: `${label} (trade) direction must be Buy, Sell, SellShort, or BuyToCover.` });
+    }
+    if (!sizing) {
+      messages.push({ code: "TradeCellSizingRequired", severity: "error", targetId: cell.cellId, message: `${label} (trade) sizingMethod must be FixedShares, FixedNotional, PercentAUM, or EqualWeight.` });
+    } else if (TRADE_CELL_SIZING_VALUE_REQUIRED_METHODS.includes(sizing)) {
+      const sizingValue = getTrimmedParameter(cell.parameters, "sizingValue");
+      if (!sizingValue || !Number.isFinite(Number(sizingValue))) {
+        messages.push({ code: "TradeCellSizingValueRequired", severity: "error", targetId: cell.cellId, message: `${label} (trade) sizingValue must be numeric when sizingMethod is ${sizing}.` });
+      }
+    }
   }
 
   return messages;
@@ -1660,7 +2087,8 @@ function cloneStrategyBuilderDocument(document: StrategyBuilderDocument): Strate
     universe: [...document.universe],
     cells: document.cells.map((cell) => ({
       ...cell,
-      fieldRefs: [...cell.fieldRefs]
+      fieldRefs: [...cell.fieldRefs],
+      parameters: cell.parameters ? { ...cell.parameters } : undefined
     })),
     transitions: document.transitions.map((transition) => ({ ...transition }))
   };
@@ -1762,6 +2190,64 @@ function buildStrategyBuilderTrace(
   return trace;
 }
 
+function buildKindDescription(cell: StrategyBuilderCell, mappedCount: number): string {
+  switch (cell.kind) {
+    case "state":
+      return `State machine node. Exit: ${cell.parameters?.["exitCondition"] ?? "(not set)"}.`;
+    case "concurrent":
+      return `Parallel evaluation point (${cell.parameters?.["semantics"] ?? "semantics not set"}).`;
+    case "universe-builder":
+      return `Structured universe for ${cell.parameters?.["assetClass"] ?? "(asset class not set)"}.`;
+    case "trade":
+      return `Trade intent: ${cell.parameters?.["direction"] ?? "?"} ${cell.parameters?.["instrument"] ?? "?"} via ${cell.parameters?.["sizingMethod"] ?? "?"}.`;
+    default:
+      return `${cell.purpose} stage with ${mappedCount} mapped field${mappedCount === 1 ? "" : "s"}.`;
+  }
+}
+
+function buildKindParameterFields(cell: StrategyBuilderCell): StrategyLegDetailFieldViewModel[] {
+  if (cell.kind === "state") {
+    const p = getStateCellParams(cell);
+    if (!p) return [];
+    return [
+      { id: "state-label", label: "State label", value: p.stateLabel, tone: "default" },
+      { id: "exit-condition", label: "Exit condition", value: p.exitCondition, tone: "default" },
+      { id: "entry-condition", label: "Entry condition", value: p.entryCondition ?? "(none)", tone: p.entryCondition ? "default" : "muted" },
+      { id: "is-terminal", label: "Terminal state", value: p.isTerminal === "true" ? "Yes" : "No", tone: p.isTerminal === "true" ? "warning" : "muted" }
+    ];
+  }
+  if (cell.kind === "concurrent") {
+    const p = getConcurrentCellParams(cell);
+    if (!p) return [];
+    return [
+      { id: "branch-ids", label: "Branch cell IDs", value: p.branchIds, tone: "default" },
+      { id: "semantics", label: "Evaluation semantics", value: p.semantics, tone: "default" }
+    ];
+  }
+  if (cell.kind === "universe-builder") {
+    const p = getUniverseBuilderCellParams(cell);
+    if (!p) return [];
+    return [
+      { id: "asset-class", label: "Asset class", value: p.assetClass, tone: "default" },
+      { id: "include-rules", label: "Include rules", value: p.includeRules, tone: "default" },
+      { id: "exclude-rules", label: "Exclude rules", value: p.excludeRules ?? "(none)", tone: p.excludeRules ? "default" : "muted" },
+      { id: "size-constraints", label: "Size constraints", value: `min ${p.minSize ?? "—"} / max ${p.maxSize ?? "—"}`, tone: "default" }
+    ];
+  }
+  if (cell.kind === "trade") {
+    const p = getTradeCellParams(cell);
+    if (!p) return [];
+    return [
+      { id: "instrument", label: "Instrument type", value: p.instrument, tone: "default" },
+      { id: "direction", label: "Direction", value: p.direction, tone: p.direction === "Buy" || p.direction === "BuyToCover" ? "success" : "warning" },
+      { id: "sizing-method", label: "Sizing method", value: p.sizingMethod, tone: "default" },
+      { id: "price-constraint", label: "Price constraint", value: p.priceConstraint ?? "Market", tone: p.priceConstraint ? "default" : "muted" },
+      { id: "sizing-value", label: "Sizing value", value: p.sizingValue ?? "—", tone: "default" }
+    ];
+  }
+  return [];
+}
+
 function buildStrategyBuilderCellDetail(
   cell: StrategyBuilderCell,
   fieldMap: Map<string, StrategyBuilderFieldCatalogItem>
@@ -1774,7 +2260,7 @@ function buildStrategyBuilderCellDetail(
     id: STRATEGY_BUILDER_SELECTED_CELL_DETAIL_PANEL_ID,
     title: cell.label,
     eyebrow: `${cell.kind} cell`,
-    description: `${cell.purpose} stage with ${mapped.length} mapped field${mapped.length === 1 ? "" : "s"}.`,
+    description: buildKindDescription(cell, mapped.length),
     source: cell.source,
     ariaLabel: `Strategy builder cell detail for ${cell.label}`,
     fields: [
@@ -1786,7 +2272,8 @@ function buildStrategyBuilderCellDetail(
         label: "Fields",
         value: cell.fieldRefs.length > 0 ? cell.fieldRefs.join(", ") : "None",
         tone: cell.fieldRefs.some((fieldRef) => fieldMap.get(fieldRef)?.isEnabled === false) ? "danger" : "default"
-      }
+      },
+      ...buildKindParameterFields(cell)
     ]
   };
 }
@@ -1795,7 +2282,7 @@ function buildStrategyBuilderDatasetFingerprint(document: StrategyBuilderDocumen
   const source = [
     document.datasetReference,
     document.universe.join(","),
-    document.cells.flatMap((cell) => cell.fieldRefs).sort().join(","),
+    document.cells.flatMap((cell) => resolveCellFieldRefs(cell)).sort().join(","),
     document.version
   ].join("|");
   let hash = 0;

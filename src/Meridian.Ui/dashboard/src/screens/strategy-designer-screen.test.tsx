@@ -99,4 +99,48 @@ describe("StrategyDesignerScreen", () => {
       "/api/workstation/strategy/designer/run-backtest"
     );
   });
+
+  it("renders kind badge in cell canvas for state cells after loading the state machine template", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyDesignerScreen />);
+
+    await user.click(screen.getByRole("button", { name: "Load State machine strategy template" }));
+
+    const canvas = screen.getByTestId("strategy-builder-canvas");
+    expect(within(canvas).getAllByText("state").length).toBeGreaterThan(0);
+  });
+
+  it("inspector shows typed trade parameters when a trade cell is selected", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyDesignerScreen />);
+
+    await user.click(screen.getByRole("button", { name: "Load Trade intent strategy template" }));
+
+    const row = screen.getByRole("row", { name: /select buy equities/i });
+    row.focus();
+    await user.keyboard("{Enter}");
+
+    const inspector = screen.getByTestId("strategy-builder-inspector");
+    expect(within(inspector).getByText("Instrument type")).toBeInTheDocument();
+    expect(within(inspector).getByText("Direction")).toBeInTheDocument();
+    expect(within(inspector).getByText("Sizing method")).toBeInTheDocument();
+  });
+
+  it("inspector shows concurrent cell parameters when concurrent cell is selected", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyDesignerScreen />);
+
+    await user.click(screen.getByRole("button", { name: "Load Concurrent branch strategy template" }));
+
+    const canvas = screen.getByTestId("strategy-builder-canvas");
+    expect(within(canvas).getAllByText("concurrent").length).toBeGreaterThan(0);
+
+    const row = screen.getByRole("row", { name: /select concurrent signal gate/i });
+    row.focus();
+    await user.keyboard("{Enter}");
+
+    const inspector = screen.getByTestId("strategy-builder-inspector");
+    expect(within(inspector).getByText("Branch cell IDs")).toBeInTheDocument();
+    expect(within(inspector).getByText("Evaluation semantics")).toBeInTheDocument();
+  });
 });
