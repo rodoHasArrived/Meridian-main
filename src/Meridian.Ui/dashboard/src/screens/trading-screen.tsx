@@ -11,6 +11,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import { Select } from "@/components/ui/select";
 import {
   Sheet,
@@ -648,6 +649,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
               ) : (
                 <p className="text-xs text-muted-foreground">{executionEvidence.controlsEmptyText}</p>
               )}
+            </div>
+            <div className="mt-3">
+              <RiskControlPanel />
             </div>
           </CardContent>
         </Card>
@@ -2433,4 +2437,3 @@ function OrderPreviewWarningRow({ warning }: { warning: OrderPreviewWarning }) {
     </li>
   );
 }
-

@@ -71,6 +71,7 @@ public static class UiEndpoints
         services.AddMemoryCache();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
+        services.TryAddSingleton<RiskRuleRuntimeService>();
 
         // Register LeanAutoExportService as a background hosted service
         services.AddSingleton<LeanAutoExportService>();
@@ -111,6 +112,7 @@ public static class UiEndpoints
         services.AddMemoryCache();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
+        services.TryAddSingleton<RiskRuleRuntimeService>();
 
         // Register LeanAutoExportService as a background hosted service
         services.AddSingleton<LeanAutoExportService>();
@@ -389,6 +391,7 @@ public static class UiEndpoints
 
         // Paper trading cockpit endpoints
         app.MapExecutionEndpoints(jsonOptions);
+        app.MapRiskEndpoints(jsonOptions);
 
         // Promotion workflow endpoints (Backtest → Paper → Live)
         app.MapPromotionEndpoints(jsonOptions);
@@ -536,6 +539,7 @@ public static class UiEndpoints
 
         // Paper trading cockpit endpoints
         app.MapExecutionEndpoints(jsonOptions);
+        app.MapRiskEndpoints(jsonOptions);
 
         // Promotion workflow endpoints (Backtest → Paper → Live)
         app.MapPromotionEndpoints(jsonOptions);
