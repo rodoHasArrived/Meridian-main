@@ -272,6 +272,74 @@ describe("buildSettingsScreenViewModel", () => {
     });
   });
 
+  it("builds profile authentication posture from session and brokerage authority", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      brokerageConnection: alpacaConnection
+    });
+
+    expect(vm.profileAuthenticationPanel).toMatchObject({
+      regionLabel: "Profile and authentication posture",
+      title: "Profile and access posture",
+      statusLabel: "Access ready",
+      statusTone: "success",
+      avatarInitials: "AR",
+      operatorName: "Andrew Rowden",
+      roleLabel: "Fund Manager",
+      environmentLabel: "PAPER",
+      workspaceLabel: "Settings",
+      commandCountLabel: "42 commands issued",
+      authorityLabel: "Brokerage verified",
+      authorityDetail: "Alpaca account PA123 is verified for readiness handoffs.",
+      notice: null
+    });
+    expect(vm.profileAuthenticationPanel.facts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "operator", value: "Andrew Rowden", tone: "default" }),
+      expect.objectContaining({ id: "environment", value: "PAPER", tone: "success" }),
+      expect.objectContaining({ id: "brokerage", value: "Brokerage verified", tone: "success" })
+    ]));
+    expect(vm.profileAuthenticationPanel.steps).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "brokerage-authority",
+        statusLabel: "Verified",
+        actionHref: "/trading/readiness",
+        actionAriaLabel: "Open Trading readiness from verified profile authentication posture"
+      }),
+      expect.objectContaining({
+        id: "audit-diagnostics",
+        statusLabel: "Review",
+        actionHref: "/settings#diagnostic-endpoints"
+      })
+    ]));
+  });
+
+  it("warns when profile authentication posture is operating in live mode", () => {
+    const liveSession: SessionInfo = { ...session, environment: "live" };
+    const vm = buildSettingsScreenViewModel({
+      session: liveSession,
+      overview,
+      brokerageConnection: { ...alpacaConnection, environment: "live" }
+    });
+
+    expect(vm.profileAuthenticationPanel).toMatchObject({
+      statusLabel: "Live authority active",
+      statusTone: "warning",
+      environmentLabel: "LIVE",
+      notice: {
+        title: "Live environment controls active",
+        tone: "warning",
+        role: "status"
+      }
+    });
+    expect(vm.profileAuthenticationPanel.summary).toContain("LIVE mode");
+    expect(vm.profileAuthenticationPanel.steps.find((step) => step.id === "environment-authority")).toMatchObject({
+      statusLabel: "LIVE",
+      tone: "warning",
+      detail: "Live mode requires explicit brokerage and readiness evidence before sensitive actions."
+    });
+  });
+
   it("marks invalid Alpaca credentials as a degraded connection state", () => {
     const vm = buildSettingsScreenViewModel({
       session,

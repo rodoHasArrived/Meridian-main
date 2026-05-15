@@ -119,6 +119,34 @@ describe("SettingsScreen", () => {
     expect(within(eventDetail).getByText("Provider health / evt-1")).toBeInTheDocument();
   });
 
+  it("renders profile authentication posture with authority handoffs", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+      />
+    );
+
+    const profileRegion = screen.getByRole("region", { name: "Profile and authentication posture" });
+    expect(profileRegion).toHaveTextContent("Profile and access posture");
+    expect(profileRegion).toHaveTextContent("Access ready");
+    expect(profileRegion).toHaveTextContent("Andrew Rowden");
+    expect(profileRegion).toHaveTextContent("Fund Manager");
+    expect(profileRegion).toHaveTextContent("42 commands issued");
+    expect(profileRegion).toHaveTextContent("Brokerage verified");
+    expect(within(profileRegion).getByRole("list", {
+      name: "Profile authentication and authorization readiness steps"
+    })).toBeInTheDocument();
+    expect(within(profileRegion).getByRole("link", {
+      name: "Open Trading readiness from verified profile authentication posture"
+    })).toHaveAttribute("href", "/trading/readiness");
+    expect(within(profileRegion).getByRole("link", {
+      name: "Open Settings diagnostic endpoints from profile authentication posture"
+    })).toHaveAttribute("href", "/settings#diagnostic-endpoints");
+    expect(document.querySelector("#diagnostic-endpoints")).toBeInTheDocument();
+  });
+
   it("updates recent-event detail with keyboard row selection", async () => {
     const user = userEvent.setup();
     renderWithRouter(

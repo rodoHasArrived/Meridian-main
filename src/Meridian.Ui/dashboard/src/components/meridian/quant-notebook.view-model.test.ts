@@ -202,6 +202,13 @@ describe("useQuantNotebookViewModel", () => {
       disabledReason: null,
       busy: false
     });
+    expect(result.current.cells[0].sourceField).toMatchObject({
+      label: "Cell 1 source",
+      placeholder: "// Cell 1\n// Use Data.Prices(symbol), Backtest.WithSymbols(...), or any C# expression",
+      disabled: false,
+      disabledReason: null,
+      spellCheck: false
+    });
     expect(result.current.dataResult).toBeNull();
     expect(result.current.dataFetchState).toBe("idle");
   });
@@ -376,6 +383,12 @@ describe("useQuantNotebookViewModel", () => {
       disabled: true,
       disabledReason: "Wait for cell 1 to finish running before rerunning it.",
       busy: true
+    });
+    expect(result.current.cells[0].sourceField).toMatchObject({
+      label: "Cell 1 source",
+      disabled: true,
+      disabledReason: "Cell 1 is running; wait before editing the source.",
+      spellCheck: false
     });
 
     await act(async () => {

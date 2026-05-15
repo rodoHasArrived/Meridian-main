@@ -115,24 +115,56 @@ describe("app shell view model", () => {
       fallbackElementId: "workbench-content"
     });
     expect(state.workflowContinuity).toMatchObject({
-      title: "Investment Operations Path",
+      title: "Market Data To Paper",
       contextLabel: "Operating context",
       contextValue: "Data / AAPL",
       routeLabel: "/data/quotes?symbol=AAPL",
-      nextActionLabel: "Next: Research",
-      nextActionHref: "/strategy"
+      nextActionLabel: "Next: Price alerts",
+      nextActionHref: "/data/alerts"
     });
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.active, step.next, step.href])).toEqual([
-      ["trusted-data", true, false, "/data/watchlist"],
-      ["research", false, true, "/strategy"],
-      ["paper-readiness", false, false, "/trading/readiness"],
-      ["portfolio-ledger", false, false, "/portfolio"],
-      ["reconciliation", false, false, "/accounting/reconciliation"],
-      ["governed-report", false, false, "/reporting/report-packs"]
+      ["watchlist", false, false, "/data/watchlist"],
+      ["quotes", true, false, "/data/quotes?symbol=AAPL"],
+      ["alerts", false, true, "/data/alerts"],
+      ["readiness", false, false, "/trading/readiness"],
+      ["provider-setup", false, false, "/settings#alpaca-provider-setup"]
+    ]);
+    expect(state.workflowContinuity.steps.map((step) => [step.label, step.statusLabel])).toEqual([
+      ["Watchlist", "Waiting"],
+      ["Live quotes", "Current / Waiting"],
+      ["Price alerts", "Next / Waiting"],
+      ["Readiness", "Waiting"],
+      ["Provider setup", "Available"]
     ]);
   });
 
-  it("derives status-aware workflow continuity for the institutional operations path", () => {
+  it("surfaces the Alpaca provider setup handoff as the active workflow step", () => {
+    const state = buildAppShellViewState({
+      pathname: "/settings",
+      hash: "#alpaca-provider-setup",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(state.workflowContinuity).toMatchObject({
+      contextValue: "Settings / Provider setup",
+      nextActionLabel: "Stay on Provider setup",
+      nextActionHref: "/settings#alpaca-provider-setup"
+    });
+    expect(state.workflowContinuity.steps.map((step) => [step.id, step.active, step.next, step.statusLabel, step.statusTone])).toEqual([
+      ["watchlist", false, false, "Waiting", "pending"],
+      ["quotes", false, false, "Waiting", "pending"],
+      ["alerts", false, false, "Waiting", "pending"],
+      ["readiness", false, false, "Waiting", "pending"],
+      ["provider-setup", true, false, "Current / Available", "ready"]
+    ]);
+    expect(state.workflowContinuity.steps[4].ariaLabel)
+      .toBe("Provider setup, current workflow step, Available");
+  });
+
+  it("derives status-aware workflow continuity for accounting closeout routes", () => {
     const state = buildAppShellViewState({
       pathname: "/accounting/reconciliation",
       loading: false,
@@ -167,17 +199,16 @@ describe("app shell view model", () => {
       } as unknown as AppShellWorkspacePayload
     });
 
-    expect(state.workflowContinuity.title).toBe("Investment Operations Path");
+    expect(state.workflowContinuity.title).toBe("Accounting Closeout");
     expect(state.workflowContinuity.contextValue).toBe("Accounting / Reconciliation");
-    expect(state.workflowContinuity.nextActionLabel).toBe("Next: Governed report");
+    expect(state.workflowContinuity.nextActionLabel).toBe("Next: Ledger");
     expect(state.workflowContinuity.summary).toContain("3 steps need operator attention.");
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.statusLabel, step.statusTone])).toEqual([
-      ["trusted-data", "Trusted", "ready"],
-      ["research", "1 review", "review"],
-      ["paper-readiness", "Degraded", "blocked"],
-      ["portfolio-ledger", "1 positions", "ready"],
-      ["reconciliation", "Current: 2 breaks", "review"],
-      ["governed-report", "Next: 1 packs", "ready"]
+      ["security-master", "2 breaks", "review"],
+      ["reconciliation", "Current / 2 breaks", "review"],
+      ["ledger", "Next / 2 breaks", "review"],
+      ["evidence", "1 packs", "ready"],
+      ["report-packs", "1 packs", "ready"]
     ]);
     expect(state.workflowContinuity.steps.find((step) => step.id === "reconciliation")?.ariaLabel)
       .toBe("Reconciliation, current workflow step, 2 breaks");

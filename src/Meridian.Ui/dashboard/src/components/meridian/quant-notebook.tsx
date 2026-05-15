@@ -391,15 +391,12 @@ function NotebookCellItem({
               )}
               value={cell.source}
               onChange={(e) => onSourceChange(e.target.value)}
-              placeholder={
-                isMarkdown
-                  ? `## Section ${cell.ordinal.toString()}\n\nNarrative, hypothesis, or analysis notes.`
-                  : `// Cell ${cell.ordinal.toString()}\n// Use Data.Prices(symbol), Backtest.WithSymbols(...), or any C# expression`
-              }
-              disabled={isRunning}
-              aria-label={`Cell ${cell.ordinal.toString()} source`}
+              placeholder={cell.sourceField.placeholder}
+              disabled={cell.sourceField.disabled}
+              title={cell.sourceField.disabledReason ?? undefined}
+              aria-label={cell.sourceField.label}
               rows={4}
-              spellCheck={isMarkdown}
+              spellCheck={cell.sourceField.spellCheck}
             />
           </div>
 

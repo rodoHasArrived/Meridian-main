@@ -528,51 +528,179 @@ const emptyWorkflowContinuityStatusContext: WorkflowContinuityStatusContext = {
 
 const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
   {
-    id: "investment-operations-path",
-    title: "Investment Operations Path",
-    summary: "Move from trusted data through research, paper validation, books, reconciliation, and governed reporting without losing operating context.",
+    id: "market-data-to-paper",
+    title: "Market Data To Paper",
+    summary: "Move from symbol selection through quote validation, alert monitoring, paper readiness, and provider repair without memorizing route order.",
     steps: [
       {
-        id: "trusted-data",
-        label: "Trusted data",
-        description: "Curate symbols, validate providers, inspect quotes, and repair backfill evidence.",
+        id: "watchlist",
+        label: "Watchlist",
+        description: "Choose the monitored universe and starter packs before market-data validation.",
         href: "/data/watchlist",
-        matchPath: "/data"
+        matchPath: "/data/watchlist"
       },
       {
-        id: "research",
-        label: "Research",
-        description: "Compare runs, inspect research evidence, and prepare promotion candidates.",
+        id: "quotes",
+        label: "Live quotes",
+        description: "Inspect quote, tape, depth, and historical trend evidence for the active symbol.",
+        href: "/data/quotes",
+        matchPath: "/data/quotes",
+        preserveSymbol: true
+      },
+      {
+        id: "alerts",
+        label: "Price alerts",
+        description: "Track threshold triggers and validate the quote feed behind watched symbols.",
+        href: "/data/alerts",
+        matchPath: "/data/alerts"
+      },
+      {
+        id: "readiness",
+        label: "Readiness",
+        description: "Review paper-operation blockers, execution controls, replay evidence, and work items.",
+        href: "/trading/readiness",
+        matchPath: "/trading/readiness"
+      },
+      {
+        id: "provider-setup",
+        label: "Provider setup",
+        description: "Repair credentials, endpoint acknowledgement, and paper/live provider posture.",
+        href: "/settings#alpaca-provider-setup",
+        matchPath: "/settings",
+        matchHash: "#alpaca-provider-setup"
+      }
+    ]
+  },
+  {
+    id: "strategy-to-paper",
+    title: "Strategy To Paper",
+    summary: "Keep research comparison, strategy design, backtest evidence, paper-session readiness, portfolio impact, and audit packet review connected.",
+    steps: [
+      {
+        id: "strategy-runs",
+        label: "Run library",
+        description: "Compare runs, inspect promotion history, and select the evidence candidate.",
         href: "/strategy",
         matchPath: "/strategy"
       },
       {
+        id: "quant-lab",
+        label: "Quant Lab",
+        description: "Prototype scripts, parameters, plots, and diagnostics against trusted data.",
+        href: "/strategy/quant-lab",
+        matchPath: "/strategy/quant-lab"
+      },
+      {
+        id: "covered-call",
+        label: "Covered call",
+        description: "Preview option chains, run covered-call scenarios, and inspect trade outcomes.",
+        href: "/strategy/covered-call",
+        matchPath: "/strategy/covered-call"
+      },
+      {
         id: "paper-readiness",
         label: "Paper readiness",
-        description: "Review replay consistency, execution controls, promotion gates, and operator work items.",
+        description: "Confirm replay consistency, acceptance gates, execution controls, and approval blockers.",
         href: "/trading/readiness",
+        matchPath: "/trading/readiness"
+      },
+      {
+        id: "portfolio-review",
+        label: "Portfolio review",
+        description: "Check exposure, account sync, positions, cash, and run-to-portfolio continuity.",
+        href: "/portfolio",
+        matchPath: "/portfolio"
+      },
+      {
+        id: "evidence-review",
+        label: "Evidence review",
+        description: "Package lineage, stale evidence, and packet completeness for governed review.",
+        href: "/reporting/evidence",
+        matchPath: "/reporting/evidence"
+      }
+    ]
+  },
+  {
+    id: "trading-governance",
+    title: "Trading Governance",
+    summary: "Hold execution readiness, cockpit action, portfolio exposure, reconciliation, and report-pack review in one operational path.",
+    steps: [
+      {
+        id: "trading-readiness",
+        label: "Readiness",
+        description: "Review gates, replay, execution controls, trust checks, and operator work items.",
+        href: "/trading/readiness",
+        matchPath: "/trading/readiness"
+      },
+      {
+        id: "trading-cockpit",
+        label: "Trading cockpit",
+        description: "Stage paper orders, inspect positions, monitor fills, and control strategy actions.",
+        href: "/trading",
         matchPath: "/trading"
       },
       {
-        id: "portfolio-ledger",
-        label: "Portfolio ledger",
-        description: "Confirm exposure, brokerage sync, positions, and run-level portfolio continuity.",
+        id: "portfolio-exposure",
+        label: "Exposure",
+        description: "Review household positions, account sync, cash, buying power, and risk posture.",
         href: "/portfolio",
         matchPath: "/portfolio"
       },
       {
         id: "reconciliation",
         label: "Reconciliation",
-        description: "Resolve breaks, reference-data gaps, ledger variance, and required sign-off detail.",
+        description: "Resolve ledger, security, cash, and position breaks before accepting readiness.",
         href: "/accounting/reconciliation",
-        matchPath: "/accounting"
+        matchPath: "/accounting/reconciliation"
       },
       {
-        id: "governed-report",
-        label: "Governed report",
-        description: "Package evidence, review report readiness, and export governed outputs.",
+        id: "report-packs",
+        label: "Report packs",
+        description: "Review governed output targets, evidence readiness, and export posture.",
         href: "/reporting/report-packs",
-        matchPath: "/reporting"
+        matchPath: "/reporting/report-packs"
+      }
+    ]
+  },
+  {
+    id: "accounting-closeout",
+    title: "Accounting Closeout",
+    summary: "Move through reference-data coverage, reconciliation, ledger evidence, audit lineage, and report packaging with the close context intact.",
+    steps: [
+      {
+        id: "security-master",
+        label: "Security Master",
+        description: "Review instrument identity, provider aliases, lots, conflicts, and coverage gaps.",
+        href: "/accounting/security-master",
+        matchPath: "/accounting/security-master"
+      },
+      {
+        id: "reconciliation",
+        label: "Reconciliation",
+        description: "Inspect run breaks, tolerance profile health, sign-off status, and recovery actions.",
+        href: "/accounting/reconciliation",
+        matchPath: "/accounting/reconciliation"
+      },
+      {
+        id: "ledger",
+        label: "Ledger",
+        description: "Validate trial balance, cash-flow context, account detail, and accounting basis.",
+        href: "/accounting/ledger",
+        matchPath: "/accounting/ledger"
+      },
+      {
+        id: "evidence",
+        label: "Evidence",
+        description: "Trace packet lineage, freshness, completeness, and unresolved evidence warnings.",
+        href: "/reporting/evidence",
+        matchPath: "/reporting/evidence"
+      },
+      {
+        id: "report-packs",
+        label: "Report packs",
+        description: "Package close evidence into governed report outputs and approval-ready exports.",
+        href: "/reporting/report-packs",
+        matchPath: "/reporting/report-packs"
       }
     ]
   }
@@ -581,9 +709,55 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
 const defaultWorkflowContinuityTrail = workflowContinuityTrails[0];
 
 function selectWorkflowContinuityTrail(pathname: string, hash: string): WorkflowContinuityTrailDefinition {
-  void pathname;
-  void hash;
-  return defaultWorkflowContinuityTrail;
+  const workspaceKey = normalizeWorkspace(pathname);
+  const scoredTrails = workflowContinuityTrails
+    .map((trail, index) => ({
+      trail,
+      index,
+      workspaceAffinity: scoreWorkflowTrailWorkspaceAffinity(trail.id, workspaceKey),
+      score: Math.max(...trail.steps.map((step) => scoreWorkflowStepRouteMatch(step, pathname, hash)))
+    }))
+    .filter((match) => match.score > 0)
+    .sort((left, right) => right.score - left.score || right.workspaceAffinity - left.workspaceAffinity || left.index - right.index);
+
+  if (scoredTrails.length > 0) {
+    return scoredTrails[0].trail;
+  }
+
+  switch (workspaceKey) {
+    case "accounting":
+    case "reporting":
+      return workflowContinuityTrails.find((trail) => trail.id === "accounting-closeout") ?? defaultWorkflowContinuityTrail;
+    case "strategy":
+      return workflowContinuityTrails.find((trail) => trail.id === "strategy-to-paper") ?? defaultWorkflowContinuityTrail;
+    case "trading":
+    case "portfolio":
+      return workflowContinuityTrails.find((trail) => trail.id === "trading-governance") ?? defaultWorkflowContinuityTrail;
+    case "data":
+    case "settings":
+    default:
+      return defaultWorkflowContinuityTrail;
+  }
+}
+
+function scoreWorkflowTrailWorkspaceAffinity(trailId: string, workspaceKey: WorkspaceKey): number {
+  if (workspaceKey === "data" || workspaceKey === "settings") {
+    return trailId === "market-data-to-paper" ? 1 : 0;
+  }
+
+  if (workspaceKey === "strategy") {
+    return trailId === "strategy-to-paper" ? 1 : 0;
+  }
+
+  if (workspaceKey === "accounting" || workspaceKey === "reporting") {
+    return trailId === "accounting-closeout" ? 1 : 0;
+  }
+
+  if (workspaceKey === "trading" || workspaceKey === "portfolio") {
+    return trailId === "trading-governance" ? 1 : 0;
+  }
+
+  return 0;
 }
 
 function materializeContinuityStep(
@@ -591,7 +765,7 @@ function materializeContinuityStep(
   subjectSymbol: string | null
 ): AppShellWorkflowContinuityStep {
   const href = step.preserveSymbol && subjectSymbol
-    ? `${step.href}?symbol=${encodeURIComponent(subjectSymbol)}`
+    ? appendSearchValue(step.href, "symbol", subjectSymbol)
     : step.href;
 
   return {
@@ -605,6 +779,22 @@ function materializeContinuityStep(
     active: false,
     next: false
   };
+}
+
+function findActiveWorkflowStepIndex(
+  steps: WorkflowContinuityTrailStepDefinition[],
+  pathname: string,
+  hash: string
+) {
+  const scoredSteps = steps
+    .map((step, index) => ({
+      index,
+      score: scoreWorkflowStepRouteMatch(step, pathname, hash)
+    }))
+    .filter((match) => match.score > 0)
+    .sort((left, right) => right.score - left.score || left.index - right.index);
+
+  return scoredSteps[0]?.index ?? 0;
 }
 
 function buildWorkflowContinuityStepStatus(
@@ -624,16 +814,34 @@ function buildWorkflowContinuityStepStatus(
   }
 
   switch (stepId) {
+    case "watchlist":
+    case "quotes":
+    case "alerts":
     case "trusted-data":
       return buildTrustedDataContinuityStatus(context);
+    case "strategy-runs":
+    case "quant-lab":
+    case "covered-call":
     case "research":
       return buildResearchContinuityStatus(context);
+    case "readiness":
     case "paper-readiness":
+    case "trading-readiness":
+    case "trading-cockpit":
       return buildPaperReadinessContinuityStatus(context);
+    case "provider-setup":
+      return buildProviderSetupContinuityStatus(context);
+    case "portfolio-review":
+    case "portfolio-exposure":
     case "portfolio-ledger":
       return buildPortfolioLedgerContinuityStatus(context);
+    case "security-master":
+    case "ledger":
     case "reconciliation":
       return buildReconciliationContinuityStatus(context);
+    case "evidence":
+    case "evidence-review":
+    case "report-packs":
     case "governed-report":
       return buildGovernedReportContinuityStatus(context);
     default:
@@ -644,11 +852,28 @@ function buildWorkflowContinuityStepStatus(
 }
 
 const workflowContinuityWorkspaceErrors: Record<string, WorkspaceKey[]> = {
+  watchlist: ["data"],
+  quotes: ["data"],
+  alerts: ["data"],
   "trusted-data": ["data"],
+  "strategy-runs": ["strategy"],
+  "quant-lab": ["strategy"],
+  "covered-call": ["strategy"],
   research: ["strategy"],
+  readiness: ["trading"],
   "paper-readiness": ["trading"],
+  "trading-readiness": ["trading"],
+  "trading-cockpit": ["trading"],
+  "provider-setup": ["settings"],
+  "portfolio-review": ["portfolio"],
+  "portfolio-exposure": ["portfolio"],
   "portfolio-ledger": ["portfolio"],
+  "security-master": ["accounting"],
+  ledger: ["accounting"],
   reconciliation: ["accounting"],
+  evidence: ["reporting"],
+  "evidence-review": ["reporting"],
+  "report-packs": ["reporting"],
   "governed-report": ["reporting"]
 };
 
@@ -710,6 +935,16 @@ function buildPaperReadinessContinuityStatus({ payload }: WorkflowContinuityStat
     : { label: "Review", tone: "review" };
 }
 
+function buildProviderSetupContinuityStatus({ payload, error, workflowError }: WorkflowContinuityStatusContext): WorkflowContinuityStepStatus {
+  if (error || workflowError) {
+    return { label: "Review", tone: "review" };
+  }
+
+  return payload.session || payload.overview
+    ? { label: "Available", tone: "ready" }
+    : { label: "Waiting", tone: "pending" };
+}
+
 function buildPortfolioLedgerContinuityStatus({ payload }: WorkflowContinuityStatusContext): WorkflowContinuityStepStatus {
   const portfolio = payload.portfolio;
   if (!portfolio) {
@@ -755,13 +990,25 @@ function buildGovernedReportContinuityStatus({ payload }: WorkflowContinuityStat
     : { label: "Needs target", tone: "review" };
 }
 
-function routeMatchesStep(pathname: string, hash: string, step: AppShellWorkflowContinuityStep): boolean {
-  const candidate = splitContinuityRoute(step.href);
-  if (candidate.hash) {
-    return pathname === candidate.pathname && hash === candidate.hash;
+function scoreWorkflowStepRouteMatch(
+  step: WorkflowContinuityTrailStepDefinition,
+  pathname: string,
+  hash: string
+) {
+  const candidate = splitContinuityRoute(step.matchPath);
+  const candidateHash = step.matchHash ?? candidate.hash;
+  if (candidateHash && hash !== candidateHash) {
+    return 0;
   }
 
-  return pathname === candidate.pathname || pathname.startsWith(`${candidate.pathname}/`);
+  const matchPath = candidate.pathname;
+  if (pathname === matchPath) {
+    return 1000 + matchPath.length + (candidateHash ? 2000 : 0);
+  }
+
+  return pathname.startsWith(`${matchPath}/`)
+    ? 100 + matchPath.length + (candidateHash ? 2000 : 0)
+    : 0;
 }
 
 function splitContinuityRoute(route: string) {
@@ -790,6 +1037,14 @@ function readSearchValue(search: string, key: string): string | null {
 function normalizeSubjectSymbol(value: string | null): string | null {
   const normalized = value?.trim().toUpperCase().replace(/[^A-Z0-9._-]/g, "") ?? "";
   return normalized.length > 0 ? normalized.slice(0, 16) : null;
+}
+
+function appendSearchValue(route: string, key: string, value: string) {
+  const hashIndex = route.indexOf("#");
+  const routeWithoutHash = hashIndex >= 0 ? route.slice(0, hashIndex) : route;
+  const hash = hashIndex >= 0 ? route.slice(hashIndex) : "";
+  const separator = routeWithoutHash.includes("?") ? "&" : "?";
+  return `${routeWithoutHash}${separator}${encodeURIComponent(key)}=${encodeURIComponent(value)}${hash}`;
 }
 
 function buildWorkflowContinuitySummary(

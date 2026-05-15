@@ -582,6 +582,54 @@ export interface SettingsSystemItem {
   tone: "default" | "success" | "warning" | "danger" | "muted";
 }
 
+export interface SettingsProfileAuthenticationFact {
+  id: string;
+  label: string;
+  value: string;
+  tone: "default" | "success" | "warning" | "danger" | "muted";
+}
+
+export interface SettingsProfileAuthenticationStep {
+  id: string;
+  label: string;
+  statusLabel: string;
+  detail: string;
+  tone: "success" | "warning" | "danger" | "muted";
+  badgeVariant: "success" | "warning" | "danger" | "outline";
+  actionLabel: string | null;
+  actionHref: string | null;
+  actionAriaLabel: string | null;
+}
+
+export interface SettingsProfileAuthenticationNotice {
+  title: string;
+  detail: string;
+  tone: "warning" | "danger";
+  role: "status" | "alert";
+}
+
+export interface SettingsProfileAuthenticationPanel {
+  regionLabel: string;
+  title: string;
+  summary: string;
+  statusLabel: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  badgeVariant: "outline" | "success" | "warning" | "danger";
+  avatarInitials: string;
+  operatorName: string;
+  roleLabel: string;
+  environmentLabel: string;
+  workspaceLabel: string;
+  commandCountLabel: string;
+  authorityLabel: string;
+  authorityDetail: string;
+  notice: SettingsProfileAuthenticationNotice | null;
+  facts: SettingsProfileAuthenticationFact[];
+  stepsTitle: string;
+  stepsAriaLabel: string;
+  steps: SettingsProfileAuthenticationStep[];
+}
+
 export interface SettingsDiagnosticLink {
   label: string;
   href: string;
@@ -718,6 +766,7 @@ export interface SettingsScreenViewModel {
   sessionTitle: string;
   sessionItems: SettingsSessionItem[];
   hasSession: boolean;
+  profileAuthenticationPanel: SettingsProfileAuthenticationPanel;
   systemTitle: string;
   systemSummary: string;
   systemTone: "default" | "success" | "warning" | "danger";
@@ -1333,6 +1382,212 @@ function connectionStatusDetail(connection: BrokerageConnectionStatus | null): s
   return "No Alpaca API-key connection is stored.";
 }
 
+function buildProfileAuthenticationPanel(
+  session: SessionInfo | null,
+  connection: BrokerageConnectionStatus | null,
+  diagnosticStatusVariant: SettingsScreenViewModel["diagnosticStatusVariant"]
+): SettingsProfileAuthenticationPanel {
+  const isLiveSession = session?.environment === "live";
+  const isConnected = connection?.isConnected === true;
+  const isConfigured = connection?.isConfigured === true;
+  const connectionFailed = connection?.state === "Degraded" || connection?.state === "ReauthorizationRequired";
+  const account = connection?.externalAccountId?.trim();
+  const workspaceLabel = session ? labelizeWorkspaceKey(session.activeWorkspace) : "Workspace unavailable";
+  const environmentLabel = session ? session.environment.toUpperCase() : "UNKNOWN";
+  const diagnosticBlocked = diagnosticStatusVariant === "danger";
+  const statusTone: SettingsProfileAuthenticationPanel["statusTone"] = !session || connectionFailed
+    ? "danger"
+    : isLiveSession || (isConfigured && !isConnected)
+      ? "warning"
+      : isConnected
+        ? "success"
+        : "default";
+  const statusLabel = !session
+    ? "Session unavailable"
+    : connectionFailed
+      ? "Authorization review"
+      : isLiveSession
+        ? "Live authority active"
+        : isConnected
+          ? "Access ready"
+          : isConfigured
+            ? "Verification needed"
+            : "Profile loaded";
+  const authorityLabel = isConnected
+    ? "Brokerage verified"
+    : isConfigured
+      ? "Brokerage test needed"
+      : "Brokerage not linked";
+  const authorityDetail = isConnected
+    ? account
+      ? `Alpaca account ${account} is verified for readiness handoffs.`
+      : "Alpaca account verification succeeded."
+    : connectionFailed
+      ? connection?.lastError?.trim() || "Brokerage authorization needs operator review."
+      : isConfigured
+        ? "Stored Alpaca keys still need account verification before readiness handoff."
+        : "Connect paper Alpaca credentials before relying on brokerage-backed workflows.";
+  const summary = !session
+    ? "Operator identity has not loaded, so authorization-sensitive workflows should stay blocked until the session payload returns."
+    : isLiveSession
+      ? `${session.displayName} is operating in LIVE mode as ${session.role}. Confirm account authority and diagnostics before live workflows.`
+      : isConnected
+        ? `${session.displayName} has a ${session.role} session with verified brokerage authority for ${workspaceLabel}.`
+        : `${session.displayName} has a ${session.role} session in ${environmentLabel}; brokerage authority still needs verification.`;
+  const notice = !session
+    ? {
+        title: "Authentication context unavailable",
+        detail: "Reconnect to the Meridian API before changing credentials or acting on sensitive workflows.",
+        tone: "danger" as const,
+        role: "alert" as const
+      }
+    : connectionFailed
+      ? {
+          title: "Brokerage authorization needs review",
+          detail: authorityDetail,
+          tone: "danger" as const,
+          role: "alert" as const
+        }
+      : isLiveSession
+        ? {
+            title: "Live environment controls active",
+            detail: "Live mode can affect real brokerage state. Keep the Alpaca provider panel and readiness evidence in view before continuing.",
+            tone: "warning" as const,
+            role: "status" as const
+          }
+        : null;
+
+  return {
+    regionLabel: "Profile and authentication posture",
+    title: "Profile and access posture",
+    summary,
+    statusLabel,
+    statusTone,
+    badgeVariant: statusTone === "default" ? "outline" : statusTone,
+    avatarInitials: buildOperatorInitials(session?.displayName),
+    operatorName: session?.displayName ?? "Session unavailable",
+    roleLabel: session?.role ?? "Role unavailable",
+    environmentLabel,
+    workspaceLabel,
+    commandCountLabel: session ? `${session.commandCount} command${session.commandCount === 1 ? "" : "s"} issued` : "Commands unavailable",
+    authorityLabel,
+    authorityDetail,
+    notice,
+    facts: [
+      {
+        id: "operator",
+        label: "Operator",
+        value: session?.displayName ?? "Unavailable",
+        tone: session ? "default" : "danger"
+      },
+      {
+        id: "role",
+        label: "Role",
+        value: session?.role ?? "Unavailable",
+        tone: session ? "default" : "danger"
+      },
+      {
+        id: "environment",
+        label: "Environment",
+        value: environmentLabel,
+        tone: isLiveSession ? "warning" : session ? "success" : "danger"
+      },
+      {
+        id: "workspace",
+        label: "Workspace",
+        value: workspaceLabel,
+        tone: session ? "muted" : "danger"
+      },
+      {
+        id: "commands",
+        label: "Command trail",
+        value: session ? String(session.commandCount) : "Unavailable",
+        tone: session ? "muted" : "danger"
+      },
+      {
+        id: "brokerage",
+        label: "Brokerage authority",
+        value: authorityLabel,
+        tone: isConnected ? "success" : connectionFailed ? "danger" : isConfigured ? "warning" : "muted"
+      }
+    ],
+    stepsTitle: "Access readiness",
+    stepsAriaLabel: "Profile authentication and authorization readiness steps",
+    steps: [
+      {
+        id: "operator-session",
+        label: "Operator session",
+        statusLabel: session ? "Loaded" : "Missing",
+        detail: session ? `${session.displayName} is recognized as ${session.role}.` : "Session payload has not loaded from the workstation host.",
+        tone: session ? "success" : "danger",
+        badgeVariant: session ? "success" : "danger",
+        actionLabel: null,
+        actionHref: null,
+        actionAriaLabel: null
+      },
+      {
+        id: "environment-authority",
+        label: "Operating mode",
+        statusLabel: environmentLabel,
+        detail: isLiveSession
+          ? "Live mode requires explicit brokerage and readiness evidence before sensitive actions."
+          : session
+            ? `${environmentLabel} mode is active for this workstation session.`
+            : "Operating mode is unknown until the session payload returns.",
+        tone: !session ? "danger" : isLiveSession ? "warning" : "success",
+        badgeVariant: !session ? "danger" : isLiveSession ? "warning" : "success",
+        actionLabel: null,
+        actionHref: null,
+        actionAriaLabel: null
+      },
+      {
+        id: "brokerage-authority",
+        label: "Brokerage authority",
+        statusLabel: isConnected ? "Verified" : connectionFailed ? "Review" : isConfigured ? "Test needed" : "Not linked",
+        detail: authorityDetail,
+        tone: isConnected ? "success" : connectionFailed ? "danger" : isConfigured ? "warning" : "muted",
+        badgeVariant: isConnected ? "success" : connectionFailed ? "danger" : isConfigured ? "warning" : "outline",
+        actionLabel: isConnected ? "Open readiness" : "Review provider setup",
+        actionHref: isConnected ? "/trading/readiness" : "/settings#alpaca-provider-setup",
+        actionAriaLabel: isConnected
+          ? "Open Trading readiness from verified profile authentication posture"
+          : "Review Alpaca provider setup from profile authentication posture"
+      },
+      {
+        id: "audit-diagnostics",
+        label: "Audit and diagnostics",
+        statusLabel: diagnosticBlocked ? "Review" : "Reachable",
+        detail: diagnosticBlocked
+          ? "At least one diagnostic payload failed; inspect API reachability before relying on profile state."
+          : "Session, diagnostics, and provider evidence can be inspected without leaving Settings.",
+        tone: diagnosticBlocked ? "warning" : "success",
+        badgeVariant: diagnosticBlocked ? "warning" : "success",
+        actionLabel: "Open diagnostics",
+        actionHref: "/settings#diagnostic-endpoints",
+        actionAriaLabel: "Open Settings diagnostic endpoints from profile authentication posture"
+      }
+    ]
+  };
+}
+
+function buildOperatorInitials(displayName: string | null | undefined): string {
+  const tokens = (displayName ?? "")
+    .replace(/[^A-Za-z0-9 ]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (tokens.length === 0) {
+    return "--";
+  }
+
+  return tokens.slice(0, 2).map((token) => token[0]?.toUpperCase() ?? "").join("");
+}
+
+function labelizeWorkspaceKey(workspace: WorkspaceKey): string {
+  return workspace.charAt(0).toUpperCase() + workspace.slice(1);
+}
+
 export function buildSettingsScreenViewModel(payload: SettingsScreenPayload): SettingsScreenViewModel;
 export function buildSettingsScreenViewModel(
   session: SessionInfo | null,
@@ -1378,19 +1633,25 @@ export function buildSettingsScreenViewModel(
     : "System overview unavailable.";
   const diagnosticSection = buildDiagnosticEndpointSection(payload);
   const backendCapabilitySection = buildBackendCapabilitySection(payload);
+  const alpacaConnectionPanel = buildAlpacaConnectionPanel(payload.brokerageConnection ?? null);
 
   return {
     headerChips: buildSettingsHeaderChips(session, overview, diagnosticSection.diagnosticStatusLabel),
     sessionTitle: session ? `Session - ${session.displayName}` : "Session",
     sessionItems,
     hasSession: session !== null,
+    profileAuthenticationPanel: buildProfileAuthenticationPanel(
+      session,
+      payload.brokerageConnection ?? null,
+      diagnosticSection.diagnosticStatusVariant
+    ),
     systemTitle: "System posture",
     systemSummary: sysSummary,
     systemTone: sysTone,
     systemItems,
     hasOverview: overview !== null,
     recentEventsSection: buildRecentEventsSection(overview),
-    alpacaConnectionPanel: buildAlpacaConnectionPanel(payload.brokerageConnection ?? null),
+    alpacaConnectionPanel,
     ...diagnosticSection,
     ...backendCapabilitySection
   };

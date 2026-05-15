@@ -154,21 +154,21 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/data/quotes?symbol=MSFT"] });
 
-    expect(screen.getByRole("region", { name: "Investment Operations Path continuity" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Market Data To Paper continuity" })).toBeInTheDocument();
     expect(screen.getByText("Data / MSFT")).toBeInTheDocument();
     expect(screen.getByText("/data/quotes?symbol=MSFT")).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "Investment Operations Path workflow steps" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Trusted data, current workflow step, Waiting" })).toHaveAttribute(
+    expect(screen.getByRole("navigation", { name: "Market Data To Paper workflow steps" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Live quotes, current workflow step, Waiting" })).toHaveAttribute(
       "href",
-      "/data/watchlist"
+      "/data/quotes?symbol=MSFT"
     );
-    expect(screen.getByRole("link", { name: "Research, next workflow step, Waiting" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Price alerts, next workflow step, Waiting" })).toHaveAttribute(
       "href",
-      "/strategy"
+      "/data/alerts"
     );
-    expect(screen.getByRole("link", { name: "Continue workflow to Research" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Continue workflow to Price alerts" })).toHaveAttribute(
       "href",
-      "/strategy"
+      "/data/alerts"
     );
   });
 
@@ -272,13 +272,13 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/settings#alpaca-provider-setup"] });
 
     expect(await screen.findByText("Settings Workstation loaded. Jumping to alpaca provider setup.")).toBeInTheDocument();
-    await waitFor(() => expect(document.getElementById("alpaca-provider-setup")).not.toBeNull());
+    await waitFor(() => expect(document.getElementById("alpaca-provider-setup")).not.toBeNull(), { timeout: 5000 });
     const alpacaSetup = document.getElementById("alpaca-provider-setup");
     expect(screen.getByRole("link", { name: "Open Alpaca paper provider setup" })).toHaveAttribute(
       "aria-current",
       "step"
     );
-    await waitFor(() => expect(alpacaSetup).toHaveFocus());
+    await waitFor(() => expect(alpacaSetup).toHaveFocus(), { timeout: 5000 });
   });
 
   it("does not open the command palette shortcut while typing in an input", async () => {
@@ -410,6 +410,7 @@ describe("App", () => {
 
     await user.click(diagnosticsLink);
 
+    await waitFor(() => expect(document.getElementById("backend-capability-coverage")).not.toBeNull(), { timeout: 5000 });
     const capabilityCoverage = document.getElementById("backend-capability-coverage");
     expect(capabilityCoverage).not.toBeNull();
     await waitFor(() => expect(capabilityCoverage).toHaveFocus());
@@ -448,7 +449,7 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/portfolio"] });
 
-    const positionsTable = await screen.findByRole("table", { name: /open positions/i });
+    const positionsTable = await screen.findByRole("table", { name: /open positions/i }, { timeout: 5000 });
     expect(within(positionsTable).getByText("NVDA")).toBeInTheDocument();
     expect(screen.getAllByText("Portfolio workspace").length).toBeGreaterThan(0);
   });

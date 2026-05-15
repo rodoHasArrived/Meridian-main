@@ -99,10 +99,19 @@ export function markDownstreamStale(
 
 export interface QuantNotebookCellViewModel extends NotebookCell {
   runCommand: QuantNotebookCommandViewModel;
+  sourceField: QuantNotebookCellSourceFieldViewModel;
   deleteConfirmationPending: boolean;
   deleteLabel: string;
   deleteAriaLabel: string;
   deleteDisabledReason: string | null;
+}
+
+export interface QuantNotebookCellSourceFieldViewModel {
+  label: string;
+  placeholder: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  spellCheck: boolean;
 }
 
 export interface QuantNotebookCommandViewModel {
@@ -496,6 +505,7 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
             disabledReason: isRunning ? `Wait for cell ${cell.ordinal.toString()} to finish running before rerunning it.` : null,
             busy: isRunning
           },
+          sourceField: buildCellSourceField(cell, isRunning),
           deleteConfirmationPending,
           deleteLabel: deleteConfirmationPending ? "Confirm" : "Delete",
           deleteAriaLabel: deleteConfirmationPending
@@ -534,6 +544,24 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
     setContext,
     fetchData,
     dismissDataResult
+  };
+}
+
+function buildCellSourceField(
+  cell: NotebookCell,
+  disabled: boolean
+): QuantNotebookCellSourceFieldViewModel {
+  const ordinal = cell.ordinal.toString();
+  const isMarkdown = cell.kind === "markdown";
+
+  return {
+    label: `Cell ${ordinal} source`,
+    placeholder: isMarkdown
+      ? `## Section ${ordinal}\n\nNarrative, hypothesis, or analysis notes.`
+      : `// Cell ${ordinal}\n// Use Data.Prices(symbol), Backtest.WithSymbols(...), or any C# expression`,
+    disabled,
+    disabledReason: disabled ? `Cell ${ordinal} is running; wait before editing the source.` : null,
+    spellCheck: isMarkdown
   };
 }
 

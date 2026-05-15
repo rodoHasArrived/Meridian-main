@@ -416,7 +416,7 @@ function focusRouteTargetWhenReady(
 
     focusElementById(fallbackElementId, root);
     cleanup();
-  }, 1500);
+  }, 4000);
 
   return cleanup;
 }

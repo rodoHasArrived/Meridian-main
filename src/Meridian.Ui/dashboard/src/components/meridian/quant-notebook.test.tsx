@@ -25,6 +25,13 @@ function makeCell(overrides: Partial<QuantNotebookCellViewModel> = {}): QuantNot
       disabledReason: null,
       busy: false
     },
+    sourceField: {
+      label: "Cell 1 source",
+      placeholder: "// Cell 1\n// Use Data.Prices(symbol), Backtest.WithSymbols(...), or any C# expression",
+      disabled: false,
+      disabledReason: null,
+      spellCheck: false
+    },
     deleteConfirmationPending: false,
     deleteLabel: "Delete",
     deleteAriaLabel: "Delete cell 1. Press again to confirm.",
@@ -141,6 +148,34 @@ describe("QuantNotebook", () => {
     const runCellButton = screen.getByRole("button", { name: "Cell 1 is running" });
     expect(runCellButton).toBeDisabled();
     expect(runCellButton).toHaveAttribute("title", "Wait for cell 1 to finish running before rerunning it.");
+  });
+
+  it("renders cell source semantics from the view model", () => {
+    render(
+      <QuantNotebook
+        vm={makeVm({
+          cells: [
+            makeCell({
+              kind: "markdown",
+              source: "",
+              sourceField: {
+                label: "Cell 1 source",
+                placeholder: "## Section 1\n\nNarrative, hypothesis, or analysis notes.",
+                disabled: true,
+                disabledReason: "Cell 1 is running; wait before editing the source.",
+                spellCheck: true
+              }
+            })
+          ]
+        })}
+      />
+    );
+
+    const source = screen.getByLabelText("Cell 1 source");
+    expect(source).toHaveAttribute("placeholder", "## Section 1\n\nNarrative, hypothesis, or analysis notes.");
+    expect(source).toBeDisabled();
+    expect(source).toHaveAttribute("title", "Cell 1 is running; wait before editing the source.");
+    expect(source).toHaveAttribute("spellcheck", "true");
   });
 
   it("uses the confirmation label and action for armed clear-output state", async () => {
