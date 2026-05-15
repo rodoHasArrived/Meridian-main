@@ -6868,6 +6868,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── dashboard
 │   │       ├── artifacts
 │   │       │   └── automation
+│   │       │       ├── covered-call-history-1440.png
+│   │       │       ├── covered-call-history-390.png
 │   │       │       ├── governance-reconciliation-disabled-reasons-mobile-smoke.png
 │   │       │       ├── governance-reconciliation-disabled-reasons-smoke.png
 │   │       │       ├── price-alerts-dev-tables-smoke.png
@@ -6903,6 +6905,8 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── report-pack-actions-smoke.png
 │   │       │       │   ├── report-pack-reference-smoke.png
 │   │       │       │   ├── reporting-dense-table-smoke.png
+│   │       │       │   ├── research-covered-call-smoke.png
+│   │       │       │   ├── research-promotion-cancel-smoke.png
 │   │       │       │   ├── security-lots-desktop-smoke.png
 │   │       │       │   ├── security-lots-mobile-smoke.png
 │   │       │       │   ├── security-master-conflicts-retry-smoke.png
@@ -6920,6 +6924,7 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── trading-fills-detail-smoke-current.png
 │   │       │       │   ├── trading-fills-detail-smoke.png
 │   │       │       │   ├── trading-order-ticket-ack-smoke.png
+│   │       │       │   ├── trading-order-ticket-duplicate-guard-smoke.png
 │   │       │       │   ├── watchlist-empty-value-mobile-smoke.png
 │   │       │       │   ├── watchlist-empty-value-smoke.png
 │   │       │       │   ├── watchlist-retry-smoke.png
@@ -6945,13 +6950,17 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── security-master-conflict-actions-desktop.png
 │   │       │       │   ├── security-master-conflict-actions-mobile.png
 │   │       │       │   ├── strategy-designer-selected-leg-desktop.png
-│   │       │       │   └── strategy-designer-selected-leg-mobile.png
+│   │       │       │   ├── strategy-designer-selected-leg-mobile.png
+│   │       │       │   ├── workspace-header-desktop.png
+│   │       │       │   └── workspace-header-mobile.png
 │   │       │       ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
 │   │       │       ├── web-ui-report-pack-profile-keyboard-smoke.png
 │   │       │       ├── web-ui-reporting-export-smoke.png
 │   │       │       ├── web-ui-reporting-mobile-smoke.png
 │   │       │       ├── web-ui-research-cash-disabled-mobile-smoke.png
 │   │       │       ├── web-ui-research-cash-disabled-smoke.png
+│   │       │       ├── web-ui-trading-command-state-desktop.png
+│   │       │       ├── web-ui-trading-command-state-mobile.png
 │   │       │       ├── web-ui-trading-paper-session-smoke.png
 │   │       │       ├── web-ui-trading-strategy-lifecycle-smoke.png
 │   │       │       └── web-ui-watchlist-sort-smoke.png
@@ -8843,6 +8852,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-719 directories, 7910 files
+719 directories, 7919 files
 ```
 <!-- readme-tree end -->
