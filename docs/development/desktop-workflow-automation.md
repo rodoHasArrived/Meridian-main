@@ -52,7 +52,10 @@ The `Refresh UI Screenshots` GitHub workflow derives its desktop matrix from thi
 captures, and any workflow with `includeInManual: true` is automatically included when the manual
 screenshot group is selected. The web capture set is planned from
 `scripts/dev/web-screenshot-routes.json`, so screenshot additions should be made in the definition
-files rather than by editing the workflow matrix directly.
+files rather than by editing the workflow matrix directly. Strategy Designer is part of that web
+evidence lane through `/workstation/strategy/designer`; keep its screenshot route paired with
+`scripts/dev/web-screenshot-fixtures.json` and the dashboard no-host fixtures for the designer
+template, field-catalog, and draft GET endpoints.
 
 ## Runner Behavior
 

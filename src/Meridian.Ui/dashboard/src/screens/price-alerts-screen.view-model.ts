@@ -170,12 +170,19 @@ export interface PriceAlertListSectionViewModel {
   tableLabel: string;
   caption: string;
   emptyText: string;
+  emptyAction: PriceAlertEmptyAction | null;
   hasRows: boolean;
   detailPanelId: string;
   selectedRowId: string | null;
   selectedDetail: PriceAlertRowDetailViewModel | null;
   detailEmptyState: PriceAlertDetailEmptyState;
   rows: PriceAlertRowViewModel[];
+}
+
+export interface PriceAlertEmptyAction {
+  label: string;
+  href: string;
+  ariaLabel: string;
 }
 
 export interface PriceAlertToolbarAction {
@@ -904,6 +911,13 @@ export function buildPriceAlertListSection(
     tableLabel: "Configured price alerts",
     caption: "Configured price alerts with current state, condition, last observed price, and row actions.",
     emptyText: "Add your first alert above. You can also click Set price alert from any symbol on the Live quotes screen.",
+    emptyAction: count === 0
+      ? {
+        label: "Open live quotes",
+        href: "/data/quotes",
+        ariaLabel: "Open live quotes to choose a symbol for a price alert"
+      }
+      : null,
     hasRows: rows.length > 0,
     detailPanelId: PRICE_ALERT_LIST_DETAIL_PANEL_ID,
     selectedRowId: selectedAlert?.id ?? null,

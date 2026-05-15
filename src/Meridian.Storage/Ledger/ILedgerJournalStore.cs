@@ -1,6 +1,7 @@
 using Meridian.Ledger;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Npgsql;
 
 namespace Meridian.Storage.Ledger;
 
@@ -36,6 +37,15 @@ public interface ILedgerJournalStore
         CancellationToken ct = default);
 
     Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default);
+}
+
+public interface ITransactionalLedgerJournalStore : ILedgerJournalStore
+{
+    Task AppendAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        LedgerJournalEntryWrite entry,
+        CancellationToken ct = default);
 }
 
 public sealed record LedgerJournalEntryWrite(

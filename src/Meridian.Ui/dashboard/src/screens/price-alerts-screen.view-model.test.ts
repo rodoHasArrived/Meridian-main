@@ -260,6 +260,18 @@ describe("price alert presentation state", () => {
     expect(section.rows[0].rowAriaLabel).toContain("AAPL price alert");
   });
 
+  it("offers a live-quotes handoff when no alerts are configured", () => {
+    const section = buildPriceAlertListSection([], 0);
+
+    expect(section.hasRows).toBe(false);
+    expect(section.emptyText).toContain("Set price alert");
+    expect(section.emptyAction).toEqual({
+      label: "Open live quotes",
+      href: "/data/quotes",
+      ariaLabel: "Open live quotes to choose a symbol for a price alert"
+    });
+  });
+
   it("derives trigger rows with acknowledgement action state", () => {
     const section = buildPriceAlertTriggerSection([
       buildTrigger({ id: "trigger-new", acknowledged: false }),

@@ -125,7 +125,7 @@ export function WatchlistScreen() {
           {vm.submitFeedback ? (
             <div
               id={vm.addSymbolField.feedbackId}
-              role={vm.submitFeedback.tone === "success" ? "status" : "alert"}
+              role={vm.addSymbolField.feedbackRole}
               className={`mt-2 flex flex-wrap items-center gap-2 text-xs ${feedbackTextClass[vm.submitFeedback.tone]}`}
             >
               <span className="inline-flex min-w-0 items-center gap-1.5">

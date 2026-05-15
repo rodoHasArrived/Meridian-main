@@ -134,6 +134,15 @@ const tradeTimelineColumns: DenseDataTableColumn<CoveredCallTradeTimelineRowView
         {row.exitReasonLabel}
       </Badge>
     )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <Badge variant={row.statusBadgeVariant} dot>
+        {row.statusLabel}
+      </Badge>
+    )
   }
 ];
 

@@ -32,6 +32,8 @@ export const RESEARCH_RUN_DETAIL_PANEL_ID = "strategy-run-library-selected-run-d
 export const RESEARCH_COMPARISON_DETAIL_PANEL_ID = "strategy-run-comparison-selected-detail";
 export const RESEARCH_PROMOTION_HISTORY_DETAIL_PANEL_ID = "strategy-promotion-history-selected-detail";
 export const RESEARCH_PLOT_STUDY_DETAIL_PANEL_ID = "plottool-selected-study-detail";
+export const RESEARCH_DIFF_POSITION_DETAIL_PANEL_ID = "strategy-run-diff-selected-position-detail";
+export const RESEARCH_DIFF_PARAMETER_DETAIL_PANEL_ID = "strategy-run-diff-selected-parameter-detail";
 
 export interface ResearchRunLibraryState {
   loadingState: ResearchLoadingState;
@@ -314,11 +316,18 @@ export interface ResearchDiffChangeRow {
   key: string;
   symbolText: string;
   changeTypeText: string;
+  baseQuantityText: string;
+  targetQuantityText: string;
   quantityText: string;
+  basePnlText: string;
+  targetPnlText: string;
   pnlText: string;
   text: string;
   badgeVariant: ResearchDiffBadgeVariant;
   ariaLabel: string;
+  rowSelectAriaLabel: string;
+  detailPanelId: string;
+  detailExpanded: boolean;
 }
 
 export interface ResearchParameterChangeRow {
@@ -327,6 +336,22 @@ export interface ResearchParameterChangeRow {
   targetValueText: string;
   valueText: string;
   ariaLabel: string;
+  rowSelectAriaLabel: string;
+  detailPanelId: string;
+  detailExpanded: boolean;
+}
+
+export interface ResearchDiffDetailState {
+  id: string;
+  panelId: string;
+  ariaLabel: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: ResearchDiffBadgeVariant;
+  fields: Array<{ label: string; value: string }>;
 }
 
 export interface ResearchDiffMetricRow {
@@ -345,6 +370,14 @@ export interface ResearchDiffPanelState {
   metrics: ResearchDiffMetricRow[];
   positionChanges: ResearchDiffChangeRow[];
   parameterChanges: ResearchParameterChangeRow[];
+  positionTable: ResearchResultTableState<ResearchDiffChangeRow>;
+  parameterTable: ResearchResultTableState<ResearchParameterChangeRow>;
+  selectedPositionKey: string | null;
+  selectedParameterKey: string | null;
+  selectedPositionDetailPanelId: string;
+  selectedParameterDetailPanelId: string;
+  selectedPositionDetail: ResearchDiffDetailState | null;
+  selectedParameterDetail: ResearchDiffDetailState | null;
   positionSectionLabel: string;
   parameterSectionLabel: string;
   positionListLabel: string;
@@ -638,6 +671,8 @@ export function useResearchRunLibraryViewModel(
   const [comparison, setComparison] = useState<RunComparisonRow[]>([]);
   const [selectedComparisonRowId, setSelectedComparisonRowId] = useState<string | null>(null);
   const [runDiff, setRunDiff] = useState<RunDiff | null>(null);
+  const [selectedDiffPositionKey, setSelectedDiffPositionKey] = useState<string | null>(null);
+  const [selectedDiffParameterKey, setSelectedDiffParameterKey] = useState<string | null>(null);
   const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
   const [selectedPromotionHistoryId, setSelectedPromotionHistoryId] = useState<string | null>(null);
   const [comparisonLoaded, setComparisonLoaded] = useState(false);
@@ -671,6 +706,8 @@ export function useResearchRunLibraryViewModel(
       comparison,
       selectedComparisonRowId,
       runDiff,
+      selectedDiffPositionKey,
+      selectedDiffParameterKey,
       promotionHistory,
       selectedPromotionHistoryId,
       comparisonLoaded,
@@ -697,6 +734,8 @@ export function useResearchRunLibraryViewModel(
       selectedPromotionHistoryId,
       promotionHistoryLoaded,
       runDiff,
+      selectedDiffPositionKey,
+      selectedDiffParameterKey,
       runDiffLoaded,
       metrics,
       data?.plotTool,
@@ -724,6 +763,8 @@ export function useResearchRunLibraryViewModel(
     setComparison([]);
     setSelectedComparisonRowId(null);
     setRunDiff(null);
+    setSelectedDiffPositionKey(null);
+    setSelectedDiffParameterKey(null);
     setComparisonLoaded(false);
     setRunDiffLoaded(false);
     setPromoteState("idle");
@@ -813,6 +854,8 @@ export function useResearchRunLibraryViewModel(
       setComparison(rows);
       setSelectedComparisonRowId(rows[0]?.runId ?? null);
       setRunDiff(null);
+      setSelectedDiffPositionKey(null);
+      setSelectedDiffParameterKey(null);
       setComparisonLoaded(true);
       setRunDiffLoaded(false);
     } catch (err) {
@@ -849,6 +892,8 @@ export function useResearchRunLibraryViewModel(
       setRunDiff(result);
       setComparison([]);
       setSelectedComparisonRowId(null);
+      setSelectedDiffPositionKey(null);
+      setSelectedDiffParameterKey(null);
       setRunDiffLoaded(true);
       setComparisonLoaded(false);
     } catch (err) {
@@ -988,6 +1033,8 @@ export function useResearchRunLibraryViewModel(
     openRunDetailById,
     selectComparisonRow: setSelectedComparisonRowId,
     selectPromotionHistoryRecord: setSelectedPromotionHistoryId,
+    selectDiffPositionChange: setSelectedDiffPositionKey,
+    selectDiffParameterChange: setSelectedDiffParameterKey,
     selectPlotStudy: setSelectedPlotStudyId,
     setPromotionInitialCash: updatePromotionInitialCash,
     setPromotionAcknowledgement: updatePromotionAcknowledgement
@@ -1004,6 +1051,8 @@ export function buildResearchRunLibraryState({
   comparison,
   selectedComparisonRowId = null,
   runDiff,
+  selectedDiffPositionKey = null,
+  selectedDiffParameterKey = null,
   promotionHistory,
   selectedPromotionHistoryId = null,
   comparisonLoaded = false,
@@ -1029,6 +1078,8 @@ export function buildResearchRunLibraryState({
   comparison: RunComparisonRow[];
   selectedComparisonRowId?: string | null;
   runDiff: RunDiff | null;
+  selectedDiffPositionKey?: string | null;
+  selectedDiffParameterKey?: string | null;
   promotionHistory: PromotionRecord[];
   selectedPromotionHistoryId?: string | null;
   comparisonLoaded?: boolean;
@@ -1079,7 +1130,10 @@ export function buildResearchRunLibraryState({
   const selectedComparisonRow = resolvedComparisonRowId
     ? comparisonTable.rows.find((row) => row.runId === resolvedComparisonRowId) ?? null
     : null;
-  const diffPanel = buildDiffPanel(runDiff);
+  const diffPanel = buildDiffPanel(runDiff, {
+    selectedPositionKey: selectedDiffPositionKey,
+    selectedParameterKey: selectedDiffParameterKey
+  });
   const resolvedPromotionHistoryId = resolveSelectedPromotionHistoryId(promotionHistory, selectedPromotionHistoryId);
   const selectedPromotionHistory = resolvedPromotionHistoryId
     ? promotionHistory.find((record) => record.promotionId === resolvedPromotionHistoryId) ?? null
@@ -2044,7 +2098,13 @@ export function buildComparisonDetail(
   };
 }
 
-export function buildDiffPanel(runDiff: RunDiff | null): ResearchDiffPanelState {
+export function buildDiffPanel(
+  runDiff: RunDiff | null,
+  options: {
+    selectedPositionKey?: string | null;
+    selectedParameterKey?: string | null;
+  } = {}
+): ResearchDiffPanelState {
   if (!runDiff) {
     return {
       title: "Position & parameter diff",
@@ -2054,6 +2114,24 @@ export function buildDiffPanel(runDiff: RunDiff | null): ResearchDiffPanelState 
       metrics: [],
       positionChanges: [],
       parameterChanges: [],
+      positionTable: {
+        rows: [],
+        hasRows: false,
+        caption: "Position changes returned by the Strategy diff command.",
+        emptyText: "No position diff result is available."
+      },
+      parameterTable: {
+        rows: [],
+        hasRows: false,
+        caption: "Parameter changes returned by the Strategy diff command.",
+        emptyText: "No parameter diff result is available."
+      },
+      selectedPositionKey: null,
+      selectedParameterKey: null,
+      selectedPositionDetailPanelId: RESEARCH_DIFF_POSITION_DETAIL_PANEL_ID,
+      selectedParameterDetailPanelId: RESEARCH_DIFF_PARAMETER_DETAIL_PANEL_ID,
+      selectedPositionDetail: null,
+      selectedParameterDetail: null,
       positionSectionLabel: "Position changes",
       parameterSectionLabel: "Parameter changes",
       positionListLabel: "No position diff rows",
@@ -2069,8 +2147,24 @@ export function buildDiffPanel(runDiff: RunDiff | null): ResearchDiffPanelState 
     ...runDiff.addedPositions,
     ...runDiff.removedPositions,
     ...runDiff.modifiedPositions
-  ].map(buildPositionDiffRow);
-  const parameterChanges = runDiff.parameterChanges.map(buildParameterDiffRow);
+  ].map((item) => buildPositionDiffRow(item, options.selectedPositionKey));
+  const parameterChanges = runDiff.parameterChanges.map((item) => buildParameterDiffRow(item, options.selectedParameterKey));
+  const selectedPositionKey = resolveSelectedDiffKey(positionChanges, options.selectedPositionKey);
+  const selectedParameterKey = resolveSelectedDiffKey(parameterChanges, options.selectedParameterKey);
+  const selectedPositionRows = positionChanges.map((row) => ({
+    ...row,
+    detailExpanded: row.key === selectedPositionKey
+  }));
+  const selectedParameterRows = parameterChanges.map((row) => ({
+    ...row,
+    detailExpanded: row.key === selectedParameterKey
+  }));
+  const selectedPosition = selectedPositionKey
+    ? selectedPositionRows.find((row) => row.key === selectedPositionKey) ?? null
+    : null;
+  const selectedParameter = selectedParameterKey
+    ? selectedParameterRows.find((row) => row.key === selectedParameterKey) ?? null
+    : null;
 
   return {
     title: "Position & parameter diff",
@@ -2078,8 +2172,26 @@ export function buildDiffPanel(runDiff: RunDiff | null): ResearchDiffPanelState 
     ariaLabel: `Strategy run diff for ${runDiff.baseStrategyName} and ${runDiff.targetStrategyName}`,
     summaryLabel: "Run diff metric summary",
     metrics: buildDiffMetricRows(runDiff.metrics),
-    positionChanges,
-    parameterChanges,
+    positionChanges: selectedPositionRows,
+    parameterChanges: selectedParameterRows,
+    positionTable: {
+      rows: selectedPositionRows,
+      hasRows: selectedPositionRows.length > 0,
+      caption: "Position changes returned by the Strategy diff command. Select a row to inspect base and target exposure.",
+      emptyText: "No position changes returned for this diff."
+    },
+    parameterTable: {
+      rows: selectedParameterRows,
+      hasRows: selectedParameterRows.length > 0,
+      caption: "Parameter changes returned by the Strategy diff command. Select a row to inspect base and target values.",
+      emptyText: "No parameter changes returned for this diff."
+    },
+    selectedPositionKey,
+    selectedParameterKey,
+    selectedPositionDetailPanelId: RESEARCH_DIFF_POSITION_DETAIL_PANEL_ID,
+    selectedParameterDetailPanelId: RESEARCH_DIFF_PARAMETER_DETAIL_PANEL_ID,
+    selectedPositionDetail: selectedPosition ? buildPositionDiffDetail(selectedPosition) : null,
+    selectedParameterDetail: selectedParameter ? buildParameterDiffDetail(selectedParameter) : null,
     positionSectionLabel: `${positionChanges.length} position ${positionChanges.length === 1 ? "change" : "changes"} returned`,
     parameterSectionLabel: `${parameterChanges.length} parameter ${parameterChanges.length === 1 ? "change" : "changes"} returned`,
     positionListLabel: "Position diff rows",
@@ -2121,27 +2233,45 @@ function buildDiffMetricRows(metrics: MetricsDiff): ResearchDiffMetricRow[] {
   ];
 }
 
-function buildPositionDiffRow(item: PositionDiffEntry): ResearchDiffChangeRow {
+function buildPositionDiffRow(
+  item: PositionDiffEntry,
+  selectedKey: string | null | undefined = null
+): ResearchDiffChangeRow {
   const symbolText = formatText(item.symbol);
   const changeTypeText = formatText(item.changeType);
+  const key = `${symbolText}-${changeTypeText}`;
   const quantityDelta = item.targetQuantity - item.baseQuantity;
   const pnlDelta = item.targetPnl - item.basePnl;
+  const baseQuantityText = formatCount(item.baseQuantity);
+  const targetQuantityText = formatCount(item.targetQuantity);
   const quantityText = `Qty ${formatSignedCount(quantityDelta)}`;
+  const basePnlText = formatMoney(item.basePnl);
+  const targetPnlText = formatMoney(item.targetPnl);
   const pnlText = `P&L ${formatMoney(pnlDelta, true)}`;
 
   return {
-    key: `${symbolText}-${changeTypeText}`,
+    key,
     symbolText,
     changeTypeText,
+    baseQuantityText,
+    targetQuantityText,
     quantityText,
+    basePnlText,
+    targetPnlText,
     pnlText,
     text: `${symbolText} ${changeTypeText}`,
     badgeVariant: badgeVariantForPositionChange(item.changeType),
-    ariaLabel: `${symbolText} ${changeTypeText}. ${quantityText}. ${pnlText}.`
+    ariaLabel: `${symbolText} ${changeTypeText}. ${quantityText}. ${pnlText}.`,
+    rowSelectAriaLabel: `Inspect ${symbolText} ${changeTypeText.toLowerCase()} position diff`,
+    detailPanelId: RESEARCH_DIFF_POSITION_DETAIL_PANEL_ID,
+    detailExpanded: key === selectedKey
   };
 }
 
-function buildParameterDiffRow(item: ParameterDiff): ResearchParameterChangeRow {
+function buildParameterDiffRow(
+  item: ParameterDiff,
+  selectedKey: string | null | undefined = null
+): ResearchParameterChangeRow {
   const key = formatText(item.key);
   const baseValueText = formatText(item.baseValue);
   const targetValueText = formatText(item.targetValue);
@@ -2152,7 +2282,62 @@ function buildParameterDiffRow(item: ParameterDiff): ResearchParameterChangeRow 
     baseValueText,
     targetValueText,
     valueText,
-    ariaLabel: `${key} changed from ${baseValueText} to ${targetValueText}.`
+    ariaLabel: `${key} changed from ${baseValueText} to ${targetValueText}.`,
+    rowSelectAriaLabel: `Inspect ${key} parameter diff`,
+    detailPanelId: RESEARCH_DIFF_PARAMETER_DETAIL_PANEL_ID,
+    detailExpanded: key === selectedKey
+  };
+}
+
+function resolveSelectedDiffKey<T extends { key: string }>(
+  rows: T[],
+  selectedKey: string | null | undefined
+): string | null {
+  if (selectedKey && rows.some((row) => row.key === selectedKey)) {
+    return selectedKey;
+  }
+
+  return rows[0]?.key ?? null;
+}
+
+function buildPositionDiffDetail(row: ResearchDiffChangeRow): ResearchDiffDetailState {
+  return {
+    id: row.key,
+    panelId: RESEARCH_DIFF_POSITION_DETAIL_PANEL_ID,
+    ariaLabel: `Selected position diff detail for ${row.symbolText}`,
+    eyebrow: "Selected position",
+    title: row.symbolText,
+    subtitle: row.changeTypeText,
+    description: `${row.symbolText} ${row.changeTypeText.toLowerCase()} between the base and target Strategy runs.`,
+    statusLabel: row.changeTypeText,
+    statusVariant: row.badgeVariant,
+    fields: [
+      { label: "Base quantity", value: row.baseQuantityText },
+      { label: "Target quantity", value: row.targetQuantityText },
+      { label: "Quantity delta", value: row.quantityText },
+      { label: "Base P&L", value: row.basePnlText },
+      { label: "Target P&L", value: row.targetPnlText },
+      { label: "P&L delta", value: row.pnlText }
+    ]
+  };
+}
+
+function buildParameterDiffDetail(row: ResearchParameterChangeRow): ResearchDiffDetailState {
+  return {
+    id: row.key,
+    panelId: RESEARCH_DIFF_PARAMETER_DETAIL_PANEL_ID,
+    ariaLabel: `Selected parameter diff detail for ${row.key}`,
+    eyebrow: "Selected parameter",
+    title: row.key,
+    subtitle: row.valueText,
+    description: `${row.key} changed between the base and target Strategy runs.`,
+    statusLabel: "Changed",
+    statusVariant: "warning",
+    fields: [
+      { label: "Base value", value: row.baseValueText },
+      { label: "Target value", value: row.targetValueText },
+      { label: "Delta", value: row.valueText }
+    ]
   };
 }
 
@@ -2488,6 +2673,14 @@ function formatSignedCount(value: number | null | undefined): string {
 
   const sign = value > 0 ? "+" : "";
   return `${sign}${value.toLocaleString()}`;
+}
+
+function formatCount(value: number | null | undefined): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "Unavailable";
+  }
+
+  return value.toLocaleString();
 }
 
 function formatSignedPercent(value: number | null | undefined): string {

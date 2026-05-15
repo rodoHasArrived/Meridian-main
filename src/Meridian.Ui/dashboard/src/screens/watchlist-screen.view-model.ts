@@ -129,6 +129,7 @@ export interface WatchlistAddSymbolFieldViewModel {
   helperId: string;
   helperText: string;
   feedbackId: string;
+  feedbackRole: "status" | "alert";
   describedBy: string;
   invalid: boolean;
   errorMessageId: string | undefined;
@@ -690,6 +691,7 @@ export function buildWatchlistAddSymbolField(
     helperId,
     helperText: "Paste one or more symbols separated by spaces or commas. Meridian normalizes them to uppercase.",
     feedbackId,
+    feedbackRole: submitFeedback?.tone === "success" ? "status" : "alert",
     describedBy: submitFeedback ? `${feedbackId} ${helperId}` : helperId,
     invalid,
     errorMessageId: invalid ? feedbackId : undefined,

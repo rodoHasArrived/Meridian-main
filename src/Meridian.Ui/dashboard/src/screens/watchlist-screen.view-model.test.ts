@@ -189,6 +189,7 @@ describe("watchlist-screen view model", () => {
       helperId: "add-symbol-help",
       helperText: "Paste one or more symbols separated by spaces or commas. Meridian normalizes them to uppercase.",
       feedbackId: "add-symbol-feedback",
+      feedbackRole: "alert",
       describedBy: "add-symbol-help",
       invalid: false,
       errorMessageId: undefined,
@@ -197,6 +198,7 @@ describe("watchlist-screen view model", () => {
 
     expect(buildWatchlistAddSymbolField({ tone: "danger", message: "Provider offline" }, true)).toMatchObject({
       describedBy: "add-symbol-feedback add-symbol-help",
+      feedbackRole: "alert",
       invalid: true,
       errorMessageId: "add-symbol-feedback",
       disabled: true
@@ -204,6 +206,7 @@ describe("watchlist-screen view model", () => {
 
     expect(buildWatchlistAddSymbolField({ tone: "success", message: "Added 1 of 1 symbols." }, false)).toMatchObject({
       describedBy: "add-symbol-feedback add-symbol-help",
+      feedbackRole: "status",
       invalid: false,
       errorMessageId: undefined,
       disabled: false

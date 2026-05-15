@@ -32,6 +32,10 @@ import type {
   SecurityMasterConflict,
   SecurityMasterEntry,
   SessionInfo,
+  StrategyDesignDocument,
+  StrategyDesignDraftSummary,
+  StrategyDesignFieldCatalogItem,
+  StrategyDesignTemplate,
   SymbolRecord,
   SymbolStatistics,
   SystemOverviewResponse,
@@ -53,6 +57,7 @@ import {
   RECONCILIATION_API_ENDPOINTS,
   REPLAY_API_ENDPOINTS,
   SECURITY_MASTER_API_ENDPOINTS,
+  STRATEGY_DESIGNER_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   brokerageConnectionStatusEndpoint
@@ -1334,6 +1339,134 @@ const fixtureQuantParameters: QuantParametersResponse = {
   ]
 };
 
+const fixtureStrategyDesignerDocument: StrategyDesignDocument = {
+  documentId: "strategy-designer-fixture-1",
+  name: "Quality momentum rotation",
+  description: "No-host Strategy Designer sample that combines quality, momentum, and risk filters.",
+  version: "1.0",
+  datasetReference: "fixture://strategy-designer/quality-momentum",
+  universe: ["AAPL", "MSFT", "NVDA", "QQQ"],
+  cells: [
+    {
+      cellId: "universe",
+      label: "Liquid equity universe",
+      kind: "universe",
+      purpose: "Seed the candidate universe with liquid large-cap equities.",
+      source: "Provider historical bars / security master",
+      fieldRefs: ["PRICE", "AVG_DOLLAR_VOLUME_20D"],
+      parameters: { minimumDollarVolume: "25000000" },
+      disabledReason: null
+    },
+    {
+      cellId: "momentum-score",
+      label: "Momentum score",
+      kind: "score",
+      purpose: "Rank candidates by medium-term momentum adjusted for volatility.",
+      source: "Meridian factor library",
+      fieldRefs: ["MOMENTUM_63D", "VOLATILITY_20D"],
+      parameters: { lookback: "63" },
+      disabledReason: null
+    },
+    {
+      cellId: "risk-gate",
+      label: "Risk gate",
+      kind: "gate",
+      purpose: "Reject symbols with drawdown or concentration risk beyond the paper-trading limit.",
+      source: "Risk policy fixture",
+      fieldRefs: ["MAX_DRAWDOWN_90D", "PORTFOLIO_WEIGHT"],
+      parameters: { maxWeight: "0.15" },
+      disabledReason: null
+    }
+  ],
+  transitions: [
+    {
+      transitionId: "universe-to-score",
+      fromCellId: "universe",
+      toCellId: "momentum-score",
+      kind: "filter",
+      condition: "avgDollarVolume20d >= 25000000",
+      maxIterations: null,
+      rationale: "Keep low-liquidity symbols out of the scoring pass."
+    },
+    {
+      transitionId: "score-to-risk",
+      fromCellId: "momentum-score",
+      toCellId: "risk-gate",
+      kind: "gate",
+      condition: "scorePercentile >= 0.80",
+      maxIterations: 1,
+      rationale: "Only top-ranked candidates continue to risk review."
+    }
+  ],
+  metadata: {
+    evidenceLane: "browser-screenshot",
+    fixture: "true"
+  },
+  createdAt: "2026-05-15T15:00:00Z",
+  updatedAt: "2026-05-15T15:00:00Z"
+};
+
+const fixtureStrategyDesignerFieldCatalog: StrategyDesignFieldCatalogItem[] = [
+  {
+    fieldId: "PRICE",
+    label: "Price",
+    source: "Provider historical bars / live quotes",
+    dataSet: "market-data",
+    typeName: "decimal",
+    description: "Canonical last or close price resolved through Meridian providers.",
+    isEnabled: true,
+    disabledReason: null,
+    synonyms: ["close", "last", "bar.close"]
+  },
+  {
+    fieldId: "MOMENTUM_63D",
+    label: "63-day momentum",
+    source: "Provider historical bars",
+    dataSet: "market-data",
+    typeName: "decimal",
+    description: "Return over the last 63 trading sessions.",
+    isEnabled: true,
+    disabledReason: null,
+    synonyms: ["return", "trend"]
+  },
+  {
+    fieldId: "AMX_PRIVATE_SCORE",
+    label: "AMX private score",
+    source: "External research upload",
+    dataSet: "research-import",
+    typeName: "decimal",
+    description: "Analyst model extension field kept disabled until provenance is attached.",
+    isEnabled: false,
+    disabledReason: "No Meridian canonical source",
+    synonyms: ["analyst", "custom", "amx"]
+  }
+];
+
+const fixtureStrategyDesignerTemplates: StrategyDesignTemplate[] = [
+  {
+    templateId: "quality-momentum-rotation",
+    name: "Quality momentum rotation",
+    description: "Rank liquid equities by momentum, quality, and volatility before risk-gate review.",
+    category: "Equity rotation",
+    sourcePrototype: "Strategy Designer fixture",
+    tags: ["momentum", "quality", "risk-gate"],
+    document: fixtureStrategyDesignerDocument
+  }
+];
+
+const fixtureStrategyDesignerDrafts: StrategyDesignDraftSummary[] = [
+  {
+    documentId: fixtureStrategyDesignerDocument.documentId,
+    name: fixtureStrategyDesignerDocument.name,
+    version: fixtureStrategyDesignerDocument.version,
+    datasetReference: fixtureStrategyDesignerDocument.datasetReference,
+    cellCount: fixtureStrategyDesignerDocument.cells.length,
+    transitionCount: fixtureStrategyDesignerDocument.transitions.length,
+    updatedAt: fixtureStrategyDesignerDocument.updatedAt,
+    validationSummary: "Fixture draft passes no-host validation."
+  }
+];
+
 const fixtureSecurityConflicts: SecurityMasterConflict[] = [
   {
     conflictId: "conflict-dev-001",
@@ -1606,6 +1739,9 @@ const fixtures = {
   [RECONCILIATION_API_ENDPOINTS.calibrationSummary]: fixtureCalibrationSummary,
   [QUANT_API_ENDPOINTS.templates]: fixtureQuantTemplates,
   [QUANT_API_ENDPOINTS.parameters]: fixtureQuantParameters,
+  [STRATEGY_DESIGNER_API_ENDPOINTS.templates]: fixtureStrategyDesignerTemplates,
+  [STRATEGY_DESIGNER_API_ENDPOINTS.fieldCatalog]: fixtureStrategyDesignerFieldCatalog,
+  [STRATEGY_DESIGNER_API_ENDPOINTS.drafts]: fixtureStrategyDesignerDrafts,
   [COVERED_CALL_API_ENDPOINTS.runs]: fixtureCoveredCallRuns,
   [COVERED_CALL_API_ENDPOINTS.chainPreview]: fixtureCoveredCallChainPreview,
   [`${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`]: fixtureSecurityConflicts,
@@ -1689,6 +1825,7 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
       return runId ? fixturePromotionEvaluations[runId] : undefined;
     }
   },
+  { pattern: apiRoutePattern(STRATEGY_DESIGNER_API_ENDPOINTS.drafts, "/[^/]+"), resolve: () => fixtureStrategyDesignerDocument },
   { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+"), resolve: () => fixturePaperSessionDetail },
   { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+/replay"), resolve: () => fixturePaperSessionReplayVerification }
 ];

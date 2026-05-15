@@ -459,9 +459,17 @@ export function PriceAlertsScreen() {
               />
             </div>
           ) : (
-            <p className="rounded-md border border-dashed border-border/70 bg-secondary/15 px-3 py-4 text-sm text-muted-foreground">
-              {vm.alertSection.emptyText}
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed border-border/70 bg-secondary/15 px-3 py-4 text-sm text-muted-foreground">
+              <p>{vm.alertSection.emptyText}</p>
+              {vm.alertSection.emptyAction ? (
+                <Button asChild variant="outline" size="sm">
+                  <Link to={vm.alertSection.emptyAction.href} aria-label={vm.alertSection.emptyAction.ariaLabel}>
+                    <LineChart className="h-3.5 w-3.5" aria-hidden="true" />
+                    <span className="ml-1.5">{vm.alertSection.emptyAction.label}</span>
+                  </Link>
+                </Button>
+              ) : null}
+            </div>
           )}
         </CardContent>
       </Card>

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import * as coveredCallApi from "@/lib/api/covered-call";
@@ -401,6 +401,8 @@ describe("CoveredCallScreen", () => {
     });
 
     expect(tradeTable).toBeInTheDocument();
+    expect(within(tradeTable).getByRole("columnheader", { name: "Status" })).toBeInTheDocument();
+    expect(within(tradeTable).getByText("Closed gain")).toBeInTheDocument();
     expect(firstTrade).toHaveAttribute("aria-selected", "true");
     expect(firstTrade).toHaveAttribute("aria-controls", "covered-call-trade-detail");
     expect(screen.getByRole("region", {

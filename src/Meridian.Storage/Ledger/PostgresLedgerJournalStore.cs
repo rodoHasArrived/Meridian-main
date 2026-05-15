@@ -8,7 +8,7 @@ using Npgsql;
 
 namespace Meridian.Storage.Ledger;
 
-public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
+public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStore
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
     private readonly LedgerJournalStoreOptions _options;
@@ -41,11 +41,40 @@ public sealed class PostgresLedgerJournalStore : ILedgerJournalStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
+        await AppendAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+    }
+
+    public async Task AppendAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        LedgerJournalEntryWrite entry,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(transaction);
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(entry.Entry);
+
+        if (entry.AggregateId == Guid.Empty)
+        {
+            throw new ArgumentException("Aggregate id is required.", nameof(entry));
+        }
+
+        if (entry.PeriodId == Guid.Empty)
+        {
+            throw new ArgumentException("Period id is required.", nameof(entry));
+        }
+
+        if (!entry.Entry.IsBalanced)
+        {
+            throw new LedgerValidationException($"Journal entry '{entry.Entry.JournalEntryId}' is not balanced.");
+        }
+
         await ValidateJournalBasisAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await InsertJournalLegsAsync(connection, transaction, entry, ct).ConfigureAwait(false);
-
-        await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)

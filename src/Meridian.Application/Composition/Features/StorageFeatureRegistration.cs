@@ -29,6 +29,7 @@ using Meridian.Storage;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Export;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Ledger;
 using Meridian.Storage.Maintenance;
 using Meridian.Storage.Policies;
 using Meridian.Storage.SecurityMaster;
@@ -193,10 +194,15 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         {
             services.AddSingleton(directLendingOptions);
             services.AddSingleton<DirectLendingEventRebuilder>();
-            services.AddSingleton<IDirectLendingStateStore, PostgresDirectLendingStateStore>();
+            services.AddSingleton<IDirectLendingStateStore>(sp =>
+                new PostgresDirectLendingStateStore(
+                    directLendingOptions,
+                    sp.GetService<ILedgerJournalStore>()));
             services.AddSingleton<IDirectLendingOperationsStore>(sp => (PostgresDirectLendingStateStore)sp.GetRequiredService<IDirectLendingStateStore>());
             services.AddSingleton<DirectLendingMigrationRunner>();
             services.AddSingleton<IDirectLendingQueryService, PostgresDirectLendingQueryService>();
+            services.AddSingleton<LoanAccountingProjector>();
+            services.AddSingleton<IAccrualLedgerService, AccrualLedgerService>();
             services.AddSingleton<IDirectLendingCommandService, PostgresDirectLendingCommandService>();
             services.AddSingleton<IDirectLendingService, PostgresDirectLendingService>();
             services.AddHostedService<DirectLendingOutboxDispatcher>();
