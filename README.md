@@ -6349,6 +6349,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── BackfillJobManager.cs
 │   │   │   │   │   ├── BackfillRequestQueue.cs
 │   │   │   │   │   ├── BackfillWorkerService.cs
+│   │   │   │   │   ├── MarketDataTracing.cs
 │   │   │   │   │   └── PriorityBackfillQueue.cs
 │   │   │   │   ├── BackfillProgressTracker.cs
 │   │   │   │   ├── BaseHistoricalDataProvider.cs
@@ -8927,6 +8928,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-726 directories, 7985 files
+726 directories, 7986 files
 ```
 <!-- readme-tree end -->
