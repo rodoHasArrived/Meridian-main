@@ -115,6 +115,7 @@ public sealed class TradingOperatorReadinessService
         }
 
         var controls = BuildControls(Resolve<ExecutionOperatorControlService>(), auditEntries);
+        var riskRuleStatuses = await ResolveRiskRuleStatusesAsync(ct).ConfigureAwait(false);
         if (controls.CircuitBreakerOpen)
         {
             AddWorkItem(
@@ -150,6 +151,34 @@ public sealed class TradingOperatorReadinessService
                 firstUnexplained?.RunId,
                 auditReference: firstUnexplained?.AuditId,
                 workItemId: "execution-evidence-incomplete");
+        }
+
+        var constrainedRiskRule = riskRuleStatuses.FirstOrDefault(static status =>
+            string.Equals(status.State, "Constrained", StringComparison.OrdinalIgnoreCase));
+        if (constrainedRiskRule is not null)
+        {
+            AddWorkItem(
+                workItems,
+                OperatorWorkItemKindDto.ExecutionControl,
+                $"{constrainedRiskRule.RuleName} is constraining trading",
+                constrainedRiskRule.Summary,
+                OperatorWorkItemToneDto.Critical,
+                workItemId: BuildWorkItemId("risk-rule-constrained", constrainedRiskRule.RuleName));
+        }
+        else
+        {
+            var observedRiskRule = riskRuleStatuses.FirstOrDefault(static status =>
+                string.Equals(status.State, "Observe", StringComparison.OrdinalIgnoreCase));
+            if (observedRiskRule is not null)
+            {
+                AddWorkItem(
+                    workItems,
+                    OperatorWorkItemKindDto.ExecutionControl,
+                    $"{observedRiskRule.RuleName} needs review",
+                    observedRiskRule.Summary,
+                    OperatorWorkItemToneDto.Warning,
+                    workItemId: BuildWorkItemId("risk-rule-observe", observedRiskRule.RuleName));
+            }
         }
 
         var trustGate = await ResolveTrustGateReadinessAsync(ct).ConfigureAwait(false);
@@ -235,6 +264,7 @@ public sealed class TradingOperatorReadinessService
             reportPack,
             reconciliationGate,
             brokerageStatus,
+            riskRuleStatuses,
             auditEntries);
         var overallStatus = ResolveOverallStatus(acceptanceGates);
         var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
@@ -308,6 +338,14 @@ public sealed class TradingOperatorReadinessService
         return auditTrail is null
             ? Array.Empty<ExecutionAuditEntry>()
             : await auditTrail.GetRecentAsync(100, ct).ConfigureAwait(false);
+    }
+
+    private async Task<IReadOnlyList<RiskRuleStatusDto>> ResolveRiskRuleStatusesAsync(CancellationToken ct)
+    {
+        var runtime = Resolve<RiskRuleRuntimeService>();
+        return runtime is null
+            ? Array.Empty<RiskRuleStatusDto>()
+            : await runtime.GetAllStatusesAsync(ct).ConfigureAwait(false);
     }
 
     private async Task<IReadOnlyList<StrategyPromotionRecord>> ResolvePromotionRecordsAsync(CancellationToken ct)
@@ -818,12 +856,14 @@ public sealed class TradingOperatorReadinessService
         TradingReportPackReadinessDto reportPack,
         ReconciliationGateEvaluation? reconciliationGate,
         WorkstationBrokerageSyncStatusDto? brokerageStatus,
+        IReadOnlyList<RiskRuleStatusDto> riskRuleStatuses,
         IReadOnlyList<ExecutionAuditEntry> auditEntries)
         =>
         [
             BuildSessionGate(activeSession, sessions, latestRun),
             BuildReplayGate(activeSession, replay),
             BuildAuditControlGate(controls, auditEntries),
+            BuildRiskRuleGate(riskRuleStatuses),
             BuildPromotionGate(promotion),
             BuildTrustGateAcceptance(trustGate),
             BuildReportPackGate(reportPack),
@@ -1045,6 +1085,46 @@ public sealed class TradingOperatorReadinessService
             Label: "Risk state explainable",
             Status: TradingAcceptanceGateStatusDto.Ready,
             Detail: $"{auditEntries.Count} execution audit entr{(auditEntries.Count == 1 ? "y is" : "ies are")} visible and no blocking controls are active.");
+    }
+
+    private static TradingAcceptanceGateDto BuildRiskRuleGate(IReadOnlyList<RiskRuleStatusDto> statuses)
+    {
+        if (statuses.Count == 0)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "risk-rules",
+                Label: "Risk rules healthy",
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                Detail: "Runtime risk-rule status is unavailable.");
+        }
+
+        var constrained = statuses.FirstOrDefault(static status =>
+            string.Equals(status.State, "Constrained", StringComparison.OrdinalIgnoreCase));
+        if (constrained is not null)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "risk-rules",
+                Label: "Risk rules healthy",
+                Status: TradingAcceptanceGateStatusDto.Blocked,
+                Detail: $"{constrained.RuleName}: {constrained.Summary}");
+        }
+
+        var observed = statuses.FirstOrDefault(static status =>
+            string.Equals(status.State, "Observe", StringComparison.OrdinalIgnoreCase));
+        if (observed is not null)
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "risk-rules",
+                Label: "Risk rules healthy",
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                Detail: $"{observed.RuleName}: {observed.Summary}");
+        }
+
+        return new TradingAcceptanceGateDto(
+            GateId: "risk-rules",
+            Label: "Risk rules healthy",
+            Status: TradingAcceptanceGateStatusDto.Ready,
+            Detail: "All runtime risk rules report healthy status.");
     }
 
     private static TradingAcceptanceGateDto BuildPromotionGate(TradingPromotionReadinessDto? promotion)
