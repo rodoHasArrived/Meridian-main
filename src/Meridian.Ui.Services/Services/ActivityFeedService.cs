@@ -415,7 +415,7 @@ public sealed class ActivityFeedService
         }
         catch
         {
-            System.Diagnostics.Trace.TraceWarning("Failed to load activity feed entries from {0}", loadPath);
+            System.Diagnostics.Trace.TraceWarning("Failed to load activity feed entries from {0}", _activityLogPath);
         }
     }
 
