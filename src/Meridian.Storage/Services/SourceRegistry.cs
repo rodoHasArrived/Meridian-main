@@ -247,10 +247,17 @@ public sealed class SourceRegistry : ISourceRegistry
             return;
         }
 
-        _saveGate.Wait();
+        // Apply the in-memory change first; ConcurrentDictionary operations are thread-safe.
+        applyChange();
+
+        // Bounded wait so persistence never blocks a thread-pool thread indefinitely.
+        // If the lock is already held by another save, we skip this disk write —
+        // the next mutation will persist all accumulated in-memory state.
+        if (!_saveGate.Wait(TimeSpan.FromSeconds(10)))
+            return;
+
         try
         {
-            applyChange();
             SaveToDisk();
         }
         finally
