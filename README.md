@@ -6914,6 +6914,8 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── overview-utc-smoke.png
 │   │       │       │   ├── portfolio-brokerage-account-detail-smoke.png
 │   │       │       │   ├── portfolio-brokerage-sync-actions-smoke.png
+│   │       │       │   ├── portfolio-readiness-debug.png
+│   │       │       │   ├── portfolio-readiness-handoff-smoke.png
 │   │       │       │   ├── portfolio-sync-trust-smoke.png
 │   │       │       │   ├── price-alert-delete-confirmation-smoke.png
 │   │       │       │   ├── price-alert-storage-warning-smoke.png
@@ -6951,6 +6953,17 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── watchlist-retry-smoke.png
 │   │       │       │   └── workstation-preview-smoke.png
 │   │       │       ├── strategy-designer-field-labels-smoke.png
+│   │       │       ├── strategy-designer-field-search-desktop.png
+│   │       │       ├── strategy-designer-field-search-mobile.png
+│   │       │       ├── user-test-and-implement-smoke
+│   │       │       │   ├── accounting.png
+│   │       │       │   ├── changed-routes-smoke.json
+│   │       │       │   ├── portfolio-readiness-preview.png
+│   │       │       │   ├── portfolio.png
+│   │       │       │   ├── reporting-export-gate-preview.png
+│   │       │       │   ├── smoke.json
+│   │       │       │   ├── strategy.png
+│   │       │       │   └── trading.png
 │   │       │       ├── web-ui
 │   │       │       │   ├── calibration-profile-detail-mobile-smoke.png
 │   │       │       │   ├── calibration-profile-detail-smoke.png
@@ -8105,6 +8118,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Commands
 │   │   │   │   ├── CliArgumentsTests.cs
 │   │   │   │   ├── CommandDispatcherTests.cs
+│   │   │   │   ├── ConfigCommandsTests.cs
 │   │   │   │   ├── DiagnosticsCommandsTests.cs
 │   │   │   │   ├── DryRunCommandTests.cs
 │   │   │   │   ├── EtlCommandsTests.cs
@@ -8903,6 +8917,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-724 directories, 7963 files
+725 directories, 7976 files
 ```
 <!-- readme-tree end -->
