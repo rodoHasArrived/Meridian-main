@@ -85,6 +85,46 @@ const completedRunResult: CoveredCallRunResult = {
   openPositionsAtEnd: []
 };
 
+const completedRunWithTrades: CoveredCallRunResult = {
+  ...completedRunResult,
+  trades: [
+    {
+      strike: 505,
+      expiration: "2024-02-16",
+      contracts: 2,
+      multiplier: 100,
+      entryDate: "2024-01-10",
+      entryCredit: 2.35,
+      exitDate: "2024-01-24",
+      exitDebit: 0.75,
+      exitReason: "TakeProfit",
+      entryImpliedVolatility: 0.22,
+      netPnlPerContract: 160,
+      totalNetPnl: 320,
+      holdingDays: 14,
+      isWin: true,
+      wasAssigned: false
+    },
+    {
+      strike: 510,
+      expiration: "2024-03-15",
+      contracts: 1,
+      multiplier: 100,
+      entryDate: "2024-02-01",
+      entryCredit: 1.9,
+      exitDate: "2024-02-12",
+      exitDebit: 3.3,
+      exitReason: "Assigned",
+      entryImpliedVolatility: null,
+      netPnlPerContract: -140,
+      totalNetPnl: -140,
+      holdingDays: 11,
+      isWin: false,
+      wasAssigned: true
+    }
+  ]
+};
+
 const historicalRun: CoveredCallRunSummary = {
   runId: "run-history-1",
   underlyingSymbol: "SPY",
@@ -339,5 +379,43 @@ describe("CoveredCallScreen", () => {
       "href",
       "/reporting/report-packs"
     );
+  });
+
+  it("renders completed trade timeline as selectable dense rows with a linked detail inspector", async () => {
+    vi.mocked(coveredCallApi.listCoveredCallRuns).mockResolvedValue([historicalRun]);
+    vi.mocked(coveredCallApi.getCoveredCallRunResult).mockResolvedValue(completedRunWithTrades);
+
+    renderCoveredCallScreen();
+
+    const historyRow = await screen.findByRole("row", {
+      name: "Reload covered-call run run-history-1 for SPY"
+    });
+    fireEvent.click(historyRow);
+
+    const tradeTable = await screen.findByRole("table", { name: "SPY covered-call trade timeline" });
+    const firstTrade = await screen.findByRole("row", {
+      name: "Inspect SPY trade 1, entry 2024-01-10, exit 2024-01-24, strike 505.00, PnL $320, status Closed gain."
+    });
+    const assignedTrade = await screen.findByRole("row", {
+      name: "Inspect SPY trade 2, entry 2024-02-01, exit 2024-02-12, strike 510.00, PnL -$140, status Assigned."
+    });
+
+    expect(tradeTable).toBeInTheDocument();
+    expect(firstTrade).toHaveAttribute("aria-selected", "true");
+    expect(firstTrade).toHaveAttribute("aria-controls", "covered-call-trade-detail");
+    expect(screen.getByRole("region", {
+      name: "Selected covered-call trade 1: SPY 505.00 call"
+    })).toBeInTheDocument();
+
+    assignedTrade.focus();
+    fireEvent.keyDown(assignedTrade, { key: "Enter" });
+
+    expect(assignedTrade).toHaveAttribute("aria-selected", "true");
+    expect(assignedTrade).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", {
+      name: "Selected covered-call trade 2: SPY 510.00 call"
+    })).toBeInTheDocument();
+    expect(screen.getByText("Take profit")).toBeInTheDocument();
+    expect(screen.getByText("Assigned; exit reason Assigned; -$140 total net PnL.")).toBeInTheDocument();
   });
 });

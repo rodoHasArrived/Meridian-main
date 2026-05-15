@@ -208,6 +208,7 @@ const defaultServices: OperatorReadinessConsoleServices = {
 };
 
 const REPORT_PACKS_ROUTE = "/reporting/report-packs";
+const PROVIDER_SETUP_ROUTE = "/settings#alpaca-provider-setup";
 
 export function useOperatorReadinessConsoleViewModel(
   payload: Omit<BuildOperatorReadinessConsoleStateOptions, "operatorInbox" | "inboxLoading" | "inboxError">,
@@ -1092,9 +1093,11 @@ function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): Readi
 }
 
 function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction | null {
-  const normalizedRoute = normalizeLocalWorkstationRoute(item.targetRoute)
-    ?? routeFromWorkItemTarget(item)
-    ?? fallbackRouteForWorkItemKind(item.kind);
+  const normalizedRoute = item.kind === "BrokerageSync"
+    ? PROVIDER_SETUP_ROUTE
+    : normalizeLocalWorkstationRoute(item.targetRoute)
+      ?? routeFromWorkItemTarget(item)
+      ?? fallbackRouteForWorkItemKind(item.kind);
   const route = item.kind === "ReportPackApproval" && normalizedRoute === "/reporting"
     ? REPORT_PACKS_ROUTE
     : normalizedRoute;
@@ -1126,7 +1129,7 @@ function fallbackRouteForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
     case "ExecutionControl":
       return "/trading/readiness";
     case "BrokerageSync":
-      return "/portfolio/brokerage-sync";
+      return PROVIDER_SETUP_ROUTE;
     case "SecurityMasterCoverage":
       return "/accounting/security-master";
     case "ReconciliationBreak":
@@ -1147,7 +1150,7 @@ function actionLabelForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
     case "PromotionReview":
       return "Open promotion review";
     case "BrokerageSync":
-      return "Open brokerage sync";
+      return "Fix provider setup";
     case "SecurityMasterCoverage":
       return "Open Security Master";
     case "ReconciliationBreak":

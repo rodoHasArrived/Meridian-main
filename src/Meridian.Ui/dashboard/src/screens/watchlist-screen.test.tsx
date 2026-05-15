@@ -286,6 +286,12 @@ describe("WatchlistScreen", () => {
     await user.click(screen.getByRole("button", { name: /Add Risk pulse starter pack: TLT, GLD, USO, VIXY/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Provider offline");
+    expect(screen.getByLabelText("Add symbol")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByLabelText("Add symbol")).toHaveAttribute("aria-errormessage", "add-symbol-feedback");
+    expect(screen.getByLabelText("Add symbol")).toHaveAttribute(
+      "aria-describedby",
+      "add-symbol-feedback add-symbol-help"
+    );
     expect(screen.getByRole("link", { name: /Open provider setup from watchlist starter-pack-exception/i })).toHaveAttribute(
       "href",
       "/settings#alpaca-provider-setup"

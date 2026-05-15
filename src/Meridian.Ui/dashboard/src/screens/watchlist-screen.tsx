@@ -58,17 +58,18 @@ export function WatchlistScreen() {
             className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center"
             aria-label={vm.formLabel}
           >
-            <label htmlFor={vm.inputId} className="sr-only">Add symbol</label>
+            <label htmlFor={vm.addSymbolField.id} className="sr-only">{vm.addSymbolField.label}</label>
             <Input
-              id={vm.inputId}
-              placeholder={vm.inputPlaceholder}
+              id={vm.addSymbolField.id}
+              placeholder={vm.addSymbolField.placeholder}
               value={vm.pendingSymbol}
               onChange={(event) => vm.setPendingSymbol(event.target.value)}
               autoComplete="off"
               spellCheck={false}
-              error={vm.submitFeedback?.tone === "danger"}
-              disabled={vm.submitting}
-              aria-describedby={vm.inputHelpId}
+              error={vm.addSymbolField.invalid}
+              disabled={vm.addSymbolField.disabled}
+              aria-describedby={vm.addSymbolField.describedBy}
+              aria-errormessage={vm.addSymbolField.errorMessageId}
             />
             <Button
               type="submit"
@@ -96,8 +97,8 @@ export function WatchlistScreen() {
               <span className="ml-1.5">{vm.refreshButtonLabel}</span>
             </Button>
           </form>
-          <p id="add-symbol-help" className="mt-2 text-xs text-muted-foreground">
-            {vm.inputHelpText}
+          <p id={vm.addSymbolField.helperId} className="mt-2 text-xs text-muted-foreground">
+            {vm.addSymbolField.helperText}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2" aria-label={vm.starterPackGroupLabel}>
             <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">{vm.starterPackEyebrow}</span>
@@ -123,7 +124,7 @@ export function WatchlistScreen() {
           </div>
           {vm.submitFeedback ? (
             <div
-              id="add-symbol-feedback"
+              id={vm.addSymbolField.feedbackId}
               role={vm.submitFeedback.tone === "success" ? "status" : "alert"}
               className={`mt-2 flex flex-wrap items-center gap-2 text-xs ${feedbackTextClass[vm.submitFeedback.tone]}`}
             >

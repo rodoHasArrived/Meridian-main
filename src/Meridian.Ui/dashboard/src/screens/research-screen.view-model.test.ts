@@ -704,9 +704,13 @@ describe("research-screen view model", () => {
     expect(valid.disabledReason).toBeNull();
     expect(valid.errorText).toBeNull();
     expect(valid.helpText).toBe("Minimum $1,000. Use whole-dollar paper capital.");
+    expect(valid.inputHelpId).toBe("promote-initial-cash-help");
+    expect(valid.inputDescribedBy).toBe("promote-initial-cash-help");
+    expect(valid.inputDisabledReasonId).toBeNull();
     expect(valid.describedBy).toBe("promote-initial-cash-help");
     expect(valid.acknowledgementChecked).toBe(true);
     expect(valid.acknowledgementLabel).toBe("I reviewed the promotion gates and paper-capital impact.");
+    expect(valid.acknowledgementDescribedBy).toBeUndefined();
 
     const unacknowledged = buildPromotionCashForm({
       input: "100000",
@@ -757,9 +761,17 @@ describe("research-screen view model", () => {
     expect(creating.submitLabel).toBe("Starting paper session...");
     expect(creating.inputDisabled).toBe(true);
     expect(creating.inputDisabledReason).toBe("Paper-session creation is already running; wait before changing capital.");
+    expect(creating.inputDisabledReasonId).toBe("promote-initial-cash-disabled-reason");
+    expect(creating.inputDescribedBy).toBe("promote-initial-cash-help promote-initial-cash-disabled-reason");
     expect(creating.acknowledgementDisabled).toBe(true);
     expect(creating.acknowledgementDisabledReason).toBe(
       "Paper-session creation is already running; wait before changing acknowledgement."
+    );
+    expect(creating.acknowledgementDisabledReasonId).toBe(
+      "promote-paper-session-acknowledgement-disabled-reason"
+    );
+    expect(creating.acknowledgementDescribedBy).toBe(
+      "promote-paper-session-acknowledgement-disabled-reason"
     );
     expect(creating.cancelDisabled).toBe(true);
     expect(creating.cancelDisabledReason).toBe(

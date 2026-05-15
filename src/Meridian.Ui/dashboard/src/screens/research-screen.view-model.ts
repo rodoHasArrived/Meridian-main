@@ -161,17 +161,22 @@ export interface ResearchPromotionSessionState {
 
 export interface ResearchPromotionCashFormState {
   inputId: string;
+  inputHelpId: string;
   label: string;
   value: string;
   min: number;
   step: number;
   inputDisabled: boolean;
   inputDisabledReason: string | null;
+  inputDisabledReasonId: string | null;
+  inputDescribedBy: string;
   acknowledgementId: string;
   acknowledgementLabel: string;
   acknowledgementChecked: boolean;
   acknowledgementDisabled: boolean;
   acknowledgementDisabledReason: string | null;
+  acknowledgementDisabledReasonId: string | null;
+  acknowledgementDescribedBy: string | undefined;
   helpText: string;
   errorText: string | null;
   describedBy: string;
@@ -1399,23 +1404,33 @@ export function buildPromotionCashForm({
   const cancelDisabledReason = isCreating
     ? "Paper-session creation is already running; wait for the session result before closing setup."
     : null;
+  const inputHelpId = "promote-initial-cash-help";
+  const inputDisabledReasonId = inputDisabledReason ? "promote-initial-cash-disabled-reason" : null;
+  const acknowledgementDisabledReasonId = acknowledgementDisabledReason
+    ? "promote-paper-session-acknowledgement-disabled-reason"
+    : null;
 
   return {
     inputId: "promote-initial-cash",
+    inputHelpId,
     label: "Initial cash ($)",
     value: input,
     min: 1000,
     step: 1000,
     inputDisabled: isCreating,
     inputDisabledReason,
+    inputDisabledReasonId,
+    inputDescribedBy: [inputHelpId, inputDisabledReasonId].filter(Boolean).join(" "),
     acknowledgementId: "promote-paper-session-acknowledgement",
     acknowledgementLabel: "I reviewed the promotion gates and paper-capital impact.",
     acknowledgementChecked: acknowledged,
     acknowledgementDisabled: isCreating,
     acknowledgementDisabledReason,
+    acknowledgementDisabledReasonId,
+    acknowledgementDescribedBy: acknowledgementDisabledReasonId ?? undefined,
     helpText,
     errorText,
-    describedBy: "promote-initial-cash-help",
+    describedBy: inputHelpId,
     canSubmit: eligible && promoteState === "evaluated" && parsed !== null && acknowledged && !isCreating,
     disabledReason,
     submitLabel: isCreating ? "Starting paper session..." : "Start paper session",

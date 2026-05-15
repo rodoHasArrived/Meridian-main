@@ -10,6 +10,7 @@ import {
   buildStaleFilterCommand,
   buildStarterPackCommands,
   buildStarterPackFeedback,
+  buildWatchlistAddSymbolField,
   buildWatchlistSelectedDetail,
   buildWatchlistRows,
   buildWatchlistStats,
@@ -177,6 +178,35 @@ describe("watchlist-screen view model", () => {
       tone: "danger",
       message: "Added 0 of 2 symbols; Provider offline.",
       providerSetupHandoff: buildProviderSetupHandoff("bulk-add-errors")
+    });
+  });
+
+  it("builds add-symbol field accessibility metadata from feedback state", () => {
+    expect(buildWatchlistAddSymbolField(null, false)).toEqual({
+      id: "add-symbol-input",
+      label: "Add symbol",
+      placeholder: "Add symbols (e.g. MSFT, SPY)",
+      helperId: "add-symbol-help",
+      helperText: "Paste one or more symbols separated by spaces or commas. Meridian normalizes them to uppercase.",
+      feedbackId: "add-symbol-feedback",
+      describedBy: "add-symbol-help",
+      invalid: false,
+      errorMessageId: undefined,
+      disabled: false
+    });
+
+    expect(buildWatchlistAddSymbolField({ tone: "danger", message: "Provider offline" }, true)).toMatchObject({
+      describedBy: "add-symbol-feedback add-symbol-help",
+      invalid: true,
+      errorMessageId: "add-symbol-feedback",
+      disabled: true
+    });
+
+    expect(buildWatchlistAddSymbolField({ tone: "success", message: "Added 1 of 1 symbols." }, false)).toMatchObject({
+      describedBy: "add-symbol-feedback add-symbol-help",
+      invalid: false,
+      errorMessageId: undefined,
+      disabled: false
     });
   });
 

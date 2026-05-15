@@ -4,6 +4,7 @@ import type {
   CoveredCallBacktestRequest,
   CoveredCallChainRow,
   CoveredCallChainPreview,
+  CoveredCallTrade,
   CoveredCallRunPhase,
   CoveredCallRunResult,
   CoveredCallRunStatus,
@@ -40,6 +41,7 @@ export interface CoveredCallFormState {
 export type CoveredCallFormErrors = Partial<Record<keyof CoveredCallFormState, string>>;
 
 export const COVERED_CALL_CHAIN_DETAIL_PANEL_ID = "covered-call-chain-candidate-detail";
+export const COVERED_CALL_TRADE_DETAIL_PANEL_ID = "covered-call-trade-detail";
 
 type CoveredCallBadgeVariant = "outline" | "success" | "warning" | "danger" | "paper" | "research" | "default";
 
@@ -113,6 +115,7 @@ export interface CoveredCallRunState {
   status: CoveredCallRunStatus | null;
   result: CoveredCallRunResult | null;
   selectedPositionIndex: number;
+  selectedTradeIndex: number;
   isStarting: boolean;
   isCancelling: boolean;
 }
@@ -170,6 +173,49 @@ export interface CoveredCallResultsActionPanelViewModel {
   title: string;
   description: string;
   actions: CoveredCallResultsActionViewModel[];
+}
+
+export interface CoveredCallTradeTimelineRowViewModel {
+  id: string;
+  index: number;
+  entryDateLabel: string;
+  exitDateLabel: string;
+  strikeLabel: string;
+  pnlLabel: string;
+  pnlClassName: "text-success" | "text-danger" | "text-muted-foreground";
+  exitReasonLabel: string;
+  statusLabel: string;
+  statusBadgeVariant: CoveredCallBadgeVariant;
+  rowAriaLabel: string;
+  rowSelectAriaLabel: string;
+  detailPanelId: string;
+  ariaExpanded: boolean;
+}
+
+export interface CoveredCallTradeTimelineDetailViewModel {
+  panelId: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  statusLabel: string;
+  statusBadgeVariant: CoveredCallBadgeVariant;
+  fields: Array<{ label: string; value: string }>;
+  ariaLabel: string;
+}
+
+export interface CoveredCallTradeTimelinePanelViewModel {
+  title: string;
+  tableLabel: string;
+  tableCaption: string;
+  emptyText: string;
+  detailPanelId: string;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  detailEmptyAriaLabel: string;
+  rows: CoveredCallTradeTimelineRowViewModel[];
+  selectedRowId: string | null;
+  selectedDetail: CoveredCallTradeTimelineDetailViewModel | null;
 }
 
 export interface CoveredCallScreenServices {
@@ -556,6 +602,136 @@ export function buildCoveredCallResultsActionPanel(
   };
 }
 
+export function buildCoveredCallTradeTimelinePanel(
+  result: CoveredCallRunResult | null,
+  selectedIndex: number
+): CoveredCallTradeTimelinePanelViewModel {
+  const base = {
+    title: result ? `Trades (${result.trades.length})` : "Trades",
+    tableLabel: result ? `${result.underlyingSymbol} covered-call trade timeline` : "Covered-call trade timeline",
+    tableCaption: result
+      ? `Select a ${result.underlyingSymbol} covered-call trade to inspect premium, holding-period, and assignment evidence.`
+      : "Covered-call trade rows appear after a completed run is loaded.",
+    emptyText: "No trades recorded.",
+    detailPanelId: COVERED_CALL_TRADE_DETAIL_PANEL_ID
+  };
+
+  if (!result || result.trades.length === 0) {
+    return {
+      ...base,
+      detailEmptyTitle: "No trade selected",
+      detailEmptyText: result
+        ? "This completed run did not record covered-call trade fills."
+        : "Complete or load a covered-call run to inspect trade evidence.",
+      detailEmptyAriaLabel: "Covered-call trade detail empty",
+      rows: [],
+      selectedRowId: null,
+      selectedDetail: null
+    };
+  }
+
+  const selectedTradeIndex = clampIndex(selectedIndex, result.trades.length);
+  const rows = result.trades.map((trade, index) =>
+    buildCoveredCallTradeTimelineRow(result.underlyingSymbol, trade, index, selectedTradeIndex)
+  );
+  const selectedTrade = result.trades[selectedTradeIndex] ?? null;
+
+  return {
+    ...base,
+    detailEmptyTitle: "No trade selected",
+    detailEmptyText: "Select a trade row to inspect premium, holding-period, and assignment evidence.",
+    detailEmptyAriaLabel: "Covered-call trade detail empty",
+    rows,
+    selectedRowId: rows[selectedTradeIndex]?.id ?? null,
+    selectedDetail: selectedTrade
+      ? buildCoveredCallTradeTimelineDetail(result.underlyingSymbol, selectedTrade, selectedTradeIndex)
+      : null
+  };
+}
+
+function buildCoveredCallTradeTimelineRow(
+  underlyingSymbol: string,
+  trade: CoveredCallTrade,
+  index: number,
+  selectedIndex: number
+): CoveredCallTradeTimelineRowViewModel {
+  const strikeLabel = formatPrice(trade.strike);
+  const pnlLabel = formatSignedMoney(trade.totalNetPnl);
+  const statusLabel = trade.wasAssigned ? "Assigned" : trade.isWin ? "Closed gain" : "Closed loss";
+  const exitReasonLabel = formatExitReason(trade.exitReason);
+  const statusBadgeVariant: CoveredCallBadgeVariant = trade.wasAssigned
+    ? "warning"
+    : trade.isWin
+      ? "success"
+      : "danger";
+  const id = coveredCallTradeRowId(trade, index);
+  const summary = `${underlyingSymbol} trade ${index + 1}, entry ${trade.entryDate}, exit ${trade.exitDate}, strike ${strikeLabel}, PnL ${pnlLabel}, status ${statusLabel}.`;
+
+  return {
+    id,
+    index,
+    entryDateLabel: trade.entryDate,
+    exitDateLabel: trade.exitDate,
+    strikeLabel,
+    pnlLabel,
+    pnlClassName: trade.totalNetPnl > 0
+      ? "text-success"
+      : trade.totalNetPnl < 0
+        ? "text-danger"
+        : "text-muted-foreground",
+    exitReasonLabel,
+    statusLabel,
+    statusBadgeVariant,
+    rowAriaLabel: summary,
+    rowSelectAriaLabel: `Inspect ${summary}`,
+    detailPanelId: COVERED_CALL_TRADE_DETAIL_PANEL_ID,
+    ariaExpanded: index === selectedIndex
+  };
+}
+
+function buildCoveredCallTradeTimelineDetail(
+  underlyingSymbol: string,
+  trade: CoveredCallTrade,
+  index: number
+): CoveredCallTradeTimelineDetailViewModel {
+  const strikeLabel = formatPrice(trade.strike);
+  const statusLabel = trade.wasAssigned ? "Assigned" : trade.isWin ? "Closed gain" : "Closed loss";
+  const exitReasonLabel = formatExitReason(trade.exitReason);
+  const statusBadgeVariant: CoveredCallBadgeVariant = trade.wasAssigned
+    ? "warning"
+    : trade.isWin
+      ? "success"
+      : "danger";
+  const totalPnl = formatSignedMoney(trade.totalNetPnl);
+
+  return {
+    panelId: COVERED_CALL_TRADE_DETAIL_PANEL_ID,
+    eyebrow: "Selected trade",
+    title: `${underlyingSymbol} ${strikeLabel} call`,
+    subtitle: `${trade.entryDate} to ${trade.exitDate} · ${trade.contracts} contract${trade.contracts === 1 ? "" : "s"}`,
+    description: `${statusLabel}; exit reason ${exitReasonLabel}; ${totalPnl} total net PnL.`,
+    statusLabel,
+    statusBadgeVariant,
+    fields: [
+      { label: "Exit reason", value: exitReasonLabel },
+      { label: "Entry credit", value: formatSignedMoney(trade.entryCredit) },
+      { label: "Exit debit", value: formatSignedMoney(trade.exitDebit) },
+      { label: "Net per contract", value: formatSignedMoney(trade.netPnlPerContract) },
+      { label: "Total net PnL", value: totalPnl },
+      { label: "Holding days", value: formatCount(trade.holdingDays) },
+      { label: "Multiplier", value: formatCount(trade.multiplier) },
+      { label: "Entry IV", value: trade.entryImpliedVolatility === null ? "—" : formatPercent(trade.entryImpliedVolatility) },
+      { label: "Assignment", value: trade.wasAssigned ? "Assigned" : "Not assigned" }
+    ],
+    ariaLabel: `Selected covered-call trade ${index + 1}: ${underlyingSymbol} ${strikeLabel} call`
+  };
+}
+
+function coveredCallTradeRowId(trade: CoveredCallTrade, index: number): string {
+  const raw = `${index}-${trade.entryDate}-${trade.exitDate}-${trade.expiration}-${trade.strike}`;
+  return `covered-call-trade-${raw.replace(/[^a-zA-Z0-9_-]+/g, "-")}`;
+}
+
 export function buildChainPreviewPanelViewModel(
   chainPreview: CoveredCallChainPreviewState
 ): CoveredCallChainPreviewPanelViewModel {
@@ -724,6 +900,24 @@ function formatCount(value: number): string {
   return Math.trunc(value).toLocaleString("en-US");
 }
 
+function formatSignedMoney(value: number): string {
+  if (!Number.isFinite(value)) return "—";
+  const sign = value < 0 ? "-$" : "$";
+  return `${sign}${Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+}
+
+function formatExitReason(value: string): string {
+  const normalized = value.trim();
+  if (!normalized) return "Closed";
+  return normalized
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase()
+    .replace(/^\w/, (letter) => letter.toUpperCase());
+}
+
 export function buildCoveredCallHistoryRows(history: CoveredCallRunSummary[]): CoveredCallHistoryRowViewModel[] {
   return history.map((row) => {
     const startedAtLabel = formatUtcDateTime(row.startedAt);
@@ -800,6 +994,7 @@ export interface CoveredCallScreenState {
   runProgressPanel: CoveredCallRunProgressPanelViewModel;
   stageNavigation: CoveredCallStageNavigationState;
   resultsActionPanel: CoveredCallResultsActionPanelViewModel;
+  tradeTimelinePanel: CoveredCallTradeTimelinePanelViewModel;
   history: CoveredCallRunSummary[];
   historyRows: CoveredCallHistoryRowViewModel[];
   historyLoading: boolean;
@@ -821,6 +1016,7 @@ export interface CoveredCallScreenViewModel extends CoveredCallScreenState {
   cancelRun: () => Promise<void>;
   loadHistory: () => Promise<void>;
   openRun: (runId: string) => Promise<void>;
+  selectTradeRow: (index: number) => void;
   selectOpenPosition: (index: number) => void;
   goToStage: (stage: CoveredCallStage) => void;
   dismissError: () => void;
@@ -870,6 +1066,7 @@ export function useCoveredCallScreenViewModel(
     status: null,
     result: null,
     selectedPositionIndex: 0,
+    selectedTradeIndex: 0,
     isStarting: false,
     isCancelling: false
   });
@@ -987,6 +1184,10 @@ export function useCoveredCallScreenViewModel(
     setRun((prev) => ({ ...prev, selectedPositionIndex: index }));
   }, []);
 
+  const selectTradeRow = useCallback((index: number) => {
+    setRun((prev) => ({ ...prev, selectedTradeIndex: index }));
+  }, []);
+
   // ---- Run lifecycle -----------------------------------------------------
   const pollAbortRef = useRef<AbortController | null>(null);
   const pollTimerRef = useRef<number | null>(null);
@@ -1016,7 +1217,7 @@ export function useCoveredCallScreenViewModel(
           try {
             const result = await services.getResult(runId);
             if (activeRunIdRef.current !== runId) return;
-            setRun((prev) => ({ ...prev, result, selectedPositionIndex: 0, isStarting: false, isCancelling: false }));
+            setRun((prev) => ({ ...prev, result, selectedPositionIndex: 0, selectedTradeIndex: 0, isStarting: false, isCancelling: false }));
             setStage("results");
           } catch (resultErr) {
             setErrorBanner(`Result fetch failed: ${(resultErr as Error).message}`);
@@ -1053,7 +1254,7 @@ export function useCoveredCallScreenViewModel(
     setPendingCancelRunId(null);
 
     setErrorBanner(null);
-    setRun({ runId: null, status: null, result: null, selectedPositionIndex: 0, isStarting: true, isCancelling: false });
+    setRun({ runId: null, status: null, result: null, selectedPositionIndex: 0, selectedTradeIndex: 0, isStarting: true, isCancelling: false });
     setStage("run");
 
     try {
@@ -1064,6 +1265,7 @@ export function useCoveredCallScreenViewModel(
         status: { runId: handle.runId, phase: "Queued", percentComplete: 0, currentBacktestDate: null, failureMessage: null },
         result: null,
         selectedPositionIndex: 0,
+        selectedTradeIndex: 0,
         isStarting: false,
         isCancelling: false
       });
@@ -1072,7 +1274,7 @@ export function useCoveredCallScreenViewModel(
       }, pollIntervalMs);
     } catch (error) {
       setErrorBanner((error as Error).message);
-      setRun({ runId: null, status: null, result: null, selectedPositionIndex: 0, isStarting: false, isCancelling: false });
+      setRun({ runId: null, status: null, result: null, selectedPositionIndex: 0, selectedTradeIndex: 0, isStarting: false, isCancelling: false });
       setStage("configure");
     }
   }, [form, pollIntervalMs, pollOnce, run.isStarting, services, stopPolling]);
@@ -1127,6 +1329,7 @@ export function useCoveredCallScreenViewModel(
         },
         result,
         selectedPositionIndex: 0,
+        selectedTradeIndex: 0,
         isStarting: false,
         isCancelling: false
       });
@@ -1156,6 +1359,10 @@ export function useCoveredCallScreenViewModel(
     () => buildCoveredCallResultsActionPanel(run.result),
     [run.result]
   );
+  const tradeTimelinePanel = useMemo(
+    () => buildCoveredCallTradeTimelinePanel(run.result, run.selectedTradeIndex),
+    [run.result, run.selectedTradeIndex]
+  );
   const historyRows = useMemo(
     () => buildCoveredCallHistoryRows(history),
     [history]
@@ -1180,6 +1387,7 @@ export function useCoveredCallScreenViewModel(
     runProgressPanel,
     stageNavigation,
     resultsActionPanel,
+    tradeTimelinePanel,
     history,
     historyRows,
     historyLoading,
@@ -1204,6 +1412,7 @@ export function useCoveredCallScreenViewModel(
     cancelRun,
     loadHistory,
     openRun,
+    selectTradeRow,
     selectOpenPosition,
     goToStage,
     dismissError
@@ -1218,6 +1427,7 @@ export function useCoveredCallScreenViewModel(
     runProgressPanel,
     stageNavigation,
     resultsActionPanel,
+    tradeTimelinePanel,
     history,
     historyRows,
     historyLoading,
@@ -1232,6 +1442,7 @@ export function useCoveredCallScreenViewModel(
     cancelRun,
     loadHistory,
     openRun,
+    selectTradeRow,
     selectOpenPosition,
     goToStage,
     dismissError

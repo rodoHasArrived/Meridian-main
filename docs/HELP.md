@@ -31,6 +31,14 @@ npm run build
 `npm run dev` serves the workstation under `/workstation/` and proxies `/api` to
 `MERIDIAN_API_BASE_URL` when set, or `http://localhost:8080` by default.
 
+To install the browser workstation as a local Windows app with Desktop and Start Menu shortcuts:
+
+```powershell
+.\build\scripts\install\install-web-workstation.ps1
+```
+
+The installed shortcut starts the local host and opens `http://localhost:8080/workstation/`.
+
 ## Configuration
 
 Configuration path resolution uses this order:

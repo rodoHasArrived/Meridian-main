@@ -122,6 +122,19 @@ export interface WatchlistStarterPackCommandState {
   busy: boolean;
 }
 
+export interface WatchlistAddSymbolFieldViewModel {
+  id: string;
+  label: string;
+  placeholder: string;
+  helperId: string;
+  helperText: string;
+  feedbackId: string;
+  describedBy: string;
+  invalid: boolean;
+  errorMessageId: string | undefined;
+  disabled: boolean;
+}
+
 export interface WatchlistSelectedDetailField {
   label: string;
   value: string;
@@ -181,6 +194,7 @@ export interface WatchlistScreenViewModel {
   tableLabel: string;
   tableCaption: string;
   formLabel: string;
+  addSymbolField: WatchlistAddSymbolFieldViewModel;
   inputId: string;
   inputPlaceholder: string;
   inputHelpId: string;
@@ -594,6 +608,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     quoteFetchedAt
   });
   const staleFilterCommand = buildStaleFilterCommand(allRows.length, totalStaleCount, hideStale);
+  const addSymbolField = buildWatchlistAddSymbolField(submitFeedback, submitting);
 
   return {
     pendingSymbol,
@@ -619,10 +634,11 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     tableLabel: "Subscribed symbol watchlist",
     tableCaption: buildTableCaption(sort, hideStale),
     formLabel: "Add symbols to the watchlist",
-    inputId: "add-symbol-input",
-    inputPlaceholder: "Add symbols (e.g. MSFT, SPY)",
-    inputHelpId: submitFeedback ? "add-symbol-feedback add-symbol-help" : "add-symbol-help",
-    inputHelpText: "Paste one or more symbols separated by spaces or commas. Meridian normalizes them to uppercase.",
+    addSymbolField,
+    inputId: addSymbolField.id,
+    inputPlaceholder: addSymbolField.placeholder,
+    inputHelpId: addSymbolField.describedBy,
+    inputHelpText: addSymbolField.helperText,
     addButtonLabel: submitting ? "Adding…" : pendingSymbols.length > 1 ? `Add ${pendingSymbols.length}` : "Add",
     addButtonAriaLabel: addValidation
       ? `Add symbol unavailable: ${addValidation}`
@@ -656,6 +672,28 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     addPendingSymbol,
     applyStarterPack,
     removeSymbol
+  };
+}
+
+export function buildWatchlistAddSymbolField(
+  submitFeedback: WatchlistSubmitFeedback | null,
+  submitting: boolean
+): WatchlistAddSymbolFieldViewModel {
+  const helperId = "add-symbol-help";
+  const feedbackId = "add-symbol-feedback";
+  const invalid = submitFeedback?.tone === "danger";
+
+  return {
+    id: "add-symbol-input",
+    label: "Add symbol",
+    placeholder: "Add symbols (e.g. MSFT, SPY)",
+    helperId,
+    helperText: "Paste one or more symbols separated by spaces or commas. Meridian normalizes them to uppercase.",
+    feedbackId,
+    describedBy: submitFeedback ? `${feedbackId} ${helperId}` : helperId,
+    invalid,
+    errorMessageId: invalid ? feedbackId : undefined,
+    disabled: submitting
   };
 }
 

@@ -8,6 +8,7 @@ import {
   buildCoveredCallRunProgressPanel,
   buildCoveredCallResultsActionPanel,
   buildCoveredCallStageNavigationState,
+  buildCoveredCallTradeTimelinePanel,
   DEFAULT_COVERED_CALL_FORM,
   formToRequest,
   isTerminalPhase,
@@ -20,7 +21,8 @@ import type {
   CoveredCallChainPreview,
   CoveredCallRunHandle,
   CoveredCallRunResult,
-  CoveredCallRunStatus
+  CoveredCallRunStatus,
+  CoveredCallTrade
 } from "@/types/covered-call";
 
 describe("validateForm", () => {
@@ -80,6 +82,7 @@ describe("covered-call run command view models", () => {
     status: null,
     result: null,
     selectedPositionIndex: 0,
+    selectedTradeIndex: 0,
     isStarting: false,
     isCancelling: false
   };
@@ -292,6 +295,116 @@ describe("covered-call run command view models", () => {
         href: "/reporting/report-packs"
       })
     ]);
+  });
+});
+
+describe("buildCoveredCallTradeTimelinePanel", () => {
+  const trade: CoveredCallTrade = {
+    strike: 505,
+    expiration: "2024-02-16",
+    contracts: 2,
+    multiplier: 100,
+    entryDate: "2024-01-10",
+    entryCredit: 2.35,
+    exitDate: "2024-01-24",
+    exitDebit: 0.75,
+    exitReason: "TakeProfit",
+    entryImpliedVolatility: 0.22,
+    netPnlPerContract: 160,
+    totalNetPnl: 320,
+    holdingDays: 14,
+    isWin: true,
+    wasAssigned: false
+  };
+
+  function runResult(trades: CoveredCallTrade[]): CoveredCallRunResult {
+    return {
+      runId: "abc",
+      underlyingSymbol: "SPY",
+      from: "2024-01-01",
+      to: "2024-06-30",
+      label: null,
+      metrics: {
+        cagr: 0.1,
+        annualizedVolatility: 0.15,
+        sharpeRatio: 0.7,
+        sortinoRatio: 0.9,
+        calmarRatio: 1.8,
+        maxDrawdownPct: -0.05,
+        winRate: 0.7,
+        assignmentRate: 0.05,
+        averageHoldingDays: 20,
+        totalOptionTrades: trades.length,
+        assignedTrades: trades.filter((item) => item.wasAssigned).length,
+        totalPremiumCollected: 1500,
+        totalOptionPnl: 800,
+        upCapture: 0.6,
+        downCapture: 0.9,
+        monthlyVar1Pct: -0.08,
+        monthlyVar5Pct: -0.05,
+        monthlyCVar5Pct: -0.06,
+        returnSkewness: 0,
+        returnKurtosis: 3,
+        annualizedTurnover: 8
+      },
+      equityCurve: [],
+      trades,
+      openPositionsAtEnd: []
+    };
+  }
+
+  it("projects covered-call trades into selectable rows and selected detail evidence", () => {
+    const loss = {
+      ...trade,
+      strike: 510,
+      entryDate: "2024-02-01",
+      exitDate: "2024-02-12",
+      exitReason: "Assigned",
+      totalNetPnl: -140,
+      netPnlPerContract: -70,
+      isWin: false,
+      wasAssigned: true
+    };
+
+    const panel = buildCoveredCallTradeTimelinePanel(runResult([trade, loss]), 1);
+
+    expect(panel).toMatchObject({
+      title: "Trades (2)",
+      tableLabel: "SPY covered-call trade timeline",
+      selectedRowId: panel.rows[1].id
+    });
+    expect(panel.rows[1]).toMatchObject({
+      entryDateLabel: "2024-02-01",
+      exitDateLabel: "2024-02-12",
+      strikeLabel: "510.00",
+      pnlLabel: "-$140",
+      pnlClassName: "text-danger",
+      statusLabel: "Assigned",
+      exitReasonLabel: "Assigned",
+      statusBadgeVariant: "warning",
+      detailPanelId: "covered-call-trade-detail",
+      ariaExpanded: true,
+      rowSelectAriaLabel: "Inspect SPY trade 2, entry 2024-02-01, exit 2024-02-12, strike 510.00, PnL -$140, status Assigned."
+    });
+    expect(panel.selectedDetail).toMatchObject({
+      title: "SPY 510.00 call",
+      statusLabel: "Assigned",
+      ariaLabel: "Selected covered-call trade 2: SPY 510.00 call"
+    });
+    expect(panel.rows[0].exitReasonLabel).toBe("Take profit");
+    expect(panel.selectedDetail?.description).toBe("Assigned; exit reason Assigned; -$140 total net PnL.");
+    expect(panel.selectedDetail?.fields).toContainEqual({ label: "Exit reason", value: "Assigned" });
+    expect(panel.selectedDetail?.fields).toContainEqual({ label: "Assignment", value: "Assigned" });
+  });
+
+  it("keeps empty trade timeline state in the view model", () => {
+    expect(buildCoveredCallTradeTimelinePanel(runResult([]), 0)).toMatchObject({
+      title: "Trades (0)",
+      emptyText: "No trades recorded.",
+      detailEmptyText: "This completed run did not record covered-call trade fills.",
+      selectedRowId: null,
+      selectedDetail: null
+    });
   });
 });
 

@@ -499,14 +499,14 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                       disabled={vm.promotionCashForm.inputDisabled}
                       title={vm.promotionCashForm.inputDisabledReason ?? undefined}
                       aria-invalid={vm.promotionCashForm.errorText ? "true" : "false"}
-                      aria-describedby={vm.promotionCashForm.describedBy}
+                      aria-describedby={vm.promotionCashForm.inputDescribedBy}
                       className={cn(
                         "w-44 rounded-md border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                         vm.promotionCashForm.errorText ? "border-danger/50 text-danger" : "border-border text-foreground"
                       )}
                     />
                     <p
-                      id={vm.promotionCashForm.describedBy}
+                      id={vm.promotionCashForm.inputHelpId}
                       className={cn(
                         "max-w-56 text-[11px] leading-4",
                         vm.promotionCashForm.errorText ? "text-danger" : "text-muted-foreground"
@@ -514,6 +514,14 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     >
                       {vm.promotionCashForm.helpText}
                     </p>
+                    {vm.promotionCashForm.inputDisabledReason ? (
+                      <p
+                        id={vm.promotionCashForm.inputDisabledReasonId ?? undefined}
+                        className="max-w-56 rounded-sm border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] leading-4 text-warning"
+                      >
+                        {vm.promotionCashForm.inputDisabledReason}
+                      </p>
+                    ) : null}
                   </div>
                   <label
                     htmlFor={vm.promotionCashForm.acknowledgementId}
@@ -526,9 +534,20 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                       onChange={(e) => vm.setPromotionAcknowledgement(e.target.checked)}
                       disabled={vm.promotionCashForm.acknowledgementDisabled}
                       title={vm.promotionCashForm.acknowledgementDisabledReason ?? undefined}
+                      aria-describedby={vm.promotionCashForm.acknowledgementDescribedBy}
                       className="mt-0.5 h-4 w-4 rounded border-border bg-background text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                     />
-                    <span>{vm.promotionCashForm.acknowledgementLabel}</span>
+                    <span className="grid gap-1">
+                      <span>{vm.promotionCashForm.acknowledgementLabel}</span>
+                      {vm.promotionCashForm.acknowledgementDisabledReason ? (
+                        <span
+                          id={vm.promotionCashForm.acknowledgementDisabledReasonId ?? undefined}
+                          className="rounded-sm border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] leading-4 text-warning"
+                        >
+                          {vm.promotionCashForm.acknowledgementDisabledReason}
+                        </span>
+                      ) : null}
+                    </span>
                   </label>
                   <Button
                     type="submit"

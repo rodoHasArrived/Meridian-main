@@ -593,17 +593,67 @@ describe("operator readiness console view model", () => {
       variant: "outline"
     });
     expect(state.workItems.find((item) => item.id === "workstation-prefixed-brokerage")?.action).toEqual({
-      label: "Open brokerage sync",
-      route: "/portfolio/brokerage-sync?fundAccountId=fund-1",
-      ariaLabel: "Open brokerage sync: Brokerage sync route",
+      label: "Fix provider setup",
+      route: "/settings#alpaca-provider-setup",
+      ariaLabel: "Fix provider setup: Brokerage sync route",
       variant: "outline"
     });
     expect(state.workItems.find((item) => item.id === "api-brokerage-fallback")?.action).toEqual({
-      label: "Open brokerage sync",
-      route: "/portfolio/brokerage-sync",
-      ariaLabel: "Open brokerage sync: API brokerage route should fallback",
+      label: "Fix provider setup",
+      route: "/settings#alpaca-provider-setup",
+      ariaLabel: "Fix provider setup: API brokerage route should fallback",
       variant: "outline"
     });
+  });
+
+  it("routes brokerage-sync work items to provider setup repair before portfolio review", () => {
+    const state = buildOperatorReadinessConsoleState({
+      research: null,
+      trading: null,
+      dataOperations: null,
+      governance: null,
+      operatorInbox: {
+        ...cleanInbox,
+        items: [
+          {
+            workItemId: "brokerage-sync-failed",
+            kind: "BrokerageSync",
+            label: "Brokerage sync failed",
+            detail: "Alpaca account sync failed because credentials require review.",
+            tone: "Critical",
+            createdAt: "2026-04-29T12:08:00Z",
+            runId: null,
+            fundAccountId: "fund-1",
+            auditReference: null,
+            workspace: "Portfolio",
+            targetRoute: "/api/fund-accounts/fund-1/brokerage-sync",
+            targetPageTag: "AccountPortfolio"
+          }
+        ],
+        criticalCount: 1,
+        warningCount: 0,
+        reviewCount: 1,
+        summary: "1 critical item needs attention."
+      },
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    expect(state.workItems[0].action).toEqual({
+      label: "Fix provider setup",
+      route: "/settings#alpaca-provider-setup",
+      ariaLabel: "Fix provider setup: Brokerage sync failed",
+      variant: "secondary"
+    });
+    expect(state.selectedWorkItemDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Route", value: "/settings#alpaca-provider-setup" }
+    ]));
+    expect(state.nextAction).toEqual(expect.objectContaining({
+      title: "Brokerage sync failed",
+      label: "Fix provider setup",
+      route: "/settings#alpaca-provider-setup",
+      level: "blocked"
+    }));
   });
 
   it("routes ledger-period close work items to the accounting reconciliation lane", () => {

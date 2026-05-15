@@ -11,7 +11,8 @@ import {
   type CoveredCallFormState,
   type CoveredCallHistoryRowViewModel,
   type CoveredCallScreenViewModel,
-  type CoveredCallStage
+  type CoveredCallStage,
+  type CoveredCallTradeTimelineRowViewModel
 } from "@/screens/covered-call-screen.view-model";
 import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
 
@@ -99,6 +100,40 @@ const historyColumns: DenseDataTableColumn<CoveredCallHistoryRowViewModel>[] = [
     id: "label",
     label: "Label",
     render: (row) => <span className="text-muted-foreground">{row.labelText}</span>
+  }
+];
+
+const tradeTimelineColumns: DenseDataTableColumn<CoveredCallTradeTimelineRowViewModel>[] = [
+  {
+    id: "entry",
+    label: "Entry",
+    render: (row) => <span className="font-mono">{row.entryDateLabel}</span>
+  },
+  {
+    id: "exit",
+    label: "Exit",
+    render: (row) => <span className="font-mono">{row.exitDateLabel}</span>
+  },
+  {
+    id: "strike",
+    label: "Strike",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.strikeLabel}</span>
+  },
+  {
+    id: "pnl",
+    label: "PnL",
+    align: "right",
+    render: (row) => <span className={`font-mono ${row.pnlClassName}`}>{row.pnlLabel}</span>
+  },
+  {
+    id: "reason",
+    label: "Reason",
+    render: (row) => (
+      <Badge variant={row.statusBadgeVariant} dot>
+        {row.exitReasonLabel}
+      </Badge>
+    )
   }
 ];
 
@@ -588,49 +623,48 @@ function EquityCurve({ result }: { result: NonNullable<CoveredCallScreenViewMode
 }
 
 function PositionTimeline({ vm }: { vm: CoveredCallScreenViewModel }) {
-  const trades = vm.run.result?.trades ?? [];
-  if (trades.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-6 text-center text-sm text-muted-foreground">No trades recorded.</CardContent>
-      </Card>
-    );
-  }
+  const panel = vm.tradeTimelinePanel;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Trades ({trades.length})</CardTitle>
+        <CardTitle className="text-base">{panel.title}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="max-h-64 overflow-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-left text-muted-foreground">
-                <th className="pb-1 pr-2">Entry</th>
-                <th className="pb-1 pr-2">Exit</th>
-                <th className="pb-1 pr-2">Strike</th>
-                <th className="pb-1 pr-2">PnL</th>
-                <th className="pb-1 pl-2">Reason</th>
-              </tr>
-            </thead>
-            <tbody>
-              {trades.map((t, idx) => (
-                <tr key={idx} className="border-t border-border/30">
-                  <td className="py-1 pr-2 font-mono">{t.entryDate}</td>
-                  <td className="py-1 pr-2 font-mono">{t.exitDate}</td>
-                  <td className="py-1 pr-2 font-mono">{t.strike.toFixed(2)}</td>
-                  <td className={`py-1 pr-2 font-mono ${t.totalNetPnl >= 0 ? "text-success" : "text-danger"}`}>
-                    {fmtMoney(t.totalNetPnl)}
-                  </td>
-                  <td className="py-1 pl-2">
-                    <Badge variant={t.wasAssigned ? "outline" : "success"} dot>
-                      {t.exitReason}
-                    </Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <CardContent className="grid gap-3">
+        <DenseDataTable
+          columns={tradeTimelineColumns}
+          rows={panel.rows}
+          getRowId={(row) => row.id}
+          getRowAriaLabel={(row) => row.rowAriaLabel}
+          getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
+          getRowAriaControls={(row) => row.detailPanelId}
+          getRowAriaExpanded={(row) => row.ariaExpanded}
+          onRowSelect={(row) => vm.selectTradeRow(row.index)}
+          selectedRowId={panel.selectedRowId}
+          emptyText={panel.emptyText}
+          ariaLabel={panel.tableLabel}
+          caption={panel.tableCaption}
+        />
+        <div id={panel.detailPanelId} aria-live="polite">
+          {panel.selectedDetail ? (
+            <EntitySummary
+              eyebrow={panel.selectedDetail.eyebrow}
+              title={panel.selectedDetail.title}
+              subtitle={panel.selectedDetail.subtitle}
+              description={panel.selectedDetail.description}
+              status={<Badge variant={panel.selectedDetail.statusBadgeVariant} dot>{panel.selectedDetail.statusLabel}</Badge>}
+              fields={panel.selectedDetail.fields}
+              ariaLabel={panel.selectedDetail.ariaLabel}
+            />
+          ) : (
+            <section
+              className="row-detail-panel"
+              aria-label={panel.detailEmptyAriaLabel}
+            >
+              <div className="head">{panel.detailEmptyTitle}</div>
+              <div className="body">{panel.detailEmptyText}</div>
+            </section>
+          )}
         </div>
       </CardContent>
     </Card>

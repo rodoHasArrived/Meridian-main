@@ -674,9 +674,23 @@ describe("ResearchScreen", () => {
       "title",
       "Paper-session creation is already running; wait before changing capital."
     );
+    expect(screen.getByLabelText("Initial cash ($)")).toHaveAttribute(
+      "aria-describedby",
+      "promote-initial-cash-help promote-initial-cash-disabled-reason"
+    );
+    expect(screen.getByLabelText("Initial cash ($)")).toHaveAccessibleDescription(
+      /Paper-session creation is already running\..*wait before changing capital\./s
+    );
     expect(acknowledgement).toBeDisabled();
     expect(acknowledgement).toHaveAttribute(
       "title",
+      "Paper-session creation is already running; wait before changing acknowledgement."
+    );
+    expect(acknowledgement).toHaveAttribute(
+      "aria-describedby",
+      "promote-paper-session-acknowledgement-disabled-reason"
+    );
+    expect(acknowledgement).toHaveAccessibleDescription(
       "Paper-session creation is already running; wait before changing acknowledgement."
     );
     expect(screen.getByRole("button", { name: /Start paper session unavailable: Paper-session creation is already running/i }))
