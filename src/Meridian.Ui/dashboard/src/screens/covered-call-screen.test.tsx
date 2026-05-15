@@ -240,6 +240,7 @@ describe("CoveredCallScreen", () => {
       "aria-describedby",
       "covered-call-stage-navigation-feedback"
     );
+    expect(screen.getByRole("button", { name: "2. Run" })).toHaveAttribute("aria-current", "step");
     expect(screen.getByRole("button", { name: "3. Results" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "3. Results" })).toHaveAttribute(
       "aria-describedby",

@@ -31,8 +31,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
-    <!-- ApplicationIcon temporarily commented out until Assets/app.ico is created -->
-    <!-- <ApplicationIcon>Assets\app.ico</ApplicationIcon> -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
 
     <!-- Assembly Information -->
     <AssemblyName>Meridian.Desktop</AssemblyName>
@@ -43,6 +42,7 @@
     <Copyright>Copyright 2024-2026 Meridian Team</Copyright>
 
     <!-- Windows Desktop Deployment Settings -->
+    <EnableMsixTooling>true</EnableMsixTooling>
     <!-- ReadyToRun is expensive in disk usage during publish, so keep it opt-in for local packaging. -->
     <PublishReadyToRun Condition="'$(PublishReadyToRun)' == ''">false</PublishReadyToRun>
     <SelfContained>false</SelfContained>
@@ -123,6 +123,18 @@
 
   <ItemGroup Condition="'$(IsWindows)' == 'true' AND Exists('Assets')">
     <Resource Include="Assets\**\*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsWindows)' == 'true'">
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+    <Content Include="Assets\app.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Brand\meridian-tile-256.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <!-- Copy sample configuration to output -->

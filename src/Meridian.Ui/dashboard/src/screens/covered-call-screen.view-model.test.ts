@@ -176,7 +176,8 @@ describe("covered-call run command view models", () => {
   });
 
   it("locks stage navigation while submit or cancel actions are unresolved", () => {
-    expect(buildCoveredCallStageNavigationState({ ...idleRun, isStarting: true })).toMatchObject({
+    const submitting = buildCoveredCallStageNavigationState({ ...idleRun, isStarting: true }, "run");
+    expect(submitting).toMatchObject({
       feedbackId: "covered-call-stage-navigation-feedback",
       feedbackText: "Wait until the strategy engine accepts the backtest request before leaving run progress.",
       configure: {
@@ -192,6 +193,32 @@ describe("covered-call run command view models", () => {
         disabledReason: "Wait until the strategy engine accepts the backtest request before leaving run progress."
       }
     });
+    expect(submitting.steps).toMatchObject([
+      {
+        stage: "configure",
+        buttonLabel: "1. Configure",
+        ariaDescribedBy: "covered-call-stage-navigation-feedback",
+        ariaCurrent: undefined,
+        isCurrent: false,
+        disabled: true
+      },
+      {
+        stage: "run",
+        buttonLabel: "2. Run",
+        ariaLabel: "2. Run",
+        ariaCurrent: "step",
+        isCurrent: true,
+        disabled: false
+      },
+      {
+        stage: "results",
+        buttonLabel: "3. Results",
+        ariaDescribedBy: "covered-call-stage-navigation-feedback",
+        ariaCurrent: undefined,
+        isCurrent: false,
+        disabled: true
+      }
+    ]);
 
     expect(buildCoveredCallStageNavigationState({ ...idleRun, runId: "run-1", isCancelling: true })).toMatchObject({
       feedbackId: "covered-call-stage-navigation-feedback",

@@ -133,7 +133,8 @@ artifacts/*
 !artifacts/provider-validation/**
 .artifacts/validation/
 output/
-data/
+/data/
+/src/Meridian.Ui/data/
 logs/
 _logs/
 diagnostic-logs/
@@ -182,6 +183,7 @@ nul
 
 *.tmp
 *.temp
+*_wpftmp.csproj
 *.swp
 *~
 ...

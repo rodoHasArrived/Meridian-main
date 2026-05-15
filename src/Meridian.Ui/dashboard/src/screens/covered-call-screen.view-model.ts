@@ -141,9 +141,21 @@ export interface CoveredCallStageNavigationItemState {
   disabledReason: string | null;
 }
 
+export interface CoveredCallStageNavigationStepViewModel extends CoveredCallStageNavigationItemState {
+  stage: CoveredCallStage;
+  label: string;
+  sequenceLabel: string;
+  buttonLabel: string;
+  ariaLabel: string;
+  ariaCurrent: "step" | undefined;
+  ariaDescribedBy: string | undefined;
+  isCurrent: boolean;
+}
+
 export type CoveredCallStageNavigationState = Record<CoveredCallStage, CoveredCallStageNavigationItemState> & {
   feedbackId: string;
   feedbackText: string | null;
+  steps: CoveredCallStageNavigationStepViewModel[];
 };
 
 export interface CoveredCallResultsActionViewModel {
@@ -442,28 +454,66 @@ export function buildCoveredCallRunProgressPanel(run: CoveredCallRunState): Cove
   };
 }
 
-export function buildCoveredCallStageNavigationState(run: CoveredCallRunState): CoveredCallStageNavigationState {
+const COVERED_CALL_STAGE_ORDER: CoveredCallStage[] = ["configure", "run", "results"];
+
+const COVERED_CALL_STAGE_LABEL: Record<CoveredCallStage, string> = {
+  configure: "Configure",
+  run: "Run",
+  results: "Results"
+};
+
+export function buildCoveredCallStageNavigationState(
+  run: CoveredCallRunState,
+  currentStage: CoveredCallStage = "configure"
+): CoveredCallStageNavigationState {
   const disabledReason = run.isStarting
     ? "Wait until the strategy engine accepts the backtest request before leaving run progress."
     : run.isCancelling
       ? "Wait until cancellation completes before leaving run progress."
       : null;
+  const feedbackId = "covered-call-stage-navigation-feedback";
+  const configure = {
+    disabled: disabledReason !== null,
+    disabledReason
+  };
+  const runStep = {
+    disabled: false,
+    disabledReason: null
+  };
+  const results = {
+    disabled: disabledReason !== null,
+    disabledReason
+  };
+  const byStage: Record<CoveredCallStage, CoveredCallStageNavigationItemState> = {
+    configure,
+    run: runStep,
+    results
+  };
 
   return {
-    feedbackId: "covered-call-stage-navigation-feedback",
+    feedbackId,
     feedbackText: disabledReason,
-    configure: {
-      disabled: disabledReason !== null,
-      disabledReason
-    },
-    run: {
-      disabled: false,
-      disabledReason: null
-    },
-    results: {
-      disabled: disabledReason !== null,
-      disabledReason
-    }
+    configure,
+    run: runStep,
+    results,
+    steps: COVERED_CALL_STAGE_ORDER.map((stage, index) => {
+      const item = byStage[stage];
+      const label = COVERED_CALL_STAGE_LABEL[stage];
+      const sequenceLabel = `${index + 1}`;
+      const isCurrent = stage === currentStage;
+      return {
+        stage,
+        label,
+        sequenceLabel,
+        buttonLabel: `${sequenceLabel}. ${label}`,
+        ariaLabel: `${sequenceLabel}. ${label}`,
+        ariaCurrent: isCurrent ? "step" : undefined,
+        ariaDescribedBy: item.disabled && disabledReason ? feedbackId : undefined,
+        isCurrent,
+        disabled: item.disabled,
+        disabledReason: item.disabledReason
+      };
+    })
   };
 }
 
@@ -1099,8 +1149,8 @@ export function useCoveredCallScreenViewModel(
     [run]
   );
   const stageNavigation = useMemo(
-    () => buildCoveredCallStageNavigationState(run),
-    [run]
+    () => buildCoveredCallStageNavigationState(run, stage),
+    [run, stage]
   );
   const resultsActionPanel = useMemo(
     () => buildCoveredCallResultsActionPanel(run.result),

@@ -872,7 +872,6 @@ Use these documents together when planning or implementing new work:
 ├── Meridian.sln
 ├── NuGet.Config
 ├── README.md
-├── WAVE2_IMPLEMENTATION_SUMMARY.md
 ├── archive
 │   └── docs
 │       ├── INDEX.md
@@ -934,6 +933,7 @@ Use these documents together when planning or implementing new work:
 │           ├── ROADMAP_UPDATE_SUMMARY.md
 │           ├── STRUCTURAL_IMPROVEMENTS_2026-02.md
 │           ├── TEST_MATRIX_FIX_SUMMARY.md
+│           ├── WAVE2_IMPLEMENTATION_SUMMARY.md
 │           └── desktop-improvements-executive-summary.md
 ├── benchmarks
 │   ├── BOTTLENECK_REPORT.md

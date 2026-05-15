@@ -9,6 +9,9 @@
 .PARAMETER Mode
     Installation mode: Docker, Native, Desktop, Check, Uninstall, UninstallDesktop, or Help
 
+.PARAMETER Help
+    Show command usage without starting an install workflow
+
 .PARAMETER DetailedOutput
     Enable verbose logging output
 
@@ -77,6 +80,8 @@ param(
     [Parameter(Position = 0)]
     [ValidateSet("Docker", "Native", "Desktop", "Check", "Uninstall", "UninstallDesktop", "Help")]
     [string]$Mode = "",
+
+    [switch]$Help,
 
     [switch]$DetailedOutput,
 
@@ -437,6 +442,7 @@ function Show-Header {
 function Show-Help {
     Show-Header
     Write-Host "Usage: .\install.ps1 [-Mode <mode>] [options]"
+    Write-Host "       .\install.ps1 -Help"
     Write-Host ""
     Write-Host "Modes:" -ForegroundColor Yellow
     Write-Host "  Docker           Install using Docker (recommended for production)"
@@ -1178,9 +1184,9 @@ function Install-Desktop {
         Write-Host ""
         if ($installedSuccessfully) {
             Write-Host "  Status:       " -ForegroundColor White -NoNewline
-            Write-Host "INSTALLED - Available in Start Menu" -ForegroundColor Green
+            Write-Host "INSTALLED - Available in Start Menu and Desktop shortcut" -ForegroundColor Green
             Write-Host ""
-            Write-Host "  Launch:       Search for 'Meridian' in Start Menu" -ForegroundColor Gray
+            Write-Host "  Launch:       Open the 'Meridian' Desktop shortcut or search Start Menu" -ForegroundColor Gray
         }
         else {
             Write-Host "  To install manually:" -ForegroundColor Yellow
@@ -1192,7 +1198,7 @@ function Install-Desktop {
         }
         Write-Host ""
         Write-Host "  Guidance:     " -ForegroundColor White -NoNewline
-        Write-Host "docs/guides/msix-packaging.md" -ForegroundColor Gray
+        Write-Host "docs/operations/msix-packaging.md" -ForegroundColor Gray
         Write-Host ""
         Write-Host "  Build logs:   " -ForegroundColor White -NoNewline
         Write-Host $diagnosticLogDir -ForegroundColor Gray
@@ -1297,6 +1303,11 @@ function Show-InteractiveMenu {
 }
 
 # Main
+if ($Help) {
+    Show-Help
+    exit 0
+}
+
 switch ($Mode) {
     "Docker" {
         Show-Header
