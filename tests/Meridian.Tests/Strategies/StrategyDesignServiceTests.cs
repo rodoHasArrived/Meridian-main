@@ -154,6 +154,28 @@ public sealed class StrategyDesignServiceTests
     }
 
     [Fact]
+    public void Validate_ConcurrentCellWithMissingBranch_ShouldBlock()
+    {
+        var service = new StrategyDesignService();
+        var document = service.Normalize(BuildDocument(cells:
+        [
+            new("rank", "Rank", "formula", "rank", "MOMENTUM_63D > 0", ["MOMENTUM_63D"]),
+            new("parallel", "Parallel check", "concurrent", "concurrent", "parallel eval", [],
+                new Dictionary<string, string>
+                {
+                    ["branchIds"] = "rank,missing-cell",
+                    ["semantics"] = "all-pass"
+                }),
+            new("risk", "Risk guard", "governance", "risk", "true", [])
+        ]));
+
+        var result = service.Validate(document);
+
+        result.IsValid.Should().BeFalse();
+        result.Messages.Should().Contain(m => m.Code == "ConcurrentCellBranchMissing");
+    }
+
+    [Fact]
     public void Validate_UniverseBuilderCellMissingAssetClass_ShouldBlock()
     {
         var service = new StrategyDesignService();
@@ -169,6 +191,105 @@ public sealed class StrategyDesignServiceTests
         result.IsValid.Should().BeFalse();
         result.Messages.Should().Contain(m => m.Code == "UniverseBuilderAssetClassRequired");
         result.Messages.Should().NotContain(m => m.Code == "UniverseBuilderIncludeRulesRequired");
+    }
+
+    [Fact]
+    public void Validate_UniverseBuilderInvalidSizeConstraints_ShouldBlock()
+    {
+        var service = new StrategyDesignService();
+        var document = service.Normalize(BuildDocument(cells:
+        [
+            new("ub", "Universe", "universe-builder", "universe", "build universe", [],
+                new Dictionary<string, string>
+                {
+                    ["assetClass"] = "Equity",
+                    ["includeRules"] = "PRICE > 10",
+                    ["minSize"] = "101",
+                    ["maxSize"] = "100"
+                }),
+            new("risk", "Risk guard", "governance", "risk", "true", [])
+        ]));
+
+        var result = service.Validate(document);
+
+        result.IsValid.Should().BeFalse();
+        result.Messages.Should().Contain(m => m.Code == "UniverseBuilderSizeRangeInvalid");
+    }
+
+    [Fact]
+    public void Validate_UniverseBuilderRulesWithUnknownField_ShouldBlock()
+    {
+        var service = new StrategyDesignService();
+        var document = service.Normalize(BuildDocument(cells:
+        [
+            new("ub", "Universe", "universe-builder", "universe", "build universe", ["PRICE"],
+                new Dictionary<string, string>
+                {
+                    ["assetClass"] = "Equity",
+                    ["includeRules"] = "UNKNOWN_FIELD > 10"
+                }),
+            new("risk", "Risk guard", "governance", "risk", "true", [])
+        ]));
+
+        var result = service.Validate(document);
+
+        result.IsValid.Should().BeFalse();
+        result.Messages.Should().Contain(m => m.Code == "UnknownField" && m.TargetId == "ub");
+    }
+
+    [Fact]
+    public void Validate_TradeCellFixedSizingWithoutNumericValue_ShouldBlock()
+    {
+        var service = new StrategyDesignService();
+        var document = service.Normalize(BuildDocument(cells:
+        [
+            new("trade-cell", "Buy equities", "trade", "trade", "execute buy order", [],
+                new Dictionary<string, string>
+                {
+                    ["instrument"] = "Equity",
+                    ["direction"] = "Buy",
+                    ["sizingMethod"] = "FixedShares",
+                    ["sizingValue"] = "not-a-number"
+                }),
+            new("risk", "Risk guard", "governance", "risk", "true", [])
+        ]));
+
+        var result = service.Validate(document);
+
+        result.IsValid.Should().BeFalse();
+        result.Messages.Should().Contain(m => m.Code == "TradeCellSizingValueRequired");
+    }
+
+    [Fact]
+    public void Normalize_TradeAndConcurrentParameters_ShouldCanonicalizeEnums()
+    {
+        var service = new StrategyDesignService();
+        var document = BuildDocument(cells:
+        [
+            new("parallel", "Parallel check", "concurrent", "concurrent", "parallel eval", [],
+                new Dictionary<string, string>
+                {
+                    ["branchIds"] = "rank",
+                    ["semantics"] = "ALL-PASS"
+                }),
+            new("trade-cell", "Buy equities", "trade", "trade", "execute buy order", [],
+                new Dictionary<string, string>
+                {
+                    ["instrument"] = "equity",
+                    ["direction"] = "buy",
+                    ["sizingMethod"] = "equalweight"
+                }),
+            new("rank", "Rank", "formula", "rank", "MOMENTUM_63D > 0", ["MOMENTUM_63D"])
+        ]);
+
+        var normalized = service.Normalize(document);
+        var concurrent = normalized.Cells.Single(cell => cell.CellId == "parallel");
+        var trade = normalized.Cells.Single(cell => cell.CellId == "trade-cell");
+
+        concurrent.Parameters!["semantics"].Should().Be("all-pass");
+        trade.Parameters!["instrument"].Should().Be("Equity");
+        trade.Parameters!["direction"].Should().Be("Buy");
+        trade.Parameters!["sizingMethod"].Should().Be("EqualWeight");
     }
 
     [Fact]

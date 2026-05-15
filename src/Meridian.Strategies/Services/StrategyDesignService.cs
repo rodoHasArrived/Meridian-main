@@ -11,6 +11,11 @@ namespace Meridian.Strategies.Services;
 public sealed class StrategyDesignService
 {
     private const int MaxLoopIterations = 1_000;
+    private static readonly string[] ConcurrentCellSemantics = ["all-pass", "any-pass", "first-wins"];
+    private static readonly string[] TradeCellInstruments = ["Equity", "Option", "Future", "ETF"];
+    private static readonly string[] TradeCellDirections = ["Buy", "Sell", "SellShort", "BuyToCover"];
+    private static readonly string[] TradeCellSizingMethods = ["FixedShares", "FixedNotional", "PercentAUM", "EqualWeight"];
+    private static readonly string[] TradeCellSizingValueRequiredMethods = ["FixedShares", "FixedNotional", "PercentAUM"];
     private static readonly Regex FieldTokenRegex = new(
         @"\b[A-Z][A-Z0-9_]{2,}\b",
         RegexOptions.CultureInvariant | RegexOptions.Compiled,
@@ -81,6 +86,10 @@ public sealed class StrategyDesignService
         var messages = new List<StrategyDesignValidationMessage>();
         var cells = document.Cells ?? Array.Empty<StrategyDesignCell>();
         var transitions = document.Transitions ?? Array.Empty<StrategyDesignTransition>();
+        var cellIds = cells
+            .Where(static cell => !string.IsNullOrWhiteSpace(cell.CellId))
+            .Select(static cell => cell.CellId)
+            .ToHashSet(StringComparer.Ordinal);
 
         if (string.IsNullOrWhiteSpace(document.Name))
         {
@@ -137,7 +146,7 @@ public sealed class StrategyDesignService
                 }
             }
 
-            messages.AddRange(ValidateCellKindParameters(cell));
+            messages.AddRange(ValidateCellKindParameters(cell, cellIds));
         }
 
         var cellOrder = cells
@@ -345,6 +354,7 @@ public sealed class StrategyDesignService
 
     private static StrategyDesignCell NormalizeCell(StrategyDesignCell cell)
     {
+        var normalizedKind = string.IsNullOrWhiteSpace(cell.Kind) ? "formula" : cell.Kind.Trim().ToLowerInvariant();
         var normalizedRefs = NormalizeStringList(cell.FieldRefs)
             .Select(static field => field.ToUpperInvariant())
             .ToArray();
@@ -353,22 +363,26 @@ public sealed class StrategyDesignService
             normalizedRefs = ExtractSourceFieldRefs(cell.Source).ToArray();
         }
 
-        return cell with
-        {
-            CellId = string.IsNullOrWhiteSpace(cell.CellId) ? $"cell-{Guid.NewGuid():N}" : cell.CellId.Trim(),
-            Label = string.IsNullOrWhiteSpace(cell.Label) ? "Untitled cell" : cell.Label.Trim(),
-            Kind = string.IsNullOrWhiteSpace(cell.Kind) ? "formula" : cell.Kind.Trim().ToLowerInvariant(),
-            Purpose = string.IsNullOrWhiteSpace(cell.Purpose) ? "filter" : cell.Purpose.Trim().ToLowerInvariant(),
-            Source = cell.Source?.Trim() ?? string.Empty,
-            FieldRefs = normalizedRefs,
-            Parameters = cell.Parameters is null
-                ? null
-                : cell.Parameters
+        var normalizedParameters = cell.Parameters is null
+            ? null
+            : NormalizeCellParameters(
+                normalizedKind,
+                cell.Parameters
                     .Where(static item => !string.IsNullOrWhiteSpace(item.Key))
                     .ToDictionary(
                         static item => item.Key.Trim(),
                         static item => item.Value?.Trim() ?? string.Empty,
-                        StringComparer.OrdinalIgnoreCase),
+                        StringComparer.OrdinalIgnoreCase));
+
+        return cell with
+        {
+            CellId = string.IsNullOrWhiteSpace(cell.CellId) ? $"cell-{Guid.NewGuid():N}" : cell.CellId.Trim(),
+            Label = string.IsNullOrWhiteSpace(cell.Label) ? "Untitled cell" : cell.Label.Trim(),
+            Kind = normalizedKind,
+            Purpose = string.IsNullOrWhiteSpace(cell.Purpose) ? "filter" : cell.Purpose.Trim().ToLowerInvariant(),
+            Source = cell.Source?.Trim() ?? string.Empty,
+            FieldRefs = normalizedRefs,
+            Parameters = normalizedParameters,
             DisabledReason = string.IsNullOrWhiteSpace(cell.DisabledReason) ? null : cell.DisabledReason.Trim()
         };
     }
@@ -388,12 +402,23 @@ public sealed class StrategyDesignService
 
     private static IReadOnlyList<string> ResolveFieldRefs(StrategyDesignCell cell)
     {
-        if (cell.FieldRefs is { Count: > 0 })
+        var refs = cell.FieldRefs is { Count: > 0 }
+            ? NormalizeStringList(cell.FieldRefs).Select(static item => item.ToUpperInvariant()).ToArray()
+            : ExtractSourceFieldRefs(cell.Source).ToArray();
+
+        if (!string.Equals(cell.Kind, "universe-builder", StringComparison.OrdinalIgnoreCase) || cell.Parameters is null)
         {
-            return NormalizeStringList(cell.FieldRefs).Select(static item => item.ToUpperInvariant()).ToArray();
+            return refs;
         }
 
-        return ExtractSourceFieldRefs(cell.Source).ToArray();
+        var includeRules = cell.Parameters.TryGetValue("includeRules", out var include) ? include : null;
+        var excludeRules = cell.Parameters.TryGetValue("excludeRules", out var exclude) ? exclude : null;
+
+        return refs
+            .Concat(ExtractSourceFieldRefs(includeRules))
+            .Concat(ExtractSourceFieldRefs(excludeRules))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static IReadOnlyList<string> ExtractSourceFieldRefs(string? source)
@@ -418,6 +443,56 @@ public sealed class StrategyDesignService
             .ToArray()
         ?? [];
 
+    private static Dictionary<string, string> NormalizeCellParameters(string cellKind, Dictionary<string, string> parameters)
+    {
+        if (parameters.Count == 0)
+        {
+            return parameters;
+        }
+
+        if (string.Equals(cellKind, "concurrent", StringComparison.OrdinalIgnoreCase) &&
+            parameters.TryGetValue("semantics", out var semantics) &&
+            TryGetCanonicalValue(semantics, ConcurrentCellSemantics, out var canonicalSemantics))
+        {
+            parameters["semantics"] = canonicalSemantics;
+        }
+
+        if (string.Equals(cellKind, "trade", StringComparison.OrdinalIgnoreCase))
+        {
+            if (parameters.TryGetValue("instrument", out var instrument) &&
+                TryGetCanonicalValue(instrument, TradeCellInstruments, out var canonicalInstrument))
+            {
+                parameters["instrument"] = canonicalInstrument;
+            }
+
+            if (parameters.TryGetValue("direction", out var direction) &&
+                TryGetCanonicalValue(direction, TradeCellDirections, out var canonicalDirection))
+            {
+                parameters["direction"] = canonicalDirection;
+            }
+
+            if (parameters.TryGetValue("sizingMethod", out var sizingMethod) &&
+                TryGetCanonicalValue(sizingMethod, TradeCellSizingMethods, out var canonicalSizingMethod))
+            {
+                parameters["sizingMethod"] = canonicalSizingMethod;
+            }
+        }
+
+        return parameters;
+    }
+
+    private static bool TryGetCanonicalValue(string? value, IReadOnlyList<string> validValues, out string canonical)
+    {
+        canonical = string.Empty;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        canonical = validValues.FirstOrDefault(candidate => string.Equals(candidate, value.Trim(), StringComparison.OrdinalIgnoreCase)) ?? string.Empty;
+        return canonical.Length > 0;
+    }
+
     private static bool IsLoopTransition(StrategyDesignTransition transition, int fromIndex, int toIndex)
         => string.Equals(transition.Kind, "loop", StringComparison.OrdinalIgnoreCase)
            || fromIndex >= toIndex
@@ -432,7 +507,7 @@ public sealed class StrategyDesignService
     private static string SafeLabel(StrategyDesignCell cell)
         => string.IsNullOrWhiteSpace(cell.Label) ? cell.CellId : cell.Label;
 
-    private static IEnumerable<StrategyDesignValidationMessage> ValidateCellKindParameters(StrategyDesignCell cell)
+    private static IEnumerable<StrategyDesignValidationMessage> ValidateCellKindParameters(StrategyDesignCell cell, IReadOnlySet<string> cellIds)
     {
         var label = SafeLabel(cell);
         var p = cell.Parameters;
@@ -448,11 +523,31 @@ public sealed class StrategyDesignService
                 break;
 
             case "concurrent":
-                if (p is null || !p.TryGetValue("branchIds", out var branches) || string.IsNullOrWhiteSpace(branches))
-                    yield return Error("ConcurrentCellBranchesRequired", cell.CellId, $"{label} (concurrent) must define a branchIds parameter.");
+                var branchIds = p is null || !p.TryGetValue("branchIds", out var branches)
+                    ? []
+                    : branches
+                        .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                        .ToArray();
 
-                var validSemantics = new[] { "all-pass", "any-pass", "first-wins" };
-                if (p is null || !p.TryGetValue("semantics", out var sem) || !validSemantics.Contains(sem, StringComparer.OrdinalIgnoreCase))
+                if (branchIds.Length == 0)
+                {
+                    yield return Error("ConcurrentCellBranchesRequired", cell.CellId, $"{label} (concurrent) must define a branchIds parameter.");
+                }
+                else
+                {
+                    var missingBranches = branchIds
+                        .Where(branchId => !cellIds.Contains(branchId))
+                        .ToArray();
+                    if (missingBranches.Length > 0)
+                    {
+                        yield return Error(
+                            "ConcurrentCellBranchMissing",
+                            cell.CellId,
+                            $"{label} (concurrent) references missing branch cell IDs: {string.Join(", ", missingBranches)}.");
+                    }
+                }
+
+                if (p is null || !p.TryGetValue("semantics", out var sem) || !ConcurrentCellSemantics.Contains(sem, StringComparer.OrdinalIgnoreCase))
                     yield return Error("ConcurrentCellSemanticsRequired", cell.CellId, $"{label} (concurrent) semantics must be one of: all-pass, any-pass, first-wins.");
                 break;
 
@@ -462,20 +557,56 @@ public sealed class StrategyDesignService
 
                 if (p is null || !p.TryGetValue("includeRules", out var includeRules) || string.IsNullOrWhiteSpace(includeRules))
                     yield return Error("UniverseBuilderIncludeRulesRequired", cell.CellId, $"{label} (universe-builder) must define at least one includeRules parameter.");
+
+                if (p is not null)
+                {
+                    var hasMinSize = p.TryGetValue("minSize", out var minSizeRaw) && !string.IsNullOrWhiteSpace(minSizeRaw);
+                    var hasMaxSize = p.TryGetValue("maxSize", out var maxSizeRaw) && !string.IsNullOrWhiteSpace(maxSizeRaw);
+
+                    var minSizeIsValid = !hasMinSize || (decimal.TryParse(minSizeRaw, out var minSize) && minSize >= 0);
+                    var maxSizeIsValid = !hasMaxSize || (decimal.TryParse(maxSizeRaw, out var maxSize) && maxSize >= 0);
+
+                    if (!minSizeIsValid)
+                    {
+                        yield return Error("UniverseBuilderMinSizeInvalid", cell.CellId, $"{label} (universe-builder) minSize must be a non-negative number.");
+                    }
+
+                    if (!maxSizeIsValid)
+                    {
+                        yield return Error("UniverseBuilderMaxSizeInvalid", cell.CellId, $"{label} (universe-builder) maxSize must be a non-negative number.");
+                    }
+
+                    if (hasMinSize && hasMaxSize && minSizeIsValid && maxSizeIsValid)
+                    {
+                        decimal.TryParse(minSizeRaw, out var parsedMinSize);
+                        decimal.TryParse(maxSizeRaw, out var parsedMaxSize);
+                        if (parsedMinSize > parsedMaxSize)
+                        {
+                            yield return Error("UniverseBuilderSizeRangeInvalid", cell.CellId, $"{label} (universe-builder) minSize cannot be greater than maxSize.");
+                        }
+                    }
+                }
                 break;
 
             case "trade":
-                var validInstruments = new[] { "Equity", "Option", "Future", "ETF" };
-                if (p is null || !p.TryGetValue("instrument", out var instr) || !validInstruments.Contains(instr, StringComparer.OrdinalIgnoreCase))
+                if (p is null || !p.TryGetValue("instrument", out var instr) || !TradeCellInstruments.Contains(instr, StringComparer.OrdinalIgnoreCase))
                     yield return Error("TradeCellInstrumentRequired", cell.CellId, $"{label} (trade) instrument must be Equity, Option, Future, or ETF.");
 
-                var validDirections = new[] { "Buy", "Sell", "SellShort", "BuyToCover" };
-                if (p is null || !p.TryGetValue("direction", out var dir) || !validDirections.Contains(dir, StringComparer.OrdinalIgnoreCase))
+                if (p is null || !p.TryGetValue("direction", out var dir) || !TradeCellDirections.Contains(dir, StringComparer.OrdinalIgnoreCase))
                     yield return Error("TradeCellDirectionRequired", cell.CellId, $"{label} (trade) direction must be Buy, Sell, SellShort, or BuyToCover.");
 
-                var validSizing = new[] { "FixedShares", "FixedNotional", "PercentAUM", "EqualWeight" };
-                if (p is null || !p.TryGetValue("sizingMethod", out var sizing) || !validSizing.Contains(sizing, StringComparer.OrdinalIgnoreCase))
+                if (p is null || !p.TryGetValue("sizingMethod", out var sizing) || !TradeCellSizingMethods.Contains(sizing, StringComparer.OrdinalIgnoreCase))
+                {
                     yield return Error("TradeCellSizingRequired", cell.CellId, $"{label} (trade) sizingMethod must be FixedShares, FixedNotional, PercentAUM, or EqualWeight.");
+                }
+                else if (TradeCellSizingValueRequiredMethods.Contains(sizing, StringComparer.OrdinalIgnoreCase))
+                {
+                    var hasSizingValue = p.TryGetValue("sizingValue", out var sizingValueRaw) && !string.IsNullOrWhiteSpace(sizingValueRaw);
+                    if (!hasSizingValue || !decimal.TryParse(sizingValueRaw, out _))
+                    {
+                        yield return Error("TradeCellSizingValueRequired", cell.CellId, $"{label} (trade) sizingValue must be numeric when sizingMethod is {sizing}.");
+                    }
+                }
                 break;
         }
     }
@@ -677,7 +808,7 @@ public sealed class StrategyDesignService
                     "provider-bars/equities/daily",
                     ["SPY"],
                     [
-                        new("equity-universe", "Liquid equity universe", "universe-builder", "universe", "structured universe definition", ["PRICE", "MOMENTUM_63D"],
+                        new("equity-universe", "Liquid equity universe", "universe-builder", "universe", "structured universe definition", ["PRICE", "MOMENTUM_63D", "VOLATILITY_20D"],
                             new Dictionary<string, string> { ["assetClass"] = "Equity", ["includeRules"] = "PRICE > 10, MOMENTUM_63D > 0", ["excludeRules"] = "VOLATILITY_20D > 0.40", ["minSize"] = "20", ["maxSize"] = "100" }),
                         new("universe-rank", "Momentum rank", "formula", "rank", "MOMENTUM_63D - VOLATILITY_20D", ["MOMENTUM_63D", "VOLATILITY_20D"], null),
                         new("universe-risk", "Universe risk guard", "governance", "risk", "VOLATILITY_20D < 0.30", ["VOLATILITY_20D"], null)
