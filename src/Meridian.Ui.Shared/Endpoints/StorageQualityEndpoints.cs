@@ -6,6 +6,7 @@ using Meridian.Storage;
 using Meridian.Storage.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -17,6 +18,7 @@ public static class StorageQualityEndpoints
 {
     public static void MapStorageQualityEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        var logger = app.Logger;
         var group = app.MapGroup("").WithTags("Storage Quality");
 
         // GET /api/storage/quality/summary — overall quality summary
@@ -47,7 +49,8 @@ public static class StorageQualityEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to generate quality summary: {ex.Message}");
+                logger.LogError(ex, "Failed to generate quality summary.");
+                return Results.Problem("Failed to generate quality summary.");
             }
         })
         .WithName("GetQualitySummary").Produces(200);
@@ -78,7 +81,8 @@ public static class StorageQualityEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to retrieve quality scores: {ex.Message}");
+                logger.LogError(ex, "Failed to retrieve quality scores.");
+                return Results.Problem("Failed to retrieve quality scores.");
             }
         })
         .WithName("GetQualityScores").Produces(200);
@@ -104,7 +108,8 @@ public static class StorageQualityEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to get quality for {symbol}: {ex.Message}");
+                logger.LogError(ex, "Failed to get quality trend for symbol {Symbol}.", symbol);
+                return Results.Problem("Failed to get symbol quality.");
             }
         })
         .WithName("GetSymbolQuality").Produces(200);
@@ -128,7 +133,8 @@ public static class StorageQualityEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to retrieve quality alerts: {ex.Message}");
+                logger.LogError(ex, "Failed to retrieve quality alerts.");
+                return Results.Problem("Failed to retrieve quality alerts.");
             }
         })
         .WithName("GetQualityAlerts").Produces(200);
@@ -169,7 +175,8 @@ public static class StorageQualityEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to rank sources for {symbol}: {ex.Message}");
+                logger.LogError(ex, "Failed to rank quality sources for symbol {Symbol}.", symbol);
+                return Results.Problem("Failed to rank quality sources.");
             }
         })
         .WithName("GetSourceRankings").Produces(200);
@@ -183,7 +190,7 @@ public static class StorageQualityEndpoints
             if (qualityService is null)
                 return Results.Json(new { message = "Data quality service not available" }, jsonOptions);
 
-            var days = int.TryParse(ctx.Request.Query["days"].FirstOrDefault(), out var d) ? d : 30;
+            var days = int.TryParse(ctx.Request.Query["days"].FirstOrDefault(), out var d) ? Math.Clamp(d, 1, 365) : 30;
             var symbol = ctx.Request.Query["symbol"].FirstOrDefault();
             if (string.IsNullOrWhiteSpace(symbol))
                 symbol = "SPY";
@@ -211,7 +218,8 @@ public static class StorageQualityEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to compute trends: {ex.Message}");
+                logger.LogError(ex, "Failed to compute quality trends.");
+                return Results.Problem("Failed to compute quality trends.");
             }
         })
         .WithName("GetQualityTrends").Produces(200);
@@ -246,7 +254,8 @@ public static class StorageQualityEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to detect anomalies: {ex.Message}");
+                logger.LogError(ex, "Failed to detect quality anomalies.");
+                return Results.Problem("Failed to detect quality anomalies.");
             }
         })
         .WithName("GetQualityAnomalies").Produces(200);
@@ -275,7 +284,8 @@ public static class StorageQualityEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Quality check failed: {ex.Message}");
+                logger.LogError(ex, "Quality check failed for path {Path}.", req.Path);
+                return Results.Problem("Quality check failed.");
             }
         })
         .WithName("RunQualityCheck").Produces(200).Produces(400).Produces(404)
