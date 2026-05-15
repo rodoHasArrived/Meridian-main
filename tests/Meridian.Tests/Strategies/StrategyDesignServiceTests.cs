@@ -1,10 +1,10 @@
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
+using Meridian.QuantScript;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Meridian.Tests.Strategies;
@@ -111,13 +111,13 @@ public sealed class StrategyDesignServiceTests
     private static ScriptRunner BuildRunner()
     {
         var compiler = new RoslynScriptCompiler(
-            Options.Create(new QuantScriptOptions()),
+            Microsoft.Extensions.Options.Options.Create(new QuantScriptOptions()),
             NullLogger<RoslynScriptCompiler>.Instance);
         return new ScriptRunner(
             compiler,
             new Mock<Meridian.QuantScript.Api.IQuantDataContext>().Object,
             new PlotQueue(),
-            Options.Create(new QuantScriptOptions { RunTimeoutSeconds = 10 }),
+            Microsoft.Extensions.Options.Options.Create(new QuantScriptOptions { RunTimeoutSeconds = 10 }),
             NullLogger<ScriptRunner>.Instance,
             null);
     }

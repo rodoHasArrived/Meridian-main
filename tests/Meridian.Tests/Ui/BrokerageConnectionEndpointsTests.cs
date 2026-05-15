@@ -63,6 +63,27 @@ public sealed class BrokerageConnectionEndpointsTests
     }
 
     [Fact]
+    public async Task PostAlpacaConnect_AllowsTradeDeskRolePermissions()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IHttpClientFactory>(_ => new StubHttpClientFactory(new CapturingStubHandler(
+                _ => { },
+                new StringContent("{\"account_number\":\"PA-TRADEDESK\"}", Encoding.UTF8, "application/json"))));
+        }, RolePermissions.For(UserRole.TradeDesk));
+
+        var response = await app.GetTestClient().PostAsync(
+            "/api/brokerage-connections/alpaca/connect",
+            JsonContent(new { keyId = "trade-desk-key", secretKey = "trade-desk-secret", environment = "paper" }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var status = await ReadAsync<BrokerageConnectionStatusDto>(response);
+        status.State.Should().Be(BrokerageConnectionStateDto.Connected);
+        status.ExternalAccountId.Should().Be("PA-TRADEDESK");
+    }
+
+    [Fact]
     public async Task DeleteAlpacaConnection_WhenUserLacksManageCredentials_ReturnsForbidden()
     {
         using var env = AlpacaEnvScope.Clear();

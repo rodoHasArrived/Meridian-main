@@ -22,11 +22,27 @@ describe("StrategyDesignerScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyDesignerScreen />);
 
-    await user.type(screen.getByRole("textbox", { name: "Search field catalog" }), "amx");
+    await user.type(screen.getByRole("textbox", { name: "Search Strategy Builder field catalog" }), "amx");
 
     expect(screen.getByTestId("strategy-builder-field-catalog")).toHaveTextContent("AMX_PRIVATE_SCORE");
     expect(screen.getByTestId("field-disabled-AMX_PRIVATE_SCORE")).toHaveTextContent("No Meridian canonical source");
     expect(screen.queryByText("63-day momentum")).not.toBeInTheDocument();
+  });
+
+  it("renders a VM-owned empty state when field catalog search has no matches", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyDesignerScreen />);
+
+    const search = screen.getByRole("textbox", { name: "Search Strategy Builder field catalog" });
+    expect(search).toHaveAccessibleDescription(/Filter by field ID/i);
+
+    await user.type(search, "no-such-field");
+
+    const catalog = screen.getByTestId("strategy-builder-field-catalog");
+    expect(within(catalog).getByRole("status", { name: "Strategy Builder field catalog empty state" })).toHaveTextContent(
+      'No field catalog entries match "no-such-field".'
+    );
+    expect(within(catalog).getByText(/0 fields match "no-such-field" out of \d+\./)).toBeInTheDocument();
   });
 
   it("lets keyboard users select a strategy cell and updates inspector and trace state", async () => {

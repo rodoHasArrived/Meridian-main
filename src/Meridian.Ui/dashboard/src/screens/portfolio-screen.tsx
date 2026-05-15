@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from "react";
 import { useEffect, useRef } from "react";
-import { BriefcaseBusiness, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
+import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -325,20 +325,16 @@ export function PortfolioScreen({
                 {vm.workflowTaskPanel.description}
               </p>
               <p className="mt-3 text-sm leading-6 text-foreground">{vm.workflowTaskPanel.selectedSummary}</p>
-              <div className="mt-4 flex flex-wrap gap-2" aria-label="Brokerage sync next actions">
-                {vm.workflowTaskPanel.actions.map((action) => {
-                  const detailId = `portfolio-brokerage-sync-${action.id}-detail`;
-
-                  return (
-                    <Button key={action.id} asChild variant={action.variant} size="sm">
-                      <Link to={action.href} aria-label={action.ariaLabel} aria-describedby={detailId}>
-                        <PortfolioWorkflowTaskActionIcon actionId={action.id} />
-                        {action.label}
-                        <span id={detailId} className="sr-only">{action.detail}</span>
-                      </Link>
-                    </Button>
-                  );
-                })}
+              <div className="mt-4 flex flex-wrap gap-2" aria-label={vm.workflowTaskPanel.actionListLabel}>
+                {vm.workflowTaskPanel.actions.map((action) => (
+                  <Button key={action.id} asChild variant={action.variant} size="sm">
+                    <Link to={action.href} aria-label={action.ariaLabel} aria-describedby={action.detailId}>
+                      <PortfolioWorkflowTaskActionIcon actionId={action.id} />
+                      {action.label}
+                      <span id={action.detailId} className="sr-only">{action.detail}</span>
+                    </Link>
+                  </Button>
+                ))}
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 lg:justify-end">
@@ -882,9 +878,13 @@ function PortfolioWorkflowTaskActionIcon({ actionId }: { actionId: PortfolioWork
   const Icon =
     actionId === "provider-setup"
       ? Settings
+      : actionId === "brokerage-sync"
+        ? BriefcaseBusiness
       : actionId === "trading-readiness"
         ? ShieldCheck
-        : BriefcaseBusiness;
+        : actionId === "evidence"
+          ? FileCheck2
+          : Wallet;
 
   return <Icon className="h-4 w-4" aria-hidden="true" />;
 }

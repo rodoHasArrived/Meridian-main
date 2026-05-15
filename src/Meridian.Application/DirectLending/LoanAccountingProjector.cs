@@ -3,6 +3,7 @@ using Meridian.Application.Ledger;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
+using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
 using LedgerAccount = Meridian.Ledger.LedgerAccount;
 using LedgerAccountType = Meridian.Ledger.LedgerAccountType;

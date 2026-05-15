@@ -108,24 +108,54 @@ function FieldCatalogPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
         <CardDescription>AMX-style vocabulary mapped to Meridian canonical data.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        <label className="relative block">
-          <span className="sr-only">Search field catalog</span>
+        <label className="relative block" htmlFor={vm.fieldSearchState.inputId}>
+          <span className="sr-only">{vm.fieldSearchState.label}</span>
           <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Input
+            id={vm.fieldSearchState.inputId}
             value={vm.fieldSearch}
             onChange={(event) => vm.setFieldSearch(event.target.value)}
             className="pl-9"
-            placeholder="Search fields"
-            aria-label="Search field catalog"
+            placeholder={vm.fieldSearchState.placeholder}
+            aria-label={vm.fieldSearchState.ariaLabel}
+            aria-describedby={vm.fieldSearchState.describedBy}
           />
         </label>
-        <div className="space-y-2" role="list" aria-label="Strategy Builder field catalog results">
-          {vm.filteredFields.map((field) => (
+        <p id={vm.fieldSearchState.helperId} className="text-xs leading-5 text-muted-foreground">
+          {vm.fieldSearchState.helperText}
+        </p>
+        <p
+          id="strategy-builder-field-catalog-search-status"
+          role="status"
+          aria-live="polite"
+          className="text-xs leading-5 text-muted-foreground"
+        >
+          {vm.fieldSearchState.resultCountText}
+        </p>
+        <div className="space-y-2" role="list" aria-label={vm.fieldSearchState.resultsLabel}>
+          {vm.filteredFields.length > 0 ? vm.filteredFields.map((field) => (
             <FieldCatalogItem key={field.fieldId} field={field} />
-          ))}
+          )) : (
+            <FieldCatalogEmptyState state={vm.fieldSearchState.emptyState} />
+          )}
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function FieldCatalogEmptyState({ state }: { state: StrategyBuilderWorkbenchViewModel["fieldSearchState"]["emptyState"] }) {
+  if (!state) return null;
+
+  return (
+    <div
+      role="status"
+      aria-label={state.ariaLabel}
+      className="rounded-lg border border-dashed border-border/80 bg-secondary/20 px-3 py-4 text-sm text-muted-foreground"
+    >
+      <div className="font-semibold text-foreground">{state.title}</div>
+      <p className="mt-1 leading-6">{state.description}</p>
+    </div>
   );
 }
 

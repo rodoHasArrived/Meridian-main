@@ -259,6 +259,27 @@ describe("PortfolioScreen", () => {
     expect(screen.getByText(/portfolio endpoint cash posture/i)).toBeDefined();
   });
 
+  it("renders a broad Portfolio readiness handoff with direct next routes", () => {
+    renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />, {
+      initialEntries: ["/portfolio"]
+    });
+
+    const handoff = screen.getByRole("region", { name: "Portfolio readiness handoff" });
+    expect(within(handoff).getByText("Portfolio acceptance handoff")).toBeInTheDocument();
+    const actions = within(handoff).getByLabelText("Portfolio readiness next actions");
+    const brokerageSyncLink = within(actions).getByRole("link", { name: "Open brokerage sync review from Portfolio readiness" });
+    expect(brokerageSyncLink).toHaveAttribute("href", "/portfolio/brokerage-sync");
+    expect(brokerageSyncLink).toHaveAttribute("aria-describedby", "portfolio-readiness-brokerage-sync-detail");
+    expect(within(handoff).getByRole("link", { name: "Open Trading readiness from Portfolio readiness" })).toHaveAttribute(
+      "href",
+      "/trading/readiness"
+    );
+    expect(within(handoff).getByRole("link", { name: "Open Mean Reversion evidence from Portfolio readiness" })).toHaveAttribute(
+      "href",
+      "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1"
+    );
+  });
+
   it("renders run-linked equity table with research data", () => {
     renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
     expect(screen.getByRole("table", { name: /run-linked equity/i })).toBeDefined();

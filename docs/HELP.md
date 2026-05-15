@@ -12,6 +12,7 @@ Run these from the repository root unless a command says otherwise.
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --help
+dotnet run --project src/Meridian/Meridian.csproj -- --setup
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 dotnet run --project src/Meridian/Meridian.csproj -- --selftest
 dotnet run --project src/Meridian/Meridian.csproj -- --diagnostics
@@ -50,12 +51,18 @@ Configuration path resolution uses this order:
 Useful probes:
 
 ```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --setup
 dotnet run --project src/Meridian/Meridian.csproj -- --show-config
 dotnet run --project src/Meridian/Meridian.csproj -- --check-config
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
 dotnet run --project src/Meridian/Meridian.csproj -- --detect-providers
 dotnet run --project src/Meridian/Meridian.csproj -- --recommend-providers
 ```
+
+`--setup` and `--first-run` are friendly aliases for the existing `--quickstart` path. They
+auto-detect provider credentials from the environment, generate a practical starter config, validate
+credentials when keys are present, back up any existing `config/appsettings.json`, and save the new
+config to `config/appsettings.json`.
 
 Provider setup should stay paper-first by default. Use Settings in the browser workstation for
 Alpaca paper-key verification and only test live endpoints after an explicit operator

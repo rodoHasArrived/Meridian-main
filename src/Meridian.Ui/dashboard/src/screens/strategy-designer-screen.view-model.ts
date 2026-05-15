@@ -163,6 +163,23 @@ export interface StrategyBuilderFieldCatalogItem {
   synonyms: string[];
 }
 
+export interface StrategyBuilderFieldCatalogSearchState {
+  inputId: string;
+  label: string;
+  ariaLabel: string;
+  placeholder: string;
+  helperId: string;
+  helperText: string;
+  describedBy: string;
+  resultsLabel: string;
+  resultCountText: string;
+  emptyState: {
+    title: string;
+    description: string;
+    ariaLabel: string;
+  } | null;
+}
+
 export interface StrategyBuilderCell {
   cellId: string;
   label: string;
@@ -268,6 +285,7 @@ export interface StrategyBuilderWorkbenchViewModel {
   metrics: DesignerSummaryMetric[];
   fieldCatalog: StrategyBuilderFieldCatalogItem[];
   fieldSearch: string;
+  fieldSearchState: StrategyBuilderFieldCatalogSearchState;
   filteredFields: StrategyBuilderFieldCatalogItem[];
   formulaSuggestions: StrategyBuilderFieldCatalogItem[];
   cells: StrategyBuilderCellViewModel[];
@@ -930,6 +948,7 @@ export function buildStrategyBuilderWorkbenchViewModel({
   const cells = buildStrategyBuilderCellViewModels(document.cells, selectedId, fieldMap, validationMessages);
   const trace = buildStrategyBuilderTrace(document, selectedId, validationMessages);
   const datasetFingerprint = buildStrategyBuilderDatasetFingerprint(document);
+  const filteredFields = filterStrategyBuilderFields(fieldSearch, catalog);
   const validationSummary = errorCount > 0
     ? `${errorCount} blocking issue${errorCount === 1 ? "" : "s"}`
     : validationMessages.length > 0
@@ -970,7 +989,8 @@ export function buildStrategyBuilderWorkbenchViewModel({
     ],
     fieldCatalog: catalog,
     fieldSearch,
-    filteredFields: filterStrategyBuilderFields(fieldSearch, catalog),
+    fieldSearchState: buildFieldCatalogSearchState(fieldSearch, filteredFields.length, catalog.length),
+    filteredFields,
     formulaSuggestions: buildFormulaSuggestions(fieldSearch, catalog),
     cells,
     transitions: buildStrategyBuilderTransitionViewModels(document, validationMessages),
@@ -1004,6 +1024,39 @@ export function buildStrategyBuilderWorkbenchViewModel({
     setFieldSearch,
     selectCell,
     loadTemplate
+  };
+}
+
+export function buildFieldCatalogSearchState(
+  fieldSearch: string,
+  visibleCount: number,
+  totalCount: number
+): StrategyBuilderFieldCatalogSearchState {
+  const normalized = fieldSearch.trim();
+  const resultWord = visibleCount === 1 ? "field" : "fields";
+  const resultCountText = normalized.length > 0
+    ? `${visibleCount} ${resultWord} match "${normalized}" out of ${totalCount}.`
+    : `${visibleCount} ${resultWord} available in the Strategy Builder catalog.`;
+
+  return {
+    inputId: "strategy-builder-field-catalog-search",
+    label: "Search field catalog",
+    ariaLabel: "Search Strategy Builder field catalog",
+    placeholder: "Search fields",
+    helperId: "strategy-builder-field-catalog-search-help",
+    helperText: "Filter by field ID, label, source, dataset, type, or synonym.",
+    describedBy: "strategy-builder-field-catalog-search-help strategy-builder-field-catalog-search-status",
+    resultsLabel: "Strategy Builder field catalog results",
+    resultCountText,
+    emptyState: visibleCount === 0
+      ? {
+        title: "No matching fields",
+        description: normalized.length > 0
+          ? `No field catalog entries match "${normalized}". Clear the filter to inspect mapped and disabled fields.`
+          : "No field catalog entries are available for this strategy document.",
+        ariaLabel: "Strategy Builder field catalog empty state"
+      }
+      : null
   };
 }
 

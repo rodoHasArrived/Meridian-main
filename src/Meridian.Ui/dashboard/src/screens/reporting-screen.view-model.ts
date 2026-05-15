@@ -775,6 +775,13 @@ function buildProfileActions(
 ): ReportingProfileAction[] {
   const isRunningThisProfile = runningProfileId === profile.id;
   const runningReason = isRunningThisProfile ? `${profile.name} export is already running.` : null;
+  const evidenceDisabledReason = buildProfileExportEvidenceDisabledReason(profile);
+  const runDisabledReason = runningReason ?? evidenceDisabledReason;
+  const runStatusText = isRunningThisProfile
+    ? `${profile.name} export is running. Wait for the result before starting another export.`
+    : evidenceDisabledReason
+      ? evidenceDisabledReason
+      : "Runs the governed export through the backend mutation and reports generated artifacts here.";
 
   return [
     {
@@ -801,27 +808,47 @@ function buildProfileActions(
       label: isRunningThisProfile ? "Running export…" : "Run export",
       href: EXPORT_API_ENDPOINTS.analysis,
       variant: "default",
-      ariaLabel: `Run ${profile.name} export analysis`,
+      ariaLabel: evidenceDisabledReason
+        ? `Run ${profile.name} export analysis unavailable until required evidence is attached`
+        : `Run ${profile.name} export analysis`,
       describedById: `reporting-action-${profile.id}-run-status`,
-      statusText: isRunningThisProfile
-        ? `${profile.name} export is running. Wait for the result before starting another export.`
-        : "Runs the governed export through the backend mutation and reports generated artifacts here.",
-      descriptionText: isRunningThisProfile
-        ? `${profile.name} export is running. Wait for the result before starting another export.`
-        : "Runs the governed export through the backend mutation and reports generated artifacts here.",
-      statusBadgeLabel: isRunningThisProfile ? "Running" : "POST",
+      statusText: runStatusText,
+      descriptionText: runStatusText,
+      statusBadgeLabel: isRunningThisProfile ? "Running" : evidenceDisabledReason ? "Gated" : "POST",
       statusBadgeAriaLabel: isRunningThisProfile
         ? `${profile.name} export is running`
-        : `${profile.name} export analysis uses POST`,
-      statusBadgeVariant: isRunningThisProfile ? "warning" : "outline",
-      isDisabled: isRunningThisProfile,
-      disabledReason: runningReason,
+        : evidenceDisabledReason
+          ? `${profile.name} export analysis is gated by missing evidence`
+          : `${profile.name} export analysis uses POST`,
+      statusBadgeVariant: isRunningThisProfile || evidenceDisabledReason ? "warning" : "outline",
+      isDisabled: runDisabledReason !== null,
+      disabledReason: runDisabledReason,
       busyLabel: isRunningThisProfile ? "Running export…" : null,
       method: "POST",
       profileId: profile.id,
       isRunning: isRunningThisProfile
     }
   ];
+}
+
+function buildProfileExportEvidenceDisabledReason(profile: GovernanceReportingProfile): string | null {
+  const missing: string[] = [];
+  if (!profile.loaderScript) {
+    missing.push("loader automation");
+  }
+
+  if (!profile.dataDictionary) {
+    missing.push("data dictionary");
+  }
+
+  if (missing.length === 0) {
+    return null;
+  }
+
+  const missingLabel = missing.length === 1
+    ? missing[0]
+    : `${missing.slice(0, -1).join(", ")} and ${missing[missing.length - 1]}`;
+  return `${profile.name} export requires ${missingLabel} evidence before running a governed POST export. Preview remains available.`;
 }
 
 export function buildExportStatusStarting(profileName: string): ReportingExportStatusState {

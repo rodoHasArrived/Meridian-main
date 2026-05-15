@@ -156,7 +156,15 @@ describe("ReportingScreen", () => {
     expect(auditProfile).toHaveAttribute("aria-expanded", "false");
     expect(auditProfile).toHaveAttribute("tabindex", "-1");
     expect(within(task).getByLabelText("Excel export preview uses GET")).toHaveTextContent("GET");
-    expect(within(task).getByRole("button", { name: "Run Excel export analysis" })).toBeEnabled();
+    const gatedExcelExport = within(task).getByRole("button", {
+      name: "Run Excel export analysis unavailable until required evidence is attached"
+    });
+    expect(gatedExcelExport).toBeDisabled();
+    expect(gatedExcelExport).toHaveAttribute(
+      "title",
+      "Excel export requires loader automation evidence before running a governed POST export. Preview remains available."
+    );
+    expect(within(task).getByLabelText("Excel export analysis is gated by missing evidence")).toHaveTextContent("Gated");
     expect(within(task).getByRole("link", { name: "GET /api/fund-structure/report-packs for Report-pack catalog" })).toHaveAttribute(
       "href",
       "/api/fund-structure/report-packs"
@@ -189,6 +197,7 @@ describe("ReportingScreen", () => {
     expect(within(task).getByRole("group", { name: "Reference-only POST /api/export/analysis for Audit Pack export analysis" })).toHaveTextContent(
       "Reference"
     );
+    expect(within(task).getByRole("button", { name: "Run Audit Pack export analysis" })).toBeEnabled();
 
     await user.click(within(task).getByRole("button", { name: "Run Audit Pack export analysis" }));
 
@@ -233,20 +242,21 @@ describe("ReportingScreen", () => {
     renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting/report-packs"] });
 
     const task = screen.getByRole("region", { name: "Report-pack approval task" });
-    await user.click(within(task).getByRole("button", { name: "Run Excel export analysis" }));
+    await user.click(within(task).getByRole("button", { name: "Select Audit Pack for report-pack approval" }));
+    await user.click(within(task).getByRole("button", { name: "Run Audit Pack export analysis" }));
 
-    const runningButton = within(task).getByRole("button", { name: "Run Excel export analysis" });
+    const runningButton = within(task).getByRole("button", { name: "Run Audit Pack export analysis" });
     expect(runningButton).toBeDisabled();
     expect(runningButton).toHaveAttribute("aria-busy", "true");
-    expect(runningButton).toHaveAttribute("title", "Excel export is already running.");
+    expect(runningButton).toHaveAttribute("title", "Audit Pack export is already running.");
     expect(runningButton).toHaveTextContent("Running export…");
-    expect(within(task).getByLabelText("Excel export is running")).toHaveTextContent("Running");
-    expect(within(task).getByText("Excel export is running. Wait for the result before starting another export.")).toBeInTheDocument();
+    expect(within(task).getByLabelText("Audit Pack export is running")).toHaveTextContent("Running");
+    expect(within(task).getByText("Audit Pack export is running. Wait for the result before starting another export.")).toBeInTheDocument();
 
     releaseFetch();
     await waitFor(() => {
       expect(screen.getByRole("status", { name: "Reporting export status" })).toHaveTextContent(
-        "Excel export completed — 1 file generated."
+        "Audit Pack export completed — 1 file generated."
       );
     });
   });

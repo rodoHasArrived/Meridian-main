@@ -42,6 +42,7 @@ public static class RolePermissions
         UserPermission.ManageOrders |
         UserPermission.ViewAnalytics |
         UserPermission.ExportData |
+        UserPermission.ManageCredentials |
         UserPermission.ViewStrategies |
         UserPermission.ManageStrategies |
         UserPermission.ViewSecurityMaster;

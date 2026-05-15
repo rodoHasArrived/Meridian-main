@@ -390,10 +390,52 @@ describe("buildPortfolioScreenViewModel", () => {
     ]);
   });
 
-  it("does not add a workflow task panel on the broad portfolio route", () => {
+  it("adds a Portfolio readiness handoff on the broad portfolio route", () => {
     const vm = buildPortfolioScreenViewModel({ trading, research, governance, pathname: "/portfolio" });
 
-    expect(vm.workflowTaskPanel).toBeNull();
+    expect(vm.workflowTaskPanel).toMatchObject({
+      regionLabel: "Portfolio readiness handoff",
+      title: "Portfolio acceptance handoff",
+      statusLabel: "Review blockers",
+      statusTone: "warning",
+      actionListLabel: "Portfolio readiness next actions",
+      selectedSummary: expect.stringContaining("Review brokerage sync, trading readiness, cash variance, and linked run evidence")
+    });
+    expect(vm.workflowTaskPanel?.actions).toEqual([
+      {
+        id: "brokerage-sync",
+        label: "Review brokerage sync",
+        href: "/portfolio/brokerage-sync",
+        ariaLabel: "Open brokerage sync review from Portfolio readiness",
+        detail: "Inspect account sync, execution feed health, exposure, and brokerage evidence.",
+        detailId: "portfolio-readiness-brokerage-sync-detail",
+        variant: "default"
+      },
+      {
+        id: "trading-readiness",
+        label: "Inspect readiness",
+        href: "/trading/readiness",
+        ariaLabel: "Open Trading readiness from Portfolio readiness",
+        detail: "Check paper-session, replay, execution-control, and readiness evidence.",
+        detailId: "portfolio-readiness-trading-readiness-detail",
+        variant: "outline"
+      },
+      {
+        id: "evidence",
+        label: "Open evidence",
+        href: "/reporting/evidence?subjectKind=strategy-run&subjectId=run-1",
+        ariaLabel: "Open Mean Reversion evidence from Portfolio readiness",
+        detail: "Review the linked strategy-run evidence packet before accepting portfolio state.",
+        detailId: "portfolio-readiness-evidence-detail",
+        variant: "outline"
+      }
+    ]);
+    expect(vm.workflowTaskPanel?.backendLinks.map((link) => link.href)).toEqual([
+      "/api/workstation/portfolio",
+      "/api/workstation/trading",
+      "/api/workstation/trading/readiness",
+      "/api/portfolio/exposure"
+    ]);
   });
 
   it("builds a dedicated brokerage-sync task panel from trading posture", () => {
@@ -409,6 +451,7 @@ describe("buildPortfolioScreenViewModel", () => {
       title: "Brokerage sync review",
       statusLabel: "Brokerage synced",
       statusTone: "success",
+      actionListLabel: "Brokerage sync next actions",
       selectedSummary: expect.stringContaining("Alpaca / paper account PA-DEMO")
     });
     expect(vm.workflowTaskPanel?.actions).toEqual([
@@ -418,6 +461,7 @@ describe("buildPortfolioScreenViewModel", () => {
         href: "/trading/readiness",
         ariaLabel: "Open Trading readiness from brokerage sync review",
         detail: "Check paper-session, replay, execution-control, and readiness evidence.",
+        detailId: "portfolio-brokerage-sync-trading-readiness-detail",
         variant: "default"
       },
       {
@@ -426,6 +470,7 @@ describe("buildPortfolioScreenViewModel", () => {
         href: "/trading",
         ariaLabel: "Open Trading cockpit from brokerage sync review",
         detail: "Review active positions, orders, and paper execution controls.",
+        detailId: "portfolio-brokerage-sync-trading-cockpit-detail",
         variant: "outline"
       }
     ]);
@@ -484,6 +529,7 @@ describe("buildPortfolioScreenViewModel", () => {
       href: "/settings#alpaca-provider-setup",
       ariaLabel: "Repair provider setup from brokerage sync review",
       detail: "Verify credentials and connection posture before accepting brokerage-sync state.",
+      detailId: "portfolio-brokerage-sync-provider-setup-detail",
       variant: "default"
     });
   });

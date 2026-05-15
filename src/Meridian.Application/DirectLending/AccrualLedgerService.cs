@@ -1,4 +1,5 @@
 using Meridian.Contracts.DirectLending;
+using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
 
 namespace Meridian.Application.DirectLending;

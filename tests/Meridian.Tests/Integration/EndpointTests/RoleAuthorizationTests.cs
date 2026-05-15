@@ -74,6 +74,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         perms.Should().HaveFlag(UserPermission.ViewMarketData);
         perms.Should().HaveFlag(UserPermission.ExecuteTrades);
         perms.Should().HaveFlag(UserPermission.ManageOrders);
+        perms.Should().HaveFlag(UserPermission.ManageCredentials);
         perms.Should().NotHaveFlag(UserPermission.ManageUsers);
         perms.Should().NotHaveFlag(UserPermission.ModifyConfig);
     }

@@ -174,6 +174,11 @@ param(
 `$configPath = "$escapedConfigPath"
 `$healthUrl = "http://localhost:`$Port/healthz"
 `$workstationUrl = "http://localhost:`$Port/workstation/"
+`$loginUrl = "http://localhost:`$Port/login?returnUrl=%2Fworkstation%2F"
+
+if ([string]::IsNullOrWhiteSpace(`$env:MDC_AUTH_MODE)) {
+    `$env:MDC_AUTH_MODE = "required"
+}
 
 function Test-MeridianEndpoint {
     param([Parameter(Mandatory)][string]`$Uri)
@@ -209,7 +214,7 @@ if (-not (Test-MeridianEndpoint -Uri `$healthUrl)) {
     }
 }
 
-Start-Process `$workstationUrl
+Start-Process `$loginUrl
 "@
 
     Set-Content -LiteralPath $LauncherPath -Value $launcher -Encoding UTF8

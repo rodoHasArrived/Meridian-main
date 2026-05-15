@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import {
+  buildFieldCatalogSearchState,
   buildCanvasLegViewModels,
   buildFormulaSuggestions,
   buildLegFromPalette,
@@ -116,8 +117,27 @@ describe("strategy designer view-model", () => {
     expect(vm.selectedCellDetail?.title).toBe("Carry rank");
     expect(vm.trace.find((step) => step.cellId === "carry-rank")?.isSelectedCell).toBe(true);
     expect(vm.filteredFields.map((field) => field.fieldId)).toContain("DURATION");
+    expect(vm.fieldSearchState).toMatchObject({
+      inputId: "strategy-builder-field-catalog-search",
+      label: "Search field catalog",
+      ariaLabel: "Search Strategy Builder field catalog",
+      emptyState: null
+    });
+    expect(vm.fieldSearchState.resultCountText).toContain('match "duration"');
     expect(vm.backtest.runCommand.disabled).toBe(false);
     expect(vm.backtest.routeActions.map((action) => action.href)).toContain("/api/workstation/strategy/designer/run-backtest");
+  });
+
+  it("derives field catalog search empty state copy from the view model", () => {
+    const state = buildFieldCatalogSearchState("missing", 0, getStrategyBuilderFieldCatalog().length);
+
+    expect(state.describedBy).toBe("strategy-builder-field-catalog-search-help strategy-builder-field-catalog-search-status");
+    expect(state.resultCountText).toContain('0 fields match "missing"');
+    expect(state.emptyState).toEqual({
+      title: "No matching fields",
+      description: 'No field catalog entries match "missing". Clear the filter to inspect mapped and disabled fields.',
+      ariaLabel: "Strategy Builder field catalog empty state"
+    });
   });
 
   it("marks backtest proof disabled when Strategy Builder validation is blocked", () => {

@@ -282,6 +282,8 @@ CONFIG FILE PRIORITY:
     3. appsettings.json (default)
 
 FIRST-TIME SETUP:
+    --setup                 First-run setup alias for --quickstart
+    --first-run             First-run setup alias for --quickstart
     --quickstart            Auto-detect, validate, and configure (fastest)
     --wizard                Interactive configuration wizard (step-by-step)
     --auto-config           Auto-configure from environment variables
@@ -292,8 +294,8 @@ FIRST-TIME SETUP:
                             backfill, production, docker
 
 EXAMPLES:
-    # Fastest setup (auto-detect everything)
-    Meridian --quickstart
+    # Easiest first-time setup (auto-detect everything)
+    Meridian --setup
 
     # Interactive first-time setup
     Meridian --wizard
@@ -479,6 +481,8 @@ MODES:
     --help, -h              Show this help message
 
 AUTO-CONFIGURATION (First-time setup):
+    --setup                 Easiest first-run setup; alias for --quickstart
+    --first-run             Easiest first-run setup; alias for --quickstart
     --quickstart            Zero-config setup: auto-detect, validate, and configure (fastest)
     --wizard                Interactive configuration wizard (recommended for new users)
     --auto-config           Quick auto-configuration based on environment variables
@@ -611,7 +615,10 @@ EXAMPLES:
     # Validate a package
     Meridian --validate-package ./packages/my-data.zip
 
-    # Run interactive configuration wizard (recommended for new users)
+    # Easiest first-time setup
+    Meridian --setup
+
+    # Run interactive configuration wizard (recommended when you want step-by-step prompts)
     Meridian --wizard
 
     # Quick auto-configuration based on environment variables
@@ -701,8 +708,8 @@ SUPPORT:
     Documentation: ./HELP.md
 
 ╔══════════════════════════════════════════════════════════════════════╗
+║  FIRST SETUP:  Run: ./Meridian --setup                    ║
 ║  QUICKSTART:   Run: ./Meridian --quickstart                ║
-║  NEW USER?     Run: ./Meridian --wizard                   ║
 ║  QUICK CHECK:  Run: ./Meridian --quick-check              ║
 ║  START API:    Run: ./Meridian --mode desktop             ║
 ║  Local API:    http://localhost:8080                                 ║

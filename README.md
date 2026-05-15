@@ -58,11 +58,12 @@ The primary runnable project. Supports multiple modes via `--mode <mode>`:
 | `--recommend-providers` | Print a provider recommendation report and exit |
 | `--symbols` / `--symbols-add` / `--symbols-remove` | Symbol management commands |
 | `--dry-run` | Validate configuration and connectivity without side effects |
-| `--quickstart` | Interactive first-run bootstrap wizard |
+| `--setup` / `--first-run` / `--quickstart` | First-run bootstrap: auto-detect providers, validate credentials when available, and write `config/appsettings.json` |
 | `ledger -f <journal-file> <report>` | Read a Ledger-compatible journal and print balance/register/accounts reports |
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --help
+dotnet run --project src/Meridian/Meridian.csproj -- --setup
 dotnet run --project src/Meridian/Meridian.csproj -- --help ledger
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2024-01-01 --backfill-to 2024-12-31

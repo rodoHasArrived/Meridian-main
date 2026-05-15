@@ -89,6 +89,13 @@ describe("useReportingScreenViewModel", () => {
       "reporting-action-excel-preview-status",
       "reporting-action-excel-run-status"
     ]);
+    expect(result.current.workflowTaskPanel?.actions[1]).toMatchObject({
+      id: "run",
+      isDisabled: true,
+      disabledReason: "Excel export requires loader automation evidence before running a governed POST export. Preview remains available.",
+      statusBadgeLabel: "Gated",
+      statusBadgeAriaLabel: "Excel export analysis is gated by missing evidence"
+    });
     expect(result.current.workflowTaskPanel?.targets.map((target) => target.label)).toEqual(["board", "audit"]);
     expect(result.current.workflowTaskPanel?.profiles.map((profile) => profile.readinessLabel)).toEqual([
       "Dictionary only",
@@ -344,7 +351,12 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.selectedProfile?.actions[1]).toMatchObject({
       id: "run",
       label: "Run export",
-      variant: "default"
+      variant: "default",
+      isDisabled: true,
+      disabledReason: "Excel export requires loader automation evidence before running a governed POST export. Preview remains available.",
+      statusBadgeLabel: "Gated",
+      statusBadgeAriaLabel: "Excel export analysis is gated by missing evidence",
+      descriptionText: "Excel export requires loader automation evidence before running a governed POST export. Preview remains available."
     });
     expect(result.current.rows.find((r) => r.id === "excel")?.isSelected).toBe(true);
     expect(result.current.rows.find((r) => r.id === "excel")?.isExpanded).toBe(true);
@@ -389,7 +401,10 @@ describe("useReportingScreenViewModel", () => {
       href: "/api/export/analysis",
       method: "POST",
       profileId: "board-packet",
-      isRunning: false
+      isRunning: false,
+      isDisabled: false,
+      disabledReason: null,
+      statusBadgeLabel: "POST"
     });
   });
 
