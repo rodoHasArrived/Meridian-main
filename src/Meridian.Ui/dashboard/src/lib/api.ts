@@ -72,8 +72,11 @@ import type {
   StrategyDesignValidationResult,
   TradingActionResult,
   TradingOperatorReadiness,
+  RiskRuleConfig,
+  RiskRuleStatus,
   TradingParameters,
   TradingWorkspaceResponse,
+  UpdateRiskRuleConfigRequest,
   WorkflowLibrary,
   WorkflowPreset,
   WorkflowPresetLibrary,
@@ -106,6 +109,8 @@ import {
   executionSessionCloseEndpoint,
   executionSessionEndpoint,
   executionSessionReplayEndpoint,
+  riskRuleConfigEndpoint,
+  riskRuleStatusEndpoint,
   historicalBarsEndpoint,
   marketDataOrderbookEndpoint,
   marketDataQuoteEndpoint,
@@ -159,6 +164,7 @@ import {
   workstationRunReviewPacketEndpoint,
   workstationRunSweepsEndpoint,
   workstationRunTimelineEndpoint,
+  RISK_API_ENDPOINTS,
   workstationSecurityMasterEconomicDefinitionEndpoint,
   workstationSecurityMasterEntryEndpoint,
   workstationSecurityMasterHistoryEndpoint,
@@ -621,6 +627,22 @@ export function getExecutionAudit(take = 20) {
 
 export function getExecutionControls() {
   return getJson<ExecutionControlSnapshot>(EXECUTION_API_ENDPOINTS.controls);
+}
+
+export function getRiskRules() {
+  return getJson<RiskRuleStatus[]>(RISK_API_ENDPOINTS.rules);
+}
+
+export function getRiskRuleStatus(ruleName: string) {
+  return getJson<RiskRuleStatus>(riskRuleStatusEndpoint(ruleName));
+}
+
+export function getRiskRuleConfig(ruleName: string) {
+  return getJson<RiskRuleConfig>(riskRuleConfigEndpoint(ruleName));
+}
+
+export function updateRiskRuleConfig(ruleName: string, request: UpdateRiskRuleConfigRequest) {
+  return putJson<RiskRuleConfig>(riskRuleConfigEndpoint(ruleName), request);
 }
 
 export function createExecutionManualOverride(request: CreateExecutionManualOverrideRequest) {

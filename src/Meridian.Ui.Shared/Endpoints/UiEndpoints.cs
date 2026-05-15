@@ -16,6 +16,8 @@ using Meridian.Contracts.Services;
 using Meridian.Storage;
 using Meridian.Storage.Services;
 using Meridian.Contracts.Workstation;
+using Meridian.Execution;
+using Meridian.Execution.Sdk;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
@@ -71,6 +73,9 @@ public static class UiEndpoints
         services.AddMemoryCache();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
+        services.TryAddSingleton(RiskRuleRuntimeOptions.Default);
+        services.TryAddSingleton<OperatorRiskRuleService>();
+        services.TryAddSingleton<IRiskValidator>(sp => sp.GetRequiredService<OperatorRiskRuleService>());
 
         // Register LeanAutoExportService as a background hosted service
         services.AddSingleton<LeanAutoExportService>();
@@ -111,6 +116,9 @@ public static class UiEndpoints
         services.AddMemoryCache();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
+        services.TryAddSingleton(RiskRuleRuntimeOptions.Default);
+        services.TryAddSingleton<OperatorRiskRuleService>();
+        services.TryAddSingleton<IRiskValidator>(sp => sp.GetRequiredService<OperatorRiskRuleService>());
 
         // Register LeanAutoExportService as a background hosted service
         services.AddSingleton<LeanAutoExportService>();
@@ -389,6 +397,7 @@ public static class UiEndpoints
 
         // Paper trading cockpit endpoints
         app.MapExecutionEndpoints(jsonOptions);
+        app.MapRiskEndpoints(jsonOptions);
 
         // Promotion workflow endpoints (Backtest → Paper → Live)
         app.MapPromotionEndpoints(jsonOptions);
@@ -536,6 +545,7 @@ public static class UiEndpoints
 
         // Paper trading cockpit endpoints
         app.MapExecutionEndpoints(jsonOptions);
+        app.MapRiskEndpoints(jsonOptions);
 
         // Promotion workflow endpoints (Backtest → Paper → Live)
         app.MapPromotionEndpoints(jsonOptions);

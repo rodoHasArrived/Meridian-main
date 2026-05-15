@@ -37,6 +37,10 @@ export const EXECUTION_API_ENDPOINTS = {
   manualOverrides: "/api/execution/controls/manual-overrides"
 } as const;
 
+export const RISK_API_ENDPOINTS = {
+  rules: "/api/risk/rules"
+} as const;
+
 export const REPLAY_API_ENDPOINTS = {
   files: "/api/replay/files",
   start: "/api/replay/start"
@@ -164,6 +168,18 @@ export function workstationOperatorInboxEndpoint(fundAccountId?: string): string
   return fundAccountId
     ? `${WORKSTATION_API_ENDPOINTS.operatorInbox}${queryString({ fundAccountId })}`
     : WORKSTATION_API_ENDPOINTS.operatorInbox;
+}
+
+export function riskRuleEndpoint(ruleName: string): string {
+  return `${RISK_API_ENDPOINTS.rules}/${pathSegment(ruleName, "ruleName")}`;
+}
+
+export function riskRuleStatusEndpoint(ruleName: string): string {
+  return `${riskRuleEndpoint(ruleName)}/status`;
+}
+
+export function riskRuleConfigEndpoint(ruleName: string): string {
+  return `${riskRuleEndpoint(ruleName)}/config`;
 }
 
 export function workstationWorkflowSummaryEndpoint(options: {

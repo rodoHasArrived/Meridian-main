@@ -1651,6 +1651,12 @@ public static class WorkstationEndpoints
         // --- Risk state (derived from live portfolio when available) ---
         var riskState = "Healthy";
         var riskSummary = "Portfolio and order-book exposure are within configured paper thresholds.";
+        IReadOnlyList<string> activeGuardrails =
+        [
+            "Single-name concentration cap set at 30% notional.",
+            "Auto-throttle activates above 70% intraday buying power.",
+            "Strategy promotion to live blocked while state is Observe or Constrained."
+        ];
         var grossExposure = 0m;
         var netExposureValue = 0m;
 
@@ -1682,6 +1688,15 @@ public static class WorkstationEndpoints
         {
             riskState = "Observe";
             riskSummary = "Strategy is running at a loss. Monitoring active.";
+        }
+
+        var riskRuleService = context.RequestServices.GetService<OperatorRiskRuleService>();
+        if (riskRuleService is not null)
+        {
+            var aggregateStatus = riskRuleService.GetAggregateStatus();
+            riskState = aggregateStatus.State;
+            riskSummary = aggregateStatus.Summary;
+            activeGuardrails = aggregateStatus.Rules.Select(static rule => rule.Summary).ToArray();
         }
 
         var maxDrawdownDisplay = portfolio is not null && portfolio.PortfolioValue > 0m
@@ -1735,12 +1750,7 @@ public static class WorkstationEndpoints
                 Var95: "—",
                 MaxDrawdown: maxDrawdownDisplay,
                 BuyingPowerUsed: buyingPowerUsedDisplay,
-                ActiveGuardrails:
-                [
-                    "Single-name concentration cap set at 30% notional.",
-                    "Auto-throttle activates above 70% intraday buying power.",
-                    "Strategy promotion to live blocked while state is Observe or Constrained."
-                ]),
+                ActiveGuardrails: activeGuardrails),
             Brokerage: new WorkstationTradingBrokerageState(
                 Provider: brokerageValidation.GatewayDisplayName,
                 Account: run is not null && !string.IsNullOrWhiteSpace(run.PortfolioId) ? run.PortfolioId : "—",
@@ -2503,6 +2513,7 @@ public static class WorkstationEndpoints
         var netExposureValue = 0m;
         var riskState = "Healthy";
         var riskSummary = "Portfolio exposure is within configured paper thresholds.";
+        IReadOnlyList<string> activeGuardrails = [];
 
         if (portfolio is not null)
         {
@@ -2526,6 +2537,15 @@ public static class WorkstationEndpoints
             }
         }
 
+        var riskRuleService = context.RequestServices.GetService<OperatorRiskRuleService>();
+        if (riskRuleService is not null)
+        {
+            var aggregateStatus = riskRuleService.GetAggregateStatus();
+            riskState = aggregateStatus.State;
+            riskSummary = aggregateStatus.Summary;
+            activeGuardrails = aggregateStatus.Rules.Select(static rule => rule.Summary).ToArray();
+        }
+
         var risk = new WorkstationTradingRiskState(
             State: riskState,
             Summary: riskSummary,
@@ -2538,7 +2558,7 @@ public static class WorkstationEndpoints
             BuyingPowerUsed: portfolio is not null && portfolio.BuyingPower > 0m
                 ? FormatPercent(grossExposure / portfolio.BuyingPower)
                 : "—",
-            ActiveGuardrails: []);
+            ActiveGuardrails: activeGuardrails);
 
         // --- Brokerage state ---
         var brokerageValidation = BrokerageValidationEvaluator.Evaluate(brokerageConfiguration);

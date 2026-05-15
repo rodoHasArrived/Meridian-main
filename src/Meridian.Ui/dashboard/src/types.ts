@@ -809,6 +809,32 @@ export interface TradingRiskState {
   activeGuardrails: string[];
 }
 
+export interface RiskRuleStatus {
+  ruleName: string;
+  displayName: string;
+  state: "Healthy" | "Observe" | "Constrained";
+  breached: boolean;
+  summary: string;
+  thresholdLabel: string;
+  thresholdValue: string;
+  currentValueLabel: string;
+  currentValue: string;
+  lastEvaluatedAt: string;
+}
+
+export interface RiskRuleConfig {
+  ruleName: string;
+  config: Record<string, string>;
+  updatedAt: string;
+  updatedBy: string;
+  reason: string;
+}
+
+export interface UpdateRiskRuleConfigRequest {
+  config: Record<string, string>;
+  reason?: string;
+}
+
 export interface BrokerageWiringStatus {
   provider: string;
   account: string;
