@@ -309,7 +309,10 @@ const breakQueue: ReconciliationBreakQueueItem[] = [
     reviewedAt: "2026-01-02T00:05:00Z",
     resolvedBy: "ops.gov",
     resolvedAt: "2026-01-02T00:10:00Z",
-    resolutionNote: "Reviewed in governance panel."
+    resolutionNote: "Reviewed in governance panel.",
+    routingTarget: "FundTrialBalance",
+    routingDetail: "Open the accounting trial balance for evidence review.",
+    recommendedAction: "Review matched fee entries before closing."
   }
 ];
 
@@ -1165,7 +1168,9 @@ describe("governance-screen view model", () => {
       disabled: false,
       disabledReason: null,
       busy: false,
-      busyLabel: null
+      busyLabel: null,
+      feedbackId: "security-conflict-refresh-feedback",
+      feedbackText: null
     });
     expect(buildSecurityConflictRefreshCommand(true, null)).toMatchObject({
       label: "Refreshing...",
@@ -1177,6 +1182,15 @@ describe("governance-screen view model", () => {
     expect(buildSecurityConflictRefreshCommand(false, "Provider offline")).toMatchObject({
       label: "Retry conflicts",
       ariaLabel: "Retry loading Security Master identifier conflicts"
+    });
+    expect(buildSecurityConflictRefreshCommand(false, null, "conflict-1")).toMatchObject({
+      label: "Refresh conflicts",
+      ariaLabel: "Refresh disabled while identifier conflict conflict-1 is resolving",
+      disabled: true,
+      disabledReason: "Wait until identifier conflict conflict-1 finishes resolving before refreshing the conflict queue.",
+      busy: false,
+      feedbackId: "security-conflict-refresh-feedback",
+      feedbackText: "Wait until identifier conflict conflict-1 finishes resolving before refreshing the conflict queue."
     });
   });
 
@@ -1348,6 +1362,11 @@ describe("governance-screen view model", () => {
     expect(rows[0]).toMatchObject({
       breakId: "run-42:cash",
       actionBusy: true,
+      varianceLabel: "+$500.00",
+      varianceTone: "success",
+      statusBadgeVariant: "danger",
+      ownerLabel: "Unassigned",
+      rowSelectAriaLabel: "Inspect reconciliation break run-42:cash",
       assignLabel: "Assigning...",
       canAssign: false,
       canResolve: false,
@@ -1363,6 +1382,7 @@ describe("governance-screen view model", () => {
 
     const state = buildReconciliationBreakQueueState({
       breakQueue,
+      selectedBreakId: "run-57:fees",
       loading: false,
       loadError: null,
       action: { breakId: "run-42:cash", command: "assign" },
@@ -1370,6 +1390,27 @@ describe("governance-screen view model", () => {
     });
 
     expect(state.hasBreaks).toBe(true);
+    expect(state.tableLabel).toBe("Reconciliation break queue");
+    expect(state.selectedBreakId).toBe("run-57:fees");
+    expect(state.selectedDetail).toMatchObject({
+      id: "reconciliation-break-detail-panel",
+      title: "Intraday Vol Carry - FeeMismatch",
+      statusLabel: "Resolved",
+      statusBadgeVariant: "success",
+      recommendedActionText: "Review matched fee entries before closing.",
+      routingActionLabel: "Open routing target",
+      routingActionHref: "/accounting",
+      routingActionAriaLabel: "Open routing target for reconciliation break run-57:fees"
+    });
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Detected", value: "Jan 2, 00:00 UTC" },
+      { label: "Updated", value: "Jan 2, 00:00 UTC" }
+    ]));
+    expect(state.rows[1]).toMatchObject({
+      isSelected: true,
+      isExpanded: true,
+      detailPanelId: "reconciliation-break-detail-panel"
+    });
     expect(state.statusAnnouncement).toBe("Assigning reconciliation break run-42:cash.");
   });
 
@@ -1383,6 +1424,8 @@ describe("governance-screen view model", () => {
     });
 
     expect(empty.hasBreaks).toBe(false);
+    expect(empty.selectedDetail).toBeNull();
+    expect(empty.detailEmptyAriaLabel).toBe("No reconciliation break selected");
     expect(empty.emptyText).toBe("No reconciliation breaks in the current queue.");
     expect(empty.statusAnnouncement).toBe("No reconciliation breaks in the current queue.");
 

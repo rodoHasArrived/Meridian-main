@@ -22,7 +22,6 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getLiveOrderbook, getLiveQuote, getLiveTrades, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { SessionStatsDto } from "@/types";
 import {
   computeIntradayMetrics,
   useLiveQuotesScreenViewModel,
@@ -32,6 +31,7 @@ import {
   type LiveQuotesMarketDataViewModel,
   type LiveQuotesPanelState,
   type LiveQuotesPriceChartViewModel,
+  type LiveQuotesSessionStatsViewModel,
   type LiveQuotesSparklineViewModel,
   type LiveQuotesTradeRowViewModel,
   type QuickTradeTicketViewModel
@@ -49,7 +49,7 @@ export function LiveQuotesScreen() {
     }
   );
   const { activeSymbol, lookup: symbolLookupVm, market: marketVm, quickTrade } = vm;
-  const session = marketVm.quoteRow?.session ?? null;
+  const session = marketVm.sessionStats;
 
   return (
     <div className="space-y-6">
@@ -263,46 +263,38 @@ function PanelStateMessage({ state }: { state: LiveQuotesPanelState }) {
   );
 }
 
-function SessionStatsBanner({ session }: { session: SessionStatsDto }) {
-  const tone = session.change > 0
-    ? "text-positive"
-    : session.change < 0
-      ? "text-danger"
-      : "text-foreground";
-  const sign = session.change > 0 ? "+" : "";
-  const pct = session.changePercent;
-  const pctText = pct === null || !Number.isFinite(pct)
-    ? ""
-    : ` (${pct > 0 ? "+" : ""}${pct.toFixed(2)}%)`;
-  const changeText = `${sign}${session.change.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4
-  })}${pctText}`;
-  const volumeText = session.volume >= 1_000_000
-    ? `${(session.volume / 1_000_000).toFixed(2)}M`
-    : session.volume >= 1_000
-      ? `${(session.volume / 1_000).toFixed(1)}K`
-      : session.volume.toLocaleString();
+function SessionStatsBanner({ session }: { session: LiveQuotesSessionStatsViewModel }) {
+  const tone = sessionStatsChangeClass[session.changeTone];
 
   return (
-    <div className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2.5">
+    <section
+      id={session.id}
+      aria-label={session.ariaLabel}
+      aria-describedby={session.descriptionId}
+      className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2.5"
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div className="flex items-baseline gap-3">
-          <span className="text-xs uppercase tracking-wide text-muted-foreground">Today</span>
-          <span className={`font-mono text-base ${tone}`} aria-label="Day change">{changeText}</span>
+          <span className="text-xs uppercase tracking-wide text-muted-foreground">{session.periodLabel}</span>
+          <span className={`font-mono text-base ${tone}`} aria-label={session.changeAriaLabel}>{session.changeLabel}</span>
         </div>
-        <span className="text-[11px] text-muted-foreground">Session {session.sessionDate}</span>
+        <span className="text-[11px] text-muted-foreground">{session.dateLabel}</span>
       </div>
+      <p id={session.descriptionId} className="sr-only">{session.description}</p>
       <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-xs sm:grid-cols-5">
-        <SessionStatCell label="Open" value={formatSessionPrice(session.open)} />
-        <SessionStatCell label="High" value={formatSessionPrice(session.high)} />
-        <SessionStatCell label="Low" value={formatSessionPrice(session.low)} />
-        <SessionStatCell label="VWAP" value={formatSessionPrice(session.vwap)} />
-        <SessionStatCell label="Volume" value={volumeText} />
+        {session.stats.map((stat) => (
+          <SessionStatCell key={stat.id} label={stat.label} value={stat.value} />
+        ))}
       </div>
-    </div>
+    </section>
   );
 }
+
+const sessionStatsChangeClass = {
+  positive: "text-positive",
+  negative: "text-danger",
+  default: "text-foreground"
+} as const;
 
 function SessionStatCell({ label, value }: { label: string; value: string }) {
   return (
@@ -311,17 +303,6 @@ function SessionStatCell({ label, value }: { label: string; value: string }) {
       <span className="text-foreground">{value}</span>
     </div>
   );
-}
-
-function formatSessionPrice(value: number | null | undefined): string {
-  if (value === null || value === undefined || Number.isNaN(value)) {
-    return "—";
-  }
-
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4
-  });
 }
 
 interface BboPanelProps {

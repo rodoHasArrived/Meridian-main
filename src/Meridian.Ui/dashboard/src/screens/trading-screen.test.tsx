@@ -747,7 +747,8 @@ describe("TradingScreen", () => {
     expect(screen.getByLabelText("Strategy ID")).toHaveAttribute("title", "Paper session creation is in progress.");
     expect(screen.getByLabelText("Initial cash ($)")).toBeDisabled();
     expect(screen.getByLabelText("Initial cash ($)")).not.toHaveAttribute("aria-invalid");
-    expect(screen.getByLabelText("Initial cash ($)")).toHaveAccessibleDescription("Strategy ID is optional. Initial cash must be at least $1,000.");
+    expect(screen.getByLabelText("Initial cash ($)")).toHaveAccessibleDescription("Paper session creation is in progress.");
+    expect(screen.getByText("Paper session creation is in progress.")).toHaveAttribute("id", "paper-session-create-requirements");
 
     resolveCreate({
       sessionId: "sess-new",

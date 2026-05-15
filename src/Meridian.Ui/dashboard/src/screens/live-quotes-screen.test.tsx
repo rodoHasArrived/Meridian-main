@@ -8,6 +8,7 @@ import {
   LIVE_QUOTES_EMPTY_VALUE,
   buildLiveQuoteRefreshCommand,
   buildLiveQuoteSymbolLookupViewModel,
+  buildLiveQuotesSessionStatsViewModel,
   buildLiveQuotesMarketViewModel,
   buildOrderRequest,
   buildPriceSparklineViewModel,
@@ -652,6 +653,43 @@ describe("buildLiveQuotesMarketViewModel", () => {
     });
   });
 
+  it("keeps session-stat presentation state in the market view model", () => {
+    const sessionStats = buildLiveQuotesSessionStatsViewModel("AAPL", quoteFixture.quote.session);
+
+    expect(sessionStats).toMatchObject({
+      id: "live-quotes-session-stats",
+      ariaLabel: "AAPL session statistics",
+      descriptionId: "live-quotes-session-stats-description",
+      periodLabel: "Today",
+      dateLabel: "Session 2026-05-08",
+      changeLabel: "+1.06 (+0.57%)",
+      changeAriaLabel: "Day change +1.06 (+0.57%)",
+      changeTone: "positive",
+      description: "Session 2026-05-08 quote evidence from 13:30:00.000 UTC to 14:59:59.000 UTC."
+    });
+    expect(sessionStats?.stats.map((stat) => [stat.label, stat.value])).toEqual([
+      ["Open", "187.00"],
+      ["High", "188.50"],
+      ["Low", "186.80"],
+      ["VWAP", "187.74"],
+      ["Volume", "1.25M"]
+    ]);
+
+    const flatSessionStats = buildLiveQuotesSessionStatsViewModel("MSFT", {
+      ...quoteFixture.quote.session,
+      change: 0,
+      changePercent: null,
+      volume: 950
+    });
+
+    expect(flatSessionStats).toMatchObject({
+      changeLabel: "0.00 (—)",
+      changeTone: "default"
+    });
+    expect(flatSessionStats?.stats.find((stat) => stat.id === "volume")?.value).toBe("950");
+    expect(buildLiveQuotesSessionStatsViewModel("AAPL", null)).toBeNull();
+  });
+
   it("models empty market-data panels after a completed fetch returns no rows", () => {
     const vm = buildLiveQuotesMarketViewModel({
       activeSymbol: "AAPL",
@@ -835,6 +873,15 @@ describe("buildLiveQuotesMarketViewModel", () => {
       ariaLabel: "Recent AAPL trade prices, ranging from 188.07 to 188.07."
     });
     expect(vm.priceChart.sparkline?.points).toMatch(/^\d+\.\d{2},\d+\.\d{2}$/);
+    expect(vm.sessionStats).toMatchObject({
+      ariaLabel: "AAPL session statistics",
+      changeLabel: "+1.06 (+0.57%)",
+      changeTone: "positive",
+      stats: expect.arrayContaining([
+        { id: "open", label: "Open", value: "187.00" },
+        { id: "volume", label: "Volume", value: "1.25M" }
+      ])
+    });
   });
 
   it("keeps sparkline projection in the view model and returns null without chartable prints", () => {
@@ -1179,6 +1226,20 @@ describe("LiveQuotesScreen quick trade", () => {
       orderbook.resolve(orderbookFixture);
       await Promise.resolve();
     });
+  });
+
+  it("renders the session-stat banner from VM-owned labels and ARIA copy", async () => {
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
+
+    const sessionRegion = await screen.findByRole("region", { name: "AAPL session statistics" });
+
+    expect(sessionRegion).toHaveAttribute("aria-describedby", "live-quotes-session-stats-description");
+    expect(within(sessionRegion).getByLabelText("Day change +1.06 (+0.57%)")).toHaveTextContent("+1.06 (+0.57%)");
+    expect(within(sessionRegion).getByText("Session 2026-05-08")).toBeInTheDocument();
+    expect(within(sessionRegion).getByText("Open")).toBeInTheDocument();
+    expect(within(sessionRegion).getByText("187.00")).toBeInTheDocument();
+    expect(within(sessionRegion).getByText("Volume")).toBeInTheDocument();
+    expect(within(sessionRegion).getByText("1.25M")).toBeInTheDocument();
   });
 
   it("keeps the last market snapshot visible when a manual refresh fails", async () => {

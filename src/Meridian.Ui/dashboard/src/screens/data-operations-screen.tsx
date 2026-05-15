@@ -265,6 +265,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
                   getRowSelectAriaLabel={(provider) => provider.selectAriaLabel}
                   getRowAriaControls={(provider) => provider.detailPanelId}
                   getRowAriaExpanded={(provider) => provider.expanded}
+                  getRowClassName={(provider) => provider.rowClassName}
                   selectedRowId={vm.providerSection.selectedRowId}
                   onRowSelect={(provider) => vm.selectProvider(provider.rowId)}
                   emptyText={vm.providerSection.emptyState.description}
@@ -305,6 +306,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
                   getRowSelectAriaLabel={(backfill) => backfill.selectAriaLabel}
                   getRowAriaControls={(backfill) => backfill.detailPanelId}
                   getRowAriaExpanded={(backfill) => backfill.expanded}
+                  getRowClassName={(backfill) => backfill.rowClassName}
                   selectedRowId={vm.selectedBackfillRowId}
                   onRowSelect={(backfill) => vm.selectBackfill(backfill.jobId)}
                   emptyText={vm.backfillSection.emptyState.description}
@@ -338,6 +340,7 @@ export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
                   getRowSelectAriaLabel={(item) => item.selectAriaLabel}
                   getRowAriaControls={(item) => item.detailPanelId}
                   getRowAriaExpanded={(item) => item.expanded}
+                  getRowClassName={(item) => item.rowClassName}
                   selectedRowId={vm.exportSection.selectedRowId}
                   onRowSelect={(item) => vm.selectExport(item.exportId)}
                   emptyText={vm.exportSection.emptyState.description}

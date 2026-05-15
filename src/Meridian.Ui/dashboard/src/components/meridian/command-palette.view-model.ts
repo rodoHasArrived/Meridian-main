@@ -1,4 +1,11 @@
 import { normalizeWorkspacePath, WORKSPACES, workflowTargetPath, workspacePath } from "@/lib/workspace";
+import {
+  appendOperatingScopeToRoute,
+  buildOperatingScopeFromSearch,
+  summarizeOperatingScopeForRoute,
+  type AppShellOperatingScopeInput,
+  type AppShellOperatingScopeState
+} from "@/app-shell.view-model";
 import type {
   WorkflowAction,
   WorkflowDefinition,
@@ -9,7 +16,8 @@ import type {
   WorkspaceSummary
 } from "@/types";
 
-export type CommandPaletteItemKind = "workspace" | "route" | "workflow" | "preset";
+export type CommandPaletteItemKind = "focus" | "workspace" | "route" | "workflow" | "preset";
+export type CommandPaletteItemStatusTone = "blocked" | "review" | "ready" | "current" | "neutral";
 export type CommandPaletteFocusBoundary = "first" | "last" | "middle" | "outside" | "none";
 export type CommandPaletteFocusTarget = "search" | "command" | "other";
 export type CommandPaletteKeyCommand =
@@ -29,6 +37,8 @@ export interface CommandPaletteItem {
   route: string;
   routeLabel: string;
   statusLabel: string;
+  statusTone: CommandPaletteItemStatusTone;
+  statusVisible: boolean;
   commandLabel: string;
   ariaLabel: string;
   presetId: string | null;
@@ -52,6 +62,18 @@ export interface CommandPaletteWorkflowData {
   workflowLibrary?: WorkflowLibrary | null;
   workflowPresets?: WorkflowPresetLibrary | null;
   workflowError?: string | null;
+  operatorFocusItems?: CommandPaletteFocusAction[] | null;
+}
+
+export interface CommandPaletteFocusAction {
+  id: string;
+  label: string;
+  detail: string;
+  route: string;
+  workspaceLabel: string;
+  actionLabel: string;
+  tone: "ready" | "review" | "blocked" | "pending";
+  ariaLabel: string;
 }
 
 interface CommandPaletteRouteDefinition {
@@ -59,7 +81,6 @@ interface CommandPaletteRouteDefinition {
   label: string;
   description: string;
   route: string;
-  preserveSymbol?: boolean;
 }
 
 export interface CommandPaletteViewModel {
@@ -85,13 +106,14 @@ export interface CommandPaletteViewModel {
 }
 
 const COMMAND_KIND_LABELS: Record<CommandPaletteItemKind, string> = {
+  focus: "Focus actions",
   workspace: "Workspaces",
   route: "Quick routes",
   preset: "Presets",
   workflow: "Workflows"
 };
 
-const COMMAND_KIND_ORDER: CommandPaletteItemKind[] = ["workspace", "route", "preset", "workflow"];
+const COMMAND_KIND_ORDER: CommandPaletteItemKind[] = ["focus", "workspace", "route", "preset", "workflow"];
 
 const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
   {
@@ -152,15 +174,13 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     id: "data-quotes",
     label: "Live quotes",
     description: "Inspect quotes, trades, depth, charts, and staged tickets.",
-    route: "/data/quotes",
-    preserveSymbol: true
+    route: "/data/quotes"
   },
   {
     id: "data-alerts",
     label: "Price alerts",
     description: "Create local quote-threshold alerts and review alert trigger state.",
-    route: "/data/alerts",
-    preserveSymbol: true
+    route: "/data/alerts"
   },
   {
     id: "data-backfills",
@@ -188,18 +208,21 @@ export function buildCommandPaletteViewModel(
   workspaces: WorkspaceSummary[] = WORKSPACES,
   workflowData: CommandPaletteWorkflowData = {},
   query = "",
-  operatingContextSymbol: string | null = null
+  operatingContextSymbol: string | null = null,
+  operatingContextScope: AppShellOperatingScopeInput | null = null
 ): CommandPaletteViewModel {
   const activeKey = normalizeWorkspacePath(pathname);
   const activeRouteParts = splitActiveRoute(pathname);
-  const subjectSymbol =
-    normalizeCommandPaletteSubjectSymbol(readSearchValue(activeRouteParts.search, "symbol"))
-    ?? normalizeCommandPaletteSubjectSymbol(operatingContextSymbol);
-  const workspaceItems = buildWorkspaceItems(workspaces, activeKey);
-  const routeItems = buildRouteItems(pathname, subjectSymbol);
-  const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname, subjectSymbol);
-  const workflowItems = buildWorkflowItems(workflowData.workflowLibrary?.workflows ?? [], pathname, subjectSymbol);
-  const items = [...workspaceItems, ...routeItems, ...presetItems, ...workflowItems];
+  const operatingScope = buildOperatingScopeFromSearch(activeRouteParts.search, {
+    ...(operatingContextScope ?? {}),
+    symbol: operatingContextScope?.symbol ?? operatingContextSymbol
+  });
+  const focusItems = buildFocusItems(workflowData.operatorFocusItems ?? [], pathname);
+  const workspaceItems = buildWorkspaceItems(workspaces, activeKey, operatingScope);
+  const routeItems = buildRouteItems(pathname, operatingScope);
+  const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname, operatingScope);
+  const workflowItems = buildWorkflowItems(workflowData.workflowLibrary?.workflows ?? [], pathname, operatingScope);
+  const items = [...focusItems, ...workspaceItems, ...routeItems, ...presetItems, ...workflowItems];
   const normalizedQuery = query.trim();
   const filteredItems = filterCommandItems(items, normalizedQuery);
   const commandGroups = buildCommandPaletteGroups(filteredItems);
@@ -213,23 +236,38 @@ export function buildCommandPaletteViewModel(
 
   return {
     title: hasWorkflowBackend ? "Open workflow command" : "Open workstation command",
-    subtitle: hasWorkflowBackend
+    subtitle: focusItems.length > 0
+      ? "Jump to ranked operator focus, shared workflows, presets, quick routes, and canonical workspaces."
+      : hasWorkflowBackend
       ? "Route through shared workflows, presets, quick routes, and canonical workspaces."
       : "Route to common operator workflows and canonical workspaces.",
-    routeSummary: buildRouteSummary(activeWorkspaceLabel, Boolean(activeWorkspace), hasWorkflowBackend, workflowData.workflowError),
+    routeSummary: buildRouteSummary(
+      activeWorkspaceLabel,
+      Boolean(activeWorkspace),
+      hasWorkflowBackend,
+      workflowData.workflowError,
+      focusItems.length
+    ),
     shortcutHint: "Esc to close",
     scopeLabel: hasWorkflowBackend ? "Shared workflow, route, and workspace routing" : "Canonical workspace and route routing",
-    operatingContextLabel: subjectSymbol ? `Subject: ${subjectSymbol}` : null,
+    operatingContextLabel: operatingScope.hasScope ? operatingScope.summary : null,
     backendStatusLabel: buildBackendStatusLabel(hasWorkflowBackend, workflowItems.length, presetItems.length, workflowData.workflowError),
     commandListLabel: hasWorkflowBackend
       ? `${items.length} command${items.length === 1 ? "" : "s"}`
       : `${items.length} workstation command${items.length === 1 ? "" : "s"}`,
     itemCountLabel: hasWorkflowBackend
-      ? buildItemCountLabel(workspaceItems.length, routeItems.length, presetItems.length, workflowItems.length)
-      : buildLocalItemCountLabel(workspaceItems.length, routeItems.length),
+      ? buildItemCountLabel(
+          workspaceItems.length,
+          routeItems.length,
+          presetItems.length,
+          workflowItems.length,
+          focusItems.length
+        )
+      : buildLocalItemCountLabel(workspaceItems.length, routeItems.length, focusItems.length),
     activeWorkspaceLabel,
     initialFocusItemId:
-      filteredItems.find((item) => item.id === activeRoute?.id)?.id
+      filteredItems.find((item) => item.kind === "focus")?.id
+      ?? filteredItems.find((item) => item.id === activeRoute?.id)?.id
       ?? filteredItems.find((item) => item.id === activeWorkspace?.id)?.id
       ?? filteredItems[0]?.id
       ?? null,
@@ -318,10 +356,14 @@ export function resolveCommandPaletteKeyCommand({
   return null;
 }
 
-function buildWorkspaceItems(workspaces: WorkspaceSummary[], activeKey: WorkspaceKey): CommandPaletteItem[] {
+function buildWorkspaceItems(
+  workspaces: WorkspaceSummary[],
+  activeKey: WorkspaceKey,
+  operatingScope: AppShellOperatingScopeState
+): CommandPaletteItem[] {
   return workspaces.map<CommandPaletteItem>((workspace) => {
     const active = workspace.key === activeKey;
-    const route = workspacePath(workspace.key);
+    const route = appendOperatingScopeToRoute(workspacePath(workspace.key), operatingScope);
 
     return {
       id: workspace.key,
@@ -331,6 +373,8 @@ function buildWorkspaceItems(workspaces: WorkspaceSummary[], activeKey: Workspac
       route,
       routeLabel: route,
       statusLabel: active ? "Current" : workspace.status,
+      statusTone: active ? "current" : "neutral",
+      statusVisible: active,
       commandLabel: active ? `Stay in ${workspace.label}` : `Open ${workspace.label}`,
       ariaLabel: active ? `${workspace.label}, current workspace` : `Open ${workspace.label} workspace`,
       presetId: null,
@@ -339,11 +383,64 @@ function buildWorkspaceItems(workspaces: WorkspaceSummary[], activeKey: Workspac
   });
 }
 
-function buildRouteItems(pathname: string, subjectSymbol: string | null): CommandPaletteItem[] {
+function buildFocusItems(actions: CommandPaletteFocusAction[], pathname: string): CommandPaletteItem[] {
+  return actions.map<CommandPaletteItem>((action) => {
+    const active = isActiveRoute(pathname, action.route);
+    const tone = commandStatusToneFromFocus(action.tone);
+    const statusLabel = active
+      ? `Current ${formatFocusTone(action.tone).toLowerCase()}`
+      : formatFocusTone(action.tone);
+
+    return {
+      id: `focus:${action.id}`,
+      kind: "focus",
+      label: action.label,
+      description: `${action.workspaceLabel}: ${action.detail}`,
+      route: action.route,
+      routeLabel: action.route,
+      statusLabel,
+      statusTone: tone,
+      statusVisible: true,
+      commandLabel: action.actionLabel || `Open ${action.label}`,
+      ariaLabel: action.ariaLabel || `${action.workspaceLabel}: ${action.label}. ${action.detail}`,
+      presetId: null,
+      active
+    };
+  });
+}
+
+function commandStatusToneFromFocus(tone: CommandPaletteFocusAction["tone"]): CommandPaletteItemStatusTone {
+  switch (tone) {
+    case "blocked":
+      return "blocked";
+    case "review":
+      return "review";
+    case "ready":
+      return "ready";
+    case "pending":
+      return "neutral";
+  }
+}
+
+function formatFocusTone(tone: CommandPaletteFocusAction["tone"]) {
+  switch (tone) {
+    case "blocked":
+      return "Blocked";
+    case "review":
+      return "Review";
+    case "ready":
+      return "Ready";
+    case "pending":
+      return "Pending";
+  }
+}
+
+function buildRouteItems(pathname: string, operatingScope: AppShellOperatingScopeState): CommandPaletteItem[] {
   return LOCAL_ROUTE_COMMANDS.map<CommandPaletteItem>((routeCommand) => {
-    const route = materializeCommandRoute(routeCommand.route, routeCommand.preserveSymbol, subjectSymbol);
-    const description = routeCommand.preserveSymbol && subjectSymbol
-      ? `${routeCommand.description} Subject: ${subjectSymbol}.`
+    const route = materializeCommandRoute(routeCommand.route, operatingScope);
+    const carriedScopeSummary = summarizeOperatingScopeForRoute(routeCommand.route, operatingScope);
+    const description = carriedScopeSummary && route !== routeCommand.route
+      ? `${routeCommand.description} ${carriedScopeSummary}.`
       : routeCommand.description;
     const active = isActiveRoute(pathname, route);
     return {
@@ -354,6 +451,8 @@ function buildRouteItems(pathname: string, subjectSymbol: string | null): Comman
       route,
       routeLabel: route,
       statusLabel: active ? "Current" : "Route",
+      statusTone: active ? "current" : "neutral",
+      statusVisible: active,
       commandLabel: active ? `Stay on ${routeCommand.label}` : `Open ${routeCommand.label}`,
       ariaLabel: active ? `${routeCommand.label}, current route` : `Open ${routeCommand.label} route`,
       presetId: null,
@@ -365,12 +464,12 @@ function buildRouteItems(pathname: string, subjectSymbol: string | null): Comman
 function buildPresetItems(
   presets: WorkflowPreset[],
   pathname: string,
-  subjectSymbol: string | null
+  operatingScope: AppShellOperatingScopeState
 ): CommandPaletteItem[] {
   return [...presets]
     .sort(comparePresets)
     .map<CommandPaletteItem>((preset) => {
-      const route = materializeCommandRoute(workflowTargetPath(preset.targetPageTag, preset.workspaceId), true, subjectSymbol);
+      const route = materializeCommandRoute(workflowTargetPath(preset.targetPageTag, preset.workspaceId), operatingScope);
       const current = isExactActivePath(pathname, route);
 
       return {
@@ -381,6 +480,8 @@ function buildPresetItems(
         route,
         routeLabel: route,
         statusLabel: current ? "Current" : preset.isPinned ? "Pinned" : "Preset",
+        statusTone: current ? "current" : preset.isPinned ? "ready" : "neutral",
+        statusVisible: current,
         commandLabel: `Open preset ${preset.name}`,
         ariaLabel: `Open workflow preset ${preset.name}`,
         presetId: preset.presetId,
@@ -392,10 +493,10 @@ function buildPresetItems(
 function buildWorkflowItems(
   workflows: WorkflowDefinition[],
   pathname: string,
-  subjectSymbol: string | null
+  operatingScope: AppShellOperatingScopeState
 ): CommandPaletteItem[] {
   return workflows.flatMap((workflow) =>
-    workflow.actions.map<CommandPaletteItem>((action) => buildWorkflowItem(workflow, action, pathname, subjectSymbol))
+    workflow.actions.map<CommandPaletteItem>((action) => buildWorkflowItem(workflow, action, pathname, operatingScope))
   );
 }
 
@@ -403,12 +504,11 @@ function buildWorkflowItem(
   workflow: WorkflowDefinition,
   action: WorkflowAction,
   pathname: string,
-  subjectSymbol: string | null
+  operatingScope: AppShellOperatingScopeState
 ): CommandPaletteItem {
   const route = materializeCommandRoute(
     workflowTargetPath(action.targetPageTag || workflow.entryPageTag, workflow.workspaceId),
-    true,
-    subjectSymbol
+    operatingScope
   );
   const current = isExactActivePath(pathname, route);
 
@@ -420,6 +520,8 @@ function buildWorkflowItem(
     route,
     routeLabel: route,
     statusLabel: current ? "Current" : "Workflow",
+    statusTone: current ? "current" : "neutral",
+    statusVisible: current,
     commandLabel: action.label,
     ariaLabel: `${action.label}, ${workflow.title}`,
     presetId: null,
@@ -431,18 +533,22 @@ function buildRouteSummary(
   activeWorkspaceLabel: string,
   hasActiveWorkspace: boolean,
   hasWorkflowBackend: boolean,
-  workflowError?: string | null
+  workflowError?: string | null,
+  focusCount = 0
 ) {
   const current = hasActiveWorkspace ? activeWorkspaceLabel : "No active workspace";
+  const focus = focusCount > 0
+    ? ` ${focusCount} ranked focus action${focusCount === 1 ? "" : "s"} available.`
+    : "";
   if (!hasWorkflowBackend) {
-    return `Route to common operator workflows and canonical workspaces. ${current}.`;
+    return `Route to common operator workflows and canonical workspaces. ${current}.${focus}`;
   }
 
   if (workflowError) {
-    return `Route through shared backend workflow commands. ${current}. Workflow library unavailable; local route commands remain available.`;
+    return `Route through shared backend workflow commands. ${current}.${focus} Workflow library unavailable; local route commands remain available.`;
   }
 
-  return `Route through shared backend workflow commands. ${current}.`;
+  return `Route through shared backend workflow commands. ${current}.${focus}`;
 }
 
 function buildBackendStatusLabel(
@@ -462,12 +568,32 @@ function buildBackendStatusLabel(
   return `${workflowActionCount} workflow action${workflowActionCount === 1 ? "" : "s"} - ${presetCount} preset${presetCount === 1 ? "" : "s"}`;
 }
 
-function buildLocalItemCountLabel(workspaceCount: number, routeCount: number) {
-  return `${workspaceCount} workspace${workspaceCount === 1 ? "" : "s"} - ${routeCount} quick route${routeCount === 1 ? "" : "s"}`;
+function buildLocalItemCountLabel(workspaceCount: number, routeCount: number, focusCount = 0) {
+  return joinCommandPaletteCounts([
+    focusCount > 0 ? `${focusCount} focus action${focusCount === 1 ? "" : "s"}` : null,
+    `${workspaceCount} workspace${workspaceCount === 1 ? "" : "s"}`,
+    `${routeCount} quick route${routeCount === 1 ? "" : "s"}`
+  ]);
 }
 
-function buildItemCountLabel(workspaceCount: number, routeCount: number, presetCount: number, workflowActionCount: number) {
-  return `${workspaceCount} workspace${workspaceCount === 1 ? "" : "s"} - ${routeCount} quick route${routeCount === 1 ? "" : "s"} - ${presetCount} preset${presetCount === 1 ? "" : "s"} - ${workflowActionCount} workflow action${workflowActionCount === 1 ? "" : "s"}`;
+function buildItemCountLabel(
+  workspaceCount: number,
+  routeCount: number,
+  presetCount: number,
+  workflowActionCount: number,
+  focusCount = 0
+) {
+  return joinCommandPaletteCounts([
+    focusCount > 0 ? `${focusCount} focus action${focusCount === 1 ? "" : "s"}` : null,
+    `${workspaceCount} workspace${workspaceCount === 1 ? "" : "s"}`,
+    `${routeCount} quick route${routeCount === 1 ? "" : "s"}`,
+    `${presetCount} preset${presetCount === 1 ? "" : "s"}`,
+    `${workflowActionCount} workflow action${workflowActionCount === 1 ? "" : "s"}`
+  ]);
+}
+
+function joinCommandPaletteCounts(parts: Array<string | null>) {
+  return parts.filter((part): part is string => Boolean(part)).join(" - ");
 }
 
 function buildFilteredItemCountLabel(filteredCount: number, totalCount: number, query: string) {
@@ -539,46 +665,8 @@ function splitActiveRoute(route: string) {
   };
 }
 
-function readSearchValue(search: string, key: string): string | null {
-  if (!search) {
-    return null;
-  }
-
-  try {
-    return new URLSearchParams(search).get(key);
-  } catch {
-    return null;
-  }
-}
-
-function normalizeCommandPaletteSubjectSymbol(value: string | null | undefined): string | null {
-  const normalized = value?.trim().toUpperCase().replace(/[^A-Z0-9._-]/g, "") ?? "";
-  return normalized.length > 0 ? normalized.slice(0, 16) : null;
-}
-
-function materializeCommandRoute(route: string, preserveSymbol: boolean | undefined, subjectSymbol: string | null) {
-  if (!preserveSymbol || !subjectSymbol || !isSymbolAwareCommandRoute(route)) {
-    return route;
-  }
-
-  return appendSearchValue(route, "symbol", subjectSymbol);
-}
-
-function isSymbolAwareCommandRoute(route: string) {
-  const { pathname } = splitActiveRoute(route);
-  return pathname === "/data/quotes" || pathname === "/data/alerts";
-}
-
-function appendSearchValue(route: string, key: string, value: string) {
-  const hashIndex = route.indexOf("#");
-  const routeWithoutHash = hashIndex >= 0 ? route.slice(0, hashIndex) : route;
-  const hash = hashIndex >= 0 ? route.slice(hashIndex) : "";
-  const searchIndex = routeWithoutHash.indexOf("?");
-  const pathname = searchIndex >= 0 ? routeWithoutHash.slice(0, searchIndex) : routeWithoutHash;
-  const params = new URLSearchParams(searchIndex >= 0 ? routeWithoutHash.slice(searchIndex) : "");
-  params.set(key, value);
-  const nextSearch = params.toString();
-  return `${pathname}${nextSearch ? `?${nextSearch}` : ""}${hash}`;
+function materializeCommandRoute(route: string, operatingScope: AppShellOperatingScopeState) {
+  return appendOperatingScopeToRoute(route, operatingScope);
 }
 
 function routeSearchMatches(

@@ -66,6 +66,11 @@ describe("today-panel view model", () => {
     expect(vm.hasMovers).toBe(false);
     expect(vm.hasOrders).toBe(false);
     expect(vm.hasFills).toBe(false);
+    expect(vm.moversTableLabel).toBe("0 top movers");
+    expect(vm.ordersTableLabel).toBe("0 open orders");
+    expect(vm.fillsTableLabel).toBe("0 recent fills");
+    expect(vm.quickActionsLabel).toBe("Today quick actions");
+    expect(vm.quickActionsEyebrow).toBe("Quick actions");
     expect(vm.emptyActionHref).toBe("/settings#alpaca-provider-setup");
     expect(vm.emptyActionAriaLabel).toBe("Open Alpaca paper provider setup checklist to connect a brokerage account");
     expect(vm.quickActions.map((a) => a.id)).toEqual([
@@ -129,9 +134,13 @@ describe("today-panel view model", () => {
 
     expect(vm.movers.map((m) => m.symbol)).toEqual(["TSLA", "MSFT", "AAPL"]);
     expect(vm.movers[0].dayPnlTone).toBe("danger");
+    expect(vm.movers[0].rowClassName).toBe("bg-danger/5");
     expect(vm.movers[1].dayPnlTone).toBe("success");
+    expect(vm.movers[1].rowClassName).toBe("bg-success/5");
     expect(vm.movers.find((m) => m.symbol === "FLAT")).toBeUndefined();
     expect(vm.moversTotal).toBe(4);
+    expect(vm.moversTableLabel).toBe("3 top movers");
+    expect(vm.moversTableCaption).toContain("3 top movers shown from 4 open positions");
   });
 
   it("previews up to five open orders and emits a more-label when there are extras", () => {
@@ -155,6 +164,8 @@ describe("today-panel view model", () => {
     expect(vm.orders[1].priceLabel).toBe("100.01");
     expect(vm.ordersTotal).toBe(7);
     expect(vm.ordersMoreLabel).toBe("+2 more in trading cockpit");
+    expect(vm.ordersTableLabel).toBe("5 open orders");
+    expect(vm.ordersTableCaption).toContain("5 open orders shown from 7 working orders");
   });
 
   it("previews up to five fills and emits a more-label when there are extras", () => {
@@ -176,6 +187,8 @@ describe("today-panel view model", () => {
     expect(vm.fills).toHaveLength(5);
     expect(vm.fillsTotal).toBe(6);
     expect(vm.fillsMoreLabel).toBe("+1 more in trading cockpit");
+    expect(vm.fillsTableLabel).toBe("5 recent fills");
+    expect(vm.fillsTableCaption).toContain("5 recent fills shown from 6 fills today");
   });
 
   it("falls back to portfolio data when only portfolio is available", () => {

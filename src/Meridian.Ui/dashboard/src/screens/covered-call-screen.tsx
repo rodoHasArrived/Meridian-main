@@ -8,12 +8,14 @@ import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/comp
 import {
   useCoveredCallScreenViewModel,
   type CoveredCallChainPreviewRowViewModel,
-  type CoveredCallFormState,
+  type CoveredCallFormFieldViewModel,
   type CoveredCallHistoryRowViewModel,
   type CoveredCallScreenViewModel,
   type CoveredCallStage,
   type CoveredCallTradeTimelineRowViewModel
 } from "@/screens/covered-call-screen.view-model";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
   {
@@ -271,41 +273,13 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
           <CardDescription>Conservative defaults follow the strategy's documented values.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <NumberField vm={vm} field="underlyingSymbol" label="Underlying" type="text" />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="from" label="From" type="date" />
-            <NumberField vm={vm} field="to" label="To" type="date" />
-          </div>
-          <NumberField vm={vm} field="minStrike" label="Min strike" type="number" step="0.01" required />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="overwriteRatio" label="Overwrite ratio" type="number" step="0.01" />
-            <NumberField vm={vm} field="maxDelta" label="Max delta" type="number" step="0.01" />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="minDte" label="Min DTE" type="number" />
-            <NumberField vm={vm} field="maxDte" label="Max DTE" type="number" />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="minIvPercentile" label="Min IV percentile" type="number" />
-            <NumberField vm={vm} field="maxSpreadPct" label="Max spread %" type="number" step="0.01" />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="minOpenInterest" label="Min open interest" type="number" />
-            <NumberField vm={vm} field="minVolume" label="Min volume" type="number" />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="takeProfitCapture" label="Take-profit capture" type="number" step="0.01" />
-            <NumberField vm={vm} field="rollDelta" label="Roll delta" type="number" step="0.01" />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="exDivWindowDays" label="Ex-div window (days)" type="number" />
-            <NumberField vm={vm} field="riskFreeRate" label="Risk-free rate" type="number" step="0.001" />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="initialCash" label="Initial cash" type="number" />
-            <NumberField vm={vm} field="initialUnderlyingShares" label="Underlying shares" type="number" />
-          </div>
-          <NumberField vm={vm} field="label" label="Run label (optional)" type="text" />
+          {vm.formFieldGroups.map((group) => (
+            <div key={group.id} className={group.columns === 2 ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
+              {group.fields.map((field) => (
+                <CoveredCallFormField key={field.key} vm={vm} field={field} />
+              ))}
+            </div>
+          ))}
 
           <div className="flex items-center gap-2 pt-2">
             <Button
@@ -347,40 +321,50 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
   );
 }
 
-interface NumberFieldProps {
+interface CoveredCallFormFieldProps {
   vm: CoveredCallScreenViewModel;
-  field: keyof CoveredCallFormState;
-  label: string;
-  type: "text" | "number" | "date";
-  step?: string;
-  required?: boolean;
+  field: CoveredCallFormFieldViewModel;
 }
 
-function NumberField({ vm, field, label, type, step, required }: NumberFieldProps) {
-  const error = vm.formErrors[field];
-  const inputId = `cc-${String(field)}`;
-  const errorId = `${inputId}-error`;
+function CoveredCallFormField({ vm, field }: CoveredCallFormFieldProps) {
   return (
     <div className="space-y-1">
-      <label htmlFor={inputId} className="text-xs font-medium text-foreground">
-        {label}
-        {required ? <span className="ml-0.5 text-danger" aria-hidden="true">*</span> : null}
+      <label htmlFor={field.id} className="text-xs font-medium text-foreground">
+        {field.label}
+        {field.required ? <span className="ml-0.5 text-danger" aria-hidden="true">*</span> : null}
       </label>
-      <input
-        id={inputId}
-        type={type}
-        step={step}
-        value={vm.form[field]}
-        onChange={(e) => vm.setField(field, e.target.value as CoveredCallFormState[typeof field])}
-        className={`w-full rounded-md border bg-background/60 px-2 py-1.5 font-mono text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
-          error ? "border-danger" : "border-border/70"
-        }`}
-        aria-invalid={error ? "true" : undefined}
-        aria-describedby={error ? errorId : undefined}
-      />
-      {error ? (
-        <p id={errorId} className="text-xs text-danger">
-          {error}
+      {field.type === "select" ? (
+        <Select
+          id={field.id}
+          value={vm.form[field.key]}
+          onChange={(e) => vm.setField(field.key, e.target.value)}
+          error={field.invalid}
+          aria-describedby={field.describedBy}
+        >
+          {field.options.map((option) => (
+            <option key={option.value} value={option.value} title={option.description}>
+              {option.label}
+            </option>
+          ))}
+        </Select>
+      ) : (
+        <Input
+          id={field.id}
+          type={field.type}
+          step={field.step}
+          value={vm.form[field.key]}
+          onChange={(e) => vm.setField(field.key, e.target.value)}
+          error={field.invalid}
+          aria-describedby={field.describedBy}
+          className="font-mono text-xs"
+        />
+      )}
+      <p id={`${field.id}-help`} className="text-xs text-muted-foreground">
+        {field.helperText}
+      </p>
+      {field.error ? (
+        <p id={field.errorId} className="text-xs text-danger">
+          {field.error}
         </p>
       ) : null}
     </div>

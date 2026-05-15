@@ -496,20 +496,41 @@ function OptionsPayoffPanel({ vm }: { vm: StrategyDesignerViewModel }) {
           >
             {vm.clearCanvasCommand.label}
           </Button>
-          <label className="ml-auto flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-            <span>{vm.spotPriceField.label}</span>
+          <div className="ml-auto grid min-w-[11rem] gap-1">
+            <label
+              htmlFor={vm.spotPriceField.id}
+              className="text-xs uppercase tracking-[0.14em] text-muted-foreground"
+            >
+              {vm.spotPriceField.label}
+            </label>
             <Input
+              id={vm.spotPriceField.id}
               type="number"
               step={vm.spotPriceField.step}
               min={vm.spotPriceField.min}
               inputMode={vm.spotPriceField.inputMode}
               value={vm.spotPriceField.value}
+              error={vm.spotPriceField.invalid}
               onChange={(event) => vm.updateSpotPriceDraft(event.target.value)}
               onBlur={(event) => vm.commitSpotPriceDraft(event.target.value)}
-              className="w-28"
+              className="w-full"
               aria-label={vm.spotPriceField.ariaLabel}
+              aria-describedby={vm.spotPriceField.describedBy}
+              aria-errormessage={vm.spotPriceField.feedbackMessage ? vm.spotPriceField.feedbackId : undefined}
             />
-          </label>
+            <p id={vm.spotPriceField.helperId} className="text-xs normal-case leading-5 tracking-normal text-muted-foreground">
+              {vm.spotPriceField.helperText}
+            </p>
+            {vm.spotPriceField.feedbackMessage ? (
+              <p
+                id={vm.spotPriceField.feedbackId}
+                role="status"
+                className="text-xs normal-case leading-5 tracking-normal text-warning"
+              >
+                {vm.spotPriceField.feedbackMessage}
+              </p>
+            ) : null}
+          </div>
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           <PayoffCard payoff={vm.payoff} legCount={vm.legs.length} />

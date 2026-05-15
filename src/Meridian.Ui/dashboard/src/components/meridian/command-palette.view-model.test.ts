@@ -59,6 +59,55 @@ describe("command palette view model", () => {
     expect(model.initialFocusItemId).toBe("portfolio");
   });
 
+  it("promotes ranked operator focus actions ahead of route navigation", () => {
+    const model = buildCommandPaletteViewModel("/data/quotes?symbol=MSFT", undefined, {
+      operatorFocusItems: [
+        {
+          id: "work-item:brokerage-sync",
+          label: "Brokerage sync failed",
+          detail: "Account sync failed after the last provider heartbeat.",
+          route: "/settings#alpaca-provider-setup",
+          workspaceLabel: "Settings",
+          actionLabel: "Fix provider setup",
+          tone: "blocked",
+          ariaLabel: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
+        },
+        {
+          id: "break:cash",
+          label: "Cash break in review",
+          detail: "Ledger cash movement needs operator sign-off.",
+          route: "/accounting/reconciliation",
+          workspaceLabel: "Accounting",
+          actionLabel: "Open break queue",
+          tone: "review",
+          ariaLabel: "Accounting: Cash break in review. Ledger cash movement needs operator sign-off. Open break queue."
+        }
+      ]
+    });
+
+    expect(model.itemCountLabel).toBe("2 focus actions - 7 workspaces - 13 quick routes");
+    expect(model.commandListLabel).toBe("22 workstation commands");
+    expect(model.routeSummary).toBe(
+      "Route to common operator workflows and canonical workspaces. Current: Data. 2 ranked focus actions available."
+    );
+    expect(model.commandGroups.map((group) => `${group.label}:${group.countLabel}`)).toEqual([
+      "Focus actions:2 focus actions",
+      "Workspaces:7 workspaces",
+      "Quick routes:13 quick routes"
+    ]);
+    expect(model.initialFocusItemId).toBe("focus:work-item:brokerage-sync");
+    expect(model.items[0]).toMatchObject({
+      kind: "focus",
+      commandLabel: "Fix provider setup",
+      route: "/settings#alpaca-provider-setup",
+      routeLabel: "/settings#alpaca-provider-setup",
+      statusLabel: "Blocked",
+      statusTone: "blocked",
+      statusVisible: true,
+      active: false
+    });
+  });
+
   it("does not mark hash-targeted setup commands active from other Settings panels", () => {
     const model = buildCommandPaletteViewModel("/settings");
 
@@ -150,6 +199,86 @@ describe("command palette view model", () => {
       route: "/data/alerts?symbol=MSFT",
       routeLabel: "/data/alerts?symbol=MSFT",
       description: "Create local quote-threshold alerts and review alert trigger state. Subject: MSFT."
+    });
+  });
+
+  it("preserves institutional operating scope in workspace, quick-route, preset, and workflow commands", () => {
+    const model = buildCommandPaletteViewModel(
+      "/portfolio?symbol=msft&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15",
+      undefined,
+      {
+        workflowLibrary: {
+          generatedAt: "2026-01-01T00:00:00Z",
+          actions: [],
+          workflows: [
+            {
+              workflowId: "evidence-review",
+              title: "Evidence Review",
+              summary: "Open governed evidence.",
+              workspaceId: "reporting",
+              workspaceTitle: "Reporting",
+              entryPageTag: "EvidenceWorkbench",
+              tone: "Primary",
+              evidenceTags: [],
+              marketPatternTags: [],
+              actions: [
+                {
+                  actionId: "open-evidence",
+                  label: "Open Evidence",
+                  detail: "Review evidence packet.",
+                  targetPageTag: "EvidenceWorkbench",
+                  tone: "Primary",
+                  workItemKind: null,
+                  routePrefixes: [],
+                  routeContains: [],
+                  aliases: []
+                }
+              ]
+            }
+          ]
+        },
+        workflowPresets: {
+          generatedAt: "2026-01-01T00:00:00Z",
+          presets: [
+            {
+              presetId: "preset-1",
+              name: "Scoped report",
+              description: "Review scoped report packet.",
+              workflowId: "evidence-review",
+              workflowTitle: "Evidence Review",
+              actionId: "open-evidence",
+              actionLabel: "Open Evidence",
+              workspaceId: "reporting",
+              workspaceTitle: "Reporting",
+              targetPageTag: "EvidenceWorkbench",
+              tags: [],
+              isPinned: true,
+              createdAt: "2026-01-01T00:00:00Z",
+              updatedAt: "2026-01-01T00:00:00Z",
+              lastUsedAt: null
+            }
+          ]
+        }
+      }
+    );
+
+    expect(model.operatingContextLabel)
+      .toBe("Subject: MSFT / Account: fund-1 / Run: run-9 / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15");
+    expect(model.items.find((item) => item.id === "trading")).toMatchObject({
+      route: "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"
+    });
+    expect(model.items.find((item) => item.id === "data")).toMatchObject({
+      route: "/data?symbol=MSFT&provider=Alpaca&from=2026-05-01&to=2026-05-15"
+    });
+    expect(model.items.find((item) => item.id === "route:data-quotes")).toMatchObject({
+      route: "/data/quotes?symbol=MSFT&provider=Alpaca&from=2026-05-01&to=2026-05-15",
+      description: "Inspect quotes, trades, depth, charts, and staged tickets. Subject: MSFT / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15."
+    });
+    expect(model.items.find((item) => item.id === "preset:preset-1")).toMatchObject({
+      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"
+    });
+    expect(model.items.find((item) => item.id === "workflow:evidence-review:open-evidence")).toMatchObject({
+      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"
     });
   });
 

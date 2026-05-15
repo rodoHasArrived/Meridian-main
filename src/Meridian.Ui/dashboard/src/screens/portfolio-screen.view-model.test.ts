@@ -738,6 +738,7 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.brokeragePositionRows.map((row) => row.expanded)).toEqual([false, true]);
     expect(vm.brokeragePositionRows[1].selectAriaLabel).toBe("Inspect MSFT Brokerage live position");
     expect(vm.brokeragePositionRows[1].detailPanelId).toBe("portfolio-brokerage-position-detail");
+    expect(vm.brokeragePositionRows[1].rowClassName).toBe("bg-warning/5");
     expect(vm.selectedBrokeragePositionId).toBe("fund-taxable-MSFT-pos-msft");
     expect(vm.selectedBrokeragePosition?.title).toBe("MSFT");
     expect(vm.selectedBrokeragePosition?.statusDetail).toContain("$1,750 market value");
@@ -799,8 +800,10 @@ describe("buildPortfolioScreenViewModel", () => {
       hasWarning: true,
       warningText: "Roth IRA account sync stale.",
       warningCount: "1 warning",
+      rowClassName: "bg-warning/5",
       healthBadgeVariant: "success"
     });
+    expect(vm.brokerageAccountRows[1].rowClassName).toBe("bg-background/50");
     expect(vm.selectedBrokerageAccount).toMatchObject({
       id: "all",
       statusBadgeLabel: "Review",

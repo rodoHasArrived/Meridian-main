@@ -47,6 +47,35 @@ export const COVERED_CALL_TRADE_DETAIL_PANEL_ID = "covered-call-trade-detail";
 
 type CoveredCallBadgeVariant = "outline" | "success" | "warning" | "danger" | "paper" | "research" | "default";
 
+export interface CoveredCallFormFieldOptionViewModel {
+  value: string;
+  label: string;
+  description: string;
+}
+
+export interface CoveredCallFormFieldViewModel {
+  key: keyof CoveredCallFormState;
+  id: string;
+  label: string;
+  type: "text" | "number" | "date" | "select";
+  step?: string;
+  required: boolean;
+  helperText: string;
+  errorId: string;
+  describedBy: string;
+  error: string | null;
+  invalid: boolean;
+  options: CoveredCallFormFieldOptionViewModel[];
+}
+
+export type CoveredCallFormFieldMap = Record<keyof CoveredCallFormState, CoveredCallFormFieldViewModel>;
+
+export interface CoveredCallFormFieldGroupViewModel {
+  id: string;
+  columns: 1 | 2;
+  fields: CoveredCallFormFieldViewModel[];
+}
+
 export interface CoveredCallChainPreviewState {
   status: "idle" | "loading" | "ready" | "error";
   data: CoveredCallChainPreview | null;
@@ -287,6 +316,268 @@ export const DEFAULT_COVERED_CALL_FORM: CoveredCallFormState = {
   initialUnderlyingShares: "100",
   label: ""
 };
+
+type CoveredCallFormFieldDefinition = Omit<CoveredCallFormFieldViewModel, "error" | "invalid" | "describedBy">;
+
+const COVERED_CALL_FORM_FIELD_DEFINITIONS: CoveredCallFormFieldDefinition[] = [
+  {
+    key: "underlyingSymbol",
+    id: "cc-underlyingSymbol",
+    label: "Underlying",
+    type: "text",
+    required: true,
+    helperText: "Ticker symbol used for historical bars, chain preview, and result handoffs.",
+    errorId: "cc-underlyingSymbol-error",
+    options: []
+  },
+  {
+    key: "from",
+    id: "cc-from",
+    label: "From",
+    type: "date",
+    required: true,
+    helperText: "First historical session included in the backtest window.",
+    errorId: "cc-from-error",
+    options: []
+  },
+  {
+    key: "to",
+    id: "cc-to",
+    label: "To",
+    type: "date",
+    required: true,
+    helperText: "Last historical session included in the backtest window.",
+    errorId: "cc-to-error",
+    options: []
+  },
+  {
+    key: "minStrike",
+    id: "cc-minStrike",
+    label: "Min strike",
+    type: "number",
+    step: "0.01",
+    required: true,
+    helperText: "Lowest call strike the strategy may sell.",
+    errorId: "cc-minStrike-error",
+    options: []
+  },
+  {
+    key: "overwriteRatio",
+    id: "cc-overwriteRatio",
+    label: "Overwrite ratio",
+    type: "number",
+    step: "0.01",
+    required: false,
+    helperText: "Target fraction of long shares covered by short calls; use 0.75 for 75%.",
+    errorId: "cc-overwriteRatio-error",
+    options: []
+  },
+  {
+    key: "maxDelta",
+    id: "cc-maxDelta",
+    label: "Max delta",
+    type: "number",
+    step: "0.01",
+    required: false,
+    helperText: "Highest option delta allowed for selected calls.",
+    errorId: "cc-maxDelta-error",
+    options: []
+  },
+  {
+    key: "minDte",
+    id: "cc-minDte",
+    label: "Min DTE",
+    type: "number",
+    required: false,
+    helperText: "Minimum calendar days to expiration.",
+    errorId: "cc-minDte-error",
+    options: []
+  },
+  {
+    key: "maxDte",
+    id: "cc-maxDte",
+    label: "Max DTE",
+    type: "number",
+    required: false,
+    helperText: "Maximum calendar days to expiration; leave blank for no cap.",
+    errorId: "cc-maxDte-error",
+    options: []
+  },
+  {
+    key: "minIvPercentile",
+    id: "cc-minIvPercentile",
+    label: "Min IV percentile",
+    type: "number",
+    required: false,
+    helperText: "Minimum implied-volatility percentile required for candidate calls.",
+    errorId: "cc-minIvPercentile-error",
+    options: []
+  },
+  {
+    key: "maxSpreadPct",
+    id: "cc-maxSpreadPct",
+    label: "Max spread %",
+    type: "number",
+    step: "0.01",
+    required: false,
+    helperText: "Maximum bid/ask spread fraction; use 0.05 for 5%.",
+    errorId: "cc-maxSpreadPct-error",
+    options: []
+  },
+  {
+    key: "minOpenInterest",
+    id: "cc-minOpenInterest",
+    label: "Min open interest",
+    type: "number",
+    required: false,
+    helperText: "Minimum open interest required before a contract can pass filters.",
+    errorId: "cc-minOpenInterest-error",
+    options: []
+  },
+  {
+    key: "minVolume",
+    id: "cc-minVolume",
+    label: "Min volume",
+    type: "number",
+    required: false,
+    helperText: "Minimum current chain volume required before a contract can pass filters.",
+    errorId: "cc-minVolume-error",
+    options: []
+  },
+  {
+    key: "scoringMode",
+    id: "cc-scoringMode",
+    label: "Scoring mode",
+    type: "select",
+    required: false,
+    helperText: "Relative ranks candidates by liquidity, depth, and premium quality; Basic keeps the plain filter score.",
+    errorId: "cc-scoringMode-error",
+    options: [
+      { value: "Relative", label: "Relative", description: "Rank by relative candidate quality." },
+      { value: "Basic", label: "Basic", description: "Use the baseline filter score." }
+    ]
+  },
+  {
+    key: "depthBonusWeight",
+    id: "cc-depthBonusWeight",
+    label: "Depth bonus weight",
+    type: "number",
+    step: "0.01",
+    required: false,
+    helperText: "Extra score weight for deeper option-chain liquidity when Relative scoring is selected.",
+    errorId: "cc-depthBonusWeight-error",
+    options: []
+  },
+  {
+    key: "takeProfitCapture",
+    id: "cc-takeProfitCapture",
+    label: "Take-profit capture",
+    type: "number",
+    step: "0.01",
+    required: false,
+    helperText: "Premium capture fraction that triggers a take-profit close; use 0.80 for 80%.",
+    errorId: "cc-takeProfitCapture-error",
+    options: []
+  },
+  {
+    key: "rollDelta",
+    id: "cc-rollDelta",
+    label: "Roll delta",
+    type: "number",
+    step: "0.01",
+    required: false,
+    helperText: "Delta threshold that can trigger a roll review.",
+    errorId: "cc-rollDelta-error",
+    options: []
+  },
+  {
+    key: "exDivWindowDays",
+    id: "cc-exDivWindowDays",
+    label: "Ex-div window (days)",
+    type: "number",
+    required: false,
+    helperText: "Days around ex-dividend dates where assignment risk receives extra attention.",
+    errorId: "cc-exDivWindowDays-error",
+    options: []
+  },
+  {
+    key: "riskFreeRate",
+    id: "cc-riskFreeRate",
+    label: "Risk-free rate",
+    type: "number",
+    step: "0.001",
+    required: false,
+    helperText: "Annual risk-free rate used by option calculations; use 0.04 for 4%.",
+    errorId: "cc-riskFreeRate-error",
+    options: []
+  },
+  {
+    key: "initialCash",
+    id: "cc-initialCash",
+    label: "Initial cash",
+    type: "number",
+    required: false,
+    helperText: "Starting cash for the backtest account.",
+    errorId: "cc-initialCash-error",
+    options: []
+  },
+  {
+    key: "initialUnderlyingShares",
+    id: "cc-initialUnderlyingShares",
+    label: "Underlying shares",
+    type: "number",
+    required: false,
+    helperText: "Starting long-share inventory available to overwrite.",
+    errorId: "cc-initialUnderlyingShares-error",
+    options: []
+  },
+  {
+    key: "label",
+    id: "cc-label",
+    label: "Run label (optional)",
+    type: "text",
+    required: false,
+    helperText: "Optional operator label shown in previous-run history.",
+    errorId: "cc-label-error",
+    options: []
+  }
+];
+
+const COVERED_CALL_FORM_FIELD_GROUPS: Array<{ id: string; columns: 1 | 2; fields: Array<keyof CoveredCallFormState> }> = [
+  { id: "symbol", columns: 1, fields: ["underlyingSymbol"] },
+  { id: "window", columns: 2, fields: ["from", "to"] },
+  { id: "strike", columns: 1, fields: ["minStrike"] },
+  { id: "overwrite-delta", columns: 2, fields: ["overwriteRatio", "maxDelta"] },
+  { id: "dte", columns: 2, fields: ["minDte", "maxDte"] },
+  { id: "vol-spread", columns: 2, fields: ["minIvPercentile", "maxSpreadPct"] },
+  { id: "liquidity", columns: 2, fields: ["minOpenInterest", "minVolume"] },
+  { id: "scoring", columns: 2, fields: ["scoringMode", "depthBonusWeight"] },
+  { id: "exit-roll", columns: 2, fields: ["takeProfitCapture", "rollDelta"] },
+  { id: "dividend-rate", columns: 2, fields: ["exDivWindowDays", "riskFreeRate"] },
+  { id: "account", columns: 2, fields: ["initialCash", "initialUnderlyingShares"] },
+  { id: "label", columns: 1, fields: ["label"] }
+];
+
+export function buildCoveredCallFormFields(errors: CoveredCallFormErrors): CoveredCallFormFieldMap {
+  return COVERED_CALL_FORM_FIELD_DEFINITIONS.reduce((fields, definition) => {
+    const error = errors[definition.key] ?? null;
+    fields[definition.key] = {
+      ...definition,
+      error,
+      invalid: Boolean(error),
+      describedBy: error ? `${definition.id}-help ${definition.errorId}` : `${definition.id}-help`
+    };
+    return fields;
+  }, {} as CoveredCallFormFieldMap);
+}
+
+export function buildCoveredCallFormFieldGroups(fields: CoveredCallFormFieldMap): CoveredCallFormFieldGroupViewModel[] {
+  return COVERED_CALL_FORM_FIELD_GROUPS.map((group) => ({
+    id: group.id,
+    columns: group.columns,
+    fields: group.fields.map((field) => fields[field])
+  }));
+}
 
 /** Returns an ISO yyyy-MM-dd date `daysOffset` days from today (UTC). */
 export function defaultIsoDate(daysOffset: number): string {
@@ -1125,6 +1416,8 @@ export interface CoveredCallScreenState {
   stage: CoveredCallStage;
   form: CoveredCallFormState;
   formErrors: CoveredCallFormErrors;
+  formFields: CoveredCallFormFieldMap;
+  formFieldGroups: CoveredCallFormFieldGroupViewModel[];
   chainPreview: CoveredCallChainPreviewState;
   chainPreviewPanel: CoveredCallChainPreviewPanelViewModel;
   run: CoveredCallRunState;
@@ -1507,6 +1800,14 @@ export function useCoveredCallScreenViewModel(
     () => buildCoveredCallPayoffPanel(run.result, run.selectedPositionIndex),
     [run.result, run.selectedPositionIndex]
   );
+  const formFields = useMemo(
+    () => buildCoveredCallFormFields(formErrors),
+    [formErrors]
+  );
+  const formFieldGroups = useMemo(
+    () => buildCoveredCallFormFieldGroups(formFields),
+    [formFields]
+  );
   const historyRows = useMemo(
     () => buildCoveredCallHistoryRows(history),
     [history]
@@ -1523,6 +1824,8 @@ export function useCoveredCallScreenViewModel(
     stage,
     form,
     formErrors,
+    formFields,
+    formFieldGroups,
     chainPreview,
     chainPreviewPanel: buildChainPreviewPanelViewModel(chainPreview),
     run,
@@ -1571,6 +1874,8 @@ export function useCoveredCallScreenViewModel(
     cancelRunCommand,
     runProgressPanel,
     stageNavigation,
+    formFields,
+    formFieldGroups,
     resultsActionPanel,
     tradeTimelinePanel,
     payoffPanel,

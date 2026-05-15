@@ -470,7 +470,8 @@
   .operator-rail-route,
   .operator-rail-shortcut,
   .command-palette-chip,
-  .command-palette-route {
+  .command-palette-route,
+  .command-palette-status {
     display: inline-flex;
     align-items: center;
     min-height: 1.5rem;
@@ -593,6 +594,38 @@
     color: var(--fg-muted);
   }
 
+  .operator-nav-scope {
+    display: grid;
+    gap: 0.1875rem;
+    min-width: 0;
+    margin: 0 0 0.375rem;
+    padding: 0.5rem 0.625rem;
+    border: 1px solid rgba(42, 178, 212, 0.24);
+    border-radius: var(--radius-md);
+    background: rgba(42, 178, 212, 0.07);
+    color: var(--fg-muted);
+  }
+
+  .operator-nav-scope span:first-child {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .operator-nav-scope span:last-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #e8f4ff;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.625rem;
+    line-height: 1.35;
+  }
+
   .operator-nav-status {
     display: inline-flex;
     align-items: center;
@@ -696,7 +729,7 @@
 
   .workflow-continuity-dock {
     display: grid;
-    grid-template-columns: minmax(15rem, 0.9fr) minmax(0, 1.45fr) max-content;
+    grid-template-columns: minmax(15rem, 0.85fr) minmax(0, 1.1fr) minmax(13rem, 0.68fr) minmax(13rem, 0.74fr) max-content;
     align-items: stretch;
     gap: 0.75rem;
     min-width: 0;
@@ -709,6 +742,143 @@
     min-width: 0;
     display: grid;
     gap: 0.375rem;
+  }
+
+  .workflow-continuity-decision {
+    grid-column: span 2;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5625rem 0.625rem;
+    border: 1px solid rgba(31, 52, 76, 0.95);
+    border-radius: var(--radius-md);
+    background: rgba(5, 16, 27, 0.82);
+  }
+
+  .workflow-continuity-decision-blocked {
+    border-color: rgba(222, 88, 120, 0.42);
+    background: rgba(222, 88, 120, 0.1);
+  }
+
+  .workflow-continuity-decision-review {
+    border-color: rgba(214, 158, 56, 0.42);
+    background: rgba(214, 158, 56, 0.1);
+  }
+
+  .workflow-continuity-decision-ready {
+    border-color: rgba(59, 186, 148, 0.34);
+    background: rgba(59, 186, 148, 0.09);
+  }
+
+  .workflow-continuity-decision-pending {
+    border-color: rgba(42, 178, 212, 0.3);
+    background: rgba(42, 178, 212, 0.08);
+  }
+
+  .workflow-continuity-decision-copy {
+    min-width: 0;
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .workflow-continuity-decision-head {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .workflow-continuity-decision-status {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border: 1px solid rgba(31, 52, 76, 0.95);
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.86);
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0.1875rem 0.3125rem;
+    text-transform: uppercase;
+  }
+
+  .workflow-continuity-decision h3 {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #f6fbff;
+    font-size: 0.8125rem;
+    font-weight: 750;
+    line-height: 1.25;
+  }
+
+  .workflow-continuity-decision p {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--fg-muted);
+    font-size: 0.6875rem;
+    line-height: 1.35;
+  }
+
+  .workflow-continuity-decision-reason {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0.375rem;
+    color: var(--fg-muted);
+    font-size: 0.625rem;
+    line-height: 1.3;
+  }
+
+  .workflow-continuity-decision-reason span:first-child {
+    color: #b6c7dc;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .workflow-continuity-decision-reason span:last-child,
+  .workflow-continuity-decision-evidence {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .workflow-continuity-decision-evidence {
+    width: fit-content;
+    max-width: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.72);
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.5625rem;
+    padding: 0.1875rem 0.375rem;
+    text-transform: uppercase;
+  }
+
+  .workflow-continuity-decision-action {
+    max-width: 14rem;
+    justify-self: end;
+    white-space: nowrap;
+  }
+
+  .workflow-continuity-decision-action span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .workflow-continuity-title {
@@ -754,6 +924,46 @@
     padding: 0.125rem 0.375rem;
   }
 
+  .workflow-continuity-scope {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin: 0;
+  }
+
+  .workflow-continuity-scope-chip {
+    display: inline-grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0.25rem;
+    max-width: 100%;
+    min-width: 0;
+    border: 1px solid rgba(42, 178, 212, 0.24);
+    border-radius: var(--radius-sm);
+    background: rgba(42, 178, 212, 0.07);
+    padding: 0.125rem 0.375rem;
+  }
+
+  .workflow-continuity-scope-chip dt {
+    color: #b6c7dc;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .workflow-continuity-scope-chip dd {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #e8f4ff;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.625rem;
+    margin: 0;
+  }
+
   .workflow-continuity-clear {
     display: inline-flex;
     align-items: center;
@@ -774,6 +984,7 @@
   }
 
   .workflow-continuity-steps {
+    grid-column: span 2;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
     gap: 0.375rem;
@@ -856,6 +1067,473 @@
     font-weight: 600;
     line-height: 1;
     padding: 0.1875rem 0.3125rem;
+    text-transform: uppercase;
+  }
+
+  .workflow-continuity-focus {
+    grid-column: span 2;
+    min-width: 0;
+    display: grid;
+    gap: 0.375rem;
+    align-self: stretch;
+    padding: 0.5rem;
+    border: 1px solid rgba(31, 52, 76, 0.95);
+    border-radius: var(--radius-md);
+    background: rgba(5, 16, 27, 0.72);
+  }
+
+  .workflow-continuity-linked {
+    grid-column: 1 / -1;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(12rem, 0.22fr) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid rgba(31, 52, 76, 0.95);
+    border-radius: var(--radius-md);
+    background: rgba(5, 16, 27, 0.66);
+  }
+
+  .workflow-continuity-evidence {
+    grid-column: span 2;
+    min-width: 0;
+    display: grid;
+    gap: 0.375rem;
+    align-self: stretch;
+    padding: 0.5rem;
+    border: 1px solid rgba(31, 52, 76, 0.95);
+    border-radius: var(--radius-md);
+    background: rgba(5, 16, 27, 0.72);
+  }
+
+  .workflow-continuity-focus-head {
+    min-width: 0;
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .workflow-continuity-linked-head {
+    min-width: 0;
+    display: grid;
+    align-content: start;
+    gap: 0.25rem;
+  }
+
+  .workflow-continuity-linked-posture {
+    width: fit-content;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border: 1px solid rgba(31, 52, 76, 0.95);
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.82);
+    color: var(--fg-muted);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0.3125rem 0.4375rem;
+  }
+
+  .workflow-continuity-linked-posture-blocked {
+    border-color: rgba(222, 88, 120, 0.38);
+    background: rgba(222, 88, 120, 0.12);
+    color: #ffc9d6;
+  }
+
+  .workflow-continuity-linked-posture-review {
+    border-color: rgba(214, 158, 56, 0.38);
+    background: rgba(214, 158, 56, 0.12);
+    color: #f7dca3;
+  }
+
+  .workflow-continuity-linked-posture-pending {
+    border-color: rgba(42, 178, 212, 0.3);
+    background: rgba(42, 178, 212, 0.09);
+    color: #bcefff;
+  }
+
+  .workflow-continuity-linked-posture-ready {
+    border-color: rgba(59, 186, 148, 0.34);
+    background: rgba(59, 186, 148, 0.1);
+    color: #bff3df;
+  }
+
+  .workflow-continuity-linked-primary {
+    justify-self: start;
+    max-width: 100%;
+  }
+
+  .workflow-continuity-linked-primary span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .workflow-continuity-evidence-head {
+    min-width: 0;
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .workflow-continuity-focus-summary,
+  .workflow-continuity-focus-empty,
+  .workflow-continuity-linked-summary,
+  .workflow-continuity-linked-empty,
+  .workflow-continuity-evidence-summary,
+  .workflow-continuity-evidence-empty {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--fg-muted);
+    font-size: 0.6875rem;
+    line-height: 1.35;
+  }
+
+  .workflow-continuity-linked-list {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.25rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .workflow-continuity-focus-list {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .workflow-continuity-evidence-list {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .workflow-continuity-linked-list li {
+    min-width: 0;
+  }
+
+  .workflow-continuity-focus-list li {
+    min-width: 0;
+  }
+
+  .workflow-continuity-evidence-list li {
+    min-width: 0;
+  }
+
+  .workflow-continuity-linked-item {
+    display: grid;
+    grid-template-rows: auto minmax(2.9rem, 1fr) auto;
+    gap: 0.25rem;
+    min-width: 0;
+    min-height: 6rem;
+    padding: 0.45rem 0.5rem;
+    border: 1px solid rgba(31, 52, 76, 0.92);
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.72);
+    color: var(--fg);
+    text-decoration: none;
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+
+  .workflow-continuity-focus-item {
+    display: grid;
+    grid-template-columns: minmax(4.5rem, max-content) minmax(0, 1fr);
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    min-height: 2.25rem;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid rgba(31, 52, 76, 0.92);
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.72);
+    color: var(--fg);
+    text-decoration: none;
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+
+  .workflow-continuity-evidence-item {
+    display: grid;
+    grid-template-columns: minmax(4.5rem, max-content) minmax(0, 1fr) max-content;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    min-height: 2.25rem;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid rgba(31, 52, 76, 0.92);
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.72);
+    color: var(--fg);
+    text-decoration: none;
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+
+  .workflow-continuity-linked-item:hover {
+    border-color: var(--border-hi);
+    background: rgba(27, 42, 60, 0.68);
+  }
+
+  .workflow-continuity-focus-item:hover {
+    border-color: var(--border-hi);
+    background: rgba(27, 42, 60, 0.68);
+  }
+
+  .workflow-continuity-evidence-item:hover {
+    border-color: var(--border-hi);
+    background: rgba(27, 42, 60, 0.68);
+  }
+
+  .workflow-continuity-focus-item-blocked {
+    border-color: rgba(222, 88, 120, 0.34);
+    background: rgba(222, 88, 120, 0.08);
+  }
+
+  .workflow-continuity-evidence-item-blocked {
+    border-color: rgba(222, 88, 120, 0.34);
+    background: rgba(222, 88, 120, 0.08);
+  }
+
+  .workflow-continuity-focus-item-review {
+    border-color: rgba(214, 158, 56, 0.34);
+    background: rgba(214, 158, 56, 0.08);
+  }
+
+  .workflow-continuity-evidence-item-review {
+    border-color: rgba(214, 158, 56, 0.34);
+    background: rgba(214, 158, 56, 0.08);
+  }
+
+  .workflow-continuity-evidence-item-pending {
+    border-color: rgba(42, 178, 212, 0.25);
+    background: rgba(42, 178, 212, 0.06);
+  }
+
+  .workflow-continuity-linked-item-blocked {
+    border-color: rgba(222, 88, 120, 0.34);
+    background: rgba(222, 88, 120, 0.08);
+  }
+
+  .workflow-continuity-linked-item-review {
+    border-color: rgba(214, 158, 56, 0.34);
+    background: rgba(214, 158, 56, 0.08);
+  }
+
+  .workflow-continuity-linked-item-pending {
+    border-color: rgba(42, 178, 212, 0.25);
+    background: rgba(42, 178, 212, 0.06);
+  }
+
+  .workflow-continuity-focus-route {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    max-width: 6.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.82);
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    padding: 0.25rem 0.3125rem;
+    text-transform: uppercase;
+  }
+
+  .workflow-continuity-linked-route {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.82);
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    padding: 0.25rem 0.3125rem;
+    text-transform: uppercase;
+  }
+
+  .workflow-continuity-evidence-route {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    max-width: 6.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.82);
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    padding: 0.25rem 0.3125rem;
+    text-transform: uppercase;
+  }
+
+  .workflow-continuity-linked-copy {
+    display: grid;
+    align-content: start;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+
+  .workflow-continuity-focus-copy {
+    display: grid;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+
+  .workflow-continuity-evidence-copy {
+    display: grid;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+
+  .workflow-continuity-linked-copy span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .workflow-continuity-linked-copy span:first-child {
+    white-space: nowrap;
+    color: #f6fbff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+
+  .workflow-continuity-linked-copy span:last-child {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    color: var(--fg-muted);
+    font-size: 0.625rem;
+    line-height: 1.2;
+  }
+
+  .workflow-continuity-focus-copy span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .workflow-continuity-evidence-copy span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .workflow-continuity-focus-title {
+    color: #f6fbff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+
+  .workflow-continuity-focus-detail {
+    color: var(--fg-muted);
+    font-size: 0.625rem;
+    line-height: 1.2;
+  }
+
+  .workflow-continuity-evidence-copy span:first-child {
+    color: #f6fbff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+
+  .workflow-continuity-focus-action {
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.5625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .workflow-continuity-linked-status {
+    width: fit-content;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.86);
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    padding: 0.1875rem 0.3125rem;
+    text-transform: uppercase;
+  }
+
+  .workflow-continuity-evidence-copy span:last-child {
+    color: var(--fg-muted);
+    font-size: 0.625rem;
+    line-height: 1.2;
+  }
+
+  .workflow-continuity-evidence-item time {
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+
+  .workflow-continuity-focus-overflow {
+    width: fit-content;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.72);
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.5625rem;
+    letter-spacing: 0.12em;
+    padding: 0.1875rem 0.375rem;
+    text-transform: uppercase;
+  }
+
+  .workflow-continuity-evidence-overflow {
+    width: fit-content;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: rgba(8, 16, 26, 0.72);
+    color: var(--fg-muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.5625rem;
+    letter-spacing: 0.12em;
+    padding: 0.1875rem 0.375rem;
     text-transform: uppercase;
   }
 
@@ -1468,6 +2146,22 @@
     color: var(--fg-muted);
   }
 
+  .mega-menu-footer-scope {
+    min-width: 0;
+    max-width: min(28rem, 46vw);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border: 1px solid rgba(42, 178, 212, 0.24);
+    border-radius: var(--radius-sm);
+    background: rgba(42, 178, 212, 0.07);
+    color: #e8f4ff;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.625rem;
+    line-height: 1;
+    padding: 0.3125rem 0.4375rem;
+  }
+
   .mega-menu-footer-hint {
     display: inline-flex;
     align-items: center;
@@ -1514,6 +2208,36 @@
     font-weight: 500;
     letter-spacing: 0.16em;
     text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+
+  .command-palette-status {
+    border-color: rgba(42, 178, 212, 0.28);
+    background: rgba(42, 178, 212, 0.10);
+    color: var(--cyan-primary);
+  }
+
+  .command-palette-status-blocked {
+    border-color: rgba(222, 88, 120, 0.38);
+    background: rgba(222, 88, 120, 0.12);
+    color: #ff8faa;
+  }
+
+  .command-palette-status-review {
+    border-color: rgba(214, 158, 56, 0.38);
+    background: rgba(214, 158, 56, 0.12);
+    color: #f7ca54;
+  }
+
+  .command-palette-status-ready {
+    border-color: rgba(67, 230, 167, 0.34);
+    background: rgba(67, 230, 167, 0.10);
+    color: #43e6a7;
+  }
+
+  .command-palette-status-neutral {
+    border-color: rgba(31, 52, 76, 0.95);
+    background: rgba(8, 16, 26, 0.82);
     color: var(--fg-muted);
   }
 
@@ -1586,7 +2310,34 @@
     padding: 0.625rem 0.75rem;
   }
 
+  .workflow-continuity-decision,
   .workflow-continuity-steps {
+    grid-column: auto;
+  }
+
+  .workflow-continuity-decision {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workflow-continuity-decision-action {
+    justify-self: stretch;
+    max-width: none;
+  }
+
+  .workflow-continuity-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workflow-continuity-linked {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workflow-continuity-focus,
+  .workflow-continuity-evidence {
+    grid-column: auto;
+  }
+
+  .workflow-continuity-linked-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

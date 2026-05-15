@@ -14,7 +14,7 @@ import {
   reviewReconciliationBreak,
   searchSecurities
 } from "@/lib/api";
-import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, workflowTargetPath } from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   AccountingBasisKind,
@@ -427,6 +427,8 @@ export interface SecurityConflictRefreshCommandViewModel {
   disabledReason: string | null;
   busy: boolean;
   busyLabel: string | null;
+  feedbackId: string;
+  feedbackText: string | null;
 }
 
 export interface SecurityConflictRowViewModel extends SecurityMasterConflict {
@@ -450,6 +452,17 @@ export interface ReconciliationBreakAction {
 
 export interface ReconciliationBreakRowViewModel extends ReconciliationBreakQueueItem {
   actionBusy: boolean;
+  varianceLabel: string;
+  varianceTone: "default" | "success" | "danger";
+  statusBadgeVariant: "success" | "warning" | "outline" | "danger";
+  detectedAtLabel: string;
+  lastUpdatedAtLabel: string;
+  ownerLabel: string;
+  rowAriaLabel: string;
+  rowSelectAriaLabel: string;
+  detailPanelId: string;
+  isSelected: boolean;
+  isExpanded: boolean;
   assignLabel: string;
   resolveLabel: string;
   dismissLabel: string;
@@ -464,9 +477,39 @@ export interface ReconciliationBreakRowViewModel extends ReconciliationBreakQueu
   dismissDisabledReason: string | null;
 }
 
+export interface ReconciliationBreakDetailFieldViewModel {
+  label: string;
+  value: string;
+}
+
+export interface ReconciliationBreakDetailViewModel {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  ariaLabel: string;
+  statusLabel: string;
+  statusBadgeVariant: "success" | "warning" | "outline" | "danger";
+  fields: ReconciliationBreakDetailFieldViewModel[];
+  analysisText: string | null;
+  recommendedActionText: string | null;
+  routingActionLabel: string | null;
+  routingActionHref: string | null;
+  routingActionAriaLabel: string | null;
+}
+
 export interface ReconciliationBreakQueueState {
   rows: ReconciliationBreakRowViewModel[];
   hasBreaks: boolean;
+  tableLabel: string;
+  tableCaption: string;
+  detailPanelId: string;
+  selectedBreakId: string | null;
+  selectedDetail: ReconciliationBreakDetailViewModel | null;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  detailEmptyAriaLabel: string;
   loadingText: string | null;
   emptyText: string;
   errorText: string | null;
@@ -1035,6 +1078,7 @@ export function useSecurityMasterViewModel(
   const searchGenerationRef = useRef(0);
   const identityGenerationRef = useRef(0);
   const conflictGenerationRef = useRef(0);
+  const conflictResolvingIdRef = useRef<string | null>(null);
 
   useEffect(() => () => {
     if (searchTimerRef.current) {
@@ -1043,6 +1087,7 @@ export function useSecurityMasterViewModel(
     searchGenerationRef.current += 1;
     identityGenerationRef.current += 1;
     conflictGenerationRef.current += 1;
+    conflictResolvingIdRef.current = null;
   }, []);
 
   useEffect(() => {
@@ -1066,6 +1111,7 @@ export function useSecurityMasterViewModel(
     setConflictsLoading(false);
     setConflictsError(null);
     setConflictResolvingId(null);
+    conflictResolvingIdRef.current = null;
     setConflictActionError(null);
     setCorporateActions(null);
     setCorporateActionsLoading(false);
@@ -1079,6 +1125,10 @@ export function useSecurityMasterViewModel(
 
   const refreshConflicts = useCallback(async () => {
     if (!active) {
+      return;
+    }
+
+    if (conflictResolvingIdRef.current) {
       return;
     }
 
@@ -1254,6 +1304,7 @@ export function useSecurityMasterViewModel(
     conflictId: string,
     resolution: ResolveConflictRequest["resolution"]
   ) => {
+    conflictResolvingIdRef.current = conflictId;
     setConflictResolvingId(conflictId);
     setConflictActionError(null);
 
@@ -1265,6 +1316,7 @@ export function useSecurityMasterViewModel(
     } catch (err) {
       setConflictActionError(toErrorMessage(err, "Conflict resolution failed."));
     } finally {
+      conflictResolvingIdRef.current = null;
       setConflictResolvingId(null);
     }
   }, [services]);
@@ -1363,8 +1415,8 @@ export function useSecurityMasterViewModel(
   );
   const openConflictCount = countOpenSecurityConflicts(conflicts);
   const conflictRefreshCommand = useMemo(
-    () => buildSecurityConflictRefreshCommand(conflictsLoading, conflictsError),
-    [conflictsError, conflictsLoading]
+    () => buildSecurityConflictRefreshCommand(conflictsLoading, conflictsError, conflictResolvingId),
+    [conflictResolvingId, conflictsError, conflictsLoading]
   );
   const pageView = useMemo(
     () => buildSecurityMasterPageViewState({
@@ -1453,6 +1505,7 @@ export function useGovernanceReconciliationViewModel(
   const [breakQueueError, setBreakQueueError] = useState<string | null>(null);
   const [breakAction, setBreakAction] = useState<ReconciliationBreakAction | null>(null);
   const [breakActionError, setBreakActionError] = useState<string | null>(null);
+  const [selectedBreakId, setSelectedBreakId] = useState<string | null>(null);
   const [trialBalance, setTrialBalance] = useState<LedgerTrialBalanceLine[]>([]);
   const [selectedTrialBalanceRowId, setSelectedTrialBalanceRowId] = useState<string | null>(null);
   const [selectedAccountingBasis, setSelectedAccountingBasis] = useState<AccountingBasisKind>(DEFAULT_ACCOUNTING_BASIS);
@@ -1636,12 +1689,13 @@ export function useGovernanceReconciliationViewModel(
   const breakQueueState = useMemo(
     () => buildReconciliationBreakQueueState({
       breakQueue,
+      selectedBreakId,
       loading: breakQueueLoading,
       loadError: breakQueueError,
       action: breakAction,
       actionError: breakActionError
     }),
-    [breakAction, breakActionError, breakQueue, breakQueueError, breakQueueLoading]
+    [breakAction, breakActionError, breakQueue, breakQueueError, breakQueueLoading, selectedBreakId]
   );
   const trialBalanceView = useMemo(
     () => buildGovernanceTrialBalanceViewState({
@@ -1706,6 +1760,7 @@ export function useGovernanceReconciliationViewModel(
     selectTrialBalanceRow: setSelectedTrialBalanceRowId,
     selectAccountingBasis,
     breakAction,
+    selectBreak: setSelectedBreakId,
     assignBreak,
     resolveBreak,
     calibrationSummary,
@@ -2111,8 +2166,24 @@ export function countOpenSecurityConflicts(conflicts: SecurityMasterConflict[] |
 
 export function buildSecurityConflictRefreshCommand(
   loading: boolean,
-  errorText: string | null
+  errorText: string | null,
+  resolvingConflictId: string | null = null
 ): SecurityConflictRefreshCommandViewModel {
+  if (resolvingConflictId) {
+    const disabledReason = `Wait until identifier conflict ${resolvingConflictId} finishes resolving before refreshing the conflict queue.`;
+
+    return {
+      label: "Refresh conflicts",
+      ariaLabel: `Refresh disabled while identifier conflict ${resolvingConflictId} is resolving`,
+      disabled: true,
+      disabledReason,
+      busy: false,
+      busyLabel: null,
+      feedbackId: "security-conflict-refresh-feedback",
+      feedbackText: disabledReason
+    };
+  }
+
   return {
     label: loading ? "Refreshing..." : errorText ? "Retry conflicts" : "Refresh conflicts",
     ariaLabel: loading
@@ -2123,7 +2194,9 @@ export function buildSecurityConflictRefreshCommand(
     disabled: loading,
     disabledReason: loading ? "Identifier conflicts are already loading." : null,
     busy: loading,
-    busyLabel: loading ? "Refreshing..." : null
+    busyLabel: loading ? "Refreshing..." : null,
+    feedbackId: "security-conflict-refresh-feedback",
+    feedbackText: null
   };
 }
 
@@ -2226,18 +2299,24 @@ export function buildSecurityConflictRows(
 
 export function buildReconciliationBreakQueueState({
   breakQueue,
+  selectedBreakId,
   loading,
   loadError,
   action,
   actionError
 }: {
   breakQueue: ReconciliationBreakQueueItem[];
+  selectedBreakId?: string | null;
   loading: boolean;
   loadError: string | null;
   action: ReconciliationBreakAction | null;
   actionError: string | null;
 }): ReconciliationBreakQueueState {
-  const rows = buildReconciliationBreakRows(breakQueue, action);
+  const effectiveSelectedBreakId = selectedBreakId && breakQueue.some((item) => item.breakId === selectedBreakId)
+    ? selectedBreakId
+    : breakQueue[0]?.breakId ?? null;
+  const rows = buildReconciliationBreakRows(breakQueue, action, effectiveSelectedBreakId);
+  const selectedRow = rows.find((row) => row.breakId === effectiveSelectedBreakId) ?? null;
   const loadingText = loading ? "Loading reconciliation break queue..." : null;
   const errorText = loadError
     ? loadError.startsWith("Reconciliation break queue failed")
@@ -2253,6 +2332,14 @@ export function buildReconciliationBreakQueueState({
   return {
     rows,
     hasBreaks: rows.length > 0,
+    tableLabel: "Reconciliation break queue",
+    tableCaption: "Selectable reconciliation break queue. Select a break row to inspect reason, ownership, audit timestamps, and routing detail.",
+    detailPanelId: "reconciliation-break-detail-panel",
+    selectedBreakId: effectiveSelectedBreakId,
+    selectedDetail: selectedRow ? buildReconciliationBreakDetail(selectedRow) : null,
+    detailEmptyTitle: "No reconciliation break selected",
+    detailEmptyText: "Break detail is unavailable until the queue includes at least one active or historical break.",
+    detailEmptyAriaLabel: "No reconciliation break selected",
     loadingText,
     emptyText: "No reconciliation breaks in the current queue.",
     errorText,
@@ -2300,7 +2387,8 @@ export function buildReconciliationResolveDialogState(
 
 export function buildReconciliationBreakRows(
   breakQueue: ReconciliationBreakQueueItem[],
-  action: ReconciliationBreakAction | null
+  action: ReconciliationBreakAction | null,
+  selectedBreakId: string | null = null
 ): ReconciliationBreakRowViewModel[] {
   return breakQueue.map((item) => {
     const actionBusy = action?.breakId === item.breakId;
@@ -2310,10 +2398,22 @@ export function buildReconciliationBreakRows(
     const canAssign = !action && item.status === "Open";
     const canResolve = !action && item.status !== "Resolved";
     const canDismiss = !action && item.status !== "Dismissed";
+    const isSelected = item.breakId === selectedBreakId;
 
     return {
       ...item,
       actionBusy,
+      varianceLabel: formatSignedCurrency(item.variance),
+      varianceTone: item.variance > 0 ? "success" : item.variance < 0 ? "danger" : "default",
+      statusBadgeVariant: reconciliationBreakStatusBadgeVariant(item.status),
+      detectedAtLabel: formatDateTimeLabel(item.detectedAt),
+      lastUpdatedAtLabel: formatDateTimeLabel(item.lastUpdatedAt),
+      ownerLabel: item.assignedTo ?? "Unassigned",
+      rowAriaLabel: `${item.strategyName} ${item.category} break ${item.breakId}. ${item.status}. Variance ${formatSignedCurrency(item.variance)}. ${item.reason}`,
+      rowSelectAriaLabel: `Inspect reconciliation break ${item.breakId}`,
+      detailPanelId: "reconciliation-break-detail-panel",
+      isSelected,
+      isExpanded: isSelected,
       assignLabel: assignBusy ? "Assigning..." : "Assign",
       resolveLabel: resolveBusy ? "Resolving..." : "Resolve",
       dismissLabel: dismissBusy ? "Dismissing..." : "Dismiss",
@@ -2349,6 +2449,57 @@ export function buildReconciliationBreakRows(
       })
     };
   });
+}
+
+function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): ReconciliationBreakDetailViewModel {
+  const routingActionHref = buildReconciliationBreakRoutingHref(row.routingTarget);
+
+  return {
+    id: row.detailPanelId,
+    eyebrow: "Break detail",
+    title: `${row.strategyName} - ${row.category}`,
+    subtitle: `${row.breakId} - ${row.status}`,
+    description: row.reason,
+    ariaLabel: `Reconciliation break detail for ${row.breakId}`,
+    statusLabel: row.status,
+    statusBadgeVariant: row.statusBadgeVariant,
+    fields: [
+      { label: "Run", value: row.runId },
+      { label: "Variance", value: row.varianceLabel },
+      { label: "Owner", value: row.ownerLabel },
+      { label: "Detected", value: row.detectedAtLabel },
+      { label: "Updated", value: row.lastUpdatedAtLabel },
+      { label: "Routing", value: row.routingTarget ?? "No routing target" },
+      { label: "Fund account", value: row.fundAccountId ?? "Not scoped" }
+    ],
+    analysisText: row.explainabilitySummary ?? null,
+    recommendedActionText: row.recommendedAction ?? null,
+    routingActionLabel: routingActionHref ? "Open routing target" : null,
+    routingActionHref,
+    routingActionAriaLabel: routingActionHref ? `Open routing target for reconciliation break ${row.breakId}` : null
+  };
+}
+
+function buildReconciliationBreakRoutingHref(routingTarget: string | null | undefined): string | null {
+  const trimmedTarget = routingTarget?.trim();
+  if (!trimmedTarget) {
+    return null;
+  }
+
+  if (trimmedTarget.startsWith("/")) {
+    return normalizeLocalWorkstationRoute(trimmedTarget) ?? trimmedTarget;
+  }
+
+  return workflowTargetPath(trimmedTarget, "accounting");
+}
+
+function reconciliationBreakStatusBadgeVariant(
+  status: ReconciliationBreakQueueItem["status"]
+): ReconciliationBreakRowViewModel["statusBadgeVariant"] {
+  if (status === "Resolved") return "success";
+  if (status === "InReview") return "warning";
+  if (status === "Dismissed") return "outline";
+  return "danger";
 }
 
 function buildBreakActionDisabledReason({
@@ -3076,6 +3227,34 @@ function formatCurrency(value: number) {
   const prefix = value >= 0 ? "$" : "-$";
   return `${prefix}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 }
+
+function formatSignedCurrency(value: number): string {
+  if (value === 0) {
+    return "$0";
+  }
+
+  const sign = value > 0 ? "+" : "-";
+  return `${sign}$${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })}`;
+}
+
+function formatDateTimeLabel(value: string | null | undefined): string {
+  if (!value) {
+    return "Not recorded";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+}
+
+function padUtc(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function toDomId(value: string): string {
   const normalized = value.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");

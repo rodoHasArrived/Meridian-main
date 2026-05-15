@@ -144,6 +144,37 @@ describe("CommandPalette", () => {
     expect(screen.getByText("No matching commands")).toBeInTheDocument();
   });
 
+  it("renders ranked operator focus actions as first-class commands", () => {
+    renderWithRouter(
+      <CommandPalette
+        open
+        onOpenChange={vi.fn()}
+        operatorFocusItems={[
+          {
+            id: "work-item:brokerage-sync",
+            label: "Brokerage sync failed",
+            detail: "Account sync failed after the last provider heartbeat.",
+            route: "/settings#alpaca-provider-setup",
+            workspaceLabel: "Settings",
+            actionLabel: "Fix provider setup",
+            tone: "blocked",
+            ariaLabel: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
+          }
+        ]}
+      />,
+      { initialEntries: ["/data/quotes?symbol=MSFT"] }
+    );
+
+    expect(screen.getByRole("navigation", { name: "21 workstation commands" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Focus actions: 1 focus action")).toBeInTheDocument();
+    expect(screen.getByText(/1 ranked focus action available\./)).toBeInTheDocument();
+    expect(screen.getByLabelText(
+      "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
+    )).toHaveAttribute("href", "/settings#alpaca-provider-setup");
+    expect(screen.getByText("Blocked")).toBeInTheDocument();
+    expect(screen.getByText("Fix provider setup")).toBeInTheDocument();
+  });
+
   it("closes when the backdrop is selected", () => {
     const onOpenChange = vi.fn();
 

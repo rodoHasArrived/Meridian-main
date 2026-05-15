@@ -104,6 +104,13 @@ export interface QuantDiagnosticSectionState {
   tone: "danger" | "warning";
 }
 
+export interface QuantMetricRowViewModel {
+  id: string;
+  label: string;
+  value: string;
+  ariaLabel: string;
+}
+
 export interface QuantTradeRowViewModel {
   id: string;
   timestamp: string;
@@ -158,6 +165,10 @@ export interface QuantRunResultPanelState {
   statusBadgeLabel: string;
   runtimeSummary: string;
   metricsLabel: string;
+  metricsTableLabel: string;
+  metricsTableCaption: string;
+  metricsEmptyText: string;
+  metricRows: QuantMetricRowViewModel[];
   consoleLabel: string;
   plotsLabel: string;
   plotsDescription: string;
@@ -867,6 +878,10 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       statusBadgeLabel: "IDLE",
       runtimeSummary: "Run state, parameters, and template availability are tracked before execution.",
       metricsLabel: "Metrics",
+      metricsTableLabel: "Quant Lab metrics",
+      metricsTableCaption: "Metrics emitted by the Quant Lab script run.",
+      metricsEmptyText: "No metrics returned by this run.",
+      metricRows: [],
       consoleLabel: "Console",
       plotsLabel: "Plots",
       plotsDescription: "No plots returned yet.",
@@ -897,6 +912,10 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       statusBadgeLabel: "RUN",
       runtimeSummary: "Quant Lab is compiling the current script and waiting for runtime evidence.",
       metricsLabel: "Metrics",
+      metricsTableLabel: "Quant Lab metrics",
+      metricsTableCaption: "Metrics emitted by the Quant Lab script run.",
+      metricsEmptyText: "Metrics will appear after the run completes.",
+      metricRows: [],
       consoleLabel: "Console",
       plotsLabel: "Plots",
       plotsDescription: "Plots will render after the run completes.",
@@ -927,6 +946,10 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
       statusBadgeLabel: "ERR",
       runtimeSummary: "Quant Lab could not complete the script run.",
       metricsLabel: "Metrics",
+      metricsTableLabel: "Quant Lab metrics",
+      metricsTableCaption: "Metrics emitted by the Quant Lab script run.",
+      metricsEmptyText: "No metrics returned because the run failed.",
+      metricRows: [],
       consoleLabel: "Console",
       plotsLabel: "Plots",
       plotsDescription: "No plots returned because the run failed.",
@@ -946,6 +969,7 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
   }
 
   const hasMetrics = result.metrics.length > 0;
+  const metricRows = buildQuantMetricRows(result.metrics);
   const consoleLines = result.consoleOutput.split("\n");
   const hasConsoleOutput = consoleLines.some((line) => line.length > 0);
   const plotCount = result.plots.length;
@@ -974,7 +998,11 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
     statusLabel: result.success ? "Completed successfully" : "Completed with errors",
     statusBadgeLabel: result.success ? "OK" : "ERR",
     runtimeSummary: `Compiled in ${formatWholeNumber(result.compileTimeMs)} ms · executed in ${formatWholeNumber(result.elapsedMs)} ms · peak ${formatWholeNumber(result.peakMemoryBytes / 1024)} KB`,
-    metricsLabel: hasMetrics ? `Metrics · ${result.metrics.length}` : "Metrics",
+    metricsLabel: hasMetrics ? `Metrics - ${metricRows.length}` : "Metrics",
+    metricsTableLabel: "Quant Lab metrics",
+    metricsTableCaption: "Metrics emitted by the Quant Lab script run. Values are script-defined evidence and may include ratios, counters, or formatted text.",
+    metricsEmptyText: result.success ? "No metrics returned by this run." : "No metrics returned because the run finished with errors.",
+    metricRows,
     consoleLabel: hasConsoleOutput ? "Console output" : "Console",
     plotsLabel: "Plots",
     plotsDescription: `${plotCount} chart${plotCount === 1 ? "" : "s"} returned by this run.`,
@@ -993,6 +1021,26 @@ export function buildRunResultPanelState(run: QuantRunState): QuantRunResultPane
     evidenceEmptyTone: result.success ? "warning" : "danger",
     diagnosticSections
   };
+}
+
+export function buildQuantMetricRows(
+  metrics: readonly QuantRunResponse["metrics"][number][]
+): QuantMetricRowViewModel[] {
+  return metrics.map((metric, index) => {
+    const label = metric.label.trim() || `Metric ${index + 1}`;
+    const value = metric.value.trim() || "Not reported";
+    return {
+      id: buildQuantMetricRowId(label, index),
+      label,
+      value,
+      ariaLabel: `${label}: ${value}`
+    };
+  });
+}
+
+export function buildQuantMetricRowId(label: string, index: number): string {
+  const stable = label.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return `quant-metric-${stable || index.toString()}`;
 }
 
 export function buildToolbarItems(

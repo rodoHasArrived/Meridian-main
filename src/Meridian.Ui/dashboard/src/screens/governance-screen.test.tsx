@@ -97,7 +97,10 @@ const data: GovernanceWorkspaceResponse = {
       reviewedAt: null,
       resolvedBy: null,
       resolvedAt: null,
-      resolutionNote: null
+      resolutionNote: null,
+      routingTarget: "FundTrialBalance",
+      routingDetail: "Open the accounting trial balance for evidence review.",
+      recommendedAction: "Review cash ledger entries before resolving."
     }
   ],
   cashFlow: {
@@ -361,6 +364,9 @@ describe("GovernanceScreen", () => {
   it("updates reconciliation detail queue selection with accessible expanded state", async () => {
     const user = userEvent.setup();
     await renderGovernanceScreen(data, "/accounting/reconciliation");
+
+    expect(screen.getByRole("link", { name: "Open routing target for reconciliation break run-42:cash" })).toHaveAttribute("href", "/accounting");
+    expect(screen.getByText("Review cash ledger entries before resolving.")).toBeInTheDocument();
 
     const nextRun = screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" });
     expect(nextRun).not.toHaveAttribute("aria-selected");
@@ -879,11 +885,20 @@ describe("GovernanceScreen", () => {
       name: `Dismiss identifier conflict conflict-1 on identifiers.CUSIP. Disabled: ${disabledReason}`
     })).toHaveAttribute("title", disabledReason);
     expect(screen.getByText("Resolving identifier conflict conflict-1.")).toHaveAttribute("role", "status");
+    const refreshDisabledReason = "Wait until identifier conflict conflict-1 finishes resolving before refreshing the conflict queue.";
+    const refreshButton = screen.getByRole("button", {
+      name: "Refresh disabled while identifier conflict conflict-1 is resolving"
+    });
+    expect(refreshButton).toBeDisabled();
+    expect(refreshButton).toHaveAttribute("aria-describedby", "security-conflict-refresh-feedback");
+    expect(refreshButton).toHaveAttribute("title", refreshDisabledReason);
+    expect(screen.getByText(refreshDisabledReason)).toHaveAttribute("role", "status");
 
     finishResolve();
 
     await waitFor(() => {
       expect(screen.queryByRole("button", { name: /Disabled: Resolution is already in progress/ })).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Refresh Security Master identifier conflicts" })).toBeEnabled();
     });
   });
 
@@ -991,6 +1006,35 @@ describe("GovernanceScreen", () => {
       .toHaveAttribute("title", "Enter the rationale or cancel the open queue action before choosing another action.");
     expect(screen.getByRole("button", { name: "Confirm resolve for reconciliation break run-42:cash" }))
       .toHaveAttribute("title", "Enter an operator rationale before confirming this queue action.");
+  });
+
+  it("selects a reconciliation break before opening its queue action", async () => {
+    const user = userEvent.setup();
+    const feeBreak = {
+      ...data.breakQueue[0],
+      breakId: "run-57:fees",
+      runId: "run-57",
+      strategyName: "Intraday Vol Carry",
+      category: "FeeMismatch",
+      variance: -125,
+      reason: "Fee accrual differs from broker statement."
+    };
+
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce([
+      data.breakQueue[0],
+      feeBreak
+    ]);
+
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
+
+    expect(await screen.findByRole("region", { name: "Reconciliation break detail for run-42:cash" }))
+      .toHaveTextContent("Paper Index Mean Reversion - AmountMismatch");
+
+    await user.click(screen.getByRole("button", { name: "Resolve reconciliation break run-57:fees" }));
+
+    expect(screen.getByRole("region", { name: "Reconciliation break detail for run-57:fees" }))
+      .toHaveTextContent("Intraday Vol Carry - FeeMismatch");
+    expect(screen.getByRole("textbox", { name: "Resolve rationale" })).toBeInTheDocument();
   });
 
   it("announces reconciliation break action failures", async () => {

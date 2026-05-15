@@ -1052,12 +1052,8 @@ function PlotToolWorkspacePanel({
           </CardHeader>
           <CardContent className="space-y-3">
             <ToolbarStrip
-              ariaLabel="Strategy notebook filters"
-              items={[
-                { id: "count", label: "Notebook set", value: `${studies.length} retained`, active: true },
-                { id: "active", label: "Primary", value: studies.find((study) => study.isActive)?.title ?? "None" },
-                { id: "lane", label: "Lane", value: "Strategy" }
-              ]}
+              ariaLabel={vm.notebookToolbarAriaLabel}
+              items={vm.notebookToolbarItems}
             />
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.85fr)]">
               <DenseDataTable
@@ -1070,14 +1066,14 @@ function PlotToolWorkspacePanel({
                 getRowAriaExpanded={(study) => study.detailExpanded}
                 onRowSelect={(study) => onStudySelect(study.id)}
                 selectedRowId={selectedStudyId}
-                emptyText="No retained PlotTool studies are available."
+                emptyText={vm.studyTableEmptyText}
                 ariaLabel="Strategy notebooks"
-                caption="Retained strategy notebooks aligned to the active PlotTool workspace. Select a row to inspect the notebook detail."
+                caption={vm.studyTableCaption}
               />
               <SelectedPlotStudyDetail
                 id={studyDetailPanelId}
                 detail={selectedStudyDetail}
-                emptyText="No PlotTool study is selected."
+                emptyText={vm.selectedStudyEmptyText}
               />
             </div>
           </CardContent>

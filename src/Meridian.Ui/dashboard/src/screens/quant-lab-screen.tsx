@@ -18,6 +18,7 @@ import {
 } from "@/components/meridian/ui-kit-primitives";
 import {
   useQuantLabScreenViewModel,
+  type QuantMetricRowViewModel,
   type QuantParameterPanelState,
   type QuantParameterRow,
   type QuantTradeLedgerState,
@@ -37,6 +38,20 @@ const quantTradeColumns: DenseDataTableColumn<QuantTradeRowViewModel>[] = [
   { id: "price", label: "Price", align: "right", render: (row) => <span className="font-mono">{row.price}</span> },
   { id: "notional", label: "Notional", align: "right", render: (row) => <span className="font-mono">{row.notional}</span> },
   { id: "commission", label: "Comm.", align: "right", render: (row) => <span className="font-mono">{row.commission}</span> }
+];
+
+const quantMetricColumns: DenseDataTableColumn<QuantMetricRowViewModel>[] = [
+  {
+    id: "metric",
+    label: "Metric",
+    render: (row) => <span className="font-mono text-muted-foreground">{row.label}</span>
+  },
+  {
+    id: "value",
+    label: "Value",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.value}</span>
+  }
 ];
 
 export function QuantLabScreen() {
@@ -204,19 +219,18 @@ function RunResultPanel({ run, panel, consoleLines, tradeLedger, onTradeSelect }
             </div>
           ) : null}
           {panel.hasMetrics ? (
-            <div>
+            <section aria-label={panel.metricsLabel}>
               <div className="eyebrow-label mb-1">{panel.metricsLabel}</div>
-              <table className="w-full text-sm">
-                <tbody>
-                  {result.metrics.map((m) => (
-                    <tr key={m.label} className="border-b border-border/30">
-                      <td className="py-1 pr-2 font-mono text-muted-foreground">{m.label}</td>
-                      <td className="py-1 text-right font-mono text-foreground">{m.value}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+              <DenseDataTable
+                columns={quantMetricColumns}
+                rows={panel.metricRows}
+                getRowId={(row) => row.id}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                emptyText={panel.metricsEmptyText}
+                ariaLabel={panel.metricsTableLabel}
+                caption={panel.metricsTableCaption}
+              />
+            </section>
           ) : null}
           {panel.hasConsoleOutput ? (
             <div>

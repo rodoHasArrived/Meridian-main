@@ -11,6 +11,7 @@ export type ReportingDetailFieldTone = "default" | "success" | "warning" | "mute
 export type ReportingExportStatusTone = "default" | "success" | "danger";
 export type ReportingFieldClassName = "text-foreground" | "text-success" | "text-warning" | "text-muted-foreground";
 export type ReportingProfileKeyCommand = "next" | "previous" | "first" | "last";
+export type ReportingProfileActionSurface = "profile-detail" | "report-pack-task";
 export type ReportingExportStatusClassName =
   | "border-border/70 bg-secondary/25 text-muted-foreground"
   | "border-success/30 bg-success/10 text-success"
@@ -340,6 +341,12 @@ export function useReportingScreenViewModel(
   const effectiveSelectedId = selectedId === undefined ? defaultSelectedId : selectedId;
   const selectedProfileData: GovernanceReportingProfile | null =
     profiles.find((p) => p.id === effectiveSelectedId) ?? null;
+  const profileDetailActions = selectedProfileData
+    ? buildProfileActions(selectedProfileData, runningProfileId, "profile-detail")
+    : [];
+  const reportPackTaskActions = selectedProfileData
+    ? buildProfileActions(selectedProfileData, runningProfileId, "report-pack-task")
+    : [];
 
   const rows: ReportingProfileRow[] = profiles.map((p) => ({
     id: p.id,
@@ -381,7 +388,7 @@ export function useReportingScreenViewModel(
           )
         ],
         readinessSummary: buildProfileReadinessSummary(selectedProfileData),
-        actions: buildProfileActions(selectedProfileData, runningProfileId)
+        actions: profileDetailActions
       }
     : null;
 
@@ -402,7 +409,7 @@ export function useReportingScreenViewModel(
     rows,
     packTargets,
     selectedProfile: selectedProfileData,
-    selectedProfileActions: detail?.actions ?? [],
+    selectedProfileActions: reportPackTaskActions,
     pathname
   });
 
@@ -771,7 +778,8 @@ function buildProfileReadinessSummary(profile: GovernanceReportingProfile): stri
 
 function buildProfileActions(
   profile: GovernanceReportingProfile,
-  runningProfileId: string | null
+  runningProfileId: string | null,
+  surface: ReportingProfileActionSurface = "profile-detail"
 ): ReportingProfileAction[] {
   const isRunningThisProfile = runningProfileId === profile.id;
   const runningReason = isRunningThisProfile ? `${profile.name} export is already running.` : null;
@@ -790,7 +798,7 @@ function buildProfileActions(
       href: exportPreviewEndpoint(profile.id),
       variant: "outline",
       ariaLabel: `Preview ${profile.name} export payload`,
-      describedById: `reporting-action-${profile.id}-preview-status`,
+      describedById: buildProfileActionDescriptionId(profile.id, "preview", surface),
       statusText: "Opens the current export payload preview in a new browser tab.",
       descriptionText: "Opens the current export payload preview in a new browser tab.",
       statusBadgeLabel: "GET",
@@ -811,7 +819,7 @@ function buildProfileActions(
       ariaLabel: evidenceDisabledReason
         ? `Run ${profile.name} export analysis unavailable until required evidence is attached`
         : `Run ${profile.name} export analysis`,
-      describedById: `reporting-action-${profile.id}-run-status`,
+      describedById: buildProfileActionDescriptionId(profile.id, "run", surface),
       statusText: runStatusText,
       descriptionText: runStatusText,
       statusBadgeLabel: isRunningThisProfile ? "Running" : evidenceDisabledReason ? "Gated" : "POST",
@@ -829,6 +837,14 @@ function buildProfileActions(
       isRunning: isRunningThisProfile
     }
   ];
+}
+
+function buildProfileActionDescriptionId(
+  profileId: string,
+  actionId: ReportingProfileAction["id"],
+  surface: ReportingProfileActionSurface
+): string {
+  return `reporting-action-${sanitizeDomId(profileId)}-${actionId}-${surface}-status`;
 }
 
 function buildProfileExportEvidenceDisabledReason(profile: GovernanceReportingProfile): string | null {

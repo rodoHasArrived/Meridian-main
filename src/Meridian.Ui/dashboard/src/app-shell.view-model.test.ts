@@ -58,6 +58,17 @@ describe("app shell view model", () => {
 
     expect(state.activeWorkspace.label).toBe("Trading");
     expect(state.canRenderRoutes).toBe(false);
+    expect(state.workflowContinuity).toMatchObject({
+      operatorFocusSummary: "Loading cross-workspace operator posture.",
+      operatorFocusEmptyText: "Ranked focus actions will appear after workstation payloads load.",
+      operatorFocusItems: [],
+      evidenceTimelineSummary: "Loading cross-workspace evidence timeline.",
+      evidenceTimelineEmptyText: "Recent audit and workflow events will appear after workstation payloads load.",
+      evidenceTimelineItems: [],
+      linkedContextSummary: "Loading linked operating context.",
+      linkedContextEmptyText: "Portfolio-aware context links will appear after workstation payloads load.",
+      linkedContextItems: []
+    });
     expect(state.statusPanel).toMatchObject({
       id: "workstation-shell-status-loading",
       titleId: "workstation-shell-status-loading-title",
@@ -125,10 +136,10 @@ describe("app shell view model", () => {
       clearSubjectAriaLabel: "Clear AAPL operating context"
     });
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.active, step.next, step.href])).toEqual([
-      ["watchlist", false, false, "/data/watchlist"],
+      ["watchlist", false, false, "/data/watchlist?symbol=AAPL"],
       ["quotes", true, false, "/data/quotes?symbol=AAPL"],
       ["alerts", false, true, "/data/alerts?symbol=AAPL"],
-      ["readiness", false, false, "/trading/readiness"],
+      ["readiness", false, false, "/trading/readiness?symbol=AAPL"],
       ["provider-setup", false, false, "/settings#alpaca-provider-setup"]
     ]);
     expect(state.workflowContinuity.steps.map((step) => [step.label, step.statusLabel])).toEqual([
@@ -158,11 +169,11 @@ describe("app shell view model", () => {
       summary: expect.stringContaining("Subject: MSFT.")
     });
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.href])).toEqual([
-      ["trading-readiness", "/trading/readiness"],
-      ["trading-cockpit", "/trading"],
-      ["portfolio-exposure", "/portfolio"],
-      ["reconciliation", "/accounting/reconciliation"],
-      ["report-packs", "/reporting/report-packs"]
+      ["trading-readiness", "/trading/readiness?symbol=MSFT"],
+      ["trading-cockpit", "/trading?symbol=MSFT"],
+      ["portfolio-exposure", "/portfolio?symbol=MSFT"],
+      ["reconciliation", "/accounting/reconciliation?symbol=MSFT"],
+      ["report-packs", "/reporting/report-packs?symbol=MSFT"]
     ]);
 
     const dataState = buildAppShellViewState({
@@ -175,12 +186,182 @@ describe("app shell view model", () => {
     });
 
     expect(dataState.workflowContinuity.steps.map((step) => [step.id, step.href])).toEqual([
-      ["watchlist", "/data/watchlist"],
+      ["watchlist", "/data/watchlist?symbol=MSFT"],
       ["quotes", "/data/quotes?symbol=MSFT"],
       ["alerts", "/data/alerts?symbol=MSFT"],
-      ["readiness", "/trading/readiness"],
+      ["readiness", "/trading/readiness?symbol=MSFT"],
       ["provider-setup", "/settings#alpaca-provider-setup"]
     ]);
+  });
+
+  it("preserves account, run, provider, and date scope across institutional workflow routes", () => {
+    const state = buildAppShellViewState({
+      pathname: "/portfolio",
+      search: "?symbol=msft&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(state.workflowContinuity).toMatchObject({
+      contextValue: "Portfolio / MSFT",
+      clearSubjectAriaLabel: "Clear operating scope: Subject MSFT, Account fund-1, Run run-9, Provider Alpaca, Window 2026-05-01 to 2026-05-15"
+    });
+    expect(state.workflowContinuity.operatingScope.summary)
+      .toBe("Subject: MSFT / Account: fund-1 / Run: run-9 / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15");
+    expect(state.workflowContinuity.operatingScope.items.map((item) => [item.label, item.value])).toEqual([
+      ["Subject", "MSFT"],
+      ["Account", "fund-1"],
+      ["Run", "run-9"],
+      ["Provider", "Alpaca"],
+      ["Window", "2026-05-01 to 2026-05-15"]
+    ]);
+    expect(state.workflowContinuity.steps.map((step) => [step.id, step.href])).toEqual([
+      ["trading-readiness", "/trading/readiness?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"],
+      ["trading-cockpit", "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"],
+      ["portfolio-exposure", "/portfolio?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"],
+      ["reconciliation", "/accounting/reconciliation?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"],
+      ["report-packs", "/reporting/report-packs?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"]
+    ]);
+  });
+
+  it("builds portfolio-aware linked context for the active operating symbol", () => {
+    const state = buildAppShellViewState({
+      pathname: "/portfolio",
+      operatingContextSymbol: "msft",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: {
+        ...sessionPayload,
+        dataOperations: {
+          providers: [
+            {
+              provider: "Alpaca",
+              status: "Healthy",
+              capability: "quotes",
+              latency: "95ms",
+              note: "Streaming quote path is healthy."
+            }
+          ],
+          backfills: [],
+          exports: []
+        },
+        trading: {
+          positions: [
+            {
+              symbol: "MSFT",
+              side: "Long",
+              quantity: "10",
+              averagePrice: "410.00",
+              markPrice: "415.00",
+              dayPnl: "+$50",
+              unrealizedPnl: "+$50",
+              exposure: "$4,150"
+            }
+          ],
+          openOrders: [
+            {
+              orderId: "order-1",
+              symbol: "MSFT",
+              side: "Buy",
+              type: "Limit",
+              quantity: "5",
+              limitPrice: "412.00",
+              status: "Working",
+              submittedAt: "2026-05-15T14:00:00Z"
+            }
+          ],
+          fills: [],
+          risk: {
+            state: "Healthy",
+            summary: "Trading risk is inside guardrails."
+          }
+        },
+        portfolio: {
+          positions: [
+            {
+              symbol: "MSFT",
+              side: "Long",
+              quantity: "10",
+              averagePrice: "410.00",
+              markPrice: "415.00",
+              dayPnl: "+$50",
+              unrealizedPnl: "+$50",
+              exposure: "$4,150"
+            }
+          ],
+          risk: {
+            state: "Healthy",
+            summary: "Exposure is inside guardrails."
+          }
+        },
+        governance: {
+          breakQueue: [
+            {
+              status: "Open"
+            }
+          ],
+          reconciliationQueue: []
+        },
+        reporting: {
+          reporting: {
+            reportPackTargets: ["monthly-board-pack"]
+          }
+        }
+      } as unknown as AppShellWorkspacePayload
+    });
+
+    expect(state.workflowContinuity).toMatchObject({
+      linkedContextSummary: "MSFT needs 2 checks before action across 5 workspaces; 2 review.",
+      linkedContextPostureLabel: "2 review",
+      linkedContextPostureTone: "review",
+      linkedContextPrimaryActionLabel: "Open Trading cockpit",
+      linkedContextPrimaryActionHref: "/trading?symbol=MSFT"
+    });
+    expect(state.workflowContinuity.linkedContextItems.map((item) => [
+      item.label,
+      item.route,
+      item.workspaceLabel,
+      item.statusLabel,
+      item.tone
+    ])).toEqual([
+      ["Trading cockpit", "/trading?symbol=MSFT", "Trading", "Orders open", "review"],
+      ["Reconciliation", "/accounting/reconciliation?symbol=MSFT", "Accounting", "Breaks open", "review"],
+      ["Quote evidence", "/data/quotes?symbol=MSFT", "Data", "Trusted", "ready"],
+      ["Portfolio exposure", "/portfolio?symbol=MSFT", "Portfolio", "Holding loaded", "ready"],
+      ["Evidence packet", "/reporting/evidence?symbol=MSFT", "Reporting", "Packet ready", "ready"]
+    ]);
+    expect(state.workflowContinuity.linkedContextItems[0].ariaLabel)
+      .toBe("Trading: Trading cockpit. 1 open order and 0 recent fills are loaded for MSFT. Orders open. active subject.");
+    expect(state.workflowContinuity.linkedContextPrimaryActionAriaLabel)
+      .toBe("Open Trading cockpit from active subject; Trading status Orders open.");
+  });
+
+  it("turns a linked subject into a global decision brief when no blockers are loaded", () => {
+    const state = buildAppShellViewState({
+      pathname: "/data/quotes",
+      search: "?symbol=MSFT",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(state.workflowContinuity.decisionBrief).toEqual({
+      label: "Decision brief",
+      title: "Continue MSFT decision",
+      summary: "MSFT needs 5 checks before action across 5 workspaces; 5 pending.",
+      reasonLabel: "Context",
+      reason: "Open quote, tape, depth, and history evidence for MSFT.",
+      statusLabel: "5 pending",
+      statusTone: "pending",
+      evidenceLabel: null,
+      actionLabel: "Open Quote evidence",
+      actionHref: "/data/quotes?symbol=MSFT",
+      actionAriaLabel: "Open Quote evidence from active subject; Data status Waiting."
+    });
   });
 
   it("surfaces the Alpaca provider setup handoff as the active workflow step", () => {
@@ -257,6 +438,148 @@ describe("app shell view model", () => {
     ]);
     expect(state.workflowContinuity.steps.find((step) => step.id === "reconciliation")?.ariaLabel)
       .toBe("Reconciliation, current workflow step, 2 breaks");
+  });
+
+  it("ranks cross-workspace operator focus items for the shell continuity dock", () => {
+    const state = buildAppShellViewState({
+      pathname: "/portfolio",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: {
+        ...sessionPayload,
+        trading: {
+          readiness: {
+            acceptanceGates: [
+              {
+                gateId: "replay-gate",
+                label: "Replay audit",
+                status: "Blocked",
+                detail: "Replay evidence is stale for the active paper session."
+              }
+            ],
+            workItems: [
+              {
+                workItemId: "brokerage-sync",
+                kind: "BrokerageSync",
+                label: "Brokerage sync failed",
+                detail: "Account sync failed after the last provider heartbeat.",
+                tone: "Critical",
+                createdAt: "2026-05-14T20:00:00Z",
+                runId: null,
+                fundAccountId: "fund-1",
+                auditReference: "audit-1",
+                workspace: "portfolio",
+                targetRoute: "/portfolio/brokerage-sync",
+                targetPageTag: "BrokerageSync"
+              },
+              {
+                workItemId: "report-pack",
+                kind: "ReportPackApproval",
+                label: "Report pack approval waiting",
+                detail: "Monthly board pack still needs an operator sign-off.",
+                tone: "Warning",
+                createdAt: "2026-05-14T21:00:00Z",
+                runId: "run-1",
+                fundAccountId: null,
+                auditReference: "audit-2",
+                workspace: "reporting",
+                targetRoute: "/reporting/report-packs",
+                targetPageTag: "ReportPackApproval"
+              }
+            ],
+            controls: {
+              circuitBreakerOpen: false
+            },
+            replay: null,
+            brokerageSync: null
+          }
+        },
+        dataOperations: {
+          providers: [
+            {
+              provider: "Alpaca",
+              status: "Warning",
+              capability: "paper",
+              latency: "120ms",
+              note: "Paper endpoint returned intermittent quote gaps.",
+              recommendedAction: "Review paper provider posture."
+            }
+          ],
+          backfills: [],
+          exports: []
+        },
+        portfolio: {
+          positions: [],
+          risk: {
+            state: "Healthy",
+            summary: "Exposure is within guardrails."
+          }
+        },
+        governance: {
+          breakQueue: [],
+          reconciliationQueue: [],
+          reporting: {
+            reportPackTargets: ["monthly-board-pack"]
+          }
+        },
+        reporting: {
+          reporting: {
+            reportPackTargets: ["monthly-board-pack"]
+          }
+        }
+      } as unknown as AppShellWorkspacePayload
+    });
+
+    expect(state.workflowContinuity.operatorFocusSummary)
+      .toBe("4 focus items across workspaces: 2 blocked and 2 review.");
+    expect(state.workflowContinuity.operatorFocusOverflowLabel).toBe("+1 more focus item");
+    expect(state.workflowContinuity.operatorFocusItems.map((item) => [
+      item.label,
+      item.route,
+      item.workspaceLabel,
+      item.actionLabel,
+      item.tone
+    ])).toEqual([
+      ["Brokerage sync failed", "/settings#alpaca-provider-setup", "Settings", "Fix provider setup", "blocked"],
+      ["Replay audit", "/trading/readiness", "Trading", "Open readiness", "blocked"],
+      ["Report pack approval waiting", "/reporting/report-packs", "Reporting", "Open report packs", "review"]
+    ]);
+    expect(state.workflowContinuity.operatorFocusCommandItems.map((item) => item.label)).toEqual([
+      "Brokerage sync failed",
+      "Replay audit",
+      "Report pack approval waiting",
+      "Alpaca provider warning"
+    ]);
+    expect(state.workflowContinuity.operatorFocusItems[0].ariaLabel)
+      .toBe("Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup.");
+    expect(state.workflowContinuity.decisionBrief).toMatchObject({
+      label: "Decision brief",
+      title: "Resolve Brokerage sync failed",
+      summary: "Settings is the highest-priority loaded issue. 4 focus items across workspaces: 2 blocked and 2 review.",
+      reasonLabel: "Why now",
+      reason: "Account sync failed after the last provider heartbeat.",
+      statusLabel: "Blocked",
+      statusTone: "blocked",
+      evidenceLabel: "Latest evidence: Reporting 2026-05-14 21:00 UTC",
+      actionLabel: "Fix provider setup",
+      actionHref: "/settings#alpaca-provider-setup",
+      actionAriaLabel: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
+    });
+    expect(state.workflowContinuity.evidenceTimelineSummary)
+      .toBe("2 evidence events across 2 workspaces. Latest: Reporting at 2026-05-14 21:00 UTC.");
+    expect(state.workflowContinuity.evidenceTimelineItems.map((item) => [
+      item.label,
+      item.workspaceLabel,
+      item.timestampLabel,
+      item.route,
+      item.tone
+    ])).toEqual([
+      ["Report pack approval waiting", "Reporting", "2026-05-14 21:00 UTC", "/reporting/report-packs", "review"],
+      ["Brokerage sync failed", "Settings", "2026-05-14 20:00 UTC", "/settings#alpaca-provider-setup", "blocked"]
+    ]);
+    expect(state.workflowContinuity.evidenceTimelineItems[0].ariaLabel)
+      .toBe("Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Audit: audit-2. 2026-05-14 21:00 UTC. Open evidence.");
   });
 
   it("keeps available routes open when only some workspace slices fail", () => {

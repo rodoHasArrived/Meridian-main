@@ -2,6 +2,8 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   COVERED_CALL_CHAIN_DETAIL_PANEL_ID,
+  buildCoveredCallFormFieldGroups,
+  buildCoveredCallFormFields,
   buildChainPreviewPanelViewModel,
   buildCoveredCallCancelCommandState,
   buildCoveredCallPayoffPanel,
@@ -65,6 +67,47 @@ describe("formToRequest", () => {
   it("converts empty maxDte to null", () => {
     const req = formToRequest({ ...DEFAULT_COVERED_CALL_FORM, minStrike: "500", maxDte: "" });
     expect(req.maxDte).toBeNull();
+  });
+});
+
+describe("covered-call form field view models", () => {
+  it("keeps field labels, helper copy, stable ids, and scoring controls in the view model", () => {
+    const fields = buildCoveredCallFormFields({ minStrike: "Minimum strike must be greater than zero." });
+    const groups = buildCoveredCallFormFieldGroups(fields);
+
+    expect(fields.minStrike).toMatchObject({
+      id: "cc-minStrike",
+      label: "Min strike",
+      type: "number",
+      step: "0.01",
+      required: true,
+      helperText: "Lowest call strike the strategy may sell.",
+      errorId: "cc-minStrike-error",
+      describedBy: "cc-minStrike-help cc-minStrike-error",
+      error: "Minimum strike must be greater than zero.",
+      invalid: true
+    });
+    expect(fields.scoringMode).toMatchObject({
+      id: "cc-scoringMode",
+      label: "Scoring mode",
+      type: "select",
+      describedBy: "cc-scoringMode-help",
+      invalid: false,
+      options: [
+        { value: "Relative", label: "Relative", description: "Rank by relative candidate quality." },
+        { value: "Basic", label: "Basic", description: "Use the baseline filter score." }
+      ]
+    });
+    expect(fields.depthBonusWeight).toMatchObject({
+      id: "cc-depthBonusWeight",
+      label: "Depth bonus weight",
+      helperText: "Extra score weight for deeper option-chain liquidity when Relative scoring is selected."
+    });
+    expect(groups.map((group) => group.id)).toContain("scoring");
+    expect(groups.find((group) => group.id === "scoring")?.fields.map((field) => field.key)).toEqual([
+      "scoringMode",
+      "depthBonusWeight"
+    ]);
   });
 });
 

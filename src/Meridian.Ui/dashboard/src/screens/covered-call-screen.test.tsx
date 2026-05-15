@@ -249,6 +249,41 @@ describe("CoveredCallScreen", () => {
     });
   });
 
+  it("renders VM-owned scoring controls and includes them in the backtest request", async () => {
+    vi.mocked(coveredCallApi.startCoveredCallBacktest).mockResolvedValue({
+      runId: "run-scoring",
+      queuedAt: "2024-07-01T00:00:00Z"
+    });
+
+    renderCoveredCallScreen();
+
+    const scoringMode = screen.getByLabelText("Scoring mode");
+    const depthBonusWeight = screen.getByLabelText("Depth bonus weight");
+
+    expect(scoringMode).toHaveAttribute("id", "cc-scoringMode");
+    expect(scoringMode).toHaveAttribute("aria-describedby", "cc-scoringMode-help");
+    expect(screen.getByText("Relative ranks candidates by liquidity, depth, and premium quality; Basic keeps the plain filter score.")).toBeInTheDocument();
+    expect(depthBonusWeight).toHaveAttribute("id", "cc-depthBonusWeight");
+    expect(depthBonusWeight).toHaveAttribute("aria-describedby", "cc-depthBonusWeight-help");
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText(/Min strike/i), { target: { value: "500" } });
+      fireEvent.change(scoringMode, { target: { value: "Basic" } });
+      fireEvent.change(depthBonusWeight, { target: { value: "0.12" } });
+    });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Run covered-call backtest" })).not.toBeDisabled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Run covered-call backtest" }));
+    });
+
+    expect(coveredCallApi.startCoveredCallBacktest).toHaveBeenCalledWith(expect.objectContaining({
+      minStrike: 500,
+      scoringMode: "Basic",
+      depthBonusWeight: 0.12
+    }));
+  });
+
   it("renders previous runs through dense-table rows and reloads a run from keyboard selection", async () => {
     vi.mocked(coveredCallApi.listCoveredCallRuns).mockResolvedValue([historicalRun]);
     vi.mocked(coveredCallApi.getCoveredCallRunResult).mockResolvedValue({

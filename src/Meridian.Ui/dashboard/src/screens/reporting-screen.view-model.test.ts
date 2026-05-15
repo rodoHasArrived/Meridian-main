@@ -86,8 +86,8 @@ describe("useReportingScreenViewModel", () => {
       "Run export"
     ]);
     expect(result.current.workflowTaskPanel?.actions.map((action) => action.describedById)).toEqual([
-      "reporting-action-excel-preview-status",
-      "reporting-action-excel-run-status"
+      "reporting-action-excel-preview-report-pack-task-status",
+      "reporting-action-excel-run-report-pack-task-status"
     ]);
     expect(result.current.workflowTaskPanel?.actions[1]).toMatchObject({
       id: "run",
@@ -337,7 +337,7 @@ describe("useReportingScreenViewModel", () => {
       label: "Preview payload",
       href: "/api/export/preview?profile=excel",
       ariaLabel: "Preview Excel export payload",
-      describedById: "reporting-action-excel-preview-status",
+      describedById: "reporting-action-excel-preview-profile-detail-status",
       statusText: "Opens the current export payload preview in a new browser tab.",
       descriptionText: "Opens the current export payload preview in a new browser tab.",
       statusBadgeLabel: "GET",
@@ -439,7 +439,7 @@ describe("useReportingScreenViewModel", () => {
         statusBadgeAriaLabel: "Excel export is running",
         statusBadgeVariant: "warning",
         descriptionText: "Excel export is running. Wait for the result before starting another export.",
-        describedById: "reporting-action-excel-run-status",
+        describedById: "reporting-action-excel-run-profile-detail-status",
         statusText: "Excel export is running. Wait for the result before starting another export."
       });
     });
