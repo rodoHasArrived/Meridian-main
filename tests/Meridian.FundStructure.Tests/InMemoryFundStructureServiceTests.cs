@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.Json;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
@@ -792,6 +793,62 @@ public sealed class InMemoryFundStructureServiceTests
             Assert.Contains(accountingView.LedgerGroups, group =>
                 group.DisplayName == "VEHICLE-TB"
                 && group.AccountIds.Contains(fixture.VehicleAccountId));
+        }
+        finally
+        {
+            DeleteDirectory(tempDirectory);
+        }
+    }
+
+    [Fact]
+    public async Task ConcurrentClientCreates_PersistAndReloadWithoutLosingState()
+    {
+        var tempDirectory = CreateTempDirectory();
+        var structurePersistencePath = Path.Combine(tempDirectory, "fund-structure-concurrency.json");
+        var now = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero);
+
+        try
+        {
+            var service = CreateStructureService(persistencePath: structurePersistencePath);
+            var organizationId = Guid.NewGuid();
+            var businessId = Guid.NewGuid();
+
+            await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+                organizationId,
+                "ORG-CONCURRENT",
+                "Concurrent Meridian Org",
+                "USD",
+                now,
+                "test"));
+
+            await service.CreateBusinessAsync(new CreateBusinessRequest(
+                businessId,
+                organizationId,
+                BusinessKindDto.FinancialAdvisor,
+                "BIZ-CONCURRENT",
+                "Concurrent Meridian Advisory",
+                "USD",
+                now,
+                "test"));
+
+            var createTasks = Enumerable.Range(1, 24).Select(index =>
+                service.CreateClientAsync(new CreateClientRequest(
+                    Guid.NewGuid(),
+                    businessId,
+                    $"CLIENT-{index:D3}",
+                    $"Concurrent Client {index:D3}",
+                    "USD",
+                    now,
+                    "test")));
+
+            await Task.WhenAll(createTasks);
+
+            var graph = await service.GetOrganizationStructureAsync(new OrganizationStructureQuery(organizationId));
+            Assert.Equal(24, graph.Clients.Count);
+
+            var reloadedService = CreateStructureService(persistencePath: structurePersistencePath);
+            var reloadedGraph = await reloadedService.GetOrganizationStructureAsync(new OrganizationStructureQuery(organizationId));
+            Assert.Equal(24, reloadedGraph.Clients.Count);
         }
         finally
         {

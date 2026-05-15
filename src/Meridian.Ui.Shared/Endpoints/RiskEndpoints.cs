@@ -93,13 +93,13 @@ public static class RiskEndpoints
 
                 return Results.Json(updated, jsonOptions);
             }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
             catch (ArgumentOutOfRangeException)
             {
                 return Results.NotFound();
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
             }
         })
         .WithName("UpdateRiskRuleConfig")
