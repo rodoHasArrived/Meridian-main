@@ -4,7 +4,7 @@ namespace Meridian.Infrastructure.Adapters.Core;
 
 internal static class MarketDataTracing
 {
-    private static readonly ActivitySource Source = new("Meridian", "1.0.0");
+    private static readonly ActivitySource Source = new("Meridian");
 
     public static Activity? StartBackfillActivity(string provider, string symbol, string? from, string? to)
     {
