@@ -6886,6 +6886,9 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   ├── covered-call-history-1440.png
 │   │       │   │   ├── covered-call-history-390.png
 │   │       │   │   ├── covered-call-trade-timeline-smoke.png
+│   │       │   │   ├── global-scope-smoke
+│   │       │   │   │   ├── global-scope-portfolio.png
+│   │       │   │   │   └── preview.pid
 │   │       │   │   ├── governance-reconciliation-disabled-reasons-mobile-smoke.png
 │   │       │   │   ├── governance-reconciliation-disabled-reasons-smoke.png
 │   │       │   │   ├── price-alerts-dev-tables-smoke.png
@@ -6909,7 +6912,14 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   │   ├── covered-call-stage-navigation-smoke.png
 │   │       │   │   │   ├── covered-call-trade-timeline-smoke.png
 │   │       │   │   │   ├── evidence-manifest-action-smoke.png
+│   │       │   │   │   ├── linked-context-portfolio-msft.png
 │   │       │   │   │   ├── live-quotes-order-readiness-handoff-smoke.png
+│   │       │   │   │   ├── operator-focus-dock-smoke-2026-05-15.png
+│   │       │   │   │   ├── operator-focus-dock-smoke.png
+│   │       │   │   │   ├── operator-focus-full-queue-smoke.png
+│   │       │   │   │   ├── operator-focus-route-state.png
+│   │       │   │   │   ├── operator-focus-settings-deeplink-2026-05-15.png
+│   │       │   │   │   ├── operator-focus-visible-detail-smoke.png
 │   │       │   │   │   ├── operator-readiness-utc-smoke.png
 │   │       │   │   │   ├── overview-portfolio-empty-actions-smoke.png
 │   │       │   │   │   ├── overview-utc-smoke.png
@@ -6949,6 +6959,7 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   │   ├── trading-fills-detail-smoke.png
 │   │       │   │   │   ├── trading-order-ticket-ack-smoke.png
 │   │       │   │   │   ├── trading-order-ticket-duplicate-guard-smoke.png
+│   │       │   │   │   ├── trading-paper-session-form-smoke.png
 │   │       │   │   │   ├── watchlist-empty-value-mobile-smoke.png
 │   │       │   │   │   ├── watchlist-empty-value-smoke.png
 │   │       │   │   │   ├── watchlist-retry-smoke.png
@@ -6979,6 +6990,8 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   │   ├── live-quotes-depth-detail-mobile.png
 │   │       │   │   │   ├── live-quotes-seeded-desktop.png
 │   │       │   │   │   ├── live-quotes-seeded-mobile.png
+│   │       │   │   │   ├── live-quotes-session-desktop.png
+│   │       │   │   │   ├── live-quotes-session-mobile.png
 │   │       │   │   │   ├── operator-readiness-evidence-desktop.png
 │   │       │   │   │   ├── operator-readiness-evidence-mobile.png
 │   │       │   │   │   ├── overview-activity-desktop.png
@@ -6991,6 +7004,8 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   │   ├── quant-lab-trade-ledger-mobile.png
 │   │       │   │   │   ├── quant-notebook-desktop.png
 │   │       │   │   │   ├── quant-notebook-mobile.png
+│   │       │   │   │   ├── reporting-report-pack-ids-desktop.png
+│   │       │   │   │   ├── reporting-report-pack-ids-mobile.png
 │   │       │   │   │   ├── research-tab-focus-desktop.png
 │   │       │   │   │   ├── research-tab-focus-mobile.png
 │   │       │   │   │   ├── security-master-conflict-actions-desktop.png
@@ -7004,6 +7019,9 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   │   ├── watchlist-clean-smoke-runner.mjs
 │   │       │   │   │   ├── workspace-header-desktop.png
 │   │       │   │   │   └── workspace-header-mobile.png
+│   │       │   │   ├── web-ui-data-operations-preview.pid
+│   │       │   │   ├── web-ui-overview-today-vite-4223.pid
+│   │       │   │   ├── web-ui-overview-today-vite.pid
 │   │       │   │   ├── web-ui-quant-notebook-smoke.png
 │   │       │   │   ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
 │   │       │   │   ├── web-ui-report-pack-profile-keyboard-smoke.png
@@ -7011,6 +7029,9 @@ Use these documents together when planning or implementing new work:
 │   │       │   │   ├── web-ui-reporting-mobile-smoke.png
 │   │       │   │   ├── web-ui-research-cash-disabled-mobile-smoke.png
 │   │       │   │   ├── web-ui-research-cash-disabled-smoke.png
+│   │       │   │   ├── web-ui-research-plottool-desktop.png
+│   │       │   │   ├── web-ui-research-plottool-mobile.png
+│   │       │   │   ├── web-ui-strategy-designer-spot-price.png
 │   │       │   │   ├── web-ui-trading-command-state-desktop.png
 │   │       │   │   ├── web-ui-trading-command-state-mobile.png
 │   │       │   │   ├── web-ui-trading-paper-session-smoke.png
@@ -8938,6 +8959,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-726 directories, 7996 files
+727 directories, 8016 files
 ```
 <!-- readme-tree end -->
