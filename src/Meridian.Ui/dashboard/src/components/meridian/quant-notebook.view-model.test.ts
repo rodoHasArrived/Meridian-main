@@ -188,6 +188,20 @@ describe("useQuantNotebookViewModel", () => {
 
     expect(result.current.cells).toHaveLength(1);
     expect(result.current.cells[0].state).toBe("idle");
+    expect(result.current.runAllCommand).toMatchObject({
+      label: "Run all",
+      ariaLabel: "Run all notebook cells",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
+    expect(result.current.cells[0].runCommand).toMatchObject({
+      label: "Run",
+      ariaLabel: "Run cell 1",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
     expect(result.current.dataResult).toBeNull();
     expect(result.current.dataFetchState).toBe("idle");
   });
@@ -332,6 +346,47 @@ describe("useQuantNotebookViewModel", () => {
     expect(result.current.cells[0].state).toBe("done");
     expect(result.current.cells[0].output).toHaveLength(1);
     expect(result.current.cells[0].output[0].text).toBe("mock output");
+  });
+
+  it("keeps run commands disabled with reasons while a cell is running", async () => {
+    const { result } = renderHook(() => useQuantNotebookViewModel());
+    const cellId = result.current.cells[0].id;
+    let resolveExecution: ((value: CellExecuteResult) => void) | undefined;
+
+    vi.mocked(api.executeCell).mockReturnValueOnce(
+      new Promise<CellExecuteResult>((resolve) => {
+        resolveExecution = resolve;
+      })
+    );
+
+    await act(async () => {
+      void result.current.runCell(cellId);
+    });
+
+    expect(result.current.runAllCommand).toMatchObject({
+      label: "Running...",
+      ariaLabel: "Notebook cells are running",
+      disabled: true,
+      disabledReason: "Wait for running cells to finish before running all notebook cells.",
+      busy: true
+    });
+    expect(result.current.cells[0].runCommand).toMatchObject({
+      label: "Running...",
+      ariaLabel: "Cell 1 is running",
+      disabled: true,
+      disabledReason: "Wait for cell 1 to finish running before rerunning it.",
+      busy: true
+    });
+
+    await act(async () => {
+      resolveExecution?.({
+        cellId,
+        success: true,
+        output: [],
+        elapsedMs: 1,
+        errorMessage: null
+      });
+    });
   });
 
   it("runCell surfaces errors as cell error state", async () => {

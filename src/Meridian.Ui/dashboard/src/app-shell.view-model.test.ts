@@ -114,6 +114,73 @@ describe("app shell view model", () => {
       targetElementId: null,
       fallbackElementId: "workbench-content"
     });
+    expect(state.workflowContinuity).toMatchObject({
+      title: "Investment Operations Path",
+      contextLabel: "Operating context",
+      contextValue: "Data / AAPL",
+      routeLabel: "/data/quotes?symbol=AAPL",
+      nextActionLabel: "Next: Research",
+      nextActionHref: "/strategy"
+    });
+    expect(state.workflowContinuity.steps.map((step) => [step.id, step.active, step.next, step.href])).toEqual([
+      ["trusted-data", true, false, "/data/watchlist"],
+      ["research", false, true, "/strategy"],
+      ["paper-readiness", false, false, "/trading/readiness"],
+      ["portfolio-ledger", false, false, "/portfolio"],
+      ["reconciliation", false, false, "/accounting/reconciliation"],
+      ["governed-report", false, false, "/reporting/report-packs"]
+    ]);
+  });
+
+  it("derives status-aware workflow continuity for the institutional operations path", () => {
+    const state = buildAppShellViewState({
+      pathname: "/accounting/reconciliation",
+      loading: false,
+      error: null,
+      workspaceErrors: {
+        trading: "Readiness endpoint timed out."
+      },
+      payload: {
+        ...sessionPayload,
+        dataOperations: {
+          providers: [{ status: "Healthy" }],
+          backfills: [],
+          exports: []
+        },
+        research: {
+          metrics: [],
+          runs: [{ status: "Needs Review" }]
+        },
+        portfolio: {
+          positions: [{ symbol: "AAPL" }],
+          risk: { state: "Healthy" }
+        },
+        governance: {
+          breakQueue: [{ status: "Open" }],
+          reconciliationQueue: [{ openBreakCount: 2 }]
+        },
+        reporting: {
+          reporting: {
+            reportPackTargets: ["monthly-board-pack"]
+          }
+        }
+      } as unknown as AppShellWorkspacePayload
+    });
+
+    expect(state.workflowContinuity.title).toBe("Investment Operations Path");
+    expect(state.workflowContinuity.contextValue).toBe("Accounting / Reconciliation");
+    expect(state.workflowContinuity.nextActionLabel).toBe("Next: Governed report");
+    expect(state.workflowContinuity.summary).toContain("3 steps need operator attention.");
+    expect(state.workflowContinuity.steps.map((step) => [step.id, step.statusLabel, step.statusTone])).toEqual([
+      ["trusted-data", "Trusted", "ready"],
+      ["research", "1 review", "review"],
+      ["paper-readiness", "Degraded", "blocked"],
+      ["portfolio-ledger", "1 positions", "ready"],
+      ["reconciliation", "Current: 2 breaks", "review"],
+      ["governed-report", "Next: 1 packs", "ready"]
+    ]);
+    expect(state.workflowContinuity.steps.find((step) => step.id === "reconciliation")?.ariaLabel)
+      .toBe("Reconciliation, current workflow step, 2 breaks");
   });
 
   it("keeps available routes open when only some workspace slices fail", () => {

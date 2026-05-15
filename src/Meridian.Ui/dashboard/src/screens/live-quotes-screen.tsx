@@ -21,12 +21,14 @@ import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getLiveOrderbook, getLiveQuote, getLiveTrades, submitOrder } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import type { SessionStatsDto } from "@/types";
 import {
   computeIntradayMetrics,
   useLiveQuotesScreenViewModel,
   type LiveQuotesBboPanelViewModel,
   type LiveQuotesDepthLadderViewModel,
+  type LiveQuotesDepthLevelViewModel,
   type LiveQuotesMarketDataViewModel,
   type LiveQuotesPanelState,
   type LiveQuotesPriceChartViewModel,
@@ -375,53 +377,120 @@ interface DepthLadderProps {
 
 function DepthLadder({ ladder, onSeedBuy, onSeedSell }: DepthLadderProps) {
   return (
-    <div className="grid grid-cols-2 gap-2 font-mono text-xs">
-      <div>
-        <div className="mb-1 flex justify-between text-muted-foreground">
-          <span>Bid size</span>
-          <span>Price</span>
-        </div>
-        {ladder.bids.map((level) => (
+    <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(17rem,0.58fr)]">
+      <div className="grid grid-cols-2 gap-2 font-mono text-xs" role="group" aria-label={ladder.tableLabel}>
+        <DepthLadderSide
+          label="Bid size"
+          valueLabel="Price"
+          levels={ladder.bids}
+          side="bid"
+          onActivate={(level) => {
+            ladder.selectLevel(level.id);
+            onSeedSell?.(level.price);
+          }}
+        />
+        <DepthLadderSide
+          label="Price"
+          valueLabel="Ask size"
+          levels={ladder.asks}
+          side="ask"
+          onActivate={(level) => {
+            ladder.selectLevel(level.id);
+            onSeedBuy?.(level.price);
+          }}
+        />
+      </div>
+      <div id={ladder.detailPanelId} aria-live="polite">
+        {ladder.selectedDetail ? (
+          <EntitySummary
+            eyebrow={ladder.selectedDetail.eyebrow}
+            title={ladder.selectedDetail.title}
+            subtitle={ladder.selectedDetail.subtitle}
+            description={ladder.selectedDetail.description}
+            status={
+              <Badge variant={ladder.selectedDetail.statusBadgeVariant}>
+                {ladder.selectedDetail.statusLabel}
+              </Badge>
+            }
+            fields={ladder.selectedDetail.fields}
+            ariaLabel={ladder.selectedDetail.ariaLabel}
+          />
+        ) : (
+          <section
+            role="status"
+            className="panel-surface h-full min-h-40 rounded-lg border-border/70 p-4 text-sm text-muted-foreground"
+            aria-label={ladder.detailEmptyTitle}
+          >
+            <div className="eyebrow-label">{ladder.detailEmptyTitle}</div>
+            <p className="mt-2">{ladder.detailEmptyText}</p>
+          </section>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DepthLadderSide({
+  label,
+  valueLabel,
+  levels,
+  side,
+  onActivate
+}: {
+  label: string;
+  valueLabel: string;
+  levels: LiveQuotesDepthLevelViewModel[];
+  side: "bid" | "ask";
+  onActivate: (level: LiveQuotesDepthLevelViewModel) => void;
+}) {
+  return (
+    <div>
+      <div className="mb-1 flex justify-between text-muted-foreground">
+        <span>{label}</span>
+        <span>{valueLabel}</span>
+      </div>
+      {levels.map((level) => {
+        const selectedClass = level.expanded
+          ? "border-primary/45 bg-primary/10"
+          : side === "bid"
+            ? "border-transparent hover:bg-positive/10"
+            : "border-transparent hover:bg-danger/10";
+        return (
           <button
             type="button"
             key={level.id}
-            onClick={() => onSeedSell?.(level.price)}
-            aria-label={level.seedLabel}
-            className="relative flex w-full justify-between rounded-sm px-2 py-1 text-left transition-colors hover:bg-positive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            onClick={() => onActivate(level)}
+            aria-label={level.selectLabel}
+            aria-controls={level.detailPanelId}
+            aria-expanded={level.expanded}
+            aria-pressed={level.expanded}
+            className={cn(
+              "relative flex w-full justify-between rounded-sm border px-2 py-1 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+              selectedClass
+            )}
           >
             <span
               aria-hidden="true"
-              className="absolute inset-y-0 right-0 rounded-sm bg-positive/15"
+              className={cn(
+                "absolute inset-y-0 rounded-sm",
+                side === "bid" ? "right-0 bg-positive/15" : "left-0 bg-danger/15"
+              )}
               style={{ width: level.barWidth }}
             />
-            <span className="relative">{level.sizeLabel}</span>
-            <span className="relative text-positive">{level.priceLabel}</span>
+            {side === "bid" ? (
+              <>
+                <span className="relative">{level.sizeLabel}</span>
+                <span className="relative text-positive">{level.priceLabel}</span>
+              </>
+            ) : (
+              <>
+                <span className="relative text-danger">{level.priceLabel}</span>
+                <span className="relative">{level.sizeLabel}</span>
+              </>
+            )}
           </button>
-        ))}
-      </div>
-      <div>
-        <div className="mb-1 flex justify-between text-muted-foreground">
-          <span>Price</span>
-          <span>Ask size</span>
-        </div>
-        {ladder.asks.map((level) => (
-          <button
-            type="button"
-            key={level.id}
-            onClick={() => onSeedBuy?.(level.price)}
-            aria-label={level.seedLabel}
-            className="relative flex w-full justify-between rounded-sm px-2 py-1 text-left transition-colors hover:bg-danger/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          >
-            <span
-              aria-hidden="true"
-              className="absolute inset-y-0 left-0 rounded-sm bg-danger/15"
-              style={{ width: level.barWidth }}
-            />
-            <span className="relative text-danger">{level.priceLabel}</span>
-            <span className="relative">{level.sizeLabel}</span>
-          </button>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }

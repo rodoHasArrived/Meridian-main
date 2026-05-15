@@ -18,6 +18,13 @@ function makeCell(overrides: Partial<QuantNotebookCellViewModel> = {}): QuantNot
     statusText: "Done in 5ms",
     collapsed: false,
     output: [{ kind: "console", text: "hello" }],
+    runCommand: {
+      label: "Run",
+      ariaLabel: "Run cell 1",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    },
     deleteConfirmationPending: false,
     deleteLabel: "Delete",
     deleteAriaLabel: "Delete cell 1. Press again to confirm.",
@@ -35,6 +42,13 @@ function makeVm(overrides: Partial<QuantNotebookViewModel> = {}): QuantNotebookV
     fetchError: null,
     dataContextPanel: buildDataContextPanel({}, null, "idle", null),
     snippets: [],
+    runAllCommand: {
+      label: "Run all",
+      ariaLabel: "Run all notebook cells",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    },
     clearOutputsLabel: "Clear",
     clearOutputsAriaLabel: "Clear all notebook outputs. Press again to confirm.",
     clearOutputsDisabledReason: null,
@@ -75,6 +89,58 @@ describe("QuantNotebook", () => {
     });
     expect(clearButton).toBeDisabled();
     expect(clearButton).toHaveAttribute("title", "Run a cell before clearing outputs.");
+  });
+
+  it("renders run-all disabled reason from the view model while a cell is running", () => {
+    render(
+      <QuantNotebook
+        vm={makeVm({
+          cells: [makeCell({ state: "running", statusText: "Running..." })],
+          runAllCommand: {
+            label: "Running...",
+            ariaLabel: "Notebook cells are running",
+            disabled: true,
+            disabledReason: "Wait for running cells to finish before running all notebook cells.",
+            busy: true
+          }
+        })}
+      />
+    );
+
+    const runAllButton = screen.getByRole("button", { name: "Notebook cells are running" });
+    expect(runAllButton).toBeDisabled();
+    expect(runAllButton).toHaveAttribute(
+      "title",
+      "Wait for running cells to finish before running all notebook cells."
+    );
+    expect(runAllButton).toHaveAttribute("aria-busy", "true");
+  });
+
+  it("renders per-cell run disabled reason from the view model", () => {
+    render(
+      <QuantNotebook
+        vm={makeVm({
+          cells: [
+            makeCell({
+              state: "running",
+              statusText: "Running...",
+              runCommand: {
+                label: "Running...",
+                ariaLabel: "Cell 1 is running",
+                disabled: true,
+                disabledReason: "Wait for cell 1 to finish running before rerunning it.",
+                busy: true
+              },
+              deleteDisabledReason: "Wait for cell 1 to finish running before deleting it."
+            })
+          ]
+        })}
+      />
+    );
+
+    const runCellButton = screen.getByRole("button", { name: "Cell 1 is running" });
+    expect(runCellButton).toBeDisabled();
+    expect(runCellButton).toHaveAttribute("title", "Wait for cell 1 to finish running before rerunning it.");
   });
 
   it("uses the confirmation label and action for armed clear-output state", async () => {

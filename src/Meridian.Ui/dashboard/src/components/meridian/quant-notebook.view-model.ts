@@ -98,6 +98,7 @@ export function markDownstreamStale(
 // ── View model hook ────────────────────────────────────────────────────────────
 
 export interface QuantNotebookCellViewModel extends NotebookCell {
+  runCommand: QuantNotebookCommandViewModel;
   deleteConfirmationPending: boolean;
   deleteLabel: string;
   deleteAriaLabel: string;
@@ -169,6 +170,7 @@ export interface QuantNotebookViewModel {
   fetchError: string | null;
   dataContextPanel: QuantNotebookDataContextPanelViewModel;
   snippets: CellSnippet[];
+  runAllCommand: QuantNotebookCommandViewModel;
   clearOutputsLabel: string;
   clearOutputsAriaLabel: string;
   clearOutputsDisabledReason: string | null;
@@ -463,6 +465,13 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
 
   const hasRunningCell = cells.some((cell) => cell.state === "running");
   const hasClearableOutput = cells.some((cell) => cell.kind !== "markdown" && cell.output.length > 0);
+  const runAllCommand: QuantNotebookCommandViewModel = {
+    label: hasRunningCell ? "Running..." : "Run all",
+    ariaLabel: hasRunningCell ? "Notebook cells are running" : "Run all notebook cells",
+    disabled: hasRunningCell,
+    disabledReason: hasRunningCell ? "Wait for running cells to finish before running all notebook cells." : null,
+    busy: hasRunningCell
+  };
   const clearOutputsDisabledReason = hasRunningCell
     ? "Wait for running cells to finish before clearing outputs."
     : hasClearableOutput
@@ -480,6 +489,13 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
         const isRunning = cell.state === "running";
         return {
           ...cell,
+          runCommand: {
+            label: isRunning ? "Running..." : "Run",
+            ariaLabel: isRunning ? `Cell ${cell.ordinal.toString()} is running` : `Run cell ${cell.ordinal.toString()}`,
+            disabled: isRunning,
+            disabledReason: isRunning ? `Wait for cell ${cell.ordinal.toString()} to finish running before rerunning it.` : null,
+            busy: isRunning
+          },
           deleteConfirmationPending,
           deleteLabel: deleteConfirmationPending ? "Confirm" : "Delete",
           deleteAriaLabel: deleteConfirmationPending
@@ -499,6 +515,7 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
     fetchError,
     dataContextPanel,
     snippets: builtInSnippets,
+    runAllCommand,
     clearOutputsLabel: clearOutputsConfirmationPending ? "Confirm clear" : "Clear",
     clearOutputsAriaLabel: clearOutputsConfirmationPending
       ? "Confirm clear all notebook outputs. This removes displayed execution results."

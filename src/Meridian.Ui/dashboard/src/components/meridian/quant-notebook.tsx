@@ -67,8 +67,6 @@ interface QuantNotebookProps {
 }
 
 export function QuantNotebook({ vm, studyChips }: QuantNotebookProps) {
-  const anyRunning = vm.cells.some((c) => c.state === "running");
-
   return (
     <Card className="border-border/70 bg-background/35">
       <CardHeader className="pb-3">
@@ -82,11 +80,14 @@ export function QuantNotebook({ vm, studyChips }: QuantNotebookProps) {
               size="sm"
               variant="secondary"
               onClick={() => void vm.runAll()}
-              disabled={anyRunning}
-              aria-label="Run all cells"
+              disabled={vm.runAllCommand.disabled}
+              disabledReason={vm.runAllCommand.disabledReason}
+              busy={vm.runAllCommand.busy}
+              busyLabel={vm.runAllCommand.label}
+              aria-label={vm.runAllCommand.ariaLabel}
             >
               <Play className="mr-1.5 h-3.5 w-3.5" />
-              Run all
+              {vm.runAllCommand.label}
             </Button>
             <Button
               size="sm"
@@ -479,8 +480,9 @@ function CellHeader({
             size="sm"
             variant="ghost"
             onClick={onRun}
-            disabled={isRunning}
-            aria-label={`Run cell ${cell.ordinal.toString()}`}
+            disabled={cell.runCommand.disabled}
+            disabledReason={cell.runCommand.disabledReason}
+            aria-label={cell.runCommand.ariaLabel}
             className="h-6 px-1.5"
           >
             <Play className="h-3 w-3" />

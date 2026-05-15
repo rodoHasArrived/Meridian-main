@@ -73,6 +73,50 @@ public sealed class ProviderFactoryCredentialContextTests
     }
 
     [Fact]
+    public void CreateBackfillProviders_UsesTopLevelAlpacaConfigWhenBackfillConfigIsEmpty()
+    {
+        var resolver = new TrackingCredentialResolver();
+        var factory = new ProviderFactory(
+            new AppConfig(
+                Alpaca: new AlpacaOptions(
+                    KeyId: "top-level-alpaca-key",
+                    SecretKey: "top-level-alpaca-secret",
+                    Feed: "delayed_sip"),
+                Backfill: new BackfillConfig(
+                    Providers: new BackfillProvidersConfig(
+                        Alpaca: new AlpacaBackfillConfig()))),
+            resolver);
+
+        var providers = factory.CreateBackfillProviders();
+
+        providers.Should().ContainSingle(p => p is AlpacaHistoricalDataProvider);
+        resolver.ContextRequests.Should().ContainEquivalentOf(
+            new ContextRequest(typeof(AlpacaHistoricalDataProvider), ["ALPACA_KEY_ID", "ALPACA_SECRET_KEY"]));
+    }
+
+    [Fact]
+    public void CreateBackfillProviders_UsesAlpacaApcaEnvironmentAliases()
+    {
+        using var env = new AlpacaEnvironmentScope();
+        env.SetProcessAndUser("ALPACA_KEY_ID", null);
+        env.SetProcessAndUser("ALPACA_SECRET_KEY", null);
+        env.SetProcessAndUser("APCA_API_KEY_ID", "apca-alpaca-key");
+        env.SetProcessAndUser("APCA_API_SECRET_KEY", "apca-alpaca-secret");
+
+        var resolver = new TrackingCredentialResolver();
+        var factory = new ProviderFactory(
+            new AppConfig(
+                Backfill: new BackfillConfig(
+                    Providers: new BackfillProvidersConfig(
+                        Alpaca: new AlpacaBackfillConfig()))),
+            resolver);
+
+        var providers = factory.CreateBackfillProviders();
+
+        providers.Should().ContainSingle(p => p is AlpacaHistoricalDataProvider);
+    }
+
+    [Fact]
     public void CreateSymbolSearchProviders_SkipsCredentialGatedProvidersWithoutLegacyMethods()
     {
         var resolver = new TrackingCredentialResolver();
@@ -127,4 +171,67 @@ public sealed class ProviderFactoryCredentialContextTests
     }
 
     private sealed record ContextRequest(Type ProviderType, IReadOnlyList<string> CredentialNames);
+
+    private sealed class AlpacaEnvironmentScope : IDisposable
+    {
+        private static readonly string[] Names =
+        [
+            "ALPACA_KEY_ID",
+            "ALPACA_SECRET_KEY",
+            "APCA_API_KEY_ID",
+            "APCA_API_SECRET_KEY",
+            "ALPACA__KEYID",
+            "ALPACA__SECRETKEY"
+        ];
+
+        private readonly Dictionary<string, string?> _processValues = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string?> _userValues = new(StringComparer.Ordinal);
+
+        public AlpacaEnvironmentScope()
+        {
+            foreach (var name in Names)
+            {
+                _processValues[name] = Environment.GetEnvironmentVariable(name);
+                _userValues[name] = ReadUser(name);
+            }
+        }
+
+        public void SetProcessAndUser(string name, string? value)
+        {
+            Environment.SetEnvironmentVariable(name, value);
+            TrySetUser(name, value);
+        }
+
+        public void Dispose()
+        {
+            foreach (var name in Names)
+            {
+                Environment.SetEnvironmentVariable(name, _processValues[name]);
+                TrySetUser(name, _userValues[name]);
+            }
+        }
+
+        private static string? ReadUser(string name)
+        {
+            try
+            {
+                return Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.User);
+            }
+            catch (PlatformNotSupportedException)
+            {
+                return null;
+            }
+        }
+
+        private static void TrySetUser(string name, string? value)
+        {
+            try
+            {
+                Environment.SetEnvironmentVariable(name, value, EnvironmentVariableTarget.User);
+            }
+            catch (PlatformNotSupportedException)
+            {
+            }
+        }
+    }
 }

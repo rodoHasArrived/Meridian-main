@@ -121,6 +121,57 @@ describe("App", () => {
     expect(screen.getByRole("main")).toHaveAttribute("id", "workbench-content");
   });
 
+  it("renders route-aware workflow continuity without relying on memorized navigation", () => {
+    mockedUseWorkstationData.mockReturnValue({
+      session: {
+        displayName: "Ops Desk",
+        role: "Operator",
+        environment: "paper",
+        activeWorkspace: "data",
+        commandCount: 7
+      },
+      overview: null,
+      research: null,
+      trading: null,
+      portfolio: null,
+      dataOperations: null,
+      governance: null,
+      reporting: null,
+      brokerageConnection: null,
+      brokeragePortfolio: null,
+      workflowLibrary: null,
+      workflowPresets: null,
+      workflowError: null,
+      usingDevelopmentFixtures: false,
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      refresh: vi.fn(),
+      refreshTrading: vi.fn(),
+      refreshPortfolio: vi.fn(),
+      upsertWorkflowPreset: vi.fn()
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/data/quotes?symbol=MSFT"] });
+
+    expect(screen.getByRole("region", { name: "Investment Operations Path continuity" })).toBeInTheDocument();
+    expect(screen.getByText("Data / MSFT")).toBeInTheDocument();
+    expect(screen.getByText("/data/quotes?symbol=MSFT")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Investment Operations Path workflow steps" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Trusted data, current workflow step, Waiting" })).toHaveAttribute(
+      "href",
+      "/data/watchlist"
+    );
+    expect(screen.getByRole("link", { name: "Research, next workflow step, Waiting" })).toHaveAttribute(
+      "href",
+      "/strategy"
+    );
+    expect(screen.getByRole("link", { name: "Continue workflow to Research" })).toHaveAttribute(
+      "href",
+      "/strategy"
+    );
+  });
+
   it("sets the workstation document title on first direct route load without moving focus", async () => {
     renderWithRouter(<App />, { initialEntries: ["/settings"] });
 
@@ -399,6 +450,6 @@ describe("App", () => {
 
     const positionsTable = await screen.findByRole("table", { name: /open positions/i });
     expect(within(positionsTable).getByText("NVDA")).toBeInTheDocument();
-    expect(screen.getByText("Portfolio workspace")).toBeInTheDocument();
+    expect(screen.getAllByText("Portfolio workspace").length).toBeGreaterThan(0);
   });
 });

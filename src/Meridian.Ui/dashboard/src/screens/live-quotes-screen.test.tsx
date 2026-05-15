@@ -795,10 +795,24 @@ describe("buildLiveQuotesMarketViewModel", () => {
       ["Stream", "stream-1"]
     ]);
     expect(vm.depthLadder.bids[0]).toMatchObject({
+      side: "bid",
       priceLabel: "188.05",
       sizeLabel: "200",
       barWidth: "100%",
-      seedLabel: "Sell AAPL at 188.05"
+      seedLabel: "Sell AAPL at 188.05",
+      selectLabel: "Inspect AAPL bid level 1 at 188.05; Sell AAPL at 188.05",
+      detailPanelId: "live-quotes-depth-level-detail",
+      expanded: true
+    });
+    expect(vm.depthLadder.selectedDetail).toMatchObject({
+      title: "Bid level 1 @ 188.05",
+      statusLabel: "Bid",
+      ariaLabel: "Bid level 1 detail",
+      fields: expect.arrayContaining([
+        { label: "Venue", value: "NASDAQ" },
+        { label: "Sequence", value: "42" },
+        { label: "Timestamp", value: "15:00:00.000 UTC" }
+      ])
     });
     expect(vm.tradeDisplayRows[0]).toMatchObject({
       aggressorLabel: "Sell",
@@ -891,6 +905,42 @@ describe("buildLiveQuotesMarketViewModel", () => {
       message: "trade tape offline",
       showData: true
     });
+  });
+
+  it("keeps selected depth-level detail in the market view model", () => {
+    const selectDepthLevel = vi.fn();
+    const vm = buildLiveQuotesMarketViewModel({
+      activeSymbol: "AAPL",
+      quote: { data: quoteFixture, error: null },
+      trades: { data: tradesFixture, error: null },
+      orderbook: { data: orderbookFixture, error: null },
+      refreshing: false,
+      selectedDepthLevelId: "ask-1",
+      selectDepthLevel,
+      tradeTableLimit: 25
+    });
+
+    expect(vm.depthLadder.selectedLevelId).toBe("ask-1");
+    expect(vm.depthLadder.asks[0]).toMatchObject({
+      id: "ask-1",
+      expanded: true,
+      tone: "negative",
+      selectLabel: "Inspect AAPL ask level 1 at 188.07; Buy AAPL at 188.07"
+    });
+    expect(vm.depthLadder.bids[0]).toMatchObject({ id: "bid-1", expanded: false });
+    expect(vm.depthLadder.selectedDetail).toMatchObject({
+      title: "Ask level 1 @ 188.07",
+      statusLabel: "Ask",
+      statusBadgeVariant: "warning",
+      description: "150 shares are visible at 188.07. Selecting this level seeds a buy limit ticket.",
+      fields: expect.arrayContaining([
+        { label: "Price", value: "188.07" },
+        { label: "Size", value: "150" },
+        { label: "Mid", value: "188.06" }
+      ])
+    });
+    vm.depthLadder.selectLevel("bid-1");
+    expect(selectDepthLevel).toHaveBeenCalledWith("bid-1");
   });
 });
 
@@ -1179,6 +1229,33 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(firstTrade).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("region", { name: "AAPL trade 10 detail" })).toBeInTheDocument();
     expect(screen.getByText("AAPL print 10")).toBeInTheDocument();
+  });
+
+  it("links order book levels to a persistent selected-depth detail panel", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
+
+    const bidLevel = await screen.findByRole("button", {
+      name: "Inspect AAPL bid level 1 at 188.05; Sell AAPL at 188.05"
+    });
+    const askLevel = await screen.findByRole("button", {
+      name: "Inspect AAPL ask level 1 at 188.07; Buy AAPL at 188.07"
+    });
+
+    expect(bidLevel).toHaveAttribute("aria-controls", "live-quotes-depth-level-detail");
+    expect(bidLevel).toHaveAttribute("aria-expanded", "true");
+    expect(askLevel).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("region", { name: "Bid level 1 detail" })).toBeInTheDocument();
+    expect(screen.getByText("Bid level 1 @ 188.05")).toBeInTheDocument();
+
+    await user.click(askLevel);
+
+    expect(askLevel).toHaveAttribute("aria-expanded", "true");
+    expect(bidLevel).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("region", { name: "Ask level 1 detail" })).toBeInTheDocument();
+    expect(screen.getByText("Ask level 1 @ 188.07")).toBeInTheDocument();
+    expect(screen.getByText("Seeded buy AAPL limit ticket at 188.07. Enter quantity, then acknowledge before submitting.")).toBeInTheDocument();
+    expect((screen.getByLabelText("Limit price") as HTMLInputElement).value).toBe("188.07");
   });
 
   it("ignores stale quote responses after switching symbols", async () => {
