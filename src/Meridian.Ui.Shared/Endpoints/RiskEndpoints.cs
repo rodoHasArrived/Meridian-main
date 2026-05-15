@@ -3,6 +3,7 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -99,16 +100,10 @@ public static class RiskEndpoints
 
     private static string ResolveActor(HttpContext context)
     {
-        if (context.Items[LoginSessionMiddleware.CurrentUserNameKey] is string userName &&
+        if (context.Items[LoginSessionMiddleware.CurrentUserKey] is string userName &&
             !string.IsNullOrWhiteSpace(userName))
         {
             return userName.Trim();
-        }
-
-        if (context.Items[LoginSessionMiddleware.CurrentDisplayNameKey] is string displayName &&
-            !string.IsNullOrWhiteSpace(displayName))
-        {
-            return displayName.Trim();
         }
 
         if (context.User.Identity?.IsAuthenticated == true &&

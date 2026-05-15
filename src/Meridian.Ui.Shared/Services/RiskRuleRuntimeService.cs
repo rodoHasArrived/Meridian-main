@@ -137,15 +137,17 @@ public sealed class RiskRuleRuntimeService
                     throw new ArgumentOutOfRangeException(nameof(request.MaxDrawdownPercent), "MaxDrawdownPercent must be greater than zero.");
                 }
 
+                var maxDrawdownPercent = request.MaxDrawdownPercent.GetValueOrDefault();
+
                 lock (_gate)
                 {
-                    _maxDrawdownPercent = request.MaxDrawdownPercent.Value;
+                    _maxDrawdownPercent = maxDrawdownPercent;
                 }
-                 _logger.LogInformation(
+                _logger.LogInformation(
                     "Risk rule config updated for {RuleName} by {Actor}: {MaxDrawdownPercent}%",
                     normalizedRule,
                     actor,
-                    request.MaxDrawdownPercent.Value);
+                    maxDrawdownPercent);
                 break;
             case "OrderRateThrottle":
                 if (request.MaxOrdersPerMinute is <= 0)
@@ -153,15 +155,17 @@ public sealed class RiskRuleRuntimeService
                     throw new ArgumentOutOfRangeException(nameof(request.MaxOrdersPerMinute), "MaxOrdersPerMinute must be greater than zero.");
                 }
 
+                var maxOrdersPerMinute = request.MaxOrdersPerMinute.GetValueOrDefault();
+
                 lock (_gate)
                 {
-                    _maxOrdersPerMinute = request.MaxOrdersPerMinute.Value;
+                    _maxOrdersPerMinute = maxOrdersPerMinute;
                 }
                 _logger.LogInformation(
                     "Risk rule config updated for {RuleName} by {Actor}: {MaxOrdersPerMinute} orders/minute",
                     normalizedRule,
                     actor,
-                    request.MaxOrdersPerMinute.Value);
+                    maxOrdersPerMinute);
                 break;
             default:
                 return null;
@@ -222,10 +226,18 @@ public sealed class RiskRuleRuntimeService
         var snapshot = controls?.GetSnapshot();
         var portfolio = Resolve<IPortfolioState>();
 
-        var maxAbsoluteQuantity = portfolio?.Positions.Values
-            .Select(position => Math.Abs(position.Quantity))
-            .DefaultIfEmpty(0m)
-            .Max() ?? 0m;
+        var maxAbsoluteQuantity = 0m;
+        if (portfolio is not null)
+        {
+            foreach (var position in portfolio.Positions.Values)
+            {
+                var quantity = Math.Abs(position.Quantity);
+                if (quantity > maxAbsoluteQuantity)
+                {
+                    maxAbsoluteQuantity = quantity;
+                }
+            }
+        }
         var threshold = snapshot?.DefaultMaxPositionSize;
 
         var violations = FindViolations(

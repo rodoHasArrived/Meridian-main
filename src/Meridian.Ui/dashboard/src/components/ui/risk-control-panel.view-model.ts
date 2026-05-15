@@ -45,11 +45,7 @@ export function buildRiskControlPanelViewModel(statuses: RiskRuleStatus[]): Risk
     summary: status.summary,
     threshold: status.threshold,
     currentValue: status.currentValue,
-    tone: status.state === "Constrained"
-      ? "danger"
-      : status.state === "Observe"
-        ? "warning"
-        : "success",
+    tone: mapRuleTone(status.state),
     violationCount: status.recentViolations.length
   }));
 
@@ -66,4 +62,16 @@ export function buildRiskControlPanelViewModel(statuses: RiskRuleStatus[]): Risk
     rows,
     violationTimeline
   };
+}
+
+function mapRuleTone(state: RiskRuleStatus["state"]): RiskRuleTone {
+  if (state === "Constrained") {
+    return "danger";
+  }
+
+  if (state === "Observe") {
+    return "warning";
+  }
+
+  return "success";
 }

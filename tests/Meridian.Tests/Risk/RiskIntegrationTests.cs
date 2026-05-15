@@ -82,7 +82,7 @@ public sealed class RiskIntegrationTests
         var controls = new ExecutionOperatorControlService(
             new ExecutionOperatorControlOptions(controlsRoot),
             NullLogger<ExecutionOperatorControlService>.Instance);
-        await controls.SetCircuitBreakerAsync(true, "incident lock", "ops").ConfigureAwait(false);
+        await controls.SetCircuitBreakerAsync(true, "incident lock", "ops");
 
         try
         {
