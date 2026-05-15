@@ -8435,6 +8435,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── EndpointStubDetectionTests.cs
 │   │   │   ├── EndpointTests
 │   │   │   │   ├── AccountPortfolioEndpointTests.cs
+│   │   │   │   ├── AdminEndpointPermissionTests.cs
 │   │   │   │   ├── AuthEndpointTests.cs
 │   │   │   │   ├── BackfillEndpointTests.cs
 │   │   │   │   ├── CatalogEndpointTests.cs
@@ -8937,6 +8938,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-726 directories, 7995 files
+726 directories, 7996 files
 ```
 <!-- readme-tree end -->
