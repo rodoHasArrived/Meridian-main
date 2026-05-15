@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   cellOutputToneClass,
   cellStateBadgeVariant,
@@ -13,9 +14,50 @@ import {
 } from "@/components/meridian/quant-notebook.view-model";
 import type {
   QuantNotebookCellViewModel,
+  QuantNotebookDataContextFieldViewModel,
+  QuantNotebookDataResultRowViewModel,
+  QuantNotebookDataResultViewModel,
   QuantNotebookViewModel
 } from "@/components/meridian/quant-notebook.view-model";
-import type { CellKind, CellOutput, PriceBar } from "@/types";
+import type { CellKind, CellOutput } from "@/types";
+
+const dataResultColumns: DenseDataTableColumn<QuantNotebookDataResultRowViewModel>[] = [
+  {
+    id: "timestamp",
+    label: "Timestamp",
+    render: (row) => <span className="font-mono text-muted-foreground">{row.timestampLabel}</span>
+  },
+  {
+    id: "open",
+    label: "Open",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.openLabel}</span>
+  },
+  {
+    id: "high",
+    label: "High",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.highLabel}</span>
+  },
+  {
+    id: "low",
+    label: "Low",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.lowLabel}</span>
+  },
+  {
+    id: "close",
+    label: "Close",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.closeLabel}</span>
+  },
+  {
+    id: "volume",
+    label: "Volume",
+    align: "right",
+    render: (row) => <span className="font-mono">{row.volumeLabel}</span>
+  }
+];
 
 // ── Top-level notebook ─────────────────────────────────────────────────────────
 
@@ -116,69 +158,136 @@ export function QuantNotebook({ vm, studyChips }: QuantNotebookProps) {
 // ── Data fetch panel ───────────────────────────────────────────────────────────
 
 function DataFetchPanel({ vm }: { vm: QuantNotebookViewModel }) {
-  const { context, dataResult, dataFetchState, fetchError } = vm;
-  const loading = dataFetchState === "loading";
+  const { context, dataContextPanel: panel } = vm;
 
   return (
-    <div className="rounded-lg border border-border/70 bg-secondary/20 p-3">
+    <section
+      className="rounded-lg border border-border/70 bg-secondary/20 p-3"
+      aria-describedby={`${panel.descriptionId} ${panel.statusId}`}
+    >
       <div className="mb-2 flex items-center gap-2">
         <Database className="h-3.5 w-3.5 text-primary" />
         <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Data context
         </span>
-        {dataResult && (
+        {panel.result && (
           <Badge variant="success" className="ml-auto text-xs">
-            {dataResult.rowCount.toLocaleString()} bars
+            {panel.result.summaryText}
           </Badge>
         )}
       </div>
+      <p id={panel.descriptionId} className="sr-only">
+        Fetch price bars into the notebook execution context.
+      </p>
 
-      <div className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto_auto]">
-        <Input
-          placeholder="Symbol (e.g. AAPL)"
+      <div className="grid gap-2 sm:grid-cols-[minmax(9rem,1fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(8rem,0.8fr)_auto]">
+        <DataContextInput
+          field={panel.fields.symbol}
           value={context.symbol ?? ""}
-          onChange={(e) => vm.setContext({ symbol: e.target.value })}
-          aria-label="Symbol"
+          placeholder="AAPL"
+          onChange={(value) => vm.setContext({ symbol: value })}
         />
-        <Input
+        <DataContextInput
+          field={panel.fields.from}
           type="date"
           value={context.from ?? ""}
-          onChange={(e) => vm.setContext({ from: e.target.value })}
-          aria-label="From date"
+          onChange={(value) => vm.setContext({ from: value })}
         />
-        <Input
+        <DataContextInput
+          field={panel.fields.to}
           type="date"
           value={context.to ?? ""}
-          onChange={(e) => vm.setContext({ to: e.target.value })}
-          aria-label="To date"
+          onChange={(value) => vm.setContext({ to: value })}
         />
-        <Select
-          value={context.interval ?? "daily"}
-          onChange={(e) => vm.setContext({ interval: e.target.value as "daily" | "hourly" | "minute" })}
-          aria-label="Interval"
-        >
-          <option value="daily">Daily</option>
-          <option value="hourly">Hourly</option>
-          <option value="minute">Minute</option>
-        </Select>
+        <div className="grid gap-1">
+          <label htmlFor={panel.fields.interval.id} className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            {panel.fields.interval.label}
+          </label>
+          <Select
+            id={panel.fields.interval.id}
+            value={context.interval ?? "daily"}
+            onChange={(e) => vm.setContext({ interval: e.target.value as "daily" | "hourly" | "minute" })}
+            aria-label={panel.fields.interval.ariaLabel}
+            aria-describedby={panel.fields.interval.describedBy}
+            disabled={panel.fields.interval.disabled}
+            title={panel.fields.interval.disabledReason ?? undefined}
+          >
+            <option value="daily">Daily</option>
+            <option value="hourly">Hourly</option>
+            <option value="minute">Minute</option>
+          </Select>
+          <span id={panel.fields.interval.helpId} className="sr-only">{panel.fields.interval.helpText}</span>
+        </div>
         <Button
           size="sm"
           variant="secondary"
           onClick={() => void vm.fetchData()}
-          disabled={loading || !context.symbol}
-          aria-label="Fetch data"
+          disabled={panel.fetchCommand.disabled}
+          disabledReason={panel.fetchCommand.disabledReason}
+          busy={panel.fetchCommand.busy}
+          busyLabel={panel.fetchCommand.label}
+          aria-label={panel.fetchCommand.ariaLabel}
+          className="self-end"
         >
-          {loading ? "Loading…" : "Fetch"}
+          {panel.fetchCommand.label}
         </Button>
       </div>
 
-      {fetchError && (
-        <p className="mt-2 text-xs text-danger">{fetchError}</p>
-      )}
+      <p
+        id={panel.statusId}
+        role={panel.statusTone === "error" ? "alert" : "status"}
+        className={cn(
+          "mt-2 text-xs",
+          panel.statusTone === "error"
+            ? "text-danger"
+            : panel.statusTone === "loading"
+              ? "text-warning"
+              : panel.statusTone === "success"
+                ? "text-success"
+                : "text-muted-foreground"
+        )}
+      >
+        {panel.statusText}
+      </p>
 
-      {dataResult && (
-        <DataResultTable result={dataResult} onDismiss={vm.dismissDataResult} />
+      {panel.result && (
+        <DataResultTable result={panel.result} onDismiss={vm.dismissDataResult} />
       )}
+    </section>
+  );
+}
+
+function DataContextInput({
+  field,
+  value,
+  onChange,
+  type = "text",
+  placeholder
+}: {
+  field: QuantNotebookDataContextFieldViewModel;
+  value: string;
+  onChange: (value: string) => void;
+  type?: "text" | "date";
+  placeholder?: string;
+}) {
+  return (
+    <div className="grid gap-1">
+      <label htmlFor={field.id} className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        {field.label}
+      </label>
+      <Input
+        id={field.id}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        aria-label={field.ariaLabel}
+        aria-describedby={field.describedBy}
+        error={field.error}
+        disabled={field.disabled}
+        title={field.disabledReason ?? undefined}
+      />
+      <span id={field.helpId} className="sr-only">{field.helpText}</span>
     </div>
   );
 }
@@ -189,55 +298,34 @@ function DataResultTable({
   result,
   onDismiss
 }: {
-  result: { symbol: string; interval: string; bars: PriceBar[]; rowCount: number };
+  result: QuantNotebookDataResultViewModel;
   onDismiss: () => void;
 }) {
-  const preview = result.bars.slice(0, 5);
-
   return (
     <div className="mt-3 rounded-md border border-border/60 bg-background/50">
       <div className="flex items-center justify-between px-3 py-2">
         <span className="text-xs text-muted-foreground">
-          {result.symbol} · {result.interval} · {result.rowCount.toLocaleString()} rows
-          {result.rowCount > 5 ? " (showing first 5)" : ""}
+          {result.summaryText}
+          {result.previewNotice ? ` (${result.previewNotice})` : ""}
         </span>
         <Button
           size="sm"
           variant="ghost"
           onClick={onDismiss}
-          aria-label="Dismiss data result"
+          aria-label={result.dismissAriaLabel}
           className="h-6 px-1.5"
         >
           <X className="h-3 w-3" />
         </Button>
       </div>
-      {preview.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-border/50 text-left text-xs">
-            <thead className="bg-secondary/30">
-              <tr>
-                {["Date", "Open", "High", "Low", "Close", "Volume"].map((col) => (
-                  <th key={col} className="px-2 py-1.5 font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                    {col}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/40">
-              {preview.map((bar) => (
-                <tr key={bar.timestamp}>
-                  <td className="px-2 py-1.5 font-mono text-muted-foreground">{bar.timestamp.slice(0, 10)}</td>
-                  <td className="px-2 py-1.5 font-mono">{bar.open.toFixed(2)}</td>
-                  <td className="px-2 py-1.5 font-mono">{bar.high.toFixed(2)}</td>
-                  <td className="px-2 py-1.5 font-mono">{bar.low.toFixed(2)}</td>
-                  <td className="px-2 py-1.5 font-mono">{bar.close.toFixed(2)}</td>
-                  <td className="px-2 py-1.5 font-mono">{bar.volume.toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DenseDataTable
+        columns={dataResultColumns}
+        rows={result.rows}
+        getRowId={(row) => row.id}
+        emptyText={result.emptyText}
+        ariaLabel={result.ariaLabel}
+        caption={result.caption}
+      />
     </div>
   );
 }

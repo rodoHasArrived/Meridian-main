@@ -303,6 +303,8 @@ describe("PortfolioScreen", () => {
     expect(within(trustSnapshot).getByText("2 accounts")).toBeInTheDocument();
     expect(within(trustSnapshot).getByText("2 positions")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /show alpaca paper roth ira account/i })).toBeDefined();
+    expect(screen.getByRole("table", { name: /alpaca paper brokerage accounts/i })).toBeDefined();
+    expect(screen.getByRole("complementary", { name: /all brokerage accounts detail/i })).toBeDefined();
     expect(screen.getByRole("table", { name: /alpaca paper current positions/i })).toBeDefined();
     expect(screen.getAllByText(/alpaca roth ira/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText("AAPL").length).toBeGreaterThan(0);
@@ -382,11 +384,13 @@ describe("PortfolioScreen", () => {
 
     const warningSummary = screen.getByRole("status", { name: "2 brokerage warnings" });
     const trustSnapshot = screen.getByRole("region", { name: /alpaca paper brokerage sync snapshot/i });
+    const accountDetail = screen.getByRole("complementary", { name: /all brokerage accounts detail/i });
     expect(within(trustSnapshot).getByText(/review sync/i)).toBeInTheDocument();
     expect(within(trustSnapshot).getByText("2 issues")).toBeInTheDocument();
     expect(within(warningSummary).getByText("Portfolio sync is stale.")).toBeInTheDocument();
     expect(within(warningSummary).getByText("Roth IRA account sync stale.")).toBeInTheDocument();
-    expect(screen.getAllByText("Roth IRA account sync stale.").length).toBeGreaterThan(1);
+    expect(within(accountDetail).getByText(/positions table is showing all alpaca paper brokerage accounts/i)).toBeInTheDocument();
+    expect(within(accountDetail).getAllByText("2 warnings").length).toBeGreaterThan(0);
   });
 
   it("renders the brokerage account filter as a keyboard-operable button group", async () => {
@@ -418,6 +422,10 @@ describe("PortfolioScreen", () => {
     expect(rothButton).toHaveAttribute("aria-pressed", "true");
     expect(allButton).toHaveAttribute("tabindex", "-1");
     expect(rothButton).toHaveAttribute("tabindex", "0");
+    const rothRow = screen.getByRole("row", { name: /filter brokerage positions to roth ira account/i });
+    expect(rothRow).toHaveAttribute("aria-selected", "true");
+    expect(rothRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("complementary", { name: /roth ira brokerage account detail/i })).toBeInTheDocument();
     let brokerageTable = screen.getByRole("table", { name: /alpaca paper current positions/i });
     expect(within(brokerageTable).getByText("AAPL")).toBeDefined();
     expect(within(brokerageTable).queryByText("MSFT")).toBeNull();
@@ -429,6 +437,35 @@ describe("PortfolioScreen", () => {
     expect(rothButton).toHaveAttribute("tabindex", "-1");
     expect(brokerageButton).toHaveAttribute("tabindex", "0");
     brokerageTable = screen.getByRole("table", { name: /alpaca paper current positions/i });
+    expect(within(brokerageTable).getByText("MSFT")).toBeDefined();
+    expect(within(brokerageTable).queryByText("AAPL")).toBeNull();
+  });
+
+  it("filters brokerage positions from the account table row with keyboard activation", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(
+      <PortfolioScreen
+        trading={trading}
+        research={research}
+        governance={governance}
+        brokerageConnection={brokerageConnection}
+        brokeragePortfolio={brokeragePortfolio}
+      />
+    );
+
+    const taxableRow = screen.getByRole("row", { name: /filter brokerage positions to brokerage account/i });
+    taxableRow.focus();
+    expect(taxableRow).toHaveFocus();
+
+    await user.keyboard(" ");
+
+    expect(taxableRow).toHaveAttribute("aria-selected", "true");
+    expect(taxableRow).toHaveAttribute("aria-controls", "portfolio-brokerage-account-detail");
+    expect(taxableRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: /show alpaca paper brokerage account/i })).toHaveAttribute("aria-pressed", "true");
+    const accountDetail = screen.getByRole("complementary", { name: /brokerage brokerage account detail/i });
+    expect(within(accountDetail).getByText(/alpaca paper \/ alpaca brokerage/i)).toBeInTheDocument();
+    const brokerageTable = screen.getByRole("table", { name: /alpaca paper current positions/i });
     expect(within(brokerageTable).getByText("MSFT")).toBeDefined();
     expect(within(brokerageTable).queryByText("AAPL")).toBeNull();
   });

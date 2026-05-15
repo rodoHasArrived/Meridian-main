@@ -10,6 +10,7 @@ import { MetricCard } from "@/components/meridian/metric-card";
 import { cn } from "@/lib/utils";
 import {
   resolveBrokerageAccountFilterKeyCommand,
+  type PortfolioBrokerageAccountRow,
   type PortfolioBrokeragePositionRow,
   type PortfolioPositionRow,
   type PortfolioWorkflowTaskAction,
@@ -130,6 +131,57 @@ const runColumns: DenseDataTableColumn<PortfolioRunRow>[] = [
     id: "promotion",
     label: "Promotion",
     render: (row) => <span className="text-muted-foreground">{row.promotionState ?? "-"}</span>
+  }
+];
+
+const brokerageAccountColumns: DenseDataTableColumn<PortfolioBrokerageAccountRow>[] = [
+  {
+    id: "account",
+    label: "Account",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.kind}</span>
+        <span className="block truncate text-xs text-muted-foreground">{row.label}</span>
+      </span>
+    )
+  },
+  {
+    id: "health",
+    label: "Health",
+    render: (row) => <Badge variant={row.healthBadgeVariant}>{row.health}</Badge>
+  },
+  {
+    id: "equity",
+    label: "Equity",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.equity}</span>
+  },
+  {
+    id: "cash",
+    label: "Cash",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.cash}</span>
+  },
+  {
+    id: "buying-power",
+    label: "Buying power",
+    align: "right",
+    render: (row) => <span className="font-mono text-foreground">{row.buyingPower}</span>
+  },
+  {
+    id: "synced",
+    label: "Synced",
+    render: (row) => <span className="font-mono text-xs text-muted-foreground">{row.syncedAt}</span>
+  },
+  {
+    id: "warnings",
+    label: "Warnings",
+    align: "right",
+    render: (row) => (
+      <span className={cn("font-mono text-xs", row.hasWarning ? "text-warning" : "text-success")}>
+        {row.warningCount}
+      </span>
+    )
   }
 ];
 
@@ -431,42 +483,63 @@ export function PortfolioScreen({
             </div>
           ) : null}
 
-          {vm.hasBrokerageAccounts ? (
-            <div className="grid gap-3 md:grid-cols-3">
-              {vm.brokerageAccountRows.map((account) => (
-                <div key={account.id} className="rounded-lg border border-border/70 bg-secondary/20 px-4 py-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold text-foreground">{account.kind}</div>
-                      <div className="mt-1 truncate text-xs text-muted-foreground">{account.label}</div>
-                    </div>
-                    <Badge variant={account.health === "Healthy" ? "success" : account.health === "Failed" ? "danger" : "warning"}>
-                      {account.health}
-                    </Badge>
-                  </div>
-                  <dl className="mt-3 grid gap-2 text-xs">
-                    <div className="flex items-center justify-between gap-3">
-                      <dt className="text-muted-foreground">Equity</dt>
-                      <dd className="font-mono text-foreground">{account.equity}</dd>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <dt className="text-muted-foreground">Cash</dt>
-                      <dd className="font-mono text-foreground">{account.cash}</dd>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <dt className="text-muted-foreground">Synced</dt>
-                      <dd className="font-mono text-foreground">{account.syncedAt}</dd>
-                    </div>
-                  </dl>
-                  {account.hasWarning ? (
-                    <div role="status" className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning">
-                      {account.warningText}
-                    </div>
-                  ) : null}
+          <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+            <DenseDataTable
+              columns={brokerageAccountColumns}
+              rows={vm.brokerageAccountRows}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+              getRowAriaControls={(row) => row.detailPanelId}
+              getRowAriaExpanded={(row) => row.expanded}
+              onRowSelect={(row) => vm.selectBrokerageAccount(row.id)}
+              selectedRowId={vm.selectedBrokerageAccount.id === "all" ? null : vm.selectedBrokerageAccount.id}
+              emptyText={vm.brokerageAccountEmptyText}
+              ariaLabel={vm.brokerageAccountsTableLabel}
+              caption="Select a brokerage account row to filter live positions and update the account inspector."
+            />
+            <aside
+              id={vm.brokerageAccountDetailId}
+              role="complementary"
+              aria-live="polite"
+              aria-label={vm.selectedBrokerageAccount.ariaLabel}
+              className={cn(
+                "row-detail-panel h-fit min-w-0",
+                cashFlowBorderClass[vm.selectedBrokerageAccount.statusTone]
+              )}
+            >
+              <div className="head flex items-center justify-between gap-3">
+                <span>{vm.selectedBrokerageAccount.statusTitle}</span>
+                <Badge variant={vm.selectedBrokerageAccount.statusBadgeVariant}>
+                  {vm.selectedBrokerageAccount.statusBadgeLabel}
+                </Badge>
+              </div>
+              <div className="body">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-foreground">{vm.selectedBrokerageAccount.title}</h3>
+                  <p className="mt-1 break-words font-mono text-xs text-muted-foreground">
+                    {vm.selectedBrokerageAccount.subtitle}
+                  </p>
                 </div>
-              ))}
-            </div>
-          ) : null}
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  {vm.selectedBrokerageAccount.statusDetail}
+                </p>
+                <dl className="mt-4 grid gap-2">
+                  {vm.selectedBrokerageAccount.fields.map((field) => (
+                    <div
+                      key={field.label}
+                      className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
+                    >
+                      <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                      <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
+                        {field.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </aside>
+          </div>
 
           {vm.hasBrokeragePositions ? (
             <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">

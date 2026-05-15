@@ -6,6 +6,7 @@ import type {
   QuantNotebookCellViewModel,
   QuantNotebookViewModel
 } from "@/components/meridian/quant-notebook.view-model";
+import { buildDataContextPanel } from "@/components/meridian/quant-notebook.view-model";
 
 function makeCell(overrides: Partial<QuantNotebookCellViewModel> = {}): QuantNotebookCellViewModel {
   return {
@@ -26,12 +27,13 @@ function makeCell(overrides: Partial<QuantNotebookCellViewModel> = {}): QuantNot
 }
 
 function makeVm(overrides: Partial<QuantNotebookViewModel> = {}): QuantNotebookViewModel {
-  return {
+  const base: QuantNotebookViewModel = {
     cells: [makeCell()],
     context: {},
     dataResult: null,
     dataFetchState: "idle",
     fetchError: null,
+    dataContextPanel: buildDataContextPanel({}, null, "idle", null),
     snippets: [],
     clearOutputsLabel: "Clear",
     clearOutputsAriaLabel: "Clear all notebook outputs. Press again to confirm.",
@@ -48,8 +50,12 @@ function makeVm(overrides: Partial<QuantNotebookViewModel> = {}): QuantNotebookV
     clearOutputs: vi.fn(),
     setContext: vi.fn(),
     fetchData: vi.fn(),
-    dismissDataResult: vi.fn(),
-    ...overrides
+    dismissDataResult: vi.fn()
+  };
+  return {
+    ...base,
+    ...overrides,
+    dataContextPanel: overrides.dataContextPanel ?? base.dataContextPanel
   };
 }
 
@@ -90,5 +96,66 @@ describe("QuantNotebook", () => {
 
     expect(clearOutputs).toHaveBeenCalledTimes(1);
     expect(screen.getByRole("button", { name: /Confirm clear all notebook outputs/ })).toHaveTextContent("Confirm clear");
+  });
+
+  it("renders fetch disabled reason and labeled data context fields from the view model", () => {
+    render(<QuantNotebook vm={makeVm()} />);
+
+    const fetchButton = screen.getByRole("button", { name: "Fetch notebook data context" });
+    expect(fetchButton).toBeDisabled();
+    expect(fetchButton).toHaveAttribute("title", "Enter a symbol before fetching notebook data.");
+    expect(screen.getByLabelText("Symbol")).toHaveAttribute("id", "quant-notebook-context-symbol");
+    expect(screen.getByLabelText("From date")).toHaveAttribute("type", "date");
+    expect(screen.getByText("Enter a symbol and fetch bars before running context-aware cells.")).toBeInTheDocument();
+  });
+
+  it("renders data fetch errors as an alert linked to the panel status", () => {
+    render(
+      <QuantNotebook
+        vm={makeVm({
+          dataFetchState: "error",
+          fetchError: "Symbol is required.",
+          dataContextPanel: buildDataContextPanel({}, null, "error", "Symbol is required.")
+        })}
+      />
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Symbol is required.");
+    expect(screen.getByLabelText("Symbol")).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("renders fetched notebook data with the dense table preview", () => {
+    const dataResult = {
+      symbol: "AAPL",
+      from: "2026-01-01",
+      to: "2026-01-31",
+      interval: "daily" as const,
+      rowCount: 6,
+      bars: [
+        { timestamp: "2026-01-01T00:00:00Z", open: 100, high: 101, low: 99, close: 100.5, volume: 1000 },
+        { timestamp: "2026-01-02T00:00:00Z", open: 101, high: 102, low: 100, close: 101.5, volume: 2000 },
+        { timestamp: "2026-01-03T00:00:00Z", open: 102, high: 103, low: 101, close: 102.5, volume: 3000 },
+        { timestamp: "2026-01-04T00:00:00Z", open: 103, high: 104, low: 102, close: 103.5, volume: 4000 },
+        { timestamp: "2026-01-05T00:00:00Z", open: 104, high: 105, low: 103, close: 104.5, volume: 5000 },
+        { timestamp: "2026-01-06T00:00:00Z", open: 105, high: 106, low: 104, close: 105.5, volume: 6000 }
+      ]
+    };
+
+    render(
+      <QuantNotebook
+        vm={makeVm({
+          context: { symbol: "AAPL" },
+          dataResult,
+          dataFetchState: "done",
+          dataContextPanel: buildDataContextPanel({ symbol: "AAPL" }, dataResult, "done", null)
+        })}
+      />
+    );
+
+    expect(screen.getAllByText("AAPL · daily · 6 bars").length).toBeGreaterThan(0);
+    expect(screen.getByRole("table", { name: "AAPL notebook data preview" })).toBeInTheDocument();
+    expect(screen.getByText("2026-01-01")).toBeInTheDocument();
+    expect(screen.getAllByText(/Showing first 5 of 6 bars\./).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "Dismiss AAPL notebook data preview" })).toBeInTheDocument();
   });
 });

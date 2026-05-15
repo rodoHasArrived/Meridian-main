@@ -142,6 +142,18 @@ describe("covered-call run command view models", () => {
       feedbackText: "Run is already completed."
     });
 
+    expect(buildCoveredCallCancelCommandState({
+      ...idleRun,
+      runId: "run-1",
+      status: { runId: "run-1", phase: "Running", percentComplete: 0.42, currentBacktestDate: "2024-03-01", failureMessage: null }
+    }, true)).toMatchObject({
+      label: "Confirm cancel",
+      ariaLabel: "Confirm cancel covered-call backtest run run-1. This stops the active backtest request.",
+      disabled: false,
+      disabledReason: null,
+      feedbackText: "Cancel confirmation pending. Confirm cancel stops this covered-call backtest run."
+    });
+
     expect(buildCoveredCallRunProgressPanel({ ...idleRun, isStarting: true })).toMatchObject({
       title: "Submitting backtest",
       description: "Submitting covered-call run request to the strategy engine.",
@@ -506,13 +518,23 @@ describe("useCoveredCallScreenViewModel", () => {
     expect(result.current.cancelRunCommand.disabled).toBe(false);
   });
 
-  it("cancelRun calls the cancel endpoint", async () => {
+  it("cancelRun requires a confirmation pass before calling the cancel endpoint", async () => {
     const services = makeServices();
     const { result } = renderHook(() => useCoveredCallScreenViewModel({ services, pollIntervalMs: 1000000, chainPreviewDebounceMs: 100000 }));
 
     act(() => result.current.setField("minStrike", "500"));
     await act(async () => {
       await result.current.startRun();
+    });
+
+    await act(async () => {
+      await result.current.cancelRun();
+    });
+
+    expect(services.cancelRun).not.toHaveBeenCalled();
+    expect(result.current.cancelRunCommand).toMatchObject({
+      label: "Confirm cancel",
+      feedbackText: "Cancel confirmation pending. Confirm cancel stops this covered-call backtest run."
     });
 
     await act(async () => {

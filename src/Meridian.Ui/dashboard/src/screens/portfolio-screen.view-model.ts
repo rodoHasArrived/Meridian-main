@@ -88,12 +88,20 @@ export interface PortfolioBrokerageAccountRow {
   label: string;
   kind: string;
   health: string;
+  healthBadgeVariant: "outline" | "success" | "warning" | "danger";
   equity: string;
   cash: string;
   buyingPower: string;
   syncedAt: string;
+  positionCount: string;
+  warningCount: string;
   hasWarning: boolean;
   warningText: string;
+  isSelected: boolean;
+  expanded: boolean;
+  detailPanelId: string;
+  selectAriaLabel: string;
+  ariaLabel: string;
 }
 
 export interface PortfolioBrokeragePositionRow {
@@ -215,6 +223,19 @@ export interface PortfolioBrokeragePositionDetail {
   fields: PortfolioDetailField[];
 }
 
+export interface PortfolioBrokerageAccountDetail {
+  id: string;
+  title: string;
+  subtitle: string;
+  ariaLabel: string;
+  statusTitle: string;
+  statusDetail: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  statusBadgeLabel: string;
+  statusBadgeVariant: "outline" | "success" | "warning" | "danger";
+  fields: PortfolioDetailField[];
+}
+
 export interface PortfolioRunEvidenceAction {
   label: string;
   href: string;
@@ -245,6 +266,10 @@ export interface PortfolioScreenViewModel {
   selectAdjacentBrokerageAccount: (direction: "next" | "previous" | "first" | "last") => void;
   hasBrokerageAccounts: boolean;
   brokerageAccountRows: PortfolioBrokerageAccountRow[];
+  brokerageAccountsTableLabel: string;
+  brokerageAccountDetailId: string;
+  selectedBrokerageAccount: PortfolioBrokerageAccountDetail;
+  brokerageAccountEmptyText: string;
   hasBrokeragePositions: boolean;
   brokeragePositionRows: PortfolioBrokeragePositionRow[];
   brokeragePositionDetailId: string;
@@ -430,6 +455,16 @@ export function buildPortfolioScreenViewModel({
   const brokeragePositionRows = brokeragePositions.map((position) =>
     toBrokeragePositionRow(position, brokerageAccounts, selectedBrokerageStableId)
   );
+  const brokerageAccountRows = brokerageAccounts.map((account) =>
+    toBrokerageAccountRow(account, selectedBrokerageKey)
+  );
+  const selectedBrokerageAccountRecord =
+    selectedBrokerageKey === "all"
+      ? null
+      : brokerageAccounts.find((account) => account.fundAccountId === selectedBrokerageKey) ?? null;
+  const selectedBrokerageAccount = selectedBrokerageAccountRecord
+    ? buildSelectedBrokerageAccountDetail(selectedBrokerageAccountRecord, providerLabel)
+    : buildAllBrokerageAccountsDetail(brokerageAccounts, brokeragePortfolio, providerLabel);
   const selectedBrokeragePositionRecord =
     brokeragePositions.find((position) => brokeragePositionId(position) === selectedBrokerageStableId) ?? null;
   const selectedBrokeragePosition = selectedBrokeragePositionRecord
@@ -482,7 +517,13 @@ export function buildPortfolioScreenViewModel({
     selectBrokerageAccount,
     selectAdjacentBrokerageAccount,
     hasBrokerageAccounts: brokerageAccounts.length > 0,
-    brokerageAccountRows: brokerageAccounts.map(toBrokerageAccountRow),
+    brokerageAccountRows,
+    brokerageAccountsTableLabel: `${providerLabel} brokerage accounts`,
+    brokerageAccountDetailId: "portfolio-brokerage-account-detail",
+    selectedBrokerageAccount,
+    brokerageAccountEmptyText: brokeragePortfolio
+      ? `No ${providerLabel} brokerage accounts are available in the household snapshot.`
+      : `${providerLabel} portfolio sync has not produced account evidence yet.`,
     hasBrokeragePositions: brokeragePositions.length > 0,
     brokeragePositionRows,
     brokeragePositionDetailId: "portfolio-brokerage-position-detail",
@@ -856,19 +897,142 @@ function nextBrokerageAccountKey(
   return options[nextIndex].key;
 }
 
-function toBrokerageAccountRow(account: BrokerageHouseholdAccount): PortfolioBrokerageAccountRow {
+function toBrokerageAccountRow(
+  account: BrokerageHouseholdAccount,
+  selectedAccountKey: string
+): PortfolioBrokerageAccountRow {
+  const kind = accountKindLabel(account.accountKind);
+  const isSelected = account.fundAccountId === selectedAccountKey;
+  const warningCount = account.warnings.length;
   return {
     id: account.fundAccountId,
     label: account.displayName,
-    kind: accountKindLabel(account.accountKind),
+    kind,
     health: account.health,
+    healthBadgeVariant: brokerageAccountHealthBadgeVariant(account.health),
     equity: formatCurrency(account.equity),
     cash: formatCurrency(account.cash),
     buyingPower: formatCurrency(account.buyingPower),
     syncedAt: formatDateTime(account.syncedAt),
-    hasWarning: account.warnings.length > 0,
-    warningText: account.warnings.length > 0 ? account.warnings.join(" ") : "No account sync warnings."
+    positionCount: formatCountLabel(account.positionCount, "position"),
+    warningCount: formatCountLabel(warningCount, "warning"),
+    hasWarning: warningCount > 0,
+    warningText: warningCount > 0 ? account.warnings.join(" ") : "No account sync warnings.",
+    isSelected,
+    expanded: isSelected,
+    detailPanelId: "portfolio-brokerage-account-detail",
+    selectAriaLabel: `Filter brokerage positions to ${kind} account`,
+    ariaLabel: `${kind} brokerage account ${account.displayName}: ${account.health}, equity ${formatCurrency(account.equity)}, cash ${formatCurrency(account.cash)}, ${formatCountLabel(warningCount, "warning")}`
   };
+}
+
+function brokerageAccountHealthBadgeVariant(
+  health: string
+): "outline" | "success" | "warning" | "danger" {
+  const normalized = health.trim().toLowerCase();
+  if (normalized === "healthy") return "success";
+  if (normalized === "failed" || normalized === "error" || normalized === "critical") return "danger";
+  if (normalized === "unknown" || normalized === "") return "outline";
+  return "warning";
+}
+
+function brokerageAccountStatusTone(health: string): PortfolioBrokerageAccountDetail["statusTone"] {
+  const variant = brokerageAccountHealthBadgeVariant(health);
+  return variant === "outline" ? "default" : variant;
+}
+
+function buildSelectedBrokerageAccountDetail(
+  account: BrokerageHouseholdAccount,
+  providerLabel: string
+): PortfolioBrokerageAccountDetail {
+  const kind = accountKindLabel(account.accountKind);
+  const warningCount = account.warnings.length;
+  const statusTone: PortfolioBrokerageAccountDetail["statusTone"] = warningCount > 0
+    ? "warning"
+    : brokerageAccountStatusTone(account.health);
+  return {
+    id: account.fundAccountId,
+    title: kind,
+    subtitle: `${providerLabel} / ${account.displayName}`,
+    ariaLabel: `${kind} brokerage account detail`,
+    statusTitle: warningCount > 0 ? "Account sync warning" : "Account sync posture",
+    statusDetail: warningCount > 0
+      ? account.warnings.join(" ")
+      : `${kind} account is ${account.health.toLowerCase()} with ${formatCountLabel(account.positionCount, "position")} and ${formatCountLabel(account.cashTransactionCount, "cash transaction")} in the latest household snapshot.`,
+    statusTone,
+    statusBadgeLabel: warningCount > 0 ? "Review" : account.health,
+    statusBadgeVariant: brokerageAccountStatusBadgeVariant(statusTone),
+    fields: [
+      { label: "Fund account", value: account.fundAccountId, tone: "muted" },
+      { label: "External account", value: account.externalAccountId, tone: "muted" },
+      { label: "Equity", value: formatCurrency(account.equity), tone: "default" },
+      { label: "Cash", value: formatCurrency(account.cash), tone: "default" },
+      { label: "Buying power", value: formatCurrency(account.buyingPower), tone: "default" },
+      { label: "Positions", value: formatCountLabel(account.positionCount, "position"), tone: "muted" },
+      { label: "Cash activity", value: formatCountLabel(account.cashTransactionCount, "cash transaction"), tone: "muted" },
+      { label: "Synced", value: formatDateTime(account.syncedAt), tone: "muted" }
+    ]
+  };
+}
+
+function buildAllBrokerageAccountsDetail(
+  accounts: BrokerageHouseholdAccount[],
+  portfolio: BrokerageHouseholdPortfolio | null | undefined,
+  providerLabel: string
+): PortfolioBrokerageAccountDetail {
+  const accountWarningCount = accounts.reduce((sum, account) => sum + account.warnings.length, 0);
+  const warningCount = accountWarningCount + (portfolio?.warnings.length ?? 0);
+  const hasAccounts = accounts.length > 0;
+  const statusTone: PortfolioBrokerageAccountDetail["statusTone"] = !hasAccounts
+    ? "danger"
+    : warningCount > 0
+      ? "warning"
+      : "success";
+  const latestSync = latestAccountSync(accounts);
+
+  return {
+    id: "all",
+    title: "All brokerage accounts",
+    subtitle: `${providerLabel} household account scope`,
+    ariaLabel: "All brokerage accounts detail",
+    statusTitle: hasAccounts ? "Household account scope" : "No account evidence",
+    statusDetail: hasAccounts
+      ? `Positions table is showing all ${providerLabel} brokerage accounts with ${formatCountLabel(warningCount, "warning")} in the latest household snapshot.`
+      : `${providerLabel} portfolio sync has not produced account evidence yet.`,
+    statusTone,
+    statusBadgeLabel: hasAccounts ? (warningCount > 0 ? "Review" : "Synced") : "Missing",
+    statusBadgeVariant: brokerageAccountStatusBadgeVariant(statusTone),
+    fields: [
+      { label: "Accounts", value: formatCountLabel(accounts.length, "account"), tone: hasAccounts ? "default" : "warning" },
+      { label: "Equity", value: formatCurrency(portfolio?.totalEquity ?? sumAccountValue(accounts, "equity")), tone: "default" },
+      { label: "Cash", value: formatCurrency(portfolio?.totalCash ?? sumAccountValue(accounts, "cash")), tone: "default" },
+      { label: "Buying power", value: formatCurrency(portfolio?.totalBuyingPower ?? sumAccountValue(accounts, "buyingPower")), tone: "default" },
+      { label: "Warnings", value: formatCountLabel(warningCount, "warning"), tone: warningCount > 0 ? "warning" : "success" },
+      { label: "Latest sync", value: latestSync, tone: latestSync === "—" ? "warning" : "muted" }
+    ]
+  };
+}
+
+function brokerageAccountStatusBadgeVariant(
+  tone: PortfolioBrokerageAccountDetail["statusTone"]
+): PortfolioBrokerageAccountDetail["statusBadgeVariant"] {
+  return tone === "default" ? "outline" : tone;
+}
+
+function sumAccountValue(
+  accounts: BrokerageHouseholdAccount[],
+  key: "equity" | "cash" | "buyingPower"
+): number {
+  return accounts.reduce((sum, account) => sum + account[key], 0);
+}
+
+function latestAccountSync(accounts: BrokerageHouseholdAccount[]): string {
+  const latest = accounts
+    .map((account) => new Date(account.syncedAt))
+    .filter((date) => !Number.isNaN(date.getTime()))
+    .sort((a, b) => b.getTime() - a.getTime())[0];
+
+  return latest ? formatDateTime(latest.toISOString()) : "—";
 }
 
 function toBrokeragePositionRow(

@@ -324,6 +324,22 @@ describe("buildSettingsScreenViewModel", () => {
       formPanelRole: "status",
       submitLabel: "Connect and test"
     });
+    expect(pristineState.keyIdField).toMatchObject({
+      id: "alpaca-key-id",
+      label: "Key ID",
+      placeholder: "ALPACA_KEY_ID",
+      describedBy: "alpaca-key-id-help alpaca-credential-readiness",
+      disabled: false,
+      disabledReason: null
+    });
+    expect(pristineState.secretKeyField).toMatchObject({
+      id: "alpaca-secret-key",
+      label: "Secret key",
+      type: "password",
+      describedBy: "alpaca-secret-key-help alpaca-credential-readiness",
+      disabled: false,
+      disabledReason: null
+    });
     expect(pristineState.requirements).toEqual([
       expect.objectContaining({ id: "alpaca-key-id-requirement", value: "Needed", met: false, tone: "muted" }),
       expect.objectContaining({ id: "alpaca-secret-key-requirement", value: "Needed", met: false, tone: "muted" }),
@@ -411,10 +427,52 @@ describe("buildSettingsScreenViewModel", () => {
     });
     expect(busyState.formPanelTitle).toBe("Testing Alpaca credentials");
     expect(busyState.submitDisabledReason).toContain("already running");
+    expect(busyState.keyIdField).toMatchObject({
+      disabled: true,
+      disabledReason: "Alpaca credential request is already running."
+    });
+    expect(busyState.secretKeyField).toMatchObject({
+      disabled: true,
+      disabledReason: "Alpaca credential request is already running."
+    });
+    expect(busyState.liveAcknowledgement.disabledReason).toBe("Alpaca credential request is already running.");
     expect(busyState.environmentOptions).toEqual([
-      expect.objectContaining({ value: "paper", isSelected: false, disabled: true }),
-      expect.objectContaining({ value: "live", isSelected: true, disabled: true })
+      expect.objectContaining({
+        value: "paper",
+        isSelected: false,
+        disabled: true,
+        disabledReason: "Alpaca credential request is already running."
+      }),
+      expect.objectContaining({
+        value: "live",
+        isSelected: true,
+        disabled: true,
+        disabledReason: "Alpaca credential request is already running."
+      })
     ]);
+
+    const clearPendingState = buildAlpacaConnectionCommandState({
+      canClear: true,
+      clearConfirmationPending: true,
+      form: {
+        keyId: "",
+        secretKey: "",
+        environment: "paper",
+        liveAcknowledged: false,
+        busyAction: null,
+        submitted: false,
+        actionMessage: null,
+        actionTone: "default"
+      }
+    });
+
+    expect(clearPendingState).toMatchObject({
+      clearLabel: "Confirm clear",
+      formPanelTitle: "Confirm Alpaca credential clear",
+      formPanelTone: "warning",
+      clearDisabledReason: null
+    });
+    expect(clearPendingState.formPanelDetail).toContain("remove the stored Alpaca key reference");
   });
 
   it("requires explicit acknowledgement before testing live Alpaca credentials", () => {
@@ -732,6 +790,37 @@ describe("buildSettingsScreenViewModel", () => {
     expect(options.signal?.aborted).toBe(true);
   });
 
+  it("requires confirmation before clearing Alpaca credentials", async () => {
+    const revokeConnection = vi.fn().mockResolvedValue(alpacaConnection);
+    const { result } = renderHook(() => useAlpacaConnectionFormViewModel({
+      canClear: true,
+      revokeConnection
+    }));
+
+    await act(async () => {
+      await result.current.clear();
+    });
+
+    expect(revokeConnection).not.toHaveBeenCalled();
+    expect(result.current.clearLabel).toBe("Confirm clear");
+    expect(result.current.formPanelTitle).toBe("Confirm Alpaca credential clear");
+
+    act(() => {
+      result.current.setKeyId("paper-key");
+    });
+
+    expect(result.current.clearLabel).toBe("Clear");
+
+    await act(async () => {
+      await result.current.clear();
+    });
+    await act(async () => {
+      await result.current.clear();
+    });
+
+    expect(revokeConnection).toHaveBeenCalledTimes(1);
+  });
+
   it("passes an abort signal through Alpaca credential clear and aborts it on unmount", async () => {
     const clearResult = deferred<BrokerageConnectionStatus>();
     const revokeConnection = vi.fn().mockReturnValue(clearResult.promise);
@@ -740,6 +829,9 @@ describe("buildSettingsScreenViewModel", () => {
       revokeConnection
     }));
 
+    await act(async () => {
+      await result.current.clear();
+    });
     await act(async () => {
       void result.current.clear();
     });

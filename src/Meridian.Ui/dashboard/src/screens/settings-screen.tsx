@@ -1,4 +1,5 @@
 import { Activity, ArrowRight, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, ShieldCheck, Trash2, User } from "lucide-react";
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import {
   buildSettingsScreenViewModel,
   useAlpacaConnectionFormViewModel,
   useSettingsRecentEventsSelectionViewModel,
+  type SettingsAlpacaCredentialFieldState,
   type SettingsRecentEventDetail,
   type SettingsRecentEventTableRow
 } from "@/screens/settings-screen.view-model";
@@ -94,6 +96,43 @@ const environmentOptionClass = {
     badge: "border-live-env/35 bg-live-env/10 text-live-env"
   }
 } as const;
+
+function AlpacaCredentialField({
+  field,
+  value,
+  onValueChange,
+  leadingIcon
+}: {
+  field: SettingsAlpacaCredentialFieldState;
+  value: string;
+  onValueChange: (value: string) => void;
+  leadingIcon: ReactNode;
+}) {
+  return (
+    <label htmlFor={field.id} className="grid gap-1 text-xs font-medium text-muted-foreground">
+      {field.label}
+      <Input
+        id={field.id}
+        type={field.type}
+        value={value}
+        onChange={(event) => onValueChange(event.target.value)}
+        autoComplete={field.autoComplete}
+        placeholder={field.placeholder}
+        leadingIcon={leadingIcon}
+        disabled={field.disabled}
+        title={field.disabledReason ?? undefined}
+        error={field.error}
+        aria-describedby={field.describedBy}
+      />
+      <span
+        id={field.helpId}
+        className={cn("text-[11px] leading-4", field.error ? "text-danger" : "text-muted-foreground")}
+      >
+        {field.helpText}
+      </span>
+    </label>
+  );
+}
 
 const setupStepToneClass = {
   success: "border-success/30 bg-success/10",
@@ -286,41 +325,18 @@ export function SettingsScreen({
         <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
           <form className="grid gap-3" onSubmit={alpacaForm.connect} noValidate aria-describedby={alpacaForm.formPanelId}>
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem]">
-              <label htmlFor="alpaca-key-id" className="grid gap-1 text-xs font-medium text-muted-foreground">
-                Key ID
-                <Input
-                  id="alpaca-key-id"
-                  value={alpacaForm.keyId}
-                  onChange={(event) => alpacaForm.setKeyId(event.target.value)}
-                  autoComplete="off"
-                  placeholder="ALPACA_KEY_ID"
-                  leadingIcon={<KeyRound className="h-4 w-4" />}
-                  disabled={!alpacaForm.canEdit}
-                  error={alpacaForm.keyIdError}
-                  aria-describedby={`${alpacaForm.fieldHelpIds.keyId} ${alpacaForm.formPanelId}`}
-                />
-                <span id={alpacaForm.fieldHelpIds.keyId} className={cn("text-[11px] leading-4", alpacaForm.keyIdError ? "text-danger" : "text-muted-foreground")}>
-                  {alpacaForm.keyIdHelpText}
-                </span>
-              </label>
-              <label htmlFor="alpaca-secret-key" className="grid gap-1 text-xs font-medium text-muted-foreground">
-                Secret key
-                <Input
-                  id="alpaca-secret-key"
-                  type="password"
-                  value={alpacaForm.secretKey}
-                  onChange={(event) => alpacaForm.setSecretKey(event.target.value)}
-                  autoComplete="off"
-                  placeholder="ALPACA_SECRET_KEY"
-                  leadingIcon={<ShieldCheck className="h-4 w-4" />}
-                  disabled={!alpacaForm.canEdit}
-                  error={alpacaForm.secretKeyError}
-                  aria-describedby={`${alpacaForm.fieldHelpIds.secretKey} ${alpacaForm.formPanelId}`}
-                />
-                <span id={alpacaForm.fieldHelpIds.secretKey} className={cn("text-[11px] leading-4", alpacaForm.secretKeyError ? "text-danger" : "text-muted-foreground")}>
-                  {alpacaForm.secretKeyHelpText}
-                </span>
-              </label>
+              <AlpacaCredentialField
+                field={alpacaForm.keyIdField}
+                value={alpacaForm.keyId}
+                onValueChange={alpacaForm.setKeyId}
+                leadingIcon={<KeyRound className="h-4 w-4" />}
+              />
+              <AlpacaCredentialField
+                field={alpacaForm.secretKeyField}
+                value={alpacaForm.secretKey}
+                onValueChange={alpacaForm.setSecretKey}
+                leadingIcon={<ShieldCheck className="h-4 w-4" />}
+              />
               <fieldset className="grid gap-1 text-xs font-medium text-muted-foreground">
                 <legend>{alpacaForm.environmentLegend}</legend>
                 <div
@@ -332,6 +348,8 @@ export function SettingsScreen({
                   {alpacaForm.environmentOptions.map((option) => (
                     <label
                       key={option.id}
+                      htmlFor={option.id}
+                      title={option.disabledReason ?? undefined}
                       className={cn(
                         "relative grid min-h-[4.75rem] cursor-pointer gap-1 rounded-md border px-3 py-2 transition-colors",
                         option.isSelected ? environmentOptionClass[option.tone].selected : environmentOptionClass[option.tone].idle,
@@ -339,11 +357,13 @@ export function SettingsScreen({
                       )}
                     >
                       <input
+                        id={option.id}
                         type="radio"
                         name="alpaca-environment"
                         value={option.value}
                         checked={option.isSelected}
                         disabled={option.disabled}
+                        title={option.disabledReason ?? undefined}
                         onChange={() => alpacaForm.setEnvironment(option.value)}
                         aria-label={option.ariaLabel}
                         aria-describedby={`${option.descriptionId} ${alpacaForm.fieldHelpIds.environment} ${alpacaForm.formPanelId}`}
@@ -370,6 +390,7 @@ export function SettingsScreen({
             {alpacaForm.liveAcknowledgement.visible ? (
               <label
                 htmlFor={alpacaForm.liveAcknowledgement.id}
+                title={alpacaForm.liveAcknowledgement.disabledReason ?? undefined}
                 className={cn(
                   "flex items-start gap-3 rounded-md border border-live-env/35 bg-live-env/10 px-3 py-3 text-sm text-live-env",
                   alpacaForm.liveAcknowledgement.disabled && "opacity-60"
@@ -380,6 +401,7 @@ export function SettingsScreen({
                   type="checkbox"
                   checked={alpacaForm.liveAcknowledgement.checked}
                   disabled={alpacaForm.liveAcknowledgement.disabled}
+                  title={alpacaForm.liveAcknowledgement.disabledReason ?? undefined}
                   required={alpacaForm.liveAcknowledgement.required}
                   onChange={(event) => alpacaForm.setLiveAcknowledged(event.target.checked)}
                   aria-label={alpacaForm.liveAcknowledgement.ariaLabel}

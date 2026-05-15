@@ -2,6 +2,8 @@ import { useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { QuantNotebook } from "@/components/meridian/quant-notebook";
+import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -874,6 +876,7 @@ function PlotToolWorkspacePanel({
   studyDetailPanelId: string;
   onStudySelect: (id: string) => void;
 }) {
+  const notebookVm = useQuantNotebookViewModel();
   const studyColumns: DenseDataTableColumn<ResearchPlotStudyItem>[] = [
     {
       id: "study",
@@ -977,45 +980,49 @@ function PlotToolWorkspacePanel({
         </Card>
       </div>
 
-      <Card className="border-border/70 bg-background/35">
-        <CardHeader className="pb-3">
-          <ToolbarStrip
-            ariaLabel="PlotTool workspace controls"
-            items={vm.toolbarPills.map((pill, index) => ({
-              id: `plot-pill-${index}`,
-              label: index === 0 ? "Window" : index === 1 ? "Sampling" : index === 2 ? "Overlay" : "Drift",
-              value: pill,
-              active: index === 0
-            }))}
-          />
-          <div className="space-y-2">
-            <div className="eyebrow-label">Scatter / residual view</div>
-            <CardTitle>{vm.title}</CardTitle>
-            <CardDescription className="font-mono text-xs">{vm.metaItems.join(" · ")}</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="plottool-chart-shell">
-            <PlotToolScatterChart
-              chart={vm.scatterChart}
+      <div className="space-y-4">
+        <Card className="border-border/70 bg-background/35">
+          <CardHeader className="pb-3">
+            <ToolbarStrip
+              ariaLabel="PlotTool workspace controls"
+              items={vm.toolbarPills.map((pill, index) => ({
+                id: `plot-pill-${index}`,
+                label: index === 0 ? "Window" : index === 1 ? "Sampling" : index === 2 ? "Overlay" : "Drift",
+                value: pill,
+                active: index === 0
+              }))}
             />
-          </div>
-          <div className="plottool-chart-legend" aria-label="PlotTool chart legend">
-            {vm.legendItems.map((item) => <PlotToolLegendItem key={item.id} item={item} />)}
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 bg-secondary/15 px-3 py-3 text-xs text-muted-foreground">
-            <div>
-              <div className="eyebrow-label">{vm.focusPoint.label}</div>
-              <div className="mt-1 font-mono text-sm text-foreground">
-                {vm.focusPoint.xValueText}
-                <span className="px-2 text-muted-foreground">/</span>
-                {vm.focusPoint.yValueText}
-              </div>
+            <div className="space-y-2">
+              <div className="eyebrow-label">Scatter / residual view</div>
+              <CardTitle>{vm.title}</CardTitle>
+              <CardDescription className="font-mono text-xs">{vm.metaItems.join(" · ")}</CardDescription>
             </div>
-            <div className="max-w-sm text-right leading-5">{vm.focusPoint.detail}</div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="plottool-chart-shell">
+              <PlotToolScatterChart
+                chart={vm.scatterChart}
+              />
+            </div>
+            <div className="plottool-chart-legend" aria-label="PlotTool chart legend">
+              {vm.legendItems.map((item) => <PlotToolLegendItem key={item.id} item={item} />)}
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 bg-secondary/15 px-3 py-3 text-xs text-muted-foreground">
+              <div>
+                <div className="eyebrow-label">{vm.focusPoint.label}</div>
+                <div className="mt-1 font-mono text-sm text-foreground">
+                  {vm.focusPoint.xValueText}
+                  <span className="px-2 text-muted-foreground">/</span>
+                  {vm.focusPoint.yValueText}
+                </div>
+              </div>
+              <div className="max-w-sm text-right leading-5">{vm.focusPoint.detail}</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <QuantNotebook vm={notebookVm} studyChips={vm.toolbarPills} />
+      </div>
 
       <div className="space-y-4">
         <Card className="border-border/70 bg-background/35">

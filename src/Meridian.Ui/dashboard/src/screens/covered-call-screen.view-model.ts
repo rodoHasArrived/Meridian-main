@@ -337,7 +337,10 @@ export function buildCoveredCallRunCommandState(
   };
 }
 
-export function buildCoveredCallCancelCommandState(run: CoveredCallRunState): CoveredCallActionCommandState {
+export function buildCoveredCallCancelCommandState(
+  run: CoveredCallRunState,
+  cancelConfirmationPending = false
+): CoveredCallActionCommandState {
   const feedbackId = "covered-call-cancel-command-feedback";
   if (run.isCancelling) {
     return {
@@ -374,6 +377,19 @@ export function buildCoveredCallCancelCommandState(run: CoveredCallRunState): Co
       feedbackText: disabledReason,
       disabled: true,
       disabledReason,
+      busy: false,
+      busyLabel: "Cancelling..."
+    };
+  }
+
+  if (cancelConfirmationPending) {
+    return {
+      label: "Confirm cancel",
+      ariaLabel: `Confirm cancel covered-call backtest run ${run.runId}. This stops the active backtest request.`,
+      feedbackId,
+      feedbackText: "Cancel confirmation pending. Confirm cancel stops this covered-call backtest run.",
+      disabled: false,
+      disabledReason: null,
       busy: false,
       busyLabel: "Cancelling..."
     };
@@ -812,6 +828,7 @@ export function useCoveredCallScreenViewModel(
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const [pendingCancelRunId, setPendingCancelRunId] = useState<string | null>(null);
 
   const setField = useCallback(<K extends keyof CoveredCallFormState>(key: K, value: CoveredCallFormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -826,6 +843,7 @@ export function useCoveredCallScreenViewModel(
   const resetForm = useCallback(() => {
     setForm(DEFAULT_COVERED_CALL_FORM);
     setFormErrors({});
+    setPendingCancelRunId(null);
   }, []);
 
   const dismissError = useCallback(() => setErrorBanner(null), []);
@@ -833,6 +851,7 @@ export function useCoveredCallScreenViewModel(
     setStage((current) => {
       const navigation = buildCoveredCallStageNavigationState(run);
       if (navigation[next].disabled) return current;
+      setPendingCancelRunId(null);
       return next;
     });
   }, [run]);
@@ -981,6 +1000,7 @@ export function useCoveredCallScreenViewModel(
     // resolves during the startRun await can't push status/result into the new run's state.
     stopPolling();
     activeRunIdRef.current = null;
+    setPendingCancelRunId(null);
 
     setErrorBanner(null);
     setRun({ runId: null, status: null, result: null, selectedPositionIndex: 0, isStarting: true, isCancelling: false });
@@ -1010,6 +1030,11 @@ export function useCoveredCallScreenViewModel(
   const cancelRun = useCallback(async () => {
     const runId = run.runId;
     if (!runId || run.isCancelling) return;
+    if (pendingCancelRunId !== runId) {
+      setPendingCancelRunId(runId);
+      return;
+    }
+    setPendingCancelRunId(null);
     setRun((prev) => ({ ...prev, isCancelling: true }));
     try {
       const status = await services.cancelRun(runId);
@@ -1018,7 +1043,7 @@ export function useCoveredCallScreenViewModel(
       setErrorBanner(`Cancel failed: ${(error as Error).message}`);
       setRun((prev) => ({ ...prev, isCancelling: false }));
     }
-  }, [run.isCancelling, run.runId, services]);
+  }, [pendingCancelRunId, run.isCancelling, run.runId, services]);
 
   const loadHistory = useCallback(async () => {
     setHistoryLoading(true);
@@ -1040,6 +1065,7 @@ export function useCoveredCallScreenViewModel(
       const result = await services.getResult(runId);
       activeRunIdRef.current = runId;
       stopPolling();
+      setPendingCancelRunId(null);
       setRun({
         runId,
         status: {
@@ -1065,8 +1091,8 @@ export function useCoveredCallScreenViewModel(
     [form, run.isStarting]
   );
   const cancelRunCommand = useMemo(
-    () => buildCoveredCallCancelCommandState(run),
-    [run]
+    () => buildCoveredCallCancelCommandState(run, Boolean(run.runId && pendingCancelRunId === run.runId)),
+    [pendingCancelRunId, run]
   );
   const runProgressPanel = useMemo(
     () => buildCoveredCallRunProgressPanel(run),

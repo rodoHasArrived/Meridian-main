@@ -1,9 +1,20 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
 import type { BrokerageConnectionStatus, PortfolioWorkspaceResponse, SessionInfo, SystemOverviewResponse } from "@/types";
+
+const apiMocks = vi.hoisted(() => ({
+  connectAlpacaConnection: vi.fn(),
+  revokeAlpacaConnection: vi.fn()
+}));
+
+vi.mock("@/lib/api", async (importActual) => ({
+  ...(await importActual<typeof import("@/lib/api")>()),
+  connectAlpacaConnection: apiMocks.connectAlpacaConnection,
+  revokeAlpacaConnection: apiMocks.revokeAlpacaConnection
+}));
 
 const session: SessionInfo = {
   displayName: "Andrew Rowden",
@@ -81,6 +92,11 @@ const portfolio: PortfolioWorkspaceResponse = {
 };
 
 describe("SettingsScreen", () => {
+  beforeEach(() => {
+    apiMocks.connectAlpacaConnection.mockReset();
+    apiMocks.revokeAlpacaConnection.mockReset();
+  });
+
   it("renders recent events as accessible status evidence rows", () => {
     renderWithRouter(<SettingsScreen session={session} overview={overview} />);
 
@@ -248,6 +264,67 @@ describe("SettingsScreen", () => {
 
     expect(submit).toBeEnabled();
     expect(screen.getByText("Credentials ready for test")).toBeInTheDocument();
+  });
+
+  it("explains disabled Alpaca form controls while a credential request is running", async () => {
+    const user = userEvent.setup();
+    const busyReason = "Alpaca credential request is already running.";
+    let resolveConnect: (status: BrokerageConnectionStatus) => void = () => undefined;
+    apiMocks.connectAlpacaConnection.mockImplementationOnce(() => new Promise<BrokerageConnectionStatus>((resolve) => {
+      resolveConnect = resolve;
+    }));
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+      />
+    );
+
+    await user.click(screen.getByRole("radio", { name: "Use Alpaca live endpoint for production brokerage verification" }));
+    await user.type(screen.getByPlaceholderText("ALPACA_KEY_ID"), "AK-LIVE");
+    await user.type(screen.getByPlaceholderText("ALPACA_SECRET_KEY"), "secret");
+    await user.click(screen.getByRole("checkbox", { name: "Acknowledge live Alpaca endpoint before testing credentials" }));
+    await user.click(screen.getByRole("button", { name: /connect and test/i }));
+
+    expect(screen.getByLabelText(/Key ID/)).toBeDisabled();
+    expect(screen.getByLabelText(/Key ID/)).toHaveAttribute("title", busyReason);
+    expect(screen.getByLabelText(/Secret key/)).toBeDisabled();
+    expect(screen.getByLabelText(/Secret key/)).toHaveAttribute("title", busyReason);
+    expect(screen.getByRole("radio", { name: "Use Alpaca paper endpoint for workstation validation" })).toHaveAttribute(
+      "title",
+      busyReason
+    );
+    expect(screen.getByRole("radio", { name: "Use Alpaca live endpoint for production brokerage verification" })).toBeDisabled();
+    expect(screen.getByRole("checkbox", { name: "Acknowledge live Alpaca endpoint before testing credentials" })).toHaveAttribute(
+      "title",
+      busyReason
+    );
+
+    resolveConnect({ ...alpacaConnection, environment: "live" });
+    expect(await screen.findAllByText("Alpaca account verified.")).toHaveLength(2);
+  });
+
+  it("requires confirmation before clearing stored Alpaca credentials", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /clear/i }));
+
+    expect(apiMocks.revokeAlpacaConnection).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: /confirm clear/i })).toBeEnabled();
+    expect(screen.getByText("Confirm Alpaca credential clear")).toBeInTheDocument();
+    expect(screen.getByText(/remove the stored Alpaca key reference/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /confirm clear/i }));
+
+    expect(apiMocks.revokeAlpacaConnection).toHaveBeenCalledTimes(1);
   });
 
   it("renders backend capability groups with mapped API links", () => {

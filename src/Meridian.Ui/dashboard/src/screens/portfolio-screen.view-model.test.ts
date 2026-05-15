@@ -615,6 +615,26 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.brokerageAccountOptions.find((option) => option.key === "fund-roth")?.isSelected).toBe(true);
     expect(vm.brokerageAccountOptions.map((option) => option.tabIndex)).toEqual([-1, 0, -1]);
     expect(vm.brokerageAccountRows).toHaveLength(2);
+    expect(vm.brokerageAccountsTableLabel).toBe("Alpaca paper brokerage accounts");
+    expect(vm.brokerageAccountDetailId).toBe("portfolio-brokerage-account-detail");
+    expect(vm.brokerageAccountRows[0]).toMatchObject({
+      id: "fund-roth",
+      healthBadgeVariant: "success",
+      positionCount: "1 position",
+      warningCount: "0 warnings",
+      isSelected: true,
+      expanded: true,
+      detailPanelId: vm.brokerageAccountDetailId,
+      selectAriaLabel: "Filter brokerage positions to Roth IRA account"
+    });
+    expect(vm.selectedBrokerageAccount).toMatchObject({
+      id: "fund-roth",
+      title: "Roth IRA",
+      ariaLabel: "Roth IRA brokerage account detail",
+      statusBadgeLabel: "Healthy",
+      statusBadgeVariant: "success"
+    });
+    expect(vm.selectedBrokerageAccount.fields.find((field) => field.label === "Buying power")?.value).toBe("$50,000");
     expect(vm.brokeragePositionRows).toHaveLength(1);
     expect(vm.brokeragePositionRows[0].symbol).toBe("AAPL");
     expect(vm.brokeragePositionRows[0].accountKind).toBe("Roth IRA");
@@ -626,6 +646,34 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.selectedBrokeragePosition?.fields.find((field) => field.label === "Security coverage")?.value).toBe("Security master missing");
     expect(vm.headerChips[0]).toEqual({ label: "Alpaca paper equity", value: "$375,000" });
     expect(vm.brokerageSetupAction).toBeNull();
+  });
+
+  it("keeps all-account brokerage detail as aggregate view state", () => {
+    const vm = buildPortfolioScreenViewModel({
+      trading,
+      research,
+      governance,
+      brokerageConnection,
+      brokeragePortfolio
+    });
+
+    expect(vm.brokerageAccountRows.map((row) => row.isSelected)).toEqual([false, false]);
+    expect(vm.brokerageAccountRows.map((row) => row.expanded)).toEqual([false, false]);
+    expect(vm.selectedBrokerageAccount).toMatchObject({
+      id: "all",
+      title: "All brokerage accounts",
+      statusTitle: "Household account scope",
+      statusBadgeLabel: "Synced",
+      statusBadgeVariant: "success"
+    });
+    expect(vm.selectedBrokerageAccount.fields).toEqual([
+      { label: "Accounts", value: "2 accounts", tone: "default" },
+      { label: "Equity", value: "$375,000", tone: "default" },
+      { label: "Cash", value: "$150,000", tone: "default" },
+      { label: "Buying power", value: "$150,000", tone: "default" },
+      { label: "Warnings", value: "0 warnings", tone: "success" },
+      { label: "Latest sync", value: "May 7, 12:00 UTC", tone: "muted" }
+    ]);
   });
 
   it("keeps selected brokerage position state in the view model", () => {
@@ -703,7 +751,19 @@ describe("buildPortfolioScreenViewModel", () => {
     ]);
     expect(vm.brokerageAccountRows[0]).toMatchObject({
       hasWarning: true,
-      warningText: "Roth IRA account sync stale."
+      warningText: "Roth IRA account sync stale.",
+      warningCount: "1 warning",
+      healthBadgeVariant: "success"
+    });
+    expect(vm.selectedBrokerageAccount).toMatchObject({
+      id: "all",
+      statusBadgeLabel: "Review",
+      statusBadgeVariant: "warning"
+    });
+    expect(vm.selectedBrokerageAccount.fields.find((field) => field.label === "Warnings")).toEqual({
+      label: "Warnings",
+      value: "2 warnings",
+      tone: "warning"
     });
   });
 

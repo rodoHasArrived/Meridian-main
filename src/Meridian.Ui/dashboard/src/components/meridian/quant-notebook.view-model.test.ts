@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   applyCellExecuteResult,
+  buildDataContextPanel,
   buildInitialCells,
   cellOutputToneClass,
   cellStateBadgeVariant,
@@ -112,6 +113,72 @@ describe("quant-notebook pure helpers", () => {
     expect(cellOutputToneClass("danger")).toBe("text-danger");
     expect(cellOutputToneClass("default")).toBe("text-foreground");
     expect(cellOutputToneClass(undefined)).toBe("text-foreground");
+  });
+
+  it("buildDataContextPanel owns fetch disabled, loading, and error state", () => {
+    const empty = buildDataContextPanel({}, null, "idle", null);
+
+    expect(empty.fetchCommand).toMatchObject({
+      label: "Fetch",
+      disabled: true,
+      disabledReason: "Enter a symbol before fetching notebook data.",
+      busy: false
+    });
+    expect(empty.statusTone).toBe("idle");
+    expect(empty.fields.symbol.error).toBe(false);
+
+    const loading = buildDataContextPanel({ symbol: "AAPL" }, null, "loading", null);
+
+    expect(loading.fetchCommand).toMatchObject({
+      label: "Loading...",
+      disabled: true,
+      disabledReason: "Notebook data fetch is already loading.",
+      busy: true
+    });
+    expect(loading.fields.from.disabledReason).toBe("Data fetch is in progress; wait before editing the start date.");
+
+    const error = buildDataContextPanel({}, null, "error", "Symbol is required.");
+
+    expect(error.statusTone).toBe("error");
+    expect(error.statusText).toBe("Symbol is required.");
+    expect(error.fields.symbol.error).toBe(true);
+  });
+
+  it("buildDataContextPanel formats result rows for the preview table", () => {
+    const panel = buildDataContextPanel(
+      { symbol: "AAPL" },
+      {
+        symbol: "AAPL",
+        from: "2026-01-01",
+        to: "2026-01-31",
+        interval: "daily",
+        rowCount: 6,
+        bars: [
+          { timestamp: "2026-01-01T00:00:00Z", open: 100, high: 101.125, low: 99.5, close: 100.25, volume: 1000 },
+          { timestamp: "2026-01-02T15:30:00Z", open: 101, high: 102, low: 100, close: 101.5, volume: 2500 },
+          { timestamp: "2026-01-03T00:00:00Z", open: 102, high: 103, low: 101, close: 102.5, volume: 3000 },
+          { timestamp: "2026-01-04T00:00:00Z", open: 103, high: 104, low: 102, close: 103.5, volume: 4000 },
+          { timestamp: "2026-01-05T00:00:00Z", open: 104, high: 105, low: 103, close: 104.5, volume: 5000 },
+          { timestamp: "2026-01-06T00:00:00Z", open: 105, high: 106, low: 104, close: 105.5, volume: 6000 }
+        ]
+      },
+      "done",
+      null
+    );
+
+    expect(panel.statusTone).toBe("success");
+    expect(panel.statusText).toBe("Loaded 6 daily bars for AAPL.");
+    expect(panel.result?.summaryText).toBe("AAPL · daily · 6 bars");
+    expect(panel.result?.previewNotice).toBe("Showing first 5 of 6 bars.");
+    expect(panel.result?.rows).toHaveLength(5);
+    expect(panel.result?.rows[0]).toMatchObject({
+      timestampLabel: "2026-01-01",
+      openLabel: "100.00",
+      highLabel: "101.125",
+      lowLabel: "99.50",
+      closeLabel: "100.25",
+      volumeLabel: "1,000"
+    });
   });
 });
 

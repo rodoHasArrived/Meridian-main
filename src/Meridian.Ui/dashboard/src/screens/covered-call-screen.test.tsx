@@ -249,6 +249,53 @@ describe("CoveredCallScreen", () => {
     expect(screen.getByText("Submitting backtest")).toBeInTheDocument();
   });
 
+  it("requires confirmation before cancelling an accepted covered-call run", async () => {
+    vi.mocked(coveredCallApi.startCoveredCallBacktest).mockResolvedValue({
+      runId: "run-1",
+      queuedAt: "2024-07-01T00:00:00Z"
+    });
+    vi.mocked(coveredCallApi.cancelCoveredCallRun).mockResolvedValue({
+      runId: "run-1",
+      phase: "Cancelled",
+      percentComplete: 0,
+      currentBacktestDate: null,
+      failureMessage: null
+    });
+
+    renderCoveredCallScreen();
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText(/Min strike/i), { target: { value: "500" } });
+    });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Run covered-call backtest" })).not.toBeDisabled());
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Run covered-call backtest" }));
+    });
+
+    const cancelButton = await screen.findByRole("button", { name: "Cancel covered-call backtest run" });
+    expect(cancelButton).not.toBeDisabled();
+
+    await act(async () => {
+      fireEvent.click(cancelButton);
+    });
+
+    expect(coveredCallApi.cancelCoveredCallRun).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", {
+      name: "Confirm cancel covered-call backtest run run-1. This stops the active backtest request."
+    })).toBeInTheDocument();
+    expect(screen.getByText("Cancel confirmation pending. Confirm cancel stops this covered-call backtest run.")).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", {
+        name: "Confirm cancel covered-call backtest run run-1. This stops the active backtest request."
+      }));
+    });
+
+    await waitFor(() => {
+      expect(coveredCallApi.cancelCoveredCallRun).toHaveBeenCalledWith("run-1");
+    });
+  });
+
   it("renders results workflow handoffs after a completed run", async () => {
     vi.mocked(coveredCallApi.startCoveredCallBacktest).mockResolvedValue({
       runId: "run-1",

@@ -104,12 +104,70 @@ export interface QuantNotebookCellViewModel extends NotebookCell {
   deleteDisabledReason: string | null;
 }
 
+export interface QuantNotebookCommandViewModel {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  busy: boolean;
+}
+
+export interface QuantNotebookDataContextFieldViewModel {
+  id: string;
+  label: string;
+  ariaLabel: string;
+  describedBy: string;
+  helpId: string;
+  helpText: string;
+  error: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
+export interface QuantNotebookDataResultRowViewModel {
+  id: string;
+  timestampLabel: string;
+  openLabel: string;
+  highLabel: string;
+  lowLabel: string;
+  closeLabel: string;
+  volumeLabel: string;
+}
+
+export interface QuantNotebookDataResultViewModel {
+  symbol: string;
+  interval: string;
+  summaryText: string;
+  previewNotice: string | null;
+  rows: QuantNotebookDataResultRowViewModel[];
+  emptyText: string;
+  ariaLabel: string;
+  caption: string;
+  dismissAriaLabel: string;
+}
+
+export interface QuantNotebookDataContextPanelViewModel {
+  descriptionId: string;
+  statusId: string;
+  statusText: string;
+  statusTone: "idle" | "loading" | "success" | "error";
+  fields: {
+    symbol: QuantNotebookDataContextFieldViewModel;
+    from: QuantNotebookDataContextFieldViewModel;
+    to: QuantNotebookDataContextFieldViewModel;
+    interval: QuantNotebookDataContextFieldViewModel;
+  };
+  fetchCommand: QuantNotebookCommandViewModel;
+  result: QuantNotebookDataResultViewModel | null;
+}
+
 export interface QuantNotebookViewModel {
   cells: QuantNotebookCellViewModel[];
   context: CellExecutionContext;
   dataResult: DataFetchResult | null;
   dataFetchState: "idle" | "loading" | "done" | "error";
   fetchError: string | null;
+  dataContextPanel: QuantNotebookDataContextPanelViewModel;
   snippets: CellSnippet[];
   clearOutputsLabel: string;
   clearOutputsAriaLabel: string;
@@ -410,6 +468,10 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
     : hasClearableOutput
       ? null
       : "Run a cell before clearing outputs.";
+  const dataContextPanel = useMemo(
+    () => buildDataContextPanel(context, dataResult, dataFetchState, fetchError),
+    [context, dataResult, dataFetchState, fetchError]
+  );
 
   const cellViewModels = useMemo<QuantNotebookCellViewModel[]>(
     () =>
@@ -435,6 +497,7 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
     dataResult,
     dataFetchState,
     fetchError,
+    dataContextPanel,
     snippets: builtInSnippets,
     clearOutputsLabel: clearOutputsConfirmationPending ? "Confirm clear" : "Clear",
     clearOutputsAriaLabel: clearOutputsConfirmationPending
@@ -455,6 +518,159 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
     fetchData,
     dismissDataResult
   };
+}
+
+export function buildDataContextPanel(
+  context: CellExecutionContext,
+  dataResult: DataFetchResult | null,
+  dataFetchState: "idle" | "loading" | "done" | "error",
+  fetchError: string | null
+): QuantNotebookDataContextPanelViewModel {
+  const loading = dataFetchState === "loading";
+  const trimmedSymbol = (context.symbol ?? "").trim();
+  const fetchDisabledReason = loading
+    ? "Notebook data fetch is already loading."
+    : trimmedSymbol.length === 0
+      ? "Enter a symbol before fetching notebook data."
+      : null;
+  const statusTone = fetchError
+    ? "error"
+    : loading
+      ? "loading"
+      : dataResult
+        ? "success"
+        : "idle";
+  const statusText = fetchError
+    ? fetchError
+    : loading
+      ? "Loading price bars for notebook context."
+      : dataResult
+        ? `Loaded ${formatCount(dataResult.rowCount)} ${dataResult.interval} bars for ${dataResult.symbol}.`
+        : "Enter a symbol and fetch bars before running context-aware cells.";
+
+  return {
+    descriptionId: "quant-notebook-data-context-description",
+    statusId: "quant-notebook-data-context-status",
+    statusText,
+    statusTone,
+    fields: {
+      symbol: buildDataContextField({
+        id: "quant-notebook-context-symbol",
+        label: "Symbol",
+        helpText: "Ticker used by notebook Data.Prices and ContextSymbol calls.",
+        error: fetchError === "Symbol is required.",
+        disabled: loading,
+        disabledReason: loading ? "Data fetch is in progress; wait before editing the symbol." : null
+      }),
+      from: buildDataContextField({
+        id: "quant-notebook-context-from",
+        label: "From date",
+        helpText: "Optional start date for the fetched bar window.",
+        error: false,
+        disabled: loading,
+        disabledReason: loading ? "Data fetch is in progress; wait before editing the start date." : null
+      }),
+      to: buildDataContextField({
+        id: "quant-notebook-context-to",
+        label: "To date",
+        helpText: "Optional end date for the fetched bar window.",
+        error: false,
+        disabled: loading,
+        disabledReason: loading ? "Data fetch is in progress; wait before editing the end date." : null
+      }),
+      interval: buildDataContextField({
+        id: "quant-notebook-context-interval",
+        label: "Interval",
+        helpText: "Bar interval for the preview and notebook context request.",
+        error: false,
+        disabled: loading,
+        disabledReason: loading ? "Data fetch is in progress; wait before editing the interval." : null
+      })
+    },
+    fetchCommand: {
+      label: loading ? "Loading..." : "Fetch",
+      ariaLabel: loading ? "Fetching notebook data context" : "Fetch notebook data context",
+      disabled: fetchDisabledReason !== null,
+      disabledReason: fetchDisabledReason,
+      busy: loading
+    },
+    result: dataResult ? buildDataResultViewModel(dataResult) : null
+  };
+}
+
+function buildDataContextField({
+  id,
+  label,
+  helpText,
+  error,
+  disabled,
+  disabledReason
+}: {
+  id: string;
+  label: string;
+  helpText: string;
+  error: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
+}): QuantNotebookDataContextFieldViewModel {
+  const helpId = `${id}-help`;
+  return {
+    id,
+    label,
+    ariaLabel: label,
+    describedBy: helpId,
+    helpId,
+    helpText,
+    error,
+    disabled,
+    disabledReason
+  };
+}
+
+function buildDataResultViewModel(result: DataFetchResult): QuantNotebookDataResultViewModel {
+  const rows = result.bars.slice(0, 5).map((bar): QuantNotebookDataResultRowViewModel => ({
+    id: bar.timestamp,
+    timestampLabel: formatBarTimestamp(bar.timestamp),
+    openLabel: formatPrice(bar.open),
+    highLabel: formatPrice(bar.high),
+    lowLabel: formatPrice(bar.low),
+    closeLabel: formatPrice(bar.close),
+    volumeLabel: formatCount(bar.volume)
+  }));
+  const rowCountLabel = formatCount(result.rowCount);
+  const previewNotice = result.rowCount > rows.length
+    ? `Showing first ${formatCount(rows.length)} of ${rowCountLabel} bars.`
+    : null;
+
+  return {
+    symbol: result.symbol,
+    interval: result.interval,
+    summaryText: `${result.symbol} · ${result.interval} · ${rowCountLabel} bars`,
+    previewNotice,
+    rows,
+    emptyText: `No ${result.interval} bars returned for ${result.symbol}. Adjust the symbol or date window and fetch again.`,
+    ariaLabel: `${result.symbol} notebook data preview`,
+    caption: `${result.symbol} ${result.interval} notebook data preview. ${previewNotice ?? `Showing ${rowCountLabel} bars.`}`,
+    dismissAriaLabel: `Dismiss ${result.symbol} notebook data preview`
+  };
+}
+
+function formatBarTimestamp(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  const iso = date.toISOString();
+  return iso.endsWith("T00:00:00.000Z") ? iso.slice(0, 10) : iso.replace(".000Z", "Z");
+}
+
+function formatPrice(value: number): string {
+  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+}
+
+function formatCount(value: number): string {
+  return Math.trunc(value).toLocaleString("en-US");
 }
 
 // ── Output tone helpers ────────────────────────────────────────────────────────

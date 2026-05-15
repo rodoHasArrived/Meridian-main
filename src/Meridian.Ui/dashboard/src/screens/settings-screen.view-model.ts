@@ -58,6 +58,8 @@ export interface SettingsAlpacaConnectionCommandState {
     secretKey: string;
     environment: string;
   };
+  keyIdField: SettingsAlpacaCredentialFieldState;
+  secretKeyField: SettingsAlpacaCredentialFieldState;
   submitLabel: string;
   clearLabel: string;
   canSubmit: boolean;
@@ -77,6 +79,20 @@ export interface SettingsAlpacaConnectionCommandState {
   requirements: SettingsAlpacaRequirementRow[];
 }
 
+export interface SettingsAlpacaCredentialFieldState {
+  id: string;
+  label: string;
+  type: "text" | "password";
+  autoComplete: string;
+  placeholder: string;
+  helpId: string;
+  helpText: string;
+  describedBy: string;
+  error: boolean;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
 export interface SettingsAlpacaEnvironmentOption {
   id: string;
   value: AlpacaEnvironment;
@@ -86,6 +102,7 @@ export interface SettingsAlpacaEnvironmentOption {
   descriptionId: string;
   isSelected: boolean;
   disabled: boolean;
+  disabledReason: string | null;
   ariaLabel: string;
   tone: "paper" | "live";
 }
@@ -106,6 +123,7 @@ export interface SettingsAlpacaLiveAcknowledgementState {
   checked: boolean;
   visible: boolean;
   disabled: boolean;
+  disabledReason: string | null;
   required: boolean;
   ariaLabel: string;
 }
@@ -149,10 +167,12 @@ const emptyAlpacaConnectionForm: SettingsAlpacaConnectionFormState = {
 
 export function buildAlpacaConnectionCommandState({
   form,
-  canClear
+  canClear,
+  clearConfirmationPending = false
 }: {
   form: SettingsAlpacaConnectionFormState;
   canClear: boolean;
+  clearConfirmationPending?: boolean;
 }): SettingsAlpacaConnectionCommandState {
   const keyIdMissing = form.keyId.trim().length === 0;
   const secretKeyMissing = form.secretKey.trim().length === 0;
@@ -166,11 +186,25 @@ export function buildAlpacaConnectionCommandState({
     : liveSelected
       ? "success"
       : "muted";
+  const clearConfirmationReady = !busy && canClear && clearConfirmationPending;
   const validationVisible = form.submitted || form.actionTone === "danger";
   const keyIdError = validationVisible && keyIdMissing;
   const secretKeyError = validationVisible && secretKeyMissing;
   const missingCredentialValue = validationVisible ? "Required" : "Needed";
   const missingCredentialTone = validationVisible ? "warning" : "muted";
+  const formPanelId = "alpaca-credential-readiness";
+  const fieldHelpIds = {
+    keyId: "alpaca-key-id-help",
+    secretKey: "alpaca-secret-key-help",
+    environment: "alpaca-environment-help"
+  };
+  const editDisabledReason = busy ? "Alpaca credential request is already running." : null;
+  const keyIdHelpText = keyIdError
+    ? "Key ID is required before Meridian can test the Alpaca account."
+    : "Stored values remain masked after refresh.";
+  const secretKeyHelpText = secretKeyError
+    ? "Secret key is required and is cleared after a connection test."
+    : "Secret key is never displayed after submit.";
   const environmentOptions: SettingsAlpacaEnvironmentOption[] = [
     {
       id: "alpaca-environment-paper",
@@ -181,6 +215,7 @@ export function buildAlpacaConnectionCommandState({
       descriptionId: "alpaca-environment-paper-description",
       isSelected: form.environment === "paper",
       disabled: busy,
+      disabledReason: editDisabledReason,
       ariaLabel: "Use Alpaca paper endpoint for workstation validation",
       tone: "paper"
     },
@@ -193,6 +228,7 @@ export function buildAlpacaConnectionCommandState({
       descriptionId: "alpaca-environment-live-description",
       isSelected: form.environment === "live",
       disabled: busy,
+      disabledReason: editDisabledReason,
       ariaLabel: "Use Alpaca live endpoint for production brokerage verification",
       tone: "live"
     }
@@ -229,6 +265,8 @@ export function buildAlpacaConnectionCommandState({
   ];
   const formPanelTone: SettingsAlpacaConnectionCommandState["formPanelTone"] = busy
     ? "warning"
+    : clearConfirmationReady
+      ? "warning"
     : form.actionTone === "danger"
       ? "danger"
       : form.actionTone === "success"
@@ -242,6 +280,8 @@ export function buildAlpacaConnectionCommandState({
     ? form.busyAction === "clear"
       ? "Clearing Alpaca credentials"
       : "Testing Alpaca credentials"
+    : clearConfirmationReady
+      ? "Confirm Alpaca credential clear"
     : form.actionMessage
       ? form.actionMessage
       : liveAcknowledgementMissing && !hasValidationErrors
@@ -253,6 +293,8 @@ export function buildAlpacaConnectionCommandState({
             : "Credentials ready for test";
   const formPanelDetail = busy
     ? "Meridian is waiting on the brokerage connection request."
+    : clearConfirmationReady
+      ? "Confirming will remove the stored Alpaca key reference and block provider-backed workflows until a new connection test succeeds."
     : form.actionMessage
       ? hasValidationErrors
         ? "Review the required fields before the next connection test."
@@ -268,19 +310,41 @@ export function buildAlpacaConnectionCommandState({
   return {
     keyIdError,
     secretKeyError,
-    formPanelId: "alpaca-credential-readiness",
+    formPanelId,
     formPanelTitle,
     formPanelDetail,
     formPanelTone,
     formPanelRole: formPanelTone === "danger" ? "alert" : "status",
     formPanelAriaLive: formPanelTone === "danger" ? "assertive" : "polite",
-    fieldHelpIds: {
-      keyId: "alpaca-key-id-help",
-      secretKey: "alpaca-secret-key-help",
-      environment: "alpaca-environment-help"
+    fieldHelpIds,
+    keyIdField: {
+      id: "alpaca-key-id",
+      label: "Key ID",
+      type: "text",
+      autoComplete: "off",
+      placeholder: "ALPACA_KEY_ID",
+      helpId: fieldHelpIds.keyId,
+      helpText: keyIdHelpText,
+      describedBy: `${fieldHelpIds.keyId} ${formPanelId}`,
+      error: keyIdError,
+      disabled: busy,
+      disabledReason: editDisabledReason
+    },
+    secretKeyField: {
+      id: "alpaca-secret-key",
+      label: "Secret key",
+      type: "password",
+      autoComplete: "off",
+      placeholder: "ALPACA_SECRET_KEY",
+      helpId: fieldHelpIds.secretKey,
+      helpText: secretKeyHelpText,
+      describedBy: `${fieldHelpIds.secretKey} ${formPanelId}`,
+      error: secretKeyError,
+      disabled: busy,
+      disabledReason: editDisabledReason
     },
     submitLabel: "Connect and test",
-    clearLabel: "Clear",
+    clearLabel: clearConfirmationReady ? "Confirm clear" : "Clear",
     canSubmit: !busy && !hasValidationErrors && !liveAcknowledgementMissing,
     canEdit: !busy,
     submitBusy: form.busyAction === "connect",
@@ -301,8 +365,8 @@ export function buildAlpacaConnectionCommandState({
         : "No stored Alpaca credentials are available to clear.",
     statusRole: form.actionTone === "danger" ? "alert" : "status",
     statusClassName: form.actionTone === "danger" ? "text-sm text-danger" : "text-sm text-muted-foreground",
-    keyIdHelpText: keyIdError ? "Key ID is required before Meridian can test the Alpaca account." : "Stored values remain masked after refresh.",
-    secretKeyHelpText: secretKeyError ? "Secret key is required and is cleared after a connection test." : "Secret key is never displayed after submit.",
+    keyIdHelpText,
+    secretKeyHelpText,
     environmentHelpText: form.environment === "live"
       ? "Live endpoint selected. Acknowledgement is required before Meridian can test these credentials."
       : "Paper endpoint selected for workstation validation.",
@@ -316,6 +380,7 @@ export function buildAlpacaConnectionCommandState({
       checked: form.liveAcknowledged,
       visible: liveSelected,
       disabled: busy,
+      disabledReason: editDisabledReason,
       required: liveSelected,
       ariaLabel: "Acknowledge live Alpaca endpoint before testing credentials"
     },
@@ -333,10 +398,11 @@ export function useAlpacaConnectionFormViewModel({
   canClear: boolean;
 } & SettingsAlpacaConnectionDependencies): SettingsAlpacaConnectionFormViewModel {
   const [form, setForm] = useState<SettingsAlpacaConnectionFormState>(emptyAlpacaConnectionForm);
+  const [clearConfirmationPending, setClearConfirmationPending] = useState(false);
   const mountedRef = useRef(true);
   const actionRevisionRef = useRef(0);
   const actionAbortRef = useRef<AbortController | null>(null);
-  const command = buildAlpacaConnectionCommandState({ form, canClear });
+  const command = buildAlpacaConnectionCommandState({ form, canClear, clearConfirmationPending });
 
   useEffect(() => () => {
     mountedRef.current = false;
@@ -345,14 +411,17 @@ export function useAlpacaConnectionFormViewModel({
   }, []);
 
   const setKeyId = (keyId: string) => {
+    setClearConfirmationPending(false);
     setForm((current) => ({ ...current, keyId, actionMessage: null, actionTone: "default" }));
   };
 
   const setSecretKey = (secretKey: string) => {
+    setClearConfirmationPending(false);
     setForm((current) => ({ ...current, secretKey, actionMessage: null, actionTone: "default" }));
   };
 
   const setEnvironment = (environment: AlpacaEnvironment) => {
+    setClearConfirmationPending(false);
     setForm((current) => ({
       ...current,
       environment,
@@ -363,6 +432,7 @@ export function useAlpacaConnectionFormViewModel({
   };
 
   const setLiveAcknowledged = (liveAcknowledged: boolean) => {
+    setClearConfirmationPending(false);
     setForm((current) => ({ ...current, liveAcknowledged, actionMessage: null, actionTone: "default" }));
   };
 
@@ -381,6 +451,7 @@ export function useAlpacaConnectionFormViewModel({
     actionAbortRef.current?.abort();
     const controller = new AbortController();
     actionAbortRef.current = controller;
+    setClearConfirmationPending(false);
     setForm({ ...submittedForm, busyAction: "connect" });
 
     try {
@@ -427,8 +498,13 @@ export function useAlpacaConnectionFormViewModel({
   };
 
   const clear = async () => {
-    const currentCommand = buildAlpacaConnectionCommandState({ form, canClear });
+    const currentCommand = buildAlpacaConnectionCommandState({ form, canClear, clearConfirmationPending });
     if (currentCommand.clearDisabledReason) {
+      return;
+    }
+    if (!clearConfirmationPending) {
+      setClearConfirmationPending(true);
+      setForm((current) => ({ ...current, actionMessage: null, actionTone: "default" }));
       return;
     }
 
@@ -437,6 +513,7 @@ export function useAlpacaConnectionFormViewModel({
     actionAbortRef.current?.abort();
     const controller = new AbortController();
     actionAbortRef.current = controller;
+    setClearConfirmationPending(false);
     setForm((current) => ({ ...current, busyAction: "clear", actionMessage: null, actionTone: "default" }));
 
     try {
