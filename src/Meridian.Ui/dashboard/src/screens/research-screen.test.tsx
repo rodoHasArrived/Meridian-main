@@ -412,8 +412,13 @@ describe("ResearchScreen", () => {
         { symbol: "AAPL", baseQuantity: 0, targetQuantity: 100, basePnl: 0, targetPnl: 250, changeType: "Added" }
       ],
       removedPositions: [],
-      modifiedPositions: [],
-      parameterChanges: [{ key: "lookback", baseValue: "20", targetValue: "30" }],
+      modifiedPositions: [
+        { symbol: "MSFT", baseQuantity: 25, targetQuantity: 40, basePnl: 120, targetPnl: 180, changeType: "Modified" }
+      ],
+      parameterChanges: [
+        { key: "lookback", baseValue: "20", targetValue: "30" },
+        { key: "threshold", baseValue: "1.5", targetValue: "2.0" }
+      ],
       metrics: {
         netPnlDelta: 1200,
         totalReturnDelta: 0.01,
@@ -441,11 +446,30 @@ describe("ResearchScreen", () => {
       .toBeInTheDocument();
     expect(screen.getByLabelText("Run diff metric summary")).toBeInTheDocument();
     expect(screen.getByRole("group", { name: /Net P&L delta \+\$1,200/ })).toBeInTheDocument();
-    expect(screen.getByLabelText("1 position change returned")).toBeInTheDocument();
-    expect(screen.getByRole("listitem", { name: "AAPL Added. Qty +100. P&L +$250." })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Position diff rows" })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Parameter diff rows" })).toBeInTheDocument();
+    expect(screen.getByLabelText("2 position changes returned")).toBeInTheDocument();
+    const aaplRow = screen.getByRole("row", { name: "Inspect AAPL added position diff" });
+    const msftRow = screen.getByRole("row", { name: "Inspect MSFT modified position diff" });
+    expect(aaplRow).toHaveAttribute("aria-controls", "strategy-run-diff-selected-position-detail");
+    expect(aaplRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected position diff detail for AAPL" }))
+      .toHaveTextContent("Base quantity");
     expect(screen.getByText("Qty +100")).toBeInTheDocument();
-    expect(screen.getByText("lookback")).toBeInTheDocument();
-    expect(screen.getByRole("listitem", { name: "lookback changed from 20 to 30." })).toHaveTextContent("20 -> 30");
+
+    await user.click(msftRow);
+    expect(msftRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected position diff detail for MSFT" }))
+      .toHaveTextContent("Target quantity");
+
+    const lookbackRow = screen.getByRole("row", { name: "Inspect lookback parameter diff" });
+    const thresholdRow = screen.getByRole("row", { name: "Inspect threshold parameter diff" });
+    expect(lookbackRow).toHaveAttribute("aria-controls", "strategy-run-diff-selected-parameter-detail");
+    expect(lookbackRow).toHaveAttribute("aria-expanded", "true");
+    await user.click(thresholdRow);
+    expect(thresholdRow).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Selected parameter diff detail for threshold" }))
+      .toHaveTextContent("1.5 -> 2.0");
     expect(api.diffRuns).toHaveBeenCalledOnce();
   });
 
@@ -482,7 +506,7 @@ describe("ResearchScreen", () => {
     await waitFor(() => {
       expect(screen.getByText("No position changes returned for this diff.")).toBeInTheDocument();
     });
-    expect(screen.getByRole("listitem", { name: "lookback changed from Unavailable to Unavailable." }))
+    expect(screen.getByRole("row", { name: "Inspect lookback parameter diff" }))
       .toHaveTextContent("Unavailable -> Unavailable");
   });
 

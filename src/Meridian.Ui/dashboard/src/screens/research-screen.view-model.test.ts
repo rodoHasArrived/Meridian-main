@@ -381,6 +381,8 @@ describe("research-screen view model", () => {
     expect(emptyDiff.hasParameterChanges).toBe(false);
     expect(emptyDiff.positionSectionLabel).toBe("0 position changes returned");
     expect(emptyDiff.parameterSectionLabel).toBe("0 parameter changes returned");
+    expect(emptyDiff.positionTable.emptyText).toBe("No position changes returned for this diff.");
+    expect(emptyDiff.parameterTable.emptyText).toBe("No parameter changes returned for this diff.");
     expect(emptyDiff.positionEmptyText).toBe("No position changes returned for this diff.");
     expect(emptyDiff.parameterEmptyText).toBe("No parameter changes returned for this diff.");
 
@@ -509,16 +511,64 @@ describe("research-screen view model", () => {
     expect(panel.positionChanges[0]).toMatchObject({
       symbolText: "AAPL",
       changeTypeText: "Added",
+      baseQuantityText: "0",
+      targetQuantityText: "100",
       quantityText: "Qty +100",
+      basePnlText: "$0",
+      targetPnlText: "$250",
       pnlText: "P&L +$250",
       badgeVariant: "success",
-      ariaLabel: "AAPL Added. Qty +100. P&L +$250."
+      ariaLabel: "AAPL Added. Qty +100. P&L +$250.",
+      rowSelectAriaLabel: "Inspect AAPL added position diff",
+      detailPanelId: "strategy-run-diff-selected-position-detail",
+      detailExpanded: true
+    });
+    expect(panel.positionTable.caption).toContain("Select a row to inspect base and target exposure.");
+    expect(panel.selectedPositionDetail).toMatchObject({
+      ariaLabel: "Selected position diff detail for AAPL",
+      title: "AAPL",
+      statusLabel: "Added"
     });
     expect(panel.hasParameterChanges).toBe(true);
     expect(panel.parameterChanges[0]).toMatchObject({
       key: "lookback",
       valueText: "20 -> 30",
-      ariaLabel: "lookback changed from 20 to 30."
+      ariaLabel: "lookback changed from 20 to 30.",
+      rowSelectAriaLabel: "Inspect lookback parameter diff",
+      detailPanelId: "strategy-run-diff-selected-parameter-detail",
+      detailExpanded: true
+    });
+    expect(panel.parameterTable.caption).toContain("Select a row to inspect base and target values.");
+    expect(panel.selectedParameterDetail).toMatchObject({
+      ariaLabel: "Selected parameter diff detail for lookback",
+      title: "lookback",
+      statusLabel: "Changed"
+    });
+
+    const selectedSecond = buildDiffPanel({
+      ...diff,
+      addedPositions: [
+        { symbol: "AAPL", baseQuantity: 0, targetQuantity: 100, basePnl: 0, targetPnl: 250, changeType: "Added" },
+        { symbol: "MSFT", baseQuantity: 25, targetQuantity: 40, basePnl: 120, targetPnl: 180, changeType: "Modified" }
+      ],
+      parameterChanges: [
+        { key: "lookback", baseValue: "20", targetValue: "30" },
+        { key: "threshold", baseValue: "1.5", targetValue: "2.0" }
+      ]
+    }, {
+      selectedPositionKey: "MSFT-Modified",
+      selectedParameterKey: "threshold"
+    });
+    expect(selectedSecond.selectedPositionKey).toBe("MSFT-Modified");
+    expect(selectedSecond.positionChanges[1]).toMatchObject({
+      detailExpanded: true,
+      quantityText: "Qty +15",
+      pnlText: "P&L +$60"
+    });
+    expect(selectedSecond.selectedParameterKey).toBe("threshold");
+    expect(selectedSecond.parameterChanges[1]).toMatchObject({
+      detailExpanded: true,
+      valueText: "1.5 -> 2.0"
     });
   });
 
