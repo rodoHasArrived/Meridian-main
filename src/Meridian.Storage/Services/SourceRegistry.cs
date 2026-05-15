@@ -248,11 +248,15 @@ public sealed class SourceRegistry : ISourceRegistry
         }
 
         // Apply the in-memory change first; ConcurrentDictionary operations are thread-safe.
+        // We do this before acquiring the save gate so that callers always see up-to-date
+        // in-memory state regardless of how long a concurrent disk write takes.
         applyChange();
 
-        // Bounded wait so persistence never blocks a thread-pool thread indefinitely.
-        // If the lock is already held by another save, we skip this disk write —
-        // the next mutation will persist all accumulated in-memory state.
+        // Bounded wait: prevents indefinite thread-pool thread blocking under load.
+        // If the timeout expires it means another save is already in progress. We skip
+        // this redundant write because the next mutation (or the ongoing save) will
+        // persist all accumulated in-memory state — the full snapshot is always serialised
+        // in SaveToDisk, so no intermediate state is ever permanently lost.
         if (!_saveGate.Wait(TimeSpan.FromSeconds(10)))
             return;
 
