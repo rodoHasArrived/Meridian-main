@@ -1049,6 +1049,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── install-hooks.sh
 │       │   └── pre-commit
 │       ├── install
+│       │   ├── install-web-workstation.ps1
 │       │   ├── install.ps1
 │       │   └── install.sh
 │       ├── lib
@@ -5047,7 +5048,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── reconciliation-operations.md
 │   │   ├── reconciliation-policy-operations.md
 │   │   ├── reconciliation-runbook.md
-│   │   └── service-level-objectives.md
+│   │   ├── service-level-objectives.md
+│   │   └── web-workstation-installer.md
 │   ├── plans
 │   │   ├── README.md
 │   │   ├── assembly-performance-roadmap.md
@@ -5503,17 +5505,20 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ISwapReferenceService.cs
 │   │   │   └── SwapProjectionService.cs
 │   │   ├── DirectLending
+│   │   │   ├── AccrualLedgerService.cs
 │   │   │   ├── DailyAccrualWorker.cs
 │   │   │   ├── DirectLendingEventRebuilder.cs
 │   │   │   ├── DirectLendingOutboxDispatcher.cs
 │   │   │   ├── DirectLendingServiceSupport.cs
 │   │   │   ├── DirectLendingWorkflowSupport.cs
 │   │   │   ├── DirectLendingWorkflowTopics.cs
+│   │   │   ├── IAccrualLedgerService.cs
 │   │   │   ├── IDirectLendingCommandService.cs
 │   │   │   ├── IDirectLendingQueryService.cs
 │   │   │   ├── IDirectLendingService.cs
 │   │   │   ├── InMemoryDirectLendingService.Workflows.cs
 │   │   │   ├── InMemoryDirectLendingService.cs
+│   │   │   ├── LoanAccountingProjector.cs
 │   │   │   ├── PostgresDirectLendingCommandService.cs
 │   │   │   ├── PostgresDirectLendingQueryService.cs
 │   │   │   └── PostgresDirectLendingService.cs
@@ -6303,6 +6308,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Meridian.FSharp.DirectLending.Aggregates.fsproj
 │   │   └── ServicingAggregate.fs
 │   ├── Meridian.FSharp.Ledger
+│   │   ├── AccrualTypes.fs
 │   │   ├── Interop.fs
 │   │   ├── JournalValidation.fs
 │   │   ├── LedgerReadModels.fs
@@ -6878,6 +6884,7 @@ Use these documents together when planning or implementing new work:
 │   │       │   └── automation
 │   │       │       ├── covered-call-history-1440.png
 │   │       │       ├── covered-call-history-390.png
+│   │       │       ├── covered-call-trade-timeline-smoke.png
 │   │       │       ├── governance-reconciliation-disabled-reasons-mobile-smoke.png
 │   │       │       ├── governance-reconciliation-disabled-reasons-smoke.png
 │   │       │       ├── price-alerts-dev-tables-smoke.png
@@ -6899,6 +6906,7 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── covered-call-history-open-guard-smoke.png
 │   │       │       │   ├── covered-call-results-handoff-smoke.png
 │   │       │       │   ├── covered-call-stage-navigation-smoke.png
+│   │       │       │   ├── covered-call-trade-timeline-smoke.png
 │   │       │       │   ├── evidence-manifest-action-smoke.png
 │   │       │       │   ├── live-quotes-order-readiness-handoff-smoke.png
 │   │       │       │   ├── operator-readiness-utc-smoke.png
@@ -6912,6 +6920,7 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── price-alerts-handoff-smoke.png
 │   │       │       │   ├── price-alerts-utc-smoke.png
 │   │       │       │   ├── readiness-inbox-refresh-smoke.png
+│   │       │       │   ├── readiness-provider-setup-handoff-smoke.png
 │   │       │       │   ├── readiness-report-pack-deeplink-smoke.png
 │   │       │       │   ├── report-pack-actions-smoke.png
 │   │       │       │   ├── report-pack-reference-smoke.png
@@ -6969,6 +6978,11 @@ Use these documents together when planning or implementing new work:
 │   │       │       │   ├── security-master-conflict-actions-mobile.png
 │   │       │       │   ├── strategy-designer-selected-leg-desktop.png
 │   │       │       │   ├── strategy-designer-selected-leg-mobile.png
+│   │       │       │   ├── watchlist-add-field-clean-desktop.png
+│   │       │       │   ├── watchlist-add-field-clean-mobile.png
+│   │       │       │   ├── watchlist-add-field-desktop.png
+│   │       │       │   ├── watchlist-add-field-mobile.png
+│   │       │       │   ├── watchlist-clean-smoke-runner.mjs
 │   │       │       │   ├── workspace-header-desktop.png
 │   │       │       │   └── workspace-header-mobile.png
 │   │       │       ├── web-ui-report-pack-profile-keyboard-mobile-smoke.png
@@ -8801,6 +8815,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── test_screenshot_workflow_plan.py
 │   │   ├── test_setup_dotnet_cache_action.py
 │   │   ├── test_shared_build_retention.py
+│   │   ├── test_web_workstation_installer.py
 │   │   ├── test_wpf_msix_install_guidance.py
 │   │   └── test_wpf_msix_manifest.py
 │   ├── setup-script-tests.md
@@ -8888,6 +8903,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-724 directories, 7948 files
+724 directories, 7963 files
 ```
 <!-- readme-tree end -->
