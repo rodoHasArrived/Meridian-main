@@ -298,8 +298,6 @@ function AppShell() {
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
                   <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
-                  <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
-                  <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                   <Route path="/strategy/*" element={<ResearchScreen data={research} />} />
                   <Route path="/data/quotes" element={<LiveQuotesScreen />} />

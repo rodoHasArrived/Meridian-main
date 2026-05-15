@@ -344,6 +344,77 @@ describe("useWorkstationData", () => {
     expect(result.current.workspaceErrors.trading).toBeUndefined();
     expect(result.current.error).toBeNull();
   });
+
+  it("surfaces portfolio-only refresh failures without discarding stale portfolio data", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let portfolioRefresh!: Promise<void>;
+    act(() => {
+      portfolioRefresh = result.current.refreshPortfolio();
+    });
+    await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getBrokerageHouseholdPortfolio).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      rejectRequest("portfolio", 1, new Error("Portfolio refresh failed."));
+      rejectRequest("brokeragePortfolio", 1, new Error("Brokerage portfolio refresh failed."));
+      await portfolioRefresh;
+    });
+
+    expect(result.current.portfolio).toEqual({ marker: "initial portfolio" });
+    expect(result.current.brokeragePortfolio).toEqual({ marker: "initial brokerage" });
+    expect(result.current.workspaceErrors.portfolio).toBe(
+      "Portfolio refresh failed.; Brokerage portfolio refresh failed."
+    );
+    expect(result.current.error).toBe(result.current.workspaceErrors.portfolio);
+  });
+
+  it("clears the portfolio-only refresh failure after a later portfolio refresh succeeds", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let failedRefresh!: Promise<void>;
+    act(() => {
+      failedRefresh = result.current.refreshPortfolio();
+    });
+    await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getBrokerageHouseholdPortfolio).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      rejectRequest("portfolio", 1, new Error("Portfolio refresh failed."));
+      rejectRequest("brokeragePortfolio", 1, new Error("Brokerage portfolio refresh failed."));
+      await failedRefresh;
+    });
+
+    let recoveryRefresh!: Promise<void>;
+    act(() => {
+      recoveryRefresh = result.current.refreshPortfolio();
+    });
+    await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(api.getBrokerageHouseholdPortfolio).toHaveBeenCalledTimes(3));
+    await act(async () => {
+      resolveRequest<PortfolioWorkspaceResponse>("portfolio", 2, { marker: "recovered portfolio" } as unknown as PortfolioWorkspaceResponse);
+      resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", 2, { marker: "recovered brokerage" } as unknown as BrokerageHouseholdPortfolio);
+      await recoveryRefresh;
+    });
+
+    expect(result.current.portfolio).toEqual({ marker: "recovered portfolio" });
+    expect(result.current.brokeragePortfolio).toEqual({ marker: "recovered brokerage" });
+    expect(result.current.workspaceErrors.portfolio).toBeUndefined();
+    expect(result.current.error).toBeNull();
+  });
 });
 
 function StrictModeWrapper({ children }: { children: ReactNode }) {

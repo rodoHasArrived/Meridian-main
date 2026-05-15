@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/app";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
@@ -119,6 +120,12 @@ describe("App", () => {
 
     expect(screen.getByRole("link", { name: "Skip to workbench" })).toHaveAttribute("href", "#workbench-content");
     expect(screen.getByRole("main")).toHaveAttribute("id", "workbench-content");
+  });
+
+  it("has no basic accessibility violations in the trading shell", async () => {
+    const { container } = renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    await expect(axe(container)).resolves.toHaveNoViolations();
   });
 
   it("renders route-aware workflow continuity without relying on memorized navigation", () => {
