@@ -12,6 +12,7 @@ import {
   REPLAY_API_ENDPOINTS,
   SECURITY_MASTER_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
+  STRATEGY_DESIGNER_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINT_TEMPLATES,
   backfillCheckpointEndpoint,
@@ -60,6 +61,7 @@ import {
   securityMasterEntryEndpoint,
   securityMasterTradingParametersEndpoint,
   strategyActionEndpoint,
+  strategyDesignerDraftEndpoint,
   strategyRunsEndpoint,
   symbolArchiveEndpoint,
   symbolRemoveEndpoint,
@@ -215,6 +217,13 @@ describe("workstation API endpoint catalog", () => {
   it("builds strategy run detail, comparison, and export endpoints from shared roots", () => {
     expect(strategyActionEndpoint("strategy / 1", "pause")).toBe("/api/strategies/strategy%20%2F%201/pause");
     expect(strategyRunsEndpoint("strategy / 1", "paper")).toBe("/api/strategies/strategy%20%2F%201/runs?type=paper");
+    expect(STRATEGY_DESIGNER_API_ENDPOINTS.templates).toBe("/api/workstation/strategy/designer/templates");
+    expect(STRATEGY_DESIGNER_API_ENDPOINTS.fieldCatalog).toBe("/api/workstation/strategy/designer/field-catalog");
+    expect(STRATEGY_DESIGNER_API_ENDPOINTS.validate).toBe("/api/workstation/strategy/designer/validate");
+    expect(STRATEGY_DESIGNER_API_ENDPOINTS.preview).toBe("/api/workstation/strategy/designer/preview");
+    expect(STRATEGY_DESIGNER_API_ENDPOINTS.runBacktest).toBe("/api/workstation/strategy/designer/run-backtest");
+    expect(strategyDesignerDraftEndpoint()).toBe("/api/workstation/strategy/designer/drafts");
+    expect(strategyDesignerDraftEndpoint("draft / 1")).toBe("/api/workstation/strategy/designer/drafts/draft%20%2F%201");
     expect(workstationRunCompareEndpoint()).toBe("/api/workstation/runs/compare");
     expect(workstationRunDiffEndpoint()).toBe("/api/workstation/runs/diff");
     expect(workstationRunAttributionEndpoint("run / 1")).toBe("/api/workstation/runs/run%20%2F%201/attribution");

@@ -1766,6 +1766,153 @@ export interface QuantRunRequest {
   parameters: Record<string, string | number | boolean | null>;
 }
 
+// --- Strategy Designer ---
+
+export interface StrategyDesignDocument {
+  documentId: string;
+  name: string;
+  description: string;
+  version: string;
+  datasetReference: string;
+  universe: string[];
+  cells: StrategyDesignCell[];
+  transitions: StrategyDesignTransition[];
+  metadata?: Record<string, string> | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StrategyDesignCell {
+  cellId: string;
+  label: string;
+  kind: string;
+  purpose: string;
+  source: string;
+  fieldRefs: string[];
+  parameters?: Record<string, string> | null;
+  disabledReason?: string | null;
+}
+
+export interface StrategyDesignTransition {
+  transitionId: string;
+  fromCellId: string;
+  toCellId: string;
+  kind: string;
+  condition: string;
+  maxIterations?: number | null;
+  rationale?: string | null;
+}
+
+export interface StrategyDesignFieldCatalogItem {
+  fieldId: string;
+  label: string;
+  source: string;
+  dataSet: string;
+  typeName: string;
+  description: string;
+  isEnabled: boolean;
+  disabledReason: string | null;
+  synonyms: string[];
+}
+
+export interface StrategyDesignTemplate {
+  templateId: string;
+  name: string;
+  description: string;
+  category: string;
+  sourcePrototype: string;
+  tags: string[];
+  document: StrategyDesignDocument;
+}
+
+export interface StrategyDesignValidationMessage {
+  code: string;
+  severity: string;
+  targetId: string;
+  message: string;
+}
+
+export interface StrategyDesignValidationResult {
+  isValid: boolean;
+  summary: string;
+  messages: StrategyDesignValidationMessage[];
+}
+
+export interface StrategyDesignDraftSummary {
+  documentId: string;
+  name: string;
+  version: string;
+  datasetReference: string;
+  cellCount: number;
+  transitionCount: number;
+  updatedAt: string;
+  validationSummary: string;
+}
+
+export interface StrategyDesignDraftSaveRequest {
+  document: StrategyDesignDocument;
+}
+
+export interface StrategyDesignDraftSaveResponse {
+  document: StrategyDesignDocument;
+  summary: StrategyDesignDraftSummary;
+  validation: StrategyDesignValidationResult;
+  trace: StrategyDesignRunTraceEntry[];
+}
+
+export interface StrategyDesignCompiledScript {
+  source: string;
+  datasetFingerprint: string;
+  fieldRefs: string[];
+  disabledFieldRefs: string[];
+}
+
+export interface StrategyDesignPreviewRow {
+  rowId: string;
+  cellId: string;
+  label: string;
+  purpose: string;
+  status: string;
+  fieldRefs: string[];
+  detail: string;
+}
+
+export interface StrategyDesignRunTraceEntry {
+  stepId: string;
+  label: string;
+  status: string;
+  detail: string;
+  cellId?: string | null;
+  occurredAt?: string | null;
+}
+
+export interface StrategyDesignPreviewResult {
+  validation: StrategyDesignValidationResult;
+  compiled: StrategyDesignCompiledScript;
+  rows: StrategyDesignPreviewRow[];
+  trace: StrategyDesignRunTraceEntry[];
+}
+
+export interface StrategyDesignRunBacktestRequest {
+  document: StrategyDesignDocument;
+  parameters?: Record<string, string> | null;
+}
+
+export interface StrategyDesignRunBacktestResponse {
+  success: boolean;
+  runId: string | null;
+  strategyId: string;
+  strategyName: string;
+  validation: StrategyDesignValidationResult;
+  compiled: StrategyDesignCompiledScript;
+  trace: StrategyDesignRunTraceEntry[];
+  previewRows: StrategyDesignPreviewRow[];
+  metrics: Record<string, string>;
+  runtimeError: string | null;
+  promotionCandidatePath: string | null;
+  reviewPacketPath: string | null;
+}
+
 // --- Quant Notebook ---
 
 export type CellKind = "code" | "markdown";

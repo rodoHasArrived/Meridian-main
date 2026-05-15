@@ -11,7 +11,9 @@ using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.QuantScript.Compilation;
 using Meridian.Storage.Export;
+using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
@@ -21,6 +23,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
@@ -72,6 +75,8 @@ public static class WorkstationEndpoints
         })
         .WithName("GetWorkstationStrategyBriefing")
         .Produces<ResearchBriefingDto>(200);
+
+        MapStrategyDesignerEndpoints(group, jsonOptions);
 
         group.MapGet("/workflow-summary", async (
             bool? hasOperatingContext,
@@ -4594,6 +4599,280 @@ public static class WorkstationEndpoints
 
         return await repository.ResolveAsync(request, ct).ConfigureAwait(false);
     }
+
+    private static void MapStrategyDesignerEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        group.MapGet("/strategy/designer/templates", (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<StrategyDesignService>();
+            return service is null
+                ? StrategyDesignerUnavailable(jsonOptions)
+                : Results.Json(service.GetTemplates(), jsonOptions);
+        })
+        .WithName("GetStrategyDesignerTemplates")
+        .Produces<IReadOnlyList<StrategyDesignTemplate>>(200)
+        .Produces(501);
+
+        group.MapGet("/strategy/designer/field-catalog", (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<StrategyDesignService>();
+            return service is null
+                ? StrategyDesignerUnavailable(jsonOptions)
+                : Results.Json(service.GetFieldCatalog(), jsonOptions);
+        })
+        .WithName("GetStrategyDesignerFieldCatalog")
+        .Produces<IReadOnlyList<StrategyDesignFieldCatalogItem>>(200)
+        .Produces(501);
+
+        group.MapGet("/strategy/designer/drafts", async (HttpContext context) =>
+        {
+            var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
+            if (repository is null)
+            {
+                return StrategyDesignerUnavailable(jsonOptions);
+            }
+
+            var drafts = await repository.ListDraftsAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(drafts, jsonOptions);
+        })
+        .WithName("GetStrategyDesignerDrafts")
+        .Produces<IReadOnlyList<StrategyDesignDraftSummary>>(200)
+        .Produces(501);
+
+        group.MapGet("/strategy/designer/drafts/{documentId}", async (string documentId, HttpContext context) =>
+        {
+            var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
+            if (repository is null)
+            {
+                return StrategyDesignerUnavailable(jsonOptions);
+            }
+
+            var document = await repository.GetAsync(documentId, context.RequestAborted).ConfigureAwait(false);
+            return document is null
+                ? Results.NotFound(new { error = "Strategy design draft was not found." })
+                : Results.Json(document, jsonOptions);
+        })
+        .WithName("GetStrategyDesignerDraft")
+        .Produces<StrategyDesignDocument>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapPost("/strategy/designer/drafts", async (StrategyDesignDraftSaveRequest? request, HttpContext context) =>
+        {
+            if (!HasPermission(context, UserPermission.ManageStrategies))
+            {
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            }
+
+            if (request?.Document is null)
+            {
+                return Results.BadRequest(new { error = "A strategy design document is required." });
+            }
+
+            var service = context.RequestServices.GetService<StrategyDesignService>();
+            var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
+            if (service is null || repository is null)
+            {
+                return StrategyDesignerUnavailable(jsonOptions);
+            }
+
+            var document = service.Normalize(request.Document);
+            var validation = service.Validate(document);
+            await repository.SaveAsync(document, context.RequestAborted).ConfigureAwait(false);
+            var response = new StrategyDesignDraftSaveResponse(
+                document,
+                StrategyDesignService.CreateDraftSummary(document),
+                validation,
+                service.BuildRunTrace(document, validation));
+            return Results.Json(response, jsonOptions);
+        })
+        .WithName("SaveStrategyDesignerDraft")
+        .Produces<StrategyDesignDraftSaveResponse>(200)
+        .Produces(400)
+        .Produces(403)
+        .Produces(501);
+
+        group.MapPost("/strategy/designer/validate", (StrategyDesignDocument? document, HttpContext context) =>
+        {
+            if (document is null)
+            {
+                return Results.BadRequest(new { error = "A strategy design document is required." });
+            }
+
+            var service = context.RequestServices.GetService<StrategyDesignService>();
+            if (service is null)
+            {
+                return StrategyDesignerUnavailable(jsonOptions);
+            }
+
+            var normalized = service.Normalize(document);
+            return Results.Json(service.Validate(normalized), jsonOptions);
+        })
+        .WithName("ValidateStrategyDesignerDocument")
+        .Produces<StrategyDesignValidationResult>(200)
+        .Produces(400)
+        .Produces(501);
+
+        group.MapPost("/strategy/designer/preview", (StrategyDesignDocument? document, HttpContext context) =>
+        {
+            if (document is null)
+            {
+                return Results.BadRequest(new { error = "A strategy design document is required." });
+            }
+
+            var service = context.RequestServices.GetService<StrategyDesignService>();
+            if (service is null)
+            {
+                return StrategyDesignerUnavailable(jsonOptions);
+            }
+
+            var normalized = service.Normalize(document);
+            var preview = service.Preview(normalized);
+            return preview.Validation.IsValid
+                ? Results.Json(preview, jsonOptions)
+                : Results.Json(preview, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        })
+        .WithName("PreviewStrategyDesignerDocument")
+        .Produces<StrategyDesignPreviewResult>(200)
+        .Produces(400)
+        .Produces(501);
+
+        group.MapPost("/strategy/designer/run-backtest", async (
+            StrategyDesignRunBacktestRequest? request,
+            HttpContext context,
+            CancellationToken ct) =>
+        {
+            if (!HasPermission(context, UserPermission.ManageStrategies))
+            {
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            }
+
+            if (request?.Document is null)
+            {
+                return Results.BadRequest(new { error = "A strategy design document is required." });
+            }
+
+            var service = context.RequestServices.GetService<StrategyDesignService>();
+            if (service is null)
+            {
+                return StrategyDesignerUnavailable(jsonOptions);
+            }
+
+            var document = service.Normalize(request.Document);
+            var preview = service.Preview(document);
+            if (!preview.Validation.IsValid)
+            {
+                return Results.Json(
+                    CreateBacktestResponse(document, preview, null, new Dictionary<string, string>(), "Validation failed."),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var runner = context.RequestServices.GetService<IScriptRunner>();
+            if (runner is null)
+            {
+                return Results.Json(
+                    new
+                    {
+                        error = "Quant Lab is not enabled on this host. Set QuantLab:Enabled to true to enable.",
+                        quantLabEnabled = false
+                    },
+                    jsonOptions,
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var parameters = request.Parameters is null
+                ? new Dictionary<string, object?>()
+                : request.Parameters.ToDictionary(
+                    static item => item.Key,
+                    static item => (object?)item.Value,
+                    StringComparer.OrdinalIgnoreCase);
+            var result = await runner.RunAsync(preview.Compiled.Source, parameters, ct).ConfigureAwait(false);
+            var metrics = result.Metrics.ToDictionary(
+                static item => item.Key,
+                static item => item.Value,
+                StringComparer.OrdinalIgnoreCase);
+            if (!result.Success)
+            {
+                return Results.Json(
+                    CreateBacktestResponse(document, preview, null, metrics, result.RuntimeError),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var runId = Guid.NewGuid().ToString("N");
+            var repository = context.RequestServices.GetService<IStrategyRepository>();
+            if (repository is not null)
+            {
+                var entry = StrategyRunEntry
+                    .Start(
+                        document.DocumentId,
+                        document.Name,
+                        RunType.Backtest,
+                        runId,
+                        datasetReference: document.DatasetReference,
+                        feedReference: "strategy-designer:v1",
+                        engine: "QuantScript",
+                        parameterSet: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["designerDocumentId"] = document.DocumentId,
+                            ["datasetFingerprint"] = preview.Compiled.DatasetFingerprint,
+                            ["cellCount"] = document.Cells.Count.ToString(CultureInfo.InvariantCulture)
+                        })
+                    .Complete(result.CapturedBacktests.FirstOrDefault());
+                await repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
+            }
+
+            return Results.Json(CreateBacktestResponse(document, preview, runId, metrics, null), jsonOptions);
+        })
+        .WithName("RunStrategyDesignerBacktest")
+        .Produces<StrategyDesignRunBacktestResponse>(200)
+        .Produces(400)
+        .Produces(403)
+        .Produces(503);
+    }
+
+    private static StrategyDesignRunBacktestResponse CreateBacktestResponse(
+        StrategyDesignDocument document,
+        StrategyDesignPreviewResult preview,
+        string? runId,
+        IReadOnlyDictionary<string, string> metrics,
+        string? runtimeError)
+    {
+        var success = runId is not null && runtimeError is null;
+        var trace = preview.Trace
+            .Concat([
+                new StrategyDesignRunTraceEntry(
+                    "record-run",
+                    "Record StrategyRunEntry",
+                    success ? "complete" : "blocked",
+                    success
+                        ? $"Recorded backtest run {runId} for promotion review."
+                        : runtimeError ?? "Backtest did not produce a recorded run.",
+                    OccurredAt: DateTimeOffset.UtcNow)
+            ])
+            .ToArray();
+
+        return new StrategyDesignRunBacktestResponse(
+            success,
+            runId,
+            document.DocumentId,
+            document.Name,
+            preview.Validation,
+            preview.Compiled,
+            trace,
+            preview.Rows,
+            metrics,
+            runtimeError,
+            success ? $"/api/promotion/evaluate/{runId}" : null,
+            success ? $"/api/workstation/runs/{runId}/review-packet" : null);
+    }
+
+    private static IResult StrategyDesignerUnavailable(JsonSerializerOptions jsonOptions)
+        => Results.Json(
+            new { error = "Strategy Designer services are not registered." },
+            jsonOptions,
+            statusCode: StatusCodes.Status501NotImplemented);
 
     private static bool HasPermission(HttpContext context, UserPermission requiredPermission)
     {

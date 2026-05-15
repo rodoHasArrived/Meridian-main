@@ -70,6 +70,15 @@ export const STRATEGY_API_ENDPOINTS = {
   base: "/api/strategies"
 } as const;
 
+export const STRATEGY_DESIGNER_API_ENDPOINTS = {
+  templates: "/api/workstation/strategy/designer/templates",
+  fieldCatalog: "/api/workstation/strategy/designer/field-catalog",
+  drafts: "/api/workstation/strategy/designer/drafts",
+  validate: "/api/workstation/strategy/designer/validate",
+  preview: "/api/workstation/strategy/designer/preview",
+  runBacktest: "/api/workstation/strategy/designer/run-backtest"
+} as const;
+
 export const SECURITY_MASTER_API_ENDPOINTS = {
   base: "/api/security-master",
   workstationSecurities: "/api/workstation/security-master/securities",
@@ -316,6 +325,12 @@ export function strategyActionEndpoint(strategyId: string, action: "pause" | "st
 
 export function strategyRunsEndpoint(strategyId: string, type?: "backtest" | "paper" | "live"): string {
   return `${strategyEndpoint(strategyId)}/runs${queryString({ type })}`;
+}
+
+export function strategyDesignerDraftEndpoint(documentId?: string): string {
+  return documentId
+    ? `${STRATEGY_DESIGNER_API_ENDPOINTS.drafts}/${pathSegment(documentId, "documentId")}`
+    : STRATEGY_DESIGNER_API_ENDPOINTS.drafts;
 }
 
 export function replaySessionActionEndpoint(

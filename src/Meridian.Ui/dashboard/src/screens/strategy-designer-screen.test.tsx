@@ -6,127 +6,59 @@ import { StrategyDesignerScreen } from "@/screens/strategy-designer-screen";
 import { renderWithRouter } from "@/test/render";
 
 describe("StrategyDesignerScreen", () => {
-  it("renders the palette and empty canvas placeholder", () => {
+  it("renders the Strategy Builder workbench with catalog, canvas, inspector, and proof panels", () => {
     renderWithRouter(<StrategyDesignerScreen />);
 
-    expect(screen.getByText("Visual Strategy Designer")).toBeInTheDocument();
-    expect(screen.getByText("Block palette")).toBeInTheDocument();
-    expect(screen.getByLabelText("Add Long Call block")).toBeInTheDocument();
-    expect(screen.getByLabelText("Add Short Put block")).toBeInTheDocument();
-    expect(screen.getByText(/Drop a leg from the palette/i)).toBeInTheDocument();
-    expect(screen.getByTestId("strategy-designer-payoff")).toBeInTheDocument();
-    expect(screen.getByTestId("strategy-designer-participation")).toBeInTheDocument();
-    expect(screen.queryByTestId("strategy-designer-payoff-polyline")).toBeNull();
-    expect(screen.getByRole("button", { name: /clear strategy canvas/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /clear strategy canvas/i })).toHaveAttribute(
-      "title",
-      "No strategy legs to clear."
-    );
-    expect(screen.getByRole("status", { name: "Strategy leg detail empty state" })).toHaveTextContent("No legs on canvas");
+    expect(screen.getByRole("heading", { name: "Strategy Builder Workbench" })).toBeInTheDocument();
+    expect(screen.getByTestId("strategy-builder-field-catalog")).toHaveTextContent("AMX private score");
+    expect(screen.getByTestId("strategy-builder-canvas")).toHaveTextContent("Momentum score");
+    expect(screen.getByTestId("strategy-builder-inspector")).toHaveTextContent("Liquid equity universe");
+    expect(screen.getByTestId("strategy-builder-backtest-proof")).toHaveTextContent("Backtest only");
+    expect(screen.getByTestId("strategy-builder-transition-map")).toHaveTextContent("Liquid equity universe -> Momentum score");
+    expect(screen.getByTestId("strategy-designer-options-payoff-panel")).toBeInTheDocument();
   });
 
-  it("appends a leg when a palette block is activated and renders payoff polyline", async () => {
+  it("filters field catalog results and surfaces disabled reasons from the view model", async () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyDesignerScreen />);
 
-    await user.click(screen.getByLabelText("Add Long Call block"));
+    await user.type(screen.getByRole("textbox", { name: "Search field catalog" }), "amx");
 
-    expect(screen.getByText(/Canvas · 1 leg/)).toBeInTheDocument();
-    expect(screen.getByTestId("strategy-designer-payoff-polyline")).toBeInTheDocument();
-    expect(screen.getByTestId("strategy-designer-participation-list")).toBeInTheDocument();
-    const detail = screen.getByRole("region", { name: /selected strategy leg detail for long call/i });
-    expect(detail).toHaveTextContent("Selected leg");
-    expect(detail).toHaveTextContent("Break-even");
-    expect(detail).toHaveTextContent("Payoff at spot");
+    expect(screen.getByTestId("strategy-builder-field-catalog")).toHaveTextContent("AMX_PRIVATE_SCORE");
+    expect(screen.getByTestId("field-disabled-AMX_PRIVATE_SCORE")).toHaveTextContent("No Meridian canonical source");
+    expect(screen.queryByText("63-day momentum")).not.toBeInTheDocument();
   });
 
-  it("exposes keyboard-operable selection state for canvas legs", async () => {
+  it("lets keyboard users select a strategy cell and updates inspector and trace state", async () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyDesignerScreen />);
 
-    await user.click(screen.getByRole("button", { name: /load sample/i }));
-
-    const firstLeg = screen.getByRole("button", { name: /selected long call/i });
-    const secondLeg = screen.getByRole("button", { name: /select short call/i });
-    expect(firstLeg).toHaveAttribute("aria-pressed", "true");
-    expect(firstLeg).toHaveAttribute("aria-controls", "strategy-designer-selected-leg-detail");
-    expect(firstLeg).toHaveAttribute("aria-expanded", "true");
-    expect(secondLeg).toHaveAttribute("aria-pressed", "false");
-    expect(secondLeg).toHaveAttribute("aria-expanded", "false");
-    expect(screen.getByRole("region", { name: /selected strategy leg detail for long call/i })).toHaveTextContent("Long exposure");
-
-    secondLeg.focus();
+    const row = screen.getByRole("row", { name: /select momentum score/i });
+    row.focus();
     await user.keyboard("{Enter}");
 
-    expect(screen.getByRole("button", { name: /select long call/i })).toHaveAttribute("aria-pressed", "false");
-    expect(screen.getByRole("button", { name: /selected short call/i })).toHaveAttribute("aria-pressed", "true");
-    const detail = screen.getByRole("region", { name: /selected strategy leg detail for short call/i });
-    expect(within(detail).getByText("Short exposure")).toBeInTheDocument();
-    expect(within(detail).getByText("Break-even")).toBeInTheDocument();
+    expect(row).toHaveAttribute("aria-selected", "true");
+    const detail = screen.getByRole("region", { name: /strategy builder cell detail for momentum score/i });
+    expect(detail).toHaveTextContent("MOMENTUM_63D - VOLATILITY_20D");
+    expect(screen.getByTestId("strategy-builder-backtest-proof")).toHaveTextContent("Momentum score");
   });
 
-  it("lets keyboard users select a canvas leg from the leg row and updates the detail panel", async () => {
+  it("loads the options payoff template and preserves the payoff panel sample", async () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyDesignerScreen />);
 
-    await user.click(screen.getByRole("button", { name: /load sample/i }));
+    await user.click(screen.getByRole("button", { name: "Load Options payoff template" }));
 
-    const secondLegRow = screen.getByRole("listitem", { name: "Short Call · 110, Short Call, leg 2 of 2" });
-    secondLegRow.focus();
-    await user.keyboard(" ");
+    expect(screen.getByTestId("strategy-builder-canvas")).toHaveTextContent("Options payoff panel");
+    expect(screen.getByTestId("strategy-builder-backtest-proof")).toHaveTextContent("strategy-design:");
 
-    expect(screen.getByRole("button", { name: /selected short call/i })).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("region", { name: /selected strategy leg detail for short call/i })).toHaveTextContent("Short exposure");
+    await user.click(screen.getByRole("button", { name: /load sample bull call spread/i }));
+
+    expect(screen.getByTestId("strategy-designer-payoff-polyline")).toBeInTheDocument();
+    expect(screen.getByTestId("strategy-designer-participation-list")).toBeInTheDocument();
   });
 
-  it("associates canvas leg field labels with stable view-model ids", async () => {
-    const user = userEvent.setup();
-    const { container } = renderWithRouter(<StrategyDesignerScreen />);
-
-    await user.click(screen.getByRole("button", { name: /load sample/i }));
-
-    const directionLabel = container.querySelector('label[for="strategy-leg-sample-long-call-direction"]');
-    const directionInput = container.querySelector("#strategy-leg-sample-long-call-direction");
-    const quantityLabel = container.querySelector('label[for="strategy-leg-sample-long-call-quantity"]');
-    const quantityInput = container.querySelector("#strategy-leg-sample-long-call-quantity");
-    const premiumLabel = container.querySelector('label[for="strategy-leg-sample-long-call-premium"]');
-    const premiumInput = container.querySelector("#strategy-leg-sample-long-call-premium");
-
-    expect(directionLabel).toHaveTextContent("Direction");
-    expect(directionInput).toHaveAccessibleName("Direction for Long Call · 100");
-    expect(quantityLabel).toHaveTextContent("Quantity");
-    expect(quantityInput).toHaveAccessibleName("Quantity for Long Call · 100");
-    expect(premiumLabel).toHaveTextContent("Premium");
-    expect(premiumInput).toHaveAccessibleName("Premium for Long Call · 100");
-  });
-
-  it("reorders canvas legs with keyboard-operable move commands", async () => {
-    const user = userEvent.setup();
-    renderWithRouter(<StrategyDesignerScreen />);
-
-    await user.click(screen.getByRole("button", { name: /load sample/i }));
-
-    const moveFirstUp = screen.getByRole("button", { name: "Move Long Call · 100 up" });
-    expect(moveFirstUp).toBeDisabled();
-    expect(moveFirstUp).toHaveAttribute("title", "Long Call · 100 is already the first leg.");
-
-    await user.click(screen.getByRole("button", { name: "Move Long Call · 100 down" }));
-
-    const legs = screen.getAllByRole("listitem")
-      .filter((item) => item.hasAttribute("data-leg-id"))
-      .map((item) => item.getAttribute("aria-label"));
-    expect(legs).toEqual([
-      "Short Call · 110, Short Call, leg 1 of 2",
-      "Long Call · 100, Long Call, leg 2 of 2"
-    ]);
-    expect(screen.getByRole("button", { name: "Move Long Call · 100 down" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Move Long Call · 100 down" })).toHaveAttribute(
-      "title",
-      "Long Call · 100 is already the last leg."
-    );
-  });
-
-  it("keeps spot price draft validation in the view model", async () => {
+  it("keeps options payoff spot-price validation in the view model", async () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyDesignerScreen />);
 
@@ -138,33 +70,17 @@ describe("StrategyDesignerScreen", () => {
     expect(spotPrice).toHaveValue(100);
   });
 
-  it("loads a two-leg sample strategy on demand and reports break-even in the caption", async () => {
-    const user = userEvent.setup();
+  it("associates route actions with the designer endpoint catalog", () => {
     renderWithRouter(<StrategyDesignerScreen />);
 
-    await user.click(screen.getByRole("button", { name: /load sample/i }));
-
-    expect(screen.getByText(/Canvas · 2 legs/)).toBeInTheDocument();
-    expect(screen.getByTestId("strategy-designer-payoff-polyline")).toBeInTheDocument();
-    expect(screen.getByTestId("strategy-designer-payoff")).toHaveTextContent(/Break-even/i);
-  });
-
-  it("requires confirmation before clearing the canvas back to the empty state", async () => {
-    const user = userEvent.setup();
-    renderWithRouter(<StrategyDesignerScreen />);
-
-    await user.click(screen.getByRole("button", { name: /load sample/i }));
-    expect(screen.getByText(/Canvas · 2 legs/)).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /clear strategy canvas/i }));
-    expect(screen.getByText(/Canvas · 2 legs/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /confirm clear strategy canvas and remove 2 legs/i })).toHaveTextContent(
-      "Confirm clear"
+    const proof = screen.getByTestId("strategy-builder-backtest-proof");
+    expect(within(proof).getByRole("link", { name: /GET Templates/i })).toHaveAttribute(
+      "href",
+      "/api/workstation/strategy/designer/templates"
     );
-
-    await user.click(screen.getByRole("button", { name: /confirm clear strategy canvas and remove 2 legs/i }));
-
-    expect(screen.getByText(/Canvas · 0 legs/)).toBeInTheDocument();
-    expect(screen.queryByTestId("strategy-designer-payoff-polyline")).toBeNull();
+    expect(within(proof).getByRole("link", { name: /POST Run backtest/i })).toHaveAttribute(
+      "href",
+      "/api/workstation/strategy/designer/run-backtest"
+    );
   });
 });

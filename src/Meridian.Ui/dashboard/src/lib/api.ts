@@ -60,6 +60,16 @@ import type {
   SystemOverviewResponse,
   ReplayFileRecord,
   ReplayStatus,
+  StrategyDesignDocument,
+  StrategyDesignDraftSaveRequest,
+  StrategyDesignDraftSaveResponse,
+  StrategyDesignDraftSummary,
+  StrategyDesignFieldCatalogItem,
+  StrategyDesignPreviewResult,
+  StrategyDesignRunBacktestRequest,
+  StrategyDesignRunBacktestResponse,
+  StrategyDesignTemplate,
+  StrategyDesignValidationResult,
   TradingActionResult,
   TradingOperatorReadiness,
   TradingParameters,
@@ -84,6 +94,7 @@ import {
   REPLAY_API_ENDPOINTS,
   SECURITY_MASTER_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
+  STRATEGY_DESIGNER_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
@@ -123,6 +134,7 @@ import {
   securityMasterOperatorOverridesEndpoint,
   securityMasterTradingParametersEndpoint,
   strategyActionEndpoint,
+  strategyDesignerDraftEndpoint,
   strategyRunsEndpoint,
   symbolArchiveEndpoint,
   symbolRemoveEndpoint,
@@ -1222,6 +1234,40 @@ export interface HistoricalBarsRequest {
 
 export function getHistoricalBars(symbol: string, request: HistoricalBarsRequest, options: ApiRequestOptions = {}) {
   return getJson<import("@/types").HistoricalBarsResponse>(historicalBarsEndpoint(symbol, request), options);
+}
+
+// --- Strategy Designer ---
+
+export function getStrategyDesignerTemplates(options: ApiRequestOptions = {}) {
+  return getJson<StrategyDesignTemplate[]>(STRATEGY_DESIGNER_API_ENDPOINTS.templates, options);
+}
+
+export function getStrategyDesignerFieldCatalog(options: ApiRequestOptions = {}) {
+  return getJson<StrategyDesignFieldCatalogItem[]>(STRATEGY_DESIGNER_API_ENDPOINTS.fieldCatalog, options);
+}
+
+export function getStrategyDesignerDrafts(options: ApiRequestOptions = {}) {
+  return getJson<StrategyDesignDraftSummary[]>(STRATEGY_DESIGNER_API_ENDPOINTS.drafts, options);
+}
+
+export function getStrategyDesignerDraft(documentId: string, options: ApiRequestOptions = {}) {
+  return getJson<StrategyDesignDocument>(strategyDesignerDraftEndpoint(documentId), options);
+}
+
+export function saveStrategyDesignerDraft(request: StrategyDesignDraftSaveRequest, options: ApiRequestOptions = {}) {
+  return postJson<StrategyDesignDraftSaveResponse>(STRATEGY_DESIGNER_API_ENDPOINTS.drafts, request, options);
+}
+
+export function validateStrategyDesignerDocument(document: StrategyDesignDocument, options: ApiRequestOptions = {}) {
+  return postJson<StrategyDesignValidationResult>(STRATEGY_DESIGNER_API_ENDPOINTS.validate, document, options);
+}
+
+export function previewStrategyDesignerDocument(document: StrategyDesignDocument, options: ApiRequestOptions = {}) {
+  return postJson<StrategyDesignPreviewResult>(STRATEGY_DESIGNER_API_ENDPOINTS.preview, document, options);
+}
+
+export function runStrategyDesignerBacktest(request: StrategyDesignRunBacktestRequest, options: ApiRequestOptions = {}) {
+  return postJson<StrategyDesignRunBacktestResponse>(STRATEGY_DESIGNER_API_ENDPOINTS.runBacktest, request, options);
 }
 
 // --- Quant Lab ---

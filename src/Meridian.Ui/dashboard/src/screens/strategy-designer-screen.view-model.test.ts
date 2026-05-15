@@ -2,20 +2,27 @@ import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import {
   buildCanvasLegViewModels,
+  buildFormulaSuggestions,
   buildLegFromPalette,
   buildDesignerSummaryMetrics,
   buildParticipationViewModel,
   buildPayoffChartViewModel,
   buildPayoffSeries,
+  buildStrategyBuilderWorkbenchViewModel,
   buildSelectedLegDetailEmptyState,
   buildSelectedLegDetailViewModel,
   computeLegPayoff,
   computePortfolioPayoff,
+  filterStrategyBuilderFields,
   findBreakEvenPrices,
+  getStrategyBuilderFieldCatalog,
+  getStrategyBuilderTemplates,
   getStrategyDesignerPalette,
   getStrategyDesignerSampleLegs,
+  loadStrategyBuilderTemplate,
   reorderLegs,
   useStrategyDesignerViewModel,
+  validateStrategyBuilderDocument,
   type StrategyLeg
 } from "@/screens/strategy-designer-screen.view-model";
 
@@ -53,6 +60,79 @@ const longStock: StrategyLeg = {
 };
 
 describe("strategy designer view-model", () => {
+  it("filters the Strategy Builder field catalog and preserves disabled AMX reasons", () => {
+    const fields = getStrategyBuilderFieldCatalog();
+    const filtered = filterStrategyBuilderFields("amx", fields);
+
+    expect(filtered.map((field) => field.fieldId)).toContain("AMX_PRIVATE_SCORE");
+    expect(filtered[0].isEnabled).toBe(false);
+    expect(filtered[0].disabledReason).toContain("No Meridian canonical source");
+  });
+
+  it("builds formula suggestions from enabled canonical fields only", () => {
+    const suggestions = buildFormulaSuggestions("mom", getStrategyBuilderFieldCatalog());
+
+    expect(suggestions.map((field) => field.fieldId)).toContain("MOMENTUM_63D");
+    expect(suggestions.some((field) => field.fieldId === "AMX_PRIVATE_SCORE")).toBe(false);
+  });
+
+  it("validates transition loops and disabled field references in the Strategy Builder document", () => {
+    const document = loadStrategyBuilderTemplate("equity-momentum-breakout");
+    const invalid = {
+      ...document,
+      cells: [
+        ...document.cells,
+        {
+          cellId: "amx-score",
+          label: "Prototype AMX score",
+          kind: "formula" as const,
+          purpose: "rank" as const,
+          source: "AMX_PRIVATE_SCORE > 0.8",
+          fieldRefs: ["AMX_PRIVATE_SCORE"]
+        }
+      ],
+      transitions: [
+        ...document.transitions,
+        { transitionId: "bad-loop", fromCellId: "proof-run", toCellId: "momentum-score", kind: "loop" as const, condition: "rebalance" }
+      ]
+    };
+
+    const messages = validateStrategyBuilderDocument(invalid);
+
+    expect(messages.map((message) => message.code)).toEqual(
+      expect.arrayContaining(["DisabledField", "LoopGuardRequired", "LoopRationaleRequired"])
+    );
+  });
+
+  it("builds selected cell, trace, template, and backtest state in the workbench view-model", () => {
+    const document = loadStrategyBuilderTemplate("investment-grade-income");
+    const vm = buildStrategyBuilderWorkbenchViewModel({
+      document,
+      selectedCellId: "carry-rank",
+      fieldSearch: "duration"
+    });
+
+    expect(getStrategyBuilderTemplates().map((template) => template.templateId)).toContain("options-payoff");
+    expect(vm.selectedCellDetail?.title).toBe("Carry rank");
+    expect(vm.trace.find((step) => step.cellId === "carry-rank")?.isSelectedCell).toBe(true);
+    expect(vm.filteredFields.map((field) => field.fieldId)).toContain("DURATION");
+    expect(vm.backtest.runCommand.disabled).toBe(false);
+    expect(vm.backtest.routeActions.map((action) => action.href)).toContain("/api/workstation/strategy/designer/run-backtest");
+  });
+
+  it("marks backtest proof disabled when Strategy Builder validation is blocked", () => {
+    const document = {
+      ...loadStrategyBuilderTemplate("equity-momentum-breakout"),
+      datasetReference: ""
+    };
+
+    const vm = buildStrategyBuilderWorkbenchViewModel({ document });
+
+    expect(vm.backtest.statusLabel).toBe("Blocked");
+    expect(vm.backtest.runCommand.disabled).toBe(true);
+    expect(vm.backtest.runCommand.disabledReason).toContain("blocking issue");
+  });
+
   it("returns six palette entries with stable kinds", () => {
     const palette = getStrategyDesignerPalette();
     expect(palette).toHaveLength(6);

@@ -131,6 +131,12 @@ public static class UiEndpoints
             new JsonlPromotionRecordStore(
                 sp.GetRequiredService<PromotionRecordStoreOptions>(),
                 sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
+        services.TryAddSingleton(StrategyDesignStoreOptions.Default);
+        services.TryAddSingleton<IStrategyDesignRepository>(sp =>
+            new JsonlStrategyDesignRepository(
+                sp.GetRequiredService<StrategyDesignStoreOptions>(),
+                sp.GetRequiredService<ILogger<JsonlStrategyDesignRepository>>()));
+        services.TryAddSingleton<StrategyDesignService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
         services.TryAddSingleton<LedgerReadService>();

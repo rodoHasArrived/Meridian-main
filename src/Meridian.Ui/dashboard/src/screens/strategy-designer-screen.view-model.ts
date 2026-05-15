@@ -140,6 +140,151 @@ export interface StrategyLegDetailViewModel {
   fields: StrategyLegDetailFieldViewModel[];
 }
 
+export type StrategyBuilderCellKind = "visual" | "formula" | "code" | "governance" | "options-payoff";
+export type StrategyBuilderCellPurpose =
+  | "universe"
+  | "filter"
+  | "rank"
+  | "risk"
+  | "backtest"
+  | "governance"
+  | "options-payoff";
+export type StrategyBuilderMessageSeverity = "error" | "warning" | "info";
+
+export interface StrategyBuilderFieldCatalogItem {
+  fieldId: string;
+  label: string;
+  source: string;
+  dataSet: string;
+  typeName: string;
+  description: string;
+  isEnabled: boolean;
+  disabledReason: string | null;
+  synonyms: string[];
+}
+
+export interface StrategyBuilderCell {
+  cellId: string;
+  label: string;
+  kind: StrategyBuilderCellKind;
+  purpose: StrategyBuilderCellPurpose;
+  source: string;
+  fieldRefs: string[];
+}
+
+export interface StrategyBuilderTransition {
+  transitionId: string;
+  fromCellId: string;
+  toCellId: string;
+  kind: "next" | "loop" | "branch";
+  condition: string;
+  maxIterations?: number | null;
+  rationale?: string | null;
+}
+
+export interface StrategyBuilderDocument {
+  documentId: string;
+  name: string;
+  description: string;
+  version: string;
+  datasetReference: string;
+  universe: string[];
+  cells: StrategyBuilderCell[];
+  transitions: StrategyBuilderTransition[];
+  updatedAt: string;
+}
+
+export interface StrategyBuilderTemplate {
+  templateId: string;
+  name: string;
+  description: string;
+  category: string;
+  tags: string[];
+  document: StrategyBuilderDocument;
+  loadCommand: StrategyDesignerCommandViewModel;
+}
+
+export interface StrategyBuilderValidationMessage {
+  code: string;
+  severity: StrategyBuilderMessageSeverity;
+  targetId: string;
+  message: string;
+}
+
+export interface StrategyBuilderFieldChipViewModel {
+  fieldId: string;
+  label: string;
+  isEnabled: boolean;
+  disabledReason: string | null;
+  statusLabel: string;
+}
+
+export interface StrategyBuilderCellViewModel extends StrategyBuilderCell {
+  isSelected: boolean;
+  status: "ready" | "warning" | "blocked";
+  statusLabel: string;
+  disabledReason: string | null;
+  fieldChips: StrategyBuilderFieldChipViewModel[];
+  selectButtonAriaLabel: string;
+  detailPanelId: string;
+}
+
+export interface StrategyBuilderTransitionViewModel extends StrategyBuilderTransition {
+  label: string;
+  status: "ready" | "warning" | "blocked";
+  statusLabel: string;
+  detail: string;
+}
+
+export interface StrategyBuilderRunTraceEntryViewModel {
+  stepId: string;
+  label: string;
+  status: "ready" | "warning" | "blocked" | "complete";
+  detail: string;
+  cellId: string | null;
+  isSelectedCell: boolean;
+}
+
+export interface StrategyBuilderBacktestPanelViewModel {
+  statusLabel: string;
+  proofSummary: string;
+  datasetFingerprint: string;
+  runCommand: StrategyDesignerCommandViewModel;
+  routeActions: Array<{ id: string; label: string; href: string; method: "GET" | "POST" }>;
+}
+
+export interface StrategyBuilderCellDetailViewModel {
+  id: string;
+  title: string;
+  eyebrow: string;
+  description: string;
+  source: string;
+  fields: StrategyLegDetailFieldViewModel[];
+  ariaLabel: string;
+}
+
+export interface StrategyBuilderWorkbenchViewModel {
+  document: StrategyBuilderDocument;
+  metrics: DesignerSummaryMetric[];
+  fieldCatalog: StrategyBuilderFieldCatalogItem[];
+  fieldSearch: string;
+  filteredFields: StrategyBuilderFieldCatalogItem[];
+  formulaSuggestions: StrategyBuilderFieldCatalogItem[];
+  cells: StrategyBuilderCellViewModel[];
+  transitions: StrategyBuilderTransitionViewModel[];
+  templates: StrategyBuilderTemplate[];
+  selectedCellId: string | null;
+  selectedCellDetail: StrategyBuilderCellDetailViewModel | null;
+  trace: StrategyBuilderRunTraceEntryViewModel[];
+  validationMessages: StrategyBuilderValidationMessage[];
+  validationSummary: string;
+  liveRegionMessage: string;
+  backtest: StrategyBuilderBacktestPanelViewModel;
+  setFieldSearch: (value: string) => void;
+  selectCell: (cellId: string | null) => void;
+  loadTemplate: (templateId: string) => void;
+}
+
 export interface StrategyCanvasLegViewModel extends StrategyLeg {
   isSelected: boolean;
   directionTone: "success" | "warning";
@@ -168,6 +313,7 @@ export interface StrategyCanvasLegViewModel extends StrategyLeg {
 }
 
 export interface StrategyDesignerViewModel {
+  workbench: StrategyBuilderWorkbenchViewModel;
   legs: StrategyLeg[];
   canvasLegs: StrategyCanvasLegViewModel[];
   palette: StrategyLegPaletteEntry[];
@@ -199,6 +345,259 @@ export interface StrategyDesignerViewModel {
 }
 
 export const STRATEGY_DESIGNER_SELECTED_LEG_DETAIL_PANEL_ID = "strategy-designer-selected-leg-detail";
+export const STRATEGY_BUILDER_SELECTED_CELL_DETAIL_PANEL_ID = "strategy-builder-selected-cell-detail";
+
+const STRATEGY_BUILDER_ENDPOINTS = {
+  templates: "/api/workstation/strategy/designer/templates",
+  fieldCatalog: "/api/workstation/strategy/designer/field-catalog",
+  drafts: "/api/workstation/strategy/designer/drafts",
+  validate: "/api/workstation/strategy/designer/validate",
+  preview: "/api/workstation/strategy/designer/preview",
+  runBacktest: "/api/workstation/strategy/designer/run-backtest"
+} as const;
+
+const STRATEGY_BUILDER_FIELD_CATALOG: StrategyBuilderFieldCatalogItem[] = [
+  {
+    fieldId: "PRICE",
+    label: "Price",
+    source: "Provider historical bars / live quotes",
+    dataSet: "market-data",
+    typeName: "decimal",
+    description: "Canonical last or close price resolved through Meridian providers.",
+    isEnabled: true,
+    disabledReason: null,
+    synonyms: ["close", "last", "bar.close"]
+  },
+  {
+    fieldId: "MOMENTUM_63D",
+    label: "63-day momentum",
+    source: "Provider historical bars",
+    dataSet: "market-data",
+    typeName: "decimal",
+    description: "Return over the last 63 trading sessions.",
+    isEnabled: true,
+    disabledReason: null,
+    synonyms: ["return", "trend"]
+  },
+  {
+    fieldId: "VOLATILITY_20D",
+    label: "20-day volatility",
+    source: "Provider historical bars",
+    dataSet: "market-data",
+    typeName: "decimal",
+    description: "Realized volatility over the last 20 trading sessions.",
+    isEnabled: true,
+    disabledReason: null,
+    synonyms: ["risk", "stdev"]
+  },
+  {
+    fieldId: "RATING",
+    label: "Rating",
+    source: "Security Master fixed-income reference",
+    dataSet: "security-master",
+    typeName: "string",
+    description: "Normalized credit rating bucket.",
+    isEnabled: true,
+    disabledReason: null,
+    synonyms: ["credit", "quality"]
+  },
+  {
+    fieldId: "YIELD",
+    label: "Yield",
+    source: "Security Master fixed-income reference",
+    dataSet: "security-master",
+    typeName: "decimal",
+    description: "Mapped yield input for carry screens.",
+    isEnabled: true,
+    disabledReason: null,
+    synonyms: ["carry", "income"]
+  },
+  {
+    fieldId: "SPREAD",
+    label: "Spread",
+    source: "Security Master fixed-income reference",
+    dataSet: "security-master",
+    typeName: "decimal",
+    description: "Mapped spread input for credit screens.",
+    isEnabled: true,
+    disabledReason: null,
+    synonyms: ["credit", "oas"]
+  },
+  {
+    fieldId: "DURATION",
+    label: "Duration",
+    source: "Security Master fixed-income reference",
+    dataSet: "security-master",
+    typeName: "decimal",
+    description: "Effective duration input.",
+    isEnabled: true,
+    disabledReason: null,
+    synonyms: ["interest-rate", "risk"]
+  },
+  {
+    fieldId: "OPTION_DELTA",
+    label: "Option delta",
+    source: "Options chain",
+    dataSet: "options",
+    typeName: "decimal",
+    description: "Option-chain greeks mapped through Meridian option reference data.",
+    isEnabled: true,
+    disabledReason: null,
+    synonyms: ["greeks", "options"]
+  },
+  {
+    fieldId: "PORTFOLIO_WEIGHT",
+    label: "Portfolio weight",
+    source: "Portfolio/run data",
+    dataSet: "portfolio",
+    typeName: "decimal",
+    description: "Weight from portfolio snapshots and strategy run data.",
+    isEnabled: true,
+    disabledReason: null,
+    synonyms: ["allocation", "portfolio"]
+  },
+  {
+    fieldId: "AMX_PRIVATE_SCORE",
+    label: "AMX private score",
+    source: "Unmapped AMX vocabulary",
+    dataSet: "unmapped",
+    typeName: "decimal",
+    description: "Prototype-only field kept visible for traceability.",
+    isEnabled: false,
+    disabledReason: "No Meridian canonical source is wired for AMX_PRIVATE_SCORE in v1.",
+    synonyms: ["amx", "private"]
+  }
+];
+
+const DEFAULT_STRATEGY_BUILDER_DOCUMENT: StrategyBuilderDocument = {
+  documentId: "equity-momentum-breakout",
+  name: "Equity momentum breakout",
+  description: "Universe, momentum formula, governance guard, and proof run for liquid equities.",
+  version: "1",
+  datasetReference: "provider-bars/equities/daily",
+  universe: ["SPY", "QQQ", "AAPL", "MSFT"],
+  cells: [
+    {
+      cellId: "liquid-universe",
+      label: "Liquid equity universe",
+      kind: "visual",
+      purpose: "universe",
+      source: "PRICE > 20 && volumeAvg20d > 1000000",
+      fieldRefs: ["PRICE"]
+    },
+    {
+      cellId: "momentum-score",
+      label: "Momentum score",
+      kind: "formula",
+      purpose: "rank",
+      source: "MOMENTUM_63D - VOLATILITY_20D",
+      fieldRefs: ["MOMENTUM_63D", "VOLATILITY_20D"]
+    },
+    {
+      cellId: "risk-guard",
+      label: "Risk guard",
+      kind: "governance",
+      purpose: "risk",
+      source: "VOLATILITY_20D < 0.30",
+      fieldRefs: ["VOLATILITY_20D"]
+    },
+    {
+      cellId: "proof-run",
+      label: "Backtest proof",
+      kind: "code",
+      purpose: "backtest",
+      source: "rebalance weekly, record run trace, attach dataset fingerprint",
+      fieldRefs: ["PRICE", "PORTFOLIO_WEIGHT"]
+    }
+  ],
+  transitions: [
+    { transitionId: "t1", fromCellId: "liquid-universe", toCellId: "momentum-score", kind: "next", condition: "universe ready" },
+    { transitionId: "t2", fromCellId: "momentum-score", toCellId: "risk-guard", kind: "next", condition: "rank complete" },
+    { transitionId: "t3", fromCellId: "risk-guard", toCellId: "proof-run", kind: "next", condition: "risk accepted" }
+  ],
+  updatedAt: "2026-05-15T00:00:00Z"
+};
+
+const STRATEGY_BUILDER_TEMPLATES: StrategyBuilderTemplate[] = [
+  {
+    templateId: "equity-momentum-breakout",
+    name: "Equity momentum breakout",
+    description: "Formula autocomplete, transition map, governance cell, and proof run.",
+    category: "Equities",
+    tags: ["formula", "backtest", "governance"],
+    document: DEFAULT_STRATEGY_BUILDER_DOCUMENT,
+    loadCommand: {
+      label: "Load",
+      ariaLabel: "Load Equity momentum breakout template",
+      disabled: false,
+      disabledReason: null
+    }
+  },
+  {
+    templateId: "investment-grade-income",
+    name: "Investment-grade income screen",
+    description: "AMX-style fixed-income fields mapped into Security Master and provider bars.",
+    category: "Fixed income",
+    tags: ["field catalog", "fixed income", "rank"],
+    document: {
+      documentId: "investment-grade-income",
+      name: "Investment-grade income screen",
+      description: "Fixed-income carry screen using canonical Meridian field mappings.",
+      version: "1",
+      datasetReference: "security-master/fixed-income + provider-bars/daily",
+      universe: ["AGG", "LQD", "VCIT"],
+      cells: [
+        { cellId: "ig-universe", label: "Investment-grade universe", kind: "visual", purpose: "universe", source: "RATING >= BBB", fieldRefs: ["RATING"] },
+        { cellId: "carry-rank", label: "Carry rank", kind: "formula", purpose: "rank", source: "(YIELD - SPREAD) / max(DURATION, 1)", fieldRefs: ["YIELD", "SPREAD", "DURATION"] },
+        { cellId: "income-risk", label: "Duration guard", kind: "governance", purpose: "risk", source: "DURATION <= 7", fieldRefs: ["DURATION"] },
+        { cellId: "income-proof", label: "Backtest proof", kind: "code", purpose: "backtest", source: "rebalance monthly by carry-rank", fieldRefs: ["PRICE"] }
+      ],
+      transitions: [
+        { transitionId: "t1", fromCellId: "ig-universe", toCellId: "carry-rank", kind: "next", condition: "universe ready" },
+        { transitionId: "t2", fromCellId: "carry-rank", toCellId: "income-risk", kind: "next", condition: "rank complete" },
+        { transitionId: "t3", fromCellId: "income-risk", toCellId: "income-proof", kind: "next", condition: "risk accepted" }
+      ],
+      updatedAt: "2026-05-15T00:00:00Z"
+    },
+    loadCommand: {
+      label: "Load",
+      ariaLabel: "Load Investment-grade income screen template",
+      disabled: false,
+      disabledReason: null
+    }
+  },
+  {
+    templateId: "options-payoff",
+    name: "Options payoff template",
+    description: "Preserves the existing option-leg payoff model inside the Strategy Builder.",
+    category: "Options",
+    tags: ["options", "payoff", "template"],
+    document: {
+      documentId: "options-payoff",
+      name: "Options payoff template",
+      description: "Existing option payoff panel carried into the broader Strategy Builder.",
+      version: "1",
+      datasetReference: "options-chain + provider-quotes",
+      universe: ["SPY"],
+      cells: [
+        { cellId: "option-context", label: "Option chain context", kind: "visual", purpose: "universe", source: "underlying == SPY && expiry <= 45d", fieldRefs: ["PRICE", "OPTION_DELTA"] },
+        { cellId: "payoff-panel", label: "Options payoff panel", kind: "options-payoff", purpose: "options-payoff", source: "bull call spread payoff sample", fieldRefs: ["OPTION_DELTA", "PRICE"] },
+        { cellId: "review-proof", label: "Review proof", kind: "governance", purpose: "governance", source: "attach payoff, run trace, and no-live-trading acknowledgement", fieldRefs: ["PORTFOLIO_WEIGHT"] }
+      ],
+      transitions: [
+        { transitionId: "t1", fromCellId: "option-context", toCellId: "payoff-panel", kind: "next", condition: "option context ready" },
+        { transitionId: "t2", fromCellId: "payoff-panel", toCellId: "review-proof", kind: "next", condition: "payoff reviewed" }
+      ],
+      updatedAt: "2026-05-15T00:00:00Z"
+    },
+    loadCommand: {
+      label: "Load",
+      ariaLabel: "Load Options payoff template",
+      disabled: false,
+      disabledReason: null
+    }
+  }
+];
 
 const PALETTE: StrategyLegPaletteEntry[] = [
   {
@@ -331,6 +730,281 @@ export function getStrategyDesignerPalette(): StrategyLegPaletteEntry[] {
 
 export function getStrategyDesignerSampleLegs(): StrategyLeg[] {
   return SAMPLE_LEGS.map((leg) => ({ ...leg }));
+}
+
+export function getStrategyBuilderFieldCatalog(): StrategyBuilderFieldCatalogItem[] {
+  return STRATEGY_BUILDER_FIELD_CATALOG.map((field) => ({
+    ...field,
+    synonyms: [...field.synonyms]
+  }));
+}
+
+export function getStrategyBuilderTemplates(): StrategyBuilderTemplate[] {
+  return STRATEGY_BUILDER_TEMPLATES.map((template) => ({
+    ...template,
+    tags: [...template.tags],
+    document: cloneStrategyBuilderDocument(template.document),
+    loadCommand: { ...template.loadCommand }
+  }));
+}
+
+export function loadStrategyBuilderTemplate(templateId: string): StrategyBuilderDocument {
+  const template = STRATEGY_BUILDER_TEMPLATES.find((item) => item.templateId === templateId) ?? STRATEGY_BUILDER_TEMPLATES[0];
+  return cloneStrategyBuilderDocument(template.document);
+}
+
+export function filterStrategyBuilderFields(
+  query: string,
+  fields: StrategyBuilderFieldCatalogItem[] = STRATEGY_BUILDER_FIELD_CATALOG
+): StrategyBuilderFieldCatalogItem[] {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) {
+    return fields;
+  }
+
+  return fields.filter((field) =>
+    [
+      field.fieldId,
+      field.label,
+      field.source,
+      field.dataSet,
+      field.description,
+      ...field.synonyms
+    ].some((value) => value.toLowerCase().includes(normalized))
+  );
+}
+
+export function buildFormulaSuggestions(
+  query: string,
+  fields: StrategyBuilderFieldCatalogItem[] = STRATEGY_BUILDER_FIELD_CATALOG
+): StrategyBuilderFieldCatalogItem[] {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) {
+    return fields.filter((field) => field.isEnabled).slice(0, 6);
+  }
+
+  return fields
+    .filter((field) => field.isEnabled)
+    .filter((field) =>
+      field.fieldId.toLowerCase().startsWith(normalized) ||
+      field.label.toLowerCase().includes(normalized) ||
+      field.synonyms.some((synonym) => synonym.toLowerCase().includes(normalized))
+    )
+    .slice(0, 6);
+}
+
+export function validateStrategyBuilderDocument(
+  document: StrategyBuilderDocument,
+  fieldCatalog: StrategyBuilderFieldCatalogItem[] = STRATEGY_BUILDER_FIELD_CATALOG
+): StrategyBuilderValidationMessage[] {
+  const messages: StrategyBuilderValidationMessage[] = [];
+  const fieldMap = new Map(fieldCatalog.map((field) => [field.fieldId, field]));
+
+  if (!document.datasetReference.trim()) {
+    messages.push({
+      code: "DatasetRequired",
+      severity: "error",
+      targetId: document.documentId,
+      message: "A dataset reference is required before preview or backtest."
+    });
+  }
+
+  if (document.universe.length === 0) {
+    messages.push({
+      code: "UniverseRequired",
+      severity: "error",
+      targetId: document.documentId,
+      message: "At least one symbol or universe selector is required."
+    });
+  }
+
+  if (document.cells.length === 0) {
+    messages.push({
+      code: "CellsRequired",
+      severity: "error",
+      targetId: document.documentId,
+      message: "At least one strategy cell is required."
+    });
+  }
+
+  for (const cell of document.cells) {
+    if (!cell.source.trim()) {
+      messages.push({
+        code: "CellSourceRequired",
+        severity: "error",
+        targetId: cell.cellId,
+        message: `${cell.label} needs a formula, visual rule, or code source.`
+      });
+    }
+
+    for (const ref of cell.fieldRefs) {
+      const field = fieldMap.get(ref);
+      if (!field) {
+        messages.push({
+          code: "UnknownField",
+          severity: "error",
+          targetId: cell.cellId,
+          message: `${cell.label} references unknown field ${ref}.`
+        });
+        continue;
+      }
+
+      if (!field.isEnabled) {
+        messages.push({
+          code: "DisabledField",
+          severity: "error",
+          targetId: cell.cellId,
+          message: `${ref} is visible but disabled: ${field.disabledReason}`
+        });
+      }
+    }
+  }
+
+  const cellOrder = new Map(document.cells.map((cell, index) => [cell.cellId, index]));
+  for (const transition of document.transitions) {
+    const fromIndex = cellOrder.get(transition.fromCellId);
+    const toIndex = cellOrder.get(transition.toCellId);
+    if (fromIndex === undefined || toIndex === undefined) {
+      messages.push({
+        code: "TransitionCellMissing",
+        severity: "error",
+        targetId: transition.transitionId,
+        message: `${transition.transitionId} points to a missing cell.`
+      });
+      continue;
+    }
+
+    const isLoop = transition.kind === "loop" || fromIndex >= toIndex;
+    if (isLoop && (!transition.maxIterations || transition.maxIterations < 1 || transition.maxIterations > 1000)) {
+      messages.push({
+        code: "LoopGuardRequired",
+        severity: "error",
+        targetId: transition.transitionId,
+        message: `${transition.transitionId} needs a 1-1000 iteration loop guard.`
+      });
+    }
+
+    if (isLoop && !transition.rationale?.trim()) {
+      messages.push({
+        code: "LoopRationaleRequired",
+        severity: "error",
+        targetId: transition.transitionId,
+        message: `${transition.transitionId} needs a bounded-loop rationale.`
+      });
+    }
+  }
+
+  if (!document.cells.some((cell) => cell.purpose === "risk" || cell.kind === "governance")) {
+    messages.push({
+      code: "RiskGuardRecommended",
+      severity: "warning",
+      targetId: document.documentId,
+      message: "Add a risk or governance cell before promotion review."
+    });
+  }
+
+  return messages;
+}
+
+export function buildStrategyBuilderWorkbenchViewModel({
+  document = DEFAULT_STRATEGY_BUILDER_DOCUMENT,
+  selectedCellId = document.cells[0]?.cellId ?? null,
+  fieldSearch = "",
+  setFieldSearch = () => undefined,
+  selectCell = () => undefined,
+  loadTemplate = () => undefined
+}: {
+  document?: StrategyBuilderDocument;
+  selectedCellId?: string | null;
+  fieldSearch?: string;
+  setFieldSearch?: (value: string) => void;
+  selectCell?: (cellId: string | null) => void;
+  loadTemplate?: (templateId: string) => void;
+} = {}): StrategyBuilderWorkbenchViewModel {
+  const catalog = getStrategyBuilderFieldCatalog();
+  const fieldMap = new Map(catalog.map((field) => [field.fieldId, field]));
+  const validationMessages = validateStrategyBuilderDocument(document, catalog);
+  const errorCount = validationMessages.filter((message) => message.severity === "error").length;
+  const selectedCell = document.cells.find((cell) => cell.cellId === selectedCellId) ?? document.cells[0] ?? null;
+  const selectedId = selectedCell?.cellId ?? null;
+  const cells = buildStrategyBuilderCellViewModels(document.cells, selectedId, fieldMap, validationMessages);
+  const trace = buildStrategyBuilderTrace(document, selectedId, validationMessages);
+  const datasetFingerprint = buildStrategyBuilderDatasetFingerprint(document);
+  const validationSummary = errorCount > 0
+    ? `${errorCount} blocking issue${errorCount === 1 ? "" : "s"}`
+    : validationMessages.length > 0
+      ? `${validationMessages.length} advisory issue${validationMessages.length === 1 ? "" : "s"}`
+      : "Ready for preview and backtest";
+
+  return {
+    document,
+    metrics: [
+      {
+        id: "builder-cells",
+        label: "Cells",
+        value: document.cells.length.toString(),
+        detail: `${document.transitions.length} transition${document.transitions.length === 1 ? "" : "s"}`,
+        tone: "default"
+      },
+      {
+        id: "builder-fields",
+        label: "Mapped fields",
+        value: new Set(document.cells.flatMap((cell) => cell.fieldRefs)).size.toString(),
+        detail: "Canonical Meridian sources",
+        tone: "success"
+      },
+      {
+        id: "builder-validation",
+        label: "Validation",
+        value: errorCount > 0 ? "Blocked" : "Ready",
+        detail: validationSummary,
+        tone: errorCount > 0 ? "danger" : validationMessages.length > 0 ? "warning" : "success"
+      },
+      {
+        id: "builder-proof",
+        label: "Proof lane",
+        value: "Backtest",
+        detail: "No live trading from builder v1",
+        tone: "default"
+      }
+    ],
+    fieldCatalog: catalog,
+    fieldSearch,
+    filteredFields: filterStrategyBuilderFields(fieldSearch, catalog),
+    formulaSuggestions: buildFormulaSuggestions(fieldSearch, catalog),
+    cells,
+    transitions: buildStrategyBuilderTransitionViewModels(document, validationMessages),
+    templates: getStrategyBuilderTemplates(),
+    selectedCellId: selectedId,
+    selectedCellDetail: selectedCell ? buildStrategyBuilderCellDetail(selectedCell, fieldMap) : null,
+    trace,
+    validationMessages,
+    validationSummary,
+    liveRegionMessage: `${document.name}. ${validationSummary}. ${selectedCell ? `${selectedCell.label} selected.` : "No cell selected."}`,
+    backtest: {
+      statusLabel: errorCount > 0 ? "Blocked" : "Ready",
+      proofSummary: errorCount > 0
+        ? "Fix designer validation before QuantScript preview or backtest execution."
+        : "Generated QuantScript will run through the existing Quant Lab and strategy run ledger.",
+      datasetFingerprint,
+      runCommand: {
+        label: "Run backtest proof",
+        ariaLabel: errorCount > 0 ? `Run backtest proof blocked: ${validationSummary}` : "Run backtest proof through Quant Lab",
+        disabled: errorCount > 0,
+        disabledReason: errorCount > 0 ? validationSummary : null
+      },
+      routeActions: [
+        { id: "templates", label: "Templates", href: STRATEGY_BUILDER_ENDPOINTS.templates, method: "GET" },
+        { id: "field-catalog", label: "Field catalog", href: STRATEGY_BUILDER_ENDPOINTS.fieldCatalog, method: "GET" },
+        { id: "validate", label: "Validate", href: STRATEGY_BUILDER_ENDPOINTS.validate, method: "POST" },
+        { id: "preview", label: "Preview", href: STRATEGY_BUILDER_ENDPOINTS.preview, method: "POST" },
+        { id: "run-backtest", label: "Run backtest", href: STRATEGY_BUILDER_ENDPOINTS.runBacktest, method: "POST" }
+      ]
+    },
+    setFieldSearch,
+    selectCell,
+    loadTemplate
+  };
 }
 
 export function computeLegPayoff(leg: StrategyLeg, spotAtExpiry: number): number {
@@ -713,6 +1387,9 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
   const [spotPriceDraft, setSpotPriceDraft] = useState<string>("100");
   const [selectedLegId, setSelectedLegId] = useState<string | null>(null);
   const [clearCanvasConfirmationPending, setClearCanvasConfirmationPending] = useState(false);
+  const [builderDocument, setBuilderDocument] = useState<StrategyBuilderDocument>(() => cloneStrategyBuilderDocument(DEFAULT_STRATEGY_BUILDER_DOCUMENT));
+  const [selectedBuilderCellId, setSelectedBuilderCellId] = useState<string | null>(() => DEFAULT_STRATEGY_BUILDER_DOCUMENT.cells[0]?.cellId ?? null);
+  const [builderFieldSearch, setBuilderFieldSearch] = useState<string>("");
 
   const clearPendingCanvasConfirmation = useCallback(() => {
     setClearCanvasConfirmationPending(false);
@@ -822,6 +1499,30 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
     setSelectedLegId(id);
   }, [clearPendingCanvasConfirmation]);
 
+  const selectBuilderCell = useCallback((cellId: string | null) => {
+    setSelectedBuilderCellId(cellId);
+  }, []);
+
+  const loadBuilderTemplate = useCallback((templateId: string) => {
+    const document = loadStrategyBuilderTemplate(templateId);
+    setBuilderDocument(document);
+    setSelectedBuilderCellId(document.cells[0]?.cellId ?? null);
+    setBuilderFieldSearch("");
+  }, []);
+
+  const workbench = useMemo(
+    () =>
+      buildStrategyBuilderWorkbenchViewModel({
+        document: builderDocument,
+        selectedCellId: selectedBuilderCellId,
+        fieldSearch: builderFieldSearch,
+        setFieldSearch: setBuilderFieldSearch,
+        selectCell: selectBuilderCell,
+        loadTemplate: loadBuilderTemplate
+      }),
+    [builderDocument, builderFieldSearch, loadBuilderTemplate, selectBuilderCell, selectedBuilderCellId]
+  );
+
   const payoff = useMemo(() => buildPayoffChartViewModel(legs, spotPrice), [legs, spotPrice]);
   const participation = useMemo(() => buildParticipationViewModel(legs, spotPrice), [legs, spotPrice]);
   const metrics = useMemo(() => buildDesignerSummaryMetrics(payoff, participation), [payoff, participation]);
@@ -842,6 +1543,7 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
   const clearCanvasLegCountLabel = `${legs.length} leg${legs.length === 1 ? "" : "s"}`;
 
   return {
+    workbench,
     legs,
     canvasLegs,
     palette: PALETTE,
@@ -897,6 +1599,157 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
     selectedLegDetail,
     selectedLegDetailEmptyState
   };
+}
+
+function cloneStrategyBuilderDocument(document: StrategyBuilderDocument): StrategyBuilderDocument {
+  return {
+    ...document,
+    universe: [...document.universe],
+    cells: document.cells.map((cell) => ({
+      ...cell,
+      fieldRefs: [...cell.fieldRefs]
+    })),
+    transitions: document.transitions.map((transition) => ({ ...transition }))
+  };
+}
+
+function buildStrategyBuilderCellViewModels(
+  cells: StrategyBuilderCell[],
+  selectedCellId: string | null,
+  fieldMap: Map<string, StrategyBuilderFieldCatalogItem>,
+  messages: StrategyBuilderValidationMessage[]
+): StrategyBuilderCellViewModel[] {
+  return cells.map((cell) => {
+    const cellMessages = messages.filter((message) => message.targetId === cell.cellId);
+    const hasError = cellMessages.some((message) => message.severity === "error");
+    const hasWarning = cellMessages.some((message) => message.severity === "warning");
+    const disabledReason = cellMessages.find((message) => message.severity === "error")?.message ?? null;
+    return {
+      ...cell,
+      isSelected: cell.cellId === selectedCellId,
+      status: hasError ? "blocked" : hasWarning ? "warning" : "ready",
+      statusLabel: hasError ? "Blocked" : hasWarning ? "Review" : "Ready",
+      disabledReason,
+      fieldChips: cell.fieldRefs.map((fieldRef) => {
+        const field = fieldMap.get(fieldRef);
+        return {
+          fieldId: fieldRef,
+          label: field?.label ?? fieldRef,
+          isEnabled: field?.isEnabled ?? false,
+          disabledReason: field?.disabledReason ?? (field ? null : `${fieldRef} is not in the Meridian field catalog.`),
+          statusLabel: field?.isEnabled ? "Mapped" : "Disabled"
+        };
+      }),
+      selectButtonAriaLabel: `${cell.cellId === selectedCellId ? "Selected" : "Select"} ${cell.label}`,
+      detailPanelId: STRATEGY_BUILDER_SELECTED_CELL_DETAIL_PANEL_ID
+    };
+  });
+}
+
+function buildStrategyBuilderTransitionViewModels(
+  document: StrategyBuilderDocument,
+  messages: StrategyBuilderValidationMessage[]
+): StrategyBuilderTransitionViewModel[] {
+  const cells = new Map(document.cells.map((cell) => [cell.cellId, cell.label]));
+  return document.transitions.map((transition) => {
+    const transitionMessages = messages.filter((message) => message.targetId === transition.transitionId);
+    const hasError = transitionMessages.some((message) => message.severity === "error");
+    const from = cells.get(transition.fromCellId) ?? transition.fromCellId;
+    const to = cells.get(transition.toCellId) ?? transition.toCellId;
+    return {
+      ...transition,
+      label: `${from} -> ${to}`,
+      status: hasError ? "blocked" : transition.kind === "loop" ? "warning" : "ready",
+      statusLabel: hasError ? "Blocked" : transition.kind === "loop" ? "Guarded loop" : "Ready",
+      detail: transition.kind === "loop"
+        ? `${transition.condition}; max ${transition.maxIterations ?? "not set"} iteration${transition.maxIterations === 1 ? "" : "s"}`
+        : transition.condition
+    };
+  });
+}
+
+function buildStrategyBuilderTrace(
+  document: StrategyBuilderDocument,
+  selectedCellId: string | null,
+  messages: StrategyBuilderValidationMessage[]
+): StrategyBuilderRunTraceEntryViewModel[] {
+  const trace: StrategyBuilderRunTraceEntryViewModel[] = [
+    {
+      stepId: "validate",
+      label: "Validate design",
+      status: messages.some((message) => message.severity === "error") ? "blocked" : "complete",
+      detail: messages.length === 0 ? "All design checks passed." : `${messages.length} validation message${messages.length === 1 ? "" : "s"}.`,
+      cellId: null,
+      isSelectedCell: false
+    }
+  ];
+
+  for (const cell of document.cells) {
+    const cellMessages = messages.filter((message) => message.targetId === cell.cellId);
+    const hasError = cellMessages.some((message) => message.severity === "error");
+    trace.push({
+      stepId: `cell-${cell.cellId}`,
+      label: cell.label,
+      status: hasError ? "blocked" : "ready",
+      detail: `${cell.kind} cell compiles into ${cell.purpose}; fields ${cell.fieldRefs.join(", ") || "none"}.`,
+      cellId: cell.cellId,
+      isSelectedCell: cell.cellId === selectedCellId
+    });
+  }
+
+  trace.push({
+    stepId: "quant-script",
+    label: "Compile QuantScript",
+    status: messages.some((message) => message.severity === "error") ? "blocked" : "ready",
+    detail: "Generated source is sent to /api/workstation/strategy/designer/run-backtest.",
+    cellId: null,
+    isSelectedCell: false
+  });
+
+  return trace;
+}
+
+function buildStrategyBuilderCellDetail(
+  cell: StrategyBuilderCell,
+  fieldMap: Map<string, StrategyBuilderFieldCatalogItem>
+): StrategyBuilderCellDetailViewModel {
+  const mapped = cell.fieldRefs
+    .map((fieldRef) => fieldMap.get(fieldRef))
+    .filter((field): field is StrategyBuilderFieldCatalogItem => field !== undefined);
+
+  return {
+    id: STRATEGY_BUILDER_SELECTED_CELL_DETAIL_PANEL_ID,
+    title: cell.label,
+    eyebrow: `${cell.kind} cell`,
+    description: `${cell.purpose} stage with ${mapped.length} mapped field${mapped.length === 1 ? "" : "s"}.`,
+    source: cell.source,
+    ariaLabel: `Strategy builder cell detail for ${cell.label}`,
+    fields: [
+      { id: "cell-id", label: "Cell ID", value: cell.cellId, tone: "muted" },
+      { id: "purpose", label: "Purpose", value: cell.purpose, tone: "default" },
+      { id: "kind", label: "Kind", value: cell.kind, tone: "default" },
+      {
+        id: "fields",
+        label: "Fields",
+        value: cell.fieldRefs.length > 0 ? cell.fieldRefs.join(", ") : "None",
+        tone: cell.fieldRefs.some((fieldRef) => fieldMap.get(fieldRef)?.isEnabled === false) ? "danger" : "default"
+      }
+    ]
+  };
+}
+
+function buildStrategyBuilderDatasetFingerprint(document: StrategyBuilderDocument): string {
+  const source = [
+    document.datasetReference,
+    document.universe.join(","),
+    document.cells.flatMap((cell) => cell.fieldRefs).sort().join(","),
+    document.version
+  ].join("|");
+  let hash = 0;
+  for (let index = 0; index < source.length; index += 1) {
+    hash = (Math.imul(31, hash) + source.charCodeAt(index)) | 0;
+  }
+  return `strategy-design:${Math.abs(hash).toString(16).padStart(8, "0")}`;
 }
 
 function buildPayoffCaption(maxProfit: number, maxLoss: number, breakEvenPrices: number[]): string {

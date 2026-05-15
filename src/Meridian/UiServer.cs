@@ -101,6 +101,9 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<Meridian.Ui.Shared.UserProfileRegistry>();
         builder.Services.AddSingleton<LoginSessionService>();
         builder.Services.AddSingleton<IStrategyRepository, StrategyRunStore>();
+        builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(contentRootPath, "data", "strategies", "designer")));
+        builder.Services.AddSingleton<IStrategyDesignRepository, JsonlStrategyDesignRepository>();
+        builder.Services.AddSingleton<StrategyDesignService>();
         builder.Services.AddSingleton(PromotionRecordStoreOptions.Default);
         builder.Services.AddSingleton<IPromotionRecordStore, JsonlPromotionRecordStore>();
         builder.Services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
