@@ -1210,15 +1210,23 @@ export function validateStrategyBuilderDocument(
   return messages;
 }
 
+function hasNonBlankParameterValue(value: unknown): boolean {
+  if (typeof value === "string") {
+    return value.trim().length > 0;
+  }
+
+  return Boolean(value);
+}
+
 function validateCellKindParameters(cell: StrategyBuilderCell): StrategyBuilderValidationMessage[] {
   const messages: StrategyBuilderValidationMessage[] = [];
   const label = cell.label || cell.cellId;
 
   if (cell.kind === "state") {
-    if (!cell.parameters?.["exitCondition"]) {
+    if (!hasNonBlankParameterValue(cell.parameters?.["exitCondition"])) {
       messages.push({ code: "StateCellExitRequired", severity: "error", targetId: cell.cellId, message: `${label} (state) must define an exitCondition parameter.` });
     }
-    if (!cell.parameters?.["stateLabel"]) {
+    if (!hasNonBlankParameterValue(cell.parameters?.["stateLabel"])) {
       messages.push({ code: "StateCellLabelRequired", severity: "error", targetId: cell.cellId, message: `${label} (state) must define a stateLabel parameter.` });
     }
   }
