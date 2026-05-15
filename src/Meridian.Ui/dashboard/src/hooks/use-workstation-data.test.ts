@@ -371,7 +371,7 @@ describe("useWorkstationData", () => {
     expect(result.current.portfolio).toEqual({ marker: "initial portfolio" });
     expect(result.current.brokeragePortfolio).toEqual({ marker: "initial brokerage" });
     expect(result.current.workspaceErrors.portfolio).toBe(
-      "Portfolio refresh failed.; Brokerage portfolio refresh failed."
+      "Portfolio refresh failed; Brokerage portfolio refresh failed"
     );
     expect(result.current.error).toBe(result.current.workspaceErrors.portfolio);
   });

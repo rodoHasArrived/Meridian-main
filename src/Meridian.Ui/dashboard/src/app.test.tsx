@@ -125,7 +125,8 @@ describe("App", () => {
   it("has no basic accessibility violations in the trading shell", async () => {
     const { container } = renderWithRouter(<App />, { initialEntries: ["/trading"] });
 
-    await expect(axe(container)).resolves.toHaveNoViolations();
+    const results = await axe(container);
+    expect(results.violations).toHaveLength(0);
   });
 
   it("renders route-aware workflow continuity without relying on memorized navigation", () => {

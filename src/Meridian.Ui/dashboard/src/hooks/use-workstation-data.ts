@@ -281,12 +281,12 @@ export function useWorkstationData() {
         if (portfolio.status === "fulfilled") {
           next = { ...next, portfolio: portfolio.value };
         } else {
-          refreshErrors.push(formatRequestError(portfolio.reason, "Portfolio workspace refresh failed."));
+          refreshErrors.push(formatRequestError(portfolio.reason, "Portfolio workspace refresh failed"));
         }
         if (brokeragePortfolio.status === "fulfilled") {
           next = { ...next, brokeragePortfolio: brokeragePortfolio.value };
         } else {
-          refreshErrors.push(formatRequestError(brokeragePortfolio.reason, "Brokerage household portfolio refresh failed."));
+          refreshErrors.push(formatRequestError(brokeragePortfolio.reason, "Brokerage household portfolio refresh failed"));
         }
 
         const refreshError = refreshErrors.length > 0 ? refreshErrors.join("; ") : null;
