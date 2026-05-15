@@ -136,6 +136,35 @@ describe("command palette view model", () => {
     });
   });
 
+  it("applies the active operating symbol to symbol-aware command routes", () => {
+    const model = buildCommandPaletteViewModel("/portfolio", undefined, {}, "msft depth", "msft");
+
+    expect(model.operatingContextLabel).toBe("Subject: MSFT");
+    expect(model.filteredItems.map((item) => item.id)).toEqual(["route:data-quotes"]);
+    expect(model.items.find((item) => item.id === "route:data-quotes")).toMatchObject({
+      route: "/data/quotes?symbol=MSFT",
+      routeLabel: "/data/quotes?symbol=MSFT",
+      description: "Inspect quotes, trades, depth, charts, and staged tickets. Subject: MSFT."
+    });
+    expect(model.items.find((item) => item.id === "route:data-alerts")).toMatchObject({
+      route: "/data/alerts?symbol=MSFT",
+      routeLabel: "/data/alerts?symbol=MSFT",
+      description: "Create local quote-threshold alerts and review alert trigger state. Subject: MSFT."
+    });
+  });
+
+  it("prefers the route symbol over the stored operating symbol", () => {
+    const model = buildCommandPaletteViewModel("/data/quotes?symbol=AAPL", undefined, {}, "", "MSFT");
+
+    expect(model.operatingContextLabel).toBe("Subject: AAPL");
+    expect(model.initialFocusItemId).toBe("route:data-quotes");
+    expect(model.items.find((item) => item.id === "route:data-quotes")).toMatchObject({
+      route: "/data/quotes?symbol=AAPL",
+      statusLabel: "Current",
+      active: true
+    });
+  });
+
   it("adds backend workflow actions and pinned presets to command routing", () => {
     const model = buildCommandPaletteViewModel("/trading", undefined, {
       workflowLibrary: {

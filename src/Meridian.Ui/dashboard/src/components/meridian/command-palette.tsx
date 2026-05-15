@@ -36,6 +36,7 @@ interface CommandPaletteProps {
   workflowLibrary?: WorkflowLibrary | null;
   workflowPresets?: WorkflowPresetLibrary | null;
   workflowError?: string | null;
+  operatingContextSymbol?: string | null;
   onPresetUsed?: (presetId: string) => void | Promise<void>;
 }
 
@@ -45,6 +46,7 @@ export function CommandPalette({
   workflowLibrary,
   workflowPresets,
   workflowError,
+  operatingContextSymbol,
   onPresetUsed
 }: CommandPaletteProps) {
   const { pathname, search, hash } = useLocation();
@@ -62,7 +64,8 @@ export function CommandPalette({
       workflowPresets,
       workflowError
     },
-    query
+    query,
+    operatingContextSymbol ?? null
   );
 
   useEffect(() => {
@@ -166,6 +169,9 @@ export function CommandPalette({
         </div>
         <div className="command-palette-summary" aria-label={viewModel.scopeLabel}>
           <span className="command-palette-chip">{viewModel.activeWorkspaceLabel}</span>
+          {viewModel.operatingContextLabel ? (
+            <span className="command-palette-chip">{viewModel.operatingContextLabel}</span>
+          ) : null}
           <span className="command-palette-chip">{viewModel.shortcutHint}</span>
           {viewModel.backendStatusLabel ? (
             <span className="command-palette-chip">{viewModel.backendStatusLabel}</span>

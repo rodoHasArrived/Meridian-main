@@ -62,6 +62,7 @@ const portfolio: PortfolioWorkspaceResponse = {
 describe("App", () => {
   beforeEach(() => {
     document.title = "Meridian";
+    window.localStorage.clear();
     mockedUseWorkstationData.mockReturnValue({
       session: {
         displayName: "Ops Desk",
@@ -164,12 +165,68 @@ describe("App", () => {
     );
     expect(screen.getByRole("link", { name: "Price alerts, next workflow step, Waiting" })).toHaveAttribute(
       "href",
-      "/data/alerts"
+      "/data/alerts?symbol=MSFT"
     );
     expect(screen.getByRole("link", { name: "Continue workflow to Price alerts" })).toHaveAttribute(
       "href",
-      "/data/alerts"
+      "/data/alerts?symbol=MSFT"
     );
+    expect(screen.getByRole("button", { name: "Clear MSFT operating context" })).toBeInTheDocument();
+  });
+
+  it("keeps a stored operating symbol available in the shell and command palette", async () => {
+    const user = userEvent.setup();
+    window.localStorage.setItem("meridian.workstation.operatingContext.v1", JSON.stringify({ symbol: "msft" }));
+    mockedUseWorkstationData.mockReturnValue({
+      session: {
+        displayName: "Ops Desk",
+        role: "Operator",
+        environment: "paper",
+        activeWorkspace: "portfolio",
+        commandCount: 7
+      },
+      overview: null,
+      research: null,
+      trading: null,
+      portfolio: null,
+      dataOperations: null,
+      governance: null,
+      reporting: null,
+      brokerageConnection: null,
+      brokeragePortfolio: null,
+      workflowLibrary: null,
+      workflowPresets: null,
+      workflowError: null,
+      usingDevelopmentFixtures: false,
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      refresh: vi.fn(),
+      refreshTrading: vi.fn(),
+      refreshPortfolio: vi.fn(),
+      upsertWorkflowPreset: vi.fn()
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/portfolio"] });
+
+    expect(screen.getByText("Portfolio / MSFT")).toBeInTheDocument();
+    await user.keyboard("{Control>}k{/Control}");
+
+    expect(screen.getByText("Subject: MSFT")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Live quotes route" })).toHaveAttribute(
+      "href",
+      "/data/quotes?symbol=MSFT"
+    );
+    expect(screen.getByRole("link", { name: "Open Price alerts route" })).toHaveAttribute(
+      "href",
+      "/data/alerts?symbol=MSFT"
+    );
+
+    await user.keyboard("{Escape}");
+    await user.click(screen.getByRole("button", { name: "Clear MSFT operating context" }));
+
+    expect(screen.queryByText("Portfolio / MSFT")).not.toBeInTheDocument();
+    expect(window.localStorage.getItem("meridian.workstation.operatingContext.v1")).toBeNull();
   });
 
   it("sets the workstation document title on first direct route load without moving focus", async () => {

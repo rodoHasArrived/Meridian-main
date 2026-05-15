@@ -2,15 +2,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as coveredCallApi from "@/lib/api/covered-call";
 import type {
   CoveredCallBacktestRequest,
-  CoveredCallChainRow,
   CoveredCallChainPreview,
-  CoveredCallTrade,
+  CoveredCallChainRow,
+  CoveredCallOpenPosition,
   CoveredCallRunPhase,
   CoveredCallRunResult,
   CoveredCallRunStatus,
   CoveredCallRunSummary,
-  CoveredCallScoringMode
+  CoveredCallScoringMode,
+  CoveredCallTrade
 } from "@/types/covered-call";
+import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
 
 export type CoveredCallStage = "configure" | "run" | "results";
 
@@ -216,6 +218,41 @@ export interface CoveredCallTradeTimelinePanelViewModel {
   rows: CoveredCallTradeTimelineRowViewModel[];
   selectedRowId: string | null;
   selectedDetail: CoveredCallTradeTimelineDetailViewModel | null;
+}
+
+export interface CoveredCallPayoffPositionOptionViewModel {
+  id: string;
+  index: number;
+  label: string;
+  description: string;
+  selected: boolean;
+  buttonVariant: "secondary" | "outline";
+  ariaLabel: string;
+}
+
+export interface CoveredCallPayoffChartLineViewModel {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
+export interface CoveredCallPayoffChartViewModel {
+  viewBox: string;
+  ariaLabel: string;
+  zeroLine: CoveredCallPayoffChartLineViewModel;
+  strikeLine: CoveredCallPayoffChartLineViewModel;
+  path: string;
+}
+
+export interface CoveredCallPayoffPanelViewModel {
+  title: string;
+  description: string;
+  emptyText: string | null;
+  selectorAriaLabel: string;
+  positionOptions: CoveredCallPayoffPositionOptionViewModel[];
+  chart: CoveredCallPayoffChartViewModel | null;
+  note: string;
 }
 
 export interface CoveredCallScreenServices {
@@ -649,6 +686,108 @@ export function buildCoveredCallTradeTimelinePanel(
   };
 }
 
+export function buildCoveredCallPayoffPanel(
+  result: CoveredCallRunResult | null,
+  selectedIndex: number
+): CoveredCallPayoffPanelViewModel {
+  const base = {
+    title: "Payoff diagram",
+    selectorAriaLabel: "Covered-call open positions",
+    note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only."
+  };
+
+  if (!result || result.openPositionsAtEnd.length === 0) {
+    return {
+      ...base,
+      description: "Short-call payoff diagram for any open position at end of run.",
+      emptyText: result ? "No open positions at end of run." : "Complete or load a run to inspect payoff evidence.",
+      positionOptions: [],
+      chart: null
+    };
+  }
+
+  const selectedPositionIndex = clampIndex(selectedIndex, result.openPositionsAtEnd.length);
+  const selectedPosition = result.openPositionsAtEnd[selectedPositionIndex];
+  const breakEven = shortCallBreakEven({
+    strike: selectedPosition.strike,
+    entryCredit: selectedPosition.entryCredit,
+    contracts: selectedPosition.contracts,
+    multiplier: selectedPosition.multiplier
+  });
+
+  return {
+    ...base,
+    title: "Payoff diagram (short call leg)",
+    description: `${selectedPosition.contracts} x ${formatPrice(selectedPosition.strike)} call expiring ${selectedPosition.expiration} - short-call break-even about $${formatPrice(breakEven)}`,
+    emptyText: null,
+    positionOptions: result.openPositionsAtEnd.map((position, index) =>
+      buildCoveredCallPayoffPositionOption(result.underlyingSymbol, position, index, selectedPositionIndex)
+    ),
+    chart: buildCoveredCallPayoffChart(selectedPosition, result.underlyingSymbol)
+  };
+}
+
+function buildCoveredCallPayoffPositionOption(
+  underlyingSymbol: string,
+  position: CoveredCallOpenPosition,
+  index: number,
+  selectedIndex: number
+): CoveredCallPayoffPositionOptionViewModel {
+  const strikeLabel = formatPrice(position.strike);
+  const selected = index === selectedIndex;
+
+  return {
+    id: position.positionId || `position-${index}`,
+    index,
+    label: `${strikeLabel} call`,
+    description: `${position.expiration} - ${position.contracts} ${position.contracts === 1 ? "contract" : "contracts"}`,
+    selected,
+    buttonVariant: selected ? "secondary" : "outline",
+    ariaLabel: `${selected ? "Selected" : "Select"} ${underlyingSymbol} ${strikeLabel} call expiring ${position.expiration} payoff diagram`
+  };
+}
+
+function buildCoveredCallPayoffChart(
+  position: CoveredCallOpenPosition,
+  underlyingSymbol: string
+): CoveredCallPayoffChartViewModel {
+  const width = 320;
+  const height = 180;
+  const spotMin = position.strike * 0.75;
+  const spotMax = position.strike * 1.25;
+  const samples = buildShortCallPayoffCurve({
+    strike: position.strike,
+    entryCredit: position.entryCredit,
+    contracts: position.contracts,
+    multiplier: position.multiplier
+  }, spotMin, spotMax, 80);
+  const allPayoffs = samples.map((sample) => sample.payoff);
+  const yMin = Math.min(...allPayoffs);
+  const yMax = Math.max(...allPayoffs);
+  const xScale = (spot: number) => ((spot - spotMin) / Math.max(spotMax - spotMin, 1e-6)) * width;
+  const yScale = (value: number) => height - ((value - yMin) / Math.max(yMax - yMin, 1e-6)) * height;
+  if (samples.length === 0 || !Number.isFinite(yMin) || !Number.isFinite(yMax)) {
+    return {
+      viewBox: `0 0 ${width} ${height}`,
+      ariaLabel: `${underlyingSymbol} ${formatPrice(position.strike)} short-call payoff diagram unavailable`,
+      zeroLine: { x1: 0, y1: height / 2, x2: width, y2: height / 2 },
+      strikeLine: { x1: width / 2, y1: 0, x2: width / 2, y2: height },
+      path: `M0,${height / 2} L${width},${height / 2}`
+    };
+  }
+  const path = samples
+    .map((sample, index) => `${index === 0 ? "M" : "L"}${xScale(sample.spot).toFixed(1)},${yScale(sample.payoff).toFixed(1)}`)
+    .join(" ");
+
+  return {
+    viewBox: `0 0 ${width} ${height}`,
+    ariaLabel: `${underlyingSymbol} ${formatPrice(position.strike)} short-call payoff diagram`,
+    zeroLine: { x1: 0, y1: yScale(0), x2: width, y2: yScale(0) },
+    strikeLine: { x1: xScale(position.strike), y1: 0, x2: xScale(position.strike), y2: height },
+    path
+  };
+}
+
 function buildCoveredCallTradeTimelineRow(
   underlyingSymbol: string,
   trade: CoveredCallTrade,
@@ -995,6 +1134,7 @@ export interface CoveredCallScreenState {
   stageNavigation: CoveredCallStageNavigationState;
   resultsActionPanel: CoveredCallResultsActionPanelViewModel;
   tradeTimelinePanel: CoveredCallTradeTimelinePanelViewModel;
+  payoffPanel: CoveredCallPayoffPanelViewModel;
   history: CoveredCallRunSummary[];
   historyRows: CoveredCallHistoryRowViewModel[];
   historyLoading: boolean;
@@ -1181,7 +1321,7 @@ export function useCoveredCallScreenViewModel(
   }, []);
 
   const selectOpenPosition = useCallback((index: number) => {
-    setRun((prev) => ({ ...prev, selectedPositionIndex: index }));
+    setRun((prev) => ({ ...prev, selectedPositionIndex: clampIndex(index, prev.result?.openPositionsAtEnd.length ?? 0) }));
   }, []);
 
   const selectTradeRow = useCallback((index: number) => {
@@ -1363,6 +1503,10 @@ export function useCoveredCallScreenViewModel(
     () => buildCoveredCallTradeTimelinePanel(run.result, run.selectedTradeIndex),
     [run.result, run.selectedTradeIndex]
   );
+  const payoffPanel = useMemo(
+    () => buildCoveredCallPayoffPanel(run.result, run.selectedPositionIndex),
+    [run.result, run.selectedPositionIndex]
+  );
   const historyRows = useMemo(
     () => buildCoveredCallHistoryRows(history),
     [history]
@@ -1388,6 +1532,7 @@ export function useCoveredCallScreenViewModel(
     stageNavigation,
     resultsActionPanel,
     tradeTimelinePanel,
+    payoffPanel,
     history,
     historyRows,
     historyLoading,
@@ -1428,6 +1573,7 @@ export function useCoveredCallScreenViewModel(
     stageNavigation,
     resultsActionPanel,
     tradeTimelinePanel,
+    payoffPanel,
     history,
     historyRows,
     historyLoading,

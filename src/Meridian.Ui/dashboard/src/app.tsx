@@ -12,14 +12,17 @@ import {
   RefreshCcw,
   Search,
   ShieldCheck,
+  X,
   type LucideIcon
 } from "lucide-react";
-import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
 import {
   buildAppShellViewState,
   buildDevelopmentFixtureNoticeViewModel,
   isAppShellEditableShortcutTarget,
+  normalizeOperatingContextSymbol,
+  readOperatingContextSymbolFromSearch,
   resolveAppShellCommandPaletteShortcut,
   type DevelopmentFixtureNoticeStep,
   type AppShellWorkflowContinuityViewModel,
@@ -76,9 +79,13 @@ function AppShell() {
   const [commandOpen, setCommandOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
+  const [storedOperatingContextSymbol, setStoredOperatingContextSymbol] = useState(readStoredOperatingContextSymbol);
   const workbenchRef = useRef<HTMLElement | null>(null);
   const previousRouteKeyRef = useRef<string | null>(null);
+  const navigate = useNavigate();
   const { hash, pathname, search } = useLocation();
+  const routeOperatingContextSymbol = readOperatingContextSymbolFromSearch(search);
+  const operatingContextSymbol = routeOperatingContextSymbol ?? storedOperatingContextSymbol;
   const {
     session,
     overview,
@@ -104,6 +111,26 @@ function AppShell() {
     markWorkflowPresetUsed(presetId).then((preset) => {
       upsertWorkflowPreset(preset);
     });
+
+  useEffect(() => {
+    if (!routeOperatingContextSymbol || routeOperatingContextSymbol === storedOperatingContextSymbol) {
+      return;
+    }
+
+    writeStoredOperatingContextSymbol(routeOperatingContextSymbol);
+    setStoredOperatingContextSymbol(routeOperatingContextSymbol);
+  }, [routeOperatingContextSymbol, storedOperatingContextSymbol]);
+
+  const handleClearOperatingContext = () => {
+    writeStoredOperatingContextSymbol(null);
+    setStoredOperatingContextSymbol(null);
+
+    if (!routeOperatingContextSymbol) {
+      return;
+    }
+
+    navigate(`${pathname}${removeOperatingContextSymbolFromSearch(search)}${hash}`, { replace: true });
+  };
 
   useEffect(() => {
     const handleCommandShortcut = (event: KeyboardEvent) => {
@@ -132,6 +159,7 @@ function AppShell() {
     pathname,
     search,
     hash,
+    operatingContextSymbol,
     commandPaletteOpen: commandOpen,
     loading,
     error,
@@ -264,7 +292,10 @@ function AppShell() {
             onRefresh={refresh}
             refreshing={loading}
           />
-          <WorkflowContinuityDock viewModel={shell.workflowContinuity} />
+          <WorkflowContinuityDock
+            viewModel={shell.workflowContinuity}
+            onClearOperatingContext={handleClearOperatingContext}
+          />
 
           <div className="workbench-scroll px-4 py-4 lg:px-6 lg:py-5">
             {usingDevelopmentFixtures ? <DevelopmentFixtureNotice refreshing={loading} onRetry={refresh} /> : null}
@@ -343,6 +374,7 @@ function AppShell() {
         workflowLibrary={workflowLibrary}
         workflowPresets={workflowPresets}
         workflowError={workflowError}
+        operatingContextSymbol={operatingContextSymbol}
         onPresetUsed={handleWorkflowPresetUsed}
       />
       <Sheet open={navOpen} onOpenChange={setNavOpen} side="left">
@@ -421,7 +453,13 @@ function focusRouteTargetWhenReady(
   return cleanup;
 }
 
-function WorkflowContinuityDock({ viewModel }: { viewModel: AppShellWorkflowContinuityViewModel }) {
+function WorkflowContinuityDock({
+  viewModel,
+  onClearOperatingContext
+}: {
+  viewModel: AppShellWorkflowContinuityViewModel;
+  onClearOperatingContext?: () => void;
+}) {
   return (
     <section className="workflow-continuity-dock" aria-label={viewModel.ariaLabel}>
       <div className="workflow-continuity-context">
@@ -436,6 +474,17 @@ function WorkflowContinuityDock({ viewModel }: { viewModel: AppShellWorkflowCont
         <div className="workflow-continuity-meta" aria-label={`Current route ${viewModel.routeLabel}`}>
           <span>{viewModel.contextValue}</span>
           <span>{viewModel.routeLabel}</span>
+          {viewModel.subjectSymbol && viewModel.clearSubjectAriaLabel && onClearOperatingContext ? (
+            <button
+              type="button"
+              className="workflow-continuity-clear focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              onClick={onClearOperatingContext}
+              aria-label={viewModel.clearSubjectAriaLabel}
+              title={viewModel.clearSubjectAriaLabel}
+            >
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -468,6 +517,58 @@ function WorkflowContinuityDock({ viewModel }: { viewModel: AppShellWorkflowCont
       </Button>
     </section>
   );
+}
+
+const OPERATING_CONTEXT_STORAGE_KEY = "meridian.workstation.operatingContext.v1";
+
+function readStoredOperatingContextSymbol(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(OPERATING_CONTEXT_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed: unknown = raw.trim().startsWith("{") ? JSON.parse(raw) : raw;
+    if (typeof parsed === "string") {
+      return normalizeOperatingContextSymbol(parsed);
+    }
+
+    if (parsed && typeof parsed === "object" && "symbol" in parsed) {
+      return normalizeOperatingContextSymbol((parsed as { symbol?: unknown }).symbol as string | null | undefined);
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+function writeStoredOperatingContextSymbol(symbol: string | null) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    if (!symbol) {
+      window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
+      return;
+    }
+
+    window.localStorage.setItem(OPERATING_CONTEXT_STORAGE_KEY, JSON.stringify({ symbol }));
+  } catch {
+    // Browser storage can be unavailable in private or locked-down contexts.
+  }
+}
+
+function removeOperatingContextSymbolFromSearch(search: string) {
+  const params = new URLSearchParams(search);
+  params.delete("symbol");
+  const next = params.toString();
+  return next ? `?${next}` : "";
 }
 
 function PriceAlertsBell() {

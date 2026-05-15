@@ -125,6 +125,40 @@ const completedRunWithTrades: CoveredCallRunResult = {
   ]
 };
 
+const completedRunWithOpenPositions: CoveredCallRunResult = {
+  ...completedRunResult,
+  openPositionsAtEnd: [
+    {
+      positionId: "pos-505",
+      strike: 505,
+      expiration: "2024-02-16",
+      contracts: 2,
+      multiplier: 100,
+      entryDate: "2024-01-10",
+      entryCredit: 2.35,
+      markToClose: 0.75,
+      currentDelta: 0.31,
+      currentDte: 21,
+      unrealisedPnl: 320,
+      premiumCaptured: 0.68
+    },
+    {
+      positionId: "pos-510",
+      strike: 510,
+      expiration: "2024-03-15",
+      contracts: 1,
+      multiplier: 100,
+      entryDate: "2024-02-01",
+      entryCredit: 1.9,
+      markToClose: 3.3,
+      currentDelta: 0.42,
+      currentDte: 44,
+      unrealisedPnl: -140,
+      premiumCaptured: 0.42
+    }
+  ]
+};
+
 const historicalRun: CoveredCallRunSummary = {
   runId: "run-history-1",
   underlyingSymbol: "SPY",
@@ -419,5 +453,35 @@ describe("CoveredCallScreen", () => {
     })).toBeInTheDocument();
     expect(screen.getByText("Take profit")).toBeInTheDocument();
     expect(screen.getByText("Assigned; exit reason Assigned; -$140 total net PnL.")).toBeInTheDocument();
+  });
+
+  it("renders payoff position controls and updates the selected short-call diagram", async () => {
+    vi.mocked(coveredCallApi.listCoveredCallRuns).mockResolvedValue([historicalRun]);
+    vi.mocked(coveredCallApi.getCoveredCallRunResult).mockResolvedValue(completedRunWithOpenPositions);
+
+    renderCoveredCallScreen();
+
+    fireEvent.click(await screen.findByRole("row", {
+      name: "Reload covered-call run run-history-1 for SPY"
+    }));
+
+    const firstPosition = await screen.findByRole("button", {
+      name: "Selected SPY 505.00 call expiring 2024-02-16 payoff diagram"
+    });
+    const secondPosition = screen.getByRole("button", {
+      name: "Select SPY 510.00 call expiring 2024-03-15 payoff diagram"
+    });
+
+    expect(firstPosition).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("img", { name: "SPY 505.00 short-call payoff diagram" })).toBeInTheDocument();
+    expect(screen.getByText("2 x 505.00 call expiring 2024-02-16 - short-call break-even about $507.35")).toBeInTheDocument();
+
+    fireEvent.click(secondPosition);
+
+    expect(await screen.findByRole("button", {
+      name: "Selected SPY 510.00 call expiring 2024-03-15 payoff diagram"
+    })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("img", { name: "SPY 510.00 short-call payoff diagram" })).toBeInTheDocument();
+    expect(screen.getByText("1 x 510.00 call expiring 2024-03-15 - short-call break-even about $511.90")).toBeInTheDocument();
   });
 });

@@ -66,6 +66,8 @@ export interface AppShellWorkflowContinuityViewModel {
   summary: string;
   contextLabel: string;
   contextValue: string;
+  subjectSymbol: string | null;
+  clearSubjectAriaLabel: string | null;
   routeLabel: string;
   stepsLabel: string;
   ariaLabel: string;
@@ -131,6 +133,7 @@ export interface BuildAppShellViewStateOptions {
   pathname: string;
   search?: string;
   hash?: string;
+  operatingContextSymbol?: string | null;
   commandPaletteOpen?: boolean;
   loading: boolean;
   error: string | null;
@@ -157,6 +160,7 @@ export function buildAppShellViewState({
   pathname,
   search = "",
   hash = "",
+  operatingContextSymbol = null,
   commandPaletteOpen = false,
   loading,
   error,
@@ -179,13 +183,20 @@ export function buildAppShellViewState({
     }),
     canRenderRoutes: !loading && !bootstrapFailed,
     routeFocus: buildRouteFocusState(pathname, search, hash, activeWorkspace),
-    workflowContinuity: buildWorkflowContinuityViewModel(pathname, search, hash, activeWorkspace, {
-      loading,
-      error,
-      workflowError,
-      workspaceErrors,
-      payload
-    }),
+    workflowContinuity: buildWorkflowContinuityViewModel(
+      pathname,
+      search,
+      hash,
+      activeWorkspace,
+      {
+        loading,
+        error,
+        workflowError,
+        workspaceErrors,
+        payload
+      },
+      operatingContextSymbol
+    ),
     commandPaletteTrigger: buildCommandPaletteTriggerState(commandPaletteOpen)
   };
 }
@@ -302,9 +313,11 @@ export function buildWorkflowContinuityViewModel(
   search: string,
   hash: string,
   activeWorkspace: WorkspaceSummary,
-  statusContext: WorkflowContinuityStatusContext = emptyWorkflowContinuityStatusContext
+  statusContext: WorkflowContinuityStatusContext = emptyWorkflowContinuityStatusContext,
+  operatingContextSymbol: string | null = null
 ): AppShellWorkflowContinuityViewModel {
-  const subjectSymbol = normalizeSubjectSymbol(readSearchValue(search, "symbol"));
+  const subjectSymbol = normalizeSubjectSymbol(readSearchValue(search, "symbol"))
+    ?? normalizeSubjectSymbol(operatingContextSymbol);
   const currentRoute = `${pathname}${search}${hash}`;
   const trail = selectWorkflowContinuityTrail(pathname, hash);
   const steps = trail.steps.map((step) => materializeContinuityStep(step, subjectSymbol));
@@ -329,6 +342,8 @@ export function buildWorkflowContinuityViewModel(
     ),
     contextLabel: "Operating context",
     contextValue,
+    subjectSymbol,
+    clearSubjectAriaLabel: subjectSymbol ? `Clear ${subjectSymbol} operating context` : null,
     routeLabel: currentRoute || "/",
     stepsLabel: `${trail.title} workflow steps`,
     ariaLabel: `${trail.title} continuity`,
@@ -552,7 +567,8 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
         label: "Price alerts",
         description: "Track threshold triggers and validate the quote feed behind watched symbols.",
         href: "/data/alerts",
-        matchPath: "/data/alerts"
+        matchPath: "/data/alerts",
+        preserveSymbol: true
       },
       {
         id: "readiness",
@@ -1037,6 +1053,14 @@ function readSearchValue(search: string, key: string): string | null {
 function normalizeSubjectSymbol(value: string | null): string | null {
   const normalized = value?.trim().toUpperCase().replace(/[^A-Z0-9._-]/g, "") ?? "";
   return normalized.length > 0 ? normalized.slice(0, 16) : null;
+}
+
+export function readOperatingContextSymbolFromSearch(search: string): string | null {
+  return normalizeSubjectSymbol(readSearchValue(search, "symbol"));
+}
+
+export function normalizeOperatingContextSymbol(value: string | null | undefined): string | null {
+  return normalizeSubjectSymbol(value ?? null);
 }
 
 function appendSearchValue(route: string, key: string, value: string) {

@@ -120,12 +120,14 @@ describe("app shell view model", () => {
       contextValue: "Data / AAPL",
       routeLabel: "/data/quotes?symbol=AAPL",
       nextActionLabel: "Next: Price alerts",
-      nextActionHref: "/data/alerts"
+      nextActionHref: "/data/alerts?symbol=AAPL",
+      subjectSymbol: "AAPL",
+      clearSubjectAriaLabel: "Clear AAPL operating context"
     });
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.active, step.next, step.href])).toEqual([
       ["watchlist", false, false, "/data/watchlist"],
       ["quotes", true, false, "/data/quotes?symbol=AAPL"],
-      ["alerts", false, true, "/data/alerts"],
+      ["alerts", false, true, "/data/alerts?symbol=AAPL"],
       ["readiness", false, false, "/trading/readiness"],
       ["provider-setup", false, false, "/settings#alpaca-provider-setup"]
     ]);
@@ -135,6 +137,49 @@ describe("app shell view model", () => {
       ["Price alerts", "Next / Waiting"],
       ["Readiness", "Waiting"],
       ["Provider setup", "Available"]
+    ]);
+  });
+
+  it("keeps a persisted operating symbol in cross-workspace workflow routes", () => {
+    const state = buildAppShellViewState({
+      pathname: "/portfolio",
+      operatingContextSymbol: "msft",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(state.workflowContinuity).toMatchObject({
+      title: "Trading Governance",
+      contextValue: "Portfolio / MSFT",
+      subjectSymbol: "MSFT",
+      clearSubjectAriaLabel: "Clear MSFT operating context",
+      summary: expect.stringContaining("Subject: MSFT.")
+    });
+    expect(state.workflowContinuity.steps.map((step) => [step.id, step.href])).toEqual([
+      ["trading-readiness", "/trading/readiness"],
+      ["trading-cockpit", "/trading"],
+      ["portfolio-exposure", "/portfolio"],
+      ["reconciliation", "/accounting/reconciliation"],
+      ["report-packs", "/reporting/report-packs"]
+    ]);
+
+    const dataState = buildAppShellViewState({
+      pathname: "/data/watchlist",
+      operatingContextSymbol: "msft",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(dataState.workflowContinuity.steps.map((step) => [step.id, step.href])).toEqual([
+      ["watchlist", "/data/watchlist"],
+      ["quotes", "/data/quotes?symbol=MSFT"],
+      ["alerts", "/data/alerts?symbol=MSFT"],
+      ["readiness", "/trading/readiness"],
+      ["provider-setup", "/settings#alpaca-provider-setup"]
     ]);
   });
 

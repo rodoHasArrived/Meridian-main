@@ -14,7 +14,6 @@ import {
   type CoveredCallStage,
   type CoveredCallTradeTimelineRowViewModel
 } from "@/screens/covered-call-screen.view-model";
-import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
   {
@@ -681,63 +680,55 @@ function PositionTimeline({ vm }: { vm: CoveredCallScreenViewModel }) {
 }
 
 function PayoffDiagramPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
-  const openPositions = vm.run.result?.openPositionsAtEnd ?? [];
-  const pos = openPositions[vm.run.selectedPositionIndex];
+  const panel = vm.payoffPanel;
 
-  if (!pos) {
+  if (!panel.chart) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Payoff diagram</CardTitle>
-          <CardDescription>Short-call payoff diagram for any open position at end of run.</CardDescription>
+          <CardTitle className="text-base">{panel.title}</CardTitle>
+          <CardDescription>{panel.description}</CardDescription>
         </CardHeader>
         <CardContent className="py-10 text-center text-sm text-muted-foreground">
-          No open positions at end of run.
+          {panel.emptyText}
         </CardContent>
       </Card>
     );
   }
 
-  // Slice 1 renders the short-call leg only; the backend does not yet thread the underlying
-  // cost basis through CoveredCallOpenPositionDto, so plotting a combined covered curve would
-  // require a fabricated basis. We surface that explicitly in the description.
-  const inputs = {
-    strike: pos.strike,
-    entryCredit: pos.entryCredit,
-    contracts: pos.contracts,
-    multiplier: pos.multiplier
-  };
-  const spotMin = pos.strike * 0.75;
-  const spotMax = pos.strike * 1.25;
-  const samples = buildShortCallPayoffCurve(inputs, spotMin, spotMax, 80);
-  const breakEven = shortCallBreakEven(inputs);
-  const width = 320;
-  const height = 180;
-  const allPayoffs = samples.map((p) => p.payoff);
-  const yMin = Math.min(...allPayoffs);
-  const yMax = Math.max(...allPayoffs);
-  const xScale = (s: number) => ((s - spotMin) / Math.max(spotMax - spotMin, 1e-6)) * width;
-  const yScale = (v: number) => height - ((v - yMin) / Math.max(yMax - yMin, 1e-6)) * height;
-  const path = samples
-    .map((p, i) => `${i === 0 ? "M" : "L"}${xScale(p.spot).toFixed(1)},${yScale(p.payoff).toFixed(1)}`)
-    .join(" ");
-
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Payoff diagram (short call leg)</CardTitle>
-        <CardDescription>
-          {pos.contracts} × {pos.strike.toFixed(2)} call expiring {pos.expiration} · short-call break-even ≈ ${breakEven.toFixed(2)}
-        </CardDescription>
+        <CardTitle className="text-base">{panel.title}</CardTitle>
+        <CardDescription>{panel.description}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Short call payoff diagram" className="h-44 w-full">
-          <line x1={0} y1={yScale(0)} x2={width} y2={yScale(0)} stroke="currentColor" strokeOpacity={0.25} />
-          <line x1={xScale(pos.strike)} y1={0} x2={xScale(pos.strike)} y2={height} stroke="currentColor" strokeOpacity={0.25} strokeDasharray="3 3" />
-          <path d={path} fill="none" stroke="hsl(var(--primary))" strokeWidth={1.8} />
+      <CardContent className="space-y-3">
+        {panel.positionOptions.length > 1 ? (
+          <div className="flex flex-wrap gap-2" aria-label={panel.selectorAriaLabel}>
+            {panel.positionOptions.map((option) => (
+              <Button
+                key={option.id}
+                type="button"
+                variant={option.buttonVariant}
+                size="sm"
+                onClick={() => vm.selectOpenPosition(option.index)}
+                aria-pressed={option.selected}
+                aria-label={option.ariaLabel}
+                className="h-auto flex-col items-start gap-0.5 px-3 py-2 text-left"
+              >
+                <span className="font-mono">{option.label}</span>
+                <span className="text-[11px] font-normal text-muted-foreground">{option.description}</span>
+              </Button>
+            ))}
+          </div>
+        ) : null}
+        <svg viewBox={panel.chart.viewBox} role="img" aria-label={panel.chart.ariaLabel} className="h-44 w-full">
+          <line {...panel.chart.zeroLine} stroke="currentColor" strokeOpacity={0.25} />
+          <line {...panel.chart.strikeLine} stroke="currentColor" strokeOpacity={0.25} strokeDasharray="3 3" />
+          <path d={panel.chart.path} fill="none" stroke="hsl(var(--primary))" strokeWidth={1.8} />
         </svg>
         <p className="mt-2 text-xs text-muted-foreground">
-          Covered-call net curve requires the underlying cost basis which is not yet threaded through the API — see slice 1.5.
+          {panel.note}
         </p>
       </CardContent>
     </Card>

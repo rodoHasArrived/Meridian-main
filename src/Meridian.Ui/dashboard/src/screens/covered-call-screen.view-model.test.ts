@@ -4,6 +4,7 @@ import {
   COVERED_CALL_CHAIN_DETAIL_PANEL_ID,
   buildChainPreviewPanelViewModel,
   buildCoveredCallCancelCommandState,
+  buildCoveredCallPayoffPanel,
   buildCoveredCallRunCommandState,
   buildCoveredCallRunProgressPanel,
   buildCoveredCallResultsActionPanel,
@@ -404,6 +405,108 @@ describe("buildCoveredCallTradeTimelinePanel", () => {
       detailEmptyText: "This completed run did not record covered-call trade fills.",
       selectedRowId: null,
       selectedDetail: null
+    });
+  });
+});
+
+describe("buildCoveredCallPayoffPanel", () => {
+  function runResult(openPositionsAtEnd: CoveredCallRunResult["openPositionsAtEnd"]): CoveredCallRunResult {
+    return {
+      runId: "abc",
+      underlyingSymbol: "SPY",
+      from: "2024-01-01",
+      to: "2024-06-30",
+      label: null,
+      metrics: {
+        cagr: 0.1,
+        annualizedVolatility: 0.15,
+        sharpeRatio: 0.7,
+        sortinoRatio: 0.9,
+        calmarRatio: 1.8,
+        maxDrawdownPct: -0.05,
+        winRate: 0.7,
+        assignmentRate: 0.05,
+        averageHoldingDays: 20,
+        totalOptionTrades: 0,
+        assignedTrades: 0,
+        totalPremiumCollected: 1500,
+        totalOptionPnl: 800,
+        upCapture: 0.6,
+        downCapture: 0.9,
+        monthlyVar1Pct: -0.08,
+        monthlyVar5Pct: -0.05,
+        monthlyCVar5Pct: -0.06,
+        returnSkewness: 0,
+        returnKurtosis: 3,
+        annualizedTurnover: 8
+      },
+      equityCurve: [],
+      trades: [],
+      openPositionsAtEnd
+    };
+  }
+
+  it("projects selectable open positions and chart geometry into the view model", () => {
+    const panel = buildCoveredCallPayoffPanel(runResult([
+      {
+        positionId: "pos-505",
+        strike: 505,
+        expiration: "2024-02-16",
+        contracts: 2,
+        multiplier: 100,
+        entryDate: "2024-01-10",
+        entryCredit: 2.35,
+        markToClose: 0.75,
+        currentDelta: 0.31,
+        currentDte: 21,
+        unrealisedPnl: 320,
+        premiumCaptured: 0.68
+      },
+      {
+        positionId: "pos-510",
+        strike: 510,
+        expiration: "2024-03-15",
+        contracts: 1,
+        multiplier: 100,
+        entryDate: "2024-02-01",
+        entryCredit: 1.9,
+        markToClose: 3.3,
+        currentDelta: 0.42,
+        currentDte: 44,
+        unrealisedPnl: -140,
+        premiumCaptured: 0.42
+      }
+    ]), 1);
+
+    expect(panel).toMatchObject({
+      title: "Payoff diagram (short call leg)",
+      selectorAriaLabel: "Covered-call open positions",
+      description: "1 x 510.00 call expiring 2024-03-15 - short-call break-even about $511.90",
+      emptyText: null
+    });
+    expect(panel.positionOptions).toHaveLength(2);
+    expect(panel.positionOptions[1]).toMatchObject({
+      id: "pos-510",
+      label: "510.00 call",
+      description: "2024-03-15 - 1 contract",
+      selected: true,
+      buttonVariant: "secondary",
+      ariaLabel: "Selected SPY 510.00 call expiring 2024-03-15 payoff diagram"
+    });
+    expect(panel.chart).toMatchObject({
+      viewBox: "0 0 320 180",
+      ariaLabel: "SPY 510.00 short-call payoff diagram"
+    });
+    expect(panel.chart?.path).toMatch(/^M/);
+  });
+
+  it("keeps empty payoff state in the view model", () => {
+    expect(buildCoveredCallPayoffPanel(runResult([]), 0)).toMatchObject({
+      title: "Payoff diagram",
+      description: "Short-call payoff diagram for any open position at end of run.",
+      emptyText: "No open positions at end of run.",
+      positionOptions: [],
+      chart: null
     });
   });
 });

@@ -754,6 +754,25 @@
     padding: 0.125rem 0.375rem;
   }
 
+  .workflow-continuity-clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: rgba(13, 23, 34, 0.72);
+    color: var(--fg-muted);
+    transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+  }
+
+  .workflow-continuity-clear:hover {
+    border-color: var(--border-hi);
+    background: var(--surface-raise-bg);
+    color: var(--fg);
+  }
+
   .workflow-continuity-steps {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));

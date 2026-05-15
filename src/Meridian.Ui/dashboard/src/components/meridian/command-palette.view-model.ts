@@ -59,6 +59,7 @@ interface CommandPaletteRouteDefinition {
   label: string;
   description: string;
   route: string;
+  preserveSymbol?: boolean;
 }
 
 export interface CommandPaletteViewModel {
@@ -67,6 +68,7 @@ export interface CommandPaletteViewModel {
   routeSummary: string;
   shortcutHint: string;
   scopeLabel: string;
+  operatingContextLabel: string | null;
   backendStatusLabel: string | null;
   commandListLabel: string;
   itemCountLabel: string;
@@ -150,13 +152,15 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     id: "data-quotes",
     label: "Live quotes",
     description: "Inspect quotes, trades, depth, charts, and staged tickets.",
-    route: "/data/quotes"
+    route: "/data/quotes",
+    preserveSymbol: true
   },
   {
     id: "data-alerts",
     label: "Price alerts",
     description: "Create local quote-threshold alerts and review alert trigger state.",
-    route: "/data/alerts"
+    route: "/data/alerts",
+    preserveSymbol: true
   },
   {
     id: "data-backfills",
@@ -183,13 +187,18 @@ export function buildCommandPaletteViewModel(
   pathname: string,
   workspaces: WorkspaceSummary[] = WORKSPACES,
   workflowData: CommandPaletteWorkflowData = {},
-  query = ""
+  query = "",
+  operatingContextSymbol: string | null = null
 ): CommandPaletteViewModel {
   const activeKey = normalizeWorkspacePath(pathname);
+  const activeRouteParts = splitActiveRoute(pathname);
+  const subjectSymbol =
+    normalizeCommandPaletteSubjectSymbol(readSearchValue(activeRouteParts.search, "symbol"))
+    ?? normalizeCommandPaletteSubjectSymbol(operatingContextSymbol);
   const workspaceItems = buildWorkspaceItems(workspaces, activeKey);
-  const routeItems = buildRouteItems(pathname);
-  const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname);
-  const workflowItems = buildWorkflowItems(workflowData.workflowLibrary?.workflows ?? [], pathname);
+  const routeItems = buildRouteItems(pathname, subjectSymbol);
+  const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname, subjectSymbol);
+  const workflowItems = buildWorkflowItems(workflowData.workflowLibrary?.workflows ?? [], pathname, subjectSymbol);
   const items = [...workspaceItems, ...routeItems, ...presetItems, ...workflowItems];
   const normalizedQuery = query.trim();
   const filteredItems = filterCommandItems(items, normalizedQuery);
@@ -210,6 +219,7 @@ export function buildCommandPaletteViewModel(
     routeSummary: buildRouteSummary(activeWorkspaceLabel, Boolean(activeWorkspace), hasWorkflowBackend, workflowData.workflowError),
     shortcutHint: "Esc to close",
     scopeLabel: hasWorkflowBackend ? "Shared workflow, route, and workspace routing" : "Canonical workspace and route routing",
+    operatingContextLabel: subjectSymbol ? `Subject: ${subjectSymbol}` : null,
     backendStatusLabel: buildBackendStatusLabel(hasWorkflowBackend, workflowItems.length, presetItems.length, workflowData.workflowError),
     commandListLabel: hasWorkflowBackend
       ? `${items.length} command${items.length === 1 ? "" : "s"}`
@@ -329,16 +339,20 @@ function buildWorkspaceItems(workspaces: WorkspaceSummary[], activeKey: Workspac
   });
 }
 
-function buildRouteItems(pathname: string): CommandPaletteItem[] {
+function buildRouteItems(pathname: string, subjectSymbol: string | null): CommandPaletteItem[] {
   return LOCAL_ROUTE_COMMANDS.map<CommandPaletteItem>((routeCommand) => {
-    const active = isActiveRoute(pathname, routeCommand.route);
+    const route = materializeCommandRoute(routeCommand.route, routeCommand.preserveSymbol, subjectSymbol);
+    const description = routeCommand.preserveSymbol && subjectSymbol
+      ? `${routeCommand.description} Subject: ${subjectSymbol}.`
+      : routeCommand.description;
+    const active = isActiveRoute(pathname, route);
     return {
       id: `route:${routeCommand.id}`,
       kind: "route",
       label: routeCommand.label,
-      description: routeCommand.description,
-      route: routeCommand.route,
-      routeLabel: routeCommand.route,
+      description,
+      route,
+      routeLabel: route,
       statusLabel: active ? "Current" : "Route",
       commandLabel: active ? `Stay on ${routeCommand.label}` : `Open ${routeCommand.label}`,
       ariaLabel: active ? `${routeCommand.label}, current route` : `Open ${routeCommand.label} route`,
@@ -348,11 +362,15 @@ function buildRouteItems(pathname: string): CommandPaletteItem[] {
   });
 }
 
-function buildPresetItems(presets: WorkflowPreset[], pathname: string): CommandPaletteItem[] {
+function buildPresetItems(
+  presets: WorkflowPreset[],
+  pathname: string,
+  subjectSymbol: string | null
+): CommandPaletteItem[] {
   return [...presets]
     .sort(comparePresets)
     .map<CommandPaletteItem>((preset) => {
-      const route = workflowTargetPath(preset.targetPageTag, preset.workspaceId);
+      const route = materializeCommandRoute(workflowTargetPath(preset.targetPageTag, preset.workspaceId), true, subjectSymbol);
       const current = isExactActivePath(pathname, route);
 
       return {
@@ -371,14 +389,27 @@ function buildPresetItems(presets: WorkflowPreset[], pathname: string): CommandP
     });
 }
 
-function buildWorkflowItems(workflows: WorkflowDefinition[], pathname: string): CommandPaletteItem[] {
+function buildWorkflowItems(
+  workflows: WorkflowDefinition[],
+  pathname: string,
+  subjectSymbol: string | null
+): CommandPaletteItem[] {
   return workflows.flatMap((workflow) =>
-    workflow.actions.map<CommandPaletteItem>((action) => buildWorkflowItem(workflow, action, pathname))
+    workflow.actions.map<CommandPaletteItem>((action) => buildWorkflowItem(workflow, action, pathname, subjectSymbol))
   );
 }
 
-function buildWorkflowItem(workflow: WorkflowDefinition, action: WorkflowAction, pathname: string): CommandPaletteItem {
-  const route = workflowTargetPath(action.targetPageTag || workflow.entryPageTag, workflow.workspaceId);
+function buildWorkflowItem(
+  workflow: WorkflowDefinition,
+  action: WorkflowAction,
+  pathname: string,
+  subjectSymbol: string | null
+): CommandPaletteItem {
+  const route = materializeCommandRoute(
+    workflowTargetPath(action.targetPageTag || workflow.entryPageTag, workflow.workspaceId),
+    true,
+    subjectSymbol
+  );
   const current = isExactActivePath(pathname, route);
 
   return {
@@ -506,6 +537,48 @@ function splitActiveRoute(route: string) {
     search,
     hash
   };
+}
+
+function readSearchValue(search: string, key: string): string | null {
+  if (!search) {
+    return null;
+  }
+
+  try {
+    return new URLSearchParams(search).get(key);
+  } catch {
+    return null;
+  }
+}
+
+function normalizeCommandPaletteSubjectSymbol(value: string | null | undefined): string | null {
+  const normalized = value?.trim().toUpperCase().replace(/[^A-Z0-9._-]/g, "") ?? "";
+  return normalized.length > 0 ? normalized.slice(0, 16) : null;
+}
+
+function materializeCommandRoute(route: string, preserveSymbol: boolean | undefined, subjectSymbol: string | null) {
+  if (!preserveSymbol || !subjectSymbol || !isSymbolAwareCommandRoute(route)) {
+    return route;
+  }
+
+  return appendSearchValue(route, "symbol", subjectSymbol);
+}
+
+function isSymbolAwareCommandRoute(route: string) {
+  const { pathname } = splitActiveRoute(route);
+  return pathname === "/data/quotes" || pathname === "/data/alerts";
+}
+
+function appendSearchValue(route: string, key: string, value: string) {
+  const hashIndex = route.indexOf("#");
+  const routeWithoutHash = hashIndex >= 0 ? route.slice(0, hashIndex) : route;
+  const hash = hashIndex >= 0 ? route.slice(hashIndex) : "";
+  const searchIndex = routeWithoutHash.indexOf("?");
+  const pathname = searchIndex >= 0 ? routeWithoutHash.slice(0, searchIndex) : routeWithoutHash;
+  const params = new URLSearchParams(searchIndex >= 0 ? routeWithoutHash.slice(searchIndex) : "");
+  params.set(key, value);
+  const nextSearch = params.toString();
+  return `${pathname}${nextSearch ? `?${nextSearch}` : ""}${hash}`;
 }
 
 function routeSearchMatches(
