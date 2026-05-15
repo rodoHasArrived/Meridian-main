@@ -1170,6 +1170,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── overview.md
 │   │   ├── provider-management.md
 │   │   ├── storage-design.md
+│   │   ├── strategy-builder-integration.md
 │   │   ├── why-this-architecture.md
 │   │   ├── workflow-library.md
 │   │   ├── wpf-shell-mvvm.md
@@ -6043,6 +6044,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ResearchBriefingDtos.cs
 │   │       ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │       ├── SecurityMasterWorkstationDtos.cs
+│   │       ├── StrategyDesignDtos.cs
 │   │       ├── StrategyRunContractCompatibility.cs
 │   │       ├── StrategyRunReadModels.cs
 │   │       ├── TradingOperatorReadinessDtos.cs
@@ -6825,6 +6827,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Interfaces
 │   │   │   ├── ILiveStrategy.cs
 │   │   │   ├── IPromotionRecordStore.cs
+│   │   │   ├── IStrategyDesignRepository.cs
 │   │   │   ├── IStrategyLifecycle.cs
 │   │   │   └── IStrategyRepository.cs
 │   │   ├── Meridian.Strategies.csproj
@@ -6839,7 +6842,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── PromotionRecordService.cs
 │   │   ├── Serialization
 │   │   │   ├── FSharpInteropJsonContext.cs
-│   │   │   └── PromotionRecordJsonContext.cs
+│   │   │   ├── PromotionRecordJsonContext.cs
+│   │   │   └── StrategyDesignJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
@@ -6857,12 +6861,14 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ReconciliationProjectionService.cs
 │   │   │   ├── ReconciliationRunService.cs
 │   │   │   ├── ReconciliationSourceAdapters.cs
+│   │   │   ├── StrategyDesignService.cs
 │   │   │   ├── StrategyLifecycleManager.cs
 │   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   ├── StrategyRunReadService.cs
 │   │   │   └── StrategyRunScopeMetadataResolver.cs
 │   │   └── Storage
 │   │       ├── JsonlPromotionRecordStore.cs
+│   │       ├── JsonlStrategyDesignRepository.cs
 │   │       └── StrategyRunStore.cs
 │   ├── Meridian.Ui
 │   │   └── dashboard
@@ -8506,6 +8512,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PromotionServiceLiveGovernanceTests.cs
 │   │   │   ├── PromotionServiceTests.cs
 │   │   │   ├── ReconciliationProjectionServiceTests.cs
+│   │   │   ├── StrategyDesignRepositoryTests.cs
+│   │   │   ├── StrategyDesignServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
 │   │   │   ├── StrategyRunContinuityServiceTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
@@ -8549,6 +8557,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │       ├── SecurityMasterPreferredEquityEndpointsTests.cs
+│   │       ├── StrategyDesignerWorkstationEndpointsTests.cs
 │   │       ├── TradingOperatorReadinessServiceTests.cs
 │   │       ├── Wave2OperatorInboxAcceptanceTests.cs
 │   │       ├── Wave2PaperTradingCockpitAcceptanceTests.cs
@@ -8877,6 +8886,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-724 directories, 7939 files
+724 directories, 7948 files
 ```
 <!-- readme-tree end -->
