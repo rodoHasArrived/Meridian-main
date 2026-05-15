@@ -208,8 +208,25 @@ jobs:
       - name: Run docs drift checks
         run: |
           mkdir -p .ai
-          python3 build/scripts/docs/ai-docs-maintenance.py drift --summary
-          python3 build/scripts/docs/ai-docs-maintenance.py sync-report --output .ai/docs-sync-report.md
+
+          drift_exit=0
+          sync_report_exit=0
+
+          python3 build/scripts/docs/ai-docs-maintenance.py drift --summary || drift_exit=$?
+          python3 build/scripts/docs/ai-docs-maintenance.py sync-report --output .ai/docs-sync-report.md || sync_report_exit=$?
+
+          echo "Docs drift exit code: $drift_exit"
+          echo "Docs sync report exit code: $sync_report_exit"
+
+          if [ "$drift_exit" -gt 1 ]; then
+            echo "docs drift failed with unexpected exit code $drift_exit"
+            exit "$drift_exit"
+          fi
+
+          if [ "$sync_report_exit" -gt 1 ]; then
+            echo "docs sync-report failed with unexpected exit code $sync_report_exit"
+            exit "$sync_report_exit"
+          fi
 
       - name: Upload docs artifacts
         uses: actions/upload-artifact@v7

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Services;
@@ -20,10 +21,14 @@ public static class ProviderCredentialEndpoints
 
         // POST /api/credentials/{provider}/validate — validate provider credentials
         group.MapPost(UiApiRoutes.ProviderCredentialsValidate, async (
+            HttpContext ctx,
             string provider,
             ConfigStore store,
             ProviderCredentialRequest req) =>
         {
+            if (!HasManageCredentialsPermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             if (string.IsNullOrWhiteSpace(provider))
                 return Results.BadRequest(new { error = "Provider name is required" });
 
@@ -48,12 +53,12 @@ public static class ProviderCredentialEndpoints
                     }
                 ), jsonOptions);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Results.Json(new ProviderCredentialValidationResult(
                     IsValid: false,
                     Status: "Error",
-                    ErrorMessage: ex.Message
+                    ErrorMessage: "An error occurred while validating credentials."
                 ), jsonOptions);
             }
         })
@@ -65,10 +70,14 @@ public static class ProviderCredentialEndpoints
 
         // POST /api/providers/{provider}/test-connection — test connection with credentials
         group.MapPost(UiApiRoutes.ProviderConnectionTest, async (
+            HttpContext ctx,
             string provider,
             ConfigStore store,
             ProviderCredentialRequest req) =>
         {
+            if (!HasManageCredentialsPermission(ctx))
+                return EndpointHelpers.Forbidden();
+
             if (string.IsNullOrWhiteSpace(provider))
                 return Results.BadRequest(new { error = "Provider name is required" });
 
@@ -87,13 +96,13 @@ public static class ProviderCredentialEndpoints
                     TestedAt: DateTime.UtcNow
                 ), jsonOptions);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Results.Json(new ProviderConnectionTest(
                     Provider: provider,
                     IsConnected: false,
                     Status: "Error",
-                    ErrorMessage: ex.Message,
+                    ErrorMessage: "An error occurred while testing the connection.",
                     TestedAt: DateTime.UtcNow
                 ), jsonOptions);
             }
@@ -290,5 +299,16 @@ public static class ProviderCredentialEndpoints
                 supportedDataTypes = new[] { "Historical" }
             }
         };
+    }
+
+    private static bool HasManageCredentialsPermission(HttpContext context)
+    {
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var value) &&
+            value is UserPermission current)
+        {
+            return (current & UserPermission.ManageCredentials) == UserPermission.ManageCredentials;
+        }
+
+        return false;
     }
 }

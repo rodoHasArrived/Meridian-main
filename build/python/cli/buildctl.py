@@ -307,7 +307,7 @@ _REQUIRED_DIRS = [
     "docs",
 ]
 
-_DOTNET_MIN = (9, 0)
+_DOTNET_MIN = (10, 0)
 
 # ---------------------------------------------------------------------------
 # Provider environment variable registry
@@ -335,7 +335,7 @@ _POSTGRES_DOCKER_FIX = (
 def _check_dotnet() -> tuple[bool, bool, str]:
     """Returns (ok, is_warning, message)."""
     if not _have("dotnet"):
-        return False, False, "dotnet SDK not found — install .NET 9.0 SDK"
+        return False, False, "dotnet SDK not found — install .NET 10.0 SDK"
     result = _run(["dotnet", "--version"])
     if result.returncode != 0:
         return False, False, "dotnet --version failed"
@@ -357,8 +357,8 @@ def _check_dotnet() -> tuple[bool, bool, str]:
 def _check_python() -> tuple[bool, bool, str]:
     version = platform.python_version()
     major, minor = sys.version_info[:2]
-    if (major, minor) < (3, 8):
-        return False, False, f"Python {version} found, 3.8+ required"
+    if (major, minor) < (3, 10):
+        return False, False, f"Python {version} found, 3.10+ required"
     return True, False, f"Python {version}"
 
 
@@ -659,12 +659,12 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     print(_color("Tooling", BLUE) if sys.stdout.isatty() else "Tooling")
 
     ok, is_warn, detail = _check_python()
-    _print_check("Python 3.8+", ok, is_warn, detail)
+    _print_check("Python 3.10+", ok, is_warn, detail)
     if not ok:
         (warnings if is_warn else failures).append(f"Python: {detail}")
 
     ok, is_warn, detail = _check_dotnet()
-    _print_check(".NET SDK 9+", ok, is_warn, detail)
+    _print_check(".NET SDK 10+", ok, is_warn, detail)
     if not ok:
         (warnings if is_warn else failures).append(f".NET SDK: {detail}")
 

@@ -130,6 +130,7 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton(Dk1TrustGateReadinessOptions.Default);
         builder.Services.AddSingleton<Dk1TrustGateReadinessService>();
         builder.Services.AddSingleton<TradingOperatorReadinessService>();
+        builder.Services.AddSingleton<RiskRuleRuntimeService>();
         builder.Services.AddSingleton<StrategyRunReviewPacketService>();
         builder.Services.AddWorkflowLibrary();
         builder.Services.AddEvidenceWorkflowFabric();

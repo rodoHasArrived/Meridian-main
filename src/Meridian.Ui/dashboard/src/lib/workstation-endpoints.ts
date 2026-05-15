@@ -37,6 +37,10 @@ export const EXECUTION_API_ENDPOINTS = {
   manualOverrides: "/api/execution/controls/manual-overrides"
 } as const;
 
+export const RISK_API_ENDPOINTS = {
+  rules: "/api/risk/rules"
+} as const;
+
 export const REPLAY_API_ENDPOINTS = {
   files: "/api/replay/files",
   start: "/api/replay/start"
@@ -297,6 +301,14 @@ export function executionAuditEndpoint(take = 20): string {
 
 export function executionManualOverrideClearEndpoint(overrideId: string): string {
   return `${EXECUTION_API_ENDPOINTS.manualOverrides}/${pathSegment(overrideId, "overrideId")}/clear`;
+}
+
+export function riskRuleStatusEndpoint(ruleName: string): string {
+  return `${RISK_API_ENDPOINTS.rules}/${pathSegment(ruleName, "ruleName")}/status`;
+}
+
+export function riskRuleConfigEndpoint(ruleName: string): string {
+  return `${RISK_API_ENDPOINTS.rules}/${pathSegment(ruleName, "ruleName")}/config`;
 }
 
 export function replayFilesEndpoint(symbol?: string): string {

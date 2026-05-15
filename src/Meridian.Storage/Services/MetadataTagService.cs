@@ -290,13 +290,20 @@ public sealed class MetadataTagService : IMetadataTagService
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
-            // Expected I/O or parse errors on load - start fresh
+            // Expected I/O or parse errors on load - start fresh with empty in-memory state.
+            System.Diagnostics.Trace.TraceWarning(
+                "MetadataTagService: failed to load metadata from {0}: {1}", _metadataStorePath, ex.Message);
         }
     }
 
     private void PersistChange(Func<bool> mutate)
     {
-        _saveLock.Wait();
+        // Bounded wait so persistence never blocks a thread-pool thread indefinitely.
+        // If the timeout expires, the in-memory state is already updated; the disk write
+        // will be retried on the next mutation.
+        if (!_saveLock.Wait(TimeSpan.FromSeconds(10)))
+            return;
+
         try
         {
             if (!mutate())
