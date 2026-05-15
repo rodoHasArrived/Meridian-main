@@ -7502,6 +7502,14 @@ Use these documents together when planning or implementing new work:
 │       ├── Copy
 │       │   └── WorkspaceCopyCatalog.cs
 │       ├── Features
+│       │   ├── Data
+│       │   │   ├── DataFeatureModule.cs
+│       │   │   └── Shell
+│       │   │       ├── DataWorkspaceShellPage.xaml
+│       │   │       ├── DataWorkspaceShellPage.xaml.cs
+│       │   │       ├── DataWorkspaceShellPresentationService.cs
+│       │   │       ├── DataWorkspaceShellSnapshotService.cs
+│       │   │       └── DataWorkspaceShellViewModel.cs
 │       │   ├── DesktopFeatureModuleRegistry.cs
 │       │   └── IDesktopFeatureModule.cs
 │       ├── GlobalUsings.cs
@@ -7551,6 +7559,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── WorkspaceShellChromeModels.cs
 │       │   ├── WorkspaceShellModels.cs
 │       │   └── WorkstationOperatingContextModels.cs
+│       ├── Package.appxmanifest
 │       ├── README.md
 │       ├── Services
 │       │   ├── AgentLoopService.cs
@@ -8613,6 +8622,10 @@ Use these documents together when planning or implementing new work:
 │   ├── Meridian.Wpf.Tests
 │   │   ├── Copy
 │   │   │   └── WorkspaceCopyCatalogTests.cs
+│   │   ├── Features
+│   │   │   └── Data
+│   │   │       └── Shell
+│   │   │           └── DataWorkspaceShellViewModelTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Wpf.Tests.csproj
 │   │   ├── Models
@@ -8776,7 +8789,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── test_screenshot_diff_report.py
 │   │   ├── test_screenshot_workflow_plan.py
 │   │   ├── test_setup_dotnet_cache_action.py
-│   │   └── test_shared_build_retention.py
+│   │   ├── test_shared_build_retention.py
+│   │   ├── test_wpf_msix_install_guidance.py
+│   │   └── test_wpf_msix_manifest.py
 │   ├── setup-script-tests.md
 │   └── xunit.runner.json
 ├── tree.bak
@@ -8862,6 +8877,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-719 directories, 7929 files
+724 directories, 7939 files
 ```
 <!-- readme-tree end -->
