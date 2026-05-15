@@ -37,6 +37,39 @@ export interface OverviewActivityRow {
   source: string;
   timestampLabel: string;
   ariaLabel: string;
+  selectAriaLabel: string;
+  detailPanelId: string;
+  expanded: boolean;
+}
+
+export interface OverviewActivityDetailField {
+  label: string;
+  value: string;
+}
+
+export interface OverviewActivityDetail {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  badgeLabel: string;
+  badgeVariant: OverviewActivityBadgeVariant;
+  ariaLabel: string;
+  fields: OverviewActivityDetailField[];
+}
+
+export interface OverviewActivitySelectionViewModel {
+  rows: OverviewActivityRow[];
+  selectedRowId: string | null;
+  selectedDetail: OverviewActivityDetail | null;
+  detailPanelId: string;
+  detailPanelTitle: string;
+  detailPanelDescription: string;
+  detailPanelEmptyText: string;
+  detailPanelAriaLabel: string;
+  tableLabel: string;
+  tableCaption: string;
+  selectActivity: (id: string) => void;
 }
 
 export type OverviewBriefingTone = "default" | "success" | "warning" | "danger";
@@ -290,6 +323,50 @@ export function useOverviewStatusViewModel(
     ...state,
     refreshing,
     refresh
+  };
+}
+
+export const OVERVIEW_ACTIVITY_DETAIL_PANEL_ID = "overview-activity-selected-detail";
+
+export function useOverviewActivitySelectionViewModel(
+  activityRows: OverviewActivityRow[]
+): OverviewActivitySelectionViewModel {
+  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
+
+  const selectedRowId = useMemo(
+    () => resolveSelectedActivityId(activityRows, selectedActivityId),
+    [activityRows, selectedActivityId]
+  );
+
+  useEffect(() => {
+    if (selectedActivityId !== selectedRowId) {
+      setSelectedActivityId(selectedRowId);
+    }
+  }, [selectedActivityId, selectedRowId]);
+
+  const rows = useMemo(
+    () => activityRows.map((row) => ({ ...row, expanded: row.id === selectedRowId })),
+    [activityRows, selectedRowId]
+  );
+  const selectedRow = rows.find((row) => row.id === selectedRowId) ?? null;
+  const selectedDetail = useMemo(() => buildOverviewActivityDetail(selectedRow), [selectedRow]);
+
+  return {
+    rows,
+    selectedRowId,
+    selectedDetail,
+    detailPanelId: OVERVIEW_ACTIVITY_DETAIL_PANEL_ID,
+    detailPanelTitle: selectedDetail ? "Selected activity" : "No activity selected",
+    detailPanelDescription: selectedDetail
+      ? `${selectedDetail.title} from ${selectedDetail.subtitle}.`
+      : "Select an event row to inspect event source, timestamp, and operator severity.",
+    detailPanelEmptyText: activityRows.length > 0
+      ? "Select an event row to inspect its triage detail."
+      : "No recent events are available for this status snapshot.",
+    detailPanelAriaLabel: selectedDetail?.ariaLabel ?? "Recent activity detail",
+    tableLabel: activityRows.length === 1 ? "1 recent system event" : `${activityRows.length} recent system events`,
+    tableCaption: "Recent system events. Select a row to update the activity detail panel.",
+    selectActivity: setSelectedActivityId
   };
 }
 
@@ -556,6 +633,7 @@ export function buildOverviewActivityRows(events: SystemEventRecord[]): Overview
     const typeState = activityTypeState[event.type];
     const source = event.source.trim() || "Unknown source";
     const timestampLabel = formatTime(event.timestamp);
+    const ariaLabel = `${typeState.typeLabel} event from ${source} at ${timestampLabel}: ${event.message}`;
 
     return {
       id: event.id,
@@ -567,9 +645,36 @@ export function buildOverviewActivityRows(events: SystemEventRecord[]): Overview
       message: event.message,
       source,
       timestampLabel,
-      ariaLabel: `${typeState.typeLabel} event from ${source} at ${timestampLabel}: ${event.message}`
+      ariaLabel,
+      selectAriaLabel: `Inspect ${ariaLabel}`,
+      detailPanelId: OVERVIEW_ACTIVITY_DETAIL_PANEL_ID,
+      expanded: false
     };
   });
+}
+
+export function buildOverviewActivityDetail(
+  row: OverviewActivityRow | null
+): OverviewActivityDetail | null {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    eyebrow: `${row.typeLabel} event`,
+    title: row.message,
+    subtitle: row.source,
+    description: overviewActivityDetailDescription[row.tone],
+    badgeLabel: row.statusCode,
+    badgeVariant: row.badgeVariant,
+    ariaLabel: `Selected recent activity detail for ${row.typeLabel} event from ${row.source}`,
+    fields: [
+      { label: "Source", value: row.source },
+      { label: "Timestamp", value: row.timestampLabel },
+      { label: "Severity", value: row.typeLabel },
+      { label: "Event ID", value: row.id }
+    ]
+  };
 }
 
 export function buildOverviewStatusBanner({
@@ -712,6 +817,23 @@ const activityTypeState: Record<SystemEventRecord["type"], Pick<OverviewActivity
     tone: "danger"
   }
 };
+
+const overviewActivityDetailDescription: Record<OverviewActivityTone, string> = {
+  default: "Informational evidence is available for operator context.",
+  warning: "Observation evidence needs review before treating the workstation posture as fully clear.",
+  danger: "Error evidence needs triage before the related workflow can be trusted."
+};
+
+function resolveSelectedActivityId(
+  rows: OverviewActivityRow[],
+  selectedActivityId: string | null
+): string | null {
+  if (selectedActivityId && rows.some((row) => row.id === selectedActivityId)) {
+    return selectedActivityId;
+  }
+
+  return rows[0]?.id ?? null;
+}
 
 const priorityRouteCopy: Record<
   OverviewPriorityRoute["id"],

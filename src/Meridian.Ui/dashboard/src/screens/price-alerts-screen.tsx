@@ -188,6 +188,16 @@ export function PriceAlertsScreen() {
               {vm.pollErrorPanel.text}
             </p>
           ) : null}
+          {vm.storageWarningPanel ? (
+            <p
+              id={vm.storageWarningPanel.id}
+              role={vm.storageWarningPanel.role}
+              aria-live={vm.storageWarningPanel.ariaLive}
+              className={vm.storageWarningPanel.className}
+            >
+              {vm.storageWarningPanel.text}
+            </p>
+          ) : null}
           {vm.notificationPanel ? (
             <div
               id={vm.notificationPanel.id}

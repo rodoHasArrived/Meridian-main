@@ -79,6 +79,7 @@ export interface PriceAlertsScreenViewModel {
   summaryMetrics: MetricSnapshot[];
   heroDescription: string;
   pollErrorPanel: PriceAlertStatusPanel | null;
+  storageWarningPanel: PriceAlertStatusPanel | null;
   notificationPanel: PriceAlertNotificationPanel | null;
   triggerSection: PriceAlertTriggerSectionViewModel;
   alertSection: PriceAlertListSectionViewModel;
@@ -321,6 +322,10 @@ export function usePriceAlertsScreenViewModel({
   const sortedAlerts = useMemo(() => sortPriceAlerts(alerts.state.alerts), [alerts.state.alerts]);
   const summaryMetrics = useMemo(() => buildPriceAlertMetrics(alerts), [alerts.enabledCount, alerts.lastPollAt, alerts.unacknowledgedCount]);
   const pollErrorPanel = useMemo(() => buildPollErrorPanel(alerts.pollErrorMessage), [alerts.pollErrorMessage]);
+  const storageWarningPanel = useMemo(
+    () => buildStorageWarningPanel(alerts.persistenceErrorMessage),
+    [alerts.persistenceErrorMessage]
+  );
   const notificationPanel = useMemo(
     () => buildNotificationPanel(alerts.notificationPermission),
     [alerts.notificationPermission]
@@ -403,6 +408,7 @@ export function usePriceAlertsScreenViewModel({
     summaryMetrics,
     heroDescription: `Get notified when a symbol crosses a price. Alerts are evaluated against live quotes every ${Math.round(PRICE_ALERTS_POLL_INTERVAL_MS / 1000)}s while this tab is open.`,
     pollErrorPanel,
+    storageWarningPanel,
     notificationPanel,
     triggerSection,
     alertSection,
@@ -752,6 +758,20 @@ function buildPollErrorPanel(error: string | null): PriceAlertStatusPanel | null
     ariaLive: "assertive",
     className: "mt-3 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger",
     text: `Quote refresh failed: ${error}`
+  };
+}
+
+function buildStorageWarningPanel(error: string | null): PriceAlertStatusPanel | null {
+  if (!error) {
+    return null;
+  }
+
+  return {
+    id: "price-alert-storage-warning",
+    role: "status",
+    ariaLive: "polite",
+    className: "mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning",
+    text: error
   };
 }
 

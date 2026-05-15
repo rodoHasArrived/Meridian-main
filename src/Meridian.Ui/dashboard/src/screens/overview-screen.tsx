@@ -19,13 +19,16 @@ import {
 import type { ElementType } from "react";
 import { Link } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   buildOverviewPortfolioPanel,
+  useOverviewActivitySelectionViewModel,
   useOverviewStatusViewModel,
+  type OverviewActivityDetail,
   type OverviewActivityRow,
   type OverviewBriefingBadgeVariant,
   type OverviewBriefingTone,
@@ -66,24 +69,6 @@ const statusBannerIconConfig: Record<OverviewStatusBannerIcon, ElementType> = {
   pending: Radio
 };
 
-const activityToneConfig = {
-  default: {
-    icon: Activity,
-    iconClassName: "text-muted-foreground",
-    rowClassName: "border-border/55 bg-secondary/20"
-  },
-  warning: {
-    icon: AlertCircle,
-    iconClassName: "text-warning",
-    rowClassName: "border-warning/30 bg-warning/5"
-  },
-  danger: {
-    icon: XCircle,
-    iconClassName: "text-danger",
-    rowClassName: "border-danger/30 bg-danger/5"
-  }
-} as const;
-
 const blockerToneConfig = {
   default: {
     icon: Activity,
@@ -112,11 +97,35 @@ const workspaceIconConfig: Record<WorkspaceKey, { icon: ElementType; accent: str
   settings: { icon: Settings, accent: "text-muted-foreground" }
 };
 
+const activityColumns: DenseDataTableColumn<OverviewActivityRow>[] = [
+  {
+    id: "status",
+    label: "Status",
+    render: (event) => <Badge variant={event.badgeVariant} dot>{event.statusCode}</Badge>
+  },
+  {
+    id: "source",
+    label: "Source",
+    render: (event) => <span className="font-mono text-xs text-muted-foreground">{event.source}</span>
+  },
+  {
+    id: "time",
+    label: "Time",
+    render: (event) => <span className="font-mono text-xs text-muted-foreground">{event.timestampLabel}</span>
+  },
+  {
+    id: "message",
+    label: "Message",
+    render: (event) => <span className="text-sm text-foreground">{event.message}</span>
+  }
+];
+
 export function OverviewScreen({ data, session, trading = null, portfolio = null }: OverviewScreenProps) {
   const vm = useOverviewStatusViewModel(data, session);
   const StatusIcon = statusBannerIconConfig[vm.statusBanner.icon];
   const portfolioPanel = buildOverviewPortfolioPanel(trading, portfolio);
   const todayPanel = buildTodayPanelViewModel(trading, portfolio);
+  const activityVm = useOverviewActivitySelectionViewModel(vm.activityRows);
 
   return (
     <div className="space-y-6">
@@ -277,13 +286,32 @@ export function OverviewScreen({ data, session, trading = null, portfolio = null
           </CardHeader>
           <CardContent>
             {vm.hasEvents ? (
-              <ul aria-label={vm.activityListLabel} className="space-y-2">
-                {vm.activityRows.map((event) => (
-                  <EventRow key={event.id} event={event} />
-                ))}
-              </ul>
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.44fr)]">
+                <DenseDataTable
+                  columns={activityColumns}
+                  rows={activityVm.rows}
+                  getRowId={(event) => event.id}
+                  getRowAriaLabel={(event) => event.ariaLabel}
+                  getRowSelectAriaLabel={(event) => event.selectAriaLabel}
+                  getRowAriaControls={(event) => event.detailPanelId}
+                  getRowAriaExpanded={(event) => event.expanded}
+                  onRowSelect={(event) => activityVm.selectActivity(event.id)}
+                  selectedRowId={activityVm.selectedRowId}
+                  emptyText={vm.activityEmptyText}
+                  ariaLabel={activityVm.tableLabel}
+                  caption={activityVm.tableCaption}
+                />
+                <ActivityDetailPanel
+                  id={activityVm.detailPanelId}
+                  title={activityVm.detailPanelTitle}
+                  description={activityVm.detailPanelDescription}
+                  emptyText={activityVm.detailPanelEmptyText}
+                  ariaLabel={activityVm.detailPanelAriaLabel}
+                  detail={activityVm.selectedDetail}
+                />
+              </div>
             ) : (
-              <p className="text-sm text-muted-foreground py-4 text-center">
+              <p role="status" className="text-sm text-muted-foreground py-4 text-center">
                 {vm.activityEmptyText}
               </p>
             )}
@@ -506,29 +534,59 @@ function PortfolioPanel({ panel }: { panel: OverviewPortfolioPanel }) {
   );
 }
 
-function EventRow({ event }: { event: OverviewActivityRow }) {
-  const config = activityToneConfig[event.tone];
-  const Icon = config.icon;
-
+function ActivityDetailPanel({
+  id,
+  title,
+  description,
+  emptyText,
+  ariaLabel,
+  detail
+}: {
+  id: string;
+  title: string;
+  description: string;
+  emptyText: string;
+  ariaLabel: string;
+  detail: OverviewActivityDetail | null;
+}) {
   return (
-    <li>
-      <div
-        role="group"
-        aria-label={event.ariaLabel}
-        className={cn("flex items-start gap-3 rounded-md border px-3 py-2", config.rowClassName)}
-      >
-        <Icon aria-hidden="true" className={cn("mt-0.5 size-3.5 shrink-0", config.iconClassName)} />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={event.badgeVariant} dot>{event.statusCode}</Badge>
-            <span className="font-mono text-[11px] text-muted-foreground">{event.source}</span>
-            <span aria-hidden="true" className="text-muted-foreground/45">·</span>
-            <span className="font-mono text-[11px] text-muted-foreground">{event.timestampLabel}</span>
-          </div>
-          <p className="mt-1 text-sm leading-snug">{event.message}</p>
-        </div>
+    <aside
+      id={id}
+      role="complementary"
+      aria-label={ariaLabel}
+      aria-live="polite"
+      className="row-detail-panel h-fit min-w-0"
+    >
+      <div className="head flex items-center justify-between gap-3">
+        <span>{title}</span>
+        {detail ? <Badge variant={detail.badgeVariant}>{detail.badgeLabel}</Badge> : null}
       </div>
-    </li>
+      <div className="body">
+        {detail ? (
+          <div role="region" aria-label={detail.ariaLabel} className="space-y-3">
+            <div>
+              <div className="eyebrow-label">{detail.eyebrow}</div>
+              <h3 className="mt-2 text-sm font-semibold text-foreground">{detail.title}</h3>
+              <p className="mt-1 font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">{detail.description}</p>
+            <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+              {detail.fields.map((field) => (
+                <div key={field.label} className="rounded-sm border border-border/60 bg-background/35 px-2.5 py-2">
+                  <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                  <dd className="mt-1 break-words font-mono text-xs text-foreground">{field.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ) : (
+          <div role="status" className="rounded-md border border-dashed border-border/70 bg-secondary/20 px-3 py-3">
+            <div className="text-sm font-semibold text-foreground">{description}</div>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{emptyText}</p>
+          </div>
+        )}
+      </div>
+    </aside>
   );
 }
 

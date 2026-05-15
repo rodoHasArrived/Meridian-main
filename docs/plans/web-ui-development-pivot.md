@@ -61,6 +61,7 @@ The browser workstation is the primary UI lane for proving the commercial story:
    - Live Quotes quick-trade accepted and rejected submission states now expose a view-model-owned Trading readiness handoff, so operators can immediately inspect paper cockpit readiness and execution-control evidence after an order attempt instead of stopping at terminal ticket copy.
    - Price Alerts creation success now exposes a view-model-owned live-quote handoff for the created symbol, so operators can immediately validate the quote feed that will drive the alert.
    - Price Alerts configured-alert deletion now requires a view-model-owned confirmation click with inline status text linked to the confirm button, so operators cannot accidentally erase a watched symbol or miss that a destructive action is pending while triaging alert state.
+   - Price Alerts local persistence failures now surface a visible, live-region storage warning while keeping the in-memory alert active, so operators know when a browser-storage or quota problem may prevent alerts from surviving reload.
    - Strategy Designer canvas legs expose stable view-model field IDs plus move-up/down commands, so multi-leg strategies can be tuned and reordered without relying on pointer-only drag behavior.
    - Strategy Designer canvas clearing now requires a view-model-owned confirmation click, and normal canvas edits clear the pending confirmation so multi-leg strategies are not erased by a stray toolbar action.
    - Covered Call chain preview and previous-run history now use the shared dense-table selection contract with fixture-backed run history, deterministic UTC labels, keyboard reload, and safe chain-preview POST support, so `/strategy/covered-call` remains demo-ready without a live API host while real run creation stays unmocked.
@@ -214,6 +215,9 @@ the view model so operators can compare quote, depth, and tape freshness without
 time zone.
 Price Alerts creation success should keep its live-quote validation handoff in the view model so the
 created symbol, encoded route, and accessible action label stay testable outside JSX.
+Price Alerts persistence warnings should stay view-model-owned and visible in a live region whenever
+browser storage rejects or cannot provide a target for alert state, because local-only alerts must not
+look durable when they may be lost on reload.
 Strategy Designer canvas fields and reorder actions should stay view-model-owned so labels,
 disabled reasons, and keyboard-operable ordering remain testable outside JSX.
 Strategy Designer destructive canvas actions should keep their confirmation labels and pending state

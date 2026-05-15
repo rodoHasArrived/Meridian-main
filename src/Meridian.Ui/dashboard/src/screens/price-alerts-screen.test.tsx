@@ -19,6 +19,18 @@ class MemoryStorage implements StorageLike {
   }
 }
 
+class FailingStorage implements StorageLike {
+  getItem(): string | null {
+    return null;
+  }
+  setItem(): void {
+    throw new Error("quota");
+  }
+  removeItem(): void {
+    return undefined;
+  }
+}
+
 function buildAlert(overrides: Partial<PriceAlert> = {}): PriceAlert {
   return {
     id: "alert-fixture",
@@ -263,6 +275,18 @@ describe("PriceAlertsScreen", () => {
       .toHaveTextContent("Alert set: BRK/B last ≥ 300");
     expect(screen.getByRole("link", { name: "Open live quotes for BRK/B after creating price alert" }))
       .toHaveAttribute("href", "/data/quotes?symbol=BRK%2FB");
+  });
+
+  it("warns when alert changes cannot be persisted", () => {
+    const fetchSnapshot = vi.fn().mockImplementation(() => new Promise<never>(() => {}));
+    renderScreen(new FailingStorage(), ["/data/alerts"], fetchSnapshot);
+
+    fireEvent.change(screen.getByLabelText("Symbol"), { target: { value: "AAPL" } });
+    fireEvent.change(screen.getByLabelText("Threshold"), { target: { value: "200" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create price alert" }));
+
+    expect(screen.getByText("Price alert storage failed. Alerts may not survive a browser reload."))
+      .toHaveAttribute("id", "price-alert-storage-warning");
   });
 
   it("shows the notification CTA when permission is default", () => {

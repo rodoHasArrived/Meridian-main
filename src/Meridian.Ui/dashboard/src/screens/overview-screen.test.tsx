@@ -1,4 +1,5 @@
 import { screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { OverviewScreen } from "@/screens/overview-screen";
 import { renderWithRouter } from "@/test/render";
 import type { SessionInfo, SystemOverviewResponse, TradingWorkspaceResponse } from "@/types";
@@ -87,19 +88,59 @@ describe("OverviewScreen", () => {
     expect(within(banner).getByText("Waiting for the workstation status payload.")).toBeInTheDocument();
   });
 
-  it("renders recent activity as accessible status evidence rows", () => {
-    renderWithRouter(<OverviewScreen data={overview} session={null} />);
+  it("renders recent activity as selectable dense-table evidence with detail", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(
+      <OverviewScreen
+        data={{
+          ...overview,
+          recentEvents: [
+            ...overview.recentEvents,
+            {
+              id: "evt-2",
+              type: "error",
+              message: "Storage verification failed.",
+              source: "Storage",
+              timestamp: "2026-04-28T18:20:00Z"
+            }
+          ]
+        }}
+        session={null}
+      />
+    );
 
     expect(screen.getByText("Recent activity")).toBeInTheDocument();
 
-    const activityList = screen.getByRole("list", { name: "1 recent system event" });
-    const activityRow = within(activityList).getByRole("group", {
-      name: /Warning event from Provider health at .*Brokerage sync delayed\./i
+    const activityTable = screen.getByRole("table", { name: "2 recent system events" });
+    const warningRow = within(activityTable).getByRole("row", {
+      name: /Inspect Warning event from Provider health at .*Brokerage sync delayed\./i
+    });
+    const errorRow = within(activityTable).getByRole("row", {
+      name: /Inspect Error event from Storage at .*Storage verification failed\./i
     });
 
-    expect(within(activityRow).getByText("OBS")).toBeInTheDocument();
-    expect(within(activityRow).getByText("Provider health")).toBeInTheDocument();
-    expect(within(activityRow).getByText("Brokerage sync delayed.")).toBeInTheDocument();
+    expect(warningRow).toHaveAttribute("aria-controls", "overview-activity-selected-detail");
+    expect(warningRow).toHaveAttribute("aria-expanded", "true");
+    expect(warningRow).toHaveAttribute("aria-selected", "true");
+    expect(within(warningRow).getByText("OBS")).toBeInTheDocument();
+    expect(within(warningRow).getByText("Provider health")).toBeInTheDocument();
+    expect(within(warningRow).getByText("Brokerage sync delayed.")).toBeInTheDocument();
+
+    const detail = screen.getByRole("complementary", {
+      name: "Selected recent activity detail for Warning event from Provider health"
+    });
+
+    expect(within(detail).getByText("Warning event")).toBeInTheDocument();
+    expect(within(detail).getByText("Brokerage sync delayed.")).toBeInTheDocument();
+    expect(within(detail).getByText("evt-1")).toBeInTheDocument();
+
+    await user.click(errorRow);
+
+    expect(errorRow).toHaveAttribute("aria-expanded", "true");
+    expect(errorRow).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("complementary", {
+      name: "Selected recent activity detail for Error event from Storage"
+    })).toHaveTextContent("Storage verification failed.");
   });
 
   it("renders an operator briefing with priority workspace calls to action", () => {
