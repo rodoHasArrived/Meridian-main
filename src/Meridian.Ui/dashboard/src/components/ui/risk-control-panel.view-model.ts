@@ -1,133 +1,77 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import * as api from "@/lib/api";
-import type { RiskRuleConfig, RiskRuleStatus, UpdateRiskRuleConfigRequest } from "@/types";
+import type { RiskRuleStatus } from "@/types";
 
-export interface RiskControlPanelServices {
-  getRiskRules: typeof api.getRiskRules;
-  getRiskRuleConfig: typeof api.getRiskRuleConfig;
-  updateRiskRuleConfig: typeof api.updateRiskRuleConfig;
+export type RiskRuleTone = "success" | "warning" | "danger";
+
+export interface RiskRuleRowViewModel {
+  ruleName: string;
+  state: RiskRuleStatus["state"];
+  summary: string;
+  threshold: string;
+  currentValue: string;
+  tone: RiskRuleTone;
+  violationCount: number;
 }
 
-export interface RiskRulePanelRow {
-  status: RiskRuleStatus;
-  config: RiskRuleConfig | null;
-  draftConfig: Record<string, string>;
-  saving: boolean;
+export interface RuleViolationTimelineItem {
+  id: string;
+  ruleName: string;
+  message: string;
 }
 
 export interface RiskControlPanelViewModel {
-  loading: boolean;
-  errorText: string | null;
-  rows: RiskRulePanelRow[];
-  refresh: () => Promise<void>;
-  updateDraftValue: (ruleName: string, key: string, value: string) => void;
-  saveRuleConfig: (ruleName: string) => Promise<void>;
+  overallState: RiskRuleStatus["state"];
+  overallSummary: string;
+  rows: RiskRuleRowViewModel[];
+  violationTimeline: RuleViolationTimelineItem[];
 }
 
-const defaultServices: RiskControlPanelServices = {
-  getRiskRules: api.getRiskRules,
-  getRiskRuleConfig: api.getRiskRuleConfig,
-  updateRiskRuleConfig: api.updateRiskRuleConfig
-};
-
-export function useRiskControlPanelViewModel(services: RiskControlPanelServices = defaultServices): RiskControlPanelViewModel {
-  const [loading, setLoading] = useState(true);
-  const [errorText, setErrorText] = useState<string | null>(null);
-  const [statuses, setStatuses] = useState<RiskRuleStatus[]>([]);
-  const [configs, setConfigs] = useState<Record<string, RiskRuleConfig>>({});
-  const [drafts, setDrafts] = useState<Record<string, Record<string, string>>>({});
-  const [saving, setSaving] = useState<Record<string, boolean>>({});
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    setErrorText(null);
-
-    try {
-      const latestStatuses = await services.getRiskRules();
-      const latestConfigs = await Promise.all(
-        latestStatuses.map(async (status) => ({
-          ruleName: status.ruleName,
-          config: await services.getRiskRuleConfig(status.ruleName)
-        }))
-      );
-
-      const nextConfigMap = Object.fromEntries(
-        latestConfigs.map(({ ruleName, config }) => [ruleName, config])
-      );
-
-      const nextDraftMap = Object.fromEntries(
-        latestConfigs.map(({ ruleName, config }) => [ruleName, { ...config.config }])
-      );
-
-      setStatuses(latestStatuses);
-      setConfigs(nextConfigMap);
-      setDrafts(nextDraftMap);
-    } catch (error) {
-      setErrorText(error instanceof Error ? error.message : "Unable to load risk rule controls.");
-    } finally {
-      setLoading(false);
-    }
-  }, [services]);
-
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
-
-  const updateDraftValue = useCallback((ruleName: string, key: string, value: string) => {
-    setDrafts((current) => ({
-      ...current,
-      [ruleName]: {
-        ...(current[ruleName] ?? {}),
-        [key]: value
-      }
-    }));
-  }, []);
-
-  const saveRuleConfig = useCallback(async (ruleName: string) => {
-    const nextConfig: UpdateRiskRuleConfigRequest = {
-      config: drafts[ruleName] ?? {}
+export function buildRiskControlPanelViewModel(statuses: RiskRuleStatus[]): RiskControlPanelViewModel {
+  if (statuses.length === 0) {
+    return {
+      overallState: "Observe",
+      overallSummary: "Risk runtime status is unavailable.",
+      rows: [],
+      violationTimeline: []
     };
+  }
 
-    setSaving((current) => ({ ...current, [ruleName]: true }));
-    setErrorText(null);
+  const constrained = statuses.find((status) => status.state === "Constrained");
+  const observed = statuses.find((status) => status.state === "Observe");
+  const selected = constrained ?? observed ?? statuses[0];
 
-    try {
-      const updatedConfig = await services.updateRiskRuleConfig(ruleName, nextConfig);
-      const updatedStatus = await services.getRiskRuleConfig(ruleName);
+  const rows = statuses.map((status) => ({
+    ruleName: status.ruleName,
+    state: status.state,
+    summary: status.summary,
+    threshold: status.threshold,
+    currentValue: status.currentValue,
+    tone: mapRuleTone(status.state),
+    violationCount: status.recentViolations.length
+  }));
 
-      setConfigs((current) => ({
-        ...current,
-        [ruleName]: updatedConfig
-      }));
-      setDrafts((current) => ({
-        ...current,
-        [ruleName]: { ...updatedStatus.config }
-      }));
-
-      const latestStatuses = await services.getRiskRules();
-      setStatuses(latestStatuses);
-    } catch (error) {
-      setErrorText(error instanceof Error ? error.message : `Unable to save ${ruleName} config.`);
-    } finally {
-      setSaving((current) => ({ ...current, [ruleName]: false }));
-    }
-  }, [drafts, services]);
-
-  const rows = useMemo<RiskRulePanelRow[]>(() => {
-    return statuses.map((status) => ({
-      status,
-      config: configs[status.ruleName] ?? null,
-      draftConfig: drafts[status.ruleName] ?? {},
-      saving: saving[status.ruleName] ?? false
-    }));
-  }, [configs, drafts, saving, statuses]);
+  const violationTimeline = statuses.flatMap((status) =>
+    status.recentViolations.map((message, index) => ({
+      id: `${status.ruleName}-${index}`,
+      ruleName: status.ruleName,
+      message
+    })));
 
   return {
-    loading,
-    errorText,
+    overallState: selected.state,
+    overallSummary: selected.summary,
     rows,
-    refresh,
-    updateDraftValue,
-    saveRuleConfig
+    violationTimeline
   };
+}
+
+function mapRuleTone(state: RiskRuleStatus["state"]): RiskRuleTone {
+  if (state === "Constrained") {
+    return "danger";
+  }
+
+  if (state === "Observe") {
+    return "warning";
+  }
+
+  return "success";
 }

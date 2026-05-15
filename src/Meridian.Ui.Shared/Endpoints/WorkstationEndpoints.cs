@@ -32,7 +32,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Endpoints for the desktop workstation API surface.
 /// </summary>
-public static class WorkstationEndpoints
+public static partial class WorkstationEndpoints
 {
     private const int MaxRunComparisonRequestIds = 10;
     private const int SecurityCoveragePreviewLimit = 5;
@@ -1690,13 +1690,12 @@ public static class WorkstationEndpoints
             riskSummary = "Strategy is running at a loss. Monitoring active.";
         }
 
-        var riskRuleService = context.RequestServices.GetService<OperatorRiskRuleService>();
-        if (riskRuleService is not null)
+        var runtimeRisk = await ResolveRuntimeRiskDescriptorAsync(context).ConfigureAwait(false);
+        if (runtimeRisk is not null)
         {
-            var aggregateStatus = riskRuleService.GetAggregateStatus();
-            riskState = aggregateStatus.State;
-            riskSummary = aggregateStatus.Summary;
-            activeGuardrails = aggregateStatus.Rules.Select(static rule => rule.Summary).ToArray();
+            riskState = runtimeRisk.State;
+            riskSummary = runtimeRisk.Summary;
+            activeGuardrails = runtimeRisk.ActiveGuardrails;
         }
 
         var maxDrawdownDisplay = portfolio is not null && portfolio.PortfolioValue > 0m
@@ -2537,13 +2536,12 @@ public static class WorkstationEndpoints
             }
         }
 
-        var riskRuleService = context.RequestServices.GetService<OperatorRiskRuleService>();
-        if (riskRuleService is not null)
+        var runtimeRisk = await ResolveRuntimeRiskDescriptorAsync(context).ConfigureAwait(false);
+        if (runtimeRisk is not null)
         {
-            var aggregateStatus = riskRuleService.GetAggregateStatus();
-            riskState = aggregateStatus.State;
-            riskSummary = aggregateStatus.Summary;
-            activeGuardrails = aggregateStatus.Rules.Select(static rule => rule.Summary).ToArray();
+            riskState = runtimeRisk.State;
+            riskSummary = runtimeRisk.Summary;
+            activeGuardrails = runtimeRisk.ActiveGuardrails;
         }
 
         var risk = new WorkstationTradingRiskState(

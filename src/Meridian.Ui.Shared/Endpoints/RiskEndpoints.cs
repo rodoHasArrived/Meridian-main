@@ -1,151 +1,117 @@
 using System.Text.Json;
-using Meridian.Contracts.Auth;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Exposes runtime risk rule status and operator-managed rule configuration.
+/// </summary>
 public static class RiskEndpoints
 {
     public static void MapRiskEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
-        var group = app.MapGroup("/api/risk").WithTags("Risk");
+        MapRiskRoutes(app.MapGroup("/api/risk").WithTags("Risk"), jsonOptions);
+        // Versioning scaffold for future contract evolution.
+        MapRiskRoutes(app.MapGroup("/api/v1/risk").WithTags("Risk"), jsonOptions);
+    }
 
-        group.MapGet("/rules", (HttpContext context) =>
+    private static void MapRiskRoutes(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        group.MapGet("/rules", async (HttpContext context) =>
         {
-            var service = context.RequestServices.GetService<OperatorRiskRuleService>();
-            if (service is null)
+            var runtime = context.RequestServices.GetService<RiskRuleRuntimeService>();
+            if (runtime is null)
             {
-                return Results.Problem("Risk rule service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+                return Results.Problem("Risk runtime service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
-            var rules = service.GetRuleStatuses();
-            return Results.Json(rules, jsonOptions);
+            var statuses = await runtime.GetAllStatusesAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(statuses, jsonOptions);
         })
-        .WithName("GetRiskRules")
-        .Produces<IReadOnlyList<RiskRuleStatusSnapshot>>(200)
+        .Produces<IReadOnlyList<RiskRuleStatusDto>>(200)
         .Produces(503);
 
-        group.MapGet("/rules/{ruleName}/status", (string ruleName, HttpContext context) =>
+        group.MapGet("/rules/{ruleName}/status", async (string ruleName, HttpContext context) =>
         {
-            var service = context.RequestServices.GetService<OperatorRiskRuleService>();
-            if (service is null)
+            var runtime = context.RequestServices.GetService<RiskRuleRuntimeService>();
+            if (runtime is null)
             {
-                return Results.Problem("Risk rule service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+                return Results.Problem("Risk runtime service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
-            var status = service.GetRuleStatus(ruleName);
-            return status is null
-                ? Results.NotFound()
-                : Results.Json(status, jsonOptions);
+            var status = await runtime.GetStatusAsync(ruleName, context.RequestAborted).ConfigureAwait(false);
+            return status is null ? Results.NotFound() : Results.Json(status, jsonOptions);
         })
-        .WithName("GetRiskRuleStatus")
-        .Produces<RiskRuleStatusSnapshot>(200)
+        .Produces<RiskRuleStatusDto>(200)
         .Produces(404)
         .Produces(503);
 
         group.MapGet("/rules/{ruleName}/config", (string ruleName, HttpContext context) =>
         {
-            var service = context.RequestServices.GetService<OperatorRiskRuleService>();
-            if (service is null)
+            var runtime = context.RequestServices.GetService<RiskRuleRuntimeService>();
+            if (runtime is null)
             {
-                return Results.Problem("Risk rule service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+                return Results.Problem("Risk runtime service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
-            try
-            {
-                return Results.Json(service.GetRuleConfig(ruleName), jsonOptions);
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-                return Results.NotFound();
-            }
+            var config = runtime.GetConfig(ruleName);
+            return config is null ? Results.NotFound() : Results.Json(config, jsonOptions);
         })
-        .WithName("GetRiskRuleConfig")
-        .Produces<RiskRuleConfigSnapshot>(200)
+        .Produces<RiskRuleConfigDto>(200)
         .Produces(404)
         .Produces(503);
 
-        group.MapPut("/rules/{ruleName}/config", async (string ruleName, UpdateRiskRuleConfigRequest request, HttpContext context) =>
+        group.MapPut("/rules/{ruleName}/config", async (
+            string ruleName,
+            RiskRuleConfigUpdateRequest request,
+            HttpContext context) =>
         {
-            if (!HasRiskConfigPermission(context))
+            var runtime = context.RequestServices.GetService<RiskRuleRuntimeService>();
+            if (runtime is null)
             {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = context.RequestServices.GetService<OperatorRiskRuleService>();
-            if (service is null)
-            {
-                return Results.Problem("Risk rule service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+                return Results.Problem("Risk runtime service is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
             try
             {
-                var actor = ResolveActor(context);
-                var updated = await service.UpdateRuleConfigAsync(
-                    ruleName,
-                    request.Config,
-                    actor,
-                    request.Reason,
-                    context.RequestAborted).ConfigureAwait(false);
-
-                return Results.Json(updated, jsonOptions);
+                var updated = await runtime
+                    .UpdateConfigAsync(ruleName, request, ResolveActor(context), context.RequestAborted)
+                    .ConfigureAwait(false);
+                return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
             }
-            catch (ArgumentOutOfRangeException)
+            catch (ArgumentOutOfRangeException exception)
             {
-                return Results.NotFound();
+                return Results.BadRequest(new { error = exception.Message });
             }
-            catch (ArgumentException ex)
+            catch (InvalidOperationException exception)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return Results.Problem(exception.Message, statusCode: StatusCodes.Status503ServiceUnavailable);
             }
         })
-        .WithName("UpdateRiskRuleConfig")
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .Produces<RiskRuleConfigSnapshot>(200)
+        .Produces<RiskRuleConfigDto>(200)
         .Produces(400)
-        .Produces(403)
         .Produces(404)
-        .Produces(429)
         .Produces(503);
-    }
-
-    private static bool HasRiskConfigPermission(HttpContext context)
-    {
-        if (!context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var value))
-        {
-            return true;
-        }
-
-        var permissions = value is UserPermission userPermission
-            ? userPermission
-            : UserPermission.None;
-
-        return permissions.HasFlag(UserPermission.ManageOrders);
     }
 
     private static string ResolveActor(HttpContext context)
     {
-        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserKey, out var actor) && actor is string actorName && !string.IsNullOrWhiteSpace(actorName))
+        if (context.Items[LoginSessionMiddleware.CurrentUserKey] is string userName &&
+            !string.IsNullOrWhiteSpace(userName))
         {
-            return actorName;
+            return userName.Trim();
         }
 
-        if (context.Request.Headers.TryGetValue("X-Meridian-Actor", out var actorHeader))
+        if (context.User.Identity?.IsAuthenticated == true &&
+            !string.IsNullOrWhiteSpace(context.User.Identity.Name))
         {
-            var headerValue = actorHeader.ToString();
-            if (!string.IsNullOrWhiteSpace(headerValue))
-            {
-                return headerValue.Trim();
-            }
+            return context.User.Identity.Name!;
         }
 
         return "operator";
     }
 }
-
-public sealed record UpdateRiskRuleConfigRequest(
-    IReadOnlyDictionary<string, string> Config,
-    string? Reason = null);

@@ -7090,6 +7090,10 @@ Use these documents together when planning or implementing new work:
 │   │       │   │       ├── input.tsx
 │   │       │   │       ├── label.tsx
 │   │       │   │       ├── progress.tsx
+│   │       │   │       ├── risk-control-panel.test.tsx
+│   │       │   │       ├── risk-control-panel.tsx
+│   │       │   │       ├── risk-control-panel.view-model.test.ts
+│   │       │   │       ├── risk-control-panel.view-model.ts
 │   │       │   │       ├── select.tsx
 │   │       │   │       ├── sheet.test.tsx
 │   │       │   │       ├── sheet.tsx
@@ -7398,6 +7402,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── QuantLabEndpoints.cs
 │   │   │   ├── ReplayEndpoints.cs
 │   │   │   ├── ResilienceEndpoints.cs
+│   │   │   ├── RiskEndpoints.cs
 │   │   │   ├── SamplingEndpoints.cs
 │   │   │   ├── SecurityMasterEndpoints.cs
 │   │   │   ├── StatusEndpoints.cs
@@ -7409,7 +7414,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SymbolEndpoints.cs
 │   │   │   ├── SymbolMappingEndpoints.cs
 │   │   │   ├── UiEndpoints.cs
-│   │   │   └── WorkstationEndpoints.cs
+│   │   │   ├── WorkstationEndpoints.cs
+│   │   │   └── WorkstationRiskEndpoints.cs
 │   │   ├── Evidence
 │   │   │   ├── EvidenceContribution.cs
 │   │   │   ├── EvidenceContributors.cs
@@ -7449,6 +7455,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
 │   │   │   ├── GovernanceReportPackRepository.cs
 │   │   │   ├── InMemoryOperatorInboxService.cs
+│   │   │   ├── RiskRuleRuntimeService.cs
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── StrategyRunReviewPacketService.cs
@@ -8454,6 +8461,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── QualityEndpointContractTests.cs
 │   │   │   │   ├── ResponseSchemaSnapshotTests.cs
 │   │   │   │   ├── ResponseSchemaValidationTests.cs
+│   │   │   │   ├── RiskEndpointTests.cs
 │   │   │   │   ├── RoleAuthorizationTests.cs
 │   │   │   │   ├── StatusEndpointTests.cs
 │   │   │   │   ├── StorageEndpointTests.cs
@@ -8485,7 +8493,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CompositeRiskValidatorTests.cs
 │   │   │   ├── DrawdownCircuitBreakerTests.cs
 │   │   │   ├── OrderRateThrottleTests.cs
-│   │   │   └── PositionLimitRuleTests.cs
+│   │   │   ├── PositionLimitRuleTests.cs
+│   │   │   └── RiskIntegrationTests.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
@@ -8928,6 +8937,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-726 directories, 7986 files
+726 directories, 7995 files
 ```
 <!-- readme-tree end -->

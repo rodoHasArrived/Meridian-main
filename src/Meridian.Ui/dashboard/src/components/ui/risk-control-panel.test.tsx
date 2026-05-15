@@ -1,62 +1,70 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RiskControlPanel } from "@/components/ui/risk-control-panel";
-import { useRiskControlPanelViewModel } from "@/components/ui/risk-control-panel.view-model";
+import * as api from "@/lib/api";
 
-vi.mock("@/components/ui/risk-control-panel.view-model", () => ({
-  useRiskControlPanelViewModel: vi.fn()
-}));
-
-const mockedUseRiskControlPanelViewModel = vi.mocked(useRiskControlPanelViewModel);
+vi.mock("@/lib/api", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
+  return {
+    ...actual,
+    getRiskRules: vi.fn().mockResolvedValue([
+      {
+        ruleName: "PositionLimit",
+        state: "Healthy",
+        summary: "No position breaches.",
+        isBreached: false,
+        threshold: "5000",
+        currentValue: "2500",
+        asOf: "2026-05-01T00:00:00Z",
+        recentViolations: []
+      },
+      {
+        ruleName: "OrderRateThrottle",
+        state: "Observe",
+        summary: "Approaching throughput limit.",
+        isBreached: false,
+        threshold: "60 orders/minute",
+        currentValue: "50 orders/minute",
+        asOf: "2026-05-01T00:00:00Z",
+        recentViolations: ["Observed 50 orders in the last minute."]
+      }
+    ]),
+    getRiskRuleConfig: vi.fn().mockResolvedValue({
+      ruleName: "DrawdownCircuitBreaker",
+      defaultMaxPositionSize: null,
+      symbolPositionLimits: null,
+      maxDrawdownPercent: 5,
+      maxOrdersPerMinute: null
+    }),
+    updateRiskRuleConfig: vi.fn().mockResolvedValue({
+      ruleName: "DrawdownCircuitBreaker",
+      defaultMaxPositionSize: null,
+      symbolPositionLimits: null,
+      maxDrawdownPercent: 6,
+      maxOrdersPerMinute: null
+    })
+  };
+});
 
 describe("RiskControlPanel", () => {
-  it("renders risk rule cards and saves config", async () => {
-    const saveRuleConfig = vi.fn(async () => undefined);
-
-    mockedUseRiskControlPanelViewModel.mockReturnValue({
-      loading: false,
-      errorText: null,
-      rows: [
-        {
-          status: {
-            ruleName: "PositionLimit",
-            displayName: "Position Limit",
-            state: "Observe",
-            breached: false,
-            summary: "Position nearing threshold",
-            thresholdLabel: "Max position",
-            thresholdValue: "100",
-            currentValueLabel: "Largest position",
-            currentValue: "85",
-            lastEvaluatedAt: "2026-05-15T00:00:00Z"
-          },
-          config: {
-            ruleName: "PositionLimit",
-            config: {
-              maxPositionSize: "100"
-            },
-            updatedAt: "2026-05-15T00:00:00Z",
-            updatedBy: "ops",
-            reason: "Updated"
-          },
-          draftConfig: {
-            maxPositionSize: "100"
-          },
-          saving: false
-        }
-      ],
-      refresh: vi.fn(async () => undefined),
-      updateDraftValue: vi.fn(),
-      saveRuleConfig
-    });
-
+  it("renders risk rules and saves drawdown threshold updates", async () => {
+    const user = userEvent.setup();
     render(<RiskControlPanel />);
 
-    expect(screen.getByText("Active risk guardrails")).toBeInTheDocument();
-    expect(screen.getByText("Position nearing threshold")).toBeInTheDocument();
+    await screen.findByText("PositionLimit");
+    expect(screen.getByText("OrderRateThrottle")).toBeInTheDocument();
+    expect(screen.getByText(/Rule violation timeline/i)).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    const input = screen.getByLabelText("Drawdown threshold percent");
+    await user.clear(input);
+    await user.type(input, "6");
+    await user.click(screen.getByRole("button", { name: "Save" }));
 
-    expect(saveRuleConfig).toHaveBeenCalledWith("PositionLimit");
+    await waitFor(() => {
+      expect(api.updateRiskRuleConfig).toHaveBeenCalledWith("DrawdownCircuitBreaker", {
+        maxDrawdownPercent: 6,
+        reason: "Updated from risk control panel."
+      });
+    });
   });
 });

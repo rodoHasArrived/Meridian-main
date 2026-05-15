@@ -1,107 +1,140 @@
-import { RefreshCcw } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useRiskControlPanelViewModel } from "@/components/ui/risk-control-panel.view-model";
+import { getRiskRuleConfig, getRiskRules, updateRiskRuleConfig } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import { buildRiskControlPanelViewModel } from "@/components/ui/risk-control-panel.view-model";
+import type { RiskRuleConfig, RiskRuleStatus } from "@/types";
 
-const toneMap: Record<"Healthy" | "Observe" | "Constrained", "success" | "warning" | "danger"> = {
-  Healthy: "success",
-  Observe: "warning",
-  Constrained: "danger"
-};
+const toneClass = {
+  success: "text-success",
+  warning: "text-warning",
+  danger: "text-danger"
+} as const;
 
 export function RiskControlPanel() {
-  const vm = useRiskControlPanelViewModel();
+  const [statuses, setStatuses] = useState<RiskRuleStatus[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [drawdownPercent, setDrawdownPercent] = useState<string>("");
+
+  const vm = useMemo(() => buildRiskControlPanelViewModel(statuses), [statuses]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load(): Promise<void> {
+      setLoading(true);
+      setError(null);
+      try {
+        const [rules, drawdownConfig] = await Promise.all([
+          getRiskRules(),
+          getRiskRuleConfig("DrawdownCircuitBreaker")
+        ]);
+        if (!cancelled) {
+          setStatuses(rules);
+          setDrawdownPercent(formatDrawdown(drawdownConfig));
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(loadError instanceof Error ? loadError.message : "Failed to load risk controls.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleDrawdownSave(): Promise<void> {
+    if (!drawdownPercent.trim()) {
+      return;
+    }
+
+    const parsed = Number(drawdownPercent);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      setError("Drawdown threshold must be a positive number.");
+      return;
+    }
+
+    setError(null);
+    await updateRiskRuleConfig("DrawdownCircuitBreaker", {
+      maxDrawdownPercent: parsed,
+      reason: "Updated from risk control panel."
+    });
+    const refreshed = await getRiskRules();
+    setStatuses(refreshed);
+  }
 
   return (
-    <Card className="panel-surface">
+    <Card data-testid="risk-control-panel">
       <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div>
-            <div className="eyebrow-label">Risk rule controls</div>
-            <CardTitle>Active risk guardrails</CardTitle>
-            <CardDescription>Inspect live rule posture and adjust thresholds inline.</CardDescription>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => { void vm.refresh(); }}
-            disabled={vm.loading}
-          >
-            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-            Refresh
-          </Button>
-        </div>
+        <CardTitle>Risk control panel</CardTitle>
+        <CardDescription>{vm.overallSummary}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {vm.errorText ? (
-          <p role="status" className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-warning">
-            {vm.errorText}
-          </p>
-        ) : null}
-
-        {vm.loading ? (
-          <p className="text-sm text-muted-foreground">Loading risk rules…</p>
-        ) : (
-          vm.rows.map((row) => (
-            <article key={row.status.ruleName} className="rounded-xl border border-border/70 bg-secondary/25 p-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground">{row.status.displayName}</h4>
-                  <p className="text-xs text-muted-foreground">{row.status.summary}</p>
-                </div>
-                <Badge variant={toneMap[row.status.state]}>{row.status.state}</Badge>
-              </div>
-
-              <dl className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
-                <div>
-                  <dt>{row.status.currentValueLabel}</dt>
-                  <dd className="font-mono text-foreground">{row.status.currentValue}</dd>
-                </div>
-                <div>
-                  <dt>{row.status.thresholdLabel}</dt>
-                  <dd className="font-mono text-foreground">{row.status.thresholdValue}</dd>
-                </div>
-              </dl>
-
-              <div className="mt-3 grid gap-2 md:grid-cols-2">
-                {Object.entries(row.draftConfig).map(([key, value]) => {
-                  const inputId = `${row.status.ruleName}-${key}`;
-                  return (
-                    <div key={inputId} className="space-y-1">
-                      <Label htmlFor={inputId} className="text-xs">{key}</Label>
-                      <Input
-                        id={inputId}
-                        value={value}
-                        onChange={(event) => vm.updateDraftValue(row.status.ruleName, key, event.target.value)}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="mt-3 flex items-center justify-between gap-2">
-                <span className="text-[11px] text-muted-foreground">
-                  Updated by {row.config?.updatedBy ?? "system"} at {row.config?.updatedAt ?? "—"}
+        {error && <p className="text-sm text-danger">{error}</p>}
+        <div className="space-y-2">
+          {vm.rows.map((row) => (
+            <article key={row.ruleName} className="rounded-lg border border-border/70 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <h4 className="font-semibold">{row.ruleName}</h4>
+                <span className={cn("text-xs font-semibold uppercase tracking-wide", toneClass[row.tone])}>
+                  {row.state}
                 </span>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => { void vm.saveRuleConfig(row.status.ruleName); }}
-                  disabled={row.saving}
-                  busy={row.saving}
-                  busyLabel="Saving…"
-                >
-                  Save
-                </Button>
               </div>
+              <p className="text-sm text-muted-foreground">{row.summary}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Threshold: {row.threshold} · Current: {row.currentValue}
+              </p>
             </article>
-          ))
-        )}
+          ))}
+          {!loading && vm.rows.length === 0 && (
+            <p className="text-sm text-muted-foreground">No risk rules are currently available.</p>
+          )}
+        </div>
+
+        <div className="rounded-lg border border-border/70 p-3">
+          <h4 className="font-semibold">Drawdown threshold</h4>
+          <div className="mt-2 flex items-center gap-2">
+            <Input
+              aria-label="Drawdown threshold percent"
+              value={drawdownPercent}
+              onChange={(event) => setDrawdownPercent(event.target.value)}
+              placeholder="5"
+            />
+            <Button type="button" onClick={() => void handleDrawdownSave()}>
+              Save
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-border/70 p-3">
+          <h4 className="font-semibold">Rule violation timeline</h4>
+          <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+            {vm.violationTimeline.slice(0, 10).map((item) => (
+              <li key={item.id}>
+                <span className="font-medium text-foreground">{item.ruleName}:</span> {item.message}
+              </li>
+            ))}
+            {vm.violationTimeline.length === 0 && <li>No recent violations recorded.</li>}
+          </ul>
+        </div>
       </CardContent>
     </Card>
   );
+}
+
+function formatDrawdown(config: RiskRuleConfig): string {
+  if (typeof config.maxDrawdownPercent !== "number" || Number.isNaN(config.maxDrawdownPercent)) {
+    return "";
+  }
+
+  return config.maxDrawdownPercent.toString();
 }
