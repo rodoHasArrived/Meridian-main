@@ -109,6 +109,8 @@ import {
   executionSessionCloseEndpoint,
   executionSessionEndpoint,
   executionSessionReplayEndpoint,
+  riskRuleConfigEndpoint,
+  riskRuleStatusEndpoint,
   historicalBarsEndpoint,
   marketDataOrderbookEndpoint,
   marketDataQuoteEndpoint,
@@ -162,6 +164,7 @@ import {
   workstationRunReviewPacketEndpoint,
   workstationRunSweepsEndpoint,
   workstationRunTimelineEndpoint,
+  RISK_API_ENDPOINTS,
   workstationSecurityMasterEconomicDefinitionEndpoint,
   workstationSecurityMasterEntryEndpoint,
   workstationSecurityMasterHistoryEndpoint,
@@ -629,16 +632,6 @@ export function getExecutionControls() {
   return getJson<ExecutionControlSnapshot>(EXECUTION_API_ENDPOINTS.controls);
 }
 
-export function createExecutionManualOverride(request: CreateExecutionManualOverrideRequest) {
-  return postJson<ExecutionManualOverride>(EXECUTION_API_ENDPOINTS.manualOverrides, request);
-}
-
-export function clearExecutionManualOverride(overrideId: string) {
-  return postJson<TradingActionResult>(executionManualOverrideClearEndpoint(overrideId));
-}
-
-// --- Risk rules ---
-
 export function getRiskRules() {
   return getJson<RiskRuleStatus[]>(RISK_API_ENDPOINTS.rules);
 }
@@ -649,6 +642,14 @@ export function getRiskRuleStatus(ruleName: string) {
 
 export function getRiskRuleConfig(ruleName: string) {
   return getJson<RiskRuleConfig>(riskRuleConfigEndpoint(ruleName));
+}
+
+export function createExecutionManualOverride(request: CreateExecutionManualOverrideRequest) {
+  return postJson<ExecutionManualOverride>(EXECUTION_API_ENDPOINTS.manualOverrides, request);
+}
+
+export function clearExecutionManualOverride(overrideId: string) {
+  return postJson<TradingActionResult>(executionManualOverrideClearEndpoint(overrideId));
 }
 
 export function updateRiskRuleConfig(ruleName: string, request: RiskRuleConfigUpdateRequest) {

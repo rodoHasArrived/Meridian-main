@@ -64,12 +64,16 @@ export function RiskControlPanel() {
     }
 
     setError(null);
-    await updateRiskRuleConfig("DrawdownCircuitBreaker", {
-      maxDrawdownPercent: parsed,
-      reason: "Updated from risk control panel."
-    });
-    const refreshed = await getRiskRules();
-    setStatuses(refreshed);
+    try {
+      await updateRiskRuleConfig("DrawdownCircuitBreaker", {
+        maxDrawdownPercent: parsed,
+        reason: "Updated from risk control panel."
+      });
+      const refreshed = await getRiskRules();
+      setStatuses(refreshed);
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Failed to update risk rule config.");
+    }
   }
 
   return (
@@ -131,8 +135,8 @@ export function RiskControlPanel() {
   );
 }
 
-function formatDrawdown(config: RiskRuleConfig): string {
-  if (typeof config.maxDrawdownPercent !== "number" || Number.isNaN(config.maxDrawdownPercent)) {
+function formatDrawdown(config: RiskRuleConfig | null | undefined): string {
+  if (!config || typeof config.maxDrawdownPercent !== "number" || Number.isNaN(config.maxDrawdownPercent)) {
     return "";
   }
 

@@ -170,6 +170,18 @@ export function workstationOperatorInboxEndpoint(fundAccountId?: string): string
     : WORKSTATION_API_ENDPOINTS.operatorInbox;
 }
 
+export function riskRuleEndpoint(ruleName: string): string {
+  return `${RISK_API_ENDPOINTS.rules}/${pathSegment(ruleName, "ruleName")}`;
+}
+
+export function riskRuleStatusEndpoint(ruleName: string): string {
+  return `${riskRuleEndpoint(ruleName)}/status`;
+}
+
+export function riskRuleConfigEndpoint(ruleName: string): string {
+  return `${riskRuleEndpoint(ruleName)}/config`;
+}
+
 export function workstationWorkflowSummaryEndpoint(options: {
   hasOperatingContext?: boolean;
   operatingContext?: string;

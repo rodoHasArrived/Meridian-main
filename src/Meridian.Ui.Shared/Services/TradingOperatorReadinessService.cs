@@ -343,9 +343,13 @@ public sealed class TradingOperatorReadinessService
     private async Task<IReadOnlyList<RiskRuleStatusDto>> ResolveRiskRuleStatusesAsync(CancellationToken ct)
     {
         var runtime = Resolve<RiskRuleRuntimeService>();
-        return runtime is null
-            ? Array.Empty<RiskRuleStatusDto>()
-            : await runtime.GetAllStatusesAsync(ct).ConfigureAwait(false);
+        if (runtime is null)
+        {
+            _logger.LogWarning("RiskRuleRuntimeService is not registered; risk rule statuses will be unavailable.");
+            return Array.Empty<RiskRuleStatusDto>();
+        }
+
+        return await runtime.GetAllStatusesAsync(ct).ConfigureAwait(false);
     }
 
     private async Task<IReadOnlyList<StrategyPromotionRecord>> ResolvePromotionRecordsAsync(CancellationToken ct)
