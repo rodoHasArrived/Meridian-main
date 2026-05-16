@@ -7476,6 +7476,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
 │   │   │   ├── GovernanceReportPackRepository.cs
 │   │   │   ├── InMemoryOperatorInboxService.cs
+│   │   │   ├── OperatorRiskRuleService.cs
 │   │   │   ├── RiskRuleRuntimeService.cs
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
@@ -8626,6 +8627,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ExecutionWriteEndpointsTests.cs
 │   │       ├── ExportEndpointsTests.cs
 │   │       ├── OptionReferenceEndpointsRoundtripTests.cs
+│   │       ├── RiskEndpointsTests.cs
 │   │       ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │       ├── SecurityMasterPreferredEquityEndpointsTests.cs
@@ -8959,6 +8961,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-727 directories, 8016 files
+727 directories, 8018 files
 ```
 <!-- readme-tree end -->
