@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Meridian.Contracts.Auth;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -71,11 +70,6 @@ public static class RiskEndpoints
             RiskRuleConfigUpdateRequest request,
             HttpContext context) =>
         {
-            if (!HasRiskConfigPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
             var runtime = context.RequestServices.GetService<RiskRuleRuntimeService>();
             if (runtime is null)
             {
@@ -119,19 +113,5 @@ public static class RiskEndpoints
         }
 
         return "operator";
-    }
-
-    private static bool HasRiskConfigPermission(HttpContext context)
-    {
-        if (!context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var value))
-        {
-            return true;
-        }
-
-        var permissions = value is UserPermission userPermission
-            ? userPermission
-            : UserPermission.None;
-
-        return permissions.HasFlag(UserPermission.ManageOrders);
     }
 }

@@ -393,9 +393,38 @@ export interface LotsTrackerAddCommandViewModel {
   disabledReason: string | null;
 }
 
+export type LotsTrackerDraftFieldKey = "tradeDate" | "quantity" | "price" | "fees" | "note";
+
+export interface LotsTrackerDraftFieldViewModel {
+  key: LotsTrackerDraftFieldKey;
+  id: string;
+  label: string;
+  type: "date" | "number" | "text";
+  step?: string;
+  placeholder?: string;
+  helperId: string;
+  helperText: string;
+  errorId: string;
+  errorText: string | null;
+  invalid: boolean;
+  describedBy: string;
+}
+
+export type LotsTrackerDraftFieldsViewModel = Record<LotsTrackerDraftFieldKey, LotsTrackerDraftFieldViewModel>;
+
+export interface LotsTrackerDraftStatusViewModel {
+  id: string;
+  role: "status";
+  tone: "neutral" | "success" | "warning";
+  text: string;
+}
+
 export interface LotsTrackerViewModel {
   title: string;
   description: string;
+  formLabel: string;
+  draftFields: LotsTrackerDraftFieldsViewModel;
+  draftStatus: LotsTrackerDraftStatusViewModel;
   addCommand: LotsTrackerAddCommandViewModel;
   metrics: LotsTrackerMetricViewModel[];
   rows: LotsTrackerRowViewModel[];
@@ -429,6 +458,7 @@ export function buildLotsTrackerViewModel({
   const resolvedSelectedLotId = selectedLot?.lotId ?? null;
   const detailPanelId = `security-lots-detail-${stableDomId(securityId)}`;
   const total = buildLotTotals(lots, marketPriceOverride);
+  const addCommand = buildAddCommand(draft);
   const rows = lots.map((lot) => buildLotRow(
     lot,
     currency,
@@ -441,7 +471,10 @@ export function buildLotsTrackerViewModel({
   return {
     title: "Lots tracker",
     description: `Record purchase lots for ${securityId} to track quantity, cost basis, and unrealised P/L. Lots are stored locally per security.`,
-    addCommand: buildAddCommand(draft),
+    formLabel: `Add purchase lot for ${securityId}`,
+    draftFields: buildLotsDraftFields(securityId, draft),
+    draftStatus: buildLotsDraftStatus(securityId, addCommand.disabledReason),
+    addCommand,
     metrics: [
       { id: "quantity", label: "Total quantity", value: formatNumber(total.qty) },
       { id: "average-cost", label: "Average cost", value: formatCurrency(total.avgCost, currency) },
@@ -459,6 +492,134 @@ export function buildLotsTrackerViewModel({
     tableLabel: `Lots for ${securityId}`,
     tableCaption: `Recorded purchase lots for ${securityId}`,
     emptyText: "No lots recorded yet. Add a lot above to start tracking cost basis."
+  };
+}
+
+function buildLotsDraftFields(securityId: string, draft: LotDraftInput): LotsTrackerDraftFieldsViewModel {
+  const prefix = `security-lots-${stableDomId(securityId)}-draft`;
+  const tradeDateError = draft.tradeDate.trim() === "" ? "Trade date is required." : null;
+  const quantity = parseDraftNumber(draft.quantity);
+  const quantityError =
+    draft.quantity.trim() === ""
+      ? "Quantity is required."
+      : quantity === null || quantity === 0
+        ? "Quantity must be a non-zero number."
+        : null;
+  const price = parseDraftNumber(draft.price);
+  const priceError =
+    draft.price.trim() === ""
+      ? "Price is required."
+      : price === null || price <= 0
+        ? "Price must be greater than zero."
+        : null;
+  const fees = draft.fees.trim() === "" ? 0 : parseDraftNumber(draft.fees);
+  const feesError = fees === null ? "Fees must be a number." : null;
+
+  return {
+    tradeDate: buildDraftField({
+      key: "tradeDate",
+      prefix,
+      label: "Trade date",
+      type: "date",
+      helperText: "Required for lot chronology and selected-lot evidence.",
+      errorText: tradeDateError
+    }),
+    quantity: buildDraftField({
+      key: "quantity",
+      prefix,
+      label: "Quantity",
+      type: "number",
+      step: "any",
+      placeholder: "100",
+      helperText: "Use positive quantity for long lots and negative quantity for short lots.",
+      errorText: quantityError
+    }),
+    price: buildDraftField({
+      key: "price",
+      prefix,
+      label: "Price",
+      type: "number",
+      step: "any",
+      placeholder: "0.00",
+      helperText: "Execution price per unit; must be greater than zero.",
+      errorText: priceError
+    }),
+    fees: buildDraftField({
+      key: "fees",
+      prefix,
+      label: "Fees",
+      type: "number",
+      step: "any",
+      placeholder: "0.00",
+      helperText: "Optional fees are included in total cost basis.",
+      errorText: feesError
+    }),
+    note: buildDraftField({
+      key: "note",
+      prefix,
+      label: "Note",
+      type: "text",
+      placeholder: "Broker, strategy, etc.",
+      helperText: "Optional desk context shown in the selected-lot detail panel.",
+      errorText: null
+    })
+  };
+}
+
+function buildDraftField({
+  key,
+  prefix,
+  label,
+  type,
+  step,
+  placeholder,
+  helperText,
+  errorText
+}: {
+  key: LotsTrackerDraftFieldKey;
+  prefix: string;
+  label: string;
+  type: LotsTrackerDraftFieldViewModel["type"];
+  step?: string;
+  placeholder?: string;
+  helperText: string;
+  errorText: string | null;
+}): LotsTrackerDraftFieldViewModel {
+  const id = `${prefix}-${kebabCase(key)}`;
+  const helperId = `${id}-help`;
+  const errorId = `${id}-error`;
+  return {
+    key,
+    id,
+    label,
+    type,
+    step,
+    placeholder,
+    helperId,
+    helperText,
+    errorId,
+    errorText,
+    invalid: errorText !== null,
+    describedBy: [helperId, errorText ? errorId : null].filter(Boolean).join(" ")
+  };
+}
+
+function buildLotsDraftStatus(securityId: string, disabledReason: string | null): LotsTrackerDraftStatusViewModel {
+  const id = `security-lots-${stableDomId(securityId)}-draft-status`;
+  if (!disabledReason) {
+    return {
+      id,
+      role: "status",
+      tone: "success",
+      text: "Lot draft is ready to add."
+    };
+  }
+
+  return {
+    id,
+    role: "status",
+    tone: "warning",
+    text: `Add lot unavailable: ${disabledReason}`
   };
 }
 
@@ -592,4 +753,8 @@ export function formatCurrency(value: number, currency: string | null): string {
 
 function stableDomId(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "selected";
+}
+
+function kebabCase(value: string): string {
+  return value.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
 }

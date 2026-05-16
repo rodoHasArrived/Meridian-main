@@ -169,6 +169,7 @@ export interface DataOperationsProviderRow {
   rowId: string;
   detailPanelId: string;
   status: DataOperationsProviderRecord["status"];
+  rowClassName: DataOperationsStatusRowClassName;
   capability: string;
   latencyText: string;
   trustScoreText: string;
@@ -201,6 +202,7 @@ export interface DataOperationsBackfillRow {
   scope: string;
   provider: string;
   status: DataOperationsBackfillRecord["status"];
+  rowClassName: DataOperationsStatusRowClassName;
   progress: string;
   updatedAt: string;
   selected: boolean;
@@ -245,6 +247,7 @@ export interface DataOperationsExportRow {
   statusLabel: string;
   statusVariant: "success" | "warning" | "paper";
   statusTone: "success" | "warning" | "paper";
+  rowClassName: DataOperationsStatusRowClassName;
   rows: string;
   updatedAt: string;
   summaryText: string;
@@ -303,6 +306,13 @@ export interface DataOperationsLoadingState {
   chips: DataOperationsLoadingChipState[];
   actions: DataOperationsLoadingActionState[];
 }
+
+export type DataOperationsStatusRowClassName =
+  | "bg-background/50"
+  | "bg-success/5"
+  | "bg-warning/5"
+  | "bg-danger/5"
+  | "bg-paper/5";
 
 // --- Provider setup types ---
 
@@ -1051,6 +1061,7 @@ export function buildProviderRow(
     rowId,
     detailPanelId: DATA_PROVIDER_DETAIL_PANEL_ID,
     status: provider.status,
+    rowClassName: providerRowClassName(statusTone),
     capability: provider.capability,
     latencyText,
     trustScoreText,
@@ -1146,6 +1157,7 @@ export function buildBackfillSection(
         scope: backfill.scope,
         provider: backfill.provider,
         status: backfill.status,
+        rowClassName: backfillRowClassName(backfill.status),
         progress: backfill.progress,
         updatedAt: backfill.updatedAt,
         selected,
@@ -1229,6 +1241,7 @@ export function buildExportSection(
         statusLabel: item.status,
         statusVariant,
         statusTone: statusVariant,
+        rowClassName: exportRowClassName(item.status),
         rows: item.rows,
         updatedAt: item.updatedAt,
         summaryText,
@@ -1308,6 +1321,42 @@ function exportStatusVariant(status: DataOperationsExportRecord["status"]): Data
   }
 
   return "warning";
+}
+
+function providerRowClassName(statusTone: DataOperationsProviderRow["statusTone"]): DataOperationsStatusRowClassName {
+  if (statusTone === "success") {
+    return "bg-success/5";
+  }
+
+  if (statusTone === "danger") {
+    return "bg-danger/5";
+  }
+
+  return "bg-warning/5";
+}
+
+function backfillRowClassName(status: DataOperationsBackfillRecord["status"]): DataOperationsStatusRowClassName {
+  if (status === "Running") {
+    return "bg-paper/5";
+  }
+
+  if (status === "Review") {
+    return "bg-warning/5";
+  }
+
+  return "bg-background/50";
+}
+
+function exportRowClassName(status: DataOperationsExportRecord["status"]): DataOperationsStatusRowClassName {
+  if (status === "Ready") {
+    return "bg-success/5";
+  }
+
+  if (status === "Running") {
+    return "bg-paper/5";
+  }
+
+  return "bg-warning/5";
 }
 
 function exportActionText(status: DataOperationsExportRecord["status"]): string {

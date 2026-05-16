@@ -1,6 +1,9 @@
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Execution.Models;
 using Meridian.Execution.Services;
+using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
@@ -36,6 +39,7 @@ public sealed class RiskRuleRuntimeService
 
     private readonly IServiceProvider _services;
     private readonly ILogger<RiskRuleRuntimeService> _logger;
+    private readonly RiskRuleRuntimeOptions _options;
     private readonly Lock _gate = new();
 
     private decimal _maxDrawdownPercent = DefaultDrawdownPercent;
@@ -43,10 +47,13 @@ public sealed class RiskRuleRuntimeService
 
     public RiskRuleRuntimeService(
         IServiceProvider services,
-        ILogger<RiskRuleRuntimeService> logger)
+        ILogger<RiskRuleRuntimeService> logger,
+        RiskRuleRuntimeOptions? options = null)
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _options = options ?? RiskRuleRuntimeOptions.Default;
+        LoadSnapshot();
     }
 
     public async Task<IReadOnlyList<RiskRuleStatusDto>> GetAllStatusesAsync(CancellationToken ct = default)
@@ -132,17 +139,18 @@ public sealed class RiskRuleRuntimeService
                 await UpdatePositionLimitConfigAsync(request, actor, ct).ConfigureAwait(false);
                 break;
             case "DrawdownCircuitBreaker":
-                if (!request.MaxDrawdownPercent.HasValue || request.MaxDrawdownPercent.Value <= 0m)
+                if (request.MaxDrawdownPercent is <= 0m)
                 {
                     throw new ArgumentOutOfRangeException(nameof(request.MaxDrawdownPercent), "MaxDrawdownPercent must be greater than zero.");
                 }
 
-                var maxDrawdownPercent = request.MaxDrawdownPercent.Value;
+                var maxDrawdownPercent = request.MaxDrawdownPercent.GetValueOrDefault();
 
                 lock (_gate)
                 {
                     _maxDrawdownPercent = maxDrawdownPercent;
                 }
+                await PersistSnapshotAsync(actor, request.Reason, ct).ConfigureAwait(false);
                 _logger.LogInformation(
                     "Risk rule config updated for {RuleName} by {Actor}: {MaxDrawdownPercent}%",
                     normalizedRule,
@@ -150,17 +158,18 @@ public sealed class RiskRuleRuntimeService
                     maxDrawdownPercent);
                 break;
             case "OrderRateThrottle":
-                if (!request.MaxOrdersPerMinute.HasValue || request.MaxOrdersPerMinute.Value <= 0)
+                if (request.MaxOrdersPerMinute is <= 0)
                 {
                     throw new ArgumentOutOfRangeException(nameof(request.MaxOrdersPerMinute), "MaxOrdersPerMinute must be greater than zero.");
                 }
 
-                var maxOrdersPerMinute = request.MaxOrdersPerMinute.Value;
+                var maxOrdersPerMinute = request.MaxOrdersPerMinute.GetValueOrDefault();
 
                 lock (_gate)
                 {
                     _maxOrdersPerMinute = maxOrdersPerMinute;
                 }
+                await PersistSnapshotAsync(actor, request.Reason, ct).ConfigureAwait(false);
                 _logger.LogInformation(
                     "Risk rule config updated for {RuleName} by {Actor}: {MaxOrdersPerMinute} orders/minute",
                     normalizedRule,
@@ -399,4 +408,64 @@ public sealed class RiskRuleRuntimeService
     }
 
     private T? Resolve<T>() where T : class => _services.GetService(typeof(T)) as T;
+
+    private async Task PersistSnapshotAsync(string actor, string? reason, CancellationToken ct)
+    {
+        RiskRuleRuntimeSnapshot snapshot;
+        lock (_gate)
+        {
+            snapshot = new RiskRuleRuntimeSnapshot(
+                MaxDrawdownPercent: _maxDrawdownPercent,
+                MaxOrdersPerMinute: _maxOrdersPerMinute,
+                UpdatedAt: DateTimeOffset.UtcNow,
+                UpdatedBy: actor,
+                Reason: reason);
+        }
+
+        var payload = JsonSerializer.Serialize(snapshot, RiskRuleRuntimeSnapshotJsonContext.Default.RiskRuleRuntimeSnapshot);
+        await AtomicFileWriter.WriteAsync(_options.SnapshotPath, payload, ct).ConfigureAwait(false);
+    }
+
+    private void LoadSnapshot()
+    {
+        try
+        {
+            if (!File.Exists(_options.SnapshotPath))
+            {
+                return;
+            }
+
+            var payload = File.ReadAllText(_options.SnapshotPath);
+            var snapshot = JsonSerializer.Deserialize(payload, RiskRuleRuntimeSnapshotJsonContext.Default.RiskRuleRuntimeSnapshot);
+            if (snapshot is null)
+            {
+                return;
+            }
+
+            lock (_gate)
+            {
+                _maxDrawdownPercent = snapshot.MaxDrawdownPercent > 0m ? snapshot.MaxDrawdownPercent : DefaultDrawdownPercent;
+                _maxOrdersPerMinute = snapshot.MaxOrdersPerMinute > 0 ? snapshot.MaxOrdersPerMinute : DefaultMaxOrdersPerMinute;
+            }
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(
+                exception,
+                "Failed to load risk runtime snapshot from {SnapshotPath}; using defaults.",
+                _options.SnapshotPath);
+        }
+    }
+}
+
+public sealed record RiskRuleRuntimeSnapshot(
+    decimal MaxDrawdownPercent,
+    int MaxOrdersPerMinute,
+    DateTimeOffset UpdatedAt,
+    string UpdatedBy,
+    string? Reason);
+
+[JsonSerializable(typeof(RiskRuleRuntimeSnapshot))]
+internal sealed partial class RiskRuleRuntimeSnapshotJsonContext : JsonSerializerContext
+{
 }

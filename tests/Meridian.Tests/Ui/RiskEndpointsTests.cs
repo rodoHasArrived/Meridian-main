@@ -26,16 +26,17 @@ public sealed class RiskEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton<IPositionTracker, StaticPositionTracker>();
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(Path.GetTempPath(), $"execution-controls-{Guid.NewGuid():N}")));
+            services.AddSingleton<ExecutionOperatorControlService>();
+            services.AddSingleton<RiskRuleRuntimeService>();
             services.AddSingleton(new RiskRuleRuntimeOptions(Path.Combine(Path.GetTempPath(), $"risk-rules-{Guid.NewGuid():N}.json")));
-            services.AddSingleton<OperatorRiskRuleService>();
-            services.AddSingleton<IRiskValidator>(sp => sp.GetRequiredService<OperatorRiskRuleService>());
         });
 
         var client = app.GetTestClient();
 
         var rulesResponse = await client.GetAsync("/api/risk/rules");
         rulesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var rules = JsonSerializer.Deserialize<RiskRuleStatusSnapshot[]>(await rulesResponse.Content.ReadAsStringAsync(), JsonOptions());
+        var rules = JsonSerializer.Deserialize<RiskRuleStatusDto[]>(await rulesResponse.Content.ReadAsStringAsync(), JsonOptions());
         rules.Should().NotBeNull();
         rules!.Should().Contain(rule => rule.RuleName == "PositionLimit");
         rules.Should().Contain(rule => rule.RuleName == "DrawdownCircuitBreaker");
@@ -45,10 +46,7 @@ public sealed class RiskEndpointsTests
             "/api/risk/rules/PositionLimit/config",
             JsonContent(new
             {
-                config = new Dictionary<string, string>
-                {
-                    ["maxPositionSize"] = "50"
-                },
+                defaultMaxPositionSize = 50m,
                 reason = "Operator tuning"
             }));
 
@@ -56,9 +54,9 @@ public sealed class RiskEndpointsTests
 
         var configResponse = await client.GetAsync("/api/risk/rules/PositionLimit/config");
         configResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var config = JsonSerializer.Deserialize<RiskRuleConfigSnapshot>(await configResponse.Content.ReadAsStringAsync(), JsonOptions());
+        var config = JsonSerializer.Deserialize<RiskRuleConfigDto>(await configResponse.Content.ReadAsStringAsync(), JsonOptions());
         config.Should().NotBeNull();
-        config!.Config["maxPositionSize"].Should().Be("50");
+        config!.DefaultMaxPositionSize.Should().Be(50m);
     }
 
     [Fact]
@@ -83,17 +81,15 @@ public sealed class RiskEndpointsTests
 
         var client = app.GetTestClient();
 
-        var updateResponse = await client.PutAsync(
-            "/api/risk/rules/PositionLimit/config",
-            JsonContent(new
+        var riskRules = app.Services.GetRequiredService<OperatorRiskRuleService>();
+        await riskRules.UpdateRuleConfigAsync(
+            "PositionLimit",
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                config = new Dictionary<string, string>
-                {
-                    ["maxPositionSize"] = "1"
-                }
-            }));
-
-        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+                ["maxPositionSize"] = "1"
+            },
+            updatedBy: "test",
+            reason: "tighten limits");
 
         var submitResponse = await client.PostAsync(
             "/api/execution/orders/submit",

@@ -7,6 +7,7 @@ import type {
   OrderResult,
   OrderSubmitRequest,
   QuotesResponse,
+  SessionStatsDto,
   TradeDataResponse,
   TradesResponse
 } from "@/types";
@@ -258,6 +259,25 @@ export interface LiveQuotesTradeDetailViewModel {
   fields: LiveQuotesTradeDetailField[];
 }
 
+export interface LiveQuotesSessionStatCellViewModel {
+  id: string;
+  label: string;
+  value: string;
+}
+
+export interface LiveQuotesSessionStatsViewModel {
+  id: string;
+  ariaLabel: string;
+  descriptionId: string;
+  description: string;
+  periodLabel: string;
+  dateLabel: string;
+  changeLabel: string;
+  changeAriaLabel: string;
+  changeTone: "positive" | "negative" | "default";
+  stats: LiveQuotesSessionStatCellViewModel[];
+}
+
 export interface LiveQuotesPriceChartViewModel {
   title: string;
   description: string;
@@ -311,6 +331,7 @@ export interface LiveQuotesMarketDataViewModel {
   quoteMetrics: LiveQuotesMetricRowViewModel[];
   depthLadder: LiveQuotesDepthLadderViewModel;
   priceChart: LiveQuotesPriceChartViewModel;
+  sessionStats: LiveQuotesSessionStatsViewModel | null;
   tradesTableLabel: string;
   tradesTableCaption: string;
   tradesDetailPanelId: string;
@@ -695,6 +716,7 @@ export function buildLiveQuotesMarketViewModel({
       caption: `Select a ${symbol} bid or ask level to seed the ticket and inspect venue, sequence, and depth evidence.`
     },
     priceChart: buildPriceChartViewModel(symbol, intraday, refreshing, trades.error),
+    sessionStats: buildLiveQuotesSessionStatsViewModel(symbol, quoteRow?.session ?? null),
     tradesTableLabel: `Recent ${symbol} trade prints`,
     tradesTableCaption: `Select a ${symbol} trade print to inspect sequence, stream, and venue evidence.`,
     tradesDetailPanelId: tradeDetailPanelId,
@@ -1204,6 +1226,42 @@ function buildQuoteMetrics(quoteRow: QuotesResponse["quote"] | null): LiveQuotes
     { id: "sequence", label: "Sequence", value: formatMarketSize(quoteRow.sequenceNumber) },
     { id: "stream", label: "Stream", value: quoteRow.streamId ?? LIVE_QUOTES_EMPTY_VALUE }
   ];
+}
+
+export function buildLiveQuotesSessionStatsViewModel(
+  symbol: string,
+  session: SessionStatsDto | null | undefined
+): LiveQuotesSessionStatsViewModel | null {
+  if (!session) {
+    return null;
+  }
+
+  const changeTone: LiveQuotesSessionStatsViewModel["changeTone"] = session.change > 0
+    ? "positive"
+    : session.change < 0
+      ? "negative"
+      : "default";
+  const changeLabel = `${formatChange(session.change)} (${formatChangePct(session.changePercent)})`;
+  const volumeLabel = formatVolume(session.volume);
+
+  return {
+    id: "live-quotes-session-stats",
+    ariaLabel: `${symbol} session statistics`,
+    descriptionId: "live-quotes-session-stats-description",
+    description: `Session ${session.sessionDate} quote evidence from ${formatMarketTimestamp(session.firstTradeAt)} to ${formatMarketTimestamp(session.lastTradeAt)}.`,
+    periodLabel: "Today",
+    dateLabel: `Session ${session.sessionDate}`,
+    changeLabel,
+    changeAriaLabel: `Day change ${changeLabel}`,
+    changeTone,
+    stats: [
+      { id: "open", label: "Open", value: formatMarketPrice(session.open) },
+      { id: "high", label: "High", value: formatMarketPrice(session.high) },
+      { id: "low", label: "Low", value: formatMarketPrice(session.low) },
+      { id: "vwap", label: "VWAP", value: formatMarketPrice(session.vwap) },
+      { id: "volume", label: "Volume", value: volumeLabel }
+    ]
+  };
 }
 
 function buildDepthLevel(

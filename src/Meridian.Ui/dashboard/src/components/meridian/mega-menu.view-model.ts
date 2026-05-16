@@ -1,4 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  appendOperatingScopeToRoute,
+  buildOperatingScopeFromSearch,
+  summarizeOperatingScopeForRoute,
+  type AppShellOperatingScopeInput
+} from "@/app-shell.view-model";
 import type { WorkspaceKey } from "@/types";
 
 export interface MegaMenuLink {
@@ -22,6 +28,8 @@ export interface MegaMenuSection {
 export interface MegaMenuViewModel {
   open: boolean;
   sections: MegaMenuSection[];
+  operatingScopeLabel: string | null;
+  operatingScopeAriaLabel: string | null;
   triggerAriaLabel: string;
   triggerControlsId: string;
   triggerExpanded: boolean;
@@ -127,7 +135,11 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
   }
 ];
 
-export function useMegaMenuViewModel(pathname: string): MegaMenuViewModel {
+export function useMegaMenuViewModel(
+  pathname: string,
+  search = "",
+  operatingContextScope: AppShellOperatingScopeInput | null = null
+): MegaMenuViewModel {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -142,30 +154,39 @@ export function useMegaMenuViewModel(pathname: string): MegaMenuViewModel {
     () => buildMegaMenuViewModel({
       pathname,
       open,
+      search,
+      operatingContextScope,
       openMenu,
       closeMenu,
       toggleMenu
     }),
-    [closeMenu, open, openMenu, pathname, toggleMenu]
+    [closeMenu, open, openMenu, operatingContextScope, pathname, search, toggleMenu]
   );
 }
 
 export function buildMegaMenuViewModel({
   pathname,
   open,
+  search = "",
+  operatingContextScope = null,
   openMenu,
   closeMenu,
   toggleMenu
 }: {
   pathname: string;
   open: boolean;
+  search?: string;
+  operatingContextScope?: AppShellOperatingScopeInput | null;
   openMenu: () => void;
   closeMenu: () => void;
   toggleMenu: () => void;
 }): MegaMenuViewModel {
+  const operatingScope = buildOperatingScopeFromSearch(search, operatingContextScope);
   return {
     open,
-    sections: buildMegaMenuSections(pathname),
+    sections: buildMegaMenuSections(pathname, operatingScope),
+    operatingScopeLabel: operatingScope.hasScope ? operatingScope.summary : null,
+    operatingScopeAriaLabel: operatingScope.hasScope ? `Mega menu preserves operating scope: ${operatingScope.summary}` : null,
     triggerAriaLabel: open ? "Close workspace navigation menu" : "Open workspace navigation menu",
     triggerControlsId: MEGA_MENU_PANEL_ID,
     triggerExpanded: open,
@@ -212,7 +233,10 @@ export function resolveMegaMenuKeyCommand({
   return null;
 }
 
-function buildMegaMenuSections(pathname: string): MegaMenuSection[] {
+function buildMegaMenuSections(
+  pathname: string,
+  operatingScope: ReturnType<typeof buildOperatingScopeFromSearch>
+): MegaMenuSection[] {
   return MENU_SECTIONS.map((section) => {
     const sectionActive = isWorkspaceSectionActive(pathname, section.key);
     return {
@@ -221,17 +245,24 @@ function buildMegaMenuSections(pathname: string): MegaMenuSection[] {
       ariaCurrent: sectionActive ? "page" : undefined,
       links: section.links.map((link) => {
         const active = isRouteActive(pathname, link.route);
+        const route = appendOperatingScopeToRoute(link.route, operatingScope);
+        const scopeSummary = summarizeOperatingScopeForRoute(link.route, operatingScope);
         return {
           ...link,
+          route,
           active,
           ariaCurrent: active ? "page" : undefined,
           ariaLabel: active
-            ? `${link.label}, current route, ${section.label} workspace`
-            : `Open ${link.label}, ${section.label} workspace`
+            ? `${link.label}, current route, ${section.label} workspace${formatPreservedScopeAriaSuffix(scopeSummary)}`
+            : `Open ${link.label}, ${section.label} workspace${formatPreservedScopeAriaSuffix(scopeSummary)}`
         };
       })
     };
   });
+}
+
+function formatPreservedScopeAriaSuffix(scopeSummary: string | null): string {
+  return scopeSummary ? `, preserving ${scopeSummary}` : "";
 }
 
 function isWorkspaceSectionActive(pathname: string, key: WorkspaceKey): boolean {

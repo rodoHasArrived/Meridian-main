@@ -120,6 +120,23 @@ describe("buildLotsTrackerViewModel", () => {
     const vm = buildVm();
 
     expect(vm.addCommand.disabled).toBe(false);
+    expect(vm.formLabel).toBe("Add purchase lot for AAPL");
+    expect(vm.draftStatus).toEqual({
+      id: "security-lots-aapl-draft-status",
+      role: "status",
+      tone: "success",
+      text: "Lot draft is ready to add."
+    });
+    expect(vm.draftFields.quantity).toMatchObject({
+      id: "security-lots-aapl-draft-quantity",
+      label: "Quantity",
+      type: "number",
+      step: "any",
+      placeholder: "100",
+      invalid: false,
+      errorText: null,
+      describedBy: "security-lots-aapl-draft-quantity-help"
+    });
     expect(vm.metrics.map((metric) => [metric.id, metric.value])).toEqual([
       ["quantity", "150"],
       ["average-cost", "185.68 USD"],
@@ -165,6 +182,51 @@ describe("buildLotsTrackerViewModel", () => {
       ariaLabel: "Add lot unavailable: Quantity must be a non-zero number.",
       disabled: true,
       disabledReason: "Quantity must be a non-zero number."
+    });
+    expect(vm.draftStatus).toMatchObject({
+      role: "status",
+      tone: "warning",
+      text: "Add lot unavailable: Quantity must be a non-zero number."
+    });
+    expect(vm.draftFields.quantity).toMatchObject({
+      invalid: true,
+      errorText: "Quantity must be a non-zero number.",
+      errorId: "security-lots-aapl-draft-quantity-error",
+      describedBy: "security-lots-aapl-draft-quantity-help security-lots-aapl-draft-quantity-error"
+    });
+    expect(vm.draftFields.price.invalid).toBe(false);
+  });
+
+  it("keeps all add-lot draft field labels, helpers, and validation ids in the view model", () => {
+    const vm = buildVm({
+      draft: {
+        tradeDate: "",
+        quantity: "",
+        price: "0",
+        fees: "abc",
+        note: ""
+      }
+    });
+
+    expect(Object.keys(vm.draftFields)).toEqual(["tradeDate", "quantity", "price", "fees", "note"]);
+    expect(vm.draftFields.tradeDate).toMatchObject({
+      id: "security-lots-aapl-draft-trade-date",
+      label: "Trade date",
+      helperText: "Required for lot chronology and selected-lot evidence.",
+      errorText: "Trade date is required."
+    });
+    expect(vm.draftFields.price).toMatchObject({
+      errorText: "Price must be greater than zero.",
+      describedBy: "security-lots-aapl-draft-price-help security-lots-aapl-draft-price-error"
+    });
+    expect(vm.draftFields.fees).toMatchObject({
+      errorText: "Fees must be a number.",
+      describedBy: "security-lots-aapl-draft-fees-help security-lots-aapl-draft-fees-error"
+    });
+    expect(vm.draftFields.note).toMatchObject({
+      invalid: false,
+      errorText: null,
+      describedBy: "security-lots-aapl-draft-note-help"
     });
   });
 

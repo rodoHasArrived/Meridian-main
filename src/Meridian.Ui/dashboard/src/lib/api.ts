@@ -40,6 +40,7 @@ import type {
   PromotionEvaluationResult,
   PromotionRecord,
   RiskRuleConfig,
+  RiskRuleConfigUpdateRequest,
   RiskRuleStatus,
   ReconciliationBreakQueueItem,
   ReconciliationCalibrationSummary,
@@ -74,11 +75,8 @@ import type {
   StrategyDesignValidationResult,
   TradingActionResult,
   TradingOperatorReadiness,
-  RiskRuleConfig,
-  RiskRuleStatus,
   TradingParameters,
   TradingWorkspaceResponse,
-  UpdateRiskRuleConfigRequest,
   WorkflowLibrary,
   WorkflowPreset,
   WorkflowPresetLibrary,
@@ -176,10 +174,7 @@ import {
   workstationWorkflowSummaryEndpoint,
   workstationWorkflowPresetEndpoint,
   workstationWorkflowPresetPinEndpoint,
-  workstationWorkflowPresetUsedEndpoint,
-  riskRuleConfigEndpoint,
-  riskRuleStatusEndpoint,
-  RISK_API_ENDPOINTS
+  workstationWorkflowPresetUsedEndpoint
 } from "@/lib/workstation-endpoints";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
@@ -646,16 +641,16 @@ export function getRiskRuleConfig(ruleName: string) {
   return getJson<RiskRuleConfig>(riskRuleConfigEndpoint(ruleName));
 }
 
-export function updateRiskRuleConfig(ruleName: string, request: UpdateRiskRuleConfigRequest) {
-  return putJson<RiskRuleConfig>(riskRuleConfigEndpoint(ruleName), request);
-}
-
 export function createExecutionManualOverride(request: CreateExecutionManualOverrideRequest) {
   return postJson<ExecutionManualOverride>(EXECUTION_API_ENDPOINTS.manualOverrides, request);
 }
 
 export function clearExecutionManualOverride(overrideId: string) {
   return postJson<TradingActionResult>(executionManualOverrideClearEndpoint(overrideId));
+}
+
+export function updateRiskRuleConfig(ruleName: string, request: RiskRuleConfigUpdateRequest) {
+  return putJson<RiskRuleConfig>(riskRuleConfigEndpoint(ruleName), request);
 }
 
 // --- Strategy lifecycle ---

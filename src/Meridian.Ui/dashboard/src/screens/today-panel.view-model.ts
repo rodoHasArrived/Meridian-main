@@ -25,6 +25,7 @@ export interface TodayMoverRow {
   markPrice: string;
   dayPnl: string;
   dayPnlTone: TodayTone;
+  rowClassName: string | undefined;
   ariaLabel: string;
 }
 
@@ -75,16 +76,24 @@ export interface TodayPanelViewModel {
   moversEmptyMessage: string;
   hasMovers: boolean;
   moversMoreLabel: string | null;
+  moversTableLabel: string;
+  moversTableCaption: string;
   orders: TodayOrderRow[];
   ordersTotal: number;
   ordersEmptyMessage: string;
   hasOrders: boolean;
   ordersMoreLabel: string | null;
+  ordersTableLabel: string;
+  ordersTableCaption: string;
   fills: TodayFillRow[];
   fillsTotal: number;
   fillsEmptyMessage: string;
   hasFills: boolean;
   fillsMoreLabel: string | null;
+  fillsTableLabel: string;
+  fillsTableCaption: string;
+  quickActionsLabel: string;
+  quickActionsEyebrow: string;
   quickActions: TodayQuickAction[];
   brokerageLabel: string | null;
 }
@@ -144,16 +153,24 @@ export function buildTodayPanelViewModel(
       moversEmptyMessage: "No open positions to track today.",
       hasMovers: false,
       moversMoreLabel: null,
+      moversTableLabel: buildTableLabel("top mover", 0),
+      moversTableCaption: buildMoversTableCaption(0, 0),
       orders: [],
       ordersTotal: 0,
       ordersEmptyMessage: "No working orders.",
       hasOrders: false,
       ordersMoreLabel: null,
+      ordersTableLabel: buildTableLabel("open order", 0),
+      ordersTableCaption: buildOrdersTableCaption(0, 0),
       fills: [],
       fillsTotal: 0,
       fillsEmptyMessage: "No fills recorded today.",
       hasFills: false,
       fillsMoreLabel: null,
+      fillsTableLabel: buildTableLabel("recent fill", 0),
+      fillsTableCaption: buildFillsTableCaption(0, 0),
+      quickActionsLabel: "Today quick actions",
+      quickActionsEyebrow: "Quick actions",
       quickActions: QUICK_ACTIONS,
       brokerageLabel: null
     };
@@ -253,6 +270,8 @@ export function buildTodayPanelViewModel(
     moversMoreLabel: positions.length > movers.length
       ? `+${positions.length - movers.length} more in portfolio`
       : null,
+    moversTableLabel: buildTableLabel("top mover", movers.length),
+    moversTableCaption: buildMoversTableCaption(movers.length, positions.length),
     orders,
     ordersTotal: openOrders.length,
     ordersEmptyMessage: "No working orders.",
@@ -260,6 +279,8 @@ export function buildTodayPanelViewModel(
     ordersMoreLabel: openOrders.length > orders.length
       ? `+${openOrders.length - orders.length} more in trading cockpit`
       : null,
+    ordersTableLabel: buildTableLabel("open order", orders.length),
+    ordersTableCaption: buildOrdersTableCaption(orders.length, openOrders.length),
     fills: fillsRows,
     fillsTotal: fills.length,
     fillsEmptyMessage: "No fills recorded today.",
@@ -267,6 +288,10 @@ export function buildTodayPanelViewModel(
     fillsMoreLabel: fills.length > fillsRows.length
       ? `+${fills.length - fillsRows.length} more in trading cockpit`
       : null,
+    fillsTableLabel: buildTableLabel("recent fill", fillsRows.length),
+    fillsTableCaption: buildFillsTableCaption(fillsRows.length, fills.length),
+    quickActionsLabel: "Today quick actions",
+    quickActionsEyebrow: "Quick actions",
     quickActions: QUICK_ACTIONS,
     brokerageLabel
   };
@@ -326,6 +351,7 @@ function buildMovers(positions: TradingPosition[]): TodayMoverRow[] {
         markPrice: pos.markPrice,
         dayPnl: pos.dayPnl,
         dayPnlTone,
+        rowClassName: todayRowClassName(dayPnlTone),
         ariaLabel: `${pos.symbol} ${pos.side} ${pos.quantity} shares, mark ${pos.markPrice}, day P&L ${pos.dayPnl}`
       };
     });
@@ -412,4 +438,32 @@ function formatSignedCurrency(value: number): string {
 
 function formatCountLabel(count: number, singular: string, plural: string): string {
   return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function buildTableLabel(singular: string, visibleCount: number): string {
+  return formatCountLabel(visibleCount, singular, `${singular}s`);
+}
+
+function buildMoversTableCaption(visibleCount: number, totalCount: number): string {
+  return `${formatCountLabel(visibleCount, "top mover", "top movers")} shown from ${formatCountLabel(totalCount, "open position", "open positions")}. Columns show symbol, side, quantity, mark price, and day P&L sorted by absolute day P&L magnitude.`;
+}
+
+function buildOrdersTableCaption(visibleCount: number, totalCount: number): string {
+  return `${formatCountLabel(visibleCount, "open order", "open orders")} shown from ${formatCountLabel(totalCount, "working order", "working orders")}. Columns show symbol, side, quantity, order price, status, and submitted time.`;
+}
+
+function buildFillsTableCaption(visibleCount: number, totalCount: number): string {
+  return `${formatCountLabel(visibleCount, "recent fill", "recent fills")} shown from ${formatCountLabel(totalCount, "fill", "fills")} today. Columns show symbol, side, quantity, price, venue, and fill time.`;
+}
+
+function todayRowClassName(tone: TodayTone): string | undefined {
+  if (tone === "success") {
+    return "bg-success/5";
+  }
+
+  if (tone === "danger") {
+    return "bg-danger/5";
+  }
+
+  return undefined;
 }

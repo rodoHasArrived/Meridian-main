@@ -1744,7 +1744,7 @@ export function buildPaperSessionState({
       min: 1000,
       step: 1000
     },
-    formRequirementText: validationError ?? "Strategy ID is optional. Initial cash must be at least $1,000.",
+    formRequirementText: busyReason ?? validationError ?? "Strategy ID is optional. Initial cash must be at least $1,000.",
     toggleCreateButtonLabel: showCreateForm ? "Close form" : "New session",
     toggleCreateButtonAriaLabel: showCreateForm ? "Close paper session creation form" : "Open paper session creation form",
     toggleCreateButtonDisabledReason: isBusy && !showCreateForm ? busyReason : null,

@@ -104,4 +104,42 @@ describe("workspace nav view model", () => {
       ariaLabel: "Price alerts, current page"
     });
   });
+
+  it("preserves operating scope across workspace and subroute navigation", () => {
+    const model = buildWorkspaceNavViewModel("/data/quotes", undefined, "?symbol=aapl&provider=alpaca");
+    const trading = model.items.find((item) => item.key === "trading");
+    const data = model.items.find((item) => item.key === "data");
+    const quotes = data?.subItems.find((item) => item.label === "Live quotes");
+
+    expect(model.operatingScopeLabel).toBe("Subject: AAPL / Provider: alpaca");
+    expect(trading).toMatchObject({
+      route: "/trading?symbol=AAPL",
+      ariaLabel: "Open Trading workspace, Review, preserving Subject: AAPL"
+    });
+    expect(data).toMatchObject({
+      route: "/data?symbol=AAPL&provider=alpaca",
+      ariaLabel: "Data workspace, current route, Live, preserving Subject: AAPL / Provider: alpaca"
+    });
+    expect(quotes).toMatchObject({
+      route: "/data/quotes?symbol=AAPL&provider=alpaca",
+      active: true,
+      ariaLabel: "Live quotes, current page, preserving Subject: AAPL / Provider: alpaca"
+    });
+  });
+
+  it("uses stored operating scope when the current route has no scope query", () => {
+    const model = buildWorkspaceNavViewModel("/portfolio", undefined, "", {
+      fundAccountId: "fund-001",
+      runId: "run-44"
+    });
+
+    expect(model.currentWorkspace).toMatchObject({
+      route: "/portfolio?fundAccountId=fund-001&runId=run-44",
+      routeAriaLabel: "Scoped route /portfolio?fundAccountId=fund-001&runId=run-44"
+    });
+    expect(model.items.find((item) => item.key === "accounting")).toMatchObject({
+      route: "/accounting?fundAccountId=fund-001&runId=run-44",
+      ariaLabel: "Open Accounting workspace, Review, preserving Account: fund-001 / Run: run-44"
+    });
+  });
 });

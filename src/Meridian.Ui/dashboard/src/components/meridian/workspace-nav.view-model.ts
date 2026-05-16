@@ -1,3 +1,9 @@
+import {
+  appendOperatingScopeToRoute,
+  buildOperatingScopeFromSearch,
+  summarizeOperatingScopeForRoute,
+  type AppShellOperatingScopeInput
+} from "@/app-shell.view-model";
 import { isWorkspacePathActive, WORKSPACES, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 
@@ -38,6 +44,8 @@ export interface WorkspaceNavViewModel {
   modelEyebrow: string;
   modelDescription: string;
   currentWorkspace: WorkspaceNavCurrentWorkspaceViewModel;
+  operatingScopeLabel: string | null;
+  operatingScopeAriaLabel: string | null;
   navEyebrow: string;
   deliveryEyebrow: string;
   deliveryTitle: string;
@@ -92,24 +100,34 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
 
 export function buildWorkspaceNavViewModel(
   pathname: string,
-  workspaces: WorkspaceSummary[] = WORKSPACES
+  workspaces: WorkspaceSummary[] = WORKSPACES,
+  search = "",
+  operatingContextScope: AppShellOperatingScopeInput | null = null
 ): WorkspaceNavViewModel {
   const currentWorkspace =
     workspaces.find((workspace) => isWorkspacePathActive(pathname, workspace.key)) ?? workspaces[0];
+  const operatingScope = buildOperatingScopeFromSearch(search, operatingContextScope);
 
   const items = workspaces.map<WorkspaceNavItemViewModel>((workspace) => {
     const active = isWorkspacePathActive(pathname, workspace.key);
     const statusTone = workspaceStatusTone(workspace.status);
+    const workspaceCanonicalRoute = workspacePath(workspace.key);
+    const workspaceRoute = appendOperatingScopeToRoute(workspaceCanonicalRoute, operatingScope);
+    const workspaceScopeSummary = summarizeOperatingScopeForRoute(workspaceCanonicalRoute, operatingScope);
     const rawSubRoutes = WORKSPACE_SUBROUTES[workspace.key] ?? [];
     const subItems: WorkspaceNavSubItemViewModel[] = active
       ? rawSubRoutes.map((sub) => {
           const subActive = isSubRouteActive(pathname, sub.route);
+          const subRoute = appendOperatingScopeToRoute(sub.route, operatingScope);
+          const subScopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
           return {
             label: sub.label,
-            route: sub.route,
+            route: subRoute,
             active: subActive,
             ariaCurrent: subActive ? "page" : undefined,
-            ariaLabel: subActive ? `${sub.label}, current page` : `Open ${sub.label}`
+            ariaLabel: subActive
+              ? `${sub.label}, current page${formatPreservedScopeAriaSuffix(subScopeSummary)}`
+              : `Open ${sub.label}${formatPreservedScopeAriaSuffix(subScopeSummary)}`
           };
         })
       : [];
@@ -120,15 +138,16 @@ export function buildWorkspaceNavViewModel(
       description: workspace.description,
       statusLabel: active ? `${workspace.status} · Current` : workspace.status,
       statusTone,
-      route: workspacePath(workspace.key),
+      route: workspaceRoute,
       active,
       ariaCurrent: active ? "page" : undefined,
       ariaLabel: active
-        ? `${workspace.label} workspace, current route, ${workspace.status}`
-        : `Open ${workspace.label} workspace, ${workspace.status}`,
+        ? `${workspace.label} workspace, current route, ${workspace.status}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`
+        : `Open ${workspace.label} workspace, ${workspace.status}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`,
       subItems
     };
   });
+  const currentRoute = appendOperatingScopeToRoute(workspacePath(currentWorkspace.key), operatingScope);
 
   return {
     brandTitle: "Meridian",
@@ -141,10 +160,12 @@ export function buildWorkspaceNavViewModel(
       description: currentWorkspace.description,
       statusLabel: `${currentWorkspace.status} posture`,
       statusTone: workspaceStatusTone(currentWorkspace.status),
-      route: workspacePath(currentWorkspace.key),
-      routeAriaLabel: `Canonical route ${workspacePath(currentWorkspace.key)}`,
+      route: currentRoute,
+      routeAriaLabel: operatingScope.hasScope ? `Scoped route ${currentRoute}` : `Canonical route ${currentRoute}`,
       ariaLabel: `Current workspace: ${currentWorkspace.label}, ${currentWorkspace.status} posture`
     },
+    operatingScopeLabel: operatingScope.hasScope ? operatingScope.summary : null,
+    operatingScopeAriaLabel: operatingScope.hasScope ? `Navigation preserves operating scope: ${operatingScope.summary}` : null,
     navEyebrow: "Workspaces",
     deliveryEyebrow: "Shell controls",
     deliveryTitle: "Palette-first routing",
@@ -175,4 +196,8 @@ function workspaceStatusTone(status: string): WorkspaceNavStatusTone {
     default:
       return "review";
   }
+}
+
+function formatPreservedScopeAriaSuffix(scopeSummary: string | null): string {
+  return scopeSummary ? `, preserving ${scopeSummary}` : "";
 }

@@ -4,10 +4,11 @@ import { X } from "lucide-react";
 import {
   buildCommandPaletteViewModel,
   resolveCommandPaletteKeyCommand,
+  type CommandPaletteFocusAction,
   type CommandPaletteFocusBoundary,
   type CommandPaletteFocusTarget
 } from "@/components/meridian/command-palette.view-model";
-import { COMMAND_PALETTE_DIALOG_ID } from "@/app-shell.view-model";
+import { COMMAND_PALETTE_DIALOG_ID, type AppShellOperatingScopeInput } from "@/app-shell.view-model";
 import { cn } from "@/lib/utils";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
 
@@ -36,6 +37,9 @@ interface CommandPaletteProps {
   workflowLibrary?: WorkflowLibrary | null;
   workflowPresets?: WorkflowPresetLibrary | null;
   workflowError?: string | null;
+  operatorFocusItems?: CommandPaletteFocusAction[] | null;
+  operatingContextSymbol?: string | null;
+  operatingScope?: AppShellOperatingScopeInput | null;
   onPresetUsed?: (presetId: string) => void | Promise<void>;
 }
 
@@ -45,6 +49,9 @@ export function CommandPalette({
   workflowLibrary,
   workflowPresets,
   workflowError,
+  operatorFocusItems,
+  operatingContextSymbol,
+  operatingScope,
   onPresetUsed
 }: CommandPaletteProps) {
   const { pathname, search, hash } = useLocation();
@@ -60,9 +67,12 @@ export function CommandPalette({
     {
       workflowLibrary,
       workflowPresets,
-      workflowError
+      workflowError,
+      operatorFocusItems
     },
-    query
+    query,
+    operatingContextSymbol ?? null,
+    operatingScope ?? null
   );
 
   useEffect(() => {
@@ -166,6 +176,9 @@ export function CommandPalette({
         </div>
         <div className="command-palette-summary" aria-label={viewModel.scopeLabel}>
           <span className="command-palette-chip">{viewModel.activeWorkspaceLabel}</span>
+          {viewModel.operatingContextLabel ? (
+            <span className="command-palette-chip">{viewModel.operatingContextLabel}</span>
+          ) : null}
           <span className="command-palette-chip">{viewModel.shortcutHint}</span>
           {viewModel.backendStatusLabel ? (
             <span className="command-palette-chip">{viewModel.backendStatusLabel}</span>
@@ -239,8 +252,13 @@ export function CommandPalette({
                         <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`}>
                           {item.routeLabel}
                         </span>
-                        {item.active && (
-                          <span className="rounded-sm border border-primary/35 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-primary">
+                        {(item.active || item.statusVisible) && (
+                          <span
+                            className={cn(
+                              "command-palette-status",
+                              `command-palette-status-${item.statusTone}`
+                            )}
+                          >
                             {item.statusLabel}
                           </span>
                         )}

@@ -465,6 +465,11 @@ export interface ResearchPlotWorkspaceState {
   statusBadgeLabel: string;
   statusBadgeVariant: ResearchComparisonBadgeVariant;
   expression: string;
+  notebookToolbarAriaLabel: string;
+  notebookToolbarItems: ResearchToolbarItem[];
+  studyTableEmptyText: string;
+  studyTableCaption: string;
+  selectedStudyEmptyText: string;
   toolbarPills: string[];
   metaItems: string[];
   xAxisLabel: string;
@@ -481,6 +486,13 @@ export interface ResearchPlotWorkspaceState {
   consoleBody: string;
   overlayTitle: string;
   overlayItems: string[];
+}
+
+export interface ResearchToolbarItem {
+  id: string;
+  label: string;
+  value?: string;
+  active?: boolean;
 }
 
 export interface ResearchPlotStatisticsState {
@@ -1152,6 +1164,14 @@ export function buildResearchRunLibraryState({
   const resolvedPlotStudyId = resolveSelectedPlotStudyId(basePlotTool.studies, selectedPlotStudyId);
   const plotTool: ResearchPlotToolState = {
     ...basePlotTool,
+    workspace: {
+      ...basePlotTool.workspace,
+      notebookToolbarAriaLabel: "Strategy notebook filters",
+      notebookToolbarItems: buildPlotNotebookToolbarItems(basePlotTool.studies, resolvedPlotStudyId),
+      studyTableEmptyText: "No retained PlotTool studies are available.",
+      studyTableCaption: "Retained strategy notebooks aligned to the active PlotTool workspace. Select a row to inspect the notebook detail.",
+      selectedStudyEmptyText: "No PlotTool study is selected."
+    },
     studies: buildPlotStudyRows(basePlotTool.studies, resolvedPlotStudyId)
   };
   const selectedPlotStudy = resolvedPlotStudyId
@@ -1734,23 +1754,24 @@ export function buildPlotToolState({
     { id: "evidence", label: "Evidence pack", value: evidenceCue, benchmark: "Ledger / audit" }
   ];
   const sampleRows = plotToolSampleRows;
+  const studyRows: ResearchPlotStudyItem[] = runs.map((run, index) => ({
+    id: run.id,
+    title: formatText(run.strategyName),
+    subtitle: `${formatText(run.dataset)} · ${formatText(run.window)} · ${formatText(run.engine)}`,
+    statusText: formatText(run.status),
+    statusBadgeLabel: formatText(run.mode).toUpperCase(),
+    statusBadgeVariant: badgeVariantForMode(run.mode),
+    metricText: `${formatText(run.pnl)} · Sharpe ${formatText(run.sharpe)}`,
+    noteText: formatOptionalNotes(run.notes),
+    isActive: activeRun ? run.id === activeRun.id : index === 0,
+    detailPanelId: RESEARCH_PLOT_STUDY_DETAIL_PANEL_ID,
+    detailExpanded: false,
+    ariaLabel: `${formatText(run.strategyName)} PlotTool study. ${formatText(run.status)} ${formatText(run.mode)}. ${formatText(run.pnl)} and Sharpe ${formatText(run.sharpe)}.`,
+    rowSelectAriaLabel: `Inspect ${formatText(run.strategyName)} PlotTool study detail`
+  }));
 
   return {
-    studies: runs.map((run, index) => ({
-      id: run.id,
-      title: formatText(run.strategyName),
-      subtitle: `${formatText(run.dataset)} · ${formatText(run.window)} · ${formatText(run.engine)}`,
-      statusText: formatText(run.status),
-      statusBadgeLabel: formatText(run.mode).toUpperCase(),
-      statusBadgeVariant: badgeVariantForMode(run.mode),
-      metricText: `${formatText(run.pnl)} · Sharpe ${formatText(run.sharpe)}`,
-      noteText: formatOptionalNotes(run.notes),
-      isActive: activeRun ? run.id === activeRun.id : index === 0,
-      detailPanelId: RESEARCH_PLOT_STUDY_DETAIL_PANEL_ID,
-      detailExpanded: false,
-      ariaLabel: `${formatText(run.strategyName)} PlotTool study. ${formatText(run.status)} ${formatText(run.mode)}. ${formatText(run.pnl)} and Sharpe ${formatText(run.sharpe)}.`,
-      rowSelectAriaLabel: `Inspect ${formatText(run.strategyName)} PlotTool study detail`
-    })),
+    studies: studyRows,
     workspace: {
       eyebrow: "Strategy Lane · PlotTool",
       title: `${chartStudyLabel} workstation`,
@@ -1764,6 +1785,11 @@ export function buildPlotToolState({
         companionName ? "Pair overlay" : "Single study",
         runDiff ? "Diff linked" : "0d lag"
       ],
+      notebookToolbarAriaLabel: "Strategy notebook filters",
+      notebookToolbarItems: buildPlotNotebookToolbarItems(studyRows, activeRun?.id ?? runs[0]?.id ?? null),
+      studyTableEmptyText: "No retained PlotTool studies are available.",
+      studyTableCaption: "Retained strategy notebooks aligned to the active PlotTool workspace. Select a row to inspect the notebook detail.",
+      selectedStudyEmptyText: "No PlotTool study is selected.",
       metaItems: [
         datasetName,
         `${observationCount.toLocaleString()} obs`,
@@ -1977,6 +2003,21 @@ export function buildPlotStudyDetail(study: ResearchPlotStudyItem): ResearchPlot
       { label: "Operator note", value: study.noteText }
     ]
   };
+}
+
+export function buildPlotNotebookToolbarItems(
+  studies: ResearchPlotStudyItem[],
+  selectedStudyId: string | null = resolveSelectedPlotStudyId(studies, null)
+): ResearchToolbarItem[] {
+  const selectedStudy = selectedStudyId
+    ? studies.find((study) => study.id === selectedStudyId) ?? null
+    : null;
+
+  return [
+    { id: "count", label: "Notebook set", value: `${studies.length} retained` },
+    { id: "selected", label: "Selected", value: selectedStudy ? formatText(selectedStudy.title) : "None", active: selectedStudy !== null },
+    { id: "lane", label: "Lane", value: "Strategy" }
+  ];
 }
 
 function resolveSelectedPlotStudyId(

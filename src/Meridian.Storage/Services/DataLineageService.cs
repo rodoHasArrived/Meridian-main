@@ -215,7 +215,13 @@ public sealed class DataLineageService : IDataLineageService
 
     private void PersistChange(Func<bool> mutate)
     {
-        _saveLock.Wait();
+        // Bounded wait so persistence never blocks a thread-pool thread indefinitely.
+        if (!_saveLock.Wait(TimeSpan.FromSeconds(10)))
+        {
+            _logger.LogWarning("DataLineageService: save lock timed out; disk write deferred.");
+            return;
+        }
+
         try
         {
             if (!mutate())

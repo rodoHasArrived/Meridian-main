@@ -217,6 +217,39 @@ describe("strategy designer view-model", () => {
     expect(payoff.caption).toContain("Add a leg");
   });
 
+  it("derives spot-price field feedback from invalid commits", () => {
+    const { result } = renderHook(() => useStrategyDesignerViewModel(getStrategyDesignerSampleLegs()));
+
+    expect(result.current.spotPriceField).toMatchObject({
+      id: "strategy-designer-spot-price",
+      helperId: "strategy-designer-spot-price-help",
+      feedbackId: "strategy-designer-spot-price-feedback",
+      describedBy: "strategy-designer-spot-price-help",
+      invalid: false,
+      feedbackMessage: null
+    });
+
+    act(() => {
+      result.current.commitSpotPriceDraft("-3");
+    });
+
+    expect(result.current.spotPriceField.value).toBe("100");
+    expect(result.current.spotPriceField.invalid).toBe(true);
+    expect(result.current.spotPriceField.describedBy).toBe(
+      "strategy-designer-spot-price-help strategy-designer-spot-price-feedback"
+    );
+    expect(result.current.spotPriceField.feedbackMessage).toBe(
+      "Enter a non-negative spot price. Restored $100.00 for payoff sampling."
+    );
+
+    act(() => {
+      result.current.updateSpotPriceDraft("125");
+    });
+
+    expect(result.current.spotPriceField.invalid).toBe(false);
+    expect(result.current.spotPriceField.feedbackMessage).toBeNull();
+  });
+
   it("locates break-even price near the long-call strike + premium", () => {
     const series = buildPayoffSeries([longCall100], 100);
     const crossings = findBreakEvenPrices(series);
