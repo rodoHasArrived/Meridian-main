@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Auth;
 using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -122,6 +123,11 @@ public sealed class RiskEndpointsTests
         configureServices(builder.Services);
 
         var app = builder.Build();
+        app.Use((context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ManageOrders;
+            return next();
+        });
         app.MapRiskEndpoints(JsonOptions());
         if (includeExecutionEndpoints)
         {
