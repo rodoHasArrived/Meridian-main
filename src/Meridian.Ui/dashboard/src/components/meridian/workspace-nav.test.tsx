@@ -15,4 +15,23 @@ describe("WorkspaceNav", () => {
     expect(screen.queryByLabelText("Canonical route /accounting")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Open command palette with Control K")).not.toBeInTheDocument();
   });
+
+  it("shows preserved operating context and carries it into navigation links", () => {
+    renderWithRouter(
+      <WorkspaceNav operatingContextScope={{ symbol: "AAPL", provider: "alpaca" }} />,
+      { initialEntries: ["/data/quotes"] }
+    );
+
+    expect(screen.getByLabelText("Navigation preserves operating scope: Subject: AAPL / Provider: alpaca")).toHaveTextContent(
+      "Subject: AAPL / Provider: alpaca"
+    );
+    expect(screen.getByLabelText("Open Trading workspace, Review, preserving Subject: AAPL")).toHaveAttribute(
+      "href",
+      "/trading?symbol=AAPL"
+    );
+    expect(screen.getByLabelText("Live quotes, current page, preserving Subject: AAPL / Provider: alpaca")).toHaveAttribute(
+      "href",
+      "/data/quotes?symbol=AAPL&provider=alpaca"
+    );
+  });
 });

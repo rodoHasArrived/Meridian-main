@@ -139,10 +139,10 @@ describe("ReportingScreen", () => {
     expect(within(task).getByRole("list", { name: "Selected report-pack export actions" })).toBeInTheDocument();
     const excelPreviewLink = within(task).getByRole("link", { name: "Preview Excel export payload" });
     expect(excelPreviewLink).toHaveAttribute("href", "/api/export/preview?profile=excel");
-    expect(excelPreviewLink).toHaveAttribute("aria-describedby", "reporting-action-excel-preview-status");
+    expect(excelPreviewLink).toHaveAttribute("aria-describedby", "reporting-action-excel-preview-report-pack-task-status");
     expect(within(task).getByText("Opens the current export payload preview in a new browser tab.")).toHaveAttribute(
       "id",
-      "reporting-action-excel-preview-status"
+      "reporting-action-excel-preview-report-pack-task-status"
     );
     const excelProfile = within(task).getByRole("button", { name: "Select Excel for report-pack approval" });
     const auditProfile = within(task).getByRole("button", { name: "Select Audit Pack for report-pack approval" });
@@ -193,7 +193,7 @@ describe("ReportingScreen", () => {
     );
     const auditPreviewLink = within(task).getByRole("link", { name: "Preview Audit Pack export payload" });
     expect(auditPreviewLink).toHaveAttribute("href", "/api/export/preview?profile=audit-pack");
-    expect(auditPreviewLink).toHaveAttribute("aria-describedby", "reporting-action-audit-pack-preview-status");
+    expect(auditPreviewLink).toHaveAttribute("aria-describedby", "reporting-action-audit-pack-preview-report-pack-task-status");
     expect(within(task).getByRole("group", { name: "Reference-only POST /api/export/analysis for Audit Pack export analysis" })).toHaveTextContent(
       "Reference"
     );
@@ -208,6 +208,27 @@ describe("ReportingScreen", () => {
         body: JSON.stringify({ profileId: "audit-pack" })
       })
     );
+  });
+
+  it("keeps report-pack task and inspector action descriptions uniquely identified", () => {
+    const { container } = renderWithRouter(<ReportingScreen data={governance} />, {
+      initialEntries: ["/reporting/report-packs"]
+    });
+
+    const task = screen.getByRole("region", { name: "Report-pack approval task" });
+    expect(within(task).getByRole("link", { name: "Preview Excel export payload" })).toHaveAttribute(
+      "aria-describedby",
+      "reporting-action-excel-preview-report-pack-task-status"
+    );
+    expect(screen.getByRole("link", { name: "Open Excel report-pack evidence" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Excel export actions" }))
+      .toHaveTextContent("Opens the current export payload preview in a new browser tab.");
+
+    const ids = Array.from(container.querySelectorAll<HTMLElement>("[id]")).map((element) => element.id);
+    const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
+    expect(duplicateIds).toEqual([]);
+    expect(container.querySelector("#reporting-action-excel-preview-profile-detail-status")).toBeInTheDocument();
+    expect(container.querySelector("#reporting-action-excel-preview-report-pack-task-status")).toBeInTheDocument();
   });
 
   it("surfaces VM-owned running export feedback in the report-pack task", async () => {

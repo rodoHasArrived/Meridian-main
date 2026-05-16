@@ -94,6 +94,7 @@ describe("DataOperationsScreen", () => {
     expect(providerRow).toHaveAttribute("aria-selected", "true");
     expect(providerRow).toHaveAttribute("aria-expanded", "true");
     expect(providerRow).toHaveAttribute("aria-controls", DATA_PROVIDER_DETAIL_PANEL_ID);
+    expect(providerRow).toHaveClass("bg-success/5");
     const providerDetail = screen.getByRole("region", { name: /provider detail for Polygon/i });
     expect(providerDetail).toBeInTheDocument();
     expect(within(providerDetail).getByText("Trust score")).toBeInTheDocument();
@@ -103,6 +104,7 @@ describe("DataOperationsScreen", () => {
     expect(within(providerDetail).getByText("Gate: No gate impact")).toBeInTheDocument();
     const runningBackfill = screen.getByRole("row", { name: "Inspect backfill BF-1042" });
     expect(runningBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
+    expect(runningBackfill).toHaveClass("bg-paper/5");
     const backfillDetail = screen.getByRole("region", { name: /backfill detail for BF-1042/i });
     expect(backfillDetail).toHaveAttribute("id", DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(within(backfillDetail).getByText("US equities / 30d")).toBeInTheDocument();
@@ -113,6 +115,7 @@ describe("DataOperationsScreen", () => {
     expect(exportRow).toHaveAttribute("aria-selected", "true");
     expect(exportRow).toHaveAttribute("aria-expanded", "true");
     expect(exportRow).toHaveAttribute("aria-controls", DATA_EXPORT_DETAIL_PANEL_ID);
+    expect(exportRow).toHaveClass("bg-success/5");
     const exportDetail = screen.getByRole("region", { name: /export detail for EX-2201/i });
     expect(exportDetail).toHaveAttribute("id", DATA_EXPORT_DETAIL_PANEL_ID);
     expect(within(exportDetail).getByText("python-pandas")).toBeInTheDocument();
@@ -166,6 +169,7 @@ describe("DataOperationsScreen", () => {
 
     expect(polygonProvider).toHaveAttribute("aria-selected", "true");
     expect(databentoProvider).toHaveAttribute("aria-expanded", "false");
+    expect(databentoProvider).toHaveClass("bg-danger/5");
 
     databentoProvider.focus();
     await user.keyboard("{Enter}");
@@ -290,6 +294,7 @@ describe("DataOperationsScreen", () => {
     expect(runningBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(reviewBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(reviewBackfill).toHaveAttribute("aria-expanded", "false");
+    expect(reviewBackfill).toHaveClass("bg-warning/5");
 
     await user.click(reviewBackfill);
 
@@ -341,6 +346,7 @@ describe("DataOperationsScreen", () => {
     expect(readyExport).toHaveAttribute("aria-selected", "true");
     expect(attentionExport).toHaveAttribute("aria-expanded", "false");
     expect(attentionExport).toHaveAttribute("aria-controls", DATA_EXPORT_DETAIL_PANEL_ID);
+    expect(attentionExport).toHaveClass("bg-warning/5");
 
     attentionExport.focus();
     await user.keyboard("{Enter}");

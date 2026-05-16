@@ -107,8 +107,15 @@ export interface StrategyDesignerCommandViewModel {
 }
 
 export interface StrategyDesignerSpotPriceFieldViewModel {
+  id: string;
   label: string;
   value: string;
+  helperId: string;
+  helperText: string;
+  feedbackId: string;
+  feedbackMessage: string | null;
+  describedBy: string;
+  invalid: boolean;
   min: number;
   step: string;
   inputMode: "decimal";
@@ -1865,6 +1872,7 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
   const [legs, setLegs] = useState<StrategyLeg[]>(initialLegs);
   const [spotPrice, setSpotPriceState] = useState<number>(100);
   const [spotPriceDraft, setSpotPriceDraft] = useState<string>("100");
+  const [spotPriceFeedback, setSpotPriceFeedback] = useState<string | null>(null);
   const [selectedLegId, setSelectedLegId] = useState<string | null>(null);
   const [clearCanvasConfirmationPending, setClearCanvasConfirmationPending] = useState(false);
   const [builderDocument, setBuilderDocument] = useState<StrategyBuilderDocument>(() => cloneStrategyBuilderDocument(DEFAULT_STRATEGY_BUILDER_DOCUMENT));
@@ -1880,11 +1888,13 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
     clearPendingCanvasConfirmation();
     setSpotPriceState(price);
     setSpotPriceDraft(price.toString());
+    setSpotPriceFeedback(null);
   }, [clearPendingCanvasConfirmation]);
 
   const updateSpotPriceDraft = useCallback((value: string) => {
     clearPendingCanvasConfirmation();
     setSpotPriceDraft(value);
+    setSpotPriceFeedback(null);
   }, [clearPendingCanvasConfirmation]);
 
   const commitSpotPriceDraft = useCallback((value?: string) => {
@@ -1894,10 +1904,12 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
     if (Number.isFinite(parsed) && parsed >= 0) {
       setSpotPriceState(parsed);
       setSpotPriceDraft(parsed.toString());
+      setSpotPriceFeedback(null);
       return;
     }
 
     setSpotPriceDraft(spotPrice.toString());
+    setSpotPriceFeedback(`Enter a non-negative spot price. Restored ${formatPrice(spotPrice)} for payoff sampling.`);
   }, [clearPendingCanvasConfirmation, spotPrice, spotPriceDraft]);
 
   const addLegFromPalette = useCallback((kind: StrategyLegKind): string => {
@@ -2029,8 +2041,17 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
     palette: PALETTE,
     spotPrice,
     spotPriceField: {
+      id: "strategy-designer-spot-price",
       label: "Spot price",
       value: spotPriceDraft,
+      helperId: "strategy-designer-spot-price-help",
+      helperText: "Non-negative decimal used to sample payoff, participation, and break-even evidence.",
+      feedbackId: "strategy-designer-spot-price-feedback",
+      feedbackMessage: spotPriceFeedback,
+      describedBy: spotPriceFeedback
+        ? "strategy-designer-spot-price-help strategy-designer-spot-price-feedback"
+        : "strategy-designer-spot-price-help",
+      invalid: spotPriceFeedback !== null,
       min: 0,
       step: "0.01",
       inputMode: "decimal",

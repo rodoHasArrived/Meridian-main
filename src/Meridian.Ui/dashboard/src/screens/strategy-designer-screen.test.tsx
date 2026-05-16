@@ -79,11 +79,27 @@ describe("StrategyDesignerScreen", () => {
     renderWithRouter(<StrategyDesignerScreen />);
 
     const spotPrice = screen.getByRole("spinbutton", { name: /underlying spot price/i });
+    expect(spotPrice).toHaveAccessibleDescription(/non-negative decimal used to sample payoff/i);
+
     await user.clear(spotPrice);
     await user.type(spotPrice, "-3");
     await user.tab();
 
     expect(spotPrice).toHaveValue(100);
+    expect(spotPrice).toHaveAttribute("aria-invalid", "true");
+    expect(spotPrice).toHaveAttribute(
+      "aria-errormessage",
+      "strategy-designer-spot-price-feedback"
+    );
+    expect(screen.getByText(
+      "Enter a non-negative spot price. Restored $100.00 for payoff sampling."
+    )).toHaveAttribute("role", "status");
+
+    await user.clear(spotPrice);
+    await user.type(spotPrice, "125");
+
+    expect(spotPrice).not.toHaveAttribute("aria-invalid");
+    expect(screen.queryByText(/restored \$100\.00/i)).not.toBeInTheDocument();
   });
 
   it("associates route actions with the designer endpoint catalog", () => {

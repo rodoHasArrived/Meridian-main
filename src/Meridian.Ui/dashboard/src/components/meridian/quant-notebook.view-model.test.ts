@@ -126,6 +126,7 @@ describe("quant-notebook pure helpers", () => {
     });
     expect(empty.statusTone).toBe("idle");
     expect(empty.fields.symbol.error).toBe(false);
+    expect(empty.fields.symbol.describedBy).toBe("quant-notebook-context-symbol-help");
 
     const loading = buildDataContextPanel({ symbol: "AAPL" }, null, "loading", null);
 
@@ -136,6 +137,8 @@ describe("quant-notebook pure helpers", () => {
       busy: true
     });
     expect(loading.fields.from.disabledReason).toBe("Data fetch is in progress; wait before editing the start date.");
+    expect(loading.fields.from.disabledReasonId).toBe("quant-notebook-context-from-disabled-reason");
+    expect(loading.fields.from.describedBy).toBe("quant-notebook-context-from-help quant-notebook-context-from-disabled-reason");
 
     const error = buildDataContextPanel({}, null, "error", "Symbol is required.");
 
@@ -207,6 +210,8 @@ describe("useQuantNotebookViewModel", () => {
       placeholder: "// Cell 1\n// Use Data.Prices(symbol), Backtest.WithSymbols(...), or any C# expression",
       disabled: false,
       disabledReason: null,
+      disabledReasonId: "quant-notebook-cell-1-source-disabled-reason",
+      describedBy: null,
       spellCheck: false
     });
     expect(result.current.dataResult).toBeNull();
@@ -388,6 +393,8 @@ describe("useQuantNotebookViewModel", () => {
       label: "Cell 1 source",
       disabled: true,
       disabledReason: "Cell 1 is running; wait before editing the source.",
+      disabledReasonId: "quant-notebook-cell-1-source-disabled-reason",
+      describedBy: "quant-notebook-cell-1-source-disabled-reason",
       spellCheck: false
     });
 

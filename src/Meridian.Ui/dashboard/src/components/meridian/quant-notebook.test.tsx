@@ -30,6 +30,8 @@ function makeCell(overrides: Partial<QuantNotebookCellViewModel> = {}): QuantNot
       placeholder: "// Cell 1\n// Use Data.Prices(symbol), Backtest.WithSymbols(...), or any C# expression",
       disabled: false,
       disabledReason: null,
+      disabledReasonId: "quant-notebook-cell-1-source-disabled-reason",
+      describedBy: null,
       spellCheck: false
     },
     deleteConfirmationPending: false,
@@ -163,6 +165,8 @@ describe("QuantNotebook", () => {
                 placeholder: "## Section 1\n\nNarrative, hypothesis, or analysis notes.",
                 disabled: true,
                 disabledReason: "Cell 1 is running; wait before editing the source.",
+                disabledReasonId: "quant-notebook-cell-1-source-disabled-reason",
+                describedBy: "quant-notebook-cell-1-source-disabled-reason",
                 spellCheck: true
               }
             })
@@ -175,6 +179,11 @@ describe("QuantNotebook", () => {
     expect(source).toHaveAttribute("placeholder", "## Section 1\n\nNarrative, hypothesis, or analysis notes.");
     expect(source).toBeDisabled();
     expect(source).toHaveAttribute("title", "Cell 1 is running; wait before editing the source.");
+    expect(source).toHaveAttribute("aria-describedby", "quant-notebook-cell-1-source-disabled-reason");
+    expect(screen.getByText("Cell 1 is running; wait before editing the source.")).toHaveAttribute(
+      "id",
+      "quant-notebook-cell-1-source-disabled-reason"
+    );
     expect(source).toHaveAttribute("spellcheck", "true");
   });
 
@@ -208,6 +217,40 @@ describe("QuantNotebook", () => {
     expect(screen.getByLabelText("Symbol")).toHaveAttribute("id", "quant-notebook-context-symbol");
     expect(screen.getByLabelText("From date")).toHaveAttribute("type", "date");
     expect(screen.getByText("Enter a symbol and fetch bars before running context-aware cells.")).toBeInTheDocument();
+  });
+
+  it("renders data-context loading locks as visible linked field feedback", () => {
+    render(
+      <QuantNotebook
+        vm={makeVm({
+          context: { symbol: "AAPL" },
+          dataFetchState: "loading",
+          dataContextPanel: buildDataContextPanel({ symbol: "AAPL" }, null, "loading", null)
+        })}
+      />
+    );
+
+    const symbol = screen.getByLabelText("Symbol");
+    expect(symbol).toBeDisabled();
+    expect(symbol).toHaveAttribute(
+      "aria-describedby",
+      "quant-notebook-context-symbol-help quant-notebook-context-symbol-disabled-reason"
+    );
+    expect(screen.getByText("Data fetch is in progress; wait before editing the symbol.")).toHaveAttribute(
+      "id",
+      "quant-notebook-context-symbol-disabled-reason"
+    );
+
+    const interval = screen.getByLabelText("Interval");
+    expect(interval).toBeDisabled();
+    expect(interval).toHaveAttribute(
+      "aria-describedby",
+      "quant-notebook-context-interval-help quant-notebook-context-interval-disabled-reason"
+    );
+    expect(screen.getByText("Data fetch is in progress; wait before editing the interval.")).toHaveAttribute(
+      "id",
+      "quant-notebook-context-interval-disabled-reason"
+    );
   });
 
   it("renders data fetch errors as an alert linked to the panel status", () => {

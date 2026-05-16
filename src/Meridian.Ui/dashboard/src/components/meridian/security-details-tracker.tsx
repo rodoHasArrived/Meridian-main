@@ -3,6 +3,7 @@ import { Briefcase, ClipboardList, Pencil, Plus, Save, Trash2, X } from "lucide-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getOperatorOverrides as defaultGetOperatorOverrides, patchOperatorOverrides as defaultPatchOperatorOverrides } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,7 @@ import {
   buildLotsTrackerViewModel,
   parseLotNumber,
   type SecurityDetailFieldDef,
+  type LotsTrackerDraftFieldViewModel,
   type LotsTrackerRowViewModel,
   type SecurityLot
 } from "./security-details-tracker.view-model";
@@ -571,8 +573,6 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
     return null;
   }
 
-  const inputClass = "w-full rounded-md border border-border bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
-  const labelClass = "text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground";
   const lotColumns: DenseDataTableColumn<LotsTrackerRowViewModel>[] = [
     {
       id: "trade-date",
@@ -639,80 +639,65 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-2 sm:grid-cols-6">
-          <div className="sm:col-span-1">
-            <label htmlFor="lot-date" className={labelClass}>Trade date</label>
-            <input
-              id="lot-date"
-              type="date"
-              className={inputClass}
-              value={draftDate}
-              onChange={(e) => {
-                setDraftDate(e.target.value);
-                setPendingRemoveLotId(null);
-              }}
-            />
-          </div>
-          <div className="sm:col-span-1">
-            <label htmlFor="lot-qty" className={labelClass}>Quantity</label>
-            <input
-              id="lot-qty"
-              type="number"
-              step="any"
-              className={inputClass}
-              value={draftQty}
-              onChange={(e) => {
-                setDraftQty(e.target.value);
-                setPendingRemoveLotId(null);
-              }}
-              placeholder="100"
-            />
-          </div>
-          <div className="sm:col-span-1">
-            <label htmlFor="lot-price" className={labelClass}>Price</label>
-            <input
-              id="lot-price"
-              type="number"
-              step="any"
-              className={inputClass}
-              value={draftPrice}
-              onChange={(e) => {
-                setDraftPrice(e.target.value);
-                setPendingRemoveLotId(null);
-              }}
-              placeholder="0.00"
-            />
-          </div>
-          <div className="sm:col-span-1">
-            <label htmlFor="lot-fees" className={labelClass}>Fees</label>
-            <input
-              id="lot-fees"
-              type="number"
-              step="any"
-              className={inputClass}
-              value={draftFees}
-              onChange={(e) => {
-                setDraftFees(e.target.value);
-                setPendingRemoveLotId(null);
-              }}
-              placeholder="0.00"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label htmlFor="lot-note" className={labelClass}>Note</label>
-            <input
-              id="lot-note"
-              type="text"
-              className={inputClass}
-              value={draftNote}
-              onChange={(e) => {
-                setDraftNote(e.target.value);
-                setPendingRemoveLotId(null);
-              }}
-              placeholder="Broker, strategy, etc."
-            />
-          </div>
+        <div role="group" aria-label={vm.formLabel} className="grid gap-2 sm:grid-cols-6">
+          <LotDraftField
+            field={vm.draftFields.tradeDate}
+            value={draftDate}
+            className="sm:col-span-1"
+            onChange={(value) => {
+              setDraftDate(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
+          <LotDraftField
+            field={vm.draftFields.quantity}
+            value={draftQty}
+            className="sm:col-span-1"
+            onChange={(value) => {
+              setDraftQty(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
+          <LotDraftField
+            field={vm.draftFields.price}
+            value={draftPrice}
+            className="sm:col-span-1"
+            onChange={(value) => {
+              setDraftPrice(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
+          <LotDraftField
+            field={vm.draftFields.fees}
+            value={draftFees}
+            className="sm:col-span-1"
+            onChange={(value) => {
+              setDraftFees(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
+          <LotDraftField
+            field={vm.draftFields.note}
+            value={draftNote}
+            className="sm:col-span-2"
+            onChange={(value) => {
+              setDraftNote(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
         </div>
+        <p
+          id={vm.draftStatus.id}
+          role={vm.draftStatus.role}
+          className={cn(
+            "rounded-md border px-3 py-2 text-xs leading-5",
+            vm.draftStatus.tone === "success"
+              ? "border-success/30 bg-success/10 text-success"
+              : "border-warning/30 bg-warning/10 text-warning"
+          )}
+        >
+          {vm.draftStatus.text}
+        </p>
         <div>
           <Button
             type="button"
@@ -720,6 +705,7 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
             onClick={addLot}
             disabled={vm.addCommand.disabled}
             disabledReason={vm.addCommand.disabledReason}
+            aria-describedby={vm.draftStatus.id}
             aria-label={vm.addCommand.ariaLabel}
           >
             <Plus className="mr-1 h-3.5 w-3.5" />
@@ -773,6 +759,46 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function LotDraftField({
+  field,
+  value,
+  onChange,
+  className
+}: {
+  field: LotsTrackerDraftFieldViewModel;
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+}) {
+  return (
+    <div className={cn("min-w-0 space-y-1", className)}>
+      <label htmlFor={field.id} className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        {field.label}
+      </label>
+      <Input
+        id={field.id}
+        type={field.type}
+        step={field.step}
+        value={value}
+        placeholder={field.placeholder}
+        error={field.invalid}
+        aria-describedby={field.describedBy}
+        aria-errormessage={field.errorText ? field.errorId : undefined}
+        className="min-h-8 px-2 py-1 text-xs"
+        onChange={(event) => onChange(event.target.value)}
+      />
+      <p id={field.helperId} className="text-[11px] leading-4 text-muted-foreground">
+        {field.helperText}
+      </p>
+      {field.errorText ? (
+        <p id={field.errorId} className="text-[11px] leading-4 text-danger">
+          {field.errorText}
+        </p>
+      ) : null}
+    </div>
   );
 }
 

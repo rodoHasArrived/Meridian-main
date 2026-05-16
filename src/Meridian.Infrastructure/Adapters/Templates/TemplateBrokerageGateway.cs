@@ -31,6 +31,8 @@ namespace Meridian.Infrastructure.Adapters.Templates;
 // [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 // [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 // [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
+[Obsolete("TemplateBrokerageGateway is a scaffold/copy-target and must not be registered or used in production. " +
+          "Copy it to Adapters/{BrokerName}/ and implement all TODO items before use.")]
 public sealed class TemplateBrokerageGateway : IBrokerageGateway
 {
     // TODO: Add your broker's HTTP client factory, config options, etc.

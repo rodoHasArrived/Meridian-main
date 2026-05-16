@@ -111,6 +111,8 @@ export interface QuantNotebookCellSourceFieldViewModel {
   placeholder: string;
   disabled: boolean;
   disabledReason: string | null;
+  disabledReasonId: string;
+  describedBy: string | null;
   spellCheck: boolean;
 }
 
@@ -132,6 +134,7 @@ export interface QuantNotebookDataContextFieldViewModel {
   error: boolean;
   disabled: boolean;
   disabledReason: string | null;
+  disabledReasonId: string;
 }
 
 export interface QuantNotebookDataResultRowViewModel {
@@ -553,6 +556,8 @@ function buildCellSourceField(
 ): QuantNotebookCellSourceFieldViewModel {
   const ordinal = cell.ordinal.toString();
   const isMarkdown = cell.kind === "markdown";
+  const disabledReason = disabled ? `Cell ${ordinal} is running; wait before editing the source.` : null;
+  const disabledReasonId = `quant-notebook-cell-${ordinal}-source-disabled-reason`;
 
   return {
     label: `Cell ${ordinal} source`,
@@ -560,7 +565,9 @@ function buildCellSourceField(
       ? `## Section ${ordinal}\n\nNarrative, hypothesis, or analysis notes.`
       : `// Cell ${ordinal}\n// Use Data.Prices(symbol), Backtest.WithSymbols(...), or any C# expression`,
     disabled,
-    disabledReason: disabled ? `Cell ${ordinal} is running; wait before editing the source.` : null,
+    disabledReason,
+    disabledReasonId,
+    describedBy: disabledReason ? disabledReasonId : null,
     spellCheck: isMarkdown
   };
 }
@@ -659,16 +666,18 @@ function buildDataContextField({
   disabledReason: string | null;
 }): QuantNotebookDataContextFieldViewModel {
   const helpId = `${id}-help`;
+  const disabledReasonId = `${id}-disabled-reason`;
   return {
     id,
     label,
     ariaLabel: label,
-    describedBy: helpId,
+    describedBy: disabledReason ? `${helpId} ${disabledReasonId}` : helpId,
     helpId,
     helpText,
     error,
     disabled,
-    disabledReason
+    disabledReason,
+    disabledReasonId
   };
 }
 

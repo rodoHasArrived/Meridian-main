@@ -86,8 +86,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             var storageOptions = sp.GetRequiredService<StorageOptions>();
             var registry = new SymbolRegistryService(storageOptions.RootPath);
 
-            // Initialize the persisted/default registry before any singleton depends on it.
-            registry.InitializeAsync().GetAwaiter().GetResult();
+            // Run on the thread pool so a captured SynchronizationContext cannot cause a deadlock.
+            Task.Run(() => registry.InitializeAsync()).GetAwaiter().GetResult();
 
             return registry;
         });

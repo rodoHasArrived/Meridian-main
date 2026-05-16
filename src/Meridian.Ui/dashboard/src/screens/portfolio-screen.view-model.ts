@@ -97,6 +97,7 @@ export interface PortfolioBrokerageAccountRow {
   warningCount: string;
   hasWarning: boolean;
   warningText: string;
+  rowClassName: string;
   isSelected: boolean;
   expanded: boolean;
   detailPanelId: string;
@@ -117,6 +118,7 @@ export interface PortfolioBrokeragePositionRow {
   pnlTone: "success" | "danger" | "default";
   assetClass: string;
   securityCoverage: string;
+  rowClassName: string;
   isSelected: boolean;
   detailPanelId: string;
   expanded: boolean;
@@ -922,6 +924,7 @@ function toBrokerageAccountRow(
     warningCount: formatCountLabel(warningCount, "warning"),
     hasWarning: warningCount > 0,
     warningText: warningCount > 0 ? account.warnings.join(" ") : "No account sync warnings.",
+    rowClassName: brokerageAccountRowClassName(account.health, warningCount),
     isSelected,
     expanded: isSelected,
     detailPanelId: "portfolio-brokerage-account-detail",
@@ -943,6 +946,23 @@ function brokerageAccountHealthBadgeVariant(
 function brokerageAccountStatusTone(health: string): PortfolioBrokerageAccountDetail["statusTone"] {
   const variant = brokerageAccountHealthBadgeVariant(health);
   return variant === "outline" ? "default" : variant;
+}
+
+function brokerageAccountRowClassName(health: string, warningCount: number): string {
+  if (warningCount > 0) {
+    return "bg-warning/5";
+  }
+
+  const variant = brokerageAccountHealthBadgeVariant(health);
+  if (variant === "danger") {
+    return "bg-danger/5";
+  }
+
+  if (variant === "warning") {
+    return "bg-warning/5";
+  }
+
+  return "bg-background/50";
 }
 
 function buildSelectedBrokerageAccountDetail(
@@ -1062,6 +1082,7 @@ function toBrokeragePositionRow(
     pnlTone: pnlTone(pnl),
     assetClass: position.assetClass,
     securityCoverage: position.security ? "Covered" : "Missing",
+    rowClassName: position.security ? "bg-background/50" : "bg-warning/5",
     isSelected: id === selectedId,
     detailPanelId: "portfolio-brokerage-position-detail",
     expanded: id === selectedId,

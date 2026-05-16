@@ -212,6 +212,33 @@ export interface ExecutionControlSnapshot {
   asOf: string;
 }
 
+export interface RiskRuleStatus {
+  ruleName: string;
+  state: "Healthy" | "Observe" | "Constrained";
+  summary: string;
+  isBreached: boolean;
+  threshold: string;
+  currentValue: string;
+  asOf: string;
+  recentViolations: string[];
+}
+
+export interface RiskRuleConfig {
+  ruleName: string;
+  defaultMaxPositionSize: number | null;
+  symbolPositionLimits: Record<string, number> | null;
+  maxDrawdownPercent: number | null;
+  maxOrdersPerMinute: number | null;
+}
+
+export interface RiskRuleConfigUpdateRequest {
+  defaultMaxPositionSize?: number | null;
+  symbolPositionLimits?: Record<string, number | null> | null;
+  maxDrawdownPercent?: number | null;
+  maxOrdersPerMinute?: number | null;
+  reason?: string | null;
+}
+
 export type OperatorWorkItemKind =
   | "PaperReplay"
   | "PromotionReview"

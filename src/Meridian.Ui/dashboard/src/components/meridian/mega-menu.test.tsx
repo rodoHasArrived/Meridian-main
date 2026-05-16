@@ -56,6 +56,27 @@ describe("MegaMenu", () => {
     expect(screen.queryByRole("dialog", { name: "Workspace navigation" })).not.toBeInTheDocument();
   });
 
+  it("carries operating context into menu links", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<MegaMenu operatingContextScope={{ symbol: "AAPL", provider: "alpaca" }} />, {
+      initialEntries: ["/data/quotes"]
+    });
+
+    await user.click(screen.getByRole("button", { name: "Open workspace navigation menu" }));
+
+    expect(screen.getByLabelText("Mega menu preserves operating scope: Subject: AAPL / Provider: alpaca")).toHaveTextContent(
+      "Subject: AAPL / Provider: alpaca"
+    );
+    expect(screen.getByRole("link", { name: "Open Readiness, Trading workspace, preserving Subject: AAPL" })).toHaveAttribute(
+      "href",
+      "/trading/readiness?symbol=AAPL"
+    );
+    expect(screen.getByRole("link", { name: "Live quotes, current route, Data workspace, preserving Subject: AAPL / Provider: alpaca" })).toHaveAttribute(
+      "href",
+      "/data/quotes?symbol=AAPL&provider=alpaca"
+    );
+  });
+
   it("restores focus when an outside click closes the menu", async () => {
     const user = userEvent.setup();
     renderWithRouter(

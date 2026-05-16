@@ -540,6 +540,7 @@ describe("paper session view model", () => {
     expect(state.toggleCreateButtonDisabledReason).toBe("Paper session sess-1 verification is running.");
     expect(state.createButtonDisabledReason).toBe("Paper session sess-1 verification is running.");
     expect(state.cancelCreateButtonDisabledReason).toBe("Paper session sess-1 verification is running.");
+    expect(state.formRequirementText).toBe("Paper session sess-1 verification is running.");
     expect(state.selectedSessionLabel).toBe("Selected session: sess-1");
     expect(state.detail).toEqual(expect.objectContaining({
       sessionId: "sess-1",

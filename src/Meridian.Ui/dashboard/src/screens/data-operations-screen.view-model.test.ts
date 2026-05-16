@@ -397,6 +397,7 @@ describe("data-operations-screen view model", () => {
     expect(providerSection.selectedDetail?.title).toBe("Polygon");
     expect(providerSection.selectedDetail?.id).toBe(DATA_PROVIDER_DETAIL_PANEL_ID);
     expect(providerSection.rows[0].statusTone).toBe("success");
+    expect(providerSection.rows[0].rowClassName).toBe("bg-success/5");
     expect(providerSection.rows[0].rowId).toBe("provider-row-polygon");
     expect(providerSection.rows[0].selected).toBe(true);
     expect(providerSection.rows[0].expanded).toBe(true);
@@ -420,6 +421,8 @@ describe("data-operations-screen view model", () => {
     expect(backfillSection.rows[1].selected).toBe(true);
     expect(backfillSection.rows[1].expanded).toBe(true);
     expect(backfillSection.rows[0].expanded).toBe(false);
+    expect(backfillSection.rows[0].rowClassName).toBe("bg-paper/5");
+    expect(backfillSection.rows[1].rowClassName).toBe("bg-warning/5");
     expect(backfillSection.rows[1].rowId).toBe("backfill-row-bf-1044");
     expect(backfillSection.rows[1].detailPanelId).toBe(DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(backfillSection.rows[0].detailPanelId).toBe(DATA_BACKFILL_DETAIL_PANEL_ID);
@@ -434,6 +437,7 @@ describe("data-operations-screen view model", () => {
     expect(exportSection.selectedRowId).toBe("export-row-ex-2201");
     expect(exportSection.rows[0].summaryText).toBe("research pack · 124k · 4m ago");
     expect(exportSection.rows[0].statusVariant).toBe("success");
+    expect(exportSection.rows[0].rowClassName).toBe("bg-success/5");
     expect(exportSection.rows[0].selected).toBe(true);
     expect(exportSection.rows[0].expanded).toBe(true);
     expect(exportSection.rows[0].detailPanelId).toBe(DATA_EXPORT_DETAIL_PANEL_ID);
@@ -508,6 +512,7 @@ describe("data-operations-screen view model", () => {
     expect(providerSection.rows[1].selected).toBe(true);
     expect(providerSection.rows[1].expanded).toBe(true);
     expect(providerSection.rows[1].statusTone).toBe("danger");
+    expect(providerSection.rows[1].rowClassName).toBe("bg-danger/5");
     expect(providerSection.rows[1].ariaLabel).toContain("Selected provider Databento");
 
     const detail = buildSelectedProviderDetail(providerRecords, "provider-row-databento");
@@ -774,8 +779,10 @@ describe("data-operations-screen view model", () => {
     ]);
 
     expect(exportSection.rows[0].statusVariant).toBe("paper");
+    expect(exportSection.rows[0].rowClassName).toBe("bg-paper/5");
     expect(exportSection.rows[0].actionText).toBe("Wait for the package writer to finish before handoff.");
     expect(exportSection.rows[1].statusVariant).toBe("warning");
+    expect(exportSection.rows[1].rowClassName).toBe("bg-warning/5");
     expect(exportSection.rows[1].actionText).toBe("Review export profile and target before report-pack use.");
   });
 
@@ -793,6 +800,7 @@ describe("data-operations-screen view model", () => {
     });
 
     expect(row.statusTone).toBe("danger");
+    expect(row.rowClassName).toBe("bg-danger/5");
     expect(row.trustFields).toContainEqual({
       id: "latency",
       label: "Latency",

@@ -5,6 +5,7 @@ import {
   buildDiffPanel,
   buildResearchLoadingState,
   buildPlotToolMomentsTable,
+  buildPlotNotebookToolbarItems,
   buildPlotToolSampleTable,
   buildPlotStudyDetail,
   buildPlotStudyRows,
@@ -585,6 +586,11 @@ describe("research-screen view model", () => {
     expect(plotTool.workspace.statusBadgeLabel).toBe("PAPER");
     expect(plotTool.workspace.expression).toContain("mean_reversion_fx.spread()");
     expect(plotTool.workspace.studySummary[0]).toMatchObject({ label: "Primary notebook", value: "Mean Reversion FX" });
+    expect(plotTool.workspace.notebookToolbarItems).toEqual([
+      { id: "count", label: "Notebook set", value: "3 retained" },
+      { id: "selected", label: "Selected", value: "Mean Reversion FX", active: true },
+      { id: "lane", label: "Lane", value: "Strategy" }
+    ]);
     expect(plotTool.studies[0]).toMatchObject({
       id: "run-1",
       detailPanelId: "plottool-selected-study-detail",
@@ -683,6 +689,11 @@ describe("research-screen view model", () => {
       statusVariant: "research"
     });
     expect(detail.fields).toContainEqual({ label: "Notebook", value: "Retained notebook" });
+    expect(buildPlotNotebookToolbarItems(rows, "run-2")).toEqual([
+      { id: "count", label: "Notebook set", value: "3 retained" },
+      { id: "selected", label: "Selected", value: "Index Momentum", active: true },
+      { id: "lane", label: "Lane", value: "Strategy" }
+    ]);
 
     const state = buildResearchRunLibraryState({
       runs,
@@ -699,6 +710,11 @@ describe("research-screen view model", () => {
     expect(state.selectedPlotStudyId).toBe("run-2");
     expect(state.selectedPlotStudyDetail?.title).toBe("Index Momentum");
     expect(state.plotTool.studies[1].detailExpanded).toBe(true);
+    expect(state.plotTool.workspace.notebookToolbarItems[1]).toMatchObject({
+      label: "Selected",
+      value: "Index Momentum",
+      active: true
+    });
   });
 
   it("derives PlotTool tab selection and keyboard transitions outside the view", () => {

@@ -488,6 +488,7 @@ export function PortfolioScreen({
               getRowSelectAriaLabel={(row) => row.selectAriaLabel}
               getRowAriaControls={(row) => row.detailPanelId}
               getRowAriaExpanded={(row) => row.expanded}
+              getRowClassName={(row) => row.rowClassName}
               onRowSelect={(row) => vm.selectBrokerageAccount(row.id)}
               selectedRowId={vm.selectedBrokerageAccount.id === "all" ? null : vm.selectedBrokerageAccount.id}
               emptyText={vm.brokerageAccountEmptyText}
@@ -547,6 +548,7 @@ export function PortfolioScreen({
                 getRowSelectAriaLabel={(row) => row.selectAriaLabel}
                 getRowAriaControls={(row) => row.detailPanelId}
                 getRowAriaExpanded={(row) => row.expanded}
+                getRowClassName={(row) => row.rowClassName}
                 onRowSelect={(row) => vm.selectBrokeragePosition(row.id)}
                 selectedRowId={vm.selectedBrokeragePositionId}
                 emptyText={vm.brokerageEmptyText}

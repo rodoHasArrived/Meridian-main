@@ -11,6 +11,7 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import { buildWorkspaceNavViewModel } from "@/components/meridian/workspace-nav.view-model";
 import { cn } from "@/lib/utils";
+import type { AppShellOperatingScopeInput } from "@/app-shell.view-model";
 import type { WorkspaceKey } from "@/types";
 
 const icons: Record<WorkspaceKey, typeof RadioTower> = {
@@ -44,16 +45,23 @@ const icons: Record<WorkspaceKey, typeof RadioTower> = {
 interface WorkspaceNavProps {
   className?: string;
   onNavigate?: () => void;
+  operatingContextScope?: AppShellOperatingScopeInput | null;
 }
 
-export function WorkspaceNav({ className, onNavigate }: WorkspaceNavProps) {
+export function WorkspaceNav({ className, onNavigate, operatingContextScope = null }: WorkspaceNavProps) {
   const location = useLocation();
-  const viewModel = buildWorkspaceNavViewModel(location.pathname);
+  const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope);
 
   return (
     <aside className={cn("operator-rail", className)} aria-label={`${viewModel.brandTitle} navigation`}>
       <nav className="operator-rail-nav" aria-label="Workspaces">
         <div className="operator-rail-section">{viewModel.navEyebrow}</div>
+        {viewModel.operatingScopeLabel ? (
+          <div className="operator-nav-scope" aria-label={viewModel.operatingScopeAriaLabel ?? undefined}>
+            <span>Context</span>
+            <span>{viewModel.operatingScopeLabel}</span>
+          </div>
+        ) : null}
         {viewModel.items.map((item) => {
           const Icon = icons[item.key];
           return (

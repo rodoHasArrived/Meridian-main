@@ -799,6 +799,60 @@ public sealed class InMemoryFundStructureServiceTests
         }
     }
 
+    [Fact]
+    public async Task CreateOrganizationAsync_UnderConcurrentWriteLoad_PersistsConsistentStateAcrossReload()
+    {
+        var tempDirectory = CreateTempDirectory();
+        var structurePersistencePath = Path.Combine(tempDirectory, "fund-structure-concurrency.json");
+        var now = new DateTimeOffset(2026, 05, 01, 12, 0, 0, TimeSpan.Zero);
+
+        try
+        {
+            var structureService = CreateStructureService(persistencePath: structurePersistencePath);
+            var organizations = Enumerable.Range(1, 12)
+                .Select(index => (
+                    OrganizationId: Guid.NewGuid(),
+                    Code: $"ORG-CONC-{index:000}",
+                    Name: $"Concurrent Org {index:000}"))
+                .ToArray();
+
+            var createTasks = organizations.Select(organization =>
+                structureService.CreateOrganizationAsync(new CreateOrganizationRequest(
+                    organization.OrganizationId,
+                    organization.Code,
+                    organization.Name,
+                    "USD",
+                    now,
+                    "concurrency-test")));
+
+            await Task.WhenAll(createTasks);
+
+            foreach (var organization in organizations)
+            {
+                var graph = await structureService.GetOrganizationStructureAsync(new OrganizationStructureQuery(organization.OrganizationId));
+                Assert.Single(graph.Organizations);
+                Assert.Equal(organization.OrganizationId, graph.Organizations[0].OrganizationId);
+                Assert.Equal(organization.Code, graph.Organizations[0].Code);
+            }
+
+            var reloadedService = CreateStructureService(
+                accountService: new InMemoryFundAccountService(),
+                persistencePath: structurePersistencePath);
+
+            foreach (var organization in organizations)
+            {
+                var graph = await reloadedService.GetOrganizationStructureAsync(new OrganizationStructureQuery(organization.OrganizationId));
+                Assert.Single(graph.Organizations);
+                Assert.Equal(organization.OrganizationId, graph.Organizations[0].OrganizationId);
+                Assert.Equal(organization.Code, graph.Organizations[0].Code);
+            }
+        }
+        finally
+        {
+            DeleteDirectory(tempDirectory);
+        }
+    }
+
     private static InMemoryFundStructureService CreateStructureService(
         InMemoryFundAccountService? accountService = null,
         string? persistencePath = null,
