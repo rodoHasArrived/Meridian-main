@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
@@ -214,7 +214,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
     );
   }
 
-  const runColumns: DenseDataTableColumn<ResearchRunTableRow>[] = [
+  const runColumns = useMemo<DenseDataTableColumn<ResearchRunTableRow>[]>(() => [
     {
       id: "compare",
       label: "",
@@ -267,9 +267,9 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
       label: "Updated",
       render: (run) => <span className="font-mono text-xs text-muted-foreground">{run.lastUpdatedText}</span>
     }
-  ];
+  ], [vm]);
 
-  const promotionHistoryColumns: DenseDataTableColumn<ResearchPromotionHistoryRow>[] = [
+  const promotionHistoryColumns = useMemo<DenseDataTableColumn<ResearchPromotionHistoryRow>[]>(() => [
     {
       id: "strategy",
       label: "Strategy",
@@ -298,9 +298,9 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
       label: "Promoted",
       render: (record) => <span className="font-mono text-xs">{record.promotedAtText}</span>
     }
-  ];
+  ], []);
 
-  const comparisonColumns: DenseDataTableColumn<ResearchComparisonTableRow>[] = [
+  const comparisonColumns = useMemo<DenseDataTableColumn<ResearchComparisonTableRow>[]>(() => [
     {
       id: "strategy",
       label: "Strategy",
@@ -353,7 +353,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
       className: "font-mono",
       render: (row) => row.fillCountText
     }
-  ];
+  ], []);
 
   return (
     <div className="space-y-8">
@@ -1483,4 +1483,3 @@ function findLastPlotPoint<T>(items: T[], predicate: (item: T) => boolean): T | 
 
   return undefined;
 }
-

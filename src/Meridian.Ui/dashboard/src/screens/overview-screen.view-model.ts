@@ -269,7 +269,7 @@ export function useOverviewStatusViewModel(
   session: SessionInfo | null,
   fetchSystemStatus: OverviewRefreshFetcher = getSystemStatus
 ) {
-  const mountedRef = useRef(false);
+  const mountedRef = useRef(true);
   const refreshRevisionRef = useRef(0);
   const [refreshing, setRefreshing] = useState(false);
   const [liveData, setLiveData] = useState<SystemOverviewResponse | null>(initialData);

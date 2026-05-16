@@ -101,8 +101,10 @@ export function useWorkstationData() {
     const revision = refreshRevisionRef.current + 1;
     refreshRevisionRef.current = revision;
     tradingRefreshRevisionRef.current += 1;
+    portfolioRefreshRevisionRef.current += 1;
     refreshAbortRef.current?.abort();
     tradingRefreshAbortRef.current?.abort();
+    portfolioRefreshAbortRef.current?.abort();
     const controller = new AbortController();
     refreshAbortRef.current = controller;
     const requestOptions = { signal: controller.signal };
@@ -276,16 +278,38 @@ export function useWorkstationData() {
       if (!mountedRef.current || portfolioRefreshRevisionRef.current !== revision) return;
       setState((current) => {
         let next = { ...current };
+        const previousPortfolioError = current.workspaceErrors.portfolio;
+        const refreshErrors: string[] = [];
         if (portfolio.status === "fulfilled") {
           next = { ...next, portfolio: portfolio.value };
+        } else {
+          refreshErrors.push(formatRequestError(portfolio.reason, "Portfolio workspace refresh failed"));
         }
         if (brokeragePortfolio.status === "fulfilled") {
           next = { ...next, brokeragePortfolio: brokeragePortfolio.value };
+        } else {
+          refreshErrors.push(formatRequestError(brokeragePortfolio.reason, "Brokerage household portfolio refresh failed"));
         }
+
+        const refreshError = refreshErrors.length > 0 ? refreshErrors.join("; ") : null;
+        const workspaceErrors = refreshError
+          ? { ...current.workspaceErrors, portfolio: refreshError }
+          : withoutWorkspaceError(current.workspaceErrors, "portfolio");
+        const error = refreshError
+          ? current.error === null || current.error === previousPortfolioError
+            ? refreshError
+            : current.error
+          : current.error === previousPortfolioError
+            ? firstWorkspaceError(workspaceErrors) ?? null
+            : current.error;
+
+        next = {
+          ...next,
+          workspaceErrors,
+          error
+        };
         return next;
       });
-    } catch {
-      // silent — portfolio refresh is opportunistic
     } finally {
       if (portfolioRefreshAbortRef.current === controller) portfolioRefreshAbortRef.current = null;
       refreshingPortfolio.current = false;

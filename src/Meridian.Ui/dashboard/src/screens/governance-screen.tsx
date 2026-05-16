@@ -1,5 +1,6 @@
 import { AlertCircle, BookCheck, CheckCircle2, Landmark, Network, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useMemo } from "react";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
@@ -287,14 +288,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const selectedSecurityEntry = securityMaster.selectedSecurityId
     ? securityMaster.results?.find((entry) => entry.securityId === securityMaster.selectedSecurityId) ?? null
     : null;
-  const identifierColumns: DenseDataTableColumn<NonNullable<typeof identity>["identifiers"][number]>[] = [
+  const identifierColumns = useMemo<DenseDataTableColumn<NonNullable<typeof identity>["identifiers"][number]>[]>(() => [
     { id: "kind", label: "Kind", render: (identifier) => <span className="font-mono">{identifier.kind}</span> },
     { id: "value", label: "Value", render: (identifier) => <span className="font-mono text-foreground">{identifier.value}</span> },
     { id: "provider", label: "Provider", render: (identifier) => identifier.providerLabel },
     { id: "state", label: "State", render: (identifier) => <Badge variant={identifier.primaryBadgeVariant}>{identifier.primaryLabel}</Badge> },
     { id: "range", label: "Valid range", render: (identifier) => <span className="font-mono text-muted-foreground">{identifier.validRangeLabel}</span> }
-  ];
-  const aliasColumns: DenseDataTableColumn<NonNullable<typeof identity>["aliases"][number]>[] = [
+  ], []);
+  const aliasColumns = useMemo<DenseDataTableColumn<NonNullable<typeof identity>["aliases"][number]>[]>(() => [
     { id: "kind", label: "Kind", render: (alias) => <span className="font-mono">{alias.aliasKind}</span> },
     {
       id: "alias",
@@ -310,8 +311,8 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
     { id: "scope", label: "Scope", render: (alias) => alias.scope },
     { id: "state", label: "State", render: (alias) => <Badge variant={alias.enabledBadgeVariant}>{alias.enabledLabel}</Badge> },
     { id: "range", label: "Valid range", render: (alias) => <span className="font-mono text-muted-foreground">{alias.validRangeLabel}</span> }
-  ];
-  const securityResultColumns: DenseDataTableColumn<SecuritySearchResultRowViewModel>[] = [
+  ], []);
+  const securityResultColumns = useMemo<DenseDataTableColumn<SecuritySearchResultRowViewModel>[]>(() => [
     {
       id: "name",
       label: "Name",
