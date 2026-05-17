@@ -1005,7 +1005,7 @@ function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () 
       ? "border-danger/30 bg-danger/10 text-danger"
       : panel.tone === "warning"
         ? "border-warning/30 bg-warning/10 text-warning"
-        : "border-border/70 bg-secondary/25 text-muted-foreground";
+        : "border-primary/25 bg-secondary/25 text-muted-foreground";
   const Icon = panel.tone === "loading" ? LoaderCircle : AlertTriangle;
 
   return (
@@ -1015,7 +1015,8 @@ function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () 
       aria-live={panel.ariaLive}
       aria-labelledby={panel.titleId}
       aria-describedby={panel.detailId}
-      className={`mb-4 ${toneClass}`}
+      aria-busy={panel.tone === "loading"}
+      className={cn("mb-4 overflow-hidden", toneClass, panel.tone === "loading" && "startup-status-panel")}
     >
       <CardHeader className="flex flex-col gap-3 space-y-0 md:flex-row md:items-start md:justify-between">
         <div>
@@ -1052,11 +1053,28 @@ function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () 
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
         <p id={panel.detailId} className="leading-6 text-foreground/80">{panel.detail}</p>
+        {panel.tone === "loading" ? (
+          <div className="startup-status-meter" aria-hidden="true">
+            <span />
+          </div>
+        ) : null}
         {panel.items.length > 0 ? (
-          <ul aria-label={panel.itemListLabel} className="grid gap-2 md:grid-cols-2">
+          <ul aria-label={panel.itemListLabel} className="grid gap-2 md:grid-cols-3">
             {panel.items.map((item) => (
-              <li key={item.key} aria-label={item.ariaLabel} className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
-                <div className="font-semibold text-foreground">{item.label}</div>
+              <li
+                key={item.key}
+                aria-label={item.ariaLabel}
+                className={cn(
+                  "rounded-md border px-3 py-2",
+                  panel.tone === "loading"
+                    ? "border-primary/20 bg-background/55"
+                    : "border-border/60 bg-background/45"
+                )}
+              >
+                <div className="flex items-center gap-2 font-semibold text-foreground">
+                  {panel.tone === "loading" ? <span className="startup-status-dot" aria-hidden="true" /> : null}
+                  {item.label}
+                </div>
                 <div className="mt-1 text-xs leading-5 text-foreground/70">{item.detail}</div>
               </li>
             ))}

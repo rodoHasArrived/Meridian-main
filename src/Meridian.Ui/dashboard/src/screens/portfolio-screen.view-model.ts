@@ -6,6 +6,7 @@ import type {
   BrokerageHouseholdAccount,
   BrokerageHouseholdPortfolio,
   BrokerageHouseholdPosition,
+  GovernanceCashFlowSummary,
   GovernanceWorkspaceResponse,
   MetricSnapshot,
   PortfolioWorkspaceResponse,
@@ -503,6 +504,7 @@ export function buildPortfolioScreenViewModel({
       openPositionCount: positions.length,
       totalExposure,
       totalUnrealizedPnl,
+      cashFlow,
       cashVarianceLabel,
       selectedRunId: selectedRunRow?.id ?? null,
       selectedRunName: selectedRunRow?.strategyName ?? null
@@ -1274,6 +1276,7 @@ function buildWorkflowTaskPanel({
   openPositionCount,
   totalExposure,
   totalUnrealizedPnl,
+  cashFlow,
   cashVarianceLabel,
   selectedRunId,
   selectedRunName
@@ -1284,6 +1287,7 @@ function buildWorkflowTaskPanel({
   openPositionCount: number;
   totalExposure: number;
   totalUnrealizedPnl: number;
+  cashFlow: GovernanceCashFlowSummary | null;
   cashVarianceLabel: string | null;
   selectedRunId: string | null;
   selectedRunName: string | null;
@@ -1296,6 +1300,7 @@ function buildWorkflowTaskPanel({
       openPositionCount,
       totalExposure,
       totalUnrealizedPnl,
+      cashFlow,
       cashVarianceLabel,
       selectedRunId,
       selectedRunName
@@ -1383,6 +1388,7 @@ function buildPortfolioReadinessTaskPanel({
   openPositionCount,
   totalExposure,
   totalUnrealizedPnl,
+  cashFlow,
   cashVarianceLabel,
   selectedRunId,
   selectedRunName
@@ -1392,6 +1398,7 @@ function buildPortfolioReadinessTaskPanel({
   openPositionCount: number;
   totalExposure: number;
   totalUnrealizedPnl: number;
+  cashFlow: GovernanceCashFlowSummary | null;
   cashVarianceLabel: string | null;
   selectedRunId: string | null;
   selectedRunName: string | null;

@@ -269,6 +269,37 @@
     @apply border-border/90;
   }
 
+  .startup-status-panel {
+    background:
+      linear-gradient(90deg, rgba(42, 178, 212, 0.12), transparent 38%),
+      rgba(13, 23, 34, 0.96);
+    box-shadow: var(--shadow-workstation);
+  }
+
+  .startup-status-meter {
+    height: 0.25rem;
+    overflow: hidden;
+    border-radius: var(--radius-xs);
+    background: rgba(31, 52, 76, 0.82);
+  }
+
+  .startup-status-meter span {
+    display: block;
+    width: 38%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--cyan-primary);
+    animation: startup-status-meter 1.8s ease-in-out infinite;
+  }
+
+  .startup-status-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 999px;
+    background: var(--cyan-primary);
+    box-shadow: 0 0 0 0.1875rem rgba(42, 178, 212, 0.12);
+  }
+
   .panel-surface-strong {
     @apply rounded-xl border border-border bg-[hsl(var(--panel-strong)/0.96)] shadow-workstation transition-[border-color] duration-150;
   }
@@ -725,6 +756,18 @@
     min-height: 0;
     height: 100%;
     overflow: auto;
+  }
+
+  @keyframes startup-status-meter {
+    0% {
+      transform: translateX(-115%);
+    }
+    50% {
+      transform: translateX(95%);
+    }
+    100% {
+      transform: translateX(270%);
+    }
   }
 
   .workflow-continuity-dock {

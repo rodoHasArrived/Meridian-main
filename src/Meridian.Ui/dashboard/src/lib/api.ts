@@ -174,10 +174,7 @@ import {
   workstationWorkflowSummaryEndpoint,
   workstationWorkflowPresetEndpoint,
   workstationWorkflowPresetPinEndpoint,
-  workstationWorkflowPresetUsedEndpoint,
-  riskRuleConfigEndpoint,
-  riskRuleStatusEndpoint,
-  RISK_API_ENDPOINTS
+  workstationWorkflowPresetUsedEndpoint
 } from "@/lib/workstation-endpoints";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";

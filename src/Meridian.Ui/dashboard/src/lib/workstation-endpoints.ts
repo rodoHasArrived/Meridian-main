@@ -315,14 +315,6 @@ export function executionManualOverrideClearEndpoint(overrideId: string): string
   return `${EXECUTION_API_ENDPOINTS.manualOverrides}/${pathSegment(overrideId, "overrideId")}/clear`;
 }
 
-export function riskRuleStatusEndpoint(ruleName: string): string {
-  return `${RISK_API_ENDPOINTS.rules}/${pathSegment(ruleName, "ruleName")}/status`;
-}
-
-export function riskRuleConfigEndpoint(ruleName: string): string {
-  return `${RISK_API_ENDPOINTS.rules}/${pathSegment(ruleName, "ruleName")}/config`;
-}
-
 export function replayFilesEndpoint(symbol?: string): string {
   return `${REPLAY_API_ENDPOINTS.files}${queryString({ symbol })}`;
 }

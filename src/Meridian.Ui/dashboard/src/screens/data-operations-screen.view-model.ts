@@ -537,10 +537,27 @@ const defaultBackfillServices: BackfillTriggerServices = {
 };
 
 const defaultBackfillForm: BackfillFormState = {
-  provider: "yahoo",
+  provider: "",
   symbols: "",
   from: "",
   to: ""
+};
+
+const NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE =
+  "Configure a provider before previewing a backfill.";
+
+const SELECT_CONFIGURED_BACKFILL_PROVIDER_MESSAGE =
+  "Select a configured provider before previewing a backfill.";
+
+const BACKFILL_PROVIDER_ALIASES: Record<string, string> = {
+  "alpaca": "alpaca",
+  "composite": "composite",
+  "composite fallback": "composite",
+  "polygon": "polygon",
+  "polygon.io": "polygon",
+  "stooq": "stooq",
+  "yahoo": "yahoo",
+  "yahoo finance": "yahoo"
 };
 
 export const DATA_BACKFILL_DETAIL_PANEL_ID = "data-backfill-detail-panel";
@@ -572,6 +589,10 @@ export function useDataOperationsViewModel(
   const [providerSetupResult, setProviderSetupResult] = useState<ProviderSetupResult | null>(null);
   const [providerSetupError, setProviderSetupError] = useState<string | null>(null);
   const providerSetupCommandRevisionRef = useRef(0);
+  const configuredBackfillProviders = useMemo(
+    () => data?.providers ?? [],
+    [data?.providers]
+  );
 
   const nextBackfillCommandRevision = useCallback(() => {
     const revision = backfillCommandRevisionRef.current + 1;
@@ -628,8 +649,16 @@ export function useDataOperationsViewModel(
   );
 
   const triggerState = useMemo(
-    () => buildBackfillTriggerState({ form, busy, phase, error, preview, result }),
-    [busy, error, form, phase, preview, result]
+    () => buildBackfillTriggerState({
+      form,
+      busy,
+      phase,
+      error,
+      preview,
+      result,
+      configuredProviders: configuredBackfillProviders
+    }),
+    [busy, configuredBackfillProviders, error, form, phase, preview, result]
   );
   const previewResultCard = useMemo(
     () => preview ? buildBackfillResultCardState(preview, "preview") : null,
@@ -650,6 +679,23 @@ export function useDataOperationsViewModel(
     setPhase("idle");
   }, [nextBackfillCommandRevision]);
 
+  useEffect(() => {
+    setForm((current) => {
+      const options = buildBackfillProviderOptions(current.provider, configuredBackfillProviders);
+      if (options.length === 0) {
+        return current.provider.length > 0 ? { ...current, provider: "" } : current;
+      }
+
+      const currentProvider = normalizeBackfillProviderValue(current.provider);
+      const matchingOption = options.find((option) => option.value === currentProvider);
+      if (matchingOption) {
+        return current.provider === matchingOption.value ? current : { ...current, provider: matchingOption.value };
+      }
+
+      return { ...current, provider: options[0].value };
+    });
+  }, [configuredBackfillProviders]);
+
   const closeBackfillDialog = useCallback(() => {
     if (busy) {
       return;
@@ -666,7 +712,7 @@ export function useDataOperationsViewModel(
   }, []);
 
   const previewBackfill = useCallback(async () => {
-    const validationError = validateBackfillForm(form);
+    const validationError = validateBackfillForm(form, configuredBackfillProviders);
     if (validationError) {
       setError(validationError);
       return;
@@ -696,10 +742,10 @@ export function useDataOperationsViewModel(
         setPhase("idle");
       }
     }
-  }, [form, isCurrentBackfillCommand, nextBackfillCommandRevision, services]);
+  }, [configuredBackfillProviders, form, isCurrentBackfillCommand, nextBackfillCommandRevision, services]);
 
   const runBackfill = useCallback(async () => {
-    const validationError = validateBackfillForm(form);
+    const validationError = validateBackfillForm(form, configuredBackfillProviders);
     if (validationError) {
       setError(validationError);
       return;
@@ -733,7 +779,7 @@ export function useDataOperationsViewModel(
         setPhase("idle");
       }
     }
-  }, [form, isCurrentBackfillCommand, nextBackfillCommandRevision, preview, services]);
+  }, [configuredBackfillProviders, form, isCurrentBackfillCommand, nextBackfillCommandRevision, preview, services]);
 
   const openProviderSetup = useCallback(() => {
     nextProviderSetupCommandRevision();
@@ -1402,7 +1448,8 @@ export function buildBackfillTriggerState({
   phase,
   error,
   preview,
-  result
+  result,
+  configuredProviders = []
 }: {
   form: BackfillFormState;
   busy: boolean;
@@ -1410,8 +1457,9 @@ export function buildBackfillTriggerState({
   error: string | null;
   preview: BackfillTriggerResult | null;
   result: BackfillTriggerResult | null;
+  configuredProviders?: DataOperationsProviderRecord[];
 }): BackfillTriggerState {
-  const validationError = validateBackfillForm(form);
+  const validationError = validateBackfillForm(form, configuredProviders);
   const feedbackText = error;
   const feedbackTone = error
     ? error === validationError
@@ -1441,7 +1489,7 @@ export function buildBackfillTriggerState({
           : "Run previewed backfill request",
     symbolsHelpText: "Separate symbols with spaces or commas. At least one symbol is required.",
     statusAnnouncement: buildBackfillStatusAnnouncement({ phase, error, preview, result }),
-    dialogState: buildBackfillDialogState({ form, busy, phase, validationError, preview, error, result })
+    dialogState: buildBackfillDialogState({ form, busy, phase, validationError, preview, error, result, configuredProviders })
   };
 }
 
@@ -1452,7 +1500,8 @@ export function buildBackfillDialogState({
   validationError,
   preview,
   error = null,
-  result = null
+  result = null,
+  configuredProviders = []
 }: {
   form: BackfillFormState;
   busy: boolean;
@@ -1461,11 +1510,15 @@ export function buildBackfillDialogState({
   preview: BackfillTriggerResult | null;
   error?: string | null;
   result?: BackfillTriggerResult | null;
+  configuredProviders?: DataOperationsProviderRecord[];
 }): BackfillDialogState {
   const previewDisabledReason = resolveBackfillPreviewDisabledReason({ busy, phase, validationError });
   const runDisabledReason = resolveBackfillRunDisabledReason({ busy, phase, validationError, preview });
+  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
   const fieldDisabledReason = busy
     ? "Backfill request is running; wait for the current request to finish before editing."
+    : providerOptions.length === 0
+      ? NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE
     : null;
 
   return {
@@ -1474,17 +1527,17 @@ export function buildBackfillDialogState({
     formLabel: "Backfill request form",
     closeButtonLabel: "Close backfill dialog",
     closeButtonDisabledReason: busy ? "Backfill request is running; wait for the current request to finish before closing." : null,
-    summaryItems: buildBackfillDialogSummaryItems(form),
+    summaryItems: buildBackfillDialogSummaryItems(form, configuredProviders),
     providerField: {
       id: "backfill-provider",
       label: "Provider",
       ariaLabel: "Backfill provider",
       placeholder: "Select a provider",
-      disabled: busy,
+      disabled: busy || providerOptions.length === 0,
       disabledReason: fieldDisabledReason
     },
-    providerOptions: buildBackfillProviderOptions(form.provider),
-    selectedProviderDetail: buildBackfillProviderDetail(form.provider),
+    providerOptions,
+    selectedProviderDetail: buildBackfillProviderDetail(form.provider, configuredProviders),
     symbolsField: {
       id: "backfill-symbols",
       label: "Symbols",
@@ -1540,13 +1593,19 @@ export function buildBackfillDialogState({
   };
 }
 
-export function buildBackfillDialogSummaryItems(form: BackfillFormState): BackfillDialogSummaryItemState[] {
-  const provider = resolveBackfillProviderLabel(form.provider);
+export function buildBackfillDialogSummaryItems(
+  form: BackfillFormState,
+  configuredProviders: DataOperationsProviderRecord[] = []
+): BackfillDialogSummaryItemState[] {
+  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
+  const provider = providerOptions.length > 0
+    ? resolveBackfillProviderLabel(form.provider, configuredProviders)
+    : "None configured";
   const symbols = parseSymbols(form.symbols);
   const range = formatBackfillRange(form.from.trim() || null, form.to.trim() || null);
 
   return [
-    { id: "provider", label: "Provider", value: provider, tone: "default" },
+    { id: "provider", label: "Provider", value: provider, tone: providerOptions.length > 0 ? "default" : "warning" },
     {
       id: "symbols",
       label: "Symbols",
@@ -1557,36 +1616,65 @@ export function buildBackfillDialogSummaryItems(form: BackfillFormState): Backfi
   ];
 }
 
-export function buildBackfillProviderOptions(selectedProvider: string): BackfillProviderOptionState[] {
-  const selected = selectedProvider.trim().toLowerCase();
-  const hasSelectedOption = BACKFILL_PROVIDER_OPTIONS.some((option) => option.value === selected);
-  const options = BACKFILL_PROVIDER_OPTIONS;
+export function buildBackfillProviderOptions(
+  selectedProvider: string,
+  configuredProviders: DataOperationsProviderRecord[] = []
+): BackfillProviderOptionState[] {
+  const options = new Map<string, BackfillProviderOptionState>();
 
-  if (!selected || hasSelectedOption) {
-    return options;
+  for (const provider of configuredProviders) {
+    const value = normalizeBackfillProviderValue(provider.provider);
+    if (!value || options.has(value)) {
+      continue;
+    }
+
+    const knownProvider = BACKFILL_PROVIDER_OPTIONS.find((option) => option.value === value);
+    const label = provider.provider.trim() || knownProvider?.label || value;
+    const capability = provider.capability.trim() || "historical backfill";
+    options.set(value, {
+      value,
+      label,
+      description: `${label} is configured for ${capability}; current status is ${provider.status.toLowerCase()}.`,
+      badge: "Configured"
+    });
   }
 
-  return [
-    ...options,
-    {
-      value: selected,
-      label: selectedProvider.trim(),
-      description: "Custom provider id. Meridian will submit it exactly as selected.",
-      badge: "Custom"
-    }
-  ];
+  const selected = normalizeBackfillProviderValue(selectedProvider);
+  const result = Array.from(options.values());
+  if (!selected || options.has(selected)) {
+    return result;
+  }
+
+  return result;
 }
 
-export function buildBackfillProviderDetail(provider: string): string {
-  const selected = provider.trim().toLowerCase();
-  const option = BACKFILL_PROVIDER_OPTIONS.find((item) => item.value === selected);
-  return option?.description ?? "Custom provider id. Use this only when the host is configured for that provider.";
+export function buildBackfillProviderDetail(
+  provider: string,
+  configuredProviders: DataOperationsProviderRecord[] = []
+): string {
+  const options = buildBackfillProviderOptions(provider, configuredProviders);
+  if (options.length === 0) {
+    return NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE;
+  }
+
+  const selected = normalizeBackfillProviderValue(provider);
+  const option = options.find((item) => item.value === selected) ?? options[0];
+  return option.description;
 }
 
-function resolveBackfillProviderLabel(provider: string): string {
+function resolveBackfillProviderLabel(
+  provider: string,
+  configuredProviders: DataOperationsProviderRecord[] = []
+): string {
   const trimmed = provider.trim();
-  const option = BACKFILL_PROVIDER_OPTIONS.find((item) => item.value === trimmed.toLowerCase());
+  const options = buildBackfillProviderOptions(provider, configuredProviders);
+  const option = options.find((item) => item.value === normalizeBackfillProviderValue(trimmed));
   return option?.label ?? (trimmed.length > 0 ? trimmed : "Default provider");
+}
+
+function normalizeBackfillProviderValue(provider: string): string {
+  const normalized = provider.trim().toLowerCase();
+  return BACKFILL_PROVIDER_ALIASES[normalized] ?? normalized;
 }
 
 export function resolveBackfillPreviewDisabledReason({
@@ -1768,7 +1856,19 @@ export function buildBackfillRequest(form: BackfillFormState): BackfillTriggerRe
   };
 }
 
-export function validateBackfillForm(form: BackfillFormState): string | null {
+export function validateBackfillForm(
+  form: BackfillFormState,
+  configuredProviders: DataOperationsProviderRecord[] = []
+): string | null {
+  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
+  if (providerOptions.length === 0) {
+    return NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE;
+  }
+
+  if (!providerOptions.some((provider) => provider.value === normalizeBackfillProviderValue(form.provider))) {
+    return SELECT_CONFIGURED_BACKFILL_PROVIDER_MESSAGE;
+  }
+
   if (parseSymbols(form.symbols).length === 0) {
     return "Enter at least one symbol before previewing a backfill.";
   }

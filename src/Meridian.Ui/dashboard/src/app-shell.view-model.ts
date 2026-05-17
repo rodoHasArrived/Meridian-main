@@ -27,7 +27,7 @@ import type {
 export type ShellStatusTone = "loading" | "warning" | "danger";
 
 export interface ShellStatusItem {
-  key: WorkspaceKey | "workflow-catalog";
+  key: string;
   label: string;
   detail: string;
   ariaLabel: string;
@@ -576,7 +576,26 @@ function buildShellStatusPanel({
       secondaryActionAriaLabel: null,
       secondaryActionHref: null,
       itemListLabel: "Workspace bootstrap status",
-      items: []
+      items: [
+        {
+          key: "session-state",
+          label: "Session state",
+          detail: "Resolving operator context and environment guardrails.",
+          ariaLabel: "Session state: resolving operator context and environment guardrails"
+        },
+        {
+          key: "workspace-payloads",
+          label: "Workspace payloads",
+          detail: "Loading Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings.",
+          ariaLabel: "Workspace payloads: loading Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings"
+        },
+        {
+          key: "evidence-slices",
+          label: "Evidence slices",
+          detail: "Preparing readiness, reconciliation, provider, and report-pack evidence.",
+          ariaLabel: "Evidence slices: preparing readiness, reconciliation, provider, and report-pack evidence"
+        }
+      ]
     };
   }
 

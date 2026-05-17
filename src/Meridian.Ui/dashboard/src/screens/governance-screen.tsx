@@ -327,7 +327,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
     { id: "primaryId", label: "Primary ID", render: (row) => <span className="font-mono text-muted-foreground">{row.primaryIdentifierLabel}</span> },
     { id: "currency", label: "Currency", render: (row) => <span className="font-mono text-muted-foreground">{row.economicDefinition.currency}</span> },
     { id: "status", label: "Status", render: (row) => <Badge variant={row.statusTone === "success" ? "success" : "warning"}>{row.status}</Badge> }
-  ];
+  ], []);
   const activeResolveBreak = resolveDialog.active
     ? reconciliation.rows.find((item) => item.breakId === resolveDialog.active?.breakId) ?? null
     : null;

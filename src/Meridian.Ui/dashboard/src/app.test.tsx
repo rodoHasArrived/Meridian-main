@@ -142,6 +142,17 @@ describe("App", () => {
     expect(screen.getByRole("main")).toHaveAttribute("id", "workbench-content");
   });
 
+  it("renders an informative startup status while workstation bootstrap is loading", () => {
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    const status = screen.getByRole("status", { name: "Booting workstation shell" });
+    expect(status).toHaveAttribute("aria-busy", "true");
+    expect(within(status).getByText("Resolving operator context and environment guardrails.")).toBeInTheDocument();
+    expect(within(status).getByText("Loading Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings.")).toBeInTheDocument();
+    expect(within(status).getByText("Preparing readiness, reconciliation, provider, and report-pack evidence.")).toBeInTheDocument();
+    expect(within(status).getByLabelText("Workspace bootstrap status")).toBeInTheDocument();
+  });
+
   it("has no basic accessibility violations in the trading shell", async () => {
     const { container } = renderWithRouter(<App />, { initialEntries: ["/trading"] });
 

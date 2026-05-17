@@ -197,7 +197,7 @@ if (-not (Test-Path -LiteralPath `$exePath)) {
 }
 
 if (-not (Test-MeridianEndpoint -Uri `$healthUrl)) {
-    `$arguments = @("--mode", "desktop", "--http-port", [string]`$Port, "--config", `$configPath)
+    `$arguments = "--mode desktop --http-port `$Port --config ```"`$configPath```""
     Start-Process -FilePath `$exePath -ArgumentList `$arguments -WorkingDirectory `$installRoot -WindowStyle Hidden | Out-Null
 
     `$ready = `$false

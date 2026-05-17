@@ -10,6 +10,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "build" / "scripts" / "install" / "install-web-workstation.ps1"
+ROOT_INSTALL_SCRIPT_PATH = REPO_ROOT / "build" / "scripts" / "install" / "install.ps1"
 
 
 @unittest.skipIf(os.name != "nt", "PowerShell installer behavior is validated on Windows")
@@ -133,6 +134,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             self.assertIn("--mode", launcher)
             self.assertIn("desktop", launcher)
             self.assertIn("http://localhost:$Port/workstation/", launcher)
+            self.assertIn('--config `"$configPath`"', launcher)
 
     def test_script_contains_host_asset_shortcut_and_launcher_contracts(self) -> None:
         script = SCRIPT_PATH.read_text(encoding="utf-8")
@@ -145,6 +147,52 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         self.assertIn("Meridian Web Workstation.lnk", script)
         self.assertIn("Launch-MeridianWebWorkstation.ps1", script)
         self.assertNotIn("MDC_CONFIG_PATH", script)
+
+    def test_root_install_script_exposes_web_workstation_mode(self) -> None:
+        powershell = shutil.which("pwsh") or shutil.which("powershell")
+        if powershell is None:
+            self.skipTest("PowerShell is not available")
+
+        root_script = ROOT_INSTALL_SCRIPT_PATH.read_text(encoding="utf-8")
+        self.assertIn('"WebWorkstation"', root_script)
+        self.assertIn("Install-WebWorkstation", root_script)
+        self.assertIn("install-web-workstation.ps1", root_script)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            install_dir = repo_root / "build" / "scripts" / "install"
+            install_dir.mkdir(parents=True)
+            shutil.copy2(ROOT_INSTALL_SCRIPT_PATH, install_dir / "install.ps1")
+            shutil.copy2(SCRIPT_PATH, install_dir / "install-web-workstation.ps1")
+
+            self._write_file(repo_root / "src" / "Meridian" / "Meridian.csproj", "<Project />")
+            self._write_file(repo_root / "src" / "Meridian.Ui" / "dashboard" / "package.json", "{}")
+
+            command = [powershell, "-NoProfile"]
+            if Path(powershell).name.lower().startswith("powershell"):
+                command.extend(["-ExecutionPolicy", "Bypass"])
+            command.extend(
+                [
+                    "-File",
+                    str(install_dir / "install.ps1"),
+                    "-Mode",
+                    "WebWorkstation",
+                    "-PlanOnly",
+                    "-WebInstallRoot",
+                    str(repo_root / "installed-app"),
+                    "-WebAppDataRoot",
+                    str(repo_root / "appdata"),
+                    "-WebPort",
+                    "8098",
+                ]
+            )
+
+            result = subprocess.run(command, cwd=repo_root, capture_output=True, text=True)
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("Meridian Web Workstation install plan", result.stdout)
+            self.assertIn("http://localhost:8098/workstation/", result.stdout)
+            self.assertFalse((repo_root / "installed-app").exists())
 
     @staticmethod
     def _write_file(path: Path, content: str) -> None:

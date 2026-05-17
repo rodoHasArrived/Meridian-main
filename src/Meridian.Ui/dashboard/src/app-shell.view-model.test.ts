@@ -78,7 +78,24 @@ describe("app shell view model", () => {
       title: "Booting workstation shell",
       detail: "Loading session state, operator workspaces, and the initial workstation evidence slices.",
       itemListLabel: "Workspace bootstrap status",
-      actionLabel: null
+      actionLabel: null,
+      items: [
+        {
+          key: "session-state",
+          label: "Session state",
+          detail: "Resolving operator context and environment guardrails."
+        },
+        {
+          key: "workspace-payloads",
+          label: "Workspace payloads",
+          detail: "Loading Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings."
+        },
+        {
+          key: "evidence-slices",
+          label: "Evidence slices",
+          detail: "Preparing readiness, reconciliation, provider, and report-pack evidence."
+        }
+      ]
     });
     expect(state.routeFocus).toMatchObject({
       routeKey: "/trading",

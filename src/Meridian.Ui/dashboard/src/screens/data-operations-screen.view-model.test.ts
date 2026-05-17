@@ -89,6 +89,19 @@ const providers: DataOperationsProviderRecord[] = [
   }
 ];
 
+const alpacaProvider: DataOperationsProviderRecord = {
+  provider: "Alpaca",
+  status: "Healthy",
+  capability: "Historical bars",
+  latency: "24ms p50",
+  note: "Configured with paper API keys.",
+  trustScore: "97%",
+  signalSource: "Provider heartbeat",
+  reasonCode: "TRUST_OK",
+  recommendedAction: "Keep provider active.",
+  gateImpact: "No gate impact"
+};
+
 const exports: DataOperationsExportRecord[] = [
   {
     exportId: "EX-2201",
@@ -178,12 +191,14 @@ describe("data-operations-screen view model", () => {
       to: "2024-01-31"
     });
 
-    expect(validateBackfillForm({ provider: "polygon", symbols: "", from: "", to: "" }))
+    expect(validateBackfillForm({ provider: "polygon", symbols: "", from: "", to: "" }, providers))
       .toBe("Enter at least one symbol before previewing a backfill.");
-    expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "2024-02-31", to: "" }))
+    expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "2024-02-31", to: "" }, providers))
       .toBe("Use YYYY-MM-DD for the From date.");
-    expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "2024-02-01", to: "2024-01-01" }))
+    expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "2024-02-01", to: "2024-01-01" }, providers))
       .toBe("From date must be before or equal to To date.");
+    expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "", to: "" }, []))
+      .toBe("Configure a provider before previewing a backfill.");
   });
 
   it("derives command enablement, feedback, and async labels", () => {
@@ -193,7 +208,8 @@ describe("data-operations-screen view model", () => {
       phase: "idle",
       error: null,
       preview: null,
-      result: null
+      result: null,
+      configuredProviders: providers
     });
 
     expect(empty.canPreview).toBe(false);
@@ -205,7 +221,8 @@ describe("data-operations-screen view model", () => {
       phase: "idle",
       error: null,
       preview,
-      result: null
+      result: null,
+      configuredProviders: providers
     });
 
     expect(readyWithPreview.canPreview).toBe(true);
@@ -218,7 +235,8 @@ describe("data-operations-screen view model", () => {
       phase: "running",
       error: null,
       preview,
-      result: null
+      result: null,
+      configuredProviders: providers
     });
 
     expect(running.runButtonLabel).toBe("Running...");
@@ -244,7 +262,8 @@ describe("data-operations-screen view model", () => {
       busy: false,
       phase: "idle",
       validationError: "Enter at least one symbol before previewing a backfill.",
-      preview: null
+      preview: null,
+      configuredProviders: providers
     });
 
     expect(dialog.titleId).toBe("backfill-dialog-title");
@@ -253,12 +272,12 @@ describe("data-operations-screen view model", () => {
     expect(dialog.closeButtonLabel).toBe("Close backfill dialog");
     expect(dialog.closeButtonDisabledReason).toBeNull();
     expect(dialog.summaryItems).toEqual([
-      { id: "provider", label: "Provider", value: "Polygon.io", tone: "default" },
+      { id: "provider", label: "Provider", value: "Polygon", tone: "default" },
       { id: "symbols", label: "Symbols", value: "None yet", tone: "warning" },
       { id: "range", label: "Range", value: "Full available history", tone: "default" }
     ]);
-    expect(dialog.providerOptions.map((provider) => provider.value)).toContain("yahoo");
-    expect(dialog.selectedProviderDetail).toContain("paid Polygon plans");
+    expect(dialog.providerOptions.map((provider) => provider.value)).toEqual(["polygon"]);
+    expect(dialog.selectedProviderDetail).toContain("Polygon is configured for Streaming equities");
     expect(dialog.symbolsField).toMatchObject({
       id: "backfill-symbols",
       ariaLabel: "Backfill symbols",
@@ -279,20 +298,18 @@ describe("data-operations-screen view model", () => {
     expect(dialog.formStatusTone).toBe("warning");
   });
 
-  it("derives guided provider options for credential-free backfill", () => {
-    const options = buildBackfillProviderOptions("yahoo");
+  it("derives provider options from configured providers only", () => {
+    const options = buildBackfillProviderOptions("alpaca", [alpacaProvider]);
     expect(options[0]).toMatchObject({
-      value: "yahoo",
-      label: "Yahoo Finance",
-      badge: "No key"
+      value: "alpaca",
+      label: "Alpaca",
+      badge: "Configured"
     });
+    expect(options.map((option) => option.value)).not.toContain("yahoo");
 
-    const custom = buildBackfillProviderOptions("internal-feed");
-    expect(custom.at(-1)).toMatchObject({
-      value: "internal-feed",
-      label: "internal-feed",
-      badge: "Custom"
-    });
+    expect(buildBackfillProviderOptions("internal-feed", [alpacaProvider]).map((option) => option.value))
+      .toEqual(["alpaca"]);
+    expect(buildBackfillProviderOptions("alpaca", [])).toEqual([]);
   });
 
   it("ignores stale backfill preview responses after a newer preview settles", async () => {
@@ -314,7 +331,15 @@ describe("data-operations-screen view model", () => {
       getProgress: async () => idleProgress
     };
 
-    const { result } = renderHook(() => useDataOperationsViewModel(null, "/data/backfills", services));
+    const workspace: DataOperationsWorkspaceResponse = {
+      metrics: [],
+      providers,
+      backfills: [],
+      exports: []
+    };
+    const { result } = renderHook(() => useDataOperationsViewModel(workspace, "/data/backfills", services));
+
+    await waitFor(() => expect(result.current.form.provider).toBe("polygon"));
 
     act(() => {
       result.current.updateBackfillForm("symbols", "AAPL MSFT");
