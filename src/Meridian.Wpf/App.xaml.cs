@@ -509,7 +509,13 @@ public partial class App : System.Windows.Application
         });
 
         services.AddSingleton<IStrategyRepository, StrategyRunStore>();
-        services.AddSingleton(PromotionRecordStoreOptions.Default);
+        services.AddSingleton<PromotionRecordStoreOptions>(sp =>
+        {
+            var configService = sp.GetRequiredService<WpfServices.ConfigService>();
+            var config = configService.LoadConfigAsync().GetAwaiter().GetResult();
+            var resolvedDataRoot = configService.ResolveDataRoot(config);
+            return new PromotionRecordStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "promotions"));
+        });
         services.AddSingleton<IPromotionRecordStore, JsonlPromotionRecordStore>();
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();

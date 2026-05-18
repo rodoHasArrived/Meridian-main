@@ -1,6 +1,6 @@
 # Provider Management Architecture
 
-**Version:** 3.1 | **Last Updated:** 2026-03-14
+**Version:** 3.2 | **Last Updated:** 2026-05-18
 
 This document describes the provider management architecture used by Meridian. It covers provider contracts, discovery, lifecycle management, failover, health monitoring, degradation scoring, and data quality operations.
 
@@ -419,6 +419,28 @@ Aggregates provider metrics for the `/api/providers/metrics` endpoint.
 
 ## Credential Management
 
+### Shared encrypted provider store
+
+**Locations:** `src/Meridian.Application/Config/Credentials/IProviderCredentialStore.cs`,
+`src/Meridian.Application/Config/Credentials/FileProviderCredentialStore.cs`
+
+Provider credentials are managed through `IProviderCredentialStore`. The default implementation
+stores encrypted per-user provider records below the resolved Meridian data root:
+
+```text
+<DataRoot>/.mdc/provider-credentials.vault
+<DataRoot>/.mdc/provider-credentials.audit.jsonl
+```
+
+The vault uses the current Windows user profile on Windows and a local profile key on non-Windows
+hosts. Audit records include provider id, action, actor, state, source, verification posture, field
+names, environment, and external account id. Audit records do not include raw credential values.
+
+Runtime provider construction resolves through `StoredProviderCredentialResolver` first and then
+falls back to the legacy config/environment resolver. Environment variables remain read-only
+compatibility fallback; new browser flows must not write process, user, or machine environment
+variables.
+
 ### CredentialValidator
 
 **Location:** `src/Meridian.ProviderSdk/CredentialValidator.cs`
@@ -481,6 +503,9 @@ UI-side health monitoring service:
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
+| `/api/providers/connections` | GET | Data and brokerage provider rows with credential state, verification state, continuity health, fallback posture, masked key preview, affected workflows, and repair action |
+| `/api/providers/{providerId}/credentials` | PUT/DELETE | Save or delete provider credentials in the encrypted provider store |
+| `/api/providers/{providerId}/verify` | POST | Verify stored provider credentials without returning secrets |
 | `/api/providers/status` | GET | All provider status including active provider |
 | `/api/providers/metrics` | GET | Provider metrics (latency, error rates) |
 | `/api/providers/latency` | GET | Latency histograms per provider |
@@ -609,3 +634,10 @@ export TIINGO__TOKEN=your-token
 - Added `BackfillProgressTracker` – real-time ETA and progress tracking for backfill jobs; available via `/api/backfill/status` endpoint.
 - Added `ProviderSubscriptionRanges` utility for splitting large symbol lists into provider-compatible batches.
 - Updated version and date.
+
+## Migration Notes (v3.1 -> v3.2)
+
+- Added the encrypted `IProviderCredentialStore` foundation and runtime `StoredProviderCredentialResolver`.
+- Added the canonical provider connection API for listing, saving, verifying, and deleting provider credentials.
+- Kept legacy `/api/credentials/*`, provider-credential validation/test, and Alpaca brokerage routes as compatibility wrappers over the shared store.
+- Updated Alpaca paper verification to use the explicit Trading API endpoint `https://paper-api.alpaca.markets/v2/account`.

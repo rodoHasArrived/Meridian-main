@@ -25,8 +25,10 @@ These are local/generated outputs and can be regenerated:
 - `node_modules/`
 - `TestResults/`
 - `coverage/`
+- `.artifacts/`
 - `artifacts/install*/`
 - `artifacts/publish/`
+- `src/Meridian.Ui/dashboard/artifacts/`
 - `src/Meridian.Ui/dashboard/tsc-output.txt`
 - `docs/docfx/docfx-log.json`
 - `docs/docfx/temp-metadata-only.json`
@@ -39,8 +41,6 @@ is inside `C:\Dev\Meridian-main`.
 - `wwwroot/workstation/`: generated workstation assets are currently tracked.
 - `docs/docfx/api/`: generated API metadata is currently part of the DocFX
   source path and should be regenerated or policy-reviewed before removal.
-- `src/Meridian.Ui/dashboard/artifacts/automation/`: contains tracked screenshot
-  evidence; prune only with an explicit evidence-retention decision.
 - `.agents/`, `.codex/`, `.claude/`, and `.github/prompts/`: overlapping agent
   guidance is intentional until the AI guidance inventory is reconciled.
 - `archive/`: historical reference only, but retained for traceability.

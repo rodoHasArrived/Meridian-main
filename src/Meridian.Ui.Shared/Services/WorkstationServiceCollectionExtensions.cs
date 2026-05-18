@@ -57,12 +57,14 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
 
         services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
-        services.TryAddSingleton(PromotionRecordStoreOptions.Default);
+        services.TryAddSingleton<PromotionRecordStoreOptions>(sp =>
+            new PromotionRecordStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "promotions")));
         services.TryAddSingleton<IPromotionRecordStore>(sp =>
             new JsonlPromotionRecordStore(
                 sp.GetRequiredService<PromotionRecordStoreOptions>(),
                 sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
-        services.TryAddSingleton(StrategyDesignStoreOptions.Default);
+        services.TryAddSingleton<StrategyDesignStoreOptions>(sp =>
+            new StrategyDesignStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "designer")));
         services.TryAddSingleton<IStrategyDesignRepository>(sp =>
             new JsonlStrategyDesignRepository(
                 sp.GetRequiredService<StrategyDesignStoreOptions>(),
@@ -95,7 +97,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileGovernanceReportPackRepository>>();
-            return new FileGovernanceReportPackRepository(ResolveWorkstationDataDirectory(), logger);
+            return new FileGovernanceReportPackRepository(ResolveWorkstationDataDirectory(sp), logger);
         });
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();
 
@@ -108,7 +110,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();
-            return new FileReconciliationBreakQueueRepository(ResolveWorkstationDataDirectory(), logger);
+            return new FileReconciliationBreakQueueRepository(ResolveWorkstationDataDirectory(sp), logger);
         });
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
@@ -162,9 +164,12 @@ public static class WorkstationServiceCollectionExtensions
         services.AddHostedService(sp => sp.GetRequiredService<CoveredCallBacktestService>());
     }
 
-    private static string ResolveWorkstationDataDirectory()
-        => Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Meridian",
-            "workstation");
+    private static string ResolveConfigDataRoot(IServiceProvider services)
+    {
+        var configStore = services.GetRequiredService<ConfigStore>();
+        return configStore.GetDataRoot(configStore.Load());
+    }
+
+    private static string ResolveWorkstationDataDirectory(IServiceProvider services)
+        => Path.Combine(ResolveConfigDataRoot(services), "workstation");
 }

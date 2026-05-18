@@ -28,6 +28,10 @@ actor, state, source, and field names, not secret values.
 Do not store provider secrets in repo files, `appsettings.json`, generated docs, logs, screenshots,
 or test fixtures. New browser flows must not mutate user-scoped environment variables.
 
+Runtime data-provider construction reads the encrypted store first through
+`StoredProviderCredentialResolver`. If no encrypted record is available, the runtime falls back to
+the existing read-only environment/config resolver.
+
 ## Legacy Environment Fallback
 
 Environment variables remain a read-only compatibility fallback for existing operator setups. If a
@@ -37,12 +41,30 @@ the Provider Connection Center so the encrypted Meridian store becomes the sourc
 Deleting a provider credential removes the local encrypted value only. It does not clear process,
 user, or machine environment variables.
 
+## Compatibility Routes
+
+The older credential endpoints remain as wrappers during migration:
+
+- `GET /api/credentials`
+- `GET /api/credentials/{provider}`
+- `POST /api/credentials/{provider}`
+- `DELETE /api/credentials/{provider}`
+- `POST /api/credentials/{provider}/test`
+- `POST /api/providers/{provider}/validate-credentials`
+- `POST /api/providers/{provider}/test-connection`
+
+These wrappers now save, delete, and verify through the shared provider store. They do not mutate
+environment variables and they do not return raw secrets.
+
 ## Alpaca
 
 Alpaca remains paper-first:
 
 - Paper is the default credential environment.
 - Live requires explicit acknowledgement in the Settings Alpaca panel.
+- Paper verification uses `https://paper-api.alpaca.markets/v2/account`.
+- The paper endpoint value `https://paper-api.alpaca.markets/v2` is accepted as a paper
+  environment hint.
 - `/api/brokerage-connections/alpaca/*` remains a compatibility route, but it now uses the shared
   credential store.
 - Verification calls Alpaca `/v2/account` and records masked account evidence without logging or

@@ -40,7 +40,14 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<DataQualityMonitoringService>(sp =>
         {
             var eventMetrics = sp.GetRequiredService<IEventMetrics>();
-            return new DataQualityMonitoringService(eventMetrics: eventMetrics);
+            var configStore = sp.GetRequiredService<ConfigStore>();
+            var reportOutputDirectory = Path.Combine(configStore.GetDataRoot(configStore.Load()), "reports");
+            return new DataQualityMonitoringService(
+                new DataQualityMonitoringConfig
+                {
+                    ReportOutputDirectory = reportOutputDirectory
+                },
+                eventMetrics);
         });
 
         // DataFreshnessSlaMonitor - monitors data freshness SLA compliance
