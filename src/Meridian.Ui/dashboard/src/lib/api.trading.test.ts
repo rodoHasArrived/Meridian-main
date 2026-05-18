@@ -151,6 +151,23 @@ describe("trading endpoint wiring", () => {
     );
   });
 
+
+
+  it("keeps API methods aligned to contract-manual override paths", async () => {
+    const CONTRACT_EXECUTION_CONTROLS = "/api/execution/controls" as const;
+    const CONTRACT_EXECUTION_MANUAL_OVERRIDES = "/api/execution/controls/manual-overrides" as const;
+    const CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR =
+      "/api/execution/controls/manual-overrides/ovr-contract/clear" as const;
+
+    await getExecutionControls();
+    await createExecutionManualOverride({ kind: "BypassOrderControls", reason: "contract-check" });
+    await clearExecutionManualOverride("ovr-contract");
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, CONTRACT_EXECUTION_CONTROLS, expect.anything());
+    expect(fetchMock).toHaveBeenNthCalledWith(2, CONTRACT_EXECUTION_MANUAL_OVERRIDES, expect.objectContaining({ method: "POST" }));
+    expect(fetchMock).toHaveBeenNthCalledWith(3, CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR, expect.objectContaining({ method: "POST" }));
+  });
+
   it("uses dev fixtures for workstation bootstrap GETs when the API host is missing", async () => {
     fetchMock.mockResolvedValue({ ok: false, status: 404, json: async () => ({}), text: async () => "" });
 
