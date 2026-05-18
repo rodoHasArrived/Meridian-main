@@ -526,6 +526,7 @@ describe("buildSettingsScreenViewModel", () => {
         id: "alpaca-environment-paper",
         value: "paper",
         badgeLabel: "Default",
+        endpointLabel: "https://paper-api.alpaca.markets/v2",
         isSelected: true,
         disabled: false,
         tone: "paper"
@@ -534,6 +535,7 @@ describe("buildSettingsScreenViewModel", () => {
         id: "alpaca-environment-live",
         value: "live",
         badgeLabel: "Real money",
+        endpointLabel: "https://api.alpaca.markets/v2",
         isSelected: false,
         disabled: false,
         tone: "live"

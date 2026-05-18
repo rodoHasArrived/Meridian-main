@@ -514,6 +514,9 @@ export function SettingsScreen({
                       <span id={option.descriptionId} className="text-[11px] font-normal leading-4 text-muted-foreground">
                         {option.description}
                       </span>
+                      <span className="break-all font-mono text-[10px] font-normal leading-4 text-muted-foreground">
+                        {option.endpointLabel}
+                      </span>
                     </label>
                   ))}
                 </div>

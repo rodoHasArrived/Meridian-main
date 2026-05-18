@@ -99,6 +99,7 @@ export interface SettingsAlpacaEnvironmentOption {
   value: AlpacaEnvironment;
   label: string;
   badgeLabel: string;
+  endpointLabel: string;
   description: string;
   descriptionId: string;
   isSelected: boolean;
@@ -212,6 +213,7 @@ export function buildAlpacaConnectionCommandState({
       value: "paper",
       label: "Paper",
       badgeLabel: "Default",
+      endpointLabel: "https://paper-api.alpaca.markets/v2",
       description: "Paper endpoint for workstation validation and readiness rehearsal.",
       descriptionId: "alpaca-environment-paper-description",
       isSelected: form.environment === "paper",
@@ -225,6 +227,7 @@ export function buildAlpacaConnectionCommandState({
       value: "live",
       label: "Live",
       badgeLabel: "Real money",
+      endpointLabel: "https://api.alpaca.markets/v2",
       description: "Live endpoint for production brokerage verification.",
       descriptionId: "alpaca-environment-live-description",
       isSelected: form.environment === "live",

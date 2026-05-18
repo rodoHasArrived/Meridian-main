@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.Contracts.Configuration;
 using Xunit;
@@ -48,6 +49,31 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         status.CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
         status.CredentialSource.Should().Be(ProviderCredentialSourceDto.LocalEncryptedStore);
         status.MaskedKeyPreview.Should().NotContain("paper-key-id");
+    }
+
+    [Theory]
+    [InlineData("https://paper-api.alpaca.markets/v2", "paper")]
+    [InlineData("https://api.alpaca.markets/v2", "live")]
+    public async Task SaveAsync_NormalizesAlpacaTradingApiEndpointToEnvironment(
+        string endpoint,
+        string expectedEnvironment)
+    {
+        var store = new FileProviderCredentialStore(_root);
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "alpaca",
+            new Dictionary<string, string?>
+            {
+                ["KeyId"] = "endpoint-key-id",
+                ["SecretKey"] = "endpoint-secret"
+            },
+            Environment: endpoint,
+            Actor: "test-operator"));
+
+        var status = await store.GetStatusAsync("alpaca");
+
+        status.Environment.Should().Be(expectedEnvironment);
+        AlpacaCredentialEnvironment.NormalizeTradingEnvironment(endpoint).Should().Be(expectedEnvironment);
     }
 
     [Fact]

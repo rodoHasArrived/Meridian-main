@@ -10,8 +10,8 @@ namespace Meridian.Ui.Shared.Services;
 
 public sealed class ProviderConnectionLifecycleService
 {
-    private const string AlpacaPaperBaseUrl = "https://paper-api.alpaca.markets";
-    private const string AlpacaLiveBaseUrl = "https://api.alpaca.markets";
+    private const string AlpacaPaperTradingApiEndpoint = "https://paper-api.alpaca.markets/v2";
+    private const string AlpacaLiveTradingApiEndpoint = "https://api.alpaca.markets/v2";
 
     private readonly IProviderCredentialStore _credentialStore;
     private readonly ConfigStore _configStore;
@@ -159,7 +159,7 @@ public sealed class ProviderConnectionLifecycleService
         try
         {
             using var client = _httpClientFactory?.CreateClient(nameof(ProviderConnectionLifecycleService)) ?? new HttpClient();
-            using var request = new HttpRequestMessage(HttpMethod.Get, $"{AlpacaBaseUrl(environment)}/v2/account");
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"{AlpacaTradingApiEndpoint(environment)}/account");
             request.Headers.TryAddWithoutValidation("APCA-API-KEY-ID", keyId);
             request.Headers.TryAddWithoutValidation("APCA-API-SECRET-KEY", secretKey);
 
@@ -354,10 +354,10 @@ public sealed class ProviderConnectionLifecycleService
         => ProviderCredentialCatalog.Find(providerId)
            ?? throw new ArgumentException($"Provider '{providerId}' is not in the provider credential catalog.", nameof(providerId));
 
-    private static string AlpacaBaseUrl(string environment)
+    private static string AlpacaTradingApiEndpoint(string environment)
         => environment.Equals(AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase)
-            ? AlpacaLiveBaseUrl
-            : AlpacaPaperBaseUrl;
+            ? AlpacaLiveTradingApiEndpoint
+            : AlpacaPaperTradingApiEndpoint;
 
     private static IReadOnlyList<string> BuildAlpacaWarnings(string environment)
         => environment.Equals(AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase)

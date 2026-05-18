@@ -14,8 +14,8 @@ namespace Meridian.Ui.Shared.Services;
 public sealed class AlpacaBrokerageConnectionService
 {
     private const string ProviderId = "alpaca";
-    private const string PaperBaseUrl = "https://paper-api.alpaca.markets";
-    private const string LiveBaseUrl = "https://api.alpaca.markets";
+    private const string PaperTradingApiEndpoint = "https://paper-api.alpaca.markets/v2";
+    private const string LiveTradingApiEndpoint = "https://api.alpaca.markets/v2";
 
     private static readonly IReadOnlyList<string> Scopes =
     [
@@ -129,7 +129,7 @@ public sealed class AlpacaBrokerageConnectionService
         CancellationToken ct)
     {
         using var client = _httpClientFactory?.CreateClient(nameof(AlpacaBrokerageConnectionService)) ?? new HttpClient();
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl(environment)}/v2/account");
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{TradingApiEndpoint(environment)}/account");
         request.Headers.TryAddWithoutValidation("APCA-API-KEY-ID", keyId);
         request.Headers.TryAddWithoutValidation("APCA-API-SECRET-KEY", secretKey);
 
@@ -204,10 +204,10 @@ public sealed class AlpacaBrokerageConnectionService
             MaskedKeyId: credentialStatus.MaskedKeyPreview);
     }
 
-    private static string BaseUrl(string environment)
+    private static string TradingApiEndpoint(string environment)
         => string.Equals(environment, AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase)
-            ? LiveBaseUrl
-            : PaperBaseUrl;
+            ? LiveTradingApiEndpoint
+            : PaperTradingApiEndpoint;
 
     private static string? FirstNonBlank(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
