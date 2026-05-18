@@ -635,6 +635,7 @@ public sealed class PaperSessionDurablePersistenceTests : IDisposable
     public async Task SessionContinuity_CreateRestartVerifyClose_PreservesScopeAndHistoryAcrossFlow()
     {
         var store = BuildStore();
+        var orderUpdatedAt = DateTimeOffset.UtcNow;
 
         var svc1 = Build(store);
         var created = await svc1.CreateSessionAsync(new CreatePaperSessionDto(
@@ -649,8 +650,10 @@ public sealed class PaperSessionDurablePersistenceTests : IDisposable
             Side = OrderSide.Buy,
             Type = OrderType.Market,
             Quantity = 10m,
+            FilledQuantity = 10m,
             Status = OrderStatus.Filled,
-            CreatedAt = DateTimeOffset.UtcNow
+            CreatedAt = orderUpdatedAt.AddSeconds(-1),
+            LastUpdatedAt = orderUpdatedAt
         });
         await svc1.RecordFillAsync(created.SessionId, BuildFill("AAPL", OrderSide.Buy, 10m, 200m));
 

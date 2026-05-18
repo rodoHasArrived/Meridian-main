@@ -36,7 +36,8 @@ This command covers:
 3. Add one new order/fill event without re-verifying replay.
 4. Check readiness (`GET /api/workstation/trading/readiness`) and confirm:
    - replay gate falls to `ReviewRequired`,
-   - stale replay work item `paper-replay-stale-{sessionId}` exists.
+   - stale replay work item `paper-replay-stale-{normalizedSessionId}` exists (`normalizedSessionId`
+     is lower-cased and non-alphanumeric separators are collapsed to `-`).
 5. Re-run replay verification for the same session and capture the new audit ID.
 6. Re-check readiness and confirm:
    - replay gate returns to `Ready`,
