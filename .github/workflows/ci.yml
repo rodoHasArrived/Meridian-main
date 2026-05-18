@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  MERIDIAN_DISABLE_DOCKER_TESTS: "true"
+
+jobs:
+  dotnet:
+    name: Restore, Build, Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore solution
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+
+      - name: Verify formatting
+        run: dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
+
+      - name: Build solution
+        run: dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
+
+      - name: Run non-integration tests
+        run: >
+          dotnet test Meridian.sln -c Release --no-build
+          --filter "Category!=Integration&Category!=Performance"
+          --logger "trx;LogFilePrefix=dotnet"
+          --results-directory artifacts/test-results/dotnet
+          /p:EnableWindowsTargeting=true
+
+      - name: Upload .NET test results
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: ci-dotnet-test-results-${{ github.run_number }}
+          path: artifacts/test-results/dotnet/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  browser-workstation:
+    name: Browser Workstation
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
+      - name: Install dashboard dependencies
+        run: npm ci --prefix src/Meridian.Ui/dashboard
+
+      - name: Run dashboard tests
+        run: npm --prefix src/Meridian.Ui/dashboard run test
+
+      - name: Build dashboard bundle
+        run: npm --prefix src/Meridian.Ui/dashboard run build

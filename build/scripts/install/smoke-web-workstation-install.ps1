@@ -323,7 +323,9 @@ $portToUse = if ($Port -eq 0) { Get-FreeTcpPort } else { $Port }
 $baseUrl = "http://localhost:$portToUse"
 $healthUri = "$baseUrl/healthz"
 $workstationUri = "$baseUrl/workstation/"
+$shutdownUri = "$baseUrl/api/system/shutdown"
 $hostProcess = $null
+$shutdownToken = ([guid]::NewGuid().ToString("N") + [guid]::NewGuid().ToString("N"))
 $result = "failed"
 $failure = $null
 $steps = New-Object System.Collections.Generic.List[object]
@@ -335,6 +337,7 @@ $previousDisableRateLimit = $env:MDC_DISABLE_RATE_LIMIT
 $previousUsers = $env:MDC_USERS
 $previousUsername = $env:MDC_USERNAME
 $previousPassword = $env:MDC_PASSWORD
+$previousShutdownToken = $env:MDC_SHUTDOWN_TOKEN
 
 New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
 
@@ -377,6 +380,7 @@ try {
     $env:MDC_USERS = $null
     $env:MDC_USERNAME = $null
     $env:MDC_PASSWORD = $null
+    $env:MDC_SHUTDOWN_TOKEN = $shutdownToken
     $hostArgumentLine = '--mode desktop --http-port {0} --config "{1}"' -f $portToUse, $configPath.Replace('"', '\"')
     $hostProcess = Start-Process `
         -FilePath $exePath `
@@ -419,15 +423,30 @@ finally {
     $env:MDC_USERS = $previousUsers
     $env:MDC_USERNAME = $previousUsername
     $env:MDC_PASSWORD = $previousPassword
+    $env:MDC_SHUTDOWN_TOKEN = $previousShutdownToken
 
     if ($null -ne $hostProcess -and -not $hostProcess.HasExited -and -not $KeepHostOpen) {
         try {
-            Write-Info "Stopping installed host PID $($hostProcess.Id)..."
-            Stop-Process -Id $hostProcess.Id -Force -ErrorAction Stop
-            $hostProcess.WaitForExit()
+            Write-Info "Requesting graceful shutdown for installed host PID $($hostProcess.Id)..."
+            Invoke-WebRequest `
+                -Uri $shutdownUri `
+                -Method Post `
+                -UseBasicParsing `
+                -TimeoutSec 5 `
+                -Headers @{ "X-Meridian-Shutdown-Token" = $shutdownToken } | Out-Null
+            if (-not $hostProcess.WaitForExit(15000)) {
+                Write-Warn "Graceful shutdown timed out; terminating installed host PID $($hostProcess.Id)."
+                Stop-Process -Id $hostProcess.Id -Force -ErrorAction Stop
+                $hostProcess.WaitForExit()
+            }
         }
         catch {
             Write-Warn "Failed to stop installed host PID $($hostProcess.Id): $($_.Exception.Message)"
+            if (-not $hostProcess.HasExited) {
+                Write-Warn "Terminating installed host PID $($hostProcess.Id) after graceful shutdown failure."
+                Stop-Process -Id $hostProcess.Id -Force -ErrorAction SilentlyContinue
+                $hostProcess.WaitForExit()
+            }
         }
     }
 

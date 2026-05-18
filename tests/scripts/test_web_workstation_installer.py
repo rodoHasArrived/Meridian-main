@@ -138,6 +138,10 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             self.assertIn("--mode", launcher)
             self.assertIn("desktop", launcher)
             self.assertIn("http://localhost:$Port/workstation/", launcher)
+            self.assertIn("web-workstation-runtime.json", launcher)
+            self.assertIn("X-Meridian-Shutdown-Token", launcher)
+            self.assertIn("-PassThru", launcher)
+            self.assertIn("[switch]$Stop", launcher)
             self.assertIn('--config `"$configPath`"', launcher)
 
     def test_script_contains_host_asset_shortcut_and_launcher_contracts(self) -> None:
@@ -149,7 +153,11 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         self.assertIn("desktop", script)
         self.assertIn("--config", script)
         self.assertIn("Meridian Web Workstation.lnk", script)
+        self.assertIn("Stop Meridian Web Workstation.lnk", script)
         self.assertIn("Launch-MeridianWebWorkstation.ps1", script)
+        self.assertIn("web-workstation-runtime.json", script)
+        self.assertIn("X-Meridian-Shutdown-Token", script)
+        self.assertIn("-PassThru", script)
         self.assertNotIn("MDC_CONFIG_PATH", script)
 
     def test_root_install_script_exposes_web_workstation_mode(self) -> None:
@@ -236,6 +244,8 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         self.assertIn("MDC_USERS = $null", smoke_script)
         self.assertIn("-MaximumRedirection 0", smoke_script)
         self.assertIn("/healthz", smoke_script)
+        self.assertIn("/api/system/shutdown", smoke_script)
+        self.assertIn("X-Meridian-Shutdown-Token", smoke_script)
         self.assertIn("/workstation/", smoke_script)
         self.assertIn("first workstation asset", smoke_script)
         self.assertIn("Invoke-WebRequest", smoke_script)

@@ -31,6 +31,28 @@ npm run ui:dashboard:test
 Broaden to WPF, UI-service, MCP, or integration tests only when the touched
 files require it.
 
+## CI Equivalents
+
+The automatic `CI` workflow mirrors these commands:
+
+```powershell
+dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
+dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
+dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
+dotnet test Meridian.sln -c Release --no-build --filter "Category!=Integration&Category!=Performance" /p:EnableWindowsTargeting=true
+npm ci --prefix src/Meridian.Ui/dashboard
+npm --prefix src/Meridian.Ui/dashboard run test
+npm --prefix src/Meridian.Ui/dashboard run build
+```
+
+The `Windows Desktop Build` workflow mirrors a Windows-only WPF build and test pass:
+
+```powershell
+dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
+dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release --no-restore --filter "Category!=Integration&FullyQualifiedName!~Integration" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
+```
+
 ## Run
 
 Main local host and CLI:

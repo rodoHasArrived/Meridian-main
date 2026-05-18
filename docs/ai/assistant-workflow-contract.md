@@ -18,9 +18,9 @@ The current repository evidence supports these AI surfaces:
 | Root assistant compatibility | `AGENTS.md`, `CLAUDE.md` | Root-level project context and compatibility for agents that read conventional files |
 | Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml` | Repo-local specialist skills, OpenAI/Codex metadata, and environment entrypoints |
 | Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/` | Claude agent definitions, portable skill packages, hooks, permissions, and model selection |
-| GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/`, `.github/workflows/copilot-*` | Repository-wide coding-agent guidance, path instructions, agents, prompts, and setup workflows |
+| GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
 | MCP-compatible clients | `src/Meridian.Mcp/`, `src/Meridian.McpServer/`, `docs/ai/navigation/README.md`, `docs/ai/generated/repo-navigation.json` | Tool, prompt, resource, and navigation access for any MCP client |
-| AI automation workflows | `.github/workflows/prompt-generation.yml`, `.github/workflows/reusable-ai-analysis.yml`, `.github/workflows/skill-evals.yml`, `.github/workflows/documentation.yml` | CI-generated prompts, AI analysis, skill evaluation, and known-error intake |
+| Workflow guidance | `.github/workflows/README.md`, `docs/development/github-actions-summary.md`, `docs/development/github-actions-testing.md` | Current build, test, publish, and maintenance workflow guidance |
 | Reusable prompt templates | `.github/prompts/`, `docs/ai/prompts/README.md` | Model-agnostic prompts for Copilot Chat, Claude Code, ChatGPT, and manual assistant sessions |
 | Shared AI documentation | `docs/ai/`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md` | Human-readable indexes, routing rules, known-error prevention, and shared project grounding |
 

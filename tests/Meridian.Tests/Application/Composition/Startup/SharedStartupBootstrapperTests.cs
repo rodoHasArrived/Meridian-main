@@ -74,7 +74,7 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         FakeDashboardServer? server = null;
         var orchestrator = new HostModeOrchestrator(
             _log,
-            (configPath, port) =>
+            (configPath, port, _) =>
             {
                 server = new FakeDashboardServer(configPath, port, cts);
                 return server;
@@ -90,7 +90,7 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         server.StartCallCount.Should().Be(1);
         server.StopCallCount.Should().Be(1);
         server.DisposeCallCount.Should().Be(1);
-        server.StopCancellationToken.CanBeCanceled.Should().BeFalse();
+        server.StopCancellationToken.CanBeCanceled.Should().BeTrue();
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
         FakeDashboardServer? server = null;
         var orchestrator = new HostModeOrchestrator(
             _log,
-            (configPath, port) =>
+            (configPath, port, _) =>
             {
                 server = new FakeDashboardServer(configPath, port);
                 return server;

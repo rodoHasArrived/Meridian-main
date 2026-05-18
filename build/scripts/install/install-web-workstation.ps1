@@ -168,14 +168,22 @@ function New-LauncherScript {
     $launcher = @"
 param(
     [ValidateRange(1, 65535)]
-    [int]`$Port = $DefaultPort
+    [int]`$Port = $DefaultPort,
+
+    [switch]`$Stop,
+
+    [switch]`$Status
 )
 
 `$ErrorActionPreference = "Stop"
 `$installRoot = Split-Path -Parent `$MyInvocation.MyCommand.Path
 `$exePath = Join-Path `$installRoot "Meridian.exe"
 `$configPath = "$escapedConfigPath"
+`$stateRoot = Join-Path (Split-Path -Parent `$configPath) "service"
+`$runtimePath = Join-Path `$stateRoot "web-workstation-runtime.json"
 `$healthUrl = "http://localhost:`$Port/healthz"
+`$lifecycleUrl = "http://localhost:`$Port/api/system/lifecycle"
+`$shutdownUrl = "http://localhost:`$Port/api/system/shutdown"
 `$workstationUrl = "http://localhost:`$Port/workstation/"
 `$loginUrl = "http://localhost:`$Port/login?returnUrl=%2Fworkstation%2F"
 
@@ -184,10 +192,13 @@ if ([string]::IsNullOrWhiteSpace(`$env:MDC_AUTH_MODE)) {
 }
 
 function Test-MeridianEndpoint {
-    param([Parameter(Mandatory)][string]`$Uri)
+    param(
+        [Parameter(Mandatory)][string]`$Uri,
+        [hashtable]`$Headers = @{}
+    )
 
     try {
-        `$response = Invoke-WebRequest -Uri `$Uri -UseBasicParsing -TimeoutSec 2
+        `$response = Invoke-WebRequest -Uri `$Uri -UseBasicParsing -TimeoutSec 2 -Headers `$Headers
         return `$response.StatusCode -ge 200 -and `$response.StatusCode -lt 500
     }
     catch {
@@ -195,13 +206,172 @@ function Test-MeridianEndpoint {
     }
 }
 
+function New-ShutdownToken {
+    return (([guid]::NewGuid().ToString("N")) + ([guid]::NewGuid().ToString("N")))
+}
+
+function Read-RuntimeState {
+    if (-not (Test-Path -LiteralPath `$runtimePath)) {
+        return `$null
+    }
+
+    try {
+        return Get-Content -LiteralPath `$runtimePath -Raw | ConvertFrom-Json
+    }
+    catch {
+        Write-Warning "Ignoring unreadable Meridian runtime state at `$runtimePath`: `$(`$_.Exception.Message)"
+        return `$null
+    }
+}
+
+function Write-RuntimeState {
+    param(
+        [Parameter(Mandatory)]`$Process,
+        [Parameter(Mandatory)][string]`$ShutdownToken
+    )
+
+    New-Item -ItemType Directory -Path `$stateRoot -Force | Out-Null
+    [ordered]@{
+        processId = [int]`$Process.Id
+        startedAtUtc = [DateTimeOffset]::UtcNow.ToString("O")
+        port = [int]`$Port
+        exePath = `$exePath
+        installRoot = `$installRoot
+        configPath = `$configPath
+        shutdownToken = `$ShutdownToken
+    } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath `$runtimePath -Encoding UTF8
+}
+
+function Remove-RuntimeState {
+    if (Test-Path -LiteralPath `$runtimePath) {
+        Remove-Item -LiteralPath `$runtimePath -Force
+    }
+}
+
+function Get-TrackedProcess {
+    param(`$Runtime)
+
+    if (`$null -eq `$Runtime -or `$null -eq `$Runtime.processId) {
+        return `$null
+    }
+
+    try {
+        return Get-Process -Id ([int]`$Runtime.processId) -ErrorAction Stop
+    }
+    catch {
+        return `$null
+    }
+}
+
+function Test-TrackedProcessMatches {
+    param(`$Runtime)
+
+    `$process = Get-TrackedProcess -Runtime `$Runtime
+    if (`$null -eq `$process) {
+        return `$false
+    }
+
+    if (`$Runtime.exePath -and `$process.Path) {
+        if (-not [string]::Equals(`$process.Path, [string]`$Runtime.exePath, [System.StringComparison]::OrdinalIgnoreCase)) {
+            return `$false
+        }
+    }
+
+    if (`$Runtime.startedAtUtc) {
+        try {
+            `$runtimeStart = [DateTimeOffset]::Parse([string]`$Runtime.startedAtUtc).UtcDateTime
+            if (`$process.StartTime.ToUniversalTime() -lt `$runtimeStart.AddSeconds(-5)) {
+                return `$false
+            }
+        }
+        catch {
+            return `$false
+        }
+    }
+
+    return `$process.ProcessName -like "Meridian*"
+}
+
+function Get-LifecycleHeaders {
+    param(`$Runtime)
+
+    if (`$null -ne `$Runtime -and -not [string]::IsNullOrWhiteSpace([string]`$Runtime.shutdownToken)) {
+        return @{ "X-Meridian-Shutdown-Token" = [string]`$Runtime.shutdownToken }
+    }
+
+    return @{}
+}
+
+function Stop-MeridianHost {
+    `$runtime = Read-RuntimeState
+    if (`$null -eq `$runtime) {
+        Write-Warning "No Meridian runtime state was found at `$runtimePath."
+        return
+    }
+
+    `$headers = Get-LifecycleHeaders -Runtime `$runtime
+    if (`$headers.Count -gt 0) {
+        try {
+            Invoke-WebRequest -Uri `$shutdownUrl -Method Post -UseBasicParsing -TimeoutSec 5 -Headers `$headers | Out-Null
+            for (`$attempt = 0; `$attempt -lt 40; `$attempt++) {
+                Start-Sleep -Milliseconds 250
+                if (`$null -eq (Get-TrackedProcess -Runtime `$runtime)) {
+                    Remove-RuntimeState
+                    Write-Host "Meridian host stopped gracefully."
+                    return
+                }
+            }
+        }
+        catch {
+            Write-Warning "Graceful Meridian shutdown request failed: `$(`$_.Exception.Message)"
+        }
+    }
+
+    if (Test-TrackedProcessMatches -Runtime `$runtime) {
+        Write-Warning "Meridian did not stop gracefully; terminating the tracked owned process `$(`$runtime.processId)."
+        Stop-Process -Id ([int]`$runtime.processId) -Force
+        Remove-RuntimeState
+        return
+    }
+
+    throw "Refusing to stop process `$(`$runtime.processId) because it no longer matches the stored Meridian runtime metadata."
+}
+
+function Show-MeridianStatus {
+    `$runtime = Read-RuntimeState
+    if (`$null -eq `$runtime) {
+        Write-Host "No Meridian runtime state is currently tracked."
+        return
+    }
+
+    `$process = Get-TrackedProcess -Runtime `$runtime
+    `$state = if (`$null -eq `$process) { "stopped" } else { "running" }
+    Write-Host "Meridian host state: `$state"
+    Write-Host "  PID: `$(`$runtime.processId)"
+    Write-Host "  Port: `$(`$runtime.port)"
+    Write-Host "  Config: `$(`$runtime.configPath)"
+}
+
 if (-not (Test-Path -LiteralPath `$exePath)) {
     throw "Meridian.exe was not found at `$exePath. Re-run the workstation installer."
 }
 
+if (`$Stop) {
+    Stop-MeridianHost
+    return
+}
+
+if (`$Status) {
+    Show-MeridianStatus
+    return
+}
+
 if (-not (Test-MeridianEndpoint -Uri `$healthUrl)) {
+    `$shutdownToken = New-ShutdownToken
+    `$env:MDC_SHUTDOWN_TOKEN = `$shutdownToken
     `$arguments = "--mode desktop --http-port `$Port --config ```"`$configPath```""
-    Start-Process -FilePath `$exePath -ArgumentList `$arguments -WorkingDirectory `$installRoot -WindowStyle Hidden | Out-Null
+    `$process = Start-Process -FilePath `$exePath -ArgumentList `$arguments -WorkingDirectory `$installRoot -WindowStyle Hidden -PassThru
+    Write-RuntimeState -Process `$process -ShutdownToken `$shutdownToken
 
     `$ready = `$false
     for (`$attempt = 0; `$attempt -lt 45; `$attempt++) {
@@ -242,18 +412,21 @@ function New-AppShortcut {
         [Parameter(Mandatory)][string]$ShortcutPath,
         [Parameter(Mandatory)][string]$LauncherPath,
         [Parameter(Mandatory)][string]$InstallRootPath,
-        [Parameter(Mandatory)][string]$IconPath
+        [Parameter(Mandatory)][string]$IconPath,
+        [string]$LauncherArguments = "",
+        [string]$Description = "Launch Meridian Web Workstation"
     )
 
     $shell = New-Object -ComObject WScript.Shell
     $shortcut = $shell.CreateShortcut($ShortcutPath)
     $shortcut.TargetPath = Get-PowerShellShortcutTarget
-    $shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$LauncherPath`""
+    $launcherSuffix = if ([string]::IsNullOrWhiteSpace($LauncherArguments)) { "" } else { " $LauncherArguments" }
+    $shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$LauncherPath`"$launcherSuffix"
     $shortcut.WorkingDirectory = $InstallRootPath
     if (Test-Path -LiteralPath $IconPath) {
         $shortcut.IconLocation = $IconPath
     }
-    $shortcut.Description = "Launch Meridian Web Workstation"
+    $shortcut.Description = $Description
     $shortcut.Save()
 }
 
@@ -276,6 +449,7 @@ $iconPath = Join-Path $installRootPath "app.ico"
 $desktopShortcutPath = Join-Path ([Environment]::GetFolderPath("DesktopDirectory")) "Meridian Web Workstation.lnk"
 $startMenuDir = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Meridian"
 $startMenuShortcutPath = Join-Path $startMenuDir "Meridian Web Workstation.lnk"
+$startMenuStopShortcutPath = Join-Path $startMenuDir "Stop Meridian Web Workstation.lnk"
 
 Assert-RequiredPath -Path $hostProject -Description "Meridian host project"
 Assert-RequiredPath -Path $dashboardPackageJson -Description "Dashboard package.json"
@@ -412,6 +586,7 @@ if (-not $NoStartMenuShortcut) {
     Invoke-Step -Name "Create Start Menu shortcut" -Action {
         New-Item -ItemType Directory -Path $startMenuDir -Force | Out-Null
         New-AppShortcut -ShortcutPath $startMenuShortcutPath -LauncherPath $launcherPath -InstallRootPath $installRootPath -IconPath $iconPath
+        New-AppShortcut -ShortcutPath $startMenuStopShortcutPath -LauncherPath $launcherPath -InstallRootPath $installRootPath -IconPath $iconPath -LauncherArguments "-Stop" -Description "Stop Meridian Web Workstation"
     }
 }
 

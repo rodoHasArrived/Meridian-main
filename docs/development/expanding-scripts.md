@@ -263,9 +263,10 @@ python3 build/scripts/docs/your-script.py --help
 python3 build/scripts/docs/your-script.py --output /tmp/test.md --summary
 ```
 
-### Step 2: Add a workflow job
+### Step 2: Add a local command or workflow job when needed
 
-Add a new job to `.github/workflows/documentation.yml`:
+Prefer adding a local command first. Add a GitHub Actions job only when the check is important
+enough to run in the active CI surface:
 
 ```yaml
   your-new-job:

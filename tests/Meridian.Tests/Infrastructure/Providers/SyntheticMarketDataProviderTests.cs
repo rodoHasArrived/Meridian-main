@@ -70,6 +70,31 @@ public sealed class SyntheticMarketDataProviderTests
     }
 
     [Fact]
+    public async Task StreamingClient_SessionClose_DisconnectStopsSyntheticPublishLoops()
+    {
+        var publisher = new RecordingPublisher();
+        await using var client = new SyntheticMarketDataClient(
+            publisher,
+            new SyntheticMarketDataConfig(Enabled: true, EventsPerSecond: 50));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        await client.ConnectAsync(timeout.Token);
+        client.SubscribeTrades(new SymbolConfig("MSFT", SubscribeTrades: true, SubscribeDepth: false));
+
+        while (publisher.Events.IsEmpty)
+        {
+            await Task.Delay(20, timeout.Token);
+        }
+
+        await client.DisconnectAsync(timeout.Token);
+        var countAfterDisconnect = publisher.Events.Count;
+
+        await Task.Delay(150, timeout.Token);
+
+        publisher.Events.Count.Should().Be(countAfterDisconnect);
+    }
+
+    [Fact]
     public void SubscribeTrades_NullConfig_ThrowsArgumentNullException()
     {
         var publisher = new RecordingPublisher();

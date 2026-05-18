@@ -30,9 +30,8 @@ make collect-debug
 
 Use the GitHub Actions workflow to run the same observability toolkit in CI and upload artifacts for debugging:
 
-```bash
-.github/workflows/build-observability.yml
-```
+Build observability is now local tooling rather than a dedicated GitHub Actions workflow. Use the
+commands in this guide directly when diagnostics are needed.
 
 The workflow executes:
 

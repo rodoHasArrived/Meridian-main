@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -156,6 +157,37 @@ public sealed class BrokerageConnectionEndpointsTests
                 .ToArray();
 
             providerNames.Should().Contain("alpaca");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UiServer_RegistersLifecycleRoutes_ForManagedShutdown()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "ui-server-lifecycle", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, CreateMinimalConfig(root));
+
+        try
+        {
+            await using var server = new UiServer(configPath, port: 0);
+            var app = GetServerApp(server);
+
+            var routes = app.Services.GetServices<EndpointDataSource>()
+                .SelectMany(source => source.Endpoints)
+                .OfType<RouteEndpoint>()
+                .Select(endpoint => endpoint.RoutePattern.RawText)
+                .ToArray();
+
+            routes.Should().Contain("/api/system/lifecycle");
+            routes.Should().Contain("/api/system/shutdown");
         }
         finally
         {

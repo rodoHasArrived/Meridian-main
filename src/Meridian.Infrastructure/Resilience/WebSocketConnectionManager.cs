@@ -304,7 +304,11 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         if (_receiveTask != null)
         {
             try
-            { await _receiveTask.ConfigureAwait(false); }
+            { await _receiveTask.WaitAsync(ct).ConfigureAwait(false); }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                _log.Warning("{Provider} receive loop did not finish before disconnect timeout", _providerName);
+            }
             catch (Exception ex)
             {
                 _log.Debug(ex, "Receive loop completion error during {Provider} disconnect", _providerName);
@@ -352,7 +356,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
             _log.Warning("{Provider} WebSocket connection lost, initiating automatic reconnection", _providerName);
 
             // Clean up existing connection
-            await CleanupConnectionAsync();
+            await CleanupConnectionAsync(ct);
 
             // Attempt reconnection with backoff
             while (_reconnectAttempts < _config.MaxReconnectAttempts && !ct.IsCancellationRequested)
@@ -434,7 +438,8 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        await DisconnectAsync().ConfigureAwait(false);
+        using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await DisconnectAsync(shutdownCts.Token).ConfigureAwait(false);
         _reconnectGate.Dispose();
         _connectLock.Dispose();
     }
@@ -565,7 +570,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         if (receiveTask != null)
         {
             try
-            { await receiveTask.ConfigureAwait(false); }
+            { await receiveTask.WaitAsync(ct).ConfigureAwait(false); }
             catch (Exception ex) { _log.Debug(ex, "{Provider} receive task failed during cleanup", _providerName); }
         }
 

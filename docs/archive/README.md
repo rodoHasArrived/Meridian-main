@@ -18,3 +18,7 @@ Current maintained entry points:
 Legacy root-level archive material under `../../archive/docs/` remains a valid
 historical reference. Migrate it only when updating links and indexes in the
 same change.
+
+Workflow modernization archive:
+
+- [Legacy GitHub Actions Inventory - 2026-05-18](workflows/legacy-github-actions-2026-05-18.md)

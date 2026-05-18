@@ -67,6 +67,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Desktop Development Testing Guide](desktop-testing-guide.md) | bootstrap, build, and validate the WPF desktop surface locally |
 | [UI Fixture Mode Guide](ui-fixture-mode-guide.md) | run the desktop UI with deterministic offline data |
 | [Desktop Workflow Automation](desktop-workflow-automation.md) | drive scripted desktop flows, screenshots, and manual-generation workflows |
+| [Process Lifecycle Diagnostics](process-lifecycle-diagnostics.md) | check startup/shutdown ownership and safely report leftover Meridian/dotnet processes |
 | [Desktop Support Policy](policies/desktop-support-policy.md) | confirm expected validation and support obligations for desktop-facing changes |
 
 ### CI, Build, And Observability
@@ -83,7 +84,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 | Document | Use it when you need to... |
 | --- | --- |
-| [Documentation Automation Guide](documentation-automation.md) | run or understand the documentation workflow and generated outputs |
+| [Documentation Automation Guide](documentation-automation.md) | run documentation automation scripts and understand generated outputs |
 | [Expanding Documentation Scripts](expanding-scripts.md) | add new scripts under `build/scripts/docs/` using existing conventions |
 | [Adding Custom Documentation Rules](adding-custom-rules.md) | extend `build/rules/doc-rules.yaml` and the rules engine safely |
 

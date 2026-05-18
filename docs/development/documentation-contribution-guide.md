@@ -205,7 +205,7 @@ Add these fields in the front matter section at the top of new documents:
 
 ### Stale Detection
 
-Documents older than **180 days** without a `Reviewed` update are considered candidates for review. The CI documentation workflow checks for stale metadata (see `.github/workflows/documentation.yml`).
+Documents older than **180 days** without a `Reviewed` update are considered candidates for review. Run the documentation automation scripts locally when stale metadata needs a refresh.
 
 ---
 

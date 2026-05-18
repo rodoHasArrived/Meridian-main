@@ -19,6 +19,8 @@ x86/
 [Bb]uild/
 !build/
 !build/scripts/
+!build/scripts/ci/
+!build/scripts/ci/*.py
 !build/scripts/docs/
 !build/scripts/docs/*.py
 !build/scripts/docs/*.sh
