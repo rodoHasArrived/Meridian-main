@@ -216,6 +216,124 @@ Use these documents together when planning or implementing new work:
 <!-- readme-tree start -->
 ```
 .
+├── .agents
+│   └── skills
+│       ├── _shared
+│       │   └── project-context.md
+│       ├── meridian-archive-organizer
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
+│       │   ├── evals
+│       │   │   └── evals.json
+│       │   ├── fixtures
+│       │   │   └── superseded-adr
+│       │   │       └── docs
+│       │   │           ├── adr
+│       │   │           │   ├── ADR-015-platform-restructuring.md
+│       │   │           │   └── README.md
+│       │   │           └── generated
+│       │   │               └── repository-structure.md
+│       │   ├── references
+│       │   │   ├── archive-placement-guide.md
+│       │   │   └── evaluation-harness.md
+│       │   └── scripts
+│       │       ├── run_evals.py
+│       │       ├── score_eval.py
+│       │       └── trace_archive_candidates.py
+│       ├── meridian-blueprint
+│       │   ├── CHANGELOG.md
+│       │   ├── SKILL.md
+│       │   └── references
+│       │       ├── blueprint-patterns.md
+│       │       └── pipeline-position.md
+│       ├── meridian-brainstorm
+│       │   ├── CHANGELOG.md
+│       │   ├── SKILL.md
+│       │   ├── brainstorm-history.jsonl
+│       │   └── references
+│       │       ├── competitive-landscape.md
+│       │       └── idea-dimensions.md
+│       ├── meridian-code-review
+│       │   ├── CHANGELOG.md
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── grader.md
+│       │   ├── eval-viewer
+│       │   │   ├── generate_review.py
+│       │   │   └── viewer.html
+│       │   ├── evals
+│       │   │   ├── benchmark_baseline.json
+│       │   │   └── evals.json
+│       │   ├── references
+│       │   │   ├── architecture.md
+│       │   │   └── schemas.md
+│       │   └── scripts
+│       │       ├── __init__.py
+│       │       ├── aggregate_benchmark.py
+│       │       ├── package_skill.py
+│       │       ├── quick_validate.py
+│       │       ├── run_eval.py
+│       │       └── utils.py
+│       ├── meridian-implementation-assurance
+│       │   ├── SKILL.md
+│       │   ├── references
+│       │   │   ├── documentation-routing.md
+│       │   │   └── evaluation-harness.md
+│       │   └── scripts
+│       │       ├── doc_route.py
+│       │       └── score_eval.py
+│       ├── meridian-provider-builder
+│       │   ├── CHANGELOG.md
+│       │   ├── SKILL.md
+│       │   └── references
+│       │       └── provider-patterns.md
+│       ├── meridian-repo-navigation
+│       │   ├── SKILL.md
+│       │   └── agents
+│       │       └── openai.yaml
+│       ├── meridian-roadmap-strategist
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
+│       │   └── references
+│       │       └── roadmap-source-map.md
+│       ├── meridian-simulated-user-panel
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── grader.md
+│       │   ├── assets
+│       │   │   ├── bundles
+│       │   │   │   ├── roadmap-review.manifest.json
+│       │   │   │   ├── screen-review.manifest.json
+│       │   │   │   ├── ship-readiness.manifest.json
+│       │   │   │   └── workflow-walkthrough.manifest.json
+│       │   │   ├── eval-result.schema.json
+│       │   │   └── review-manifest.schema.json
+│       │   ├── evals
+│       │   │   ├── benchmark_baseline.json
+│       │   │   ├── evals.json
+│       │   │   └── golden
+│       │   │       ├── eval-01-welcome-onboarding-design-partner.md
+│       │   │       ├── eval-02-provider-onboarding-release-gate.md
+│       │   │       ├── eval-03-fund-ledger-controls-review.md
+│       │   │       ├── eval-04-analysis-export-power-user-review.md
+│       │   │       ├── eval-05-research-promotion-roadmap-review.md
+│       │   │       └── eval-06-provider-health-usability-lab.md
+│       │   ├── references
+│       │   │   ├── artifact-bundles.md
+│       │   │   ├── personas.md
+│       │   │   ├── review-contract.md
+│       │   │   ├── review-modes.md
+│       │   │   └── sample-prompts.md
+│       │   └── scripts
+│       │       ├── __init__.py
+│       │       └── run_eval.py
+│       └── meridian-test-writer
+│           ├── CHANGELOG.md
+│           ├── SKILL.md
+│           └── references
+│               └── test-patterns.md
 ├── .artifacts
 │   └── link-repair-report.md
 ├── .claude
@@ -387,6 +505,15 @@ Use these documents together when planning or implementing new work:
 │       │       └── test-patterns.md
 │       └── skills_provider.py
 ├── .codex
+│   ├── agents
+│   │   ├── meridian-archive-organizer.toml
+│   │   ├── meridian-blueprint.toml
+│   │   ├── meridian-cleanup.toml
+│   │   ├── meridian-docs.toml
+│   │   ├── meridian-navigation.toml
+│   │   ├── meridian-repo-navigation.toml
+│   │   ├── meridian-roadmap-strategist.toml
+│   │   └── meridian-user-panel.toml
 │   ├── config.toml
 │   ├── environments
 │   │   ├── README.md
@@ -8961,6 +9088,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-727 directories, 8018 files
+771 directories, 8101 files
 ```
 <!-- readme-tree end -->
