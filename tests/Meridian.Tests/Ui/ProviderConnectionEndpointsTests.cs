@@ -20,6 +20,7 @@ using Xunit;
 
 namespace Meridian.Tests.Ui;
 
+[Collection(AlpacaCredentialEnvironmentCollection.Name)]
 public sealed class ProviderConnectionEndpointsTests
 {
     [Fact]

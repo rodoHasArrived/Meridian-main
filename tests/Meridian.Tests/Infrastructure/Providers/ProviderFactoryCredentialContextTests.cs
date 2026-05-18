@@ -11,10 +11,12 @@ using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Tests.Ui;
 using Xunit;
 
 namespace Meridian.Tests.Infrastructure.Providers;
 
+[Collection(AlpacaCredentialEnvironmentCollection.Name)]
 public sealed class ProviderFactoryCredentialContextTests
 {
     [Fact]

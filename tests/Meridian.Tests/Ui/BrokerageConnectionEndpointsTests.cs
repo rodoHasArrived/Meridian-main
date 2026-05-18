@@ -21,6 +21,7 @@ using Xunit;
 
 namespace Meridian.Tests.Ui;
 
+[Collection(AlpacaCredentialEnvironmentCollection.Name)]
 public sealed class BrokerageConnectionEndpointsTests
 {
     [Fact]
@@ -178,6 +179,7 @@ public sealed class BrokerageConnectionEndpointsTests
         try
         {
             await using var server = new UiServer(configPath, port: 0);
+            await server.StartAsync();
             var app = GetServerApp(server);
 
             var routes = app.Services.GetServices<EndpointDataSource>()

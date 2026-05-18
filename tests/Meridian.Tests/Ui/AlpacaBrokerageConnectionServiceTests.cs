@@ -12,6 +12,7 @@ using Xunit;
 
 namespace Meridian.Tests.Ui;
 
+[Collection(AlpacaCredentialEnvironmentCollection.Name)]
 public sealed class AlpacaBrokerageConnectionServiceTests
 {
     [Fact]
