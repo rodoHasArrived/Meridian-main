@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Roadmap Strategist"
+  short_description: "Refresh Meridian roadmap and target-state docs"
+  default_prompt: "Use $meridian-roadmap-strategist to refresh Meridian roadmap or target-state docs using the current workstation, provider-confidence, and governance delivery waves."
