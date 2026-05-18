@@ -349,6 +349,41 @@ public sealed class PromotionServiceTests
         history[0].ApprovalChecklist.Should().BeEquivalentTo(PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper));
     }
 
+    [Fact]
+    public async Task GetPromotionHistoryAsync_WithMalformedPersistedRecords_ShouldSkipInvalidEntries()
+    {
+        var tempRoot = CreateTempRoot();
+        var options = new PromotionRecordStoreOptions(Path.Combine(tempRoot, "promotion-history"));
+        Directory.CreateDirectory(options.RootDirectory);
+        var valid = new StrategyPromotionRecord(
+            PromotionId: "promotion-valid",
+            StrategyId: "s1",
+            StrategyName: "Strategy One",
+            SourceRunType: RunType.Backtest,
+            TargetRunType: RunType.Paper,
+            SourceRunId: "run-valid",
+            TargetRunId: "run-paper",
+            QualifyingSharpe: 1.1d,
+            QualifyingMaxDrawdownPercent: 0.05m,
+            QualifyingTotalReturn: 0.12m,
+            Decision: PromotionDecisionKinds.Approved,
+            PromotedAt: DateTimeOffset.UtcNow,
+            ApprovalReason: "approved",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            AuditReference: "audit-valid",
+            ApprovedBy: "ops");
+        var malformed = valid with { PromotionId = "promotion-malformed", ApprovedBy = "" };
+        await File.WriteAllLinesAsync(
+            options.HistoryPath,
+            [System.Text.Json.JsonSerializer.Serialize(valid), System.Text.Json.JsonSerializer.Serialize(malformed)]);
+
+        var store = new JsonlPromotionRecordStore(options, NullLogger<JsonlPromotionRecordStore>.Instance);
+        var records = await store.LoadAllAsync();
+
+        records.Should().ContainSingle();
+        records[0].PromotionId.Should().Be("promotion-valid");
+    }
+
     // ---- Helpers ----
 
     private static PromotionService BuildService(out StrategyRunStore store, string? rootPath = null)

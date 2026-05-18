@@ -283,12 +283,13 @@ public sealed class TradingOperatorReadinessService
         else if (promotion.RequiresReview || !IsPromotionTraceComplete(promotion))
         {
             PrometheusMetrics.RecordRunContinuityMissingLineage("api", "promotion-trace-incomplete");
+            var missingFields = GetMissingPromotionTraceFields(promotion);
             AddWorkItem(
                 workItems,
                 OperatorWorkItemKindDto.PromotionReview,
                 "Promotion trace incomplete",
-                "Promotion evidence must include decision, operator, rationale, lineage, and audit reference.",
-                OperatorWorkItemToneDto.Warning,
+                $"Promotion evidence is incomplete. Missing: {string.Join(", ", missingFields)}.",
+                OperatorWorkItemToneDto.Critical,
                 promotion.SourceRunId ?? promotion.TargetRunId,
                 auditReference: promotion.AuditReference,
                 workItemId: BuildWorkItemId("promotion-trace-incomplete", promotion.SourceRunId ?? promotion.TargetRunId));
@@ -864,13 +865,60 @@ public sealed class TradingOperatorReadinessService
         !string.IsNullOrWhiteSpace(record.AuditReference);
 
     private static bool IsPromotionTraceComplete(TradingPromotionReadinessDto? promotion) =>
-        promotion is not null &&
-        !string.IsNullOrWhiteSpace(promotion.ApprovalStatus) &&
-        !string.IsNullOrWhiteSpace(promotion.ApprovedBy) &&
-        !string.IsNullOrWhiteSpace(promotion.Reason) &&
-        HasApprovalChecklist(promotion.ApprovalChecklist) &&
-        !string.IsNullOrWhiteSpace(promotion.SourceRunId) &&
-        !string.IsNullOrWhiteSpace(promotion.AuditReference);
+        GetMissingPromotionTraceFields(promotion).Count == 0;
+
+    private static IReadOnlyList<string> GetMissingPromotionTraceFields(TradingPromotionReadinessDto? promotion)
+    {
+        if (promotion is null)
+        {
+            return ["promotion"];
+        }
+
+        var missing = new List<string>();
+        if (string.IsNullOrWhiteSpace(promotion.ApprovalStatus))
+        {
+            missing.Add("decision");
+        }
+
+        if (string.IsNullOrWhiteSpace(promotion.ApprovedBy))
+        {
+            missing.Add("operator");
+        }
+
+        if (string.IsNullOrWhiteSpace(promotion.Reason))
+        {
+            missing.Add("rationale");
+        }
+
+        if (!HasApprovalChecklist(promotion.ApprovalChecklist))
+        {
+            missing.Add("checklist");
+        }
+
+        if (string.IsNullOrWhiteSpace(promotion.SourceRunId))
+        {
+            missing.Add("sourceRunId");
+        }
+
+        if (string.Equals(promotion.ApprovalStatus, PromotionDecisionKinds.Approved, StringComparison.OrdinalIgnoreCase) &&
+            string.IsNullOrWhiteSpace(promotion.TargetRunId))
+        {
+            missing.Add("targetRunId");
+        }
+
+        if (string.Equals(promotion.ApprovalStatus, PromotionDecisionKinds.Rejected, StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(promotion.TargetRunId))
+        {
+            missing.Add("targetRunId must be empty for rejected decisions");
+        }
+
+        if (string.IsNullOrWhiteSpace(promotion.AuditReference))
+        {
+            missing.Add("auditReference");
+        }
+
+        return missing;
+    }
 
     private static bool HasApprovalChecklist(IReadOnlyList<string>? approvalChecklist)
         => approvalChecklist is { Count: > 0 } &&
@@ -1226,8 +1274,8 @@ public sealed class TradingOperatorReadinessService
         return new TradingAcceptanceGateDto(
             GateId: "promotion",
             Label: "Promotion trace complete",
-            Status: TradingAcceptanceGateStatusDto.ReviewRequired,
-            Detail: "Promotion evidence must include decision, operator, rationale, checklist, lineage, and audit reference.",
+            Status: TradingAcceptanceGateStatusDto.Blocked,
+            Detail: $"Promotion evidence is incomplete. Missing: {string.Join(", ", GetMissingPromotionTraceFields(promotion))}.",
             RunId: promotion.SourceRunId ?? promotion.TargetRunId,
             AuditReference: promotion.AuditReference);
     }
