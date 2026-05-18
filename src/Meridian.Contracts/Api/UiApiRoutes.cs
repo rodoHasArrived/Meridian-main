@@ -75,6 +75,9 @@ public static class UiApiRoutes
     public const string ProviderStatus = "/api/providers/status";
     public const string ProviderMetrics = "/api/providers/metrics";
     public const string ProviderConfigure = "/api/providers/configure";
+    public const string ProviderConnections = "/api/providers/connections";
+    public const string ProviderCredentialMutation = "/api/providers/{providerId}/credentials";
+    public const string ProviderCredentialVerify = "/api/providers/{providerId}/verify";
     public const string ProviderCatalog = "/api/providers/catalog";
     public const string ProviderCatalogById = "/api/providers/catalog/{providerId}";
     public const string ProviderById = "/api/providers/{providerName}";

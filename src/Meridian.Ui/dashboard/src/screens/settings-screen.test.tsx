@@ -3,7 +3,13 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
-import type { BrokerageConnectionStatus, PortfolioWorkspaceResponse, SessionInfo, SystemOverviewResponse } from "@/types";
+import type {
+  BrokerageConnectionStatus,
+  PortfolioWorkspaceResponse,
+  ProviderConnectionRow,
+  SessionInfo,
+  SystemOverviewResponse
+} from "@/types";
 
 const apiMocks = vi.hoisted(() => ({
   connectAlpacaConnection: vi.fn(),
@@ -63,6 +69,49 @@ const alpacaConnection: BrokerageConnectionStatus = {
   verifiedAt: "2026-05-07T11:50:00Z",
   maskedKeyId: "********1234"
 };
+
+const providerConnections: ProviderConnectionRow[] = [
+  {
+    providerId: "alpaca",
+    displayName: "Alpaca",
+    capability: "DataAndBrokerage",
+    credentialState: "Verified",
+    credentialSource: "LocalEncryptedStore",
+    verificationState: "Verified",
+    health: "Healthy",
+    fallbackActive: false,
+    lastVerifiedAt: "2026-05-07T11:50:00Z",
+    lastSuccessfulAt: "2026-05-07T11:50:00Z",
+    lastFailureAt: null,
+    lastError: null,
+    maskedKeyPreview: "********1234",
+    environment: "paper",
+    externalAccountId: "PA123",
+    affectedWorkflows: ["Trading readiness", "Portfolio brokerage sync"],
+    recommendedAction: "No credential repair action required.",
+    actionHref: "/settings#alpaca-provider-setup"
+  },
+  {
+    providerId: "polygon",
+    displayName: "Polygon.io",
+    capability: "Data",
+    credentialState: "Missing",
+    credentialSource: "None",
+    verificationState: "NotVerified",
+    health: "Warning",
+    fallbackActive: true,
+    lastVerifiedAt: null,
+    lastSuccessfulAt: null,
+    lastFailureAt: "2026-05-07T11:45:00Z",
+    lastError: "Provider credential missing.",
+    maskedKeyPreview: null,
+    environment: null,
+    externalAccountId: null,
+    affectedWorkflows: ["Historical backfill"],
+    recommendedAction: "Add the Polygon API key before routing data repair through Polygon.",
+    actionHref: "/settings#provider-polygon-connection"
+  }
+];
 
 const portfolio: PortfolioWorkspaceResponse = {
   metrics: [],
@@ -145,6 +194,32 @@ describe("SettingsScreen", () => {
       name: "Open Settings diagnostic endpoints from profile authentication posture"
     })).toHaveAttribute("href", "/settings#diagnostic-endpoints");
     expect(document.querySelector("#diagnostic-endpoints")).toBeInTheDocument();
+  });
+
+  it("renders provider connection center with continuity repair links", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+        providerConnections={providerConnections}
+      />
+    );
+
+    const center = screen.getByText("Provider Connection Center").closest("div");
+    expect(screen.getByText("Brokerage capable")).toBeInTheDocument();
+    expect(screen.getByText("Data providers")).toBeInTheDocument();
+    expect(screen.getByText("Alpaca")).toBeInTheDocument();
+    expect(screen.getByText("Polygon.io")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Alpaca provider connection row" })).toHaveAttribute(
+      "href",
+      "/settings#alpaca-provider-setup"
+    );
+    expect(screen.getByRole("link", { name: "Open Polygon.io provider connection row" })).toHaveAttribute(
+      "href",
+      "/settings#provider-polygon-connection"
+    );
+    expect(center).not.toHaveTextContent("endpoint-secret");
   });
 
   it("updates recent-event detail with keyboard row selection", async () => {

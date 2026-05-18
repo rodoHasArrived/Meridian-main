@@ -99,6 +99,7 @@ function AppShell() {
     governance,
     reporting,
     brokerageConnection,
+    providerConnections,
     brokeragePortfolio,
     workflowLibrary,
     workflowPresets,
@@ -362,6 +363,7 @@ function AppShell() {
                       governance={governance}
                       reporting={reporting}
                       brokerageConnection={brokerageConnection}
+                      providerConnections={providerConnections}
                       onRefresh={refresh}
                       loading={loading}
                       error={error}

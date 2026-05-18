@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Config;
+using Meridian.Application.Config.Credentials;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,7 +20,7 @@ public sealed class AlpacaBrokerageConnectionServiceTests
         using var env = AlpacaEnvScope.Clear();
         Environment.SetEnvironmentVariable("APCA_API_KEY_ID", "alias-key-1234");
         Environment.SetEnvironmentVariable("APCA_API_SECRET_KEY", "alias-secret");
-        var service = CreateService(new ConstantStubHandler(HttpStatusCode.OK, BuildAccountResponse()));
+        var service = CreateService(new ConstantStubHandler(HttpStatusCode.OK, BuildAccountResponse()), out var store);
 
         var status = await service.GetStatusAsync();
 
@@ -30,17 +31,19 @@ public sealed class AlpacaBrokerageConnectionServiceTests
         status.MaskedKeyId.Should().EndWith("1234");
         status.MaskedKeyId.Should().NotContain("alias-key");
         status.Warnings.Should().Contain(warning => warning.Contains("/v2/account", StringComparison.OrdinalIgnoreCase));
+        DeleteStore(store);
     }
 
     [Fact]
-    public async Task ConnectAsync_WithPaperKeys_VerifiesAccountAndWritesCanonicalCredentials()
+    public async Task ConnectAsync_WithPaperKeys_VerifiesAccountAndWritesEncryptedStoreCredentials()
     {
         using var env = AlpacaEnvScope.Clear();
         HttpRequestMessage? capturedRequest = null;
         var service = CreateService(new CapturingStubHandler(
             request => capturedRequest = request,
             HttpStatusCode.OK,
-            BuildAccountResponse("PA123")));
+            BuildAccountResponse("PA123")),
+            out var store);
 
         var status = await service.ConnectAsync(new AlpacaBrokerageConnectionRequestDto(
             KeyId: "paper-key",
@@ -53,13 +56,19 @@ public sealed class AlpacaBrokerageConnectionServiceTests
         status.ExternalAccountId.Should().Be("PA123");
         status.VerifiedAt.Should().NotBeNull();
         status.MaskedKeyId.Should().NotContain("paper-key");
-        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.KeyIdName).Should().Be("paper-key");
-        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.SecretKeyName).Should().Be("paper-secret");
-        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.TradingEnvironmentName).Should().Be("paper");
+        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.KeyIdName).Should().BeNull();
+        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.SecretKeyName).Should().BeNull();
+        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.TradingEnvironmentName).Should().BeNull();
+        var stored = await store.ReadForProviderAsync("alpaca");
+        stored.Should().NotBeNull();
+        stored!.Get("KeyId").Should().Be("paper-key");
+        stored.Get("SecretKey").Should().Be("paper-secret");
+        (await File.ReadAllTextAsync(store.VaultPath)).Should().NotContain("paper-secret");
         capturedRequest.Should().NotBeNull();
         capturedRequest!.RequestUri!.ToString().Should().Be("https://paper-api.alpaca.markets/v2/account");
         capturedRequest.Headers.GetValues("APCA-API-KEY-ID").Should().ContainSingle().Which.Should().Be("paper-key");
         capturedRequest.Headers.GetValues("APCA-API-SECRET-KEY").Should().ContainSingle().Which.Should().Be("paper-secret");
+        DeleteStore(store);
     }
 
     [Fact]
@@ -70,7 +79,8 @@ public sealed class AlpacaBrokerageConnectionServiceTests
         var service = CreateService(new CapturingStubHandler(
             request => capturedRequest = request,
             HttpStatusCode.OK,
-            BuildAccountResponse("LA123")));
+            BuildAccountResponse("LA123")),
+            out var store);
 
         var status = await service.ConnectAsync(new AlpacaBrokerageConnectionRequestDto(
             KeyId: "live-key",
@@ -82,6 +92,7 @@ public sealed class AlpacaBrokerageConnectionServiceTests
         status.Warnings.Should().Contain(warning => warning.Contains("Live Alpaca endpoint", StringComparison.OrdinalIgnoreCase));
         capturedRequest.Should().NotBeNull();
         capturedRequest!.RequestUri!.ToString().Should().Be("https://api.alpaca.markets/v2/account");
+        DeleteStore(store);
     }
 
     [Fact]
@@ -90,7 +101,8 @@ public sealed class AlpacaBrokerageConnectionServiceTests
         using var env = AlpacaEnvScope.Clear();
         var service = CreateService(new ConstantStubHandler(
             HttpStatusCode.Unauthorized,
-            new StringContent("{\"message\":\"invalid\"}", Encoding.UTF8, "application/json")));
+            new StringContent("{\"message\":\"invalid\"}", Encoding.UTF8, "application/json")),
+            out var store);
 
         var status = await service.ConnectAsync(new AlpacaBrokerageConnectionRequestDto(
             KeyId: "bad-key",
@@ -103,12 +115,29 @@ public sealed class AlpacaBrokerageConnectionServiceTests
         status.LastError.Should().NotContain("super-secret-value");
         status.Warnings.Should().NotContain(warning => warning.Contains("super-secret-value", StringComparison.Ordinal));
         status.MaskedKeyId.Should().NotContain("bad-key");
+        DeleteStore(store);
     }
 
-    private static AlpacaBrokerageConnectionService CreateService(HttpMessageHandler handler) =>
-        new(
+    private static AlpacaBrokerageConnectionService CreateService(
+        HttpMessageHandler handler,
+        out FileProviderCredentialStore store)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "alpaca-brokerage", Guid.NewGuid().ToString("N"));
+        store = new FileProviderCredentialStore(root);
+        return new AlpacaBrokerageConnectionService(
             NullLogger<AlpacaBrokerageConnectionService>.Instance,
-            new StubHttpClientFactory(handler));
+            new StubHttpClientFactory(handler),
+            store);
+    }
+
+    private static void DeleteStore(FileProviderCredentialStore store)
+    {
+        var root = Directory.GetParent(store.VaultPath)?.Parent?.FullName;
+        if (!string.IsNullOrWhiteSpace(root) && Directory.Exists(root))
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
 
     private static StringContent BuildAccountResponse(string accountNumber = "PA-DEMO") =>
         new(

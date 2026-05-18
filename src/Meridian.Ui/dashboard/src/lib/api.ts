@@ -36,6 +36,10 @@ import type {
   PaperSessionSummary,
   PaperSessionDetail,
   PaperSessionReplayVerification,
+  ProviderConnectionRow,
+  ProviderCredentialMutationResult,
+  ProviderCredentialUpsertRequest,
+  ProviderCredentialVerificationResult,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
@@ -119,6 +123,8 @@ import {
   portfolioHouseholdEndpoint,
   portfolioSymbolExposureEndpoint,
   promotionEvaluateEndpoint,
+  providerCredentialEndpoint,
+  providerVerifyEndpoint,
   providerRemoveEndpoint,
   providerTestEndpoint,
   qualityAnomalyAcknowledgeEndpoint,
@@ -1200,6 +1206,26 @@ export function getPortfolioWorkspace(options: ApiRequestOptions = {}) {
 
 export function getAlpacaConnectionStatus(options: ApiRequestOptions = {}) {
   return getJson<BrokerageConnectionStatus>(brokerageConnectionStatusEndpoint("alpaca"), options);
+}
+
+export function getProviderConnections(options: ApiRequestOptions = {}) {
+  return getJson<ProviderConnectionRow[]>(PROVIDER_API_ENDPOINTS.connections, options);
+}
+
+export function putProviderCredentials(
+  providerId: string,
+  request: ProviderCredentialUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return putJson<ProviderCredentialMutationResult>(providerCredentialEndpoint(providerId), request, options);
+}
+
+export function verifyProviderConnection(providerId: string, options: ApiRequestOptions = {}) {
+  return postJson<ProviderCredentialVerificationResult>(providerVerifyEndpoint(providerId), undefined, options);
+}
+
+export function deleteProviderCredentials(providerId: string, options: ApiRequestOptions = {}) {
+  return deleteJson<ProviderCredentialMutationResult>(providerCredentialEndpoint(providerId), options);
 }
 
 export function connectAlpacaConnection(

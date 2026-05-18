@@ -106,7 +106,8 @@ export const BACKFILL_API_ENDPOINTS = {
 
 export const PROVIDER_API_ENDPOINTS = {
   configure: "/api/providers/configure",
-  status: "/api/providers/status"
+  status: "/api/providers/status",
+  connections: "/api/providers/connections"
 } as const;
 
 export const SYMBOL_API_ENDPOINTS = {
@@ -162,6 +163,14 @@ export function brokerageConnectionStatusEndpoint(provider: BrokerageConnectionP
 
 export function brokerageConnectionConnectEndpoint(provider: BrokerageConnectionProvider): string {
   return `${brokerageConnectionEndpoint(provider)}/connect`;
+}
+
+export function providerCredentialEndpoint(providerId: string): string {
+  return `/api/providers/${pathSegment(providerId, "providerId")}/credentials`;
+}
+
+export function providerVerifyEndpoint(providerId: string): string {
+  return `/api/providers/${pathSegment(providerId, "providerId")}/verify`;
 }
 
 export function workstationOperatorInboxEndpoint(fundAccountId?: string): string {

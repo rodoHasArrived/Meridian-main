@@ -4,6 +4,7 @@ import {
   getDataWorkspace,
   getGovernanceWorkspace,
   getAlpacaConnectionStatus,
+  getProviderConnections,
   hasDevelopmentFixtureUsage,
   getPortfolioWorkspace,
   getReportingWorkspace,
@@ -21,6 +22,7 @@ import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
+  ProviderConnectionRow,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -43,6 +45,7 @@ interface WorkstationDataState {
   governance: GovernanceWorkspaceResponse | null;
   reporting: GovernanceWorkspaceResponse | null;
   brokerageConnection: BrokerageConnectionStatus | null;
+  providerConnections: ProviderConnectionRow[] | null;
   brokeragePortfolio: BrokerageHouseholdPortfolio | null;
   workflowLibrary: WorkflowLibrary | null;
   workflowPresets: WorkflowPresetLibrary | null;
@@ -63,6 +66,7 @@ const initialState: WorkstationDataState = {
   governance: null,
   reporting: null,
   brokerageConnection: null,
+  providerConnections: null,
   brokeragePortfolio: null,
   workflowLibrary: null,
   workflowPresets: null,
@@ -121,6 +125,7 @@ export function useWorkstationData() {
       governance,
       reporting,
       brokerageConnection,
+      providerConnections,
       brokeragePortfolio,
       workflowLibrary,
       workflowPresets
@@ -134,6 +139,7 @@ export function useWorkstationData() {
       getGovernanceWorkspace(requestOptions),
       getReportingWorkspace(requestOptions),
       getAlpacaConnectionStatus(requestOptions),
+      getProviderConnections(requestOptions),
       getBrokerageHouseholdPortfolio("alpaca", requestOptions),
       getWorkflowLibrary(requestOptions),
       getWorkflowPresets(requestOptions)
@@ -182,6 +188,7 @@ export function useWorkstationData() {
       governance: readWorkspace(["accounting"], governance),
       reporting: readWorkspace(["reporting"], reporting),
       brokerageConnection: readWorkspace(["portfolio"], brokerageConnection),
+      providerConnections: readWorkspace(["settings", "data"], providerConnections),
       brokeragePortfolio: readWorkspace(["portfolio"], brokeragePortfolio),
       workflowLibrary: readWorkflow(workflowLibrary),
       workflowPresets: readWorkflow(workflowPresets),

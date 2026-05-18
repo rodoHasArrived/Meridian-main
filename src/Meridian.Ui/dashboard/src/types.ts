@@ -593,6 +593,66 @@ export interface AlpacaBrokerageConnectionRequest {
   environment: "paper" | "live";
 }
 
+export type ProviderConnectionCapability = "Data" | "Brokerage" | "DataAndBrokerage";
+export type ProviderCredentialState = "NotRequired" | "Missing" | "Partial" | "Configured" | "Verified" | "Invalid";
+export type ProviderCredentialSource =
+  | "None"
+  | "LocalEncryptedStore"
+  | "Environment"
+  | "ExternalVaultReference"
+  | "NotRequired";
+export type ProviderVerificationState = "NotRequired" | "NotVerified" | "Verified" | "Failed" | "Stale";
+export type ProviderContinuityHealth = "Unknown" | "Healthy" | "Warning" | "Degraded" | "Blocked";
+
+export interface ProviderConnectionRow {
+  providerId: string;
+  displayName: string;
+  capability: ProviderConnectionCapability;
+  credentialState: ProviderCredentialState;
+  credentialSource: ProviderCredentialSource;
+  verificationState: ProviderVerificationState;
+  health: ProviderContinuityHealth;
+  fallbackActive: boolean;
+  lastVerifiedAt: string | null;
+  lastSuccessfulAt: string | null;
+  lastFailureAt: string | null;
+  lastError: string | null;
+  maskedKeyPreview: string | null;
+  environment: string | null;
+  externalAccountId: string | null;
+  affectedWorkflows: string[];
+  recommendedAction: string;
+  actionHref: string;
+}
+
+export interface ProviderCredentialUpsertRequest {
+  credentials: Record<string, string | null | undefined>;
+  environment?: string | null;
+  requestedBy?: string | null;
+}
+
+export interface ProviderCredentialMutationResult {
+  providerId: string;
+  credentialState: ProviderCredentialState;
+  credentialSource: ProviderCredentialSource;
+  verificationState: ProviderVerificationState;
+  health: ProviderContinuityHealth;
+  maskedKeyPreview: string | null;
+  environment: string | null;
+  warnings: string[];
+}
+
+export interface ProviderCredentialVerificationResult {
+  providerId: string;
+  success: boolean;
+  verificationState: ProviderVerificationState;
+  health: ProviderContinuityHealth;
+  lastVerifiedAt: string | null;
+  lastError: string | null;
+  externalAccountId: string | null;
+  warnings: string[];
+}
+
 export interface BrokerageHouseholdAccount {
   fundAccountId: string;
   providerId: string;

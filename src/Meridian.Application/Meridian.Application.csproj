@@ -45,6 +45,7 @@
 
     <!-- Validation -->
     <PackageReference Include="FluentValidation" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
   </ItemGroup>
 
   <ItemGroup>

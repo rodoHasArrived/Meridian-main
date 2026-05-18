@@ -11,6 +11,7 @@ using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.QuantScript;
 using Meridian.Strategies.Interfaces;
@@ -82,7 +83,9 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<Meridian.Ui.Shared.Services.BackfillCoordinator>(sp =>
         {
             var configStore = sp.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
-            return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore);
+            var registry = sp.GetService<ProviderRegistry>();
+            var factory = sp.GetService<ProviderFactory>();
+            return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore, registry, factory);
         });
 
         builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
@@ -125,6 +128,7 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
         builder.Services.AddSingleton<BrokerageConnectionService>();
         builder.Services.AddSingleton<AlpacaBrokerageConnectionService>();
+        builder.Services.AddSingleton<ProviderConnectionLifecycleService>();
         builder.Services.AddSingleton(BrokeragePortfolioSyncOptions.Default);
         builder.Services.AddSingleton<BrokeragePortfolioSyncService>();
         builder.Services.AddSingleton(Dk1TrustGateReadinessOptions.Default);

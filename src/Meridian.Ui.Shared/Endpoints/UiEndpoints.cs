@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using Meridian.Application.Composition;
+using Meridian.Application.Config.Credentials;
 using Meridian.Application.FundStructure;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Monitoring.DataQuality;
@@ -16,6 +17,7 @@ using Meridian.Contracts.Services;
 using Meridian.Storage;
 using Meridian.Storage.Services;
 using Meridian.Contracts.Workstation;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
@@ -51,6 +53,11 @@ public static class UiEndpoints
         // Use the centralized composition root (registers core services)
         var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         services.AddMarketDataServices(options);
+        services.TryAddSingleton<Meridian.Ui.Shared.Services.ConfigStore>(sp =>
+        {
+            var core = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>();
+            return new Meridian.Ui.Shared.Services.ConfigStore(core.ConfigPath);
+        });
 
         // Register user profile registry (multi-user RBAC) and session-based auth service
         services.AddSingleton<UserProfileRegistry>();
@@ -61,7 +68,9 @@ public static class UiEndpoints
         services.AddSingleton<Meridian.Ui.Shared.Services.BackfillCoordinator>(sp =>
         {
             var configStore = sp.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
-            return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore);
+            var registry = sp.GetService<ProviderRegistry>();
+            var factory = sp.GetService<ProviderFactory>();
+            return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore, registry, factory);
         });
 
         RegisterStrategyWorkstationServices(services);
@@ -92,6 +101,11 @@ public static class UiEndpoints
         // Use the centralized composition root (registers core services)
         var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         services.AddMarketDataServices(options);
+        services.TryAddSingleton<Meridian.Ui.Shared.Services.ConfigStore>(sp =>
+        {
+            var core = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>();
+            return new Meridian.Ui.Shared.Services.ConfigStore(core.ConfigPath);
+        });
 
         // Register user profile registry (multi-user RBAC) and session-based auth service
         services.AddSingleton<UserProfileRegistry>();
@@ -101,7 +115,9 @@ public static class UiEndpoints
         services.AddSingleton<Meridian.Ui.Shared.Services.BackfillCoordinator>(sp =>
         {
             var configStore = sp.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
-            return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore);
+            var registry = sp.GetService<ProviderRegistry>();
+            var factory = sp.GetService<ProviderFactory>();
+            return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore, registry, factory);
         });
 
         RegisterStrategyWorkstationServices(services);
@@ -148,6 +164,7 @@ public static class UiEndpoints
         services.TryAddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
         services.TryAddSingleton<BrokerageConnectionService>();
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
+        services.TryAddSingleton<ProviderConnectionLifecycleService>();
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
         services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
@@ -290,6 +307,7 @@ public static class UiEndpoints
         // Data ingestion and operator onboarding endpoints
         app.MapDemoModeEndpoints(jsonOptions);
         app.MapBackfillValidationEndpoints(jsonOptions);
+        app.MapProviderConnectionEndpoints(jsonOptions);
         app.MapProviderCredentialEndpoints(jsonOptions);
 
         app.MapStorageEndpoints(jsonOptions);
@@ -438,6 +456,7 @@ public static class UiEndpoints
         // Data ingestion and operator onboarding endpoints
         app.MapDemoModeEndpoints(jsonOptions);
         app.MapBackfillValidationEndpoints(jsonOptions);
+        app.MapProviderConnectionEndpoints(jsonOptions);
         app.MapProviderCredentialEndpoints(jsonOptions);
 
         app.MapStorageEndpoints(jsonOptions);

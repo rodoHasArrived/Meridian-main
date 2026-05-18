@@ -232,7 +232,10 @@ public sealed class TradingOperatorReadinessService
                     ? OperatorWorkItemToneDto.Critical
                     : OperatorWorkItemToneDto.Warning,
                 fundAccountId: brokerageStatus.FundAccountId,
-                workItemId: BuildWorkItemId("brokerage-sync-attention", brokerageStatus.FundAccountId.ToString("N")));
+                workItemId: BuildWorkItemId("brokerage-sync-attention", brokerageStatus.FundAccountId.ToString("N")),
+                workspaceOverride: "Settings",
+                targetRouteOverride: BuildProviderConnectionSettingsRoute(brokerageStatus.ProviderId),
+                targetPageTagOverride: "ProviderConnectionCenter");
         }
 
         if (latestRun is not null)
@@ -1427,7 +1430,10 @@ public sealed class TradingOperatorReadinessService
         Guid? fundAccountId = null,
         string? auditReference = null,
         string? workItemId = null,
-        string? scope = null)
+        string? scope = null,
+        string? workspaceOverride = null,
+        string? targetRouteOverride = null,
+        string? targetPageTagOverride = null)
     {
         var navigation = ResolveWorkItemNavigation(kind, fundAccountId);
         workItems.Add(new OperatorWorkItemDto(
@@ -1440,9 +1446,9 @@ public sealed class TradingOperatorReadinessService
             RunId: runId,
             FundAccountId: fundAccountId,
             AuditReference: auditReference,
-            Workspace: navigation.Workspace,
-            TargetRoute: navigation.TargetRoute,
-            TargetPageTag: navigation.TargetPageTag,
+            Workspace: workspaceOverride ?? navigation.Workspace,
+            TargetRoute: targetRouteOverride ?? navigation.TargetRoute,
+            TargetPageTag: targetPageTagOverride ?? navigation.TargetPageTag,
             Scope: scope));
     }
 
@@ -1474,6 +1480,19 @@ public sealed class TradingOperatorReadinessService
                 UiApiRoutes.WorkstationTradingReadiness,
                 "TradingShell")
         };
+
+    private static string BuildProviderConnectionSettingsRoute(string? providerId)
+    {
+        if (string.IsNullOrWhiteSpace(providerId))
+        {
+            return "/settings#provider-connection-center";
+        }
+
+        var normalized = providerId.Trim().ToLowerInvariant();
+        return normalized == "alpaca"
+            ? "/settings#alpaca-provider-setup"
+            : $"/settings#provider-{normalized}-connection";
+    }
 
     private static string BuildWorkItemId(string prefix, string? scope = null)
     {

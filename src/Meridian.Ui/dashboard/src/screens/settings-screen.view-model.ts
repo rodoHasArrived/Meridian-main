@@ -24,6 +24,7 @@ import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
+  ProviderConnectionRow,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -747,6 +748,45 @@ export interface SettingsAlpacaConnectionPanel {
   setupChecklist: SettingsAlpacaSetupStep[];
 }
 
+export interface SettingsProviderConnectionRow {
+  providerId: string;
+  rowAnchorId: string;
+  displayName: string;
+  capabilityLabel: string;
+  credentialLabel: string;
+  credentialTone: "default" | "success" | "warning" | "danger" | "muted";
+  verificationLabel: string;
+  healthLabel: string;
+  healthTone: "default" | "success" | "warning" | "danger" | "muted";
+  sourceLabel: string;
+  environmentLabel: string;
+  maskedKeyPreviewLabel: string;
+  lastHeartbeatLabel: string;
+  fallbackLabel: string;
+  affectedWorkflowsLabel: string;
+  affectedWorkflows: string[];
+  recommendedAction: string;
+  actionHref: string;
+  actionLabel: string;
+  actionAriaLabel: string;
+}
+
+export interface SettingsProviderConnectionGroup {
+  id: "brokerage" | "data";
+  label: string;
+  summary: string;
+  rows: SettingsProviderConnectionRow[];
+  emptyLabel: string;
+}
+
+export interface SettingsProviderConnectionCenter {
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: "default" | "success" | "warning" | "danger" | "outline";
+  groups: SettingsProviderConnectionGroup[];
+}
+
 export interface SettingsDiagnosticCounts {
   loadedLabel: string;
   failedLabel: string;
@@ -773,6 +813,7 @@ export interface SettingsScreenViewModel {
   systemItems: SettingsSystemItem[];
   hasOverview: boolean;
   recentEventsSection: SettingsRecentEventsSection;
+  providerConnectionCenter: SettingsProviderConnectionCenter;
   alpacaConnectionPanel: SettingsAlpacaConnectionPanel;
   diagnosticLinks: SettingsDiagnosticLink[];
   diagnosticCounts: SettingsDiagnosticCounts;
@@ -797,6 +838,7 @@ export interface SettingsScreenPayload {
   governance?: GovernanceWorkspaceResponse | null;
   reporting?: GovernanceWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
+  providerConnections?: ProviderConnectionRow[] | null;
   loading?: boolean;
   error?: string | null;
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
@@ -1588,6 +1630,160 @@ function labelizeWorkspaceKey(workspace: WorkspaceKey): string {
   return workspace.charAt(0).toUpperCase() + workspace.slice(1);
 }
 
+function buildProviderConnectionCenter(
+  connections: ProviderConnectionRow[] | null | undefined
+): SettingsProviderConnectionCenter {
+  const rows = (connections ?? []).map(buildProviderConnectionRow);
+  const brokerageRows = rows.filter((row) => row.capabilityLabel.includes("Brokerage"));
+  const dataRows = rows.filter((row) => !row.capabilityLabel.includes("Brokerage"));
+  const blockedCount = rows.filter((row) => row.healthTone === "danger").length;
+  const warningCount = rows.filter((row) => row.healthTone === "warning").length;
+  const verifiedCount = rows.filter((row) => row.credentialLabel === "Verified" || row.credentialLabel === "Not required").length;
+
+  const statusLabel = rows.length === 0
+    ? "Unavailable"
+    : blockedCount > 0
+      ? `${blockedCount} blocked`
+      : warningCount > 0
+        ? `${warningCount} need review`
+        : "Continuity ready";
+
+  return {
+    title: "Provider Connection Center",
+    description: rows.length === 0
+      ? "Provider connection evidence has not loaded for this Settings session."
+      : `${verifiedCount}/${rows.length} providers are verified or credential-free; repair actions route to the affected provider row.`,
+    statusLabel,
+    statusVariant: rows.length === 0 ? "warning" : blockedCount > 0 ? "danger" : warningCount > 0 ? "warning" : "success",
+    groups: [
+      {
+        id: "brokerage",
+        label: "Brokerage capable",
+        summary: "Trading and account-sync providers with credential or gateway posture.",
+        rows: brokerageRows,
+        emptyLabel: "No brokerage-capable provider rows loaded."
+      },
+      {
+        id: "data",
+        label: "Data providers",
+        summary: "Market-data and reference-data providers used by backfill and repair workflows.",
+        rows: dataRows,
+        emptyLabel: "No data-provider rows loaded."
+      }
+    ]
+  };
+}
+
+function buildProviderConnectionRow(row: ProviderConnectionRow): SettingsProviderConnectionRow {
+  const healthTone = providerHealthTone(row.health);
+  const credentialTone = providerCredentialTone(row.credentialState);
+  const workflows = row.affectedWorkflows.length > 0 ? row.affectedWorkflows : ["Workflow impact not declared"];
+  return {
+    providerId: row.providerId,
+    rowAnchorId: row.providerId === "alpaca" ? "alpaca-provider-setup" : `provider-${row.providerId}-connection`,
+    displayName: row.displayName,
+    capabilityLabel: providerCapabilityLabel(row.capability),
+    credentialLabel: providerCredentialLabel(row.credentialState),
+    credentialTone,
+    verificationLabel: providerVerificationLabel(row.verificationState),
+    healthLabel: providerHealthLabel(row.health),
+    healthTone,
+    sourceLabel: providerCredentialSourceLabel(row.credentialSource),
+    environmentLabel: row.environment ? row.environment.toUpperCase() : "Not set",
+    maskedKeyPreviewLabel: row.maskedKeyPreview ?? "Masked after save",
+    lastHeartbeatLabel: formatSettingsUtcMinute(row.lastSuccessfulAt ?? row.lastVerifiedAt),
+    fallbackLabel: row.fallbackActive ? "Fallback active" : "Primary route",
+    affectedWorkflowsLabel: workflows.join(", "),
+    affectedWorkflows: workflows,
+    recommendedAction: row.recommendedAction,
+    actionHref: row.actionHref || `/settings#provider-${row.providerId}-connection`,
+    actionLabel: row.providerId === "alpaca" ? "Manage Alpaca" : "Open provider row",
+    actionAriaLabel: `Open ${row.displayName} provider connection row`
+  };
+}
+
+function providerCapabilityLabel(value: ProviderConnectionRow["capability"]): string {
+  switch (value) {
+    case "DataAndBrokerage":
+      return "Data + Brokerage";
+    case "Brokerage":
+      return "Brokerage";
+    default:
+      return "Data";
+  }
+}
+
+function providerCredentialLabel(value: ProviderConnectionRow["credentialState"]): string {
+  switch (value) {
+    case "NotRequired":
+      return "Not required";
+    default:
+      return value.replace(/([a-z])([A-Z])/g, "$1 $2");
+  }
+}
+
+function providerVerificationLabel(value: ProviderConnectionRow["verificationState"]): string {
+  switch (value) {
+    case "NotRequired":
+      return "Not required";
+    case "NotVerified":
+      return "Not verified";
+    default:
+      return value;
+  }
+}
+
+function providerHealthLabel(value: ProviderConnectionRow["health"]): string {
+  return value === "Unknown" ? "Unknown" : value;
+}
+
+function providerCredentialSourceLabel(value: ProviderConnectionRow["credentialSource"]): string {
+  switch (value) {
+    case "LocalEncryptedStore":
+      return "Encrypted local store";
+    case "Environment":
+      return "Legacy environment";
+    case "ExternalVaultReference":
+      return "External vault";
+    case "NotRequired":
+      return "Not required";
+    default:
+      return "Not configured";
+  }
+}
+
+function providerCredentialTone(value: ProviderConnectionRow["credentialState"]): SettingsProviderConnectionRow["credentialTone"] {
+  switch (value) {
+    case "Verified":
+    case "NotRequired":
+      return "success";
+    case "Configured":
+      return "warning";
+    case "Partial":
+    case "Invalid":
+      return "danger";
+    case "Missing":
+      return "warning";
+    default:
+      return "muted";
+  }
+}
+
+function providerHealthTone(value: ProviderConnectionRow["health"]): SettingsProviderConnectionRow["healthTone"] {
+  switch (value) {
+    case "Healthy":
+      return "success";
+    case "Warning":
+    case "Unknown":
+      return "warning";
+    case "Degraded":
+    case "Blocked":
+      return "danger";
+    default:
+      return "muted";
+  }
+}
+
 export function buildSettingsScreenViewModel(payload: SettingsScreenPayload): SettingsScreenViewModel;
 export function buildSettingsScreenViewModel(
   session: SessionInfo | null,
@@ -1633,6 +1829,7 @@ export function buildSettingsScreenViewModel(
     : "System overview unavailable.";
   const diagnosticSection = buildDiagnosticEndpointSection(payload);
   const backendCapabilitySection = buildBackendCapabilitySection(payload);
+  const providerConnectionCenter = buildProviderConnectionCenter(payload.providerConnections ?? null);
   const alpacaConnectionPanel = buildAlpacaConnectionPanel(payload.brokerageConnection ?? null);
 
   return {
@@ -1651,6 +1848,7 @@ export function buildSettingsScreenViewModel(
     systemItems,
     hasOverview: overview !== null,
     recentEventsSection: buildRecentEventsSection(overview),
+    providerConnectionCenter,
     alpacaConnectionPanel,
     ...diagnosticSection,
     ...backendCapabilitySection

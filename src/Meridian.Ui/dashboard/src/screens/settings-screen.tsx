@@ -21,6 +21,7 @@ import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
+  ProviderConnectionRow,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -38,6 +39,7 @@ interface SettingsScreenProps {
   governance?: GovernanceWorkspaceResponse | null;
   reporting?: GovernanceWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
+  providerConnections?: ProviderConnectionRow[] | null;
   onRefresh?: () => Promise<void> | void;
   loading?: boolean;
   error?: string | null;
@@ -178,6 +180,7 @@ export function SettingsScreen({
   governance = null,
   reporting = null,
   brokerageConnection = null,
+  providerConnections = null,
   onRefresh,
   loading = false,
   error = null,
@@ -193,6 +196,7 @@ export function SettingsScreen({
     governance,
     reporting,
     brokerageConnection,
+    providerConnections,
     loading,
     error,
     workspaceErrors
@@ -358,6 +362,81 @@ export function SettingsScreen({
           </CardContent>
         </Card>
       </section>
+
+      <Card id="provider-connection-center" className="panel-surface scroll-mt-6 border border-border/70">
+        <CardHeader>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="eyebrow-label">Provider management</div>
+              <CardTitle className="mt-2 flex items-center gap-2 text-base">
+                <MonitorCheck className="h-4 w-4 text-primary" />
+                {vm.providerConnectionCenter.title}
+              </CardTitle>
+              <CardDescription className="mt-2">{vm.providerConnectionCenter.description}</CardDescription>
+            </div>
+            <Badge
+              variant={vm.providerConnectionCenter.statusVariant}
+              dot={vm.providerConnectionCenter.statusVariant === "success"}
+            >
+              {vm.providerConnectionCenter.statusLabel}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-4 xl:grid-cols-2">
+          {vm.providerConnectionCenter.groups.map((group) => (
+            <section key={group.id} className="grid gap-3" aria-label={group.label}>
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold text-foreground">{group.label}</h3>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">{group.summary}</p>
+              </div>
+              {group.rows.length > 0 ? (
+                <div className="grid gap-2">
+                  {group.rows.map((row) => (
+                    <article
+                      key={`${group.id}-${row.providerId}`}
+                      id={row.rowAnchorId === "alpaca-provider-setup" ? undefined : row.rowAnchorId}
+                      className="rounded-md border border-border/70 bg-background/35 px-3 py-3"
+                    >
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h4 className="text-sm font-semibold text-foreground">{row.displayName}</h4>
+                            <Badge variant="outline">{row.capabilityLabel}</Badge>
+                            <Badge variant={toneVariant(row.healthTone)} dot={row.healthTone === "success"}>
+                              {row.healthLabel}
+                            </Badge>
+                          </div>
+                          <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.recommendedAction}</p>
+                        </div>
+                        <Button asChild variant="outline" size="sm" className="shrink-0">
+                          <Link to={row.actionHref} aria-label={row.actionAriaLabel}>
+                            {row.actionLabel}
+                            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Link>
+                        </Button>
+                      </div>
+                      <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <SettingsFieldRow label="Credential" value={row.credentialLabel} tone={row.credentialTone} />
+                        <SettingsFieldRow label="Verification" value={row.verificationLabel} tone={row.credentialTone} />
+                        <SettingsFieldRow label="Source" value={row.sourceLabel} tone="muted" />
+                        <SettingsFieldRow label="Environment" value={row.environmentLabel} tone="muted" />
+                        <SettingsFieldRow label="Masked key" value={row.maskedKeyPreviewLabel} tone="muted" />
+                        <SettingsFieldRow label="Last good heartbeat" value={row.lastHeartbeatLabel} tone="muted" />
+                        <SettingsFieldRow label="Failover" value={row.fallbackLabel} tone={row.fallbackLabel === "Fallback active" ? "warning" : "muted"} />
+                        <SettingsFieldRow label="Affected workflows" value={row.affectedWorkflowsLabel} tone="default" />
+                      </dl>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
+                  {group.emptyLabel}
+                </p>
+              )}
+            </section>
+          ))}
+        </CardContent>
+      </Card>
 
       <Card
         id="alpaca-provider-setup"
@@ -928,6 +1007,13 @@ function recentEventsVariant(state: "ready" | "empty" | "unavailable"): "default
 }
 
 function systemVariant(tone: keyof typeof systemToneClass): "outline" | "success" | "warning" | "danger" {
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  if (tone === "danger") return "danger";
+  return "outline";
+}
+
+function toneVariant(tone: keyof typeof itemToneClass): "outline" | "success" | "warning" | "danger" {
   if (tone === "success") return "success";
   if (tone === "warning") return "warning";
   if (tone === "danger") return "danger";

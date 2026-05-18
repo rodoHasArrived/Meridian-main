@@ -1258,7 +1258,8 @@ public sealed class WorkstationEndpointsTests
             readiness.WorkItems.Should().Contain(item =>
                 item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
                 item.FundAccountId == fundAccountId &&
-                item.TargetRoute == UiApiRoutes.WithParam(UiApiRoutes.FundAccountBrokerageSyncStatus, "accountId", fundAccountId.ToString()));
+                item.Workspace == "Settings" &&
+                item.TargetRoute == "/settings#alpaca-provider-setup");
         }
         finally
         {
@@ -1418,9 +1419,9 @@ public sealed class WorkstationEndpointsTests
                     item.FundAccountId == fundAccountId)
                 .Which;
             syncItem.Tone.Should().Be(OperatorWorkItemToneDto.Critical);
-            syncItem.Workspace.Should().Be("Trading");
-            syncItem.TargetRoute.Should().Be(UiApiRoutes.WithParam(UiApiRoutes.FundAccountBrokerageSyncStatus, "accountId", fundAccountId.ToString()));
-            syncItem.TargetPageTag.Should().Be("AccountPortfolio");
+            syncItem.Workspace.Should().Be("Settings");
+            syncItem.TargetRoute.Should().Be("/settings#alpaca-provider-setup");
+            syncItem.TargetPageTag.Should().Be("ProviderConnectionCenter");
             syncItem.Detail.Should().Contain("Alpaca credentials are missing.");
         }
         finally

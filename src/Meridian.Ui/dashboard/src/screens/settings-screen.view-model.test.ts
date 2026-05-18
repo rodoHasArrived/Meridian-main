@@ -6,7 +6,7 @@ import {
   buildSettingsScreenViewModel,
   useAlpacaConnectionFormViewModel
 } from "@/screens/settings-screen.view-model";
-import type { BrokerageConnectionStatus, SessionInfo, SystemOverviewResponse } from "@/types";
+import type { BrokerageConnectionStatus, ProviderConnectionRow, SessionInfo, SystemOverviewResponse } from "@/types";
 
 const session: SessionInfo = {
   displayName: "Andrew Rowden",
@@ -50,6 +50,49 @@ const alpacaConnection: BrokerageConnectionStatus = {
   maskedKeyId: "********1234"
 };
 
+const providerConnections: ProviderConnectionRow[] = [
+  {
+    providerId: "alpaca",
+    displayName: "Alpaca",
+    capability: "DataAndBrokerage",
+    credentialState: "Verified",
+    credentialSource: "LocalEncryptedStore",
+    verificationState: "Verified",
+    health: "Healthy",
+    fallbackActive: false,
+    lastVerifiedAt: "2026-05-07T11:50:00Z",
+    lastSuccessfulAt: "2026-05-07T11:50:00Z",
+    lastFailureAt: null,
+    lastError: null,
+    maskedKeyPreview: "********1234",
+    environment: "paper",
+    externalAccountId: "PA123",
+    affectedWorkflows: ["Trading readiness", "Portfolio brokerage sync"],
+    recommendedAction: "No credential repair action required.",
+    actionHref: "/settings#alpaca-provider-setup"
+  },
+  {
+    providerId: "polygon",
+    displayName: "Polygon.io",
+    capability: "Data",
+    credentialState: "Missing",
+    credentialSource: "None",
+    verificationState: "NotVerified",
+    health: "Warning",
+    fallbackActive: true,
+    lastVerifiedAt: null,
+    lastSuccessfulAt: null,
+    lastFailureAt: "2026-05-07T11:45:00Z",
+    lastError: "Provider credential missing.",
+    maskedKeyPreview: null,
+    environment: null,
+    externalAccountId: null,
+    affectedWorkflows: ["Historical backfill"],
+    recommendedAction: "Add the Polygon API key before routing data repair through Polygon.",
+    actionHref: "/settings#provider-polygon-connection"
+  }
+];
+
 describe("buildSettingsScreenViewModel", () => {
   it("builds session items from session data", () => {
     const vm = buildSettingsScreenViewModel(session, null);
@@ -85,6 +128,36 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.systemItems.some((i) => i.label === "Active runs" && i.value === "2")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Symbols monitored" && i.value === "120")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Last heartbeat" && i.value === "May 1, 00:00 UTC")).toBe(true);
+  });
+
+  it("builds provider connection center rows with exact repair anchors", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      providerConnections,
+      brokerageConnection: alpacaConnection
+    });
+
+    expect(vm.providerConnectionCenter.statusLabel).toBe("1 need review");
+    expect(vm.providerConnectionCenter.statusVariant).toBe("warning");
+    const brokerageRows = vm.providerConnectionCenter.groups.find((group) => group.id === "brokerage")?.rows ?? [];
+    const dataRows = vm.providerConnectionCenter.groups.find((group) => group.id === "data")?.rows ?? [];
+
+    expect(brokerageRows).toHaveLength(1);
+    expect(brokerageRows[0]).toMatchObject({
+      providerId: "alpaca",
+      capabilityLabel: "Data + Brokerage",
+      credentialLabel: "Verified",
+      sourceLabel: "Encrypted local store",
+      actionHref: "/settings#alpaca-provider-setup"
+    });
+    expect(dataRows).toHaveLength(1);
+    expect(dataRows[0]).toMatchObject({
+      providerId: "polygon",
+      credentialLabel: "Missing",
+      fallbackLabel: "Fallback active",
+      actionHref: "/settings#provider-polygon-connection"
+    });
   });
 
   it("returns success tone for healthy system", () => {
