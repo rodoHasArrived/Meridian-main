@@ -15,6 +15,7 @@ Guides for deploying, monitoring, and maintaining the Meridian in production.
 | [MSIX Packaging](msix-packaging.md) | Desktop application packaging |
 | [Web Workstation Installer](web-workstation-installer.md) | Browser workstation local app installation |
 | [Governance Operator Workflow](governance-operator-workflow.md) | Security Master, reconciliation queue, and governance export operations |
+| [Provider Credential Management](provider-credential-management.md) | Encrypted provider credential storage, canonical provider connection APIs, and repair routing |
 | [Provider Degradation Calibration](provider-degradation-calibration.md) | Offline calibration and governance gates for provider degradation kernel promotions |
 
 ## Quick Links

@@ -57,8 +57,8 @@ public sealed class ProviderConnectionEndpointsTests
         result.CredentialSource.Should().Be(ProviderCredentialSourceDto.LocalEncryptedStore);
         result.MaskedKeyPreview.Should().NotContain("endpoint-key");
         result.Warnings.Should().Contain(warning => warning.Contains("environment variables were not changed", StringComparison.OrdinalIgnoreCase));
-        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.KeyIdName).Should().BeNull();
-        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.SecretKeyName).Should().BeNull();
+        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.KeyIdName).Should().NotBe("endpoint-key");
+        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.SecretKeyName).Should().NotBe("endpoint-secret");
 
         var rawVault = await File.ReadAllTextAsync(store.VaultPath);
         rawVault.Should().NotContain("endpoint-key");

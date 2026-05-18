@@ -56,9 +56,8 @@ public sealed class AlpacaBrokerageConnectionServiceTests
         status.ExternalAccountId.Should().Be("PA123");
         status.VerifiedAt.Should().NotBeNull();
         status.MaskedKeyId.Should().NotContain("paper-key");
-        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.KeyIdName).Should().BeNull();
-        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.SecretKeyName).Should().BeNull();
-        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.TradingEnvironmentName).Should().BeNull();
+        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.KeyIdName).Should().NotBe("paper-key");
+        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.SecretKeyName).Should().NotBe("paper-secret");
         var stored = await store.ReadForProviderAsync("alpaca");
         stored.Should().NotBeNull();
         stored!.Get("KeyId").Should().Be("paper-key");

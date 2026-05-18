@@ -107,6 +107,9 @@ Prefer the narrowest validation command that matches the files being changed.
 - Desktop-retained artifacts such as workspace state, watchlists, credentials, activity logs,
   collection sessions, symbol mappings, schema dictionaries, and catalog metadata should stay under
   the resolved external config and data roots so upgrades do not depend on the install directory.
+- Provider credentials saved by browser workstation flows use the shared encrypted
+  `IProviderCredentialStore` under the resolved data root; environment variables are read-only
+  legacy fallback and new flows must not write provider secrets to user-level env vars.
 - Wizard review/save flows should use `AppConfigJsonOptions` plus `ConfigStore` so previewed JSON
   and persisted config share the same serializer and resolved config path.
 - Paper-session order history is lifecycle-sensitive metadata; await the durable append before

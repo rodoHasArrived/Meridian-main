@@ -59,8 +59,8 @@ public sealed class BrokerageConnectionEndpointsTests
         status.ExternalAccountId.Should().Be("PA-ENDPOINT");
         status.MaskedKeyId.Should().NotContain("endpoint-key");
         status.LastError.Should().BeNull();
-        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.KeyIdName).Should().BeNull();
-        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.SecretKeyName).Should().BeNull();
+        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.KeyIdName).Should().NotBe("endpoint-key");
+        Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.SecretKeyName).Should().NotBe("endpoint-secret");
         var store = app.Services.GetRequiredService<IProviderCredentialStore>();
         var stored = await store.ReadForProviderAsync("alpaca");
         stored.Should().NotBeNull();

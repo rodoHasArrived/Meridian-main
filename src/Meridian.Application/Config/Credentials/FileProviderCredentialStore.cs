@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Runtime.Versioning;
 using Meridian.Contracts.Configuration;
 using Meridian.Storage.Archival;
 
@@ -465,7 +466,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         ct.ThrowIfCancellationRequested();
         if (OperatingSystem.IsWindows())
         {
-            return ("dpapi-current-user", ProtectedData.Protect(plainBytes, Entropy, DataProtectionScope.CurrentUser));
+            return ("dpapi-current-user", ProtectWithDpapi(plainBytes));
         }
 
         return ("local-aes-gcm", ProtectWithLocalKey(plainBytes, ct));
@@ -476,11 +477,20 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         ct.ThrowIfCancellationRequested();
         return protection switch
         {
-            "dpapi-current-user" => ProtectedData.Unprotect(protectedBytes, Entropy, DataProtectionScope.CurrentUser),
+            "dpapi-current-user" when OperatingSystem.IsWindows() => UnprotectWithDpapi(protectedBytes),
+            "dpapi-current-user" => throw new PlatformNotSupportedException("DPAPI protected credential vaults can only be opened by the Windows user profile that created them."),
             "local-aes-gcm" => UnprotectWithLocalKey(protectedBytes, ct),
             _ => throw new InvalidOperationException($"Unsupported provider credential vault protection '{protection}'.")
         };
     }
+
+    [SupportedOSPlatform("windows")]
+    private static byte[] ProtectWithDpapi(byte[] plainBytes)
+        => ProtectedData.Protect(plainBytes, Entropy, DataProtectionScope.CurrentUser);
+
+    [SupportedOSPlatform("windows")]
+    private static byte[] UnprotectWithDpapi(byte[] protectedBytes)
+        => ProtectedData.Unprotect(protectedBytes, Entropy, DataProtectionScope.CurrentUser);
 
     private byte[] ProtectWithLocalKey(byte[] plainBytes, CancellationToken ct)
     {
