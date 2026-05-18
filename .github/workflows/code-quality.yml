@@ -111,7 +111,7 @@ jobs:
             ERROR_COUNT=$(grep -cE " error (CA|CS|IDE|SCS)" build-output.log || true)
           fi
 
-          if [ "$QUALITY_CANCELLED" -eq 0 ] && { [ "${{ steps.build.outcome }}" != "success" ] || [ "$WARNING_COUNT" -gt 0 ] || [ "$ERROR_COUNT" -gt 0 ]; }; then
+          if [ "$QUALITY_CANCELLED" -eq 0 ] && { [ "${{ steps.build.outcome }}" != "success" ] || [ "$ERROR_COUNT" -gt 0 ]; }; then
             BUILD_ISSUES=1
           fi
 

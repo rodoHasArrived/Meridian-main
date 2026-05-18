@@ -5,6 +5,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CENTRAL_PACKAGES = REPO_ROOT / "Directory.Packages.props"
+BUILD_PROPS = REPO_ROOT / "Directory.Build.props"
 
 
 class CentralPackageVersionTests(unittest.TestCase):
@@ -65,6 +66,22 @@ class CentralPackageVersionTests(unittest.TestCase):
     def test_aspnet_test_host_has_central_pin(self) -> None:
         self.assertEqual(self.versions["Microsoft.AspNetCore.Mvc.Testing"], "9.0.15")
         self.assertEqual(self.versions["Microsoft.AspNetCore.TestHost"], "9.0.15")
+
+    def test_security_transitive_pins_cover_current_audit_fixes(self) -> None:
+        self.assertEqual(self.properties["CentralPackageTransitivePinningEnabled"], "true")
+        self.assertEqual(self.versions["Snappier"], "1.3.1")
+
+    def test_nuget_audit_suppression_is_advisory_specific(self) -> None:
+        root = ET.parse(BUILD_PROPS).getroot()
+        suppressions = [
+            item.attrib["Include"]
+            for item in root.findall(".//NuGetAuditSuppress")
+        ]
+
+        self.assertEqual(
+            ["https://github.com/advisories/GHSA-xhg6-9j5j-w4vf"],
+            suppressions,
+        )
 
     def test_all_project_package_references_have_central_versions(self) -> None:
         missing: list[str] = []
