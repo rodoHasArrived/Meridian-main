@@ -5171,6 +5171,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── performance-tuning.md
 │   │   ├── portable-data-packager.md
 │   │   ├── preflight-checklist.md
+│   │   ├── provider-credential-management.md
 │   │   ├── provider-degradation-calibration.md
 │   │   ├── reconciliation-operations.md
 │   │   ├── reconciliation-policy-operations.md
@@ -9096,6 +9097,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-771 directories, 8109 files
+771 directories, 8110 files
 ```
 <!-- readme-tree end -->
