@@ -148,9 +148,9 @@ describe("App", () => {
 
     const status = screen.getByRole("status", { name: "Booting workstation shell" });
     expect(status).toHaveAttribute("aria-busy", "true");
-    expect(within(status).getByText("Resolving operator context and environment guardrails.")).toBeInTheDocument();
-    expect(within(status).getByText("Loading Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings.")).toBeInTheDocument();
-    expect(within(status).getByText("Preparing readiness, reconciliation, provider, and report-pack evidence.")).toBeInTheDocument();
+    expect(within(status).getByLabelText("Session state: resolving operator context and environment guardrails")).toBeInTheDocument();
+    expect(within(status).getByLabelText("Workspace payloads: loading Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings")).toBeInTheDocument();
+    expect(within(status).getByLabelText("Evidence slices: preparing readiness, reconciliation, provider, and report-pack evidence")).toBeInTheDocument();
     expect(within(status).getByLabelText("Workspace bootstrap status")).toBeInTheDocument();
   });
 
@@ -220,7 +220,7 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "Clear MSFT operating context" })).toBeInTheDocument();
   });
 
-  it("renders linked portfolio-aware context routes in the global workflow dock", () => {
+  it("keeps linked portfolio-aware context reachable from the compact decision brief", () => {
     mockedUseWorkstationData.mockReturnValue({
       session: {
         displayName: "Ops Desk",
@@ -359,34 +359,16 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/portfolio?symbol=MSFT"] });
 
-    const linkedContext = screen.getByRole("region", { name: "Linked context" });
-    expect(linkedContext).toBeInTheDocument();
-    expect(within(linkedContext).getByText("MSFT context is clear across 5 workspaces.")).toBeInTheDocument();
-    expect(within(linkedContext).getByText("Ready")).toBeInTheDocument();
-    expect(within(linkedContext).getByRole("link", { name: "Review MSFT context from active subject; Data status Trusted." })).toHaveAttribute(
+    const decisionBrief = screen.getByRole("region", { name: "Decision brief" });
+    expect(within(decisionBrief).getByText("Continue MSFT decision")).toBeInTheDocument();
+    expect(within(decisionBrief).getByText("MSFT context is clear across 5 workspaces.")).toBeInTheDocument();
+    expect(within(decisionBrief).getByText("Ready")).toBeInTheDocument();
+    expect(within(decisionBrief).getByRole("link", { name: "Review MSFT context from active subject; Data status Trusted." })).toHaveAttribute(
       "href",
       "/data/quotes?symbol=MSFT"
     );
-    expect(screen.getByRole("link", { name: /Data: Quote evidence\./ })).toHaveAttribute(
-      "href",
-      "/data/quotes?symbol=MSFT"
-    );
-    expect(screen.getByRole("link", { name: /Trading: Trading cockpit\./ })).toHaveAttribute(
-      "href",
-      "/trading?symbol=MSFT"
-    );
-    expect(screen.getByRole("link", { name: /Portfolio: Portfolio exposure\./ })).toHaveAttribute(
-      "href",
-      "/portfolio?symbol=MSFT"
-    );
-    expect(screen.getByRole("link", { name: /Accounting: Reconciliation\./ })).toHaveAttribute(
-      "href",
-      "/accounting/reconciliation?symbol=MSFT"
-    );
-    expect(screen.getByRole("link", { name: /Reporting: Evidence packet\./ })).toHaveAttribute(
-      "href",
-      "/reporting/evidence?symbol=MSFT"
-    );
+    expect(screen.queryByRole("region", { name: "Linked context" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Data: Quote evidence\./ })).not.toBeInTheDocument();
   });
 
   it("renders and clears the global operating scope across the workstation shell", async () => {
@@ -455,7 +437,7 @@ describe("App", () => {
     expect(screen.queryByLabelText("Operating scope")).not.toBeInTheDocument();
   });
 
-  it("renders ranked operator focus actions inside the global workflow dock and command palette", async () => {
+  it("keeps ranked operator focus out of the dock list while preserving command palette actions", async () => {
     const user = userEvent.setup();
     mockedUseWorkstationData.mockReturnValue({
       session: {
@@ -556,22 +538,20 @@ describe("App", () => {
     expect(within(decisionBrief).getByRole("link", {
       name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
     })).toHaveAttribute("href", "/settings#alpaca-provider-setup");
-    expect(screen.getByRole("region", { name: "Operator focus" })).toBeInTheDocument();
-    expect(screen.getByText("4 focus items across workspaces: 2 blocked and 2 review.")).toBeInTheDocument();
-    expect(screen.getByText("+1 more focus item")).toBeInTheDocument();
-    expect(screen.getAllByText("Account sync failed after the last provider heartbeat.").length).toBeGreaterThan(0);
-    expect(screen.getByText("Replay evidence is stale for the active paper session.")).toBeInTheDocument();
+    expect(within(decisionBrief).getByText(/4 focus items across workspaces: 2 blocked and 2 review\./)).toBeInTheDocument();
     expect(screen.getAllByRole("link", {
       name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
     }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);
     expect(screen.queryByRole("link", {
       name: "Data: Alpaca provider warning. Review paper provider posture. Open provider trust."
     })).not.toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Evidence timeline" })).toBeInTheDocument();
-    expect(screen.getByText("2 evidence events across 2 workspaces. Latest: Reporting at 2026-05-14 21:00 UTC.")).toBeInTheDocument();
-    expect(screen.getByRole("link", {
+    expect(screen.queryByRole("region", { name: "Operator focus" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Evidence timeline" })).not.toBeInTheDocument();
+    expect(screen.queryByText("+1 more focus item")).not.toBeInTheDocument();
+    expect(screen.queryByText("Replay evidence is stale for the active paper session.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", {
       name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Audit: audit-2. 2026-05-14 21:00 UTC. Open evidence."
-    })).toHaveAttribute("href", "/reporting/report-packs");
+    })).not.toBeInTheDocument();
 
     await user.keyboard("{Control>}k{/Control}");
     expect(screen.getByRole("dialog", { name: "Open workstation command" })).toBeInTheDocument();
@@ -583,6 +563,9 @@ describe("App", () => {
     expect(screen.getByRole("link", {
       name: "Data: Alpaca provider warning. Review paper provider posture. Open provider trust."
     })).toHaveAttribute("href", "/data/providers");
+    expect(screen.getByRole("link", {
+      name: "Trading: Replay audit. Replay evidence is stale for the active paper session. Open readiness."
+    })).toHaveAttribute("href", "/trading/readiness");
   });
 
   it("keeps a stored operating symbol available in the shell and command palette", async () => {
@@ -745,7 +728,7 @@ describe("App", () => {
     expect(await screen.findByText("Settings Workstation loaded. Jumping to alpaca provider setup.")).toBeInTheDocument();
     await waitFor(() => expect(document.getElementById("alpaca-provider-setup")).not.toBeNull(), { timeout: 15000 });
     const alpacaSetup = document.getElementById("alpaca-provider-setup");
-    expect(screen.getByRole("link", { name: "Open Alpaca paper provider setup" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Provider setup, current workflow step/ })).toHaveAttribute(
       "aria-current",
       "step"
     );
@@ -823,15 +806,9 @@ describe("App", () => {
 
     expect(screen.getByText("Demo data")).toBeInTheDocument();
     expect(screen.getByText("Showing local fixture responses because the Meridian API host is unavailable.")).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "Demo workflow" })).toBeInTheDocument();
-    expect(screen.getByText("Evidence path")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open sample watchlist demo lane" })).toHaveAttribute("href", "/data/watchlist");
-    expect(screen.getByRole("link", { name: "Open sample live quotes for AAPL" })).toHaveAttribute("href", "/data/quotes?symbol=AAPL");
-    expect(screen.getByRole("link", { name: "Open sample readiness console" })).toHaveAttribute("href", "/trading/readiness");
-    expect(screen.getByRole("link", { name: "Open Alpaca paper provider setup" })).toHaveAttribute(
-      "href",
-      "/settings#alpaca-provider-setup"
-    );
+    expect(screen.queryByRole("navigation", { name: "Demo workflow" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Evidence path")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Open sample watchlist demo lane" })).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Retry Meridian API host and reload live workstation data" }));
     expect(refresh).toHaveBeenCalledOnce();
   });

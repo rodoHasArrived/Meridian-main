@@ -11,6 +11,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "build" / "scripts" / "install" / "install-web-workstation.ps1"
 ROOT_INSTALL_SCRIPT_PATH = REPO_ROOT / "build" / "scripts" / "install" / "install.ps1"
+SMOKE_SCRIPT_PATH = REPO_ROOT / "build" / "scripts" / "install" / "smoke-web-workstation-install.ps1"
 
 
 @unittest.skipIf(os.name != "nt", "PowerShell installer behavior is validated on Windows")
@@ -129,7 +130,10 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             self.assertTrue((install_root / "Launch-MeridianWebWorkstation.ps1").exists())
             self.assertTrue((install_root / "data" / "execution" / "sessions").is_dir())
             self.assertTrue((app_data_root / "data" / "workstation" / "evidence").is_dir())
-            self.assertIn('"DataRoot": "data"', (app_data_root / "appsettings.json").read_text())
+            appsettings = (app_data_root / "appsettings.json").read_text()
+            self.assertIn('"DataRoot": "data"', appsettings)
+            self.assertIn('"DataSource": "Synthetic"', appsettings)
+            self.assertIn('"Synthetic"', appsettings)
             launcher = (install_root / "Launch-MeridianWebWorkstation.ps1").read_text()
             self.assertIn("--mode", launcher)
             self.assertIn("desktop", launcher)
@@ -157,6 +161,9 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         self.assertIn('"WebWorkstation"', root_script)
         self.assertIn("Install-WebWorkstation", root_script)
         self.assertIn("install-web-workstation.ps1", root_script)
+        self.assertIn("$global:LASTEXITCODE = 0", root_script)
+        self.assertIn("$webSucceeded = $?", root_script)
+        self.assertIn("$webExitCode -ne 0", root_script)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             repo_root = Path(temp_dir)
@@ -193,6 +200,47 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             self.assertIn("Meridian Web Workstation install plan", result.stdout)
             self.assertIn("http://localhost:8098/workstation/", result.stdout)
             self.assertFalse((repo_root / "installed-app").exists())
+
+    def test_web_workstation_install_smoke_script_parses_and_probes_installed_copy(self) -> None:
+        powershell = shutil.which("pwsh") or shutil.which("powershell")
+        if powershell is None:
+            self.skipTest("PowerShell is not available")
+
+        parse = subprocess.run(
+            [
+                powershell,
+                "-NoProfile",
+                "-Command",
+                (
+                    "$tokens=$null; $errors=$null; "
+                    f"[System.Management.Automation.Language.Parser]::ParseFile('{SMOKE_SCRIPT_PATH}', [ref]$tokens, [ref]$errors) | Out-Null; "
+                    "if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }"
+                ),
+            ],
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertEqual(parse.returncode, 0, parse.stderr)
+
+        smoke_script = SMOKE_SCRIPT_PATH.read_text(encoding="utf-8")
+        self.assertIn("install.ps1", smoke_script)
+        self.assertIn('"WebWorkstation"', smoke_script)
+        self.assertIn("-WebInstallRoot", smoke_script)
+        self.assertIn("-WebAppDataRoot", smoke_script)
+        self.assertIn("-NoDesktopShortcut", smoke_script)
+        self.assertIn("-NoStartMenuShortcut", smoke_script)
+        self.assertIn("Meridian.exe", smoke_script)
+        self.assertIn("--mode desktop --http-port", smoke_script)
+        self.assertIn("MDC_AUTH_MODE = \"optional\"", smoke_script)
+        self.assertIn("MDC_USERS = $null", smoke_script)
+        self.assertIn("-MaximumRedirection 0", smoke_script)
+        self.assertIn("/healthz", smoke_script)
+        self.assertIn("/workstation/", smoke_script)
+        self.assertIn("first workstation asset", smoke_script)
+        self.assertIn("Invoke-WebRequest", smoke_script)
+        self.assertIn("host.stdout.log", smoke_script)
+        self.assertIn("host.stderr.log", smoke_script)
 
     @staticmethod
     def _write_file(path: Path, content: str) -> None:

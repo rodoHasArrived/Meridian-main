@@ -5,6 +5,8 @@
 
 This index is the main entry point for the active `docs/` tree. It is organized around Meridian's current direction: an evidence-backed investment operations platform where browser-first operator workflows prove trusted data, research, paper validation, portfolio/accounting review, reconciliation, approvals, and governed reporting outcomes end-to-end.
 
+Current local project path: `C:\Dev\Meridian-main`.
+
 ## Platform At A Glance
 
 Meridian's current solution includes:
@@ -21,7 +23,9 @@ Meridian's current solution includes:
 - **First local setup:** [Getting Started Guide](getting-started/README.md)
 - **Operator reference:** [Help and FAQ](HELP.md)
 - **Operational procedures:** [Operator Runbook](operations/operator-runbook.md)
-- **Docs navigation by folder:** [Plans Overview](plans/README.md), [Status Docs Index](status/README.md), [Architecture Docs](architecture/README.md), [Development Guides](development/README.md)
+- **Docs navigation by folder:** [Plans Overview](plans/README.md), [Status Docs Index](status/README.md), [Architecture Docs](architecture/README.md), [Development Guides](development/README.md), [Developer Quick Guides](developer/README.md), [Design Documentation](design/README.md)
+- **Repository hygiene:** [Cleanup and Maintenance](operations/cleanup-and-maintenance.md), [Disk Space Hygiene](operations/disk-space-hygiene.md)
+- **Prompt and agent guidance:** [Automation Prompts](prompts/automation-prompts.md), [Repo Maintenance Prompts](prompts/repo-maintenance-prompts.md)
 - **Current roadmap snapshot:** [Combined Roadmap](status/ROADMAP_COMBINED.md)
 - **Current delivery plan:** [Project Roadmap](status/ROADMAP.md)
 - **Target product narrative:** [Target End Product](status/TARGET_END_PRODUCT.md)
@@ -35,7 +39,7 @@ Meridian's current solution includes:
 |------|---------|----------|
 | Product | `getting-started/`, `providers/`, `operations/` | Users and operators |
 | Web Operator UI | `plans/`, `status/`, `development/`, `ai/` | Dashboard, API, and workflow contributors |
-| Engineering | `architecture/`, `adr/`, `development/`, `integrations/`, `reference/`, `diagrams/`, `ai/` | Developers and tool authors |
+| Engineering | `architecture/`, `adr/`, `developer/`, `development/`, `integrations/`, `reference/`, `diagrams/`, `design/`, `prompts/`, `ai/` | Developers and tool authors |
 | Governance | `status/`, `plans/`, `evaluations/`, `audits/`, `security/` | Core team and stakeholders |
 
 `generated/` and any file marked as auto-generated should be refreshed by script rather than edited by hand. `docs/_site/` is the built documentation site output.
@@ -54,7 +58,12 @@ Meridian's current solution includes:
 ### Developers
 
 - [Repository Organization Guide](development/repository-organization-guide.md)
+- [Developer Setup](developer/setup.md)
+- [Build, Test, Run](developer/build-test-run.md)
+- [Publish Standalone EXE](developer/publish-standalone-exe.md)
 - [Repository Rule Set](development/repository-rule-set.md)
+- [Cleanup and Maintenance](operations/cleanup-and-maintenance.md)
+- [Disk Space Hygiene](operations/disk-space-hygiene.md)
 - [Provider Implementation Guide](development/provider-implementation.md)
 - [Desktop Testing Guide](development/desktop-testing-guide.md)
 - [Documentation Contribution Guide](development/documentation-contribution-guide.md)
@@ -64,12 +73,16 @@ Meridian's current solution includes:
 ### Architecture and design
 
 - [Architecture Overview](architecture/overview.md)
+- [Project Structure](architecture/project-structure.md)
+- [Module Map](architecture/module-map.md)
 - [Layer Boundaries](architecture/layer-boundaries.md)
 - [Storage Design](architecture/storage-design.md)
 - [Ledger Architecture](architecture/ledger-architecture.md)
 - [Desktop Layers](architecture/desktop-layers.md)
 - [WPF Shell MVVM](architecture/wpf-shell-mvvm.md)
+- [MVVM Guidelines](architecture/mvvm-guidelines.md)
 - [ADRs](adr/README.md)
+- [Design System Usage](design/design-system-usage.md)
 
 ### Status and planning
 
@@ -131,6 +144,10 @@ These commands are currently reflected in the repo's code and build scripts:
 - `dotnet run --project src/Meridian/Meridian.csproj -- --validate-config`
 - `dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true`
 
+See [developer/build-test-run.md](developer/build-test-run.md) and
+[developer/publish-standalone-exe.md](developer/publish-standalone-exe.md) for
+short current command paths from `C:\Dev\Meridian-main`.
+
 ## Reference
 
 - [API Reference](reference/api-reference.md)
@@ -141,10 +158,11 @@ These commands are currently reflected in the repo's code and build scripts:
 
 ## Archive
 
-Historical and superseded material now lives outside the active docs tree under `archive/docs/`.
+Historical and superseded material consolidated during docs cleanup now lives under `docs/archive/`.
+Older root-level archive links under `archive/docs/` remain valid historical references until those
+records are migrated intentionally.
 
-- [Archive index](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/INDEX.md)
-- [Archive overview](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/README.md)
+- [Docs archive overview](archive/README.md)
 
 ## Maintenance Checklist
 
@@ -154,3 +172,5 @@ When documentation changes in a PR:
 2. Keep `status/ROADMAP*.md`, `status/OPPORTUNITY_SCAN.md`, `status/TARGET_END_PRODUCT.md`, `status/FEATURE_INVENTORY.md`, `plans/evidence-backed-investment-operations-plan.md`, and the relevant blueprint docs aligned.
 3. Prefer updating folder `README.md` files when you add or retire documents.
 4. Avoid editing generated docs by hand unless you are also updating the generator.
+5. Add new prompts to the prompt catalog before creating another parallel prompt folder.
+6. Keep generated artifacts in ignored output folders such as `artifacts/`, `bin/`, `obj/`, `TestResults/`, `coverage/`, and `node_modules/`.

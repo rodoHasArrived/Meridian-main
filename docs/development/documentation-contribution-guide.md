@@ -46,7 +46,8 @@ Documentation debt is real. When making code changes:
 - Update related documentation in the same PR
 - Mark deprecated information clearly
 - Archive outdated documents rather than deleting them
-- Use `archive/docs/` as the single home for historical records (do not create parallel `docs/archive/` locations)
+- Use `docs/archive/` for historical records consolidated from the active docs tree. Legacy
+  root `archive/docs/` links remain historical references until they are intentionally migrated.
 
 ### 4. Make It Findable
 
@@ -89,10 +90,15 @@ docs/
 │  ── META / TOOLING ─────────────────────────────────────────────────
 ├── ai/                        # AI assistant instructions
 ├── generated/                 # Auto-generated documentation (do not edit)
-+-- archive/                   # Project-level archive root (see ../archive/docs/)
+├── archive/                   # Historical docs retained inside the docs tree
 ├── docfx/                     # DocFX API docs config
 └── README.md                  # Master documentation index (START HERE)
-```\r\n\r\nHistorical and superseded material lives at the project root:\r\n\r\n```\r\narchive/\r\n- docs/                      # Historical and superseded documentation\r\n  - assessments/            # Archived audits, analyses, and evaluations\r\n  - plans/                  # Completed or superseded plans\r\n  - summaries/              # Historical summaries and reports\r\n  - migrations/             # Legacy migration notes\r\n  - assets/                 # Archived diagrams and supporting assets\r\n- code/                     # Reserved for retired code snapshots\r\n```\r\n\r\n### Document Categories
+```
+
+Legacy root archive material may still live under `archive/docs/`; migrate it
+only with a focused link and index update.
+
+### Document Categories
 
 | Category | Purpose | Examples |
 |----------|---------|----------|
@@ -136,7 +142,7 @@ Is it a step-by-step guide for end users or operators?
                             Is it a targeted code-quality or hygiene audit?
                             ├── Yes → docs/audits/
                             └── No →
-                                Is it superseded or historical? → archive/docs/
+                                Is it superseded or historical? → docs/archive/
 ```
 
 ### Quick Lookup
@@ -157,7 +163,7 @@ Is it a step-by-step guide for end users or operators?
 | Security vulnerabilities, known issues | `security/` |
 | AI assistant guides and known errors | `ai/` |
 | Auto-generated output (do not edit) | `generated/` |
-| Outdated / superseded content | `archive/docs/` (single canonical archive location) |
+| Outdated / superseded content | `docs/archive/` |
 | Diagrams (DOT/Graphviz) | `diagrams/` |
 | UML diagrams (PlantUML) | `diagrams/uml/` |
 
@@ -355,7 +361,7 @@ Add provider by implementing interface.
 ### Special Cases
 
 - **ADRs**: Use format `NNN-short-title.md` (e.g., `001-provider-abstraction.md`)
-- **Archived**: Preserve original names but add entry to `https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md`
+- **Archived**: Preserve original names and add a note in `docs/archive/README.md`
 - **Generated**: Prefix with `generated-` or use `generated/` directory
 
 ---
@@ -560,8 +566,8 @@ When documentation becomes outdated:
    > Archived on 2026-02-12.
    ```
 
-2. **Move to `archive/docs/`** when no longer relevant
-3. **Add entry to [https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md)** explaining why archived
+2. **Move to `docs/archive/`** when no longer relevant
+3. **Add an entry to [docs/archive/README.md](../archive/README.md)** explaining why archived
 
 ---
 

@@ -35,6 +35,9 @@ This directory contains documentation about the system's design, architectural d
 | Document | Description |
 | -------- | ----------- |
 | [Overview](overview.md) | High-level system architecture |
+| [Project Structure](project-structure.md) | Maintained repository inventory and cleanup classification |
+| [Module Map](module-map.md) | Layer-oriented project map and dependency boundary quick reference |
+| [MVVM Guidelines](mvvm-guidelines.md) | Browser and retained WPF view-model boundaries |
 | [Layer Boundaries](layer-boundaries.md) | Project dependency rules and enforcement |
 | [Storage Design](storage-design.md) | Tiered storage pipeline and WAL design |
 | [Deterministic Canonicalization](deterministic-canonicalization.md) | Data normalization and deduplication |
@@ -44,11 +47,9 @@ This directory contains documentation about the system's design, architectural d
 | [Domain Boundaries](domains.md) | Domain model responsibilities |
 | [C4 Diagrams Reference](c4-diagrams.md) | C4 views plus the runtime, workstation, Security Master, and fund-ops diagram catalog |
 | [Crystallized Storage Format](crystallized-storage-format.md) | Storage format specification |
-| [Deterministic Canonicalization](deterministic-canonicalization.md) | Normalization and deduplication rules |
 | [Ledger Architecture](ledger-architecture.md) | Ledger, portfolio, and accounting architecture notes |
 | [Strategy Builder Integration](strategy-builder-integration.md) | Browser Strategy Builder contracts, JSONL draft storage, QuantScript proof execution, and prototype boundary |
 | [Environment Designer Runtime Projection and WPF Admin Surface](environment-designer-runtime-projection-and-wpf-admin-surface.md) | Draft/publish/rollback architecture for company umbrella environment design |
-| [Desktop Layers](desktop-layers.md) | WPF desktop application layering |
 | [WPF Shell MVVM](wpf-shell-mvvm.md) | Shell composition and MVVM direction for the desktop client |
 | [WPF Workstation Shell UX](wpf-workstation-shell-ux.md) | Retained desktop shell UX pattern and compatibility guidance for WPF workspace shells |
 | [Workflow Library](workflow-library.md) | Reusable workstation workflow and action registry architecture |

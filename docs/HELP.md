@@ -36,9 +36,15 @@ To install the browser workstation as a local Windows app with Desktop and Start
 
 ```powershell
 .\build\scripts\install\install-web-workstation.ps1
+.\build\scripts\install\install.ps1 -Mode WebWorkstation
 ```
 
 The installed shortcut starts the local host and opens `http://localhost:8080/workstation/`.
+For an end-to-end installed-copy smoke, run:
+
+```powershell
+.\build\scripts\install\smoke-web-workstation-install.ps1
+```
 
 ## Configuration
 

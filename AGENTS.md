@@ -5,6 +5,10 @@ Keep it short and prefer the canonical Meridian guidance sources:
 
 - `CLAUDE.md` for the full repository guide.
 - `.codex/skills/_shared/project-context.md` for current Codex project context.
+- `docs/architecture/project-structure.md` for the maintained repository map.
+- `docs/architecture/module-map.md` for layer ownership and dependency boundaries.
+- `docs/developer/setup.md`, `docs/developer/build-test-run.md`, and `docs/developer/publish-standalone-exe.md` for current local developer workflows.
+- `docs/prompts/repo-maintenance-prompts.md` and `docs/prompts/automation-prompts.md` for prompt, agent, and automation guidance.
 - `docs/HELP.md` for verified operator and developer CLI workflows.
 - `docs/ai/navigation/README.md` for generated repo-navigation workflow guidance.
 - `docs/development/build-observability.md` for build diagnostics, metrics, fingerprints, and debug bundles.
@@ -27,6 +31,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 ## Current Direction
 
 - Meridian is a .NET 10 fund-management and trading-platform codebase.
+- The authoritative local checkout path for this workspace is `C:\Dev\Meridian-main`.
 - Position new roadmap and docs work around evidence-backed investment operations: trusted data, research, paper validation, books, reconciliation, approvals, and governed reports.
 - New operator UI development is paused for `src/Meridian.Wpf/` unless needed for shared contracts, regression fixes, or retained desktop support.
 - `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets are the active web-based operator UI delivery lane.

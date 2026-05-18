@@ -164,12 +164,18 @@ export default defineConfig({
     setupFiles: "./src/test/setup.ts",
     css: true,
     pool: "forks",
+    fileParallelism: false,
+    minWorkers: 1,
+    maxWorkers: 1,
     poolOptions: {
       forks: {
         minForks: 1,
-        maxForks: 2
+        maxForks: 1,
+        isolate: true,
+        execArgv: ["--max-old-space-size=4096"]
       }
     },
-    testTimeout: 15000
+    testTimeout: 15000,
+    teardownTimeout: 5000
   }
 });

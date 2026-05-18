@@ -821,9 +821,14 @@ function Install-WebWorkstation {
     if ($script:LaunchAfterInstall) { $webParameters.LaunchAfterInstall = $true }
     if ($script:PlanOnly) { $webParameters.PlanOnly = $true }
 
+    $global:LASTEXITCODE = 0
     & $webInstaller @webParameters
-    if ($LASTEXITCODE -ne 0) {
-        throw "Web workstation installer failed with exit code $LASTEXITCODE"
+    $webSucceeded = $?
+    $lastExitCodeVariable = Get-Variable -Name LASTEXITCODE -ErrorAction SilentlyContinue
+    $webExitCode = if ($lastExitCodeVariable -and $lastExitCodeVariable.Value -is [int]) { [int]$lastExitCodeVariable.Value } else { 0 }
+
+    if (-not $webSucceeded -or $webExitCode -ne 0) {
+        throw "Web workstation installer failed with exit code $webExitCode"
     }
 }
 

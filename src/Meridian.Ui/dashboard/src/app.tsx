@@ -3,17 +3,12 @@ import {
   ArrowRight,
   AlertTriangle,
   Bell,
-  Database,
   GitBranch,
-  KeyRound,
-  LineChart,
   LoaderCircle,
   Menu,
   RefreshCcw,
   Search,
-  ShieldCheck,
-  X,
-  type LucideIcon
+  X
 } from "lucide-react";
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import meridianMarkUrl from "@/assets/brand/meridian-mark.svg";
@@ -24,18 +19,15 @@ import {
   readOperatingScopeFromSearch,
   removeOperatingScopeFromSearch,
   resolveAppShellCommandPaletteShortcut,
-  type AppShellOperatingScopeInput,
-  type DevelopmentFixtureNoticeStep,
   type AppShellWorkflowContinuityViewModel,
+  type AppShellOperatingScopeInput,
   type ShellStatusPanel
 } from "@/app-shell.view-model";
 import { CommandPalette } from "@/components/meridian/command-palette";
-import { MegaMenu } from "@/components/meridian/mega-menu";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Sheet,
   SheetBody,
@@ -278,7 +270,6 @@ function AppShell() {
 
         <div className="workstation-actions">
           <PriceAlertsBell />
-          <MegaMenu operatingContextScope={operatingScopeInput} />
           {session ? (
             <div className="workstation-session-card">
               <Badge variant={session.environment} dot>{session.environment}</Badge>
@@ -292,7 +283,11 @@ function AppShell() {
       </header>
 
       <div className="workstation-shell">
-        <WorkspaceNav className="workstation-rail-desktop" operatingContextScope={operatingScopeInput} />
+        <WorkspaceNav
+          className="workstation-rail-desktop"
+          density="compact"
+          operatingContextScope={operatingScopeInput}
+        />
 
         <main
           ref={workbenchRef}
@@ -487,6 +482,9 @@ function WorkflowContinuityDock({
   viewModel: AppShellWorkflowContinuityViewModel;
   onClearOperatingContext?: () => void;
 }) {
+  const visibleSteps = viewModel.steps.filter((step) => step.active || step.next);
+  const dockSteps = visibleSteps.length > 0 ? visibleSteps : viewModel.steps.slice(0, 2);
+
   return (
     <section className="workflow-continuity-dock" aria-label={viewModel.ariaLabel}>
       <div className="workflow-continuity-context">
@@ -528,7 +526,7 @@ function WorkflowContinuityDock({
       <DecisionBriefPanel decision={viewModel.decisionBrief} />
 
       <nav className="workflow-continuity-steps" aria-label={viewModel.stepsLabel}>
-        {viewModel.steps.map((step) => (
+        {dockSteps.map((step) => (
           <Link
             key={step.id}
             to={step.href}
@@ -547,10 +545,6 @@ function WorkflowContinuityDock({
           </Link>
         ))}
       </nav>
-
-      <LinkedContextPanel viewModel={viewModel} />
-      <OperatorFocusPanel viewModel={viewModel} />
-      <EvidenceTimelinePanel viewModel={viewModel} />
 
       <Button asChild variant="secondary" size="sm" className="workflow-continuity-next">
         <Link to={viewModel.nextActionHref} aria-label={viewModel.nextActionAriaLabel}>
@@ -593,144 +587,6 @@ function DecisionBriefPanel({
           <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </Button>
-    </section>
-  );
-}
-
-function LinkedContextPanel({ viewModel }: { viewModel: AppShellWorkflowContinuityViewModel }) {
-  return (
-    <section className="workflow-continuity-linked" aria-label={viewModel.linkedContextLabel}>
-      <div className="workflow-continuity-linked-head">
-        <span className="eyebrow-label">{viewModel.linkedContextLabel}</span>
-        <span
-          className={cn(
-            "workflow-continuity-linked-posture",
-            `workflow-continuity-linked-posture-${viewModel.linkedContextPostureTone}`
-          )}
-        >
-          {viewModel.linkedContextPostureLabel}
-        </span>
-        <span className="workflow-continuity-linked-summary">{viewModel.linkedContextSummary}</span>
-        {viewModel.linkedContextPrimaryActionHref && viewModel.linkedContextPrimaryActionLabel ? (
-          <Button asChild variant="secondary" size="sm" className="workflow-continuity-linked-primary">
-            <Link
-              to={viewModel.linkedContextPrimaryActionHref}
-              aria-label={viewModel.linkedContextPrimaryActionAriaLabel ?? viewModel.linkedContextPrimaryActionLabel}
-            >
-              <span>{viewModel.linkedContextPrimaryActionLabel}</span>
-              <ArrowRight aria-hidden="true" size={14} />
-            </Link>
-          </Button>
-        ) : null}
-      </div>
-
-      {viewModel.linkedContextItems.length > 0 ? (
-        <ul aria-label={viewModel.linkedContextItemsLabel} className="workflow-continuity-linked-list">
-          {viewModel.linkedContextItems.map((item) => (
-            <li key={item.id}>
-              <Link
-                to={item.route}
-                aria-label={item.ariaLabel}
-                className={cn(
-                  "workflow-continuity-linked-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                  `workflow-continuity-linked-item-${item.tone}`
-                )}
-              >
-                <span className="workflow-continuity-linked-route">{item.workspaceLabel}</span>
-                <span className="workflow-continuity-linked-copy">
-                  <span>{item.label}</span>
-                  <span>{item.detail}</span>
-                </span>
-                <span className="workflow-continuity-linked-status">{item.statusLabel}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="workflow-continuity-linked-empty">{viewModel.linkedContextEmptyText}</p>
-      )}
-    </section>
-  );
-}
-
-function EvidenceTimelinePanel({ viewModel }: { viewModel: AppShellWorkflowContinuityViewModel }) {
-  return (
-    <section className="workflow-continuity-evidence" aria-label={viewModel.evidenceTimelineLabel}>
-      <div className="workflow-continuity-evidence-head">
-        <span className="eyebrow-label">{viewModel.evidenceTimelineLabel}</span>
-        <span className="workflow-continuity-evidence-summary">{viewModel.evidenceTimelineSummary}</span>
-      </div>
-
-      {viewModel.evidenceTimelineItems.length > 0 ? (
-        <ol aria-label={viewModel.evidenceTimelineItemsLabel} className="workflow-continuity-evidence-list">
-          {viewModel.evidenceTimelineItems.map((item) => (
-            <li key={item.id}>
-              <Link
-                to={item.route}
-                aria-label={item.ariaLabel}
-                className={cn(
-                  "workflow-continuity-evidence-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                  `workflow-continuity-evidence-item-${item.tone}`
-                )}
-              >
-                <span className="workflow-continuity-evidence-route">{item.workspaceLabel}</span>
-                <span className="workflow-continuity-evidence-copy">
-                  <span>{item.label}</span>
-                  <span>{item.detail}</span>
-                </span>
-                <time dateTime={item.timestampIso}>{item.timestampLabel}</time>
-              </Link>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <p className="workflow-continuity-evidence-empty">{viewModel.evidenceTimelineEmptyText}</p>
-      )}
-
-      {viewModel.evidenceTimelineOverflowLabel ? (
-        <span className="workflow-continuity-evidence-overflow">{viewModel.evidenceTimelineOverflowLabel}</span>
-      ) : null}
-    </section>
-  );
-}
-
-function OperatorFocusPanel({ viewModel }: { viewModel: AppShellWorkflowContinuityViewModel }) {
-  return (
-    <section className="workflow-continuity-focus" aria-label={viewModel.operatorFocusLabel}>
-      <div className="workflow-continuity-focus-head">
-        <span className="eyebrow-label">{viewModel.operatorFocusLabel}</span>
-        <span className="workflow-continuity-focus-summary">{viewModel.operatorFocusSummary}</span>
-      </div>
-
-      {viewModel.operatorFocusItems.length > 0 ? (
-        <ul aria-label={viewModel.operatorFocusItemsLabel} className="workflow-continuity-focus-list">
-          {viewModel.operatorFocusItems.map((item) => (
-            <li key={item.id}>
-              <Link
-                to={item.route}
-                aria-label={item.ariaLabel}
-                className={cn(
-                  "workflow-continuity-focus-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                  `workflow-continuity-focus-item-${item.tone}`
-                )}
-              >
-                <span className="workflow-continuity-focus-route">{item.workspaceLabel}</span>
-                <span className="workflow-continuity-focus-copy">
-                  <span className="workflow-continuity-focus-title">{item.label}</span>
-                  <span className="workflow-continuity-focus-detail">{item.detail}</span>
-                  <span className="workflow-continuity-focus-action">{item.actionLabel}</span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="workflow-continuity-focus-empty">{viewModel.operatorFocusEmptyText}</p>
-      )}
-
-      {viewModel.operatorFocusOverflowLabel ? (
-        <span className="workflow-continuity-focus-overflow">{viewModel.operatorFocusOverflowLabel}</span>
-      ) : null}
     </section>
   );
 }
@@ -844,13 +700,13 @@ function operatingScopesEqual(left: AppShellOperatingScopeInput, right: AppShell
 }
 
 function PriceAlertsBell() {
-  const { unacknowledgedCount, enabledCount } = usePriceAlerts();
+  const { unacknowledgedCount } = usePriceAlerts();
   const hasUnread = unacknowledgedCount > 0;
-  const label = hasUnread
-    ? `${unacknowledgedCount} unacknowledged price alert${unacknowledgedCount === 1 ? "" : "s"}`
-    : enabledCount > 0
-      ? `${enabledCount} active price alert${enabledCount === 1 ? "" : "s"}, none triggered`
-      : "Price alerts";
+  if (!hasUnread) {
+    return null;
+  }
+
+  const label = `${unacknowledgedCount} unacknowledged price alert${unacknowledgedCount === 1 ? "" : "s"}`;
 
   return (
     <Link
@@ -860,16 +716,12 @@ function PriceAlertsBell() {
       className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
     >
       <Bell className="h-4 w-4" aria-hidden="true" />
-      {hasUnread ? (
-        <span
-          aria-hidden="true"
-          className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-background bg-warning px-1 font-mono text-[10px] font-semibold leading-none text-background"
-        >
-          {unacknowledgedCount > 99 ? "99+" : unacknowledgedCount}
-        </span>
-      ) : enabledCount > 0 ? (
-        <span aria-hidden="true" className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary" />
-      ) : null}
+      <span
+        aria-hidden="true"
+        className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-background bg-warning px-1 font-mono text-[10px] font-semibold leading-none text-background"
+      >
+        {unacknowledgedCount > 99 ? "99+" : unacknowledgedCount}
+      </span>
     </Link>
   );
 }
@@ -909,7 +761,7 @@ function DevelopmentFixtureNotice({
     <div
       role={viewModel.role}
       aria-live={viewModel.ariaLive}
-      className="mb-4 flex flex-col gap-3 rounded-lg border border-warning/35 bg-warning/10 px-3 py-3 text-sm text-foreground lg:flex-row lg:items-center lg:justify-between"
+      className="mb-3 flex flex-col gap-2 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-foreground lg:flex-row lg:items-center lg:justify-between"
     >
       <div className="flex min-w-0 flex-wrap items-center gap-2">
         <span className="font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-warning">
@@ -932,36 +784,6 @@ function DevelopmentFixtureNotice({
           <RefreshCcw className={`h-3.5 w-3.5 ${viewModel.retryBusy ? "animate-spin" : ""}`} aria-hidden="true" />
           <span>{viewModel.retryLabel}</span>
         </Button>
-        <nav aria-label="Demo workflow" className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">
-            {viewModel.workflowLabel}
-          </span>
-          {viewModel.steps.map((item) => {
-            const Icon = developmentFixtureDemoIcons[item.id];
-            return (
-              <Button
-                key={item.href}
-                asChild
-                variant={item.active ? "default" : "outline"}
-                size="sm"
-                className={item.active ? "" : "bg-background/40"}
-              >
-                <Link to={item.href} aria-label={item.ariaLabel} aria-current={item.active ? "step" : undefined}>
-                  <span
-                    aria-hidden="true"
-                    className={item.active
-                      ? "font-mono text-[0.6875rem] text-primary-foreground/80"
-                      : "font-mono text-[0.6875rem] text-muted-foreground"}
-                  >
-                    {item.step}
-                  </span>
-                  <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                  <span>{item.label}</span>
-                </Link>
-              </Button>
-            );
-          })}
-        </nav>
       </div>
     </div>
   );
@@ -994,95 +816,82 @@ function focusElementById(targetElementId: string, fallbackElement: HTMLElement 
   return true;
 }
 
-const developmentFixtureDemoIcons: Record<DevelopmentFixtureNoticeStep["id"], LucideIcon> = {
-  watchlist: Database,
-  quotes: LineChart,
-  readiness: ShieldCheck,
-  connect: KeyRound
-};
-
 function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () => void }) {
   const toneClass =
     panel.tone === "danger"
-      ? "border-danger/30 bg-danger/10 text-danger"
+      ? "border-danger/30 bg-danger/10"
       : panel.tone === "warning"
-        ? "border-warning/30 bg-warning/10 text-warning"
-        : "border-primary/25 bg-secondary/25 text-muted-foreground";
+        ? "border-warning/30 bg-warning/10"
+        : "border-primary/25 bg-secondary/25";
   const Icon = panel.tone === "loading" ? LoaderCircle : AlertTriangle;
+  const itemSummary = panel.items.length > 0
+    ? `${panel.items.length} ${panel.items.length === 1 ? "detail" : "details"}`
+    : null;
 
   return (
-    <Card
+    <section
       id={panel.id}
       role={panel.role}
       aria-live={panel.ariaLive}
       aria-labelledby={panel.titleId}
       aria-describedby={panel.detailId}
       aria-busy={panel.tone === "loading"}
-      className={cn("mb-4 overflow-hidden", toneClass, panel.tone === "loading" && "startup-status-panel")}
+      className={cn(
+        "mb-3 flex flex-col gap-3 rounded-md border px-3 py-2 text-sm md:flex-row md:items-center md:justify-between",
+        toneClass,
+        panel.tone === "loading" && "startup-status-panel"
+      )}
     >
-      <CardHeader className="flex flex-col gap-3 space-y-0 md:flex-row md:items-start md:justify-between">
-        <div>
-          <div className="eyebrow-label">Shell status</div>
-          <CardTitle id={panel.titleId} className="mt-2 flex items-center gap-2 text-base text-foreground">
-            <Icon
-              aria-hidden="true"
-              className={`h-4 w-4 shrink-0 ${panel.tone === "loading" ? "animate-spin" : ""}`}
-            />
-            {panel.title}
-          </CardTitle>
+      <div className="min-w-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className="eyebrow-label">Shell status</span>
+          <span id={panel.titleId} className="inline-flex min-w-0 items-center gap-2 font-semibold text-foreground">
+            <Icon aria-hidden="true" className={`h-4 w-4 shrink-0 ${panel.tone === "loading" ? "animate-spin" : ""}`} />
+            <span className="min-w-0 truncate">{panel.title}</span>
+          </span>
+          {itemSummary ? (
+            <span className="rounded-sm border border-border/60 bg-background/45 px-1.5 py-0.5 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-muted-foreground">
+              {itemSummary}
+            </span>
+          ) : null}
         </div>
-        {panel.actionLabel || panel.secondaryActionHref ? (
-          <div className="flex flex-wrap items-center gap-2">
-            {panel.secondaryActionHref && panel.secondaryActionLabel ? (
-              <Button asChild variant="outline" size="sm">
-                <Link to={panel.secondaryActionHref} aria-label={panel.secondaryActionAriaLabel ?? panel.secondaryActionLabel}>
-                  {panel.secondaryActionLabel}
-                </Link>
-              </Button>
-            ) : null}
-            {panel.actionLabel ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onRetry}
-                aria-label={panel.actionAriaLabel ?? panel.actionLabel}
-              >
-                {panel.actionLabel}
-              </Button>
-            ) : null}
-          </div>
-        ) : null}
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        <p id={panel.detailId} className="leading-6 text-foreground/80">{panel.detail}</p>
+        <p id={panel.detailId} className="mt-1 min-w-0 truncate text-foreground/80">{panel.detail}</p>
         {panel.tone === "loading" ? (
-          <div className="startup-status-meter" aria-hidden="true">
+          <div className="startup-status-meter mt-2" aria-hidden="true">
             <span />
           </div>
         ) : null}
         {panel.items.length > 0 ? (
-          <ul aria-label={panel.itemListLabel} className="grid gap-2 md:grid-cols-3">
+          <ul aria-label={panel.itemListLabel} className="sr-only">
             {panel.items.map((item) => (
-              <li
-                key={item.key}
-                aria-label={item.ariaLabel}
-                className={cn(
-                  "rounded-md border px-3 py-2",
-                  panel.tone === "loading"
-                    ? "border-primary/20 bg-background/55"
-                    : "border-border/60 bg-background/45"
-                )}
-              >
-                <div className="flex items-center gap-2 font-semibold text-foreground">
-                  {panel.tone === "loading" ? <span className="startup-status-dot" aria-hidden="true" /> : null}
-                  {item.label}
-                </div>
-                <div className="mt-1 text-xs leading-5 text-foreground/70">{item.detail}</div>
+              <li key={item.key} aria-label={item.ariaLabel}>
+                {item.label}: {item.detail}
               </li>
             ))}
           </ul>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+      {panel.actionLabel || panel.secondaryActionHref ? (
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {panel.secondaryActionHref && panel.secondaryActionLabel ? (
+            <Button asChild variant="outline" size="sm">
+              <Link to={panel.secondaryActionHref} aria-label={panel.secondaryActionAriaLabel ?? panel.secondaryActionLabel}>
+                {panel.secondaryActionLabel}
+              </Link>
+            </Button>
+          ) : null}
+          {panel.actionLabel ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRetry}
+              aria-label={panel.actionAriaLabel ?? panel.actionLabel}
+            >
+              {panel.actionLabel}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
   );
 }

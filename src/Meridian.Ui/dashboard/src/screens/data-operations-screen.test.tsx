@@ -370,9 +370,9 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByRole("heading", { name: "Trigger backfill" })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole("textbox", { name: "Backfill symbols" })).toHaveFocus());
     expect(screen.getByRole("group", { name: "Backfill request form" })).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Backfill provider" })).toHaveValue("yahoo");
-    expect(screen.getByRole("button", { name: /Yahoo Finance No key/i })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText(/Credential-free daily and intraday historical bars/i)).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Backfill provider" })).toHaveValue("polygon");
+    expect(screen.getByRole("button", { name: /Polygon Configured/i })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText(/Polygon is configured for Streaming equities/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Close backfill dialog" })).toBeInTheDocument();
     expect(screen.getByText("Enter at least one symbol before previewing a backfill.")).toBeInTheDocument();
   });

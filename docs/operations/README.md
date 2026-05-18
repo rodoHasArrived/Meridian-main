@@ -17,6 +17,8 @@ Guides for deploying, monitoring, and maintaining the Meridian in production.
 | [Governance Operator Workflow](governance-operator-workflow.md) | Security Master, reconciliation queue, and governance export operations |
 | [Provider Credential Management](provider-credential-management.md) | Encrypted provider credential storage, canonical provider connection APIs, and repair routing |
 | [Provider Degradation Calibration](provider-degradation-calibration.md) | Offline calibration and governance gates for provider degradation kernel promotions |
+| [Cleanup And Maintenance](cleanup-and-maintenance.md) | Safe generated-output cleanup, path hygiene, and repository maintenance rules |
+| [Disk Space Hygiene](disk-space-hygiene.md) | Local disk-space triage and generated artifact retention |
 
 ## Quick Links
 

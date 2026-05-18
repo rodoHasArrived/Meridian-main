@@ -44,19 +44,29 @@ const icons: Record<WorkspaceKey, typeof RadioTower> = {
  */
 interface WorkspaceNavProps {
   className?: string;
+  density?: "compact" | "detailed";
   onNavigate?: () => void;
   operatingContextScope?: AppShellOperatingScopeInput | null;
 }
 
-export function WorkspaceNav({ className, onNavigate, operatingContextScope = null }: WorkspaceNavProps) {
+export function WorkspaceNav({
+  className,
+  density = "detailed",
+  onNavigate,
+  operatingContextScope = null
+}: WorkspaceNavProps) {
   const location = useLocation();
   const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope);
+  const compact = density === "compact";
 
   return (
-    <aside className={cn("operator-rail", className)} aria-label={`${viewModel.brandTitle} navigation`}>
+    <aside
+      className={cn("operator-rail", compact && "operator-rail-compact", className)}
+      aria-label={`${viewModel.brandTitle} navigation`}
+    >
       <nav className="operator-rail-nav" aria-label="Workspaces">
         <div className="operator-rail-section">{viewModel.navEyebrow}</div>
-        {viewModel.operatingScopeLabel ? (
+        {!compact && viewModel.operatingScopeLabel ? (
           <div className="operator-nav-scope" aria-label={viewModel.operatingScopeAriaLabel ?? undefined}>
             <span>Context</span>
             <span>{viewModel.operatingScopeLabel}</span>
@@ -78,12 +88,14 @@ export function WorkspaceNav({ className, onNavigate, operatingContextScope = nu
               >
                 <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span className="truncate font-medium">{item.label}</span>
-                <span className={`operator-nav-status operator-nav-status-${item.statusTone}`}>
-                  <span className="operator-nav-status-dot" aria-hidden="true" />
-                  {item.statusLabel}
-                </span>
+                {!compact ? (
+                  <span className={`operator-nav-status operator-nav-status-${item.statusTone}`}>
+                    <span className="operator-nav-status-dot" aria-hidden="true" />
+                    {item.statusLabel}
+                  </span>
+                ) : null}
               </Link>
-              {item.subItems.length > 0 && (
+              {!compact && item.subItems.length > 0 && (
                 <div className="operator-nav-subitems" role="group" aria-label={`${item.label} sub-routes`}>
                   {item.subItems.map((sub) => (
                     <Link

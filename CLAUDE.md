@@ -15,6 +15,8 @@ Meridian is a .NET 10 trading and fund-operations platform with:
 - retained WPF desktop support for shared contracts, regressions, and existing desktop workflows,
 - MCP and AI workflow assets for repository navigation and task automation.
 
+Current local project path: `C:\Dev\Meridian-main`.
+
 ## Core Working Rules
 
 1. Make the smallest safe change that satisfies the request.
@@ -110,6 +112,10 @@ make ai-maintenance-full
 
 Do not embed the generated repository tree in `CLAUDE.md`. Use these maintained sources instead:
 
+- `docs/architecture/project-structure.md` for the maintained repository map.
+- `docs/architecture/module-map.md` for layer ownership and dependency boundaries.
+- `docs/developer/build-test-run.md` for current local build, test, and run commands.
+- `docs/prompts/repo-maintenance-prompts.md` for prompt, agent, and skill maintenance rules.
 - `docs/ai/navigation/README.md` for the generated repo-navigation workflow.
 - `docs/ai/generated/repo-navigation.md` for subsystem routing and entrypoints.
 - `docs/generated/repository-structure.md` for the full generated repository tree.

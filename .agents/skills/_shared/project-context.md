@@ -14,6 +14,7 @@
 ## Platform Snapshot
 
 - Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery.
+- The authoritative local checkout path for this workspace is `C:\Dev\Meridian-main`.
 - The repo already contains strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
 - The current delivery focus is productization: turn those foundations into one cohesive operator
@@ -40,6 +41,11 @@
 Read these before changing skills, agents, or workflow guidance:
 
 - `README.md`
+- `docs/architecture/project-structure.md`
+- `docs/architecture/module-map.md`
+- `docs/architecture/mvvm-guidelines.md`
+- `docs/developer/build-test-run.md`
+- `docs/prompts/repo-maintenance-prompts.md`
 - `docs/status/ROADMAP.md`
 - `docs/status/FEATURE_INVENTORY.md`
 - `docs/status/IMPROVEMENTS.md`

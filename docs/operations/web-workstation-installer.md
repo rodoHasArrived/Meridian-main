@@ -46,11 +46,28 @@ Defaults:
 - install root: `%LOCALAPPDATA%\Programs\Meridian Web Workstation`
 - app data root: `%LOCALAPPDATA%\Meridian`
 - config path: `%LOCALAPPDATA%\Meridian\appsettings.json`
+- first-run data source: `Synthetic`
 - workstation URL: `http://localhost:8080/workstation/`
 
 The host serves static workstation files from its working directory at `wwwroot/workstation`. The
 installer therefore copies `src/Meridian.Ui/wwwroot/workstation` into the install root after the
 dashboard build completes.
+
+## Smoke Test
+
+Use the install smoke when changing the installer, launcher, host publish, or workstation asset
+staging path:
+
+```powershell
+.\build\scripts\install\smoke-web-workstation-install.ps1
+```
+
+The smoke runs `build/scripts/install/install.ps1 -Mode WebWorkstation` into an isolated artifact
+directory, starts the installed `Meridian.exe` from that installed copy, verifies
+`http://localhost:<port>/healthz`, verifies `http://localhost:<port>/workstation/`, and writes logs
+under `artifacts/install-smoke/web-workstation/<timestamp>/`. It removes the isolated installed
+copy after a passing run unless `-KeepInstalledCopy` is specified. Use `-SkipDashboardBuild` only
+when `src/Meridian.Ui/wwwroot/workstation` already contains the bundle you intend to validate.
 
 ## Troubleshooting
 

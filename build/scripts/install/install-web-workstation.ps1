@@ -128,7 +128,10 @@ function New-DefaultConfig {
     $config = @"
 {
   "DataRoot": "data",
-  "DataSource": "NoOp",
+  "DataSource": "Synthetic",
+  "Synthetic": {
+    "Enabled": true
+  },
   "Symbols": [],
   "Storage": {
     "NamingConvention": "BySymbol",

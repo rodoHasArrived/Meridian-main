@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as api from "@/lib/api";
 import { GovernanceScreen } from "@/screens/governance-screen";
@@ -363,6 +363,8 @@ describe("GovernanceScreen", () => {
 
   it("updates reconciliation detail queue selection with accessible expanded state", async () => {
     const user = userEvent.setup();
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
     expect(screen.getByRole("link", { name: "Open routing target for reconciliation break run-42:cash" })).toHaveAttribute("href", "/accounting");
@@ -963,7 +965,8 @@ describe("GovernanceScreen", () => {
       assignedTo: "ops.gov",
       reviewedBy: "ops.gov"
     });
-    expect(await screen.findByText("InReview")).toBeInTheDocument();
+    const detail = await screen.findByRole("region", { name: "Reconciliation break detail for run-42:cash" });
+    expect(within(detail).getByText("InReview")).toBeInTheDocument();
   });
 
   it("surfaces view-model disabled reasons for reconciliation queue actions", async () => {

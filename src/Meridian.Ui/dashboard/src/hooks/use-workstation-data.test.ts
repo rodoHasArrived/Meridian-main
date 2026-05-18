@@ -9,6 +9,7 @@ import type {
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
+  ProviderConnectionRow,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -23,6 +24,7 @@ vi.mock("@/lib/api", () => ({
   getDataWorkspace: vi.fn(),
   getGovernanceWorkspace: vi.fn(),
   getAlpacaConnectionStatus: vi.fn(),
+  getProviderConnections: vi.fn(),
   hasDevelopmentFixtureUsage: vi.fn(() => false),
   getPortfolioWorkspace: vi.fn(),
   getReportingWorkspace: vi.fn(),
@@ -48,6 +50,7 @@ const requests: Record<string, Deferred<unknown>[]> = {
   governance: [],
   overview: [],
   portfolio: [],
+  providerConnections: [],
   reporting: [],
   research: [],
   session: [],
@@ -72,6 +75,7 @@ describe("useWorkstationData", () => {
     vi.mocked(api.getGovernanceWorkspace).mockImplementation(() => track<GovernanceWorkspaceResponse>("governance"));
     vi.mocked(api.getReportingWorkspace).mockImplementation(() => track<GovernanceWorkspaceResponse>("reporting"));
     vi.mocked(api.getAlpacaConnectionStatus).mockImplementation(() => track<BrokerageConnectionStatus>("brokerageConnection"));
+    vi.mocked(api.getProviderConnections).mockImplementation(() => track<ProviderConnectionRow[]>("providerConnections"));
     vi.mocked(api.getBrokerageHouseholdPortfolio).mockImplementation(() => track<BrokerageHouseholdPortfolio>("brokeragePortfolio"));
     vi.mocked(api.getWorkflowLibrary).mockImplementation(() => track<WorkflowLibrary>("workflowLibrary"));
     vi.mocked(api.getWorkflowPresets).mockImplementation(() => track<WorkflowPresetLibrary>("workflowPresets"));
@@ -295,6 +299,7 @@ describe("useWorkstationData", () => {
       resolveRequest<GovernanceWorkspaceResponse>("governance", 0, { marker: "accounting" } as unknown as GovernanceWorkspaceResponse);
       resolveRequest<GovernanceWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as GovernanceWorkspaceResponse);
       rejectRequest("brokerageConnection", 0, new Error("Alpaca connection status failed."));
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
       rejectRequest("brokeragePortfolio", 0, new Error("Brokerage household sync failed."));
       resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "workflows" } as unknown as WorkflowLibrary);
       resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, {
@@ -466,6 +471,7 @@ function resolveRefreshBatchWithIndexes({
   resolveRequest<GovernanceWorkspaceResponse>("governance", defaultIndex, { marker: `${marker} accounting` } as unknown as GovernanceWorkspaceResponse);
   resolveRequest<GovernanceWorkspaceResponse>("reporting", defaultIndex, { marker: `${marker} reporting` } as unknown as GovernanceWorkspaceResponse);
   resolveRequest<BrokerageConnectionStatus>("brokerageConnection", defaultIndex, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
+  resolveRequest<ProviderConnectionRow[]>("providerConnections", defaultIndex, []);
   resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", defaultIndex, { marker: `${marker} brokerage` } as unknown as BrokerageHouseholdPortfolio);
   resolveRequest<WorkflowLibrary>("workflowLibrary", defaultIndex, { marker: `${marker} workflows` } as unknown as WorkflowLibrary);
   resolveRequest<WorkflowPresetLibrary>("workflowPresets", defaultIndex, {
