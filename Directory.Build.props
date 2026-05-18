@@ -31,4 +31,8 @@
     <!-- CS1591: Missing XML comment for publicly visible type or member (not required for all members) -->
     <NoWarn>$(NoWarn);MSB3277;NETSDK1206;NU1608;IL2026;IL2070;CS1587;CS1591</NoWarn>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- Exact advisory suppression only; accepted risk is documented in docs/security/known-vulnerabilities.md. -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-xhg6-9j5j-w4vf" />
+  </ItemGroup>
 </Project>
