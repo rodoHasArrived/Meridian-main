@@ -24,7 +24,10 @@ namespace Meridian.Application.Composition.Startup;
 /// <summary>
 /// Factory delegate for creating the host-specific dashboard server implementation.
 /// </summary>
-public delegate IHostDashboardServer DashboardServerFactory(string configPath, int port);
+public delegate IHostDashboardServer DashboardServerFactory(
+    string configPath,
+    int port,
+    IApplicationLifecycleCoordinator lifecycle);
 
 /// <summary>
 /// Host-agnostic abstraction over the dashboard server used by shared startup orchestration.
@@ -73,13 +76,32 @@ public static class SharedStartupBootstrapper
         DashboardServerFactory dashboardServerFactory,
         CancellationToken ct)
     {
+        using var lifecycle = ApplicationLifecycleCoordinator.Create(log, ct);
         await using var configService = new ConfigurationService(log);
         var cfg = configService.LoadAndPrepareConfig(cfgPath);
 
         try
         {
             var orchestrator = new HostModeOrchestrator(log, dashboardServerFactory);
-            return await orchestrator.RunAsync(cliArgs, cfg, cfgPath, configService, deploymentContext, ct);
+            log.Information("Meridian startup beginning (Mode={Mode}, Port={Port}, ConfigPath={ConfigPath})",
+                deploymentContext.Mode,
+                deploymentContext.HttpPort,
+                cfgPath);
+            var exitCode = await orchestrator.RunAsync(
+                cliArgs,
+                cfg,
+                cfgPath,
+                configService,
+                deploymentContext,
+                lifecycle.ShutdownToken,
+                lifecycle);
+            log.Information("Meridian host stopped with exit code {ExitCode}", exitCode);
+            return exitCode;
+        }
+        catch (OperationCanceledException) when (lifecycle.ShutdownToken.IsCancellationRequested)
+        {
+            log.Information("Meridian shutdown completed after cancellation request ({Reason})", lifecycle.ShutdownReason);
+            return 0;
         }
         catch (Exception ex)
         {
@@ -94,6 +116,7 @@ public static class SharedStartupBootstrapper
         }
         finally
         {
+            log.Information("Flushing Meridian logging pipeline");
             LoggingSetup.CloseAndFlush();
         }
     }
@@ -359,27 +382,41 @@ public sealed class HostModeOrchestrator
         _dashboardServerFactory = dashboardServerFactory;
     }
 
-    public Task<int> RunAsync(
+    public async Task<int> RunAsync(
         CliArguments cliArgs,
         AppConfig cfg,
         string cfgPath,
         ConfigurationService configService,
         DeploymentContext deployment,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        IApplicationLifecycleCoordinator? lifecycle = null)
     {
-        var ctx = new StartupContext
+        var ownsLifecycle = lifecycle is null;
+        var effectiveLifecycle = lifecycle ?? ApplicationLifecycleCoordinator.Create(_log, ct);
+        try
         {
-            CliArgs = cliArgs,
-            Config = cfg,
-            ConfigPath = cfgPath,
-            Deployment = deployment,
-            ConfigurationService = configService,
-            DashboardServerFactory = _dashboardServerFactory,
-            Log = _log,
-            CancellationToken = ct
-        };
+            var ctx = new StartupContext
+            {
+                CliArgs = cliArgs,
+                Config = cfg,
+                ConfigPath = cfgPath,
+                Deployment = deployment,
+                ConfigurationService = configService,
+                DashboardServerFactory = _dashboardServerFactory,
+                Lifecycle = effectiveLifecycle,
+                Log = _log,
+                CancellationToken = effectiveLifecycle.ShutdownToken
+            };
 
-        var orchestrator = new StartupOrchestrator(_log, _dashboardServerFactory);
-        return orchestrator.RunAsync(ctx);
+            var orchestrator = new StartupOrchestrator(_log, _dashboardServerFactory);
+            return await orchestrator.RunAsync(ctx);
+        }
+        finally
+        {
+            if (ownsLifecycle)
+            {
+                effectiveLifecycle.Dispose();
+            }
+        }
     }
 }

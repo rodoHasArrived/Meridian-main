@@ -1,4 +1,9 @@
+using System.Diagnostics;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using Meridian.Application.Composition;
+using Meridian.Application.Composition.Startup;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Monitoring.DataQuality;
@@ -41,16 +46,30 @@ namespace Meridian;
 [ImplementsAdr("ADR-004", "Large file decomposition - endpoints extracted to dedicated modules")]
 public sealed class UiServer : IAsyncDisposable
 {
+    public const string LocalShutdownTokenHeader = "X-Meridian-Shutdown-Token";
+
     private readonly WebApplication _app;
     private readonly ILogger<UiServer> _logger;
+    private readonly IApplicationLifecycleCoordinator _lifecycle;
+    private readonly bool _ownsLifecycle;
+    private readonly string _configPath;
+    private readonly int _port;
 
     /// <summary>
     /// Creates a new UiServer using the centralized ServiceCompositionRoot.
     /// </summary>
     /// <param name="configPath">Path to the configuration file.</param>
     /// <param name="port">HTTP port to listen on.</param>
-    public UiServer(string configPath, int port = 8080)
+    public UiServer(
+        string configPath,
+        int port = 8080,
+        IApplicationLifecycleCoordinator? lifecycle = null)
     {
+        _configPath = configPath;
+        _port = port;
+        _lifecycle = lifecycle ?? ApplicationLifecycleCoordinator.Create(Serilog.Log.Logger);
+        _ownsLifecycle = lifecycle is null;
+
         var contentRootPath = Directory.GetCurrentDirectory();
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -70,6 +89,7 @@ public sealed class UiServer : IAsyncDisposable
         // Use centralized service composition root
         var compositionOptions = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         builder.Services.AddMarketDataServices(compositionOptions);
+        builder.Services.AddSingleton(_lifecycle);
 
         // Register the Ui.Shared ConfigStore wrapper so endpoint lambdas can resolve it from DI.
         // The wrapper delegates to the core ConfigStore already registered by AddMarketDataServices.
@@ -306,8 +326,80 @@ public sealed class UiServer : IAsyncDisposable
         // Archive Maintenance API (not included in MapUiEndpoints)
         _app.MapArchiveMaintenanceEndpoints();
 
+        MapLifecycleEndpoints();
+
         _app.MapUiEndpointsWithStatus(statusHandlers);
 
+    }
+
+    private void MapLifecycleEndpoints()
+    {
+        _app.MapGet("/api/system/lifecycle", (HttpContext context) =>
+        {
+            if (!IsLoopbackRequest(context))
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+            if (!IsAuthorizedLifecycleRequest(context))
+                return Results.Unauthorized();
+
+            return Results.Ok(new
+            {
+                processId = Environment.ProcessId,
+                processName = Process.GetCurrentProcess().ProcessName,
+                startedAtUtc = _lifecycle.StartedAtUtc,
+                uptimeSeconds = Math.Round((DateTimeOffset.UtcNow - _lifecycle.StartedAtUtc).TotalSeconds, 3),
+                port = _port,
+                configPath = _configPath,
+                shutdownRequested = _lifecycle.IsShutdownRequested,
+                shutdownReason = _lifecycle.ShutdownReason
+            });
+        });
+
+        _app.MapPost("/api/system/shutdown", async (HttpContext context) =>
+        {
+            if (!IsLoopbackRequest(context))
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+            if (!IsAuthorizedLifecycleRequest(context))
+                return Results.Unauthorized();
+
+            await _lifecycle.RequestShutdownAsync(
+                "http-local-shutdown",
+                "Local lifecycle endpoint requested shutdown",
+                context.RequestAborted);
+
+            return Results.Json(new
+            {
+                accepted = true,
+                processId = Environment.ProcessId,
+                shutdownRequested = _lifecycle.IsShutdownRequested
+            }, statusCode: StatusCodes.Status202Accepted);
+        });
+    }
+
+    private bool IsAuthorizedLifecycleRequest(HttpContext context)
+        => context.Items.ContainsKey(LoginSessionMiddleware.CurrentUserKey)
+            || IsValidLocalShutdownToken(context);
+
+    private bool IsValidLocalShutdownToken(HttpContext context)
+    {
+        if (string.IsNullOrWhiteSpace(_lifecycle.LocalShutdownToken))
+            return false;
+
+        var supplied = context.Request.Headers[LocalShutdownTokenHeader].FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(supplied))
+            return false;
+
+        var expectedBytes = Encoding.UTF8.GetBytes(_lifecycle.LocalShutdownToken);
+        var suppliedBytes = Encoding.UTF8.GetBytes(supplied);
+        return suppliedBytes.Length == expectedBytes.Length
+            && CryptographicOperations.FixedTimeEquals(suppliedBytes, expectedBytes);
+    }
+
+    private static bool IsLoopbackRequest(HttpContext context)
+    {
+        var remoteIp = context.Connection.RemoteIpAddress;
+        return remoteIp is null || IPAddress.IsLoopback(remoteIp);
     }
 
     public async Task StartAsync(CancellationToken ct = default)
@@ -325,5 +417,9 @@ public sealed class UiServer : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await _app.DisposeAsync();
+        if (_ownsLifecycle)
+        {
+            _lifecycle.Dispose();
+        }
     }
 }

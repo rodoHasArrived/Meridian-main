@@ -181,7 +181,8 @@ public sealed class CollectorModeRunner
                     coordinationSnapshot.RootPath);
             }
 
-            using var connectTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            using var connectTimeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            connectTimeoutCts.CancelAfter(TimeSpan.FromSeconds(30));
             await dataClient.ConnectAsync(connectTimeoutCts.Token);
         }
         catch (OperationCanceledException)
@@ -272,11 +273,21 @@ public sealed class CollectorModeRunner
         }
         finally
         {
-            watcher?.Dispose();
+            if (watcher is not null)
+            {
+                await watcher.DisposeAsync().ConfigureAwait(false);
+                _log.Information("Configuration watcher stopped");
+            }
 
             try
             {
-                await dataClient.DisconnectAsync();
+                using var disconnectCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                await dataClient.DisconnectAsync(disconnectCts.Token);
+                _log.Information("Data provider disconnect completed");
+            }
+            catch (OperationCanceledException)
+            {
+                _log.Warning("Data provider disconnect did not complete within the shutdown timeout");
             }
             catch (Exception ex)
             {

@@ -40,7 +40,7 @@ public sealed record ProviderInfo(
 /// - Unified metadata access via <see cref="IProviderMetadata"/>
 /// </remarks>
 [ImplementsAdr("ADR-001", "Centralized provider registry for plugin-style management")]
-public sealed class ProviderRegistry : IDisposable
+public sealed class ProviderRegistry : IDisposable, IAsyncDisposable
 {
     /// <summary>
     /// Single unified registry of all providers. Type-specific queries filter by ProviderCapabilities.
@@ -534,12 +534,14 @@ public sealed class ProviderRegistry : IDisposable
     }
 
     public void Dispose()
+        => DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+    public async ValueTask DisposeAsync()
     {
         if (_disposed)
             return;
         _disposed = true;
 
-        // Dispose all providers based on their capabilities
         foreach (var registered in _allProviders.Values)
         {
             try
@@ -547,13 +549,12 @@ public sealed class ProviderRegistry : IDisposable
                 switch (registered.Provider)
                 {
                     case IAsyncDisposable asyncDisposable:
-                        asyncDisposable.DisposeAsync().AsTask().ContinueWith(
-                            t => _log.Warning(t.Exception!.InnerException ?? t.Exception,
-                                "Failed to async-dispose provider {ProviderName}", registered.Name),
-                            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+                        await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                        _log.Debug("Async-disposed provider {ProviderName}", registered.Name);
                         break;
                     case IDisposable disposable:
                         disposable.Dispose();
+                        _log.Debug("Disposed provider {ProviderName}", registered.Name);
                         break;
                 }
             }
