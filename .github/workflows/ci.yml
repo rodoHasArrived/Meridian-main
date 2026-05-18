@@ -51,16 +51,19 @@ jobs:
       - name: Verify formatting
         run: dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
 
-      - name: Build solution
-        run: dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
+      - name: Build web workstation lane
+        run: dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false
 
       - name: Run non-integration tests
-        run: >
-          dotnet test Meridian.sln -c Release --no-build
-          --filter "Category!=Integration&Category!=Performance"
-          --logger "trx;LogFilePrefix=dotnet"
-          --results-directory artifacts/test-results/dotnet
-          /p:EnableWindowsTargeting=true
+        run: |
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=core" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=fsharp" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=ui" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=backtesting" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=directlending" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=fundstructure" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=mcpserver" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=quantscript" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
 
       - name: Upload .NET test results
         if: failure()

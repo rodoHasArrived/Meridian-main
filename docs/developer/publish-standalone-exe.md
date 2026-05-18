@@ -26,6 +26,12 @@ For the retained WPF desktop executable:
 pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project desktop -OutputDir artifacts/publish/local-desktop
 ```
 
+For the host-served browser workstation bundle:
+
+```powershell
+pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project web-workstation -OutputDir artifacts/publish/local-web-workstation
+```
+
 The manual `Publish Smoke` GitHub Actions workflow runs the same script on a
 Windows runner and uploads the generated `artifacts/publish/publish-smoke/`
 directory. It does not create a public release or deploy externally.

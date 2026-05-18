@@ -369,7 +369,7 @@ if (`$Status) {
 if (-not (Test-MeridianEndpoint -Uri `$healthUrl)) {
     `$shutdownToken = New-ShutdownToken
     `$env:MDC_SHUTDOWN_TOKEN = `$shutdownToken
-    `$arguments = "--mode desktop --http-port `$Port --config ```"`$configPath```""
+    `$arguments = "--mode workstation --http-port `$Port --config ```"`$configPath```""
     `$process = Start-Process -FilePath `$exePath -ArgumentList `$arguments -WorkingDirectory `$installRoot -WindowStyle Hidden -PassThru
     Write-RuntimeState -Process `$process -ShutdownToken `$shutdownToken
 
@@ -442,7 +442,7 @@ $dashboardRoot = Join-Path $repoRoot "src\Meridian.Ui\dashboard"
 $dashboardPackageJson = Join-Path $dashboardRoot "package.json"
 $dashboardNodeModules = Join-Path $dashboardRoot "node_modules"
 $dashboardBundle = Join-Path $repoRoot "src\Meridian.Ui\wwwroot\workstation"
-$publishRoot = Join-Path $repoRoot "artifacts\publish\web-workstation-installer\$RuntimeIdentifier"
+$publishRoot = Join-Path $repoRoot "artifacts\publish\web-workstation\$RuntimeIdentifier"
 $launcherPath = Join-Path $installRootPath "Launch-MeridianWebWorkstation.ps1"
 $iconSource = Join-Path $repoRoot "src\Meridian\app.ico"
 $iconPath = Join-Path $installRootPath "app.ico"

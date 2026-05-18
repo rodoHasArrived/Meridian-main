@@ -9,9 +9,9 @@ The detailed workflow reference lives in `.github/workflows/README.md`.
 
 | Workflow | File | Trigger | Purpose |
 | --- | --- | --- | --- |
-| CI | `.github/workflows/ci.yml` | Pull requests, pushes to `main`, manual | Restore, format check, Release build, non-integration .NET tests, dashboard tests, dashboard build |
+| CI | `.github/workflows/ci.yml` | Pull requests, pushes to `main`, manual | Restore solution, format check, focused web-workstation Release build, non-integration .NET tests, dashboard tests, dashboard build |
 | Windows Desktop Build | `.github/workflows/windows-desktop-build.yml` | Pull requests, pushes to `main`, manual | Full Windows WPF build, WPF tests, desktop publish smoke |
-| Publish Smoke | `.github/workflows/publish-smoke.yml` | Manual | Standalone Windows publish artifact for `collector` or `desktop` |
+| Publish Smoke | `.github/workflows/publish-smoke.yml` | Manual | Standalone Windows publish artifact for `collector`, `desktop`, or `web-workstation` |
 | Maintenance | `.github/workflows/maintenance.yml` | Workflow/docs/tooling changes, weekly, manual | Workflow hygiene checks and Action YAML linting |
 
 ## Local Command Map
@@ -21,8 +21,8 @@ The automatic CI lane mirrors:
 ```powershell
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
-dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
-dotnet test Meridian.sln -c Release --no-build --filter "Category!=Integration&Category!=Performance" /p:EnableWindowsTargeting=true
+dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" /p:EnableWindowsTargeting=true
 npm ci --prefix src/Meridian.Ui/dashboard
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
@@ -40,6 +40,8 @@ The manual publish smoke lane mirrors:
 
 ```powershell
 pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project collector -Version 1.0.0-smoke -Configuration Release -OutputDir artifacts/publish/publish-smoke -OutputRetentionDays 0 -OutputRetainLatest 0
+pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project desktop -Version 1.0.0-smoke -Configuration Release -OutputDir artifacts/publish/publish-smoke -OutputRetentionDays 0 -OutputRetainLatest 0
+pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project web-workstation -Version 1.0.0-smoke -Configuration Release -OutputDir artifacts/publish/publish-smoke -OutputRetentionDays 0 -OutputRetainLatest 0
 ```
 
 ## Removed Automation

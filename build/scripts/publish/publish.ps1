@@ -10,7 +10,7 @@ param(
     [ValidateSet("all", "win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64")]
     [string]$Platform = "all",
 
-    [ValidateSet("all", "collector", "desktop")]
+    [ValidateSet("all", "collector", "desktop", "web-workstation")]
     [string]$Project = "all",
 
     [string]$Version = "1.0.0",
@@ -48,6 +48,7 @@ else {
 $AllPlatforms = @("win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64")
 $WindowsPlatforms = @("win-x64", "win-arm64")
 $CollectorProject = Join-Path $RepoRoot "src/Meridian/Meridian.csproj"
+$WebWorkstationProject = Join-Path $RepoRoot "src/Meridian/Meridian.csproj"
 $DesktopProject = Join-Path $RepoRoot "src/Meridian.Wpf/Meridian.Wpf.csproj"
 $ArtifactRetentionModule = Join-Path $LibDir "ArtifactRetention.psm1"
 if (Test-Path $ArtifactRetentionModule) {
@@ -158,6 +159,7 @@ Parameters:
                   all        Build all projects
                   collector  Build only Meridian (CLI)
                   desktop    Build only Meridian.Wpf / Meridian.Desktop (Windows Desktop App)
+                  web-workstation Build only the browser workstation local host
 
   -Version      Version number (default: 1.0.0)
   -Configuration Build configuration (default: Release)
@@ -253,6 +255,33 @@ function Publish-DesktopApp {
     Write-Success "Published Meridian Desktop (WPF) for $RuntimeId -> $outputPath"
 }
 
+function Publish-WebWorkstationHost {
+    param([string]$RuntimeId)
+
+    $outputPath = Join-Path (Join-Path $ResolvedOutputDir $RuntimeId) "web-workstation"
+
+    Write-Info "Publishing Meridian Web Workstation host for $RuntimeId..."
+
+    dotnet publish $WebWorkstationProject `
+        -c $Configuration `
+        -r $RuntimeId `
+        -o $outputPath `
+        -p:Version=$Version `
+        --self-contained true `
+        -p:PublishSingleFile=true `
+        -p:PublishReadyToRun=false `
+        -p:PublishTrimmed=false `
+        -p:EnableCompressionInSingleFile=true `
+        -p:IncludeNativeLibrariesForSelfExtract=true `
+        -p:IncludeAllContentForSelfExtract=true
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to publish Meridian Web Workstation host for $RuntimeId"
+    }
+
+    Write-Success "Published Meridian Web Workstation host for $RuntimeId -> $outputPath"
+}
+
 function New-Package {
     param([string]$RuntimeId)
 
@@ -322,6 +351,10 @@ foreach ($rid in $TargetPlatforms) {
 
     if ($Project -eq "all" -or $Project -eq "collector") {
         Publish-Project -ProjectPath $CollectorProject -RuntimeId $rid -ProjectName "Meridian" -OutputSubDir "collector"
+    }
+
+    if ($Project -eq "web-workstation") {
+        Publish-WebWorkstationHost -RuntimeId $rid
     }
 
     # Build the WPF desktop app only for Windows platforms

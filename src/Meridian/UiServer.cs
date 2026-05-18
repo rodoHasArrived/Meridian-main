@@ -60,6 +60,7 @@ public sealed class UiServer : IAsyncDisposable
     /// </summary>
     /// <param name="configPath">Path to the configuration file.</param>
     /// <param name="port">HTTP port to listen on.</param>
+    /// <param name="lifecycle">Optional process lifecycle coordinator used by local shutdown endpoints.</param>
     public UiServer(
         string configPath,
         int port = 8080,

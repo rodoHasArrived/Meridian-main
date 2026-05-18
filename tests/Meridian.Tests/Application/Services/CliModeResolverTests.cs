@@ -75,6 +75,8 @@ public sealed class CliModeResolverTests
     }
 
     [Theory]
+    [InlineData("workstation", CliModeResolver.RunMode.Workstation)]
+    [InlineData("web-workstation", CliModeResolver.RunMode.Workstation)]
     [InlineData("desktop", CliModeResolver.RunMode.Desktop)]
     [InlineData("DESKTOP", CliModeResolver.RunMode.Desktop)]
     [InlineData("headless", CliModeResolver.RunMode.Headless)]
@@ -124,7 +126,7 @@ public sealed class CliModeResolverTests
         var (mode, error) = CliModeResolver.ResolveWithError(["--ui"]);
 
         mode.Should().Be(CliModeResolver.RunMode.Headless);
-        error.Should().Be("The web dashboard has been removed; use desktop or headless mode instead of '--ui'.");
+        error.Should().Be("The legacy web dashboard mode has been removed; use workstation mode for the browser workstation or desktop/headless mode instead of '--ui'.");
     }
 
     [Fact]
@@ -133,7 +135,7 @@ public sealed class CliModeResolverTests
         var (mode, error) = CliModeResolver.ResolveWithError(["--mode", "web"]);
 
         mode.Should().Be(CliModeResolver.RunMode.Headless);
-        error.Should().Be("The web dashboard has been removed; use desktop or headless mode instead of '--mode web'.");
+        error.Should().Be("The legacy web dashboard mode has been removed; use workstation mode for the browser workstation or desktop/headless mode instead of '--mode web'.");
     }
 
     [Fact]
@@ -149,6 +151,7 @@ public sealed class CliModeResolverTests
         mode.Should().Be(CliModeResolver.RunMode.Headless); // Default fallback
         error.Should().NotBeNullOrEmpty();
         error.Should().Contain("unknown");
+        error.Should().Contain("workstation");
         error.Should().Contain("desktop");
         error.Should().Contain("headless");
     }

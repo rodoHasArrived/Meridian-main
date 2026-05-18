@@ -13,7 +13,7 @@ Run these from the repository root unless a command says otherwise.
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --help
 dotnet run --project src/Meridian/Meridian.csproj -- --setup
-dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
+dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
 dotnet run --project src/Meridian/Meridian.csproj -- --selftest
 dotnet run --project src/Meridian/Meridian.csproj -- --diagnostics
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
@@ -40,6 +40,8 @@ To install the browser workstation as a local Windows app with Desktop and Start
 ```
 
 The installed shortcut starts the local host and opens `http://localhost:8080/workstation/`.
+It uses `--mode workstation`, which keeps provider connections and collector subscriptions
+deferred until an operator action needs them.
 For an end-to-end installed-copy smoke, run:
 
 ```powershell

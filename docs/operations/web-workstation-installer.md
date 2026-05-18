@@ -17,9 +17,13 @@ The root Windows installer exposes the same workflow through `-Mode WebWorkstati
 .\build\scripts\install\install.ps1 -Mode WebWorkstation
 ```
 
-The installed shortcut starts `Meridian.exe --mode desktop --http-port 8080 --config
+The installed shortcut starts `Meridian.exe --mode workstation --http-port 8080 --config
 %LOCALAPPDATA%\Meridian\appsettings.json`, waits for `http://localhost:8080/healthz`, and opens
 `http://localhost:8080/workstation/`.
+
+`workstation` mode starts only the local UI/API host. It does not auto-connect providers, start
+market-data subscriptions, or run the collector pipeline; use `--mode desktop` when the retained
+desktop-local host must run the UI server and collector side by side.
 
 ## Options
 
