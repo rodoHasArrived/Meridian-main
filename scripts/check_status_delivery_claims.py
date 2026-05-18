@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import string
 import sys
 from pathlib import Path
 
@@ -33,6 +34,39 @@ APPROVED_SCOPING_PHRASES = (
     "active wave 1 evidence gate",
 )
 
+
+
+def _is_negated_phrase(lowered_text: str, start_index: int) -> bool:
+    context = lowered_text[max(0, start_index - 40):start_index]
+    trimmed = context.rstrip(string.whitespace + string.punctuation)
+    return any(
+        trimmed.endswith(marker)
+        for marker in (
+            "not",
+            "not yet",
+            "never",
+            "no longer",
+            "isn't",
+            "isnt",
+            "aren't",
+            "arent",
+            "cannot",
+            "can't",
+            "cant",
+        )
+    )
+
+
+def _has_unnegated_phrase(lowered_text: str, phrase: str) -> bool:
+    start = 0
+    while True:
+        match_index = lowered_text.find(phrase, start)
+        if match_index == -1:
+            return False
+        if not _is_negated_phrase(lowered_text, match_index):
+            return True
+        start = match_index + len(phrase)
+
 PASS_PACKET_REFERENCE_RE = re.compile(
     r"(artifacts/provider-validation/_automation/\d{4}-\d{2}-\d{2}/[^\s`]*dk1-pilot-parity-packet\.json|artifacts/provider-validation/_automation/\d{4}-\d{2}-\d{2}/|artifact id\s*[:#-]?\s*`?[A-Za-z0-9_.-]+`?|signed\s+\d{4}-\d{2}-\d{2}\s+dk1\s+parity\s+packet)",
     re.IGNORECASE,
@@ -50,7 +84,7 @@ def validate_doc(path: Path) -> list[str]:
         )
 
     for phrase in DENYLIST_PHRASES:
-        if phrase in lowered:
+        if _has_unnegated_phrase(lowered, phrase):
             errors.append(f"{path}: prohibited live-readiness claim phrase found: '{phrase}'.")
 
     if not any(phrase in lowered for phrase in APPROVED_SCOPING_PHRASES):

@@ -239,9 +239,15 @@ public sealed class TradingOperatorReadinessServiceTests
     }
 
     [Fact]
-    public async Task GetAsync_WithFullyReadyPaperScenario_ShouldMarkCockpitReadyForPaperOperation()
+<<<<<<< ours
+    public async Task GetAsync_WithCorePaperDependenciesRegistered_ShouldMarkSessionReplayAndAuditGatesReady()
     {
-        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithFullyReadyPaperScenario_ShouldMarkCockpitReadyForPaperOperation));
+        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithCorePaperDependenciesRegistered_ShouldMarkSessionReplayAndAuditGatesReady));
+=======
+    public async Task GetAsync_WithVerifiedReplayOnly_ShouldKeepGovernanceGatesInReview()
+    {
+        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithVerifiedReplayOnly_ShouldKeepGovernanceGatesInReview));
+>>>>>>> theirs
         var persistence = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
@@ -262,10 +268,26 @@ public sealed class TradingOperatorReadinessServiceTests
 
         var readiness = await service.GetAsync();
 
-        readiness.AcceptanceGates.All(g => g.Status == TradingAcceptanceGateStatusDto.Ready).Should().BeTrue();
-        readiness.WorkItems.Should().NotContain(item => item.Tone == OperatorWorkItemToneDto.Critical);
-        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.Ready);
-        readiness.ReadyForPaperOperation.Should().BeTrue();
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "session" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "replay" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
+<<<<<<< ours
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "audit-controls" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
+        readiness.AcceptanceGates.Should().Contain(gate =>
+            gate.GateId is "promotion" or "trust-gate" or "report-pack" or "reconciliation" &&
+            gate.Status != TradingAcceptanceGateStatusDto.Ready);
+=======
+        readiness.AcceptanceGates.Should().Contain(gate =>
+            gate.GateId is "promotion" or "trust-gate" or "report-pack" or "reconciliation" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired);
+        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
+>>>>>>> theirs
+        readiness.ReadyForPaperOperation.Should().BeFalse();
     }
 
     [Fact]

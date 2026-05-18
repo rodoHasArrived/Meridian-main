@@ -48,6 +48,20 @@ Latest pass packet: artifacts/provider-validation/_automation/2026-05-17/dk1-pil
             errors = module.validate_doc(doc)
             self.assertTrue(any("prohibited" in err for err in errors))
 
+
+    def test_allows_negated_live_readiness_phrase(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            doc = self.write_doc(
+                root,
+                "docs/status/production-status.md",
+                """
+This release is not ready for live trading and remains in progress with paper workflow evidence.
+Latest pass packet: artifacts/provider-validation/_automation/2026-05-17/dk1-pilot-parity-packet.json.
+""",
+            )
+            self.assertEqual([], module.validate_doc(doc))
+
     def test_rejects_missing_packet_reference(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
