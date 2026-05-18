@@ -3881,6 +3881,44 @@ public sealed class WorkstationEndpointsTests
         return result!;
     }
 
+
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldPreserveReplayStaleSeverityAndRoute()
+    {
+        var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-inbox-stale-replay", Guid.NewGuid().ToString("N"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(_ => new ExecutionAuditTrailService(
+                new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+                NullLogger<ExecutionAuditTrailService>.Instance));
+            services.AddSingleton<IPaperSessionStore>(_ => new JsonlFilePaperSessionStore(
+                Path.Combine(rootPath, "sessions"),
+                NullLogger<JsonlFilePaperSessionStore>.Instance));
+            services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
+                NullLogger<PaperSessionPersistenceService>.Instance,
+                sp.GetRequiredService<IPaperSessionStore>(),
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+        });
+
+        var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto("strat-inbox", "Inbox Replay", 100_000m, ["AAPL"]));
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-1", "AAPL", 1m));
+        var verification = await persistence.VerifyReplayAsync(session.SessionId);
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-2", "AAPL", 2m));
+
+        var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>(UiApiRoutes.WorkstationOperatorInbox, ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().ContainSingle(item =>
+            item.WorkItemId == $"paper-replay-stale-{session.SessionId.ToLowerInvariant()}" &&
+            item.Tone == OperatorWorkItemToneDto.Warning &&
+            item.TargetRoute == UiApiRoutes.WorkstationTradingReadiness &&
+            item.TargetPageTag == "TradingReadinessConsole" &&
+            item.AuditReference == verification!.VerificationAuditId);
+    }
+
     private static StringContent JsonContent(object payload) =>
         new(JsonSerializer.Serialize(payload, ServerJsonOptions), Encoding.UTF8, "application/json");
 

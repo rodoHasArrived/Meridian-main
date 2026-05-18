@@ -1801,6 +1801,7 @@ public static partial class WorkstationEndpoints
             .GroupBy(static item => item.WorkItemId, StringComparer.OrdinalIgnoreCase)
             .Select(static group => group
                 .OrderByDescending(static item => item.Tone)
+                .ThenByDescending(static item => IsReplayContinuityWorkItem(item))
                 .ThenByDescending(static item => item.CreatedAt)
                 .First())
             .OrderByDescending(static item => item.Tone)
@@ -1823,6 +1824,12 @@ public static partial class WorkstationEndpoints
             Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount));
     }
 
+
+    private static bool IsReplayContinuityWorkItem(OperatorWorkItemDto item)
+        => item.Kind == OperatorWorkItemKindDto.PaperReplay
+           && (!string.IsNullOrWhiteSpace(item.WorkItemId)
+               && (item.WorkItemId.Contains("paper-replay-stale", StringComparison.OrdinalIgnoreCase)
+                   || item.WorkItemId.Contains("paper-replay-mismatch", StringComparison.OrdinalIgnoreCase)));
     private static void RecordOperatorInboxContinuityMetrics(IReadOnlyList<OperatorWorkItemDto> items)
     {
         foreach (var item in items)

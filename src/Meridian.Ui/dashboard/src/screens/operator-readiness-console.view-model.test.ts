@@ -1422,4 +1422,58 @@ describe("operator readiness console view model", () => {
       { label: "Evidence", value: "Created Apr 29, 11:00 UTC" }
     ]));
   });
+
+
+  it("prioritizes replay stale warnings over unrelated review items for primary next action", () => {
+    const state = buildOperatorReadinessConsoleState({
+      research,
+      trading,
+      dataOperations,
+      governance,
+      operatorInbox: {
+        ...inbox,
+        items: [
+          {
+            workItemId: "paper-replay-stale-paper-1",
+            kind: "PaperReplay",
+            label: "Paper replay verification stale",
+            detail: "Replay verification is stale for paper-1.",
+            tone: "Warning",
+            createdAt: "2026-04-29T12:02:00Z",
+            runId: "run-1",
+            fundAccountId: null,
+            auditReference: "audit-replay-3",
+            workspace: "Trading",
+            targetRoute: "/trading/readiness",
+            targetPageTag: "TradingReadinessConsole"
+          },
+          {
+            workItemId: "promotion-review-run-1",
+            kind: "PromotionReview",
+            label: "Promotion checklist incomplete",
+            detail: "Finish continuity review.",
+            tone: "Warning",
+            createdAt: "2026-04-29T12:03:00Z",
+            runId: "run-1",
+            fundAccountId: "fund-1",
+            auditReference: "audit-promotion-1",
+            workspace: "Trading",
+            targetRoute: "/trading/readiness",
+            targetPageTag: "TradingReadinessConsole"
+          }
+        ],
+        criticalCount: 0,
+        warningCount: 2,
+        reviewCount: 2,
+        summary: "2 review items need attention."
+      },
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    expect(state.nextAction.title).toBe("Paper replay verification stale");
+    expect(state.nextAction.route).toBe("/trading/readiness");
+    expect(state.nextAction.level).toBe("review");
+  });
+
 });

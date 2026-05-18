@@ -1277,6 +1277,7 @@ interface NextActionCandidate {
   disabledReason?: string | null;
   sourcePriority: number;
   index: number;
+  dominancePriority: number;
 }
 
 function buildNextAction({
@@ -1355,6 +1356,11 @@ function buildNextAction({
       return levelDelta;
     }
 
+    const dominanceDelta = right.dominancePriority - left.dominancePriority;
+    if (dominanceDelta !== 0) {
+      return dominanceDelta;
+    }
+
     const sourceDelta = left.sourcePriority - right.sourcePriority;
     if (sourceDelta !== 0) {
       return sourceDelta;
@@ -1405,8 +1411,24 @@ function nextActionCandidateFromRow(
     route: options.route,
     level: row.level,
     sourcePriority: options.sourcePriority,
-    index: options.index
+    index: options.index,
+    dominancePriority: replayDominancePriority(row)
   };
+}
+
+function replayDominancePriority(row: ReadinessConsoleRow): number {
+  const normalizedId = row.id.toLowerCase();
+  const normalizedLabel = row.label.toLowerCase();
+
+  if (normalizedId.includes('paper-replay-mismatch') || normalizedLabel.includes('replay mismatch')) {
+    return 2;
+  }
+
+  if (normalizedId.includes('paper-replay-stale') || normalizedLabel.includes('replay verification stale')) {
+    return 1;
+  }
+
+  return 0;
 }
 
 function countWorkItemTones(workItems: OperatorWorkItem[]): Record<OperatorWorkItem["tone"], number> {
