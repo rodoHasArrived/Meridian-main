@@ -252,7 +252,7 @@ if __name__ == '__main__':
 - Graceful handling of encoding errors (`errors='replace'`)
 - Logging to stderr, summaries to stdout
 
-## Integrating with the Workflow
+## Integrating with Local Tooling
 
 ### Step 1: Add the script to `build/scripts/docs/`
 
@@ -263,41 +263,20 @@ python3 build/scripts/docs/your-script.py --help
 python3 build/scripts/docs/your-script.py --output /tmp/test.md --summary
 ```
 
-### Step 2: Add a local command or workflow job when needed
+### Step 2: Add a local command
 
-Prefer adding a local command first. Add a GitHub Actions job only when the check is important
-enough to run in the active CI surface:
+Expose the script through a Make target, a documented command, or an existing orchestration script
+when it becomes part of regular maintenance:
 
-```yaml
-  your-new-job:
-    name: Your New Feature
-    needs: [detect-changes]
-    if: |
-      needs.detect-changes.outputs.any_changed == 'true' &&
-      github.event_name != 'issues'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v6.2.0
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Run your script
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          python3 build/scripts/docs/your-script.py \
-            --output docs/status/your-report.md \
-            --summary >> "$GITHUB_STEP_SUMMARY" 2>&1
+```makefile
+docs-your-report:
+	python3 build/scripts/docs/your-script.py --output docs/status/your-report.md --summary
 ```
 
-### Step 3: Add to the report job
+### Step 3: Add CI only when justified
 
-Add the new job to the `report` job's `needs` list and add a result row.
+If the script should block workflow changes or repository hygiene, wire it into
+`build/scripts/ci/check-workflow-hygiene.py` or the active `maintenance.yml` workflow.
 
 ### Step 4: Update documentation
 

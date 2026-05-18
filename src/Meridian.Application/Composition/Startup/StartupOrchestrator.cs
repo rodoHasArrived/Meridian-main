@@ -76,6 +76,7 @@ public sealed class StartupOrchestrator
     {
         var mode = ctx.Deployment.Mode switch
         {
+            DeploymentMode.Workstation => HostMode.Workstation,
             DeploymentMode.Desktop => HostMode.Desktop,
             _ when ctx.CliArgs.Backfill || (ctx.Config.Backfill?.Enabled == true) => HostMode.Backfill,
             _ => HostMode.Collector
@@ -90,6 +91,9 @@ public sealed class StartupOrchestrator
     {
         return plan.Mode switch
         {
+            HostMode.Workstation => new WorkstationModeRunner(_log, _dashboardServerFactory)
+                                    .RunAsync(plan.Context, plan.Context.CancellationToken),
+
             HostMode.Desktop => new DesktopModeRunner(_log, _dashboardServerFactory)
                                     .RunAsync(plan.Context, plan.Context.CancellationToken),
 

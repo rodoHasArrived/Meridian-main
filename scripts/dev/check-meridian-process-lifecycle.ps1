@@ -100,7 +100,7 @@ function Invoke-GracefulShutdown {
         return $true
     }
     catch {
-        Write-Warning "Graceful shutdown probe failed for $uri: $($_.Exception.Message)"
+        Write-Warning "Graceful shutdown probe failed for ${uri}: $($_.Exception.Message)"
         return $false
     }
 }

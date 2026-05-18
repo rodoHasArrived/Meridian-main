@@ -65,12 +65,14 @@ public sealed class UiServer : IAsyncDisposable
         int port = 8080,
         IApplicationLifecycleCoordinator? lifecycle = null)
     {
+        var serverBuildStopwatch = Stopwatch.StartNew();
         _configPath = configPath;
         _port = port;
         _lifecycle = lifecycle ?? ApplicationLifecycleCoordinator.Create(Serilog.Log.Logger);
         _ownsLifecycle = lifecycle is null;
 
         var contentRootPath = Directory.GetCurrentDirectory();
+        var serviceRegistrationStopwatch = Stopwatch.StartNew();
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
             ContentRootPath = contentRootPath
@@ -286,11 +288,22 @@ public sealed class UiServer : IAsyncDisposable
                 return ["General"];
             });
         });
+        serviceRegistrationStopwatch.Stop();
 
+        var appBuildStopwatch = Stopwatch.StartNew();
         _app = builder.Build();
+        appBuildStopwatch.Stop();
         _logger = _app.Services.GetRequiredService<ILoggerFactory>().CreateLogger<UiServer>();
+        _logger.LogInformation(
+            "UiServer service graph built (ServiceRegistrationMs={ServiceRegistrationMs}, AppBuildMs={AppBuildMs})",
+            serviceRegistrationStopwatch.ElapsedMilliseconds,
+            appBuildStopwatch.ElapsedMilliseconds);
+
+        var readinessStopwatch = Stopwatch.StartNew();
         SecurityMasterStartup.EnsureDatabaseReady(_app.Services, _logger);
         DirectLendingStartup.EnsureDatabaseReady(_app.Services, _logger);
+        readinessStopwatch.Stop();
+        _logger.LogInformation("UiServer readiness checks completed in {ElapsedMs} ms", readinessStopwatch.ElapsedMilliseconds);
 
         // Wire Polly circuit breaker callbacks to CircuitBreakerStatusService
         ServiceCompositionRoot.InitializeCircuitBreakerCallbackRouter(_app.Services);
@@ -307,7 +320,14 @@ public sealed class UiServer : IAsyncDisposable
             options.DocumentTitle = "Meridian - API Documentation";
         });
 
+        var routeStopwatch = Stopwatch.StartNew();
         ConfigureRoutes();
+        routeStopwatch.Stop();
+        serverBuildStopwatch.Stop();
+        _logger.LogInformation(
+            "UiServer configured routes in {RouteMapMs} ms; constructor completed in {ElapsedMs} ms",
+            routeStopwatch.ElapsedMilliseconds,
+            serverBuildStopwatch.ElapsedMilliseconds);
     }
 
     private void ConfigureRoutes()
@@ -404,14 +424,19 @@ public sealed class UiServer : IAsyncDisposable
 
     public async Task StartAsync(CancellationToken ct = default)
     {
+        var stopwatch = Stopwatch.StartNew();
         await _app.StartAsync(ct);
-        _logger.LogInformation("UiServer started on {Urls}", string.Join(", ", _app.Urls));
+        _logger.LogInformation(
+            "UiServer started on {Urls} in {ElapsedMs} ms",
+            string.Join(", ", _app.Urls),
+            stopwatch.ElapsedMilliseconds);
     }
 
     public async Task StopAsync(CancellationToken ct = default)
     {
+        var stopwatch = Stopwatch.StartNew();
         await _app.StopAsync(ct);
-        _logger.LogInformation("UiServer stopped");
+        _logger.LogInformation("UiServer stopped in {ElapsedMs} ms", stopwatch.ElapsedMilliseconds);
     }
 
     public async ValueTask DisposeAsync()

@@ -15,15 +15,6 @@
     <Product>Meridian</Product>
     <Copyright>Copyright © 2024 Meridian Team</Copyright>
 
-    <!-- Single-file publishing -->
-    <PublishSingleFile>true</PublishSingleFile>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
-    <PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>partial</TrimMode>
-    <PublishReadyToRun>true</PublishReadyToRun>
-
     <!-- SelfContained only during publish -->
     <SelfContained Condition="'$(PublishProtocol)' != ''">true</SelfContained>
     <SelfContained Condition="'$(PublishProtocol)' == ''">false</SelfContained>
@@ -34,10 +25,12 @@
     <Deterministic>true</Deterministic>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <EnableLeanIntegration Condition="'$(EnableLeanIntegration)' == ''">false</EnableLeanIntegration>
+    <EnableCppTraderIntegration Condition="'$(EnableCppTraderIntegration)' == ''">false</EnableCppTraderIntegration>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
-    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
+  <PropertyGroup Condition="'$(EnableLeanIntegration)' == 'true'">
+    <DefineConstants>$(DefineConstants);MERIDIAN_ENABLE_LEAN</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows')) Or '$(RuntimeIdentifier.StartsWith(`win`))' == 'true'">
@@ -48,9 +41,8 @@
     <TrimmerRootAssembly Include="System.Text.Json" />
   </ItemGroup>
 
-  <!-- Host-level dependencies (entry point, Lean integration, benchmarking) -->
+  <!-- Host-level dependencies (entry point and desktop-local API host) -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.Extensions.Logging" />
 
@@ -59,18 +51,26 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
 
-    <!-- QuantConnect Lean Engine Integration (host-level) -->
+  </ItemGroup>
+
+  <!-- QuantConnect Lean Engine integration is optional and excluded from normal workstation builds. -->
+  <ItemGroup Condition="'$(EnableLeanIntegration)' == 'true'">
     <PackageReference Include="QuantConnect.Lean" />
     <PackageReference Include="QuantConnect.Lean.Engine" />
     <PackageReference Include="QuantConnect.Common" />
     <PackageReference Include="QuantConnect.Indicators" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(EnableLeanIntegration)' != 'true'">
+    <Compile Remove="Integrations\Lean\**\*.cs" />
+    <None Include="Integrations\Lean\**\*.cs" />
+  </ItemGroup>
+
   <!-- Layer Assembly References -->
   <ItemGroup>
     <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
     <ProjectReference Include="..\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
-    <ProjectReference Include="..\Meridian.Infrastructure.CppTrader\Meridian.Infrastructure.CppTrader.csproj" />
+    <ProjectReference Include="..\Meridian.Infrastructure.CppTrader\Meridian.Infrastructure.CppTrader.csproj" Condition="'$(EnableCppTraderIntegration)' == 'true'" />
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
     <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />
     <ProjectReference Include="..\Meridian.Domain\Meridian.Domain.csproj" />

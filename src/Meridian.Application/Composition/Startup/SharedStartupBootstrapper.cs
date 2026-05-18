@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Meridian.Application.Backfill;
 using Meridian.Application.Commands;
@@ -46,9 +47,12 @@ public static class SharedStartupBootstrapper
 {
     public static Task<int> RunAsync(string[] args, DashboardServerFactory dashboardServerFactory, CancellationToken ct = default)
     {
+        var bootstrapStopwatch = Stopwatch.StartNew();
         var cliArgs = CliArguments.Parse(args);
         var cfgPath = SharedStartupHelpers.ResolveConfigPath(cliArgs);
+        var configProbeStopwatch = Stopwatch.StartNew();
         var initialCfg = SharedStartupHelpers.LoadConfigMinimal(cfgPath);
+        configProbeStopwatch.Stop();
 
         LoggingSetup.Initialize(dataRoot: initialCfg.DataRoot);
         var log = LoggingSetup.ForContext("Program");
@@ -62,8 +66,13 @@ public static class SharedStartupBootstrapper
             return Task.FromResult(1);
         }
 
-        log.Debug("Deployment context: {Mode}, Command: {Command}, Docker: {IsDocker}",
-            deploymentContext.Mode, deploymentContext.Command, deploymentContext.IsDocker);
+        log.Information(
+            "Meridian bootstrap prepared in {ElapsedMs} ms (ConfigProbeMs={ConfigProbeMs}, Mode={Mode}, Command={Command}, Docker={IsDocker})",
+            bootstrapStopwatch.ElapsedMilliseconds,
+            configProbeStopwatch.ElapsedMilliseconds,
+            deploymentContext.Mode,
+            deploymentContext.Command,
+            deploymentContext.IsDocker);
 
         return RunCoreAsync(cliArgs, cfgPath, log, deploymentContext, dashboardServerFactory, ct);
     }
@@ -76,17 +85,20 @@ public static class SharedStartupBootstrapper
         DashboardServerFactory dashboardServerFactory,
         CancellationToken ct)
     {
+        var configStopwatch = Stopwatch.StartNew();
         using var lifecycle = ApplicationLifecycleCoordinator.Create(log, ct);
         await using var configService = new ConfigurationService(log);
         var cfg = configService.LoadAndPrepareConfig(cfgPath);
+        configStopwatch.Stop();
 
         try
         {
             var orchestrator = new HostModeOrchestrator(log, dashboardServerFactory);
-            log.Information("Meridian startup beginning (Mode={Mode}, Port={Port}, ConfigPath={ConfigPath})",
+            log.Information("Meridian startup beginning (Mode={Mode}, Port={Port}, ConfigPath={ConfigPath}, ConfigLoadMs={ConfigLoadMs})",
                 deploymentContext.Mode,
                 deploymentContext.HttpPort,
-                cfgPath);
+                cfgPath,
+                configStopwatch.ElapsedMilliseconds);
             var exitCode = await orchestrator.RunAsync(
                 cliArgs,
                 cfg,
