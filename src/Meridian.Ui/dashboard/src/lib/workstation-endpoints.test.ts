@@ -126,6 +126,7 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationOperatorInboxEndpoint("  fund account/1  ")).toBe(
       "/api/workstation/operator/inbox?fundAccountId=fund+account%2F1"
     );
+    expect(workstationOperatorInboxEndpoint("")).toBe("/api/workstation/operator/inbox");
   });
 
   it("builds workflow preset endpoints from the shared preset root", () => {
@@ -279,6 +280,9 @@ describe("workstation API endpoint catalog", () => {
     expect(reconciliationRunEndpoint("recon / 1")).toBe("/api/workstation/reconciliation/runs/recon%20%2F%201");
     expect(reconciliationBreakQueueEndpoint({ status: "Open", fundAccountId: "fund / 1" })).toBe(
       "/api/workstation/reconciliation/break-queue?status=Open&fundAccountId=fund+%2F+1"
+    );
+    expect(reconciliationBreakQueueEndpoint({ fundAccountId: " fund / 1 " })).toBe(
+      "/api/workstation/reconciliation/break-queue?fundAccountId=fund+%2F+1"
     );
     expect(reconciliationBreakEndpoint("break / 1")).toBe("/api/workstation/reconciliation/break-queue/break%20%2F%201");
     expect(reconciliationBreakAuditEndpoint("break / 1")).toBe(

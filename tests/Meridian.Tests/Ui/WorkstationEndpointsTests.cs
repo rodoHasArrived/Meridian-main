@@ -1297,6 +1297,64 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldKeepHighSeverityRoutesResolvable()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-inbox-route-resolution-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+        await app.Services.GetRequiredService<IReconciliationRunService>().RunAsync(new ReconciliationRunRequest(runId));
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        var routeCriticalItems = inbox!.Items
+            .Where(item => item.Tone is OperatorWorkItemToneDto.Critical or OperatorWorkItemToneDto.Warning)
+            .ToArray();
+
+        routeCriticalItems.Should().NotBeEmpty();
+        routeCriticalItems.Should().OnlyContain(item =>
+            !string.IsNullOrWhiteSpace(item.Workspace) &&
+            !string.IsNullOrWhiteSpace(item.TargetPageTag) &&
+            !string.IsNullOrWhiteSpace(item.TargetRoute) &&
+            item.TargetRoute.StartsWith("/", StringComparison.Ordinal));
+
+        routeCriticalItems.Should().Contain(item =>
+            item.Kind == OperatorWorkItemKindDto.PaperReplay &&
+            item.TargetRoute == UiApiRoutes.WorkstationTradingReadiness &&
+            item.TargetPageTag == "TradingShell");
+        routeCriticalItems.Should().Contain(item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue &&
+            item.TargetPageTag == "AccountingShell");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldReturnDeterministicOrderingAcrossPollingRequests()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        var first = await client.GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+        var second = await client.GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        first!.Items.Select(item => item.WorkItemId)
+            .Should()
+            .Equal(second!.Items.Select(item => item.WorkItemId));
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeOlderRunReviewPacketBlockersWhenLatestRunIsClean()
     {
         await using var app = await CreateAppAsync(services =>
