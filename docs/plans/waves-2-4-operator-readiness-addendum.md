@@ -2,8 +2,14 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, Execution, Governance, and Platform contributors
-**Last Updated:** 2026-05-08
+**Last Updated:** 2026-05-18
 **Status:** Active addendum - converts the canonical Waves 2-4 roadmap into concrete workstreams with ownership lanes, dependency rules, and exit criteria
+
+Planning review note 2026-05-18: this addendum remains the active dependency plan for Waves 2-4.
+It should be interpreted through the browser-first operator UI lane, retained-WPF support policy,
+the consolidated current-direction entry point in
+[`current-direction-and-status.md`](current-direction-and-status.md), and the active plan index in
+[`README.md`](README.md).
 
 ---
 
@@ -50,6 +56,7 @@ Current shell-support evidence also includes Welcome readiness progress for prov
 
 It should be read with:
 
+- [`current-direction-and-status.md`](current-direction-and-status.md)
 - [`trading-workstation-migration-blueprint.md`](trading-workstation-migration-blueprint.md)
 - [`paper-trading-cockpit-reliability-sprint.md`](paper-trading-cockpit-reliability-sprint.md)
 - [`brokerage-portfolio-sync-blueprint.md`](brokerage-portfolio-sync-blueprint.md)

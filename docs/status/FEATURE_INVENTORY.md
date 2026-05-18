@@ -1,10 +1,10 @@
 # Meridian — Feature Inventory
 
-**Version:** 1.7.12
-**Date:** 2026-05-15
+**Version:** 1.7.13
+**Date:** 2026-05-18
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
-Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md) (2026-04-29 differentiation filter and archive rule), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
+Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) (consolidated current direction, status, and plan-file roles), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md) (2026-04-29 differentiation filter and archive rule), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
 
 ---
 
@@ -26,9 +26,9 @@ These modules describe Meridian's sellable product direction. They are conservat
 
 | Module | Status | Current evidence and remaining work |
 | --- | --- | --- |
-| Meridian Assurance Loop | 🔄 | Product framing for trusted data -> research -> paper trading -> ledger/reconciliation -> governed report pack. Support evidence exists across DK1, readiness, shared run, reconciliation, and report-pack seams; end-to-end acceptance remains open. |
+| Meridian Assurance Loop | 🔄 | Product framing for trusted data -> research -> paper trading -> ledger/reconciliation -> governed report pack. `PilotAcceptanceHarnessTests` now provides executable support evidence for the eight-stage golden path and writes `artifacts/pilot-acceptance/latest/pilot-readiness.json`; operator/browser acceptance remains open. |
 | Meridian Evidence OS | 🔄 | Umbrella product positioning for the evidence graph, vault, completeness scoring, decision lineage, approval packets, replay verification, report-line provenance, and governed report packs. Shared evidence APIs and a browser Evidence Workbench are now support evidence, but this is not a delivered platform layer. |
-| Run Evidence Graph | 🔄 | Shared evidence services now expose subject, packet, graph, validation, template, and manifest-export seams for strategy-run, paper-readiness, reconciliation-review, report-pack, provider-trust, and analysis-export subjects. The canonical cross-lifecycle graph, approval retention, and report-line drilldown remain open. |
+| Run Evidence Graph | 🔄 | Shared evidence services now expose subject, packet, graph, validation, template, and manifest-export seams for strategy-run, paper-readiness, reconciliation-review, report-pack, provider-trust, and analysis-export subjects. The pilot acceptance artifact now records cross-stage evidence graph edges and source evidence IDs; broader approval retention and report-line drilldown remain open. |
 | Governed Report Pack Studio | 🔄 | Early support exists through report-pack schema/version checks, export/reporting seams, governed output direction, and a browser Reporting task panel for report-pack review targets, selected-profile preview/export-analysis actions, and backend links that distinguish concrete GET navigation from reference-only POST export mutations. Browser studio workflow and retained approval/restatement lifecycle remain open. |
 | Reconciliation Casework Module | 🔄 | Early in progress through file-backed break queues, seeded owner/tolerance/sign-off metadata, audit history, and calibration-summary rollups. Durable generalized casework, SLA/aging, comments, and full close workflow remain open. |
 | Accounting-Grade Paper Trading | 🔄 | Support evidence exists through paper sessions, replay/audit metadata, order/fill/ledger count checks, and readiness gates. Paper books, journal-entry review, trial-balance impact, and reconciliation-ready accounting views remain open. |
@@ -731,5 +731,5 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-_Last Updated: 2026-05-12_
+_Last Updated: 2026-05-18_
 

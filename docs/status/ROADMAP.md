@@ -1,8 +1,8 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-05-15
+**Last Updated:** 2026-05-18
 **Status:** Active productization — the narrow Wave 1 trust gate is repo-closed, DK1 provider trust now has a signed 2026-04-27 pilot replay/sample-set parity packet, valid packet-bound operator sign-off, and cockpit readiness projection; Waves 2-4 remain the core operator-readiness path. New desktop feature development is paused, and the active operator UI lane is now the browser workstation in `src/Meridian.Ui/dashboard/` with built assets served from `src/Meridian.Ui/wwwroot/workstation/`. The WPF workspace-shell baseline remains retained support evidence for shared contracts, regression fixes, and compatibility checks. Current post-May-9 deltas add Security Master/UFL reference-data projection support, browser provider-setup validation handoffs, browser Data backfill queue dense-table selection, browser Trading loading-state panel and Recent Fills detail support, browser Live Quotes trade-detail selection plus quick-trade readiness handoffs, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, Quant Lab plot view-model extraction, Quant Notebook cell/data-fetch helpers, crash-safe shared UI persistence, WPF Data shell feature-module support, Overview Today panel support, local Price Alerts, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail state at `/strategy/covered-call`, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, and view-model-owned browser workflow polish for hash-aware command routing, query-string route focus for subject/symbol handoffs, Portfolio brokerage-sync next actions, Watchlist no-quote/empty-state copy, Overview status/refresh presentation, Reporting report-pack actions and endpoint-link safety, Security Master lot-detail/conflict refresh state, and UTC Trading readiness labels; they are support evidence, not wave exits.
-**Repository Snapshot (2026-05-15 current repo):** solution/build/test project files: 43 | `src/` project files: 27 | test projects: 9 | workflow files: 44
+**Repository Snapshot (2026-05-15 current repo; retained during the 2026-05-18 planning review):** solution/build/test project files: 43 | `src/` project files: 27 | test projects: 9 | workflow files: 44
 
 Meridian is no longer primarily blocked on missing platform primitives. The repo already contains strong market-data, storage, replay, backtesting, execution, ledger, workstation, and Security Master foundations. The remaining delivery problem is now narrower and more product-shaped: prove operator trust, close workflow gaps, and deepen governance in one browser-first operator UI without letting the product split into parallel subsystems.
 
@@ -39,6 +39,7 @@ The documentation rule attached to this positioning is explicit: prior plans, UI
 
 Use this document with:
 
+- [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) - consolidated current direction, status, and plan-file roles
 - [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md) - current capability status
 - [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) - normalized non-assembly backlog
 - [`IMPROVEMENTS.md`](IMPROVEMENTS.md) - completed improvement history
@@ -54,6 +55,30 @@ Use this document with:
 - [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md) - current short-horizon execution plan
 - [`../plans/waves-2-4-operator-readiness-addendum.md`](../plans/waves-2-4-operator-readiness-addendum.md) - concrete owner-based workstreams, dependencies, and exit criteria for the active Waves 2-4 path
 - [`../plans/web-ui-development-pivot.md`](../plans/web-ui-development-pivot.md) - current web-first operator UI direction
+
+---
+
+## 2026-05-18 Planning Review
+
+The project plan set was reviewed against the current `AGENTS.md` direction, shared Codex project
+context, and the active roadmap source map. The consolidated planning entry point is now
+[`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md), with
+[`../plans/README.md`](../plans/README.md) retaining the detailed file-by-file classification. The
+controlling interpretation is unchanged: Waves 2-4 are the core operator-readiness path, new
+operator UI work belongs in the browser workstation, retained WPF work is
+compatibility/support/regression evidence, and mobile-specific product lanes remain out of scope.
+Plan documents that are target-state packages, optional tracks, or later-wave blueprints remain
+active only in the role named by the plan index; they do not alter the wave status table below.
+
+Implementation follow-up on the acceleration plan: the golden-path pilot harness is now treated as
+the executable proof lane. `PilotAcceptanceHarnessTests` exercises the shared service and endpoint
+path for trusted data, research run, run comparison, paper promotion, paper session replay,
+portfolio/ledger review, reconciliation, and governed report pack, then writes
+`artifacts/pilot-acceptance/latest/pilot-readiness.json`. The `golden-path-validation.yml`
+workflow runs that harness, validates the pilot dashboard renderer, generates the markdown/JSON
+dashboard under `artifacts/pilot-acceptance/latest/`, and uploads `pilot-acceptance-evidence`.
+This is W2-W4 support evidence and a stronger acceleration mechanism; W2, W3, and W4 remain
+`In Progress` until operator/browser acceptance and governance sign-off criteria are met.
 
 ---
 

@@ -1,0 +1,170 @@
+using Meridian.Application.Config.Credentials;
+using Meridian.Application.FundStructure;
+using Meridian.Application.SecurityMaster;
+using Meridian.Application.Services;
+using Meridian.Application.UI;
+using Meridian.Backtesting;
+using Meridian.Backtesting.Engine;
+using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
+using Meridian.Contracts.Workstation;
+using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Storage;
+using Meridian.Storage.Services;
+using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Promotions;
+using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
+using Meridian.Ui.Shared;
+using Meridian.Ui.Shared.Evidence;
+using Meridian.Ui.Shared.Services.CoveredCall;
+using Meridian.Ui.Shared.Workflows;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
+
+namespace Meridian.Ui.Shared.Services;
+
+/// <summary>
+/// Registers the shared web-workstation service graph consumed by endpoint and host surfaces.
+/// </summary>
+public static class WorkstationServiceCollectionExtensions
+{
+    public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services)
+    {
+        services.TryAddSingleton<ConfigStore>(sp =>
+        {
+            var core = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>();
+            return new ConfigStore(core.ConfigPath);
+        });
+
+        // The UI coordinator wraps the core coordinator and adds preview support for workstation flows.
+        services.AddSingleton<BackfillCoordinator>(sp =>
+        {
+            var configStore = sp.GetRequiredService<ConfigStore>();
+            var registry = sp.GetService<ProviderRegistry>();
+            var factory = sp.GetService<ProviderFactory>();
+            return new BackfillCoordinator(configStore, registry, factory);
+        });
+
+        services.AddMemoryCache();
+        services.TryAddSingleton<UserProfileRegistry>();
+        services.TryAddSingleton<LoginSessionService>();
+        services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
+        services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
+
+        services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
+        services.TryAddSingleton(PromotionRecordStoreOptions.Default);
+        services.TryAddSingleton<IPromotionRecordStore>(sp =>
+            new JsonlPromotionRecordStore(
+                sp.GetRequiredService<PromotionRecordStoreOptions>(),
+                sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
+        services.TryAddSingleton(StrategyDesignStoreOptions.Default);
+        services.TryAddSingleton<IStrategyDesignRepository>(sp =>
+            new JsonlStrategyDesignRepository(
+                sp.GetRequiredService<StrategyDesignStoreOptions>(),
+                sp.GetRequiredService<ILogger<JsonlStrategyDesignRepository>>()));
+        services.TryAddSingleton<StrategyDesignService>();
+        services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
+        services.TryAddSingleton<PortfolioReadService>();
+        services.TryAddSingleton<LedgerReadService>();
+        services.TryAddSingleton<StrategyRunReadService>();
+        services.TryAddSingleton<CashFlowProjectionService>();
+        services.TryAddSingleton<StrategyRunContinuityService>();
+
+        services.TryAddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
+        services.TryAddSingleton<BrokerageConnectionService>();
+        services.TryAddSingleton<AlpacaBrokerageConnectionService>();
+        services.TryAddSingleton<ProviderConnectionLifecycleService>();
+        services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
+        services.TryAddSingleton<BrokeragePortfolioSyncService>();
+
+        services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
+        services.TryAddSingleton<Dk1TrustGateReadinessService>();
+        services.TryAddSingleton<TradingOperatorReadinessService>();
+        services.TryAddSingleton<RiskRuleRuntimeService>();
+        services.TryAddSingleton<StrategyRunReviewPacketService>();
+        services.TryAddSingleton<BacktestToLivePromoter>();
+        services.TryAddSingleton<PromotionService>();
+        services.TryAddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();
+        services.TryAddSingleton<NavAttributionService>();
+        services.TryAddSingleton<ReportGenerationService>();
+        services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<FileGovernanceReportPackRepository>>();
+            return new FileGovernanceReportPackRepository(ResolveWorkstationDataDirectory(), logger);
+        });
+        services.TryAddSingleton<FundOperationsWorkspaceReadService>();
+
+        services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
+        services.TryAddSingleton<IStrategyPortfolioReconciliationSourceAdapter, StrategyPortfolioReconciliationSourceAdapter>();
+        services.TryAddSingleton<IInternalCashReconciliationSourceAdapter, BankInternalCashReconciliationSourceAdapter>();
+        services.TryAddSingleton<IExternalStatementSource, NullExternalStatementSource>();
+        services.TryAddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
+        services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();
+            return new FileReconciliationBreakQueueRepository(ResolveWorkstationDataDirectory(), logger);
+        });
+        services.TryAddSingleton<ReconciliationProjectionService>();
+        services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
+
+        services.AddWorkflowLibrary();
+        services.AddEvidenceWorkflowFabric();
+        services.TryAddSingleton<WorkstationWorkflowSummaryService>();
+        services.AddCoveredCallBacktestServices();
+
+        return services;
+    }
+
+    public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services)
+    {
+        services.TryAddSingleton<LeanAutoExportService>();
+        services.AddHostedService(sp => sp.GetRequiredService<LeanAutoExportService>());
+        return services;
+    }
+
+    private static void AddCoveredCallBacktestServices(this IServiceCollection services)
+    {
+        services.AddOptions<CoveredCallBacktestOptions>()
+            .BindConfiguration(CoveredCallBacktestOptions.SectionName);
+
+        services.TryAddSingleton<ICoveredCallChainProviderFactory, CoveredCallChainProviderFactory>();
+        services.TryAddSingleton<Func<BacktestRequest, BacktestEngine>>(sp =>
+        {
+            BacktestEngine CreateEngine(BacktestRequest request)
+            {
+                var storageOptions = new StorageOptions { RootPath = request.DataRoot };
+                var catalogService = new StorageCatalogService(request.DataRoot, storageOptions);
+                return new BacktestEngine(
+                    sp.GetRequiredService<ILogger<BacktestEngine>>(),
+                    catalogService,
+                    sp.GetService<ContractSecurityMasterQueryService>(),
+                    sp.GetService<ICorporateActionAdjustmentService>(),
+                    sp.GetService<IBacktestPreflightService>());
+            }
+
+            return CreateEngine;
+        });
+
+        services.TryAddSingleton<CoveredCallBacktestService>(sp => new CoveredCallBacktestService(
+            engineFactory: sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>(),
+            chainFactory: sp.GetRequiredService<ICoveredCallChainProviderFactory>(),
+            runRepository: sp.GetRequiredService<IStrategyRepository>(),
+            options: sp.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<CoveredCallBacktestOptions>>(),
+            resultCache: sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
+            loggerFactory: sp.GetRequiredService<ILoggerFactory>()));
+        services.TryAddSingleton<ICoveredCallBacktestService>(sp => sp.GetRequiredService<CoveredCallBacktestService>());
+        services.AddHostedService(sp => sp.GetRequiredService<CoveredCallBacktestService>());
+    }
+
+    private static string ResolveWorkstationDataDirectory()
+        => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Meridian",
+            "workstation");
+}

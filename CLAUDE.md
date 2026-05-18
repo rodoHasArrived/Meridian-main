@@ -28,6 +28,8 @@ Current local project path: `C:\Dev\Meridian-main`.
 
 ## Current Product Direction
 
+- Start planning work from `docs/plans/current-direction-and-status.md`, then use
+  `docs/plans/README.md` for detailed plan-file roles.
 - Active operator UI work belongs in `src/Meridian.Ui/dashboard/`.
 - Built browser-workstation assets live in `src/Meridian.Ui/wwwroot/workstation/`.
 - Shared read-model and endpoint support belongs in `src/Meridian.Ui.Services/` and

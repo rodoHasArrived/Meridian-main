@@ -16,6 +16,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `docs/development/desktop-testing-guide.md` for WPF test slices and shell-first regression bundles.
 - `docs/development/wpf-implementation-notes.md` for WPF shell routing, workspace surfaces, and focused validation guidance.
 - `docs/plans/web-ui-development-pivot.md` for the active browser-first operator UI pivot.
+- `docs/plans/current-direction-and-status.md` for the consolidated current planning interpretation and plan-file roles.
 - `docs/plans/evidence-backed-investment-operations-plan.md` for the active differentiation plan and archive rule.
 - `docs/development/documentation-automation.md` for local docs automation profiles and generated-docs rules.
 - `docs/operations/msix-packaging.md` for desktop MSIX packaging and install workflows.

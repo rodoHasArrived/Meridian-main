@@ -2,10 +2,10 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, and delivery leads
-**Last Updated:** 2026-05-12
+**Last Updated:** 2026-05-18
 **Status:** Active implementation backlog
 
-> **UI lane refresh (2026-05-12):** The browser workstation is the active
+> **UI lane refresh (2026-05-18):** The browser workstation is the active
 > operator UI lane again. Backlog items that touch operator workflow should use
 > shared contracts, local/web API endpoints, or shared read models first, then
 > land browser-visible surfaces in `src/Meridian.Ui/dashboard/`. WPF remains a

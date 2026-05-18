@@ -1,8 +1,9 @@
 # Governance and Fund Operations Blueprint
 
-**Last Updated:** 2026-05-12
+**Last Updated:** 2026-05-18
 
 This blueprint is subordinate to
+[`current-direction-and-status.md`](current-direction-and-status.md) and
 [`evidence-backed-investment-operations-plan.md`](evidence-backed-investment-operations-plan.md)
 and should be read as the Wave 4 implementation shape for the accounting, reconciliation, and
 governed-output parts of Meridian's active differentiation plan.

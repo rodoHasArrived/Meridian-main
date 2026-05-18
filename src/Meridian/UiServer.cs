@@ -6,17 +6,14 @@ using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
-using Meridian.Application.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Domain.Collectors;
 using Meridian.Execution;
-using Meridian.Execution.Adapters;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
-using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.QuantScript;
 using Meridian.Strategies.Interfaces;
@@ -24,9 +21,7 @@ using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
-using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
-using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -94,22 +89,8 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddMarketDataServices(compositionOptions);
         builder.Services.AddSingleton(_lifecycle);
 
-        // Register the Ui.Shared ConfigStore wrapper so endpoint lambdas can resolve it from DI.
-        // The wrapper delegates to the core ConfigStore already registered by AddMarketDataServices.
-        builder.Services.AddSingleton<Meridian.Ui.Shared.Services.ConfigStore>(sp =>
-        {
-            var core = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>();
-            return new Meridian.Ui.Shared.Services.ConfigStore(core.ConfigPath);
-        });
-
-        // Register the Ui.Shared BackfillCoordinator so endpoint lambdas can resolve it from DI.
-        builder.Services.AddSingleton<Meridian.Ui.Shared.Services.BackfillCoordinator>(sp =>
-        {
-            var configStore = sp.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
-            var registry = sp.GetService<ProviderRegistry>();
-            var factory = sp.GetService<ProviderFactory>();
-            return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore, registry, factory);
-        });
+        builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(contentRootPath, "data", "strategies", "designer")));
+        builder.Services.AddWorkstationSharedServices();
 
         builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
         {
@@ -123,54 +104,14 @@ public sealed class UiServer : IAsyncDisposable
                 () => null);
         });
 
-        // Register session-based authentication service
-        builder.Services.AddSingleton<Meridian.Ui.Shared.UserProfileRegistry>();
-        builder.Services.AddSingleton<LoginSessionService>();
-        builder.Services.AddSingleton<IStrategyRepository, StrategyRunStore>();
-        builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(contentRootPath, "data", "strategies", "designer")));
-        builder.Services.AddSingleton<IStrategyDesignRepository, JsonlStrategyDesignRepository>();
-        builder.Services.AddSingleton<StrategyDesignService>();
-        builder.Services.AddSingleton(PromotionRecordStoreOptions.Default);
-        builder.Services.AddSingleton<IPromotionRecordStore, JsonlPromotionRecordStore>();
-        builder.Services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
-        builder.Services.AddSingleton<PortfolioReadService>();
-        builder.Services.AddSingleton<LedgerReadService>();
-        builder.Services.AddSingleton<StrategyRunReadService>();
-        builder.Services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
-        builder.Services.AddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
-        builder.Services.AddSingleton<IStrategyPortfolioReconciliationSourceAdapter, StrategyPortfolioReconciliationSourceAdapter>();
-        builder.Services.AddSingleton<IInternalCashReconciliationSourceAdapter, BankInternalCashReconciliationSourceAdapter>();
-        builder.Services.AddSingleton<IExternalStatementSource, NullExternalStatementSource>();
-        builder.Services.AddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
-        builder.Services.AddSingleton<ReconciliationProjectionService>();
-        builder.Services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         builder.Services.AddSingleton<IReconciliationGovernanceAuditStore>(_ => new JsonlReconciliationGovernanceAuditStore(Path.Combine("artifacts", "reconciliation", "governance-audit.jsonl")));
         builder.Services.AddSingleton<ReconciliationGovernanceService>();
-        builder.Services.AddSingleton<CashFlowProjectionService>();
-        builder.Services.AddSingleton<StrategyRunContinuityService>();
-        builder.Services.AddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
-        builder.Services.AddSingleton<BrokerageConnectionService>();
-        builder.Services.AddSingleton<AlpacaBrokerageConnectionService>();
-        builder.Services.AddSingleton<ProviderConnectionLifecycleService>();
-        builder.Services.AddSingleton(BrokeragePortfolioSyncOptions.Default);
-        builder.Services.AddSingleton<BrokeragePortfolioSyncService>();
-        builder.Services.AddSingleton(Dk1TrustGateReadinessOptions.Default);
-        builder.Services.AddSingleton<Dk1TrustGateReadinessService>();
-        builder.Services.AddSingleton<TradingOperatorReadinessService>();
-        builder.Services.AddSingleton<RiskRuleRuntimeService>();
-        builder.Services.AddSingleton<StrategyRunReviewPacketService>();
-        builder.Services.AddWorkflowLibrary();
-        builder.Services.AddEvidenceWorkflowFabric();
-        builder.Services.AddSingleton<WorkstationWorkflowSummaryService>();
-        builder.Services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
         // Durable promotion-record store is required by PromotionService; without it
         // /api/promotion/approve and /api/promotion/reject fail DI resolution at runtime.
         builder.Services.AddSingleton<IPromotionRecordStore>(sp =>
             new JsonlPromotionRecordStore(
                 Path.Combine(contentRootPath, "data", "promotions"),
                 sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
-        builder.Services.AddSingleton<Meridian.Strategies.Services.PromotionService>();
-        builder.Services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchQueryService, Meridian.Application.SecurityMaster.SecurityMasterWorkbenchQueryService>();
         builder.Services.AddSingleton(ExecutionAuditTrailOptions.Default);
         builder.Services.AddSingleton<ExecutionAuditTrailService>();
         builder.Services.AddSingleton(ExecutionOperatorControlOptions.Default);

@@ -6,6 +6,11 @@
 
 Add Meridian-native brokerage and custodian portfolio syncing that imports external account state such as accessible accounts, positions, balances, open orders, fills, and cash transactions into Meridian's existing `fund account`, `portfolio`, `ledger`, `reconciliation`, `Accounting`, and `Reporting` workflows without turning market-data providers into portfolio-domain services.
 
+Planning review note 2026-05-18: this blueprint remains a Wave 3-4 continuity reference under the
+consolidated planning entry point in
+[`current-direction-and-status.md`](current-direction-and-status.md). It does not promote live
+integration readiness ahead of the paper-first and read-only trust gates.
+
 This should extend the existing execution and brokerage seams already present in:
 
 - `src/Meridian.Execution.Sdk/`

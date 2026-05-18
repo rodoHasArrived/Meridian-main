@@ -1,10 +1,16 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-05-15
-**Horizon:** Next 6 weeks
+**Last Updated:** 2026-05-18
+**Horizon:** 2026-05-18 through 2026-06-28
 **Status:** Short-horizon execution slice derived from the canonical roadmap and current DK readiness dashboard
 
-This document is the six-week execution slice of [`ROADMAP.md`](../status/ROADMAP.md). It is intentionally narrower than the canonical roadmap and advances the active Wave 2-4 core operator-readiness path while keeping the closed Wave 1 trust gate synchronized.
+This document is the six-week execution slice of [`ROADMAP.md`](../status/ROADMAP.md), interpreted through the consolidated current-direction entry point in [`current-direction-and-status.md`](current-direction-and-status.md). It is intentionally narrower than the canonical roadmap and advances the active Wave 2-4 core operator-readiness path while keeping the closed Wave 1 trust gate synchronized.
+
+Planning review note 2026-05-18: the plan remains the active short-horizon execution slice after
+the full `docs/plans` review and consolidated current-direction pass. It does not promote
+later-wave Backtest Studio, live-readiness, optional advanced research, or UFL target-state work
+ahead of the Wave 2 cockpit, Wave 3 continuity, Wave 4 governance, and Wave 1 trust-gate
+maintenance path.
 
 Use this with [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) when assigning owners, sequencing dependencies, or checking workstream-level exit criteria inside the active Waves 2-4 path.
 

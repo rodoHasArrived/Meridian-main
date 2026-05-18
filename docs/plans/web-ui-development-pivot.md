@@ -1,11 +1,15 @@
 # Web UI Development Pivot
 
-**Date:** 2026-05-13
+**Date:** 2026-05-18
 **Status:** Active direction
 
 ## Decision
 
 Pause new desktop-app feature development and continue operator UI delivery through the browser workstation in `src/Meridian.Ui/dashboard/`. Keep `src/Meridian.Wpf/` available for retained desktop support, shared-contract regression checks, and compatibility fixes, but do not start new WPF-first operator surfaces while this pivot is active.
+
+This pivot is interpreted through the consolidated current-direction entry point in
+[`current-direction-and-status.md`](current-direction-and-status.md). It is a current delivery
+policy for operator UI work, not a separate roadmap from the active Wave 2-4 path.
 
 New product behavior should land behind shared contracts, local/web API endpoints, or shared read
 models before any client-specific workflow is expanded. WPF remains one supported client, not the

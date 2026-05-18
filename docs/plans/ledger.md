@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-05-13
+**Last Updated:** 2026-05-18
 **Status:** Active execution roadmap; F# period management, PostgreSQL ledger persistence, ledger
 book/period APIs, period-close inbox routing, run-ledger drill-ins, and the first governed
 trial-balance report-pack artifact slice are complete. Accrual-to-ledger posting and

@@ -2,10 +2,10 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-05-12
+**Last Updated:** 2026-05-18
 **Status:** Active execution roadmap aligned to Wave 4 governance and fund-operations productization
 
-> **UI lane refresh (2026-05-12):** Browser workstation references in this
+> **UI lane refresh (2026-05-18):** Browser workstation references in this
 > roadmap are active again. New operator-facing governance, accounting,
 > reporting, and portfolio workflows should be shared-contract-first and
 > visible through `src/Meridian.Ui/dashboard/`; WPF remains retained support,

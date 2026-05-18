@@ -1,8 +1,8 @@
 # Plans
 
-**Last Reviewed:** 2026-05-13
+**Last Reviewed:** 2026-05-18
 
-This directory contains current Meridian execution plans, blueprints, and target-state packages. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); the files here are subordinate implementation plans, optional-track designs, or asset-package specifications.
+This directory contains current Meridian execution plans, blueprints, and target-state packages. Start with [current-direction-and-status.md](current-direction-and-status.md) for the consolidated planning interpretation. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); the remaining files here are subordinate implementation plans, optional-track designs, or asset-package specifications.
 
 Active planning direction:
 
@@ -10,7 +10,17 @@ Active planning direction:
 - New operator UI work belongs in the browser workstation under `src/Meridian.Ui/dashboard/`.
 - Retained WPF work is limited to shared contracts, regression fixes, compatibility evidence, and retained desktop support.
 - Top-level operator navigation remains `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`; legacy `Research`, `Data Operations`, and `Governance` names are compatibility or planning shorthand.
+- No mobile-specific product lane is active; responsive browser validation is allowed only for the browser workstation.
 - Completed, superseded, or historical plans belong under `archive/docs/`, not this active folder.
+
+## 2026-05-18 Review Result
+
+All active plan and roadmap files in this directory were reviewed for their current role. The
+consolidated current-direction document is now the first planning stop; the classification below
+remains the source of truth for detailed follow-up: core Wave 2-4 operator-readiness plans come
+first, later-wave productization follows, UFL target-state packages remain reference designs, and
+technical/optional tracks must not compete with the core operator-ready path unless a current
+roadmap decision pulls them forward.
 
 ## Core Operator-Ready Path
 
@@ -18,6 +28,7 @@ These are the active documents for Waves 2-4 and the current short-horizon execu
 
 | Document | Current role |
 | --- | --- |
+| [current-direction-and-status.md](current-direction-and-status.md) | Single consolidated planning entry point for current direction, project status, and document roles |
 | [evidence-backed-investment-operations-plan.md](evidence-backed-investment-operations-plan.md) | Product-category filter and archive rule for the active investment-operations direction |
 | [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current time-boxed execution slice for Waves 2-4 and trust-gate maintenance |
 | [waves-2-4-operator-readiness-addendum.md](waves-2-4-operator-readiness-addendum.md) | Owner lanes, dependencies, and exit criteria for Waves 2-4 |

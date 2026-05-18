@@ -1,15 +1,21 @@
 # Meridian - Opportunity Scan
 
-**Last Updated:** 2026-05-15
+**Last Updated:** 2026-05-18
 **Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, signed DK1 pilot sample-set/parity-packet evidence, packet-bound sign-off validation, cockpit readiness projection, the active browser workstation lane, the web Research run-library, Quant Notebook helpers, and Quant Lab support slices, shared workflow command-palette commands with hash-aware provider-setup routing, browser Portfolio dense-table detail selection and brokerage-sync next actions plus Portfolio/Reporting/Settings/Data task panels, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, browser Evidence Workbench and shared evidence packet/graph APIs, live quote/order-book/watchlist/Price Alerts market-context routes with selectable recent-trade detail inspection, Watchlist no-quote/empty-state copy, and quick-trade readiness handoffs, Overview Today panel, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, provider-setup validation handoffs, seeded no-host quote-demo fixtures, simplified browser rail/header chrome, browser Security Master search-result selection and details/lots/operator-override support with identity drill-ins, lot-detail, and conflict refresh state, UFL/reference-data projection endpoints, read-only/paper-first brokerage connection evidence, crash-safe shared UI persistence, retained WPF shell support evidence including the Data shell feature module, desktop workflow automation hardening, and scheduled/manual WPF screenshot evidence capture
 
 This document turns the current repository state into the next opportunity order. It is intentionally narrower than a full roadmap refresh: it identifies the best next opportunities, why they matter now, what they unlock, and where they belong in the active delivery sequence.
 
-Use this with [`ROADMAP.md`](ROADMAP.md), [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md), [`IMPROVEMENTS.md`](IMPROVEMENTS.md), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md), and [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md).
+Use this with [`ROADMAP.md`](ROADMAP.md), [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md), [`IMPROVEMENTS.md`](IMPROVEMENTS.md), [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md), and [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md).
 
 Use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md) as the golden-path productization filter for deciding whether a new opportunity strengthens the active pilot lifecycle or distracts from it.
 
 Archived or deprecated planning files should not be used as active opportunity sources unless a current roadmap document explicitly promotes one of their ideas back into the Wave 2-4 path.
+
+Planning review note 2026-05-18: all active plan files were reclassified through
+[`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) and
+[`../plans/README.md`](../plans/README.md). No optional advanced research, UFL target-state, or
+later-wave document outranks the Wave 2 cockpit, Wave 3 continuity, Wave 4 governance, and Wave 1
+trust-gate maintenance order below.
 
 ---
 

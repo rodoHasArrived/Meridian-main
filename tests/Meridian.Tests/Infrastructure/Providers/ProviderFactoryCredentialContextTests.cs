@@ -1,5 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Config;
+using Meridian.Application.Config.Credentials;
+using Meridian.Application.Services;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
@@ -28,6 +30,43 @@ public sealed class ProviderFactoryCredentialContextTests
             });
 
         context.Get("POLYGON_API_KEY").Should().Be("config-polygon-key");
+    }
+
+    [Fact]
+    public async Task StoredProviderCredentialResolver_CreateContext_UsesEncryptedStoreBeforeConfigFallback()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-factory-store", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var store = new FileProviderCredentialStore(root);
+            await store.SaveAsync(new ProviderCredentialSaveRequest(
+                "polygon",
+                new Dictionary<string, string?>
+                {
+                    ["ApiKey"] = "stored-polygon-key"
+                },
+                Actor: "test"));
+            var resolver = new StoredProviderCredentialResolver(
+                store,
+                new EnvironmentCredentialResolver());
+
+            var context = resolver.CreateContext(
+                typeof(PolygonHistoricalDataProvider),
+                new Dictionary<string, string?>(StringComparer.Ordinal)
+                {
+                    ["POLYGON_API_KEY"] = "config-polygon-key"
+                });
+
+            context.Get("POLYGON_API_KEY").Should().Be("stored-polygon-key");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
     }
 
     [Fact]

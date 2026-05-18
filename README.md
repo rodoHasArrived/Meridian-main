@@ -15,6 +15,7 @@ Current local project path: `C:\Dev\Meridian-main`.
 - [Build, Test, Run](docs/developer/build-test-run.md)
 - [Publish Standalone EXE](docs/developer/publish-standalone-exe.md)
 - [Project Roadmap](docs/status/ROADMAP.md)
+- [Current Direction and Status](docs/plans/current-direction-and-status.md)
 - [Feature Inventory](docs/status/FEATURE_INVENTORY.md)
 - [Improvements Tracker](docs/status/IMPROVEMENTS.md)
 - [Cleanup and Maintenance](docs/operations/cleanup-and-maintenance.md)
@@ -213,6 +214,7 @@ Build safety note:
 
 Use these documents together when planning or implementing new work:
 
+- [docs/plans/current-direction-and-status.md](docs/plans/current-direction-and-status.md) for the consolidated current direction, status, and plan-file roles
 - [docs/status/ROADMAP_COMBINED.md](docs/status/ROADMAP_COMBINED.md) for the shortest roadmap and target-state summary
 - [docs/status/ROADMAP.md](docs/status/ROADMAP.md) for the canonical wave order: Wave 1 provider confidence and checkpoint evidence, Wave 2 paper-trading cockpit hardening, Wave 3 shared run / portfolio / ledger continuity, and Wave 4 governance and fund-operations productization on top of the delivered Security Master baseline
 - [docs/plans/evidence-backed-investment-operations-plan.md](docs/plans/evidence-backed-investment-operations-plan.md) for the product-category filter, commercial differentiation bets, sequencing rule, and archive-placement rule
@@ -1600,6 +1602,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── covered-call-writing-slice-1-blueprint.md
+│   │   ├── current-direction-and-status.md
 │   │   ├── evidence-backed-investment-operations-plan.md
 │   │   ├── fund-management-module-implementation-backlog.md
 │   │   ├── fund-management-pr-sequenced-roadmap.md

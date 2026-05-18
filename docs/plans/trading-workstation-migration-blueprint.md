@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, and Platform contributors
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-05-18
 **Status:** Active blueprint — the active operator UI implementation lane is now the web dashboard in `src/Meridian.Ui/dashboard/`, with WPF retained for compatibility, support fixes, and shared-contract regression evidence. The WPF shell/navigation baseline remains implemented support evidence; signed DK1 trust-gate state and risk/control audit explainability now project into the trading readiness lane and retained WPF Trading desk briefing hero with stale replay count detail plus warning/critical shared-work-item blockers. The web Research run library now provides the first browser support slice for retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, and refreshed built workstation assets. Workflow validation and cockpit/shared-model/governance hardening remain in progress.
 
 ---
@@ -68,7 +68,8 @@ The newest shell support slice adds Welcome readiness progress for provider conn
 
 - Make **Strategy Run** the central product object across backtest, paper, and live modes.
 - Promote **Portfolio + Ledger** from internal implementation detail to first-class user experience.
-- Consolidate desktop navigation into **workflow workspaces**.
+- Consolidate visible product navigation into **workflow workspaces** while retaining WPF
+  compatibility routes only where they support shared contracts or desktop support.
 - Unify native and Lean backtesting under a single operator-facing model.
 - Evolve paper trading into a realistic pre-live operating environment.
 
@@ -83,32 +84,45 @@ The newest shell support slice adds Welcome readiness progress for provider conn
 
 ## 4. Target Product Information Architecture
 
-The target UX is organized around four top-level workspaces.
+The target UX is organized around seven visible browser-workstation workspaces:
+`Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+Retained WPF compatibility routes may still use legacy labels such as `Research`,
+`Data Operations`, and `Governance`, but those names are aliases or planning shorthand, not the
+default product navigation.
 
-## 4.1 Research
+## 4.1 Data
 
-**Purpose:** Explore data, validate coverage, run experiments, compare results.
+**Purpose:** Establish trusted provider, symbol, storage, replay, backfill, and export evidence.
 
 **Consolidates / fronts:**
 
-- BacktestPage
-- LeanIntegrationPage (backtest functions)
-- ChartingPage
-- EventReplayPage
-- DataCalendarPage
-- AdvancedAnalyticsPage
-- AnalysisExport pages when used as research output
+- provider setup and health
+- live quotes, order book, watchlists, and price alerts
+- backfill, storage, symbol, package, and data-quality workflows
+- Security Master reference-data readiness where it is part of data trust
+
+## 4.2 Strategy
+
+**Purpose:** Turn trusted data into reviewed runs, comparisons, promotion packets, QuantScript
+handoffs, visual strategy design, and research evidence.
+
+**Consolidates / fronts:**
+
+- Backtest and Lean research surfaces
+- run library, run comparison, promotion history, and review-packet workflows
+- QuantScript, Quant Lab, notebook, and strategy-designer workflows
+- research exports when used as evidence for a run or promotion
 
 **Primary tasks:**
 
-- choose dataset
-- validate coverage / data quality
+- choose dataset and strategy inputs
 - run backtests
 - compare multiple runs
 - inspect fills and attribution
+- review promotion readiness
 - export research outputs
 
-## 4.2 Trading
+## 4.3 Trading
 
 **Purpose:** Operate strategies in paper mode now, live mode later, with clear risk and audit controls.
 
@@ -128,34 +142,52 @@ The target UX is organized around four top-level workspaces.
 - pause / stop / flatten safely
 - promote strategy configuration from backtest to paper to live
 
-## 4.3 Data Operations
+## 4.4 Portfolio
 
-**Purpose:** Manage providers, symbols, backfills, storage, and export operations.
+**Purpose:** Inspect account posture, positions, exposure, attribution, household rollups, brokerage
+sync evidence, and balance evidence created by research, paper, and read-only account-sync flows.
 
-**Consolidates / fronts:**
+**Primary tasks:**
 
-- BackfillPage
-- SymbolsPage
-- SymbolMappingPage
-- SymbolStoragePage
-- StoragePage
-- ScheduleManagerPage
-- Provider pages
-- PackageManagerPage
-- export and packaging flows when used operationally
+- review positions and exposure
+- inspect brokerage-sync freshness and divergence
+- drill from run or symbol context into portfolio impact
+- hand off to Trading readiness, Accounting, or Reporting evidence when needed
 
-## 4.4 Governance
+## 4.5 Accounting
 
-**Purpose:** Risk, ledger, diagnostics, audit trail, notifications, and settings.
+**Purpose:** Review ledger, cash-flow, trial-balance, reconciliation, Security Master, and sign-off
+casework on the same shared evidence model.
 
 **Consolidates / fronts:**
 
-- portfolio ledger views
-- diagnostics
-- notifications
-- retention / archival assurance
-- settings
-- credential / integration safety surfaces
+- run ledger, cash-flow, trial-balance, and reconciliation views
+- Security Master coverage, identity, lot, override, and conflict review
+- fund/account/entity posture where the workflow is accounting-led
+
+## 4.6 Reporting
+
+**Purpose:** Convert governed evidence into retained report packs, exports, approvals, and
+restatement-ready artifacts.
+
+**Primary tasks:**
+
+- preview report-pack readiness
+- inspect evidence packets and graph lineage
+- generate, approve, export, and retain governed outputs
+- drill report lines back to source run, portfolio, ledger, reconciliation, and approval evidence
+
+## 4.7 Settings
+
+**Purpose:** Keep credentials, storage roots, backend capability coverage, environment posture, and
+operator configuration reproducible.
+
+**Primary tasks:**
+
+- configure providers and credential posture
+- repair setup blockers from readiness workflows
+- review API capability coverage and storage/evidence paths
+- keep paper-first and live-gated workflow settings explicit
 
 ---
 
@@ -224,7 +256,7 @@ These services should sit above raw engine/service primitives and below UI view 
 
 ## 6. Target UI Surfaces
 
-## 6.1 Research workspace
+## 6.1 Strategy workspace
 
 **Default layout**
 
@@ -250,18 +282,13 @@ These services should sit above raw engine/service primitives and below UI view 
 - flatten positions
 - acknowledge risk alerts
 
-## 6.3 Portfolio & Ledger workspace
+## 6.3 Portfolio, Accounting, and Reporting workspaces
 
-**Primary tabs**
+**Primary surfaces**
 
-- Overview
-- Positions
-- Exposure
-- Cash & Financing
-- Journal
-- Trial Balance
-- P&L Attribution
-- Audit Trail
+- Portfolio: overview, positions, exposure, attribution, brokerage-sync posture, and balance evidence
+- Accounting: cash and financing, journal, trial balance, reconciliation, Security Master coverage, and sign-off casework
+- Reporting: report-pack readiness, evidence workbench, artifact generation, approval, retention, and provenance drill-ins
 
 ## 6.4 Web workstation and local API direction
 
@@ -342,9 +369,10 @@ RunCashFlow now has a WPF evidence-state pass for selected-run, missing-run, no-
 
 - Backtesting feels like one product capability with multiple engines, not separate tools.
 
-## Phase 4 — Portfolio & Ledger first-class UX
+## Phase 4 — Portfolio, Accounting, and Reporting first-class UX
 
-**Goal:** Surface accounting and portfolio state as operator-visible product features.
+**Goal:** Surface portfolio, ledger, accounting, reconciliation, and governed-output state as
+operator-visible product features.
 
 **Work**
 

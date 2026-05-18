@@ -93,7 +93,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
                 repo_root
                 / "artifacts"
                 / "publish"
-                / "web-workstation-installer"
+                / "web-workstation"
                 / "win-x64"
                 / "Meridian.exe",
                 "fake executable",
@@ -136,7 +136,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             self.assertIn('"Synthetic"', appsettings)
             launcher = (install_root / "Launch-MeridianWebWorkstation.ps1").read_text()
             self.assertIn("--mode", launcher)
-            self.assertIn("desktop", launcher)
+            self.assertIn("workstation", launcher)
             self.assertIn("http://localhost:$Port/workstation/", launcher)
             self.assertIn("web-workstation-runtime.json", launcher)
             self.assertIn("X-Meridian-Shutdown-Token", launcher)
@@ -150,7 +150,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         self.assertIn("src\\Meridian.Ui\\wwwroot\\workstation", script)
         self.assertIn("wwwroot\\workstation", script)
         self.assertIn("--mode", script)
-        self.assertIn("desktop", script)
+        self.assertIn("workstation", script)
         self.assertIn("--config", script)
         self.assertIn("Meridian Web Workstation.lnk", script)
         self.assertIn("Stop Meridian Web Workstation.lnk", script)
@@ -239,7 +239,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         self.assertIn("-NoDesktopShortcut", smoke_script)
         self.assertIn("-NoStartMenuShortcut", smoke_script)
         self.assertIn("Meridian.exe", smoke_script)
-        self.assertIn("--mode desktop --http-port", smoke_script)
+        self.assertIn("--mode workstation --http-port", smoke_script)
         self.assertIn("MDC_AUTH_MODE = \"optional\"", smoke_script)
         self.assertIn("MDC_USERS = $null", smoke_script)
         self.assertIn("-MaximumRedirection 0", smoke_script)

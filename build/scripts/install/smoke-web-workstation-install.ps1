@@ -381,7 +381,7 @@ try {
     $env:MDC_USERNAME = $null
     $env:MDC_PASSWORD = $null
     $env:MDC_SHUTDOWN_TOKEN = $shutdownToken
-    $hostArgumentLine = '--mode desktop --http-port {0} --config "{1}"' -f $portToUse, $configPath.Replace('"', '\"')
+    $hostArgumentLine = '--mode workstation --http-port {0} --config "{1}"' -f $portToUse, $configPath.Replace('"', '\"')
     $hostProcess = Start-Process `
         -FilePath $exePath `
         -ArgumentList $hostArgumentLine `

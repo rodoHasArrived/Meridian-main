@@ -1,6 +1,7 @@
 // IHttpClientFactory lives in Microsoft.Extensions.Http (transitively available)
 using System.Net.Http;
 using Meridian.Application.Config;
+using Meridian.Application.Config.Credentials;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Services;
@@ -42,7 +43,11 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<IProviderCredentialResolver>(sp =>
         {
             var configService = sp.GetRequiredService<ConfigurationService>();
-            return new ConfigurationServiceCredentialAdapter(configService);
+            var fallback = new ConfigurationServiceCredentialAdapter(configService);
+            var credentialStore = sp.GetService<IProviderCredentialStore>();
+            return credentialStore is null
+                ? fallback
+                : new StoredProviderCredentialResolver(credentialStore, fallback);
         });
 
         // Register the unified ProviderRegistry as singleton

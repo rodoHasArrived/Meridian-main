@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, operations, and stakeholders
-**Last Updated:** 2026-05-12
+**Last Updated:** 2026-05-18
 **Status:** Active planning document; subordinate to the canonical wave model in [`../status/ROADMAP.md`](../status/ROADMAP.md)
 
 > Current-state refresh (2026-04-27): keep this matrix as a broad product-vision view, not a
@@ -18,7 +18,7 @@
 > investment operations**. Read this matrix through the trusted data -> research -> paper ->
 > books -> reconciliation -> governed report path rather than as a generic front-to-back suite.
 >
-> UI lane refresh (2026-05-12): the visible operator shell is now the
+> UI lane refresh (2026-05-18): the visible operator shell is now the
 > browser-first seven-workspace model. WPF shell evidence remains valuable
 > retained desktop support, but it should not define new feature acceptance
 > unless a roadmap item explicitly targets desktop compatibility.

@@ -1,19 +1,31 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
-**Last Updated:** 2026-05-15
+**Last Updated:** 2026-05-18
 **Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, signed DK1 pilot sample-set/parity-packet evidence, packet-bound sign-off validation, cockpit readiness projection, the active browser workstation lane, the web Research run-library, Quant Notebook helpers, and gated Quant Lab support slices, shared workflow command-palette commands with grouped/hash-aware browser sections, browser query-string route focus for subject/symbol handoffs, browser Portfolio dense-table detail selection and brokerage-sync next actions plus Portfolio/Reporting/Settings/Data task panels, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, browser Evidence Workbench support backed by shared evidence packet/graph APIs, live quote/order-book/watchlist market-context routes with selectable recent-trade detail inspection, Watchlist no-quote/empty-state copy, and quick-trade readiness handoffs, historical price charts, paper-first Alpaca connection verification plus provider-setup validation handoffs, read-only Robinhood brokerage aggregation support, browser Security Master search-result selection and details/lots/operator-override support with identity drill-ins, lot-detail, and conflict refresh/retry state, UFL/reference-data projection endpoints, browser focus-management and Overview status/refresh hardening, Overview Today panel, `/data/alerts` Price Alerts, `/strategy/designer` Strategy Designer, `/strategy/covered-call` chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills dense detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, Reporting report-pack actions and endpoint-link safety, Quant Lab plot view-model extraction, crash-safe shared UI persistence, simplified browser rail/header chrome, retained WPF shell support evidence including the Data shell feature module, neutral demo-data fixture semantics with seeded AAPL market-data fixtures, stronger desktop workflow automation evidence, and hardened WPF screenshot/manual evidence capture
 
-This document is the shortest complete entry point into Meridian's current roadmap. [`ROADMAP.md`](ROADMAP.md) remains the authoritative source for wave order, retained completion claims, and the definition of core operator-readiness.
+This document is the shortest stakeholder summary of Meridian's current roadmap. For the consolidated planning entry point, start with [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md). [`ROADMAP.md`](ROADMAP.md) remains the authoritative source for wave order, retained completion claims, and the definition of core operator-readiness.
 
 Use this with:
 
 - [`ROADMAP.md`](ROADMAP.md) for the canonical roadmap
+- [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) for current direction, status, and plan-file roles
 - [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md) for the 2026-04-29 differentiation and archive-placement rule
 - [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md) for the short-horizon execution slice
 - [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md) for the golden-path pilot workflow and scope filter
 - [`OPPORTUNITY_SCAN.md`](OPPORTUNITY_SCAN.md) for the prioritized opportunity framing
 - [`TARGET_END_PRODUCT.md`](TARGET_END_PRODUCT.md) for the compact product narrative
 - [`production-status.md`](production-status.md) for current readiness posture
+
+---
+
+## 2026-05-18 Planning Review
+
+This combined entry point was rechecked against the consolidated planning direction and remains a
+summary of the canonical roadmap, opportunity scan, and target-state narrative. The review did not
+promote any later-wave, optional-track, UFL target-state, or retained-WPF support document into core
+readiness. Use [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md)
+for the current interpretation, then [`../plans/README.md`](../plans/README.md) for the detailed
+role of every active plan file.
 
 ---
 

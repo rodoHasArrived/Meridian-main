@@ -30,7 +30,6 @@ public sealed class TradingOperatorReadinessService
     {
         ct.ThrowIfCancellationRequested();
         var asOf = DateTimeOffset.UtcNow;
-        var warnings = new List<string>();
         var workItems = new List<OperatorWorkItemDto>();
 
         var paperService = Resolve<PaperSessionPersistenceService>();
@@ -43,6 +42,92 @@ public sealed class TradingOperatorReadinessService
         var latestRun = await ResolveLatestRunAsync(ct).ConfigureAwait(false);
         var promotionRecords = await ResolvePromotionRecordsAsync(ct).ConfigureAwait(false);
         var promotion = BuildPromotion(latestRun, promotionRecords);
+        var paperReadiness = BuildPaperSessionReadiness(paperService, latestRun, auditEntries, workItems);
+        var sessions = paperReadiness.Sessions;
+        var activeSession = paperReadiness.ActiveSession;
+        var replay = paperReadiness.Replay;
+
+        if (auditEntries.Count == 0)
+        {
+            AddWorkItem(
+                workItems,
+                OperatorWorkItemKindDto.PaperReplay,
+                "No audit evidence",
+                "No execution audit entries are visible for the paper acceptance lane.",
+                OperatorWorkItemToneDto.Warning,
+                workItemId: "execution-audit-empty");
+        }
+
+        var controls = BuildControls(Resolve<ExecutionOperatorControlService>(), auditEntries);
+        var riskRuleStatuses = await ResolveRiskRuleStatusesAsync(ct).ConfigureAwait(false);
+        AddExecutionControlWorkItems(workItems, controls, riskRuleStatuses);
+
+        var trustGate = await ResolveTrustGateReadinessAsync(ct).ConfigureAwait(false);
+        var reportPack = await ResolveReportPackReadinessAsync(latestRun, promotion, ct).ConfigureAwait(false);
+        var reconciliationGate = await ResolveReconciliationGateAsync(latestRun, ct).ConfigureAwait(false);
+        AddPromotionGovernanceWorkItems(workItems, latestRun, promotion, trustGate, reportPack, reconciliationGate);
+
+        var brokerageStatus = await ResolveBrokerageStatusAsync(fundAccountId, ct).ConfigureAwait(false);
+        AddBrokerageSyncWorkItem(workItems, brokerageStatus);
+        AddSecurityMasterCoverageWorkItem(workItems, latestRun);
+
+        var acceptanceGates = BuildAcceptanceGates(
+            activeSession,
+            sessions,
+            latestRun,
+            replay,
+            controls,
+            promotion,
+            trustGate,
+            reportPack,
+            reconciliationGate,
+            brokerageStatus,
+            riskRuleStatuses,
+            auditEntries);
+        var overallStatus = ResolveOverallStatus(acceptanceGates);
+        var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
+        var warnings = BuildWarnings(workItems);
+
+        _logger.LogDebug(
+            "Built trading operator readiness with {OverallStatus}, {WorkItemCount} work item(s), and {WarningCount} warning(s).",
+            overallStatus,
+            workItems.Count,
+            warnings.Count);
+
+        return new TradingOperatorReadinessDto(
+            AsOf: asOf,
+            ActiveSession: activeSession,
+            Sessions: sessions,
+            Replay: replay,
+            Controls: controls,
+            Promotion: promotion,
+            TrustGate: trustGate,
+            BrokerageSync: brokerageStatus,
+            WorkItems: workItems
+                .OrderByDescending(static item => item.Tone)
+                .ThenBy(static item => item.CreatedAt)
+                .ToArray(),
+            Warnings: warnings.Distinct(StringComparer.OrdinalIgnoreCase).ToArray())
+        {
+            AcceptanceGates = acceptanceGates,
+            EvidenceCompleteness = evidenceCompleteness,
+            OverallStatus = overallStatus,
+            ReadyForPaperOperation = overallStatus == TradingAcceptanceGateStatusDto.Ready,
+            ReportPack = reportPack
+        };
+    }
+
+    private sealed record PaperSessionReadiness(
+        IReadOnlyList<TradingPaperSessionReadinessDto> Sessions,
+        TradingPaperSessionReadinessDto? ActiveSession,
+        TradingReplayReadinessDto? Replay);
+
+    private static PaperSessionReadiness BuildPaperSessionReadiness(
+        PaperSessionPersistenceService? paperService,
+        StrategyRunDetail? latestRun,
+        IReadOnlyList<ExecutionAuditEntry> auditEntries,
+        ICollection<OperatorWorkItemDto> workItems)
+    {
         var sessionSummaries = paperService?.GetSessions() ?? [];
         var sessions = sessionSummaries
             .Select(summary => MapSession(summary, paperService?.GetSession(summary.SessionId)))
@@ -103,19 +188,14 @@ public sealed class TradingOperatorReadinessService
                 workItemId: BuildWorkItemId("paper-replay-stale", replay.SessionId));
         }
 
-        if (auditEntries.Count == 0)
-        {
-            AddWorkItem(
-                workItems,
-                OperatorWorkItemKindDto.PaperReplay,
-                "No audit evidence",
-                "No execution audit entries are visible for the paper acceptance lane.",
-                OperatorWorkItemToneDto.Warning,
-                workItemId: "execution-audit-empty");
-        }
+        return new PaperSessionReadiness(sessions, activeSession, replay);
+    }
 
-        var controls = BuildControls(Resolve<ExecutionOperatorControlService>(), auditEntries);
-        var riskRuleStatuses = await ResolveRiskRuleStatusesAsync(ct).ConfigureAwait(false);
+    private static void AddExecutionControlWorkItems(
+        ICollection<OperatorWorkItemDto> workItems,
+        TradingControlReadinessDto controls,
+        IReadOnlyList<RiskRuleStatusDto> riskRuleStatuses)
+    {
         if (controls.CircuitBreakerOpen)
         {
             AddWorkItem(
@@ -164,26 +244,31 @@ public sealed class TradingOperatorReadinessService
                 constrainedRiskRule.Summary,
                 OperatorWorkItemToneDto.Critical,
                 workItemId: BuildWorkItemId("risk-rule-constrained", constrainedRiskRule.RuleName));
-        }
-        else
-        {
-            var observedRiskRule = riskRuleStatuses.FirstOrDefault(static status =>
-                string.Equals(status.State, "Observe", StringComparison.OrdinalIgnoreCase));
-            if (observedRiskRule is not null)
-            {
-                AddWorkItem(
-                    workItems,
-                    OperatorWorkItemKindDto.ExecutionControl,
-                    $"{observedRiskRule.RuleName} needs review",
-                    observedRiskRule.Summary,
-                    OperatorWorkItemToneDto.Warning,
-                    workItemId: BuildWorkItemId("risk-rule-observe", observedRiskRule.RuleName));
-            }
+            return;
         }
 
-        var trustGate = await ResolveTrustGateReadinessAsync(ct).ConfigureAwait(false);
-        var reportPack = await ResolveReportPackReadinessAsync(latestRun, promotion, ct).ConfigureAwait(false);
-        var reconciliationGate = await ResolveReconciliationGateAsync(latestRun, ct).ConfigureAwait(false);
+        var observedRiskRule = riskRuleStatuses.FirstOrDefault(static status =>
+            string.Equals(status.State, "Observe", StringComparison.OrdinalIgnoreCase));
+        if (observedRiskRule is not null)
+        {
+            AddWorkItem(
+                workItems,
+                OperatorWorkItemKindDto.ExecutionControl,
+                $"{observedRiskRule.RuleName} needs review",
+                observedRiskRule.Summary,
+                OperatorWorkItemToneDto.Warning,
+                workItemId: BuildWorkItemId("risk-rule-observe", observedRiskRule.RuleName));
+        }
+    }
+
+    private static void AddPromotionGovernanceWorkItems(
+        ICollection<OperatorWorkItemDto> workItems,
+        StrategyRunDetail? latestRun,
+        TradingPromotionReadinessDto? promotion,
+        TradingTrustGateReadinessDto trustGate,
+        TradingReportPackReadinessDto reportPack,
+        ReconciliationGateEvaluation? reconciliationGate)
+    {
         if (promotion is null)
         {
             AddWorkItem(
@@ -217,93 +302,67 @@ public sealed class TradingOperatorReadinessService
         }
 
         AddReconciliationGateWorkItem(workItems, reconciliationGate, latestRun?.Summary.RunId);
-
-        var brokerageStatus = await ResolveBrokerageStatusAsync(fundAccountId, ct).ConfigureAwait(false);
-        if (brokerageStatus is not null && brokerageStatus.Health is not WorkstationBrokerageSyncHealth.Healthy)
-        {
-            AddWorkItem(
-                workItems,
-                OperatorWorkItemKindDto.BrokerageSync,
-                "Brokerage sync attention",
-                brokerageStatus.Warnings.FirstOrDefault()
-                    ?? brokerageStatus.LastError
-                    ?? "Brokerage sync is not healthy.",
-                brokerageStatus.Health is WorkstationBrokerageSyncHealth.Failed
-                    ? OperatorWorkItemToneDto.Critical
-                    : OperatorWorkItemToneDto.Warning,
-                fundAccountId: brokerageStatus.FundAccountId,
-                workItemId: BuildWorkItemId("brokerage-sync-attention", brokerageStatus.FundAccountId.ToString("N")),
-                workspaceOverride: "Settings",
-                targetRouteOverride: BuildProviderConnectionSettingsRoute(brokerageStatus.ProviderId),
-                targetPageTagOverride: "ProviderConnectionCenter");
-        }
-
-        if (latestRun is not null)
-        {
-            var missingSecurityCount =
-                (latestRun.Portfolio?.SecurityMissingCount ?? 0)
-                + (latestRun.Ledger?.SecurityMissingCount ?? 0);
-            if (missingSecurityCount > 0)
-            {
-                AddWorkItem(
-                    workItems,
-                    OperatorWorkItemKindDto.SecurityMasterCoverage,
-                    "Security Master coverage gap",
-                    $"{missingSecurityCount} run security reference(s) are missing coverage.",
-                    OperatorWorkItemToneDto.Warning,
-                    latestRun.Summary.RunId,
-                    workItemId: BuildWorkItemId("security-master-coverage-gap", latestRun.Summary.RunId));
-            }
-        }
-
-        var acceptanceGates = BuildAcceptanceGates(
-            activeSession,
-            sessions,
-            latestRun,
-            replay,
-            controls,
-            promotion,
-            trustGate,
-            reportPack,
-            reconciliationGate,
-            brokerageStatus,
-            riskRuleStatuses,
-            auditEntries);
-        var overallStatus = ResolveOverallStatus(acceptanceGates);
-        var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
-
-        warnings.AddRange(workItems
-            .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
-            .Select(static item => item.Detail));
-
-        _logger.LogDebug(
-            "Built trading operator readiness with {OverallStatus}, {WorkItemCount} work item(s), and {WarningCount} warning(s).",
-            overallStatus,
-            workItems.Count,
-            warnings.Count);
-
-        return new TradingOperatorReadinessDto(
-            AsOf: asOf,
-            ActiveSession: activeSession,
-            Sessions: sessions,
-            Replay: replay,
-            Controls: controls,
-            Promotion: promotion,
-            TrustGate: trustGate,
-            BrokerageSync: brokerageStatus,
-            WorkItems: workItems
-                .OrderByDescending(static item => item.Tone)
-                .ThenBy(static item => item.CreatedAt)
-                .ToArray(),
-            Warnings: warnings.Distinct(StringComparer.OrdinalIgnoreCase).ToArray())
-        {
-            AcceptanceGates = acceptanceGates,
-            EvidenceCompleteness = evidenceCompleteness,
-            OverallStatus = overallStatus,
-            ReadyForPaperOperation = overallStatus == TradingAcceptanceGateStatusDto.Ready,
-            ReportPack = reportPack
-        };
     }
+
+    private static void AddBrokerageSyncWorkItem(
+        ICollection<OperatorWorkItemDto> workItems,
+        WorkstationBrokerageSyncStatusDto? brokerageStatus)
+    {
+        if (brokerageStatus is null || brokerageStatus.Health is WorkstationBrokerageSyncHealth.Healthy)
+        {
+            return;
+        }
+
+        AddWorkItem(
+            workItems,
+            OperatorWorkItemKindDto.BrokerageSync,
+            "Brokerage sync attention",
+            brokerageStatus.Warnings.FirstOrDefault()
+                ?? brokerageStatus.LastError
+                ?? "Brokerage sync is not healthy.",
+            brokerageStatus.Health is WorkstationBrokerageSyncHealth.Failed
+                ? OperatorWorkItemToneDto.Critical
+                : OperatorWorkItemToneDto.Warning,
+            fundAccountId: brokerageStatus.FundAccountId,
+            workItemId: BuildWorkItemId("brokerage-sync-attention", brokerageStatus.FundAccountId.ToString("N")),
+            workspaceOverride: "Settings",
+            targetRouteOverride: BuildProviderConnectionSettingsRoute(brokerageStatus.ProviderId),
+            targetPageTagOverride: "ProviderConnectionCenter");
+    }
+
+    private static void AddSecurityMasterCoverageWorkItem(
+        ICollection<OperatorWorkItemDto> workItems,
+        StrategyRunDetail? latestRun)
+    {
+        if (latestRun is null)
+        {
+            return;
+        }
+
+        var missingSecurityCount =
+            (latestRun.Portfolio?.SecurityMissingCount ?? 0)
+            + (latestRun.Ledger?.SecurityMissingCount ?? 0);
+        if (missingSecurityCount == 0)
+        {
+            return;
+        }
+
+        AddWorkItem(
+            workItems,
+            OperatorWorkItemKindDto.SecurityMasterCoverage,
+            "Security Master coverage gap",
+            $"{missingSecurityCount} run security reference(s) are missing coverage.",
+            OperatorWorkItemToneDto.Warning,
+            latestRun.Summary.RunId,
+            workItemId: BuildWorkItemId("security-master-coverage-gap", latestRun.Summary.RunId));
+    }
+
+    private static IReadOnlyList<string> BuildWarnings(IReadOnlyList<OperatorWorkItemDto> workItems)
+        => workItems
+            .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
+            .Select(static item => item.Detail)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
     private async Task<StrategyRunDetail?> ResolveLatestRunAsync(CancellationToken ct)
     {
@@ -865,18 +924,26 @@ public sealed class TradingOperatorReadinessService
         WorkstationBrokerageSyncStatusDto? brokerageStatus,
         IReadOnlyList<RiskRuleStatusDto> riskRuleStatuses,
         IReadOnlyList<ExecutionAuditEntry> auditEntries)
-        =>
-        [
+    {
+        var gates = new List<TradingAcceptanceGateDto>
+        {
             BuildSessionGate(activeSession, sessions, latestRun),
             BuildReplayGate(activeSession, replay),
-            BuildAuditControlGate(controls, auditEntries),
-            BuildRiskRuleGate(riskRuleStatuses),
-            BuildPromotionGate(promotion),
-            BuildTrustGateAcceptance(trustGate),
-            BuildReportPackGate(reportPack),
-            BuildReconciliationGate(reconciliationGate),
-            BuildBrokerageSyncGate(brokerageStatus)
-        ];
+            BuildAuditControlGate(controls, auditEntries)
+        };
+
+        if (riskRuleStatuses.Count > 0)
+        {
+            gates.Add(BuildRiskRuleGate(riskRuleStatuses));
+        }
+
+        gates.Add(BuildPromotionGate(promotion));
+        gates.Add(BuildTrustGateAcceptance(trustGate));
+        gates.Add(BuildReportPackGate(reportPack));
+        gates.Add(BuildReconciliationGate(reconciliationGate));
+        gates.Add(BuildBrokerageSyncGate(brokerageStatus));
+        return gates;
+    }
 
 
     private static TradingAcceptanceGateDto BuildBrokerageSyncGate(WorkstationBrokerageSyncStatusDto? brokerageStatus)
@@ -1240,7 +1307,7 @@ public sealed class TradingOperatorReadinessService
             Detail: evaluation.Detail);
     }
 
-    private static void AddReconciliationGateWorkItem(List<OperatorWorkItemDto> workItems, ReconciliationGateEvaluation? evaluation, string? runId)
+    private static void AddReconciliationGateWorkItem(ICollection<OperatorWorkItemDto> workItems, ReconciliationGateEvaluation? evaluation, string? runId)
     {
         if (evaluation is null || evaluation.Status == TradingAcceptanceGateStatusDto.Ready)
         {

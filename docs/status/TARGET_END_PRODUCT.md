@@ -1,6 +1,6 @@
 # Meridian - Target End Product
 
-**Last Updated:** 2026-05-15
+**Last Updated:** 2026-05-18
 **Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, signed DK1 parity-packet evidence with packet-bound sign-off validation, cockpit readiness projection, the active browser workstation lane, the web Research run-library, Quant Notebook helpers, and gated Quant Lab support slices, shared workflow command-palette commands with hash-aware provider-setup routing, browser Portfolio/Reporting/Settings/Data task panels plus Portfolio brokerage-sync next actions, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, the browser Evidence Workbench and shared evidence packet/graph APIs, live quote/order-book/watchlist/Price Alerts market-context routes with selectable recent-trade detail inspection and Watchlist no-quote/empty-state copy, Overview Today panel, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, browser Security Master search-result selection, identity drill-ins, details/lots/operator-override support, UFL/reference-data projection endpoints, paper-first Alpaca connection verification plus provider-setup next-validation handoffs, read-only Robinhood brokerage aggregation support, stable route-aware run review-packet work items surfaced through operator inbox when actionable, seeded reconciliation exception-route/tolerance/sign-off metadata plus calibration-summary rollups, crash-safe shared UI persistence, retained WPF shell support evidence including the Data shell feature module, workflow automation hardening, scheduled/manual WPF screenshot evidence capture, simplified browser rail/header chrome, and demo-data fixture semantics with seeded market-data demo paths
 
 ---
@@ -19,6 +19,12 @@ The umbrella product story is **Meridian Evidence OS**: a governed investment op
 
 For the release-level scenario that ties those workspaces together, use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md).
 For the product-category filter and documentation archive rule, use [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md).
+For the consolidated current planning interpretation, use [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md).
+
+Planning review note 2026-05-18: this target-state document was reconciled with the active
+`docs/plans` index and the consolidated current-direction entry point. The seven-workspace browser
+workstation model remains the visible product shape, WPF remains retained support, and
+mobile-specific product surfaces remain out of scope.
 
 ---
 

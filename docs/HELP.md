@@ -1,10 +1,12 @@
 # Meridian Help
 
-**Last Reviewed:** 2026-05-13
+**Last Reviewed:** 2026-05-18
 
 This page keeps the high-traffic local operator and developer commands in one stable target for
-docs links. For roadmap status and product direction, use [`status/ROADMAP.md`](status/ROADMAP.md)
-and [`status/FEATURE_INVENTORY.md`](status/FEATURE_INVENTORY.md).
+docs links. For roadmap status and product direction, start with
+[`plans/current-direction-and-status.md`](plans/current-direction-and-status.md), then use
+[`status/ROADMAP.md`](status/ROADMAP.md) and
+[`status/FEATURE_INVENTORY.md`](status/FEATURE_INVENTORY.md).
 
 ## Command-line usage
 

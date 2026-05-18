@@ -12,6 +12,7 @@ automation outside the current build/test/publish scope.
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
 | CI | `ci.yml` | Pull requests, pushes to `main`, manual | Restores `Meridian.sln`, verifies formatting, builds the focused `Meridian.WebWorkstation.slnf` lane, runs non-integration .NET tests, then tests and builds `src/Meridian.Ui/dashboard`. | .NET TRX results on failure |
+| Golden Path Validation | `golden-path-validation.yml` | Golden-path contract changes, manual | Runs `PilotAcceptanceHarnessTests`, validates the pilot readiness dashboard renderer, generates `artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md`, and uploads the acceptance evidence bundle. | `pilot-acceptance-evidence` |
 | Windows Desktop Build | `windows-desktop-build.yml` | Pull requests, pushes to `main`, manual | Builds the real WPF app on Windows, runs WPF tests, and smoke-publishes the desktop executable. | WPF TRX results on failure |
 | Publish Smoke | `publish-smoke.yml` | Manual only | Runs `build/scripts/publish/publish.ps1` for a selected Windows runtime and uploads the generated standalone output. | Publish output |
 | Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly schedule, manual | Runs repository workflow hygiene checks and validates workflow syntax with `actionlint`. | None |
@@ -26,6 +27,14 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore -
 npm ci --prefix src/Meridian.Ui/dashboard
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
+```
+
+Golden-path pilot acceptance:
+
+```powershell
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
+python build/scripts/docs/generate-pilot-readiness-dashboard.py --output artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md --json-output artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.json
+python -m unittest build/scripts/docs/tests/test_pilot_readiness_dashboard.py
 ```
 
 Windows desktop validation:

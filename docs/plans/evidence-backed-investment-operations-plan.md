@@ -1,6 +1,6 @@
 # Evidence-Backed Investment Operations Plan
 
-**Date:** 2026-05-15
+**Date:** 2026-05-18
 **Status:** Active product-positioning and roadmap filter, refreshed against current browser-workstation support evidence
 **Audience:** Product, roadmap, architecture, web dashboard, governance, and fund-operations contributors
 
@@ -10,7 +10,8 @@ as another trading workstation or generic front-to-back suite. The sharper categ
 impact, reconciliation outcomes, approvals, and governed report artifacts tied together in one
 explainable chain.
 
-Use this document as the product-category filter for roadmap work. It does not create a new wave
+Use this document as the product-category filter for roadmap work after starting from
+[`current-direction-and-status.md`](current-direction-and-status.md). It does not create a new wave
 or claim the modules below are already delivered. It sharpens Waves 2-4 and tells maintainers what
 to keep active, what to demote, and what to archive.
 
@@ -116,6 +117,7 @@ Keep these active unless they are explicitly replaced and their strong reference
 - [`../status/ROADMAP.md`](../status/ROADMAP.md)
 - [`../status/ROADMAP_COMBINED.md`](../status/ROADMAP_COMBINED.md)
 - [`../status/FEATURE_INVENTORY.md`](../status/FEATURE_INVENTORY.md)
+- [`current-direction-and-status.md`](current-direction-and-status.md)
 - [`meridian-pilot-workflow.md`](meridian-pilot-workflow.md)
 - [`meridian-6-week-roadmap.md`](meridian-6-week-roadmap.md)
 - [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md)

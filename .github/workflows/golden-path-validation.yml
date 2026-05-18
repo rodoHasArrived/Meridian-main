@@ -1,0 +1,108 @@
+name: Golden Path Validation
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/golden-path-validation.yml"
+      - "build/scripts/docs/generate-pilot-readiness-dashboard.py"
+      - "build/scripts/docs/tests/test_pilot_readiness_dashboard.py"
+      - "src/Meridian.Application/Commands/LedgerCliCommand.cs"
+      - "src/Meridian.Application/Ledger/TextJournal/**"
+      - "src/Meridian.Contracts/Workstation/**"
+      - "src/Meridian.Execution/**"
+      - "src/Meridian.Ledger/**"
+      - "src/Meridian.Strategies/**"
+      - "src/Meridian.Ui.Shared/**"
+      - "tests/Meridian.Tests/Application/Commands/LedgerCliCommandTests.cs"
+      - "tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs"
+      - "tests/scripts/test_golden_path_validation_workflow.py"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/golden-path-validation.yml"
+      - "build/scripts/docs/generate-pilot-readiness-dashboard.py"
+      - "build/scripts/docs/tests/test_pilot_readiness_dashboard.py"
+      - "src/Meridian.Application/Commands/LedgerCliCommand.cs"
+      - "src/Meridian.Application/Ledger/TextJournal/**"
+      - "src/Meridian.Contracts/Workstation/**"
+      - "src/Meridian.Execution/**"
+      - "src/Meridian.Ledger/**"
+      - "src/Meridian.Strategies/**"
+      - "src/Meridian.Ui.Shared/**"
+      - "tests/Meridian.Tests/Application/Commands/LedgerCliCommandTests.cs"
+      - "tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs"
+      - "tests/scripts/test_golden_path_validation_workflow.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: golden-path-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  DOTNET_VERSION: '10.0.x'
+  MERIDIAN_DISABLE_DOCKER_TESTS: "true"
+
+jobs:
+  pilot-acceptance:
+    name: Pilot Acceptance Evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-golden-path-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore pilot test project
+        run: dotnet restore tests/Meridian.Tests/Meridian.Tests.csproj /p:EnableWindowsTargeting=true
+
+      - name: Run pilot acceptance harness
+        run: |
+          # Scenario source: tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "trx;LogFilePrefix=pilot-acceptance" --results-directory artifacts/test-results/pilot-acceptance /p:EnableWindowsTargeting=true
+
+      - name: Validate pilot readiness dashboard renderer
+        run: python3 -m unittest build/scripts/docs/tests/test_pilot_readiness_dashboard.py
+
+      - name: Generate pilot readiness dashboard
+        run: |
+          python3 build/scripts/docs/generate-pilot-readiness-dashboard.py --output artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md --json-output artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.json
+
+      - name: Upload pilot acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: pilot-acceptance-evidence
+          path: |
+            artifacts/pilot-acceptance/latest/pilot-readiness.json
+            artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md
+            artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.json
+            artifacts/test-results/pilot-acceptance/
+          if-no-files-found: ignore
+          retention-days: 30
