@@ -630,6 +630,57 @@ public sealed class PaperSessionDurablePersistenceTests : IDisposable
         var detail = svc2.GetSession(summary.SessionId);
         detail!.OrderHistory.Should().ContainSingle(o => o.OrderId == "O-1");
     }
+
+    [Fact]
+    public async Task SessionContinuity_CreateRestartVerifyClose_PreservesScopeAndHistoryAcrossFlow()
+    {
+        var store = BuildStore();
+        var orderUpdatedAt = DateTimeOffset.UtcNow;
+
+        var svc1 = Build(store);
+        var created = await svc1.CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "strat-wave2-session-continuity",
+            StrategyName: "Wave2 Session Continuity",
+            InitialCash: 75_000m,
+            Symbols: ["AAPL", "MSFT"]));
+        await svc1.RecordOrderUpdateAsync(created.SessionId, new OrderState
+        {
+            OrderId = "wave2-order-1",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            FilledQuantity = 10m,
+            Status = OrderStatus.Filled,
+            CreatedAt = orderUpdatedAt.AddSeconds(-1),
+            LastUpdatedAt = orderUpdatedAt
+        });
+        await svc1.RecordFillAsync(created.SessionId, BuildFill("AAPL", OrderSide.Buy, 10m, 200m));
+
+        var svc2 = Build(store);
+        await svc2.InitialiseAsync();
+        var restored = svc2.GetSession(created.SessionId);
+
+        restored.Should().NotBeNull();
+        restored!.Symbols.Should().Equal("AAPL", "MSFT");
+        restored.OrderHistory.Should().ContainSingle(order => order.OrderId == "wave2-order-1");
+        restored.FillHistory.Should().HaveCount(1);
+        restored.LedgerEntryCount.Should().BeGreaterThan(0);
+
+        var verification = await svc2.VerifyReplayAsync(created.SessionId);
+        verification.Should().NotBeNull();
+        verification!.IsConsistent.Should().BeTrue();
+        verification.ComparedOrderCount.Should().Be(1);
+        verification.ComparedFillCount.Should().Be(1);
+        verification.ComparedLedgerEntryCount.Should().BeGreaterThan(0);
+
+        var closed = await svc2.CloseSessionAsync(created.SessionId);
+        closed.Should().BeTrue();
+
+        var svc3 = Build(store);
+        await svc3.InitialiseAsync();
+        svc3.GetSessions().Should().ContainSingle(session => session.SessionId == created.SessionId && !session.IsActive);
+    }
 }
 
 // ---------------------------------------------------------------------------

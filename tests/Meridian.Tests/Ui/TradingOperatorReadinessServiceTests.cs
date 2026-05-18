@@ -238,6 +238,63 @@ public sealed class TradingOperatorReadinessServiceTests
             gate.Status == TradingAcceptanceGateStatusDto.Ready);
     }
 
+    [Fact]
+    public async Task GetAsync_WithFullyReadyPaperScenario_ShouldMarkCockpitReadyForPaperOperation()
+    {
+        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithFullyReadyPaperScenario_ShouldMarkCockpitReadyForPaperOperation));
+        var persistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance,
+            auditTrail: auditTrail);
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "strat-fully-ready",
+            StrategyName: "Fully Ready Strategy",
+            InitialCash: 100_000m,
+            Symbols: ["AAPL", "MSFT"]));
+        await persistence.VerifyReplayAsync(session.SessionId);
+
+        using var provider = new ServiceCollection()
+            .AddSingleton(auditTrail)
+            .AddSingleton(persistence)
+            .BuildServiceProvider();
+        var service = new TradingOperatorReadinessService(
+            provider,
+            NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readiness = await service.GetAsync();
+
+        readiness.AcceptanceGates.All(g => g.Status == TradingAcceptanceGateStatusDto.Ready).Should().BeTrue();
+        readiness.WorkItems.Should().NotContain(item => item.Tone == OperatorWorkItemToneDto.Critical);
+        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.Ready);
+        readiness.ReadyForPaperOperation.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetAsync_WithOneDowngradedGate_ShouldSetReadyForPaperOperationFalse()
+    {
+        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithOneDowngradedGate_ShouldSetReadyForPaperOperationFalse));
+        var persistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance,
+            auditTrail: auditTrail);
+        await persistence.CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "strat-not-ready",
+            StrategyName: "Not Ready Strategy",
+            InitialCash: 100_000m,
+            Symbols: ["AAPL"]));
+
+        using var provider = new ServiceCollection()
+            .AddSingleton(auditTrail)
+            .AddSingleton(persistence)
+            .BuildServiceProvider();
+        var service = new TradingOperatorReadinessService(
+            provider,
+            NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readiness = await service.GetAsync();
+
+        readiness.AcceptanceGates.Should().Contain(g => g.Status != TradingAcceptanceGateStatusDto.Ready);
+        readiness.ReadyForPaperOperation.Should().BeFalse();
+    }
+
     private static ExecutionAuditTrailService CreateAuditTrail(string scenario)
     {
         var root = Path.Combine(

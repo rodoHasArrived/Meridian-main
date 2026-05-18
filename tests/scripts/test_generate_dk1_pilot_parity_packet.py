@@ -58,6 +58,73 @@ class GenerateDk1PilotParityPacketTests(unittest.TestCase):
             )
             self.assertEqual(3, len(packet["operatorSignoff"]["approvals"]))
 
+
+    def test_single_run_writes_exactly_one_packet_with_restart_continuity_evidence(self) -> None:
+        pwsh = shutil.which("pwsh")
+        if pwsh is None:
+            self.skipTest("pwsh is not available")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            summary_path = temp_path / "wave1-validation-summary.json"
+            signoff_path = temp_path / "dk1-operator-signoff.json"
+
+            summary_path.write_text(json.dumps(_build_passing_summary()), encoding="utf-8")
+            packet_review = _write_reviewed_packet(temp_path, summary_path)
+            signoff_path.write_text(json.dumps(_build_signed_signoff(packet_review)), encoding="utf-8")
+
+            subprocess.run(
+                [
+                    pwsh,
+                    "-NoProfile",
+                    "-File",
+                    str(SCRIPT_PATH),
+                    "-SummaryJsonPath",
+                    str(summary_path),
+                    "-OperatorSignoffPath",
+                    str(signoff_path),
+                ],
+                cwd=REPO_ROOT,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            packets = sorted(temp_path.glob("dk1-pilot-parity-packet*.json"))
+            self.assertEqual(
+                1,
+                len(packets),
+                f"Expected exactly one packet artifact for a single run, found {len(packets)}: {packets}",
+            )
+
+            packet = json.loads(packets[0].read_text(encoding="utf-8"))
+            operator_signoff = packet.get("operatorSignoff", {})
+            packet_review_node = operator_signoff.get("packetReview", {})
+
+            self.assertTrue(str(packet.get("generatedAtUtc", "")).strip())
+            self.assertTrue(str(packet_review_node.get("generatedAtUtc", "")).strip())
+            self.assertTrue(str(packet_review_node.get("sourceSummary", "")).strip())
+            self.assertTrue(str(packet_review_node.get("path", "")).strip())
+            self.assertTrue(str(packet_review_node.get("status", "")).strip())
+
+            self.assertEqual(str(summary_path), packet_review_node.get("sourceSummary"))
+            self.assertEqual(str(packets[0]), packet_review_node.get("path"))
+
+            evidence_documents = packet.get("evidenceDocuments", [])
+            self.assertGreater(len(evidence_documents), 0)
+            self.assertTrue(
+                all(str(document.get("path", "")).strip() for document in evidence_documents),
+                "Expected evidence document references for restart continuity review.",
+            )
+
+            sample_review = packet.get("sampleReview", {})
+            samples = sample_review.get("samples", [])
+            self.assertGreater(len(samples), 0)
+            self.assertTrue(
+                all(str(sample.get("id", "")).strip() for sample in samples),
+                "Expected sample identifiers to remain linked for replay continuity verification.",
+            )
+
     def test_operator_signoff_path_rejects_stale_packet_binding(self) -> None:
         pwsh = shutil.which("pwsh")
         if pwsh is None:
