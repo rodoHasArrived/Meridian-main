@@ -5596,8 +5596,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Credentials
 │   │   │   │   ├── CredentialStatus.cs
 │   │   │   │   ├── CredentialTestingService.cs
+│   │   │   │   ├── FileProviderCredentialStore.cs
+│   │   │   │   ├── IProviderCredentialStore.cs
 │   │   │   │   ├── OAuthToken.cs
 │   │   │   │   ├── OAuthTokenRefreshService.cs
+│   │   │   │   ├── ProviderCredentialCatalog.cs
 │   │   │   │   └── ProviderCredentialResolver.cs
 │   │   │   ├── DefaultConfigPathResolver.cs
 │   │   │   ├── DeploymentContext.cs
@@ -6028,6 +6031,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AppConfigDto.cs
 │   │   │   ├── DerivativesConfigDto.cs
 │   │   │   ├── MeridianPathDefaults.cs
+│   │   │   ├── ProviderConnectionDtos.cs
 │   │   │   ├── ProviderConnectionsConfigDto.cs
 │   │   │   └── SymbolConfig.cs
 │   │   ├── Credentials
@@ -7544,6 +7548,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── OptionsEndpoints.cs
 │   │   │   ├── PathValidation.cs
 │   │   │   ├── PromotionEndpoints.cs
+│   │   │   ├── ProviderConnectionEndpoints.cs
 │   │   │   ├── ProviderCredentialEndpoints.cs
 │   │   │   ├── ProviderEndpoints.cs
 │   │   │   ├── ProviderExtendedEndpoints.cs
@@ -7604,6 +7609,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── GovernanceReportPackRepository.cs
 │   │   │   ├── InMemoryOperatorInboxService.cs
 │   │   │   ├── OperatorRiskRuleService.cs
+│   │   │   ├── ProviderConnectionLifecycleService.cs
 │   │   │   ├── RiskRuleRuntimeService.cs
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
@@ -8312,7 +8318,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── ConfigValidatorCliTests.cs
 │   │   │   │   ├── ConfigValidatorTests.cs
 │   │   │   │   ├── ConfigurationUnificationTests.cs
-│   │   │   │   └── ProviderCredentialResolverTests.cs
+│   │   │   │   ├── ProviderCredentialResolverTests.cs
+│   │   │   │   └── ProviderCredentialStoreTests.cs
 │   │   │   ├── Coordination
 │   │   │   │   ├── ClusterCoordinatorServiceTests.cs
 │   │   │   │   ├── LeaseManagerTests.cs
@@ -8754,6 +8761,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── ExecutionWriteEndpointsTests.cs
 │   │       ├── ExportEndpointsTests.cs
 │   │       ├── OptionReferenceEndpointsRoundtripTests.cs
+│   │       ├── ProviderConnectionEndpointsTests.cs
 │   │       ├── RiskEndpointsTests.cs
 │   │       ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
@@ -9088,6 +9096,6 @@ Use these documents together when planning or implementing new work:
         │   └── watchlist-screen-lIteaLqr.js
         └── index.html
 
-771 directories, 8101 files
+771 directories, 8109 files
 ```
 <!-- readme-tree end -->
