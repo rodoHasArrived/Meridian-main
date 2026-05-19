@@ -90,12 +90,62 @@ public sealed class LedgerJournalStoreTests
         var period = BuildAccountingPeriod("SoftClosed");
         var write = BuildBalancedJournalWrite(period.PeriodId) with
         {
-            PostingKind = LedgerPostingKindDto.Adjustment
+            PostingKind = LedgerPostingKindDto.Adjustment,
+            AdjustmentApproval = BuildApprovedAdjustmentApproval()
         };
 
         var act = () => LedgerPeriodPostingGuard.Validate(write, period);
 
         act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void PostingGuard_SoftClosedAdjustment_RequiresApprovalMetadata()
+    {
+        var period = BuildAccountingPeriod("SoftClosed");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            PostingKind = LedgerPostingKindDto.Adjustment
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*requires approved governance metadata*");
+    }
+
+    [Fact]
+    public void PostingGuard_AdjustmentApprovalMetadata_RequiresApprovedStatus()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            PostingKind = LedgerPostingKindDto.Adjustment,
+            AdjustmentApproval = BuildApprovedAdjustmentApproval() with
+            {
+                Status = LedgerAdjustmentApprovalStatusDto.Pending
+            }
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*must be Approved*");
+    }
+
+    [Fact]
+    public void PostingGuard_OriginatingEntry_RejectsAdjustmentApprovalMetadata()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            AdjustmentApproval = BuildApprovedAdjustmentApproval()
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*approval metadata*not an Adjustment*");
     }
 
     [Fact]
@@ -190,6 +240,18 @@ public sealed class LedgerJournalStoreTests
         sql.Should().Contain("ix_journal_legs_period_posting_kind");
     }
 
+    [Fact]
+    public void LedgerAdjustmentApprovalMigration_DefinesJournalApprovalMetadataColumnsAndIndexes()
+    {
+        var sql = ReadMigration("V_ledger_007__journal_adjustment_approval_metadata.sql");
+
+        sql.Should().Contain("add column if not exists adjustment_approval_metadata jsonb null");
+        sql.Should().Contain("ck_journal_entries_adjustment_approval_metadata");
+        sql.Should().Contain("ck_journal_legs_adjustment_approval_metadata");
+        sql.Should().Contain("ix_journal_entries_adjustment_approval_id");
+        sql.Should().Contain("ix_journal_entries_period_adjustment_approval_status");
+    }
+
     private static LedgerJournalEntryWrite BuildBalancedJournalWrite(
         Guid periodId,
         DateTimeOffset? timestamp = null)
@@ -237,6 +299,17 @@ public sealed class LedgerJournalStoreTests
             OpenedAt: DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
             ClosedAt: null,
             Version: 1);
+
+    private static LedgerAdjustmentApprovalMetadataDto BuildApprovedAdjustmentApproval() =>
+        new(
+            ApprovalId: "approval-ledger-adjustment-1",
+            Status: LedgerAdjustmentApprovalStatusDto.Approved,
+            ApprovedBy: "fund-controller",
+            ApprovedAt: DateTimeOffset.Parse("2026-01-31T22:00:00Z"),
+            ReasonCode: "month-end-true-up",
+            GovernanceCaseId: "case-ledger-close-1",
+            EvidenceLink: "evidence://ledger/adjustment/approval-1",
+            Notes: "Controller approved soft-close true-up.");
 
     private static JournalEntry BuildUnbalancedJournalEntry()
     {

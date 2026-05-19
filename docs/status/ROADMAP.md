@@ -27,7 +27,7 @@ Data Trust Passport
 -> Governed Report Pack
 ```
 
-This framing sharpens Waves 2-4 without creating a new wave. The current repo has support evidence for pieces of the loop, including provider trust packets, shared run continuity, paper-session replay/audit metadata, promotion checklist state, reconciliation break queues, report-pack schema/version checks, shared evidence packet/graph APIs, browser Evidence Workbench actions, and the read-only web Operator Readiness Console. The named commercial modules remain roadmap targets until shared contracts, retained evidence, and browser-visible workflows prove them end to end.
+This framing sharpens Waves 2-4 without creating a new wave. The current repo has support evidence for pieces of the loop, including provider trust packets, shared run continuity, paper-session replay/audit metadata, promotion checklist state, reconciliation break queues, report-pack schema/version/validation checks, shared evidence packet/graph/vault-manifest APIs, browser Evidence Workbench actions, and the read-only web Operator Readiness Console. The named commercial modules remain roadmap targets until shared contracts, retained evidence, and browser-visible workflows prove them end to end.
 
 The next accounting-led commercial wedge should be: **Can Meridian prove, book, reconcile, approve, and report this investment decision?** Ideas such as Books Before Broker, an investment accounting Transaction Lab, Close the Books workflow, broker statement reconciliation, Controls-as-Code, and one-click evidence packets should be treated as roadmap targets layered onto Waves 2-4. They are not current implementation claims; future delivery should start with shared evidence/accounting/readiness contracts and browser-dashboard workflows before any client-specific UI expands.
 
@@ -77,6 +77,18 @@ now exposes `-SizeOptimized` for standalone size and low-disk investigations, an
 scan is also being cleaned so local diagnostic tool caches do not inflate project TODO counts.
 These changes improve developer/release hygiene but do not close W2 cockpit, W3 continuity, W4
 governance, or live-readiness gates.
+
+2026-05-19 governance follow-up: newer repo evidence strengthens Wave 3/Wave 4 support without
+changing wave status. Ledger writes now preserve `posting_kind` and enforce open, soft-closed, and
+hard-closed period posting rules in the ledger store; governed report packs now carry structured
+validation/lifecycle metadata; evidence manifest exports now have retained vault identity, index,
+lookup, and a host-served manifest route; and reconciliation case storage now has safer path
+handling, atomic writes, audit JSONL append, status normalization, and transition validation. The
+active worktree also has a Security Master validation-gate/snapshot slice that can block unresolved
+or unapproved records for strategy preflight, ledger posting, reconciliation intake, report-pack
+evidence, and override approval workflows. Treat all of this as continuity and governance support
+evidence, not as completion of durable close casework, report publication, Evidence Vault, or
+live-readiness gates.
 
 Implementation follow-up on the acceleration plan: the golden-path pilot harness is now treated as
 the executable proof lane. `PilotAcceptanceHarnessTests` exercises the shared service and endpoint

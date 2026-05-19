@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Application.SecurityMaster;
 using Meridian.Application.Banking;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Banking;
@@ -121,6 +122,47 @@ public sealed class ReconciliationRunServiceTests
         detail.SecurityClassifications["AAPL"].MatchedIdentifierValue.Should().Be("US0378331005");
         detail.SecurityClassifications["AAPL"].MatchedProvider.Should().Be("OpenFIGI");
         detail.SecurityClassifications["TSLA"].PrimaryIdentifierKind.Should().Be("Ticker");
+    }
+
+    [Fact]
+    public async Task RunAsync_WithSecurityValidationIssue_ShouldExposeReconciliationCoverageIssue()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-validation-gate"));
+
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            SecurityId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            DisplayName: "Apple Inc.",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "AAPL"));
+        lookup.Register("TSLA", new WorkstationSecurityReference(
+            SecurityId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            DisplayName: "Tesla Inc.",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "TSLA"));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: new SymbolSecurityValidationGate("TSLA"));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-validation-gate"));
+
+        detail.Should().NotBeNull();
+        detail!.Summary.HasSecurityCoverageIssues.Should().BeTrue();
+        detail.SecurityCoverageIssues.Should().NotBeNullOrEmpty();
+        detail.SecurityCoverageIssues!.Should().Contain(issue =>
+            issue.Symbol == "TSLA"
+            && issue.Code == "SM_ACCOUNTING_CLASSIFICATION_MISSING"
+            && issue.Severity == ReconciliationBreakSeverity.High
+            && issue.Reason.Contains("Security Master validation", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -287,7 +329,8 @@ public sealed class ReconciliationRunServiceTests
         StrategyRunStore store,
         IReconciliationRunRepository repository,
         ISecurityReferenceLookup? securityReferenceLookup,
-        IBankTransactionSource? bankTransactionSource)
+        IBankTransactionSource? bankTransactionSource,
+        ISecurityValidationGateService? securityValidationGate = null)
     {
         IStrategyRepository strategyRepository = store;
         var portfolioReadService = securityReferenceLookup is null
@@ -297,7 +340,66 @@ public sealed class ReconciliationRunServiceTests
             ? new LedgerReadService()
             : new LedgerReadService(securityReferenceLookup);
         var runReadService = new StrategyRunReadService(strategyRepository, portfolioReadService, ledgerReadService);
-        return new ReconciliationRunService(runReadService, new ReconciliationProjectionService(), repository, bankTransactionSource);
+        return new ReconciliationRunService(
+            runReadService,
+            new ReconciliationProjectionService(),
+            repository,
+            bankTransactionSource,
+            securityValidationGate: securityValidationGate);
+    }
+
+    private sealed class SymbolSecurityValidationGate(string blockedSymbol) : ISecurityValidationGateService
+    {
+        public Task<SecurityValidationGateResultDto> ValidateSymbolAsync(
+            string symbol,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            CancellationToken ct = default)
+        {
+            var normalized = symbol.Trim().ToUpperInvariant();
+            IReadOnlyList<SecurityValidationIssueDto> issues = string.Equals(normalized, blockedSymbol, StringComparison.OrdinalIgnoreCase)
+                ?
+                [
+                    new SecurityValidationIssueDto(
+                        SecurityValidationSeverityDto.Error,
+                        "SM_ACCOUNTING_CLASSIFICATION_MISSING",
+                        "Accounting classification is missing",
+                        "The record does not expose an accounting classification for ledger posting and report grouping.",
+                        ["commonTerms.accountingClassification"],
+                        "Attach the ledger/reporting accounting classification.",
+                        [])
+                ]
+                : Array.Empty<SecurityValidationIssueDto>();
+            var report = new SecurityValidationReportDto(
+                SecurityId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                Scope: "Security",
+                EvaluatedAtUtc: DateTimeOffset.UtcNow,
+                HasBlockingIssues: issues.Count > 0,
+                CriticalIssueCount: 0,
+                ErrorIssueCount: issues.Count,
+                Issues: issues);
+
+            return Task.FromResult(new SecurityValidationGateResultDto(
+                workflow,
+                normalized,
+                report.SecurityId,
+                IsResolved: true,
+                IsBlocked: report.HasBlockingIssues,
+                Report: report,
+                Snapshot: null));
+        }
+
+        public Task<SecurityValidationGateResultDto> ValidateSecurityAsync(
+            Guid securityId,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            string? symbol = null,
+            CancellationToken ct = default)
+            => ValidateSymbolAsync(symbol ?? securityId.ToString(), workflow, workflowReference, actor, persistSnapshot, ct);
     }
 
     // -----------------------------------------------------------------------

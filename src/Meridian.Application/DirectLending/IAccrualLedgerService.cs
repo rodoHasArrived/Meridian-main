@@ -1,4 +1,5 @@
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.Ledger;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
 
@@ -21,5 +22,6 @@ public interface IAccrualLedgerService
         DailyAccrualEntryDto accrual,
         Guid sourceEventId,
         DirectLendingEventWriteMetadata metadata,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null);
 }

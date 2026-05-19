@@ -1,4 +1,6 @@
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Banking;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.FSharp.Ledger;
 
@@ -13,6 +15,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     private readonly IStrategyPortfolioReconciliationSourceAdapter _portfolioAdapter;
     private readonly IInternalCashReconciliationSourceAdapter _internalCashAdapter;
     private readonly IExternalStatementReconciliationSourceAdapter _externalStatementAdapter;
+    private readonly ISecurityValidationGateService? _securityValidationGate;
 
     public ReconciliationRunService(
         StrategyRunReadService runReadService,
@@ -22,7 +25,8 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         IStrategyLedgerReconciliationSourceAdapter? ledgerAdapter = null,
         IStrategyPortfolioReconciliationSourceAdapter? portfolioAdapter = null,
         IInternalCashReconciliationSourceAdapter? internalCashAdapter = null,
-        IExternalStatementReconciliationSourceAdapter? externalStatementAdapter = null)
+        IExternalStatementReconciliationSourceAdapter? externalStatementAdapter = null,
+        ISecurityValidationGateService? securityValidationGate = null)
     {
         _runReadService = runReadService ?? throw new ArgumentNullException(nameof(runReadService));
         _projectionService = projectionService ?? throw new ArgumentNullException(nameof(projectionService));
@@ -31,6 +35,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         _portfolioAdapter = portfolioAdapter ?? new StrategyPortfolioReconciliationSourceAdapter();
         _internalCashAdapter = internalCashAdapter ?? new BankInternalCashReconciliationSourceAdapter(bankTransactionSource);
         _externalStatementAdapter = externalStatementAdapter ?? new ExternalStatementReconciliationSourceAdapter(new NullExternalStatementSource());
+        _securityValidationGate = securityValidationGate;
     }
 
     public async Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
@@ -95,7 +100,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 result.HasActualAsOf ? result.ActualAsOf : null));
         }
 
-        var securityCoverageIssues = BuildSecurityCoverageIssues(runDetail);
+        var securityCoverageIssues = await BuildSecurityCoverageIssuesAsync(runDetail, request.RunId, ct).ConfigureAwait(false);
         var bankBreakCount = breaks.Count(b => bankCheckIds.Contains(b.CheckId));
 
         var bankTransactions = normalizedInputs.InternalCashMovements
@@ -209,7 +214,10 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     private static bool IsUnresolvedStatus(ReconciliationBreakStatus status) =>
         status is not ReconciliationBreakStatus.Matched and not ReconciliationBreakStatus.Resolved;
 
-    private static IReadOnlyList<ReconciliationSecurityCoverageIssueDto> BuildSecurityCoverageIssues(StrategyRunDetail detail)
+    private async Task<IReadOnlyList<ReconciliationSecurityCoverageIssueDto>> BuildSecurityCoverageIssuesAsync(
+        StrategyRunDetail detail,
+        string runId,
+        CancellationToken ct)
     {
         var issues = new List<ReconciliationSecurityCoverageIssueDto>();
 
@@ -224,7 +232,10 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                         Source: "portfolio",
                         Symbol: position.Symbol,
                         AccountName: null,
-                        Reason: $"Portfolio position '{position.Symbol}' is missing a Security Master match.")));
+                        Reason: $"Portfolio position '{position.Symbol}' is missing a Security Master match.",
+                        Code: "SM_RECON_SECURITY_UNRESOLVED",
+                        Severity: ReconciliationBreakSeverity.High,
+                        EvidenceLink: "/workstation/data/security-master")));
         }
 
         if (detail.Ledger is not null)
@@ -238,13 +249,80 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                         Source: "ledger",
                         Symbol: line.Symbol!,
                         AccountName: line.AccountName,
-                        Reason: $"Ledger coverage for '{line.Symbol}' in '{line.AccountName}' is missing a Security Master match.")));
+                        Reason: $"Ledger coverage for '{line.Symbol}' in '{line.AccountName}' is missing a Security Master match.",
+                        Code: "SM_RECON_SECURITY_UNRESOLVED",
+                        Severity: ReconciliationBreakSeverity.High,
+                        EvidenceLink: "/workstation/data/security-master")));
+        }
+
+        if (_securityValidationGate is not null)
+        {
+            foreach (var scope in EnumerateSecurityScopes(detail))
+            {
+                ct.ThrowIfCancellationRequested();
+                var validation = await _securityValidationGate
+                    .ValidateSymbolAsync(
+                        scope.Symbol,
+                        SecurityValidationWorkflowDto.ReconciliationBreakIntake,
+                        workflowReference: runId,
+                        actor: "reconciliation-run-service",
+                        persistSnapshot: false,
+                        ct)
+                    .ConfigureAwait(false);
+
+                foreach (var issue in validation.Report.Issues)
+                {
+                    issues.Add(new ReconciliationSecurityCoverageIssueDto(
+                        Source: scope.Source,
+                        Symbol: validation.Symbol ?? scope.Symbol,
+                        AccountName: scope.AccountName,
+                        Reason: $"Security Master validation {issue.Code}: {issue.Message}",
+                        Code: issue.Code,
+                        Severity: MapSecurityValidationSeverity(issue.Severity),
+                        EvidenceLink: issue.EvidenceLinks.FirstOrDefault()?.Route ?? "/workstation/data/security-master"));
+                }
+            }
         }
 
         return issues
-            .DistinctBy(static issue => $"{issue.Source}|{issue.Symbol}|{issue.AccountName}", StringComparer.OrdinalIgnoreCase)
+            .DistinctBy(static issue => $"{issue.Source}|{issue.Symbol}|{issue.AccountName}|{issue.Code}", StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
+
+    private static IEnumerable<(string Source, string Symbol, string? AccountName)> EnumerateSecurityScopes(StrategyRunDetail detail)
+    {
+        if (detail.Portfolio is not null)
+        {
+            foreach (var position in detail.Portfolio.Positions)
+            {
+                if (!string.IsNullOrWhiteSpace(position.Symbol))
+                {
+                    yield return ("portfolio", position.Symbol.Trim().ToUpperInvariant(), null);
+                }
+            }
+        }
+
+        if (detail.Ledger is not null)
+        {
+            foreach (var line in detail.Ledger.TrialBalance)
+            {
+                if (!string.IsNullOrWhiteSpace(line.Symbol))
+                {
+                    yield return ("ledger", line.Symbol!.Trim().ToUpperInvariant(), line.AccountName);
+                }
+            }
+        }
+    }
+
+    private static ReconciliationBreakSeverity MapSecurityValidationSeverity(SecurityValidationSeverityDto severity)
+        => severity switch
+        {
+            SecurityValidationSeverityDto.Critical => ReconciliationBreakSeverity.Critical,
+            SecurityValidationSeverityDto.Error => ReconciliationBreakSeverity.High,
+            SecurityValidationSeverityDto.Warning => ReconciliationBreakSeverity.Medium,
+            SecurityValidationSeverityDto.Info => ReconciliationBreakSeverity.Info,
+            _ => ReconciliationBreakSeverity.Medium
+        };
 
     /// <summary>
     /// Builds a symbol-keyed authoritative Security Master map from security references that were

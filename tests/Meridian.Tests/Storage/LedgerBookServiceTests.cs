@@ -272,7 +272,8 @@ public sealed class LedgerBookServiceTests
             expense: 50m,
             timestamp: DateTimeOffset.Parse("2026-06-30T21:00:00Z")) with
         {
-            PostingKind = LedgerPostingKindDto.Adjustment
+            PostingKind = LedgerPostingKindDto.Adjustment,
+            AdjustmentApproval = BuildApprovedAdjustmentApproval()
         };
 
         var originatingAct = () => store.AppendAsync(originating);
@@ -553,6 +554,17 @@ public sealed class LedgerBookServiceTests
             PeriodId: periodId);
     }
 
+    private static LedgerAdjustmentApprovalMetadataDto BuildApprovedAdjustmentApproval() =>
+        new(
+            ApprovalId: "approval-ledger-adjustment-1",
+            Status: LedgerAdjustmentApprovalStatusDto.Approved,
+            ApprovedBy: "fund-controller",
+            ApprovedAt: DateTimeOffset.Parse("2026-06-30T22:00:00Z"),
+            ReasonCode: "month-end-true-up",
+            GovernanceCaseId: "case-ledger-close-1",
+            EvidenceLink: "evidence://ledger/adjustment/approval-1",
+            Notes: "Controller approved soft-close true-up.");
+
     private static string ReadMigration(string fileName)
     {
         var root = FindRepoRoot();
@@ -622,7 +634,8 @@ public sealed class LedgerBookServiceTests
                 entry.RuleVersion,
                 entry.SourceEventId,
                 entry.SourceJournalEntryId,
-                entry.PostingKind));
+                entry.PostingKind,
+                entry.AdjustmentApproval));
             return Task.CompletedTask;
         }
 

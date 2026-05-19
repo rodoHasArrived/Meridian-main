@@ -31,6 +31,13 @@ role of every active plan file.
 `publish.ps1 -SizeOptimized`, and `build/scripts/publish/measure-size.ps1`. Treat that as
 developer/release support evidence only; it does not change the W2-W4 readiness gates.
 
+2026-05-19 repo evidence adds governance support rather than a readiness exit: ledger
+`posting_kind` guards, report-pack validation/lifecycle metadata, retained evidence-vault manifest
+lookup, hardened reconciliation case persistence/audit transitions, account-sync history/readiness
+DTOs, and an in-flight Security Master validation-gate/snapshot slice. These should be read as W3/W4
+support evidence; durable close casework, report publication controls, full Evidence Vault, and
+live-readiness remain open.
+
 ---
 
 ## Canonical Program State

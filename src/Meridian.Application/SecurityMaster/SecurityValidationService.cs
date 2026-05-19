@@ -35,13 +35,16 @@ public sealed class SecurityValidationService : ISecurityValidationService
 
     private readonly ISecurityMasterStore _store;
     private readonly AssetClassValidatorRegistry _assetClassValidators;
+    private readonly IOperatorOverridesStore? _operatorOverridesStore;
 
     public SecurityValidationService(
         ISecurityMasterStore store,
-        AssetClassValidatorRegistry assetClassValidators)
+        AssetClassValidatorRegistry assetClassValidators,
+        IOperatorOverridesStore? operatorOverridesStore = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _assetClassValidators = assetClassValidators ?? throw new ArgumentNullException(nameof(assetClassValidators));
+        _operatorOverridesStore = operatorOverridesStore;
     }
 
     public async Task<SecurityValidationReportDto> ValidateSecurityAsync(Guid securityId, CancellationToken ct = default)
@@ -67,7 +70,11 @@ public sealed class SecurityValidationService : ISecurityValidationService
                 ]);
         }
 
-        return ValidateRecord(record, universe, DateTimeOffset.UtcNow);
+        var evaluatedAt = DateTimeOffset.UtcNow;
+        var issues = ValidateRecord(record, universe, evaluatedAt).Issues.ToList();
+        issues.AddRange(await ValidateOperatorOverridesAsync(securityId, ct).ConfigureAwait(false));
+
+        return BuildReport(record.SecurityId, "Security", evaluatedAt, issues);
     }
 
     public async Task<SecurityValidationReportDto> ValidateUniverseAsync(CancellationToken ct = default)
@@ -82,6 +89,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
         {
             ct.ThrowIfCancellationRequested();
             issues.AddRange(ValidateRecord(record, universe, evaluatedAtUtc).Issues);
+            issues.AddRange(await ValidateOperatorOverridesAsync(record.SecurityId, ct).ConfigureAwait(false));
         }
 
         return BuildReport(null, "Universe", evaluatedAtUtc, issues);
@@ -385,6 +393,66 @@ public sealed class SecurityValidationService : ISecurityValidationService
                 "The record does not expose an accounting classification for ledger posting and report grouping.",
                 ["commonTerms.accountingClassification", "assetSpecificTerms.accountingClassification", "assetSpecificTerms.classification"],
                 "Attach the ledger/reporting accounting classification before journal generation relies on the record."));
+        }
+
+        return issues;
+    }
+
+    private async Task<IReadOnlyList<SecurityValidationIssueDto>> ValidateOperatorOverridesAsync(
+        Guid securityId,
+        CancellationToken ct)
+    {
+        if (_operatorOverridesStore is null)
+        {
+            return [];
+        }
+
+        var overrides = await _operatorOverridesStore.GetAsync(securityId, ct).ConfigureAwait(false);
+        if (overrides is null || overrides.Values.Count == 0)
+        {
+            return [];
+        }
+
+        var issues = new List<SecurityValidationIssueDto>();
+        if (overrides.ApprovalStatus != SecurityOverrideApprovalStatusDto.Approved)
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_OVERRIDE_APPROVAL_REQUIRED",
+                "Operator override requires approval",
+                "The record has operator override values that are not approved for governed run, ledger, reconciliation, or report-pack use.",
+                ["operatorOverrides", "operatorOverrides.approvalStatus"],
+                "Route the override through reviewer approval or remove the override before governed workflows consume the record.",
+                [
+                    new SecurityEvidenceLinkDto(
+                        EvidenceKind: "SecurityOperatorOverride",
+                        EvidenceId: securityId.ToString(),
+                        Route: UiApiRoutes.SecurityMasterOperatorOverrides.Replace("{securityId:guid}", securityId.ToString(), StringComparison.Ordinal),
+                        Summary: $"Override approval status is {overrides.ApprovalStatus}.")
+                ]));
+        }
+
+        if (overrides.ApprovalStatus == SecurityOverrideApprovalStatusDto.Approved
+            && (string.IsNullOrWhiteSpace(overrides.ReviewedBy) || overrides.ReviewedAt is null))
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_OVERRIDE_SIGNOFF_INCOMPLETE",
+                "Operator override sign-off is incomplete",
+                "Approved operator overrides must include reviewer identity and reviewed-at timestamp for audit reconstruction.",
+                ["operatorOverrides.reviewedBy", "operatorOverrides.reviewedAt"],
+                "Capture reviewer sign-off metadata before using this override in governed workflows."));
+        }
+
+        if (overrides.AuditTrail.Count == 0)
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Warning,
+                "SM_OVERRIDE_AUDIT_TRAIL_MISSING",
+                "Operator override audit trail is missing",
+                "The override row does not expose immutable audit events for its current values.",
+                ["operatorOverrides.auditTrail"],
+                "Backfill or migrate override audit events so governance review can reconstruct who changed and approved the values."));
         }
 
         return issues;

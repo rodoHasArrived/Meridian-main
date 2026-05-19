@@ -105,9 +105,10 @@ builds fall back to typed fixture data for the initial dashboard bootstrap GETs 
 mutation workflows still require the Meridian API.
 
 Current web evidence support includes the `/reporting/evidence` workbench plus shared evidence
-APIs for subjects, packet/graph inspection, validation, and manifest export. Treat that as
-browser-visible support for run, readiness, reconciliation, report-pack, provider-trust, and export
-evidence, not as completion of the full Evidence Vault or report-line provenance roadmap.
+APIs for subjects, packet/graph inspection, validation, manifest export, and retained manifest
+lookup through the evidence-vault index. Treat that as browser-visible support for run, readiness,
+reconciliation, report-pack, provider-trust, and export evidence, not as completion of the full
+Evidence Vault or report-line provenance roadmap.
 
 Current browser workstation support also includes Overview portfolio-at-a-glance and Today-panel
 market posture with view-model owned status-banner and refresh-command presentation, Portfolio position and run-evidence tables
@@ -138,6 +139,13 @@ UI-service JSON persistence now routes config, export preset, and quality archiv
 `AtomicFileWriter`, and the Meridian Design System now has reference workbench and tokenized-color
 support evidence. Treat these as support evidence for Waves 2-4, not completion of durable
 reconciliation casework, report-pack, cockpit, or live-readiness gates.
+
+Current governance support also includes ledger `posting_kind` preservation and closed-period
+posting guards, structured report-pack validation/lifecycle metadata, hardened reconciliation case
+storage/audit/status transitions, account-sync history/readiness DTOs, and a Security Master
+validation-gate/snapshot slice in the active worktree. These are Wave 3/Wave 4 support evidence, not
+approval of live trading, report publication, full close workflow readiness, or Evidence Vault
+completion.
 
 ### MCP server (minimal) — `src/Meridian.Mcp`
 

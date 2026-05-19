@@ -45,6 +45,25 @@ public enum LedgerPostingKindDto
     Adjustment = 1
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<LedgerAdjustmentApprovalStatusDto>))]
+public enum LedgerAdjustmentApprovalStatusDto
+{
+    Pending = 0,
+    Approved = 1,
+    Rejected = 2,
+    Superseded = 3
+}
+
+public sealed record LedgerAdjustmentApprovalMetadataDto(
+    string ApprovalId,
+    LedgerAdjustmentApprovalStatusDto Status,
+    string ApprovedBy,
+    DateTimeOffset ApprovedAt,
+    string ReasonCode,
+    string? GovernanceCaseId = null,
+    string? EvidenceLink = null,
+    string? Notes = null);
+
 public sealed record CreateAccountingPolicyRequest(
     AccountingBasisKindDto AccountingBasis,
     string PolicyId,

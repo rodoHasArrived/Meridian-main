@@ -34,3 +34,43 @@ public sealed record SecurityValidationReportDto(
     int CriticalIssueCount,
     int ErrorIssueCount,
     IReadOnlyList<SecurityValidationIssueDto> Issues);
+
+[JsonConverter(typeof(JsonStringEnumConverter<SecurityValidationWorkflowDto>))]
+public enum SecurityValidationWorkflowDto
+{
+    Unknown = 0,
+    StrategyRunPreflight = 1,
+    LedgerPosting = 2,
+    ReconciliationBreakIntake = 3,
+    ReportPackEvidence = 4,
+    OverrideApproval = 5
+}
+
+public sealed record SecurityValidationSnapshotRequestDto(
+    SecurityValidationWorkflowDto Workflow,
+    string? WorkflowReference,
+    string? Actor,
+    string Reason,
+    IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
+
+public sealed record SecurityValidationSnapshotDto(
+    Guid SnapshotId,
+    Guid? SecurityId,
+    string Scope,
+    SecurityValidationWorkflowDto Workflow,
+    string? WorkflowReference,
+    string? Actor,
+    string Reason,
+    DateTimeOffset RecordedAtUtc,
+    string ReportHashSha256,
+    SecurityValidationReportDto Report,
+    IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
+
+public sealed record SecurityValidationGateResultDto(
+    SecurityValidationWorkflowDto Workflow,
+    string? Symbol,
+    Guid? SecurityId,
+    bool IsResolved,
+    bool IsBlocked,
+    SecurityValidationReportDto Report,
+    SecurityValidationSnapshotDto? Snapshot);

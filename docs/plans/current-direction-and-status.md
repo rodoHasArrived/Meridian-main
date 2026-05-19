@@ -56,6 +56,13 @@ output now belongs under ignored `artifacts/publish/` paths, the publish script 
 `build/scripts/publish/measure-size.ps1` reports common generated-output roots. Treat this as
 developer/release tooling support, not a Wave 2-4 product-readiness claim.
 
+The newer May 19 governance/accounting evidence is also support evidence, not closure: ledger
+`posting_kind` guards, report-pack validation/lifecycle metadata, retained evidence-vault manifest
+lookup, reconciliation case storage/audit hardening, account-sync history/readiness DTOs, and the
+active Security Master validation-gate/snapshot slice all reinforce W3/W4 continuity. They do not
+close durable casework, report publication controls, Evidence Vault, close workflow, or
+live-readiness.
+
 W2/W3/W4 claim discipline: every new roadmap or status claim for these waves must either map to a
 `pilot-readiness.*` stage gate that turns green in the latest harness output or name the blocker in
 that stage gate's `blockers` list. The current stage mapping is:

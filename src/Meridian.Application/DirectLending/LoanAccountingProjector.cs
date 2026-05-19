@@ -32,7 +32,8 @@ public sealed class LoanAccountingProjector
         Guid sourceEventId,
         DirectLendingEventWriteMetadata metadata,
         CancellationToken ct,
-        LedgerPostingKindDto postingKind = LedgerPostingKindDto.Originating)
+        LedgerPostingKindDto postingKind = LedgerPostingKindDto.Originating,
+        LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null)
     {
         if (_journalStore is null)
         {
@@ -186,7 +187,8 @@ public sealed class LoanAccountingProjector
                 RuleId: eventType,
                 RuleVersion: policy.Version,
                 SourceEventId: sourceEventId,
-                PostingKind: postingKind)
+                PostingKind: postingKind,
+                AdjustmentApproval: adjustmentApproval)
         ];
     }
 

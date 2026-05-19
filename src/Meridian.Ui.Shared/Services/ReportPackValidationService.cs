@@ -1,4 +1,5 @@
 using Meridian.Application.Services;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Ui.Shared.Services;
@@ -11,7 +12,8 @@ public sealed record ReportPackValidationContext(
     ReconciliationSummary Reconciliation,
     int RunCount,
     int SecurityMissingCount,
-    IReadOnlyList<GovernanceReportArtifactFormatDto> Formats);
+    IReadOnlyList<GovernanceReportArtifactFormatDto> Formats,
+    IReadOnlyList<SecurityValidationGateResultDto>? SecurityValidationResults = null);
 
 public sealed class ReportPackValidationService
 {
@@ -70,6 +72,8 @@ public sealed class ReportPackValidationService
                 suggestedAction: "Complete Security Master classification for unresolved report symbols.",
                 evidenceLink: "/workstation/data/security-master"));
         }
+
+        issues.AddRange(BuildSecurityMasterValidationIssues(context));
 
         if (context.Reconciliation.OpenBreakCount > 0)
         {
@@ -172,4 +176,39 @@ public sealed class ReportPackValidationService
             AffectedPeriod: context.AsOf,
             SuggestedAction: suggestedAction,
             EvidenceLink: evidenceLink);
+
+    private static IReadOnlyList<FundReportPackValidationIssueDto> BuildSecurityMasterValidationIssues(
+        ReportPackValidationContext context)
+    {
+        var validationResults = context.SecurityValidationResults ?? [];
+        var issues = new List<FundReportPackValidationIssueDto>();
+
+        foreach (var result in validationResults)
+        {
+            foreach (var issue in result.Report.Issues)
+            {
+                if (issue.Severity == SecurityValidationSeverityDto.Info)
+                {
+                    continue;
+                }
+
+                var securityLabel = result.Symbol ?? result.SecurityId?.ToString() ?? "unresolved-security";
+                issues.Add(new FundReportPackValidationIssueDto(
+                    Code: $"report-pack.security-master.{issue.Code.ToLowerInvariant()}",
+                    Severity: issue.Severity is SecurityValidationSeverityDto.Critical or SecurityValidationSeverityDto.Error
+                        ? GovernanceReportValidationSeverityDto.Critical
+                        : GovernanceReportValidationSeverityDto.Warning,
+                    Title: issue.Title,
+                    Message: issue.Message,
+                    AffectedReportId: context.ReportId,
+                    AffectedSection: "security-master",
+                    AffectedSecurity: securityLabel,
+                    AffectedPeriod: context.AsOf,
+                    SuggestedAction: issue.SuggestedAction,
+                    EvidenceLink: issue.EvidenceLinks.FirstOrDefault()?.Route ?? "/workstation/data/security-master"));
+            }
+        }
+
+        return issues;
+    }
 }

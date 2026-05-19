@@ -49,6 +49,26 @@ public sealed class AccrualLedgerServiceTests
         writes[0].PostingKind.Should().Be(LedgerPostingKindDto.Adjustment);
     }
 
+    [Fact]
+    public async Task ReverseAccrualAsync_PreservesAdjustmentApprovalMetadata()
+    {
+        var period = BuildOpenPeriod();
+        var service = CreateService(period);
+        var loanId = Guid.NewGuid();
+        var approval = BuildApprovedAdjustmentApproval();
+
+        var writes = await service.ReverseAccrualAsync(
+            loanId,
+            BuildContract(loanId),
+            BuildAccrualEntry(),
+            Guid.NewGuid(),
+            BuildMetadata(),
+            adjustmentApproval: approval);
+
+        writes.Should().ContainSingle();
+        writes[0].AdjustmentApproval.Should().BeEquivalentTo(approval);
+    }
+
     private static AccrualLedgerService CreateService(LedgerAccountingPeriod period)
     {
         var projector = new LoanAccountingProjector(
@@ -88,6 +108,16 @@ public sealed class AccrualLedgerServiceTests
             CommandId: Guid.NewGuid(),
             SourceSystem: "unit-test",
             ReplayFlag: false);
+
+    private static LedgerAdjustmentApprovalMetadataDto BuildApprovedAdjustmentApproval() =>
+        new(
+            ApprovalId: "approval-direct-lending-reversal-1",
+            Status: LedgerAdjustmentApprovalStatusDto.Approved,
+            ApprovedBy: "fund-controller",
+            ApprovedAt: DateTimeOffset.Parse("2026-03-24T13:00:00Z"),
+            ReasonCode: "accrual-reversal",
+            GovernanceCaseId: "case-direct-lending-reversal-1",
+            EvidenceLink: "evidence://ledger/direct-lending/reversal-approval-1");
 
     private static LoanContractDetailDto BuildContract(Guid loanId)
     {

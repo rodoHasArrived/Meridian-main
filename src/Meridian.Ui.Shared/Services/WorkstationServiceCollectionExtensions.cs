@@ -1,4 +1,5 @@
 using Meridian.Application.Config.Credentials;
+using Meridian.Application.Backtesting;
 using Meridian.Application.FundStructure;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
@@ -76,6 +77,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<StrategyRunReadService>();
         services.TryAddSingleton<CashFlowProjectionService>();
         services.TryAddSingleton<StrategyRunContinuityService>();
+        services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
 
         services.TryAddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
         services.TryAddSingleton<BrokerageConnectionService>();

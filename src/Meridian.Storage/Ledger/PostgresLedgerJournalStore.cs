@@ -451,6 +451,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 source_event_id,
                 source_journal_entry_id,
                 posting_kind,
+                adjustment_approval_metadata,
                 occurred_at,
                 description,
                 metadata)
@@ -468,6 +469,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 @source_event_id,
                 @source_journal_entry_id,
                 @posting_kind,
+                cast(@adjustment_approval_metadata as jsonb),
                 @occurred_at,
                 @description,
                 cast(@metadata as jsonb));
@@ -485,6 +487,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         command.Parameters.AddWithValue("source_event_id", (object?)entry.SourceEventId ?? DBNull.Value);
         command.Parameters.AddWithValue("source_journal_entry_id", (object?)entry.SourceJournalEntryId ?? DBNull.Value);
         command.Parameters.AddWithValue("posting_kind", entry.PostingKind.ToString());
+        command.Parameters.AddWithValue("adjustment_approval_metadata", SerializeAdjustmentApproval(entry.AdjustmentApproval));
         command.Parameters.AddWithValue("occurred_at", entry.Entry.Timestamp.UtcDateTime);
         command.Parameters.AddWithValue("description", entry.Entry.Description);
         command.Parameters.AddWithValue("metadata", JsonSerializer.Serialize(entry.Entry.Metadata.Normalize(), JsonOptions));
@@ -551,6 +554,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                     source_event_id,
                     source_journal_entry_id,
                     posting_kind,
+                    adjustment_approval_metadata,
                     occurred_at,
                     account_name,
                     account_type,
@@ -575,6 +579,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                     @source_event_id,
                     @source_journal_entry_id,
                     @posting_kind,
+                    cast(@adjustment_approval_metadata as jsonb),
                     @occurred_at,
                     @account_name,
                     @account_type,
@@ -599,6 +604,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             command.Parameters.AddWithValue("source_event_id", (object?)entry.SourceEventId ?? DBNull.Value);
             command.Parameters.AddWithValue("source_journal_entry_id", (object?)entry.SourceJournalEntryId ?? DBNull.Value);
             command.Parameters.AddWithValue("posting_kind", entry.PostingKind.ToString());
+            command.Parameters.AddWithValue("adjustment_approval_metadata", SerializeAdjustmentApproval(entry.AdjustmentApproval));
             command.Parameters.AddWithValue("occurred_at", leg.Timestamp.UtcDateTime);
             command.Parameters.AddWithValue("account_name", leg.Account.Name);
             command.Parameters.AddWithValue("account_type", leg.Account.AccountType.ToString());
@@ -630,6 +636,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                    je.source_event_id,
                    je.source_journal_entry_id,
                    je.posting_kind,
+                   je.adjustment_approval_metadata::text,
                    je.occurred_at,
                    je.description,
                    je.metadata::text,
@@ -682,26 +689,27 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                     SourceEventId: reader.IsDBNull(11) ? null : reader.GetGuid(11),
                     SourceJournalEntryId: reader.IsDBNull(12) ? null : reader.GetGuid(12),
                     PostingKind: Enum.Parse<LedgerPostingKindDto>(reader.GetString(13), ignoreCase: true),
-                    Timestamp: ReadUtcDateTimeOffset(reader, 14),
-                    Description: reader.GetString(15),
-                    Metadata: DeserializeMetadata(reader.GetString(16)),
-                    CreatedAt: ReadUtcDateTimeOffset(reader, 17));
+                    AdjustmentApproval: reader.IsDBNull(14) ? null : DeserializeAdjustmentApproval(reader.GetString(14)),
+                    Timestamp: ReadUtcDateTimeOffset(reader, 15),
+                    Description: reader.GetString(16),
+                    Metadata: DeserializeMetadata(reader.GetString(17)),
+                    CreatedAt: ReadUtcDateTimeOffset(reader, 18));
             }
 
-            var accountType = Enum.Parse<LedgerAccountType>(reader.GetString(20), ignoreCase: true);
+            var accountType = Enum.Parse<LedgerAccountType>(reader.GetString(21), ignoreCase: true);
             var account = new LedgerAccount(
-                reader.GetString(19),
+                reader.GetString(20),
                 accountType,
-                reader.IsDBNull(21) ? null : reader.GetString(21),
-                reader.IsDBNull(22) ? null : reader.GetString(22));
+                reader.IsDBNull(22) ? null : reader.GetString(22),
+                reader.IsDBNull(23) ? null : reader.GetString(23));
             current.Lines.Add(new LedgerEntry(
-                reader.GetGuid(18),
+                reader.GetGuid(19),
                 journalEntryId,
-                ReadUtcDateTimeOffset(reader, 26),
+                ReadUtcDateTimeOffset(reader, 27),
                 account,
-                reader.GetDecimal(23),
                 reader.GetDecimal(24),
-                reader.GetString(25)));
+                reader.GetDecimal(25),
+                reader.GetString(26)));
         }
 
         if (current is not null)
@@ -991,6 +999,13 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
     private static JournalEntryMetadata DeserializeMetadata(string json)
         => JsonSerializer.Deserialize<JournalEntryMetadata>(json, JsonOptions) ?? new JournalEntryMetadata();
 
+    private static object SerializeAdjustmentApproval(LedgerAdjustmentApprovalMetadataDto? approval)
+        => approval is null ? DBNull.Value : JsonSerializer.Serialize(approval, JsonOptions);
+
+    private static LedgerAdjustmentApprovalMetadataDto DeserializeAdjustmentApproval(string json)
+        => JsonSerializer.Deserialize<LedgerAdjustmentApprovalMetadataDto>(json, JsonOptions)
+           ?? throw new LedgerValidationException("Stored adjustment approval metadata is invalid.");
+
     private static string RequireLineageText(string value, string parameterName)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -1026,6 +1041,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         Guid? SourceEventId,
         Guid? SourceJournalEntryId,
         LedgerPostingKindDto PostingKind,
+        LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval,
         DateTimeOffset Timestamp,
         string Description,
         JournalEntryMetadata Metadata,
@@ -1049,6 +1065,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 RuleVersion,
                 SourceEventId,
                 SourceJournalEntryId,
-                PostingKind);
+                PostingKind,
+                AdjustmentApproval);
     }
 }

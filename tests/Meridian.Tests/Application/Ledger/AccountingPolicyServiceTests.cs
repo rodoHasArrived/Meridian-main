@@ -60,14 +60,17 @@ public sealed class AccountingPolicyServiceTests
     {
         var policyService = new AccountingPolicyService();
         var projectionService = new AccountingBasisProjectionService(policyService);
+        var approval = BuildApprovedAdjustmentApproval();
 
         var result = await projectionService.ProjectAsync(new AccountingBasisProjectionRequest(
             SourceEntry: BuildBalancedJournalEntry(),
             AggregateId: Guid.NewGuid(),
             PeriodId: Guid.NewGuid(),
-            PostingKind: LedgerPostingKindDto.Adjustment));
+            PostingKind: LedgerPostingKindDto.Adjustment,
+            AdjustmentApproval: approval));
 
         result.Write.PostingKind.Should().Be(LedgerPostingKindDto.Adjustment);
+        result.Write.AdjustmentApproval.Should().BeEquivalentTo(approval);
     }
 
     [Fact]
@@ -128,4 +131,14 @@ public sealed class AccountingPolicyServiceTests
                     "GAAP accrual projection")
             ]);
     }
+
+    private static LedgerAdjustmentApprovalMetadataDto BuildApprovedAdjustmentApproval() =>
+        new(
+            ApprovalId: "approval-gaap-adjustment-1",
+            Status: LedgerAdjustmentApprovalStatusDto.Approved,
+            ApprovedBy: "fund-controller",
+            ApprovedAt: DateTimeOffset.Parse("2026-05-13T13:00:00Z"),
+            ReasonCode: "basis-adjustment",
+            GovernanceCaseId: "case-gaap-approval-1",
+            EvidenceLink: "evidence://ledger/adjustment/gaap-approval-1");
 }

@@ -51,7 +51,8 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
         DailyAccrualEntryDto accrual,
         Guid sourceEventId,
         DirectLendingEventWriteMetadata metadata,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null)
     {
         using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
         {
@@ -73,6 +74,7 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
             sourceEventId,
             metadata,
             ct,
-            LedgerPostingKindDto.Adjustment);
+            LedgerPostingKindDto.Adjustment,
+            adjustmentApproval);
     }
 }

@@ -295,6 +295,61 @@ public sealed class FundStructureEndpointTests
         payload.Scope.DisplayName.Should().Be(LedgerGroupId.UnassignedValue);
     }
 
+    [Fact]
+    public async Task AccountReadinessAndSyncHistoryEndpoints_ReturnSharedAccountSyncState()
+    {
+        var accountService = _fixture.Services.GetRequiredService<IFundAccountService>();
+        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: Guid.NewGuid(),
+            AccountType: AccountTypeDto.Bank,
+            AccountCode: $"BANK-{Guid.NewGuid():N}"[..13].ToUpperInvariant(),
+            DisplayName: "Endpoint Sync Bank",
+            BaseCurrency: "USD",
+            EffectiveFrom: new DateTimeOffset(2026, 4, 10, 0, 0, 0, TimeSpan.Zero),
+            CreatedBy: "endpoint-test",
+            LedgerReference: "ENDPOINT-CASH",
+            BankDetails: new BankAccountDetailsDto(
+                AccountNumber: "99887766",
+                BankName: "Meridian Bank",
+                BranchName: null,
+                Iban: null,
+                BicSwift: null,
+                RoutingNumber: null,
+                SortCode: null,
+                IntermediaryBankBic: null,
+                IntermediaryBankName: null,
+                BeneficiaryName: null,
+                BeneficiaryAddress: null)));
+        await accountService.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
+            AccountId: account.AccountId,
+            Capability: "bank-balances",
+            Status: AccountSyncStatusDto.Succeeded,
+            ProviderLinkStatus: AccountProviderLinkStatusDto.Verified,
+            ProviderId: "meridian-bank",
+            ExternalAccountId: "99887766",
+            FreshUntil: DateTimeOffset.UtcNow.AddHours(1),
+            RawEvidencePath: "artifacts/account-sync/bank/raw.json",
+            CorrelationId: "endpoint-sync-history"));
+
+        var historyResponse = await _client.GetAsync($"/api/fund-accounts/{account.AccountId}/sync-history?capability=bank-balances");
+        var readinessResponse = await _client.GetAsync($"/api/fund-accounts/{account.AccountId}/readiness");
+
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var history = await historyResponse.Content.ReadFromJsonAsync<AccountSyncHistoryEntryDto[]>();
+        var readiness = await readinessResponse.Content.ReadFromJsonAsync<AccountReadinessSnapshotDto>();
+
+        history.Should().NotBeNull();
+        history!.Should().ContainSingle(entry =>
+            entry.AccountId == account.AccountId
+            && entry.Status == AccountSyncStatusDto.Succeeded
+            && entry.ProviderId == "meridian-bank");
+        readiness.Should().NotBeNull();
+        readiness!.IsReady.Should().BeTrue();
+        readiness.ProviderLinkStatus.Should().Be(AccountProviderLinkStatusDto.Verified);
+        readiness.Issues.Should().BeEmpty();
+    }
+
     private async Task<SeededFundWorkspace> SeedFundWorkspaceAsync(IReadOnlyList<string>? runIds = null)
     {
         var fundProfileId = $"fund-endpoint-{Guid.NewGuid():N}";

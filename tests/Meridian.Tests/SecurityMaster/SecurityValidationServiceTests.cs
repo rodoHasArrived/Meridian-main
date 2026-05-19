@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Storage;
 using Meridian.Storage.SecurityMaster;
 using NSubstitute;
 
@@ -134,6 +135,93 @@ public sealed class SecurityValidationServiceTests
         _ = store.DidNotReceive().LoadAllAsync(Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task Scenario_PendingOperatorOverride_ProducesApprovalIssue()
+    {
+        var securityId = Guid.NewGuid();
+        var record = CreateProjection(
+            securityId,
+            "Equity",
+            [CreateIdentifier(SecurityIdentifierKind.Ticker, "AAPL", isPrimary: true)]);
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<SecurityProjectionRecord>>([record]));
+        var overridesStore = Substitute.For<IOperatorOverridesStore>();
+        overridesStore.GetAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(new OperatorOverridesDto(
+                securityId,
+                new Dictionary<string, string> { ["sector"] = "Technology" },
+                "operator",
+                Now)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending,
+                ReasonCode = "CLASSIFICATION_CORRECTION"
+            });
+        var service = new SecurityValidationService(
+            store,
+            AssetClassValidatorRegistry.CreateDefault(),
+            overridesStore);
+
+        var report = await service.ValidateSecurityAsync(securityId);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_OVERRIDE_APPROVAL_REQUIRED"
+            && issue.Severity == SecurityValidationSeverityDto.Error
+            && issue.EvidenceLinks.Any(link => link.EvidenceKind == "SecurityOperatorOverride"));
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_OVERRIDE_AUDIT_TRAIL_MISSING"
+            && issue.Severity == SecurityValidationSeverityDto.Warning);
+    }
+
+    [Fact]
+    public async Task Scenario_FileSnapshotStore_AppendsImmutableValidationSnapshot()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-security-validation-{Guid.NewGuid():N}");
+        try
+        {
+            var store = new FileSecurityValidationSnapshotStore(new StorageOptions { RootPath = root });
+            var report = new SecurityValidationReportDto(
+                SecurityId: Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                Scope: "Security",
+                EvaluatedAtUtc: Now,
+                HasBlockingIssues: true,
+                CriticalIssueCount: 0,
+                ErrorIssueCount: 1,
+                Issues:
+                [
+                    SecurityValidationIssueFactoryForTests.Issue(
+                        "SM_IDENTIFIER_MISSING",
+                        "Active identifier is missing")
+                ]);
+
+            var snapshot = await store.RecordAsync(
+                report,
+                new SecurityValidationSnapshotRequestDto(
+                    SecurityValidationWorkflowDto.ReportPackEvidence,
+                    "report-1",
+                    "reviewer",
+                    "Governance report-pack evidence gate.",
+                    []));
+
+            snapshot.SnapshotId.Should().NotBe(Guid.Empty);
+            snapshot.ReportHashSha256.Should().HaveLength(64);
+            var file = Directory.GetFiles(
+                Path.Combine(root, "governance", "security-master", "validation-snapshots"),
+                "*.jsonl").Should().ContainSingle().Which;
+            var line = File.ReadLines(file).Should().ContainSingle().Which;
+            line.Should().Contain("SM_IDENTIFIER_MISSING");
+            line.Should().Contain("report-1");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
     private static SecurityProjectionRecord CreateProjection(
         Guid securityId,
         string assetClass,
@@ -184,4 +272,17 @@ public sealed class SecurityValidationServiceTests
             Now.AddDays(-1),
             ValidTo: null,
             Provider: provider);
+
+    private static class SecurityValidationIssueFactoryForTests
+    {
+        public static SecurityValidationIssueDto Issue(string code, string title)
+            => new(
+                SecurityValidationSeverityDto.Error,
+                code,
+                title,
+                $"{title}.",
+                ["identifiers"],
+                "Correct the Security Master record.",
+                []);
+    }
 }
