@@ -6,6 +6,8 @@ namespace Meridian.Ui.Tests.Services;
 
 public sealed class OAuthRefreshServiceTests
 {
+    private const string CheckAndRefreshOperationName = "CheckAndRefreshTokensAsync";
+
     [Fact]
     public async Task SafeCheckAndRefreshTokensAsync_WhenWrapperThrows_ShouldEmitFailureEventAndLog()
     {
@@ -23,7 +25,7 @@ public sealed class OAuthRefreshServiceTests
 
         service.WrapperFailureCount.Should().Be(1);
         evt.Should().NotBeNull();
-        evt!.OperationName.Should().Be("CheckAndRefreshTokensAsync");
+        evt!.OperationName.Should().Be(CheckAndRefreshOperationName);
         evt.Exception.Should().BeOfType<InvalidOperationException>();
         evt.EmittedStructuredLog.Should().BeTrue();
         logger.Entries.Should().ContainSingle(x => x.LogLevel == LogLevel.Error && x.Message.Contains("CheckAndRefreshTokensAsync"));

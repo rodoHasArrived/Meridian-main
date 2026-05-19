@@ -71,6 +71,10 @@ public sealed class OAuthRefreshService : IDisposable
     /// <summary>
     /// Creates a new OAuth refresh service instance with explicit dependencies.
     /// </summary>
+    /// <param name="credentialService">Credential service implementation used for token operations.</param>
+    /// <param name="logger">
+    /// Optional logger instance. When null, <see cref="NullLogger{T}.Instance"/> is used.
+    /// </param>
     public static OAuthRefreshService Create(
         CredentialService credentialService,
         ILogger<OAuthRefreshService>? logger = null)
