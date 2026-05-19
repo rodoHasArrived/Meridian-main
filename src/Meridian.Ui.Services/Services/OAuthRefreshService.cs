@@ -1,5 +1,7 @@
 using System.Threading;
 using System.Timers;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Ui.Services;
 
@@ -10,14 +12,20 @@ namespace Meridian.Ui.Services;
 public sealed class OAuthRefreshService : IDisposable
 {
     private static readonly Lazy<OAuthRefreshService> _instance = new(() => new OAuthRefreshService());
+    private static readonly TimeSpan WrapperFailureLogThrottleWindow = TimeSpan.FromMinutes(1);
+    private static readonly ILoggerFactory SingletonLoggerFactory = LoggerFactory.Create(static _ => { });
     /// <summary>
     /// Gets the singleton instance of the OAuth refresh service.
     /// </summary>
     public static OAuthRefreshService Instance => _instance.Value;
 
     private readonly CredentialService _credentialService;
+    private readonly ILogger<OAuthRefreshService> _logger;
     private readonly System.Timers.Timer _refreshTimer;
     private readonly System.Timers.Timer _expirationCheckTimer;
+    private readonly Dictionary<string, DateTime> _lastWrapperFailureLogByOperation = new(StringComparer.Ordinal);
+    private readonly object _wrapperFailureSync = new();
+    private int _wrapperFailureCount;
     private bool _isRunning;
     private bool _disposed;
 
@@ -45,10 +53,26 @@ public sealed class OAuthRefreshService : IDisposable
     /// Event raised when a token is about to expire and cannot be auto-refreshed.
     /// </summary>
     public event EventHandler<TokenExpirationWarningEventArgs>? TokenExpirationWarning;
+    /// <summary>
+    /// Event raised when a wrapper-level timer operation fails.
+    /// </summary>
+    public event EventHandler<OAuthWrapperFailureEventArgs>? WrapperOperationFailed;
+
+    /// <summary>
+    /// Count of wrapper-level failures observed by safe background wrappers.
+    /// </summary>
+    public int WrapperFailureCount => Volatile.Read(ref _wrapperFailureCount);
 
     private OAuthRefreshService()
+        : this(new CredentialService(), SingletonLoggerFactory.CreateLogger<OAuthRefreshService>())
     {
-        _credentialService = new CredentialService();
+    }
+
+    internal OAuthRefreshService(CredentialService credentialService, ILogger<OAuthRefreshService>? logger = null)
+    {
+        ArgumentNullException.ThrowIfNull(credentialService);
+        _credentialService = credentialService;
+        _logger = logger ?? NullLogger<OAuthRefreshService>.Instance;
 
         _refreshTimer = new System.Timers.Timer(CheckIntervalMs);
         _refreshTimer.Elapsed += OnRefreshTimerElapsed;
@@ -179,8 +203,9 @@ public sealed class OAuthRefreshService : IDisposable
         {
             await CheckAndRefreshTokensAsync();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            RecordWrapperFailure(nameof(CheckAndRefreshTokensAsync), ex);
         }
     }
 
@@ -190,8 +215,64 @@ public sealed class OAuthRefreshService : IDisposable
         {
             await CheckExpiringTokensAsync();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            RecordWrapperFailure(nameof(CheckExpiringTokensAsync), ex);
+        }
+    }
+
+    internal Task InvokeSafeCheckAndRefreshTokensForTestsAsync(CancellationToken ct = default)
+        => SafeCheckAndRefreshTokensAsync(ct);
+
+    internal Task InvokeSafeCheckExpiringTokensForTestsAsync(CancellationToken ct = default)
+        => SafeCheckExpiringTokensAsync(ct);
+
+    private void RecordWrapperFailure(string operationName, Exception ex)
+    {
+        Interlocked.Increment(ref _wrapperFailureCount);
+
+        var now = DateTime.UtcNow;
+        var shouldLog = true;
+        lock (_wrapperFailureSync)
+        {
+            if (_lastWrapperFailureLogByOperation.TryGetValue(operationName, out var lastLoggedAt) &&
+                now - lastLoggedAt < WrapperFailureLogThrottleWindow)
+            {
+                shouldLog = false;
+            }
+            else
+            {
+                _lastWrapperFailureLogByOperation[operationName] = now;
+            }
+        }
+
+        if (shouldLog)
+        {
+            _logger.LogError(
+                ex,
+                "OAuth refresh background wrapper failed for operation {OperationName}.",
+                operationName);
+        }
+
+        var handlers = WrapperOperationFailed;
+        if (handlers is null)
+        {
+            return;
+        }
+
+        foreach (EventHandler<OAuthWrapperFailureEventArgs> handler in handlers.GetInvocationList())
+        {
+            try
+            {
+                handler(this, new OAuthWrapperFailureEventArgs(operationName, ex, now, shouldLog));
+            }
+            catch (Exception eventEx)
+            {
+                _logger.LogError(
+                    eventEx,
+                    "OAuth refresh wrapper failure event handler threw for operation {OperationName}.",
+                    operationName);
+            }
         }
     }
 
@@ -373,5 +454,24 @@ public sealed class TokenExpirationWarningEventArgs : EventArgs
         ProviderId = providerId;
         ExpiresAt = expiresAt;
         CanAutoRefresh = canAutoRefresh;
+    }
+}
+
+/// <summary>
+/// Event args for wrapper-level failures in background safe wrappers.
+/// </summary>
+public sealed class OAuthWrapperFailureEventArgs : EventArgs
+{
+    public string OperationName { get; }
+    public Exception Exception { get; }
+    public DateTime OccurredAtUtc { get; }
+    public bool EmittedStructuredLog { get; }
+
+    public OAuthWrapperFailureEventArgs(string operationName, Exception exception, DateTime occurredAtUtc, bool emittedStructuredLog)
+    {
+        OperationName = operationName;
+        Exception = exception;
+        OccurredAtUtc = occurredAtUtc;
+        EmittedStructuredLog = emittedStructuredLog;
     }
 }
