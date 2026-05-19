@@ -64,9 +64,17 @@ public sealed class OAuthRefreshService : IDisposable
     public int WrapperFailureCount => Volatile.Read(ref _wrapperFailureCount);
 
     private OAuthRefreshService()
-        : this(new CredentialService(), SingletonLoggerFactory.CreateLogger<OAuthRefreshService>())
+        : this(CredentialService.Instance, SingletonLoggerFactory.CreateLogger<OAuthRefreshService>())
     {
     }
+
+    /// <summary>
+    /// Creates a new OAuth refresh service instance with explicit dependencies.
+    /// </summary>
+    public static OAuthRefreshService Create(
+        CredentialService credentialService,
+        ILogger<OAuthRefreshService>? logger = null)
+        => new(credentialService, logger);
 
     internal OAuthRefreshService(CredentialService credentialService, ILogger<OAuthRefreshService>? logger = null)
     {
@@ -99,7 +107,7 @@ public sealed class OAuthRefreshService : IDisposable
         _expirationCheckTimer.Start();
 
         // Perform initial check
-        _ = CheckAndRefreshTokensAsync();
+        _ = SafeCheckAndRefreshTokensAsync();
     }
 
     /// <summary>
