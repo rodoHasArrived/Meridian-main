@@ -52,6 +52,22 @@ public sealed class AccountingPolicyServiceTests
         result.Write.RuleVersion.Should().Be("rule-v2");
         result.Write.SourceEventId.Should().Be(sourceEventId);
         result.Write.SourceJournalEntryId.Should().Be(sourceJournalEntryId);
+        result.Write.PostingKind.Should().Be(LedgerPostingKindDto.Originating);
+    }
+
+    [Fact]
+    public async Task ProjectAsync_PreservesAdjustmentPostingKindOnJournalWrite()
+    {
+        var policyService = new AccountingPolicyService();
+        var projectionService = new AccountingBasisProjectionService(policyService);
+
+        var result = await projectionService.ProjectAsync(new AccountingBasisProjectionRequest(
+            SourceEntry: BuildBalancedJournalEntry(),
+            AggregateId: Guid.NewGuid(),
+            PeriodId: Guid.NewGuid(),
+            PostingKind: LedgerPostingKindDto.Adjustment));
+
+        result.Write.PostingKind.Should().Be(LedgerPostingKindDto.Adjustment);
     }
 
     [Fact]

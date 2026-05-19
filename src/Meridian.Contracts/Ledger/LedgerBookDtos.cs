@@ -38,6 +38,13 @@ public enum LedgerPeriodSignoffStatusDto
     Rejected = 3
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<LedgerPostingKindDto>))]
+public enum LedgerPostingKindDto
+{
+    Originating = 0,
+    Adjustment = 1
+}
+
 public sealed record CreateAccountingPolicyRequest(
     AccountingBasisKindDto AccountingBasis,
     string PolicyId,

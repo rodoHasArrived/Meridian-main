@@ -103,7 +103,11 @@ public sealed class LedgerBookServiceTests
             new DateOnly(2026, 5, 1),
             new DateOnly(2026, 5, 31)));
 
-        var act = () => store.AppendAsync(BuildBalancedEntry(period.PeriodId, revenue: 1_200m, expense: 300m));
+        var act = () => store.AppendAsync(BuildBalancedEntry(
+            period.PeriodId,
+            revenue: 1_200m,
+            expense: 300m,
+            timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z")));
 
         await act.Should().ThrowAsync<LedgerValidationException>()
             .WithMessage("*basis 'Primary'*basis 'Gaap'*");
@@ -140,11 +144,20 @@ public sealed class LedgerBookServiceTests
             "2026-P01",
             new DateOnly(2026, 1, 1),
             new DateOnly(2026, 1, 31),
-            "HardClosed",
+            "Open",
             DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
-            DateTimeOffset.Parse("2026-02-01T00:00:00Z"),
+            null,
             0), expectedVersion: 0);
-        await store.AppendAsync(BuildBalancedEntry(previous.PeriodId, revenue: 800m, expense: 300m));
+        await store.AppendAsync(BuildBalancedEntry(
+            previous.PeriodId,
+            revenue: 800m,
+            expense: 300m,
+            timestamp: DateTimeOffset.Parse("2026-01-31T21:00:00Z")));
+        await store.SavePeriodAsync(previous with
+        {
+            Status = "HardClosed",
+            ClosedAt = DateTimeOffset.Parse("2026-02-01T00:00:00Z")
+        }, expectedVersion: previous.Version);
 
         var current = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
             book.LedgerBookId,
@@ -223,6 +236,51 @@ public sealed class LedgerBookServiceTests
 
         await act.Should().ThrowAsync<LedgerPeriodTransitionException>()
             .WithMessage("*Cannot transition*SoftClosed to SoftClosed*");
+    }
+
+    [Fact]
+    public async Task AppendAsync_AfterSoftClose_AllowsOnlyAdjustmentPostingKind()
+    {
+        var store = new InMemoryLedgerJournalStore();
+        var service = new PostgresLedgerBookService(store);
+        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
+            "alpha-fund",
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            "Alpha Fund",
+            "USD"));
+        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
+            book.LedgerBookId,
+            2026,
+            6,
+            "2026-P06",
+            new DateOnly(2026, 6, 1),
+            new DateOnly(2026, 6, 30)));
+
+        await service.ClosePeriodAsync(
+            period.PeriodId,
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, "fund-controller"));
+
+        var originating = BuildBalancedEntry(
+            period.PeriodId,
+            revenue: 400m,
+            expense: 100m,
+            timestamp: DateTimeOffset.Parse("2026-06-30T21:00:00Z"));
+        var adjustment = BuildBalancedEntry(
+            period.PeriodId,
+            revenue: 200m,
+            expense: 50m,
+            timestamp: DateTimeOffset.Parse("2026-06-30T21:00:00Z")) with
+        {
+            PostingKind = LedgerPostingKindDto.Adjustment
+        };
+
+        var originatingAct = () => store.AppendAsync(originating);
+        var adjustmentAct = () => store.AppendAsync(adjustment);
+
+        await originatingAct.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*soft-closed*Adjustment*");
+        await adjustmentAct.Should().NotThrowAsync();
     }
 
     [Fact]
@@ -444,17 +502,21 @@ public sealed class LedgerBookServiceTests
         return app;
     }
 
-    private static LedgerJournalEntryWrite BuildBalancedEntry(Guid periodId, decimal revenue, decimal expense)
+    private static LedgerJournalEntryWrite BuildBalancedEntry(
+        Guid periodId,
+        decimal revenue,
+        decimal expense,
+        DateTimeOffset? timestamp = null)
     {
         var journalEntryId = Guid.NewGuid();
-        var timestamp = DateTimeOffset.Parse("2026-02-28T21:00:00Z");
+        var occurredAt = timestamp ?? DateTimeOffset.Parse("2026-02-28T21:00:00Z");
         const string description = "Month-end revenue and expense posting";
         var lines = new[]
         {
             new LedgerEntry(
                 Guid.NewGuid(),
                 journalEntryId,
-                timestamp,
+                occurredAt,
                 new LedgerAccount("Cash", LedgerAccountType.Asset),
                 debit: revenue,
                 credit: 0m,
@@ -462,7 +524,7 @@ public sealed class LedgerBookServiceTests
             new LedgerEntry(
                 Guid.NewGuid(),
                 journalEntryId,
-                timestamp,
+                occurredAt,
                 new LedgerAccount("Management fees", LedgerAccountType.Revenue),
                 debit: 0m,
                 credit: revenue,
@@ -470,7 +532,7 @@ public sealed class LedgerBookServiceTests
             new LedgerEntry(
                 Guid.NewGuid(),
                 journalEntryId,
-                timestamp,
+                occurredAt,
                 new LedgerAccount("Operating expense", LedgerAccountType.Expense),
                 debit: expense,
                 credit: 0m,
@@ -478,7 +540,7 @@ public sealed class LedgerBookServiceTests
             new LedgerEntry(
                 Guid.NewGuid(),
                 journalEntryId,
-                timestamp,
+                occurredAt,
                 new LedgerAccount("Cash", LedgerAccountType.Asset),
                 debit: 0m,
                 credit: expense,
@@ -486,7 +548,7 @@ public sealed class LedgerBookServiceTests
         };
 
         return new LedgerJournalEntryWrite(
-            new JournalEntry(journalEntryId, timestamp, description, lines),
+            new JournalEntry(journalEntryId, occurredAt, description, lines),
             AggregateId: Guid.NewGuid(),
             PeriodId: periodId);
     }
@@ -529,6 +591,8 @@ public sealed class LedgerBookServiceTests
                 throw new LedgerValidationException($"Accounting period '{entry.PeriodId}' was not found.");
             }
 
+            LedgerPeriodPostingGuard.Validate(entry, period);
+
             if (period.LedgerBookId is { } ledgerBookId &&
                 _books.TryGetValue(ledgerBookId, out var book) &&
                 book.AccountingBasis != entry.AccountingBasis)
@@ -557,7 +621,8 @@ public sealed class LedgerBookServiceTests
                 entry.RuleId,
                 entry.RuleVersion,
                 entry.SourceEventId,
-                entry.SourceJournalEntryId));
+                entry.SourceJournalEntryId,
+                entry.PostingKind));
             return Task.CompletedTask;
         }
 

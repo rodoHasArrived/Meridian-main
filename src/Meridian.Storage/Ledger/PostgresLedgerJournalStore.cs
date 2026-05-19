@@ -72,7 +72,20 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             throw new LedgerValidationException($"Journal entry '{entry.Entry.JournalEntryId}' is not balanced.");
         }
 
-        await ValidateJournalBasisAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        var period = await LoadPeriodAsync(
+                connection,
+                transaction,
+                entry.PeriodId,
+                forUpdate: _options.EnablePeriodLocking,
+                ct)
+            .ConfigureAwait(false);
+        if (period is null)
+        {
+            throw new LedgerValidationException($"Ledger period '{entry.PeriodId}' was not found.");
+        }
+
+        LedgerPeriodPostingGuard.Validate(entry, period);
+        await ValidateJournalBasisAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await InsertJournalLegsAsync(connection, transaction, entry, ct).ConfigureAwait(false);
     }
@@ -437,6 +450,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 rule_version,
                 source_event_id,
                 source_journal_entry_id,
+                posting_kind,
                 occurred_at,
                 description,
                 metadata)
@@ -453,6 +467,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 @rule_version,
                 @source_event_id,
                 @source_journal_entry_id,
+                @posting_kind,
                 @occurred_at,
                 @description,
                 cast(@metadata as jsonb));
@@ -469,6 +484,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         command.Parameters.AddWithValue("rule_version", (object?)NormalizeOptional(entry.RuleVersion) ?? DBNull.Value);
         command.Parameters.AddWithValue("source_event_id", (object?)entry.SourceEventId ?? DBNull.Value);
         command.Parameters.AddWithValue("source_journal_entry_id", (object?)entry.SourceJournalEntryId ?? DBNull.Value);
+        command.Parameters.AddWithValue("posting_kind", entry.PostingKind.ToString());
         command.Parameters.AddWithValue("occurred_at", entry.Entry.Timestamp.UtcDateTime);
         command.Parameters.AddWithValue("description", entry.Entry.Description);
         command.Parameters.AddWithValue("metadata", JsonSerializer.Serialize(entry.Entry.Metadata.Normalize(), JsonOptions));
@@ -479,22 +495,11 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         LedgerJournalEntryWrite entry,
+        LedgerAccountingPeriod period,
         CancellationToken ct)
     {
         _ = RequireLineageText(entry.AccountingPolicyId, nameof(entry.AccountingPolicyId));
         _ = RequireLineageText(entry.AccountingPolicyVersion, nameof(entry.AccountingPolicyVersion));
-
-        var period = await LoadPeriodAsync(
-                connection,
-                transaction,
-                entry.PeriodId,
-                forUpdate: false,
-                ct)
-            .ConfigureAwait(false);
-        if (period is null)
-        {
-            throw new LedgerValidationException($"Ledger period '{entry.PeriodId}' was not found.");
-        }
 
         if (period.LedgerBookId is not { } ledgerBookId)
         {
@@ -545,6 +550,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                     rule_version,
                     source_event_id,
                     source_journal_entry_id,
+                    posting_kind,
                     occurred_at,
                     account_name,
                     account_type,
@@ -568,6 +574,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                     @rule_version,
                     @source_event_id,
                     @source_journal_entry_id,
+                    @posting_kind,
                     @occurred_at,
                     @account_name,
                     @account_type,
@@ -591,6 +598,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             command.Parameters.AddWithValue("rule_version", (object?)NormalizeOptional(entry.RuleVersion) ?? DBNull.Value);
             command.Parameters.AddWithValue("source_event_id", (object?)entry.SourceEventId ?? DBNull.Value);
             command.Parameters.AddWithValue("source_journal_entry_id", (object?)entry.SourceJournalEntryId ?? DBNull.Value);
+            command.Parameters.AddWithValue("posting_kind", entry.PostingKind.ToString());
             command.Parameters.AddWithValue("occurred_at", leg.Timestamp.UtcDateTime);
             command.Parameters.AddWithValue("account_name", leg.Account.Name);
             command.Parameters.AddWithValue("account_type", leg.Account.AccountType.ToString());
@@ -621,6 +629,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                    je.rule_version,
                    je.source_event_id,
                    je.source_journal_entry_id,
+                   je.posting_kind,
                    je.occurred_at,
                    je.description,
                    je.metadata::text,
@@ -672,26 +681,27 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                     RuleVersion: reader.IsDBNull(10) ? null : reader.GetString(10),
                     SourceEventId: reader.IsDBNull(11) ? null : reader.GetGuid(11),
                     SourceJournalEntryId: reader.IsDBNull(12) ? null : reader.GetGuid(12),
-                    Timestamp: ReadUtcDateTimeOffset(reader, 13),
-                    Description: reader.GetString(14),
-                    Metadata: DeserializeMetadata(reader.GetString(15)),
-                    CreatedAt: ReadUtcDateTimeOffset(reader, 16));
+                    PostingKind: Enum.Parse<LedgerPostingKindDto>(reader.GetString(13), ignoreCase: true),
+                    Timestamp: ReadUtcDateTimeOffset(reader, 14),
+                    Description: reader.GetString(15),
+                    Metadata: DeserializeMetadata(reader.GetString(16)),
+                    CreatedAt: ReadUtcDateTimeOffset(reader, 17));
             }
 
-            var accountType = Enum.Parse<LedgerAccountType>(reader.GetString(19), ignoreCase: true);
+            var accountType = Enum.Parse<LedgerAccountType>(reader.GetString(20), ignoreCase: true);
             var account = new LedgerAccount(
-                reader.GetString(18),
+                reader.GetString(19),
                 accountType,
-                reader.IsDBNull(20) ? null : reader.GetString(20),
-                reader.IsDBNull(21) ? null : reader.GetString(21));
+                reader.IsDBNull(21) ? null : reader.GetString(21),
+                reader.IsDBNull(22) ? null : reader.GetString(22));
             current.Lines.Add(new LedgerEntry(
-                reader.GetGuid(17),
+                reader.GetGuid(18),
                 journalEntryId,
-                ReadUtcDateTimeOffset(reader, 25),
+                ReadUtcDateTimeOffset(reader, 26),
                 account,
-                reader.GetDecimal(22),
                 reader.GetDecimal(23),
-                reader.GetString(24)));
+                reader.GetDecimal(24),
+                reader.GetString(25)));
         }
 
         if (current is not null)
@@ -1015,6 +1025,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         string? RuleVersion,
         Guid? SourceEventId,
         Guid? SourceJournalEntryId,
+        LedgerPostingKindDto PostingKind,
         DateTimeOffset Timestamp,
         string Description,
         JournalEntryMetadata Metadata,
@@ -1037,6 +1048,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 RuleId,
                 RuleVersion,
                 SourceEventId,
-                SourceJournalEntryId);
+                SourceJournalEntryId,
+                PostingKind);
     }
 }

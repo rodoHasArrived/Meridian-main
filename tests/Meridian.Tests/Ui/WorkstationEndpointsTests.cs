@@ -679,7 +679,28 @@ public sealed class WorkstationEndpointsTests
                     SecurityMissingCount: 0,
                     SourceSnapshotHash: new string('a', 64)),
                 Artifacts: [],
-                Warnings: []),
+                Warnings: [])
+            {
+                Status = GovernanceReportPackStatusDto.Validated,
+                ValidationIssues = [],
+                LifecycleEvents =
+                [
+                    new FundReportPackLifecycleEventDto(
+                        FromStatus: GovernanceReportPackStatusDto.Draft,
+                        ToStatus: GovernanceReportPackStatusDto.Generated,
+                        ChangedAt: new DateTimeOffset(2026, 4, 24, 16, 5, 0, TimeSpan.Zero),
+                        Actor: "ops.lead",
+                        Reason: "Test report pack generated.",
+                        CorrelationId: "wave2-report-pack"),
+                    new FundReportPackLifecycleEventDto(
+                        FromStatus: GovernanceReportPackStatusDto.Generated,
+                        ToStatus: GovernanceReportPackStatusDto.Validated,
+                        ChangedAt: new DateTimeOffset(2026, 4, 24, 16, 5, 0, TimeSpan.Zero),
+                        Actor: "ops.lead",
+                        Reason: "Test report pack validated.",
+                        CorrelationId: "wave2-report-pack")
+                ]
+            },
             [new GovernanceReportPackArtifactContent(
                 "trial-balance",
                 GovernanceReportArtifactFormatDto.Json,

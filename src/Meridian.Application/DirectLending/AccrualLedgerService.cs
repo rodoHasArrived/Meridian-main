@@ -1,4 +1,5 @@
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.Ledger;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
 
@@ -71,6 +72,7 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
             payload,
             sourceEventId,
             metadata,
-            ct);
+            ct,
+            LedgerPostingKindDto.Adjustment);
     }
 }

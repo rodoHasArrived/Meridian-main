@@ -131,7 +131,7 @@ public sealed class SecurityValidationServiceTests
         var act = () => service.ValidateSecurityAsync(Guid.NewGuid(), cts.Token);
 
         await act.Should().ThrowAsync<OperationCanceledException>();
-        store.DidNotReceive().LoadAllAsync(Arg.Any<CancellationToken>());
+        _ = store.DidNotReceive().LoadAllAsync(Arg.Any<CancellationToken>());
     }
 
     private static SecurityProjectionRecord CreateProjection(

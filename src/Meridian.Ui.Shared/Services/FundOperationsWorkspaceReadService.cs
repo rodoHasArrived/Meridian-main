@@ -59,6 +59,7 @@ public sealed class FundOperationsWorkspaceReadService
     private readonly NavAttributionService _navAttributionService;
     private readonly ReportGenerationService _reportGenerationService;
     private readonly IGovernanceReportPackRepository? _reportPackRepository;
+    private readonly ReportPackValidationService _reportPackValidationService;
 
     public FundOperationsWorkspaceReadService(
         IFundAccountService fundAccountService,
@@ -68,7 +69,8 @@ public sealed class FundOperationsWorkspaceReadService
         ReportGenerationService reportGenerationService,
         ISecurityReferenceLookup? securityReferenceLookup = null,
         IReconciliationRunService? strategyReconciliationService = null,
-        IGovernanceReportPackRepository? reportPackRepository = null)
+        IGovernanceReportPackRepository? reportPackRepository = null,
+        ReportPackValidationService? reportPackValidationService = null)
     {
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _strategyRepository = strategyRepository ?? throw new ArgumentNullException(nameof(strategyRepository));
@@ -78,6 +80,7 @@ public sealed class FundOperationsWorkspaceReadService
         _securityReferenceLookup = securityReferenceLookup;
         _strategyReconciliationService = strategyReconciliationService;
         _reportPackRepository = reportPackRepository;
+        _reportPackValidationService = reportPackValidationService ?? new ReportPackValidationService();
     }
 
     public async Task<FundOperationsWorkspaceDto> GetWorkspaceAsync(
@@ -265,6 +268,25 @@ public sealed class FundOperationsWorkspaceReadService
         var securityMissingCount = report.TrialBalance.Count(static row =>
             !string.IsNullOrWhiteSpace(row.Symbol)
             && string.Equals(row.LookupQuality, "missing", StringComparison.OrdinalIgnoreCase));
+        var auditActor = request.AuditActor.Trim();
+        var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
+            ? Guid.NewGuid().ToString("N")
+            : request.CorrelationId.Trim();
+        var validationIssues = _reportPackValidationService.Validate(new ReportPackValidationContext(
+            ReportId: report.ReportId,
+            AsOf: asOf,
+            Report: report,
+            Ledger: ledger,
+            Reconciliation: reconciliation,
+            RunCount: runs.Count,
+            SecurityMissingCount: securityMissingCount,
+            Formats: formats));
+        var status = _reportPackValidationService.ResolveStatus(validationIssues);
+        var lifecycleEvents = _reportPackValidationService.BuildGenerationLifecycle(
+            auditActor,
+            correlationId,
+            report.GeneratedAt,
+            status);
         var provenance = new FundReportPackProvenanceDto(
             RelatedRunIds: runs.Select(static run => run.RunId).ToArray(),
             JournalEntryCount: ledger.JournalEntryCount,
@@ -292,10 +314,8 @@ public sealed class FundOperationsWorkspaceReadService
             AsOf: asOf,
             GeneratedAt: report.GeneratedAt,
             TotalNetAssets: report.TotalNetAssets,
-            AuditActor: request.AuditActor.Trim(),
-            CorrelationId: string.IsNullOrWhiteSpace(request.CorrelationId)
-                ? Guid.NewGuid().ToString("N")
-                : request.CorrelationId.Trim(),
+            AuditActor: auditActor,
+            CorrelationId: correlationId,
             DecisionRationale: string.IsNullOrWhiteSpace(request.DecisionRationale)
                 ? null
                 : request.DecisionRationale.Trim(),
@@ -303,7 +323,12 @@ public sealed class FundOperationsWorkspaceReadService
             Artifacts: [],
             Warnings: BuildReportPackWarnings(report, reconciliation, runs.Count, securityMissingCount),
             ContractName: GovernanceReportPackContract.ContractName,
-            SchemaVersion: schemaVersion);
+            SchemaVersion: schemaVersion)
+        {
+            Status = status,
+            ValidationIssues = validationIssues,
+            LifecycleEvents = lifecycleEvents
+        };
 
         return await repository
             .SaveAsync(snapshot, BuildReportPackArtifacts(report, formats, ct), ct)

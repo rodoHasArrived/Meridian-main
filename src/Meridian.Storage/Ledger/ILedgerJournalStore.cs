@@ -60,7 +60,8 @@ public sealed record LedgerJournalEntryWrite(
     string? RuleId = null,
     string? RuleVersion = null,
     Guid? SourceEventId = null,
-    Guid? SourceJournalEntryId = null);
+    Guid? SourceJournalEntryId = null,
+    LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating);
 
 public sealed record LedgerJournalEntryRecord(
     JournalEntry Entry,
@@ -76,7 +77,8 @@ public sealed record LedgerJournalEntryRecord(
     string? RuleId = null,
     string? RuleVersion = null,
     Guid? SourceEventId = null,
-    Guid? SourceJournalEntryId = null);
+    Guid? SourceJournalEntryId = null,
+    LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating);
 
 public sealed record LedgerAccountingPeriod(
     Guid PeriodId,
