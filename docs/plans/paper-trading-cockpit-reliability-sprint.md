@@ -488,3 +488,39 @@ Fixture-seeded success alone is not sufficient for Wave 2 exit.
 3. Confirm promotion trace and audit-control explainability are complete.
 4. Confirm DK1 trust-gate sign-off packet binding is valid for the current packet.
 5. Record operator sign-off evidence and rerun readiness + operator-inbox probes for final packet capture.
+
+
+## Gated Rollout Criteria (Read-Only -> Paper -> Production)
+
+Use this staged gate model for operator rollout decisions. Promotion to the next stage requires all
+mandatory checks to pass and all required evidence artifacts to be attached in the same dated packet.
+
+### Gate Matrix
+
+| Gate Stage | Purpose | Mandatory Compatibility Checks | Mandatory Reconciliation Accuracy Checks | Mandatory Degradation Calibration Checks | Sign-off Owners | Required Evidence Artifacts |
+| --- | --- | --- | --- | --- | --- | --- |
+| Read-Only Validation Gate | Prove contracts and posture projections are safe before enabling order-entry paper workflows. | `contract-compatibility-matrix` must show no blocking deltas for shared readiness DTOs, workstation endpoints, and operator-inbox routing fields; API and consumer surfaces must agree on acceptance-gate precedence and status mapping (`Ready`/`ReviewRequired`/`Blocked`). | Reconciliation queue loads without storage/seed failures; open/in-review break projections are consistent between trading readiness and operator inbox; no unresolved schema/enum mismatch in reconciliation route metadata (exception route, tolerance profile, sign-off role/status). | Latest provider calibration packet is present, internally consistent, and marked pass-ready per `provider-degradation-calibration` governance checks; no summary/packet gate contradiction. | Platform Engineering lead, Contracts owner, Governance/Accounting owner. | 1) Contract compatibility snapshot (`docs/status/contract-compatibility-matrix.md` update or attached report). 2) Readiness + operator-inbox API probe captures. 3) Reconciliation queue projection sample with route/sign-off metadata. 4) Calibration summary + packet consistency report. |
+| Paper Operation Gate | Allow controlled paper-session create/verify/close and promotion-review workflows. | End-to-end scenario continuity across `/api/execution/*`, `/api/promotion/*`, `/api/workstation/trading/readiness`, and `/api/workstation/operator/inbox`; no status-mapping drift between cockpit acceptance cards and shared DTO contract. | Reconciliation accuracy meets policy threshold for sampled runs (no persistent unresolved drift after triage SLA window); open breaks include accountable routing and required sign-off metadata; replay/readiness and reconciliation posture are mutually consistent for account-scoped requests (`fundAccountId`). | Candidate degradation kernel has fresh incident-backed calibration run; pass/fail decision is operator-visible in readiness/governance views; calibration freshness window has not expired. | Trading Operations owner, Reconciliation Operations owner, Risk & Controls owner, QA release owner. | 1) Dated paper-session reliability packet (`create -> replay verify -> stale -> re-verify -> close`). 2) Promotion approve/reject trace packet with operator/rationale/audit linkage. 3) Reconciliation accuracy runbook output and break triage log. 4) Calibration CLI output + signed governance recommendation. |
+| Production Promotion Gate | Permit production execution workflows after paper reliability is continuously proven. | Zero blocking compatibility issues across shared contracts, UI consumers, and retained surfaces; release candidate passes focused contract/regression slices tied to readiness, operator inbox, and promotion trace DTOs. | Reconciliation drift remains within approved tolerance across consecutive readiness windows; no orphaned unresolved critical breaks; governed reporting/reconciliation evidence is complete and sign-off state current. | Production-target kernel version is the same reviewed candidate from paper gate (or newer with a new approved calibration packet); incident replay set coverage is complete for required providers. | Head of Trading, Head of Operations/Accounting, Risk Officer, Release Manager. | 1) Production go/no-go checklist signed by all owners. 2) Consecutive-window reconciliation drift summary and exception decisions. 3) Approved kernel calibration packet + operator sign-off artifact. 4) Release validation bundle linking compatibility, readiness, reconciliation, and promotion trace checks. |
+
+### Operational Rollback Triggers (Mandatory)
+
+Rollback to the previous gate stage is required when any trigger below is observed and cannot be
+cleared inside the defined incident window.
+
+| Trigger Family | Trigger Condition | Immediate Action | Rollback Destination | Required Incident Evidence |
+| --- | --- | --- | --- | --- |
+| Persistent reconciliation drift | Reconciliation variance exceeds approved tolerance for two consecutive monitoring windows, or the same high-severity break reopens after resolution without data correction proof. | Freeze gate advancement, open incident, route to reconciliation owner, and block readiness posture from reporting `ReadyForPaperOperation=true` for affected scope. | Production -> Paper, or Paper -> Read-Only depending on severity and blast radius. | Drift timeline, affected accounts/runs, break IDs, triage notes, and remediation plan with ETA. |
+| Status-mapping failures | Any mismatch where one surface reports `Ready` while shared readiness/acceptance gates resolve to `ReviewRequired` or `Blocked`, including enum/projection desync between API and UI clients. | Mark release state invalid, disable progression, execute compatibility hotfix or rollback build, and re-run compatibility + endpoint parity checks. | Production -> Paper for live mismatches; Paper -> Read-Only for pre-production mismatches. | Before/after payload captures, UI screenshots/logs, version/build IDs, and fixed contract test evidence. |
+| Readiness posture inconsistencies | Trading readiness and operator inbox disagree on blocker severity, work-item routing priority, or account-scoped (`fundAccountId`) posture for the same session/account window. | Treat as control-plane inconsistency, hold promotions/session expansion, reconcile projections, and rerun readiness/inbox probes for the same correlation window. | Production -> Paper, or Paper -> Read-Only if unresolved after one incident cycle. | Paired endpoint responses with timestamps, correlation IDs, route metadata diffs, and resolution verification output. |
+
+### Gate Evidence and Sign-off Workflow
+
+1. Generate a dated gate packet under `artifacts/` that includes compatibility, reconciliation,
+   calibration, and readiness evidence for the same execution window.
+2. Route packet review to the gate's listed sign-off owners; all signatories must either approve or
+   explicitly record a conditional exception with expiry.
+3. Record final decision (`promote`, `hold`, or `rollback`) and cross-link it from status docs used
+   for release governance.
+4. If any mandatory trigger fires post-approval, reopen the gate decision and apply the rollback
+   matrix above before resuming normal promotion flow.
