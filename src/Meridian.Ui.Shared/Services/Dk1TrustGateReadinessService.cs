@@ -23,6 +23,7 @@ public sealed class Dk1TrustGateReadinessService
     ];
 
     private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(30);
+    private const string EvidenceBundleFileName = "provider-validation-evidence-bundle.json";
 
     private readonly Dk1TrustGateReadinessOptions _options;
     private readonly ILogger<Dk1TrustGateReadinessService> _logger;
@@ -201,8 +202,46 @@ public sealed class Dk1TrustGateReadinessService
             SampleReviews = sampleReviews,
             EvidenceDocuments = evidenceDocumentReviews,
             TrustRationaleContract = trustRationaleContract,
-            BaselineThresholdContract = baselineThresholdContract
+            BaselineThresholdContract = baselineThresholdContract,
+            CalibrationVersion = TryGetCalibrationVersion(automationRoot),
+            CalibrationValidatedAt = TryGetCalibrationValidatedAt(automationRoot),
+            PromotionPosture = TryGetPromotionPosture(automationRoot)
         };
+    }
+
+    private static JsonElement? TryGetLatestEvidenceBundle(string automationRoot)
+    {
+        var bundlePath = Directory
+            .EnumerateFiles(automationRoot, EvidenceBundleFileName, SearchOption.AllDirectories)
+            .Select(path => new FileInfo(path))
+            .OrderByDescending(file => file.LastWriteTimeUtc)
+            .Select(file => file.FullName)
+            .FirstOrDefault();
+        if (bundlePath is null)
+        {
+            return null;
+        }
+
+        using var doc = JsonDocument.Parse(File.ReadAllText(bundlePath));
+        return doc.RootElement.Clone();
+    }
+
+    private static string? TryGetCalibrationVersion(string automationRoot)
+    {
+        var bundle = TryGetLatestEvidenceBundle(automationRoot);
+        return GetString(TryGetProperty(TryGetProperty(bundle, "promotionPosture"), "candidateKernelVersion"));
+    }
+
+    private static DateTimeOffset? TryGetCalibrationValidatedAt(string automationRoot)
+    {
+        var bundle = TryGetLatestEvidenceBundle(automationRoot);
+        return TryParseDateTimeOffset(GetString(bundle, "generatedAtUtc"));
+    }
+
+    private static string? TryGetPromotionPosture(string automationRoot)
+    {
+        var bundle = TryGetLatestEvidenceBundle(automationRoot);
+        return GetString(TryGetProperty(TryGetProperty(bundle, "promotionPosture"), "status"));
     }
 
     private string? ResolveAutomationRoot()
