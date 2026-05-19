@@ -1391,6 +1391,12 @@ public sealed class TradingOperatorReadinessService
             runId,
             workItemId: BuildWorkItemId("reconciliation-policy", runId));
     }
+    /// <summary>
+    /// Resolves the aggregate readiness status using deterministic precedence:
+    /// <c>Blocked</c> overrides all other signals, <c>ReviewRequired</c> overrides <c>Ready</c>, and
+    /// <c>Ready</c> is returned only when every gate reports ready.
+    /// This keeps stale replay/trust/promotion signals from being masked by otherwise-green gates.
+    /// </summary>
     private static TradingAcceptanceGateStatusDto ResolveOverallStatus(IReadOnlyList<TradingAcceptanceGateDto> gates)
     {
         if (gates.Any(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked))

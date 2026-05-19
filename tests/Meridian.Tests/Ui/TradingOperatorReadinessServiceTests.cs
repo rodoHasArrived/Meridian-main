@@ -325,6 +325,39 @@ public sealed class TradingOperatorReadinessServiceTests
         readiness.ReadyForPaperOperation.Should().BeFalse();
     }
 
+
+    [Fact]
+    public async Task GetAsync_WithReplayCoverageDrift_ShouldDowngradeReplayGateAndOverallStatus()
+    {
+        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithReplayCoverageDrift_ShouldDowngradeReplayGateAndOverallStatus));
+        var persistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance,
+            auditTrail: auditTrail);
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "strat-precedence",
+            StrategyName: "Precedence Strategy",
+            InitialCash: 100_000m,
+            Symbols: ["AAPL"]));
+        await persistence.VerifyReplayAsync(session.SessionId);
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("drift-order-1", "AAPL", 5m));
+
+        using var provider = new ServiceCollection()
+            .AddSingleton(auditTrail)
+            .AddSingleton(persistence)
+            .BuildServiceProvider();
+        var service = new TradingOperatorReadinessService(provider, NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readiness = await service.GetAsync();
+
+        readiness.AcceptanceGates.Should().ContainSingle(g =>
+            g.GateId == "session" && g.Status == TradingAcceptanceGateStatusDto.Ready);
+        readiness.AcceptanceGates.Should().ContainSingle(g =>
+            g.GateId == "replay" && g.Status == TradingAcceptanceGateStatusDto.ReviewRequired && g.Detail.Contains("stale", StringComparison.OrdinalIgnoreCase));
+        readiness.WorkItems.Should().Contain(item => item.WorkItemId.StartsWith("paper-replay-stale", StringComparison.OrdinalIgnoreCase));
+        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
+        readiness.ReadyForPaperOperation.Should().BeFalse();
+    }
+
     private static ExecutionAuditTrailService CreateAuditTrail(string scenario)
     {
         var root = Path.Combine(
