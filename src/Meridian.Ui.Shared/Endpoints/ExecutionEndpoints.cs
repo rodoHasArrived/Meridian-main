@@ -1029,7 +1029,7 @@ public static class ExecutionEndpoints
     private static IResult? TryRejectOrderRoutingForPhaseGate(IServiceProvider services)
     {
         var configuration = services.GetService<BrokerageConfiguration>();
-        if (configuration is null)
+        if (configuration is null || !IsTradierLiveProductionRouting(configuration))
         {
             return null;
         }
@@ -1065,6 +1065,21 @@ public static class ExecutionEndpoints
         }
 
         return null;
+    }
+
+    private static bool IsTradierLiveProductionRouting(BrokerageConfiguration configuration)
+    {
+        if (!configuration.LiveExecutionEnabled)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(configuration.Gateway))
+        {
+            return false;
+        }
+
+        return string.Equals(configuration.Gateway, "tradier", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool HasExecutionControlPermission(HttpContext context)
