@@ -5,6 +5,9 @@
 
 This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence, with bounded runtime evidence regenerated and attached from the validation run when a provider scenario cannot be closed from checked-in tests. The current signed DK1 evidence is the 2026-04-27 packet set under `artifacts/provider-validation/_automation/2026-04-27/`; future date-stamped packets are current only for the run that produced them and need matching packet-bound sign-off before they can replace that evidence. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.
 
+
+For the unified per-broker phase/blocker/evidence view, see [`provider-integration-status.md`](./provider-integration-status.md).
+
 ## Legend
 
 - ✅ Closed with executable repo evidence
