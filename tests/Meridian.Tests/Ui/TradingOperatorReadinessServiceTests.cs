@@ -6,6 +6,7 @@ using Meridian.Execution.Sdk;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Meridian.Testing;
 
 namespace Meridian.Tests.Ui;
 
@@ -363,6 +364,57 @@ public sealed class TradingOperatorReadinessServiceTests
         readinessAfterDrift.WorkItems.Should().ContainSingle(item =>
             item.WorkItemId.StartsWith("paper-replay-stale", StringComparison.OrdinalIgnoreCase));
         readinessAfterDrift.ReadyForPaperOperation.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetAsync_AfterRestart_ShouldPreserveReplayParityAndExecutionAuditEvidence()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(GetAsync_AfterRestart_ShouldPreserveReplayParityAndExecutionAuditEvidence));
+        var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(artifacts.RootPath, "audit-trail")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var store = new FilePaperSessionStore(
+            Path.Combine(artifacts.RootPath, "paper-sessions"),
+            NullLogger<FilePaperSessionStore>.Instance);
+        var firstPersistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance,
+            store,
+            auditTrail);
+        var session = await firstPersistence.CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "ibkr-restart-parity",
+            StrategyName: "IBKR Restart Parity",
+            InitialCash: 100_000m,
+            Symbols: ["AAPL", "MSFT"]));
+        await firstPersistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("restart-order-1", "AAPL", 15m));
+        await firstPersistence.RecordFillAsync(session.SessionId, CreateExecutionFill("restart-order-1", "AAPL", 15m, 201.25m));
+        var verification = await firstPersistence.VerifyReplayAsync(session.SessionId);
+        verification.Should().NotBeNull();
+
+        var secondPersistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance,
+            store,
+            auditTrail);
+        using var provider = new ServiceCollection()
+            .AddSingleton(auditTrail)
+            .AddSingleton(secondPersistence)
+            .BuildServiceProvider();
+        var service = new TradingOperatorReadinessService(provider, NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readiness = await service.GetAsync();
+
+        readiness.ActiveSession.Should().NotBeNull();
+        readiness.Replay.Should().NotBeNull();
+        readiness.Replay!.IsConsistent.Should().BeTrue();
+        readiness.Replay.VerificationAuditId.Should().Be(verification!.VerificationAuditId);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "session" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "replay" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Ready);
+        readiness.WorkItems.Should().NotContain(item =>
+            item.WorkItemId.StartsWith("paper-replay-stale", StringComparison.OrdinalIgnoreCase) ||
+            item.WorkItemId.StartsWith("paper-replay-mismatch", StringComparison.OrdinalIgnoreCase));
     }
 
     private static ExecutionAuditTrailService CreateAuditTrail(string scenario)
