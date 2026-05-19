@@ -961,6 +961,32 @@ public sealed class PaperSessionReplayTests : IDisposable
 
         verification.Should().BeNull();
     }
+
+    [Fact]
+    public async Task VerifyReplayAsync_WhenLedgerJournalContainsCorruptEntries_ReportsDegradedButKeepsSuccessfulEntries()
+    {
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(_tempDir, "corrupt-ledger-audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var service = Build(new CorruptLedgerReplayStore(), auditTrail);
+        await service.InitialiseAsync();
+
+        var verification = await service.VerifyReplayAsync("PAPER-CORRUPT-001");
+
+        verification.Should().NotBeNull();
+        verification!.ReplayPortfolio.Positions.Should().ContainSingle(position => position.Symbol == "AAPL");
+        verification.CorruptLedgerEntryCount.Should().Be(1);
+        verification.CorruptLedgerEntryIds.Should().Contain("journal-corrupt");
+        verification.IsConsistent.Should().BeFalse();
+        verification.MismatchReasons.Should().Contain(reason =>
+            reason.Contains("skipped 1 corrupt entry", StringComparison.OrdinalIgnoreCase));
+
+        var auditEntries = await auditTrail.GetAllAsync();
+        var auditEntry = auditEntries.Single(entry => entry.AuditId == verification.VerificationAuditId);
+        auditEntry.Outcome.Should().Be("AttentionRequired");
+        auditEntry.Metadata!["corruptLedgerEntryCount"].Should().Be("1");
+        auditEntry.Metadata["corruptLedgerEntryIds"].Should().Contain("journal-corrupt");
+    }
 }
 
 
@@ -994,6 +1020,57 @@ internal sealed class ThrowingLedgerSaveStore : IPaperSessionStore
         string sessionId,
         CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>([]);
+}
+
+internal sealed class CorruptLedgerReplayStore : IPaperSessionStore
+{
+    public Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default) => Task.CompletedTask;
+    public Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default) => Task.CompletedTask;
+    public Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SaveLedgerJournalAsync(string sessionId, IReadOnlyList<PersistedJournalEntryDto> entries, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SaveSessionClosedAtAsync(string sessionId, DateTimeOffset? closedAtUtc, CancellationToken ct = default) => Task.CompletedTask;
+
+    public Task<IReadOnlyList<PersistedSessionRecord>> LoadAllSessionsAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PersistedSessionRecord>>(
+            [new PersistedSessionRecord("PAPER-CORRUPT-001", "strat-corrupt", "Corrupt", 100_000m, DateTimeOffset.UtcNow.AddMinutes(-30), null, true, ["AAPL"])]);
+
+    public Task<IReadOnlyList<ExecutionReport>> LoadFillsAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ExecutionReport>>([new ExecutionReport("fill-1", "AAPL", 10m, 100m, DateTimeOffset.UtcNow.AddMinutes(-20), ExecutionSide.Buy, OrderType.Market)]);
+
+    public Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<OrderState>>([]);
+
+    public Task<IReadOnlyList<PersistedJournalEntryDto>> LoadLedgerJournalAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>(
+        [
+            new PersistedJournalEntryDto(
+                "journal-ok",
+                DateTimeOffset.UtcNow.AddMinutes(-19),
+                "buy entry",
+                [
+                    new PersistedLedgerLineDto("line-1","journal-ok",DateTimeOffset.UtcNow.AddMinutes(-19),new PersistedLedgerAccountDto("Cash","Asset","AAPL",null),0m,1000m,"credit cash"),
+                    new PersistedLedgerLineDto("line-2","journal-ok",DateTimeOffset.UtcNow.AddMinutes(-19),new PersistedLedgerAccountDto("Position","Asset","AAPL",null),1000m,0m,"debit pos")
+                ],
+                "Trade",
+                "AAPL",
+                null,
+                null,
+                "Trading",
+                "strat-corrupt"),
+            new PersistedJournalEntryDto(
+                "journal-corrupt",
+                DateTimeOffset.UtcNow.AddMinutes(-18),
+                "corrupt entry",
+                [
+                    new PersistedLedgerLineDto("line-bad","wrong-journal-id",DateTimeOffset.UtcNow.AddMinutes(-18),new PersistedLedgerAccountDto("Cash","Asset","AAPL",null),100m,0m,"bad")
+                ],
+                "Trade",
+                "AAPL",
+                null,
+                null,
+                "Trading",
+                "strat-corrupt")
+        ]);
 }
 internal sealed class ThrowingOrderUpdateStore : IPaperSessionStore
 {
