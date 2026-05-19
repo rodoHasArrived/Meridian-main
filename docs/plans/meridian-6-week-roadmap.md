@@ -60,6 +60,14 @@ This plan starts from the current repo state:
   account-sync history/readiness DTOs, and an in-flight Security Master validation-gate/snapshot
   service. Use these to strengthen W3/W4 acceptance evidence without claiming durable close, report
   publication, full Evidence Vault, or live-readiness completion
+- current browser-workstation operator-safety support now also includes provider setup feedback
+  that exposes provider-routing connection and binding metadata, credential source, environment,
+  warnings, and Settings trust-snapshot refresh posture; Strategy Designer backend action metadata
+  that separates browser-openable GET routes from reference-only POST validation, preview, and
+  run-backtest mutations; and Reporting export commands that abort superseded same-profile or
+  profile-switch requests. Use these to reduce operator confusion and stale async state without
+  claiming cockpit acceptance, Backtest Studio, governed report-pack lifecycle, or live-readiness
+  completion
 - buyer-facing demo paths, role-based views, readiness dashboards, close workflow previews, and evidence packet actions should be planned for the web dashboard after shared contracts exist; retained WPF coverage should stay limited to support and regression validation
 - the web Research run library already has a support slice for retained-run review, two-run compare/diff readiness, selected run-detail inspection, promotion-history decision detail, command-error alerts, component/view-model coverage, and refreshed built assets; the gated Quant Lab browser surface adds execution/parameter/template and plot-rendering support evidence, with plot geometry and accessibility state now extracted into a reusable view-model module, but strategy-aware launch/preflight, persisted sweep grouping, and Backtest Studio unification remain open
 - the retained WPF workstation shell is already organized around compatibility workspace groupings

@@ -24,6 +24,14 @@ stronger audit/status-transition handling, and Security Master validation gates 
 snapshots in the active worktree. These strengthen the target path but do not complete the full
 Evidence OS, report-line provenance, close workflow, or live-readiness story.
 
+Current browser-workstation safety evidence also narrows the target path without completing it:
+provider setup now makes provider-routing connections, bindings, credential-source, environment,
+warnings, and trust-snapshot refresh posture visible in Data and Settings; Strategy Designer now
+separates browser-openable GET route evidence from reference-only POST validation, preview, and
+run-backtest commands; and Reporting export actions now abort superseded profile exports. These are
+the right direction for an explainable workstation, but report-pack lifecycle, Backtest Studio, and
+live-readiness acceptance remain open.
+
 For the release-level scenario that ties those workspaces together, use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md).
 For the product-category filter and documentation archive rule, use [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md).
 For the consolidated current planning interpretation, use [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md).

@@ -90,6 +90,16 @@ evidence, and override approval workflows. Treat all of this as continuity and g
 evidence, not as completion of durable close casework, report publication, Evidence Vault, or
 live-readiness gates.
 
+2026-05-19 browser-workstation follow-up: the active dashboard now has more operator-safety
+evidence without changing wave status. Provider setup seeds visible provider-routing connection and
+binding metadata, credential source, environment, and warnings, and Settings refreshes
+provider-routing connections, bindings, and trust snapshots after setup and during lightweight
+refresh. Strategy Designer backend route actions now render browser-openable GET routes separately
+from reference-only POST validation, preview, and run-backtest mutations. Reporting export commands
+now propagate `AbortSignal` through `runAnalysisExport` and abort superseded same-profile or
+profile-switch exports before stale results can replace the current selection. Treat these as
+support for W2-W4 operator trust, not cockpit, Backtest Studio, or report-pack lifecycle closure.
+
 Implementation follow-up on the acceleration plan: the golden-path pilot harness is now treated as
 the executable proof lane. `PilotAcceptanceHarnessTests` exercises the shared service and endpoint
 path for trusted data, research run, run comparison, paper promotion, paper session replay,

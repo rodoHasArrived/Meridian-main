@@ -26,6 +26,13 @@ roadmap decision pulls them forward.
 investigation, generated-output ignore rules, and TODO-scan cache hygiene do not change the current
 plan-file classification or move W2-W4 wave status.
 
+2026-05-19 browser-workstation follow-up: provider setup now exposes provider-routing connection,
+binding, credential-source, environment, warning, and trust-snapshot refresh state in Data and
+Settings; Strategy Designer route actions now separate browser-openable GET evidence from
+reference-only POST backtest/validation mutations; and Reporting export commands now abort
+superseded profile exports. These are operator-safety and routing-support deltas, not plan
+reclassification or wave exits.
+
 ## Core Operator-Ready Path
 
 These are the active documents for Waves 2-4 and the current short-horizon execution lane.

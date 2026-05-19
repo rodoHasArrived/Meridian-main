@@ -147,6 +147,15 @@ validation-gate/snapshot slice in the active worktree. These are Wave 3/Wave 4 s
 approval of live trading, report publication, full close workflow readiness, or Evidence Vault
 completion.
 
+Current browser workflow hardening also includes provider-routing visibility after provider setup:
+the Data setup dialog reports created connection, binding, credential-source, environment, and
+warning metadata, and Settings refreshes provider-routing connections, bindings, and trust snapshots
+after setup and during its lightweight refresh cycle. Strategy Designer backend actions now
+distinguish browser-openable GET routes from reference-only POST mutations for validation, preview,
+and backtest commands. Reporting export commands now pass abort signals and suppress superseded
+same-profile or profile-switch export results. Treat these as operator-safety support evidence, not
+completion of provider governance, Backtest Studio, or governed report-pack lifecycle gates.
+
 ### MCP server (minimal) — `src/Meridian.Mcp`
 
 A lightweight [Model Context Protocol](https://modelcontextprotocol.io/) server. Loads tools, prompts, and resources from the assembly and communicates over stdio. Intended for repo-navigation and code-review AI tooling. All diagnostic output goes to stderr; stdout is reserved for the MCP protocol.

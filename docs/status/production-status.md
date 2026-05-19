@@ -13,6 +13,13 @@ storage/audit hardening, account-sync history/readiness DTOs, and an in-flight S
 validation-gate/snapshot slice. These are support evidence for Waves 3-4 and do not change the
 canonical `In Progress` posture for W2-W4.
 
+2026-05-19 browser-workstation note: provider setup and Settings refresh now surface
+provider-routing connection, binding, credential-source, environment, warning, and trust-snapshot
+state; Strategy Designer route actions now separate browser-openable GET evidence from
+reference-only POST validation, preview, and run-backtest actions; and Reporting export commands now
+abort superseded profile exports. These improve operator safety and route semantics, but they are
+not cockpit acceptance, Backtest Studio, governed report-pack lifecycle, or live-readiness exits.
+
 ---
 
 ## Canonical Program State

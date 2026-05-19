@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { runAnalysisExport } from "@/lib/api";
+import type { ApiRequestOptions } from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
 import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath } from "@/lib/workspace";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary } from "@/types";
@@ -85,7 +87,7 @@ export interface ReportingExportStatusState {
 }
 
 export interface ReportingExportServices {
-  runExport: (profileId: string) => Promise<ExportAnalysisResult>;
+  runExport: (profileId: string, options?: ApiRequestOptions) => Promise<ExportAnalysisResult>;
 }
 
 export interface ReportingPackTargetRow {
@@ -222,7 +224,7 @@ export interface ReportingScreenViewModel {
 }
 
 const defaultReportingExportServices: ReportingExportServices = {
-  runExport: (profileId) => runAnalysisExport(profileId)
+  runExport: (profileId, options) => runAnalysisExport(profileId, options)
 };
 
 const REPORT_PACK_PROFILE_ACTIONS_ID = "report-pack-profile-actions";
@@ -239,21 +241,30 @@ export function useReportingScreenViewModel(
   const [runningProfileId, setRunningProfileId] = useState<string | null>(null);
   const [exportStatus, setExportStatus] = useState<ReportingExportStatusState | null>(null);
   const exportCommandRevisionRef = useRef(0);
+  const exportAbortRef = useRef<AbortController | null>(null);
   const detailId = "reporting-profile-detail";
 
   useEffect(() => () => {
     exportCommandRevisionRef.current += 1;
+    exportAbortRef.current?.abort();
+    exportAbortRef.current = null;
   }, []);
 
-  const selectProfile = (id: string) => {
+  const cancelExportCommand = () => {
     exportCommandRevisionRef.current += 1;
+    exportAbortRef.current?.abort();
+    exportAbortRef.current = null;
+    setRunningProfileId(null);
+    setExportStatus(null);
+  };
+
+  const selectProfile = (id: string) => {
+    cancelExportCommand();
     setSelectedId((prev) => {
       const defaultProfileId = reporting ? defaultReportPackProfileId(reporting, pathname) : null;
       const activeId = prev === undefined ? defaultProfileId : prev;
       return activeId === id ? null : id;
     });
-    setRunningProfileId(null);
-    setExportStatus(null);
   };
 
   const selectAdjacentReportPackProfile = (direction: ReportingProfileKeyCommand) => {
@@ -261,34 +272,38 @@ export function useReportingScreenViewModel(
       return;
     }
 
-    exportCommandRevisionRef.current += 1;
+    cancelExportCommand();
     setSelectedId((prev) => {
       const defaultProfileId = defaultReportPackProfileId(reporting, pathname);
       const activeId = prev === undefined ? defaultProfileId : prev;
       return adjacentReportPackProfileId(reporting.profiles, activeId, direction);
     });
-    setRunningProfileId(null);
-    setExportStatus(null);
   };
 
   const runExportCommand = async (profileId: string, profileName: string) => {
     const commandRevision = exportCommandRevisionRef.current + 1;
     exportCommandRevisionRef.current = commandRevision;
+    exportAbortRef.current?.abort();
+    const controller = new AbortController();
+    exportAbortRef.current = controller;
     setRunningProfileId(profileId);
     setExportStatus(buildExportStatusStarting(profileName));
 
     try {
-      const result = await services.runExport(profileId);
+      const result = await services.runExport(profileId, { signal: controller.signal });
       if (exportCommandRevisionRef.current !== commandRevision) {
         return;
       }
       setExportStatus(buildExportStatusResult(profileId, profileName, result));
     } catch (error) {
-      if (exportCommandRevisionRef.current !== commandRevision) {
+      if (exportCommandRevisionRef.current !== commandRevision || isAbortError(error)) {
         return;
       }
       setExportStatus(buildExportStatusFailure(profileName, error));
     } finally {
+      if (exportAbortRef.current === controller) {
+        exportAbortRef.current = null;
+      }
       if (exportCommandRevisionRef.current === commandRevision) {
         setRunningProfileId(null);
       }
@@ -903,20 +918,25 @@ export function buildExportStatusResult(
 }
 
 export function buildExportStatusFailure(profileName: string, error: unknown): ReportingExportStatusState {
-  const message = error instanceof Error ? error.message : "Unknown export error.";
+  const fallback = `${profileName} export failed without backend detail.`;
+  const detail = describeApiError(error, fallback);
 
   return {
-    text: `${profileName} export failed. ${message}`,
+    text: `${profileName} export failed. ${detail.summary}`,
     tone: "danger",
     className: exportStatusToneClass("danger"),
     ariaLabel: "Reporting export status",
     fields: [
       buildReportingDetailField("Profile", profileName, "default"),
-      buildReportingDetailField("Failure", message, "warning")
+      buildReportingDetailField("Failure", detail.summary, "warning")
     ],
-    warnings: [],
+    warnings: detail.details,
     artifacts: []
   };
+}
+
+function isAbortError(error: unknown): boolean {
+  return (error instanceof DOMException || error instanceof Error) && error.name === "AbortError";
 }
 
 function buildExportResultFields(requestedProfileId: string, result: ExportAnalysisResult): ReportingDetailField[] {

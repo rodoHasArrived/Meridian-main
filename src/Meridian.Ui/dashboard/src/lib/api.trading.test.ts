@@ -408,12 +408,14 @@ describe("trading endpoint wiring", () => {
   });
 
   it("wires analysis export as a POST mutation", async () => {
-    await runAnalysisExport("audit-pack");
+    const controller = new AbortController();
+    await runAnalysisExport("audit-pack", { signal: controller.signal });
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/export/analysis",
       expect.objectContaining({
         method: "POST",
+        signal: controller.signal,
         body: JSON.stringify({ profileId: "audit-pack" })
       })
     );

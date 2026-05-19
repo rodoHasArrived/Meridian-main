@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
+import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
@@ -26,6 +27,7 @@ export type BackfillPhase = "idle" | "previewing" | "running";
 export interface BackfillTriggerState {
   validationError: string | null;
   feedbackText: string | null;
+  feedbackDetails: string[];
   feedbackTone: "warning" | "danger" | null;
   canPreview: boolean;
   canRun: boolean;
@@ -591,7 +593,7 @@ export function useDataOperationsViewModel(
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
   const [preview, setPreview] = useState<BackfillTriggerResult | null>(null);
   const [result, setResult] = useState<BackfillTriggerResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
   const backfillCommandRevisionRef = useRef(0);
@@ -601,7 +603,7 @@ export function useDataOperationsViewModel(
   const [providerForm, setProviderForm] = useState<ProviderSetupFormState>(defaultProviderSetupForm);
   const [providerPhase, setProviderPhase] = useState<ProviderSetupPhase>("idle");
   const [providerSetupResult, setProviderSetupResult] = useState<ProviderSetupResult | null>(null);
-  const [providerSetupError, setProviderSetupError] = useState<string | null>(null);
+  const [providerSetupError, setProviderSetupError] = useState<ApiErrorDisplay | null>(null);
   const providerSetupCommandRevisionRef = useRef(0);
   const configuredBackfillProviders = useMemo(
     () => data?.providers ?? [],
@@ -728,7 +730,7 @@ export function useDataOperationsViewModel(
   const previewBackfill = useCallback(async () => {
     const validationError = validateBackfillForm(form, configuredBackfillProviders);
     if (validationError) {
-      setError(validationError);
+      setError(buildDataOperationsErrorState(validationError));
       return;
     }
 
@@ -749,7 +751,7 @@ export function useDataOperationsViewModel(
         return;
       }
       setPreview(null);
-      setError(err instanceof Error ? err.message : "Backfill preview failed.");
+      setError(buildDataOperationsErrorState(err, "Backfill preview failed."));
     } finally {
       if (isCurrentBackfillCommand(commandRevision)) {
         setBusy(false);
@@ -761,12 +763,12 @@ export function useDataOperationsViewModel(
   const runBackfill = useCallback(async () => {
     const validationError = validateBackfillForm(form, configuredBackfillProviders);
     if (validationError) {
-      setError(validationError);
+      setError(buildDataOperationsErrorState(validationError));
       return;
     }
 
     if (!preview) {
-      setError("Preview the request before running the backfill.");
+      setError(buildDataOperationsErrorState("Preview the request before running the backfill."));
       return;
     }
 
@@ -786,7 +788,7 @@ export function useDataOperationsViewModel(
       if (!isCurrentBackfillCommand(commandRevision)) {
         return;
       }
-      setError(err instanceof Error ? err.message : "Backfill run failed.");
+      setError(buildDataOperationsErrorState(err, "Backfill run failed."));
     } finally {
       if (isCurrentBackfillCommand(commandRevision)) {
         setBusy(false);
@@ -849,7 +851,7 @@ export function useDataOperationsViewModel(
   const submitProviderSetup = useCallback(async () => {
     const validationError = validateProviderSetupForm(providerForm);
     if (validationError) {
-      setProviderSetupError(validationError);
+      setProviderSetupError(buildDataOperationsErrorState(validationError));
       return;
     }
 
@@ -885,8 +887,7 @@ export function useDataOperationsViewModel(
       if (!isCurrentProviderSetupCommand(commandRevision)) {
         return;
       }
-      const message = err instanceof Error ? err.message : "Provider setup failed.";
-      setProviderSetupError(message);
+      setProviderSetupError(buildDataOperationsErrorState(err, "Provider setup failed."));
       setProviderPhase("error");
     } finally {
       if (isCurrentProviderSetupCommand(commandRevision)) {
@@ -1475,15 +1476,16 @@ export function buildBackfillTriggerState({
   form: BackfillFormState;
   busy: boolean;
   phase: BackfillPhase;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   preview: BackfillTriggerResult | null;
   result: BackfillTriggerResult | null;
   configuredProviders?: DataOperationsProviderRecord[];
 }): BackfillTriggerState {
   const validationError = validateBackfillForm(form, configuredProviders);
-  const feedbackText = error;
+  const feedbackText = error?.summary ?? null;
+  const feedbackDetails = error?.details ?? [];
   const feedbackTone = error
-    ? error === validationError
+    ? feedbackText === validationError
       ? "warning"
       : "danger"
     : null;
@@ -1491,6 +1493,7 @@ export function buildBackfillTriggerState({
   return {
     validationError,
     feedbackText,
+    feedbackDetails,
     feedbackTone,
     canPreview: !busy && validationError === null,
     canRun: !busy && preview !== null && validationError === null,
@@ -1529,7 +1532,7 @@ export function buildBackfillDialogState({
   phase: BackfillPhase;
   validationError: string | null;
   preview: BackfillTriggerResult | null;
-  error?: string | null;
+  error?: ApiErrorDisplay | null;
   result?: BackfillTriggerResult | null;
   configuredProviders?: DataOperationsProviderRecord[];
 }): BackfillDialogState {
@@ -1760,7 +1763,7 @@ export function buildBackfillFormStatusLabel({
   phase: BackfillPhase;
   validationError: string | null;
   preview: BackfillTriggerResult | null;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   result: BackfillTriggerResult | null;
 }): string {
   if (phase === "previewing") {
@@ -1776,7 +1779,7 @@ export function buildBackfillFormStatusLabel({
   }
 
   if (error) {
-    return error;
+    return error.summary;
   }
 
   if (result?.success) {
@@ -1807,7 +1810,7 @@ function resolveBackfillFormStatusTone({
 }: {
   phase: BackfillPhase;
   validationError: string | null;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   preview: BackfillTriggerResult | null;
   result: BackfillTriggerResult | null;
 }): BackfillDialogState["formStatusTone"] {
@@ -2066,7 +2069,7 @@ function buildBackfillStatusAnnouncement({
   result
 }: {
   phase: BackfillPhase;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   preview: BackfillTriggerResult | null;
   result: BackfillTriggerResult | null;
 }): string {
@@ -2079,7 +2082,7 @@ function buildBackfillStatusAnnouncement({
   }
 
   if (error) {
-    return `Backfill request failed: ${error}`;
+    return `Backfill request failed: ${error.summary}`;
   }
 
   if (result) {
@@ -2207,6 +2210,15 @@ export function buildProviderSetupDialogState(
     successMetadata: buildProviderSetupSuccessMetadata(result),
     successActions: buildProviderSetupSuccessActions(form)
   };
+}
+
+function buildDataOperationsErrorState(error: unknown, fallback?: string): ApiErrorDisplay {
+  if (typeof error === "string") {
+    const summary = error.trim() || (fallback ?? "Request failed.");
+    return { summary, details: [] };
+  }
+
+  return describeApiError(error, fallback ?? "Request failed.");
 }
 
 function buildProviderSetupStatusLabel(phase: ProviderSetupPhase, validationError: string | null): string {

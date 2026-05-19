@@ -38,6 +38,14 @@ DTOs, and an in-flight Security Master validation-gate/snapshot slice. These sho
 support evidence; durable close casework, report publication controls, full Evidence Vault, and
 live-readiness remain open.
 
+2026-05-19 browser-workstation evidence also adds support rather than a readiness exit:
+provider-setup results and Settings refresh now expose provider-routing connection, binding,
+credential-source, environment, warning, and trust-snapshot posture; Strategy Designer backend
+actions distinguish browser-openable GET routes from reference-only POST validation, preview, and
+run-backtest mutations; and Reporting export commands now abort superseded profile exports before
+late results can update the active profile state. These reduce operator confusion but do not close
+cockpit acceptance, Backtest Studio, governed report-pack lifecycle, or live-readiness.
+
 ---
 
 ## Canonical Program State

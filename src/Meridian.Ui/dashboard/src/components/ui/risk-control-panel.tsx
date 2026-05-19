@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getRiskRuleConfig, getRiskRules, updateRiskRuleConfig } from "@/lib/api";
+import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import { buildRiskControlPanelViewModel } from "@/components/ui/risk-control-panel.view-model";
 import type { RiskRuleConfig, RiskRuleStatus } from "@/types";
@@ -16,7 +17,7 @@ const toneClass = {
 export function RiskControlPanel() {
   const [statuses, setStatuses] = useState<RiskRuleStatus[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [drawdownPercent, setDrawdownPercent] = useState<string>("");
 
   const vm = useMemo(() => buildRiskControlPanelViewModel(statuses), [statuses]);
@@ -37,7 +38,7 @@ export function RiskControlPanel() {
         }
       } catch (loadError) {
         if (!cancelled) {
-          setError(loadError instanceof Error ? loadError.message : "Failed to load risk controls.");
+          setError(describeApiError(loadError, "Failed to load risk controls."));
         }
       } finally {
         if (!cancelled) {
@@ -59,7 +60,7 @@ export function RiskControlPanel() {
 
     const parsed = Number(drawdownPercent);
     if (!Number.isFinite(parsed) || parsed <= 0) {
-      setError("Drawdown threshold must be a positive number.");
+      setError({ summary: "Drawdown threshold must be a positive number.", details: [] });
       return;
     }
 
@@ -72,7 +73,7 @@ export function RiskControlPanel() {
       const refreshed = await getRiskRules();
       setStatuses(refreshed);
     } catch (updateError) {
-      setError(updateError instanceof Error ? updateError.message : "Failed to update risk rule config.");
+      setError(describeApiError(updateError, "Failed to update risk rule config."));
     }
   }
 
@@ -83,7 +84,18 @@ export function RiskControlPanel() {
         <CardDescription>{vm.overallSummary}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error ? (
+          <div role="alert" className="rounded-md border border-danger/35 bg-danger/10 px-3 py-2.5 text-sm text-danger">
+            <p>{error.summary}</p>
+            {error.details.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-danger/90">
+                {error.details.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
         <div className="space-y-2">
           {vm.rows.map((row) => (
             <article key={row.ruleName} className="rounded-lg border border-border/70 p-3">

@@ -826,12 +826,21 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
               {vm.providerSetupDialogState.statusLabel}
             </div>
 
-            {vm.providerSetupError && (
-              <div role="alert" className="mt-3 flex items-start gap-2 rounded-lg border border-danger/35 bg-danger/10 px-3 py-2.5 text-sm text-danger">
-                <XCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                <span>{vm.providerSetupError}</span>
-              </div>
-            )}
+        {vm.providerSetupError && (
+          <div role="alert" className="mt-3 flex items-start gap-2 rounded-lg border border-danger/35 bg-danger/10 px-3 py-2.5 text-sm text-danger">
+            <XCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <div className="min-w-0">
+              <div>{vm.providerSetupError.summary}</div>
+              {vm.providerSetupError.details.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-danger/90">
+                  {vm.providerSetupError.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          </div>
+        )}
 
             <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button
@@ -1039,7 +1048,16 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
                 : "border-danger/40 bg-danger/10 text-danger"
             )}
           >
-            {vm.feedbackText}
+            <div className="min-w-0">
+              <div>{vm.feedbackText}</div>
+              {vm.feedbackDetails.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                  {vm.feedbackDetails.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
           </div>
         )}
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>

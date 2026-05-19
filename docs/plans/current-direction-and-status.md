@@ -63,6 +63,15 @@ active Security Master validation-gate/snapshot slice all reinforce W3/W4 contin
 close durable casework, report publication controls, Evidence Vault, close workflow, or
 live-readiness.
 
+The latest May 19 browser-workstation support evidence is likewise support evidence, not a wave
+exit. Provider setup now feeds visible provider-routing connection, binding, credential-source,
+environment, warning, and trust-snapshot refresh state into Data and Settings. Strategy Designer
+backend actions now mark GET endpoints as browser-openable and POST validation/preview/backtest
+commands as reference-only, and Reporting export commands carry abort signals so superseded profile
+exports cannot publish stale status under the wrong selection. These reduce operator confusion and
+late-response races, but they do not close W2 cockpit acceptance, W3 continuity, W4 report-pack
+lifecycle, Backtest Studio, or live-readiness gates.
+
 W2/W3/W4 claim discipline: every new roadmap or status claim for these waves must either map to a
 `pilot-readiness.*` stage gate that turns green in the latest harness output or name the blocker in
 that stage gate's `blockers` list. The current stage mapping is:
