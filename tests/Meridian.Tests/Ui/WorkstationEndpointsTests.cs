@@ -816,13 +816,15 @@ public sealed class WorkstationEndpointsTests
         readiness.WorkItems.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.PromotionReview);
 
         using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
-        trading.RootElement
-            .GetProperty("readiness")
+        var embeddedReadiness = trading.RootElement.GetProperty("readiness");
+        embeddedReadiness
             .GetProperty("activeSession")
             .GetProperty("sessionId")
             .GetString()
             .Should()
             .Be(session.SessionId);
+        embeddedReadiness.GetProperty("overallStatus").GetString().Should().Be(readiness.OverallStatus.ToString());
+        embeddedReadiness.GetProperty("acceptanceGates").GetArrayLength().Should().Be(readiness.AcceptanceGates.Count);
     }
 
     [Fact]
@@ -1027,6 +1029,96 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_ShouldRefreshAfterReplayTrustAndPromotionStateChanges()
+    {
+        var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness-refresh", Guid.NewGuid().ToString("N"));
+        var automationRoot = Path.Combine(rootPath, "provider-validation", "_automation");
+        WriteReadyDk1Packet(automationRoot);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            RegisterPromotionServices(services, Path.Combine(rootPath, "promotions"));
+            services.AddSingleton(new Dk1TrustGateReadinessOptions(automationRoot));
+            services.AddSingleton<Dk1TrustGateReadinessService>();
+            services.AddSingleton(_ => new ExecutionAuditTrailService(
+                new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+                NullLogger<ExecutionAuditTrailService>.Instance));
+            services.AddSingleton<IPaperSessionStore>(_ => new JsonlFilePaperSessionStore(
+                Path.Combine(rootPath, "sessions"),
+                NullLogger<JsonlFilePaperSessionStore>.Instance));
+            services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
+                NullLogger<PaperSessionPersistenceService>.Instance,
+                sp.GetRequiredService<IPaperSessionStore>(),
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-refresh-backtest",
+            strategyId: "strat-refresh",
+            strategyName: "Refresh Strategy",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 4, 28, 14, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")));
+
+        var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto("strat-refresh", "Refresh Strategy", 100_000m, ["AAPL"]));
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("refresh-order-1", "AAPL", 10m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("refresh-order-1", "AAPL", 10m, 190m));
+        var verification = await persistence.VerifyReplayAsync(session.SessionId);
+
+        var client = app.GetTestClient();
+        var before = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(UiApiRoutes.WorkstationTradingReadiness, ServerJsonOptions);
+        before.Should().NotBeNull();
+        before!.Replay!.VerificationAuditId.Should().Be(verification!.VerificationAuditId);
+        before.Promotion!.ApprovalStatus.Should().BeNull();
+        before.TrustGate.OperatorSignoffStatus.Should().Be("pending");
+
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("refresh-order-2", "AAPL", 5m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("refresh-order-2", "AAPL", 5m, 191m));
+        await app.Services.GetRequiredService<IPromotionRecordStore>().AppendAsync(new StrategyPromotionRecord(
+            PromotionId: "promotion-refresh-backtest",
+            StrategyId: "strat-refresh",
+            StrategyName: "Refresh Strategy",
+            SourceRunType: RunType.Backtest,
+            TargetRunType: RunType.Paper,
+            SourceRunId: "run-refresh-backtest",
+            TargetRunId: "run-refresh-paper",
+            QualifyingSharpe: 1.2d,
+            QualifyingMaxDrawdownPercent: 0.05m,
+            QualifyingTotalReturn: 0.12m,
+            Decision: PromotionDecisionKinds.Approved,
+            PromotedAt: new DateTimeOffset(2026, 4, 28, 16, 0, 0, TimeSpan.Zero),
+            ApprovalReason: "Ready after review.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            AuditReference: "audit-refresh-promotion",
+            ApprovedBy: "ops.refresh"));
+        WriteReadyDk1Packet(
+            automationRoot,
+            """
+            {
+              "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "signedOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "status": "signed",
+              "requiredBeforeDk1Exit": true,
+              "signedAtUtc": "2026-04-28T16:00:00Z"
+            }
+            """);
+
+        var after = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(UiApiRoutes.WorkstationTradingReadiness, ServerJsonOptions);
+        after.Should().NotBeNull();
+        after!.ActiveSession!.OrderCount.Should().Be(2);
+        after.Replay!.ComparedOrderCount.Should().Be(1);
+        after.AcceptanceGates.Should().ContainSingle(g => g.GateId == "replay" && g.Status == TradingAcceptanceGateStatusDto.ReviewRequired);
+        after.Promotion!.ApprovalStatus.Should().Be(PromotionDecisionKinds.Approved);
+        after.TrustGate.OperatorSignoffStatus.Should().Be("signed");
+        after.SnapshotVersion.Should().NotBe(before.SnapshotVersion);
+        after.SnapshotMaterializedAt.Should().BeAfter(before.SnapshotMaterializedAt);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_TradingReadiness_ShouldNotUseStalePromotionHistoryForLatestRun()
     {
         var promotionRoot = Path.Combine(
@@ -1211,6 +1303,125 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_ShouldExposeRequiredContractFieldsAndDegradeWhenEvidenceIsMissing()
+    {
+        var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness-contract", Guid.NewGuid().ToString("N"));
+        var automationRoot = Path.Combine(rootPath, "provider-validation", "_automation");
+
+        WriteReadyDk1Packet(
+            automationRoot,
+            packetStatus: "not-ready",
+            blockersJson: """
+                [
+                  "DK1 trust packet requires refreshed provider parity evidence before operator review."
+                ]
+                """);
+
+        try
+        {
+            await using var app = await CreateAppAsync(services =>
+            {
+                RegisterRunReadServices(services);
+                RegisterPromotionServices(services, Path.Combine(rootPath, "promotions"));
+                services.AddSingleton(new Dk1TrustGateReadinessOptions(automationRoot));
+                services.AddSingleton<Dk1TrustGateReadinessService>();
+                services.AddSingleton(_ => new ExecutionAuditTrailService(
+                    new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+                    NullLogger<ExecutionAuditTrailService>.Instance));
+                services.AddSingleton<IPaperSessionStore>(_ => new JsonlFilePaperSessionStore(
+                    Path.Combine(rootPath, "sessions"),
+                    NullLogger<JsonlFilePaperSessionStore>.Instance));
+                services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
+                    NullLogger<PaperSessionPersistenceService>.Instance,
+                    sp.GetRequiredService<IPaperSessionStore>(),
+                    sp.GetRequiredService<ExecutionAuditTrailService>()));
+            });
+
+            var store = app.Services.GetRequiredService<IStrategyRepository>();
+            await store.RecordRunAsync(BuildRun(
+                runId: "run-contract-backtest",
+                strategyId: "strat-contract",
+                strategyName: "Contract Coverage",
+                runType: RunType.Backtest,
+                startedAt: new DateTimeOffset(2026, 4, 28, 13, 0, 0, TimeSpan.Zero),
+                datasetReference: "dataset/us/equities",
+                feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")));
+
+            var session = await app.Services.GetRequiredService<PaperSessionPersistenceService>().CreateSessionAsync(new CreatePaperSessionDto(
+                StrategyId: "strat-contract",
+                StrategyName: "Contract Coverage",
+                InitialCash: 125_000m,
+                Symbols: ["AAPL"]));
+
+            var client = app.GetTestClient();
+            using var response = await client.GetAsync(UiApiRoutes.WorkstationTradingReadiness);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            using var payload = await ReadJsonAsync(client, UiApiRoutes.WorkstationTradingReadiness);
+            var root = payload.RootElement;
+            root.TryGetProperty("overallStatus", out var overallStatus).Should().BeTrue();
+            root.TryGetProperty("readyForPaperOperation", out var readyForPaperOperation).Should().BeTrue();
+            root.TryGetProperty("trustGate", out var trustGate).Should().BeTrue();
+            root.TryGetProperty("replay", out var replay).Should().BeTrue();
+            root.TryGetProperty("promotion", out var promotion).Should().BeTrue();
+            root.TryGetProperty("acceptanceGates", out var acceptanceGates).Should().BeTrue();
+            root.TryGetProperty("workItems", out var workItems).Should().BeTrue();
+            overallStatus.ValueKind.Should().Be(JsonValueKind.String);
+            readyForPaperOperation.ValueKind.Should().Be(JsonValueKind.False);
+            trustGate.ValueKind.Should().Be(JsonValueKind.Object);
+            replay.ValueKind.Should().Be(JsonValueKind.Null);
+            promotion.ValueKind.Should().Be(JsonValueKind.Object);
+            acceptanceGates.ValueKind.Should().Be(JsonValueKind.Array);
+            workItems.ValueKind.Should().Be(JsonValueKind.Array);
+
+            var readiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+                UiApiRoutes.WorkstationTradingReadiness,
+                ServerJsonOptions);
+            readiness.Should().NotBeNull();
+
+            readiness!.ActiveSession.Should().NotBeNull();
+            readiness.ActiveSession!.SessionId.Should().Be(session.SessionId);
+            readiness.TrustGate.Should().NotBeNull();
+            readiness.TrustGate.Status.Should().Be("not-ready");
+            readiness.TrustGate.Blockers.Should().NotBeEmpty();
+            readiness.Replay.Should().BeNull();
+            readiness.Promotion.Should().NotBeNull();
+            readiness.Promotion!.RequiresReview.Should().BeTrue();
+            readiness.Promotion.ApprovalStatus.Should().BeNull();
+            readiness.Promotion.State.Should().NotBeNullOrWhiteSpace();
+            readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
+
+            readiness.AcceptanceGates.Should().ContainSingle(gate =>
+                gate.GateId == "dk1-trust" &&
+                gate.Status == TradingAcceptanceGateStatusDto.Blocked);
+            readiness.AcceptanceGates.Should().ContainSingle(gate =>
+                gate.GateId == "replay" &&
+                gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+                gate.SessionId == session.SessionId);
+            readiness.AcceptanceGates.Should().ContainSingle(gate =>
+                gate.GateId == "promotion" &&
+                gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+                gate.RunId == "run-contract-backtest");
+            readiness.WorkItems.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.ProviderTrustGate &&
+                item.Tone == OperatorWorkItemToneDto.Critical);
+            readiness.WorkItems.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.PaperReplay &&
+                item.Tone == OperatorWorkItemToneDto.Warning);
+            readiness.WorkItems.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.PromotionReview &&
+                item.Tone == OperatorWorkItemToneDto.Warning);
+        }
+        finally
+        {
+            if (Directory.Exists(rootPath))
+            {
+                Directory.Delete(rootPath, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_TradingReadinessWithoutRegisteredReadinessService_ShouldUseSharedReadinessBuilder()
     {
         await using var app = await CreateAppAsync();
@@ -1315,6 +1526,64 @@ public sealed class WorkstationEndpointsTests
             item.WorkItemId == "promotion-decision-missing" &&
             item.TargetRoute == UiApiRoutes.WorkstationTradingReadiness &&
             item.TargetPageTag == "TradingShell");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldKeepHighSeverityRoutesResolvable()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-inbox-route-resolution-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+        await app.Services.GetRequiredService<IReconciliationRunService>().RunAsync(new ReconciliationRunRequest(runId));
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        var routeCriticalItems = inbox!.Items
+            .Where(item => item.Tone is OperatorWorkItemToneDto.Critical or OperatorWorkItemToneDto.Warning)
+            .ToArray();
+
+        routeCriticalItems.Should().NotBeEmpty();
+        routeCriticalItems.Should().OnlyContain(item =>
+            !string.IsNullOrWhiteSpace(item.Workspace) &&
+            !string.IsNullOrWhiteSpace(item.TargetPageTag) &&
+            !string.IsNullOrWhiteSpace(item.TargetRoute) &&
+            item.TargetRoute.StartsWith("/", StringComparison.Ordinal));
+
+        routeCriticalItems.Should().Contain(item =>
+            item.Kind == OperatorWorkItemKindDto.PaperReplay &&
+            item.TargetRoute == UiApiRoutes.WorkstationTradingReadiness &&
+            item.TargetPageTag == "TradingShell");
+        routeCriticalItems.Should().Contain(item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue &&
+            item.TargetPageTag == "AccountingShell");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldReturnDeterministicOrderingAcrossPollingRequests()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        var first = await client.GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+        var second = await client.GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        first!.Items.Select(item => item.WorkItemId)
+            .Should()
+            .Equal(second!.Items.Select(item => item.WorkItemId));
     }
 
     [Fact]
@@ -1561,6 +1830,152 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_FundAccountScope_ShouldReturnOnlyRequestedAccountWorkItemsAndPreserveRoutingMetadata()
+    {
+        var accountA = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var accountB = Guid.Parse("84fb987e-5323-4630-9a0c-d1c30c95fa47");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-scope", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var brokerageSync = CreateFailedBrokerageSyncService(root);
+            await brokerageSync.RunSyncAsync(accountA, new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
+            await brokerageSync.RunSyncAsync(accountB, new WorkstationBrokerageSyncRunRequestDto("ibkr", "DU-7788", "ops-review"));
+
+            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+            var client = app.GetTestClient();
+
+            var readiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+                $"/api/workstation/trading/readiness?fundAccountId={accountA:D}",
+                ServerJsonOptions);
+            var inbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+                $"/api/workstation/operator/inbox?fundAccountId={accountA:D}",
+                ServerJsonOptions);
+
+            readiness.Should().NotBeNull();
+            readiness!.BrokerageSync.Should().NotBeNull();
+            readiness.BrokerageSync!.FundAccountId.Should().Be(accountA);
+            readiness.WorkItems.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == accountA &&
+                item.Workspace == "Settings" &&
+                item.TargetRoute == "/settings#alpaca-provider-setup" &&
+                item.TargetPageTag == "ProviderConnectionCenter");
+            readiness.WorkItems.Should().NotContain(item => item.FundAccountId == accountB);
+
+            inbox.Should().NotBeNull();
+            inbox!.Items.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == accountA &&
+                item.Workspace == "Settings" &&
+                item.TargetRoute == "/settings#alpaca-provider-setup" &&
+                item.TargetPageTag == "ProviderConnectionCenter");
+            inbox.Items.Should().NotContain(item => item.FundAccountId == accountB);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_FundAccountScope_WithUnknownAccount_ShouldNotFallBackToOtherScopedAccounts()
+    {
+        var knownAccount = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var unknownAccount = Guid.Parse("d8a69792-3313-4067-a311-a4de2133fe81");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-scope-unknown", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var brokerageSync = CreateFailedBrokerageSyncService(root);
+            await brokerageSync.RunSyncAsync(knownAccount, new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
+
+            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+            var client = app.GetTestClient();
+
+            var readiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+                $"/api/workstation/trading/readiness?fundAccountId={unknownAccount:D}",
+                ServerJsonOptions);
+            var inbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+                $"/api/workstation/operator/inbox?fundAccountId={unknownAccount:D}",
+                ServerJsonOptions);
+
+            readiness.Should().NotBeNull();
+            readiness!.BrokerageSync.Should().NotBeNull("unknown scoped account should report an unlinked brokerage sync posture instead of inheriting another account's sync");
+            readiness.BrokerageSync!.Health.ToString().Should().Be("Unlinked");
+            readiness.BrokerageSync.ProviderId.Should().BeNull("unknown scoped account should not inherit another account's brokerage provider linkage");
+            readiness.WorkItems.Should().NotContain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == knownAccount);
+
+            inbox.Should().NotBeNull();
+            inbox!.Items.Should().NotContain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == knownAccount);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_FundAccountScope_OperatorInboxScopedQueries_ShouldReturnPerAccountBrokerageSyncItemsWithoutCrossAccountLeakage()
+    {
+        var accountA = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var accountB = Guid.Parse("84fb987e-5323-4630-9a0c-d1c30c95fa47");
+        var accountWithoutPendingItems = Guid.Parse("04ef2646-cad4-4775-8235-d63ef5a25d7f");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-scope-global", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var brokerageSync = CreateFailedBrokerageSyncService(root);
+            await brokerageSync.RunSyncAsync(accountA, new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
+            await brokerageSync.RunSyncAsync(accountB, new WorkstationBrokerageSyncRunRequestDto("ibkr", "DU-7788", "ops-review"));
+
+            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+            var client = app.GetTestClient();
+
+            var accountAInbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+                $"/api/workstation/operator/inbox?fundAccountId={accountA:D}",
+                ServerJsonOptions);
+            var accountBInbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+                $"/api/workstation/operator/inbox?fundAccountId={accountB:D}",
+                ServerJsonOptions);
+            var emptyScopedInbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+                $"/api/workstation/operator/inbox?fundAccountId={accountWithoutPendingItems:D}",
+                ServerJsonOptions);
+
+            accountAInbox.Should().NotBeNull();
+            accountAInbox!.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.BrokerageSync && item.FundAccountId == accountA);
+
+            accountBInbox.Should().NotBeNull();
+            accountBInbox!.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.BrokerageSync && item.FundAccountId == accountB);
+
+            emptyScopedInbox.Should().NotBeNull();
+            emptyScopedInbox!.Items.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == accountWithoutPendingItems &&
+                item.Workspace == "Settings" &&
+                item.TargetRoute == "/settings#provider-connection-center" &&
+                item.TargetPageTag == "ProviderConnectionCenter");
+            emptyScopedInbox.Items.Should().NotContain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId != accountWithoutPendingItems);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeOpenReconciliationBreaks()
     {
         await using var app = await CreateAppAsync(services =>
@@ -1644,6 +2059,120 @@ public sealed class WorkstationEndpointsTests
         breakItem.TargetRoute.Should().Be(UiApiRoutes.ReconciliationBreakQueue);
         breakItem.TargetPageTag.Should().Be("AccountingShell");
         breakItem.Detail.Should().Contain("The break is in review");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ReadinessOnlyItems_ShouldExposeExpectedClassificationAndMetadata()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationBreakQueueRepository>(
+                new FileReconciliationBreakQueueRepository(
+                    Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                    NullLogger<FileReconciliationBreakQueueRepository>.Instance));
+        });
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().NotBeEmpty();
+        inbox.Items.Should().Contain(item => string.Equals(item.WorkItemId, "reconciliation-policy", StringComparison.OrdinalIgnoreCase));
+        inbox.Items.Should().NotContain(item => item.WorkItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase));
+        inbox.Items.Should().OnlyContain(item =>
+            !string.IsNullOrWhiteSpace(item.Title) &&
+            !string.IsNullOrWhiteSpace(item.Detail) &&
+            !string.IsNullOrWhiteSpace(item.TargetRoute));
+        inbox.Items.Should().Contain(item => item.WorkItemId == "paper-session-missing");
+        inbox.CriticalCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Critical));
+        inbox.WarningCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Warning));
+        inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
+        inbox.Items.Should().BeInDescendingOrder(item => item.Tone);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ReconciliationBreaks_ShouldExposeExpectedClassificationAndMetadata()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-inbox-break-only-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+        _ = await app.Services.GetRequiredService<IReconciliationRunService>().RunAsync(new ReconciliationRunRequest(runId));
+
+        var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().NotBeEmpty();
+        inbox.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.ReconciliationBreak);
+        inbox.Items.Should().OnlyContain(item =>
+            !string.IsNullOrWhiteSpace(item.Title) &&
+            !string.IsNullOrWhiteSpace(item.Detail) &&
+            !string.IsNullOrWhiteSpace(item.TargetRoute));
+        inbox.Items.Where(item => item.Kind == OperatorWorkItemKindDto.ReconciliationBreak)
+            .Should().OnlyContain(item => item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue);
+        inbox.CriticalCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Critical));
+        inbox.WarningCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Warning));
+        inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
+        inbox.Items.Should().BeInDescendingOrder(item => item.Tone);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_MixedQueue_ShouldRetainBothCategoriesWithoutDropsAndOrderByPriority()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-inbox-mixed-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+        _ = await app.Services.GetRequiredService<IReconciliationRunService>().RunAsync(new ReconciliationRunRequest(runId));
+
+        var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(item => item.WorkItemId == "paper-session-missing");
+        inbox.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.ReconciliationBreak);
+        inbox.Items.Should().BeInDescendingOrder(item => item.Tone);
+        inbox.Items.Should().OnlyContain(item =>
+            !string.IsNullOrWhiteSpace(item.Title) &&
+            !string.IsNullOrWhiteSpace(item.Detail) &&
+            !string.IsNullOrWhiteSpace(item.TargetRoute));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_WhenNoReconciliationBreaks_ShouldNotEmitFalseBreakItems()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationBreakQueueRepository>(
+                new FileReconciliationBreakQueueRepository(
+                    Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                    NullLogger<FileReconciliationBreakQueueRepository>.Instance));
+        });
+
+        var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(item => string.Equals(item.WorkItemId, "reconciliation-policy", StringComparison.OrdinalIgnoreCase));
+        inbox.Items.Should().NotContain(item => item.WorkItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase));
+        inbox.CriticalCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Critical));
+        inbox.WarningCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Warning));
+        inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
     }
 
     [Fact]
@@ -1737,9 +2266,44 @@ public sealed class WorkstationEndpointsTests
         readiness.Blockers.Should().BeEmpty();
         readiness.TrustRationaleContract.Should().NotBeNull();
         readiness.TrustRationaleContract!.Status.Should().Be("validated");
+        readiness.CalibrationVersion.Should().BeNull();
+        readiness.CalibrationValidatedAt.Should().BeNull();
+        readiness.PromotionPosture.Should().BeNull();
         readiness.PacketPath.Should().NotBeNull();
         Path.IsPathRooted(readiness.PacketPath!).Should().BeFalse();
         readiness.PacketPath.Should().Contain("dk1-pilot-parity-packet.json");
+    }
+
+    [Fact]
+    public async Task Dk1TrustGateReadinessService_WithEvidenceBundle_ShouldExposeCalibrationPosture()
+    {
+        var automationRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "dk1-calibration-bundle",
+            Guid.NewGuid().ToString("N"));
+        WriteReadyDk1Packet(automationRoot);
+        WriteProviderValidationEvidenceBundle(
+            automationRoot,
+            """
+            {
+              "generatedAtUtc": "2026-04-27T09:30:00Z",
+              "promotionPosture": {
+                "status": "candidate-approved",
+                "candidateKernelVersion": "kernel-v2"
+              }
+            }
+            """);
+
+        var service = new Dk1TrustGateReadinessService(
+            new Dk1TrustGateReadinessOptions(automationRoot),
+            NullLogger<Dk1TrustGateReadinessService>.Instance);
+
+        var readiness = await service.GetCurrentAsync();
+
+        readiness.CalibrationVersion.Should().Be("kernel-v2");
+        readiness.PromotionPosture.Should().Be("candidate-approved");
+        readiness.CalibrationValidatedAt.Should().Be(new DateTimeOffset(2026, 4, 27, 9, 30, 0, TimeSpan.Zero));
     }
 
     [Fact]
@@ -3623,7 +4187,9 @@ public sealed class WorkstationEndpointsTests
     private static void WriteReadyDk1Packet(
         string automationRoot,
         string? operatorSignoffJson = null,
-        bool includeContractReview = true)
+        bool includeContractReview = true,
+        string packetStatus = "ready-for-operator-review",
+        string blockersJson = "[]")
     {
         var packetDirectory = Path.Combine(automationRoot, "unit-ready");
         Directory.CreateDirectory(packetDirectory);
@@ -3640,7 +4206,7 @@ public sealed class WorkstationEndpointsTests
             {
               "generatedAtUtc": "2026-04-25T20:28:38Z",
               "sourceSummary": "artifacts/provider-validation/_automation/unit-ready/wave1-validation-summary.json",
-              "status": "ready-for-operator-review",
+              "status": "__PACKET_STATUS__",
               "sampleReview": {
                 "requiredCount": 4,
                 "samples": [
@@ -3712,9 +4278,10 @@ public sealed class WorkstationEndpointsTests
               ],
               __CONTRACT_REVIEW__
               "operatorSignoff": __OPERATOR_SIGNOFF__,
-              "blockers": []
+              "blockers": __BLOCKERS__
             }
             """
+            .Replace("__PACKET_STATUS__", packetStatus)
             .Replace("__CONTRACT_REVIEW__", includeContractReview
                 ? """
                   "trustRationaleContract": {
@@ -3748,7 +4315,17 @@ public sealed class WorkstationEndpointsTests
                   },
                 """
                 : string.Empty)
-            .Replace("__OPERATOR_SIGNOFF__", operatorSignoffJson));
+            .Replace("__OPERATOR_SIGNOFF__", operatorSignoffJson)
+            .Replace("__BLOCKERS__", blockersJson));
+    }
+
+    private static void WriteProviderValidationEvidenceBundle(string automationRoot, string bundleJson)
+    {
+        var bundleDirectory = Path.Combine(automationRoot, "unit-ready");
+        Directory.CreateDirectory(bundleDirectory);
+        File.WriteAllText(
+            Path.Combine(bundleDirectory, "provider-validation-evidence-bundle.json"),
+            bundleJson);
     }
 
     private static void RegisterSecurityMasterWorkbenchServices(

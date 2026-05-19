@@ -1,6 +1,6 @@
 # Contract Compatibility Matrix
 
-Last reviewed: 2026-04-29
+Last reviewed: 2026-05-19
 Scope: workstation contracts and shared service/ledger interfaces consumed by workstation APIs.
 
 This matrix defines compatibility commitments for:
@@ -84,6 +84,43 @@ Any pull request touching scoped surfaces must pass:
    - ledger read/write snapshot compatibility tests,
    - workstation endpoint request/response shape tests.
 5. **Migration-note gate (required for breaking changes):** matrix doc update + PR migration note declaration.
+
+## Workstation Dashboard Compatibility Protocol (Readiness + Operator Inbox + Routing Metadata)
+
+The browser workstation dashboard consumes shared workstation DTO/enum payloads from:
+
+- `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs`
+- `src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs`
+- `src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs`
+- `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`
+
+### Changes that require coordinated backend + UI updates
+
+1. Any additive or breaking change to:
+   - `TradingOperatorReadinessDto`,
+   - `TradingAcceptanceGateDto`,
+   - `OperatorWorkItemDto`,
+   - `OperatorInboxDto`,
+   - routing metadata fields (`targetRoute`, `targetPageTag`, `workspace`, `scope`), or
+   - enum-like string fields consumed by dashboard decision logic (`overallStatus`, gate status, work-item kind/tone).
+2. Any endpoint payload projection change for:
+   - `GET /api/workstation/trading/readiness`
+   - `GET /api/workstation/operator/inbox`
+   - workflow/routing metadata responses used by the dashboard shell.
+
+### Required test slice before merge
+
+Run the narrowest contract-focused checks:
+
+- `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints_TradingReadiness|FullyQualifiedName~MapWorkstationEndpoints_OperatorInbox|FullyQualifiedName~WorkstationContractSnapshotTests"`
+- `npm --prefix src/Meridian.Ui/dashboard run test -- operator-readiness-console.view-model.test.ts trading-screen.view-model.test.ts`
+
+### Approval rule
+
+- If `WorkstationContractSnapshotTests` fingerprint changes, reviewers must treat it as explicit contract drift and require:
+  - a paired dashboard update (or explicit no-op rationale),
+  - updated/additional compatibility tests for the changed assumption, and
+  - PR note confirming contract drift was reviewed by both backend and dashboard owners.
 
 ## Weekly Interop Review Cadence
 
