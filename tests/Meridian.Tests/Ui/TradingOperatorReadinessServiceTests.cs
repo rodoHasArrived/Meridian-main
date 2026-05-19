@@ -364,3 +364,68 @@ public sealed class TradingOperatorReadinessServiceTests
         Timestamp = DateTimeOffset.UtcNow
     };
 }
+
+    [Fact]
+    public async Task GetAsync_ShouldEmitRouteAndDestinationPairsThatResolveToKnownInboxDestinations()
+    {
+        using var provider = new ServiceCollection().BuildServiceProvider();
+        var service = new TradingOperatorReadinessService(
+            provider,
+            NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readiness = await service.GetAsync();
+
+        var expected = new Dictionary<OperatorWorkItemKindDto, (string Route, string PageTag)>
+        {
+            [OperatorWorkItemKindDto.PaperReplay] = (UiApiRoutes.WorkstationTradingReadiness, "TradingShell"),
+            [OperatorWorkItemKindDto.PromotionReview] = (UiApiRoutes.WorkstationTradingReadiness, "TradingShell"),
+            [OperatorWorkItemKindDto.ProviderTrustGate] = (UiApiRoutes.WorkstationTradingReadiness, "TradingShell"),
+            [OperatorWorkItemKindDto.ReportPackApproval] = (UiApiRoutes.FundReportPacks, "ReportingShell")
+        };
+
+        foreach (var pair in expected)
+        {
+            readiness.WorkItems.Should().Contain(item =>
+                item.Kind == pair.Key &&
+                item.TargetRoute == pair.Value.Route &&
+                item.TargetPageTag == pair.Value.PageTag);
+        }
+
+        var knownDestinationIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "TradingShell", "AccountPortfolio", "DataShell", "AccountingShell", "ReportingShell",
+            "FundReconciliation", "FundTrialBalance", "FundReportPack", "SecurityMaster", "FundAuditTrail", "NotificationCenter"
+        };
+
+        readiness.WorkItems
+            .Select(item => Meridian.Wpf.Services.TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(item))
+            .Should()
+            .OnlyContain(id => knownDestinationIds.Contains(id));
+    }
+
+    [Fact]
+    public async Task GetAsync_RouteCompatibilityGuard_ShouldKeepExpectedKindRouteMapStable()
+    {
+        using var provider = new ServiceCollection().BuildServiceProvider();
+        var service = new TradingOperatorReadinessService(
+            provider,
+            NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readiness = await service.GetAsync();
+
+        var requiredMap = new[]
+        {
+            (OperatorWorkItemKindDto.PaperReplay, UiApiRoutes.WorkstationTradingReadiness),
+            (OperatorWorkItemKindDto.PromotionReview, UiApiRoutes.WorkstationTradingReadiness),
+            (OperatorWorkItemKindDto.ProviderTrustGate, UiApiRoutes.WorkstationTradingReadiness),
+            (OperatorWorkItemKindDto.ReportPackApproval, UiApiRoutes.FundReportPacks)
+        };
+
+        foreach (var (kind, route) in requiredMap)
+        {
+            readiness.WorkItems.Should().Contain(item => item.Kind == kind && item.TargetRoute == route,
+                $"{kind} route mapping is a compatibility contract for operator inbox deep-links");
+        }
+    }
+
+
