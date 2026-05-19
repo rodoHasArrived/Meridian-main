@@ -1,5 +1,4 @@
 using Meridian.Execution.Sdk;
-using OrderSide = Meridian.Execution.Sdk.OrderSide;
 
 namespace Meridian.Infrastructure.Adapters.TradeStation;
 
@@ -68,11 +67,11 @@ public static class TradeStationPayloadMappers
             Commission: payload.Commission);
     }
 
-    public static OrderSide MapSide(string? side)
+    public static Meridian.Execution.Sdk.OrderSide MapSide(string? side)
         => Normalize(side) switch
         {
-            "buy" or "buytocover" => OrderSide.Buy,
-            "sell" or "sellshort" => OrderSide.Sell,
+            "buy" or "buytocover" => Meridian.Execution.Sdk.OrderSide.Buy,
+            "sell" or "sellshort" => Meridian.Execution.Sdk.OrderSide.Sell,
             _ => throw new InvalidOperationException($"Unsupported TradeStation side '{side ?? "<null>"}'.")
         };
 
