@@ -363,7 +363,6 @@ public sealed class TradingOperatorReadinessServiceTests
         FillPrice = fillPrice,
         Timestamp = DateTimeOffset.UtcNow
     };
-}
 
     [Fact]
     public async Task GetAsync_ShouldEmitRouteAndDestinationPairsThatResolveToKnownInboxDestinations()
@@ -391,16 +390,16 @@ public sealed class TradingOperatorReadinessServiceTests
                 item.TargetPageTag == pair.Value.PageTag);
         }
 
-        var knownDestinationIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        var knownRouteAndPageTagPairs = new HashSet<(string Route, string PageTag)>
         {
-            "TradingShell", "AccountPortfolio", "DataShell", "AccountingShell", "ReportingShell",
-            "FundReconciliation", "FundTrialBalance", "FundReportPack", "SecurityMaster", "FundAuditTrail", "NotificationCenter"
+            (UiApiRoutes.WorkstationTradingReadiness, "TradingShell"),
+            (UiApiRoutes.FundReportPacks, "ReportingShell")
         };
 
         readiness.WorkItems
-            .Select(item => Meridian.Wpf.Services.TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(item))
+            .Select(item => (item.TargetRoute, item.TargetPageTag))
             .Should()
-            .OnlyContain(id => knownDestinationIds.Contains(id));
+            .OnlyContain(pair => knownRouteAndPageTagPairs.Contains(pair));
     }
 
     [Fact]
@@ -427,5 +426,5 @@ public sealed class TradingOperatorReadinessServiceTests
                 $"{kind} route mapping is a compatibility contract for operator inbox deep-links");
         }
     }
-
+}
 
