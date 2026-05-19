@@ -704,8 +704,11 @@ describe("operator readiness console view model", () => {
       action: expect.objectContaining({ route: "/accounting/reconciliation" })
     }));
     expect(state.selectedWorkItemDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Required sign-off role", value: "Fund Controller" },
+      { label: "Sign-off status", value: "Pending" },
+      { label: "Tolerance profile", value: "month-end-25bp" },
       { label: "Route", value: "/accounting/reconciliation" },
-      { label: "Evidence", value: "Accounting - FundReconciliation - period-p02" }
+      { label: "Evidence", value: "Accounting - FundReconciliation - period-p02 - Fund Controller sign-off Pending" }
     ]));
     expect(state.nextAction).toEqual(expect.objectContaining({
       title: "SoftClosed sign-off required",
@@ -713,6 +716,33 @@ describe("operator readiness console view model", () => {
       route: "/accounting/reconciliation",
       level: "review"
     }));
+  });
+
+  it("degrades unknown work-item kinds to a safe default action and route", () => {
+    const unknownItem = {
+      ...readiness.workItems[0],
+      workItemId: "unknown-kind",
+      kind: "FutureKindFromBackend" as OperatorWorkItem["kind"],
+      label: "Unknown kind should not break rendering"
+    };
+    const state = buildOperatorReadinessConsoleState({
+      readiness: {
+        ...readiness,
+        workItems: [unknownItem]
+      },
+      inbox: null,
+      research,
+      trading,
+      dataOperations,
+      governance
+    });
+
+    expect(state.workItems[0]?.action).toEqual({
+      label: "Open operator item",
+      route: "/trading/readiness",
+      ariaLabel: "Open operator item: Unknown kind should not break rendering",
+      variant: "outline"
+    });
   });
 
   it("blocks the headline from a critical inbox item when trading readiness is missing", () => {

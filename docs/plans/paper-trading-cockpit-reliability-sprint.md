@@ -471,3 +471,20 @@ Declare this matrix complete only when **every row is green** under:
 2. account-scoped brokerage sync update scenarios.
 
 Fixture-seeded success alone is not sufficient for Wave 2 exit.
+
+
+## Canonical gate-evaluation acceptance criteria (2026-05-19 update)
+
+1. `GET /api/workstation/trading/readiness` and `GET /api/workstation/trading` must return the same readiness projection (`overallStatus`, `acceptanceGates`, `workItems`) for the same request scope.
+2. Overall posture is computed through one canonical gate flow in precedence order: replay verification, reconciliation, acceptance controls/promotion/trust/report-pack/session, then brokerage-sync.
+3. Every `acceptanceGates[]` row must expose explicit explainability fields: `status`, `reason`, `lastEvidenceAt`, and `requiredNextAction`.
+4. Replay stale evidence must demote replay to `ReviewRequired` and emit a `paper-replay-stale-*` work item until replay verification is rerun.
+5. `fundAccountId` scoped calls must preserve brokerage-sync + operator-inbox account context and not alter unrelated gate semantics.
+
+## Operator sign-off sequence
+
+1. Resolve `Blocked` acceptance gates.
+2. Resolve or acknowledge `ReviewRequired` replay/reconciliation/brokerage items.
+3. Confirm promotion trace and audit-control explainability are complete.
+4. Confirm DK1 trust-gate sign-off packet binding is valid for the current packet.
+5. Record operator sign-off evidence and rerun readiness + operator-inbox probes for final packet capture.

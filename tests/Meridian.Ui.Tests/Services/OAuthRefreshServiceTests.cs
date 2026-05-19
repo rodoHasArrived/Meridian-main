@@ -98,8 +98,9 @@ public sealed class OAuthRefreshServiceTests
             return Credentials;
         }
 
-        public override Task<OAuthRefreshResult> RefreshOAuthTokenAsync(string providerId)
+        public override Task<OAuthRefreshResult> RefreshOAuthTokenAsync(string providerId, CancellationToken ct = default)
         {
+            ct.ThrowIfCancellationRequested();
             if (RefreshException is not null)
             {
                 throw RefreshException;

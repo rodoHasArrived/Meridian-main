@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
@@ -29,7 +30,8 @@ public sealed class TradingOperatorReadinessServiceTests
             "execution-audit-empty",
             "promotion-decision-missing",
             "dk1-trust-packet-unavailable",
-            "report-pack-lineage");
+            "report-pack-lineage",
+            "reconciliation-policy");
         secondIds.Should().Equal(firstIds);
         firstIds.Should().NotContain(static id => id.StartsWith("operator-", StringComparison.OrdinalIgnoreCase));
 
@@ -325,6 +327,44 @@ public sealed class TradingOperatorReadinessServiceTests
         readiness.ReadyForPaperOperation.Should().BeFalse();
     }
 
+
+    [Fact]
+    public async Task GetAsync_WithReplayCoverageDrift_ShouldDowngradeReplayGateAndEmitSingleStaleReplayWorkItem()
+    {
+        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithReplayCoverageDrift_ShouldDowngradeReplayGateAndEmitSingleStaleReplayWorkItem));
+        var persistence = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance,
+            auditTrail: auditTrail);
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "strat-precedence",
+            StrategyName: "Precedence Strategy",
+            InitialCash: 100_000m,
+            Symbols: ["AAPL"]));
+        await persistence.VerifyReplayAsync(session.SessionId);
+
+        using var provider = new ServiceCollection()
+            .AddSingleton(auditTrail)
+            .AddSingleton(persistence)
+            .BuildServiceProvider();
+        var service = new TradingOperatorReadinessService(provider, NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readinessBeforeDrift = await service.GetAsync();
+        readinessBeforeDrift.AcceptanceGates.Should().ContainSingle(g =>
+            g.GateId == "replay" && g.Status == TradingAcceptanceGateStatusDto.Ready);
+
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("drift-order-1", "AAPL", 5m));
+
+        var readinessAfterDrift = await service.GetAsync();
+
+        readinessAfterDrift.AcceptanceGates.Should().ContainSingle(g =>
+            g.GateId == "session" && g.Status == TradingAcceptanceGateStatusDto.Ready);
+        readinessAfterDrift.AcceptanceGates.Should().ContainSingle(g =>
+            g.GateId == "replay" && g.Status == TradingAcceptanceGateStatusDto.ReviewRequired && g.Detail.Contains("stale", StringComparison.OrdinalIgnoreCase));
+        readinessAfterDrift.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId.StartsWith("paper-replay-stale", StringComparison.OrdinalIgnoreCase));
+        readinessAfterDrift.ReadyForPaperOperation.Should().BeFalse();
+    }
+
     private static ExecutionAuditTrailService CreateAuditTrail(string scenario)
     {
         var root = Path.Combine(
@@ -363,4 +403,70 @@ public sealed class TradingOperatorReadinessServiceTests
         FillPrice = fillPrice,
         Timestamp = DateTimeOffset.UtcNow
     };
+
+    [Fact]
+    public async Task GetAsync_ShouldEmitRouteAndDestinationPairsThatResolveToKnownInboxDestinations()
+    {
+        using var provider = new ServiceCollection().BuildServiceProvider();
+        var service = new TradingOperatorReadinessService(
+            provider,
+            NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readiness = await service.GetAsync();
+
+        var expected = new Dictionary<OperatorWorkItemKindDto, (string Route, string PageTag)>
+        {
+            [OperatorWorkItemKindDto.PaperReplay] = (UiApiRoutes.WorkstationTradingReadiness, "TradingShell"),
+            [OperatorWorkItemKindDto.PromotionReview] = (UiApiRoutes.WorkstationTradingReadiness, "TradingShell"),
+            [OperatorWorkItemKindDto.ProviderTrustGate] = (UiApiRoutes.WorkstationTradingReadiness, "TradingShell"),
+            [OperatorWorkItemKindDto.ReconciliationBreak] = (UiApiRoutes.ReconciliationBreakQueue, "AccountingShell"),
+            [OperatorWorkItemKindDto.ReportPackApproval] = (UiApiRoutes.FundReportPacks, "ReportingShell")
+        };
+
+        foreach (var pair in expected)
+        {
+            readiness.WorkItems.Should().Contain(item =>
+                item.Kind == pair.Key &&
+                item.TargetRoute == pair.Value.Route &&
+                item.TargetPageTag == pair.Value.PageTag);
+        }
+
+        var knownRouteAndPageTagPairs = new HashSet<(string? Route, string? PageTag)>
+        {
+            (UiApiRoutes.WorkstationTradingReadiness, "TradingShell"),
+            (UiApiRoutes.ReconciliationBreakQueue, "AccountingShell"),
+            (UiApiRoutes.FundReportPacks, "ReportingShell")
+        };
+
+        readiness.WorkItems
+            .Select(item => (item.TargetRoute, item.TargetPageTag))
+            .Should()
+            .OnlyContain(pair => knownRouteAndPageTagPairs.Contains(pair));
+    }
+
+    [Fact]
+    public async Task GetAsync_RouteCompatibilityGuard_ShouldKeepExpectedKindRouteMapStable()
+    {
+        using var provider = new ServiceCollection().BuildServiceProvider();
+        var service = new TradingOperatorReadinessService(
+            provider,
+            NullLogger<TradingOperatorReadinessService>.Instance);
+
+        var readiness = await service.GetAsync();
+
+        var requiredMap = new[]
+        {
+            (OperatorWorkItemKindDto.PaperReplay, UiApiRoutes.WorkstationTradingReadiness),
+            (OperatorWorkItemKindDto.PromotionReview, UiApiRoutes.WorkstationTradingReadiness),
+            (OperatorWorkItemKindDto.ProviderTrustGate, UiApiRoutes.WorkstationTradingReadiness),
+            (OperatorWorkItemKindDto.ReconciliationBreak, UiApiRoutes.ReconciliationBreakQueue),
+            (OperatorWorkItemKindDto.ReportPackApproval, UiApiRoutes.FundReportPacks)
+        };
+
+        foreach (var (kind, route) in requiredMap)
+        {
+            readiness.WorkItems.Should().Contain(item => item.Kind == kind && item.TargetRoute == route,
+                $"{kind} route mapping is a compatibility contract for operator inbox deep-links");
+        }
+    }
 }

@@ -75,7 +75,10 @@ public sealed record TradingAcceptanceGateDto(
     string Detail,
     string? SessionId = null,
     string? RunId = null,
-    string? AuditReference = null);
+    string? AuditReference = null,
+    string? Reason = null,
+    DateTimeOffset? LastEvidenceAt = null,
+    string? RequiredNextAction = null);
 
 public sealed record EvidenceCompletenessSummaryDto(
     TradingAcceptanceGateStatusDto Status,
@@ -233,6 +236,12 @@ public sealed record TradingTrustGateReadinessDto(
     public TradingTrustGateContractReadinessDto? TrustRationaleContract { get; init; }
 
     public TradingTrustGateContractReadinessDto? BaselineThresholdContract { get; init; }
+
+    public string? CalibrationVersion { get; init; }
+
+    public DateTimeOffset? CalibrationValidatedAt { get; init; }
+
+    public string? PromotionPosture { get; init; }
 }
 
 public sealed record TradingReportPackReadinessDto(
@@ -267,6 +276,10 @@ public sealed record TradingOperatorReadinessDto(
     public TradingReportPackReadinessDto? ReportPack { get; init; }
 
     public EvidenceCompletenessSummaryDto? EvidenceCompleteness { get; init; }
+
+    public DateTimeOffset SnapshotMaterializedAt { get; init; }
+
+    public string SnapshotVersion { get; init; } = string.Empty;
 }
 
 public sealed record StrategyRunReviewPacketDto(

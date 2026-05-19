@@ -60,3 +60,17 @@ its bound operator sign-off file before replacing that signed evidence.
 - Robinhood remains polling-oriented and unofficial. Do not describe it as websocket-validated.
 - Yahoo is active only as a historical and fallback provider row for Wave 1.
 - `Polygon`, `Interactive Brokers`, `NYSE`, and `StockSharp` are deferred from the active Wave 1 gate.
+
+
+## Unified automation and promotion posture
+
+Use `./scripts/dev/run-provider-validation-evidence-bundle.ps1` to generate:
+- `wave1-validation-summary.json`
+- `dk1-pilot-parity-packet.json`
+- `dk1-operator-signoff.json`
+- `provider-degradation-governance.json` (when `-CalibrationInput` is provided)
+- `provider-validation-evidence-bundle.json`
+
+The evidence bundle standardizes schema and emits promotion posture (`candidate-approved`, `candidate-rejected`, or `not-run`) with baseline-versus-candidate kernel metadata.
+
+Promotion checklist and rollback triggers are authoritative in `docs/operations/provider-degradation-calibration.md`; this matrix requires those checks for any DK1 promotion decision.
