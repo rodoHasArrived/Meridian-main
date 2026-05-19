@@ -22,16 +22,16 @@ public class CredentialService
 
     public event EventHandler<CredentialExpirationEventArgs>? CredentialExpiring;
 
-    public IReadOnlyList<CredentialWithMetadata> GetAllCredentialsWithMetadata()
+    public virtual IReadOnlyList<CredentialWithMetadata> GetAllCredentialsWithMetadata()
         => Array.Empty<CredentialWithMetadata>();
 
-    public Task<OAuthRefreshResult> RefreshOAuthTokenAsync(string providerId)
+    public virtual Task<OAuthRefreshResult> RefreshOAuthTokenAsync(string providerId)
         => Task.FromResult(new OAuthRefreshResult { Success = false, ErrorMessage = "Not implemented" });
 
-    public Task UpdateMetadataAsync(string resource, Action<CredentialMetadataUpdate> updateAction)
+    public virtual Task UpdateMetadataAsync(string resource, Action<CredentialMetadataUpdate> updateAction)
         => Task.CompletedTask;
 
-    public CredentialMetadataInfo? GetMetadata(string resource)
+    public virtual CredentialMetadataInfo? GetMetadata(string resource)
         => null;
 
     protected void OnCredentialExpiring(CredentialExpirationEventArgs e)
