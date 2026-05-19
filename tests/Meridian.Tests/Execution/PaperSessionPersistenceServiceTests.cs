@@ -1035,7 +1035,21 @@ internal sealed class CorruptLedgerReplayStore : IPaperSessionStore
             [new PersistedSessionRecord("PAPER-CORRUPT-001", "strat-corrupt", "Corrupt", 100_000m, DateTimeOffset.UtcNow.AddMinutes(-30), null, true, ["AAPL"])]);
 
     public Task<IReadOnlyList<ExecutionReport>> LoadFillsAsync(string sessionId, CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<ExecutionReport>>([new ExecutionReport("fill-1", "AAPL", 10m, 100m, DateTimeOffset.UtcNow.AddMinutes(-20), ExecutionSide.Buy, OrderType.Market)]);
+        => Task.FromResult<IReadOnlyList<ExecutionReport>>(
+            [
+                new()
+                {
+                    OrderId = "fill-1",
+                    ReportType = ExecutionReportType.Fill,
+                    Symbol = "AAPL",
+                    Side = OrderSide.Buy,
+                    OrderStatus = OrderStatus.Filled,
+                    OrderQuantity = 10m,
+                    FilledQuantity = 10m,
+                    FillPrice = 100m,
+                    Timestamp = DateTimeOffset.UtcNow.AddMinutes(-20)
+                }
+            ]);
 
     public Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<OrderState>>([]);
