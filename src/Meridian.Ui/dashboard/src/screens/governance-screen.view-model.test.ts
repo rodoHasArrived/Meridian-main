@@ -1,7 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { ApiError, describeApiError } from "@/lib/api-errors";
-import { ApiError } from "@/lib/api-errors";
+import { ApiError as MeridianApiError, describeApiError } from "@/lib/api-errors";
 import {
   buildCalibrationSummaryViewState,
   buildCorporateActionsViewState,
@@ -1008,7 +1007,7 @@ describe("governance-screen view model", () => {
   });
 
   it("preserves structured Governance api-errors in trial balance, calibration, and corporate actions views", () => {
-    const apiError = new ApiError({
+    const apiError = new MeridianApiError({
       path: "/api/workstation/governance/trial-balance",
       status: 422,
       title: "Validation failed",
@@ -1252,7 +1251,7 @@ describe("governance-screen view model", () => {
       query: "AAPL",
       searching: false,
       results: [],
-      searchError: describeApiError(new ApiError({
+      searchError: describeApiError(new MeridianApiError({
         path: "/api/security-master/search",
         status: 503,
         title: "Provider unavailable",
@@ -1312,7 +1311,7 @@ describe("governance-screen view model", () => {
     const retryConflicts = deferred<SecurityMasterConflict[]>();
     const services = createSecurityMasterServices({
       getConflicts: vi.fn()
-        .mockRejectedValueOnce(new ApiError({
+        .mockRejectedValueOnce(new MeridianApiError({
           path: "/api/workstation/security-master/conflicts",
           status: 503,
           detail: "Conflict API offline"

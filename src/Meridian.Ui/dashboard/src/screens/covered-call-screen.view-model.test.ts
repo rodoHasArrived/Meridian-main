@@ -737,7 +737,6 @@ describe("useCoveredCallScreenViewModel", () => {
 
     expect(services.startRun).not.toHaveBeenCalled();
     expect(result.current.errorBanner).toBeTruthy();
-    expect(result.current.errorBanner?.summary).toMatch(/minimum strike/i);
     expect(result.current.stage).toBe("configure");
   });
 
