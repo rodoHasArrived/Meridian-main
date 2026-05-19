@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
@@ -29,7 +30,8 @@ public sealed class TradingOperatorReadinessServiceTests
             "execution-audit-empty",
             "promotion-decision-missing",
             "dk1-trust-packet-unavailable",
-            "report-pack-lineage");
+            "report-pack-lineage",
+            "reconciliation-policy");
         secondIds.Should().Equal(firstIds);
         firstIds.Should().NotContain(static id => id.StartsWith("operator-", StringComparison.OrdinalIgnoreCase));
 
@@ -379,6 +381,7 @@ public sealed class TradingOperatorReadinessServiceTests
             [OperatorWorkItemKindDto.PaperReplay] = (UiApiRoutes.WorkstationTradingReadiness, "TradingShell"),
             [OperatorWorkItemKindDto.PromotionReview] = (UiApiRoutes.WorkstationTradingReadiness, "TradingShell"),
             [OperatorWorkItemKindDto.ProviderTrustGate] = (UiApiRoutes.WorkstationTradingReadiness, "TradingShell"),
+            [OperatorWorkItemKindDto.ReconciliationBreak] = (UiApiRoutes.ReconciliationBreakQueue, "AccountingShell"),
             [OperatorWorkItemKindDto.ReportPackApproval] = (UiApiRoutes.FundReportPacks, "ReportingShell")
         };
 
@@ -390,9 +393,10 @@ public sealed class TradingOperatorReadinessServiceTests
                 item.TargetPageTag == pair.Value.PageTag);
         }
 
-        var knownRouteAndPageTagPairs = new HashSet<(string Route, string PageTag)>
+        var knownRouteAndPageTagPairs = new HashSet<(string? Route, string? PageTag)>
         {
             (UiApiRoutes.WorkstationTradingReadiness, "TradingShell"),
+            (UiApiRoutes.ReconciliationBreakQueue, "AccountingShell"),
             (UiApiRoutes.FundReportPacks, "ReportingShell")
         };
 
@@ -417,6 +421,7 @@ public sealed class TradingOperatorReadinessServiceTests
             (OperatorWorkItemKindDto.PaperReplay, UiApiRoutes.WorkstationTradingReadiness),
             (OperatorWorkItemKindDto.PromotionReview, UiApiRoutes.WorkstationTradingReadiness),
             (OperatorWorkItemKindDto.ProviderTrustGate, UiApiRoutes.WorkstationTradingReadiness),
+            (OperatorWorkItemKindDto.ReconciliationBreak, UiApiRoutes.ReconciliationBreakQueue),
             (OperatorWorkItemKindDto.ReportPackApproval, UiApiRoutes.FundReportPacks)
         };
 
@@ -427,4 +432,3 @@ public sealed class TradingOperatorReadinessServiceTests
         }
     }
 }
-
