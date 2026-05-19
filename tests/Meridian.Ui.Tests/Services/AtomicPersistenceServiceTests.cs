@@ -126,6 +126,20 @@ public sealed class AtomicPersistenceServiceTests : IDisposable
         service.SaveFailures.Should().ContainSingle();
     }
 
+    [Fact]
+    public async Task DeletePresetAsync_SaveFailure_RestoresPresetInMemory()
+    {
+        var presetDirectory = Path.Combine(_tempDir, "delete-save-failure-presets");
+        var service = new TestExportPresetService(presetDirectory);
+        var preset = await service.CreatePresetAsync("Delete rollback", format: ExportPresetFormat.Jsonl);
+
+        service.ForceWriteFailure = true;
+        var deleted = await service.DeletePresetAsync(preset.Id);
+
+        deleted.Should().BeFalse();
+        service.GetPreset(preset.Id).Should().NotBeNull();
+    }
+
     private sealed class TestExportPresetService : ExportPresetServiceBase
     {
         public bool ForceWriteFailure { get; set; }

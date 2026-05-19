@@ -188,9 +188,11 @@ public class ExportPresetServiceBase
         if (preset == null || preset.IsBuiltIn)
             return false;
 
-        _presets.Remove(preset);
+        var presetIndex = _presets.IndexOf(preset);
+        _presets.RemoveAt(presetIndex);
         if (!await SavePresetsAsync(cancellationToken))
         {
+            _presets.Insert(presetIndex, preset);
             return false;
         }
 
