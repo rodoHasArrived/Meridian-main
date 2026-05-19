@@ -43,7 +43,7 @@ This command covers:
    - replay gate returns to `Ready`,
    - stale replay work item is cleared.
 7. Query operator inbox (`GET /api/workstation/operator/inbox`) and confirm severity/tone alignment
-   with readiness blockers.
+   with readiness blockers plus actionable routing/sign-off detail for each blocking item.
 
 ## Evidence Packet Contents
 
@@ -52,5 +52,5 @@ For each run date (`YYYY-MM-DD`), archive:
 - focused test output log,
 - replay audit IDs before and after stale recovery,
 - readiness payload snapshots for stale and recovered states,
-- operator-inbox snapshot for blocker alignment,
+- operator-inbox snapshot for blocker alignment and routing/sign-off detail evidence,
 - short narrative stating whether all four Wave 2 reliability gates are pass/review/blocked.

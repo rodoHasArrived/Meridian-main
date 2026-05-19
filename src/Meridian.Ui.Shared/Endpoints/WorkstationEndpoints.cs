@@ -304,6 +304,77 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationPortfolio")
         .Produces<WorkstationPortfolioPayload>(200);
 
+
+        group.MapGet("/operations/continuity", async (Guid? fundAccountId, string? periodId, string? status, HttpContext context) =>
+        {
+            if (fundAccountId is null || fundAccountId == Guid.Empty)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]> { ["fundAccountId"] = ["The fundAccountId query parameter is required."] });
+            }
+
+            var readService = context.RequestServices.GetService<IStrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run read service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var runs = await readService.GetRunHistoryAsync(modeFilter: null, statusFilter: status, strategyId: null, limit: 100, context.RequestAborted).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(periodId))
+            {
+                runs = runs.Where(run => string.Equals(run.SweepId, periodId, StringComparison.OrdinalIgnoreCase)).ToArray();
+            }
+
+            return Results.Json(runs, jsonOptions);
+        })
+        .WithName("GetOperationsContinuitySummary");
+
+        group.MapGet("/operations/continuity/{workflowId}", async (string workflowId, HttpContext context) =>
+        {
+            return await GetRunContinuityResultAsync(workflowId, context, jsonOptions).ConfigureAwait(false);
+        })
+        .WithName("GetOperationsContinuityDetail");
+
+        group.MapGet("/operations/continuity/{workflowId}/timeline", async (string workflowId, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<IStrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run read service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var timeline = await readService.GetMergedTimelineAsync(modeFilter: null, statusFilter: null, strategyId: null, limit: 200, context.RequestAborted).ConfigureAwait(false);
+            var filtered = timeline.Where(item => string.Equals(item.RunId, workflowId, StringComparison.OrdinalIgnoreCase)).ToArray();
+            return filtered.Length == 0 ? Results.NotFound() : Results.Json(filtered, jsonOptions);
+        })
+        .WithName("GetOperationsContinuityTimeline");
+
+        group.MapGet("/operations/continuity/{workflowId}/breaks", async (string workflowId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationRunService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var detail = await service.GetLatestForRunAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return detail is null ? Results.NotFound() : Results.Json(detail.Breaks, jsonOptions);
+        })
+        .WithName("GetOperationsContinuityBreaks");
+
+        group.MapGet("/operations/continuity/{workflowId}/ledger-preview", async (string workflowId, HttpContext context) =>
+        {
+            var ledgerService = context.RequestServices.GetService<StrategyRunLedgerService>();
+            if (ledgerService is null)
+            {
+                return Results.Problem("Strategy run ledger service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var summary = await ledgerService.GetSummaryAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return summary is null ? Results.NotFound() : Results.Json(summary, jsonOptions);
+        })
+        .WithName("GetOperationsContinuityLedgerPreview");
+
+
         group.MapPost("/reconciliation/runs", async (ReconciliationRunRequest request, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<IReconciliationRunService>();
@@ -4992,3 +5063,24 @@ public sealed record MetricsDiff(
     decimal? TargetNetPnl,
     decimal? BaseTotalReturn,
     decimal? TargetTotalReturn);
+
+    private static async Task<IResult> GetRunContinuityResultAsync(string runId, HttpContext context, JsonSerializerOptions jsonOptions)
+    {
+        var continuityService = context.RequestServices.GetService<StrategyRunContinuityService>();
+        if (continuityService is null)
+        {
+            return Results.Problem("Strategy run continuity service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+        }
+
+        var detail = await continuityService.GetRunContinuityAsync(runId, context.RequestAborted).ConfigureAwait(false);
+        return detail is null
+            ? Results.NotFound()
+            : Results.Json(new StrategyRunContinuityDto(
+                detail.Run,
+                detail.Lineage,
+                detail.CashFlow,
+                detail.Reconciliation,
+                detail.ContinuityStatus), jsonOptions);
+    }
+
+

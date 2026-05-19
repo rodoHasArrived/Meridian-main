@@ -58,6 +58,7 @@ public sealed class FundOperationsWorkspaceReadService
     private readonly PortfolioReadService _portfolioReadService;
     private readonly ISecurityReferenceLookup? _securityReferenceLookup;
     private readonly IReconciliationRunService? _strategyReconciliationService;
+    private readonly IReconciliationBreakQueueRepository? _breakQueueRepository;
     private readonly NavAttributionService _navAttributionService;
     private readonly ReportGenerationService _reportGenerationService;
     private readonly IGovernanceReportPackRepository? _reportPackRepository;
@@ -72,6 +73,7 @@ public sealed class FundOperationsWorkspaceReadService
         ReportGenerationService reportGenerationService,
         ISecurityReferenceLookup? securityReferenceLookup = null,
         IReconciliationRunService? strategyReconciliationService = null,
+        IReconciliationBreakQueueRepository? breakQueueRepository = null,
         IGovernanceReportPackRepository? reportPackRepository = null,
         ReportPackValidationService? reportPackValidationService = null,
         ISecurityValidationGateService? securityValidationGate = null)
@@ -83,6 +85,7 @@ public sealed class FundOperationsWorkspaceReadService
         _reportGenerationService = reportGenerationService ?? throw new ArgumentNullException(nameof(reportGenerationService));
         _securityReferenceLookup = securityReferenceLookup;
         _strategyReconciliationService = strategyReconciliationService;
+        _breakQueueRepository = breakQueueRepository;
         _reportPackRepository = reportPackRepository;
         _reportPackValidationService = reportPackValidationService ?? new ReportPackValidationService();
         _securityValidationGate = securityValidationGate;
@@ -702,7 +705,80 @@ public sealed class FundOperationsWorkspaceReadService
             OpenBreakCount: openBreaks,
             BreakAmountTotal: breakAmountTotal,
             RecentRuns: ordered,
-            SecurityCoverageIssueCount: securityCoverageIssues);
+            SecurityCoverageIssueCount: securityCoverageIssues,
+            BreakQueue: await BuildBreakQueueProjectionAsync(ct).ConfigureAwait(false),
+            LedgerImpactPreview: BuildLedgerImpactPreview(ordered),
+            HasCriticalBreakOpen: await HasCriticalBreakOpenAsync(ct).ConfigureAwait(false));
+    }
+
+    private async Task<ReconciliationBreakQueueProjectionDto?> BuildBreakQueueProjectionAsync(CancellationToken ct)
+    {
+        if (_breakQueueRepository is null)
+        {
+            return null;
+        }
+
+        var items = await _breakQueueRepository.GetAllAsync(null, ct).ConfigureAwait(false);
+        var projected = items
+            .OrderByDescending(static item => item.LastUpdatedAt)
+            .Select(static item => new ReconciliationBreakQueueProjectionItemDto(
+                BreakId: item.BreakId,
+                WorkflowId: item.RunId,
+                Severity: item.Severity,
+                Status: item.Status,
+                Owner: item.AssignedTo,
+                RequiredSignoffRole: item.RequiredSignoffRole,
+                SignoffStatus: item.SignoffStatus,
+                RoutingTarget: item.RoutingTarget,
+                RoutingDetail: item.RoutingDetail,
+                EvidenceReference: item.UpstreamSyncCursor ?? item.ExternalAccountId,
+                LastUpdatedAt: item.LastUpdatedAt))
+            .ToArray();
+
+        return new ReconciliationBreakQueueProjectionDto(
+            TotalCount: projected.Length,
+            OpenCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open),
+            InReviewCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview),
+            ResolvedCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved),
+            DismissedCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed),
+            CriticalOpenCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open && item.Severity == ReconciliationBreakSeverity.Critical),
+            Items: projected);
+    }
+
+    private static LedgerImpactPreviewDto BuildLedgerImpactPreview(IReadOnlyList<FundReconciliationItem> items)
+    {
+        var draftEntryCount = items.Sum(static item => item.TotalBreaks);
+        var netDebit = items.Where(static item => item.BreakAmountTotal >= 0m).Sum(static item => item.BreakAmountTotal);
+        var netCredit = items.Where(static item => item.BreakAmountTotal < 0m).Sum(static item => Math.Abs(item.BreakAmountTotal));
+        var flags = new List<string>();
+        if (draftEntryCount > 0)
+        {
+            flags.Add("draft-entries-present");
+        }
+
+        if (items.Any(static item => item.TotalBreaks > 0 && !string.Equals(item.Status, "Resolved", StringComparison.OrdinalIgnoreCase)))
+        {
+            flags.Add("unresolved-breaks-blocking-close");
+        }
+
+        return new LedgerImpactPreviewDto(
+            DraftEntryCount: draftEntryCount,
+            NetDebitEffect: netDebit,
+            NetCreditEffect: netCredit,
+            NetBalanceDelta: netDebit - netCredit,
+            HasValidationWarnings: flags.Count > 0,
+            ValidationFlags: flags);
+    }
+
+    private async Task<bool> HasCriticalBreakOpenAsync(CancellationToken ct)
+    {
+        if (_breakQueueRepository is null)
+        {
+            return false;
+        }
+
+        var items = await _breakQueueRepository.GetAllAsync(ReconciliationBreakQueueStatus.Open, ct).ConfigureAwait(false);
+        return items.Any(static item => item.Severity == ReconciliationBreakSeverity.Critical);
     }
 
     private async Task<FundNavAttributionSummaryDto> BuildNavSummaryAsync(

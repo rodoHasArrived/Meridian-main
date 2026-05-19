@@ -17,6 +17,35 @@ public sealed class BrokerageConfiguration
     /// Validation/signoff artifact requirements for enabling broker order routing.
     /// </summary>
     public BrokerValidationGateOptions ValidationGates { get; set; } = new();
+    /// Enables the read-only brokerage verification phase.
+    /// </summary>
+    public bool ReadOnlyPhaseEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Enables the paper-trading lifecycle phase.
+    /// </summary>
+    public bool PaperTradingPhaseEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Enables production order routing after all go-live gates pass.
+    /// </summary>
+    public bool ProductionRoutingPhaseEnabled { get; set; }
+
+    /// <summary>
+    /// Indicates read-only verification evidence is passing.
+    /// </summary>
+    public bool ReadOnlyVerificationPassed { get; set; }
+
+    /// <summary>
+    /// Indicates paper lifecycle tests are passing.
+    /// </summary>
+    public bool PaperLifecycleTestsPassed { get; set; }
+
+    /// <summary>
+    /// Indicates replay evidence is current and passing.
+    /// </summary>
+    public bool ReplayEvidencePassed { get; set; }
+
     /// <summary>
     /// The brokerage gateway to use. Must match a registered gateway ID
     /// (e.g., "alpaca", "ib", "paper").
