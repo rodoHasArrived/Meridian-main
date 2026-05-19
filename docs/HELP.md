@@ -116,3 +116,12 @@ Known local-environment pitfalls:
 - stale Vite preview or Node processes can lock built workstation assets during `npm run build`
 - missing Playwright-managed browsers may require installed Chrome or Edge for smoke checks
 - low free space on `C:` can break restore/build/test lanes before product code is at fault
+
+
+## Workstation governance workflow references
+
+For workstation governance lifecycle, approval/rejection/reopen guidance, and API route catalog:
+
+- [`status/workstation-governance-state-model.md`](status/workstation-governance-state-model.md)
+- [`operations/workstation-governance-approval-runbook.md`](operations/workstation-governance-approval-runbook.md)
+- [`reference/api-reference.md`](reference/api-reference.md) (Workstation governance routes)

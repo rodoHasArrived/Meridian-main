@@ -1,6 +1,6 @@
 # Live Execution Controls
 
-**Last Updated:** 2026-04-25
+**Last Updated:** 2026-05-19
 
 This guide covers the operator-facing controls that gate live execution in Meridian while preserving `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` as the stable backend seam.
 
@@ -18,6 +18,12 @@ For the embedded UI host (`src/Meridian/Meridian.csproj`), live routing is enabl
 ```powershell
 $env:MERIDIAN_EXECUTION_GATEWAY = "alpaca"
 $env:MERIDIAN_EXECUTION_LIVE_ENABLED = "true"
+$env:MERIDIAN_EXECUTION_READ_ONLY_PHASE_ENABLED = "true"
+$env:MERIDIAN_EXECUTION_PAPER_PHASE_ENABLED = "true"
+$env:MERIDIAN_EXECUTION_PRODUCTION_PHASE_ENABLED = "true"
+$env:MERIDIAN_EXECUTION_READ_ONLY_VERIFICATION_PASSED = "true"
+$env:MERIDIAN_EXECUTION_PAPER_LIFECYCLE_PASSED = "true"
+$env:MERIDIAN_EXECUTION_REPLAY_EVIDENCE_PASSED = "true"
 $env:ALPACA_KEY_ID = "<key>"
 $env:ALPACA_SECRET_KEY = "<secret>"
 ```
@@ -31,6 +37,132 @@ $env:MERIDIAN_EXECUTION_MAX_OPEN_ORDERS = "10"
 ```
 
 If `MERIDIAN_EXECUTION_LIVE_ENABLED` is missing or `MERIDIAN_EXECUTION_GATEWAY` resolves to `paper`, `Paper -> Live` promotion remains blocked.
+If any execution phase flag is disabled, order-routing endpoints remain blocked even when the OMS is healthy.
+
+## Tradier go-live gates (production routing)
+
+Before enabling production routing with Tradier, all gates must pass:
+
+1. **Read-only verification gate**
+   - Confirm account/position/order snapshots are healthy in read-only mode.
+   - Set `MERIDIAN_EXECUTION_READ_ONLY_VERIFICATION_PASSED=true`.
+2. **Paper-trading lifecycle gate**
+   - Run create/restore/verify/close paper-session lifecycle tests.
+   - Set `MERIDIAN_EXECUTION_PAPER_LIFECYCLE_PASSED=true`.
+3. **Replay evidence gate**
+   - Run replay verification for active paper sessions and capture durable audit evidence.
+   - Set `MERIDIAN_EXECUTION_REPLAY_EVIDENCE_PASSED=true`.
+
+Production routing remains blocked until all three gate flags are true.
+
+## Rollback steps
+
+If production behavior is degraded:
+
+1. Open the circuit breaker (`POST /api/execution/controls/circuit-breaker`) with an incident reason.
+2. Disable production phase by setting `MERIDIAN_EXECUTION_PRODUCTION_PHASE_ENABLED=false`.
+3. Optionally disable `MERIDIAN_EXECUTION_LIVE_ENABLED` to force non-live routing posture.
+4. Re-run replay verification and paper lifecycle checks before re-enabling production phase.
+
+## Minimum monitoring checks
+
+- Poll `GET /api/execution/health` every minute.
+- Poll `GET /api/execution/controls` and alert if circuit breaker is open or required gates are false.
+- Poll `GET /api/execution/audit?take=100` and alert on repeated `Rejected` order/control outcomes.
+- Validate replay freshness through `GET /api/execution/sessions/{sessionId}/replay` after restarts and before re-enabling production phase.
+
+## Phased Enablement Checklist
+
+Use this checklist as the promotion contract from read-only investigation through paper validation and finally production routing.
+
+### Phase 1 — Read-Only (No Order Routing)
+
+**Objective:** prove data, contracts, and replay evidence are trustworthy before any paper order entry.
+
+Prerequisites:
+
+- Test pass criteria:
+  - ✅ `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints_TradingReadiness" --logger "console;verbosity=normal"`
+  - ✅ `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints_OperatorInbox" --logger "console;verbosity=normal"`
+  - ✅ `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PaperSessionReplayTests" --logger "console;verbosity=normal"`
+- Replay parity:
+  - active session replay endpoint reports matching fill/order/ledger counts
+  - no stale replay work item in operator inbox for the target account/session
+- Contract compatibility:
+  - latest contract compatibility matrix is green for changed shared DTOs/endpoints
+  - no unresolved deprecation or compatibility blockers in release gate artifacts
+
+Exit criteria:
+
+- Operator can explain readiness and inbox blockers from current endpoint evidence.
+- Promotion records remain blocked for any non-read-only mode until replay and contract gates pass.
+
+### Phase 2 — Paper (Controlled Simulation Routing)
+
+**Objective:** validate promotion workflow, continuity, and operator triage under paper routing.
+
+Prerequisites:
+
+- Read-only checklist completed.
+- Test pass criteria:
+  - ✅ `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~Wave2PaperTradingCockpitAcceptanceTests" --logger "console;verbosity=normal"`
+  - ✅ `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ExecutionWriteEndpointsTests" --logger "console;verbosity=normal"`
+- Replay parity:
+  - latest `GET /api/execution/sessions/{sessionId}/replay` result includes verification evidence ID and zero mismatch deltas
+  - replay verification timestamp is newer than latest order/fill event in the active session
+- Contract compatibility:
+  - shared workstation/promotion contracts validated for desktop + web consumers before paper sign-off
+
+Exit criteria:
+
+- `Backtest -> Paper` approval succeeds with full checklist and audit reference.
+- Paper session survives restart with session scope/order history/ledger continuity preserved.
+
+### Phase 3 — Production (Live Routing Eligibility)
+
+**Objective:** prevent live routing unless all promotion controls, replay parity, and compatibility gates are complete and auditable.
+
+Prerequisites:
+
+- Paper checklist completed with recent evidence.
+- Test pass criteria:
+  - ✅ `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PromotionServiceLiveGovernanceTests" --logger "console;verbosity=normal"`
+  - ✅ `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OrderManagementSystemGovernanceTests" --logger "console;verbosity=normal"`
+- Replay parity:
+  - active paper session has current verification audit (`verificationAuditId`) and no divergence from latest persisted counts
+  - operator inbox contains no unresolved critical replay/promotion blockers for the account
+- Contract compatibility:
+  - latest contract compatibility gate evidence attached to promotion packet
+  - no breaking compatibility drift between promotion API contracts and workstation consumers
+
+Exit criteria:
+
+- `Paper -> Live` approval includes live checklist + active manual override + audit trace.
+- OMS live routing remains blocked by default and becomes eligible only inside the approved window.
+
+## Configuration And Runtime Gates For Live Routing
+
+Production order routing must remain disabled unless **all** gates below are satisfied.
+
+### Configuration Gates (startup/static)
+
+- `MERIDIAN_EXECUTION_LIVE_ENABLED=true` is required.
+- `MERIDIAN_EXECUTION_GATEWAY` must resolve to a non-`paper` live-capable gateway.
+- Required live credentials must be present for the selected gateway.
+- Optional risk ceilings (`MERIDIAN_EXECUTION_MAX_POSITION_SIZE`, `MERIDIAN_EXECUTION_MAX_ORDER_NOTIONAL`, `MERIDIAN_EXECUTION_MAX_OPEN_ORDERS`) should be explicitly set for production profiles.
+
+If any configuration gate fails, live promotion and live order routing are blocked.
+
+### Runtime Gates (dynamic/operational)
+
+- Circuit breaker must be closed (`isOpen=false`).
+- `AllowLivePromotion` manual override must exist, be scoped to the target strategy/run, and be unexpired.
+- Promotion approval checklist must be complete for target mode (`LIVE_OVERRIDE_REVIEWED` included).
+- Replay verification must be fresh relative to session activity and expose no mismatch deltas.
+- Operator inbox/readiness cannot have unresolved critical blockers for the target fund account.
+- Contract compatibility status used by the release/promotion packet must be current and passing.
+
+If any runtime gate regresses, support should immediately halt routing via circuit breaker and clear live overrides.
 
 ## Execution Endpoints
 
@@ -179,3 +311,42 @@ The repo includes executable coverage for the stable seam and Alpaca gateway pat
 - `Meridian.Tests.Execution.OrderManagementSystemTests.PlaceOrderAsync_WhenGatewayStartsDisconnected_ConnectsAndAuditsSelectedGateway`
 - `Meridian.Tests.Strategies.PromotionServiceLiveGovernanceTests`
 - `Meridian.Tests.Execution.OrderManagementSystemGovernanceTests`
+
+## Operator Validation + Disable/Rollback Actions
+
+Use this runbook when support teams need to validate readiness, stop live routing, or roll back promotion posture.
+
+### Validate Before Promotion
+
+1. Check current controls (`GET /api/execution/controls`) and confirm breaker is closed only when intended.
+2. Check readiness + inbox for the active fund account:
+   - `GET /api/workstation/trading/readiness`
+   - `GET /api/workstation/operator/inbox?fundAccountId=<account-guid>`
+3. Verify replay parity:
+   - `GET /api/execution/sessions/{sessionId}/replay`
+   - confirm evidence counts, `verificationAuditId`, and recency are aligned
+4. Confirm latest contract compatibility packet is attached to the promotion review bundle.
+5. Approve promotion only after checklist completeness and override scope review.
+
+### Disable Live Routing Immediately (Emergency Halt)
+
+1. Open circuit breaker:
+
+```http
+POST /api/execution/controls/circuit-breaker
+{
+  "isOpen": true,
+  "reason": "Emergency live-routing halt",
+  "correlationId": "corr-emergency-halt-001"
+}
+```
+
+2. Clear all active `AllowLivePromotion` overrides tied to the incident scope.
+3. Re-query `GET /api/execution/controls` and `GET /api/execution/audit` to confirm control state and traceability.
+
+### Rollback Promotion Eligibility (Post-Incident)
+
+1. Force promotion posture back to paper-only by keeping `MERIDIAN_EXECUTION_GATEWAY=paper` or removing live enablement in the environment profile.
+2. Re-run replay verification for the affected session and capture fresh evidence.
+3. Resolve/close operator inbox blockers and document disposition.
+4. Require a fresh manual override and full checklist review before re-enabling live promotion.
