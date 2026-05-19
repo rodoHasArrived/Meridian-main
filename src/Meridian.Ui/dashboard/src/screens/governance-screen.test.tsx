@@ -908,12 +908,18 @@ describe("GovernanceScreen", () => {
   it("recovers Security Master conflict loading failures with a retry command", async () => {
     const user = userEvent.setup();
     vi.mocked(api.getSecurityConflicts)
-      .mockRejectedValueOnce(new Error("Conflict API offline"))
+      .mockRejectedValueOnce(new ApiError({
+        path: "/api/workstation/security-master/conflicts",
+        status: 503,
+        detail: "Conflict API offline"
+      }))
       .mockResolvedValueOnce([securityConflict]);
 
     await renderGovernanceScreen(data, "/accounting/security-master");
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Conflict API offline");
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Identifier conflicts failed to load: Conflict API offline");
+    expect(within(alert).getByText("Endpoint returned 503 for /api/workstation/security-master/conflicts.")).toBeInTheDocument();
     const retry = screen.getByRole("button", { name: "Retry loading Security Master identifier conflicts" });
     expect(retry).toHaveTextContent("Retry conflicts");
 
@@ -921,6 +927,36 @@ describe("GovernanceScreen", () => {
 
     expect(await screen.findByRole("group", { name: /Identifier conflict conflict-1/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Refresh Security Master identifier conflicts" })).toHaveTextContent("Refresh conflicts");
+  });
+
+  it("announces Security Master conflict resolution failures with structured details", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(api.resolveSecurityConflict).mockRejectedValueOnce(
+      new ApiError({
+        path: "/api/workstation/security-master/conflicts/conflict-1/resolve",
+        status: 409,
+        detail: "Resolution requires a newer conflict snapshot.",
+        validationIssues: [
+          {
+            field: "resolution",
+            label: "resolution",
+            messages: ["Choose a resolution that matches the active provider record."]
+          }
+        ]
+      })
+    );
+
+    await renderGovernanceScreen(data, "/accounting/security-master");
+
+    await user.click(await screen.findByRole("button", {
+      name: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Bloomberg value sec-1"
+    }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Conflict resolution failed: Resolution requires a newer conflict snapshot.");
+    expect(within(alert).getByText("Endpoint returned 409 for /api/workstation/security-master/conflicts/conflict-1/resolve.")).toBeInTheDocument();
+    expect(within(alert).getByText("resolution: Choose a resolution that matches the active provider record.")).toBeInTheDocument();
   });
 
   it("renders reconciliation detail on deep-link routes and updates selection", async () => {

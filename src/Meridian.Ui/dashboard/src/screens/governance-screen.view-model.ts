@@ -15,7 +15,12 @@ import {
   reviewReconciliationBreak,
   searchSecurities
 } from "@/lib/api";
-import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, workflowTargetPath } from "@/lib/workspace";
+import {
+  evidenceWorkbenchPath,
+  normalizeLocalWorkstationRoute,
+  WORKSTATION_ROUTE_CATALOG,
+  workflowTargetPath
+} from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   AccountingBasisKind,
@@ -142,6 +147,7 @@ export interface CalibrationSummaryViewState {
   selectedProfile: CalibrationProfileDetailViewModel | null;
   refreshCommand: CalibrationSummaryRefreshCommandViewModel;
   errorText: string | null;
+  errorDetails: string[];
   loadingText: string | null;
   statusAnnouncement: string;
 }
@@ -194,6 +200,7 @@ export interface CorporateActionsViewState {
   detailEmptyAriaLabel: string;
   loadingText: string | null;
   errorText: string | null;
+  errorDetails: string[];
   hasRows: boolean;
   statusAnnouncement: string;
 }
@@ -298,6 +305,7 @@ export interface TradingParametersViewState {
   asOfLabel: string;
   fields: TradingParametersField[];
   errorText: string | null;
+  errorDetails: string[];
   loadingText: string | null;
   statusAnnouncement: string;
 }
@@ -332,6 +340,7 @@ export interface SecuritySearchState {
   resultRows: SecuritySearchResultRowViewModel[];
   searchStatusText: string | null;
   searchErrorText: string | null;
+  searchErrorDetails: string[];
   statusAnnouncement: string;
 }
 
@@ -798,6 +807,7 @@ export interface GovernanceTrialBalanceViewState {
   emptyTitle: string;
   emptyDetail: string;
   errorText: string | null;
+  errorDetails: string[];
   statusAnnouncement: string;
 }
 
@@ -975,7 +985,7 @@ export function useGovernanceCashFlowViewModel(
 }
 
 export function buildGovernanceLoadingViewState(pathname: string): GovernanceLoadingViewState {
-  const workspaceLabel = pathname.startsWith("/reporting") ? "Reporting" : "Accounting";
+  const workspaceLabel = pathname.startsWith(WORKSTATION_ROUTE_CATALOG.reporting) ? "Reporting" : "Accounting";
   const slug = workspaceLabel.toLowerCase();
   return {
     role: "status",
@@ -1059,24 +1069,24 @@ export function useSecurityMasterViewModel(
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SecurityMasterEntry[] | null>(null);
   const [searching, setSearching] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<ApiErrorDisplay | null>(null);
   const [selectedSecurityId, setSelectedSecurityId] = useState<string | null>(null);
   const [identity, setIdentity] = useState<SecurityIdentityDrillIn | null>(null);
   const [identityLoading, setIdentityLoading] = useState(false);
-  const [identityError, setIdentityError] = useState<string | null>(null);
+  const [identityError, setIdentityError] = useState<ApiErrorDisplay | null>(null);
   const [conflicts, setConflicts] = useState<SecurityMasterConflict[] | null>(null);
   const [conflictsLoading, setConflictsLoading] = useState(false);
-  const [conflictsError, setConflictsError] = useState<string | null>(null);
+  const [conflictsError, setConflictsError] = useState<ApiErrorDisplay | null>(null);
   const [conflictResolvingId, setConflictResolvingId] = useState<string | null>(null);
-  const [conflictActionError, setConflictActionError] = useState<string | null>(null);
+  const [conflictActionError, setConflictActionError] = useState<ApiErrorDisplay | null>(null);
   const [corporateActions, setCorporateActions] = useState<CorporateAction[] | null>(null);
   const [corporateActionsLoading, setCorporateActionsLoading] = useState(false);
-  const [corporateActionsError, setCorporateActionsError] = useState<string | null>(null);
+  const [corporateActionsError, setCorporateActionsError] = useState<ApiErrorDisplay | null>(null);
   const [selectedCorporateActionId, setSelectedCorporateActionId] = useState<string | null>(null);
   const [selectedScheduleEventId, setSelectedScheduleEventId] = useState<string | null>(null);
   const [tradingParameters, setTradingParameters] = useState<TradingParameters | null>(null);
   const [tradingParametersLoading, setTradingParametersLoading] = useState(false);
-  const [tradingParametersError, setTradingParametersError] = useState<string | null>(null);
+  const [tradingParametersError, setTradingParametersError] = useState<ApiErrorDisplay | null>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchGenerationRef = useRef(0);
   const identityGenerationRef = useRef(0);
@@ -1148,7 +1158,7 @@ export function useSecurityMasterViewModel(
     } catch (err) {
       if (conflictGenerationRef.current === generation) {
         setConflicts([]);
-        setConflictsError(toErrorMessage(err, "Identifier conflicts failed to load."));
+        setConflictsError(describeApiError(err, "Identifier conflicts failed to load."));
       }
     } finally {
       if (conflictGenerationRef.current === generation) {
@@ -1189,7 +1199,7 @@ export function useSecurityMasterViewModel(
       .catch((err) => {
         if (!cancelled) {
           setCorporateActions([]);
-          setCorporateActionsError(toErrorMessage(err, "Corporate actions failed to load."));
+          setCorporateActionsError(describeApiError(err, "Corporate actions failed to load."));
         }
       })
       .finally(() => {
@@ -1207,7 +1217,7 @@ export function useSecurityMasterViewModel(
       .catch((err) => {
         if (!cancelled) {
           setTradingParameters(null);
-          setTradingParametersError(toErrorMessage(err, "Trading parameters failed to load."));
+          setTradingParametersError(describeApiError(err, "Trading parameters failed to load."));
         }
       })
       .finally(() => {
@@ -1258,7 +1268,7 @@ export function useSecurityMasterViewModel(
         .catch((err) => {
           if (searchGenerationRef.current === generation) {
             setResults([]);
-            setSearchError(toErrorMessage(err, "Security search failed."));
+            setSearchError(describeApiError(err, "Security search failed."));
           }
         })
         .finally(() => {
@@ -1294,7 +1304,7 @@ export function useSecurityMasterViewModel(
       }
     } catch (err) {
       if (identityGenerationRef.current === generation) {
-        setIdentityError(toErrorMessage(err, "Identity drill-in failed."));
+        setIdentityError(describeApiError(err, "Identity drill-in failed."));
       }
     } finally {
       if (identityGenerationRef.current === generation) {
@@ -1317,7 +1327,7 @@ export function useSecurityMasterViewModel(
         conflict.conflictId === conflictId ? updated : conflict
       )) ?? current);
     } catch (err) {
-      setConflictActionError(toErrorMessage(err, "Conflict resolution failed."));
+      setConflictActionError(describeApiError(err, "Conflict resolution failed."));
     } finally {
       conflictResolvingIdRef.current = null;
       setConflictResolvingId(null);
@@ -1463,16 +1473,19 @@ export function useSecurityMasterViewModel(
     identity,
     identityView,
     identityLoading,
-    identityErrorText: identityError,
+    identityErrorText: identityError?.summary ?? null,
+    identityErrorDetails: identityError?.details ?? [],
     conflicts,
     conflictRows,
     hasConflicts: conflictRows.length > 0,
     conflictEmptyText: "No identifier conflicts detected.",
     conflictSectionAriaLabel: "Security Master identifier conflict queue",
     conflictsLoading,
-    conflictsErrorText: conflictsError,
+    conflictsErrorText: conflictsError?.summary ?? null,
+    conflictsErrorDetails: conflictsError?.details ?? [],
     conflictResolvingId,
-    conflictActionErrorText: conflictActionError,
+    conflictActionErrorText: conflictActionError?.summary ?? null,
+    conflictActionErrorDetails: conflictActionError?.details ?? [],
     conflictRefreshCommand,
     refreshConflicts,
     resolveConflict,
@@ -1484,7 +1497,7 @@ export function useSecurityMasterViewModel(
     selectCorporateAction: setSelectedCorporateActionId,
     hasCorporateActions: (corporateActions?.length ?? 0) > 0,
     corporateActionsLoading,
-    corporateActionsErrorText: corporateActionsError,
+    corporateActionsErrorText: corporateActionsError?.summary ?? null,
     securitySchedules,
     securityScheduleRows,
     schedulesView,
@@ -1492,7 +1505,7 @@ export function useSecurityMasterViewModel(
     tradingParameters,
     tradingParametersView,
     tradingParametersLoading,
-    tradingParametersErrorText: tradingParametersError,
+    tradingParametersErrorText: tradingParametersError?.summary ?? null,
     ...searchState
   };
 }
@@ -1513,10 +1526,10 @@ export function useGovernanceReconciliationViewModel(
   const [selectedTrialBalanceRowId, setSelectedTrialBalanceRowId] = useState<string | null>(null);
   const [selectedAccountingBasis, setSelectedAccountingBasis] = useState<AccountingBasisKind>(DEFAULT_ACCOUNTING_BASIS);
   const [trialBalanceLoading, setTrialBalanceLoading] = useState(false);
-  const [trialBalanceError, setTrialBalanceError] = useState<string | null>(null);
+  const [trialBalanceError, setTrialBalanceError] = useState<ApiErrorDisplay | null>(null);
   const [calibrationSummary, setCalibrationSummary] = useState<ReconciliationCalibrationSummary | null>(null);
   const [calibrationLoading, setCalibrationLoading] = useState(false);
-  const [calibrationError, setCalibrationError] = useState<string | null>(null);
+  const [calibrationError, setCalibrationError] = useState<ApiErrorDisplay | null>(null);
   const [selectedCalibrationProfileId, setSelectedCalibrationProfileId] = useState<string | null>(null);
   const calibrationRequestRevisionRef = useRef(0);
 
@@ -1592,7 +1605,7 @@ export function useGovernanceReconciliationViewModel(
       })
       .catch((err) => {
         if (calibrationRequestRevisionRef.current === revision) {
-          setCalibrationError(toErrorMessage(err, "Calibration summary failed to load."));
+          setCalibrationError(describeApiError(err, "Calibration summary failed to load."));
         }
       })
       .finally(() => {
@@ -1635,7 +1648,7 @@ export function useGovernanceReconciliationViewModel(
       .catch((err) => {
         if (!cancelled) {
           setTrialBalance([]);
-          setTrialBalanceError(toErrorMessage(err, "Trial balance failed to load."));
+          setTrialBalanceError(describeApiError(err, "Trial balance failed to load."));
         }
       })
       .finally(() => {
@@ -1715,7 +1728,7 @@ export function useGovernanceReconciliationViewModel(
       selectedRowId: selectedTrialBalanceRowId,
       selectedBasis: selectedAccountingBasis,
       loading: trialBalanceLoading,
-      errorText: trialBalanceError
+      error: trialBalanceError
     }),
     [selectedAccountingBasis, selectedReconciliation?.runId, selectedTrialBalanceRowId, trialBalance, trialBalanceError, trialBalanceLoading]
   );
@@ -1766,7 +1779,7 @@ export function useGovernanceReconciliationViewModel(
     queuePanelView,
     trialBalance,
     trialBalanceLoading,
-    trialBalanceErrorText: trialBalanceError,
+    trialBalanceErrorText: trialBalanceError?.summary ?? null,
     trialBalanceView,
     selectTrialBalanceRow: setSelectedTrialBalanceRowId,
     selectAccountingBasis,
@@ -1776,7 +1789,7 @@ export function useGovernanceReconciliationViewModel(
     resolveBreak,
     calibrationSummary,
     calibrationLoading,
-    calibrationErrorText: calibrationError,
+    calibrationErrorText: calibrationError?.summary ?? null,
     calibrationView,
     ...breakQueueState
   };
@@ -1845,7 +1858,7 @@ export function useReconciliationResolveDialogViewModel(
 }
 
 export function resolveGovernanceWorkstream(pathname: string): GovernanceWorkstream {
-  if (pathname.startsWith("/reporting")) {
+  if (pathname.startsWith(WORKSTATION_ROUTE_CATALOG.reporting)) {
     return "reporting";
   }
 
@@ -1922,7 +1935,7 @@ export function buildReconciliationQueuePanelViewState(
     overviewTitle: "Reconciliation queue",
     overviewDescription: "Open breaks, timing drift, and balanced runs stay visible without leaving Accounting.",
     overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation workstream to inspect selected run detail.",
-    overviewActionHref: "/accounting/reconciliation",
+    overviewActionHref: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
     overviewActionLabel: "Open reconciliation",
     overviewActionAriaLabel: "Open Accounting reconciliation workstream",
     listLabel: "Reconciliation runs",
@@ -2121,18 +2134,20 @@ export function buildSecuritySearchState({
   searching: boolean;
   results: SecurityMasterEntry[] | null;
   selectedSecurityId?: string | null;
-  searchError: string | null;
+  searchError: string | ApiErrorDisplay | null;
   identityLoading: boolean;
-  identityError: string | null;
+  identityError: string | ApiErrorDisplay | null;
 }): SecuritySearchState {
   const trimmedQuery = query.trim();
   const resultCount = results?.length ?? 0;
   const hasResults = resultCount > 0;
   const resultRows = buildSecuritySearchResultRows(results, selectedSecurityId ?? null);
-  const searchErrorText = searchError
-    ? searchError.startsWith("Security search failed")
-      ? searchError
-      : `Security search failed: ${searchError}`
+  const normalizedSearchError = normalizeApiErrorDisplay(searchError);
+  const normalizedIdentityError = normalizeApiErrorDisplay(identityError);
+  const searchErrorText = normalizedSearchError
+    ? normalizedSearchError.summary.startsWith("Security search failed")
+      ? normalizedSearchError.summary
+      : `Security search failed: ${normalizedSearchError.summary}`
     : null;
 
   let searchStatusText: string | null = null;
@@ -2159,6 +2174,7 @@ export function buildSecuritySearchState({
     resultRows,
     searchStatusText,
     searchErrorText,
+    searchErrorDetails: normalizedSearchError?.details ?? [],
     statusAnnouncement: buildSecurityStatusAnnouncement({
       searching,
       trimmedQuery,
@@ -2166,7 +2182,7 @@ export function buildSecuritySearchState({
       results,
       searchErrorText,
       identityLoading,
-      identityError
+      identityError: normalizedIdentityError?.summary ?? null
     })
   };
 }
@@ -2177,9 +2193,10 @@ export function countOpenSecurityConflicts(conflicts: SecurityMasterConflict[] |
 
 export function buildSecurityConflictRefreshCommand(
   loading: boolean,
-  errorText: string | null,
+  errorText: string | ApiErrorDisplay | null,
   resolvingConflictId: string | null = null
 ): SecurityConflictRefreshCommandViewModel {
+  const normalizedError = normalizeApiErrorDisplay(errorText);
   if (resolvingConflictId) {
     const disabledReason = `Wait until identifier conflict ${resolvingConflictId} finishes resolving before refreshing the conflict queue.`;
 
@@ -2196,10 +2213,10 @@ export function buildSecurityConflictRefreshCommand(
   }
 
   return {
-    label: loading ? "Refreshing..." : errorText ? "Retry conflicts" : "Refresh conflicts",
+    label: loading ? "Refreshing..." : normalizedError ? "Retry conflicts" : "Refresh conflicts",
     ariaLabel: loading
       ? "Refreshing Security Master identifier conflicts"
-      : errorText
+      : normalizedError
         ? "Retry loading Security Master identifier conflicts"
         : "Refresh Security Master identifier conflicts",
     disabled: loading,
@@ -2554,7 +2571,7 @@ export function buildGovernanceCashFlowViewState(
   pathname: string,
   workstream: GovernanceWorkstream
 ): GovernanceCashFlowViewState {
-  const routePath = pathname || "/accounting";
+  const routePath = pathname || WORKSTATION_ROUTE_CATALOG.accounting;
   const contextLabel = cashFlowContextLabel(workstream);
 
   if (!cashFlow) {
@@ -2807,14 +2824,14 @@ export function buildGovernanceTrialBalanceViewState({
   selectedRowId,
   selectedBasis = DEFAULT_ACCOUNTING_BASIS,
   loading,
-  errorText
+  error
 }: {
   runId: string | null;
   rows: LedgerTrialBalanceLine[];
   selectedRowId?: string | null;
   selectedBasis?: AccountingBasisKind | null;
   loading: boolean;
-  errorText: string | null;
+  error: string | ApiErrorDisplay | null;
 }): GovernanceTrialBalanceViewState {
   const detailPanelId = "trial-balance-account-detail";
   const runLabel = runId ?? "selected run";
@@ -2834,6 +2851,8 @@ export function buildGovernanceTrialBalanceViewState({
     isExpanded: row.rowId === resolvedSelectedRowId
   }));
   const selectedRow = viewRows.find((row) => row.rowId === resolvedSelectedRowId) ?? null;
+  const normalizedError = normalizeApiErrorDisplay(error);
+  const errorText = normalizedError?.summary ?? null;
   const state: GovernanceTrialBalanceState = errorText
     ? "error"
     : loading && !hasRows
@@ -2869,6 +2888,7 @@ export function buildGovernanceTrialBalanceViewState({
     emptyTitle: "No trial balance lines",
     emptyDetail: `Meridian did not return account-balance rows for ${runLabel}. Select another reconciliation run or refresh ledger evidence before report handoff.`,
     errorText,
+    errorDetails: normalizedError?.details ?? [],
     statusAnnouncement: buildTrialBalanceAnnouncement({ runLabel, state, rowCount: viewRows.length, loading, errorText })
   };
 }
@@ -3480,9 +3500,11 @@ function buildReconciliationBreakStatusAnnouncement({
 export function buildCalibrationSummaryViewState(
   summary: ReconciliationCalibrationSummary | null,
   loading: boolean,
-  errorText: string | null,
+  error: string | ApiErrorDisplay | null,
   selectedProfileId: string | null = null
 ): CalibrationSummaryViewState {
+  const normalizedError = normalizeApiErrorDisplay(error);
+  const errorText = normalizedError?.summary ?? null;
   const statusTone = calibrationStatusTone(summary?.status ?? null);
   const profiles = summary?.profiles ?? [];
   const effectiveSelectedProfileId = selectedProfileId && profiles.some((profile) => profile.toleranceProfileId === selectedProfileId)
@@ -3522,6 +3544,7 @@ export function buildCalibrationSummaryViewState(
     selectedProfile: selectedProfileRow ? buildCalibrationProfileDetail(selectedProfileRow) : null,
     refreshCommand: buildCalibrationSummaryRefreshCommand(loading, errorText),
     errorText,
+    errorDetails: normalizedError?.details ?? [],
     loadingText: loading ? "Loading calibration summary..." : null,
     statusAnnouncement: errorText
       ? `Calibration summary error: ${errorText}`
@@ -3892,8 +3915,10 @@ export function buildCorporateActionsViewState(
   actions: CorporateAction[] | null,
   selectedRowId: string | null,
   loading: boolean,
-  errorText: string | null
+  error: string | ApiErrorDisplay | null
 ): CorporateActionsViewState {
+  const normalizedError = normalizeApiErrorDisplay(error);
+  const errorText = normalizedError?.summary ?? null;
   const rows = buildCorporateActionRows(actions, selectedRowId);
   const effectiveSelectedRowId = rows.find((row) => row.rowId === selectedRowId)?.rowId ?? rows[0]?.rowId ?? null;
   const selectedRow = rows.find((row) => row.rowId === effectiveSelectedRowId) ?? null;
@@ -3914,6 +3939,7 @@ export function buildCorporateActionsViewState(
     detailEmptyAriaLabel: "No corporate action selected",
     loadingText: loading ? "Loading corporate actions..." : null,
     errorText,
+    errorDetails: normalizedError?.details ?? [],
     hasRows: rows.length > 0,
     statusAnnouncement: errorText
       ? `Corporate actions error: ${errorText}`
@@ -3953,8 +3979,10 @@ function buildCorporateActionDetailViewState(
 export function buildTradingParametersViewState(
   params: TradingParameters | null,
   loading: boolean,
-  errorText: string | null
+  error: string | ApiErrorDisplay | null
 ): TradingParametersViewState {
+  const normalizedError = normalizeApiErrorDisplay(error);
+  const errorText = normalizedError?.summary ?? null;
   const fields: TradingParametersField[] = params
     ? [
         { label: "Lot size", value: params.lotSize !== null ? String(params.lotSize) : "—" },
@@ -3979,6 +4007,7 @@ export function buildTradingParametersViewState(
     asOfLabel: params?.asOf ? formatSecurityDate(params.asOf) : "—",
     fields,
     errorText,
+    errorDetails: normalizedError?.details ?? [],
     loadingText: loading ? "Loading trading parameters..." : null,
     statusAnnouncement: errorText
       ? `Trading parameters error: ${errorText}`

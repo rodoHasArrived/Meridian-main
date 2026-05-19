@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type { MetricSnapshot, QuotesSnapshotItem, SymbolRecord, SymbolStatistics } from "@/types";
 
 export type WatchlistBadgeVariant = "default" | "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research";
@@ -754,7 +755,7 @@ export function buildWatchlistRows(
         lastTone,
         changeTone,
         isRemoving,
-        quoteHref: `/data/quotes?symbol=${encodeURIComponent(record.symbol)}`,
+        quoteHref: workstationRouteWithQuery("dataQuotes", { symbol: record.symbol }),
         quoteAriaLabel: `View live quotes for ${record.symbol}`,
         inspectLabel: "Inspect",
         inspectAriaLabel: `Inspect ${record.symbol} watchlist detail`,
@@ -1027,7 +1028,7 @@ export function buildStarterPackFeedback(
 
 export function buildProviderSetupHandoff(reason: string): WatchlistProviderSetupHandoff {
   return {
-    href: "/settings#alpaca-provider-setup",
+    href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
     label: "Fix provider setup",
     ariaLabel: `Open provider setup from watchlist ${reason}`,
     detail: "Review provider credentials and connection status in Settings."
@@ -1041,7 +1042,7 @@ export function buildLiveQuoteHandoff(symbols: readonly string[], reason: string
   }
 
   return {
-    href: `/data/quotes?symbol=${encodeURIComponent(symbol)}`,
+    href: workstationRouteWithQuery("dataQuotes", { symbol }),
     label: "Review live quote",
     ariaLabel: `Open live quotes for ${symbol} from watchlist ${reason}`,
     detail: `Review the ${symbol} live quote, chart, and quick-trade ticket.`

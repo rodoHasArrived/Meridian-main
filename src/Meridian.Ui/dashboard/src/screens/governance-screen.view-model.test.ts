@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ApiError } from "@/lib/api-errors";
 import {
   buildCalibrationSummaryViewState,
   buildCorporateActionsViewState,
@@ -1243,14 +1244,21 @@ describe("governance-screen view model", () => {
     const retryConflicts = deferred<SecurityMasterConflict[]>();
     const services = createSecurityMasterServices({
       getConflicts: vi.fn()
-        .mockRejectedValueOnce(new Error("Conflict API offline"))
+        .mockRejectedValueOnce(new ApiError({
+          path: "/api/workstation/security-master/conflicts",
+          status: 503,
+          detail: "Conflict API offline"
+        }))
         .mockReturnValueOnce(retryConflicts.promise)
     });
     const drillInServices = createSecurityMasterDrillInServices();
 
     const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
 
-    await waitFor(() => expect(result.current.conflictsErrorText).toBe("Conflict API offline"));
+    await waitFor(() => expect(result.current.conflictsErrorText).toBe("Identifier conflicts failed to load: Conflict API offline"));
+    expect(result.current.conflictsErrorDetails).toEqual([
+      "Endpoint returned 503 for /api/workstation/security-master/conflicts."
+    ]);
     expect(result.current.conflictRefreshCommand).toMatchObject({
       label: "Retry conflicts",
       disabled: false

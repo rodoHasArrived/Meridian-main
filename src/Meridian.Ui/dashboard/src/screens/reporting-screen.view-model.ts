@@ -3,7 +3,7 @@ import { runAnalysisExport } from "@/lib/api";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint } from "@/lib/workstation-endpoints";
-import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
@@ -235,7 +235,7 @@ const REPORT_PACK_PROFILE_KEYBOARD_HELP_ID = "report-pack-profile-keyboard-help"
 export function useReportingScreenViewModel(
   reporting: GovernanceReportingSummary | null,
   services: ReportingExportServices = defaultReportingExportServices,
-  pathname = "/reporting"
+  pathname: string = WORKSTATION_ROUTE_CATALOG.reporting
 ): ReportingScreenViewModel {
   const [selectedId, setSelectedId] = useState<string | null | undefined>(undefined);
   const [runningProfileId, setRunningProfileId] = useState<string | null>(null);
@@ -745,8 +745,8 @@ function buildWorkflowBackendLink({
 }
 
 function isReportPackRoute(pathname: string): boolean {
-  const normalized = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/reporting";
-  return normalized === "/reporting/report-packs";
+  const normalized = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || WORKSTATION_ROUTE_CATALOG.reporting;
+  return normalized === WORKSTATION_ROUTE_CATALOG.reportingReportPacks;
 }
 
 function defaultReportPackProfileId(reporting: GovernanceReportingSummary, pathname: string): string | null {
