@@ -1215,7 +1215,15 @@ public sealed class WorkstationEndpointsTests
     {
         var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness-contract", Guid.NewGuid().ToString("N"));
         var automationRoot = Path.Combine(rootPath, "provider-validation", "_automation");
-        Directory.CreateDirectory(automationRoot);
+
+        WriteReadyDk1Packet(
+            automationRoot,
+            packetStatus: "not-ready",
+            blockersJson: """
+                [
+                  "DK1 trust packet requires refreshed provider parity evidence before operator review."
+                ]
+                """);
 
         try
         {
@@ -1270,7 +1278,7 @@ public sealed class WorkstationEndpointsTests
             readyForPaperOperation.ValueKind.Should().Be(JsonValueKind.False);
             trustGate.ValueKind.Should().Be(JsonValueKind.Object);
             replay.ValueKind.Should().Be(JsonValueKind.Null);
-            promotion.ValueKind.Should().Be(JsonValueKind.Null);
+            promotion.ValueKind.Should().Be(JsonValueKind.Object);
             acceptanceGates.ValueKind.Should().Be(JsonValueKind.Array);
             workItems.ValueKind.Should().Be(JsonValueKind.Array);
 
@@ -1282,15 +1290,18 @@ public sealed class WorkstationEndpointsTests
             readiness!.ActiveSession.Should().NotBeNull();
             readiness.ActiveSession!.SessionId.Should().Be(session.SessionId);
             readiness.TrustGate.Should().NotBeNull();
-            readiness.TrustGate.Status.Should().Be("packet-unavailable");
-            readiness.TrustGate.Blockers.Should().ContainSingle();
+            readiness.TrustGate.Status.Should().Be("not-ready");
+            readiness.TrustGate.Blockers.Should().NotBeEmpty();
             readiness.Replay.Should().BeNull();
-            readiness.Promotion.Should().BeNull();
-            readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
+            readiness.Promotion.Should().NotBeNull();
+            readiness.Promotion!.RequiresReview.Should().BeTrue();
+            readiness.Promotion.ApprovalStatus.Should().BeNull();
+            readiness.Promotion.State.Should().NotBeNullOrWhiteSpace();
+            readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
 
             readiness.AcceptanceGates.Should().ContainSingle(gate =>
                 gate.GateId == "dk1-trust" &&
-                gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired);
+                gate.Status == TradingAcceptanceGateStatusDto.Blocked);
             readiness.AcceptanceGates.Should().ContainSingle(gate =>
                 gate.GateId == "replay" &&
                 gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
@@ -1301,7 +1312,7 @@ public sealed class WorkstationEndpointsTests
                 gate.RunId == "run-contract-backtest");
             readiness.WorkItems.Should().Contain(item =>
                 item.Kind == OperatorWorkItemKindDto.ProviderTrustGate &&
-                item.Tone == OperatorWorkItemToneDto.Warning);
+                item.Tone == OperatorWorkItemToneDto.Critical);
             readiness.WorkItems.Should().Contain(item =>
                 item.Kind == OperatorWorkItemKindDto.PaperReplay &&
                 item.Tone == OperatorWorkItemToneDto.Warning);
@@ -3903,7 +3914,9 @@ public sealed class WorkstationEndpointsTests
     private static void WriteReadyDk1Packet(
         string automationRoot,
         string? operatorSignoffJson = null,
-        bool includeContractReview = true)
+        bool includeContractReview = true,
+        string packetStatus = "ready-for-operator-review",
+        string blockersJson = "[]")
     {
         var packetDirectory = Path.Combine(automationRoot, "unit-ready");
         Directory.CreateDirectory(packetDirectory);
@@ -3920,7 +3933,7 @@ public sealed class WorkstationEndpointsTests
             {
               "generatedAtUtc": "2026-04-25T20:28:38Z",
               "sourceSummary": "artifacts/provider-validation/_automation/unit-ready/wave1-validation-summary.json",
-              "status": "ready-for-operator-review",
+              "status": "__PACKET_STATUS__",
               "sampleReview": {
                 "requiredCount": 4,
                 "samples": [
@@ -3992,9 +4005,10 @@ public sealed class WorkstationEndpointsTests
               ],
               __CONTRACT_REVIEW__
               "operatorSignoff": __OPERATOR_SIGNOFF__,
-              "blockers": []
+              "blockers": __BLOCKERS__
             }
             """
+            .Replace("__PACKET_STATUS__", packetStatus)
             .Replace("__CONTRACT_REVIEW__", includeContractReview
                 ? """
                   "trustRationaleContract": {
@@ -4028,7 +4042,8 @@ public sealed class WorkstationEndpointsTests
                   },
                 """
                 : string.Empty)
-            .Replace("__OPERATOR_SIGNOFF__", operatorSignoffJson));
+            .Replace("__OPERATOR_SIGNOFF__", operatorSignoffJson)
+            .Replace("__BLOCKERS__", blockersJson));
     }
 
     private static void RegisterSecurityMasterWorkbenchServices(
