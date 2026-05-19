@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Session;
+using Meridian.Storage.Archival;
 using Meridian.Ui.Services;
 
 namespace Meridian.Ui.Tests.Services;
@@ -110,22 +111,9 @@ public sealed class CollectionSessionServiceTests
     public async Task LoadSessionsAsync_WhenLegacyMigrationSaveFails_LoadsLegacyAndKeepsTargetUnwritten()
     {
         using var fixture = new PathFixture("mdc-session-legacy-failure");
-        var legacyPath = Path.Combine(AppContext.BaseDirectory, "sessions.json");
-        var legacyBackupPath = legacyPath + ".bak-test";
-
-        if (File.Exists(legacyBackupPath))
-        {
-            File.Delete(legacyBackupPath);
-        }
-
-        if (File.Exists(legacyPath))
-        {
-            File.Move(legacyPath, legacyBackupPath);
-        }
-
-        try
-        {
-            var legacyJson = """
+        var legacyPath = Path.Combine(fixture.RootPath, "legacy", "sessions.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(legacyPath)!);
+        var legacyJson = """
                              {
                                "sessions": [
                                  {
@@ -138,31 +126,45 @@ public sealed class CollectionSessionServiceTests
                                ]
                              }
                              """;
-            await File.WriteAllTextAsync(legacyPath, legacyJson);
+        await File.WriteAllTextAsync(legacyPath, legacyJson);
 
-            var service = new CollectionSessionService(
-                new FixedConfigService(fixture.ConfigPath, new AppConfigDto { DataRoot = "data" }),
-                NotificationService.Instance,
-                static (_, _, _) => throw new IOException("simulated migration write failure"));
+        var service = new CollectionSessionService(
+            new FixedConfigService(fixture.ConfigPath, new AppConfigDto { DataRoot = "data" }),
+            NotificationService.Instance,
+            static (_, _, _) => throw new IOException("simulated migration write failure"),
+            legacyPath);
 
-            var config = await service.LoadSessionsAsync();
+        var config = await service.LoadSessionsAsync();
 
-            config.Sessions.Should().ContainSingle(s => s.Name == "legacy");
-            var targetPath = Path.Combine(fixture.RootPath, "data", "_sessions", "sessions.json");
-            File.Exists(targetPath).Should().BeFalse("migration save failed, so target path remains absent");
-        }
-        finally
-        {
-            if (File.Exists(legacyPath))
-            {
-                File.Delete(legacyPath);
-            }
+        config.Sessions.Should().ContainSingle(s => s.Name == "legacy");
+        var targetPath = Path.Combine(fixture.RootPath, "data", "_sessions", "sessions.json");
+        File.Exists(targetPath).Should().BeFalse("migration save failed, so target path remains absent");
+    }
 
-            if (File.Exists(legacyBackupPath))
-            {
-                File.Move(legacyBackupPath, legacyPath);
-            }
-        }
+    [Fact]
+    public async Task LoadSessionsAsync_WhenLegacyJsonMalformed_QuarantinesLegacyFile_AndCreatesCleanTarget()
+    {
+        using var fixture = new PathFixture("mdc-session-legacy-malformed");
+        var legacyPath = Path.Combine(fixture.RootPath, "legacy", "sessions.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(legacyPath)!);
+        await File.WriteAllTextAsync(legacyPath, "{ malformed legacy json");
+
+        var service = new CollectionSessionService(
+            new FixedConfigService(fixture.ConfigPath, new AppConfigDto { DataRoot = "data" }),
+            NotificationService.Instance,
+            AtomicFileWriter.WriteAsync,
+            legacyPath);
+
+        var config = await service.LoadSessionsAsync();
+
+        config.Sessions.Should().NotBeNull().And.BeEmpty();
+        File.Exists(legacyPath).Should().BeFalse("malformed legacy file should be quarantined");
+        Directory.GetFiles(Path.Combine(fixture.RootPath, "legacy", "_quarantine"), "sessions-malformed-*.json")
+            .Should()
+            .HaveCount(1);
+        File.Exists(Path.Combine(fixture.RootPath, "data", "_sessions", "sessions.json"))
+            .Should()
+            .BeTrue("recovery should persist a clean default target file");
     }
 
     // ── CollectionSession model (from Contracts) ────────────────────

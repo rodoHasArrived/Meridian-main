@@ -44,11 +44,24 @@ public sealed class CollectionSessionService
         IConfigService configService,
         NotificationService notificationService,
         Func<string, string, CancellationToken, Task> writeTextAsync)
+        : this(
+            configService,
+            notificationService,
+            writeTextAsync,
+            Path.Combine(AppContext.BaseDirectory, "sessions.json"))
+    {
+    }
+
+    internal CollectionSessionService(
+        IConfigService configService,
+        NotificationService notificationService,
+        Func<string, string, CancellationToken, Task> writeTextAsync,
+        string legacySessionsFilePath)
     {
         _configService = configService;
         _notificationService = notificationService;
         _writeTextAsync = writeTextAsync;
-        _legacySessionsFilePath = Path.Combine(AppContext.BaseDirectory, "sessions.json");
+        _legacySessionsFilePath = legacySessionsFilePath;
     }
 
     /// <summary>
@@ -61,10 +74,11 @@ public sealed class CollectionSessionService
             return _sessionsConfig;
         }
 
+        var loadPath = _legacySessionsFilePath;
         try
         {
             var sessionsFilePath = await GetSessionsFilePathAsync(ct);
-            var loadPath = sessionsFilePath;
+            loadPath = sessionsFilePath;
             var migratedFromLegacy = false;
             if (!File.Exists(loadPath) &&
                 !PathsEqual(sessionsFilePath, _legacySessionsFilePath) &&
@@ -86,7 +100,7 @@ public sealed class CollectionSessionService
         }
         catch (JsonException ex)
         {
-            await RecoverMalformedSessionsFileAsync(ex, ct).ConfigureAwait(false);
+            await RecoverMalformedSessionsFileAsync(loadPath, ex, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -105,9 +119,9 @@ public sealed class CollectionSessionService
         if (_sessionsConfig == null)
             return;
 
-        var sessionsFilePath = await GetSessionsFilePathAsync(ct);
         try
         {
+            var sessionsFilePath = await GetSessionsFilePathAsync(ct).ConfigureAwait(false);
             var directory = Path.GetDirectoryName(sessionsFilePath);
             if (!string.IsNullOrWhiteSpace(directory))
             {
@@ -117,9 +131,13 @@ public sealed class CollectionSessionService
             var json = JsonSerializer.Serialize(_sessionsConfig, DesktopJsonOptions.PrettyPrint);
             await _writeTextAsync(sessionsFilePath, json, ct).ConfigureAwait(false);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            Log.Warning(ex, "Collection sessions {Operation} failed for path {Path}.", "save", sessionsFilePath);
+            Log.Warning(ex, "Collection sessions {Operation} failed for path {Path}.", "save", _sessionsFilePath ?? "unknown");
         }
     }
 
@@ -581,32 +599,31 @@ Verification: {(session.ManifestPath != null ? "✓ Manifest generated" : "Pendi
             Path.GetFullPath(right),
             StringComparison.OrdinalIgnoreCase);
 
-    private async Task RecoverMalformedSessionsFileAsync(JsonException ex, CancellationToken ct)
+    private async Task RecoverMalformedSessionsFileAsync(string failedLoadPath, JsonException ex, CancellationToken ct)
     {
-        var sessionsFilePath = await GetSessionsFilePathAsync(ct).ConfigureAwait(false);
         try
         {
-            if (!File.Exists(sessionsFilePath))
+            if (!File.Exists(failedLoadPath))
             {
-                Log.Warning(ex, "Collection sessions {Operation} failed for path {Path}.", "load", sessionsFilePath);
+                Log.Warning(ex, "Collection sessions {Operation} failed for path {Path}.", "load", failedLoadPath);
                 return;
             }
 
-            var directory = Path.GetDirectoryName(sessionsFilePath) ?? AppContext.BaseDirectory;
+            var directory = Path.GetDirectoryName(failedLoadPath) ?? AppContext.BaseDirectory;
             var quarantineDirectory = Path.Combine(directory, "_quarantine");
             Directory.CreateDirectory(quarantineDirectory);
 
             var quarantineFilePath = Path.Combine(
                 quarantineDirectory,
-                $"{Path.GetFileNameWithoutExtension(sessionsFilePath)}-malformed-{DateTime.UtcNow:yyyyMMddHHmmssfff}{Path.GetExtension(sessionsFilePath)}");
-            File.Move(sessionsFilePath, quarantineFilePath, overwrite: true);
+                $"{Path.GetFileNameWithoutExtension(failedLoadPath)}-malformed-{DateTime.UtcNow:yyyyMMddHHmmssfff}{Path.GetExtension(failedLoadPath)}");
+            File.Move(failedLoadPath, quarantineFilePath, overwrite: true);
             _sessionsConfig = new CollectionSessionsConfig { Sessions = Array.Empty<CollectionSession>() };
             await SaveSessionsAsync(ct).ConfigureAwait(false);
-            Log.Warning(ex, "Collection sessions {Operation} recovered from malformed file {Path} by quarantining to {QuarantinePath}.", "load", sessionsFilePath, quarantineFilePath);
+            Log.Warning(ex, "Collection sessions {Operation} recovered from malformed file {Path} by quarantining to {QuarantinePath}.", "load", failedLoadPath, quarantineFilePath);
         }
         catch (Exception recoveryEx)
         {
-            Log.Warning(recoveryEx, "Collection sessions {Operation} recovery failed for path {Path}.", "load", sessionsFilePath);
+            Log.Warning(recoveryEx, "Collection sessions {Operation} recovery failed for path {Path}.", "load", failedLoadPath);
         }
     }
 
