@@ -267,6 +267,10 @@ public sealed record TradingOperatorReadinessDto(
     public TradingReportPackReadinessDto? ReportPack { get; init; }
 
     public EvidenceCompletenessSummaryDto? EvidenceCompleteness { get; init; }
+
+    public DateTimeOffset SnapshotMaterializedAt { get; init; }
+
+    public string SnapshotVersion { get; init; } = string.Empty;
 }
 
 public sealed record StrategyRunReviewPacketDto(

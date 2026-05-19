@@ -87,9 +87,17 @@ public sealed class TradingOperatorReadinessService
         var overallStatus = ResolveOverallStatus(acceptanceGates);
         var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
         var warnings = BuildWarnings(workItems);
+        var snapshotVersion = BuildSnapshotVersion(
+            latestRun?.Summary.RunId,
+            replay?.VerificationAuditId,
+            promotion?.AuditReference,
+            trustGate.Status,
+            trustGate.OperatorSignoffStatus);
 
         _logger.LogDebug(
-            "Built trading operator readiness with {OverallStatus}, {WorkItemCount} work item(s), and {WarningCount} warning(s).",
+            "Built trading operator readiness snapshot {SnapshotVersion} at {SnapshotMaterializedAt:o} with {OverallStatus}, {WorkItemCount} work item(s), and {WarningCount} warning(s).",
+            snapshotVersion,
+            asOf,
             overallStatus,
             workItems.Count,
             warnings.Count);
@@ -113,9 +121,25 @@ public sealed class TradingOperatorReadinessService
             EvidenceCompleteness = evidenceCompleteness,
             OverallStatus = overallStatus,
             ReadyForPaperOperation = overallStatus == TradingAcceptanceGateStatusDto.Ready,
-            ReportPack = reportPack
+            ReportPack = reportPack,
+            SnapshotMaterializedAt = asOf,
+            SnapshotVersion = snapshotVersion
         };
     }
+
+    private static string BuildSnapshotVersion(
+        string? runId,
+        string? replayAuditReference,
+        string? promotionAuditReference,
+        string trustGateStatus,
+        string? trustGateOperatorSignoffStatus)
+        => string.Join(
+            '|',
+            runId ?? "none",
+            replayAuditReference ?? "none",
+            promotionAuditReference ?? "none",
+            trustGateStatus,
+            trustGateOperatorSignoffStatus ?? "none");
 
     private sealed record PaperSessionReadiness(
         IReadOnlyList<TradingPaperSessionReadinessDto> Sessions,
