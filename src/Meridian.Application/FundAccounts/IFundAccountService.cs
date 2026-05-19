@@ -89,4 +89,23 @@ public interface IFundAccountService
 
     Task<IReadOnlyList<AccountReconciliationBreakDto>> GetOpenBreaksAsync(
         Guid accountId, CancellationToken ct = default);
+
+    // ── Sync history and readiness ───────────────────────────────────────────
+
+    Task<AccountSyncHistoryEntryDto> RecordSyncHistoryAsync(
+        RecordAccountSyncHistoryRequest request, CancellationToken ct = default);
+
+    Task<IReadOnlyList<AccountSyncHistoryEntryDto>> GetSyncHistoryAsync(
+        Guid accountId,
+        string? capability = null,
+        CancellationToken ct = default);
+
+    Task<AccountSyncHistoryEntryDto?> GetLatestSyncHistoryAsync(
+        Guid accountId,
+        string? capability = null,
+        CancellationToken ct = default);
+
+    Task<AccountReadinessSnapshotDto?> GetReadinessAsync(
+        Guid accountId,
+        CancellationToken ct = default);
 }

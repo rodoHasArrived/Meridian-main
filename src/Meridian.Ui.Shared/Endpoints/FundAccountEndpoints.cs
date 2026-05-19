@@ -404,6 +404,34 @@ public static class FundAccountEndpoints
         .Produces<AccountBalanceSnapshotDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
+        // ── Sync history and readiness ───────────────────────────────────────
+
+        group.MapGet("/{accountId:guid}/sync-history", async (Guid accountId, HttpContext context) =>
+        {
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
+                return ServiceUnavailable();
+
+            var capability = context.Request.Query["capability"].FirstOrDefault();
+            var results = await queryService.GetSyncHistoryAsync(accountId, capability, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(results, jsonOptions);
+        })
+        .WithName("GetAccountSyncHistory")
+        .Produces<IReadOnlyList<AccountSyncHistoryEntryDto>>(StatusCodes.Status200OK);
+
+        group.MapGet("/{accountId:guid}/readiness", async (Guid accountId, HttpContext context) =>
+        {
+            var queryService = ResolveQueryService(context);
+            if (queryService is null)
+                return ServiceUnavailable();
+
+            var result = await queryService.GetReadinessAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+        })
+        .WithName("GetAccountReadiness")
+        .Produces<AccountReadinessSnapshotDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
         // ── Statement ingestion ───────────────────────────────────────────────
 
         group.MapPost("/{accountId:guid}/custodian-statements", async (Guid accountId, JsonElement body, HttpContext context) =>

@@ -160,6 +160,12 @@ public sealed class FundStructureEndpointTests
         payload.DisplayName.Should().Be(seed.DisplayName);
         payload.AuditActor.Should().Be("endpoint-test");
         payload.CorrelationId.Should().Be("endpoint-correlation");
+        payload.Status.Should().Be(GovernanceReportPackStatusDto.Validated);
+        payload.ValidationIssues.Should().BeEmpty();
+        payload.LifecycleEvents.Should().HaveCount(2);
+        payload.LifecycleEvents.Select(static lifecycle => lifecycle.ToStatus)
+            .Should()
+            .ContainInOrder(GovernanceReportPackStatusDto.Generated, GovernanceReportPackStatusDto.Validated);
         payload.Provenance.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
         payload.Provenance.SourceSnapshotHash.Should().MatchRegex("^[a-f0-9]{64}$");
         payload.Artifacts.Should().OnlyContain(artifact =>
@@ -190,6 +196,9 @@ public sealed class FundStructureEndpointTests
         payload!.Should().Contain(item => item.ReportId == generated.ReportId);
         payload.Single(item => item.ReportId == generated.ReportId).RelativeManifestPath.Should().EndWith("manifest.json");
         payload.Single(item => item.ReportId == generated.ReportId).SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
+        payload.Single(item => item.ReportId == generated.ReportId).Status.Should().Be(GovernanceReportPackStatusDto.Validated);
+        payload.Single(item => item.ReportId == generated.ReportId).ValidationIssueCount.Should().Be(0);
+        payload.Single(item => item.ReportId == generated.ReportId).LifecycleEventCount.Should().Be(2);
     }
 
     [Fact]

@@ -141,6 +141,49 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public void EvidencePacketValidationService_DuringLedgerReview_ExplainsLedgerArtifactIntegrityIssues()
+    {
+        var subject = Subject(EvidenceSubjectResolver.StrategyRunKind, "run-ledger-integrity");
+        var ledger = Node(
+            subject,
+            "ledger",
+            "run-ledger",
+            EvidenceStatusDto.Ready,
+            artifacts:
+            [
+                new EvidenceArtifactRefDto(
+                    "ledger:journal",
+                    "ledger-journal",
+                    Path: null,
+                    Route: null,
+                    GeneratedAt: DateTimeOffset.UtcNow,
+                    Hash: null,
+                    Retained: false)
+            ]);
+        var service = new EvidencePacketValidationService();
+
+        var result = service.Validate(
+            [ledger],
+            [],
+            new HashSet<string>(["ledger"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        result.Completeness.Status.Should().Be(EvidenceStatusDto.Blocked);
+        result.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ledger-missing-trial-balance-artifact" &&
+            issue.EvidenceId == "ledger" &&
+            issue.Severity == EvidenceValidationSeverityDto.Critical);
+        result.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ledger-artifact-not-retained" &&
+            issue.EvidenceId == "ledger" &&
+            issue.Severity == EvidenceValidationSeverityDto.Warning);
+        result.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ledger-artifact-not-addressable" &&
+            issue.EvidenceId == "ledger" &&
+            issue.Severity == EvidenceValidationSeverityDto.Critical);
+    }
+
+    [Fact]
     public async Task EvidenceGraphService_DuringCancelledReview_PreservesCancellation()
     {
         var service = CreateGraphService([new StubContributor("slow", static _ => true, _ => new EvidenceContribution([], [], [], [], []))]);
@@ -193,6 +236,10 @@ public sealed class EvidenceWorkflowFabricTests
         var export = await exportResponse.Content.ReadFromJsonAsync<EvidencePacketExportResponse>(ServerJsonOptions);
         export.Should().NotBeNull();
         export!.Retained.Should().BeTrue();
+        export.VaultIdentity.Should().NotBeNull();
+        export.VaultIdentity!.VaultId.Should().StartWith("ev-");
+        export.VaultIdentity.ManifestPath.Should().Be(export.ManifestPath);
+        export.VaultIdentity.ManifestRoute.Should().Be(export.ManifestRoute);
         export.WarningCount.Should().Be(0);
         File.Exists(Path.Combine(root, export.ManifestPath.Replace('/', Path.DirectorySeparatorChar))).Should().BeTrue();
 
@@ -202,9 +249,17 @@ public sealed class EvidenceWorkflowFabricTests
         var manifestJson = await manifestResponse.Content.ReadAsStringAsync();
         manifestJson.Should().Contain("\"manifestOnly\": true");
         manifestJson.Should().Contain("\"requestedBy\": \"operator\"");
+        manifestJson.Should().Contain("\"vaultIdentity\": {");
+        manifestJson.Should().Contain(export.VaultIdentity.VaultId);
+
+        var vaultResponse = await client.GetAsync($"/workstation/evidence/vault/{export.VaultIdentity.VaultId}");
+        vaultResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        vaultResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
 
         var traversalResponse = await client.GetAsync("/workstation/evidence/report-pack/current/..%2Fsecret-manifest.json");
         traversalResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var traversalError = await traversalResponse.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
+        traversalError!.Code.Should().Be("evidence-manifest-not-found");
     }
 
     [Fact]
@@ -216,6 +271,9 @@ public sealed class EvidenceWorkflowFabricTests
         var response = await client.GetAsync("/api/workstation/evidence/subjects/unknown/current/packet");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var error = await response.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
+        error!.Code.Should().Be("unsupported-evidence-subject-kind");
+        error.SubjectKind.Should().Be("unknown");
     }
 
     [Fact]
@@ -251,9 +309,12 @@ public sealed class EvidenceWorkflowFabricTests
 
         response.ManifestPath.Should().Contain("review jan-..-2026");
         response.ManifestRoute.Should().Contain("/workstation/evidence/report-pack/review%20jan-..-2026/");
+        response.VaultIdentity.Should().NotBeNull();
+        response.VaultIdentity!.SubjectId.Should().Be("Review Jan/../2026");
         response.WarningCount.Should().Be(0);
         manifestJson.Should().Contain("\"schemaVersion\": 1");
         manifestJson.Should().Contain("\"validationIssues\": [");
+        manifestJson.Should().Contain("\"vaultIdentity\": {");
         manifestJson.Should().Contain("\"code\": \"review-required-evidence\"");
         manifestJson.Should().NotContain("This warning should be excluded.");
     }

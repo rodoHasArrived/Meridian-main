@@ -12,6 +12,18 @@ These routes require `ManageCredentials`. Responses return credential state, mas
 verification state, continuity health, affected workflows, and the next repair action. Raw secrets
 are never returned.
 
+The legacy provider setup route remains available for compatibility:
+
+- `POST /api/providers/configure`
+
+This route now stores submitted credentials only through `IProviderCredentialStore`; it does not
+write API keys or API secrets into `appsettings.json`, `DataSourceConfig`, logs, or response DTOs.
+When a permission context is attached, setup requires `ManageProviders`, and requests that include
+credentials also require `ManageCredentials`. Local/test hosts without a permission context retain
+the previous optional setup behavior. Successful setup creates a redacted legacy data-source entry
+and seeds provider-routing connections and capability bindings so routing previews can inspect the
+new provider immediately.
+
 ## Local Encrypted Store
 
 New credential saves write to an encrypted per-user vault under the resolved Meridian data root:
@@ -31,6 +43,10 @@ or test fixtures. New browser flows must not mutate user-scoped environment vari
 Runtime data-provider construction reads the encrypted store first through
 `StoredProviderCredentialResolver`. If no encrypted record is available, the runtime falls back to
 the existing read-only environment/config resolver.
+
+Provider setup uses credential references of the form `vault:{providerId}/{environment}`. Alpaca
+defaults to `paper`; non-environment-specific providers use a `default` reference segment when a
+credential is required.
 
 ## Legacy Environment Fallback
 

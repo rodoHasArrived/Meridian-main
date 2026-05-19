@@ -29,6 +29,8 @@ public sealed class EvidencePacketValidationService
             ApplyNoOrphanWarnings(nodes, validatedEdges, warnings, issues);
         }
 
+        ApplyLedgerIntegrityIssues(nodes, issues);
+
         var completeness = BuildCompleteness(nodes, nodeLookup, requiredIds, issues);
         return new EvidencePacketValidationResult(
             Edges: validatedEdges,
@@ -163,8 +165,9 @@ public sealed class EvidencePacketValidationService
         var score = required.Length == 0
             ? 100
             : (int)Math.Round(ready.Count * 100d / required.Length, MidpointRounding.AwayFromZero);
+        var hasCriticalValidationIssue = issues.Any(static issue => issue.Severity == EvidenceValidationSeverityDto.Critical);
         var status =
-            missing.Count > 0 || blockers.Count > 0 ? EvidenceStatusDto.Blocked :
+            missing.Count > 0 || blockers.Count > 0 || hasCriticalValidationIssue ? EvidenceStatusDto.Blocked :
             stale.Count > 0 ? EvidenceStatusDto.Stale :
             ready.Count == required.Length ? EvidenceStatusDto.Ready :
             EvidenceStatusDto.ReviewRequired;
@@ -217,5 +220,66 @@ public sealed class EvidencePacketValidationService
                 SourceSystem: node.SourceSystem,
                 RelatedWorkItemId: workItemId));
         }
+    }
+
+    private static void ApplyLedgerIntegrityIssues(
+        IReadOnlyList<EvidenceNodeDto> nodes,
+        List<EvidenceValidationIssueDto> issues)
+    {
+        foreach (var node in nodes)
+        {
+            if (string.Equals(node.Kind, "run-ledger", StringComparison.OrdinalIgnoreCase) &&
+                node.Status is EvidenceStatusDto.Ready or EvidenceStatusDto.ReviewRequired)
+            {
+                RequireLedgerArtifact(node, "ledger-journal", "ledger-missing-journal-artifact", issues);
+                RequireLedgerArtifact(node, "ledger-trial-balance", "ledger-missing-trial-balance-artifact", issues);
+            }
+
+            foreach (var artifact in node.ArtifactRefs.Where(static artifact =>
+                         artifact.Kind.StartsWith("ledger-", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (!artifact.Retained)
+                {
+                    issues.Add(new EvidenceValidationIssueDto(
+                        Code: "ledger-artifact-not-retained",
+                        Severity: EvidenceValidationSeverityDto.Warning,
+                        Message: $"Ledger artifact '{artifact.ArtifactId}' is not marked retained.",
+                        EvidenceId: node.EvidenceId,
+                        EvidenceKind: node.Kind,
+                        SourceSystem: node.SourceSystem));
+                }
+
+                if (string.IsNullOrWhiteSpace(artifact.Path) && string.IsNullOrWhiteSpace(artifact.Route))
+                {
+                    issues.Add(new EvidenceValidationIssueDto(
+                        Code: "ledger-artifact-not-addressable",
+                        Severity: EvidenceValidationSeverityDto.Critical,
+                        Message: $"Ledger artifact '{artifact.ArtifactId}' has no retained path or route.",
+                        EvidenceId: node.EvidenceId,
+                        EvidenceKind: node.Kind,
+                        SourceSystem: node.SourceSystem));
+                }
+            }
+        }
+    }
+
+    private static void RequireLedgerArtifact(
+        EvidenceNodeDto node,
+        string artifactKind,
+        string issueCode,
+        List<EvidenceValidationIssueDto> issues)
+    {
+        if (node.ArtifactRefs.Any(artifact => string.Equals(artifact.Kind, artifactKind, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        issues.Add(new EvidenceValidationIssueDto(
+            Code: issueCode,
+            Severity: EvidenceValidationSeverityDto.Critical,
+            Message: $"Ledger evidence '{node.EvidenceId}' is missing required '{artifactKind}' artifact evidence.",
+            EvidenceId: node.EvidenceId,
+            EvidenceKind: node.Kind,
+            SourceSystem: node.SourceSystem));
     }
 }

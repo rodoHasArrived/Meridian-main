@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
@@ -17,6 +19,10 @@ public interface IEvidenceArtifactStore
         string subjectKind,
         string subjectId,
         string fileName,
+        CancellationToken ct = default);
+
+    Task<EvidenceManifestFile?> TryOpenManifestByVaultIdAsync(
+        string vaultId,
         CancellationToken ct = default);
 }
 
@@ -58,6 +64,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         var directory = Path.Combine(_rootDirectory, subjectKind, subjectId);
         var manifestPath = Path.Combine(directory, fileName);
         var relativePath = Path.Combine("workstation", "evidence", subjectKind, subjectId, fileName);
+        var manifestRoute = $"/workstation/evidence/{RouteSegment(subjectKind)}/{RouteSegment(subjectId)}/{RouteSegment(fileName)}";
         var manifest = new EvidenceManifestDto(
             SchemaVersion: 1,
             ExportedAt: generatedAt,
@@ -69,11 +76,26 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             Nodes: packet.Nodes,
             Edges: packet.Edges,
             Actions: packet.Actions,
-            Warnings: request.IncludeWarnings ? packet.Warnings : []);
+            Warnings: request.IncludeWarnings ? packet.Warnings : [],
+            VaultIdentity: null);
+        var preimage = JsonSerializer.Serialize(manifest, _jsonOptions);
+        var contentHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(preimage))).ToLowerInvariant();
+        var vaultIdentity = new EvidenceVaultIdentityDto(
+            VaultId: $"ev-{contentHash[..24]}",
+            SubjectKind: packet.Subject.SubjectKind,
+            SubjectId: packet.Subject.SubjectId,
+            ManifestPath: relativePath.Replace(Path.DirectorySeparatorChar, '/'),
+            ManifestRoute: manifestRoute,
+            RetainedAt: generatedAt,
+            ContentHashSha256: contentHash,
+            SchemaVersion: 1,
+            StorageKind: "file-manifest");
+        manifest = manifest with { VaultIdentity = vaultIdentity };
 
         await AtomicFileWriter
             .WriteAsync(manifestPath, JsonSerializer.Serialize(manifest, _jsonOptions), ct)
             .ConfigureAwait(false);
+        await WriteVaultIndexAsync(vaultIdentity, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Wrote evidence manifest for {SubjectKind}/{SubjectId} to {ManifestPath}.",
@@ -86,10 +108,13 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             SubjectId: packet.Subject.SubjectId,
             GeneratedAt: generatedAt,
             ManifestPath: relativePath.Replace(Path.DirectorySeparatorChar, '/'),
-            ManifestRoute: $"/workstation/evidence/{RouteSegment(subjectKind)}/{RouteSegment(subjectId)}/{RouteSegment(fileName)}",
+            ManifestRoute: manifestRoute,
             EvidenceCount: packet.Nodes.Count,
             WarningCount: request.IncludeWarnings ? packet.Warnings.Count : 0,
-            Retained: true);
+            Retained: true)
+        {
+            VaultIdentity = vaultIdentity
+        };
     }
 
     public Task<EvidenceManifestFile?> TryOpenManifestAsync(
@@ -133,6 +158,43 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             "application/json",
             info.Name,
             new DateTimeOffset(info.LastWriteTimeUtc)));
+    }
+
+    public async Task<EvidenceManifestFile?> TryOpenManifestByVaultIdAsync(
+        string vaultId,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var safeVaultId = ValidateVaultId(vaultId);
+        if (safeVaultId is null)
+        {
+            return null;
+        }
+
+        var indexPath = Path.Combine(_rootDirectory, "_vault", $"{safeVaultId}.json");
+        if (!File.Exists(indexPath))
+        {
+            return null;
+        }
+
+        await using var stream = new FileStream(
+            indexPath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            bufferSize: 16 * 1024,
+            useAsync: true);
+        var identity = await JsonSerializer
+            .DeserializeAsync<EvidenceVaultIdentityDto>(stream, _jsonOptions, ct)
+            .ConfigureAwait(false);
+        if (identity is null)
+        {
+            return null;
+        }
+
+        var fileName = Path.GetFileName(identity.ManifestPath);
+        return await TryOpenManifestAsync(identity.SubjectKind, identity.SubjectId, fileName, ct)
+            .ConfigureAwait(false);
     }
 
     public static string ResolveDataRoot(IServiceProvider services)
@@ -191,6 +253,32 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         return fileName;
     }
 
+    private async Task WriteVaultIndexAsync(EvidenceVaultIdentityDto identity, CancellationToken ct)
+    {
+        var indexPath = Path.Combine(_rootDirectory, "_vault", $"{identity.VaultId}.json");
+        await AtomicFileWriter
+            .WriteAsync(indexPath, JsonSerializer.Serialize(identity, _jsonOptions), ct)
+            .ConfigureAwait(false);
+    }
+
+    private static string? ValidateVaultId(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var normalized = value.Trim().ToLowerInvariant();
+        if (!normalized.StartsWith("ev-", StringComparison.Ordinal) || normalized.Length != 27)
+        {
+            return null;
+        }
+
+        return normalized[3..].All(static ch => ch is (>= '0' and <= '9') or (>= 'a' and <= 'f'))
+            ? normalized
+            : null;
+    }
+
     private static string RouteSegment(string value)
         => Uri.EscapeDataString(value);
 
@@ -209,5 +297,6 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         IReadOnlyList<EvidenceNodeDto> Nodes,
         IReadOnlyList<EvidenceEdgeDto> Edges,
         IReadOnlyList<WorkflowActionDto> Actions,
-        IReadOnlyList<string> Warnings);
+        IReadOnlyList<string> Warnings,
+        EvidenceVaultIdentityDto? VaultIdentity);
 }

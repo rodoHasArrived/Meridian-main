@@ -1,6 +1,6 @@
 # Provider Management Architecture
 
-**Version:** 3.2 | **Last Updated:** 2026-05-18
+**Version:** 3.3 | **Last Updated:** 2026-05-19
 
 This document describes the provider management architecture used by Meridian. It covers provider contracts, discovery, lifecycle management, failover, health monitoring, degradation scoring, and data quality operations.
 
@@ -441,6 +441,30 @@ falls back to the legacy config/environment resolver. Environment variables rema
 compatibility fallback; new browser flows must not write process, user, or machine environment
 variables.
 
+### ProviderSetupService
+
+**Location:** `src/Meridian.Application/ProviderRouting/ProviderSetupService.cs`
+
+`ProviderSetupService` is the application-layer boundary for the legacy
+`POST /api/providers/configure` setup flow. It normalizes the provider family through the shared
+credential catalog, saves submitted credentials only through `IProviderCredentialStore`, creates a
+redacted legacy `DataSourceConfig` entry for backward compatibility, and seeds
+`ProviderConnectionsConfig` connections and bindings for the requested setup capabilities.
+
+The setup service never stores submitted API keys or API secrets in `DataSourceConfig`, endpoint
+responses, or routing DTOs. Responses expose only safe setup metadata: provider id, connection id,
+binding ids, credential state/source, credential reference, environment, and warnings. New setup
+connections start with `ProductionReady = false` until certification or verification promotes the
+connection.
+
+Capability mapping for this compatibility flow is intentionally narrow:
+
+| Setup capability | Provider routing capability |
+|------------------|-----------------------------|
+| `streaming` | `RealtimeMarketData` |
+| `backfill` | `HistoricalBars` |
+| `reference` | `ReferenceData` |
+
 ### CredentialValidator
 
 **Location:** `src/Meridian.ProviderSdk/CredentialValidator.cs`
@@ -503,6 +527,7 @@ UI-side health monitoring service:
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
+| `/api/providers/configure` | POST | Compatibility setup flow that stores credentials through the encrypted provider store, creates a redacted legacy data source, and seeds provider-routing connections/bindings |
 | `/api/providers/connections` | GET | Data and brokerage provider rows with credential state, verification state, continuity health, fallback posture, masked key preview, affected workflows, and repair action |
 | `/api/providers/{providerId}/credentials` | PUT/DELETE | Save or delete provider credentials in the encrypted provider store |
 | `/api/providers/{providerId}/verify` | POST | Verify stored provider credentials without returning secrets |
@@ -512,6 +537,15 @@ UI-side health monitoring service:
 | `/api/providers/catalog` | GET | Provider catalog with capabilities metadata |
 | `/api/providers/comparison` | GET | Feature comparison across providers |
 | `/api/connections` | GET | Connection health status |
+
+### Provider Routing API (`/api/provider-routing/`)
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/provider-routing/connections` | GET | Configured provider-routing connections with safe credential references and production-ready state |
+| `/api/provider-routing/bindings` | GET | Capability bindings used by the routing engine |
+| `/api/provider-routing/trust-snapshots` | GET | Trust-score snapshots for configured routing connections |
+| `/api/provider-routing/preview` | POST | Deterministic route preview for a requested provider capability |
 
 ### Failover API (`/api/failover/`)
 
@@ -641,3 +675,14 @@ export TIINGO__TOKEN=your-token
 - Added the canonical provider connection API for listing, saving, verifying, and deleting provider credentials.
 - Kept legacy `/api/credentials/*`, provider-credential validation/test, and Alpaca brokerage routes as compatibility wrappers over the shared store.
 - Updated Alpaca paper verification to use the explicit Trading API endpoint `https://paper-api.alpaca.markets/v2/account`.
+
+## Migration Notes (v3.2 -> v3.3)
+
+- Moved legacy provider setup DTOs into shared contracts and routed `/api/providers/configure`
+  through `ProviderSetupService`.
+- Hardened provider setup so newly submitted secrets are written only to `IProviderCredentialStore`
+  and never into legacy `DataSourceConfig` entries.
+- Added `/api/provider-routing/connections`, `/api/provider-routing/bindings`,
+  `/api/provider-routing/trust-snapshots`, and `/api/provider-routing/preview` endpoint mappings.
+- Seeded provider-routing connections and bindings from setup so configured providers are visible
+  to route previews and trust snapshots immediately.

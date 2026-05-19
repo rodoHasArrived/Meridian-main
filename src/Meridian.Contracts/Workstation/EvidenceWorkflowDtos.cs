@@ -69,6 +69,25 @@ public sealed record EvidenceValidationIssueDto(
     string? SourceSystem = null,
     string? RelatedWorkItemId = null);
 
+public sealed record EvidenceVaultIdentityDto(
+    string VaultId,
+    string SubjectKind,
+    string SubjectId,
+    string ManifestPath,
+    string ManifestRoute,
+    DateTimeOffset RetainedAt,
+    string ContentHashSha256,
+    int SchemaVersion,
+    string StorageKind);
+
+public sealed record EvidenceEndpointErrorDto(
+    string Code,
+    string Message,
+    string? SubjectKind = null,
+    string? SubjectId = null,
+    string? FileName = null,
+    string? VaultId = null);
+
 public sealed record EvidenceCompletenessDto(
     int Score,
     EvidenceStatusDto Status,
@@ -122,4 +141,7 @@ public sealed record EvidencePacketExportResponse(
     string ManifestRoute,
     int EvidenceCount,
     int WarningCount,
-    bool Retained);
+    bool Retained)
+{
+    public EvidenceVaultIdentityDto? VaultIdentity { get; init; }
+}

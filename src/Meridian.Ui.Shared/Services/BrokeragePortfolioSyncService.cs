@@ -172,7 +172,16 @@ public sealed class BrokeragePortfolioSyncService
 
         if (link is null)
         {
-            return UnlinkedStatus(fundAccountId, "Run request did not include a provider/account link and the fund account does not expose one.");
+            var status = UnlinkedStatus(fundAccountId, "Run request did not include a provider/account link and the fund account does not expose one.");
+            await RecordSharedSyncHistoryAsync(
+                fundAccountId,
+                link: null,
+                status,
+                attemptedAt,
+                rawPath: null,
+                projectionPath: null,
+                ct).ConfigureAwait(false);
+            return status;
         }
 
         if (!_portfolioAdapters.TryGetValue(link.ProviderId, out var portfolioAdapter)
@@ -184,6 +193,14 @@ public sealed class BrokeragePortfolioSyncService
                 attemptedAt,
                 $"No brokerage sync adapter is registered for provider '{link.ProviderId}'.");
             await PersistFailureProjectionAsync(fundAccountId, link, status, attemptedAt, ct).ConfigureAwait(false);
+            await RecordSharedSyncHistoryAsync(
+                fundAccountId,
+                link,
+                status,
+                attemptedAt,
+                rawPath: null,
+                projectionPath: BuildProjectionPath(fundAccountId),
+                ct).ConfigureAwait(false);
             return status;
         }
 
@@ -258,6 +275,14 @@ public sealed class BrokeragePortfolioSyncService
             ct).ConfigureAwait(false);
 
         await PersistProjectionAsync(projection, ct).ConfigureAwait(false);
+        await RecordSharedSyncHistoryAsync(
+            fundAccountId,
+            link,
+            projection.Status,
+            attemptedAt,
+            rawPath,
+            projection.ProjectionPath,
+            ct).ConfigureAwait(false);
         await EnrichSharedReadServicesAsync(fundAccountId, attemptedAt, projection, ct).ConfigureAwait(false);
         return projection.Status;
     }
@@ -654,6 +679,168 @@ public sealed class BrokeragePortfolioSyncService
                 LastProjectionPath: projection.ProjectionPath),
             ct).ConfigureAwait(false);
     }
+
+    private async Task RecordSharedSyncHistoryAsync(
+        Guid fundAccountId,
+        WorkstationBrokerageAccountLinkDto? link,
+        WorkstationBrokerageSyncStatusDto status,
+        DateTimeOffset attemptedAt,
+        string? rawPath,
+        string? projectionPath,
+        CancellationToken ct)
+    {
+        var management = _services.GetService<IAccountManagementService>();
+        var fundAccountService = _services.GetService<IFundAccountService>();
+        if (management is null && fundAccountService is null)
+        {
+            return;
+        }
+
+        var syncStatus = status.Health switch
+        {
+            WorkstationBrokerageSyncHealth.Healthy => AccountSyncStatusDto.Succeeded,
+            WorkstationBrokerageSyncHealth.Degraded or WorkstationBrokerageSyncHealth.Stale => AccountSyncStatusDto.Degraded,
+            WorkstationBrokerageSyncHealth.Failed => AccountSyncStatusDto.Failed,
+            WorkstationBrokerageSyncHealth.Unlinked => AccountSyncStatusDto.Failed,
+            _ => AccountSyncStatusDto.Failed
+        };
+        var providerLinkStatus = status.Health switch
+        {
+            WorkstationBrokerageSyncHealth.Healthy => AccountProviderLinkStatusDto.Verified,
+            WorkstationBrokerageSyncHealth.Degraded => AccountProviderLinkStatusDto.Degraded,
+            WorkstationBrokerageSyncHealth.Stale => AccountProviderLinkStatusDto.Linked,
+            WorkstationBrokerageSyncHealth.Unlinked => AccountProviderLinkStatusDto.NotLinked,
+            WorkstationBrokerageSyncHealth.Failed => ClassifyProviderLinkFailure(status.LastError, status.Warnings),
+            _ => AccountProviderLinkStatusDto.SyncFailed
+        };
+        var completedAt = status.LastSuccessfulSyncAt ?? status.LastAttemptedSyncAt ?? attemptedAt;
+        var freshUntil = syncStatus is AccountSyncStatusDto.Succeeded or AccountSyncStatusDto.Degraded
+            ? completedAt.Add(_options.StaleAfter)
+            : (DateTimeOffset?)null;
+
+        var request = new RecordAccountSyncHistoryRequest(
+            AccountId: fundAccountId,
+            Capability: "brokerage-sync",
+            Status: syncStatus,
+            ProviderLinkStatus: providerLinkStatus,
+            ProviderId: link?.ProviderId ?? status.ProviderId,
+            ExternalAccountId: link?.ExternalAccountId ?? status.ExternalAccountId,
+            AttemptedAt: status.LastAttemptedSyncAt ?? attemptedAt,
+            CompletedAt: completedAt,
+            FreshUntil: freshUntil,
+            FailureKind: syncStatus == AccountSyncStatusDto.Failed
+                ? ClassifyFailureKind(status.LastError, status.Warnings)
+                : AccountSyncFailureKindDto.None,
+            FailureMessage: syncStatus == AccountSyncStatusDto.Failed ? status.LastError ?? status.Warnings.FirstOrDefault() : null,
+            CorrelationId: BuildSyncCorrelationId(fundAccountId, link, status, attemptedAt),
+            RequestedBy: link?.LinkedBy,
+            RawEvidencePath: rawPath,
+            ProjectionEvidencePath: projectionPath,
+            SecurityMissingCount: status.SecurityMissingCount,
+            Warnings: status.Warnings);
+
+        try
+        {
+            if (management is not null)
+            {
+                await management.RecordSyncHistoryAsync(request, ct).ConfigureAwait(false);
+                return;
+            }
+
+            await fundAccountService!.RecordSyncHistoryAsync(request, ct).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Brokerage sync history could not be recorded for fund account {FundAccountId}.",
+                fundAccountId);
+        }
+    }
+
+    private static string BuildSyncCorrelationId(
+        Guid fundAccountId,
+        WorkstationBrokerageAccountLinkDto? link,
+        WorkstationBrokerageSyncStatusDto status,
+        DateTimeOffset attemptedAt)
+        => string.Join(
+            "|",
+            "brokerage-sync",
+            fundAccountId.ToString("N"),
+            link?.ProviderId ?? status.ProviderId ?? "unlinked",
+            link?.ExternalAccountId ?? status.ExternalAccountId ?? "unlinked",
+            attemptedAt.UtcDateTime.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+    private static AccountProviderLinkStatusDto ClassifyProviderLinkFailure(
+        string? error,
+        IReadOnlyList<string> warnings)
+    {
+        var text = BuildFailureText(error, warnings);
+        if (text.Contains("unauthorized", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("401", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("reauthor", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountProviderLinkStatusDto.Unauthorized;
+        }
+
+        if (text.Contains("credential", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("secret", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("token", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountProviderLinkStatusDto.Expired;
+        }
+
+        if (text.Contains("unsupported", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("not registered", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountProviderLinkStatusDto.Unsupported;
+        }
+
+        return AccountProviderLinkStatusDto.SyncFailed;
+    }
+
+    private static AccountSyncFailureKindDto ClassifyFailureKind(
+        string? error,
+        IReadOnlyList<string> warnings)
+    {
+        var text = BuildFailureText(error, warnings);
+        if (text.Contains("credential", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("secret", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("token", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountSyncFailureKindDto.CredentialMissing;
+        }
+
+        if (text.Contains("unauthorized", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("401", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("403", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountSyncFailureKindDto.Unauthorized;
+        }
+
+        if (text.Contains("rate", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("429", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountSyncFailureKindDto.RateLimited;
+        }
+
+        if (text.Contains("timeout", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("timed out", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountSyncFailureKindDto.Timeout;
+        }
+
+        if (text.Contains("unsupported", StringComparison.OrdinalIgnoreCase)
+            || text.Contains("not registered", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountSyncFailureKindDto.Unsupported;
+        }
+
+        return AccountSyncFailureKindDto.Unknown;
+    }
+
+    private static string BuildFailureText(string? error, IReadOnlyList<string> warnings)
+        => string.Join(" ", warnings.Prepend(error ?? string.Empty));
 
     private async Task EnrichSharedReadServicesAsync(
         Guid fundAccountId,
