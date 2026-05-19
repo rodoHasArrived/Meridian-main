@@ -1561,6 +1561,135 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_FundAccountScope_ShouldReturnOnlyRequestedAccountWorkItemsAndPreserveRoutingMetadata()
+    {
+        var accountA = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var accountB = Guid.Parse("84fb987e-5323-4630-9a0c-d1c30c95fa47");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-scope", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var brokerageSync = CreateFailedBrokerageSyncService(root);
+            await brokerageSync.RunSyncAsync(accountA, new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
+            await brokerageSync.RunSyncAsync(accountB, new WorkstationBrokerageSyncRunRequestDto("ibkr", "DU-7788", "ops-review"));
+
+            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+            var client = app.GetTestClient();
+
+            var readiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+                $"/api/workstation/trading/readiness?fundAccountId={accountA:D}",
+                ServerJsonOptions);
+            var inbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+                $"/api/workstation/operator/inbox?fundAccountId={accountA:D}",
+                ServerJsonOptions);
+
+            readiness.Should().NotBeNull();
+            readiness!.BrokerageSync.Should().NotBeNull();
+            readiness.BrokerageSync!.FundAccountId.Should().Be(accountA);
+            readiness.WorkItems.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == accountA &&
+                item.Workspace == "Settings" &&
+                item.TargetRoute == "/settings#alpaca-provider-setup" &&
+                item.TargetPageTag == "ProviderConnectionCenter");
+            readiness.WorkItems.Should().NotContain(item => item.FundAccountId == accountB);
+
+            inbox.Should().NotBeNull();
+            inbox!.Items.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == accountA &&
+                item.Workspace == "Settings" &&
+                item.TargetRoute == "/settings#alpaca-provider-setup" &&
+                item.TargetPageTag == "ProviderConnectionCenter");
+            inbox.Items.Should().NotContain(item => item.FundAccountId == accountB);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_FundAccountScope_WithUnknownAccount_ShouldNotFallBackToOtherScopedAccounts()
+    {
+        var knownAccount = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var unknownAccount = Guid.Parse("d8a69792-3313-4067-a311-a4de2133fe81");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-scope-unknown", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var brokerageSync = CreateFailedBrokerageSyncService(root);
+            await brokerageSync.RunSyncAsync(knownAccount, new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
+
+            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+            var client = app.GetTestClient();
+
+            var readiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+                $"/api/workstation/trading/readiness?fundAccountId={unknownAccount:D}",
+                ServerJsonOptions);
+            var inbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+                $"/api/workstation/operator/inbox?fundAccountId={unknownAccount:D}",
+                ServerJsonOptions);
+
+            readiness.Should().NotBeNull();
+            readiness!.BrokerageSync.Should().BeNull("unknown scoped account should not inherit another account's sync posture");
+            readiness.WorkItems.Should().NotContain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == knownAccount);
+
+            inbox.Should().NotBeNull();
+            inbox!.Items.Should().NotContain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == knownAccount);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_FundAccountScope_GlobalAggregate_ShouldIncludeAllScopedAccountsAndScopedEmptyState()
+    {
+        var accountA = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var accountB = Guid.Parse("84fb987e-5323-4630-9a0c-d1c30c95fa47");
+        var accountWithoutPendingItems = Guid.Parse("04ef2646-cad4-4775-8235-d63ef5a25d7f");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-scope-global", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var brokerageSync = CreateFailedBrokerageSyncService(root);
+            await brokerageSync.RunSyncAsync(accountA, new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-404", "ops-review"));
+            await brokerageSync.RunSyncAsync(accountB, new WorkstationBrokerageSyncRunRequestDto("ibkr", "DU-7788", "ops-review"));
+
+            await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
+            var client = app.GetTestClient();
+
+            var globalInbox = await client.GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+            var emptyScopedInbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+                $"/api/workstation/operator/inbox?fundAccountId={accountWithoutPendingItems:D}",
+                ServerJsonOptions);
+
+            globalInbox.Should().NotBeNull();
+            globalInbox!.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.BrokerageSync && item.FundAccountId == accountA);
+            globalInbox.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.BrokerageSync && item.FundAccountId == accountB);
+
+            emptyScopedInbox.Should().NotBeNull();
+            emptyScopedInbox!.Items.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.BrokerageSync);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_OperatorInbox_ShouldIncludeOpenReconciliationBreaks()
     {
         await using var app = await CreateAppAsync(services =>
