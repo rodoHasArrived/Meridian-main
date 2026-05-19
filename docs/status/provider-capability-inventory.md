@@ -36,6 +36,12 @@ Status definitions used below:
 - `Services/AlpacaBrokerageConnectionService.cs` (Alpaca paper/live connection service)
 - `Endpoints/ExecutionEndpoints.cs` (paper execution + brokerage gateway read/write seam)
 
+### `src/Meridian.Contracts/`
+
+- `Api/ProviderCatalog.cs` (standardized provider metadata and capability flags)
+- `Configuration/ProviderConnectionDtos.cs` (connection and credential state contracts)
+- `Domain/Enums/ConnectionStatus.cs` (shared provider connectivity states)
+
 ## Current broker/provider inventory
 
 | Broker / Provider | Authentication model | Account endpoints | Position model | Order lifecycle events | Execution / fill fidelity | Historical data availability | Rate limits | Sandbox / paper support | Key blockers requiring shared-contract updates |
