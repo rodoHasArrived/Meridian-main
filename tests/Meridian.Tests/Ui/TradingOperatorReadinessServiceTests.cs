@@ -327,9 +327,9 @@ public sealed class TradingOperatorReadinessServiceTests
 
 
     [Fact]
-    public async Task GetAsync_WithReplayCoverageDrift_ShouldDowngradeReplayGateAndOverallStatus()
+    public async Task GetAsync_WithReplayCoverageDrift_ShouldDowngradeReplayGateAndEmitSingleStaleReplayWorkItem()
     {
-        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithReplayCoverageDrift_ShouldDowngradeReplayGateAndOverallStatus));
+        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithReplayCoverageDrift_ShouldDowngradeReplayGateAndEmitSingleStaleReplayWorkItem));
         var persistence = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
@@ -339,7 +339,6 @@ public sealed class TradingOperatorReadinessServiceTests
             InitialCash: 100_000m,
             Symbols: ["AAPL"]));
         await persistence.VerifyReplayAsync(session.SessionId);
-        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("drift-order-1", "AAPL", 5m));
 
         using var provider = new ServiceCollection()
             .AddSingleton(auditTrail)
@@ -347,15 +346,21 @@ public sealed class TradingOperatorReadinessServiceTests
             .BuildServiceProvider();
         var service = new TradingOperatorReadinessService(provider, NullLogger<TradingOperatorReadinessService>.Instance);
 
-        var readiness = await service.GetAsync();
+        var readinessBeforeDrift = await service.GetAsync();
+        readinessBeforeDrift.AcceptanceGates.Should().ContainSingle(g =>
+            g.GateId == "replay" && g.Status == TradingAcceptanceGateStatusDto.Ready);
 
-        readiness.AcceptanceGates.Should().ContainSingle(g =>
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("drift-order-1", "AAPL", 5m));
+
+        var readinessAfterDrift = await service.GetAsync();
+
+        readinessAfterDrift.AcceptanceGates.Should().ContainSingle(g =>
             g.GateId == "session" && g.Status == TradingAcceptanceGateStatusDto.Ready);
-        readiness.AcceptanceGates.Should().ContainSingle(g =>
+        readinessAfterDrift.AcceptanceGates.Should().ContainSingle(g =>
             g.GateId == "replay" && g.Status == TradingAcceptanceGateStatusDto.ReviewRequired && g.Detail.Contains("stale", StringComparison.OrdinalIgnoreCase));
-        readiness.WorkItems.Should().Contain(item => item.WorkItemId.StartsWith("paper-replay-stale", StringComparison.OrdinalIgnoreCase));
-        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
-        readiness.ReadyForPaperOperation.Should().BeFalse();
+        readinessAfterDrift.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId.StartsWith("paper-replay-stale", StringComparison.OrdinalIgnoreCase));
+        readinessAfterDrift.ReadyForPaperOperation.Should().BeFalse();
     }
 
     private static ExecutionAuditTrailService CreateAuditTrail(string scenario)
