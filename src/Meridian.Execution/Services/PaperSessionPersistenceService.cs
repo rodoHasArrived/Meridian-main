@@ -194,32 +194,7 @@ public sealed class PaperSessionPersistenceService
         {
             return null;
         }
-
-        ExecutionPortfolioSnapshotDto? portfolioSnapshot = null;
-        if (session.Portfolio is not null)
-        {
-            var positions = session.Portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
-            portfolioSnapshot = new ExecutionPortfolioSnapshotDto(
-                Cash: session.Portfolio.Cash,
-                PortfolioValue: session.Portfolio.PortfolioValue,
-                UnrealisedPnl: session.Portfolio.UnrealisedPnl,
-                RealisedPnl: session.Portfolio.RealisedPnl,
-                Positions: positions,
-                AsOf: DateTimeOffset.UtcNow);
-        }
-
-        return new PaperSessionDetailDto(
-            Summary: ToSummary(session),
-            Symbols: session.Symbols.ToArray(),
-            Portfolio: portfolioSnapshot,
-            OrderHistory: session.OrderHistory.ToArray(),
-            FillCount: session.FillHistory.Count,
-            LedgerEntryCount: GetLedger(sessionId)?.JournalEntryCount ?? 0,
-            LastFillAt: session.FillHistory.Count > 0
-                ? session.FillHistory.Max(static fill => fill.Timestamp)
-                : null,
-            LastOrderUpdatedAt: ResolveLastOrderUpdatedAt(session.OrderHistory),
-            FillHistory: session.FillHistory.ToArray());
+        return BuildSessionDetailDto(sessionId, session);
     }
 
     /// <summary>Returns the portfolio state for a live session, or null.</summary>
@@ -446,15 +421,12 @@ public sealed class PaperSessionPersistenceService
         string sessionId,
         CancellationToken ct = default)
     {
-        var detail = GetSession(sessionId);
-        if (detail is null)
-        {
-            return null;
-        }
         if (!_sessions.TryGetValue(sessionId, out var session))
         {
             return null;
         }
+
+        var detail = BuildSessionDetailDto(sessionId, session);
 
         var replayPortfolio = await ReplaySessionAsync(sessionId, ct).ConfigureAwait(false);
         if (replayPortfolio is null)
@@ -702,13 +674,14 @@ public sealed class PaperSessionPersistenceService
             }
             catch (Exception ex)
             {
-                corruptEntryIds.Add(dto.JournalEntryId);
+                var accountHint = dto.Lines?.FirstOrDefault()?.Account?.Name ?? "unknown";
+                corruptEntryIds.Add(dto.JournalEntryId.ToString("D"));
                 _logger.LogWarning(
                     ex,
                     "Skipping corrupt persisted ledger journal entry {JournalEntryId} (symbol={Symbol}, accountHint={AccountHint}) during paper session reconstruction.",
                     dto.JournalEntryId,
                     dto.Symbol ?? "unknown",
-                    dto.Lines?.FirstOrDefault()?.Account?.Name ?? "unknown");
+                    accountHint);
             }
         }
 
@@ -968,6 +941,35 @@ public sealed class PaperSessionPersistenceService
         return orderHistory
             .Select(static order => order.LastUpdatedAt ?? order.CreatedAt)
             .Max();
+    }
+
+    private PaperSessionDetailDto BuildSessionDetailDto(string sessionId, PaperSession session)
+    {
+        ExecutionPortfolioSnapshotDto? portfolioSnapshot = null;
+        if (session.Portfolio is not null)
+        {
+            var positions = session.Portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
+            portfolioSnapshot = new ExecutionPortfolioSnapshotDto(
+                Cash: session.Portfolio.Cash,
+                PortfolioValue: session.Portfolio.PortfolioValue,
+                UnrealisedPnl: session.Portfolio.UnrealisedPnl,
+                RealisedPnl: session.Portfolio.RealisedPnl,
+                Positions: positions,
+                AsOf: DateTimeOffset.UtcNow);
+        }
+
+        return new PaperSessionDetailDto(
+            Summary: ToSummary(session),
+            Symbols: session.Symbols.ToArray(),
+            Portfolio: portfolioSnapshot,
+            OrderHistory: session.OrderHistory.ToArray(),
+            FillCount: session.FillHistory.Count,
+            LedgerEntryCount: GetLedger(sessionId)?.JournalEntryCount ?? 0,
+            LastFillAt: session.FillHistory.Count > 0
+                ? session.FillHistory.Max(static fill => fill.Timestamp)
+                : null,
+            LastOrderUpdatedAt: ResolveLastOrderUpdatedAt(session.OrderHistory),
+            FillHistory: session.FillHistory.ToArray());
     }
 
     private sealed class PaperSession

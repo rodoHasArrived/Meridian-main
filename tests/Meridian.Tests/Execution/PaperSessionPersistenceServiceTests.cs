@@ -976,7 +976,7 @@ public sealed class PaperSessionReplayTests : IDisposable
         verification.Should().NotBeNull();
         verification!.ReplayPortfolio.Positions.Should().ContainSingle(position => position.Symbol == "AAPL");
         verification.CorruptLedgerEntryCount.Should().Be(1);
-        verification.CorruptLedgerEntryIds.Should().Contain("journal-corrupt");
+        verification.CorruptLedgerEntryIds.Should().Contain("22222222-2222-2222-2222-222222222222");
         verification.IsConsistent.Should().BeFalse();
         verification.MismatchReasons.Should().Contain(reason =>
             reason.Contains("skipped 1 corrupt entry", StringComparison.OrdinalIgnoreCase));
@@ -985,7 +985,7 @@ public sealed class PaperSessionReplayTests : IDisposable
         var auditEntry = auditEntries.Single(entry => entry.AuditId == verification.VerificationAuditId);
         auditEntry.Outcome.Should().Be("AttentionRequired");
         auditEntry.Metadata!["corruptLedgerEntryCount"].Should().Be("1");
-        auditEntry.Metadata["corruptLedgerEntryIds"].Should().Contain("journal-corrupt");
+        auditEntry.Metadata["corruptLedgerEntryIds"].Should().Contain("22222222-2222-2222-2222-222222222222");
     }
 }
 
@@ -1035,42 +1035,92 @@ internal sealed class CorruptLedgerReplayStore : IPaperSessionStore
             [new PersistedSessionRecord("PAPER-CORRUPT-001", "strat-corrupt", "Corrupt", 100_000m, DateTimeOffset.UtcNow.AddMinutes(-30), null, true, ["AAPL"])]);
 
     public Task<IReadOnlyList<ExecutionReport>> LoadFillsAsync(string sessionId, CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<ExecutionReport>>([new ExecutionReport("fill-1", "AAPL", 10m, 100m, DateTimeOffset.UtcNow.AddMinutes(-20), ExecutionSide.Buy, OrderType.Market)]);
+        => Task.FromResult<IReadOnlyList<ExecutionReport>>(
+            [
+                new()
+                {
+                    OrderId = "fill-1",
+                    ReportType = ExecutionReportType.Fill,
+                    Symbol = "AAPL",
+                    Side = OrderSide.Buy,
+                    OrderStatus = OrderStatus.Filled,
+                    OrderQuantity = 10m,
+                    FilledQuantity = 10m,
+                    FillPrice = 100m,
+                    Timestamp = DateTimeOffset.UtcNow.AddMinutes(-20)
+                }
+            ]);
 
     public Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<OrderState>>([]);
 
     public Task<IReadOnlyList<PersistedJournalEntryDto>> LoadLedgerJournalAsync(string sessionId, CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>(
-        [
-            new PersistedJournalEntryDto(
-                "journal-ok",
-                DateTimeOffset.UtcNow.AddMinutes(-19),
-                "buy entry",
-                [
-                    new PersistedLedgerLineDto("line-1","journal-ok",DateTimeOffset.UtcNow.AddMinutes(-19),new PersistedLedgerAccountDto("Cash","Asset","AAPL",null),0m,1000m,"credit cash"),
-                    new PersistedLedgerLineDto("line-2","journal-ok",DateTimeOffset.UtcNow.AddMinutes(-19),new PersistedLedgerAccountDto("Position","Asset","AAPL",null),1000m,0m,"debit pos")
-                ],
-                "Trade",
-                "AAPL",
-                null,
-                null,
-                "Trading",
-                "strat-corrupt"),
-            new PersistedJournalEntryDto(
-                "journal-corrupt",
-                DateTimeOffset.UtcNow.AddMinutes(-18),
-                "corrupt entry",
-                [
-                    new PersistedLedgerLineDto("line-bad","wrong-journal-id",DateTimeOffset.UtcNow.AddMinutes(-18),new PersistedLedgerAccountDto("Cash","Asset","AAPL",null),100m,0m,"bad")
-                ],
-                "Trade",
-                "AAPL",
-                null,
-                null,
-                "Trading",
-                "strat-corrupt")
-        ]);
+    {
+        var now = DateTimeOffset.UtcNow;
+        var journalOkId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var corruptJournalId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
+        PersistedJournalEntryDto BuildEntry(
+            Guid journalId,
+            string description,
+            DateTimeOffset timestamp,
+            IReadOnlyList<PersistedLedgerLineDto> lines)
+            => new(
+                JournalEntryId: journalId,
+                Timestamp: timestamp,
+                Description: description,
+                Lines: lines,
+                ActivityType: "Trade",
+                Symbol: "AAPL",
+                SecurityId: null,
+                OrderId: null,
+                LedgerView: "Trading",
+                StrategyId: "strat-corrupt");
+
+        PersistedLedgerLineDto BuildLine(
+            Guid entryId,
+            Guid journalId,
+            DateTimeOffset timestamp,
+            string accountName,
+            decimal debit,
+            decimal credit,
+            string description)
+            => new(
+                EntryId: entryId,
+                JournalEntryId: journalId,
+                Timestamp: timestamp,
+                Account: new PersistedLedgerAccountDto(accountName, "Asset", "AAPL", null),
+                Debit: debit,
+                Credit: credit,
+                Description: description);
+
+        var validEntry = BuildEntry(
+            journalOkId,
+            "buy entry",
+            now.AddMinutes(-19),
+            [
+                BuildLine(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"), journalOkId, now.AddMinutes(-19), "Cash", 0m, 1000m, "credit cash"),
+                BuildLine(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"), journalOkId, now.AddMinutes(-19), "Position", 1000m, 0m, "debit pos")
+            ]);
+
+        // Intentionally corrupt: line references a different JournalEntryId than parent.
+        var corruptEntry = BuildEntry(
+            corruptJournalId,
+            "corrupt entry",
+            now.AddMinutes(-18),
+            [
+                BuildLine(
+                    Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1"),
+                    Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                    now.AddMinutes(-18),
+                    "Cash",
+                    100m,
+                    0m,
+                    "bad")
+            ]);
+
+        return Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>([validEntry, corruptEntry]);
+    }
 }
 internal sealed class ThrowingOrderUpdateStore : IPaperSessionStore
 {

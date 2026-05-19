@@ -1211,6 +1211,125 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_ShouldExposeRequiredContractFieldsAndDegradeWhenEvidenceIsMissing()
+    {
+        var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness-contract", Guid.NewGuid().ToString("N"));
+        var automationRoot = Path.Combine(rootPath, "provider-validation", "_automation");
+
+        WriteReadyDk1Packet(
+            automationRoot,
+            packetStatus: "not-ready",
+            blockersJson: """
+                [
+                  "DK1 trust packet requires refreshed provider parity evidence before operator review."
+                ]
+                """);
+
+        try
+        {
+            await using var app = await CreateAppAsync(services =>
+            {
+                RegisterRunReadServices(services);
+                RegisterPromotionServices(services, Path.Combine(rootPath, "promotions"));
+                services.AddSingleton(new Dk1TrustGateReadinessOptions(automationRoot));
+                services.AddSingleton<Dk1TrustGateReadinessService>();
+                services.AddSingleton(_ => new ExecutionAuditTrailService(
+                    new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+                    NullLogger<ExecutionAuditTrailService>.Instance));
+                services.AddSingleton<IPaperSessionStore>(_ => new JsonlFilePaperSessionStore(
+                    Path.Combine(rootPath, "sessions"),
+                    NullLogger<JsonlFilePaperSessionStore>.Instance));
+                services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
+                    NullLogger<PaperSessionPersistenceService>.Instance,
+                    sp.GetRequiredService<IPaperSessionStore>(),
+                    sp.GetRequiredService<ExecutionAuditTrailService>()));
+            });
+
+            var store = app.Services.GetRequiredService<IStrategyRepository>();
+            await store.RecordRunAsync(BuildRun(
+                runId: "run-contract-backtest",
+                strategyId: "strat-contract",
+                strategyName: "Contract Coverage",
+                runType: RunType.Backtest,
+                startedAt: new DateTimeOffset(2026, 4, 28, 13, 0, 0, TimeSpan.Zero),
+                datasetReference: "dataset/us/equities",
+                feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")));
+
+            var session = await app.Services.GetRequiredService<PaperSessionPersistenceService>().CreateSessionAsync(new CreatePaperSessionDto(
+                StrategyId: "strat-contract",
+                StrategyName: "Contract Coverage",
+                InitialCash: 125_000m,
+                Symbols: ["AAPL"]));
+
+            var client = app.GetTestClient();
+            using var response = await client.GetAsync(UiApiRoutes.WorkstationTradingReadiness);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            using var payload = await ReadJsonAsync(client, UiApiRoutes.WorkstationTradingReadiness);
+            var root = payload.RootElement;
+            root.TryGetProperty("overallStatus", out var overallStatus).Should().BeTrue();
+            root.TryGetProperty("readyForPaperOperation", out var readyForPaperOperation).Should().BeTrue();
+            root.TryGetProperty("trustGate", out var trustGate).Should().BeTrue();
+            root.TryGetProperty("replay", out var replay).Should().BeTrue();
+            root.TryGetProperty("promotion", out var promotion).Should().BeTrue();
+            root.TryGetProperty("acceptanceGates", out var acceptanceGates).Should().BeTrue();
+            root.TryGetProperty("workItems", out var workItems).Should().BeTrue();
+            overallStatus.ValueKind.Should().Be(JsonValueKind.String);
+            readyForPaperOperation.ValueKind.Should().Be(JsonValueKind.False);
+            trustGate.ValueKind.Should().Be(JsonValueKind.Object);
+            replay.ValueKind.Should().Be(JsonValueKind.Null);
+            promotion.ValueKind.Should().Be(JsonValueKind.Object);
+            acceptanceGates.ValueKind.Should().Be(JsonValueKind.Array);
+            workItems.ValueKind.Should().Be(JsonValueKind.Array);
+
+            var readiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+                UiApiRoutes.WorkstationTradingReadiness,
+                ServerJsonOptions);
+            readiness.Should().NotBeNull();
+
+            readiness!.ActiveSession.Should().NotBeNull();
+            readiness.ActiveSession!.SessionId.Should().Be(session.SessionId);
+            readiness.TrustGate.Should().NotBeNull();
+            readiness.TrustGate.Status.Should().Be("not-ready");
+            readiness.TrustGate.Blockers.Should().NotBeEmpty();
+            readiness.Replay.Should().BeNull();
+            readiness.Promotion.Should().NotBeNull();
+            readiness.Promotion!.RequiresReview.Should().BeTrue();
+            readiness.Promotion.ApprovalStatus.Should().BeNull();
+            readiness.Promotion.State.Should().NotBeNullOrWhiteSpace();
+            readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
+
+            readiness.AcceptanceGates.Should().ContainSingle(gate =>
+                gate.GateId == "dk1-trust" &&
+                gate.Status == TradingAcceptanceGateStatusDto.Blocked);
+            readiness.AcceptanceGates.Should().ContainSingle(gate =>
+                gate.GateId == "replay" &&
+                gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+                gate.SessionId == session.SessionId);
+            readiness.AcceptanceGates.Should().ContainSingle(gate =>
+                gate.GateId == "promotion" &&
+                gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+                gate.RunId == "run-contract-backtest");
+            readiness.WorkItems.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.ProviderTrustGate &&
+                item.Tone == OperatorWorkItemToneDto.Critical);
+            readiness.WorkItems.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.PaperReplay &&
+                item.Tone == OperatorWorkItemToneDto.Warning);
+            readiness.WorkItems.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.PromotionReview &&
+                item.Tone == OperatorWorkItemToneDto.Warning);
+        }
+        finally
+        {
+            if (Directory.Exists(rootPath))
+            {
+                Directory.Delete(rootPath, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_TradingReadinessWithoutRegisteredReadinessService_ShouldUseSharedReadinessBuilder()
     {
         await using var app = await CreateAppAsync();
@@ -1315,6 +1434,64 @@ public sealed class WorkstationEndpointsTests
             item.WorkItemId == "promotion-decision-missing" &&
             item.TargetRoute == UiApiRoutes.WorkstationTradingReadiness &&
             item.TargetPageTag == "TradingShell");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldKeepHighSeverityRoutesResolvable()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-inbox-route-resolution-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+        await app.Services.GetRequiredService<IReconciliationRunService>().RunAsync(new ReconciliationRunRequest(runId));
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        var routeCriticalItems = inbox!.Items
+            .Where(item => item.Tone is OperatorWorkItemToneDto.Critical or OperatorWorkItemToneDto.Warning)
+            .ToArray();
+
+        routeCriticalItems.Should().NotBeEmpty();
+        routeCriticalItems.Should().OnlyContain(item =>
+            !string.IsNullOrWhiteSpace(item.Workspace) &&
+            !string.IsNullOrWhiteSpace(item.TargetPageTag) &&
+            !string.IsNullOrWhiteSpace(item.TargetRoute) &&
+            item.TargetRoute.StartsWith("/", StringComparison.Ordinal));
+
+        routeCriticalItems.Should().Contain(item =>
+            item.Kind == OperatorWorkItemKindDto.PaperReplay &&
+            item.TargetRoute == UiApiRoutes.WorkstationTradingReadiness &&
+            item.TargetPageTag == "TradingShell");
+        routeCriticalItems.Should().Contain(item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue &&
+            item.TargetPageTag == "AccountingShell");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldReturnDeterministicOrderingAcrossPollingRequests()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        var first = await client.GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+        var second = await client.GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        first!.Items.Select(item => item.WorkItemId)
+            .Should()
+            .Equal(second!.Items.Select(item => item.WorkItemId));
     }
 
     [Fact]
@@ -1644,6 +1821,120 @@ public sealed class WorkstationEndpointsTests
         breakItem.TargetRoute.Should().Be(UiApiRoutes.ReconciliationBreakQueue);
         breakItem.TargetPageTag.Should().Be("AccountingShell");
         breakItem.Detail.Should().Contain("The break is in review");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ReadinessOnlyItems_ShouldExposeExpectedClassificationAndMetadata()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationBreakQueueRepository>(
+                new FileReconciliationBreakQueueRepository(
+                    Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                    NullLogger<FileReconciliationBreakQueueRepository>.Instance));
+        });
+
+        var inbox = await app
+            .GetTestClient()
+            .GetFromJsonAsync<OperatorInboxDto>(
+                "/api/workstation/operator/inbox",
+                ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().NotBeEmpty();
+        inbox.Items.Should().Contain(item => string.Equals(item.WorkItemId, "reconciliation-policy", StringComparison.OrdinalIgnoreCase));
+        inbox.Items.Should().NotContain(item => item.WorkItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase));
+        inbox.Items.Should().OnlyContain(item =>
+            !string.IsNullOrWhiteSpace(item.Title) &&
+            !string.IsNullOrWhiteSpace(item.Detail) &&
+            !string.IsNullOrWhiteSpace(item.TargetRoute));
+        inbox.Items.Should().Contain(item => item.WorkItemId == "paper-session-missing");
+        inbox.CriticalCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Critical));
+        inbox.WarningCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Warning));
+        inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
+        inbox.Items.Should().BeInDescendingOrder(item => item.Tone);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ReconciliationBreaks_ShouldExposeExpectedClassificationAndMetadata()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-inbox-break-only-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+        _ = await app.Services.GetRequiredService<IReconciliationRunService>().RunAsync(new ReconciliationRunRequest(runId));
+
+        var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().NotBeEmpty();
+        inbox.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.ReconciliationBreak);
+        inbox.Items.Should().OnlyContain(item =>
+            !string.IsNullOrWhiteSpace(item.Title) &&
+            !string.IsNullOrWhiteSpace(item.Detail) &&
+            !string.IsNullOrWhiteSpace(item.TargetRoute));
+        inbox.Items.Where(item => item.Kind == OperatorWorkItemKindDto.ReconciliationBreak)
+            .Should().OnlyContain(item => item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue);
+        inbox.CriticalCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Critical));
+        inbox.WarningCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Warning));
+        inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
+        inbox.Items.Should().BeInDescendingOrder(item => item.Tone);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_MixedQueue_ShouldRetainBothCategoriesWithoutDropsAndOrderByPriority()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-inbox-mixed-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+        _ = await app.Services.GetRequiredService<IReconciliationRunService>().RunAsync(new ReconciliationRunRequest(runId));
+
+        var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(item => item.WorkItemId == "paper-session-missing");
+        inbox.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.ReconciliationBreak);
+        inbox.Items.Should().BeInDescendingOrder(item => item.Tone);
+        inbox.Items.Should().OnlyContain(item =>
+            !string.IsNullOrWhiteSpace(item.Title) &&
+            !string.IsNullOrWhiteSpace(item.Detail) &&
+            !string.IsNullOrWhiteSpace(item.TargetRoute));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_WhenNoReconciliationBreaks_ShouldNotEmitFalseBreakItems()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationBreakQueueRepository>(
+                new FileReconciliationBreakQueueRepository(
+                    Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                    NullLogger<FileReconciliationBreakQueueRepository>.Instance));
+        });
+
+        var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().Contain(item => string.Equals(item.WorkItemId, "reconciliation-policy", StringComparison.OrdinalIgnoreCase));
+        inbox.Items.Should().NotContain(item => item.WorkItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase));
+        inbox.CriticalCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Critical));
+        inbox.WarningCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Warning));
+        inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
     }
 
     [Fact]
@@ -3623,7 +3914,9 @@ public sealed class WorkstationEndpointsTests
     private static void WriteReadyDk1Packet(
         string automationRoot,
         string? operatorSignoffJson = null,
-        bool includeContractReview = true)
+        bool includeContractReview = true,
+        string packetStatus = "ready-for-operator-review",
+        string blockersJson = "[]")
     {
         var packetDirectory = Path.Combine(automationRoot, "unit-ready");
         Directory.CreateDirectory(packetDirectory);
@@ -3640,7 +3933,7 @@ public sealed class WorkstationEndpointsTests
             {
               "generatedAtUtc": "2026-04-25T20:28:38Z",
               "sourceSummary": "artifacts/provider-validation/_automation/unit-ready/wave1-validation-summary.json",
-              "status": "ready-for-operator-review",
+              "status": "__PACKET_STATUS__",
               "sampleReview": {
                 "requiredCount": 4,
                 "samples": [
@@ -3712,9 +4005,10 @@ public sealed class WorkstationEndpointsTests
               ],
               __CONTRACT_REVIEW__
               "operatorSignoff": __OPERATOR_SIGNOFF__,
-              "blockers": []
+              "blockers": __BLOCKERS__
             }
             """
+            .Replace("__PACKET_STATUS__", packetStatus)
             .Replace("__CONTRACT_REVIEW__", includeContractReview
                 ? """
                   "trustRationaleContract": {
@@ -3748,7 +4042,8 @@ public sealed class WorkstationEndpointsTests
                   },
                 """
                 : string.Empty)
-            .Replace("__OPERATOR_SIGNOFF__", operatorSignoffJson));
+            .Replace("__OPERATOR_SIGNOFF__", operatorSignoffJson)
+            .Replace("__BLOCKERS__", blockersJson));
     }
 
     private static void RegisterSecurityMasterWorkbenchServices(
