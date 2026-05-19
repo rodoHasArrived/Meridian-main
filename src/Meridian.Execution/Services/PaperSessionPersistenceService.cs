@@ -708,7 +708,7 @@ public sealed class PaperSessionPersistenceService
                     "Skipping corrupt persisted ledger journal entry {JournalEntryId} (symbol={Symbol}, accountHint={AccountHint}) during paper session reconstruction.",
                     dto.JournalEntryId,
                     dto.Symbol ?? "unknown",
-                    dto.Lines.FirstOrDefault()?.Account?.Name ?? "unknown");
+                    dto.Lines?.FirstOrDefault()?.Account?.Name ?? "unknown");
             }
         }
 
