@@ -3905,6 +3905,7 @@ public sealed class WorkstationEndpointsTests
         var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
         var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto("strat-inbox", "Inbox Replay", 100_000m, ["AAPL"]));
         await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-1", "AAPL", 1m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-1", "AAPL", 1m, 190m));
         var verification = await persistence.VerifyReplayAsync(session.SessionId);
         await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-2", "AAPL", 2m));
 
@@ -3915,7 +3916,7 @@ public sealed class WorkstationEndpointsTests
             item.WorkItemId == $"paper-replay-stale-{session.SessionId.ToLowerInvariant()}" &&
             item.Tone == OperatorWorkItemToneDto.Warning &&
             item.TargetRoute == UiApiRoutes.WorkstationTradingReadiness &&
-            item.TargetPageTag == "TradingReadinessConsole" &&
+            item.TargetPageTag == "TradingShell" &&
             item.AuditReference == verification!.VerificationAuditId);
     }
 

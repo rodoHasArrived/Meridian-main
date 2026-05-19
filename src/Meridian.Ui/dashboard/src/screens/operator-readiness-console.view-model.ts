@@ -1351,14 +1351,14 @@ function buildNextAction({
         index
       }))
   ].sort((left, right) => {
-    const levelDelta = levelPriority(left.level) - levelPriority(right.level);
-    if (levelDelta !== 0) {
-      return levelDelta;
-    }
-
     const dominanceDelta = right.dominancePriority - left.dominancePriority;
     if (dominanceDelta !== 0) {
       return dominanceDelta;
+    }
+
+    const levelDelta = levelPriority(left.level) - levelPriority(right.level);
+    if (levelDelta !== 0) {
+      return levelDelta;
     }
 
     const sourceDelta = left.sourcePriority - right.sourcePriority;
@@ -1418,13 +1418,12 @@ function nextActionCandidateFromRow(
 
 function replayDominancePriority(row: ReadinessConsoleRow): number {
   const normalizedId = row.id.toLowerCase();
-  const normalizedLabel = row.label.toLowerCase();
 
-  if (normalizedId.includes('paper-replay-mismatch') || normalizedLabel.includes('replay mismatch')) {
+  if (normalizedId.startsWith('paper-replay-mismatch')) {
     return 2;
   }
 
-  if (normalizedId.includes('paper-replay-stale') || normalizedLabel.includes('replay verification stale')) {
+  if (normalizedId.startsWith('paper-replay-stale')) {
     return 1;
   }
 

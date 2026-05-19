@@ -1830,6 +1830,7 @@ public static partial class WorkstationEndpoints
            && (!string.IsNullOrWhiteSpace(item.WorkItemId)
                && (item.WorkItemId.Contains("paper-replay-stale", StringComparison.OrdinalIgnoreCase)
                    || item.WorkItemId.Contains("paper-replay-mismatch", StringComparison.OrdinalIgnoreCase)));
+
     private static void RecordOperatorInboxContinuityMetrics(IReadOnlyList<OperatorWorkItemDto> items)
     {
         foreach (var item in items)

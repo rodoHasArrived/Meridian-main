@@ -1424,7 +1424,7 @@ describe("operator readiness console view model", () => {
   });
 
 
-  it("prioritizes replay stale warnings over unrelated review items for primary next action", () => {
+  it("prioritizes replay stale continuity items over unrelated higher-severity items for primary next action", () => {
     const state = buildOperatorReadinessConsoleState({
       research,
       trading,
@@ -1452,7 +1452,7 @@ describe("operator readiness console view model", () => {
             kind: "PromotionReview",
             label: "Promotion checklist incomplete",
             detail: "Finish continuity review.",
-            tone: "Warning",
+            tone: "Critical",
             createdAt: "2026-04-29T12:03:00Z",
             runId: "run-1",
             fundAccountId: "fund-1",
@@ -1462,8 +1462,8 @@ describe("operator readiness console view model", () => {
             targetPageTag: "TradingReadinessConsole"
           }
         ],
-        criticalCount: 0,
-        warningCount: 2,
+        criticalCount: 1,
+        warningCount: 1,
         reviewCount: 2,
         summary: "2 review items need attention."
       },

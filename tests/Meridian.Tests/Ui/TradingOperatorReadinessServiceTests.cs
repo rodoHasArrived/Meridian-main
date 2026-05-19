@@ -1,5 +1,7 @@
 using FluentAssertions;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -252,10 +254,43 @@ public sealed class TradingOperatorReadinessServiceTests
             StrategyName: "Stale Strategy",
             InitialCash: 50_000m,
             Symbols: ["AAPL"]));
-        await persistence.RecordOrderUpdateAsync(session.SessionId, new ExecutionOrderState("o1", "AAPL", 1m, 1m, ExecutionOrderStatus.Filled, DateTimeOffset.UtcNow, 100m));
-        await persistence.RecordFillAsync(session.SessionId, new ExecutionFill("o1", "AAPL", 1m, 100m, DateTimeOffset.UtcNow));
+        await persistence.RecordOrderUpdateAsync(session.SessionId, new OrderState
+        {
+            OrderId = "o1",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            Status = OrderStatus.Filled,
+            CreatedAt = DateTimeOffset.UtcNow,
+            LastUpdatedAt = DateTimeOffset.UtcNow,
+            AverageFillPrice = 100m
+        });
+        await persistence.RecordFillAsync(session.SessionId, new ExecutionReport
+        {
+            OrderId = "o1",
+            ReportType = ExecutionReportType.Fill,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            OrderStatus = OrderStatus.Filled,
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 100m,
+            Timestamp = DateTimeOffset.UtcNow
+        });
         var verification = await persistence.VerifyReplayAsync(session.SessionId);
-        await persistence.RecordOrderUpdateAsync(session.SessionId, new ExecutionOrderState("o2", "AAPL", 1m, 1m, ExecutionOrderStatus.Filled, DateTimeOffset.UtcNow, 101m));
+        await persistence.RecordOrderUpdateAsync(session.SessionId, new OrderState
+        {
+            OrderId = "o2",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            Status = OrderStatus.Filled,
+            CreatedAt = DateTimeOffset.UtcNow,
+            LastUpdatedAt = DateTimeOffset.UtcNow,
+            AverageFillPrice = 101m
+        });
 
         using var provider = new ServiceCollection().AddSingleton(auditTrail).AddSingleton(persistence).BuildServiceProvider();
         var service = new TradingOperatorReadinessService(provider, NullLogger<TradingOperatorReadinessService>.Instance);
