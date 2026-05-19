@@ -1027,6 +1027,96 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_ShouldRefreshAfterReplayTrustAndPromotionStateChanges()
+    {
+        var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness-refresh", Guid.NewGuid().ToString("N"));
+        var automationRoot = Path.Combine(rootPath, "provider-validation", "_automation");
+        WriteReadyDk1Packet(automationRoot);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            RegisterPromotionServices(services, Path.Combine(rootPath, "promotions"));
+            services.AddSingleton(new Dk1TrustGateReadinessOptions(automationRoot));
+            services.AddSingleton<Dk1TrustGateReadinessService>();
+            services.AddSingleton(_ => new ExecutionAuditTrailService(
+                new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+                NullLogger<ExecutionAuditTrailService>.Instance));
+            services.AddSingleton<IPaperSessionStore>(_ => new JsonlFilePaperSessionStore(
+                Path.Combine(rootPath, "sessions"),
+                NullLogger<JsonlFilePaperSessionStore>.Instance));
+            services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
+                NullLogger<PaperSessionPersistenceService>.Instance,
+                sp.GetRequiredService<IPaperSessionStore>(),
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-refresh-backtest",
+            strategyId: "strat-refresh",
+            strategyName: "Refresh Strategy",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 4, 28, 14, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")));
+
+        var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto("strat-refresh", "Refresh Strategy", 100_000m, ["AAPL"]));
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("refresh-order-1", "AAPL", 10m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("refresh-order-1", "AAPL", 10m, 190m));
+        var verification = await persistence.VerifyReplayAsync(session.SessionId);
+
+        var client = app.GetTestClient();
+        var before = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(UiApiRoutes.WorkstationTradingReadiness, ServerJsonOptions);
+        before.Should().NotBeNull();
+        before!.Replay!.VerificationAuditId.Should().Be(verification!.VerificationAuditId);
+        before.Promotion!.ApprovalStatus.Should().BeNull();
+        before.TrustGate.OperatorSignoffStatus.Should().Be("pending");
+
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("refresh-order-2", "AAPL", 5m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("refresh-order-2", "AAPL", 5m, 191m));
+        await app.Services.GetRequiredService<IPromotionRecordStore>().AppendAsync(new StrategyPromotionRecord(
+            PromotionId: "promotion-refresh-backtest",
+            StrategyId: "strat-refresh",
+            StrategyName: "Refresh Strategy",
+            SourceRunType: RunType.Backtest,
+            TargetRunType: RunType.Paper,
+            SourceRunId: "run-refresh-backtest",
+            TargetRunId: "run-refresh-paper",
+            QualifyingSharpe: 1.2d,
+            QualifyingMaxDrawdownPercent: 0.05m,
+            QualifyingTotalReturn: 0.12m,
+            Decision: PromotionDecisionKinds.Approved,
+            PromotedAt: new DateTimeOffset(2026, 4, 28, 16, 0, 0, TimeSpan.Zero),
+            ApprovalReason: "Ready after review.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            AuditReference: "audit-refresh-promotion",
+            ApprovedBy: "ops.refresh"));
+        WriteReadyDk1Packet(
+            automationRoot,
+            """
+            {
+              "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "signedOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "status": "signed",
+              "requiredBeforeDk1Exit": true,
+              "signedAtUtc": "2026-04-28T16:00:00Z"
+            }
+            """);
+
+        var after = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(UiApiRoutes.WorkstationTradingReadiness, ServerJsonOptions);
+        after.Should().NotBeNull();
+        after!.ActiveSession!.OrderCount.Should().Be(2);
+        after.Replay!.ComparedOrderCount.Should().Be(1);
+        after.AcceptanceGates.Should().ContainSingle(g => g.GateId == "replay" && g.Status == TradingAcceptanceGateStatusDto.ReviewRequired);
+        after.Promotion!.ApprovalStatus.Should().Be(PromotionDecisionKinds.Approved);
+        after.TrustGate.OperatorSignoffStatus.Should().Be("signed");
+        after.SnapshotVersion.Should().NotBe(before.SnapshotVersion);
+        after.SnapshotMaterializedAt.Should().BeAfter(before.SnapshotMaterializedAt);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_TradingReadiness_ShouldNotUseStalePromotionHistoryForLatestRun()
     {
         var promotionRoot = Path.Combine(
