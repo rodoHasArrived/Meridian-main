@@ -26,10 +26,6 @@ public class CredentialService
     public virtual IReadOnlyList<CredentialWithMetadata> GetAllCredentialsWithMetadata()
         => Array.Empty<CredentialWithMetadata>();
 
-    public virtual Task<OAuthRefreshResult> RefreshOAuthTokenAsync(string providerId)
-        => Task.FromResult(new OAuthRefreshResult { Success = false, ErrorMessage = "Not implemented" });
-
-    public virtual Task UpdateMetadataAsync(string resource, Action<CredentialMetadataUpdate> updateAction)
     public virtual Task<OAuthRefreshResult> RefreshOAuthTokenAsync(string providerId, CancellationToken ct = default)
         => Task.FromResult(new OAuthRefreshResult { Success = false, ErrorMessage = "Not implemented" });
 

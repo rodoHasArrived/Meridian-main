@@ -11,10 +11,8 @@ namespace Meridian.Ui.Services;
 /// </summary>
 public sealed class OAuthRefreshService : IDisposable
 {
-    private static readonly Lazy<ILoggerFactory> _singletonLoggerFactory = new(() => LoggerFactory.Create(_ => { }));
     private static readonly Lazy<OAuthRefreshService> _instance = new(() => new OAuthRefreshService());
     private static readonly TimeSpan WrapperFailureLogThrottleWindow = TimeSpan.FromMinutes(1);
-    private static readonly ILoggerFactory SingletonLoggerFactory = NullLoggerFactory.Instance;
     /// <summary>
     /// Gets the singleton instance of the OAuth refresh service.
     /// </summary>
@@ -65,27 +63,9 @@ public sealed class OAuthRefreshService : IDisposable
     public int WrapperFailureCount => Volatile.Read(ref _wrapperFailureCount);
 
     private OAuthRefreshService()
-        : this(new CredentialService(), _singletonLoggerFactory.Value.CreateLogger<OAuthRefreshService>())
+        : this(CredentialService.Instance)
     {
     }
-
-    internal OAuthRefreshService(CredentialService credentialService, ILogger<OAuthRefreshService>? logger = null)
-    {
-        : this(CredentialService.Instance, SingletonLoggerFactory.CreateLogger<OAuthRefreshService>())
-    {
-    }
-
-    /// <summary>
-    /// Creates a new OAuth refresh service instance with explicit dependencies.
-    /// </summary>
-    /// <param name="credentialService">Credential service implementation used for token operations.</param>
-    /// <param name="logger">
-    /// Optional logger instance. When null, <see cref="NullLogger{T}.Instance"/> is used.
-    /// </param>
-    public static OAuthRefreshService Create(
-        CredentialService credentialService,
-        ILogger<OAuthRefreshService>? logger = null)
-        => new(credentialService, logger);
 
     internal OAuthRefreshService(CredentialService credentialService, ILogger<OAuthRefreshService>? logger = null)
     {
@@ -118,7 +98,7 @@ public sealed class OAuthRefreshService : IDisposable
         _expirationCheckTimer.Start();
 
         // Perform initial check
-        _ = SafeCheckAndRefreshTokensAsync();
+        _ = CheckAndRefreshTokensAsync();
     }
 
     /// <summary>
@@ -191,7 +171,7 @@ public sealed class OAuthRefreshService : IDisposable
         }
         catch (Exception ex)
         {
-            if (ct.IsCancellationRequested && ex is OperationCanceledException)
+            if (ex is OperationCanceledException)
             {
                 throw;
             }
@@ -228,10 +208,8 @@ public sealed class OAuthRefreshService : IDisposable
         {
             await CheckAndRefreshTokensAsync(ct);
         }
-        catch (Exception ex)
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            RecordWrapperFailure("CheckAndRefreshTokensAsync", ex);
         }
         catch (Exception ex)
         {
@@ -278,9 +256,6 @@ public sealed class OAuthRefreshService : IDisposable
                 _lastWrapperFailureLogByOperation[operationName] = now;
             }
         }
-        catch (Exception ex)
-        {
-            RecordWrapperFailure("CheckExpiringTokensAsync", ex);
 
         if (shouldLog)
         {
@@ -310,42 +285,6 @@ public sealed class OAuthRefreshService : IDisposable
                     operationName);
             }
         }
-    }
-
-    internal Task InvokeSafeCheckAndRefreshTokensForTestsAsync(CancellationToken ct = default)
-        => SafeCheckAndRefreshTokensAsync(ct);
-
-    internal Task InvokeSafeCheckExpiringTokensForTestsAsync(CancellationToken ct = default)
-        => SafeCheckExpiringTokensAsync(ct);
-
-    private void RecordWrapperFailure(string operationName, Exception ex)
-    {
-        Interlocked.Increment(ref _wrapperFailureCount);
-
-        var now = DateTime.UtcNow;
-        var shouldLog = true;
-        lock (_wrapperFailureSync)
-        {
-            if (_lastWrapperFailureLogByOperation.TryGetValue(operationName, out var lastLoggedAt) &&
-                now - lastLoggedAt < WrapperFailureLogThrottleWindow)
-            {
-                shouldLog = false;
-            }
-            else
-            {
-                _lastWrapperFailureLogByOperation[operationName] = now;
-            }
-        }
-
-        if (shouldLog)
-        {
-            _logger.LogError(
-                ex,
-                "OAuth refresh background wrapper failed for operation {OperationName}.",
-                operationName);
-        }
-
-        WrapperOperationFailed?.Invoke(this, new OAuthWrapperFailureEventArgs(operationName, ex, now, shouldLog));
     }
 
     private async Task CheckAndRefreshTokensAsync(CancellationToken ct = default)
@@ -378,7 +317,7 @@ public sealed class OAuthRefreshService : IDisposable
                 }
                 catch (Exception ex)
                 {
-                    if (ct.IsCancellationRequested && ex is OperationCanceledException)
+                    if (ex is OperationCanceledException)
                     {
                         throw;
                     }
