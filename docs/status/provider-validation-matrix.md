@@ -21,6 +21,16 @@ This matrix is Meridian's active Wave 1 evidence gate. Every row must point to e
 | TradeStation execution evidence reconciliation slice | `PaperSessionPersistenceServiceTests.TradeStationExecutionSlice_CreateUpdateCancelAndFillReconciliation_ProducesDeterministicCanonicalEvidence`, `PaperSessionPersistenceServiceTests.TradeStationExecutionSlice_DelayedOutOfOrderEvents_RemainsIdempotentAndDeterministic` | Not required; this row is repo-closed evidence for create/update/cancel plus delayed/out-of-order fill reconciliation determinism into canonical execution evidence | ✅ | n/a |
 | Parquet L2 flush behavior | `ParquetStorageSinkTests`, `ParquetConversionServiceTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
 
+
+## 2026-05-19 focused execution-provider validation artifacts
+
+Focused validation on 2026-05-19 added executable coverage for Tradier-style account/position sync, options order placement lifecycle under partial-fill progression, and negative-path failover posture verification for rate-limit (`429`) plus transient broker failures. Evidence is now closed in-repo via `TradierExecutionReconciliationTests` instead of requiring standalone runtime packet notes for those scenarios.
+
+Artifacts and evidence anchors for this run date:
+
+- `tests/Meridian.Tests/Execution/TradierExecutionReconciliationTests.cs`
+- `docs/status/provider-validation-matrix.md` (this update)
+
 ## Primary Validation Command
 
 Run the Wave 1 command matrix with:
