@@ -128,6 +128,12 @@ public static class ExecutionEndpoints
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
+            if (!TryValidateBrokerOrderPlacementGate(context, out var blockingMessage))
+            {
+                var blocked = new OrderResult(false, null, blockingMessage ?? "Broker order routing is disabled by validation gates.");
+                return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+            }
+
             var actor = ResolveActor(context);
             string? correlationId = null;
             request.Metadata?.TryGetValue("correlationId", out correlationId);
@@ -148,6 +154,7 @@ public static class ExecutionEndpoints
         .WithName("SubmitOrder")
         .Produces<OrderResult>(201)
         .Produces<OrderResult>(400)
+        .Produces<OrderResult>(403)
         .Produces(503);
 
         group.MapPost("/orders/{orderId}/cancel", async (string orderId, HttpContext context) =>
@@ -995,6 +1002,59 @@ public static class ExecutionEndpoints
     }
 
     private static string GenerateActionId() => $"act-{Guid.NewGuid():N}";
+
+    private static bool TryValidateBrokerOrderPlacementGate(HttpContext context, out string? blockingMessage)
+    {
+        blockingMessage = null;
+        var config = context.RequestServices.GetService<BrokerageConfiguration>();
+        if (config is null)
+        {
+            return true;
+        }
+
+        var gatewayId = string.IsNullOrWhiteSpace(config.Gateway)
+            ? "paper"
+            : config.Gateway.Trim().ToLowerInvariant();
+
+        if (!config.BrokerFlows.TryGetValue(gatewayId, out var flow))
+        {
+            flow = new BrokerFlowFlags();
+        }
+
+        if (string.Equals(gatewayId, "paper", StringComparison.Ordinal))
+        {
+            if (!flow.PaperOrderFlowEnabled)
+            {
+                blockingMessage = "Paper order flow is disabled for broker 'paper'.";
+                return false;
+            }
+
+            return true;
+        }
+
+        if (!flow.ProductionOrderRoutingEnabled)
+        {
+            blockingMessage = $"Production order routing is disabled for broker '{gatewayId}'.";
+            return false;
+        }
+
+        if (config.ValidationGates.RequireValidationArtifactsForOrderPlacement)
+        {
+            if (!File.Exists(config.ValidationGates.ValidationArtifactPath))
+            {
+                blockingMessage = $"Order placement is gated until validation artifact is present: {config.ValidationGates.ValidationArtifactPath}.";
+                return false;
+            }
+
+            if (!File.Exists(config.ValidationGates.SignoffArtifactPath))
+            {
+                blockingMessage = $"Order placement is gated until signoff artifact is present: {config.ValidationGates.SignoffArtifactPath}.";
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     private static bool HasExecutionControlPermission(HttpContext context)
     {

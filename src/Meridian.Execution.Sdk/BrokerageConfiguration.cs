@@ -7,6 +7,17 @@ namespace Meridian.Execution.Sdk;
 public sealed class BrokerageConfiguration
 {
     /// <summary>
+    /// Per-broker feature flags that separate read-only data access,
+    /// paper-trading order flow, and production order routing.
+    /// Keys are normalized broker IDs (e.g., "alpaca", "ib", "robinhood").
+    /// </summary>
+    public Dictionary<string, BrokerFlowFlags> BrokerFlows { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Validation/signoff artifact requirements for enabling broker order routing.
+    /// </summary>
+    public BrokerValidationGateOptions ValidationGates { get; set; } = new();
+    /// <summary>
     /// The brokerage gateway to use. Must match a registered gateway ID
     /// (e.g., "alpaca", "ib", "paper").
     /// Default is "paper" for safety.
@@ -36,4 +47,22 @@ public sealed class BrokerageConfiguration
     /// Maximum number of open orders allowed at any time. Zero means unlimited.
     /// </summary>
     public int MaxOpenOrders { get; set; }
+}
+
+public sealed class BrokerFlowFlags
+{
+    public bool ReadOnlyDataEnabled { get; set; } = true;
+
+    public bool PaperOrderFlowEnabled { get; set; }
+
+    public bool ProductionOrderRoutingEnabled { get; set; }
+}
+
+public sealed class BrokerValidationGateOptions
+{
+    public bool RequireValidationArtifactsForOrderPlacement { get; set; } = true;
+
+    public string ValidationArtifactPath { get; set; } = "artifacts/provider-validation/_automation/current/wave1-validation-summary.json";
+
+    public string SignoffArtifactPath { get; set; } = "artifacts/provider-validation/_automation/current/dk1-operator-signoff.json";
 }
