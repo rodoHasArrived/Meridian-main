@@ -1655,7 +1655,7 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_FundAccountScope_GlobalAggregate_ShouldIncludeAllScopedAccountsAndScopedEmptyState()
+    public async Task MapWorkstationEndpoints_FundAccountScope_OperatorInboxScopedQueries_ShouldReturnPerAccountBrokerageSyncItemsWithoutCrossAccountLeakage()
     {
         var accountA = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
         var accountB = Guid.Parse("84fb987e-5323-4630-9a0c-d1c30c95fa47");
@@ -1687,7 +1687,15 @@ public sealed class WorkstationEndpointsTests
             accountBInbox!.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.BrokerageSync && item.FundAccountId == accountB);
 
             emptyScopedInbox.Should().NotBeNull();
-            emptyScopedInbox!.Items.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.BrokerageSync);
+            emptyScopedInbox!.Items.Should().Contain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId == accountWithoutPendingItems &&
+                item.Workspace == "Settings" &&
+                item.TargetRoute == "/settings#provider-connection-center" &&
+                item.TargetPageTag == "ProviderConnectionCenter");
+            emptyScopedInbox.Items.Should().NotContain(item =>
+                item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
+                item.FundAccountId != accountWithoutPendingItems);
         }
         finally
         {
