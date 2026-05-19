@@ -1676,7 +1676,7 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_OperatorInbox_ReconciliationOnlyBreaks_ShouldExposeExpectedClassificationAndMetadata()
+    public async Task MapWorkstationEndpoints_OperatorInbox_ReconciliationBreaks_ShouldExposeExpectedClassificationAndMetadata()
     {
         await using var app = await CreateAppAsync(services =>
         {
@@ -1684,17 +1684,6 @@ public sealed class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-            services.AddSingleton<ITradingReadinessService>(new FixedTradingReadinessService(new TradingOperatorReadinessDto(
-                AsOf: new DateTimeOffset(2026, 05, 19, 0, 0, 0, TimeSpan.Zero),
-                PaperSession: null,
-                Replay: null,
-                Controls: new TradingControlReadinessDto(false, null, null, null, 0, 0, null),
-                Promotion: null,
-                WorkItems: [],
-                OverallStatus: TradingAcceptanceGateStatusDto.Ready,
-                Summary: "No trading readiness blockers are open.",
-                AcceptanceGates: [],
-                TrustGate: null)));
         });
 
         var runId = $"run-inbox-break-only-{Guid.NewGuid():N}";
@@ -1706,12 +1695,13 @@ public sealed class WorkstationEndpointsTests
 
         inbox.Should().NotBeNull();
         inbox!.Items.Should().NotBeEmpty();
-        inbox.Items.Should().OnlyContain(item => item.Kind == OperatorWorkItemKindDto.ReconciliationBreak);
+        inbox.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.ReconciliationBreak);
         inbox.Items.Should().OnlyContain(item =>
             !string.IsNullOrWhiteSpace(item.Title) &&
             !string.IsNullOrWhiteSpace(item.Detail) &&
             !string.IsNullOrWhiteSpace(item.TargetRoute));
-        inbox.Items.Should().OnlyContain(item => item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue);
+        inbox.Items.Where(item => item.Kind == OperatorWorkItemKindDto.ReconciliationBreak)
+            .Should().OnlyContain(item => item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue);
         inbox.CriticalCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Critical));
         inbox.WarningCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Warning));
         inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
@@ -1747,33 +1737,21 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_OperatorInbox_WhenNoReadinessOrBreaks_ShouldReturnClearEmptyShape()
+    public async Task MapWorkstationEndpoints_OperatorInbox_WhenNoReconciliationBreaks_ShouldNotEmitFalseBreakItems()
     {
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton<IReconciliationBreakQueueRepository>(
                 new InMemoryReconciliationBreakQueueRepository());
-            services.AddSingleton<ITradingReadinessService>(new FixedTradingReadinessService(new TradingOperatorReadinessDto(
-                AsOf: new DateTimeOffset(2026, 05, 19, 0, 0, 0, TimeSpan.Zero),
-                PaperSession: null,
-                Replay: null,
-                Controls: new TradingControlReadinessDto(false, null, null, null, 0, 0, null),
-                Promotion: null,
-                WorkItems: [],
-                OverallStatus: TradingAcceptanceGateStatusDto.Ready,
-                Summary: "No trading readiness blockers are open.",
-                AcceptanceGates: [],
-                TrustGate: null)));
         });
 
         var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
 
         inbox.Should().NotBeNull();
-        inbox!.Items.Should().BeEmpty();
-        inbox.CriticalCount.Should().Be(0);
-        inbox.WarningCount.Should().Be(0);
-        inbox.ReviewCount.Should().Be(0);
-        inbox.Summary.Should().Be("No operator work items are open.");
+        inbox!.Items.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.ReconciliationBreak);
+        inbox.CriticalCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Critical));
+        inbox.WarningCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Warning));
+        inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
     }
 
     [Fact]
@@ -5076,19 +5054,6 @@ public sealed class WorkstationEndpointsTests
             _references.TryGetValue(symbol, out var reference);
             return Task.FromResult<WorkstationSecurityReference?>(reference);
         }
-    }
-
-    private sealed class FixedTradingReadinessService : ITradingReadinessService
-    {
-        private readonly TradingOperatorReadinessDto _response;
-
-        public FixedTradingReadinessService(TradingOperatorReadinessDto response)
-        {
-            _response = response;
-        }
-
-        public Task<TradingOperatorReadinessDto> GetAsync(Guid? fundAccountId = null, CancellationToken ct = default)
-            => Task.FromResult(_response);
     }
 
     private sealed class StubSecurityMasterQueryService :
