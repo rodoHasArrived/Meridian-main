@@ -6,6 +6,8 @@ namespace Meridian.Ui.Tests.Services;
 
 public sealed class OAuthRefreshServiceTests
 {
+    private const string CheckAndRefreshOperationName = "CheckAndRefreshTokensAsync";
+
     [Fact]
     public async Task SafeCheckAndRefreshTokensAsync_WhenWrapperThrows_ShouldEmitFailureEventAndLog()
     {
@@ -15,7 +17,7 @@ public sealed class OAuthRefreshServiceTests
         };
 
         var logger = new TestLogger<OAuthRefreshService>();
-        var service = new OAuthRefreshService(credentialService, logger);
+        var service = OAuthRefreshService.Create(credentialService, logger);
         OAuthWrapperFailureEventArgs? evt = null;
         service.WrapperOperationFailed += (_, e) => evt = e;
 
@@ -23,7 +25,7 @@ public sealed class OAuthRefreshServiceTests
 
         service.WrapperFailureCount.Should().Be(1);
         evt.Should().NotBeNull();
-        evt!.OperationName.Should().Be("CheckAndRefreshTokensAsync");
+        evt!.OperationName.Should().Be(CheckAndRefreshOperationName);
         evt.Exception.Should().BeOfType<InvalidOperationException>();
         evt.EmittedStructuredLog.Should().BeTrue();
         logger.Entries.Should().ContainSingle(x => x.LogLevel == LogLevel.Error && x.Message.Contains("CheckAndRefreshTokensAsync"));
@@ -47,7 +49,7 @@ public sealed class OAuthRefreshServiceTests
         };
 
         var logger = new TestLogger<OAuthRefreshService>();
-        var service = new OAuthRefreshService(credentialService, logger);
+        var service = OAuthRefreshService.Create(credentialService, logger);
         var events = new List<OAuthWrapperFailureEventArgs>();
         service.WrapperOperationFailed += (_, e) => events.Add(e);
         service.TokenExpirationWarning += (_, _) => throw new InvalidOperationException("observer failed");
@@ -71,7 +73,7 @@ public sealed class OAuthRefreshServiceTests
         };
 
         var logger = new TestLogger<OAuthRefreshService>();
-        var service = new OAuthRefreshService(credentialService, logger);
+        var service = OAuthRefreshService.Create(credentialService, logger);
         service.WrapperOperationFailed += (_, _) => throw new InvalidOperationException("event subscriber failed");
 
         var act = () => service.InvokeSafeCheckAndRefreshTokensForTestsAsync();

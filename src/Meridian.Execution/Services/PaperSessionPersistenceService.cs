@@ -427,8 +427,6 @@ public sealed class PaperSessionPersistenceService
         }
         var detail = BuildSessionDetailDto(sessionId, session);
 
-        var detail = BuildSessionDetailDto(sessionId, session);
-
         var replayPortfolio = await ReplaySessionAsync(sessionId, ct).ConfigureAwait(false);
         if (replayPortfolio is null)
         {

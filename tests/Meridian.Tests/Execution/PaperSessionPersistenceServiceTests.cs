@@ -843,6 +843,118 @@ public sealed class PaperSessionReplayTests : IDisposable
         replay.RealisedPnl.Should().Be(liveDetail.Portfolio.RealisedPnl);
     }
 
+
+    [Fact]
+    public async Task TradeStationExecutionSlice_CreateUpdateCancelAndFillReconciliation_ProducesDeterministicCanonicalEvidence()
+    {
+        var store = BuildStore();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(_tempDir, "tradestation-audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var service = Build(store, auditTrail);
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("tradestation-order-flow", "TradeStation slice", 100_000m, ["AAPL"]));
+
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "ts-order-001",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            FilledQuantity = 0m,
+            Status = OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow.AddSeconds(-30),
+            LastUpdatedAt = DateTimeOffset.UtcNow.AddSeconds(-30)
+        });
+
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "ts-order-001",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            FilledQuantity = 6m,
+            Status = OrderStatus.PartiallyFilled,
+            CreatedAt = DateTimeOffset.UtcNow.AddSeconds(-20),
+            LastUpdatedAt = DateTimeOffset.UtcNow.AddSeconds(-20)
+        });
+
+        await service.RecordFillAsync(summary.SessionId, BuyFill("AAPL", 6m, 150m));
+
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "ts-order-001",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            FilledQuantity = 6m,
+            Status = OrderStatus.Cancelled,
+            CreatedAt = DateTimeOffset.UtcNow.AddSeconds(-10),
+            LastUpdatedAt = DateTimeOffset.UtcNow.AddSeconds(-10)
+        });
+
+        var verification = await service.VerifyReplayAsync(summary.SessionId);
+
+        verification.Should().NotBeNull();
+        verification!.IsConsistent.Should().BeTrue();
+        verification.ComparedOrderCount.Should().BeGreaterThan(0);
+        verification.ComparedFillCount.Should().Be(1);
+        verification.MismatchReasons.Should().BeEmpty();
+        verification.ReplayPortfolio.Positions.Should().ContainSingle(p => p.Symbol == "AAPL" && p.Quantity == 6m);
+    }
+
+    [Fact]
+    public async Task TradeStationExecutionSlice_DelayedOutOfOrderEvents_RemainsIdempotentAndDeterministic()
+    {
+        var store = BuildStore();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(_tempDir, "tradestation-out-of-order-audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var service = Build(store, auditTrail);
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("tradestation-out-of-order", null, 100_000m, ["AAPL"]));
+
+        await service.RecordFillAsync(summary.SessionId, BuyFill("AAPL", 4m, 200m));
+
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "ts-order-oo-001",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 4m,
+            FilledQuantity = 4m,
+            Status = OrderStatus.Filled,
+            CreatedAt = DateTimeOffset.UtcNow.AddSeconds(-5),
+            LastUpdatedAt = DateTimeOffset.UtcNow.AddSeconds(-5)
+        });
+
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "ts-order-oo-001",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 4m,
+            FilledQuantity = 0m,
+            Status = OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow.AddSeconds(-25),
+            LastUpdatedAt = DateTimeOffset.UtcNow.AddSeconds(-25)
+        });
+
+        var first = await service.VerifyReplayAsync(summary.SessionId);
+        var second = await service.VerifyReplayAsync(summary.SessionId);
+
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        first!.IsConsistent.Should().BeTrue();
+        second!.IsConsistent.Should().BeTrue();
+        second.ComparedFillCount.Should().Be(first.ComparedFillCount);
+        second.ComparedOrderCount.Should().Be(first.ComparedOrderCount);
+        second.ReplayPortfolio.Cash.Should().Be(first.ReplayPortfolio.Cash);
+        second.ReplayPortfolio.Positions.Should().BeEquivalentTo(first.ReplayPortfolio.Positions);
+    }
     [Fact]
     public async Task VerifyReplayAsync_WithStore_ReturnsConsistentVerification()
     {

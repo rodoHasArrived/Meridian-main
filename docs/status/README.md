@@ -118,3 +118,5 @@ When authoring or editing these doc categories, include the required section hea
 - [Backtest Studio Unification Blueprint](../plans/backtest-studio-unification-blueprint.md)
 - [Architecture Overview](../architecture/overview.md)
 - [Main Documentation Index](../README.md)
+
+- [`workstation-governance-state-model.md`](workstation-governance-state-model.md): canonical workstation governance state model, transition table, and v1 additive compatibility expectations.
