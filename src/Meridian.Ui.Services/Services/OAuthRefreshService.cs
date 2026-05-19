@@ -158,7 +158,8 @@ public sealed class OAuthRefreshService : IDisposable
     {
         try
         {
-            var result = await _credentialService.RefreshOAuthTokenAsync(providerId);
+            ct.ThrowIfCancellationRequested();
+            var result = await _credentialService.RefreshOAuthTokenAsync(providerId, ct);
             if (result.Success)
             {
                 TokenRefreshed?.Invoke(this, new TokenRefreshEventArgs(providerId, DateTime.UtcNow));
@@ -171,6 +172,11 @@ public sealed class OAuthRefreshService : IDisposable
         }
         catch (Exception ex)
         {
+            if (ct.IsCancellationRequested && ex is OperationCanceledException)
+            {
+                throw;
+            }
+
             TokenRefreshFailed?.Invoke(this, new TokenRefreshFailedEventArgs(providerId, ex.Message));
             return false;
         }
@@ -182,7 +188,7 @@ public sealed class OAuthRefreshService : IDisposable
     public async Task SetAutoRefreshAsync(string providerId, bool enabled, CancellationToken ct = default)
     {
         var resource = $"{CredentialService.OAuthTokenResource}.{providerId}";
-        await _credentialService.UpdateMetadataAsync(resource, m => m.AutoRefreshEnabled = enabled);
+        await _credentialService.UpdateMetadataAsync(resource, m => m.AutoRefreshEnabled = enabled, ct);
     }
 
     private void OnRefreshTimerElapsed(object? sender, ElapsedEventArgs e)
@@ -201,7 +207,10 @@ public sealed class OAuthRefreshService : IDisposable
     {
         try
         {
-            await CheckAndRefreshTokensAsync();
+            await CheckAndRefreshTokensAsync(ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
         }
         catch (Exception ex)
         {
@@ -213,7 +222,10 @@ public sealed class OAuthRefreshService : IDisposable
     {
         try
         {
-            await CheckExpiringTokensAsync();
+            await CheckExpiringTokensAsync(ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
         }
         catch (Exception ex)
         {
@@ -278,11 +290,13 @@ public sealed class OAuthRefreshService : IDisposable
 
     private async Task CheckAndRefreshTokensAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var credentials = _credentialService.GetAllCredentialsWithMetadata();
         var oauthTokens = credentials.Where(c => c.IsOAuthToken);
 
         foreach (var token in oauthTokens)
         {
+            ct.ThrowIfCancellationRequested();
             if (!token.CanAutoRefresh || !token.ExpiresAt.HasValue)
                 continue;
 
@@ -292,7 +306,7 @@ public sealed class OAuthRefreshService : IDisposable
                 var providerId = token.Resource.Replace($"{CredentialService.OAuthTokenResource}.", "");
                 try
                 {
-                    var result = await _credentialService.RefreshOAuthTokenAsync(providerId);
+                    var result = await _credentialService.RefreshOAuthTokenAsync(providerId, ct);
                     if (result.Success)
                     {
                         TokenRefreshed?.Invoke(this, new TokenRefreshEventArgs(providerId, DateTime.UtcNow));
@@ -304,19 +318,26 @@ public sealed class OAuthRefreshService : IDisposable
                 }
                 catch (Exception ex)
                 {
+                    if (ct.IsCancellationRequested && ex is OperationCanceledException)
+                    {
+                        throw;
+                    }
+
                     TokenRefreshFailed?.Invoke(this, new TokenRefreshFailedEventArgs(providerId, ex.Message));
                 }
             }
         }
     }
 
-    private Task CheckExpiringTokensAsync()
+    private Task CheckExpiringTokensAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         var credentials = _credentialService.GetAllCredentialsWithMetadata();
         var oauthTokens = credentials.Where(c => c.IsOAuthToken);
 
         foreach (var token in oauthTokens)
         {
+            ct.ThrowIfCancellationRequested();
             if (!token.ExpiresAt.HasValue)
                 continue;
 
