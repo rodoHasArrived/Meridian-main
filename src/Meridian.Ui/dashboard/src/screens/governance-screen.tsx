@@ -1245,12 +1245,26 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               )}
               {reconciliation.errorText && (
                 <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {reconciliation.errorText}
+                  <div>{reconciliation.errorText}</div>
+                  {reconciliation.errorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.errorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
               {reconciliation.actionErrorText && (
                 <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {reconciliation.actionErrorText}
+                  <div>{reconciliation.actionErrorText}</div>
+                  {reconciliation.actionErrorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.actionErrorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
               <DenseDataTable

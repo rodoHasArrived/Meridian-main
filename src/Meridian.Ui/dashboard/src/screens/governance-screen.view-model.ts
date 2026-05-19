@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
   getCorporateActions,
   getReconciliationBreakQueue,
@@ -513,7 +514,9 @@ export interface ReconciliationBreakQueueState {
   loadingText: string | null;
   emptyText: string;
   errorText: string | null;
+  errorDetails: string[];
   actionErrorText: string | null;
+  actionErrorDetails: string[];
   statusAnnouncement: string;
 }
 
@@ -1502,9 +1505,9 @@ export function useGovernanceReconciliationViewModel(
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [breakQueue, setBreakQueue] = useState<ReconciliationBreakQueueItem[]>(data?.breakQueue ?? []);
   const [breakQueueLoading, setBreakQueueLoading] = useState(false);
-  const [breakQueueError, setBreakQueueError] = useState<string | null>(null);
+  const [breakQueueError, setBreakQueueError] = useState<ApiErrorDisplay | null>(null);
   const [breakAction, setBreakAction] = useState<ReconciliationBreakAction | null>(null);
-  const [breakActionError, setBreakActionError] = useState<string | null>(null);
+  const [breakActionError, setBreakActionError] = useState<ApiErrorDisplay | null>(null);
   const [selectedBreakId, setSelectedBreakId] = useState<string | null>(null);
   const [trialBalance, setTrialBalance] = useState<LedgerTrialBalanceLine[]>([]);
   const [selectedTrialBalanceRowId, setSelectedTrialBalanceRowId] = useState<string | null>(null);
@@ -1561,7 +1564,7 @@ export function useGovernanceReconciliationViewModel(
       .catch((err) => {
         if (!cancelled) {
           setBreakQueue(data?.breakQueue ?? []);
-          setBreakQueueError(toErrorMessage(err, "Reconciliation break queue failed to load."));
+          setBreakQueueError(describeApiError(err, "Reconciliation break queue failed to load."));
         }
       })
       .finally(() => {
@@ -1654,7 +1657,7 @@ export function useGovernanceReconciliationViewModel(
       const updated = await services.reviewBreak({ breakId, assignedTo: "ops.gov", reviewedBy: "ops.gov" });
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
     } catch (err) {
-      setBreakActionError(toErrorMessage(err, "Break assignment failed."));
+      setBreakActionError(describeApiError(err, "Break assignment failed."));
     } finally {
       setBreakAction(null);
     }
@@ -1667,7 +1670,10 @@ export function useGovernanceReconciliationViewModel(
   ) => {
     const trimmedRationale = (operatorRationale ?? "").trim();
     if (!trimmedRationale) {
-      setBreakActionError("Operator rationale is required.");
+      setBreakActionError({
+        summary: "Operator rationale is required.",
+        details: []
+      });
       return;
     }
 
@@ -1685,7 +1691,7 @@ export function useGovernanceReconciliationViewModel(
       });
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
     } catch (err) {
-      setBreakActionError(toErrorMessage(err, "Break resolution failed."));
+      setBreakActionError(describeApiError(err, "Break resolution failed."));
     } finally {
       setBreakAction(null);
     }
@@ -2313,9 +2319,9 @@ export function buildReconciliationBreakQueueState({
   breakQueue: ReconciliationBreakQueueItem[];
   selectedBreakId?: string | null;
   loading: boolean;
-  loadError: string | null;
+  loadError: string | ApiErrorDisplay | null;
   action: ReconciliationBreakAction | null;
-  actionError: string | null;
+  actionError: string | ApiErrorDisplay | null;
 }): ReconciliationBreakQueueState {
   const effectiveSelectedBreakId = selectedBreakId && breakQueue.some((item) => item.breakId === selectedBreakId)
     ? selectedBreakId
@@ -2323,15 +2329,17 @@ export function buildReconciliationBreakQueueState({
   const rows = buildReconciliationBreakRows(breakQueue, action, effectiveSelectedBreakId);
   const selectedRow = rows.find((row) => row.breakId === effectiveSelectedBreakId) ?? null;
   const loadingText = loading ? "Loading reconciliation break queue..." : null;
-  const errorText = loadError
-    ? loadError.startsWith("Reconciliation break queue failed")
-      ? loadError
-      : `Reconciliation break queue failed: ${loadError}`
+  const normalizedLoadError = normalizeApiErrorDisplay(loadError);
+  const normalizedActionError = normalizeApiErrorDisplay(actionError);
+  const errorText = normalizedLoadError
+    ? normalizedLoadError.summary.startsWith("Reconciliation break queue failed")
+      ? normalizedLoadError.summary
+      : `Reconciliation break queue failed: ${normalizedLoadError.summary}`
     : null;
-  const actionErrorText = actionError
-    ? actionError.startsWith("Break ")
-      ? actionError
-      : `Break action failed: ${actionError}`
+  const actionErrorText = normalizedActionError
+    ? normalizedActionError.summary.startsWith("Break ")
+      ? normalizedActionError.summary
+      : `Break action failed: ${normalizedActionError.summary}`
     : null;
 
   return {
@@ -2348,7 +2356,9 @@ export function buildReconciliationBreakQueueState({
     loadingText,
     emptyText: "No reconciliation breaks in the current queue.",
     errorText,
+    errorDetails: normalizedLoadError?.details ?? [],
     actionErrorText,
+    actionErrorDetails: normalizedActionError?.details ?? [],
     statusAnnouncement: buildReconciliationBreakStatusAnnouncement({
       loading,
       action,
@@ -4176,4 +4186,16 @@ function toErrorMessage(err: unknown, fallback: string): string {
   }
 
   return fallback;
+}
+
+function normalizeApiErrorDisplay(error: string | ApiErrorDisplay | null): ApiErrorDisplay | null {
+  if (!error) {
+    return null;
+  }
+
+  if (typeof error === "string") {
+    return { summary: error, details: [] };
+  }
+
+  return error;
 }

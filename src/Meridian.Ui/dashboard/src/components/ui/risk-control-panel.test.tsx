@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import * as api from "@/lib/api";
+import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -66,5 +67,37 @@ describe("RiskControlPanel", () => {
         reason: "Updated from risk control panel."
       });
     });
+  });
+
+  it("renders structured API error details when a risk update fails", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.updateRiskRuleConfig).mockRejectedValueOnce(
+      createApiErrorFromResponseBody(
+        "/api/risk/rules/DrawdownCircuitBreaker/config",
+        409,
+        JSON.stringify({
+          title: "Risk configuration rejected",
+          detail: "The proposed threshold conflicts with the active governance policy.",
+          errors: {
+            maxDrawdownPercent: ["Lower the threshold or obtain approval before retrying."]
+          }
+        })
+      )
+    );
+
+    render(<RiskControlPanel />);
+
+    await screen.findByText("PositionLimit");
+
+    const input = screen.getByLabelText("Drawdown threshold percent");
+    await user.clear(input);
+    await user.type(input, "6");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(screen.getByText("The proposed threshold conflicts with the active governance policy.")).toBeInTheDocument();
+    expect(screen.getByText("Endpoint returned 409 for /api/risk/rules/DrawdownCircuitBreaker/config.")).toBeInTheDocument();
+    expect(screen.getByText("Risk configuration rejected")).toBeInTheDocument();
+    expect(screen.getByText("maxDrawdownPercent: Lower the threshold or obtain approval before retrying.")).toBeInTheDocument();
   });
 });

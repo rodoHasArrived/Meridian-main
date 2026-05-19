@@ -5,6 +5,7 @@ import {
   summarizeOperatingScopeForRoute,
   type AppShellOperatingScopeInput
 } from "@/app-shell.view-model";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type { WorkspaceKey } from "@/types";
 
 export interface MegaMenuLink {
@@ -59,11 +60,11 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     label: "Trading",
     eyebrow: "Execution & orders",
     links: [
-      { label: "Cockpit", route: "/trading", description: "Live trading dashboard" },
-      { label: "Orders", route: "/trading/orders", description: "Order blotter and status" },
-      { label: "Positions", route: "/trading/positions", description: "Open position tracking" },
-      { label: "Risk", route: "/trading/risk", description: "Real-time risk exposure" },
-      { label: "Readiness", route: "/trading/readiness", description: "Pre-trade readiness check" }
+      { label: "Cockpit", route: WORKSTATION_ROUTE_CATALOG.trading, description: "Live trading dashboard" },
+      { label: "Orders", route: WORKSTATION_ROUTE_CATALOG.tradingOrders, description: "Order blotter and status" },
+      { label: "Positions", route: WORKSTATION_ROUTE_CATALOG.tradingPositions, description: "Open position tracking" },
+      { label: "Risk", route: WORKSTATION_ROUTE_CATALOG.tradingRisk, description: "Real-time risk exposure" },
+      { label: "Readiness", route: WORKSTATION_ROUTE_CATALOG.tradingReadiness, description: "Pre-trade readiness check" }
     ]
   },
   {
@@ -71,9 +72,9 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     label: "Portfolio",
     eyebrow: "Exposure & attribution",
     links: [
-      { label: "Exposure", route: "/portfolio", description: "Portfolio exposure overview" },
-      { label: "Attribution", route: "/portfolio/attribution", description: "Performance attribution" },
-      { label: "Brokerage sync", route: "/portfolio/brokerage-sync", description: "Brokerage account sync review" }
+      { label: "Exposure", route: WORKSTATION_ROUTE_CATALOG.portfolio, description: "Portfolio exposure overview" },
+      { label: "Attribution", route: WORKSTATION_ROUTE_CATALOG.portfolioAttribution, description: "Performance attribution" },
+      { label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync, description: "Brokerage account sync review" }
     ]
   },
   {
@@ -81,10 +82,10 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     label: "Accounting",
     eyebrow: "Ledger & reconciliation",
     links: [
-      { label: "Ledger", route: "/accounting", description: "Fund ledger entries" },
-      { label: "Reconciliation", route: "/accounting/reconciliation", description: "Position reconciliation" },
-      { label: "Security Master", route: "/accounting/security-master", description: "Reference-data readiness" },
-      { label: "Approvals", route: "/accounting/approvals", description: "Pending approval queue" }
+      { label: "Ledger", route: WORKSTATION_ROUTE_CATALOG.accounting, description: "Fund ledger entries" },
+      { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, description: "Position reconciliation" },
+      { label: "Security Master", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster, description: "Reference-data readiness" },
+      { label: "Approvals", route: WORKSTATION_ROUTE_CATALOG.accountingApprovals, description: "Pending approval queue" }
     ]
   },
   {
@@ -92,10 +93,10 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     label: "Reporting",
     eyebrow: "Reports & exports",
     links: [
-      { label: "Profiles", route: "/reporting", description: "Governed export profiles" },
-      { label: "Report packs", route: "/reporting/report-packs", description: "Approval-ready report packet review" },
-      { label: "Evidence", route: "/reporting/evidence", description: "Packet completeness and lineage" },
-      { label: "Exports", route: "/reporting/exports", description: "Data export queue" }
+      { label: "Profiles", route: WORKSTATION_ROUTE_CATALOG.reporting, description: "Governed export profiles" },
+      { label: "Report packs", route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks, description: "Approval-ready report packet review" },
+      { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.reportingEvidence, description: "Packet completeness and lineage" },
+      { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.reportingExports, description: "Data export queue" }
     ]
   },
   {
@@ -103,12 +104,12 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     label: "Strategy",
     eyebrow: "Research & backtesting",
     links: [
-      { label: "Backtest runs", route: "/strategy", description: "Strategy backtest results" },
-      { label: "Designer", route: "/strategy/designer", description: "Visual multi-leg strategy designer with payoff and participation visualizations" },
-      { label: "Covered call", route: "/strategy/covered-call", description: "Run covered-call backtests with chain preview and payoff evidence" },
-      { label: "Promotions", route: "/strategy/promotions", description: "Paper-to-live promotions" },
-      { label: "Research", route: "/strategy/research", description: "Signal research workspace" },
-      { label: "Quant Lab", route: "/strategy/quant-lab", description: "Run C# scripts with plots and metrics" }
+      { label: "Backtest runs", route: WORKSTATION_ROUTE_CATALOG.strategy, description: "Strategy backtest results" },
+      { label: "Designer", route: WORKSTATION_ROUTE_CATALOG.strategyDesigner, description: "Visual multi-leg strategy designer with payoff and participation visualizations" },
+      { label: "Covered call", route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall, description: "Run covered-call backtests with chain preview and payoff evidence" },
+      { label: "Promotions", route: WORKSTATION_ROUTE_CATALOG.strategyPromotions, description: "Paper-to-live promotions" },
+      { label: "Research", route: WORKSTATION_ROUTE_CATALOG.strategyResearch, description: "Signal research workspace" },
+      { label: "Quant Lab", route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab, description: "Run C# scripts with plots and metrics" }
     ]
   },
   {
@@ -116,11 +117,11 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     label: "Data",
     eyebrow: "Providers & feeds",
     links: [
-      { label: "Provider posture", route: "/data", description: "Data provider health" },
-      { label: "Watchlist", route: "/data/watchlist", description: "Symbol subscription setup" },
-      { label: "Live quotes", route: "/data/quotes", description: "Quote, trade, and depth workbench" },
-      { label: "Price alerts", route: "/data/alerts", description: "Local quote-threshold alerts and trigger review" },
-      { label: "Backfill queues", route: "/data/backfills", description: "Historical data backfill" }
+      { label: "Provider posture", route: WORKSTATION_ROUTE_CATALOG.data, description: "Data provider health" },
+      { label: "Watchlist", route: WORKSTATION_ROUTE_CATALOG.dataWatchlist, description: "Symbol subscription setup" },
+      { label: "Live quotes", route: WORKSTATION_ROUTE_CATALOG.dataQuotes, description: "Quote, trade, and depth workbench" },
+      { label: "Price alerts", route: WORKSTATION_ROUTE_CATALOG.dataAlerts, description: "Local quote-threshold alerts and trigger review" },
+      { label: "Backfill queues", route: WORKSTATION_ROUTE_CATALOG.dataBackfills, description: "Historical data backfill" }
     ]
   },
   {
@@ -128,9 +129,9 @@ const MENU_SECTIONS: StaticMegaMenuSection[] = [
     label: "Settings",
     eyebrow: "Session & preferences",
     links: [
-      { label: "Session", route: "/settings", description: "Active session details" },
-      { label: "Preferences", route: "/settings/preferences", description: "User preferences" },
-      { label: "Integrations", route: "/settings/integrations", description: "API and broker connections" }
+      { label: "Session", route: WORKSTATION_ROUTE_CATALOG.settings, description: "Active session details" },
+      { label: "Preferences", route: WORKSTATION_ROUTE_CATALOG.settingsPreferences, description: "User preferences" },
+      { label: "Integrations", route: WORKSTATION_ROUTE_CATALOG.settingsIntegrations, description: "API and broker connections" }
     ]
   }
 ];
@@ -266,7 +267,8 @@ function formatPreservedScopeAriaSuffix(scopeSummary: string | null): string {
 }
 
 function isWorkspaceSectionActive(pathname: string, key: WorkspaceKey): boolean {
-  return pathname === `/${key}` || pathname.startsWith(`/${key}/`);
+  const workspaceRoot = WORKSTATION_ROUTE_CATALOG[key];
+  return pathname === workspaceRoot || pathname.startsWith(`${workspaceRoot}/`);
 }
 
 function isRouteActive(pathname: string, route: string): boolean {

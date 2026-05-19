@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
+  appendRouteQuery,
   evidenceWorkbenchPath,
   legacyWorkspaceRedirect,
   normalizeLocalWorkstationRoute,
   normalizeWorkspacePath,
+  settingsProviderConnectionRoute,
   WORKSPACES,
+  WORKSTATION_ROUTE_CATALOG,
   workflowTargetPath,
+  workstationRoute,
+  workstationRouteWithHash,
+  workstationRouteWithQuery,
   workspaceForKey,
   workspacePath
 } from "@/lib/workspace";
@@ -33,6 +39,20 @@ describe("workspace metadata", () => {
       "/data",
       "/settings"
     ]);
+  });
+
+  it("exposes typed workstation route catalog helpers", () => {
+    expect(workstationRoute("tradingReadiness")).toBe("/trading/readiness");
+    expect(workstationRoute("settingsAlpacaProviderSetup")).toBe("/settings#alpaca-provider-setup");
+    expect(workstationRouteWithQuery("dataQuotes", { symbol: "BRK/B", provider: "Alpaca", empty: null })).toBe(
+      "/data/quotes?symbol=BRK%2FB&provider=Alpaca"
+    );
+    expect(appendRouteQuery(WORKSTATION_ROUTE_CATALOG.reportingEvidence, { subjectKind: "run", subjectId: "run 1" }))
+      .toBe("/reporting/evidence?subjectKind=run&subjectId=run%201");
+    expect(workstationRouteWithHash("settings", "#backend-capability-coverage")).toBe(
+      "/settings#backend-capability-coverage"
+    );
+    expect(settingsProviderConnectionRoute("alpaca-paper")).toBe("/settings#provider-alpaca-paper-connection");
   });
 
   it("normalizes legacy workspace URLs to canonical roots", () => {

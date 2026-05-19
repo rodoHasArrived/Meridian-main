@@ -1,4 +1,10 @@
-import { normalizeWorkspacePath, WORKSPACES, workflowTargetPath, workspacePath } from "@/lib/workspace";
+import {
+  normalizeWorkspacePath,
+  WORKSPACES,
+  WORKSTATION_ROUTE_CATALOG,
+  workflowTargetPath,
+  workspacePath
+} from "@/lib/workspace";
 import {
   appendOperatingScopeToRoute,
   buildOperatingScopeFromSearch,
@@ -134,79 +140,79 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     id: "trading-readiness",
     label: "Readiness console",
     description: "Review paper cockpit blockers, operator work items, and promotion evidence.",
-    route: "/trading/readiness"
+    route: WORKSTATION_ROUTE_CATALOG.tradingReadiness
   },
   {
     id: "portfolio-brokerage-sync",
     label: "Brokerage sync",
     description: "Review household brokerage account sync posture and recovery actions.",
-    route: "/portfolio/brokerage-sync"
+    route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync
   },
   {
     id: "accounting-reconciliation",
     label: "Reconciliation breaks",
     description: "Work position breaks, sign-off detail, and reconciliation recovery.",
-    route: "/accounting/reconciliation"
+    route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
   },
   {
     id: "accounting-security-master",
     label: "Security Master",
     description: "Review reference-data coverage, identifier conflicts, and trusted instruments.",
-    route: "/accounting/security-master"
+    route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster
   },
   {
     id: "reporting-report-packs",
     label: "Report packs",
     description: "Open approval-ready report packet review and governed outputs.",
-    route: "/reporting/report-packs"
+    route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
   },
   {
     id: "reporting-evidence",
     label: "Evidence workbench",
     description: "Inspect packet completeness, stale evidence, and lineage.",
-    route: "/reporting/evidence"
+    route: WORKSTATION_ROUTE_CATALOG.reportingEvidence
   },
   {
     id: "strategy-quant-lab",
     label: "Quant Lab",
     description: "Run scripts with parameter hints, templates, plots, and metrics.",
-    route: "/strategy/quant-lab"
+    route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab
   },
   {
     id: "strategy-covered-call",
     label: "Covered call backtest",
     description: "Configure covered-call chain preview, run backtests, and review payoff evidence.",
-    route: "/strategy/covered-call"
+    route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall
   },
   {
     id: "data-watchlist",
     label: "Watchlist",
     description: "Add symbols and starter packs before validating live quotes.",
-    route: "/data/watchlist"
+    route: WORKSTATION_ROUTE_CATALOG.dataWatchlist
   },
   {
     id: "data-quotes",
     label: "Live quotes",
     description: "Inspect quotes, trades, depth, charts, and staged tickets.",
-    route: "/data/quotes"
+    route: WORKSTATION_ROUTE_CATALOG.dataQuotes
   },
   {
     id: "data-alerts",
     label: "Price alerts",
     description: "Create local quote-threshold alerts and review alert trigger state.",
-    route: "/data/alerts"
+    route: WORKSTATION_ROUTE_CATALOG.dataAlerts
   },
   {
     id: "data-backfills",
     label: "Backfill queues",
     description: "Preview, trigger, and review historical data backfill jobs.",
-    route: "/data/backfills"
+    route: WORKSTATION_ROUTE_CATALOG.dataBackfills
   },
   {
     id: "settings-integrations",
     label: "Alpaca provider setup",
     description: "Repair paper credentials, endpoint acknowledgements, and broker connection readiness.",
-    route: "/settings#alpaca-provider-setup"
+    route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup
   }
 ];
 

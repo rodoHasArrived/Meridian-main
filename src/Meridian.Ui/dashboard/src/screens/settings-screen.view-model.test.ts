@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ApiError } from "@/lib/api-errors";
 import {
   buildAlpacaConnectionCommandState,
   buildSettingsRecentEventsSelectionViewModel,
@@ -583,6 +584,7 @@ describe("buildSettingsScreenViewModel", () => {
         busyAction: null,
         submitted: false,
         actionMessage: null,
+        actionDetails: [],
         actionTone: "default"
       }
     });
@@ -637,6 +639,7 @@ describe("buildSettingsScreenViewModel", () => {
         busyAction: null,
         submitted: true,
         actionMessage: null,
+        actionDetails: [],
         actionTone: "default"
       }
     });
@@ -690,6 +693,7 @@ describe("buildSettingsScreenViewModel", () => {
         busyAction: "connect",
         submitted: true,
         actionMessage: null,
+        actionDetails: [],
         actionTone: "default"
       }
     });
@@ -737,6 +741,7 @@ describe("buildSettingsScreenViewModel", () => {
         busyAction: null,
         submitted: false,
         actionMessage: null,
+        actionDetails: [],
         actionTone: "default"
       }
     });
@@ -761,6 +766,7 @@ describe("buildSettingsScreenViewModel", () => {
         busyAction: null,
         submitted: false,
         actionMessage: null,
+        actionDetails: [],
         actionTone: "default"
       }
     });
@@ -791,6 +797,7 @@ describe("buildSettingsScreenViewModel", () => {
         busyAction: null,
         submitted: false,
         actionMessage: null,
+        actionDetails: [],
         actionTone: "default"
       }
     });
@@ -1119,6 +1126,43 @@ describe("buildSettingsScreenViewModel", () => {
     unmount();
 
     expect(options.signal?.aborted).toBe(true);
+  });
+
+  it("surfaces structured Alpaca connection errors", async () => {
+    const connectConnection = vi.fn().mockRejectedValue(
+      new ApiError({
+        path: "/api/brokerage-connections/alpaca/connect",
+        status: 422,
+        detail: "One or more validation errors occurred.",
+        validationIssues: [
+          {
+            field: "secretKey",
+            label: "secretKey",
+            messages: ["Secret key must include the paper account scope."]
+          }
+        ]
+      })
+    );
+    const { result } = renderHook(() => useAlpacaConnectionFormViewModel({
+      canClear: false,
+      connectConnection
+    }));
+
+    act(() => {
+      result.current.setKeyId("paper-key");
+      result.current.setSecretKey("paper-secret");
+    });
+
+    await act(async () => {
+      await result.current.connect({ preventDefault: vi.fn() } as never);
+    });
+
+    expect(result.current.actionMessage).toBe("One or more validation errors occurred.");
+    expect(result.current.statusDetails).toEqual([
+      "Endpoint returned 422 for /api/brokerage-connections/alpaca/connect.",
+      "secretKey: Secret key must include the paper account scope."
+    ]);
+    expect(result.current.statusRole).toBe("alert");
   });
 });
 

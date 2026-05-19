@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { connectAlpacaConnection, revokeAlpacaConnection } from "@/lib/api";
 import type { ApiRequestOptions } from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
 import {
   BACKFILL_API_ENDPOINTS,
   CONFIG_API_ENDPOINTS,
@@ -45,6 +46,7 @@ export interface SettingsAlpacaConnectionFormState {
   busyAction: "connect" | "clear" | null;
   submitted: boolean;
   actionMessage: string | null;
+  actionDetails: string[];
   actionTone: "default" | "success" | "danger";
 }
 
@@ -74,6 +76,7 @@ export interface SettingsAlpacaConnectionCommandState {
   clearDisabledReason: string | null;
   statusRole: "status" | "alert";
   statusClassName: string;
+  statusDetails: string[];
   keyIdHelpText: string;
   secretKeyHelpText: string;
   environmentHelpText: string;
@@ -167,6 +170,7 @@ const emptyAlpacaConnectionForm: SettingsAlpacaConnectionFormState = {
   busyAction: null,
   submitted: false,
   actionMessage: null,
+  actionDetails: [],
   actionTone: "default"
 };
 
@@ -372,6 +376,7 @@ export function buildAlpacaConnectionCommandState({
         : "No stored Alpaca credentials are available to clear.",
     statusRole: form.actionTone === "danger" ? "alert" : "status",
     statusClassName: form.actionTone === "danger" ? "text-sm text-danger" : "text-sm text-muted-foreground",
+    statusDetails: form.actionDetails,
     keyIdHelpText,
     secretKeyHelpText,
     environmentHelpText: form.environment === "live"
@@ -419,12 +424,12 @@ export function useAlpacaConnectionFormViewModel({
 
   const setKeyId = (keyId: string) => {
     setClearConfirmationPending(false);
-    setForm((current) => ({ ...current, keyId, actionMessage: null, actionTone: "default" }));
+    setForm((current) => ({ ...current, keyId, actionMessage: null, actionDetails: [], actionTone: "default" }));
   };
 
   const setSecretKey = (secretKey: string) => {
     setClearConfirmationPending(false);
-    setForm((current) => ({ ...current, secretKey, actionMessage: null, actionTone: "default" }));
+    setForm((current) => ({ ...current, secretKey, actionMessage: null, actionDetails: [], actionTone: "default" }));
   };
 
   const setEnvironment = (environment: AlpacaEnvironment) => {
@@ -434,19 +439,20 @@ export function useAlpacaConnectionFormViewModel({
       environment,
       liveAcknowledged: environment === "live" ? current.liveAcknowledged : false,
       actionMessage: null,
+      actionDetails: [],
       actionTone: "default"
     }));
   };
 
   const setLiveAcknowledged = (liveAcknowledged: boolean) => {
     setClearConfirmationPending(false);
-    setForm((current) => ({ ...current, liveAcknowledged, actionMessage: null, actionTone: "default" }));
+    setForm((current) => ({ ...current, liveAcknowledged, actionMessage: null, actionDetails: [], actionTone: "default" }));
   };
 
   const connect = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const submittedForm = { ...form, submitted: true, actionMessage: null, actionTone: "default" as const };
+    const submittedForm = { ...form, submitted: true, actionMessage: null, actionDetails: [], actionTone: "default" as const };
     const submittedCommand = buildAlpacaConnectionCommandState({ form: submittedForm, canClear });
     if (!submittedCommand.canSubmit) {
       setForm(submittedForm);
@@ -484,6 +490,7 @@ export function useAlpacaConnectionFormViewModel({
         actionMessage: status.isConnected
           ? "Alpaca account verified."
           : status.lastError ?? status.warnings[0] ?? "Alpaca connection updated.",
+        actionDetails: [],
         actionTone: status.isConnected ? "success" : "danger"
       }));
     } catch (err) {
@@ -491,10 +498,12 @@ export function useAlpacaConnectionFormViewModel({
         return;
       }
 
+      const display = describeApiError(err, "Alpaca connection request failed.");
       setForm((current) => ({
         ...current,
         busyAction: null,
-        actionMessage: err instanceof Error ? err.message : "Alpaca connection request failed.",
+        actionMessage: display.summary,
+        actionDetails: display.details,
         actionTone: "danger"
       }));
     } finally {
@@ -511,7 +520,7 @@ export function useAlpacaConnectionFormViewModel({
     }
     if (!clearConfirmationPending) {
       setClearConfirmationPending(true);
-      setForm((current) => ({ ...current, actionMessage: null, actionTone: "default" }));
+      setForm((current) => ({ ...current, actionMessage: null, actionDetails: [], actionTone: "default" }));
       return;
     }
 
@@ -521,7 +530,7 @@ export function useAlpacaConnectionFormViewModel({
     const controller = new AbortController();
     actionAbortRef.current = controller;
     setClearConfirmationPending(false);
-    setForm((current) => ({ ...current, busyAction: "clear", actionMessage: null, actionTone: "default" }));
+    setForm((current) => ({ ...current, busyAction: "clear", actionMessage: null, actionDetails: [], actionTone: "default" }));
 
     try {
       await revokeConnection({ signal: controller.signal });
@@ -537,6 +546,7 @@ export function useAlpacaConnectionFormViewModel({
       setForm({
         ...emptyAlpacaConnectionForm,
         actionMessage: "Alpaca credentials cleared.",
+        actionDetails: [],
         actionTone: "success"
       });
     } catch (err) {
@@ -544,10 +554,12 @@ export function useAlpacaConnectionFormViewModel({
         return;
       }
 
+      const display = describeApiError(err, "Alpaca clear request failed.");
       setForm((current) => ({
         ...current,
         busyAction: null,
-        actionMessage: err instanceof Error ? err.message : "Alpaca clear request failed.",
+        actionMessage: display.summary,
+        actionDetails: display.details,
         actionTone: "danger"
       }));
     } finally {

@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 
 interface ProviderField {
@@ -33,12 +34,18 @@ interface ProviderCredentialSetupProps {
   isLoading?: boolean;
 }
 
+interface ProviderCredentialFeedback {
+  success: boolean;
+  message: string;
+  details: string[];
+}
+
 export function ProviderCredentialSetup({ providers, onSave, onTest, isLoading }: ProviderCredentialSetupProps) {
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<Record<string, string>>({});
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [feedback, setFeedback] = useState<ProviderCredentialFeedback | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const provider = selectedProvider ? providers[selectedProvider] : null;
@@ -46,7 +53,7 @@ export function ProviderCredentialSetup({ providers, onSave, onTest, isLoading }
   const handleSelectProvider = (providerName: string) => {
     setSelectedProvider(providerName);
     setCredentials({});
-    setTestResult(null);
+    setFeedback(null);
     setShowPasswords({});
   };
 
@@ -56,14 +63,17 @@ export function ProviderCredentialSetup({ providers, onSave, onTest, isLoading }
     setIsTesting(true);
     try {
       const success = await onTest(selectedProvider, credentials);
-      setTestResult({
+      setFeedback({
         success,
         message: success ? "Connection successful!" : "Connection failed. Please check your credentials.",
+        details: [],
       });
     } catch (error) {
-      setTestResult({
+      const display = describeApiError(error, "Connection test failed.");
+      setFeedback({
         success: false,
-        message: `Test failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        message: display.summary,
+        details: display.details
       });
     } finally {
       setIsTesting(false);
@@ -78,7 +88,14 @@ export function ProviderCredentialSetup({ providers, onSave, onTest, isLoading }
       await onSave(selectedProvider, credentials);
       setSelectedProvider(null);
       setCredentials({});
-      setTestResult(null);
+      setFeedback(null);
+    } catch (error) {
+      const display = describeApiError(error, "Saving provider credentials failed.");
+      setFeedback({
+        success: false,
+        message: display.summary,
+        details: display.details
+      });
     } finally {
       setIsSaving(false);
     }
@@ -198,28 +215,38 @@ export function ProviderCredentialSetup({ providers, onSave, onTest, isLoading }
                   )}
 
                   {/* Test result */}
-                  {testResult && (
+                  {feedback && (
                     <div
+                      role="alert"
                       className={cn(
                         "p-3 rounded-lg border flex gap-2",
-                        testResult.success
+                        feedback.success
                           ? "bg-green-50 border-green-200"
                           : "bg-red-50 border-red-200",
                       )}
                     >
-                      {testResult.success ? (
+                      {feedback.success ? (
                         <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
                       ) : (
                         <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />
                       )}
-                      <p
-                        className={cn(
-                          "text-sm",
-                          testResult.success ? "text-green-900" : "text-red-900",
-                        )}
-                      >
-                        {testResult.message}
-                      </p>
+                      <div className="min-w-0">
+                        <p
+                          className={cn(
+                            "text-sm",
+                            feedback.success ? "text-green-900" : "text-red-900",
+                          )}
+                        >
+                          {feedback.message}
+                        </p>
+                        {feedback.details.length > 0 ? (
+                          <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-red-900/90">
+                            {feedback.details.map((detail) => (
+                              <li key={detail}>{detail}</li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
                     </div>
                   )}
                 </div>

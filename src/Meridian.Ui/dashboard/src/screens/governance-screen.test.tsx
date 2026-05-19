@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import { GovernanceScreen } from "@/screens/governance-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
@@ -1044,7 +1045,20 @@ describe("GovernanceScreen", () => {
     const user = userEvent.setup();
 
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
-    vi.mocked(api.resolveReconciliationBreak).mockRejectedValueOnce(new Error("Ledger write rejected"));
+    vi.mocked(api.resolveReconciliationBreak).mockRejectedValueOnce(
+      new ApiError({
+        path: "/api/workstation/reconciliation/break-queue/run-42:cash/resolve",
+        status: 409,
+        detail: "Ledger write rejected",
+        validationIssues: [
+          {
+            field: "operatorRationale",
+            label: "operatorRationale",
+            messages: ["Operator rationale must cite the balancing ledger entry."]
+          }
+        ]
+      })
+    );
 
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
@@ -1055,6 +1069,9 @@ describe("GovernanceScreen", () => {
     await user.type(rationaleInput, "Reviewed cash mismatch");
     await user.click(screen.getByRole("button", { name: /confirm resolve/i }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Break action failed: Ledger write rejected");
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Break action failed: Ledger write rejected");
+    expect(within(alert).getByText("Endpoint returned 409 for /api/workstation/reconciliation/break-queue/run-42:cash/resolve.")).toBeInTheDocument();
+    expect(within(alert).getByText("operatorRationale: Operator rationale must cite the balancing ledger entry.")).toBeInTheDocument();
   });
 });

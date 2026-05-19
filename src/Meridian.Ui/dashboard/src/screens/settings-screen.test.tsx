@@ -1,6 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiError } from "@/lib/api-errors";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
 import type {
@@ -485,6 +486,77 @@ describe("SettingsScreen", () => {
     await user.click(screen.getByRole("button", { name: /confirm clear/i }));
 
     expect(apiMocks.revokeAlpacaConnection).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders structured Alpaca clear failure details", async () => {
+    const user = userEvent.setup();
+    apiMocks.revokeAlpacaConnection.mockRejectedValueOnce(
+      new ApiError({
+        path: "/api/brokerage-connections/alpaca",
+        status: 409,
+        detail: "Credential revocation is blocked.",
+        validationIssues: [
+          {
+            field: "providerState",
+            label: "providerState",
+            messages: ["Provider still has an active verification job."]
+          }
+        ]
+      })
+    );
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /clear/i }));
+    await user.click(screen.getByRole("button", { name: /confirm clear/i }));
+
+    const setupPanel = document.querySelector("#alpaca-provider-setup");
+    expect(setupPanel).not.toBeNull();
+    expect(await within(setupPanel as HTMLElement).findByText("Credential revocation is blocked.")).toBeInTheDocument();
+    expect(within(setupPanel as HTMLElement).getByText("Endpoint returned 409 for /api/brokerage-connections/alpaca.")).toBeInTheDocument();
+    expect(within(setupPanel as HTMLElement).getByText("providerState: Provider still has an active verification job.")).toBeInTheDocument();
+  });
+
+  it("renders structured Alpaca validation details when credential verification fails", async () => {
+    const user = userEvent.setup();
+    apiMocks.connectAlpacaConnection.mockRejectedValueOnce(
+      new ApiError({
+        path: "/api/brokerage-connections/alpaca/connect",
+        status: 422,
+        detail: "One or more validation errors occurred.",
+        validationIssues: [
+          {
+            field: "secretKey",
+            label: "secretKey",
+            messages: ["Secret key must include the paper account scope."]
+          }
+        ]
+      })
+    );
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+      />
+    );
+
+    await user.type(screen.getByPlaceholderText("ALPACA_KEY_ID"), "AK-PAPER");
+    await user.type(screen.getByPlaceholderText("ALPACA_SECRET_KEY"), "secret");
+    await user.click(screen.getByRole("button", { name: /connect and test/i }));
+
+    const setupPanel = document.querySelector("#alpaca-provider-setup");
+    expect(setupPanel).not.toBeNull();
+    expect(await within(setupPanel as HTMLElement).findByText("One or more validation errors occurred.")).toBeInTheDocument();
+    expect(within(setupPanel as HTMLElement).getByText("Endpoint returned 422 for /api/brokerage-connections/alpaca/connect.")).toBeInTheDocument();
+    expect(within(setupPanel as HTMLElement).getByText("secretKey: Secret key must include the paper account scope.")).toBeInTheDocument();
   });
 
   it("renders backend capability groups with mapped API links", () => {

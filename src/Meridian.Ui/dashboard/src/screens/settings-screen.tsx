@@ -647,7 +647,16 @@ export function SettingsScreen({
                 {alpacaForm.clearLabel}
               </Button>
               {alpacaForm.actionMessage ? (
-                <span role={alpacaForm.statusRole} className={alpacaForm.statusClassName}>{alpacaForm.actionMessage}</span>
+                <div aria-live={alpacaForm.statusRole === "alert" ? "assertive" : "polite"} className={alpacaForm.statusClassName}>
+                  <div>{alpacaForm.actionMessage}</div>
+                  {alpacaForm.statusDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {alpacaForm.statusDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
               ) : null}
             </div>
           </form>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
@@ -978,14 +979,14 @@ export function buildDataOperationsLoadingState(
       {
         id: "settings",
         label: "Check provider setup",
-        href: "/settings#alpaca-provider-setup",
+        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
         ariaLabel: "Open Alpaca paper provider setup while Data workspace loads",
         variant: "default"
       },
       {
         id: "quotes",
         label: "Open live quotes",
-        href: "/data/quotes",
+        href: WORKSTATION_ROUTE_CATALOG.dataQuotes,
         ariaLabel: "Open live quotes while Data workspace loads",
         variant: "outline"
       }
@@ -1076,7 +1077,7 @@ export function buildRouteFocusCardState({
     ],
     action: {
       label: "Open Security Master",
-      href: "/accounting/security-master",
+      href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
       ariaLabel: "Open Security Master in Accounting"
     }
   };
@@ -2385,7 +2386,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "live-quotes",
       label: "Validate live quotes",
-      href: "/data/quotes?symbol=AAPL",
+      href: workstationRouteWithQuery("dataQuotes", { symbol: "AAPL" }),
       ariaLabel: `Validate live quotes after configuring ${providerLabel}`,
       variant: "default"
     });
@@ -2395,7 +2396,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "backfill",
       label: "Preview a backfill",
-      href: "/data/backfills",
+      href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
       ariaLabel: `Preview a historical backfill after configuring ${providerLabel}`,
       variant: actions.length === 0 ? "default" : "outline"
     });
@@ -2405,7 +2406,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "readiness",
       label: "Check Trading readiness",
-      href: "/trading/readiness",
+      href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
       ariaLabel: `Check Trading readiness after configuring ${providerLabel}`,
       variant: actions.length === 0 ? "default" : "outline"
     });
@@ -2415,7 +2416,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "security-master",
       label: "Review Security Master",
-      href: "/accounting/security-master",
+      href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
       ariaLabel: `Review Security Master coverage after configuring ${providerLabel}`,
       variant: actions.length === 0 ? "default" : "outline"
     });
