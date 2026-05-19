@@ -246,6 +246,8 @@ public sealed class TradingOperatorReadinessServiceTests
     public async Task GetAsync_WithStaleReplay_ShouldKeepStableWorkItemSeverityAndAuditReference()
     {
         await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithStaleReplay_ShouldKeepStableWorkItemSeverityAndAuditReference));
+        var firstTimestamp = new DateTimeOffset(2026, 5, 19, 12, 0, 0, TimeSpan.Zero);
+        var secondTimestamp = firstTimestamp.AddMinutes(1);
         var persistence = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
@@ -262,8 +264,8 @@ public sealed class TradingOperatorReadinessServiceTests
             Type = OrderType.Market,
             Quantity = 1m,
             Status = OrderStatus.Filled,
-            CreatedAt = DateTimeOffset.UtcNow,
-            LastUpdatedAt = DateTimeOffset.UtcNow,
+            CreatedAt = firstTimestamp,
+            LastUpdatedAt = firstTimestamp,
             AverageFillPrice = 100m
         });
         await persistence.RecordFillAsync(session.SessionId, new ExecutionReport
@@ -276,7 +278,7 @@ public sealed class TradingOperatorReadinessServiceTests
             OrderQuantity = 1m,
             FilledQuantity = 1m,
             FillPrice = 100m,
-            Timestamp = DateTimeOffset.UtcNow
+            Timestamp = firstTimestamp
         });
         var verification = await persistence.VerifyReplayAsync(session.SessionId);
         await persistence.RecordOrderUpdateAsync(session.SessionId, new OrderState
@@ -287,8 +289,8 @@ public sealed class TradingOperatorReadinessServiceTests
             Type = OrderType.Market,
             Quantity = 1m,
             Status = OrderStatus.Filled,
-            CreatedAt = DateTimeOffset.UtcNow,
-            LastUpdatedAt = DateTimeOffset.UtcNow,
+            CreatedAt = secondTimestamp,
+            LastUpdatedAt = secondTimestamp,
             AverageFillPrice = 101m
         });
 
