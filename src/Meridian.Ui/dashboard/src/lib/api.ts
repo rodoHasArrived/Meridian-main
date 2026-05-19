@@ -551,8 +551,8 @@ export function getReportingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<GovernanceWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.reporting, options);
 }
 
-export function runAnalysisExport(profileId: string) {
-  return postJson<ExportAnalysisResult>(EXPORT_API_ENDPOINTS.analysis, { profileId });
+export function runAnalysisExport(profileId: string, options: ApiRequestOptions = {}) {
+  return postJson<ExportAnalysisResult>(EXPORT_API_ENDPOINTS.analysis, { profileId }, options);
 }
 
 // --- Promotion workflow ---

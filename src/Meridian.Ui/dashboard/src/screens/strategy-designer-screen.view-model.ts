@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
 export type StrategyLegKind =
   | "long-call"
@@ -438,7 +439,15 @@ export interface StrategyBuilderBacktestPanelViewModel {
   proofSummary: string;
   datasetFingerprint: string;
   runCommand: StrategyDesignerCommandViewModel;
-  routeActions: Array<{ id: string; label: string; href: string; method: "GET" | "POST" }>;
+  routeActions: Array<{
+    id: string;
+    label: string;
+    href: string;
+    method: "GET" | "POST";
+    ariaLabel: string;
+    isBrowserNavigable: boolean;
+    interactionLabel: "Open" | "Reference";
+  }>;
 }
 
 export interface StrategyBuilderCellDetailViewModel {
@@ -535,15 +544,6 @@ export interface StrategyDesignerViewModel {
 
 export const STRATEGY_DESIGNER_SELECTED_LEG_DETAIL_PANEL_ID = "strategy-designer-selected-leg-detail";
 export const STRATEGY_BUILDER_SELECTED_CELL_DETAIL_PANEL_ID = "strategy-builder-selected-cell-detail";
-
-const STRATEGY_BUILDER_ENDPOINTS = {
-  templates: "/api/workstation/strategy/designer/templates",
-  fieldCatalog: "/api/workstation/strategy/designer/field-catalog",
-  drafts: "/api/workstation/strategy/designer/drafts",
-  validate: "/api/workstation/strategy/designer/validate",
-  preview: "/api/workstation/strategy/designer/preview",
-  runBacktest: "/api/workstation/strategy/designer/run-backtest"
-} as const;
 
 const STRATEGY_BUILDER_FIELD_CATALOG: StrategyBuilderFieldCatalogItem[] = [
   {
@@ -1448,16 +1448,37 @@ export function buildStrategyBuilderWorkbenchViewModel({
         disabledReason: errorCount > 0 ? validationSummary : null
       },
       routeActions: [
-        { id: "templates", label: "Templates", href: STRATEGY_BUILDER_ENDPOINTS.templates, method: "GET" },
-        { id: "field-catalog", label: "Field catalog", href: STRATEGY_BUILDER_ENDPOINTS.fieldCatalog, method: "GET" },
-        { id: "validate", label: "Validate", href: STRATEGY_BUILDER_ENDPOINTS.validate, method: "POST" },
-        { id: "preview", label: "Preview", href: STRATEGY_BUILDER_ENDPOINTS.preview, method: "POST" },
-        { id: "run-backtest", label: "Run backtest", href: STRATEGY_BUILDER_ENDPOINTS.runBacktest, method: "POST" }
+        buildStrategyBuilderBackendLink("templates", "Templates", STRATEGY_DESIGNER_API_ENDPOINTS.templates, "GET"),
+        buildStrategyBuilderBackendLink("field-catalog", "Field catalog", STRATEGY_DESIGNER_API_ENDPOINTS.fieldCatalog, "GET"),
+        buildStrategyBuilderBackendLink("validate", "Validate", STRATEGY_DESIGNER_API_ENDPOINTS.validate, "POST"),
+        buildStrategyBuilderBackendLink("preview", "Preview", STRATEGY_DESIGNER_API_ENDPOINTS.preview, "POST"),
+        buildStrategyBuilderBackendLink("run-backtest", "Run backtest", STRATEGY_DESIGNER_API_ENDPOINTS.runBacktest, "POST")
       ]
     },
     setFieldSearch,
     selectCell,
     loadTemplate
+  };
+}
+
+function buildStrategyBuilderBackendLink(
+  id: string,
+  label: string,
+  href: string,
+  method: "GET" | "POST"
+): StrategyBuilderBacktestPanelViewModel["routeActions"][number] {
+  const isBrowserNavigable = method === "GET" && !href.includes("{");
+
+  return {
+    id,
+    label,
+    href,
+    method,
+    ariaLabel: isBrowserNavigable
+      ? `${method} ${href} for ${label}`
+      : `Reference-only ${method} ${href} for ${label}`,
+    isBrowserNavigable,
+    interactionLabel: isBrowserNavigable ? "Open" : "Reference"
   };
 }
 
