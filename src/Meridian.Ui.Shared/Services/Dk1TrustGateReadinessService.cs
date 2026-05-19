@@ -154,23 +154,31 @@ public sealed class Dk1TrustGateReadinessService
         return BuildPacketCacheState(packetPath);
     }
 
-    private static PacketCacheState BuildPacketCacheState(string? packetPath)
+    private PacketCacheState BuildPacketCacheState(string? packetPath)
     {
         if (string.IsNullOrWhiteSpace(packetPath))
         {
             return PacketCacheState.Empty;
         }
 
-        var info = new FileInfo(packetPath);
-        if (!info.Exists)
+        try
         {
+            var info = new FileInfo(packetPath);
+            if (!info.Exists)
+            {
+                return new PacketCacheState(packetPath, null, null);
+            }
+
+            return new PacketCacheState(
+                packetPath,
+                info.LastWriteTimeUtc.Ticks,
+                info.Length);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogDebug(ex, "Unable to inspect DK1 packet metadata for cache state at {PacketPath}.", packetPath);
             return new PacketCacheState(packetPath, null, null);
         }
-
-        return new PacketCacheState(
-            packetPath,
-            info.LastWriteTimeUtc.Ticks,
-            info.Length);
     }
 
     private static bool PacketStateMatches(PacketCacheState cachedState, PacketCacheState currentState)
