@@ -123,7 +123,8 @@ public sealed class TradingOperatorReadinessService
             ReadyForPaperOperation = overallStatus == TradingAcceptanceGateStatusDto.Ready,
             ReportPack = reportPack,
             SnapshotMaterializedAt = asOf,
-            SnapshotVersion = snapshotVersion
+            SnapshotVersion = snapshotVersion,
+            ProviderPromotionChecklist = BuildProviderPromotionChecklist(trustGate, replay, asOf)
         };
     }
 
@@ -1437,6 +1438,82 @@ public sealed class TradingOperatorReadinessService
             runId,
             workItemId: BuildWorkItemId("reconciliation-policy", runId));
     }
+
+    private ProviderPromotionChecklistDto BuildProviderPromotionChecklist(
+        TradingTrustGateReadinessDto trustGate,
+        TradingReplayReadinessDto? replay,
+        DateTimeOffset asOf)
+    {
+        var contractCompatibilityValidated = ResolveContractCompatibilityValidated();
+        var focusedAdapterTestsValidated = string.Equals(trustGate.Status, "ready-for-operator-review", StringComparison.OrdinalIgnoreCase) &&
+                                           trustGate.ReadySampleCount >= trustGate.RequiredSampleCount &&
+                                           trustGate.ValidatedEvidenceDocumentCount > 0;
+        var replayEvidenceGenerated = replay is { IsConsistent: true };
+        var degradationCalibrationOutputValidated = string.Equals(trustGate.PromotionPosture, "candidate-approved", StringComparison.OrdinalIgnoreCase);
+
+        var blockers = new List<string>();
+        if (!contractCompatibilityValidated)
+        {
+            blockers.Add("Contract compatibility validation packet is missing or not approved.");
+        }
+
+        if (!focusedAdapterTestsValidated)
+        {
+            blockers.Add("Focused adapter validation evidence is not ready in the provider promotion packet.");
+        }
+
+        if (!replayEvidenceGenerated)
+        {
+            blockers.Add("Replay evidence is missing or inconsistent for the active paper session.");
+        }
+
+        if (!degradationCalibrationOutputValidated)
+        {
+            blockers.Add("Provider degradation calibration output is missing or not candidate-approved.");
+        }
+
+        var ready = blockers.Count == 0;
+        return new ProviderPromotionChecklistDto(
+            ContractCompatibilityValidated: contractCompatibilityValidated,
+            FocusedAdapterTestsValidated: focusedAdapterTestsValidated,
+            ReplayEvidenceGenerated: replayEvidenceGenerated,
+            DegradationCalibrationOutputValidated: degradationCalibrationOutputValidated,
+            ReadyForPaperEnablement: ready,
+            ReadyForLiveEnablement: ready,
+            Blockers: blockers,
+            EvidenceBundlePath: trustGate.PacketPath,
+            EvaluatedAt: asOf);
+    }
+
+    private bool ResolveContractCompatibilityValidated()
+    {
+        try
+        {
+            var root = Directory.GetCurrentDirectory();
+            var contractRoot = Path.Combine(root, "artifacts", "contract-review");
+            if (!Directory.Exists(contractRoot))
+            {
+                return false;
+            }
+
+            var latest = Directory.EnumerateFiles(contractRoot, "contract-review-packet.json", SearchOption.AllDirectories)
+                .Select(path => new FileInfo(path))
+                .OrderByDescending(file => file.LastWriteTimeUtc)
+                .FirstOrDefault();
+            if (latest is null)
+            {
+                return false;
+            }
+
+            using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(latest.FullName));
+            return doc.RootElement.TryGetProperty("readyForCadenceReview", out var ready) && ready.ValueKind == System.Text.Json.JsonValueKind.True;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     /// <summary>
     /// Resolves the aggregate readiness status using deterministic precedence:
     /// <c>Blocked</c> overrides all other signals, <c>ReviewRequired</c> overrides <c>Ready</c>, and

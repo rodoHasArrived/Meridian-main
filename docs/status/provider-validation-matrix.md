@@ -55,6 +55,23 @@ packet is signed and valid for DK1 exit. Future DK1 reviews must use a freshly g
 `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json` packet plus
 its bound operator sign-off file before replacing that signed evidence.
 
+
+## Promotion Checklist Requirement (Paper + Live Enablement)
+
+Before enabling any broker for **paper** or **live** workflows, all four checks must be green in workstation/provider readiness:
+
+1. **Contract compatibility validation** (`artifacts/contract-review/<yyyy-mm-dd>/contract-review-packet.json` with `readyForCadenceReview=true`).
+2. **Focused adapter tests** (provider row evidence captured in the active Wave 1/DK packet).
+3. **Replay evidence generation** (consistent replay verification for the active paper session).
+4. **Degradation calibration output** (`provider-validation-evidence-bundle.json` posture `candidate-approved`).
+
+If any check fails, promotion enablement is blocked and operator surfaces must show explicit blockers.
+
+## Pass/Fail Criteria
+
+- **Pass:** all four checklist checks are true and no provider-promotion blockers are emitted.
+- **Fail:** one or more checks are false; paper/live enablement must remain disabled until evidence is regenerated under `artifacts/provider-validation/_automation/<yyyy-mm-dd>/` (and `artifacts/contract-review/<yyyy-mm-dd>/` for contract compatibility).
+
 ## Notes
 
 - Robinhood remains polling-oriented and unofficial. Do not describe it as websocket-validated.
