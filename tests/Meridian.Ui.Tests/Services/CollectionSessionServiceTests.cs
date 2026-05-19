@@ -67,6 +67,104 @@ public sealed class CollectionSessionServiceTests
         configService.LoadConfigCallCount.Should().Be(1);
     }
 
+    [Fact]
+    public async Task LoadSessionsAsync_WithMalformedJson_QuarantinesFile_AndReturnsDefault()
+    {
+        using var fixture = new PathFixture("mdc-session-malformed");
+        var dataRoot = Path.Combine(fixture.RootPath, "data");
+        var sessionPath = Path.Combine(dataRoot, "_sessions", "sessions.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(sessionPath)!);
+        await File.WriteAllTextAsync(sessionPath, "{ not valid json");
+
+        var service = new CollectionSessionService(
+            new FixedConfigService(fixture.ConfigPath, new AppConfigDto { DataRoot = "data" }),
+            NotificationService.Instance);
+
+        var config = await service.LoadSessionsAsync();
+
+        config.Should().NotBeNull();
+        config.Sessions.Should().NotBeNull().And.BeEmpty();
+        File.Exists(sessionPath).Should().BeTrue("service rewrites a clean default sessions file");
+        Directory.GetFiles(Path.Combine(dataRoot, "_sessions", "_quarantine"), "sessions-malformed-*.json")
+            .Should()
+            .HaveCount(1);
+    }
+
+    [Fact]
+    public async Task SaveSessionsAsync_WhenWriteFails_DoesNotThrow_AndPreservesInMemoryData()
+    {
+        using var fixture = new PathFixture("mdc-session-write-failure");
+        var service = new CollectionSessionService(
+            new FixedConfigService(fixture.ConfigPath, new AppConfigDto { DataRoot = "data" }),
+            NotificationService.Instance,
+            static (_, _, _) => throw new IOException("simulated write interruption"));
+
+        await service.LoadSessionsAsync();
+        var created = await service.CreateSessionAsync("session-a");
+
+        var sessions = await service.GetSessionsAsync();
+        sessions.Should().ContainSingle(s => s.Id == created.Id);
+    }
+
+    [Fact]
+    public async Task LoadSessionsAsync_WhenLegacyMigrationSaveFails_LoadsLegacyAndKeepsTargetUnwritten()
+    {
+        using var fixture = new PathFixture("mdc-session-legacy-failure");
+        var legacyPath = Path.Combine(AppContext.BaseDirectory, "sessions.json");
+        var legacyBackupPath = legacyPath + ".bak-test";
+
+        if (File.Exists(legacyBackupPath))
+        {
+            File.Delete(legacyBackupPath);
+        }
+
+        if (File.Exists(legacyPath))
+        {
+            File.Move(legacyPath, legacyBackupPath);
+        }
+
+        try
+        {
+            var legacyJson = """
+                             {
+                               "sessions": [
+                                 {
+                                   "id": "legacy-session",
+                                   "name": "legacy",
+                                   "status": "Pending",
+                                   "createdAt": "2026-01-01T00:00:00Z",
+                                   "updatedAt": "2026-01-01T00:00:00Z"
+                                 }
+                               ]
+                             }
+                             """;
+            await File.WriteAllTextAsync(legacyPath, legacyJson);
+
+            var service = new CollectionSessionService(
+                new FixedConfigService(fixture.ConfigPath, new AppConfigDto { DataRoot = "data" }),
+                NotificationService.Instance,
+                static (_, _, _) => throw new IOException("simulated migration write failure"));
+
+            var config = await service.LoadSessionsAsync();
+
+            config.Sessions.Should().ContainSingle(s => s.Name == "legacy");
+            var targetPath = Path.Combine(fixture.RootPath, "data", "_sessions", "sessions.json");
+            File.Exists(targetPath).Should().BeFalse("migration save failed, so target path remains absent");
+        }
+        finally
+        {
+            if (File.Exists(legacyPath))
+            {
+                File.Delete(legacyPath);
+            }
+
+            if (File.Exists(legacyBackupPath))
+            {
+                File.Move(legacyBackupPath, legacyPath);
+            }
+        }
+    }
+
     // ── CollectionSession model (from Contracts) ────────────────────
 
     [Fact]
