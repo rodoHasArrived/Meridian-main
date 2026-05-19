@@ -90,9 +90,7 @@ public sealed class TradingOperatorReadinessService
         var snapshotVersion = BuildSnapshotVersion(
             latestRun?.Summary.RunId,
             replay?.VerificationAuditId,
-            promotion?.AuditReference,
-            trustGate.Status,
-            trustGate.OperatorSignoffStatus);
+            promotion?.AuditReference);
 
         _logger.LogDebug(
             "Built trading operator readiness snapshot {SnapshotVersion} at {SnapshotMaterializedAt:o} with {OverallStatus}, {WorkItemCount} work item(s), and {WarningCount} warning(s).",
