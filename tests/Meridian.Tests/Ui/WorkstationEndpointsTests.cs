@@ -1652,7 +1652,9 @@ public sealed class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton<IReconciliationBreakQueueRepository>(
-                new InMemoryReconciliationBreakQueueRepository());
+                new FileReconciliationBreakQueueRepository(
+                    Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                    NullLogger<FileReconciliationBreakQueueRepository>.Instance));
         });
 
         var inbox = await app
@@ -1663,7 +1665,8 @@ public sealed class WorkstationEndpointsTests
 
         inbox.Should().NotBeNull();
         inbox!.Items.Should().NotBeEmpty();
-        inbox.Items.Should().OnlyContain(item => item.Kind != OperatorWorkItemKindDto.ReconciliationBreak);
+        inbox.Items.Should().Contain(item => string.Equals(item.WorkItemId, "reconciliation-policy", StringComparison.OrdinalIgnoreCase));
+        inbox.Items.Should().NotContain(item => item.WorkItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase));
         inbox.Items.Should().OnlyContain(item =>
             !string.IsNullOrWhiteSpace(item.Title) &&
             !string.IsNullOrWhiteSpace(item.Detail) &&
@@ -1742,13 +1745,16 @@ public sealed class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton<IReconciliationBreakQueueRepository>(
-                new InMemoryReconciliationBreakQueueRepository());
+                new FileReconciliationBreakQueueRepository(
+                    Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                    NullLogger<FileReconciliationBreakQueueRepository>.Instance));
         });
 
         var inbox = await app.GetTestClient().GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
 
         inbox.Should().NotBeNull();
-        inbox!.Items.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.ReconciliationBreak);
+        inbox!.Items.Should().Contain(item => string.Equals(item.WorkItemId, "reconciliation-policy", StringComparison.OrdinalIgnoreCase));
+        inbox.Items.Should().NotContain(item => item.WorkItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase));
         inbox.CriticalCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Critical));
         inbox.WarningCount.Should().Be(inbox.Items.Count(item => item.Tone == OperatorWorkItemToneDto.Warning));
         inbox.ReviewCount.Should().Be(inbox.CriticalCount + inbox.WarningCount);
