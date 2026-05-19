@@ -160,12 +160,14 @@ public sealed class FundStructureEndpointTests
         payload.DisplayName.Should().Be(seed.DisplayName);
         payload.AuditActor.Should().Be("endpoint-test");
         payload.CorrelationId.Should().Be("endpoint-correlation");
-        payload.Status.Should().Be(GovernanceReportPackStatusDto.Validated);
-        payload.ValidationIssues.Should().BeEmpty();
+        payload.Status.Should().Be(GovernanceReportPackStatusDto.ReviewRequired);
+        payload.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "report-pack.missing-security-master-classification" &&
+            issue.Severity == GovernanceReportValidationSeverityDto.Warning);
         payload.LifecycleEvents.Should().HaveCount(2);
         payload.LifecycleEvents.Select(static lifecycle => lifecycle.ToStatus)
             .Should()
-            .ContainInOrder(GovernanceReportPackStatusDto.Generated, GovernanceReportPackStatusDto.Validated);
+            .ContainInOrder(GovernanceReportPackStatusDto.Generated, GovernanceReportPackStatusDto.ReviewRequired);
         payload.Provenance.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
         payload.Provenance.SourceSnapshotHash.Should().MatchRegex("^[a-f0-9]{64}$");
         payload.Artifacts.Should().OnlyContain(artifact =>
@@ -196,8 +198,8 @@ public sealed class FundStructureEndpointTests
         payload!.Should().Contain(item => item.ReportId == generated.ReportId);
         payload.Single(item => item.ReportId == generated.ReportId).RelativeManifestPath.Should().EndWith("manifest.json");
         payload.Single(item => item.ReportId == generated.ReportId).SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
-        payload.Single(item => item.ReportId == generated.ReportId).Status.Should().Be(GovernanceReportPackStatusDto.Validated);
-        payload.Single(item => item.ReportId == generated.ReportId).ValidationIssueCount.Should().Be(0);
+        payload.Single(item => item.ReportId == generated.ReportId).Status.Should().Be(GovernanceReportPackStatusDto.ReviewRequired);
+        payload.Single(item => item.ReportId == generated.ReportId).ValidationIssueCount.Should().BeGreaterThan(0);
         payload.Single(item => item.ReportId == generated.ReportId).LifecycleEventCount.Should().Be(2);
     }
 
@@ -298,56 +300,88 @@ public sealed class FundStructureEndpointTests
     [Fact]
     public async Task AccountReadinessAndSyncHistoryEndpoints_ReturnSharedAccountSyncState()
     {
-        var accountService = _fixture.Services.GetRequiredService<IFundAccountService>();
-        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
-            AccountId: Guid.NewGuid(),
-            AccountType: AccountTypeDto.Bank,
-            AccountCode: $"BANK-{Guid.NewGuid():N}"[..13].ToUpperInvariant(),
-            DisplayName: "Endpoint Sync Bank",
-            BaseCurrency: "USD",
-            EffectiveFrom: new DateTimeOffset(2026, 4, 10, 0, 0, 0, TimeSpan.Zero),
-            CreatedBy: "endpoint-test",
-            LedgerReference: "ENDPOINT-CASH",
-            BankDetails: new BankAccountDetailsDto(
-                AccountNumber: "99887766",
-                BankName: "Meridian Bank",
-                BranchName: null,
-                Iban: null,
-                BicSwift: null,
-                RoutingNumber: null,
-                SortCode: null,
-                IntermediaryBankBic: null,
-                IntermediaryBankName: null,
-                BeneficiaryName: null,
-                BeneficiaryAddress: null)));
-        await accountService.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
-            AccountId: account.AccountId,
-            Capability: "bank-balances",
-            Status: AccountSyncStatusDto.Succeeded,
-            ProviderLinkStatus: AccountProviderLinkStatusDto.Verified,
-            ProviderId: "meridian-bank",
-            ExternalAccountId: "99887766",
-            FreshUntil: DateTimeOffset.UtcNow.AddHours(1),
-            RawEvidencePath: "artifacts/account-sync/bank/raw.json",
-            CorrelationId: "endpoint-sync-history"));
+        var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
+        Environment.SetEnvironmentVariable(
+            "MDC_USERS",
+            """[{"username":"fund-ops","password":"test-pass","role":"Accounting"}]""");
 
-        var historyResponse = await _client.GetAsync($"/api/fund-accounts/{account.AccountId}/sync-history?capability=bank-balances");
-        var readinessResponse = await _client.GetAsync($"/api/fund-accounts/{account.AccountId}/readiness");
+        try
+        {
+            var loginResponse = await _client.PostAsJsonAsync(
+                "/api/auth/login",
+                new { Username = "fund-ops", Password = "test-pass" });
+            var sessionCookie = loginResponse.Headers
+                .Where(header => header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(header => header.Value)
+                .FirstOrDefault(value => value.Contains("mdc-session", StringComparison.OrdinalIgnoreCase));
 
-        historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var history = await historyResponse.Content.ReadFromJsonAsync<AccountSyncHistoryEntryDto[]>();
-        var readiness = await readinessResponse.Content.ReadFromJsonAsync<AccountReadinessSnapshotDto>();
+            loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            sessionCookie.Should().NotBeNullOrWhiteSpace("fund account endpoints require an authenticated accounting role");
 
-        history.Should().NotBeNull();
-        history!.Should().ContainSingle(entry =>
-            entry.AccountId == account.AccountId
-            && entry.Status == AccountSyncStatusDto.Succeeded
-            && entry.ProviderId == "meridian-bank");
-        readiness.Should().NotBeNull();
-        readiness!.IsReady.Should().BeTrue();
-        readiness.ProviderLinkStatus.Should().Be(AccountProviderLinkStatusDto.Verified);
-        readiness.Issues.Should().BeEmpty();
+            var accountService = _fixture.Services.GetRequiredService<IFundAccountService>();
+            var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+                AccountId: Guid.NewGuid(),
+                AccountType: AccountTypeDto.Bank,
+                AccountCode: $"BANK-{Guid.NewGuid():N}"[..13].ToUpperInvariant(),
+                DisplayName: "Endpoint Sync Bank",
+                BaseCurrency: "USD",
+                EffectiveFrom: new DateTimeOffset(2026, 4, 10, 0, 0, 0, TimeSpan.Zero),
+                CreatedBy: "endpoint-test",
+                LedgerReference: "ENDPOINT-CASH",
+                BankDetails: new BankAccountDetailsDto(
+                    AccountNumber: "99887766",
+                    BankName: "Meridian Bank",
+                    BranchName: null,
+                    Iban: null,
+                    BicSwift: null,
+                    RoutingNumber: null,
+                    SortCode: null,
+                    IntermediaryBankBic: null,
+                    IntermediaryBankName: null,
+                    BeneficiaryName: null,
+                    BeneficiaryAddress: null)));
+            await accountService.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
+                AccountId: account.AccountId,
+                Capability: "bank-balances",
+                Status: AccountSyncStatusDto.Succeeded,
+                ProviderLinkStatus: AccountProviderLinkStatusDto.Verified,
+                ProviderId: "meridian-bank",
+                ExternalAccountId: "99887766",
+                FreshUntil: DateTimeOffset.UtcNow.AddHours(1),
+                RawEvidencePath: "artifacts/account-sync/bank/raw.json",
+                CorrelationId: "endpoint-sync-history"));
+
+            using var historyRequest = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"/api/fund-accounts/{account.AccountId}/sync-history?capability=bank-balances");
+            using var readinessRequest = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"/api/fund-accounts/{account.AccountId}/readiness");
+            historyRequest.Headers.Add("Cookie", sessionCookie!);
+            readinessRequest.Headers.Add("Cookie", sessionCookie!);
+
+            var historyResponse = await _client.SendAsync(historyRequest);
+            var readinessResponse = await _client.SendAsync(readinessRequest);
+
+            historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var history = await historyResponse.Content.ReadFromJsonAsync<AccountSyncHistoryEntryDto[]>();
+            var readiness = await readinessResponse.Content.ReadFromJsonAsync<AccountReadinessSnapshotDto>();
+
+            history.Should().NotBeNull();
+            history!.Should().ContainSingle(entry =>
+                entry.AccountId == account.AccountId
+                && entry.Status == AccountSyncStatusDto.Succeeded
+                && entry.ProviderId == "meridian-bank");
+            readiness.Should().NotBeNull();
+            readiness!.IsReady.Should().BeTrue();
+            readiness.ProviderLinkStatus.Should().Be(AccountProviderLinkStatusDto.Verified);
+            readiness.Issues.Should().BeEmpty();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", originalUsers);
+        }
     }
 
     private async Task<SeededFundWorkspace> SeedFundWorkspaceAsync(IReadOnlyList<string>? runIds = null)

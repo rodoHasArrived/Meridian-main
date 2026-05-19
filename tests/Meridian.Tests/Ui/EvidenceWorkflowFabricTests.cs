@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
@@ -133,7 +134,7 @@ public sealed class EvidenceWorkflowFabricTests
             new HashSet<string>(["review"], StringComparer.OrdinalIgnoreCase),
             enforceNoOrphanRule: false);
 
-        reviewResult.Completeness.Status.Should().Be(EvidenceStatusDto.Blocked);
+        reviewResult.Completeness.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
         reviewResult.Completeness.BlockingWorkItemIds.Should().Contain("report-pack-lineage:current");
         reviewResult.Completeness.ValidationIssues.Should().Contain(issue =>
             issue.Code == "review-required-evidence" &&
@@ -180,6 +181,51 @@ public sealed class EvidenceWorkflowFabricTests
         result.Completeness.ValidationIssues.Should().Contain(issue =>
             issue.Code == "ledger-artifact-not-addressable" &&
             issue.EvidenceId == "ledger" &&
+            issue.Severity == EvidenceValidationSeverityDto.Critical);
+    }
+
+    [Fact]
+    public void EvidencePacketValidationService_DuringLedgerReview_MarksWarningOnlyRetentionIssuesForReview()
+    {
+        var subject = Subject(EvidenceSubjectResolver.StrategyRunKind, "run-ledger-retention");
+        var generatedAt = DateTimeOffset.UtcNow;
+        var ledger = Node(
+            subject,
+            "ledger",
+            "run-ledger",
+            EvidenceStatusDto.Ready,
+            artifacts:
+            [
+                new EvidenceArtifactRefDto(
+                    "ledger:journal",
+                    "ledger-journal",
+                    Path: "runs/run-ledger-retention/ledger-journal.json",
+                    Route: null,
+                    GeneratedAt: generatedAt,
+                    Hash: null,
+                    Retained: false),
+                new EvidenceArtifactRefDto(
+                    "ledger:trial-balance",
+                    "ledger-trial-balance",
+                    Path: "runs/run-ledger-retention/trial-balance.json",
+                    Route: null,
+                    GeneratedAt: generatedAt,
+                    Hash: null,
+                    Retained: true)
+            ]);
+        var service = new EvidencePacketValidationService();
+
+        var result = service.Validate(
+            [ledger],
+            [],
+            new HashSet<string>(["ledger"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        result.Completeness.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
+        result.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ledger-artifact-not-retained" &&
+            issue.Severity == EvidenceValidationSeverityDto.Warning);
+        result.Completeness.ValidationIssues.Should().NotContain(issue =>
             issue.Severity == EvidenceValidationSeverityDto.Critical);
     }
 
@@ -240,8 +286,15 @@ public sealed class EvidenceWorkflowFabricTests
         export.VaultIdentity!.VaultId.Should().StartWith("ev-");
         export.VaultIdentity.ManifestPath.Should().Be(export.ManifestPath);
         export.VaultIdentity.ManifestRoute.Should().Be(export.ManifestRoute);
+        export.VaultIdentity.ContentHashSha256.Should().HaveLength(64);
+        export.VaultIdentity.StorageKind.Should().Be("file-manifest");
         export.WarningCount.Should().Be(0);
         File.Exists(Path.Combine(root, export.ManifestPath.Replace('/', Path.DirectorySeparatorChar))).Should().BeTrue();
+        var indexPath = Path.Combine(root, "workstation", "evidence", "_vault", $"{export.VaultIdentity.VaultId}.json");
+        File.Exists(indexPath).Should().BeTrue();
+        var indexJson = await File.ReadAllTextAsync(indexPath);
+        var indexedIdentity = JsonSerializer.Deserialize<EvidenceVaultIdentityDto>(indexJson, ServerJsonOptions);
+        indexedIdentity.Should().BeEquivalentTo(export.VaultIdentity);
 
         var manifestResponse = await client.GetAsync(export.ManifestRoute);
         manifestResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -256,10 +309,24 @@ public sealed class EvidenceWorkflowFabricTests
         vaultResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         vaultResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
 
+        var missingVaultResponse = await client.GetAsync("/workstation/evidence/vault/ev-000000000000000000000000");
+        missingVaultResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var missingVaultError = await missingVaultResponse.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
+        missingVaultError!.Code.Should().Be("evidence-vault-manifest-not-found");
+        missingVaultError.VaultId.Should().Be("ev-000000000000000000000000");
+
         var traversalResponse = await client.GetAsync("/workstation/evidence/report-pack/current/..%2Fsecret-manifest.json");
         traversalResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
         var traversalError = await traversalResponse.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
         traversalError!.Code.Should().Be("evidence-manifest-not-found");
+
+        var malformedExportResponse = await client.PostAsync(
+            "/api/workstation/evidence/subjects/report-pack/current/export-manifest",
+            new StringContent("{", Encoding.UTF8, "application/json"));
+        malformedExportResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var malformedExportError = await malformedExportResponse.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
+        malformedExportError!.Code.Should().Be("invalid-evidence-export-request");
+        malformedExportError.SubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
     }
 
     [Fact]
@@ -312,6 +379,15 @@ public sealed class EvidenceWorkflowFabricTests
         response.VaultIdentity.Should().NotBeNull();
         response.VaultIdentity!.SubjectId.Should().Be("Review Jan/../2026");
         response.WarningCount.Should().Be(0);
+        var retainedManifest = await store.TryOpenManifestByVaultIdAsync(response.VaultIdentity.VaultId);
+        retainedManifest.Should().NotBeNull();
+        using (var reader = new StreamReader(retainedManifest!.Content))
+        {
+            var retainedJson = await reader.ReadToEndAsync();
+            retainedJson.Should().Contain("\"subjectId\": \"Review Jan/../2026\"");
+            retainedJson.Should().Contain(response.VaultIdentity.VaultId);
+        }
+
         manifestJson.Should().Contain("\"schemaVersion\": 1");
         manifestJson.Should().Contain("\"validationIssues\": [");
         manifestJson.Should().Contain("\"vaultIdentity\": {");

@@ -111,7 +111,7 @@ public sealed class LedgerJournalStoreTests
         var act = () => LedgerPeriodPostingGuard.Validate(write, period);
 
         act.Should().Throw<LedgerValidationException>()
-            .WithMessage("*requires approved governance metadata*");
+            .WithMessage("*require approved governance metadata*");
     }
 
     [Fact]

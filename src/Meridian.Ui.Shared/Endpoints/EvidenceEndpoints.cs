@@ -144,10 +144,15 @@ public static class EvidenceEndpoints
                 return packetResult.Result;
             }
 
-            var request = await ReadExportRequestAsync(context).ConfigureAwait(false);
+            var requestResult = await ReadExportRequestAsync(context, subjectKind, subjectId).ConfigureAwait(false);
+            if (requestResult.Error is not null)
+            {
+                return requestResult.Error;
+            }
+
             var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
             var response = await store
-                .WriteManifestAsync(packetResult.Packet, request, context.RequestAborted)
+                .WriteManifestAsync(packetResult.Packet, requestResult.Request, context.RequestAborted)
                 .ConfigureAwait(false);
             return Results.Json(response, jsonOptions);
         })
@@ -213,15 +218,37 @@ public static class EvidenceEndpoints
         string? vaultId = null)
         => new(code, message, subjectKind, subjectId, fileName, vaultId);
 
-    private static async Task<EvidencePacketExportRequest> ReadExportRequestAsync(HttpContext context)
+    private static async Task<(EvidencePacketExportRequest Request, IResult? Error)> ReadExportRequestAsync(
+        HttpContext context,
+        string subjectKind,
+        string subjectId)
     {
         if (context.Request.ContentLength == 0)
         {
-            return new EvidencePacketExportRequest(null, null);
+            return (new EvidencePacketExportRequest(null, null), null);
         }
 
-        var request = await context.Request.ReadFromJsonAsync<EvidencePacketExportRequest>(
-            cancellationToken: context.RequestAborted).ConfigureAwait(false);
-        return request ?? new EvidencePacketExportRequest(null, null);
+        try
+        {
+            var request = await context.Request.ReadFromJsonAsync<EvidencePacketExportRequest>(
+                cancellationToken: context.RequestAborted).ConfigureAwait(false);
+            return (request ?? new EvidencePacketExportRequest(null, null), null);
+        }
+        catch (JsonException)
+        {
+            return (new EvidencePacketExportRequest(null, null), Results.BadRequest(Error(
+                "invalid-evidence-export-request",
+                "Evidence export request body must be a valid JSON object.",
+                subjectKind,
+                subjectId)));
+        }
+        catch (BadHttpRequestException)
+        {
+            return (new EvidencePacketExportRequest(null, null), Results.BadRequest(Error(
+                "invalid-evidence-export-request",
+                "Evidence export request body must be a valid JSON object.",
+                subjectKind,
+                subjectId)));
+        }
     }
 }

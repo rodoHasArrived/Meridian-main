@@ -109,8 +109,8 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
             reconciliationCase.LastUpdatedAtUtc,
             reconciliationCase.LastUpdatedBy,
             latestHistory);
-        await File
-            .AppendAllTextAsync(auditPath, JsonSerializer.Serialize(record, _auditJsonOptions) + Environment.NewLine, ct)
+        await AtomicFileWriter
+            .AppendLinesAsync(auditPath, [JsonSerializer.Serialize(record, _auditJsonOptions)], ct)
             .ConfigureAwait(false);
     }
 

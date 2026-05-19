@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LotsTrackerPanel, SecurityDetailsPanel, type OperatorOverridesService } from "@/components/meridian/security-details-tracker";
 import type { SecurityLot } from "@/components/meridian/security-details-tracker.view-model";
-import type { SecurityIdentityDrillIn, SecurityMasterEntry } from "@/types";
+import type { OperatorOverridesDto, SecurityIdentityDrillIn, SecurityMasterEntry } from "@/types";
 
 const lotsKey = "meridian.security.lots.AAPL";
 
@@ -58,6 +58,15 @@ const securityIdentity: SecurityIdentityDrillIn = {
     }
   ],
   aliases: []
+};
+
+const operatorOverrides: OperatorOverridesDto = {
+  securityId: "sec-1",
+  values: {
+    issuer: "Apple Inc."
+  },
+  updatedBy: "ops",
+  updatedAt: "2026-05-19T09:00:00Z"
 };
 
 describe("LotsTrackerPanel", () => {
@@ -125,8 +134,8 @@ describe("SecurityDetailsPanel", () => {
 
   it("renders sync status and disables override commands from the view model while loading", async () => {
     const overridesService: OperatorOverridesService = {
-      get: vi.fn(() => new Promise(() => undefined)),
-      patch: vi.fn()
+      get: vi.fn<OperatorOverridesService["get"]>(() => new Promise<OperatorOverridesDto>(() => undefined)),
+      patch: vi.fn<OperatorOverridesService["patch"]>()
     };
 
     render(
@@ -146,20 +155,8 @@ describe("SecurityDetailsPanel", () => {
 
   it("renders editor helper semantics from the view model when editing an override", async () => {
     const overridesService: OperatorOverridesService = {
-      get: vi.fn().mockResolvedValue({
-        values: {
-          issuer: "Apple Inc."
-        },
-        updatedBy: "ops",
-        updatedAt: "2026-05-19T09:00:00Z"
-      }),
-      patch: vi.fn().mockResolvedValue({
-        values: {
-          issuer: "Apple Inc."
-        },
-        updatedBy: "ops",
-        updatedAt: "2026-05-19T09:00:00Z"
-      })
+      get: vi.fn<OperatorOverridesService["get"]>().mockResolvedValue(operatorOverrides),
+      patch: vi.fn<OperatorOverridesService["patch"]>().mockResolvedValue(operatorOverrides)
     };
     const user = userEvent.setup();
 

@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,12 +35,16 @@ public sealed record EvidenceManifestFile(
 
 public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
 {
+    private const string ManifestRelativeRoot = "workstation/evidence/";
+    private const string FileManifestStorageKind = "file-manifest";
+
     private readonly string _rootDirectory;
     private readonly ILogger<FileEvidenceArtifactStore> _logger;
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true
+        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() }
     };
 
     public FileEvidenceArtifactStore(string dataRoot, ILogger<FileEvidenceArtifactStore> logger)
@@ -78,8 +83,8 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             Actions: packet.Actions,
             Warnings: request.IncludeWarnings ? packet.Warnings : [],
             VaultIdentity: null);
-        var preimage = JsonSerializer.Serialize(manifest, _jsonOptions);
-        var contentHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(preimage))).ToLowerInvariant();
+        var retainedExportJson = JsonSerializer.Serialize(manifest, _jsonOptions);
+        var contentHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(retainedExportJson))).ToLowerInvariant();
         var vaultIdentity = new EvidenceVaultIdentityDto(
             VaultId: $"ev-{contentHash[..24]}",
             SubjectKind: packet.Subject.SubjectKind,
@@ -89,7 +94,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             RetainedAt: generatedAt,
             ContentHashSha256: contentHash,
             SchemaVersion: 1,
-            StorageKind: "file-manifest");
+            StorageKind: FileManifestStorageKind);
         manifest = manifest with { VaultIdentity = vaultIdentity };
 
         await AtomicFileWriter
@@ -125,39 +130,8 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
     {
         ct.ThrowIfCancellationRequested();
 
-        var safeFileName = ValidateManifestFileName(fileName);
-        if (safeFileName is null)
-        {
-            return Task.FromResult<EvidenceManifestFile?>(null);
-        }
-
-        var directory = Path.GetFullPath(Path.Combine(
-            _rootDirectory,
-            SanitizePathSegment(subjectKind),
-            SanitizePathSegment(subjectId)));
-        var filePath = Path.GetFullPath(Path.Combine(directory, safeFileName));
-        var directoryPrefix = directory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-            + Path.DirectorySeparatorChar;
-
-        if (!filePath.StartsWith(directoryPrefix, PathComparison) || !File.Exists(filePath))
-        {
-            return Task.FromResult<EvidenceManifestFile?>(null);
-        }
-
-        var info = new FileInfo(filePath);
-        Stream stream = new FileStream(
-            filePath,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.Read,
-            bufferSize: 64 * 1024,
-            useAsync: true);
-
-        return Task.FromResult<EvidenceManifestFile?>(new EvidenceManifestFile(
-            stream,
-            "application/json",
-            info.Name,
-            new DateTimeOffset(info.LastWriteTimeUtc)));
+        var filePath = ResolveSubjectManifestPath(subjectKind, subjectId, fileName);
+        return Task.FromResult(OpenManifestFile(filePath));
     }
 
     public async Task<EvidenceManifestFile?> TryOpenManifestByVaultIdAsync(
@@ -172,29 +146,16 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         }
 
         var indexPath = Path.Combine(_rootDirectory, "_vault", $"{safeVaultId}.json");
-        if (!File.Exists(indexPath))
+        var identity = await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false);
+        var manifestPath = identity is null
+            ? null
+            : ResolveVaultManifestPath(identity, safeVaultId);
+        if (manifestPath is null)
         {
             return null;
         }
 
-        await using var stream = new FileStream(
-            indexPath,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.Read,
-            bufferSize: 16 * 1024,
-            useAsync: true);
-        var identity = await JsonSerializer
-            .DeserializeAsync<EvidenceVaultIdentityDto>(stream, _jsonOptions, ct)
-            .ConfigureAwait(false);
-        if (identity is null)
-        {
-            return null;
-        }
-
-        var fileName = Path.GetFileName(identity.ManifestPath);
-        return await TryOpenManifestAsync(identity.SubjectKind, identity.SubjectId, fileName, ct)
-            .ConfigureAwait(false);
+        return OpenManifestFile(manifestPath);
     }
 
     public static string ResolveDataRoot(IServiceProvider services)
@@ -261,6 +222,126 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             .ConfigureAwait(false);
     }
 
+    private async Task<EvidenceVaultIdentityDto?> TryReadVaultIdentityAsync(
+        string indexPath,
+        CancellationToken ct)
+    {
+        if (!File.Exists(indexPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            await using var stream = new FileStream(
+                indexPath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize: 16 * 1024,
+                useAsync: true);
+            return await JsonSerializer
+                .DeserializeAsync<EvidenceVaultIdentityDto>(stream, _jsonOptions, ct)
+                .ConfigureAwait(false);
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be deserialized.", indexPath);
+            return null;
+        }
+    }
+
+    private string? ResolveSubjectManifestPath(
+        string subjectKind,
+        string subjectId,
+        string fileName)
+    {
+        var safeFileName = ValidateManifestFileName(fileName);
+        if (safeFileName is null)
+        {
+            return null;
+        }
+
+        var directory = Path.GetFullPath(Path.Combine(
+            _rootDirectory,
+            SanitizePathSegment(subjectKind),
+            SanitizePathSegment(subjectId)));
+        var filePath = Path.GetFullPath(Path.Combine(directory, safeFileName));
+        var directoryPrefix = directory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
+
+        return filePath.StartsWith(directoryPrefix, PathComparison)
+            ? filePath
+            : null;
+    }
+
+    private string? ResolveVaultManifestPath(EvidenceVaultIdentityDto identity, string expectedVaultId)
+    {
+        if (!string.Equals(identity.VaultId, expectedVaultId, StringComparison.OrdinalIgnoreCase) ||
+            identity.SchemaVersion <= 0 ||
+            !string.Equals(identity.StorageKind, FileManifestStorageKind, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var manifestPath = identity.ManifestPath.Replace('\\', '/').Trim();
+        if (string.IsNullOrWhiteSpace(manifestPath) ||
+            Path.IsPathRooted(manifestPath) ||
+            !manifestPath.StartsWith(ManifestRelativeRoot, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var relativeToEvidenceRoot = manifestPath[ManifestRelativeRoot.Length..];
+        var segments = relativeToEvidenceRoot.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length < 3 ||
+            segments.Any(static segment => segment is "." or "..") ||
+            segments.Length != relativeToEvidenceRoot.Split('/').Length ||
+            ValidateManifestFileName(segments[^1]) is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var filePath = Path.GetFullPath(Path.Combine(
+                _rootDirectory,
+                Path.Combine(segments)));
+            return IsUnderRoot(filePath, _rootDirectory) ? filePath : null;
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+        catch (NotSupportedException)
+        {
+            return null;
+        }
+    }
+
+    private static EvidenceManifestFile? OpenManifestFile(string? filePath)
+    {
+        if (filePath is null || !File.Exists(filePath))
+        {
+            return null;
+        }
+
+        var info = new FileInfo(filePath);
+        Stream stream = new FileStream(
+            filePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            bufferSize: 64 * 1024,
+            useAsync: true);
+
+        return new EvidenceManifestFile(
+            stream,
+            "application/json",
+            info.Name,
+            new DateTimeOffset(info.LastWriteTimeUtc));
+    }
+
     private static string? ValidateVaultId(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -281,6 +362,14 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
 
     private static string RouteSegment(string value)
         => Uri.EscapeDataString(value);
+
+    private static bool IsUnderRoot(string path, string root)
+    {
+        var rootPath = Path.GetFullPath(root)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
+        return path.StartsWith(rootPath, PathComparison);
+    }
 
     private static readonly StringComparison PathComparison = OperatingSystem.IsWindows()
         ? StringComparison.OrdinalIgnoreCase

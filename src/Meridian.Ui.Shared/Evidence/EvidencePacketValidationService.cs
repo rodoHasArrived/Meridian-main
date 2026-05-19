@@ -166,9 +166,11 @@ public sealed class EvidencePacketValidationService
             ? 100
             : (int)Math.Round(ready.Count * 100d / required.Length, MidpointRounding.AwayFromZero);
         var hasCriticalValidationIssue = issues.Any(static issue => issue.Severity == EvidenceValidationSeverityDto.Critical);
+        var hasWarningValidationIssue = issues.Any(static issue => issue.Severity == EvidenceValidationSeverityDto.Warning);
         var status =
-            missing.Count > 0 || blockers.Count > 0 || hasCriticalValidationIssue ? EvidenceStatusDto.Blocked :
+            missing.Count > 0 || hasCriticalValidationIssue ? EvidenceStatusDto.Blocked :
             stale.Count > 0 ? EvidenceStatusDto.Stale :
+            hasWarningValidationIssue ? EvidenceStatusDto.ReviewRequired :
             ready.Count == required.Length ? EvidenceStatusDto.Ready :
             EvidenceStatusDto.ReviewRequired;
 

@@ -353,8 +353,10 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             snapshot.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
             snapshot.AuditActor.Should().Be("unit-test");
             snapshot.CorrelationId.Should().Be("corr-report-001");
-            snapshot.Status.Should().Be(GovernanceReportPackStatusDto.Validated);
-            snapshot.ValidationIssues.Should().BeEmpty();
+            snapshot.Status.Should().Be(GovernanceReportPackStatusDto.ReviewRequired);
+            snapshot.ValidationIssues.Should().Contain(issue =>
+                issue.Code == "report-pack.missing-security-master-classification" &&
+                issue.Severity == GovernanceReportValidationSeverityDto.Warning);
             snapshot.LifecycleEvents.Select(static lifecycle => (
                     lifecycle.FromStatus,
                     lifecycle.ToStatus,
@@ -363,7 +365,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
                 .Should()
                 .ContainInOrder(
                     (GovernanceReportPackStatusDto.Draft, GovernanceReportPackStatusDto.Generated, "unit-test", "corr-report-001"),
-                    (GovernanceReportPackStatusDto.Generated, GovernanceReportPackStatusDto.Validated, "unit-test", "corr-report-001"));
+                    (GovernanceReportPackStatusDto.Generated, GovernanceReportPackStatusDto.ReviewRequired, "unit-test", "corr-report-001"));
             snapshot.Provenance.RelatedRunIds.Should().ContainSingle().Which.Should().Be("run-report-001");
             snapshot.Provenance.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
             snapshot.Provenance.JournalEntryCount.Should().BeGreaterThan(0);
@@ -397,7 +399,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             File.ReadAllText(manifestPath).Should().Contain(snapshot.ReportId.ToString());
             File.ReadAllText(manifestPath).Should().Contain("\"schemaVersion\": 2");
             File.ReadAllText(manifestPath).Should().Contain("\"contractName\": \"governance-report-pack\"");
-            File.ReadAllText(manifestPath).Should().Contain("\"status\": \"Validated\"");
+            File.ReadAllText(manifestPath).Should().Contain("\"status\": \"ReviewRequired\"");
 
             var trialBalanceCsv = snapshot.Artifacts.Single(artifact =>
                 artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
@@ -456,8 +458,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             history[0].GeneratedAt.Should().BeOnOrAfter(history[1].GeneratedAt);
             history.Select(item => item.ReportId).Should().ContainInOrder(newer.ReportId, older.ReportId);
             history.Should().OnlyContain(item =>
-                item.Status == GovernanceReportPackStatusDto.Validated &&
-                item.ValidationIssueCount == 0 &&
+                item.Status == GovernanceReportPackStatusDto.ReviewRequired &&
+                item.ValidationIssueCount > 0 &&
                 item.LifecycleEventCount == 2);
 
             var detail = await service.GetReportPackAsync(newer.ReportId);

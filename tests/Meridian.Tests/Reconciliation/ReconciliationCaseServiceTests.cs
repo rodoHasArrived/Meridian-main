@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
 
@@ -31,6 +32,13 @@ public sealed class ReconciliationCaseServiceTests
         var auditLines = await File.ReadAllLinesAsync(auditPath);
         Assert.True(auditLines.Length >= 2);
         Assert.Contains(auditLines, line => line.Contains("\"status\":\"InReview\"", StringComparison.Ordinal));
+        Assert.All(auditLines, line =>
+        {
+            using var audit = JsonDocument.Parse(line);
+            Assert.Equal(created[0].CaseId, audit.RootElement.GetProperty("caseId").GetString());
+            Assert.Equal("system", audit.RootElement.GetProperty("actor").GetString());
+            Assert.True(audit.RootElement.TryGetProperty("latestHistory", out _));
+        });
     }
 
     [Fact]
@@ -47,5 +55,29 @@ public sealed class ReconciliationCaseServiceTests
         Assert.Equal("Approved", approved.Status);
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => service.UpdateStatusAsync(created[0].CaseId, "Resolved", "terminal transition"));
+    }
+
+    [Fact]
+    public async Task SaveAsync_WhenCancelledBeforeWrite_DoesNotCreateCaseOrAuditFiles()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-case-{Guid.NewGuid():N}");
+        var store = new JsonReconciliationCaseStore(root);
+        var now = DateTimeOffset.UtcNow;
+        var reconciliationCase = new ReconciliationCase(
+            "case-cancelled",
+            "imp-cancelled",
+            "Open",
+            "Unmatched statement row",
+            0.2m,
+            "none",
+            now,
+            [new ReconciliationCaseHistoryEntry(now, "None", "Open", "Case created from matcher outcome")]);
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => store.SaveAsync(reconciliationCase, cts.Token));
+
+        Assert.False(Directory.Exists(Path.Combine(root, "reconciliation", "cases")));
     }
 }
