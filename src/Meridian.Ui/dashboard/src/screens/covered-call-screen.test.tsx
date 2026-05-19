@@ -250,6 +250,36 @@ describe("CoveredCallScreen", () => {
     });
   });
 
+  it("renders structured chain preview failure details", async () => {
+    vi.mocked(coveredCallApi.previewCoveredCallChain).mockRejectedValueOnce(
+      new ApiError({
+        path: "/api/covered-call/preview",
+        status: 503,
+        detail: "Preview service unavailable",
+        validationIssues: [
+          {
+            field: "underlyingSymbol",
+            label: "underlyingSymbol",
+            messages: ["Underlying symbol is not routable for option-chain preview."]
+          }
+        ]
+      })
+    );
+
+    renderCoveredCallScreen();
+
+    fireEvent.change(screen.getByLabelText(/Min strike/i), { target: { value: "500" } });
+
+    await waitFor(() => {
+      expect(screen.getByText("Chain preview failed: Preview service unavailable")).toBeInTheDocument();
+    });
+
+    const detailPanel = screen.getByLabelText("Covered-call candidate detail unavailable");
+    expect(within(detailPanel).getByText("Preview service unavailable")).toBeInTheDocument();
+    expect(within(detailPanel).getByText("Endpoint returned 503 for /api/covered-call/preview.")).toBeInTheDocument();
+    expect(within(detailPanel).getByText("underlyingSymbol: Underlying symbol is not routable for option-chain preview.")).toBeInTheDocument();
+  });
+
   it("renders VM-owned scoring controls and includes them in the backtest request", async () => {
     vi.mocked(coveredCallApi.startCoveredCallBacktest).mockResolvedValue({
       runId: "run-scoring",
