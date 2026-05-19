@@ -24,7 +24,10 @@ the previous optional setup behavior. Successful setup creates a redacted legacy
 and seeds provider-routing connections and capability bindings so routing previews can inspect the
 new provider immediately. The browser Data lane setup dialog displays the returned connection id,
 binding ids, credential state/source, environment, and warnings after save; it does not display
-submitted credential values or vault references.
+submitted credential values or vault references. The Settings Provider Connection Center refreshes
+the legacy provider connection rows plus `/api/provider-routing/connections`,
+`/api/provider-routing/bindings`, and `/api/provider-routing/trust-snapshots` after successful
+setup and on its lightweight live-refresh cycle.
 
 ## Local Encrypted Store
 
