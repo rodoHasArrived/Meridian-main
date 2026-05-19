@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Meridian.Ui.Services;
@@ -29,6 +30,10 @@ public class CredentialService
         => Task.FromResult(new OAuthRefreshResult { Success = false, ErrorMessage = "Not implemented" });
 
     public virtual Task UpdateMetadataAsync(string resource, Action<CredentialMetadataUpdate> updateAction)
+    public virtual Task<OAuthRefreshResult> RefreshOAuthTokenAsync(string providerId, CancellationToken ct = default)
+        => Task.FromResult(new OAuthRefreshResult { Success = false, ErrorMessage = "Not implemented" });
+
+    public virtual Task UpdateMetadataAsync(string resource, Action<CredentialMetadataUpdate> updateAction, CancellationToken ct = default)
         => Task.CompletedTask;
 
     public virtual CredentialMetadataInfo? GetMetadata(string resource)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Ui.Services;
 
@@ -13,7 +14,7 @@ public interface ICredentialService
 {
     event EventHandler<CredentialExpirationEventArgs>? CredentialExpiring;
     IReadOnlyList<CredentialWithMetadata> GetAllCredentialsWithMetadata();
-    Task<OAuthRefreshResult> RefreshOAuthTokenAsync(string providerId);
-    Task UpdateMetadataAsync(string resource, Action<CredentialMetadataUpdate> updateAction);
+    Task<OAuthRefreshResult> RefreshOAuthTokenAsync(string providerId, CancellationToken ct = default);
+    Task UpdateMetadataAsync(string resource, Action<CredentialMetadataUpdate> updateAction, CancellationToken ct = default);
     CredentialMetadataInfo? GetMetadata(string resource);
 }

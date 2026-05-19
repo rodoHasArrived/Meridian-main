@@ -260,6 +260,70 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
+    public async Task SubmitOrder_WhenPaperFlowFlagDisabled_Returns403AndDoesNotSubmit()
+    {
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterBrokerageOms(services, gateway);
+            services.AddSingleton(new BrokerageConfiguration
+            {
+                Gateway = "paper",
+                BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["paper"] = new() { PaperOrderFlowEnabled = false }
+                }
+            });
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionOrderSubmit,
+            JsonContent(new ExecutionOrderRequest("AAPL", OrderSide.Buy, Meridian.Execution.Sdk.OrderType.Market, 1m)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var result = await ReadAsync<OrderResult>(response);
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("Paper order flow is disabled");
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WhenProductionRoutingEnabledButValidationArtifactsMissing_Returns403()
+    {
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterBrokerageOms(services, gateway);
+            services.AddSingleton(new BrokerageConfiguration
+            {
+                Gateway = "alpaca",
+                BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["alpaca"] = new() { ProductionOrderRoutingEnabled = true }
+                },
+                ValidationGates = new BrokerValidationGateOptions
+                {
+                    RequireValidationArtifactsForOrderPlacement = true,
+                    ValidationArtifactPath = Path.Combine(Path.GetTempPath(), "missing-validation-artifact.json"),
+                    SignoffArtifactPath = Path.Combine(Path.GetTempPath(), "missing-signoff-artifact.json")
+                }
+            });
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionOrderSubmit,
+            JsonContent(new ExecutionOrderRequest("AAPL", OrderSide.Buy, Meridian.Execution.Sdk.OrderType.Market, 1m)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var result = await ReadAsync<OrderResult>(response);
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("validation artifact");
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task PaperSessionLifecycleEndpoints_PreserveSymbolsAndExposeReplayContinuityAudit()
     {
         using var artifacts = TestArtifactDirectory.Create(nameof(PaperSessionLifecycleEndpoints_PreserveSymbolsAndExposeReplayContinuityAudit));

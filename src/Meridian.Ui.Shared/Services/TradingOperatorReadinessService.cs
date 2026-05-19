@@ -84,17 +84,25 @@ public sealed class TradingOperatorReadinessService
             brokerageStatus,
             riskRuleStatuses,
             auditEntries);
-        var overallStatus = ResolveOverallStatus(acceptanceGates);
+        var overallStatus = EvaluateOverallPosture(acceptanceGates);
         var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
         var warnings = BuildWarnings(workItems);
+        var snapshotVersion = BuildSnapshotVersion(
+            latestRun?.Summary.RunId,
+            replay?.VerificationAuditId,
+            promotion?.AuditReference,
+            trustGate.Status,
+            trustGate.OperatorSignoffStatus);
 
         _logger.LogDebug(
-            "Built trading operator readiness with {OverallStatus}, {WorkItemCount} work item(s), and {WarningCount} warning(s).",
+            "Built trading operator readiness snapshot {SnapshotVersion} at {SnapshotMaterializedAt:o} with {OverallStatus}, {WorkItemCount} work item(s), and {WarningCount} warning(s).",
+            snapshotVersion,
+            asOf,
             overallStatus,
             workItems.Count,
             warnings.Count);
 
-        return new TradingOperatorReadinessDto(
+        var readiness = new TradingOperatorReadinessDto(
             AsOf: asOf,
             ActiveSession: activeSession,
             Sessions: sessions,
@@ -113,9 +121,60 @@ public sealed class TradingOperatorReadinessService
             EvidenceCompleteness = evidenceCompleteness,
             OverallStatus = overallStatus,
             ReadyForPaperOperation = overallStatus == TradingAcceptanceGateStatusDto.Ready,
-            ReportPack = reportPack
+            ReportPack = reportPack,
+            SnapshotMaterializedAt = asOf,
+            SnapshotVersion = snapshotVersion,
+            ProviderPromotionChecklist = BuildProviderPromotionChecklist(trustGate, replay, asOf)
         };
+
+        ValidateRequiredReadinessFields(readiness);
+        return readiness;
     }
+
+    private static void ValidateRequiredReadinessFields(TradingOperatorReadinessDto readiness)
+    {
+        if (string.IsNullOrWhiteSpace(readiness.OverallStatus))
+        {
+            throw new InvalidOperationException("Trading readiness projection is missing OverallStatus.");
+        }
+
+        if (string.IsNullOrWhiteSpace(readiness.SnapshotVersion))
+        {
+            throw new InvalidOperationException("Trading readiness projection is missing SnapshotVersion.");
+        }
+
+        if (readiness.AcceptanceGates is null || readiness.AcceptanceGates.Count == 0)
+        {
+            throw new InvalidOperationException("Trading readiness projection is missing AcceptanceGates.");
+        }
+
+        if (readiness.EvidenceCompleteness is null)
+        {
+            throw new InvalidOperationException("Trading readiness projection is missing EvidenceCompleteness.");
+        }
+
+        foreach (var gate in readiness.AcceptanceGates)
+        {
+            if (string.IsNullOrWhiteSpace(gate.GateKey) || string.IsNullOrWhiteSpace(gate.Status))
+            {
+                throw new InvalidOperationException("Trading readiness projection contains an incomplete acceptance gate.");
+            }
+        }
+    }
+
+    private static string BuildSnapshotVersion(
+        string? runId,
+        string? replayAuditReference,
+        string? promotionAuditReference,
+        string trustGateStatus,
+        string? trustGateOperatorSignoffStatus)
+        => string.Join(
+            '|',
+            runId ?? "none",
+            replayAuditReference ?? "none",
+            promotionAuditReference ?? "none",
+            trustGateStatus,
+            trustGateOperatorSignoffStatus ?? "none");
 
     private sealed record PaperSessionReadiness(
         IReadOnlyList<TradingPaperSessionReadinessDto> Sessions,
@@ -993,7 +1052,29 @@ public sealed class TradingOperatorReadinessService
         gates.Add(BuildReportPackGate(reportPack));
         gates.Add(BuildReconciliationGate(reconciliationGate));
         gates.Add(BuildBrokerageSyncGate(brokerageStatus));
-        return gates;
+        return gates.Select(AttachExplainability).ToArray();
+    }
+
+    private static TradingAcceptanceGateDto AttachExplainability(TradingAcceptanceGateDto gate)
+    {
+        var requiredNextAction = gate.RequiredNextAction;
+        if (string.IsNullOrWhiteSpace(requiredNextAction))
+        {
+            requiredNextAction = gate.Status switch
+            {
+                TradingAcceptanceGateStatusDto.Ready => "No immediate action required.",
+                TradingAcceptanceGateStatusDto.ReviewRequired => "Review the gate evidence and resolve outstanding operator actions.",
+                TradingAcceptanceGateStatusDto.Blocked => "Resolve blocking evidence before accepting cockpit readiness.",
+                _ => "Collect gate evidence and re-evaluate readiness."
+            };
+        }
+
+        return gate with
+        {
+            Reason = string.IsNullOrWhiteSpace(gate.Reason) ? gate.Detail : gate.Reason,
+            LastEvidenceAt = gate.LastEvidenceAt ?? DateTimeOffset.UtcNow,
+            RequiredNextAction = requiredNextAction
+        };
     }
 
 
@@ -1391,14 +1472,119 @@ public sealed class TradingOperatorReadinessService
             runId,
             workItemId: BuildWorkItemId("reconciliation-policy", runId));
     }
-    private static TradingAcceptanceGateStatusDto ResolveOverallStatus(IReadOnlyList<TradingAcceptanceGateDto> gates)
+
+    private ProviderPromotionChecklistDto BuildProviderPromotionChecklist(
+        TradingTrustGateReadinessDto trustGate,
+        TradingReplayReadinessDto? replay,
+        DateTimeOffset asOf)
     {
-        if (gates.Any(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked))
+        var contractCompatibilityValidated = ResolveContractCompatibilityValidated();
+        var focusedAdapterTestsValidated = string.Equals(trustGate.Status, "ready-for-operator-review", StringComparison.OrdinalIgnoreCase) &&
+                                           trustGate.ReadySampleCount >= trustGate.RequiredSampleCount &&
+                                           trustGate.ValidatedEvidenceDocumentCount > 0;
+        var replayEvidenceGenerated = replay is { IsConsistent: true };
+        var degradationCalibrationOutputValidated = string.Equals(trustGate.PromotionPosture, "candidate-approved", StringComparison.OrdinalIgnoreCase);
+
+        var blockers = new List<string>();
+        if (!contractCompatibilityValidated)
+        {
+            blockers.Add("Contract compatibility validation packet is missing or not approved.");
+        }
+
+        if (!focusedAdapterTestsValidated)
+        {
+            blockers.Add("Focused adapter validation evidence is not ready in the provider promotion packet.");
+        }
+
+        if (!replayEvidenceGenerated)
+        {
+            blockers.Add("Replay evidence is missing or inconsistent for the active paper session.");
+        }
+
+        if (!degradationCalibrationOutputValidated)
+        {
+            blockers.Add("Provider degradation calibration output is missing or not candidate-approved.");
+        }
+
+        var ready = blockers.Count == 0;
+        return new ProviderPromotionChecklistDto(
+            ContractCompatibilityValidated: contractCompatibilityValidated,
+            FocusedAdapterTestsValidated: focusedAdapterTestsValidated,
+            ReplayEvidenceGenerated: replayEvidenceGenerated,
+            DegradationCalibrationOutputValidated: degradationCalibrationOutputValidated,
+            ReadyForPaperEnablement: ready,
+            ReadyForLiveEnablement: ready,
+            Blockers: blockers,
+            EvidenceBundlePath: trustGate.PacketPath,
+            EvaluatedAt: asOf);
+    }
+
+    private bool ResolveContractCompatibilityValidated()
+    {
+        try
+        {
+            var root = Directory.GetCurrentDirectory();
+            var contractRoot = Path.Combine(root, "artifacts", "contract-review");
+            if (!Directory.Exists(contractRoot))
+            {
+                return false;
+            }
+
+            var latest = Directory.EnumerateFiles(contractRoot, "contract-review-packet.json", SearchOption.AllDirectories)
+                .Select(path => new FileInfo(path))
+                .OrderByDescending(file => file.LastWriteTimeUtc)
+                .FirstOrDefault();
+            if (latest is null)
+            {
+                return false;
+            }
+
+            using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(latest.FullName));
+            return doc.RootElement.TryGetProperty("readyForCadenceReview", out var ready) && ready.ValueKind == System.Text.Json.JsonValueKind.True;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Resolves the aggregate readiness status using deterministic precedence:
+    /// <c>Blocked</c> overrides all other signals, <c>ReviewRequired</c> overrides <c>Ready</c>, and
+    /// <c>Ready</c> is returned only when every gate reports ready.
+    /// This keeps stale replay/trust/promotion signals from being masked by otherwise-green gates.
+    /// </summary>
+    private static TradingAcceptanceGateStatusDto EvaluateOverallPosture(IReadOnlyList<TradingAcceptanceGateDto> gates)
+    {
+        var canonicalGateOrder = new[]
+        {
+            "replay",
+            "reconciliation",
+            "audit-controls",
+            "promotion",
+            "dk1-trust",
+            "report-pack",
+            "session",
+            "brokerage-sync"
+        };
+
+        var ordered = canonicalGateOrder
+            .Select(gateId => gates.FirstOrDefault(gate => string.Equals(gate.GateId, gateId, StringComparison.OrdinalIgnoreCase)))
+            .Where(static gate => gate is not null)
+            .Cast<TradingAcceptanceGateDto>()
+            .ToArray();
+
+        if (ordered.Length == 0)
+        {
+            return TradingAcceptanceGateStatusDto.Unknown;
+        }
+
+        if (ordered.Any(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked))
         {
             return TradingAcceptanceGateStatusDto.Blocked;
         }
 
-        return gates.All(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
+        return ordered.All(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
             ? TradingAcceptanceGateStatusDto.Ready
             : TradingAcceptanceGateStatusDto.ReviewRequired;
     }

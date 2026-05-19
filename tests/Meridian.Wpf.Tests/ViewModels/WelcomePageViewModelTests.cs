@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Windows.Controls;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
@@ -23,7 +24,8 @@ public sealed class WelcomePageViewModelTests : IDisposable
             NotificationService.Instance,
             StatusService.Instance,
             ConnectionService.Instance,
-            ConfigService.Instance);
+            ConfigService.Instance,
+            NullLogger<WelcomePageViewModel>.Instance);
     }
 
     [Fact]
@@ -186,6 +188,44 @@ public sealed class WelcomePageViewModelTests : IDisposable
 
             viewModel.ReadinessProgressText.Should().Be(expectedProgress);
             viewModel.ReadinessSummaryText.Should().Contain(expectedSummaryFragment);
+        });
+    }
+
+
+    [Fact]
+    public void ApplyOverviewSnapshotForTests_WhenFallbackWarningsPresent_ProjectsDegradedDataHealthIndicator()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var viewModel = CreateViewModel();
+
+            viewModel.ApplyOverviewSnapshotForTests(
+                isConnected: true,
+                connectionProviderText: "Provider connected",
+                symbolCount: 0,
+                storagePath: "./data",
+                configuredDataRoot: "data",
+                fallbackWarnings: new[] { "symbol-inventory-unavailable", "storage-path-unavailable" });
+
+            viewModel.DataHealthIndicatorText.Should().Be("Data stale/unavailable: symbol-inventory-unavailable, storage-path-unavailable");
+        });
+    }
+
+    [Fact]
+    public void ApplyOverviewSnapshotForTests_WithoutFallbackWarnings_ProjectsHealthyDataIndicator()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var viewModel = CreateViewModel();
+
+            viewModel.ApplyOverviewSnapshotForTests(
+                isConnected: true,
+                connectionProviderText: "Alpaca",
+                symbolCount: 12,
+                storagePath: @"D:\Meridian\data",
+                configuredDataRoot: @"D:\Meridian\data");
+
+            viewModel.DataHealthIndicatorText.Should().Be("Data confidence normal");
         });
     }
 

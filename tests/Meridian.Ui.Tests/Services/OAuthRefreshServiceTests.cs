@@ -6,6 +6,8 @@ namespace Meridian.Ui.Tests.Services;
 
 public sealed class OAuthRefreshServiceTests
 {
+    private const string CheckAndRefreshOperationName = "CheckAndRefreshTokensAsync";
+
     [Fact]
     public async Task SafeCheckAndRefreshTokensAsync_WhenWrapperThrows_ShouldEmitFailureEventAndLog()
     {
@@ -26,6 +28,11 @@ public sealed class OAuthRefreshServiceTests
 
         var logger = new TestLogger<OAuthRefreshService>();
         var service = new OAuthRefreshService(credentialService, logger);
+            CredentialsException = new InvalidOperationException("credential enumeration failed")
+        };
+
+        var logger = new TestLogger<OAuthRefreshService>();
+        var service = OAuthRefreshService.Create(credentialService, logger);
         OAuthWrapperFailureEventArgs? evt = null;
         service.WrapperOperationFailed += (_, e) => evt = e;
 
@@ -34,6 +41,7 @@ public sealed class OAuthRefreshServiceTests
         service.WrapperFailureCount.Should().Be(1);
         evt.Should().NotBeNull();
         evt!.OperationName.Should().Be("CheckAndRefreshTokensAsync");
+        evt!.OperationName.Should().Be(CheckAndRefreshOperationName);
         evt.Exception.Should().BeOfType<InvalidOperationException>();
         evt.EmittedStructuredLog.Should().BeTrue();
         logger.Entries.Should().ContainSingle(x => x.LogLevel == LogLevel.Error && x.Message.Contains("CheckAndRefreshTokensAsync"));
@@ -58,6 +66,7 @@ public sealed class OAuthRefreshServiceTests
 
         var logger = new TestLogger<OAuthRefreshService>();
         var service = new OAuthRefreshService(credentialService, logger);
+        var service = OAuthRefreshService.Create(credentialService, logger);
         var events = new List<OAuthWrapperFailureEventArgs>();
         service.WrapperOperationFailed += (_, e) => events.Add(e);
         service.TokenExpirationWarning += (_, _) => throw new InvalidOperationException("observer failed");
@@ -81,6 +90,43 @@ public sealed class OAuthRefreshServiceTests
 
         public override Task<OAuthRefreshResult> RefreshOAuthTokenAsync(string providerId)
         {
+    [Fact]
+    public async Task SafeCheckAndRefreshTokensAsync_WhenWrapperFailureHandlerThrows_ShouldNotEscapeSafeWrapper()
+    {
+        var credentialService = new TestCredentialService
+        {
+            CredentialsException = new InvalidOperationException("credential enumeration failed")
+        };
+
+        var logger = new TestLogger<OAuthRefreshService>();
+        var service = OAuthRefreshService.Create(credentialService, logger);
+        service.WrapperOperationFailed += (_, _) => throw new InvalidOperationException("event subscriber failed");
+
+        var act = () => service.InvokeSafeCheckAndRefreshTokensForTestsAsync();
+
+        await act.Should().NotThrowAsync();
+        logger.Entries.Should().Contain(x => x.LogLevel == LogLevel.Error && x.Message.Contains("event handler threw"));
+    }
+
+    private sealed class TestCredentialService : CredentialService
+    {
+        public IReadOnlyList<CredentialWithMetadata> Credentials { get; set; } = Array.Empty<CredentialWithMetadata>();
+        public Exception? CredentialsException { get; set; }
+        public Exception? RefreshException { get; set; }
+
+        public override IReadOnlyList<CredentialWithMetadata> GetAllCredentialsWithMetadata()
+        {
+            if (CredentialsException is not null)
+            {
+                throw CredentialsException;
+            }
+
+            return Credentials;
+        }
+
+        public override Task<OAuthRefreshResult> RefreshOAuthTokenAsync(string providerId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
             if (RefreshException is not null)
             {
                 throw RefreshException;

@@ -124,9 +124,20 @@ public static class ExecutionEndpoints
 
         group.MapPost("/orders/submit", async (OrderRequest request, HttpContext context) =>
         {
+            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
+            {
+                return phaseGateFailure;
+            }
+
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            if (!TryValidateBrokerOrderPlacementGate(context, out var blockingMessage))
+            {
+                var blocked = new OrderResult(false, null, blockingMessage ?? "Broker order routing is disabled by validation gates.");
+                return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+            }
 
             var actor = ResolveActor(context);
             string? correlationId = null;
@@ -148,10 +159,16 @@ public static class ExecutionEndpoints
         .WithName("SubmitOrder")
         .Produces<OrderResult>(201)
         .Produces<OrderResult>(400)
+        .Produces<OrderResult>(403)
         .Produces(503);
 
         group.MapPost("/orders/{orderId}/cancel", async (string orderId, HttpContext context) =>
         {
+            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
+            {
+                return phaseGateFailure;
+            }
+
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
@@ -186,6 +203,11 @@ public static class ExecutionEndpoints
 
         group.MapPost("/orders/cancel-all", async (HttpContext context) =>
         {
+            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
+            {
+                return phaseGateFailure;
+            }
+
             if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
             {
                 return EndpointHelpers.Forbidden();
@@ -640,6 +662,11 @@ public static class ExecutionEndpoints
 
         group.MapPost("/positions/actions/close", async (ExecutionPositionActionRequest request, HttpContext context) =>
         {
+            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
+            {
+                return phaseGateFailure;
+            }
+
             var snapshot = await BuildBlotterSnapshotAsync(
                 context.RequestServices,
                 context.RequestAborted).ConfigureAwait(false);
@@ -678,6 +705,11 @@ public static class ExecutionEndpoints
 
         group.MapPost("/positions/actions/upsize", async (ExecutionPositionActionRequest request, HttpContext context) =>
         {
+            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
+            {
+                return phaseGateFailure;
+            }
+
             var snapshot = await BuildBlotterSnapshotAsync(
                 context.RequestServices,
                 context.RequestAborted).ConfigureAwait(false);
@@ -716,6 +748,11 @@ public static class ExecutionEndpoints
 
         group.MapPost("/positions/{symbol}/close", async (string symbol, HttpContext context) =>
         {
+            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
+            {
+                return phaseGateFailure;
+            }
+
             var snapshot = await BuildBlotterSnapshotAsync(
                 context.RequestServices,
                 context.RequestAborted).ConfigureAwait(false);
@@ -995,6 +1032,113 @@ public static class ExecutionEndpoints
     }
 
     private static string GenerateActionId() => $"act-{Guid.NewGuid():N}";
+
+    private static bool TryValidateBrokerOrderPlacementGate(HttpContext context, out string? blockingMessage)
+    {
+        blockingMessage = null;
+        var config = context.RequestServices.GetService<BrokerageConfiguration>();
+        if (config is null)
+        {
+            return true;
+        }
+
+        var gatewayId = string.IsNullOrWhiteSpace(config.Gateway)
+            ? "paper"
+            : config.Gateway.Trim().ToLowerInvariant();
+
+        if (!config.BrokerFlows.TryGetValue(gatewayId, out var flow))
+        {
+            flow = new BrokerFlowFlags();
+        }
+
+        if (string.Equals(gatewayId, "paper", StringComparison.Ordinal))
+        {
+            if (!flow.PaperOrderFlowEnabled)
+            {
+                blockingMessage = "Paper order flow is disabled for broker 'paper'.";
+                return false;
+            }
+
+            return true;
+        }
+
+        if (!flow.ProductionOrderRoutingEnabled)
+        {
+            blockingMessage = $"Production order routing is disabled for broker '{gatewayId}'.";
+            return false;
+        }
+
+        if (config.ValidationGates.RequireValidationArtifactsForOrderPlacement)
+        {
+            if (!File.Exists(config.ValidationGates.ValidationArtifactPath))
+            {
+                blockingMessage = $"Order placement is gated until validation artifact is present: {config.ValidationGates.ValidationArtifactPath}.";
+                return false;
+            }
+
+            if (!File.Exists(config.ValidationGates.SignoffArtifactPath))
+            {
+                blockingMessage = $"Order placement is gated until signoff artifact is present: {config.ValidationGates.SignoffArtifactPath}.";
+                return false;
+            }
+        }
+
+        return true;
+    private static IResult? TryRejectOrderRoutingForPhaseGate(IServiceProvider services)
+    {
+        var configuration = services.GetService<BrokerageConfiguration>();
+        if (configuration is null || !IsTradierLiveProductionRouting(configuration))
+        {
+            return null;
+        }
+
+        if (!configuration.ReadOnlyPhaseEnabled)
+        {
+            return Results.BadRequest(new { error = "Order routing is blocked because the read-only phase is disabled." });
+        }
+
+        if (!configuration.PaperTradingPhaseEnabled)
+        {
+            return Results.BadRequest(new { error = "Order routing is blocked because the paper-trading phase is disabled." });
+        }
+
+        if (!configuration.ProductionRoutingPhaseEnabled)
+        {
+            return Results.BadRequest(new { error = "Order routing is blocked because production routing is disabled." });
+        }
+
+        if (!configuration.ReadOnlyVerificationPassed)
+        {
+            return Results.BadRequest(new { error = "Production routing gate failed: read-only verification must pass." });
+        }
+
+        if (!configuration.PaperLifecycleTestsPassed)
+        {
+            return Results.BadRequest(new { error = "Production routing gate failed: paper-trading lifecycle tests must pass." });
+        }
+
+        if (!configuration.ReplayEvidencePassed)
+        {
+            return Results.BadRequest(new { error = "Production routing gate failed: replay evidence must pass." });
+        }
+
+        return null;
+    }
+
+    private static bool IsTradierLiveProductionRouting(BrokerageConfiguration configuration)
+    {
+        if (!configuration.LiveExecutionEnabled)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(configuration.Gateway))
+        {
+            return false;
+        }
+
+        return string.Equals(configuration.Gateway, "tradier", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static bool HasExecutionControlPermission(HttpContext context)
     {
