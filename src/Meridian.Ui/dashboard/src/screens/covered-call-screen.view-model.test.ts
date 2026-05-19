@@ -627,6 +627,7 @@ describe("buildChainPreviewPanelViewModel", () => {
     })).toMatchObject({
       description: "Loading chain preview...",
       emptyText: "Loading chain preview...",
+      errorDetails: [],
       selectedDetail: null
     });
 
@@ -644,11 +645,15 @@ describe("buildChainPreviewPanelViewModel", () => {
     expect(buildChainPreviewPanelViewModel({
       status: "error",
       data: null,
-      error: "HTTP 503",
+      error: {
+        summary: "HTTP 503",
+        details: ["Endpoint returned 503 for /api/covered-call/preview."]
+      },
       selectedIndex: 0
     })).toMatchObject({
       description: "Error: HTTP 503",
       emptyText: "Chain preview failed: HTTP 503",
+      errorDetails: ["Endpoint returned 503 for /api/covered-call/preview."],
       detailEmptyTitle: "Chain preview failed"
     });
   });

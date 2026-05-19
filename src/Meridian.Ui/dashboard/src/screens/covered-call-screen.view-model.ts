@@ -81,7 +81,7 @@ export interface CoveredCallFormFieldGroupViewModel {
 export interface CoveredCallChainPreviewState {
   status: "idle" | "loading" | "ready" | "error";
   data: CoveredCallChainPreview | null;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   selectedIndex: number;
 }
 
@@ -120,6 +120,7 @@ export interface CoveredCallChainPreviewPanelViewModel {
   tableLabel: string;
   tableCaption: string;
   emptyText: string;
+  errorDetails: string[];
   detailPanelId: string;
   detailEmptyTitle: string;
   detailEmptyText: string;
@@ -1178,6 +1179,7 @@ export function buildChainPreviewPanelViewModel(
       ...base,
       description: "Loading chain preview...",
       emptyText: "Loading chain preview...",
+      errorDetails: [],
       detailEmptyTitle: "Chain preview loading",
       detailEmptyText: "Candidate detail will appear after the option-chain preview finishes.",
       detailEmptyAriaLabel: "Covered-call candidate detail loading",
@@ -1188,11 +1190,12 @@ export function buildChainPreviewPanelViewModel(
   }
 
   if (chainPreview.status === "error") {
-    const errorText = chainPreview.error ?? "Unknown error";
+    const errorText = chainPreview.error?.summary ?? "Unknown error";
     return {
       ...base,
       description: `Error: ${errorText}`,
       emptyText: `Chain preview failed: ${errorText}`,
+      errorDetails: chainPreview.error?.details ?? [],
       detailEmptyTitle: "Chain preview failed",
       detailEmptyText: errorText,
       detailEmptyAriaLabel: "Covered-call candidate detail unavailable",
@@ -1211,6 +1214,7 @@ export function buildChainPreviewPanelViewModel(
         ? "No option candidates matched the current filters."
         : "Set an underlying and a positive min strike to preview the chain.",
       emptyText: readyEmpty ? "No candidates match the current filters." : "No candidates yet.",
+      errorDetails: [],
       detailEmptyTitle: readyEmpty ? "No candidate selected" : "Candidate detail",
       detailEmptyText: readyEmpty
         ? "Adjust strike, delta, DTE, liquidity, or spread filters to find covered-call candidates."
@@ -1230,6 +1234,7 @@ export function buildChainPreviewPanelViewModel(
     ...base,
     description: `${formatCount(data.filtersPassed)} of ${formatCount(data.totalContractsScanned)} candidates pass filters.`,
     emptyText: "No candidates match the current filters.",
+    errorDetails: [],
     detailEmptyTitle: "No candidate selected",
     detailEmptyText: "Select a candidate row to inspect strike, liquidity, and filter evidence.",
     detailEmptyAriaLabel: "Covered-call candidate detail empty",
@@ -1577,7 +1582,7 @@ export function useCoveredCallScreenViewModel(
       setChainPreview({
         status: "error",
         data: null,
-        error: (error as Error).message,
+        error: describeApiError(error, "Covered-call chain preview failed."),
         selectedIndex: 0
       });
     }

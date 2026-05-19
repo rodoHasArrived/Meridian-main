@@ -416,7 +416,16 @@ function ChainPreviewTable({ vm }: { vm: CoveredCallScreenViewModel }) {
           aria-label={panel.detailEmptyAriaLabel}
         >
           <div className="head">{panel.detailEmptyTitle}</div>
-          <div className="body">{panel.detailEmptyText}</div>
+          <div className="body">
+            <div>{panel.detailEmptyText}</div>
+            {panel.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc pl-5 text-xs text-muted-foreground">
+                {panel.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
         </section>
       )}
     </div>
