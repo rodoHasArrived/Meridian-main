@@ -11,6 +11,7 @@ namespace Meridian.Ui.Services;
 /// </summary>
 public sealed class OAuthRefreshService : IDisposable
 {
+    private static readonly Lazy<ILoggerFactory> _singletonLoggerFactory = new(() => LoggerFactory.Create(_ => { }));
     private static readonly Lazy<OAuthRefreshService> _instance = new(() => new OAuthRefreshService());
     private static readonly TimeSpan WrapperFailureLogThrottleWindow = TimeSpan.FromMinutes(1);
     /// <summary>
@@ -63,7 +64,7 @@ public sealed class OAuthRefreshService : IDisposable
     public int WrapperFailureCount => Volatile.Read(ref _wrapperFailureCount);
 
     private OAuthRefreshService()
-        : this(new CredentialService(), NullLogger<OAuthRefreshService>.Instance)
+        : this(new CredentialService(), _singletonLoggerFactory.Value.CreateLogger<OAuthRefreshService>())
     {
     }
 
