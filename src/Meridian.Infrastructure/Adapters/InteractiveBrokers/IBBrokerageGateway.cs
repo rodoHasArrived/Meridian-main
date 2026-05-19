@@ -511,7 +511,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
             MarketPrice = averageCost,
             MarketValue = marketValue,
             UnrealizedPnl = 0m,
-            AssetClass = MapAssetClass(update.SecurityType),
+            AssetClass = IBCanonicalPayloadMapper.MapAssetClass(update.SecurityType, update.Metadata),
             Metadata = update.Metadata,
             AccruedInterest = accruedInterest
         };
@@ -535,13 +535,13 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
             OrderId = gatewayOrderId.ToString(),
             ClientOrderId = context?.ClientOrderId ?? update.ClientOrderId,
             Symbol = context?.Symbol ?? update.Symbol,
-            Side = context?.Side ?? ParseSide(update.Action),
-            Type = context?.Type ?? ParseOrderType(update.OrderType),
+            Side = context?.Side ?? IBCanonicalPayloadMapper.ParseSide(update.Action, update.Metadata),
+            Type = context?.Type ?? IBCanonicalPayloadMapper.ParseOrderType(update.OrderType, update.Metadata),
             Quantity = context?.Quantity ?? update.Quantity,
             FilledQuantity = update.FilledQuantity,
             LimitPrice = update.LimitPrice is > 0 ? (decimal)update.LimitPrice.Value : context?.LimitPrice,
             StopPrice = update.StopPrice is > 0 ? (decimal)update.StopPrice.Value : context?.StopPrice,
-            Status = MapOrderStatus(update.Status, update.FilledQuantity, Math.Max(update.Quantity - update.FilledQuantity, 0m), update.RejectReason),
+            Status = IBCanonicalPayloadMapper.MapOrderStatus(update.Status, update.FilledQuantity, Math.Max(update.Quantity - update.FilledQuantity, 0m), update.RejectReason, update.Metadata),
             CreatedAt = context?.CreatedAt ?? update.ReceivedAt
         };
 
@@ -592,7 +592,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
     {
         var gatewayOrderId = update.OrderId;
         var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
-        var orderStatus = MapOrderStatus(update.Status, update.Filled, update.Remaining, null);
+        var orderStatus = IBCanonicalPayloadMapper.MapOrderStatus(update.Status, update.Filled, update.Remaining, null);
 
         if (_openOrders.TryGetValue(gatewayOrderId, out var openOrder))
         {
@@ -672,7 +672,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
             orderStatus,
             context,
             context?.Symbol ?? update.Symbol,
-            context?.Side ?? ParseExecutionSide(update.Side),
+            context?.Side ?? IBCanonicalPayloadMapper.ParseSide(update.Side),
             orderQuantity,
             update.CumulativeQuantity,
             (decimal)update.Price,
@@ -775,72 +775,6 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
             Timestamp = timestamp,
         };
     }
-
-    private static OrderStatus MapOrderStatus(string? status, decimal filled, decimal remaining, string? rejectReason)
-    {
-        var normalized = status?.Trim();
-
-        if (!string.IsNullOrWhiteSpace(rejectReason))
-            return OrderStatus.Rejected;
-
-        if (string.Equals(normalized, "Filled", StringComparison.OrdinalIgnoreCase))
-            return OrderStatus.Filled;
-
-        if (string.Equals(normalized, "Cancelled", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(normalized, "ApiCancelled", StringComparison.OrdinalIgnoreCase))
-            return OrderStatus.Cancelled;
-
-        if (string.Equals(normalized, "PendingCancel", StringComparison.OrdinalIgnoreCase))
-            return OrderStatus.PendingCancel;
-
-        if (string.Equals(normalized, "Inactive", StringComparison.OrdinalIgnoreCase))
-            return OrderStatus.Rejected;
-
-        if (filled > 0 && remaining > 0)
-            return OrderStatus.PartiallyFilled;
-
-        if (string.Equals(normalized, "Submitted", StringComparison.OrdinalIgnoreCase))
-            return OrderStatus.Accepted;
-
-        if (string.Equals(normalized, "PreSubmitted", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(normalized, "PendingSubmit", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(normalized, "ApiPending", StringComparison.OrdinalIgnoreCase))
-            return OrderStatus.PendingNew;
-
-        return filled > 0 ? OrderStatus.PartiallyFilled : OrderStatus.Accepted;
-    }
-
-    private static string MapAssetClass(string? securityType)
-        => securityType?.ToUpperInvariant() switch
-        {
-            "OPT" => "option",
-            "FUT" => "futures",
-            "CASH" => "forex",
-            "BOND" => "bond",
-            "GOVT" => "bond",
-            _ => "equity"
-        };
-
-    private static OrderSide ParseSide(string? action)
-        => string.Equals(action, "SELL", StringComparison.OrdinalIgnoreCase) ||
-           string.Equals(action, "SLD", StringComparison.OrdinalIgnoreCase)
-            ? OrderSide.Sell
-            : OrderSide.Buy;
-
-    private static OrderSide ParseExecutionSide(string? side)
-        => string.Equals(side, "SLD", StringComparison.OrdinalIgnoreCase) ||
-           string.Equals(side, "SELL", StringComparison.OrdinalIgnoreCase)
-            ? OrderSide.Sell
-            : OrderSide.Buy;
-
-    private static OrderType ParseOrderType(string? orderType)
-        => orderType?.ToUpperInvariant() switch
-        {
-            "LMT" => OrderType.Limit,
-            "STP" => OrderType.StopMarket,
-            "STP LMT" => OrderType.StopLimit,
-            _ => OrderType.Market
-        };
 
     private static decimal? TryGetDecimal(IReadOnlyDictionary<string, string>? metadata, string key)
     {
