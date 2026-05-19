@@ -1137,7 +1137,7 @@ function routeFromWorkItemTarget(item: OperatorWorkItem): string | null {
   return workflowTargetPath(item.targetPageTag, item.workspace);
 }
 
-function fallbackRouteForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
+function fallbackRouteForWorkItemKind(kind: string): string {
   switch (kind) {
     case "PaperReplay":
     case "PromotionReview":
@@ -1155,10 +1155,12 @@ function fallbackRouteForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
       return REPORT_PACKS_ROUTE;
     case "ProviderTrustGate":
       return WORKSTATION_ROUTE_CATALOG.data;
+    default:
+      return WORKSTATION_ROUTE_CATALOG.tradingReadiness;
   }
 }
 
-function actionLabelForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
+function actionLabelForWorkItemKind(kind: string): string {
   switch (kind) {
     case "PaperReplay":
       return "Open replay evidence";
@@ -1178,6 +1180,8 @@ function actionLabelForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
       return "Open provider trust";
     case "ExecutionControl":
       return "Open execution controls";
+    default:
+      return "Open operator item";
   }
 }
 
