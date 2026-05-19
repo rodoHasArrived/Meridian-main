@@ -18,6 +18,12 @@ For the embedded UI host (`src/Meridian/Meridian.csproj`), live routing is enabl
 ```powershell
 $env:MERIDIAN_EXECUTION_GATEWAY = "alpaca"
 $env:MERIDIAN_EXECUTION_LIVE_ENABLED = "true"
+$env:MERIDIAN_EXECUTION_READ_ONLY_PHASE_ENABLED = "true"
+$env:MERIDIAN_EXECUTION_PAPER_PHASE_ENABLED = "true"
+$env:MERIDIAN_EXECUTION_PRODUCTION_PHASE_ENABLED = "true"
+$env:MERIDIAN_EXECUTION_READ_ONLY_VERIFICATION_PASSED = "true"
+$env:MERIDIAN_EXECUTION_PAPER_LIFECYCLE_PASSED = "true"
+$env:MERIDIAN_EXECUTION_REPLAY_EVIDENCE_PASSED = "true"
 $env:ALPACA_KEY_ID = "<key>"
 $env:ALPACA_SECRET_KEY = "<secret>"
 ```
@@ -31,6 +37,39 @@ $env:MERIDIAN_EXECUTION_MAX_OPEN_ORDERS = "10"
 ```
 
 If `MERIDIAN_EXECUTION_LIVE_ENABLED` is missing or `MERIDIAN_EXECUTION_GATEWAY` resolves to `paper`, `Paper -> Live` promotion remains blocked.
+If any execution phase flag is disabled, order-routing endpoints remain blocked even when the OMS is healthy.
+
+## Tradier go-live gates (production routing)
+
+Before enabling production routing with Tradier, all gates must pass:
+
+1. **Read-only verification gate**
+   - Confirm account/position/order snapshots are healthy in read-only mode.
+   - Set `MERIDIAN_EXECUTION_READ_ONLY_VERIFICATION_PASSED=true`.
+2. **Paper-trading lifecycle gate**
+   - Run create/restore/verify/close paper-session lifecycle tests.
+   - Set `MERIDIAN_EXECUTION_PAPER_LIFECYCLE_PASSED=true`.
+3. **Replay evidence gate**
+   - Run replay verification for active paper sessions and capture durable audit evidence.
+   - Set `MERIDIAN_EXECUTION_REPLAY_EVIDENCE_PASSED=true`.
+
+Production routing remains blocked until all three gate flags are true.
+
+## Rollback steps
+
+If production behavior is degraded:
+
+1. Open the circuit breaker (`POST /api/execution/controls/circuit-breaker`) with an incident reason.
+2. Disable production phase by setting `MERIDIAN_EXECUTION_PRODUCTION_PHASE_ENABLED=false`.
+3. Optionally disable `MERIDIAN_EXECUTION_LIVE_ENABLED` to force non-live routing posture.
+4. Re-run replay verification and paper lifecycle checks before re-enabling production phase.
+
+## Minimum monitoring checks
+
+- Poll `GET /api/execution/health` every minute.
+- Poll `GET /api/execution/controls` and alert if circuit breaker is open or required gates are false.
+- Poll `GET /api/execution/audit?take=100` and alert on repeated `Rejected` order/control outcomes.
+- Validate replay freshness through `GET /api/execution/sessions/{sessionId}/replay` after restarts and before re-enabling production phase.
 
 ## Execution Endpoints
 
