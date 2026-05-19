@@ -1076,11 +1076,23 @@ public sealed class WorkstationEndpointsTests
 
         await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("refresh-order-2", "AAPL", 5m));
         await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("refresh-order-2", "AAPL", 5m, 191m));
-        await app.Services.GetRequiredService<PromotionService>().ApproveAsync(new PromotionApprovalRequest(
-            "run-refresh-backtest",
-            "ops.refresh",
-            "Ready after review.",
-            PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
+        await app.Services.GetRequiredService<IPromotionRecordStore>().AppendAsync(new StrategyPromotionRecord(
+            PromotionId: "promotion-refresh-backtest",
+            StrategyId: "strat-refresh",
+            StrategyName: "Refresh Strategy",
+            SourceRunType: RunType.Backtest,
+            TargetRunType: RunType.Paper,
+            SourceRunId: "run-refresh-backtest",
+            TargetRunId: "run-refresh-paper",
+            QualifyingSharpe: 1.2d,
+            QualifyingMaxDrawdownPercent: 0.05m,
+            QualifyingTotalReturn: 0.12m,
+            Decision: PromotionDecisionKinds.Approved,
+            PromotedAt: new DateTimeOffset(2026, 4, 28, 16, 0, 0, TimeSpan.Zero),
+            ApprovalReason: "Ready after review.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper),
+            AuditReference: "audit-refresh-promotion",
+            ApprovedBy: "ops.refresh"));
         WriteReadyDk1Packet(
             automationRoot,
             """
