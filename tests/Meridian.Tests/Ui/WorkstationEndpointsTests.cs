@@ -816,13 +816,15 @@ public sealed class WorkstationEndpointsTests
         readiness.WorkItems.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.PromotionReview);
 
         using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
-        trading.RootElement
-            .GetProperty("readiness")
+        var embeddedReadiness = trading.RootElement.GetProperty("readiness");
+        embeddedReadiness
             .GetProperty("activeSession")
             .GetProperty("sessionId")
             .GetString()
             .Should()
             .Be(session.SessionId);
+        embeddedReadiness.GetProperty("overallStatus").GetString().Should().Be(readiness.OverallStatus.ToString());
+        embeddedReadiness.GetProperty("acceptanceGates").GetArrayLength().Should().Be(readiness.AcceptanceGates.Count);
     }
 
     [Fact]

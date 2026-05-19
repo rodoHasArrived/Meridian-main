@@ -129,6 +129,15 @@ Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE
 
 Operator-readiness language for Wave 2 should stay “in progress” until the full cockpit-hardened gate above is continuously passing.
 
+### Wave 2 operator sign-off sequence (canonical readiness flow)
+
+1. Query `GET /api/workstation/trading/readiness` and `GET /api/workstation/trading` and confirm the embedded readiness projection is identical for `overallStatus`, `acceptanceGates`, and `workItems`.
+2. Verify canonical gate precedence is respected: replay, reconciliation, acceptance controls/promotion/trust/report-pack/session, brokerage-sync.
+3. For each acceptance gate verify explainability fields are populated: `status`, `reason`, `lastEvidenceAt`, and `requiredNextAction`.
+4. Validate account-scoped behavior by rerunning readiness and operator inbox with `fundAccountId=<account-guid>`.
+5. If replay evidence is stale, rerun replay verification and capture the recovered gate/audit reference before final operator acceptance.
+
+
 ### Wave 3: Shared run / portfolio / ledger continuity
 
 - the shared run seam exists, but paper/live-adjacent history, cash-flow, and reconciliation continuity are not equally deep in every surface yet

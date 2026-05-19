@@ -75,7 +75,10 @@ public sealed record TradingAcceptanceGateDto(
     string Detail,
     string? SessionId = null,
     string? RunId = null,
-    string? AuditReference = null);
+    string? AuditReference = null,
+    string? Reason = null,
+    DateTimeOffset? LastEvidenceAt = null,
+    string? RequiredNextAction = null);
 
 public sealed record EvidenceCompletenessSummaryDto(
     TradingAcceptanceGateStatusDto Status,
