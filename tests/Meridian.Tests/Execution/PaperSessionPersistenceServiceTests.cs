@@ -976,7 +976,7 @@ public sealed class PaperSessionReplayTests : IDisposable
         verification.Should().NotBeNull();
         verification!.ReplayPortfolio.Positions.Should().ContainSingle(position => position.Symbol == "AAPL");
         verification.CorruptLedgerEntryCount.Should().Be(1);
-        verification.CorruptLedgerEntryIds.Should().Contain("journal-corrupt");
+        verification.CorruptLedgerEntryIds.Should().Contain("22222222-2222-2222-2222-222222222222");
         verification.IsConsistent.Should().BeFalse();
         verification.MismatchReasons.Should().Contain(reason =>
             reason.Contains("skipped 1 corrupt entry", StringComparison.OrdinalIgnoreCase));
@@ -985,7 +985,7 @@ public sealed class PaperSessionReplayTests : IDisposable
         var auditEntry = auditEntries.Single(entry => entry.AuditId == verification.VerificationAuditId);
         auditEntry.Outcome.Should().Be("AttentionRequired");
         auditEntry.Metadata!["corruptLedgerEntryCount"].Should().Be("1");
-        auditEntry.Metadata["corruptLedgerEntryIds"].Should().Contain("journal-corrupt");
+        auditEntry.Metadata["corruptLedgerEntryIds"].Should().Contain("22222222-2222-2222-2222-222222222222");
     }
 }
 
