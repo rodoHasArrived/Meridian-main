@@ -1633,7 +1633,9 @@ public sealed class WorkstationEndpointsTests
                 ServerJsonOptions);
 
             readiness.Should().NotBeNull();
-            readiness!.BrokerageSync.Should().BeNull("unknown scoped account should not inherit another account's sync posture");
+            readiness!.BrokerageSync.Should().NotBeNull("unknown scoped account should report an unlinked brokerage sync posture instead of inheriting another account's sync");
+            readiness.BrokerageSync!.Health.ToString().Should().Be("Unlinked");
+            readiness.BrokerageSync.ProviderId.Should().BeNull("unknown scoped account should not inherit another account's brokerage provider linkage");
             readiness.WorkItems.Should().NotContain(item =>
                 item.Kind == OperatorWorkItemKindDto.BrokerageSync &&
                 item.FundAccountId == knownAccount);
