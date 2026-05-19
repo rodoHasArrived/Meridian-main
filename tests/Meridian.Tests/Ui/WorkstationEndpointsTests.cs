@@ -1211,6 +1211,108 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_ShouldExposeRequiredContractFieldsAndDegradeWhenEvidenceIsMissing()
+    {
+        var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness-contract", Guid.NewGuid().ToString("N"));
+        var automationRoot = Path.Combine(rootPath, "provider-validation", "_automation");
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            RegisterPromotionServices(services, Path.Combine(rootPath, "promotions"));
+            services.AddSingleton(new Dk1TrustGateReadinessOptions(automationRoot));
+            services.AddSingleton<Dk1TrustGateReadinessService>();
+            services.AddSingleton(_ => new ExecutionAuditTrailService(
+                new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+                NullLogger<ExecutionAuditTrailService>.Instance));
+            services.AddSingleton<IPaperSessionStore>(_ => new JsonlFilePaperSessionStore(
+                Path.Combine(rootPath, "sessions"),
+                NullLogger<JsonlFilePaperSessionStore>.Instance));
+            services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
+                NullLogger<PaperSessionPersistenceService>.Instance,
+                sp.GetRequiredService<IPaperSessionStore>(),
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-contract-backtest",
+            strategyId: "strat-contract",
+            strategyName: "Contract Coverage",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 4, 28, 13, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")));
+
+        var session = await app.Services.GetRequiredService<PaperSessionPersistenceService>().CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "strat-contract",
+            StrategyName: "Contract Coverage",
+            InitialCash: 125_000m,
+            Symbols: ["AAPL"]));
+
+        var client = app.GetTestClient();
+        using var response = await client.GetAsync(UiApiRoutes.WorkstationTradingReadiness);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var payload = await ReadJsonAsync(client, UiApiRoutes.WorkstationTradingReadiness);
+        var root = payload.RootElement;
+        root.TryGetProperty("overallStatus", out var overallStatus).Should().BeTrue();
+        root.TryGetProperty("readyForPaperOperation", out var readyForPaperOperation).Should().BeTrue();
+        root.TryGetProperty("trustGate", out var trustGate).Should().BeTrue();
+        root.TryGetProperty("replay", out var replay).Should().BeTrue();
+        root.TryGetProperty("promotion", out var promotion).Should().BeTrue();
+        root.TryGetProperty("acceptanceGates", out var acceptanceGates).Should().BeTrue();
+        root.TryGetProperty("workItems", out var workItems).Should().BeTrue();
+        overallStatus.ValueKind.Should().Be(JsonValueKind.String);
+        readyForPaperOperation.ValueKind.Should().Be(JsonValueKind.False);
+        trustGate.ValueKind.Should().Be(JsonValueKind.Object);
+        replay.ValueKind.Should().Be(JsonValueKind.Object);
+        promotion.ValueKind.Should().Be(JsonValueKind.Object);
+        acceptanceGates.ValueKind.Should().Be(JsonValueKind.Array);
+        workItems.ValueKind.Should().Be(JsonValueKind.Array);
+
+        var readiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+            UiApiRoutes.WorkstationTradingReadiness,
+            ServerJsonOptions);
+        readiness.Should().NotBeNull();
+
+        readiness!.ActiveSession.Should().NotBeNull();
+        readiness.ActiveSession!.SessionId.Should().Be(session.SessionId);
+        readiness.TrustGate.Should().NotBeNull();
+        readiness.TrustGate.Status.Should().Be("not-ready");
+        readiness.TrustGate.Blockers.Should().NotBeEmpty();
+        readiness.Replay.Should().NotBeNull();
+        readiness.Replay!.VerificationAuditId.Should().BeNull();
+        readiness.Replay.IsConsistent.Should().BeFalse();
+        readiness.Promotion.Should().NotBeNull();
+        readiness.Promotion!.RequiresReview.Should().BeTrue();
+        readiness.Promotion.ApprovalStatus.Should().BeNull();
+        readiness.Promotion.State.Should().NotBeNullOrWhiteSpace();
+        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
+
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "dk1-trust" &&
+            gate.Status == TradingAcceptanceGateStatusDto.Blocked);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "replay" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            gate.SessionId == session.SessionId);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "promotion" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            gate.RunId == "run-contract-backtest");
+        readiness.WorkItems.Should().Contain(item =>
+            item.Kind == OperatorWorkItemKindDto.ProviderTrustGate &&
+            item.Tone == OperatorWorkItemToneDto.Critical);
+        readiness.WorkItems.Should().Contain(item =>
+            item.Kind == OperatorWorkItemKindDto.PaperReplay &&
+            item.Tone == OperatorWorkItemToneDto.Warning);
+        readiness.WorkItems.Should().Contain(item =>
+            item.Kind == OperatorWorkItemKindDto.PromotionReview &&
+            item.Tone == OperatorWorkItemToneDto.Warning);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_TradingReadinessWithoutRegisteredReadinessService_ShouldUseSharedReadinessBuilder()
     {
         await using var app = await CreateAppAsync();
