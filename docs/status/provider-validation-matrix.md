@@ -1,6 +1,6 @@
 # Provider Validation Matrix
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-05-19
 **Scope:** Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
 
 This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence, with bounded runtime evidence regenerated and attached from the validation run when a provider scenario cannot be closed from checked-in tests. The current signed DK1 evidence is the 2026-04-27 packet set under `artifacts/provider-validation/_automation/2026-04-27/`; future date-stamped packets are current only for the run that produced them and need matching packet-bound sign-off before they can replace that evidence. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.
@@ -19,6 +19,16 @@ This matrix is Meridian's active Wave 1 evidence gate. Every row must point to e
 | Yahoo historical and fallback confidence | `YahooFinanceHistoricalDataProviderTests`, `YahooFinanceIntradayContractTests` | Not required for the active Wave 1 claim; existing live Yahoo integration suites are optional developer reference only | ✅ | n/a |
 | Checkpoint reliability | `BackfillStatusStoreTests`, `ParallelBackfillServiceTests`, `GapBackfillServiceTests`, `CheckpointEndpointTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
 | Parquet L2 flush behavior | `ParquetStorageSinkTests`, `ParquetConversionServiceTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
+
+
+## 2026-05-19 focused execution-provider validation artifacts
+
+Focused validation on 2026-05-19 added executable coverage for Tradier-style account/position sync, options order placement lifecycle under partial-fill progression, and negative-path failover posture verification for rate-limit (`429`) plus transient broker failures. Evidence is now closed in-repo via `TradierExecutionReconciliationTests` instead of requiring standalone runtime packet notes for those scenarios.
+
+Artifacts and evidence anchors for this run date:
+
+- `tests/Meridian.Tests/Execution/TradierExecutionReconciliationTests.cs`
+- `docs/status/provider-validation-matrix.md` (this update)
 
 ## Primary Validation Command
 
