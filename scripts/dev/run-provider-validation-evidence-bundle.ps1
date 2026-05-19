@@ -10,6 +10,17 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
+function ConvertTo-RepoRelativePath {
+    param([Parameter(Mandatory)][string]$Path)
+
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    if ($fullPath.StartsWith($repoRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $fullPath.Substring($repoRoot.Length + 1).Replace('\', '/')
+    }
+
+    return $fullPath
+}
+
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $bundleRoot = Join-Path (Join-Path $repoRoot $OutputRoot) $DateStamp
 New-Item -ItemType Directory -Force -Path $bundleRoot | Out-Null
@@ -30,7 +41,12 @@ if (-not $SkipWave1) {
 }
 
 & $packetScript -DateStamp $DateStamp -OutputRoot $OutputRoot -SummaryJsonPath $summaryPath
-& $signoffScript -OutputPath $signoffPath -PacketPath $packetPath -Validate
+if (-not (Test-Path -LiteralPath $signoffPath)) {
+    & $signoffScript -OutputPath $signoffPath -PacketPath $packetPath
+    throw "Operator sign-off template generated at '$signoffPath'. Complete and approve the template, then re-run this script."
+}
+
+$signoffReview = & $signoffScript -OutputPath $signoffPath -PacketPath $packetPath -Validate -Json | ConvertFrom-Json
 
 $calibration = $null
 if (-not [string]::IsNullOrWhiteSpace($CalibrationInput)) {
@@ -38,7 +54,24 @@ if (-not [string]::IsNullOrWhiteSpace($CalibrationInput)) {
         $CandidateKernelVersion = "kernel-$((Get-Date).ToUniversalTime().ToString('yyyyMMddHHmmss'))"
     }
 
-    dotnet run --project src/Meridian/Meridian.csproj -- --calibrate-provider-degradation --calibration-input $CalibrationInput --candidate-kernel-version $CandidateKernelVersion --baseline-kernel-version $BaselineKernelVersion --calibration-report $calibrationReportPath --governance-output $governancePath | Out-Host
+    $dotnetArgs = @(
+        "run",
+        "--project",
+        "src/Meridian/Meridian.csproj",
+        "--",
+        "--calibrate-provider-degradation",
+        "--calibration-input",
+        $CalibrationInput,
+        "--candidate-kernel-version",
+        $CandidateKernelVersion,
+        "--baseline-kernel-version",
+        $BaselineKernelVersion,
+        "--calibration-report",
+        $calibrationReportPath,
+        "--governance-output",
+        $governancePath
+    )
+    & dotnet @dotnetArgs | Out-Host
     $calibration = Get-Content -Raw -LiteralPath $governancePath | ConvertFrom-Json
 }
 
@@ -49,6 +82,7 @@ $signoff = Get-Content -Raw -LiteralPath $signoffPath | ConvertFrom-Json
 if (-not $summary.generatedAtUtc -or -not $summary.result) { throw "Summary schema invalid: missing generatedAtUtc/result." }
 if (-not $packet.generatedAtUtc -or -not $packet.status) { throw "Parity packet schema invalid: missing generatedAtUtc/status." }
 if (-not $signoff.packetReview -or -not $signoff.packetReview.validForOperatorReview) { throw "Sign-off schema invalid or packet review not ready." }
+if (-not $signoffReview.validForDk1Exit) { throw "Operator sign-off review did not satisfy DK1 exit requirements." }
 
 $summaryAt = [DateTimeOffset]::Parse($summary.generatedAtUtc)
 $packetAt = [DateTimeOffset]::Parse($packet.generatedAtUtc)
@@ -71,15 +105,15 @@ $promotion = if ($null -eq $calibration) {
 $bundle = [ordered]@{
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
     dateStamp = $DateStamp
-    summaryPath = "artifacts/provider-validation/_automation/$DateStamp/wave1-validation-summary.json"
-    parityPacketPath = "artifacts/provider-validation/_automation/$DateStamp/dk1-pilot-parity-packet.json"
-    signoffPath = "artifacts/provider-validation/_automation/$DateStamp/dk1-operator-signoff.json"
-    calibrationGovernancePath = if (Test-Path $governancePath) { "artifacts/provider-validation/_automation/$DateStamp/provider-degradation-governance.json" } else { $null }
+    summaryPath = ConvertTo-RepoRelativePath -Path $summaryPath
+    parityPacketPath = ConvertTo-RepoRelativePath -Path $packetPath
+    signoffPath = ConvertTo-RepoRelativePath -Path $signoffPath
+    calibrationGovernancePath = if (Test-Path $governancePath) { ConvertTo-RepoRelativePath -Path $governancePath } else { $null }
     schemaVersion = "provider-validation-bundle/v1"
     gateOutcome = [ordered]@{
         wave1Result = [string]$summary.result
         dk1Status = [string]$packet.status
-        operatorSignoffValidForDk1Exit = [bool]$signoff.validForDk1Exit
+        operatorSignoffValidForDk1Exit = [bool]$signoffReview.validForDk1Exit
     }
     promotionPosture = $promotion
 }

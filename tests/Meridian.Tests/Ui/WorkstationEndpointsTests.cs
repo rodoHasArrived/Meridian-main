@@ -2028,9 +2028,44 @@ public sealed class WorkstationEndpointsTests
         readiness.Blockers.Should().BeEmpty();
         readiness.TrustRationaleContract.Should().NotBeNull();
         readiness.TrustRationaleContract!.Status.Should().Be("validated");
+        readiness.CalibrationVersion.Should().BeNull();
+        readiness.CalibrationValidatedAt.Should().BeNull();
+        readiness.PromotionPosture.Should().BeNull();
         readiness.PacketPath.Should().NotBeNull();
         Path.IsPathRooted(readiness.PacketPath!).Should().BeFalse();
         readiness.PacketPath.Should().Contain("dk1-pilot-parity-packet.json");
+    }
+
+    [Fact]
+    public async Task Dk1TrustGateReadinessService_WithEvidenceBundle_ShouldExposeCalibrationPosture()
+    {
+        var automationRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "dk1-calibration-bundle",
+            Guid.NewGuid().ToString("N"));
+        WriteReadyDk1Packet(automationRoot);
+        WriteProviderValidationEvidenceBundle(
+            automationRoot,
+            """
+            {
+              "generatedAtUtc": "2026-04-27T09:30:00Z",
+              "promotionPosture": {
+                "status": "candidate-approved",
+                "candidateKernelVersion": "kernel-v2"
+              }
+            }
+            """);
+
+        var service = new Dk1TrustGateReadinessService(
+            new Dk1TrustGateReadinessOptions(automationRoot),
+            NullLogger<Dk1TrustGateReadinessService>.Instance);
+
+        var readiness = await service.GetCurrentAsync();
+
+        readiness.CalibrationVersion.Should().Be("kernel-v2");
+        readiness.PromotionPosture.Should().Be("candidate-approved");
+        readiness.CalibrationValidatedAt.Should().Be(new DateTimeOffset(2026, 4, 27, 9, 30, 0, TimeSpan.Zero));
     }
 
     [Fact]
@@ -4044,6 +4079,15 @@ public sealed class WorkstationEndpointsTests
                 : string.Empty)
             .Replace("__OPERATOR_SIGNOFF__", operatorSignoffJson)
             .Replace("__BLOCKERS__", blockersJson));
+    }
+
+    private static void WriteProviderValidationEvidenceBundle(string automationRoot, string bundleJson)
+    {
+        var bundleDirectory = Path.Combine(automationRoot, "unit-ready");
+        Directory.CreateDirectory(bundleDirectory);
+        File.WriteAllText(
+            Path.Combine(bundleDirectory, "provider-validation-evidence-bundle.json"),
+            bundleJson);
     }
 
     private static void RegisterSecurityMasterWorkbenchServices(

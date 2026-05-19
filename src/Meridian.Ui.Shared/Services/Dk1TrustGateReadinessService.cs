@@ -171,6 +171,7 @@ public sealed class Dk1TrustGateReadinessService
             MissingOwners: missingOwners,
             CompletedAt: operatorSignoffCompletedAt,
             SourcePath: operatorSignoffSourcePath);
+        var latestEvidenceBundle = TryGetLatestEvidenceBundle(automationRoot);
 
         return new TradingTrustGateReadinessDto(
             GateId: "DK1",
@@ -203,9 +204,9 @@ public sealed class Dk1TrustGateReadinessService
             EvidenceDocuments = evidenceDocumentReviews,
             TrustRationaleContract = trustRationaleContract,
             BaselineThresholdContract = baselineThresholdContract,
-            CalibrationVersion = TryGetCalibrationVersion(automationRoot),
-            CalibrationValidatedAt = TryGetCalibrationValidatedAt(automationRoot),
-            PromotionPosture = TryGetPromotionPosture(automationRoot)
+            CalibrationVersion = TryGetCalibrationVersion(latestEvidenceBundle),
+            CalibrationValidatedAt = TryGetCalibrationValidatedAt(latestEvidenceBundle),
+            PromotionPosture = TryGetPromotionPosture(latestEvidenceBundle)
         };
     }
 
@@ -226,21 +227,18 @@ public sealed class Dk1TrustGateReadinessService
         return doc.RootElement.Clone();
     }
 
-    private static string? TryGetCalibrationVersion(string automationRoot)
+    private static string? TryGetCalibrationVersion(JsonElement? bundle)
     {
-        var bundle = TryGetLatestEvidenceBundle(automationRoot);
         return GetString(TryGetProperty(TryGetProperty(bundle, "promotionPosture"), "candidateKernelVersion"));
     }
 
-    private static DateTimeOffset? TryGetCalibrationValidatedAt(string automationRoot)
+    private static DateTimeOffset? TryGetCalibrationValidatedAt(JsonElement? bundle)
     {
-        var bundle = TryGetLatestEvidenceBundle(automationRoot);
         return TryParseDateTimeOffset(GetString(bundle, "generatedAtUtc"));
     }
 
-    private static string? TryGetPromotionPosture(string automationRoot)
+    private static string? TryGetPromotionPosture(JsonElement? bundle)
     {
-        var bundle = TryGetLatestEvidenceBundle(automationRoot);
         return GetString(TryGetProperty(TryGetProperty(bundle, "promotionPosture"), "status"));
     }
 
@@ -547,6 +545,9 @@ public sealed class Dk1TrustGateReadinessService
         var property = TryGetProperty(element, propertyName);
         return property is { ValueKind: JsonValueKind.String } value ? value.GetString() : null;
     }
+
+    private static string? GetString(JsonElement? element) =>
+        element is { ValueKind: JsonValueKind.String } value ? value.GetString() : null;
 
     private static int GetInt32(JsonElement? element, string propertyName)
     {
