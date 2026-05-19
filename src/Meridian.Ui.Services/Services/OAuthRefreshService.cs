@@ -11,6 +11,7 @@ namespace Meridian.Ui.Services;
 /// </summary>
 public sealed class OAuthRefreshService : IDisposable
 {
+    private static readonly Lazy<ILoggerFactory> _singletonLoggerFactory = new(() => LoggerFactory.Create(_ => { }));
     private static readonly Lazy<OAuthRefreshService> _instance = new(() => new OAuthRefreshService());
     private static readonly TimeSpan WrapperFailureLogThrottleWindow = TimeSpan.FromMinutes(1);
     private static readonly ILoggerFactory SingletonLoggerFactory = NullLoggerFactory.Instance;
@@ -64,6 +65,12 @@ public sealed class OAuthRefreshService : IDisposable
     public int WrapperFailureCount => Volatile.Read(ref _wrapperFailureCount);
 
     private OAuthRefreshService()
+        : this(new CredentialService(), _singletonLoggerFactory.Value.CreateLogger<OAuthRefreshService>())
+    {
+    }
+
+    internal OAuthRefreshService(CredentialService credentialService, ILogger<OAuthRefreshService>? logger = null)
+    {
         : this(CredentialService.Instance, SingletonLoggerFactory.CreateLogger<OAuthRefreshService>())
     {
     }
@@ -221,8 +228,10 @@ public sealed class OAuthRefreshService : IDisposable
         {
             await CheckAndRefreshTokensAsync(ct);
         }
+        catch (Exception ex)
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
+            RecordWrapperFailure("CheckAndRefreshTokensAsync", ex);
         }
         catch (Exception ex)
         {
@@ -269,6 +278,9 @@ public sealed class OAuthRefreshService : IDisposable
                 _lastWrapperFailureLogByOperation[operationName] = now;
             }
         }
+        catch (Exception ex)
+        {
+            RecordWrapperFailure("CheckExpiringTokensAsync", ex);
 
         if (shouldLog)
         {
@@ -298,6 +310,42 @@ public sealed class OAuthRefreshService : IDisposable
                     operationName);
             }
         }
+    }
+
+    internal Task InvokeSafeCheckAndRefreshTokensForTestsAsync(CancellationToken ct = default)
+        => SafeCheckAndRefreshTokensAsync(ct);
+
+    internal Task InvokeSafeCheckExpiringTokensForTestsAsync(CancellationToken ct = default)
+        => SafeCheckExpiringTokensAsync(ct);
+
+    private void RecordWrapperFailure(string operationName, Exception ex)
+    {
+        Interlocked.Increment(ref _wrapperFailureCount);
+
+        var now = DateTime.UtcNow;
+        var shouldLog = true;
+        lock (_wrapperFailureSync)
+        {
+            if (_lastWrapperFailureLogByOperation.TryGetValue(operationName, out var lastLoggedAt) &&
+                now - lastLoggedAt < WrapperFailureLogThrottleWindow)
+            {
+                shouldLog = false;
+            }
+            else
+            {
+                _lastWrapperFailureLogByOperation[operationName] = now;
+            }
+        }
+
+        if (shouldLog)
+        {
+            _logger.LogError(
+                ex,
+                "OAuth refresh background wrapper failed for operation {OperationName}.",
+                operationName);
+        }
+
+        WrapperOperationFailed?.Invoke(this, new OAuthWrapperFailureEventArgs(operationName, ex, now, shouldLog));
     }
 
     private async Task CheckAndRefreshTokensAsync(CancellationToken ct = default)
