@@ -1,6 +1,6 @@
 # Meridian - Opportunity Scan
 
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-05-19
 **Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, signed DK1 pilot sample-set/parity-packet evidence, packet-bound sign-off validation, cockpit readiness projection, the active browser workstation lane, the web Research run-library, Quant Notebook helpers, and Quant Lab support slices, shared workflow command-palette commands with hash-aware provider-setup routing, browser Portfolio dense-table detail selection and brokerage-sync next actions plus Portfolio/Reporting/Settings/Data task panels, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, browser Evidence Workbench and shared evidence packet/graph APIs, live quote/order-book/watchlist/Price Alerts market-context routes with selectable recent-trade detail inspection, Watchlist no-quote/empty-state copy, and quick-trade readiness handoffs, Overview Today panel, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, provider-setup validation handoffs, seeded no-host quote-demo fixtures, simplified browser rail/header chrome, browser Security Master search-result selection and details/lots/operator-override support with identity drill-ins, lot-detail, and conflict refresh state, UFL/reference-data projection endpoints, read-only/paper-first brokerage connection evidence, crash-safe shared UI persistence, retained WPF shell support evidence including the Data shell feature module, desktop workflow automation hardening, and scheduled/manual WPF screenshot evidence capture
 
 This document turns the current repository state into the next opportunity order. It is intentionally narrower than a full roadmap refresh: it identifies the best next opportunities, why they matter now, what they unlock, and where they belong in the active delivery sequence.
@@ -16,6 +16,13 @@ Planning review note 2026-05-18: all active plan files were reclassified through
 [`../plans/README.md`](../plans/README.md). No optional advanced research, UFL target-state, or
 later-wave document outranks the Wave 2 cockpit, Wave 3 continuity, Wave 4 governance, and Wave 1
 trust-gate maintenance order below.
+
+2026-05-19 browser-workstation support note: provider setup and Settings refresh now expose
+provider-routing connection, binding, credential-source, environment, warning, and trust-snapshot
+state; Strategy Designer backend actions now separate browser-openable GET evidence from
+reference-only POST validation, preview, and run-backtest actions; and Reporting export commands
+now abort superseded profile exports. These improve operator safety and keep the opportunity order
+focused on the same W2-W4 gates; they are not new wave exits.
 
 ---
 

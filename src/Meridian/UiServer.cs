@@ -8,6 +8,7 @@ using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
+using Meridian.Contracts.Configuration;
 using Meridian.Domain.Collectors;
 using Meridian.Execution;
 using Meridian.Execution.Interfaces;
@@ -73,6 +74,7 @@ public sealed class UiServer : IAsyncDisposable
         {
             ContentRootPath = contentRootPath
         });
+        var resolvedDataRoot = ResolvePersistentDataRoot(configPath);
 
         // Minimize logging from ASP.NET Core
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
@@ -89,7 +91,7 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddMarketDataServices(compositionOptions);
         builder.Services.AddSingleton(_lifecycle);
 
-        builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(contentRootPath, "data", "strategies", "designer")));
+        builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
         builder.Services.AddWorkstationSharedServices();
 
         builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
@@ -104,21 +106,22 @@ public sealed class UiServer : IAsyncDisposable
                 () => null);
         });
 
-        builder.Services.AddSingleton<IReconciliationGovernanceAuditStore>(_ => new JsonlReconciliationGovernanceAuditStore(Path.Combine("artifacts", "reconciliation", "governance-audit.jsonl")));
+        builder.Services.AddSingleton<IReconciliationGovernanceAuditStore>(_ =>
+            new JsonlReconciliationGovernanceAuditStore(Path.Combine(resolvedDataRoot, "reconciliation", "governance-audit.jsonl")));
         builder.Services.AddSingleton<ReconciliationGovernanceService>();
         // Durable promotion-record store is required by PromotionService; without it
         // /api/promotion/approve and /api/promotion/reject fail DI resolution at runtime.
         builder.Services.AddSingleton<IPromotionRecordStore>(sp =>
             new JsonlPromotionRecordStore(
-                Path.Combine(contentRootPath, "data", "promotions"),
+                Path.Combine(resolvedDataRoot, "strategies", "promotions"),
                 sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
-        builder.Services.AddSingleton(ExecutionAuditTrailOptions.Default);
+        builder.Services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(resolvedDataRoot, "execution", "audit")));
         builder.Services.AddSingleton<ExecutionAuditTrailService>();
-        builder.Services.AddSingleton(ExecutionOperatorControlOptions.Default);
+        builder.Services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(resolvedDataRoot, "execution", "controls")));
         builder.Services.AddSingleton<ExecutionOperatorControlService>();
         builder.Services.AddSingleton<IPaperSessionStore>(sp =>
             new JsonlFilePaperSessionStore(
-                Path.Combine(AppContext.BaseDirectory, "data", "execution", "sessions"),
+                Path.Combine(resolvedDataRoot, "execution", "sessions"),
                 sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
@@ -362,6 +365,27 @@ public sealed class UiServer : IAsyncDisposable
     {
         var remoteIp = context.Connection.RemoteIpAddress;
         return remoteIp is null || IPAddress.IsLoopback(remoteIp);
+    }
+
+    internal static string ResolvePersistentDataRoot(string configPath)
+    {
+        if (File.Exists(configPath))
+        {
+            try
+            {
+                var json = File.ReadAllText(configPath);
+                var configuredDataRoot = MeridianPathDefaults.ResolveConfiguredDataRootFromJson(json, null);
+                return MeridianPathDefaults.ResolveDataRoot(configPath, configuredDataRoot);
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+        }
+
+        return MeridianPathDefaults.ResolveDataRoot(configPath, null);
     }
 
     public async Task StartAsync(CancellationToken ct = default)

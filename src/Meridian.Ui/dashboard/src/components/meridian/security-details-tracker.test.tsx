@@ -1,8 +1,9 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
-import { LotsTrackerPanel } from "@/components/meridian/security-details-tracker";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { LotsTrackerPanel, SecurityDetailsPanel, type OperatorOverridesService } from "@/components/meridian/security-details-tracker";
 import type { SecurityLot } from "@/components/meridian/security-details-tracker.view-model";
+import type { OperatorOverridesDto, SecurityIdentityDrillIn, SecurityMasterEntry } from "@/types";
 
 const lotsKey = "meridian.security.lots.AAPL";
 
@@ -16,6 +17,57 @@ const lots: SecurityLot[] = [
     note: "Opening sleeve"
   }
 ];
+
+const securityEntry: SecurityMasterEntry = {
+  securityId: "sec-1",
+  displayName: "Apple Inc.",
+  status: "Active",
+  classification: {
+    assetClass: "Equity",
+    subType: "CommonStock",
+    primaryIdentifierKind: "Ticker",
+    primaryIdentifierValue: "AAPL"
+  },
+  economicDefinition: {
+    currency: "USD",
+    version: 3,
+    effectiveFrom: "2024-01-01T00:00:00Z",
+    effectiveTo: null,
+    subType: "CommonStock",
+    assetFamily: "Equity",
+    issuerType: "Corporate"
+  }
+};
+
+const securityIdentity: SecurityIdentityDrillIn = {
+  securityId: "sec-1",
+  displayName: "Apple Inc.",
+  assetClass: "Equity",
+  status: "Active",
+  version: 3,
+  effectiveFrom: "2024-01-01T00:00:00Z",
+  effectiveTo: null,
+  identifiers: [
+    {
+      kind: "Ticker",
+      value: "AAPL",
+      isPrimary: true,
+      validFrom: "2024-01-01T00:00:00Z",
+      validTo: null,
+      provider: "Nasdaq"
+    }
+  ],
+  aliases: []
+};
+
+const operatorOverrides: OperatorOverridesDto = {
+  securityId: "sec-1",
+  values: {
+    issuer: "Apple Inc."
+  },
+  updatedBy: "ops",
+  updatedAt: "2026-05-19T09:00:00Z"
+};
 
 describe("LotsTrackerPanel", () => {
   beforeEach(() => {
@@ -72,5 +124,61 @@ describe("LotsTrackerPanel", () => {
 
     await waitFor(() => expect(screen.getByText("No lots recorded yet. Add a lot above to start tracking cost basis.")).toBeInTheDocument());
     expect(JSON.parse(window.localStorage.getItem(lotsKey) ?? "[]")).toEqual([]);
+  });
+});
+
+describe("SecurityDetailsPanel", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  it("renders sync status and disables override commands from the view model while loading", async () => {
+    const overridesService: OperatorOverridesService = {
+      get: vi.fn<OperatorOverridesService["get"]>(() => new Promise<OperatorOverridesDto>(() => undefined)),
+      patch: vi.fn<OperatorOverridesService["patch"]>()
+    };
+
+    render(
+      <SecurityDetailsPanel
+        entry={securityEntry}
+        identity={securityIdentity}
+        tradingParameters={null}
+        overridesService={overridesService}
+      />
+    );
+
+    expect(await screen.findByLabelText("Security override sync status: Loading from server")).toHaveTextContent("Loading from server");
+    const editIdentifier = screen.getByRole("button", { name: "Edit Identifier" });
+    expect(editIdentifier).toBeDisabled();
+    expect(editIdentifier).toHaveAttribute("title", "Security overrides are still loading from the server.");
+  });
+
+  it("renders editor helper semantics from the view model when editing an override", async () => {
+    const overridesService: OperatorOverridesService = {
+      get: vi.fn<OperatorOverridesService["get"]>().mockResolvedValue(operatorOverrides),
+      patch: vi.fn<OperatorOverridesService["patch"]>().mockResolvedValue(operatorOverrides)
+    };
+    const user = userEvent.setup();
+
+    render(
+      <SecurityDetailsPanel
+        entry={securityEntry}
+        identity={securityIdentity}
+        tradingParameters={null}
+        overridesService={overridesService}
+      />
+    );
+
+    await screen.findByText("Synced");
+    await user.click(screen.getByRole("button", { name: "Edit Issuer" }));
+
+    const issuerEditor = screen.getByLabelText("Issuer override value");
+    expect(issuerEditor).toHaveAttribute("id", "security-detail-sec-1-issuer-editor");
+    expect(issuerEditor).toHaveAttribute("aria-describedby", "security-detail-sec-1-issuer-editor-help");
+    expect(screen.getByText("Enter a value to override the server field, or leave it blank to clear the override.")).toHaveAttribute(
+      "id",
+      "security-detail-sec-1-issuer-editor-help"
+    );
+    expect(screen.getByRole("button", { name: "Save Issuer" })).toBeEnabled();
   });
 });

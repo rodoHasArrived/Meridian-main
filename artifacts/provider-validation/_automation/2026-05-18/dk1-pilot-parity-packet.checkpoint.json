@@ -1,0 +1,35 @@
+{
+  "checkpointConventionVersion": 1,
+  "workflow": "generate-dk1-pilot-parity-packet",
+  "runId": "2d2193e5338d434d8cc5441e0199653e",
+  "inputHash": "b678327372d76d75f88b1d89ad392dcd54c0679b66ca2012bcd92aaf6744b49e",
+  "inputSnapshot": {
+    "dateStamp": "2026-05-18",
+    "outputRoot": "artifacts/provider-validation/_automation",
+    "summaryJsonPath": "C:\\Dev\\Meridian-main\\artifacts\\provider-validation\\_automation\\2026-05-18\\wave1-validation-summary.json",
+    "operatorSignoffPath": "",
+    "allowFailedSummary": true
+  },
+  "metadata": {},
+  "steps": {
+    "write-dk1-packet-json": {
+      "state": "succeeded",
+      "description": "Write DK1 pilot parity packet JSON.",
+      "timestampUtc": "2026-05-19T07:33:14.0867508Z",
+      "inputHash": "b678327372d76d75f88b1d89ad392dcd54c0679b66ca2012bcd92aaf6744b49e",
+      "artifactPointers": [
+        "C:\\Dev\\Meridian-main\\artifacts\\provider-validation\\_automation\\2026-05-18\\dk1-pilot-parity-packet.json"
+      ]
+    },
+    "write-dk1-packet-markdown": {
+      "state": "succeeded",
+      "description": "Write DK1 pilot parity packet markdown.",
+      "timestampUtc": "2026-05-19T07:33:14.2761060Z",
+      "inputHash": "b678327372d76d75f88b1d89ad392dcd54c0679b66ca2012bcd92aaf6744b49e",
+      "artifactPointers": [
+        "C:\\Dev\\Meridian-main\\artifacts\\provider-validation\\_automation\\2026-05-18\\dk1-pilot-parity-packet.md"
+      ]
+    }
+  },
+  "generatedAtUtc": "2026-05-19T07:33:14.2765956Z"
+}

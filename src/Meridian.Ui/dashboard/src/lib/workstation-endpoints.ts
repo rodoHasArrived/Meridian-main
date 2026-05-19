@@ -110,6 +110,13 @@ export const PROVIDER_API_ENDPOINTS = {
   connections: "/api/providers/connections"
 } as const;
 
+export const PROVIDER_ROUTING_API_ENDPOINTS = {
+  connections: "/api/provider-routing/connections",
+  bindings: "/api/provider-routing/bindings",
+  trustSnapshots: "/api/provider-routing/trust-snapshots",
+  preview: "/api/provider-routing/preview"
+} as const;
+
 export const SYMBOL_API_ENDPOINTS = {
   symbols: "/api/symbols",
   statistics: "/api/symbols/statistics",

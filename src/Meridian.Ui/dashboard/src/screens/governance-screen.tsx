@@ -687,6 +687,13 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                   <p className="mt-2 text-sm leading-6">
                     {reconciliation.trialBalanceView.errorText ?? reconciliation.trialBalanceView.loadingText ?? reconciliation.trialBalanceView.emptyDetail}
                   </p>
+                  {reconciliation.trialBalanceView.errorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.trialBalanceView.errorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
               {reconciliation.trialBalanceView.loadingText && reconciliation.trialBalanceView.hasRows ? (
@@ -696,7 +703,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               ) : null}
               {reconciliation.trialBalanceView.errorText && reconciliation.trialBalanceView.hasRows ? (
                 <div role="alert" className="mt-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {reconciliation.trialBalanceView.errorText}
+                  <div>{reconciliation.trialBalanceView.errorText}</div>
+                  {reconciliation.trialBalanceView.errorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.trialBalanceView.errorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               ) : null}
             </CardContent>
@@ -959,7 +973,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               )}
               {securityMaster.searchErrorText && (
                 <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {securityMaster.searchErrorText}
+                  <div>{securityMaster.searchErrorText}</div>
+                  {securityMaster.searchErrorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {securityMaster.searchErrorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
 
@@ -988,7 +1009,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                 )}
                 {securityMaster.identityErrorText && (
                   <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                    {securityMaster.identityErrorText}
+                    <div>{securityMaster.identityErrorText}</div>
+                    {securityMaster.identityErrorDetails.length > 0 ? (
+                      <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                        {securityMaster.identityErrorDetails.map((detail) => (
+                          <li key={detail}>{detail}</li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </div>
                 )}
                 {identity && (
@@ -1102,12 +1130,26 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               {securityMaster.conflictsLoading && <p role="status" className="text-sm text-muted-foreground">Loading conflicts…</p>}
               {securityMaster.conflictsErrorText && (
                 <div role="alert" className="mb-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {securityMaster.conflictsErrorText}
+                  <div>{securityMaster.conflictsErrorText}</div>
+                  {securityMaster.conflictsErrorDetails.length > 0 && (
+                    <ul className="mt-2 list-disc pl-5">
+                      {securityMaster.conflictsErrorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
               {securityMaster.conflictActionErrorText && (
                 <div role="alert" className="mb-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {securityMaster.conflictActionErrorText}
+                  <div>{securityMaster.conflictActionErrorText}</div>
+                  {securityMaster.conflictActionErrorDetails.length > 0 && (
+                    <ul className="mt-2 list-disc pl-5">
+                      {securityMaster.conflictActionErrorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
               {!securityMaster.conflictsLoading && securityMaster.conflicts !== null && !securityMaster.hasConflicts && (
@@ -1245,12 +1287,26 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               )}
               {reconciliation.errorText && (
                 <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {reconciliation.errorText}
+                  <div>{reconciliation.errorText}</div>
+                  {reconciliation.errorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.errorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
               {reconciliation.actionErrorText && (
                 <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {reconciliation.actionErrorText}
+                  <div>{reconciliation.actionErrorText}</div>
+                  {reconciliation.actionErrorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.actionErrorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
               <DenseDataTable
@@ -1396,7 +1452,14 @@ function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewModel }
         {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
         {view.errorText && (
           <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            {view.errorText}
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         )}
         {!view.loadingText && !view.errorText && (
@@ -1495,7 +1558,14 @@ function CorporateActionsPanel({
         {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
         {view.errorText && (
           <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            {view.errorText}
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         )}
         {!view.loadingText && !view.errorText && (
@@ -1626,7 +1696,14 @@ function TradingParametersPanel({ view }: { view: TradingParametersViewState }) 
         {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
         {view.errorText && (
           <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            {view.errorText}
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         )}
         {!view.loadingText && !view.errorText && view.fields.length === 0 && (

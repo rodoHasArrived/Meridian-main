@@ -289,6 +289,14 @@ public sealed class PromotionService
             approvalChecklist: approvalChecklist,
             manualOverrideId: request.ManualOverrideId,
             auditReference: auditReference);
+        if (!TryValidatePromotionRecord(promotionRecord, out var validationError))
+        {
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: validationError ?? "Promotion approval record is invalid.");
+        }
 
         var newRun = new StrategyRunEntry(
             RunId: newRunId,
@@ -402,6 +410,14 @@ public sealed class PromotionService
             reviewNotes: request.ReviewNotes,
             manualOverrideId: request.ManualOverrideId,
             auditReference: auditReference);
+        if (!TryValidatePromotionRecord(promotionRecord, out var validationError))
+        {
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: validationError ?? "Promotion rejection record is invalid.");
+        }
 
         await _promotionRecordStore.AppendAsync(promotionRecord, ct).ConfigureAwait(false);
 
@@ -461,6 +477,58 @@ public sealed class PromotionService
         }
 
         return null;
+    }
+
+    internal static bool TryValidatePromotionRecord(StrategyPromotionRecord record, out string? validationError)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+
+        if (string.IsNullOrWhiteSpace(record.ApprovedBy))
+        {
+            validationError = "Promotion decision record requires operator identity.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(record.Decision))
+        {
+            validationError = "Promotion decision record requires a decision.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(record.ApprovalReason))
+        {
+            validationError = "Promotion decision record requires rationale.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(record.AuditReference))
+        {
+            validationError = "Promotion decision record requires durable audit reference.";
+            return false;
+        }
+
+        var isApproved = string.Equals(record.Decision, PromotionDecisionKinds.Approved, StringComparison.OrdinalIgnoreCase);
+        var isRejected = string.Equals(record.Decision, PromotionDecisionKinds.Rejected, StringComparison.OrdinalIgnoreCase);
+        if (!isApproved && !isRejected)
+        {
+            validationError = $"Promotion decision '{record.Decision}' is unsupported.";
+            return false;
+        }
+
+        if (isApproved && string.IsNullOrWhiteSpace(record.TargetRunId))
+        {
+            validationError = "Approved promotion records must include target run lineage.";
+            return false;
+        }
+
+        if (isRejected && !string.IsNullOrWhiteSpace(record.TargetRunId))
+        {
+            validationError = "Rejected promotion records must not include target run lineage.";
+            return false;
+        }
+
+        validationError = null;
+        return true;
     }
 }
 

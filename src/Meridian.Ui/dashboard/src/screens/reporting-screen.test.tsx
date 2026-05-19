@@ -390,6 +390,34 @@ describe("ReportingScreen", () => {
     expect(within(exportStatus).getByText(/audit\/export-1\.md/)).toBeInTheDocument();
   });
 
+  it("renders structured backend validation detail for export failures", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      text: async () => JSON.stringify({
+        title: "Validation failed",
+        detail: "One or more validation errors occurred.",
+        errors: {
+          profileId: ["Profile is required."],
+          approvalReason: ["Approval reason must cite packet evidence."]
+        }
+      })
+    });
+
+    renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting"] });
+
+    await user.click(screen.getByRole("row", { name: /select audit pack export profile/i }));
+    await user.click(screen.getByRole("button", { name: "Run Audit Pack export analysis" }));
+
+    const exportStatus = await screen.findByRole("status", { name: "Reporting export status" });
+    expect(within(exportStatus).getByText("Audit Pack export failed. One or more validation errors occurred.")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("Endpoint returned 400 for /api/export/analysis.")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("Validation failed")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("profileId: Profile is required.")).toBeInTheDocument();
+    expect(within(exportStatus).getByText("approvalReason: Approval reason must cite packet evidence.")).toBeInTheDocument();
+  });
+
   it("renders explicit empty states for missing reporting profiles and pack targets", () => {
     const emptyGovernance: GovernanceWorkspaceResponse = {
       ...governance,

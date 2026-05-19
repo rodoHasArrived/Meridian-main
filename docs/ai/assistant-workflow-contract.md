@@ -17,6 +17,7 @@ The current repository evidence supports these AI surfaces:
 | --- | --- | --- |
 | Root assistant compatibility | `AGENTS.md`, `CLAUDE.md` | Root-level project context and compatibility for agents that read conventional files |
 | Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml` | Repo-local specialist skills, OpenAI/Codex metadata, and environment entrypoints |
+| Agent Skills-compatible hosts | `.agents/skills/`, `.agents/skills/_shared/project-context.md`, `.agents/skills/*/agents/openai.yaml` | Portable `open-agent-skills-v1` packages and host-neutral skill metadata |
 | Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/` | Claude agent definitions, portable skill packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
 | MCP-compatible clients | `src/Meridian.Mcp/`, `src/Meridian.McpServer/`, `docs/ai/navigation/README.md`, `docs/ai/generated/repo-navigation.json` | Tool, prompt, resource, and navigation access for any MCP client |
@@ -24,9 +25,12 @@ The current repository evidence supports these AI surfaces:
 | Reusable prompt templates | `.github/prompts/`, `docs/ai/prompts/README.md` | Model-agnostic prompts for Copilot Chat, Claude Code, ChatGPT, and manual assistant sessions |
 | Shared AI documentation | `docs/ai/`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md` | Human-readable indexes, routing rules, known-error prevention, and shared project grounding |
 
-No tracked `.cursor/`, `.windsurf/`, `.continue/`, `.cline/`, `.roo/`, or Gemini-specific
-instruction surface was found during the 2026-04-28 scan. Add one only when there is an actual
-tooling need and link it from `docs/ai/README.md`.
+The AI inventory checker also watches optional IDE/provider assistant entrypoints such as
+`.cursor/`, `.windsurf/`, `.continue/`, `.cline/`, `.roo/`, `.cursorrules`, `.windsurfrules`,
+`.clinerules`, `.roomodes`, `GEMINI.md`, and `.gemini/`. No tracked Cursor, Windsurf, Continue,
+Cline, Roo, or Gemini instruction surface was found during the 2026-05-19 scan. Add one only when
+there is an actual tooling need, then list the exact entrypoint in this contract and
+`docs/ai/README.md`.
 
 ---
 
@@ -87,15 +91,17 @@ Every assistant and automation should use the same high-level flow:
 
 | Topic | Source of truth | Mirrors or consumers |
 | --- | --- | --- |
-| Project framing, commands, and architecture | `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
+| Project framing, commands, and architecture | `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
 | Repo routing and subsystem ownership | `docs/ai/generated/repo-navigation.json`, `docs/ai/navigation/README.md` | MCP navigation resources/tools, generated markdown, navigation agents and skills |
 | Known AI mistakes | `docs/ai/ai-known-errors.md` | Copilot instructions, Claude/Codex skills, documentation workflow intake |
 | Codex skill catalog | `.codex/skills/README.md`, `docs/ai/skills/README.md` | Codex UI metadata in `agents/openai.yaml` |
+| Agent Skills-compatible package catalog | `.agents/skills/`, `docs/ai/skills/README.md` | Host-neutral portable Agent Skill packages and `agents/openai.yaml` metadata |
 | Claude agent and skill catalog | `.claude/agents/`, `.claude/skills/`, `docs/ai/agents/README.md`, `docs/ai/skills/README.md` | Portable skill packages and Claude settings |
 | Copilot agents, prompts, and path rules | `.github/agents/`, `.github/prompts/`, `.github/instructions/`, `.github/copilot-instructions.md` | `docs/ai/agents/README.md`, `docs/ai/prompts/README.md`, `docs/ai/instructions/README.md` |
 | MCP tools, prompts, and resources | `src/Meridian.Mcp/`, `src/Meridian.McpServer/` | `docs/ai/navigation/README.md`, generated repo-navigation artifacts |
 | AI prompt generation and evaluation | `.github/workflows/prompt-generation.yml`, `.github/workflows/skill-evals.yml`, skill `evals/` folders | Generated prompt files and eval reports |
 | Assistant entrypoints and provider config | `AGENTS.md`, `CLAUDE.md`, `.codex/config.toml`, `.codex/environments/`, `.claude/settings.json`, `.claude/settings.local.json`, `.github/copilot-instructions.md` | AI inventory drift checker, root shims, provider-specific startup/config flows |
+| Optional IDE/provider assistant entrypoints | `build/scripts/docs/check-ai-inventory.py`, this contract, `docs/ai/README.md` | Cursor, Windsurf, Continue, Cline, Roo, or Gemini files only when a real repo usage path is added |
 
 ---
 
@@ -108,8 +114,9 @@ Use this checklist when changing any AI-related asset:
 - [ ] Confirm whether the change is shared policy, host-specific mechanics, or generated content.
 - [ ] Update the shared source first when the rule is provider-agnostic.
 - [ ] Update only the provider-specific files that need host mechanics or discoverability links.
-- [ ] Keep shared project context mirrored between `.codex/skills/_shared/project-context.md` and
-      `.claude/skills/_shared/project-context.md` when current project framing changes.
+- [ ] Keep shared project context mirrored across `.codex/skills/_shared/project-context.md`,
+      `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`
+      when current project framing changes.
 - [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard first,
       retained WPF support only when needed, and visible root workspaces limited to `Trading`,
       `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
@@ -163,4 +170,4 @@ Before adding support for a new assistant, IDE, model provider, or automation:
 
 ---
 
-_Last Updated: 2026-05-13_
+_Last Updated: 2026-05-19_

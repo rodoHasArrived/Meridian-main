@@ -51,14 +51,6 @@ internal sealed class SecurityMasterCommands : ICliCommand
         if (string.Equals(provider, "edgar", StringComparison.OrdinalIgnoreCase))
             return await ExecuteEdgarIngestAsync(args, ct).ConfigureAwait(false);
 
-        if (_importService is null)
-        {
-            Console.Error.WriteLine("Security Master is not configured.");
-            Console.Error.WriteLine("Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to use this command.");
-            _log.Warning("--security-master-ingest invoked but Security Master is not configured");
-            return CliResult.Fail(ErrorCode.ConfigurationInvalid);
-        }
-
         // --- File-based ingest path ---
         return await ExecuteFileIngestAsync(args, ct).ConfigureAwait(false);
     }
@@ -217,6 +209,14 @@ internal sealed class SecurityMasterCommands : ICliCommand
         {
             Console.Error.WriteLine($"Unsupported file format: {extension}. Only .csv and .json are supported.");
             return CliResult.Fail(ErrorCode.ValidationFailed);
+        }
+
+        if (_importService is null)
+        {
+            Console.Error.WriteLine("Security Master is not configured.");
+            Console.Error.WriteLine("Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to use this command.");
+            _log.Warning("--security-master-ingest invoked but Security Master is not configured");
+            return CliResult.Fail(ErrorCode.ConfigurationInvalid);
         }
 
         _log.Information("Starting Security Master ingest from {File}", filePath);

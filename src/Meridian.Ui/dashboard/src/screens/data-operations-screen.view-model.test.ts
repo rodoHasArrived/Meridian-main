@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import * as workstationApi from "@/lib/api";
+import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
@@ -18,6 +19,7 @@ import {
   buildProviderRow,
   buildProviderSection,
   buildProviderSetupDialogState,
+  buildProviderSetupSuccessMetadata,
   buildProviderSetupSuccessActions,
   buildRouteFocusCardState,
   buildSelectedExportDetail,
@@ -373,6 +375,58 @@ describe("data-operations-screen view model", () => {
     expect(result.current.busy).toBe(false);
   });
 
+  it("surfaces structured preview errors with operator-visible detail lines", async () => {
+    const idleProgress: BackfillProgressResponse = {
+      active: false,
+      provider: null,
+      symbols: [],
+      message: null
+    };
+    const services = {
+      preview: async () => {
+        throw createApiErrorFromResponseBody(
+          "/api/backfill/preview",
+          400,
+          JSON.stringify({
+            title: "Backfill validation failed",
+            detail: "Provider rejected the requested date window.",
+            errors: {
+              symbols: ["At least one supported symbol is required."]
+            }
+          })
+        );
+      },
+      run: async (request: BackfillTriggerRequest) => ({ ...preview, symbols: request.symbols }),
+      getProgress: async () => idleProgress
+    };
+    const workspace: DataOperationsWorkspaceResponse = {
+      metrics: [],
+      providers,
+      backfills: [],
+      exports: []
+    };
+    const { result } = renderHook(() => useDataOperationsViewModel(workspace, "/data/backfills", services));
+
+    await waitFor(() => expect(result.current.form.provider).toBe("polygon"));
+
+    act(() => {
+      result.current.updateBackfillForm("symbols", "AAPL");
+    });
+
+    await act(async () => {
+      await result.current.previewBackfill();
+    });
+
+    expect(result.current.error).toEqual({
+      summary: "Provider rejected the requested date window.",
+      details: [
+        "Endpoint returned 400 for /api/backfill/preview.",
+        "Backfill validation failed",
+        "symbols: At least one supported symbol is required."
+      ]
+    });
+  });
+
   it("derives backfill preview and completion result cards", () => {
     const previewCard = buildBackfillResultCardState(preview, "preview");
 
@@ -683,6 +737,37 @@ describe("data-operations-screen view model", () => {
     ]);
   });
 
+  it("derives safe provider setup routing and credential metadata from setup results", () => {
+    const metadata = buildProviderSetupSuccessMetadata({
+      success: true,
+      providerId: "provider-alpaca-paper",
+      providerName: "Alpaca paper",
+      message: "Alpaca paper was configured.",
+      error: null,
+      connectionId: "provider-alpaca-paper",
+      bindingIds: ["provider-alpaca-paper-RealtimeMarketData", "provider-alpaca-paper-HistoricalBars"],
+      credentialState: "Configured",
+      credentialSource: "ExternalVaultReference",
+      credentialReference: "vault:alpaca/paper",
+      environment: "paper",
+      warnings: ["Credential verification still needs to run."]
+    });
+
+    expect(metadata.rows).toEqual([
+      { id: "connection-id", label: "Connection", value: "provider-alpaca-paper" },
+      {
+        id: "binding-ids",
+        label: "Bindings",
+        value: "provider-alpaca-paper-RealtimeMarketData, provider-alpaca-paper-HistoricalBars"
+      },
+      { id: "credential-state", label: "Credential", value: "Configured" },
+      { id: "credential-source", label: "Source", value: "External vault reference" },
+      { id: "environment", label: "Environment", value: "PAPER" }
+    ]);
+    expect(metadata.warnings).toEqual(["Credential verification still needs to run."]);
+    expect(metadata.rows.map((row) => row.value).join(" ")).not.toContain("vault:alpaca/paper");
+  });
+
   it("ignores stale provider setup responses after a newer submission settles", async () => {
     const setupRequests: Array<{
       resolve: (value: Awaited<ReturnType<typeof workstationApi.setupProvider>>) => void;
@@ -739,6 +824,50 @@ describe("data-operations-screen view model", () => {
       expect(result.current.providerPhase).toBe("success");
       expect(result.current.providerSetupResult?.providerName).toBe("Alpaca paper");
       expect(result.current.providerSetupError).toBeNull();
+    } finally {
+      setupProvider.mockRestore();
+    }
+  });
+
+  it("surfaces structured provider setup errors without exposing secrets", async () => {
+    const setupProvider = vi.spyOn(workstationApi, "setupProvider").mockRejectedValue(
+      createApiErrorFromResponseBody(
+        "/api/providers/configure",
+        403,
+        JSON.stringify({
+          title: "Credential verification failed",
+          detail: "Paper trading credentials were rejected by the provider.",
+          errors: {
+            apiKey: ["Verify the configured key against the selected environment."]
+          }
+        })
+      )
+    );
+
+    try {
+      const { result } = renderHook(() => useDataOperationsViewModel(null, "/data"));
+
+      act(() => {
+        result.current.updateProviderForm("kind", "alpaca");
+        result.current.updateProviderForm("apiKey", "key-123");
+        result.current.updateProviderForm("apiSecret", "secret-456");
+      });
+
+      await act(async () => {
+        await result.current.submitProviderSetup();
+      });
+
+      expect(result.current.providerPhase).toBe("error");
+      expect(result.current.providerSetupError).toEqual({
+        summary: "Paper trading credentials were rejected by the provider.",
+        details: [
+          "Endpoint returned 403 for /api/providers/configure.",
+          "Credential verification failed",
+          "apiKey: Verify the configured key against the selected environment."
+        ]
+      });
+      expect(result.current.providerSetupError?.details.join(" ")).not.toContain("secret-456");
+      expect(result.current.providerSetupError?.details.join(" ")).not.toContain("key-123");
     } finally {
       setupProvider.mockRestore();
     }

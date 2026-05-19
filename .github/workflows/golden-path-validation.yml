@@ -101,6 +101,7 @@ jobs:
           name: pilot-acceptance-evidence
           path: |
             artifacts/pilot-acceptance/latest/pilot-readiness.json
+            artifacts/pilot-acceptance/latest/pilot-readiness.md
             artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md
             artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.json
             artifacts/test-results/pilot-acceptance/

@@ -26,6 +26,8 @@ param(
     [ValidateRange(0, [int]::MaxValue)]
     [int]$OutputRetainLatest = 5,
 
+    [switch]$SizeOptimized,
+
     [switch]$Help
 )
 
@@ -80,6 +82,24 @@ function Write-Error {
     param([string]$Message)
     Write-Host "[ERROR] " -ForegroundColor Red -NoNewline
     Write-Host $Message
+}
+
+function Get-SizeOptimizedPublishArguments {
+    if (-not $SizeOptimized) {
+        return @()
+    }
+
+    return @(
+        "-maxcpucount:1",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:DebugType=none",
+        "-p:DebugSymbols=false",
+        "-p:GenerateDocumentationFile=false",
+        "-p:PublishDocumentationFile=false",
+        "-p:CopyDocumentationFilesFromPackages=false",
+        "-p:PublishReadyToRun=false"
+    )
 }
 
 function Get-PublishOutputProcesses {
@@ -166,12 +186,14 @@ Parameters:
   -OutputDir    Output directory (default: ./dist)
   -OutputRetentionDays Days to keep generated publish output when OutputDir is under artifacts/publish (default: 14; 0 disables age pruning)
   -OutputRetainLatest Latest generated publish output directories to keep under artifacts/publish (default: 5; 0 disables count pruning)
+  -SizeOptimized Keep standalone single-file publishing but suppress publish-only debug/doc output and run MSBuild in a lower-parallelism mode
   -Help         Show this help message
 
 Examples:
   .\publish.ps1                                    # Build all platforms, all projects
   .\publish.ps1 -Platform linux-x64                # Build Linux x64 only
   .\publish.ps1 -Platform win-x64 -Project collector  # Build Windows collector only
+  .\publish.ps1 -Platform win-x64 -Project web-workstation -SizeOptimized -OutputDir artifacts/publish/local-size
   .\publish.ps1 -Version 2.0.0                     # Build with custom version
 "@
 }
@@ -187,6 +209,7 @@ function Publish-Project {
     $outputPath = Join-Path (Join-Path $ResolvedOutputDir $RuntimeId) $OutputSubDir
 
     Write-Info "Publishing $ProjectName for $RuntimeId..."
+    $sizeOptimizedArgs = Get-SizeOptimizedPublishArguments
 
     dotnet publish $ProjectPath `
         -c $Configuration `
@@ -198,7 +221,8 @@ function Publish-Project {
         -p:PublishTrimmed=true `
         -p:EnableCompressionInSingleFile=true `
         -p:IncludeNativeLibrariesForSelfExtract=true `
-        -p:IncludeAllContentForSelfExtract=true
+        -p:IncludeAllContentForSelfExtract=true `
+        @sizeOptimizedArgs
 
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to publish $ProjectName for $RuntimeId"
@@ -220,6 +244,7 @@ function Publish-DesktopApp {
     $platform = if ($RuntimeId -eq "win-arm64") { "ARM64" } else { "x64" }
 
     Write-Info "Publishing Meridian Desktop (WPF) for $RuntimeId..."
+    $sizeOptimizedArgs = Get-SizeOptimizedPublishArguments
 
     # Meridian Desktop is a WPF app with a separate assembly name.
     dotnet publish $DesktopProject `
@@ -231,7 +256,8 @@ function Publish-DesktopApp {
         -p:Platform=$platform `
         --self-contained true `
         -p:WindowsPackageType=None `
-        -p:PublishReadyToRun=false
+        -p:PublishReadyToRun=false `
+        @sizeOptimizedArgs
 
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to publish Meridian Desktop for $RuntimeId"
@@ -261,6 +287,7 @@ function Publish-WebWorkstationHost {
     $outputPath = Join-Path (Join-Path $ResolvedOutputDir $RuntimeId) "web-workstation"
 
     Write-Info "Publishing Meridian Web Workstation host for $RuntimeId..."
+    $sizeOptimizedArgs = Get-SizeOptimizedPublishArguments
 
     dotnet publish $WebWorkstationProject `
         -c $Configuration `
@@ -273,7 +300,8 @@ function Publish-WebWorkstationHost {
         -p:PublishTrimmed=false `
         -p:EnableCompressionInSingleFile=true `
         -p:IncludeNativeLibrariesForSelfExtract=true `
-        -p:IncludeAllContentForSelfExtract=true
+        -p:IncludeAllContentForSelfExtract=true `
+        @sizeOptimizedArgs
 
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to publish Meridian Web Workstation host for $RuntimeId"
@@ -344,6 +372,9 @@ New-Item -ItemType Directory -Path $ResolvedOutputDir -Force | Out-Null
 Write-Info "Building Meridian v$Version ($Configuration)"
 Write-Info "Target platforms: $($TargetPlatforms -join ', ')"
 Write-Info "Target projects: $Project"
+if ($SizeOptimized) {
+    Write-Info "Size-optimized standalone publish mode enabled"
+}
 Write-Host ""
 
 foreach ($rid in $TargetPlatforms) {

@@ -2,7 +2,9 @@ import {
   normalizeLocalWorkstationRoute,
   normalizeWorkspacePath,
   WORKSPACES,
+  WORKSTATION_ROUTE_CATALOG,
   workflowTargetPath,
+  workstationRouteWithQuery,
   workspaceForPath,
   workspacePath
 } from "@/lib/workspace";
@@ -635,7 +637,7 @@ function buildShellStatusPanel({
       actionAriaLabel: "Retry failed workstation slices",
       secondaryActionLabel: "Review diagnostics",
       secondaryActionAriaLabel: "Review Settings capability coverage for failed workstation slices",
-      secondaryActionHref: "/settings#backend-capability-coverage",
+      secondaryActionHref: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
       itemListLabel: "Failed workstation slices",
       items: failedItems
     };
@@ -747,38 +749,38 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
         id: "watchlist",
         label: "Watchlist",
         description: "Choose the monitored universe and starter packs before market-data validation.",
-        href: "/data/watchlist",
-        matchPath: "/data/watchlist"
+        href: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
+        matchPath: WORKSTATION_ROUTE_CATALOG.dataWatchlist
       },
       {
         id: "quotes",
         label: "Live quotes",
         description: "Inspect quote, tape, depth, and historical trend evidence for the active symbol.",
-        href: "/data/quotes",
-        matchPath: "/data/quotes",
+        href: WORKSTATION_ROUTE_CATALOG.dataQuotes,
+        matchPath: WORKSTATION_ROUTE_CATALOG.dataQuotes,
         preserveSymbol: true
       },
       {
         id: "alerts",
         label: "Price alerts",
         description: "Track threshold triggers and validate the quote feed behind watched symbols.",
-        href: "/data/alerts",
-        matchPath: "/data/alerts",
+        href: WORKSTATION_ROUTE_CATALOG.dataAlerts,
+        matchPath: WORKSTATION_ROUTE_CATALOG.dataAlerts,
         preserveSymbol: true
       },
       {
         id: "readiness",
         label: "Readiness",
         description: "Review paper-operation blockers, execution controls, replay evidence, and work items.",
-        href: "/trading/readiness",
-        matchPath: "/trading/readiness"
+        href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+        matchPath: WORKSTATION_ROUTE_CATALOG.tradingReadiness
       },
       {
         id: "provider-setup",
         label: "Provider setup",
         description: "Repair credentials, endpoint acknowledgement, and paper/live provider posture.",
-        href: "/settings#alpaca-provider-setup",
-        matchPath: "/settings",
+        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
+        matchPath: WORKSTATION_ROUTE_CATALOG.settings,
         matchHash: "#alpaca-provider-setup"
       }
     ]
@@ -792,43 +794,43 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
         id: "strategy-runs",
         label: "Run library",
         description: "Compare runs, inspect promotion history, and select the evidence candidate.",
-        href: "/strategy",
-        matchPath: "/strategy"
+        href: WORKSTATION_ROUTE_CATALOG.strategy,
+        matchPath: WORKSTATION_ROUTE_CATALOG.strategy
       },
       {
         id: "quant-lab",
         label: "Quant Lab",
         description: "Prototype scripts, parameters, plots, and diagnostics against trusted data.",
-        href: "/strategy/quant-lab",
-        matchPath: "/strategy/quant-lab"
+        href: WORKSTATION_ROUTE_CATALOG.strategyQuantLab,
+        matchPath: WORKSTATION_ROUTE_CATALOG.strategyQuantLab
       },
       {
         id: "covered-call",
         label: "Covered call",
         description: "Preview option chains, run covered-call scenarios, and inspect trade outcomes.",
-        href: "/strategy/covered-call",
-        matchPath: "/strategy/covered-call"
+        href: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall,
+        matchPath: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall
       },
       {
         id: "paper-readiness",
         label: "Paper readiness",
         description: "Confirm replay consistency, acceptance gates, execution controls, and approval blockers.",
-        href: "/trading/readiness",
-        matchPath: "/trading/readiness"
+        href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+        matchPath: WORKSTATION_ROUTE_CATALOG.tradingReadiness
       },
       {
         id: "portfolio-review",
         label: "Portfolio review",
         description: "Check exposure, account sync, positions, cash, and run-to-portfolio continuity.",
-        href: "/portfolio",
-        matchPath: "/portfolio"
+        href: WORKSTATION_ROUTE_CATALOG.portfolio,
+        matchPath: WORKSTATION_ROUTE_CATALOG.portfolio
       },
       {
         id: "evidence-review",
         label: "Evidence review",
         description: "Package lineage, stale evidence, and packet completeness for governed review.",
-        href: "/reporting/evidence",
-        matchPath: "/reporting/evidence"
+        href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
+        matchPath: WORKSTATION_ROUTE_CATALOG.reportingEvidence
       }
     ]
   },
@@ -841,36 +843,36 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
         id: "trading-readiness",
         label: "Readiness",
         description: "Review gates, replay, execution controls, trust checks, and operator work items.",
-        href: "/trading/readiness",
-        matchPath: "/trading/readiness"
+        href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+        matchPath: WORKSTATION_ROUTE_CATALOG.tradingReadiness
       },
       {
         id: "trading-cockpit",
         label: "Trading cockpit",
         description: "Stage paper orders, inspect positions, monitor fills, and control strategy actions.",
-        href: "/trading",
-        matchPath: "/trading"
+        href: WORKSTATION_ROUTE_CATALOG.trading,
+        matchPath: WORKSTATION_ROUTE_CATALOG.trading
       },
       {
         id: "portfolio-exposure",
         label: "Exposure",
         description: "Review household positions, account sync, cash, buying power, and risk posture.",
-        href: "/portfolio",
-        matchPath: "/portfolio"
+        href: WORKSTATION_ROUTE_CATALOG.portfolio,
+        matchPath: WORKSTATION_ROUTE_CATALOG.portfolio
       },
       {
         id: "reconciliation",
         label: "Reconciliation",
         description: "Resolve ledger, security, cash, and position breaks before accepting readiness.",
-        href: "/accounting/reconciliation",
-        matchPath: "/accounting/reconciliation"
+        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
       },
       {
         id: "report-packs",
         label: "Report packs",
         description: "Review governed output targets, evidence readiness, and export posture.",
-        href: "/reporting/report-packs",
-        matchPath: "/reporting/report-packs"
+        href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
+        matchPath: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
       }
     ]
   },
@@ -883,36 +885,36 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
         id: "security-master",
         label: "Security Master",
         description: "Review instrument identity, provider aliases, lots, conflicts, and coverage gaps.",
-        href: "/accounting/security-master",
-        matchPath: "/accounting/security-master"
+        href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster
       },
       {
         id: "reconciliation",
         label: "Reconciliation",
         description: "Inspect run breaks, tolerance profile health, sign-off status, and recovery actions.",
-        href: "/accounting/reconciliation",
-        matchPath: "/accounting/reconciliation"
+        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
       },
       {
         id: "ledger",
         label: "Ledger",
         description: "Validate trial balance, cash-flow context, account detail, and accounting basis.",
-        href: "/accounting/ledger",
-        matchPath: "/accounting/ledger"
+        href: WORKSTATION_ROUTE_CATALOG.accountingLedger,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingLedger
       },
       {
         id: "evidence",
         label: "Evidence",
         description: "Trace packet lineage, freshness, completeness, and unresolved evidence warnings.",
-        href: "/reporting/evidence",
-        matchPath: "/reporting/evidence"
+        href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
+        matchPath: WORKSTATION_ROUTE_CATALOG.reportingEvidence
       },
       {
         id: "report-packs",
         label: "Report packs",
         description: "Package close evidence into governed report outputs and approval-ready exports.",
-        href: "/reporting/report-packs",
-        matchPath: "/reporting/report-packs"
+        href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
+        matchPath: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
       }
     ]
   }
@@ -1392,7 +1394,7 @@ function buildWorkspaceErrorFocusItems(context: WorkflowContinuityStatusContext)
         id: `workspace-error:${key}`,
         label,
         detail: detail || "Workspace request failed.",
-        route: "/settings#backend-capability-coverage",
+        route: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
         workspaceLabel: workspace?.label ?? key,
         actionLabel: "Review diagnostics",
         tone: "blocked",
@@ -1406,7 +1408,7 @@ function buildWorkspaceErrorFocusItems(context: WorkflowContinuityStatusContext)
       id: "workspace-error:workflow-catalog",
       label: "Workflow catalog degraded",
       detail: context.workflowError,
-      route: "/settings#backend-capability-coverage",
+      route: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
       workspaceLabel: "Settings",
       actionLabel: "Review diagnostics",
       tone: "review",
@@ -1439,7 +1441,7 @@ function buildTradingFocusItems({ payload }: WorkflowContinuityStatusContext): O
         detail: readiness.replay.mismatchReasons.length > 0
           ? readiness.replay.mismatchReasons.join("; ")
           : "Latest replay verification does not match the active paper session.",
-        route: "/trading/readiness",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
         workspaceLabel: "Trading",
         actionLabel: "Open replay evidence",
         tone: "blocked",
@@ -1453,7 +1455,7 @@ function buildTradingFocusItems({ payload }: WorkflowContinuityStatusContext): O
         id: "trading-control:circuit-breaker",
         label: "Execution circuit breaker open",
         detail: readiness.controls.circuitBreakerReason ?? "Execution controls require operator review before paper operation.",
-        route: "/trading/readiness",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
         workspaceLabel: "Trading",
         actionLabel: "Open execution controls",
         tone: "blocked",
@@ -1470,7 +1472,7 @@ function buildTradingFocusItems({ payload }: WorkflowContinuityStatusContext): O
         detail: brokerage.lastError
           ?? ((brokerage.warnings ?? []).join("; ")
             || `${brokerage.positionCount} positions, ${brokerage.openOrderCount} open orders, and ${brokerage.securityMissingCount} missing securities in sync evidence.`),
-        route: brokerage.health === "Unlinked" ? "/settings#alpaca-provider-setup" : "/portfolio/brokerage-sync",
+        route: brokerage.health === "Unlinked" ? WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup : WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
         workspaceLabel: brokerage.health === "Unlinked" ? "Settings" : "Portfolio",
         actionLabel: brokerage.health === "Unlinked" ? "Fix provider setup" : "Open brokerage sync",
         tone: brokerage.health === "Stale" ? "review" : "blocked",
@@ -1501,7 +1503,7 @@ function buildDataFocusItems({ payload }: WorkflowContinuityStatusContext): Oper
         id: `data-export:${item.exportId}`,
         label: `${item.profile} export needs attention`,
         detail: `${item.target} export has ${item.rows} rows as of ${item.updatedAt}.`,
-        route: "/data",
+        route: WORKSTATION_ROUTE_CATALOG.data,
         workspaceLabel: "Data",
         actionLabel: "Open data exports",
         tone: "review",
@@ -1521,7 +1523,7 @@ function buildPortfolioFocusItems({ payload }: WorkflowContinuityStatusContext):
     id: "portfolio-risk",
     label: `Portfolio risk ${portfolio.risk.state.toLowerCase()}`,
     detail: portfolio.risk.summary,
-    route: "/portfolio",
+    route: WORKSTATION_ROUTE_CATALOG.portfolio,
     workspaceLabel: "Portfolio",
     actionLabel: "Open exposure",
     tone: portfolio.risk.state === "Constrained" ? "blocked" : "review",
@@ -1546,7 +1548,7 @@ function buildAccountingFocusItems({ payload }: WorkflowContinuityStatusContext)
         id: `reconciliation-run:${row.runId}`,
         label: `${row.strategyName} reconciliation open`,
         detail: `${formatCount(row.openBreakCount, "open break")} across ${formatCount(row.breakCount, "total break")}. Status: ${row.reconciliationStatus}.`,
-        route: "/accounting/reconciliation",
+        route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
         workspaceLabel: "Accounting",
         actionLabel: "Open reconciliation",
         tone: row.reconciliationStatus === "SecurityCoverageOpen" ? "blocked" : "review",
@@ -1558,7 +1560,7 @@ function buildAccountingFocusItems({ payload }: WorkflowContinuityStatusContext)
           id: "cash-flow-variance",
           label: "Cash-flow variance open",
           detail: governance.cashFlow.summary,
-          route: "/accounting",
+          route: WORKSTATION_ROUTE_CATALOG.accounting,
           workspaceLabel: "Accounting",
           actionLabel: "Open ledger",
           tone: governance.cashFlow.tone === "danger" ? "blocked" : "review",
@@ -1581,7 +1583,7 @@ function buildReportingFocusItems({ payload }: WorkflowContinuityStatusContext):
         id: "reporting:missing-report-pack-target",
         label: "Report-pack target missing",
         detail: "No governed report-pack targets are loaded for approval-ready output review.",
-        route: "/reporting/report-packs",
+        route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
         workspaceLabel: "Reporting",
         actionLabel: "Open report packs",
         tone: "review",
@@ -1638,7 +1640,7 @@ function buildOperatorFocusCandidateFromGate(
     id: `trading-gate:${gate.gateId}`,
     label: gate.label,
     detail: gate.detail,
-    route: "/trading/readiness",
+    route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
     workspaceLabel: "Trading",
     actionLabel: "Open readiness",
     tone: gate.status === "Blocked" ? "blocked" : "review",
@@ -1659,7 +1661,7 @@ function buildOperatorFocusCandidateFromProvider(
     id: `provider:${provider.provider}`,
     label: `${provider.provider} provider ${provider.status.toLowerCase()}`,
     detail: provider.recommendedAction ?? provider.note,
-    route: "/data/providers",
+    route: WORKSTATION_ROUTE_CATALOG.dataProviders,
     workspaceLabel: "Data",
     actionLabel: "Open provider trust",
     tone: provider.status === "Degraded" ? "blocked" : "review",
@@ -1680,7 +1682,7 @@ function buildOperatorFocusCandidateFromBackfill(
     id: `backfill:${backfill.jobId}`,
     label: `${backfill.scope} backfill needs review`,
     detail: `${backfill.provider} backfill is ${backfill.progress}; updated ${backfill.updatedAt}.`,
-    route: "/data/backfills",
+    route: WORKSTATION_ROUTE_CATALOG.dataBackfills,
     workspaceLabel: "Data",
     actionLabel: "Open backfills",
     tone: "review",
@@ -1701,7 +1703,7 @@ function buildOperatorFocusCandidateFromBreak(
     id: `break:${item.breakId}`,
     label: `${item.category} break ${item.status === "Open" ? "open" : "in review"}`,
     detail: item.recommendedAction ?? item.explainabilitySummary ?? item.reason,
-    route: normalizeLocalWorkstationRoute(item.routingTarget) ?? "/accounting/reconciliation",
+    route: normalizeLocalWorkstationRoute(item.routingTarget) ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
     workspaceLabel: "Accounting",
     actionLabel: "Open break queue",
     tone: item.status === "Open" ? "blocked" : "review",
@@ -1722,7 +1724,7 @@ function buildOperatorFocusCandidateFromResearchRun(
     id: `research-run:${run.id}`,
     label: `${run.strategyName} run needs review`,
     detail: run.notes || `${run.engine} ${run.mode} run on ${run.dataset}.`,
-    route: "/strategy",
+    route: WORKSTATION_ROUTE_CATALOG.strategy,
     workspaceLabel: "Strategy",
     actionLabel: "Open run library",
     tone: "review",
@@ -1758,7 +1760,7 @@ function buildOperatorFocusCandidate({
 
 function routeForOperatorWorkItem(item: OperatorWorkItem): string {
   if (item.kind === "BrokerageSync") {
-    return "/settings#alpaca-provider-setup";
+    return WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup;
   }
 
   return normalizeLocalWorkstationRoute(item.targetRoute)
@@ -1779,18 +1781,18 @@ function fallbackRouteForOperatorWorkItemKind(kind: OperatorWorkItem["kind"]): s
     case "PaperReplay":
     case "PromotionReview":
     case "ExecutionControl":
-      return "/trading/readiness";
+      return WORKSTATION_ROUTE_CATALOG.tradingReadiness;
     case "BrokerageSync":
-      return "/settings#alpaca-provider-setup";
+      return WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup;
     case "SecurityMasterCoverage":
-      return "/accounting/security-master";
+      return WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster;
     case "ReconciliationBreak":
     case "LedgerPeriodClose":
-      return "/accounting/reconciliation";
+      return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
     case "ReportPackApproval":
-      return "/reporting/report-packs";
+      return WORKSTATION_ROUTE_CATALOG.reportingReportPacks;
     case "ProviderTrustGate":
-      return "/data/providers";
+      return WORKSTATION_ROUTE_CATALOG.dataProviders;
   }
 }
 
@@ -1986,7 +1988,7 @@ function buildDataLinkedContextItem(
   symbol: string
 ): AppShellLinkedContextItem {
   const data = payload.dataOperations;
-  const route = appendSearchValue("/data/quotes", "symbol", symbol);
+  const route = appendSearchValue(WORKSTATION_ROUTE_CATALOG.dataQuotes, "symbol", symbol);
   if (!data) {
     return buildLinkedContextItem({
       id: "data-quotes",
@@ -2041,7 +2043,7 @@ function buildTradingLinkedContextItem(
   symbol: string
 ): AppShellLinkedContextItem {
   const trading = payload.trading;
-  const route = appendSearchValue("/trading", "symbol", symbol);
+  const route = appendSearchValue(WORKSTATION_ROUTE_CATALOG.trading, "symbol", symbol);
   if (!trading) {
     return buildLinkedContextItem({
       id: "trading-cockpit",
@@ -2109,7 +2111,7 @@ function buildPortfolioLinkedContextItem(
   symbol: string
 ): AppShellLinkedContextItem {
   const portfolio = payload.portfolio;
-  const route = appendSearchValue("/portfolio", "symbol", symbol);
+  const route = appendSearchValue(WORKSTATION_ROUTE_CATALOG.portfolio, "symbol", symbol);
   if (!portfolio) {
     return buildLinkedContextItem({
       id: "portfolio-exposure",
@@ -2163,7 +2165,7 @@ function buildAccountingLinkedContextItem(
   symbol: string
 ): AppShellLinkedContextItem {
   const governance = payload.governance;
-  const route = appendSearchValue("/accounting/reconciliation", "symbol", symbol);
+  const route = appendSearchValue(WORKSTATION_ROUTE_CATALOG.accountingReconciliation, "symbol", symbol);
   if (!governance) {
     return buildLinkedContextItem({
       id: "accounting-reconciliation",
@@ -2197,7 +2199,7 @@ function buildReportingLinkedContextItem(
   symbol: string
 ): AppShellLinkedContextItem {
   const reporting = payload.reporting;
-  const route = appendSearchValue("/reporting/evidence", "symbol", symbol);
+  const route = appendSearchValue(WORKSTATION_ROUTE_CATALOG.reportingEvidence, "symbol", symbol);
   if (!reporting) {
     return buildLinkedContextItem({
       id: "reporting-evidence",
@@ -2332,7 +2334,7 @@ function buildTradingEvidenceTimelineItems({ payload }: WorkflowContinuityStatus
       detail: readiness.readyForPaperOperation
         ? "Ready for paper operation with the latest readiness snapshot."
         : `${formatCount((readiness.acceptanceGates ?? []).filter((gate) => gate.status !== "Ready").length, "gate")} and ${formatCount((readiness.workItems ?? []).length, "work item")} require operator review.`,
-      route: "/trading/readiness",
+      route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
       workspaceLabel: "Trading",
       timestamp: readiness.asOf,
       tone: toneFromReadinessStatus(readiness.overallStatus),
@@ -2360,7 +2362,7 @@ function buildTradingEvidenceTimelineItems({ payload }: WorkflowContinuityStatus
         id: `trading-replay:${readiness.replay.sessionId}`,
         label: readiness.replay.isConsistent ? "Replay verification passed" : "Replay verification mismatch",
         detail: `${formatCount(readiness.replay.comparedFillCount, "fill")}, ${formatCount(readiness.replay.comparedOrderCount, "order")}, and ${formatCount(readiness.replay.comparedLedgerEntryCount, "ledger entry", "ledger entries")} compared.${readiness.replay.verificationAuditId ? ` Audit: ${readiness.replay.verificationAuditId}.` : ""}`,
-        route: "/trading/readiness",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
         workspaceLabel: "Trading",
         timestamp: readiness.replay.verifiedAt,
         tone: readiness.replay.isConsistent ? "ready" : "blocked",
@@ -2374,7 +2376,7 @@ function buildTradingEvidenceTimelineItems({ payload }: WorkflowContinuityStatus
         id: "trading-control:circuit-breaker",
         label: readiness.controls.circuitBreakerOpen ? "Execution circuit breaker open" : "Execution circuit breaker changed",
         detail: readiness.controls.circuitBreakerReason ?? "Execution controls changed for the paper cockpit.",
-        route: "/trading/readiness",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
         workspaceLabel: "Trading",
         timestamp: readiness.controls.circuitBreakerChangedAt,
         tone: readiness.controls.circuitBreakerOpen ? "blocked" : "ready",
@@ -2390,7 +2392,7 @@ function buildTradingEvidenceTimelineItems({ payload }: WorkflowContinuityStatus
         detail: readiness.brokerageSync.lastError
           ?? ((readiness.brokerageSync.warnings ?? []).join("; ")
             || `${formatCount(readiness.brokerageSync.positionCount, "position")}, ${formatCount(readiness.brokerageSync.openOrderCount, "open order")}, and ${formatCount(readiness.brokerageSync.securityMissingCount, "missing security", "missing securities")} in sync evidence.`),
-        route: readiness.brokerageSync.health === "Unlinked" ? "/settings#alpaca-provider-setup" : "/portfolio/brokerage-sync",
+        route: readiness.brokerageSync.health === "Unlinked" ? WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup : WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
         workspaceLabel: readiness.brokerageSync.health === "Unlinked" ? "Settings" : "Portfolio",
         timestamp: readiness.brokerageSync.lastAttemptedSyncAt ?? readiness.brokerageSync.lastSuccessfulSyncAt,
         tone: readiness.brokerageSync.health === "Healthy" ? "ready" : readiness.brokerageSync.health === "Stale" ? "review" : "blocked",
@@ -2405,7 +2407,7 @@ function buildTradingEvidenceTimelineItems({ payload }: WorkflowContinuityStatus
       id: `trading-fill:${fill.fillId}`,
       label: `${fill.side} fill ${fill.symbol}`,
       detail: `${fill.quantity} @ ${fill.price} on ${fill.venue}. Order: ${fill.orderId}.`,
-      route: "/trading",
+      route: WORKSTATION_ROUTE_CATALOG.trading,
       workspaceLabel: "Trading",
       timestamp: fill.timestamp,
       tone: "ready",
@@ -2428,7 +2430,7 @@ function buildDataEvidenceTimelineItems({ payload }: WorkflowContinuityStatusCon
       id: `data-backfill:${backfill.jobId}`,
       label: `${backfill.scope} backfill ${backfill.status.toLowerCase()}`,
       detail: `${backfill.provider} backfill progress: ${backfill.progress}.`,
-      route: "/data/backfills",
+      route: WORKSTATION_ROUTE_CATALOG.dataBackfills,
       workspaceLabel: "Data",
       timestamp: backfill.updatedAt,
       tone: backfill.status === "Review" ? "review" : "pending",
@@ -2439,7 +2441,7 @@ function buildDataEvidenceTimelineItems({ payload }: WorkflowContinuityStatusCon
       id: `data-export:${item.exportId}`,
       label: `${item.profile} export ${item.status.toLowerCase()}`,
       detail: `${item.target} export has ${item.rows} rows.`,
-      route: "/data",
+      route: WORKSTATION_ROUTE_CATALOG.data,
       workspaceLabel: "Data",
       timestamp: item.updatedAt,
       tone: item.status === "Attention" ? "review" : item.status === "Running" ? "pending" : "ready",
@@ -2455,7 +2457,7 @@ function buildStrategyEvidenceTimelineItems({ payload }: WorkflowContinuityStatu
       id: `strategy-run:${run.id}`,
       label: `${run.strategyName} ${run.status.toLowerCase()}`,
       detail: `${run.engine} ${run.mode} run on ${run.dataset}. ${run.notes}`,
-      route: "/strategy",
+      route: WORKSTATION_ROUTE_CATALOG.strategy,
       workspaceLabel: "Strategy",
       timestamp: run.lastUpdated,
       tone: run.status === "Needs Review" ? "review" : run.status === "Running" || run.status === "Queued" ? "pending" : "ready",
@@ -2471,7 +2473,7 @@ function buildPortfolioEvidenceTimelineItems({ payload }: WorkflowContinuityStat
       id: `portfolio-run:${run.runId}`,
       label: `${run.strategyName} portfolio ${run.status.toLowerCase()}`,
       detail: `${run.engine} ${run.mode} run, PnL ${run.pnl}, promotion ${run.promotionState ?? "none"}.`,
-      route: "/portfolio",
+      route: WORKSTATION_ROUTE_CATALOG.portfolio,
       workspaceLabel: "Portfolio",
       timestamp: run.lastUpdated,
       tone: run.status.toLowerCase().includes("review") ? "review" : "ready",
@@ -2492,7 +2494,7 @@ function buildAccountingEvidenceTimelineItems({ payload }: WorkflowContinuitySta
       id: `accounting-break:${item.breakId}`,
       label: `${item.category} break ${item.status.toLowerCase()}`,
       detail: item.recommendedAction ?? item.explainabilitySummary ?? item.reason,
-      route: normalizeLocalWorkstationRoute(item.routingTarget) ?? "/accounting/reconciliation",
+      route: normalizeLocalWorkstationRoute(item.routingTarget) ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
       workspaceLabel: "Accounting",
       timestamp: item.lastUpdatedAt,
       tone: item.status === "Open" ? "blocked" : item.status === "InReview" ? "review" : "ready",
@@ -2503,7 +2505,7 @@ function buildAccountingEvidenceTimelineItems({ payload }: WorkflowContinuitySta
       id: `accounting-reconciliation:${row.runId}`,
       label: `${row.strategyName} reconciliation ${row.reconciliationStatus}`,
       detail: `${formatCount(row.openBreakCount, "open break")} across ${formatCount(row.breakCount, "total break")}. Status: ${row.status}.`,
-      route: "/accounting/reconciliation",
+      route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
       workspaceLabel: "Accounting",
       timestamp: row.lastUpdated,
       tone: row.openBreakCount > 0 ? row.reconciliationStatus === "SecurityCoverageOpen" ? "blocked" : "review" : "ready",
@@ -2615,30 +2617,30 @@ function toneFromSystemEventType(type: "info" | "warning" | "error"): AppShellWo
 function routeForSystemEvent(source: string): string {
   const normalized = source.toLowerCase();
   if (normalized.includes("trading") || normalized.includes("execution") || normalized.includes("paper")) {
-    return "/trading/readiness";
+    return WORKSTATION_ROUTE_CATALOG.tradingReadiness;
   }
 
   if (normalized.includes("portfolio") || normalized.includes("brokerage")) {
-    return "/portfolio";
+    return WORKSTATION_ROUTE_CATALOG.portfolio;
   }
 
   if (normalized.includes("reconciliation") || normalized.includes("ledger") || normalized.includes("accounting")) {
-    return "/accounting/reconciliation";
+    return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
   }
 
   if (normalized.includes("report") || normalized.includes("evidence")) {
-    return "/reporting/evidence";
+    return WORKSTATION_ROUTE_CATALOG.reportingEvidence;
   }
 
   if (normalized.includes("strategy") || normalized.includes("research")) {
-    return "/strategy";
+    return WORKSTATION_ROUTE_CATALOG.strategy;
   }
 
   if (normalized.includes("data") || normalized.includes("provider") || normalized.includes("backfill")) {
-    return "/data/providers";
+    return WORKSTATION_ROUTE_CATALOG.dataProviders;
   }
 
-  return "/settings#backend-capability-coverage";
+  return WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage;
 }
 
 function dedupeEvidenceTimelineCandidates(candidates: EvidenceTimelineCandidate[]): EvidenceTimelineCandidate[] {
@@ -2956,32 +2958,32 @@ const developmentFixtureDemoSteps = [
   {
     id: "watchlist",
     step: "1",
-    href: "/data/watchlist",
-    matchPath: "/data/watchlist",
+    href: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
+    matchPath: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
     label: "Watchlist",
     ariaLabel: "Open sample watchlist demo lane"
   },
   {
     id: "quotes",
     step: "2",
-    href: "/data/quotes?symbol=AAPL",
-    matchPath: "/data/quotes",
+    href: workstationRouteWithQuery("dataQuotes", { symbol: "AAPL" }),
+    matchPath: WORKSTATION_ROUTE_CATALOG.dataQuotes,
     label: "Quotes",
     ariaLabel: "Open sample live quotes for AAPL"
   },
   {
     id: "readiness",
     step: "3",
-    href: "/trading/readiness",
-    matchPath: "/trading/readiness",
+    href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+    matchPath: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
     label: "Readiness",
     ariaLabel: "Open sample readiness console"
   },
   {
     id: "connect",
     step: "4",
-    href: "/settings#alpaca-provider-setup",
-    matchPath: "/settings",
+    href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
+    matchPath: WORKSTATION_ROUTE_CATALOG.settings,
     matchHash: "#alpaca-provider-setup",
     label: "Connect",
     ariaLabel: "Open Alpaca paper provider setup"

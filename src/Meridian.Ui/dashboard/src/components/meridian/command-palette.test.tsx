@@ -141,7 +141,29 @@ describe("CommandPalette", () => {
     await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "missing command");
 
     expect(screen.getByText("0 of 20 commands match")).toBeInTheDocument();
+    const search = screen.getByRole("searchbox", { name: "Search command palette" });
+    expect(search).toHaveAttribute("aria-describedby", "command-palette-filter-count command-palette-empty-state-detail");
+    expect(screen.getByText("Empty")).toBeInTheDocument();
     expect(screen.getByText("No matching commands")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      'No commands match "missing command". Clear the search to return to all workstation commands.'
+    );
+    expect(screen.getByRole("button", { name: "Clear command palette search for missing command" })).toBeInTheDocument();
+  });
+
+  it("clears no-match search results and restores focus to search", async () => {
+    const user = userEvent.setup();
+
+    renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, { initialEntries: ["/trading"] });
+
+    const search = screen.getByRole("searchbox", { name: "Search command palette" });
+    await user.type(search, "missing command");
+    await user.click(screen.getByRole("button", { name: "Clear command palette search for missing command" }));
+
+    expect(search).toHaveValue("");
+    expect(search).toHaveFocus();
+    expect(screen.getByText("20 commands available")).toBeInTheDocument();
+    expect(screen.queryByText("No matching commands")).not.toBeInTheDocument();
   });
 
   it("renders ranked operator focus actions as first-class commands", () => {

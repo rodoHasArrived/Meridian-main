@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-05-18
+**Reviewed:** 2026-05-19
 
 Use this guide before removing files or reorganizing the repository.
 
@@ -23,10 +23,16 @@ These are local/generated outputs and can be regenerated:
 - `bin/`
 - `obj/`
 - `node_modules/`
+- `src/Meridian.Ui/dashboard/node_modules/`
+- `src/Meridian.Ui/dashboard/dist/`
+- `src/Meridian.Ui/dashboard/coverage/`
 - `TestResults/`
 - `coverage/`
+- `.artifacts/`
 - `artifacts/install*/`
 - `artifacts/publish/`
+- `.tools/` and `.tools/.store/` local diagnostic-tool caches
+- `src/Meridian.Ui/dashboard/artifacts/`
 - `src/Meridian.Ui/dashboard/tsc-output.txt`
 - `docs/docfx/docfx-log.json`
 - `docs/docfx/temp-metadata-only.json`
@@ -39,8 +45,9 @@ is inside `C:\Dev\Meridian-main`.
 - `wwwroot/workstation/`: generated workstation assets are currently tracked.
 - `docs/docfx/api/`: generated API metadata is currently part of the DocFX
   source path and should be regenerated or policy-reviewed before removal.
-- `src/Meridian.Ui/dashboard/artifacts/automation/`: contains tracked screenshot
-  evidence; prune only with an explicit evidence-retention decision.
+- `artifacts/provider-validation/`: generated run evidence can be intentionally
+  retained when current status docs point to it; do not bulk-delete it with
+  generic artifact cleanup.
 - `.agents/`, `.codex/`, `.claude/`, and `.github/prompts/`: overlapping agent
   guidance is intentional until the AI guidance inventory is reconciled.
 - `archive/`: historical reference only, but retained for traceability.
@@ -67,6 +74,16 @@ from the current checkout before publishing documentation.
   surfaces have been checked.
 - Keep generated reports out of source unless the docs automation contract
   explicitly tracks them.
+- Do not vendor global or local tool restore caches into `.tools/`; install
+  diagnostics such as `dotnet-dump` on demand outside source control.
+
+## Script Ownership
+
+- `scripts/dev/`: local developer workflows, desktop/web capture, cleanup, and
+  smoke probes.
+- `build/scripts/`: build, docs, install, publish, hooks, and validation
+  automation.
+- `scripts/ai/`: AI maintenance entrypoints and orchestration wrappers.
 
 ## Validation
 

@@ -70,6 +70,31 @@ public sealed class BackfillCoordinatorPreviewTests : IDisposable
         symbol.WouldOverwrite.Should().BeFalse();
     }
 
+    [Fact]
+    public async Task PreviewAsync_DailyRequest_DetectsCurrentStorageLayout()
+    {
+        await using var fixture = await CreateCoordinatorAsync();
+        var symbolDir = Path.Combine(_dataRoot, "INDI", "HistoricalBar");
+        Directory.CreateDirectory(symbolDir);
+        await File.WriteAllTextAsync(Path.Combine(symbolDir, "2026-04-20.jsonl.gz"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(symbolDir, "2026-05-15.jsonl.gz"), "{}");
+
+        var preview = await fixture.Coordinator.PreviewAsync(new BackfillRequest(
+            "yahoo",
+            ["INDI"],
+            new DateOnly(2026, 4, 18),
+            new DateOnly(2026, 5, 15),
+            DataGranularity.Daily));
+
+        var symbol = preview.Symbols.Should().ContainSingle().Subject;
+        symbol.ExistingData.HasData.Should().BeTrue();
+        symbol.ExistingData.FileCount.Should().Be(2);
+        symbol.ExistingData.ExistingFrom.Should().Be(new DateOnly(2026, 4, 20));
+        symbol.ExistingData.ExistingTo.Should().Be(new DateOnly(2026, 5, 15));
+        symbol.ExistingData.IsComplete.Should().BeTrue();
+        symbol.WouldOverwrite.Should().BeFalse();
+    }
+
     private async Task<PreviewFixture> CreateCoordinatorAsync()
     {
         var store = new ConfigStore(_configPath);

@@ -1,6 +1,6 @@
 # Meridian - Target End Product
 
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-05-19
 **Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, signed DK1 parity-packet evidence with packet-bound sign-off validation, cockpit readiness projection, the active browser workstation lane, the web Research run-library, Quant Notebook helpers, and gated Quant Lab support slices, shared workflow command-palette commands with hash-aware provider-setup routing, browser Portfolio/Reporting/Settings/Data task panels plus Portfolio brokerage-sync next actions, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, the browser Evidence Workbench and shared evidence packet/graph APIs, live quote/order-book/watchlist/Price Alerts market-context routes with selectable recent-trade detail inspection and Watchlist no-quote/empty-state copy, Overview Today panel, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, browser Security Master search-result selection, identity drill-ins, details/lots/operator-override support, UFL/reference-data projection endpoints, paper-first Alpaca connection verification plus provider-setup next-validation handoffs, read-only Robinhood brokerage aggregation support, stable route-aware run review-packet work items surfaced through operator inbox when actionable, seeded reconciliation exception-route/tolerance/sign-off metadata plus calibration-summary rollups, crash-safe shared UI persistence, retained WPF shell support evidence including the Data shell feature module, workflow automation hardening, scheduled/manual WPF screenshot evidence capture, simplified browser rail/header chrome, and demo-data fixture semantics with seeded market-data demo paths
 
 ---
@@ -16,6 +16,21 @@ The product promise is continuity: one operator can move from data trust to rese
 The accounting-led product question is: can Meridian prove, book, reconcile, approve, and report an investment decision? Books Before Broker, Transaction Lab, insurance accounting views, Close the Books, broker statement reconciliation, report restatement tracking, controls, and evidence packets should be treated as planned product modules unless the roadmap already names partial support evidence.
 
 The umbrella product story is **Meridian Evidence OS**: a governed investment operating system that connects evidence graph, vault, completeness scoring, decision lineage, approval packets, replay verification, report-line provenance, and governed report packs. Shared evidence APIs and the first browser Evidence Workbench are current support evidence; the full Evidence OS remains positioning language, not a delivered platform layer.
+
+Current May 19 support evidence narrows part of that path: evidence manifests can now be retained
+and reopened through a vault index/lookup route, report packs carry validation/lifecycle metadata,
+ledger postings preserve originating-versus-adjustment discipline, reconciliation case storage has
+stronger audit/status-transition handling, and Security Master validation gates can produce workflow
+snapshots in the active worktree. These strengthen the target path but do not complete the full
+Evidence OS, report-line provenance, close workflow, or live-readiness story.
+
+Current browser-workstation safety evidence also narrows the target path without completing it:
+provider setup now makes provider-routing connections, bindings, credential-source, environment,
+warnings, and trust-snapshot refresh posture visible in Data and Settings; Strategy Designer now
+separates browser-openable GET route evidence from reference-only POST validation, preview, and
+run-backtest commands; and Reporting export actions now abort superseded profile exports. These are
+the right direction for an explainable workstation, but report-pack lifecycle, Backtest Studio, and
+live-readiness acceptance remain open.
 
 For the release-level scenario that ties those workspaces together, use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md).
 For the product-category filter and documentation archive rule, use [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md).

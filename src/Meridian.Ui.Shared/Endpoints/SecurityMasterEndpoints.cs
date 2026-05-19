@@ -49,6 +49,21 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status404NotFound);
 
         /// <summary>
+        /// Validates a Security Master record without mutating it and returns structured,
+        /// operator-actionable issues for downstream run, ledger, reconciliation, and report-pack gates.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterValidation, async (
+            Guid securityId,
+            [FromServices] AppSecurityMaster.ISecurityValidationService validationService,
+            CancellationToken ct) =>
+        {
+            var report = await validationService.ValidateSecurityAsync(securityId, ct).ConfigureAwait(false);
+            return Results.Json(report, jsonOptions);
+        })
+        .WithName("ValidateSecurityMasterRecord")
+        .Produces<SecurityValidationReportDto>(StatusCodes.Status200OK);
+
+        /// <summary>
         /// Resolves a security by external identifier (ISIN, CUSIP, Ticker, FIGI, SEDOL, etc.).
         /// Supports filtering by provider and active status.
         /// </summary>

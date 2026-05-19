@@ -52,6 +52,42 @@ public sealed record EvidenceEdgeDto(
     string Relationship,
     string Reason);
 
+[JsonConverter(typeof(JsonStringEnumConverter<EvidenceValidationSeverityDto>))]
+public enum EvidenceValidationSeverityDto
+{
+    Info = 0,
+    Warning = 1,
+    Critical = 2
+}
+
+public sealed record EvidenceValidationIssueDto(
+    string Code,
+    EvidenceValidationSeverityDto Severity,
+    string Message,
+    string? EvidenceId = null,
+    string? EvidenceKind = null,
+    string? SourceSystem = null,
+    string? RelatedWorkItemId = null);
+
+public sealed record EvidenceVaultIdentityDto(
+    string VaultId,
+    string SubjectKind,
+    string SubjectId,
+    string ManifestPath,
+    string ManifestRoute,
+    DateTimeOffset RetainedAt,
+    string ContentHashSha256,
+    int SchemaVersion,
+    string StorageKind);
+
+public sealed record EvidenceEndpointErrorDto(
+    string Code,
+    string Message,
+    string? SubjectKind = null,
+    string? SubjectId = null,
+    string? FileName = null,
+    string? VaultId = null);
+
 public sealed record EvidenceCompletenessDto(
     int Score,
     EvidenceStatusDto Status,
@@ -59,7 +95,10 @@ public sealed record EvidenceCompletenessDto(
     IReadOnlyList<string> ReadyIds,
     IReadOnlyList<string> MissingIds,
     IReadOnlyList<string> StaleIds,
-    IReadOnlyList<string> BlockingWorkItemIds);
+    IReadOnlyList<string> BlockingWorkItemIds)
+{
+    public IReadOnlyList<EvidenceValidationIssueDto> ValidationIssues { get; init; } = [];
+}
 
 public sealed record EvidencePacketDto(
     EvidenceSubjectDto Subject,
@@ -102,4 +141,7 @@ public sealed record EvidencePacketExportResponse(
     string ManifestRoute,
     int EvidenceCount,
     int WarningCount,
-    bool Retained);
+    bool Retained)
+{
+    public EvidenceVaultIdentityDto? VaultIdentity { get; init; }
+}

@@ -305,6 +305,7 @@ public static class UiApiRoutes
 
     // Security Master endpoints
     public const string SecurityMasterById = "/api/security-master/{securityId:guid}";
+    public const string SecurityMasterValidation = "/api/security-master/{securityId:guid}/validation";
     public const string SecurityMasterResolve = "/api/security-master/resolve";
     public const string SecurityMasterSearch = "/api/security-master/search";
     public const string SecurityMasterHistory = "/api/security-master/{securityId:guid}/history";

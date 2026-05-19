@@ -3,6 +3,7 @@ import { act, renderHook, screen, waitFor, within } from "@testing-library/react
 import userEvent from "@testing-library/user-event";
 import { useNavigate } from "react-router-dom";
 
+import { ApiError } from "@/lib/api-errors";
 import { computeIntradayMetrics, LiveQuotesScreen } from "@/screens/live-quotes-screen";
 import {
   LIVE_QUOTES_EMPTY_VALUE,
@@ -268,7 +269,7 @@ describe("validateQuickTicket", () => {
   it("keeps quick-ticket form fields and accessible copy in the view model", () => {
     const vm = buildQuickTradeTicketViewModel({
       activeSymbol: "AAPL",
-      ticket: { side: "Buy", type: "Limit", quantity: "", limitPrice: "", phase: "idle", message: null, orderId: null, acknowledged: false },
+      ticket: { side: "Buy", type: "Limit", quantity: "", limitPrice: "", phase: "idle", message: null, details: [], orderId: null, acknowledged: false },
       seedTicket: vi.fn(),
       updateField: vi.fn(),
       setReviewAcknowledged: vi.fn(),
@@ -320,7 +321,7 @@ describe("validateQuickTicket", () => {
   it("requires quick-ticket review acknowledgement after fields are valid", () => {
     const vm = buildQuickTradeTicketViewModel({
       activeSymbol: "AAPL",
-      ticket: { side: "Buy", type: "Limit", quantity: "10", limitPrice: "188.05", phase: "idle", message: null, orderId: null, acknowledged: false },
+      ticket: { side: "Buy", type: "Limit", quantity: "10", limitPrice: "188.05", phase: "idle", message: null, details: [], orderId: null, acknowledged: false },
       seedTicket: vi.fn(),
       updateField: vi.fn(),
       setReviewAcknowledged: vi.fn(),
@@ -346,7 +347,7 @@ describe("validateQuickTicket", () => {
 
     const acknowledged = buildQuickTradeTicketViewModel({
       activeSymbol: "AAPL",
-      ticket: { side: "Buy", type: "Limit", quantity: "10", limitPrice: "188.05", phase: "idle", message: null, orderId: null, acknowledged: true },
+      ticket: { side: "Buy", type: "Limit", quantity: "10", limitPrice: "188.05", phase: "idle", message: null, details: [], orderId: null, acknowledged: true },
       seedTicket: vi.fn(),
       updateField: vi.fn(),
       setReviewAcknowledged: vi.fn(),
@@ -372,6 +373,7 @@ describe("validateQuickTicket", () => {
         limitPrice: "188.05",
         phase: "seeded",
         message: "Seeded sell AAPL limit ticket at 188.05. Enter quantity, then acknowledge before submitting.",
+        details: [],
         orderId: null,
         acknowledged: false
       },
@@ -402,6 +404,7 @@ describe("validateQuickTicket", () => {
         limitPrice: "188.05",
         phase: "submitted",
         message: "Order ORD-1 accepted.",
+        details: [],
         orderId: "ORD-1",
         acknowledged: false
       },
@@ -430,6 +433,7 @@ describe("validateQuickTicket", () => {
         limitPrice: "",
         phase: "error",
         message: "Insufficient buying power",
+        details: ["Endpoint returned 409 for /api/orders."],
         orderId: null,
         acknowledged: false
       },
@@ -453,7 +457,7 @@ describe("validateQuickTicket", () => {
   it("switches quick-ticket price metadata for market orders", () => {
     const vm = buildQuickTradeTicketViewModel({
       activeSymbol: "AAPL",
-      ticket: { side: "Buy", type: "Market", quantity: "10", limitPrice: "", phase: "idle", message: null, orderId: null, acknowledged: false },
+      ticket: { side: "Buy", type: "Market", quantity: "10", limitPrice: "", phase: "idle", message: null, details: [], orderId: null, acknowledged: false },
       seedTicket: vi.fn(),
       updateField: vi.fn(),
       setReviewAcknowledged: vi.fn(),
@@ -481,6 +485,7 @@ describe("validateQuickTicket", () => {
         limitPrice: "188.05",
         phase: "submitting",
         message: null,
+        details: [],
         orderId: null,
         acknowledged: false
       },
@@ -578,7 +583,47 @@ describe("useQuickTradeTicket", () => {
 
     expect(result.current.ticket.phase).toBe("idle");
     expect(result.current.ticket.message).toBeNull();
+    expect(result.current.ticket.details).toEqual([]);
     expect(result.current.ticket.orderId).toBeNull();
+  });
+
+  it("keeps structured submit failure details on the ticket state", async () => {
+    const submitOrder = vi.fn(async () => {
+      throw new ApiError({
+        path: "/api/orders",
+        status: 422,
+        title: "Order validation failed",
+        detail: "Quantity exceeds configured order limit.",
+        validationIssues: [
+          {
+            field: "quantity",
+            label: "quantity",
+            messages: ["Reduce the share count before resubmitting."]
+          }
+        ]
+      });
+    });
+    const { result } = renderHook(() => useQuickTradeTicket("AAPL", { submitOrder }));
+
+    act(() => {
+      result.current.updateField("quantity", "1000");
+      result.current.updateField("limitPrice", "188.05");
+      result.current.setReviewAcknowledged(true);
+    });
+
+    await act(async () => {
+      await result.current.submitTicket({
+        preventDefault: vi.fn()
+      } as unknown as Parameters<typeof result.current.submitTicket>[0]);
+    });
+
+    expect(result.current.ticket.phase).toBe("error");
+    expect(result.current.ticket.message).toBe("Quantity exceeds configured order limit.");
+    expect(result.current.ticket.details).toEqual([
+      "Endpoint returned 422 for /api/orders.",
+      "Order validation failed",
+      "quantity: Reduce the share count before resubmitting."
+    ]);
   });
 });
 
@@ -1144,6 +1189,38 @@ describe("LiveQuotesScreen quick trade", () => {
       "href",
       "/trading/readiness"
     );
+  });
+
+  it("renders structured backend details when order submission throws", async () => {
+    vi.spyOn(api, "submitOrder").mockRejectedValue(new ApiError({
+      path: "/api/orders",
+      status: 503,
+      title: "Execution service unavailable",
+      detail: "Order router is offline.",
+      validationIssues: [
+        {
+          field: "routing",
+          label: "routing",
+          messages: ["Reconnect the execution provider before retrying this order."]
+        }
+      ]
+    }));
+
+    const user = userEvent.setup();
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
+
+    await waitForAsyncEffects();
+
+    await user.click(await screen.findByRole("button", { name: /Buy AAPL at ask/i }));
+    await user.type(screen.getByLabelText("Order quantity in shares"), "10");
+    await user.click(screen.getByRole("checkbox", { name: /I reviewed this order ticket/i }));
+    await user.click(screen.getByRole("button", { name: /Submit buy order for AAPL/i }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Order router is offline.");
+    expect(within(alert).getByText("Endpoint returned 503 for /api/orders.")).toBeInTheDocument();
+    expect(within(alert).getByText("Execution service unavailable")).toBeInTheDocument();
+    expect(within(alert).getByText("routing: Reconnect the execution provider before retrying this order.")).toBeInTheDocument();
   });
 
   it("confirms seeded quick-ticket state and escalates invalid edited fields", async () => {

@@ -10,6 +10,9 @@ import type {
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -25,6 +28,9 @@ vi.mock("@/lib/api", () => ({
   getGovernanceWorkspace: vi.fn(),
   getAlpacaConnectionStatus: vi.fn(),
   getProviderConnections: vi.fn(),
+  getProviderRoutingBindings: vi.fn(),
+  getProviderRoutingConnections: vi.fn(),
+  getProviderRoutingTrustSnapshots: vi.fn(),
   hasDevelopmentFixtureUsage: vi.fn(() => false),
   getPortfolioWorkspace: vi.fn(),
   getReportingWorkspace: vi.fn(),
@@ -51,6 +57,9 @@ const requests: Record<string, Deferred<unknown>[]> = {
   overview: [],
   portfolio: [],
   providerConnections: [],
+  providerRoutingBindings: [],
+  providerRoutingConnections: [],
+  providerRoutingTrustSnapshots: [],
   reporting: [],
   research: [],
   session: [],
@@ -76,6 +85,9 @@ describe("useWorkstationData", () => {
     vi.mocked(api.getReportingWorkspace).mockImplementation(() => track<GovernanceWorkspaceResponse>("reporting"));
     vi.mocked(api.getAlpacaConnectionStatus).mockImplementation(() => track<BrokerageConnectionStatus>("brokerageConnection"));
     vi.mocked(api.getProviderConnections).mockImplementation(() => track<ProviderConnectionRow[]>("providerConnections"));
+    vi.mocked(api.getProviderRoutingConnections).mockImplementation(() => track<ProviderRoutingConnection[]>("providerRoutingConnections"));
+    vi.mocked(api.getProviderRoutingBindings).mockImplementation(() => track<ProviderRoutingBinding[]>("providerRoutingBindings"));
+    vi.mocked(api.getProviderRoutingTrustSnapshots).mockImplementation(() => track<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots"));
     vi.mocked(api.getBrokerageHouseholdPortfolio).mockImplementation(() => track<BrokerageHouseholdPortfolio>("brokeragePortfolio"));
     vi.mocked(api.getWorkflowLibrary).mockImplementation(() => track<WorkflowLibrary>("workflowLibrary"));
     vi.mocked(api.getWorkflowPresets).mockImplementation(() => track<WorkflowPresetLibrary>("workflowPresets"));
@@ -208,6 +220,136 @@ describe("useWorkstationData", () => {
     });
   });
 
+  it("refreshes provider-routing evidence without reloading every workspace", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let routingRefresh!: Promise<void>;
+    act(() => {
+      routingRefresh = result.current.refreshProviderRouting();
+    });
+    await waitFor(() => expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(2));
+
+    expect(api.getSession).toHaveBeenCalledTimes(1);
+    expect(result.current.providerRoutingRefreshing).toBe(true);
+
+    await act(async () => {
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", 1, []);
+      resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 1, [
+        {
+          connectionId: "provider-alpaca-paper",
+          providerFamilyId: "alpaca",
+          displayName: "Alpaca paper",
+          connectionType: "DataVendor",
+          connectionMode: "ReadOnly",
+          enabled: true,
+          credentialReference: "vault:alpaca/paper",
+          institutionId: null,
+          externalAccountId: null,
+          scope: null,
+          tags: ["streaming"],
+          description: null,
+          productionReady: false
+        }
+      ]);
+      resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 1, [
+        {
+          bindingId: "provider-alpaca-paper-RealtimeMarketData",
+          capability: "RealtimeMarketData",
+          connectionId: "provider-alpaca-paper",
+          target: null,
+          priority: 100,
+          enabled: true,
+          failoverConnectionIds: [],
+          safetyModeOverride: null,
+          notes: null
+        }
+      ]);
+      resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 1, [
+        {
+          connectionId: "provider-alpaca-paper",
+          providerFamilyId: "alpaca",
+          score: 82,
+          isHealthy: true,
+          healthStatus: "Healthy",
+          isProductionReady: false,
+          isCertificationFresh: false,
+          signals: []
+        }
+      ]);
+      await routingRefresh;
+    });
+
+    expect(result.current.providerRoutingConnections?.[0].connectionId).toBe("provider-alpaca-paper");
+    expect(result.current.providerRoutingBindings).toHaveLength(1);
+    expect(result.current.providerRoutingTrustSnapshots?.[0].score).toBe(82);
+    expect(result.current.providerRoutingRefreshing).toBe(false);
+    expect(result.current.workspaceErrors.settings).toBeUndefined();
+  });
+
+  it("keeps stale provider-routing evidence when a later routing refresh fails", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let successfulRefresh!: Promise<void>;
+    act(() => {
+      successfulRefresh = result.current.refreshProviderRouting();
+    });
+    await waitFor(() => expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", 1, []);
+      resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 1, [
+        {
+          connectionId: "provider-polygon",
+          providerFamilyId: "polygon",
+          displayName: "Polygon.io",
+          connectionType: "DataVendor",
+          connectionMode: "ReadOnly",
+          enabled: true,
+          credentialReference: "vault:polygon/default",
+          institutionId: null,
+          externalAccountId: null,
+          scope: null,
+          tags: ["backfill"],
+          description: null,
+          productionReady: true
+        }
+      ]);
+      resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 1, []);
+      resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 1, []);
+      await successfulRefresh;
+    });
+
+    let failedRefresh!: Promise<void>;
+    act(() => {
+      failedRefresh = result.current.refreshProviderRouting();
+    });
+    await waitFor(() => expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(3));
+    await act(async () => {
+      rejectRequest("providerConnections", 2, new Error("Provider connections timed out."));
+      rejectRequest("providerRoutingConnections", 2, new Error("Routing connections timed out."));
+      rejectRequest("providerRoutingBindings", 2, new Error("Routing bindings timed out."));
+      rejectRequest("providerRoutingTrustSnapshots", 2, new Error("Trust snapshots timed out."));
+      await failedRefresh;
+    });
+
+    expect(result.current.providerRoutingConnections?.[0].connectionId).toBe("provider-polygon");
+    expect(result.current.workspaceErrors.settings).toContain("Routing connections timed out.");
+    expect(result.current.providerRoutingRefreshing).toBe(false);
+  });
+
   it("does not let an older trading-only refresh overwrite a newer full refresh", async () => {
     const { result } = renderHook(() => useWorkstationData());
 
@@ -300,6 +442,9 @@ describe("useWorkstationData", () => {
       resolveRequest<GovernanceWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as GovernanceWorkspaceResponse);
       rejectRequest("brokerageConnection", 0, new Error("Alpaca connection status failed."));
       resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
+      resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
+      resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
+      resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
       rejectRequest("brokeragePortfolio", 0, new Error("Brokerage household sync failed."));
       resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "workflows" } as unknown as WorkflowLibrary);
       resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, {
@@ -472,6 +617,9 @@ function resolveRefreshBatchWithIndexes({
   resolveRequest<GovernanceWorkspaceResponse>("reporting", defaultIndex, { marker: `${marker} reporting` } as unknown as GovernanceWorkspaceResponse);
   resolveRequest<BrokerageConnectionStatus>("brokerageConnection", defaultIndex, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
   resolveRequest<ProviderConnectionRow[]>("providerConnections", defaultIndex, []);
+  resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", defaultIndex, []);
+  resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", defaultIndex, []);
+  resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", defaultIndex, []);
   resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", defaultIndex, { marker: `${marker} brokerage` } as unknown as BrokerageHouseholdPortfolio);
   resolveRequest<WorkflowLibrary>("workflowLibrary", defaultIndex, { marker: `${marker} workflows` } as unknown as WorkflowLibrary);
   resolveRequest<WorkflowPresetLibrary>("workflowPresets", defaultIndex, {

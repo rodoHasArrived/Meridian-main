@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
-import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type {
   ExecutionAuditEntry,
   ExecutionControlSnapshot,
@@ -733,7 +733,7 @@ function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingRea
 
   return {
     label: "Fix provider setup",
-    href: "/settings#alpaca-provider-setup",
+    href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
     ariaLabel: `Open provider setup for ${item.label}`,
     detail: "Review provider credentials and connection status in Settings."
   };

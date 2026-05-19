@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
   buildFieldCatalogSearchState,
   buildCanvasLegViewModels,
@@ -130,7 +131,24 @@ describe("strategy designer view-model", () => {
     });
     expect(vm.fieldSearchState.resultCountText).toContain('match "duration"');
     expect(vm.backtest.runCommand.disabled).toBe(false);
-    expect(vm.backtest.routeActions.map((action) => action.href)).toContain("/api/workstation/strategy/designer/run-backtest");
+    expect(vm.backtest.routeActions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "templates",
+          href: STRATEGY_DESIGNER_API_ENDPOINTS.templates,
+          method: "GET",
+          isBrowserNavigable: true,
+          interactionLabel: "Open"
+        }),
+        expect.objectContaining({
+          id: "run-backtest",
+          href: STRATEGY_DESIGNER_API_ENDPOINTS.runBacktest,
+          method: "POST",
+          isBrowserNavigable: false,
+          interactionLabel: "Reference"
+        })
+      ])
+    );
   });
 
   it("derives field catalog search empty state copy from the view model", () => {

@@ -322,4 +322,58 @@ describe("buildSecurityDetailsViewModel", () => {
       isOverridden: true
     });
   });
+
+  it("projects sync status, hidden override copy, and field command disabled reasons", () => {
+    const vm = buildSecurityDetailsVm({
+      assetClass: "Equity",
+      overrides: {
+        issuer: "Apple Inc.",
+        couponRate: "5.25"
+      }
+    });
+    const loading = buildSecurityDetailsViewModel({
+      entry: securityEntry,
+      identity: securityIdentity,
+      tradingParameters: null,
+      overrides: {
+        issuer: "Apple Inc.",
+        couponRate: "5.25"
+      },
+      editingKey: "issuer",
+      serverStatus: "loading",
+      serverErrorText: "Timeout",
+      updatedBy: "ops",
+      updatedAt: "2026-05-19T09:00:00Z"
+    });
+    const issuer = loading.groups.flatMap((group) => group.fields).find((field) => field.key === "issuer");
+
+    expect(vm.hiddenOverridesLabel).toBe("1 hidden override");
+    expect(loading.syncStatus).toMatchObject({
+      label: "Loading from server",
+      className: "border-primary/35 bg-primary/10 text-primary"
+    });
+    expect(loading.serverError).toMatchObject({
+      text: "Timeout",
+      ariaLabel: "Security override sync warning: Timeout"
+    });
+    expect(loading.updatedLabel).toBe("last edit by ops @ 2026-05-19T09:00:00Z");
+    expect(issuer).toMatchObject({
+      isEditing: true,
+      editCommand: {
+        disabled: true,
+        disabledReason: "Security overrides are still loading from the server."
+      },
+      saveCommand: {
+        ariaLabel: "Save Issuer",
+        disabled: true,
+        disabledReason: "Security overrides are still loading from the server."
+      },
+      editor: {
+        id: "security-detail-sec-1-issuer-editor",
+        describedBy: "security-detail-sec-1-issuer-editor-help",
+        disabled: true,
+        helperText: "Enter a value to override the server field, or leave it blank to clear the override."
+      }
+    });
+  });
 });

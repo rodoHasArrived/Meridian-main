@@ -6,7 +6,7 @@ The Portable Data Packager allows you to create self-contained, shareable data p
 
 The Portable Data Packager provides:
 
-- **Self-contained packages**: ZIP or TAR.GZ archives with all data and metadata
+- **Self-contained packages**: ZIP, TAR.GZ, or 7Z archives with all data and metadata
 - **Comprehensive manifests**: JSON manifests with checksums, schemas, and quality metrics
 - **Loader scripts**: Ready-to-use Python and R scripts for data loading
 - **Data dictionaries**: Auto-generated documentation for all event types
@@ -68,7 +68,7 @@ Meridian --validate-package ./packages/my-data.zip
 | `--package-events <list>` | Event types (Trade,BboQuote,L2Snapshot) | All types |
 | `--package-from <date>` | Start date (YYYY-MM-DD) | No limit |
 | `--package-to <date>` | End date (YYYY-MM-DD) | No limit |
-| `--package-format <fmt>` | Format: zip, tar.gz | `zip` |
+| `--package-format <fmt>` | Archive format: zip, tar.gz, tgz, or 7z. Unsupported values fail validation instead of falling back to zip. | `zip` |
 | `--package-compression <level>` | Compression: none, fast, balanced, max | `balanced` |
 | `--no-quality-report` | Exclude quality report | Include |
 | `--no-data-dictionary` | Exclude data dictionary | Include |

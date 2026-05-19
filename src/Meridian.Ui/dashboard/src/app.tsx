@@ -92,6 +92,10 @@ function AppShell() {
     reporting,
     brokerageConnection,
     providerConnections,
+    providerRoutingConnections,
+    providerRoutingBindings,
+    providerRoutingTrustSnapshots,
+    providerRoutingRefreshing,
     brokeragePortfolio,
     workflowLibrary,
     workflowPresets,
@@ -101,6 +105,7 @@ function AppShell() {
     error,
     workspaceErrors,
     refresh,
+    refreshProviderRouting,
     upsertWorkflowPreset
   } = useWorkstationData();
   const handleWorkflowPresetUsed = (presetId: string) =>
@@ -346,7 +351,12 @@ function AppShell() {
                   <Route path="/data/alerts" element={<PriceAlertsScreen />} />
                   <Route path="/data/security-master" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master/*" element={<LegacyWorkspaceRedirect />} />
-                  <Route path="/data/*" element={<DataOperationsScreen data={dataOperations} />} />
+                  <Route path="/data/*" element={(
+                    <DataOperationsScreen
+                      data={dataOperations}
+                      onProviderSetupConfigured={refreshProviderRouting}
+                    />
+                  )} />
                   <Route path="/settings/*" element={(
                     <SettingsScreen
                       session={session}
@@ -359,7 +369,12 @@ function AppShell() {
                       reporting={reporting}
                       brokerageConnection={brokerageConnection}
                       providerConnections={providerConnections}
+                      providerRoutingConnections={providerRoutingConnections}
+                      providerRoutingBindings={providerRoutingBindings}
+                      providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+                      providerRoutingRefreshing={providerRoutingRefreshing}
                       onRefresh={refresh}
+                      onProviderRoutingRefresh={refreshProviderRouting}
                       loading={loading}
                       error={error}
                       workspaceErrors={workspaceErrors}

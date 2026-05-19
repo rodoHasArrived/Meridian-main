@@ -33,6 +33,12 @@ export interface SecurityDetailFieldViewModel {
   displayValue: string;
   isOverridden: boolean;
   overrideValue: string | undefined;
+  isEditing: boolean;
+  editCommand: SecurityDetailCommandViewModel;
+  clearCommand: SecurityDetailCommandViewModel | null;
+  saveCommand: SecurityDetailCommandViewModel;
+  cancelCommand: SecurityDetailCommandViewModel;
+  editor: SecurityDetailEditorViewModel;
 }
 
 export interface SecurityDetailGroupViewModel {
@@ -47,6 +53,11 @@ export interface SecurityDetailsViewModel {
   groups: SecurityDetailGroupViewModel[];
   overrideCount: number;
   hiddenOverrideCount: number;
+  syncStatus: SecurityDetailsSyncStatusViewModel | null;
+  hiddenOverridesLabel: string | null;
+  hiddenOverridesTitle: string | null;
+  updatedLabel: string | null;
+  serverError: SecurityDetailsServerErrorViewModel | null;
 }
 
 export interface BuildSecurityDetailsViewModelInput {
@@ -54,6 +65,42 @@ export interface BuildSecurityDetailsViewModelInput {
   identity: SecurityIdentityDrillIn | null;
   tradingParameters: TradingParameters | null;
   overrides: Record<string, string>;
+  editingKey?: string | null;
+  serverStatus?: SecurityDetailsServerStatus;
+  serverErrorText?: string | null;
+  updatedBy?: string | null;
+  updatedAt?: string | null;
+}
+
+export type SecurityDetailsServerStatus = "idle" | "loading" | "synced" | "offline" | "saving" | "error";
+
+export interface SecurityDetailCommandViewModel {
+  label: string;
+  ariaLabel: string;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
+export interface SecurityDetailEditorViewModel {
+  id: string;
+  label: string;
+  ariaLabel: string;
+  describedBy: string;
+  helperId: string;
+  helperText: string;
+  disabled: boolean;
+  disabledReason: string | null;
+}
+
+export interface SecurityDetailsSyncStatusViewModel {
+  label: string;
+  ariaLabel: string;
+  className: "border-success/35 bg-success/10 text-success" | "border-primary/35 bg-primary/10 text-primary" | "border-warning/35 bg-warning/10 text-warning";
+}
+
+export interface SecurityDetailsServerErrorViewModel {
+  text: string;
+  ariaLabel: string;
 }
 
 const RATING_OPTIONS = [
@@ -247,30 +294,57 @@ export function buildSecurityDetailsViewModel({
   entry,
   identity,
   tradingParameters,
-  overrides
+  overrides,
+  editingKey = null,
+  serverStatus = "idle",
+  serverErrorText = null,
+  updatedBy = null,
+  updatedAt = null
 }: BuildSecurityDetailsViewModelInput): SecurityDetailsViewModel {
   const ctx: SecurityDetailContext = { entry, identity, tradingParameters };
   const assetClass = resolveAssetClass(ctx, overrides);
   const assetClassVisibilityKey = normalizeAssetClass(assetClass);
   const visibleKeys = new Set<string>();
+  const securityId = identity?.securityId ?? entry?.securityId ?? "selected";
   const groups = SECURITY_DETAIL_GROUPS
     .map((group) => {
       const visibleFields = group.fields
         .filter((field) => isFieldVisible(group, field, assetClassVisibilityKey))
-        .map((field) => buildSecurityDetailFieldViewModel(field, ctx, overrides));
+        .map((field) => buildSecurityDetailFieldViewModel({
+          field,
+          ctx,
+          overrides,
+          securityId,
+          editingKey,
+          serverStatus
+        }));
       for (const field of visibleFields) {
         visibleKeys.add(field.key);
       }
       return { id: group.id, title: group.title, fields: visibleFields };
     })
     .filter((group) => group.fields.length > 0);
+  const overrideCount = Object.keys(overrides).length;
+  const hiddenOverrideCount = Object.keys(overrides).filter((key) => !visibleKeys.has(key)).length;
 
   return {
     assetClass,
     assetClassVisibilityKey,
     groups,
-    overrideCount: Object.keys(overrides).length,
-    hiddenOverrideCount: Object.keys(overrides).filter((key) => !visibleKeys.has(key)).length
+    overrideCount,
+    hiddenOverrideCount,
+    syncStatus: buildSecurityDetailsSyncStatus(serverStatus),
+    hiddenOverridesLabel: hiddenOverrideCount > 0
+      ? `${hiddenOverrideCount} hidden override${hiddenOverrideCount === 1 ? "" : "s"}`
+      : null,
+    hiddenOverridesTitle: hiddenOverrideCount > 0
+      ? `${hiddenOverrideCount} override${hiddenOverrideCount === 1 ? "" : "s"} belong to fields hidden for this security type.`
+      : null,
+    updatedLabel: updatedBy && updatedAt ? `last edit by ${updatedBy} @ ${updatedAt}` : null,
+    serverError: serverErrorText ? {
+      text: serverErrorText,
+      ariaLabel: `Security override sync warning: ${serverErrorText}`
+    } : null
   };
 }
 
@@ -312,15 +386,27 @@ function isFieldVisible(group: SecurityDetailGroupDef, field: SecurityDetailFiel
   return TRADING_ASSET_VISIBLE_FIELDS.has(field.key);
 }
 
-function buildSecurityDetailFieldViewModel(
-  field: SecurityDetailFieldDef,
-  ctx: SecurityDetailContext,
-  overrides: Record<string, string>
-): SecurityDetailFieldViewModel {
+function buildSecurityDetailFieldViewModel({
+  field,
+  ctx,
+  overrides,
+  securityId,
+  editingKey,
+  serverStatus
+}: {
+  field: SecurityDetailFieldDef;
+  ctx: SecurityDetailContext;
+  overrides: Record<string, string>;
+  securityId: string;
+  editingKey: string | null;
+  serverStatus: SecurityDetailsServerStatus;
+}): SecurityDetailFieldViewModel {
   const derived = field.derive?.(ctx) ?? null;
   const override = overrides[field.key];
   const isOverridden = override !== undefined && override !== "";
+  const isEditing = editingKey === field.key;
   const value = isOverridden ? override : (derived ?? "");
+  const syncDisabledReason = buildOverrideSyncDisabledReason(serverStatus);
   return {
     def: field,
     key: field.key,
@@ -328,8 +414,90 @@ function buildSecurityDetailFieldViewModel(
     value,
     displayValue: value === "" ? "—" : (field.format ? field.format(value) : value),
     isOverridden,
-    overrideValue: override
+    overrideValue: override,
+    isEditing,
+    editCommand: {
+      label: "Edit",
+      ariaLabel: `Edit ${field.label}`,
+      disabled: syncDisabledReason !== null,
+      disabledReason: syncDisabledReason
+    },
+    clearCommand: isOverridden ? {
+      label: "Clear",
+      ariaLabel: `Clear override for ${field.label}`,
+      disabled: syncDisabledReason !== null,
+      disabledReason: syncDisabledReason
+    } : null,
+    saveCommand: {
+      label: "Save",
+      ariaLabel: `Save ${field.label}`,
+      disabled: syncDisabledReason !== null,
+      disabledReason: syncDisabledReason
+    },
+    cancelCommand: {
+      label: "Cancel",
+      ariaLabel: `Cancel editing ${field.label}`,
+      disabled: false,
+      disabledReason: null
+    },
+    editor: buildSecurityDetailEditor(field, securityId, syncDisabledReason)
   };
+}
+
+function buildSecurityDetailEditor(
+  field: SecurityDetailFieldDef,
+  securityId: string,
+  syncDisabledReason: string | null
+): SecurityDetailEditorViewModel {
+  const id = `security-detail-${stableDomId(securityId)}-${stableDomId(field.key)}-editor`;
+  const helperId = `${id}-help`;
+  return {
+    id,
+    label: field.label,
+    ariaLabel: `${field.label} override value`,
+    describedBy: helperId,
+    helperId,
+    helperText: "Enter a value to override the server field, or leave it blank to clear the override.",
+    disabled: syncDisabledReason !== null,
+    disabledReason: syncDisabledReason
+  };
+}
+
+function buildSecurityDetailsSyncStatus(status: SecurityDetailsServerStatus): SecurityDetailsSyncStatusViewModel | null {
+  if (status === "idle") {
+    return null;
+  }
+
+  const label =
+    status === "loading" ? "Loading from server"
+    : status === "saving" ? "Saving"
+    : status === "synced" ? "Synced"
+    : status === "offline" ? "Offline (local only)"
+    : "Error";
+  const className =
+    status === "synced"
+      ? "border-success/35 bg-success/10 text-success"
+      : status === "saving" || status === "loading"
+        ? "border-primary/35 bg-primary/10 text-primary"
+        : "border-warning/35 bg-warning/10 text-warning";
+
+  return {
+    label,
+    ariaLabel: `Security override sync status: ${label}`,
+    className
+  };
+}
+
+function buildOverrideSyncDisabledReason(status: SecurityDetailsServerStatus): string | null {
+  if (status === "loading") {
+    return "Security overrides are still loading from the server.";
+  }
+
+  if (status === "saving") {
+    return "Security overrides are saving; wait for the current edit to finish.";
+  }
+
+  return null;
 }
 
 export interface SecurityLot {

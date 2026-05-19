@@ -10,6 +10,7 @@ public static class EvidenceWorkflowServiceCollectionExtensions
     {
         services.TryAddSingleton<EvidenceTemplateRegistry>();
         services.TryAddSingleton<EvidenceSubjectResolver>();
+        services.TryAddSingleton<EvidencePacketValidationService>();
         services.TryAddSingleton<EvidenceGraphService>();
         services.TryAddSingleton<IEvidenceArtifactStore>(sp =>
             new FileEvidenceArtifactStore(

@@ -467,17 +467,21 @@ public sealed class PaperSessionPersistenceService
             : await _store.LoadLedgerJournalAsync(sessionId, ct).ConfigureAwait(false);
 
         var mismatchReasons = ComparePortfolios(detail.Portfolio, replayPortfolio);
-        var comparedFillCount = persistedFills.Count;
+        var currentLedger = GetLedger(sessionId);
+        var currentLedgerEntryCount = currentLedger?.JournalEntryCount ?? 0;
+        var currentLedgerLineCount = currentLedger?.TotalLedgerEntryCount ?? 0;
+        var comparedFillCount = _store is null
+            ? detail.FillCount
+            : persistedFills.Count;
         var comparedOrderCount = _store is null
             ? detail.OrderHistory?.Count ?? 0
             : persistedOrders.Count;
         var comparedLedgerEntryCount = _store is null
-            ? 0
+            ? currentLedgerEntryCount
             : persistedLedgerEntries.Count;
-        var persistedLedgerLineCount = persistedLedgerEntries.Sum(static entry => entry.Lines.Count);
-        var currentLedger = GetLedger(sessionId);
-        var currentLedgerEntryCount = currentLedger?.JournalEntryCount ?? 0;
-        var currentLedgerLineCount = currentLedger?.TotalLedgerEntryCount ?? 0;
+        var persistedLedgerLineCount = _store is null
+            ? currentLedgerLineCount
+            : persistedLedgerEntries.Sum(static entry => entry.Lines.Count);
         var lastPersistedFillAt = persistedFills.Count > 0
             ? persistedFills.Max(fill => fill.Timestamp)
             : (DateTimeOffset?)null;

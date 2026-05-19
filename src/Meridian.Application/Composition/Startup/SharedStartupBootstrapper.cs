@@ -289,6 +289,7 @@ internal static class CommandDispatchPlanner
             new LedgerCliCommand(),
             new PackageCommands(cfg, log),
             new EtlCommands(cfgPath, log),
+            new StatementImportCommands(dataRoot, log),
             new StatementCommands(),
             new ConfigPresetCommand(new AutoConfigurationService(), log),
             new QueryCommand(new HistoricalDataQueryService(dataRoot), log),
@@ -297,7 +298,6 @@ internal static class CommandDispatchPlanner
             new RunbookCommands(runbookStore, runbookExecutor),
             new WalRepairCommand(cfg, log),
             new ProviderCalibrationCommand(dataRoot, log),
-            new StatementImportCommands(dataRoot, log),
             // Security Master ingest: importService is null until the full host configures Postgres.
             new SecurityMasterCommands(importService: null, log)));
     }

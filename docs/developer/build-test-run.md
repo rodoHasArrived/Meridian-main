@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-05-18
+**Reviewed:** 2026-05-19
 
 Use the narrowest command that covers your change.
 
@@ -27,6 +27,16 @@ For automation or concurrent local builds, prefer isolated output:
 ```powershell
 python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release --isolation-key cleanup-pass
 ```
+
+To preview and remove local generated output without touching tracked files:
+
+```powershell
+pwsh ./scripts/dev/cleanup-generated.ps1 -IncludeNodeModules -IncludeTemp -IncludeLogs
+pwsh ./scripts/dev/cleanup-generated.ps1 -IncludeNodeModules -IncludeTemp -IncludeLogs -Execute
+```
+
+If a cleanup stops on a locked `bin/` or `obj/` file, close the running
+`dotnet`/Meridian process that owns the output and rerun the preview.
 
 ## Test
 

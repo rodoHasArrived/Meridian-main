@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
+import { ApiError } from "@/lib/api-errors";
 import * as coveredCallApi from "@/lib/api/covered-call";
 import { CoveredCallScreen } from "@/screens/covered-call-screen";
 import { COVERED_CALL_CHAIN_DETAIL_PANEL_ID } from "@/screens/covered-call-screen.view-model";
@@ -249,6 +250,36 @@ describe("CoveredCallScreen", () => {
     });
   });
 
+  it("renders structured chain preview failure details", async () => {
+    vi.mocked(coveredCallApi.previewCoveredCallChain).mockRejectedValueOnce(
+      new ApiError({
+        path: "/api/covered-call/preview",
+        status: 503,
+        detail: "Preview service unavailable",
+        validationIssues: [
+          {
+            field: "underlyingSymbol",
+            label: "underlyingSymbol",
+            messages: ["Underlying symbol is not routable for option-chain preview."]
+          }
+        ]
+      })
+    );
+
+    renderCoveredCallScreen();
+
+    fireEvent.change(screen.getByLabelText(/Min strike/i), { target: { value: "500" } });
+
+    await waitFor(() => {
+      expect(screen.getByText("Chain preview failed: Preview service unavailable")).toBeInTheDocument();
+    });
+
+    const detailPanel = screen.getByLabelText("Covered-call candidate detail unavailable");
+    expect(within(detailPanel).getByText("Preview service unavailable")).toBeInTheDocument();
+    expect(within(detailPanel).getByText("Endpoint returned 503 for /api/covered-call/preview.")).toBeInTheDocument();
+    expect(within(detailPanel).getByText("underlyingSymbol: Underlying symbol is not routable for option-chain preview.")).toBeInTheDocument();
+  });
+
   it("renders VM-owned scoring controls and includes them in the backtest request", async () => {
     vi.mocked(coveredCallApi.startCoveredCallBacktest).mockResolvedValue({
       runId: "run-scoring",
@@ -313,6 +344,22 @@ describe("CoveredCallScreen", () => {
     });
     await screen.findByRole("navigation", { name: "Covered-call results next workflow" });
     expect(historyRow).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("renders structured history-load diagnostics when previous runs fail to load", async () => {
+    vi.mocked(coveredCallApi.listCoveredCallRuns).mockRejectedValue(new ApiError({
+      path: "/api/covered-call/runs?limit=50",
+      status: 503,
+      title: "History store unavailable",
+      detail: "Covered-call run history is temporarily offline."
+    }));
+
+    renderCoveredCallScreen();
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Previous covered-call runs failed to load: Covered-call run history is temporarily offline.");
+    expect(within(alert).getByText("Endpoint returned 503 for /api/covered-call/runs?limit=50.")).toBeInTheDocument();
+    expect(within(alert).getByText("History store unavailable")).toBeInTheDocument();
   });
 
   it("renders submitting progress and a disabled cancel reason while the engine accepts the run", async () => {
@@ -518,5 +565,28 @@ describe("CoveredCallScreen", () => {
     })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("img", { name: "SPY 510.00 short-call payoff diagram" })).toBeInTheDocument();
     expect(screen.getByText("1 x 510.00 call expiring 2024-03-15 - short-call break-even about $511.90")).toBeInTheDocument();
+  });
+
+  it("renders structured run-reload diagnostics when a cached result cannot be reopened", async () => {
+    vi.mocked(coveredCallApi.listCoveredCallRuns).mockResolvedValue([historicalRun]);
+    vi.mocked(coveredCallApi.getCoveredCallRunResult).mockRejectedValue(new ApiError({
+      path: "/api/covered-call/runs/run-history-1/result",
+      status: 410,
+      title: "Cached result expired",
+      detail: "Run completed but the cached result has expired."
+    }));
+
+    renderCoveredCallScreen();
+
+    fireEvent.click(await screen.findByRole("row", {
+      name: "Reload covered-call run run-history-1 for SPY"
+    }));
+
+    const alert = await screen.findByText("Backtest issue");
+    const banner = alert.closest("div")?.parentElement;
+    expect(screen.getByText("Run completed but the cached result has expired.")).toBeInTheDocument();
+    expect(screen.getByText("Endpoint returned 410 for /api/covered-call/runs/run-history-1/result.")).toBeInTheDocument();
+    expect(screen.getByText("Cached result expired")).toBeInTheDocument();
+    expect(banner).toBeInTheDocument();
   });
 });

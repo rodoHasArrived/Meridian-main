@@ -134,6 +134,7 @@ public static class UiEndpoints
         app.MapBackfillValidationEndpoints(jsonOptions);
         app.MapProviderConnectionEndpoints(jsonOptions);
         app.MapProviderCredentialEndpoints(jsonOptions);
+        app.MapProviderRoutingEndpoints(jsonOptions);
 
         app.MapStorageEndpoints(jsonOptions);
         app.MapStorageQualityEndpoints(jsonOptions);

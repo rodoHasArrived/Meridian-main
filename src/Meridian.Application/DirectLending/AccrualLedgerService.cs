@@ -1,4 +1,5 @@
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.Ledger;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
 
@@ -50,7 +51,8 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
         DailyAccrualEntryDto accrual,
         Guid sourceEventId,
         DirectLendingEventWriteMetadata metadata,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null)
     {
         using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
         {
@@ -71,6 +73,8 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
             payload,
             sourceEventId,
             metadata,
-            ct);
+            ct,
+            LedgerPostingKindDto.Adjustment,
+            adjustmentApproval);
     }
 }

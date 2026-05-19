@@ -5,8 +5,14 @@ import {
   getEvidenceSubjects,
   validateEvidencePacket
 } from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
 import type { ApiRequestOptions } from "@/lib/api";
-import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, workflowTargetPath } from "@/lib/workspace";
+import {
+  evidenceWorkbenchPath,
+  normalizeLocalWorkstationRoute,
+  WORKSTATION_ROUTE_CATALOG,
+  workflowTargetPath
+} from "@/lib/workspace";
 import type {
   EvidenceCompleteness,
   EvidenceEdge,
@@ -176,6 +182,11 @@ export interface EvidenceWorkbenchCommandState {
   disabledReason: string | null;
 }
 
+export interface EvidenceWorkbenchErrorState {
+  summary: string;
+  details: string[];
+}
+
 export interface EvidenceExportResultViewModel {
   title: string;
   manifestPath: string;
@@ -191,7 +202,7 @@ export interface EvidenceWorkbenchViewModel {
   title: string;
   subtitle: string;
   loading: boolean;
-  error: string | null;
+  error: EvidenceWorkbenchErrorState | null;
   showSubjectPicker: boolean;
   hasSelection: boolean;
   hasPacket: boolean;
@@ -259,7 +270,7 @@ export function useEvidenceWorkbenchViewModel(
   const [subjects, setSubjects] = useState<EvidenceSubject[]>([]);
   const [packet, setPacket] = useState<EvidencePacket | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<EvidenceWorkbenchErrorState | null>(null);
   const [exportBusy, setExportBusy] = useState(false);
   const [exportResult, setExportResult] = useState<EvidencePacketExportResponse | null>(null);
   const [validateBusy, setValidateBusy] = useState(false);
@@ -307,7 +318,7 @@ export function useEvidenceWorkbenchViewModel(
         }
       } catch (loadError) {
         if (requestRevisionRef.current === revision && !isAbortError(loadError)) {
-          setError(loadError instanceof Error ? loadError.message : "Evidence workbench failed to load.");
+          setError(buildEvidenceWorkbenchError(loadError, "Evidence workbench failed to load."));
         }
       } finally {
         if (loadAbortRef.current === controller) {
@@ -352,7 +363,7 @@ export function useEvidenceWorkbenchViewModel(
       }
     } catch (exportError) {
       if (requestRevisionRef.current === revision && exportCommandRevisionRef.current === exportRevision && !isAbortError(exportError)) {
-        setError(exportError instanceof Error ? exportError.message : "Evidence manifest export failed.");
+        setError(buildEvidenceWorkbenchError(exportError, "Evidence manifest export failed."));
       }
     } finally {
       if (exportAbortRef.current === controller) {
@@ -385,7 +396,7 @@ export function useEvidenceWorkbenchViewModel(
       }
     } catch (validateError) {
       if (requestRevisionRef.current === revision && validateCommandRevisionRef.current === validateRevision && !isAbortError(validateError)) {
-        setError(validateError instanceof Error ? validateError.message : "Evidence validation failed.");
+        setError(buildEvidenceWorkbenchError(validateError, "Evidence validation failed."));
       }
     } finally {
       if (validateAbortRef.current === controller) {
@@ -426,7 +437,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
   loading: boolean;
-  error: string | null;
+  error: EvidenceWorkbenchErrorState | null;
   subjects: EvidenceSubject[];
   packet: EvidencePacket | null;
   exportBusy: boolean;
@@ -492,7 +503,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     subjectEmptyTitle: "No evidence subjects returned",
     subjectEmptyDetail: "Readiness, reconciliation, report-pack, and provider evidence will appear here after the workstation APIs publish packet subjects.",
     subjectEmptyActionLabel: "Open readiness console",
-    subjectEmptyActionHref: "/trading/readiness",
+    subjectEmptyActionHref: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
     subjectEmptyActionAriaLabel: "Open readiness console to review upstream evidence sources",
     subjects: input.subjects,
     packet: input.packet,
@@ -525,6 +536,10 @@ export function buildEvidenceWorkbenchViewModel(input: {
     exportManifest: input.exportManifest,
     validatePacket: input.validatePacket
   };
+}
+
+function buildEvidenceWorkbenchError(error: unknown, fallback: string): EvidenceWorkbenchErrorState {
+  return describeApiError(error, fallback);
 }
 
 function isAbortError(error: unknown): boolean {

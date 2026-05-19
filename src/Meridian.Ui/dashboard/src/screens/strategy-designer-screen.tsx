@@ -441,12 +441,34 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          {vm.backtest.routeActions.map((action) => (
-            <a key={action.id} href={action.href} className="inline-flex items-center gap-1 rounded-md border border-border/70 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+          {vm.backtest.routeActions.map((action) => action.isBrowserNavigable ? (
+            <a
+              key={action.id}
+              href={action.href}
+              aria-label={action.ariaLabel}
+              className="inline-flex items-center gap-1 rounded-md border border-border/70 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+            >
               <Eye className="h-3.5 w-3.5" aria-hidden="true" />
               <span>{action.method}</span>
               <span>{action.label}</span>
+              <span className="rounded-sm border border-border/60 px-1 py-0.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                {action.interactionLabel}
+              </span>
             </a>
+          ) : (
+            <div
+              key={action.id}
+              role="group"
+              aria-label={action.ariaLabel}
+              className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-secondary/20 px-2.5 py-1.5 text-xs text-muted-foreground"
+            >
+              <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>{action.method}</span>
+              <span>{action.label}</span>
+              <span className="rounded-sm border border-border/60 px-1 py-0.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                {action.interactionLabel}
+              </span>
+            </div>
           ))}
         </div>
         <div className="space-y-2" role="list" aria-label="Strategy Builder run trace">

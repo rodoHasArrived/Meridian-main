@@ -134,7 +134,10 @@ public sealed record ReconciliationSecurityCoverageIssueDto(
     string Source,
     string Symbol,
     string? AccountName,
-    string Reason);
+    string Reason,
+    string? Code = null,
+    ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Medium,
+    string? EvidenceLink = null);
 
 /// <summary>
 /// Full detail payload for a single reconciliation run.

@@ -679,7 +679,28 @@ public sealed class WorkstationEndpointsTests
                     SecurityMissingCount: 0,
                     SourceSnapshotHash: new string('a', 64)),
                 Artifacts: [],
-                Warnings: []),
+                Warnings: [])
+            {
+                Status = GovernanceReportPackStatusDto.Validated,
+                ValidationIssues = [],
+                LifecycleEvents =
+                [
+                    new FundReportPackLifecycleEventDto(
+                        FromStatus: GovernanceReportPackStatusDto.Draft,
+                        ToStatus: GovernanceReportPackStatusDto.Generated,
+                        ChangedAt: new DateTimeOffset(2026, 4, 24, 16, 5, 0, TimeSpan.Zero),
+                        Actor: "ops.lead",
+                        Reason: "Test report pack generated.",
+                        CorrelationId: "wave2-report-pack"),
+                    new FundReportPackLifecycleEventDto(
+                        FromStatus: GovernanceReportPackStatusDto.Generated,
+                        ToStatus: GovernanceReportPackStatusDto.Validated,
+                        ChangedAt: new DateTimeOffset(2026, 4, 24, 16, 5, 0, TimeSpan.Zero),
+                        Actor: "ops.lead",
+                        Reason: "Test report pack validated.",
+                        CorrelationId: "wave2-report-pack")
+                ]
+            },
             [new GovernanceReportPackArtifactContent(
                 "trial-balance",
                 GovernanceReportArtifactFormatDto.Json,
@@ -1352,6 +1373,112 @@ public sealed class WorkstationEndpointsTests
         first!.Items.Select(item => item.WorkItemId)
             .Should()
             .Equal(second!.Items.Select(item => item.WorkItemId));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorInbox_ShouldMatchReadinessSeverityAcrossWave2Lanes()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+            services.AddSingleton<ReconciliationGovernanceService>();
+        });
+
+        var runId = $"run-severity-parity-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+        var reconciliation = await app.Services
+            .GetRequiredService<IReconciliationRunService>()
+            .RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var client = app.GetTestClient();
+        var readiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+            "/api/workstation/trading/readiness",
+            ServerJsonOptions);
+        var inbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+            "/api/workstation/operator/inbox",
+            ServerJsonOptions);
+
+        readiness.Should().NotBeNull();
+        inbox.Should().NotBeNull();
+
+        var readinessSeverityByCategory = NormalizeReadinessSeverity(readiness!.WorkItems);
+        var inboxSeverityByCategory = NormalizeInboxSeverity(inbox!.Items);
+
+        AssertCategoryParity("replay", readinessSeverityByCategory, inboxSeverityByCategory, "paper-session-missing");
+        AssertCategoryParity("controls", readinessSeverityByCategory, inboxSeverityByCategory, "execution-evidence-incomplete");
+        AssertCategoryParity("promotion-traceability", readinessSeverityByCategory, inboxSeverityByCategory, "promotion-decision-missing");
+        AssertCategoryParity("reconciliation", readinessSeverityByCategory, inboxSeverityByCategory, "reconciliation-policy-");
+        AssertCategoryParity("dk1-trust-gate", readinessSeverityByCategory, inboxSeverityByCategory, "dk1-trust-packet-unavailable");
+
+        static Dictionary<string, int> NormalizeReadinessSeverity(IEnumerable<OperatorWorkItemDto> items)
+            => items.GroupBy(static item => GetCategory(item.WorkItemId))
+                .ToDictionary(static group => group.Key, static group => group.Max(item => ToSeverityRank(item.Tone)), StringComparer.OrdinalIgnoreCase);
+
+        static Dictionary<string, int> NormalizeInboxSeverity(IEnumerable<OperatorWorkItemDto> items)
+            => items.GroupBy(static item => GetCategory(item.WorkItemId))
+                .ToDictionary(static group => group.Key, static group => group.Max(item => ToSeverityRank(item.Tone)), StringComparer.OrdinalIgnoreCase);
+
+        static string GetCategory(string workItemId)
+        {
+            if (workItemId.StartsWith("paper-session-", StringComparison.OrdinalIgnoreCase) ||
+                workItemId.StartsWith("paper-replay-", StringComparison.OrdinalIgnoreCase))
+            {
+                return "replay";
+            }
+
+            if (workItemId.StartsWith("execution-", StringComparison.OrdinalIgnoreCase))
+            {
+                return "controls";
+            }
+
+            if (workItemId.StartsWith("promotion-", StringComparison.OrdinalIgnoreCase))
+            {
+                return "promotion-traceability";
+            }
+
+            if (workItemId.StartsWith("reconciliation-policy-", StringComparison.OrdinalIgnoreCase) ||
+                workItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase))
+            {
+                return "reconciliation";
+            }
+
+            if (workItemId.StartsWith("dk1-trust-", StringComparison.OrdinalIgnoreCase))
+            {
+                return "dk1-trust-gate";
+            }
+
+            return $"other:{workItemId}";
+        }
+
+        static int ToSeverityRank(OperatorWorkItemToneDto tone) =>
+            tone switch
+            {
+                OperatorWorkItemToneDto.Critical => 2,
+                OperatorWorkItemToneDto.Warning => 1,
+                _ => 0
+            };
+
+        static void AssertCategoryParity(
+            string category,
+            IReadOnlyDictionary<string, int> readiness,
+            IReadOnlyDictionary<string, int> inbox,
+            string expectedAnchorId)
+        {
+            readiness.ContainsKey(category).Should().BeTrue(
+                $"readiness lane should expose {category} via anchor '{expectedAnchorId}'");
+            inbox.ContainsKey(category).Should().BeTrue(
+                $"inbox lane should expose {category} via anchor '{expectedAnchorId}'");
+
+            var readinessSeverity = readiness[category];
+            var inboxSeverity = inbox[category];
+            inboxSeverity.Should().Be(readinessSeverity,
+                $"severity drift detected for {category} (anchor '{expectedAnchorId}')");
+        }
     }
 
     [Fact]

@@ -189,10 +189,21 @@ describe("DataOperationsScreen", () => {
       providerId: "provider-alpaca",
       providerName: "Alpaca paper",
       message: "Provider configured.",
-      error: null
+      error: null,
+      connectionId: "provider-alpaca",
+      bindingIds: ["provider-alpaca-RealtimeMarketData", "provider-alpaca-HistoricalBars"],
+      credentialState: "Configured",
+      credentialSource: "ExternalVaultReference",
+      credentialReference: "vault:alpaca/paper",
+      environment: "paper",
+      warnings: ["Credential verification still needs to run."]
     });
+    const refreshProviderRouting = vi.fn();
 
-    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+    renderWithRouter(
+      <DataOperationsScreen data={data} onProviderSetupConfigured={refreshProviderRouting} />,
+      { initialEntries: ["/data"] }
+    );
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
 
@@ -217,6 +228,17 @@ describe("DataOperationsScreen", () => {
     })));
 
     expect(await screen.findByText("Alpaca paper configured")).toBeInTheDocument();
+    const posture = screen.getByRole("region", { name: "Provider setup routing and credential posture" });
+    expect(posture).toHaveTextContent("provider-alpaca");
+    expect(posture).toHaveTextContent("provider-alpaca-RealtimeMarketData");
+    expect(posture).toHaveTextContent("Configured");
+    expect(posture).toHaveTextContent("External vault reference");
+    expect(posture).toHaveTextContent("PAPER");
+    expect(screen.getByRole("status", { name: "Provider setup warnings" }))
+      .toHaveTextContent("Credential verification still needs to run.");
+    expect(screen.queryByText("key-123")).not.toBeInTheDocument();
+    expect(screen.queryByText("secret-456")).not.toBeInTheDocument();
+    expect(screen.queryByText("vault:alpaca/paper")).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Provider setup next validation" }))
       .toHaveTextContent("Next validation");
     expect(screen.getByRole("link", { name: "Validate live quotes after configuring Alpaca" }))
@@ -225,6 +247,7 @@ describe("DataOperationsScreen", () => {
       .toHaveAttribute("href", "/data/backfills");
     expect(screen.getByRole("link", { name: "Check Trading readiness after configuring Alpaca" }))
       .toHaveAttribute("href", "/trading/readiness");
+    await waitFor(() => expect(refreshProviderRouting).toHaveBeenCalledTimes(1));
 
     await user.click(screen.getByRole("button", { name: "Configure another" }));
 

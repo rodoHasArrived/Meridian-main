@@ -59,7 +59,8 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         List<BankStatementBatchDto> BankBatches,
         List<BankStatementLineDto> BankLines,
         List<AccountReconciliationRunDto> ReconciliationRuns,
-        List<AccountReconciliationResultDto> ReconciliationResults)
+        List<AccountReconciliationResultDto> ReconciliationResults,
+        List<AccountSyncHistoryEntryDto> SyncHistory)
     {
         public StoredAccount WithSummary(AccountSummaryDto summary) =>
             this with { Summary = summary };
@@ -112,7 +113,8 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
                 BankBatches: [],
                 BankLines: [],
                 ReconciliationRuns: [],
-                ReconciliationResults: []);
+                ReconciliationResults: [],
+                SyncHistory: []);
             snapshot = CaptureSnapshotLocked();
         }
 
@@ -723,6 +725,314 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         return envelopes;
     }
 
+    public async Task<AccountSyncHistoryEntryDto> RecordSyncHistoryAsync(
+        RecordAccountSyncHistoryRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
+        var capability = RequireText(request.Capability, nameof(request.Capability));
+        var now = DateTimeOffset.UtcNow;
+        var attemptedAt = request.AttemptedAt ?? now;
+        var completedAt = request.CompletedAt ?? (request.Status == AccountSyncStatusDto.Pending ? null : now);
+        var correlationId = NormalizeOptional(request.CorrelationId);
+        var failureKind = request.Status == AccountSyncStatusDto.Failed && request.FailureKind == AccountSyncFailureKindDto.None
+            ? AccountSyncFailureKindDto.Unknown
+            : request.Status == AccountSyncStatusDto.Failed
+                ? request.FailureKind
+                : AccountSyncFailureKindDto.None;
+        var warnings = (request.Warnings ?? Array.Empty<string>())
+            .Where(static warning => !string.IsNullOrWhiteSpace(warning))
+            .Select(static warning => warning.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        AccountSyncHistoryEntryDto entry;
+        (long Version, string Json)? snapshot = null;
+        lock (_gate)
+        {
+            if (!_accounts.TryGetValue(request.AccountId, out var stored))
+            {
+                throw new InvalidOperationException($"Account {request.AccountId} not found.");
+            }
+
+            var existingIndex = string.IsNullOrWhiteSpace(correlationId)
+                ? -1
+                : stored.SyncHistory.FindIndex(existing =>
+                    existing.AccountId == request.AccountId
+                    && string.Equals(existing.Capability, capability, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(existing.CorrelationId, correlationId, StringComparison.OrdinalIgnoreCase));
+
+            entry = new AccountSyncHistoryEntryDto(
+                existingIndex >= 0 ? stored.SyncHistory[existingIndex].SyncHistoryId : Guid.NewGuid(),
+                request.AccountId,
+                capability,
+                request.Status,
+                request.ProviderLinkStatus,
+                NormalizeOptional(request.ProviderId),
+                NormalizeOptional(request.ExternalAccountId),
+                attemptedAt,
+                completedAt,
+                request.FreshUntil,
+                failureKind,
+                NormalizeOptional(request.FailureMessage),
+                correlationId,
+                NormalizeOptional(request.RequestedBy),
+                NormalizeOptional(request.RawEvidencePath),
+                NormalizeOptional(request.ProjectionEvidencePath),
+                Math.Max(0, request.SecurityMissingCount),
+                warnings);
+
+            if (existingIndex >= 0)
+            {
+                stored.SyncHistory[existingIndex] = entry;
+            }
+            else
+            {
+                stored.SyncHistory.Add(entry);
+            }
+
+            snapshot = CaptureSnapshotLocked();
+        }
+
+        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        return entry;
+    }
+
+    public Task<IReadOnlyList<AccountSyncHistoryEntryDto>> GetSyncHistoryAsync(
+        Guid accountId,
+        string? capability = null,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_gate)
+        {
+            if (!_accounts.TryGetValue(accountId, out var stored))
+            {
+                return Task.FromResult<IReadOnlyList<AccountSyncHistoryEntryDto>>([]);
+            }
+
+            var normalizedCapability = NormalizeOptional(capability);
+            var results = stored.SyncHistory
+                .Where(entry => normalizedCapability is null
+                    || string.Equals(entry.Capability, normalizedCapability, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(static entry => entry.AttemptedAt)
+                .ThenByDescending(static entry => entry.CompletedAt)
+                .ToArray();
+            return Task.FromResult<IReadOnlyList<AccountSyncHistoryEntryDto>>(results);
+        }
+    }
+
+    public Task<AccountSyncHistoryEntryDto?> GetLatestSyncHistoryAsync(
+        Guid accountId,
+        string? capability = null,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_gate)
+        {
+            if (!_accounts.TryGetValue(accountId, out var stored))
+            {
+                return Task.FromResult<AccountSyncHistoryEntryDto?>(null);
+            }
+
+            var normalizedCapability = NormalizeOptional(capability);
+            var result = stored.SyncHistory
+                .Where(entry => normalizedCapability is null
+                    || string.Equals(entry.Capability, normalizedCapability, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(static entry => entry.AttemptedAt)
+                .ThenByDescending(static entry => entry.CompletedAt)
+                .FirstOrDefault();
+            return Task.FromResult(result);
+        }
+    }
+
+    public Task<AccountReadinessSnapshotDto?> GetReadinessAsync(
+        Guid accountId,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_gate)
+        {
+            return Task.FromResult(
+                _accounts.TryGetValue(accountId, out var stored)
+                    ? BuildReadinessSnapshot(stored, DateTimeOffset.UtcNow)
+                    : null);
+        }
+    }
+
+    private static AccountReadinessSnapshotDto BuildReadinessSnapshot(StoredAccount stored, DateTimeOffset now)
+    {
+        var account = stored.Summary;
+        var latestSync = stored.SyncHistory
+            .OrderByDescending(static entry => entry.AttemptedAt)
+            .ThenByDescending(static entry => entry.CompletedAt)
+            .FirstOrDefault();
+        var lastSuccessfulSync = stored.SyncHistory
+            .Where(static entry => entry.Status is AccountSyncStatusDto.Succeeded or AccountSyncStatusDto.Degraded)
+            .OrderByDescending(static entry => entry.CompletedAt ?? entry.AttemptedAt)
+            .FirstOrDefault();
+        var providerLinkStatus = latestSync?.ProviderLinkStatus ?? InferProviderLinkStatus(account);
+        var issues = new List<AccountReadinessIssueDto>();
+
+        if (providerLinkStatus == AccountProviderLinkStatusDto.NotLinked)
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.provider_link.missing",
+                AccountReadinessSeverityDto.Critical,
+                "Provider link missing",
+                "Account is not linked to a provider, custodian, bank, or broker identity.",
+                account.AccountId,
+                Capability: latestSync?.Capability,
+                SuggestedAction: "Link the Meridian account to the external provider account before accepting sync readiness."));
+        }
+        else if (providerLinkStatus is AccountProviderLinkStatusDto.Unauthorized
+                 or AccountProviderLinkStatusDto.Revoked
+                 or AccountProviderLinkStatusDto.Expired
+                 or AccountProviderLinkStatusDto.Unsupported)
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.provider_link.unavailable",
+                AccountReadinessSeverityDto.Critical,
+                "Provider link unavailable",
+                $"Provider link status is {providerLinkStatus}.",
+                account.AccountId,
+                latestSync?.ProviderId,
+                latestSync?.ExternalAccountId,
+                latestSync?.Capability,
+                "Repair or verify the provider link before running account sync.",
+                ResolveEvidenceLink(latestSync)));
+        }
+
+        if (latestSync is null)
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.sync.never_run",
+                AccountReadinessSeverityDto.Warning,
+                "Account sync has not run",
+                "No durable account sync history exists for this account.",
+                account.AccountId,
+                SuggestedAction: "Run the account sync or import account evidence before using account data for downstream workflows."));
+        }
+        else
+        {
+            if (latestSync.Status == AccountSyncStatusDto.Failed)
+            {
+                issues.Add(new AccountReadinessIssueDto(
+                    "account.sync.failed",
+                    AccountReadinessSeverityDto.Critical,
+                    "Latest account sync failed",
+                    latestSync.FailureMessage ?? $"Latest {latestSync.Capability} sync failed with {latestSync.FailureKind}.",
+                    account.AccountId,
+                    latestSync.ProviderId,
+                    latestSync.ExternalAccountId,
+                    latestSync.Capability,
+                    "Review provider connectivity, credentials, and the sync evidence before retrying.",
+                    ResolveEvidenceLink(latestSync)));
+            }
+
+            if (latestSync.FreshUntil is { } freshUntil && freshUntil < now)
+            {
+                issues.Add(new AccountReadinessIssueDto(
+                    "account.sync.stale",
+                    AccountReadinessSeverityDto.Warning,
+                    "Account sync is stale",
+                    $"Latest {latestSync.Capability} sync was fresh until {freshUntil:O}.",
+                    account.AccountId,
+                    latestSync.ProviderId,
+                    latestSync.ExternalAccountId,
+                    latestSync.Capability,
+                    "Run account sync again before relying on balances, positions, activity, or margin state.",
+                    ResolveEvidenceLink(latestSync)));
+            }
+
+            if (latestSync.SecurityMissingCount > 0)
+            {
+                issues.Add(new AccountReadinessIssueDto(
+                    "account.security_master.coverage_missing",
+                    AccountReadinessSeverityDto.Warning,
+                    "Security Master coverage gap",
+                    $"{latestSync.SecurityMissingCount} synced position(s) are missing Security Master coverage.",
+                    account.AccountId,
+                    latestSync.ProviderId,
+                    latestSync.ExternalAccountId,
+                    latestSync.Capability,
+                    "Map missing securities before posting security-linked activity or accepting reconciliation.",
+                    ResolveEvidenceLink(latestSync)));
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(account.LedgerReference))
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.ledger_mapping.missing",
+                AccountReadinessSeverityDto.Critical,
+                "Ledger mapping missing",
+                "Account does not have a ledger reference.",
+                account.AccountId,
+                latestSync?.ProviderId,
+                latestSync?.ExternalAccountId,
+                latestSync?.Capability,
+                "Map the account to a ledger reference before posting account activity."));
+        }
+
+        var openBreakCount = stored.ReconciliationResults.Count(static result => !result.IsMatch);
+        if (openBreakCount > 0)
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.reconciliation.breaks_open",
+                AccountReadinessSeverityDto.Warning,
+                "Unresolved reconciliation breaks",
+                $"{openBreakCount} account reconciliation break(s) remain open.",
+                account.AccountId,
+                latestSync?.ProviderId,
+                latestSync?.ExternalAccountId,
+                latestSync?.Capability,
+                "Review and resolve reconciliation breaks before accepting account readiness."));
+        }
+
+        return new AccountReadinessSnapshotDto(
+            account.AccountId,
+            now,
+            providerLinkStatus,
+            latestSync?.Status,
+            lastSuccessfulSync?.CompletedAt ?? lastSuccessfulSync?.AttemptedAt,
+            latestSync?.FreshUntil,
+            IsReady: issues.Count == 0,
+            Issues: issues);
+    }
+
+    private static AccountProviderLinkStatusDto InferProviderLinkStatus(AccountSummaryDto account)
+    {
+        if (!string.IsNullOrWhiteSpace(account.Institution))
+        {
+            return AccountProviderLinkStatusDto.Linked;
+        }
+
+        if (account.AccountType == AccountTypeDto.Bank && !string.IsNullOrWhiteSpace(account.BankDetails?.BankName))
+        {
+            return AccountProviderLinkStatusDto.Linked;
+        }
+
+        return AccountProviderLinkStatusDto.NotLinked;
+    }
+
+    private static string? ResolveEvidenceLink(AccountSyncHistoryEntryDto? latestSync)
+        => NormalizeOptional(latestSync?.RawEvidencePath) ?? NormalizeOptional(latestSync?.ProjectionEvidencePath);
+
+    private static string RequireText(string? value, string parameterName)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException($"{parameterName} is required.", parameterName);
+        }
+
+        return value.Trim();
+    }
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
     private (long Version, string Json)? CaptureSnapshotLocked()
     {
         if (_persistencePath is null)
@@ -782,7 +1092,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
 
             foreach (var account in state.Accounts)
             {
-                _accounts[account.Summary.AccountId] = account;
+                _accounts[account.Summary.AccountId] = NormalizeStoredAccount(account);
             }
 
             _stateVersion = 1;
@@ -793,6 +1103,19 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             // Preserve startup availability for malformed or missing local snapshots.
         }
     }
+
+    private static StoredAccount NormalizeStoredAccount(StoredAccount account)
+        => account with
+        {
+            Snapshots = account.Snapshots ?? [],
+            CustodianBatches = account.CustodianBatches ?? [],
+            CustodianPositions = account.CustodianPositions ?? [],
+            BankBatches = account.BankBatches ?? [],
+            BankLines = account.BankLines ?? [],
+            ReconciliationRuns = account.ReconciliationRuns ?? [],
+            ReconciliationResults = account.ReconciliationResults ?? [],
+            SyncHistory = account.SyncHistory ?? []
+        };
 
     public Task<IReadOnlyList<AccountSummaryDto>> ListAccountsAsync(AccountTypeDto? accountType, bool? isActive, string? currency, CancellationToken ct = default)
     {

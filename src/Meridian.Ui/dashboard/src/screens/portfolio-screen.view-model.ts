@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   BrokerageConnectionStatus,
@@ -321,7 +321,7 @@ export function buildPortfolioScreenViewModel({
   selectedRunId = null,
   selectedBrokeragePositionId = null,
   selectedBrokerageAccountKey = "all",
-  pathname = "/portfolio",
+  pathname = WORKSTATION_ROUTE_CATALOG.portfolio,
   selectPosition = () => {},
   selectRun = () => {},
   selectBrokeragePosition = () => {},
@@ -644,7 +644,7 @@ function buildBrokerageSetupAction({
 
   return {
     label: "Open provider setup",
-    href: "/settings#alpaca-provider-setup",
+    href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
     ariaLabel: `Open ${providerLabel} provider setup from Portfolio brokerage panel`,
     detail: connectionNeedsSetup
       ? `Verify ${providerLabel} credentials before accepting brokerage portfolio state.`
@@ -780,7 +780,7 @@ export function usePortfolioScreenViewModel({
   governance,
   brokerageConnection,
   brokeragePortfolio,
-  pathname = "/portfolio"
+  pathname = WORKSTATION_ROUTE_CATALOG.portfolio
 }: {
   portfolio?: PortfolioWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
@@ -1293,7 +1293,7 @@ function buildWorkflowTaskPanel({
   selectedRunName: string | null;
 }): PortfolioWorkflowTaskPanel | null {
   const normalizedPathname = normalizePathname(pathname);
-  if (normalizedPathname === "/portfolio") {
+  if (normalizedPathname === WORKSTATION_ROUTE_CATALOG.portfolio) {
     return buildPortfolioReadinessTaskPanel({
       risk,
       brokerage,
@@ -1307,7 +1307,7 @@ function buildWorkflowTaskPanel({
     });
   }
 
-  if (normalizedPathname !== "/portfolio/brokerage-sync") {
+  if (normalizedPathname !== WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync) {
     return null;
   }
 
@@ -1495,7 +1495,7 @@ function buildPortfolioReadinessActions({
     actions.push({
       id: "provider-setup",
       label: "Repair provider setup",
-      href: "/settings#alpaca-provider-setup",
+      href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       ariaLabel: "Repair Alpaca provider setup from Portfolio readiness",
       detail: "Verify credentials and connection posture before accepting portfolio state.",
       detailId: portfolioWorkflowTaskActionDetailId("readiness", "provider-setup"),
@@ -1506,7 +1506,7 @@ function buildPortfolioReadinessActions({
   actions.push({
     id: "brokerage-sync",
     label: "Review brokerage sync",
-    href: "/portfolio/brokerage-sync",
+    href: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
     ariaLabel: "Open brokerage sync review from Portfolio readiness",
     detail: "Inspect account sync, execution feed health, exposure, and brokerage evidence.",
     detailId: portfolioWorkflowTaskActionDetailId("readiness", "brokerage-sync"),
@@ -1516,7 +1516,7 @@ function buildPortfolioReadinessActions({
   actions.push({
     id: "trading-readiness",
     label: "Inspect readiness",
-    href: "/trading/readiness",
+    href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
     ariaLabel: "Open Trading readiness from Portfolio readiness",
     detail: "Check paper-session, replay, execution-control, and readiness evidence.",
     detailId: portfolioWorkflowTaskActionDetailId("readiness", "trading-readiness"),
@@ -1559,7 +1559,7 @@ function buildWorkflowTaskActions({
     actions.push({
       id: "provider-setup",
       label: "Repair provider setup",
-      href: "/settings#alpaca-provider-setup",
+      href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       ariaLabel: `Repair ${providerSetupTarget} from brokerage sync review`,
       detail: "Verify credentials and connection posture before accepting brokerage-sync state.",
       detailId: portfolioWorkflowTaskActionDetailId("brokerage-sync", "provider-setup"),
@@ -1570,7 +1570,7 @@ function buildWorkflowTaskActions({
   actions.push({
     id: "trading-readiness",
     label: "Inspect readiness",
-    href: "/trading/readiness",
+    href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
     ariaLabel: "Open Trading readiness from brokerage sync review",
     detail: "Check paper-session, replay, execution-control, and readiness evidence.",
     detailId: portfolioWorkflowTaskActionDetailId("brokerage-sync", "trading-readiness"),
@@ -1580,7 +1580,7 @@ function buildWorkflowTaskActions({
   actions.push({
     id: "trading-cockpit",
     label: "Open Trading cockpit",
-    href: "/trading",
+    href: WORKSTATION_ROUTE_CATALOG.trading,
     ariaLabel: "Open Trading cockpit from brokerage sync review",
     detail: "Review active positions, orders, and paper execution controls.",
     detailId: portfolioWorkflowTaskActionDetailId("brokerage-sync", "trading-cockpit"),

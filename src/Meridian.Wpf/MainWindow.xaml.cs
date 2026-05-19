@@ -324,6 +324,12 @@ public partial class MainWindow : Window
 
     private async void OnLaunchArgsReceived(object? sender, string[] args)
     {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => OnLaunchArgsReceived(sender, args));
+            return;
+        }
+
         try
         {
             await HandleLaunchArgsAsync(args);

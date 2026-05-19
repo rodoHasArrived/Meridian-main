@@ -52,39 +52,138 @@ export const LEGACY_WORKSPACE_ALIASES: Record<LegacyWorkspaceKey, WorkspaceKey> 
   governance: "accounting"
 };
 
-const PAGE_TAG_ROUTES: Record<string, string> = {
-  AccountPortfolio: "/portfolio/brokerage-sync",
-  AccountingShell: "/accounting",
-  Backtest: "/strategy",
-  Backfill: "/data/backfills",
-  BrokerageSync: "/portfolio/brokerage-sync",
-  DataShell: "/data",
-  EvidenceWorkbench: "/reporting/evidence",
-  FundAuditTrail: "/accounting",
-  FundReconciliation: "/accounting/reconciliation",
-  FundReportPack: "/reporting/report-packs",
-  FundTrialBalance: "/accounting",
-  PortfolioShell: "/portfolio",
-  ProviderHealth: "/data/providers",
-  ProviderTrust: "/data/providers",
-  ReportingShell: "/reporting",
-  ReportPackApproval: "/reporting/report-packs",
-  RunRisk: "/trading/readiness",
-  SecurityMaster: "/accounting/security-master",
-  SettingsShell: "/settings",
-  StrategyRuns: "/strategy",
-  StrategyShell: "/strategy",
-  TradingReadiness: "/trading/readiness",
-  TradingReadinessConsole: "/trading/readiness",
-  TradingShell: "/trading"
+export const WORKSTATION_ROUTE_CATALOG = {
+  trading: "/trading",
+  tradingOrders: "/trading/orders",
+  tradingPositions: "/trading/positions",
+  tradingRisk: "/trading/risk",
+  tradingReadiness: "/trading/readiness",
+  portfolio: "/portfolio",
+  portfolioAttribution: "/portfolio/attribution",
+  portfolioBrokerageSync: "/portfolio/brokerage-sync",
+  accounting: "/accounting",
+  accountingLedger: "/accounting/ledger",
+  accountingReconciliation: "/accounting/reconciliation",
+  accountingSecurityMaster: "/accounting/security-master",
+  accountingApprovals: "/accounting/approvals",
+  reporting: "/reporting",
+  reportingReportPacks: "/reporting/report-packs",
+  reportingEvidence: "/reporting/evidence",
+  reportingExports: "/reporting/exports",
+  strategy: "/strategy",
+  strategyDesigner: "/strategy/designer",
+  strategyCoveredCall: "/strategy/covered-call",
+  strategyPromotions: "/strategy/promotions",
+  strategyResearch: "/strategy/research",
+  strategyQuantLab: "/strategy/quant-lab",
+  data: "/data",
+  dataProviders: "/data/providers",
+  dataWatchlist: "/data/watchlist",
+  dataQuotes: "/data/quotes",
+  dataAlerts: "/data/alerts",
+  dataBackfills: "/data/backfills",
+  dataSecurityMasterLegacy: "/data/security-master",
+  settings: "/settings",
+  settingsPreferences: "/settings/preferences",
+  settingsIntegrations: "/settings/integrations",
+  settingsAlpacaProviderSetup: "/settings#alpaca-provider-setup",
+  settingsBackendCapabilityCoverage: "/settings#backend-capability-coverage",
+  settingsDiagnosticEndpoints: "/settings#diagnostic-endpoints"
+} as const;
+
+export type WorkstationRouteKey = keyof typeof WORKSTATION_ROUTE_CATALOG;
+export type WorkstationRoutePath = (typeof WORKSTATION_ROUTE_CATALOG)[WorkstationRouteKey];
+export type WorkstationRouteQueryValue = string | number | boolean | null | undefined;
+
+const WORKSPACE_ROOT_ROUTES: Record<WorkspaceKey, WorkstationRoutePath> = {
+  trading: WORKSTATION_ROUTE_CATALOG.trading,
+  portfolio: WORKSTATION_ROUTE_CATALOG.portfolio,
+  accounting: WORKSTATION_ROUTE_CATALOG.accounting,
+  reporting: WORKSTATION_ROUTE_CATALOG.reporting,
+  strategy: WORKSTATION_ROUTE_CATALOG.strategy,
+  data: WORKSTATION_ROUTE_CATALOG.data,
+  settings: WORKSTATION_ROUTE_CATALOG.settings
+};
+
+const PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> = {
+  AccountPortfolio: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
+  AccountingShell: WORKSTATION_ROUTE_CATALOG.accounting,
+  Backtest: WORKSTATION_ROUTE_CATALOG.strategy,
+  Backfill: WORKSTATION_ROUTE_CATALOG.dataBackfills,
+  BrokerageSync: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
+  DataShell: WORKSTATION_ROUTE_CATALOG.data,
+  EvidenceWorkbench: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
+  FundAuditTrail: WORKSTATION_ROUTE_CATALOG.accounting,
+  FundReconciliation: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+  FundReportPack: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
+  FundTrialBalance: WORKSTATION_ROUTE_CATALOG.accounting,
+  PortfolioShell: WORKSTATION_ROUTE_CATALOG.portfolio,
+  ProviderHealth: WORKSTATION_ROUTE_CATALOG.dataProviders,
+  ProviderTrust: WORKSTATION_ROUTE_CATALOG.dataProviders,
+  ReportingShell: WORKSTATION_ROUTE_CATALOG.reporting,
+  ReportPackApproval: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
+  RunRisk: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+  SecurityMaster: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
+  SettingsShell: WORKSTATION_ROUTE_CATALOG.settings,
+  StrategyRuns: WORKSTATION_ROUTE_CATALOG.strategy,
+  StrategyShell: WORKSTATION_ROUTE_CATALOG.strategy,
+  TradingReadiness: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+  TradingReadinessConsole: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
+  TradingShell: WORKSTATION_ROUTE_CATALOG.trading
 };
 
 export function workspacePath(key: WorkspaceKey) {
-  return `/${key}`;
+  return WORKSPACE_ROOT_ROUTES[key];
+}
+
+export function workstationRoute(key: WorkstationRouteKey): WorkstationRoutePath {
+  return WORKSTATION_ROUTE_CATALOG[key];
+}
+
+export function workstationRouteWithQuery(
+  key: WorkstationRouteKey,
+  query: Record<string, WorkstationRouteQueryValue>
+): string {
+  return appendRouteQuery(WORKSTATION_ROUTE_CATALOG[key], query);
+}
+
+export function appendRouteQuery(
+  route: string,
+  query: Record<string, WorkstationRouteQueryValue>
+): string {
+  const hashIndex = route.indexOf("#");
+  const routeWithoutHash = hashIndex >= 0 ? route.slice(0, hashIndex) : route;
+  const hash = hashIndex >= 0 ? route.slice(hashIndex) : "";
+  const searchIndex = routeWithoutHash.indexOf("?");
+  const pathname = searchIndex >= 0 ? routeWithoutHash.slice(0, searchIndex) : routeWithoutHash;
+  const params = new URLSearchParams(searchIndex >= 0 ? routeWithoutHash.slice(searchIndex) : "");
+
+  Object.entries(query).forEach(([key, value]) => {
+    if (value === null || value === undefined) {
+      return;
+    }
+
+    params.set(key, String(value));
+  });
+
+  const search = params.toString().replace(/\+/g, "%20");
+  return `${pathname}${search ? `?${search}` : ""}${hash}`;
+}
+
+export function workstationRouteWithHash(key: WorkstationRouteKey, hashTarget: string): string {
+  const target = hashTarget.trim().replace(/^#/, "");
+  return target ? `${WORKSTATION_ROUTE_CATALOG[key]}#${target}` : WORKSTATION_ROUTE_CATALOG[key];
+}
+
+export function settingsProviderConnectionRoute(providerId: string): string {
+  return workstationRouteWithHash("settings", `provider-${providerId}-connection`);
 }
 
 export function evidenceWorkbenchPath(subjectKind: string, subjectId: string) {
-  return `/reporting/evidence?subjectKind=${encodeURIComponent(subjectKind)}&subjectId=${encodeURIComponent(subjectId)}`;
+  return workstationRouteWithQuery("reportingEvidence", {
+    subjectKind,
+    subjectId
+  });
 }
 
 export function workflowTargetPath(
@@ -165,8 +264,8 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
   }
 
   if (firstSegment === "data" && pathSegments(pathname)[1] === "security-master") {
-    const suffix = pathname.slice("/data/security-master".length);
-    return `/accounting/security-master${suffix}${search}${hash}`;
+    const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.dataSecurityMasterLegacy.length);
+    return `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}${suffix}${search}${hash}`;
   }
 
   if (!isLegacyWorkspaceKey(firstSegment)) {

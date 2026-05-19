@@ -58,4 +58,60 @@ public sealed class FundStructureContractsJsonContextTests
         snapshotRoundTrip.Should().NotBeNull();
         snapshotRoundTrip!.PendingSettlement.Should().Be(10m);
     }
+
+    [Fact]
+    public void SyncHistoryAndReadinessDtos_ShouldRoundTripViaGeneratedContext()
+    {
+        var request = new RecordAccountSyncHistoryRequest(
+            AccountId: Guid.NewGuid(),
+            Capability: "brokerage-sync",
+            Status: AccountSyncStatusDto.Failed,
+            ProviderLinkStatus: AccountProviderLinkStatusDto.Unauthorized,
+            ProviderId: "alpaca",
+            ExternalAccountId: "PA-123",
+            FailureKind: AccountSyncFailureKindDto.Unauthorized,
+            FailureMessage: "Unauthorized",
+            CorrelationId: "sync-1",
+            RawEvidencePath: "artifacts/account-sync/raw.json",
+            SecurityMissingCount: 2,
+            Warnings: ["Unauthorized provider account."]);
+
+        var requestJson = JsonSerializer.Serialize(request, FundStructureContractsJsonContext.Default.RecordAccountSyncHistoryRequest);
+        requestJson.Should().Contain("\"status\":\"Failed\"");
+        requestJson.Should().Contain("\"providerLinkStatus\":\"Unauthorized\"");
+
+        var requestRoundTrip = JsonSerializer.Deserialize(requestJson, FundStructureContractsJsonContext.Default.RecordAccountSyncHistoryRequest);
+        requestRoundTrip.Should().NotBeNull();
+        requestRoundTrip!.FailureKind.Should().Be(AccountSyncFailureKindDto.Unauthorized);
+        requestRoundTrip.SecurityMissingCount.Should().Be(2);
+
+        var readiness = new AccountReadinessSnapshotDto(
+            AccountId: request.AccountId,
+            EvaluatedAt: DateTimeOffset.UtcNow,
+            ProviderLinkStatus: AccountProviderLinkStatusDto.Unauthorized,
+            LatestSyncStatus: AccountSyncStatusDto.Failed,
+            LastSuccessfulSyncAt: null,
+            FreshUntil: null,
+            IsReady: false,
+            Issues:
+            [
+                new AccountReadinessIssueDto(
+                    "account.sync.failed",
+                    AccountReadinessSeverityDto.Critical,
+                    "Latest account sync failed",
+                    "Unauthorized",
+                    request.AccountId,
+                    ProviderId: "alpaca",
+                    ExternalAccountId: "PA-123",
+                    Capability: "brokerage-sync",
+                    EvidenceLink: "artifacts/account-sync/raw.json")
+            ]);
+
+        var readinessJson = JsonSerializer.Serialize(readiness, FundStructureContractsJsonContext.Default.AccountReadinessSnapshotDto);
+        readinessJson.Should().Contain("\"severity\":\"Critical\"");
+
+        var readinessRoundTrip = JsonSerializer.Deserialize(readinessJson, FundStructureContractsJsonContext.Default.AccountReadinessSnapshotDto);
+        readinessRoundTrip.Should().NotBeNull();
+        readinessRoundTrip!.Issues.Should().ContainSingle(issue => issue.Code == "account.sync.failed");
+    }
 }

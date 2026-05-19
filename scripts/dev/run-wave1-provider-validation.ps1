@@ -309,6 +309,10 @@ function Invoke-Step {
     }
 }
 
+if ([string]::IsNullOrWhiteSpace($CheckpointPath)) {
+    $CheckpointPath = Join-Path $summaryDir "run-wave1-provider-validation.checkpoint.json"
+}
+
 $checkpoint = Initialize-MeridianCheckpoint `
     -Workflow "run-wave1-provider-validation" `
     -CheckpointPath $CheckpointPath `

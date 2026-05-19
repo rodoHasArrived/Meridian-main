@@ -25,6 +25,18 @@ The installed shortcut starts `Meridian.exe --mode workstation --http-port 8080 
 market-data subscriptions, or run the collector pipeline; use `--mode desktop` when the retained
 desktop-local host must run the UI server and collector side by side.
 
+Each installer run is upgrade-aware:
+
+- backs up the current `%LOCALAPPDATA%\Meridian` state to
+  `%LOCALAPPDATA%\Meridian\backups\install-<timestamp>\`
+- preserves the active config and resolved data root instead of recreating them
+- removes stale Desktop or Start Menu shortcuts that still point at missing older installs
+- skips file replacement when the installed host and workstation bundle already match the latest
+  published output, which avoids unnecessary downtime under low disk pressure
+- writes an install manifest to
+  `%LOCALAPPDATA%\Meridian\service\web-workstation-install-manifest.json`
+  so future upgrades can inspect the last install source, backup path, and cleanup actions
+
 ## Options
 
 ```powershell
@@ -50,12 +62,16 @@ Defaults:
 - install root: `%LOCALAPPDATA%\Programs\Meridian Web Workstation`
 - app data root: `%LOCALAPPDATA%\Meridian`
 - config path: `%LOCALAPPDATA%\Meridian\appsettings.json`
+- backup root: `%LOCALAPPDATA%\Meridian\backups`
+- install manifest: `%LOCALAPPDATA%\Meridian\service\web-workstation-install-manifest.json`
 - first-run data source: `Synthetic`
 - workstation URL: `http://localhost:8080/workstation/`
 
 The host serves static workstation files from its working directory at `wwwroot/workstation`. The
 installer therefore copies `src/Meridian.Ui/wwwroot/workstation` into the install root after the
-dashboard build completes.
+dashboard build completes. Persistent runtime state stays under `%LOCALAPPDATA%\Meridian`; the
+installer removes empty legacy `data/` and `artifacts/` placeholders from the install root so the
+installed app directory remains binary-focused.
 
 ## Smoke Test
 
@@ -79,4 +95,6 @@ when `src/Meridian.Ui/wwwroot/workstation` already contains the bundle you inten
   stop stale Vite preview processes and rerun the installer.
 - If restore or publish fails because `C:` is low on space, clear generated build output and NuGet
   caches before retrying.
+- If the installer reports stale shortcuts, inspect the Desktop or Start Menu entries that pointed
+  at missing side-by-side installs before recreating manual launchers.
 - Use `-PlanOnly` first when changing install paths or ports.
