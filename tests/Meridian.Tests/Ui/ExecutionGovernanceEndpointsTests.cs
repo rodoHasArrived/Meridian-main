@@ -58,7 +58,7 @@ public sealed class ExecutionGovernanceEndpointsTests
         auditEntries.Should().NotBeNull();
         auditEntries!.Should().Contain(entry =>
             entry.Action == "CircuitBreakerOpened" &&
-            entry.Actor == "ops");
+            entry.Actor == "ops-user");
     }
 
     [Fact]
@@ -120,12 +120,12 @@ public sealed class ExecutionGovernanceEndpointsTests
         auditEntries.Should().NotBeNull();
         auditEntries!.Should().Contain(entry =>
             entry.Action == "ManualOverrideCreated" &&
-            entry.Actor == "ops" &&
+            entry.Actor == "ops-user" &&
             entry.RunId == "run-123" &&
             entry.CorrelationId == "corr-override-create");
         auditEntries.Should().Contain(entry =>
             entry.Action == "ManualOverrideCleared" &&
-            entry.Actor == "ops" &&
+            entry.Actor == "ops-user" &&
             entry.RunId == "run-123" &&
             entry.CorrelationId == "corr-override-clear");
     }

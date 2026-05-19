@@ -134,6 +134,12 @@ artifacts/*
 !artifacts/provider-validation/
 !artifacts/provider-validation/**
 .artifacts/validation/
+artifacts/**/*.log
+artifacts/**/*.tmp
+artifacts/install-smoke/
+artifacts/publish/
+!artifacts/provider-validation/
+!artifacts/provider-validation/**
 output/
 /data/
 /src/Meridian.Ui/data/
@@ -209,6 +215,7 @@ vulnerable-packages.txt
 todo-scan-results.json
 .ai/
 .claude/worktrees/
+.tools/
 src/Meridian.Ui/dashboard/artifacts/automation/**/*.pid
 
 # DocFX generated output
@@ -254,6 +261,7 @@ __pycache__/
 /src/Meridian.Ui/dashboard/artifacts/*.log
 /src/Meridian.Ui/dashboard/artifacts/*.tmp
 /src/Meridian.Ui/dashboard/artifacts/ui-cleanup-*.png
+/wwwroot/workstation/assets/.vite-temp/
 /wwwroot/workstation/.vite-temp/
 
 # Meridian SQLite adapter runtime artifacts

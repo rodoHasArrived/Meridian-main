@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-05-18
+**Reviewed:** 2026-05-19
 
 Use the repository publish script for local standalone executable output. Run it
 from `C:\Dev\Meridian-main`.
@@ -13,6 +13,8 @@ pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project collector -O
 
 The publish script writes generated output under `artifacts/publish/`, which is
 ignored by Git and should not be committed.
+Use a run-specific output directory and leave retention enabled for ordinary
+local smoke runs so old publish products are pruned automatically.
 
 The Windows collector executable is written under:
 

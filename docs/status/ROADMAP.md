@@ -74,11 +74,18 @@ Implementation follow-up on the acceleration plan: the golden-path pilot harness
 the executable proof lane. `PilotAcceptanceHarnessTests` exercises the shared service and endpoint
 path for trusted data, research run, run comparison, paper promotion, paper session replay,
 portfolio/ledger review, reconciliation, and governed report pack, then writes
-`artifacts/pilot-acceptance/latest/pilot-readiness.json`. The `golden-path-validation.yml`
+`artifacts/pilot-acceptance/latest/pilot-readiness.json` and
+`artifacts/pilot-acceptance/latest/pilot-readiness.md`. The `golden-path-validation.yml`
 workflow runs that harness, validates the pilot dashboard renderer, generates the markdown/JSON
 dashboard under `artifacts/pilot-acceptance/latest/`, and uploads `pilot-acceptance-evidence`.
 This is W2-W4 support evidence and a stronger acceleration mechanism; W2, W3, and W4 remain
 `In Progress` until operator/browser acceptance and governance sign-off criteria are met.
+Every W2/W3/W4 readiness claim must now be stage-gated: either it turns one of the
+`pilot-readiness.*` stage gates green, or the stage gate records the unresolved blocker in its
+`blockers` list. W2 claims map to `TrustedData`, `PaperPromotion`, and `PaperSession`; W3 claims map
+to `TrustedData`, `ResearchRun`, `RunComparison`, `PaperPromotion`, `PortfolioLedgerReview`, and
+`Reconciliation`; W4 claims map to `TrustedData`, `PortfolioLedgerReview`, `Reconciliation`, and
+`GovernedReportPack`.
 
 ---
 

@@ -56,6 +56,7 @@ class PilotReadinessDashboardTests(unittest.TestCase):
                 artifact["ledger_artifact_refs"][0]["route"],
             )
             self.assertEqual("Governed report pack lineage", artifact["stage_gates"][-1]["label"])
+            self.assertEqual(["W4"], artifact["stage_gates"][-1]["wave_claims"])
             acceptance_check = next(
                 check for check in payload["checks"] if check["id"] == "pilot-acceptance-artifact"
             )
@@ -139,6 +140,41 @@ class PilotReadinessDashboardTests(unittest.TestCase):
             self.assertIn("route-only ledger artifact refs", acceptance_check["missing_terms"])
             self.assertEqual("gap", acceptance_check["status"])
 
+    def test_dashboard_rejects_missing_wave_claims(self) -> None:
+        artifact = build_artifact()
+        artifact["stageGates"][4]["waveClaims"] = []
+
+        loaded = pilot_dashboard.load_pilot_acceptance_artifact_from_payload(
+            artifact,
+            "artifacts/pilot-acceptance/latest/pilot-readiness.json",
+        )
+
+        self.assertFalse(loaded["all_stages_ready"])
+        self.assertTrue(
+            any(
+                "PaperSession W2-W4 claims are none; expected W2." == issue
+                for issue in loaded["consistency_issues"]
+            )
+        )
+
+    def test_dashboard_requires_blocker_when_claimed_stage_is_not_ready(self) -> None:
+        artifact = build_artifact()
+        artifact["stageGates"][7]["status"] = "ReviewRequired"
+        artifact["stageGates"][7]["blockers"] = []
+
+        loaded = pilot_dashboard.load_pilot_acceptance_artifact_from_payload(
+            artifact,
+            "artifacts/pilot-acceptance/latest/pilot-readiness.json",
+        )
+
+        self.assertFalse(loaded["all_stages_ready"])
+        self.assertTrue(
+            any(
+                "GovernedReportPack carries W2-W4 claims but records no blocker" in issue
+                for issue in loaded["consistency_issues"]
+            )
+        )
+
     def test_dashboard_marks_missing_pilot_acceptance_artifact_without_failing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             payload = pilot_dashboard.build_dashboard(Path(tmp))
@@ -179,6 +215,7 @@ class PilotReadinessDashboardTests(unittest.TestCase):
 
         self.assertIn("## Pilot Acceptance Artifact", rendered)
         self.assertIn("Governed report pack lineage", rendered)
+        self.assertIn("| Governed report pack lineage | W4 | Ready |", rendered)
         self.assertIn("### Ledger Artifact Refs", rendered)
         self.assertIn("ledger-journal", rendered)
         self.assertIn("### Evidence Graph", rendered)
@@ -243,6 +280,7 @@ def build_artifact() -> dict:
 
 def build_expected_stage_gates(camel_case: bool = False) -> list[dict]:
     evidence_key = "evidenceIds" if camel_case else "evidence_ids"
+    wave_claims_key = "waveClaims" if camel_case else "wave_claims"
     return [
         {
             "stage": "TrustedData",
@@ -250,6 +288,7 @@ def build_expected_stage_gates(camel_case: bool = False) -> list[dict]:
             "status": "Ready",
             evidence_key: ["provider-evidence/unit", "dataset/pilot/unit"],
             "blockers": [],
+            wave_claims_key: ["W2", "W3", "W4"],
             "validation": "Unit artifact loaded.",
         },
         {
@@ -258,6 +297,7 @@ def build_expected_stage_gates(camel_case: bool = False) -> list[dict]:
             "status": "Ready",
             evidence_key: ["run-backtest-unit", "dataset/pilot/unit"],
             "blockers": [],
+            wave_claims_key: ["W3"],
             "validation": "Research run loaded.",
         },
         {
@@ -266,6 +306,7 @@ def build_expected_stage_gates(camel_case: bool = False) -> list[dict]:
             "status": "Ready",
             evidence_key: ["run-backtest-unit", "run-paper-unit"],
             "blockers": [],
+            wave_claims_key: ["W3"],
             "validation": "Run comparison loaded.",
         },
         {
@@ -274,6 +315,7 @@ def build_expected_stage_gates(camel_case: bool = False) -> list[dict]:
             "status": "Ready",
             evidence_key: ["promotion-audit-unit"],
             "blockers": [],
+            wave_claims_key: ["W2", "W3"],
             "validation": "Promotion audit loaded.",
         },
         {
@@ -282,6 +324,7 @@ def build_expected_stage_gates(camel_case: bool = False) -> list[dict]:
             "status": "Ready",
             evidence_key: ["PAPER-UNIT", "replay-audit-unit"],
             "blockers": [],
+            wave_claims_key: ["W2"],
             "validation": "Replay audit loaded.",
         },
         {
@@ -290,6 +333,7 @@ def build_expected_stage_gates(camel_case: bool = False) -> list[dict]:
             "status": "Ready",
             evidence_key: ["portfolio/unit", "ledger/unit"],
             "blockers": [],
+            wave_claims_key: ["W3", "W4"],
             "validation": "Portfolio and ledger evidence loaded.",
         },
         {
@@ -298,6 +342,7 @@ def build_expected_stage_gates(camel_case: bool = False) -> list[dict]:
             "status": "Ready",
             evidence_key: ["reconciliation-unit"],
             "blockers": [],
+            wave_claims_key: ["W3", "W4"],
             "validation": "Reconciliation run loaded.",
         },
         {
@@ -306,6 +351,7 @@ def build_expected_stage_gates(camel_case: bool = False) -> list[dict]:
             "status": "Ready",
             evidence_key: ["report-unit", "run-paper-unit"],
             "blockers": [],
+            wave_claims_key: ["W4"],
             "validation": "Report pack links to pilot evidence.",
         },
     ]

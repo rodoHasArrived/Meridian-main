@@ -1305,6 +1305,7 @@ public sealed class WorkstationEndpointsTests
             services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
             services.AddSingleton<ReconciliationProjectionService>();
             services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+            services.AddSingleton<ReconciliationGovernanceService>();
         });
 
         var runId = $"run-severity-parity-{Guid.NewGuid():N}";
@@ -1332,7 +1333,7 @@ public sealed class WorkstationEndpointsTests
         AssertCategoryParity("replay", readinessSeverityByCategory, inboxSeverityByCategory, "paper-session-missing");
         AssertCategoryParity("controls", readinessSeverityByCategory, inboxSeverityByCategory, "execution-evidence-incomplete");
         AssertCategoryParity("promotion-traceability", readinessSeverityByCategory, inboxSeverityByCategory, "promotion-decision-missing");
-        AssertCategoryParity("reconciliation", readinessSeverityByCategory, inboxSeverityByCategory, "reconciliation-break-");
+        AssertCategoryParity("reconciliation", readinessSeverityByCategory, inboxSeverityByCategory, "reconciliation-policy-");
         AssertCategoryParity("dk1-trust-gate", readinessSeverityByCategory, inboxSeverityByCategory, "dk1-trust-packet-unavailable");
 
         static Dictionary<string, int> NormalizeReadinessSeverity(IEnumerable<OperatorWorkItemDto> items)
@@ -1361,7 +1362,8 @@ public sealed class WorkstationEndpointsTests
                 return "promotion-traceability";
             }
 
-            if (workItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase))
+            if (workItemId.StartsWith("reconciliation-policy-", StringComparison.OrdinalIgnoreCase) ||
+                workItemId.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase))
             {
                 return "reconciliation";
             }

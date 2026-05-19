@@ -1364,7 +1364,20 @@ public sealed class TradingOperatorReadinessService
 
     private static void AddReconciliationGateWorkItem(ICollection<OperatorWorkItemDto> workItems, ReconciliationGateEvaluation? evaluation, string? runId)
     {
-        if (evaluation is null || evaluation.Status == TradingAcceptanceGateStatusDto.Ready)
+        if (evaluation is null)
+        {
+            AddWorkItem(
+                workItems,
+                OperatorWorkItemKindDto.ReconciliationBreak,
+                "Reconciliation policy unavailable",
+                "Reconciliation policy evaluation is not available.",
+                OperatorWorkItemToneDto.Warning,
+                runId,
+                workItemId: BuildWorkItemId("reconciliation-policy", runId));
+            return;
+        }
+
+        if (evaluation.Status == TradingAcceptanceGateStatusDto.Ready)
         {
             return;
         }
