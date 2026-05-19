@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
+using Meridian.Execution.Sdk;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -239,15 +240,9 @@ public sealed class TradingOperatorReadinessServiceTests
     }
 
     [Fact]
-<<<<<<< ours
-    public async Task GetAsync_WithCorePaperDependenciesRegistered_ShouldMarkSessionReplayAndAuditGatesReady()
+    public async Task GetAsync_WithVerifiedReplayOnly_ShouldKeepCorePaperGatesReadyAndGovernanceGatesInReview()
     {
-        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithCorePaperDependenciesRegistered_ShouldMarkSessionReplayAndAuditGatesReady));
-=======
-    public async Task GetAsync_WithVerifiedReplayOnly_ShouldKeepGovernanceGatesInReview()
-    {
-        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithVerifiedReplayOnly_ShouldKeepGovernanceGatesInReview));
->>>>>>> theirs
+        await using var auditTrail = CreateAuditTrail(nameof(GetAsync_WithVerifiedReplayOnly_ShouldKeepCorePaperGatesReadyAndGovernanceGatesInReview));
         var persistence = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
             auditTrail: auditTrail);
@@ -256,6 +251,8 @@ public sealed class TradingOperatorReadinessServiceTests
             StrategyName: "Fully Ready Strategy",
             InitialCash: 100_000m,
             Symbols: ["AAPL", "MSFT"]));
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-ready-1", "AAPL", 10m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-ready-1", "AAPL", 10m, 190m));
         await persistence.VerifyReplayAsync(session.SessionId);
 
         using var provider = new ServiceCollection()
@@ -274,19 +271,30 @@ public sealed class TradingOperatorReadinessServiceTests
         readiness.AcceptanceGates.Should().ContainSingle(gate =>
             gate.GateId == "replay" &&
             gate.Status == TradingAcceptanceGateStatusDto.Ready);
-<<<<<<< ours
         readiness.AcceptanceGates.Should().ContainSingle(gate =>
             gate.GateId == "audit-controls" &&
             gate.Status == TradingAcceptanceGateStatusDto.Ready);
-        readiness.AcceptanceGates.Should().Contain(gate =>
-            gate.GateId is "promotion" or "trust-gate" or "report-pack" or "reconciliation" &&
-            gate.Status != TradingAcceptanceGateStatusDto.Ready);
-=======
-        readiness.AcceptanceGates.Should().Contain(gate =>
-            gate.GateId is "promotion" or "trust-gate" or "report-pack" or "reconciliation" &&
+        readiness.ActiveSession.Should().NotBeNull();
+        readiness.Replay.Should().NotBeNull();
+        readiness.Replay!.ComparedFillCount.Should().Be(readiness.ActiveSession!.FillCount);
+        readiness.Replay.ComparedOrderCount.Should().Be(readiness.ActiveSession.OrderCount);
+        readiness.Replay.ComparedLedgerEntryCount.Should().Be(readiness.ActiveSession.LedgerEntryCount);
+        readiness.WorkItems.Should().NotContain(item =>
+            item.WorkItemId.Contains("paper-replay-stale", StringComparison.OrdinalIgnoreCase) ||
+            item.WorkItemId.Contains("paper-replay-mismatch", StringComparison.OrdinalIgnoreCase));
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "promotion" &&
             gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired);
-        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
->>>>>>> theirs
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "dk1-trust" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "report-pack" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "reconciliation" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired);
+        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
         readiness.ReadyForPaperOperation.Should().BeFalse();
     }
 
@@ -330,4 +338,29 @@ public sealed class TradingOperatorReadinessServiceTests
             new ExecutionAuditTrailOptions(root),
             NullLogger<ExecutionAuditTrailService>.Instance);
     }
+
+    private static OrderState CreateExecutionOrderState(string orderId, string symbol, decimal quantity) => new()
+    {
+        OrderId = orderId,
+        Symbol = symbol,
+        Side = OrderSide.Buy,
+        Type = OrderType.Market,
+        Quantity = quantity,
+        Status = OrderStatus.Accepted,
+        CreatedAt = DateTimeOffset.UtcNow,
+        LastUpdatedAt = DateTimeOffset.UtcNow
+    };
+
+    private static ExecutionReport CreateExecutionFill(string orderId, string symbol, decimal quantity, decimal fillPrice) => new()
+    {
+        OrderId = orderId,
+        ReportType = ExecutionReportType.Fill,
+        Symbol = symbol,
+        Side = OrderSide.Buy,
+        OrderStatus = OrderStatus.Filled,
+        OrderQuantity = quantity,
+        FilledQuantity = quantity,
+        FillPrice = fillPrice,
+        Timestamp = DateTimeOffset.UtcNow
+    };
 }

@@ -670,9 +670,16 @@ describe("governance-screen view model", () => {
         .mockReturnValueOnce(firstLoad)
         .mockResolvedValueOnce(retrySummary)
     };
+    const bootstrapData = {
+      metrics: [],
+      reconciliationQueue,
+      breakQueue: [],
+      cashFlow: null,
+      reporting: null
+    } as unknown as GovernanceWorkspaceResponse;
 
     const { result } = renderHook(() => useGovernanceReconciliationViewModel({
-      ...({ metrics: [], reconciliationQueue, breakQueue: [], cashFlow: null, reporting: null } as unknown as GovernanceWorkspaceResponse)
+      ...bootstrapData
     }, "reconciliation", services));
 
     await waitFor(() => expect(result.current.calibrationView.refreshCommand.disabled).toBe(true));

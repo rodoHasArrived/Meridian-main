@@ -284,12 +284,15 @@ public sealed class TradingOperatorReadinessService
         {
             PrometheusMetrics.RecordRunContinuityMissingLineage("api", "promotion-trace-incomplete");
             var missingFields = GetMissingPromotionTraceFields(promotion);
+            var hasDecision = !string.IsNullOrWhiteSpace(promotion.ApprovalStatus);
             AddWorkItem(
                 workItems,
                 OperatorWorkItemKindDto.PromotionReview,
-                "Promotion trace incomplete",
-                $"Promotion evidence is incomplete. Missing: {string.Join(", ", missingFields)}.",
-                OperatorWorkItemToneDto.Critical,
+                hasDecision ? "Promotion trace incomplete" : "Promotion decision required",
+                hasDecision
+                    ? $"Promotion evidence is incomplete. Missing: {string.Join(", ", missingFields)}."
+                    : $"Record the paper promotion decision before accepting the cockpit. Missing: {string.Join(", ", missingFields)}.",
+                hasDecision ? OperatorWorkItemToneDto.Critical : OperatorWorkItemToneDto.Warning,
                 promotion.SourceRunId ?? promotion.TargetRunId,
                 auditReference: promotion.AuditReference,
                 workItemId: BuildWorkItemId("promotion-trace-incomplete", promotion.SourceRunId ?? promotion.TargetRunId));
@@ -1274,8 +1277,12 @@ public sealed class TradingOperatorReadinessService
         return new TradingAcceptanceGateDto(
             GateId: "promotion",
             Label: "Promotion trace complete",
-            Status: TradingAcceptanceGateStatusDto.Blocked,
-            Detail: $"Promotion evidence is incomplete. Missing: {string.Join(", ", GetMissingPromotionTraceFields(promotion))}.",
+            Status: string.IsNullOrWhiteSpace(promotion.ApprovalStatus)
+                ? TradingAcceptanceGateStatusDto.ReviewRequired
+                : TradingAcceptanceGateStatusDto.Blocked,
+            Detail: string.IsNullOrWhiteSpace(promotion.ApprovalStatus)
+                ? $"Promotion decision is pending. Missing: {string.Join(", ", GetMissingPromotionTraceFields(promotion))}."
+                : $"Promotion evidence is incomplete. Missing: {string.Join(", ", GetMissingPromotionTraceFields(promotion))}.",
             RunId: promotion.SourceRunId ?? promotion.TargetRunId,
             AuditReference: promotion.AuditReference);
     }

@@ -195,6 +195,8 @@ public sealed class ExecutionGovernanceEndpointsTests
             });
         });
 
+        await app.Services.GetRequiredService<AlpacaBrokerageGateway>().ConnectAsync();
+
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
 
@@ -273,6 +275,8 @@ public sealed class ExecutionGovernanceEndpointsTests
                 config.MaxPositionSize = 100m;
             });
         });
+
+        await app.Services.GetRequiredService<RobinhoodBrokerageGateway>().ConnectAsync();
 
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");

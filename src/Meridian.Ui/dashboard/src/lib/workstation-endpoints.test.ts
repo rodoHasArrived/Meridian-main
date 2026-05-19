@@ -353,14 +353,14 @@ describe("execution control route contract parity", () => {
     "/api/execution/controls/manual-overrides/{overrideId}/clear" as const;
 
   it("keeps frontend helper constants aligned with backend contracts", () => {
-    expect(EXECUTION_API_ENDPOINTS.manualOverrides).toBe(
-      CONTRACT_EXECUTION_MANUAL_OVERRIDES,
+    expect(
+      EXECUTION_API_ENDPOINTS.manualOverrides,
       "frontend helper diverged from backend contract: manual override create route"
-    );
+    ).toBe(CONTRACT_EXECUTION_MANUAL_OVERRIDES);
 
-    expect(executionManualOverrideClearEndpoint("override-1")).toBe(
-      CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR_TEMPLATE.replace("{overrideId}", "override-1"),
+    expect(
+      executionManualOverrideClearEndpoint("override-1"),
       "frontend helper diverged from backend contract: manual override clear route template"
-    );
+    ).toBe(CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR_TEMPLATE.replace("{overrideId}", "override-1"));
   });
 });
