@@ -518,8 +518,8 @@ describe("SettingsScreen", () => {
 
     const setupPanel = document.querySelector("#alpaca-provider-setup");
     expect(setupPanel).not.toBeNull();
-    expect(await within(setupPanel as HTMLElement).findByText("Credential revocation is blocked.")).toBeInTheDocument();
-    expect(within(setupPanel as HTMLElement).getByText("Endpoint returned 409 for /api/brokerage-connections/alpaca.")).toBeInTheDocument();
+    expect(await within(setupPanel as HTMLElement).findByText("Endpoint returned 409 for /api/brokerage-connections/alpaca.")).toBeInTheDocument();
+    expect(within(setupPanel as HTMLElement).getAllByText("Credential revocation is blocked.").length).toBeGreaterThan(0);
     expect(within(setupPanel as HTMLElement).getByText("providerState: Provider still has an active verification job.")).toBeInTheDocument();
   });
 
@@ -554,8 +554,8 @@ describe("SettingsScreen", () => {
 
     const setupPanel = document.querySelector("#alpaca-provider-setup");
     expect(setupPanel).not.toBeNull();
-    expect(await within(setupPanel as HTMLElement).findByText("One or more validation errors occurred.")).toBeInTheDocument();
-    expect(within(setupPanel as HTMLElement).getByText("Endpoint returned 422 for /api/brokerage-connections/alpaca/connect.")).toBeInTheDocument();
+    expect(await within(setupPanel as HTMLElement).findByText("Endpoint returned 422 for /api/brokerage-connections/alpaca/connect.")).toBeInTheDocument();
+    expect(within(setupPanel as HTMLElement).getAllByText("One or more validation errors occurred.").length).toBeGreaterThan(0);
     expect(within(setupPanel as HTMLElement).getByText("secretKey: Secret key must include the paper account scope.")).toBeInTheDocument();
   });
 

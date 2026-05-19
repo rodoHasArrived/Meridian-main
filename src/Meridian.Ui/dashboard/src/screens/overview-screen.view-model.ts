@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSystemStatus } from "@/lib/api";
-import { WORKSPACES, workspacePath } from "@/lib/workspace";
+import { WORKSPACES, WORKSTATION_ROUTE_CATALOG, workspacePath } from "@/lib/workspace";
 import type {
   MetricSnapshot,
   PortfolioWorkspaceResponse,
@@ -435,7 +435,7 @@ export function buildOverviewValueBlockers(
       id: "refresh-failed",
       title: "Live status refresh failed",
       detail: refreshErrorText,
-      href: "/settings#backend-capability-coverage",
+      href: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
       actionLabel: "Review diagnostics",
       badgeLabel: "Refresh",
       badgeVariant: "danger",
@@ -448,7 +448,7 @@ export function buildOverviewValueBlockers(
       id: "status-unavailable",
       title: "System posture is still loading",
       detail: "The workstation has not returned a status payload yet. If this remains blank, review backend capability coverage.",
-      href: "/settings#backend-capability-coverage",
+      href: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
       actionLabel: "Review diagnostics",
       badgeLabel: "Waiting",
       badgeVariant: "warning",
@@ -463,7 +463,7 @@ export function buildOverviewValueBlockers(
       id: "system-offline",
       title: "Workstation host is offline",
       detail: "Operator workflows cannot be trusted until the local host reports online status.",
-      href: "/settings#backend-capability-coverage",
+      href: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
       actionLabel: "Review diagnostics",
       badgeLabel: "Offline",
       badgeVariant: "danger",
@@ -476,7 +476,7 @@ export function buildOverviewValueBlockers(
       id: "providers-missing",
       title: "No provider baseline configured",
       detail: "Connect a paper provider before expecting quotes, backfills, readiness checks, or paper orders to be useful.",
-      href: "/settings#alpaca-provider-setup",
+      href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       actionLabel: "Connect provider",
       badgeLabel: "Setup",
       badgeVariant: "danger",
@@ -487,7 +487,7 @@ export function buildOverviewValueBlockers(
       id: "providers-offline",
       title: "All configured providers are offline",
       detail: `${current.providersTotal} configured ${pluralize(current.providersTotal, "provider")} need connectivity before market-data workflows are useful.`,
-      href: "/settings#alpaca-provider-setup",
+      href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       actionLabel: "Repair provider",
       badgeLabel: "Offline",
       badgeVariant: "danger",
@@ -499,7 +499,7 @@ export function buildOverviewValueBlockers(
       id: "providers-degraded",
       title: "Provider baseline is degraded",
       detail: `${offlineCount} of ${current.providersTotal} ${pluralize(current.providersTotal, "provider")} are offline. Review provider posture before accepting readiness evidence.`,
-      href: "/data/providers",
+      href: WORKSTATION_ROUTE_CATALOG.dataProviders,
       actionLabel: "Review providers",
       badgeLabel: "Provider",
       badgeVariant: "warning",
@@ -512,7 +512,7 @@ export function buildOverviewValueBlockers(
       id: "symbols-empty",
       title: "No monitored symbols",
       detail: "Seed a watchlist before validating quotes, historical data, backfills, or paper-trade tickets.",
-      href: "/data/watchlist",
+      href: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
       actionLabel: "Seed watchlist",
       badgeLabel: "Symbols",
       badgeVariant: "warning",
@@ -527,7 +527,7 @@ export function buildOverviewValueBlockers(
       detail: current.storageHealth === "Critical"
         ? "Generated evidence and replay outputs are not safe to trust until storage health recovers."
         : "Storage is warning. Confirm evidence durability before relying on generated reports or replay packets.",
-      href: "/settings#backend-capability-coverage",
+      href: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
       actionLabel: "Review storage",
       badgeLabel: "Storage",
       badgeVariant: current.storageHealth === "Critical" ? "danger" : "warning",
@@ -540,7 +540,7 @@ export function buildOverviewValueBlockers(
       id: "backfills-active",
       title: "Backfill work is still running",
       detail: `${current.activeBackfills} active ${pluralize(current.activeBackfills, "backfill")} may change data coverage and downstream evidence.`,
-      href: "/data/backfills",
+      href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
       actionLabel: "Review backfills",
       badgeLabel: "Backfill",
       badgeVariant: "outline",
@@ -555,7 +555,7 @@ export function buildOverviewValueBlockers(
       id: `event-${latestError.id}`,
       title: "Recent system error needs triage",
       detail: `${latestError.source.trim() || "Unknown source"}: ${latestError.message}`,
-      href: "/settings#backend-capability-coverage",
+      href: WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage,
       actionLabel: "Review diagnostics",
       badgeLabel: "Error",
       badgeVariant: "danger",
@@ -862,7 +862,7 @@ const priorityRouteCopy: Record<
     title: "Seed a working watchlist",
     detail: "No monitored symbols are loaded yet. Add a starter pack before validating quotes, backfills, or paper orders.",
     buttonLabel: "Open watchlist",
-    href: "/data/watchlist",
+    href: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
     ariaLabel: "Open Data watchlist starter packs"
   },
   settings: {
@@ -870,7 +870,7 @@ const priorityRouteCopy: Record<
     title: "Connect provider baseline",
     detail: "Provider setup is blocking useful validation. Verify workstation setup before expecting quotes or readiness checks.",
     buttonLabel: "Open setup checks",
-    href: "/settings#alpaca-provider-setup",
+    href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
     ariaLabel: "Open Alpaca paper provider setup checklist"
   }
 };
@@ -1070,7 +1070,7 @@ export function buildOverviewPortfolioPanel(
       openOrderCount: 0,
       emptyMessage: "Connect a brokerage account or start a paper session to see your portfolio here.",
       emptyAction: {
-        href: "/settings#alpaca-provider-setup",
+        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
         label: "Connect provider",
         ariaLabel: "Open Alpaca paper provider setup checklist from the empty portfolio panel"
       }
@@ -1145,7 +1145,7 @@ export function buildOverviewPortfolioPanel(
     openOrderCount: trading?.openOrders.length ?? 0,
     emptyMessage: "No open positions. Use the trading cockpit to place your first order.",
     emptyAction: {
-      href: "/trading",
+      href: WORKSTATION_ROUTE_CATALOG.trading,
       label: "Open trading cockpit",
       ariaLabel: "Open Trading cockpit from the empty portfolio positions panel"
     }

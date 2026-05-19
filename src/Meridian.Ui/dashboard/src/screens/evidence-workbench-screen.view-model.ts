@@ -7,7 +7,12 @@ import {
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import type { ApiRequestOptions } from "@/lib/api";
-import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, workflowTargetPath } from "@/lib/workspace";
+import {
+  evidenceWorkbenchPath,
+  normalizeLocalWorkstationRoute,
+  WORKSTATION_ROUTE_CATALOG,
+  workflowTargetPath
+} from "@/lib/workspace";
 import type {
   EvidenceCompleteness,
   EvidenceEdge,
@@ -498,7 +503,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     subjectEmptyTitle: "No evidence subjects returned",
     subjectEmptyDetail: "Readiness, reconciliation, report-pack, and provider evidence will appear here after the workstation APIs publish packet subjects.",
     subjectEmptyActionLabel: "Open readiness console",
-    subjectEmptyActionHref: "/trading/readiness",
+    subjectEmptyActionHref: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
     subjectEmptyActionAriaLabel: "Open readiness console to review upstream evidence sources",
     subjects: input.subjects,
     packet: input.packet,

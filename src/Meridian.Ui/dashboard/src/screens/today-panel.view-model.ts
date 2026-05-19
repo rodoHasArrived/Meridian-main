@@ -5,6 +5,7 @@ import type {
   TradingPosition,
   TradingWorkspaceResponse
 } from "@/types";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 
 export type TodayTone = "default" | "success" | "warning" | "danger";
 
@@ -99,35 +100,35 @@ export interface TodayPanelViewModel {
 }
 
 const PREVIEW_LIMIT = 5;
-const BROKERAGE_SETUP_HREF = "/settings#alpaca-provider-setup";
+const BROKERAGE_SETUP_HREF = WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup;
 
 const QUICK_ACTIONS: TodayQuickAction[] = [
   {
     id: "place-order",
     label: "Place order",
     description: "Open the trading cockpit to stage a paper or live order.",
-    href: "/trading",
+    href: WORKSTATION_ROUTE_CATALOG.trading,
     ariaLabel: "Open trading cockpit to place an order"
   },
   {
     id: "add-symbol",
     label: "Add symbol",
     description: "Subscribe a symbol to the live data pipeline.",
-    href: "/data/watchlist",
+    href: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
     ariaLabel: "Open the watchlist to add a symbol"
   },
   {
     id: "live-quote",
     label: "Look up quote",
     description: "Inspect live bid/ask, recent trades, and L2 depth.",
-    href: "/data/quotes",
+    href: WORKSTATION_ROUTE_CATALOG.dataQuotes,
     ariaLabel: "Open live quotes lookup"
   },
   {
     id: "reconcile",
     label: "Reconcile",
     description: "Review accounting breaks and cash posture.",
-    href: "/accounting",
+    href: WORKSTATION_ROUTE_CATALOG.accounting,
     ariaLabel: "Open accounting reconciliation queue"
   }
 ];

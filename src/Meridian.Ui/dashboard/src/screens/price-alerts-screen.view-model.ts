@@ -3,6 +3,7 @@ import type { PriceAlertsApi } from "@/lib/price-alerts/service";
 import { PRICE_ALERTS_POLL_INTERVAL_MS } from "@/lib/price-alerts/service";
 import { describeCondition } from "@/lib/price-alerts/evaluator";
 import type { PriceAlert, PriceAlertCondition, PriceAlertDraft, PriceAlertField, PriceAlertTrigger } from "@/lib/price-alerts/types";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type { MetricSnapshot } from "@/types";
 
 export interface PriceAlertFormState {
@@ -722,7 +723,7 @@ export function buildPriceAlertSubmitFeedback(draft: PriceAlertDraft): PriceAler
     ariaLabel: `Price alert created for ${draft.symbol}`,
     action: {
       label: "Open live quotes",
-      href: `/data/quotes?symbol=${encodeURIComponent(draft.symbol)}`,
+      href: workstationRouteWithQuery("dataQuotes", { symbol: draft.symbol }),
       ariaLabel: `Open live quotes for ${draft.symbol} after creating price alert`
     }
   };
@@ -882,7 +883,7 @@ function buildTriggerRow(trigger: PriceAlertTrigger, selectedTriggerId: string |
     statusVariant: trigger.acknowledged ? "outline" : "warning",
     rowAriaLabel: `${trigger.symbol} triggered alert. ${conditionLabel}. Fired at ${priceLabel} on ${triggeredAtLabel}. ${trigger.acknowledged ? "Acknowledged." : "Needs acknowledgement."}`,
     rowSelectAriaLabel: `Inspect triggered alert ${trigger.symbol}`,
-    quoteHref: `/data/quotes?symbol=${encodeURIComponent(trigger.symbol)}`,
+    quoteHref: workstationRouteWithQuery("dataQuotes", { symbol: trigger.symbol }),
     quoteAriaLabel: `Open live quotes for ${trigger.symbol}`,
     acknowledgeAction: trigger.acknowledged
       ? null
@@ -914,7 +915,7 @@ export function buildPriceAlertListSection(
     emptyAction: count === 0
       ? {
         label: "Open live quotes",
-        href: "/data/quotes",
+        href: WORKSTATION_ROUTE_CATALOG.dataQuotes,
         ariaLabel: "Open live quotes to choose a symbol for a price alert"
       }
       : null,
@@ -957,7 +958,7 @@ function buildAlertRow(alert: PriceAlert, selectedAlertId: string | null, pendin
     rowClassName: alert.enabled && !isSnoozed ? "border-border/70 bg-background/50" : "border-border/50 bg-secondary/25",
     rowAriaLabel: `${alert.symbol} price alert. ${statusLabel}. ${conditionLabel}. ${lastObservedLabel}.${deleteConfirmationPending ? " Delete confirmation pending." : ""}`,
     rowSelectAriaLabel: `Inspect configured alert ${alert.symbol}`,
-    quoteHref: `/data/quotes?symbol=${encodeURIComponent(alert.symbol)}`,
+    quoteHref: workstationRouteWithQuery("dataQuotes", { symbol: alert.symbol }),
     quoteAriaLabel: `Open live quotes for ${alert.symbol}`,
     primaryAction: buildPrimaryAlertAction(alert, isSnoozed),
     pauseAction: {
@@ -1003,7 +1004,7 @@ function buildTriggerDetail(trigger: PriceAlertTrigger): PriceAlertRowDetailView
       { id: "note", label: "Operator note", value: trigger.note ?? "No operator note", tone: trigger.note ? "default" : "muted" },
       { id: "alert-id", label: "Alert ID", value: trigger.alertId, tone: "muted" }
     ],
-    quoteHref: `/data/quotes?symbol=${encodeURIComponent(trigger.symbol)}`,
+    quoteHref: workstationRouteWithQuery("dataQuotes", { symbol: trigger.symbol }),
     quoteAriaLabel: `Open live quotes for ${trigger.symbol}`,
     action: trigger.acknowledged
       ? null
@@ -1045,7 +1046,7 @@ function buildAlertDetail(alert: PriceAlert): PriceAlertRowDetailViewModel {
       { id: "snoozed-until", label: "Snoozed until", value: isSnoozed ? formatPriceAlertTimestamp(alert.snoozedUntil) : "—", tone: isSnoozed ? "warning" : "muted" },
       { id: "note", label: "Operator note", value: alert.note ?? "No operator note", tone: alert.note ? "default" : "muted" }
     ],
-    quoteHref: `/data/quotes?symbol=${encodeURIComponent(alert.symbol)}`,
+    quoteHref: workstationRouteWithQuery("dataQuotes", { symbol: alert.symbol }),
     quoteAriaLabel: `Open live quotes for ${alert.symbol}`,
     action: {
       ...primaryAction,

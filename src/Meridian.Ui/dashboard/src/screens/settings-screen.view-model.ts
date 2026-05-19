@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { connectAlpacaConnection, revokeAlpacaConnection } from "@/lib/api";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
+import { settingsProviderConnectionRoute, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   BACKFILL_API_ENDPOINTS,
   CONFIG_API_ENDPOINTS,
@@ -985,7 +986,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "trading",
     workspaceKey: "trading",
     workspaceLabel: "Trading",
-    route: "/trading",
+    route: WORKSTATION_ROUTE_CATALOG.trading,
     title: "Paper trading cockpit",
     description: "Trading positions, orders, sessions, replay, promotion, controls, and operator inbox readiness.",
     isAvailable: (payload) => payload.trading !== null && payload.trading !== undefined,
@@ -1003,7 +1004,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "portfolio",
     workspaceKey: "portfolio",
     workspaceLabel: "Portfolio",
-    route: "/portfolio",
+    route: WORKSTATION_ROUTE_CATALOG.portfolio,
     title: "Portfolio and run continuity",
     description: "Aggregate exposure, symbol exposure, run fills, ledger, attribution, continuity, and review packets.",
     isAvailable: (payload) => payload.portfolio !== null && payload.portfolio !== undefined,
@@ -1021,7 +1022,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "accounting",
     workspaceKey: "accounting",
     workspaceLabel: "Accounting",
-    route: "/accounting",
+    route: WORKSTATION_ROUTE_CATALOG.accounting,
     title: "Accounting and reconciliation",
     description: "Reconciliation run creation, break queues, audit history, calibration summary, cash flow, ledger drill-ins, and Security Master coverage.",
     isAvailable: (payload) => payload.governance !== null && payload.governance !== undefined,
@@ -1039,7 +1040,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "reporting",
     workspaceKey: "reporting",
     workspaceLabel: "Reporting",
-    route: "/reporting",
+    route: WORKSTATION_ROUTE_CATALOG.reporting,
     title: "Governed reports and exports",
     description: "Reporting workspace posture, analysis exports, report-pack targets, data dictionaries, and approval lanes.",
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
@@ -1055,7 +1056,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "strategy",
     workspaceKey: "strategy",
     workspaceLabel: "Strategy",
-    route: "/strategy",
+    route: WORKSTATION_ROUTE_CATALOG.strategy,
     title: "Strategy run library",
     description: "Strategy workspace payloads, run history, timeline, sweeps, comparisons, diffs, and promotion actions.",
     isAvailable: (payload) => payload.research !== null && payload.research !== undefined,
@@ -1073,7 +1074,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "data",
     workspaceKey: "data",
     workspaceLabel: "Data",
-    route: "/data",
+    route: WORKSTATION_ROUTE_CATALOG.data,
     title: "Data trust and provider operations",
     description: "Provider status, backfill trigger and preview, symbols, storage quality, and data-quality queues.",
     isAvailable: (payload) => payload.dataOperations !== null && payload.dataOperations !== undefined,
@@ -1095,7 +1096,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     id: "settings",
     workspaceKey: "settings",
     workspaceLabel: "Settings",
-    route: "/settings",
+    route: WORKSTATION_ROUTE_CATALOG.settings,
     title: "Configuration and diagnostics",
     description: "Session context, health, configuration, workflow library, workflow presets, credentials, and diagnostics.",
     isAvailable: (payload) => payload.session !== null && payload.overview !== null,
@@ -1415,7 +1416,7 @@ function buildAlpacaSetupChecklist(
       tone: isConnected ? "success" : "muted",
       badgeVariant: isConnected ? "success" : "outline",
       actionLabel: isConnected ? "Open readiness" : null,
-      actionHref: isConnected ? "/trading/readiness" : null,
+      actionHref: isConnected ? WORKSTATION_ROUTE_CATALOG.tradingReadiness : null,
       actionAriaLabel: isConnected ? "Open Trading readiness after Alpaca account verification" : null
     }
   ];
@@ -1623,7 +1624,7 @@ function buildProfileAuthenticationPanel(
         tone: isConnected ? "success" : connectionFailed ? "danger" : isConfigured ? "warning" : "muted",
         badgeVariant: isConnected ? "success" : connectionFailed ? "danger" : isConfigured ? "warning" : "outline",
         actionLabel: isConnected ? "Open readiness" : "Review provider setup",
-        actionHref: isConnected ? "/trading/readiness" : "/settings#alpaca-provider-setup",
+        actionHref: isConnected ? WORKSTATION_ROUTE_CATALOG.tradingReadiness : WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
         actionAriaLabel: isConnected
           ? "Open Trading readiness from verified profile authentication posture"
           : "Review Alpaca provider setup from profile authentication posture"
@@ -1638,7 +1639,7 @@ function buildProfileAuthenticationPanel(
         tone: diagnosticBlocked ? "warning" : "success",
         badgeVariant: diagnosticBlocked ? "warning" : "success",
         actionLabel: "Open diagnostics",
-        actionHref: "/settings#diagnostic-endpoints",
+        actionHref: WORKSTATION_ROUTE_CATALOG.settingsDiagnosticEndpoints,
         actionAriaLabel: "Open Settings diagnostic endpoints from profile authentication posture"
       }
     ]
@@ -1782,7 +1783,7 @@ function buildProviderConnectionRow(
     affectedWorkflowsLabel: workflows.join(", "),
     affectedWorkflows: workflows,
     recommendedAction: row.recommendedAction,
-    actionHref: row.actionHref || `/settings#provider-${row.providerId}-connection`,
+    actionHref: row.actionHref || settingsProviderConnectionRoute(row.providerId),
     actionLabel: row.providerId === "alpaca" ? "Manage Alpaca" : "Open provider row",
     actionAriaLabel: `Open ${row.displayName} provider connection row`
   };
@@ -1821,7 +1822,7 @@ function buildProviderRoutingConnectionRow(
     affectedWorkflowsLabel: workflows.join(", "),
     affectedWorkflows: workflows,
     recommendedAction: providerRoutingRecommendedAction(connection, routingContext),
-    actionHref: `/settings#provider-${connection.connectionId}-connection`,
+    actionHref: settingsProviderConnectionRoute(connection.connectionId),
     actionLabel: "Open provider row",
     actionAriaLabel: `Open ${connection.displayName} provider connection row`
   };

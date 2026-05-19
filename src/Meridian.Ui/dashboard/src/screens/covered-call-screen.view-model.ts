@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as coveredCallApi from "@/lib/api/covered-call";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type {
   CoveredCallBacktestRequest,
   CoveredCallChainPreview,
@@ -908,21 +909,21 @@ export function buildCoveredCallResultsActionPanel(
             id: "live-quote",
             label: "Validate live quote",
             description: `Open ${symbol} quote, order book, trades, and chart evidence.`,
-            href: `/data/quotes?symbol=${quoteSymbol}`,
+            href: workstationRouteWithQuery("dataQuotes", { symbol: quoteSymbol }),
             ariaLabel: `Validate live quote evidence for ${symbol}`
           },
           {
             id: "strategy-designer",
             label: "Refine payoff",
             description: "Compare the covered-call shape against editable option-leg structures.",
-            href: "/strategy/designer",
+            href: WORKSTATION_ROUTE_CATALOG.strategyDesigner,
             ariaLabel: "Open Strategy Designer to refine covered-call payoff"
           },
           {
             id: "report-pack",
             label: "Package evidence",
             description: "Move selected run evidence toward report-pack preview or export review.",
-            href: "/reporting/report-packs",
+            href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
             ariaLabel: "Open report packs to package covered-call run evidence"
           }
         ]
