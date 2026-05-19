@@ -23,7 +23,7 @@ public sealed class OAuthRefreshServiceTests
 
         service.WrapperFailureCount.Should().Be(1);
         evt.Should().NotBeNull();
-        evt!.OperationName.Should().Be(nameof(OAuthRefreshService.CheckAndRefreshTokensAsync));
+        evt!.OperationName.Should().Be("CheckAndRefreshTokensAsync");
         evt.Exception.Should().BeOfType<InvalidOperationException>();
         evt.EmittedStructuredLog.Should().BeTrue();
         logger.Entries.Should().ContainSingle(x => x.LogLevel == LogLevel.Error && x.Message.Contains("CheckAndRefreshTokensAsync"));

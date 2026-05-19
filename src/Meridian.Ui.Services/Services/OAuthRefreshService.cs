@@ -13,7 +13,6 @@ public sealed class OAuthRefreshService : IDisposable
 {
     private static readonly Lazy<OAuthRefreshService> _instance = new(() => new OAuthRefreshService());
     private static readonly TimeSpan WrapperFailureLogThrottleWindow = TimeSpan.FromMinutes(1);
-    private static readonly ILoggerFactory SingletonLoggerFactory = LoggerFactory.Create(static _ => { });
     /// <summary>
     /// Gets the singleton instance of the OAuth refresh service.
     /// </summary>
@@ -64,7 +63,7 @@ public sealed class OAuthRefreshService : IDisposable
     public int WrapperFailureCount => Volatile.Read(ref _wrapperFailureCount);
 
     private OAuthRefreshService()
-        : this(new CredentialService(), SingletonLoggerFactory.CreateLogger<OAuthRefreshService>())
+        : this(CredentialService.Instance)
     {
     }
 
