@@ -1,4 +1,5 @@
 using Meridian.Application.DirectLending;
+using Meridian.Application.Ledger;
 using Meridian.Contracts.DirectLending;
 using Meridian.Storage.DirectLending;
 using Npgsql;
@@ -36,7 +37,12 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
         Store = new PostgresDirectLendingStateStore(Options);
         Rebuilder = new DirectLendingEventRebuilder();
         QueryService = new PostgresDirectLendingQueryService(Store, Store, Rebuilder);
-        CommandService = new PostgresDirectLendingCommandService(Store, Store, QueryService, Options);
+        CommandService = new PostgresDirectLendingCommandService(
+            Store,
+            Store,
+            QueryService,
+            new LoanAccountingProjector(journalStore: null, new AccountingPolicyService()),
+            Options);
         Service = new PostgresDirectLendingService(CommandService, QueryService);
     }
 

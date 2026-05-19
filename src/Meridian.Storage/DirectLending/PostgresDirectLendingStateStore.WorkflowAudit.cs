@@ -1,13 +1,13 @@
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.DirectLending;
 
 namespace Meridian.Storage.DirectLending;
 
 public sealed partial class PostgresDirectLendingStateStore
 {
-    public async Task<OperationsWorkflowAuditRecord> AppendOperationsWorkflowAuditAsync(OperationsWorkflowAuditRecord record, CancellationToken ct = default)
+    public async Task<OperationsWorkflowAuditRecord> AppendOperationsWorkflowAuditAsync(OperationsWorkflowAuditAppendRequest request, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
@@ -21,14 +21,14 @@ public sealed partial class PostgresDirectLendingStateStore
                 select hash
                 from {Qualified("operations_workflow_audit")}
                 where workflow_id = @workflow_id
-                order by occurred_at_utc desc, audit_id desc
+                order by created_at desc, audit_id desc
                 limit 1;
                 """;
-            previous.Parameters.AddWithValue("workflow_id", record.WorkflowId);
+            previous.Parameters.AddWithValue("workflow_id", request.WorkflowId);
             previousHash = (string?)await previous.ExecuteScalarAsync(ct).ConfigureAwait(false);
         }
 
-        var computedHash = ComputeOperationsWorkflowAuditHash(record, previousHash);
+        var computedHash = ComputeOperationsWorkflowAuditHash(request, previousHash);
 
         await using (var insert = connection.CreateCommand())
         {
@@ -48,38 +48,65 @@ public sealed partial class PostgresDirectLendingStateStore
                     @broker_reference_id, @security_reference_id, @ledger_reference_id, @reconciliation_reference_id, @evidence_reference_id, @audit_reference_id,
                     @hash, @previous_hash, @severity, @tags);
                 """;
-            insert.Parameters.AddWithValue("audit_id", record.AuditId);
-            insert.Parameters.AddWithValue("occurred_at_utc", record.OccurredAtUtc.UtcDateTime);
-            insert.Parameters.AddWithValue("workflow_id", record.WorkflowId);
-            insert.Parameters.AddWithValue("fund_account_id", record.FundAccountId);
-            insert.Parameters.AddWithValue("period_id", record.PeriodId);
-            insert.Parameters.AddWithValue("event_type", record.EventType);
-            insert.Parameters.AddWithValue("from_state", (object?)record.FromState ?? DBNull.Value);
-            insert.Parameters.AddWithValue("to_state", (object?)record.ToState ?? DBNull.Value);
-            insert.Parameters.AddWithValue("gate", (object?)record.Gate ?? DBNull.Value);
-            insert.Parameters.AddWithValue("from_gate_status", (object?)record.FromGateStatus ?? DBNull.Value);
-            insert.Parameters.AddWithValue("to_gate_status", (object?)record.ToGateStatus ?? DBNull.Value);
-            insert.Parameters.AddWithValue("actor", record.Actor);
-            insert.Parameters.AddWithValue("rationale", record.Rationale);
-            insert.Parameters.AddWithValue("trace_id", (object?)record.TraceId ?? DBNull.Value);
-            insert.Parameters.AddWithValue("request_id", (object?)record.RequestId ?? DBNull.Value);
-            insert.Parameters.AddWithValue("session_id", (object?)record.SessionId ?? DBNull.Value);
-            insert.Parameters.AddWithValue("run_id", (object?)record.RunId ?? DBNull.Value);
-            insert.Parameters.AddWithValue("broker_reference_id", (object?)record.BrokerReferenceId ?? DBNull.Value);
-            insert.Parameters.AddWithValue("security_reference_id", (object?)record.SecurityReferenceId ?? DBNull.Value);
-            insert.Parameters.AddWithValue("ledger_reference_id", (object?)record.LedgerReferenceId ?? DBNull.Value);
-            insert.Parameters.AddWithValue("reconciliation_reference_id", (object?)record.ReconciliationReferenceId ?? DBNull.Value);
-            insert.Parameters.AddWithValue("evidence_reference_id", (object?)record.EvidenceReferenceId ?? DBNull.Value);
-            insert.Parameters.AddWithValue("audit_reference_id", (object?)record.AuditReferenceId ?? DBNull.Value);
+            insert.Parameters.AddWithValue("audit_id", request.AuditId);
+            insert.Parameters.AddWithValue("occurred_at_utc", request.OccurredAtUtc.UtcDateTime);
+            insert.Parameters.AddWithValue("workflow_id", request.WorkflowId);
+            insert.Parameters.AddWithValue("fund_account_id", request.FundAccountId);
+            insert.Parameters.AddWithValue("period_id", request.PeriodId);
+            insert.Parameters.AddWithValue("event_type", request.EventType);
+            insert.Parameters.AddWithValue("from_state", (object?)request.FromState ?? DBNull.Value);
+            insert.Parameters.AddWithValue("to_state", (object?)request.ToState ?? DBNull.Value);
+            insert.Parameters.AddWithValue("gate", (object?)request.Gate ?? DBNull.Value);
+            insert.Parameters.AddWithValue("from_gate_status", (object?)request.FromGateStatus ?? DBNull.Value);
+            insert.Parameters.AddWithValue("to_gate_status", (object?)request.ToGateStatus ?? DBNull.Value);
+            insert.Parameters.AddWithValue("actor", request.Actor);
+            insert.Parameters.AddWithValue("rationale", request.Rationale);
+            insert.Parameters.AddWithValue("trace_id", (object?)request.TraceId ?? DBNull.Value);
+            insert.Parameters.AddWithValue("request_id", (object?)request.RequestId ?? DBNull.Value);
+            insert.Parameters.AddWithValue("session_id", (object?)request.SessionId ?? DBNull.Value);
+            insert.Parameters.AddWithValue("run_id", (object?)request.RunId ?? DBNull.Value);
+            insert.Parameters.AddWithValue("broker_reference_id", (object?)request.BrokerReferenceId ?? DBNull.Value);
+            insert.Parameters.AddWithValue("security_reference_id", (object?)request.SecurityReferenceId ?? DBNull.Value);
+            insert.Parameters.AddWithValue("ledger_reference_id", (object?)request.LedgerReferenceId ?? DBNull.Value);
+            insert.Parameters.AddWithValue("reconciliation_reference_id", (object?)request.ReconciliationReferenceId ?? DBNull.Value);
+            insert.Parameters.AddWithValue("evidence_reference_id", (object?)request.EvidenceReferenceId ?? DBNull.Value);
+            insert.Parameters.AddWithValue("audit_reference_id", (object?)request.AuditReferenceId ?? DBNull.Value);
             insert.Parameters.AddWithValue("hash", computedHash);
             insert.Parameters.AddWithValue("previous_hash", (object?)previousHash ?? DBNull.Value);
-            insert.Parameters.AddWithValue("severity", record.Severity);
-            insert.Parameters.AddWithValue("tags", record.Tags.ToArray());
+            insert.Parameters.AddWithValue("severity", request.Severity);
+            insert.Parameters.AddWithValue("tags", request.Tags.ToArray());
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
-        return record with { Hash = computedHash, PreviousHash = previousHash };
+        return new OperationsWorkflowAuditRecord(
+            request.AuditId,
+            request.OccurredAtUtc,
+            request.WorkflowId,
+            request.FundAccountId,
+            request.PeriodId,
+            request.EventType,
+            request.FromState,
+            request.ToState,
+            request.Gate,
+            request.FromGateStatus,
+            request.ToGateStatus,
+            request.Actor,
+            request.Rationale,
+            request.TraceId,
+            request.RequestId,
+            request.SessionId,
+            request.RunId,
+            request.BrokerReferenceId,
+            request.SecurityReferenceId,
+            request.LedgerReferenceId,
+            request.ReconciliationReferenceId,
+            request.EvidenceReferenceId,
+            request.AuditReferenceId,
+            computedHash,
+            previousHash,
+            request.Severity,
+            request.Tags);
     }
 
     public async Task<IReadOnlyList<OperationsWorkflowAuditRecord>> GetOperationsWorkflowAuditAsync(string workflowId, CancellationToken ct = default)
@@ -95,7 +122,7 @@ public sealed partial class PostgresDirectLendingStateStore
                    hash, previous_hash, severity, tags
             from {Qualified("operations_workflow_audit")}
             where workflow_id = @workflow_id
-            order by occurred_at_utc, audit_id;
+            order by created_at, audit_id;
             """;
         command.Parameters.AddWithValue("workflow_id", workflowId);
 
@@ -136,38 +163,71 @@ public sealed partial class PostgresDirectLendingStateStore
         return results;
     }
 
-    private static string ComputeOperationsWorkflowAuditHash(OperationsWorkflowAuditRecord record, string? previousHash)
+    private static string ComputeOperationsWorkflowAuditHash(OperationsWorkflowAuditAppendRequest request, string? previousHash)
     {
-        var canonicalPayload = JsonSerializer.Serialize(new
-        {
-            record.AuditId,
-            OccurredAtUtc = record.OccurredAtUtc.ToUniversalTime().ToString("O"),
-            record.WorkflowId,
-            record.FundAccountId,
-            record.PeriodId,
-            record.EventType,
-            record.FromState,
-            record.ToState,
-            record.Gate,
-            record.FromGateStatus,
-            record.ToGateStatus,
-            record.Actor,
-            record.Rationale,
-            record.TraceId,
-            record.RequestId,
-            record.SessionId,
-            record.RunId,
-            record.BrokerReferenceId,
-            record.SecurityReferenceId,
-            record.LedgerReferenceId,
-            record.ReconciliationReferenceId,
-            record.EvidenceReferenceId,
-            record.AuditReferenceId,
-            record.Severity,
-            Tags = record.Tags.OrderBy(static tag => tag, StringComparer.Ordinal).ToArray()
-        });
+        var canonicalPayload = new OperationsWorkflowAuditHashPayload(
+            request.AuditId,
+            request.OccurredAtUtc.ToUniversalTime().ToString("O"),
+            request.WorkflowId,
+            request.FundAccountId,
+            request.PeriodId,
+            request.EventType,
+            request.FromState,
+            request.ToState,
+            request.Gate,
+            request.FromGateStatus,
+            request.ToGateStatus,
+            request.Actor,
+            request.Rationale,
+            request.TraceId,
+            request.RequestId,
+            request.SessionId,
+            request.RunId,
+            request.BrokerReferenceId,
+            request.SecurityReferenceId,
+            request.LedgerReferenceId,
+            request.ReconciliationReferenceId,
+            request.EvidenceReferenceId,
+            request.AuditReferenceId,
+            request.Severity,
+            request.Tags.OrderBy(static tag => tag, StringComparer.Ordinal).ToArray(),
+            previousHash ?? string.Empty);
 
-        var bytes = Encoding.UTF8.GetBytes($"{canonicalPayload}|{previousHash ?? string.Empty}");
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(
+            canonicalPayload,
+            OperationsWorkflowAuditJsonContext.Default.OperationsWorkflowAuditHashPayload);
         return Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
     }
+
+    private sealed record OperationsWorkflowAuditHashPayload(
+        Guid AuditId,
+        string OccurredAtUtc,
+        string WorkflowId,
+        Guid FundAccountId,
+        string PeriodId,
+        string EventType,
+        string? FromState,
+        string? ToState,
+        string? Gate,
+        string? FromGateStatus,
+        string? ToGateStatus,
+        string Actor,
+        string Rationale,
+        string? TraceId,
+        string? RequestId,
+        string? SessionId,
+        string? RunId,
+        string? BrokerReferenceId,
+        string? SecurityReferenceId,
+        string? LedgerReferenceId,
+        string? ReconciliationReferenceId,
+        string? EvidenceReferenceId,
+        string? AuditReferenceId,
+        string Severity,
+        string[] Tags,
+        string PreviousHash);
+
+    [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(OperationsWorkflowAuditHashPayload))]
+    private sealed partial class OperationsWorkflowAuditJsonContext : JsonSerializerContext;
 }

@@ -44,7 +44,15 @@ create table if not exists __SCHEMA__.operations_workflow_audit (
 );
 
 create index if not exists ix_operations_workflow_audit_stream
-    on __SCHEMA__.operations_workflow_audit (workflow_id, occurred_at_utc, audit_id);
+    on __SCHEMA__.operations_workflow_audit (workflow_id, created_at, audit_id);
 
 create unique index if not exists ux_operations_workflow_audit_hash
     on __SCHEMA__.operations_workflow_audit (workflow_id, hash);
+
+create unique index if not exists ux_operations_workflow_audit_previous_hash
+    on __SCHEMA__.operations_workflow_audit (workflow_id, previous_hash)
+    where previous_hash is not null;
+
+create unique index if not exists ux_operations_workflow_audit_genesis
+    on __SCHEMA__.operations_workflow_audit (workflow_id)
+    where previous_hash is null;

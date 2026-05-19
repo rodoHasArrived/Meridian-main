@@ -43,6 +43,33 @@ public sealed record OperationsWorkflowAuditRecord(
     string Severity,
     IReadOnlyList<string> Tags);
 
+public sealed record OperationsWorkflowAuditAppendRequest(
+    Guid AuditId,
+    DateTimeOffset OccurredAtUtc,
+    string WorkflowId,
+    Guid FundAccountId,
+    string PeriodId,
+    string EventType,
+    string? FromState,
+    string? ToState,
+    string? Gate,
+    string? FromGateStatus,
+    string? ToGateStatus,
+    string Actor,
+    string Rationale,
+    string? TraceId,
+    string? RequestId,
+    string? SessionId,
+    string? RunId,
+    string? BrokerReferenceId,
+    string? SecurityReferenceId,
+    string? LedgerReferenceId,
+    string? ReconciliationReferenceId,
+    string? EvidenceReferenceId,
+    string? AuditReferenceId,
+    string Severity,
+    IReadOnlyList<string> Tags);
+
 public interface IDirectLendingOperationsStore
 {
     Task<IReadOnlyList<CashTransactionDto>> GetCashTransactionsAsync(Guid loanId, CancellationToken ct = default);
@@ -107,7 +134,7 @@ public interface IDirectLendingOperationsStore
 
     Task UpsertCheckpointAsync(RebuildCheckpointDto checkpoint, CancellationToken ct = default);
 
-    Task<OperationsWorkflowAuditRecord> AppendOperationsWorkflowAuditAsync(OperationsWorkflowAuditRecord record, CancellationToken ct = default);
+    Task<OperationsWorkflowAuditRecord> AppendOperationsWorkflowAuditAsync(OperationsWorkflowAuditAppendRequest request, CancellationToken ct = default);
 
     Task<IReadOnlyList<OperationsWorkflowAuditRecord>> GetOperationsWorkflowAuditAsync(string workflowId, CancellationToken ct = default);
 }
