@@ -70,6 +70,6 @@ Status definitions used below:
 
 - **CLI and operator command ownership**: `src/Meridian.Application/Commands/`
 - **Client/service orchestration ownership**: `src/Meridian.Ui.Services/Services/`
-- **Shared API + DTO + readiness/execution contract ownership**: `src/Meridian.Ui.Shared/Endpoints/` and `src/Meridian.Ui.Shared/Services/`
+- Shared API + DTO + readiness/execution contract ownership: `src/Meridian.Contracts/`, `src/Meridian.Ui.Shared/Endpoints/`, and `src/Meridian.Ui.Shared/Services/`
 
 This document should be updated whenever a broker/provider adapter, shared workstation contract, or provider connection endpoint changes status.
