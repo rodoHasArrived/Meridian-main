@@ -1670,14 +1670,21 @@ public sealed class WorkstationEndpointsTests
             await using var app = await CreateAppAsync(services => services.AddSingleton(brokerageSync));
             var client = app.GetTestClient();
 
-            var globalInbox = await client.GetFromJsonAsync<OperatorInboxDto>("/api/workstation/operator/inbox", ServerJsonOptions);
+            var accountAInbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+                $"/api/workstation/operator/inbox?fundAccountId={accountA:D}",
+                ServerJsonOptions);
+            var accountBInbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+                $"/api/workstation/operator/inbox?fundAccountId={accountB:D}",
+                ServerJsonOptions);
             var emptyScopedInbox = await client.GetFromJsonAsync<OperatorInboxDto>(
                 $"/api/workstation/operator/inbox?fundAccountId={accountWithoutPendingItems:D}",
                 ServerJsonOptions);
 
-            globalInbox.Should().NotBeNull();
-            globalInbox!.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.BrokerageSync && item.FundAccountId == accountA);
-            globalInbox.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.BrokerageSync && item.FundAccountId == accountB);
+            accountAInbox.Should().NotBeNull();
+            accountAInbox!.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.BrokerageSync && item.FundAccountId == accountA);
+
+            accountBInbox.Should().NotBeNull();
+            accountBInbox!.Items.Should().Contain(item => item.Kind == OperatorWorkItemKindDto.BrokerageSync && item.FundAccountId == accountB);
 
             emptyScopedInbox.Should().NotBeNull();
             emptyScopedInbox!.Items.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.BrokerageSync);
