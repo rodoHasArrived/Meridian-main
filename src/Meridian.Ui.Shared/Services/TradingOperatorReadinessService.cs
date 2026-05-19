@@ -102,7 +102,7 @@ public sealed class TradingOperatorReadinessService
             workItems.Count,
             warnings.Count);
 
-        return new TradingOperatorReadinessDto(
+        var readiness = new TradingOperatorReadinessDto(
             AsOf: asOf,
             ActiveSession: activeSession,
             Sessions: sessions,
@@ -125,6 +125,40 @@ public sealed class TradingOperatorReadinessService
             SnapshotMaterializedAt = asOf,
             SnapshotVersion = snapshotVersion
         };
+
+        ValidateRequiredReadinessFields(readiness);
+        return readiness;
+    }
+
+    private static void ValidateRequiredReadinessFields(TradingOperatorReadinessDto readiness)
+    {
+        if (string.IsNullOrWhiteSpace(readiness.OverallStatus))
+        {
+            throw new InvalidOperationException("Trading readiness projection is missing OverallStatus.");
+        }
+
+        if (string.IsNullOrWhiteSpace(readiness.SnapshotVersion))
+        {
+            throw new InvalidOperationException("Trading readiness projection is missing SnapshotVersion.");
+        }
+
+        if (readiness.AcceptanceGates is null || readiness.AcceptanceGates.Count == 0)
+        {
+            throw new InvalidOperationException("Trading readiness projection is missing AcceptanceGates.");
+        }
+
+        if (readiness.EvidenceCompleteness is null)
+        {
+            throw new InvalidOperationException("Trading readiness projection is missing EvidenceCompleteness.");
+        }
+
+        foreach (var gate in readiness.AcceptanceGates)
+        {
+            if (string.IsNullOrWhiteSpace(gate.GateKey) || string.IsNullOrWhiteSpace(gate.Status))
+            {
+                throw new InvalidOperationException("Trading readiness projection contains an incomplete acceptance gate.");
+            }
+        }
     }
 
     private static string BuildSnapshotVersion(
