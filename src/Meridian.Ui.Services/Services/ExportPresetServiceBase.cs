@@ -81,7 +81,7 @@ public class ExportPresetServiceBase
             if (_presets.Count == 0)
             {
                 _presets.AddRange(GetBuiltInPresets());
-                _ = await SavePresetsAsync(cancellationToken);
+                await SavePresetsAsync(cancellationToken);
             }
 
             EnsureBuiltInPresets();
