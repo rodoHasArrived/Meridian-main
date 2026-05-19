@@ -111,7 +111,7 @@ $steps = @(
             "dotnet"
         ) + $commonTestArgs + @(
             "--filter",
-            "FullyQualifiedName~BackfillStatusStoreTests|FullyQualifiedName~ParallelBackfillServiceTests|FullyQualifiedName~GapBackfillServiceTests|FullyQualifiedName~CheckpointEndpointTests"
+            "FullyQualifiedName~BackfillStatusStoreTests|FullyQualifiedName~ParallelBackfillServiceTests|FullyQualifiedName~GapBackfillServiceTests|FullyQualifiedName~CheckpointEndpointTests|FullyQualifiedName~TradeStationExecutionSlice_CreateUpdateCancelAndFillReconciliation_ProducesDeterministicCanonicalEvidence|FullyQualifiedName~TradeStationExecutionSlice_DelayedOutOfOrderEvents_RemainsIdempotentAndDeterministic"
         )
     },
     [ordered]@{

@@ -255,6 +255,18 @@ public sealed record TradingReportPackReadinessDto(
     int WarningCount,
     string? ManifestPath);
 
+
+public sealed record ProviderPromotionChecklistDto(
+    bool ContractCompatibilityValidated,
+    bool FocusedAdapterTestsValidated,
+    bool ReplayEvidenceGenerated,
+    bool DegradationCalibrationOutputValidated,
+    bool ReadyForPaperEnablement,
+    bool ReadyForLiveEnablement,
+    IReadOnlyList<string> Blockers,
+    string? EvidenceBundlePath,
+    DateTimeOffset EvaluatedAt);
+
 public sealed record TradingOperatorReadinessDto(
     DateTimeOffset AsOf,
     TradingPaperSessionReadinessDto? ActiveSession,
@@ -280,6 +292,8 @@ public sealed record TradingOperatorReadinessDto(
     public DateTimeOffset SnapshotMaterializedAt { get; init; }
 
     public string SnapshotVersion { get; init; } = string.Empty;
+
+    public ProviderPromotionChecklistDto? ProviderPromotionChecklist { get; init; }
 }
 
 public sealed record StrategyRunReviewPacketDto(
