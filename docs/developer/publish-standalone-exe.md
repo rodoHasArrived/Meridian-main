@@ -34,6 +34,21 @@ For the host-served browser workstation bundle:
 pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project web-workstation -OutputDir artifacts/publish/local-web-workstation
 ```
 
+Use `-SizeOptimized` for local size investigation or low-disk publish checks. It keeps the
+standalone single-file publish shape, but suppresses publish-only debug/doc output and runs MSBuild
+with lower parallelism:
+
+```powershell
+pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project web-workstation -SizeOptimized -OutputDir artifacts/publish/local-size
+```
+
+To inspect the largest repo-local generated-output and source roots before or after a publish run:
+
+```powershell
+pwsh ./build/scripts/publish/measure-size.ps1
+pwsh ./build/scripts/publish/measure-size.ps1 -AsJson
+```
+
 The manual `Publish Smoke` GitHub Actions workflow runs the same script on a
 Windows runner and uploads the generated `artifacts/publish/publish-smoke/`
 directory. It does not create a public release or deploy externally.

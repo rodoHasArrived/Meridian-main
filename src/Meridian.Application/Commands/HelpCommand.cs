@@ -140,13 +140,19 @@ COMMANDS:
     --statement-reconcile                      Run matching and produce unresolved cases
 
 REQUIRED OPTIONS:
-    --statement-source-kind <local|s3|sftp>   Statement source adapter kind
+    --statement-source-kind <local>           Statement source adapter kind
     --statement-source-path <path>             Source file or directory path
+    --statement-broker <broker>                Broker schema for canonical import (samplebroker)
+    --statement-date <yyyy-MM-dd>              Statement date for canonical import
 
 EXAMPLES:
     Meridian --statement-validate --statement-source-kind local --statement-source-path ./statements/ibkr-jan.csv
 
+    Meridian --statement-validate --statement-broker samplebroker --statement-source-path ./statements/sample.csv --statement-date 2026-01-31
+
     Meridian --statement-import --statement-source-kind local --statement-source-path ./statements/ibkr-jan.csv
+
+    Meridian --statement-import --statement-broker samplebroker --statement-source-path ./statements/sample.csv --statement-date 2026-01-31
 
     Meridian --statement-reconcile --statement-source-kind local --statement-source-path ./statements/ibkr-jan.csv
 ");
@@ -328,7 +334,7 @@ CREATE OPTIONS:
     --package-events <list>         Event types (Trade,BboQuote,L2Snapshot)
     --package-from <date>           Start date (YYYY-MM-DD)
     --package-to <date>             End date (YYYY-MM-DD)
-    --package-format <fmt>          Format: zip, tar.gz (default: zip)
+    --package-format <fmt>          Format: zip, tar.gz, 7z (default: zip)
     --package-compression <level>   Compression: none, fast, balanced, max
     --no-quality-report             Exclude quality report from package
     --no-data-dictionary            Exclude data dictionary
@@ -547,7 +553,7 @@ PACKAGING OPTIONS:
     --package-events <list>         Event types (Trade,BboQuote,L2Snapshot)
     --package-from <date>           Start date (YYYY-MM-DD)
     --package-to <date>             End date (YYYY-MM-DD)
-    --package-format <fmt>          Format: zip, tar.gz (default: zip)
+    --package-format <fmt>          Format: zip, tar.gz, 7z (default: zip)
     --package-compression <level>   Compression: none, fast, balanced, max
     --no-quality-report             Exclude quality report from package
     --no-data-dictionary            Exclude data dictionary

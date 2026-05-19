@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Commands;
 using Meridian.Application.Config;
+using Meridian.Storage.Packaging;
 using Serilog;
 using Xunit;
 
@@ -85,6 +86,30 @@ public class PackageCommandsTests
     {
         var cmd = new PackageCommands(TestConfig, Logger);
         var result = await cmd.ExecuteAsync(new[] { "--validate-package" });
+        result.ExitCode.Should().Be(2);
+    }
+
+    [Theory]
+    [InlineData("zip", PackageFormat.Zip)]
+    [InlineData("tar.gz", PackageFormat.TarGz)]
+    [InlineData("tgz", PackageFormat.TarGz)]
+    [InlineData("7z", PackageFormat.SevenZip)]
+    public void TryParsePackageFormat_WithSupportedFormat_ReturnsFormat(
+        string value,
+        PackageFormat expected)
+    {
+        PackageCommands.TryParsePackageFormat(value, out var format).Should().BeTrue();
+        format.Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithUnsupportedPackageFormat_ReturnsValidationError()
+    {
+        var cmd = new PackageCommands(TestConfig, Logger);
+
+        var result = await cmd.ExecuteAsync(new[] { "--package", "--package-format", "csv" });
+
+        result.Success.Should().BeFalse();
         result.ExitCode.Should().Be(2);
     }
 }

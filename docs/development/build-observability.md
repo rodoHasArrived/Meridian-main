@@ -89,6 +89,13 @@ generated publish directories older than 14 days or beyond the latest 5 runs bef
 Tune that with `-OutputRetentionDays <days>` and `-OutputRetainLatest <count>`, or set both to `0`
 to skip publish-output retention for a run.
 
+Use `-SizeOptimized` when investigating standalone publish size or running under tight local disk
+constraints. It keeps single-file publishing, disables publish-only debug/doc output, disables
+ReadyToRun, and lowers MSBuild parallelism so size-focused publish runs are less likely to create
+large temporary output bursts. Use `build/scripts/publish/measure-size.ps1` to compare common
+repo-local output roots such as `artifacts/publish`, dashboard `node_modules`, built workstation
+assets, `src`, and `tests`.
+
 `scripts/dev/cleanup-generated.ps1` previews untracked generated `bin`, `obj`, `TestResults`, and
 BenchmarkDotNet output by default. The scan skips Node dependency trees so package `bin` folders are
 not treated as .NET build output. Add `-IncludeNodeModules` only when you explicitly want to include

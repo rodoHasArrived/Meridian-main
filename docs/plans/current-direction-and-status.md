@@ -1,6 +1,6 @@
 # Meridian Current Direction And Status
 
-**Last Reviewed:** 2026-05-18
+**Last Reviewed:** 2026-05-19
 **Role:** Single planning entry point for current direction, project status, and document roles.
 
 Use this file before reading individual roadmap or plan documents. It consolidates the active interpretation of Meridian's many planning files without replacing their detailed implementation notes.
@@ -49,6 +49,12 @@ IDs, ledger references, and validation text. `.github/workflows/golden-path-vali
 turns that harness into a repeatable acceptance lane and uploads the generated readiness dashboard
 as `pilot-acceptance-evidence`. This advances support evidence for W2-W4; it does not by itself
 close operator acceptance, live readiness, broad WPF scope, mobile, W5, or W6.
+
+Release/distribution hygiene evidence as of 2026-05-19 is narrower than roadmap completion: publish
+output now belongs under ignored `artifacts/publish/` paths, the publish script has a
+`-SizeOptimized` mode for local size and low-disk investigations, and
+`build/scripts/publish/measure-size.ps1` reports common generated-output roots. Treat this as
+developer/release tooling support, not a Wave 2-4 product-readiness claim.
 
 W2/W3/W4 claim discipline: every new roadmap or status claim for these waves must either map to a
 `pilot-readiness.*` stage gate that turns green in the latest harness output or name the blocker in

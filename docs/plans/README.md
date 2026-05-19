@@ -1,6 +1,6 @@
 # Plans
 
-**Last Reviewed:** 2026-05-18
+**Last Reviewed:** 2026-05-19
 
 This directory contains current Meridian execution plans, blueprints, and target-state packages. Start with [current-direction-and-status.md](current-direction-and-status.md) for the consolidated planning interpretation. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); the remaining files here are subordinate implementation plans, optional-track designs, or asset-package specifications.
 
@@ -21,6 +21,10 @@ remains the source of truth for detailed follow-up: core Wave 2-4 operator-readi
 first, later-wave productization follows, UFL target-state packages remain reference designs, and
 technical/optional tracks must not compete with the core operator-ready path unless a current
 roadmap decision pulls them forward.
+
+2026-05-19 follow-up: release/distribution cleanup remains technical support work. Publish-size
+investigation, generated-output ignore rules, and TODO-scan cache hygiene do not change the current
+plan-file classification or move W2-W4 wave status.
 
 ## Core Operator-Ready Path
 

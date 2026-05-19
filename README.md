@@ -209,6 +209,7 @@ Build safety note:
   those limits, or set both to `0` to disable cleanup for a run.
 - Keep the F# test project's transitive `xunit.v3` runtime pin aligned with
   `xunit.runner.visualstudio`; Linux/macOS VSTest discovery depends on the v3 JSON handshake.
+- For standalone publish-size checks, use `pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project web-workstation -SizeOptimized -OutputDir artifacts/publish/local-size`, then inspect common output roots with `pwsh ./build/scripts/publish/measure-size.ps1`.
 
 ## Planning Source of Truth
 

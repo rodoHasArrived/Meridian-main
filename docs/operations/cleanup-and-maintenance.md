@@ -23,6 +23,9 @@ These are local/generated outputs and can be regenerated:
 - `bin/`
 - `obj/`
 - `node_modules/`
+- `src/Meridian.Ui/dashboard/node_modules/`
+- `src/Meridian.Ui/dashboard/dist/`
+- `src/Meridian.Ui/dashboard/coverage/`
 - `TestResults/`
 - `coverage/`
 - `.artifacts/`

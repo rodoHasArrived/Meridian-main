@@ -1,8 +1,8 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-05-19
 **Status:** Active productization — the narrow Wave 1 trust gate is repo-closed, DK1 provider trust now has a signed 2026-04-27 pilot replay/sample-set parity packet, valid packet-bound operator sign-off, and cockpit readiness projection; Waves 2-4 remain the core operator-readiness path. New desktop feature development is paused, and the active operator UI lane is now the browser workstation in `src/Meridian.Ui/dashboard/` with built assets served from `src/Meridian.Ui/wwwroot/workstation/`. The WPF workspace-shell baseline remains retained support evidence for shared contracts, regression fixes, and compatibility checks. Current post-May-9 deltas add Security Master/UFL reference-data projection support, browser provider-setup validation handoffs, browser Data backfill queue dense-table selection, browser Trading loading-state panel and Recent Fills detail support, browser Live Quotes trade-detail selection plus quick-trade readiness handoffs, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, Quant Lab plot view-model extraction, Quant Notebook cell/data-fetch helpers, crash-safe shared UI persistence, WPF Data shell feature-module support, Overview Today panel support, local Price Alerts, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail state at `/strategy/covered-call`, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, and view-model-owned browser workflow polish for hash-aware command routing, query-string route focus for subject/symbol handoffs, Portfolio brokerage-sync next actions, Watchlist no-quote/empty-state copy, Overview status/refresh presentation, Reporting report-pack actions and endpoint-link safety, Security Master lot-detail/conflict refresh state, and UTC Trading readiness labels; they are support evidence, not wave exits.
-**Repository Snapshot (2026-05-15 current repo; retained during the 2026-05-18 planning review):** solution/build/test project files: 43 | `src/` project files: 27 | test projects: 9 | workflow files: 44
+**Repository Snapshot (2026-05-19 current repo):** solution/build/test project files: 41 | `src/` project files: 27 | test projects: 9 | workflow files: 5
 
 Meridian is no longer primarily blocked on missing platform primitives. The repo already contains strong market-data, storage, replay, backtesting, execution, ledger, workstation, and Security Master foundations. The remaining delivery problem is now narrower and more product-shaped: prove operator trust, close workflow gaps, and deepen governance in one browser-first operator UI without letting the product split into parallel subsystems.
 
@@ -69,6 +69,14 @@ operator UI work belongs in the browser workstation, retained WPF work is
 compatibility/support/regression evidence, and mobile-specific product lanes remain out of scope.
 Plan documents that are target-state packages, optional tracks, or later-wave blueprints remain
 active only in the role named by the plan index; they do not alter the wave status table below.
+
+2026-05-19 follow-up: the current release/distribution delta is support tooling, not a wave exit.
+Generated publish output is expected under ignored `artifacts/publish/` paths, the publish script
+now exposes `-SizeOptimized` for standalone size and low-disk investigations, and
+`build/scripts/publish/measure-size.ps1` reports common repo-local output roots. The generated TODO
+scan is also being cleaned so local diagnostic tool caches do not inflate project TODO counts.
+These changes improve developer/release hygiene but do not close W2 cockpit, W3 continuity, W4
+governance, or live-readiness gates.
 
 Implementation follow-up on the acceleration plan: the golden-path pilot harness is now treated as
 the executable proof lane. `PilotAcceptanceHarnessTests` exercises the shared service and endpoint

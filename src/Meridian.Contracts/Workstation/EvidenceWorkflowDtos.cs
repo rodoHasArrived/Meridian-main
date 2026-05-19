@@ -52,6 +52,23 @@ public sealed record EvidenceEdgeDto(
     string Relationship,
     string Reason);
 
+[JsonConverter(typeof(JsonStringEnumConverter<EvidenceValidationSeverityDto>))]
+public enum EvidenceValidationSeverityDto
+{
+    Info = 0,
+    Warning = 1,
+    Critical = 2
+}
+
+public sealed record EvidenceValidationIssueDto(
+    string Code,
+    EvidenceValidationSeverityDto Severity,
+    string Message,
+    string? EvidenceId = null,
+    string? EvidenceKind = null,
+    string? SourceSystem = null,
+    string? RelatedWorkItemId = null);
+
 public sealed record EvidenceCompletenessDto(
     int Score,
     EvidenceStatusDto Status,
@@ -59,7 +76,10 @@ public sealed record EvidenceCompletenessDto(
     IReadOnlyList<string> ReadyIds,
     IReadOnlyList<string> MissingIds,
     IReadOnlyList<string> StaleIds,
-    IReadOnlyList<string> BlockingWorkItemIds);
+    IReadOnlyList<string> BlockingWorkItemIds)
+{
+    public IReadOnlyList<EvidenceValidationIssueDto> ValidationIssues { get; init; } = [];
+}
 
 public sealed record EvidencePacketDto(
     EvidenceSubjectDto Subject,

@@ -235,6 +235,12 @@ docs/docfx/api/*.yml
 # that should be restored via `npm install`, not committed.
 
 node_modules/
+/src/Meridian.Ui/dashboard/node_modules/
+/src/Meridian.Ui/dashboard/dist/
+/src/Meridian.Ui/dashboard/coverage/
+/artifacts/publish/
+**/artifacts/bin/
+**/artifacts/obj/
 
 # ============================================
 # Python Dependencies (for Build System)

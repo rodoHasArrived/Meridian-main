@@ -137,9 +137,18 @@ describe("command palette view model", () => {
     expect(model.filteredItems).toEqual([]);
     expect(model.commandGroups).toEqual([]);
     expect(model.filteredItemCountLabel).toBe("0 of 20 commands match");
+    expect(model.searchDescribedBy).toBe("command-palette-filter-count command-palette-empty-state-detail");
     expect(model.emptyState).toEqual({
+      id: "command-palette-empty-state",
+      titleId: "command-palette-empty-state-title",
+      detailId: "command-palette-empty-state-detail",
+      actionId: "command-palette-clear-search",
       title: "No matching commands",
-      detail: "Try a workspace name, route, workflow title, or status label."
+      detail: 'No commands match "not-a-command". Clear the search to return to all workstation commands.',
+      statusLabel: "Empty",
+      actionLabel: "Clear search",
+      actionAriaLabel: "Clear command palette search for not-a-command",
+      canClearSearch: true
     });
   });
 

@@ -53,6 +53,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         var securityMasterOptions = CreateSecurityMasterOptions();
         var directLendingOptions = CreateDirectLendingOptions();
 
+        services.TryAddSingleton(_ => AssetClassValidatorRegistry.CreateDefault());
+
         // StorageOptions - configured from AppConfig or defaults
         services.AddSingleton<StorageOptions>(sp =>
         {
@@ -138,6 +140,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<SecurityMasterQueryService>();
             services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
+            services.AddSingleton<ISecurityValidationService, SecurityValidationService>();
             services.AddSingleton<IBondReferenceService, BondProjectionService>();
             services.AddSingleton<IOptionReferenceService, OptionProjectionService>();
             services.AddSingleton<IOptionChainImportService>(sp => (OptionProjectionService)sp.GetRequiredService<IOptionReferenceService>());
@@ -186,6 +189,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterConflictService, NullSecurityMasterConflictService>();
         services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
         services.TryAddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
+        services.TryAddSingleton<ISecurityValidationService, NullSecurityValidationService>();
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
         services.TryAddSingleton<IOperatorOverridesStore, NullOperatorOverridesStore>();
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();

@@ -94,13 +94,13 @@ internal sealed class PackageCommands : ICliCommand
         var formatArg = CliArguments.GetValue(args, "--package-format");
         if (!string.IsNullOrWhiteSpace(formatArg))
         {
-            options.Format = formatArg.ToLowerInvariant() switch
+            if (!TryParsePackageFormat(formatArg, out var format))
             {
-                "zip" => PackageFormat.Zip,
-                "tar.gz" or "targz" or "tgz" => PackageFormat.TarGz,
-                "7z" or "7zip" => PackageFormat.SevenZip,
-                _ => PackageFormat.Zip
-            };
+                Console.Error.WriteLine($"Unsupported package format: {formatArg}. Supported formats: zip, tar.gz, tgz, 7z.");
+                return CliResult.Fail(ErrorCode.ValidationFailed);
+            }
+
+            options.Format = format;
         }
 
         var compressionArg = CliArguments.GetValue(args, "--package-compression");
@@ -152,6 +152,24 @@ internal sealed class PackageCommands : ICliCommand
         Console.Error.WriteLine($"Error: {result.Error}");
         _log.Error("Package creation failed: {Error}", result.Error);
         return CliResult.Fail(ErrorCode.WriteFailed);
+    }
+
+    internal static bool TryParsePackageFormat(string value, out PackageFormat format)
+    {
+        format = value.Trim().ToLowerInvariant() switch
+        {
+            "zip" => PackageFormat.Zip,
+            "tar.gz" or "targz" or "tgz" => PackageFormat.TarGz,
+            "7z" or "7zip" => PackageFormat.SevenZip,
+            _ => default
+        };
+
+        return value.Trim().Equals("zip", StringComparison.OrdinalIgnoreCase)
+            || value.Trim().Equals("tar.gz", StringComparison.OrdinalIgnoreCase)
+            || value.Trim().Equals("targz", StringComparison.OrdinalIgnoreCase)
+            || value.Trim().Equals("tgz", StringComparison.OrdinalIgnoreCase)
+            || value.Trim().Equals("7z", StringComparison.OrdinalIgnoreCase)
+            || value.Trim().Equals("7zip", StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<CliResult> RunImportAsync(string packagePath, string[] args, CancellationToken ct)

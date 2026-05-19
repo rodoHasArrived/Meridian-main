@@ -69,6 +69,75 @@ public sealed class EvidenceWorkflowFabricTests
         packet.Completeness.MissingIds.Should().Contain("missing");
         packet.Completeness.StaleIds.Should().Contain("stale");
         packet.Completeness.BlockingWorkItemIds.Should().Contain("provider-trust:sample-review");
+        packet.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "invalid-edge" &&
+            issue.EvidenceId == "ready");
+        packet.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "missing-required-evidence" &&
+            issue.EvidenceId == "missing" &&
+            issue.Severity == EvidenceValidationSeverityDto.Critical);
+        packet.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "stale-required-evidence" &&
+            issue.EvidenceId == "stale");
+        packet.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "review-required-evidence" &&
+            issue.EvidenceId == "review" &&
+            issue.RelatedWorkItemId == "provider-trust:sample-review");
+    }
+
+    [Fact]
+    public void EvidencePacketValidationService_DuringGovernedReportReview_ExplainsReadyMissingStaleAndReviewStates()
+    {
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "current");
+        var ready = Node(subject, "ready", "analysis-export", EvidenceStatusDto.Ready);
+        var stale = Node(subject, "stale", "report-pack", EvidenceStatusDto.Stale, stale: true);
+        var review = Node(subject, "review", "portfolio-context", EvidenceStatusDto.ReviewRequired, workItemIds: ["report-pack-lineage:current"]);
+        var service = new EvidencePacketValidationService();
+
+        var readyResult = service.Validate(
+            [ready],
+            [],
+            new HashSet<string>(["ready"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        readyResult.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+        readyResult.Completeness.ValidationIssues.Should().BeEmpty();
+
+        var missingResult = service.Validate(
+            [ready],
+            [],
+            new HashSet<string>(["ready", "missing"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        missingResult.Completeness.Status.Should().Be(EvidenceStatusDto.Blocked);
+        missingResult.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "missing-required-evidence" &&
+            issue.EvidenceId == "missing" &&
+            issue.Severity == EvidenceValidationSeverityDto.Critical);
+
+        var staleResult = service.Validate(
+            [stale],
+            [],
+            new HashSet<string>(["stale"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        staleResult.Completeness.Status.Should().Be(EvidenceStatusDto.Stale);
+        staleResult.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "stale-required-evidence" &&
+            issue.EvidenceId == "stale" &&
+            issue.EvidenceKind == "report-pack");
+
+        var reviewResult = service.Validate(
+            [review],
+            [],
+            new HashSet<string>(["review"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        reviewResult.Completeness.Status.Should().Be(EvidenceStatusDto.Blocked);
+        reviewResult.Completeness.BlockingWorkItemIds.Should().Contain("report-pack-lineage:current");
+        reviewResult.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "review-required-evidence" &&
+            issue.RelatedWorkItemId == "report-pack-lineage:current");
     }
 
     [Fact]
@@ -160,7 +229,19 @@ public sealed class EvidenceWorkflowFabricTests
             GeneratedAt: DateTimeOffset.UtcNow,
             Nodes: [Node(subject, "node-1", "analysis-export", EvidenceStatusDto.Ready)],
             Edges: [],
-            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["node-1"], ["node-1"], [], [], []),
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["node-1"], ["node-1"], [], [], [])
+            {
+                ValidationIssues =
+                [
+                    new EvidenceValidationIssueDto(
+                        Code: "review-required-evidence",
+                        Severity: EvidenceValidationSeverityDto.Warning,
+                        Message: "Report-pack approval evidence requires review.",
+                        EvidenceId: "node-1",
+                        EvidenceKind: "analysis-export",
+                        SourceSystem: "test")
+                ]
+            },
             Actions: [],
             Warnings: ["This warning should be excluded."]);
 
@@ -172,6 +253,8 @@ public sealed class EvidenceWorkflowFabricTests
         response.ManifestRoute.Should().Contain("/workstation/evidence/report-pack/review%20jan-..-2026/");
         response.WarningCount.Should().Be(0);
         manifestJson.Should().Contain("\"schemaVersion\": 1");
+        manifestJson.Should().Contain("\"validationIssues\": [");
+        manifestJson.Should().Contain("\"code\": \"review-required-evidence\"");
         manifestJson.Should().NotContain("This warning should be excluded.");
     }
 
