@@ -79,34 +79,7 @@ public sealed partial class PostgresDirectLendingStateStore
         }
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
-        return new OperationsWorkflowAuditRecord(
-            request.AuditId,
-            request.OccurredAtUtc,
-            request.WorkflowId,
-            request.FundAccountId,
-            request.PeriodId,
-            request.EventType,
-            request.FromState,
-            request.ToState,
-            request.Gate,
-            request.FromGateStatus,
-            request.ToGateStatus,
-            request.Actor,
-            request.Rationale,
-            request.TraceId,
-            request.RequestId,
-            request.SessionId,
-            request.RunId,
-            request.BrokerReferenceId,
-            request.SecurityReferenceId,
-            request.LedgerReferenceId,
-            request.ReconciliationReferenceId,
-            request.EvidenceReferenceId,
-            request.AuditReferenceId,
-            computedHash,
-            previousHash,
-            request.Severity,
-            request.Tags);
+        return CreateOperationsWorkflowAuditRecord(request, computedHash, previousHash);
     }
 
     public async Task<IReadOnlyList<OperationsWorkflowAuditRecord>> GetOperationsWorkflowAuditAsync(string workflowId, CancellationToken ct = default)
@@ -199,6 +172,39 @@ public sealed partial class PostgresDirectLendingStateStore
         return Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
     }
 
+    private static OperationsWorkflowAuditRecord CreateOperationsWorkflowAuditRecord(
+        OperationsWorkflowAuditAppendRequest request,
+        string hash,
+        string? previousHash) =>
+        new(
+            request.AuditId,
+            request.OccurredAtUtc,
+            request.WorkflowId,
+            request.FundAccountId,
+            request.PeriodId,
+            request.EventType,
+            request.FromState,
+            request.ToState,
+            request.Gate,
+            request.FromGateStatus,
+            request.ToGateStatus,
+            request.Actor,
+            request.Rationale,
+            request.TraceId,
+            request.RequestId,
+            request.SessionId,
+            request.RunId,
+            request.BrokerReferenceId,
+            request.SecurityReferenceId,
+            request.LedgerReferenceId,
+            request.ReconciliationReferenceId,
+            request.EvidenceReferenceId,
+            request.AuditReferenceId,
+            hash,
+            previousHash,
+            request.Severity,
+            request.Tags);
+
     private sealed record OperationsWorkflowAuditHashPayload(
         Guid AuditId,
         string OccurredAtUtc,
@@ -225,7 +231,7 @@ public sealed partial class PostgresDirectLendingStateStore
         string? AuditReferenceId,
         string Severity,
         string[] Tags,
-        string PreviousHash);
+        string ChainPreviousHash);
 
     [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
     [JsonSerializable(typeof(OperationsWorkflowAuditHashPayload))]

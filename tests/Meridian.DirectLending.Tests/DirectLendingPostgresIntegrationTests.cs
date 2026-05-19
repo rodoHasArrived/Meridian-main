@@ -8,6 +8,8 @@ namespace Meridian.DirectLending.Tests;
 [Trait("Category", "Integration")]
 public sealed class DirectLendingPostgresIntegrationTests
 {
+    private const string WorkflowIdPrefix = "wf-";
+
     [DirectLendingDatabaseFact]
     public async Task PostgresService_ShouldPersistSchemaVersionedHistoryAndSnapshots()
     {
@@ -63,7 +65,7 @@ public sealed class DirectLendingPostgresIntegrationTests
             return;
         }
 
-        var workflowId = $"wf-{Guid.NewGuid():N}";
+        var workflowId = $"{WorkflowIdPrefix}{Guid.NewGuid():N}";
         var fundAccountId = Guid.NewGuid();
         var periodId = "2026-Q2";
 
@@ -103,6 +105,7 @@ public sealed class DirectLendingPostgresIntegrationTests
         stream[1].PreviousHash.Should().Be(stream[0].Hash);
         stream[2].PreviousHash.Should().Be(stream[1].Hash);
         stream.Select(static entry => entry.Hash).Should().OnlyHaveUniqueItems();
+        stream.Should().OnlyContain(static entry => IsValidSha256HexHash(entry.Hash));
     }
 
     [DirectLendingDatabaseFact]
@@ -117,7 +120,7 @@ public sealed class DirectLendingPostgresIntegrationTests
         var act = async () =>
             await db.Store.AppendOperationsWorkflowAuditAsync(
                 BuildAuditAppendRequest(
-                    workflowId: $"wf-{Guid.NewGuid():N}",
+                    workflowId: $"{WorkflowIdPrefix}{Guid.NewGuid():N}",
                     fundAccountId: Guid.NewGuid(),
                     periodId: "2026-Q2",
                     eventType: "unknown_event"));
@@ -187,4 +190,9 @@ public sealed class DirectLendingPostgresIntegrationTests
             AuditReferenceId: null,
             Severity: "info",
             Tags: ["integration", "audit"]);
+
+    private static bool IsValidSha256HexHash(string hash) =>
+        hash.Length == 64 &&
+        hash.All(static character =>
+            (character >= '0' && character <= '9') || (character >= 'a' && character <= 'f'));
 }
