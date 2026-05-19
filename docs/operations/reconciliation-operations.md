@@ -16,9 +16,16 @@ Current implementation supports one broker statement schema: `samplebroker` CSV 
 ## Commands
 
 ```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-validate --statement-source-kind local --statement-source-path <path>
 dotnet run --project src/Meridian/Meridian.csproj -- --statement-validate --statement-broker samplebroker --statement-source-path <path> --statement-date <yyyy-mm-dd>
 dotnet run --project src/Meridian/Meridian.csproj -- --statement-import --statement-broker samplebroker --statement-source-path <path> --statement-date <yyyy-mm-dd>
+dotnet run --project src/Meridian/Meridian.csproj -- --statement-reconcile --statement-source-kind local --statement-source-path <path>
 ```
+
+Use the `--statement-broker` / `--statement-date` form when importing the supported
+`samplebroker` canonical CSV schema. The generic `--statement-source-kind local` form is the
+local-file accessibility and reconciliation probe; non-local statement adapters are not registered
+in the current command surface.
 
 ## Artifacts
 

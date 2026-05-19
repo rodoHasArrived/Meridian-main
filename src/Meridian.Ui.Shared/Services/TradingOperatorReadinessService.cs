@@ -84,12 +84,20 @@ public sealed class TradingOperatorReadinessService
             brokerageStatus,
             riskRuleStatuses,
             auditEntries);
-        var overallStatus = ResolveOverallStatus(acceptanceGates);
+        var overallStatus = EvaluateOverallPosture(acceptanceGates);
         var evidenceCompleteness = BuildEvidenceCompleteness(acceptanceGates, workItems);
         var warnings = BuildWarnings(workItems);
+        var snapshotVersion = BuildSnapshotVersion(
+            latestRun?.Summary.RunId,
+            replay?.VerificationAuditId,
+            promotion?.AuditReference,
+            trustGate.Status,
+            trustGate.OperatorSignoffStatus);
 
         _logger.LogDebug(
-            "Built trading operator readiness with {OverallStatus}, {WorkItemCount} work item(s), and {WarningCount} warning(s).",
+            "Built trading operator readiness snapshot {SnapshotVersion} at {SnapshotMaterializedAt:o} with {OverallStatus}, {WorkItemCount} work item(s), and {WarningCount} warning(s).",
+            snapshotVersion,
+            asOf,
             overallStatus,
             workItems.Count,
             warnings.Count);
@@ -113,9 +121,25 @@ public sealed class TradingOperatorReadinessService
             EvidenceCompleteness = evidenceCompleteness,
             OverallStatus = overallStatus,
             ReadyForPaperOperation = overallStatus == TradingAcceptanceGateStatusDto.Ready,
-            ReportPack = reportPack
+            ReportPack = reportPack,
+            SnapshotMaterializedAt = asOf,
+            SnapshotVersion = snapshotVersion
         };
     }
+
+    private static string BuildSnapshotVersion(
+        string? runId,
+        string? replayAuditReference,
+        string? promotionAuditReference,
+        string trustGateStatus,
+        string? trustGateOperatorSignoffStatus)
+        => string.Join(
+            '|',
+            runId ?? "none",
+            replayAuditReference ?? "none",
+            promotionAuditReference ?? "none",
+            trustGateStatus,
+            trustGateOperatorSignoffStatus ?? "none");
 
     private sealed record PaperSessionReadiness(
         IReadOnlyList<TradingPaperSessionReadinessDto> Sessions,
@@ -283,12 +307,16 @@ public sealed class TradingOperatorReadinessService
         else if (promotion.RequiresReview || !IsPromotionTraceComplete(promotion))
         {
             PrometheusMetrics.RecordRunContinuityMissingLineage("api", "promotion-trace-incomplete");
+            var missingFields = GetMissingPromotionTraceFields(promotion);
+            var hasDecision = !string.IsNullOrWhiteSpace(promotion.ApprovalStatus);
             AddWorkItem(
                 workItems,
                 OperatorWorkItemKindDto.PromotionReview,
-                "Promotion trace incomplete",
-                "Promotion evidence must include decision, operator, rationale, lineage, and audit reference.",
-                OperatorWorkItemToneDto.Warning,
+                hasDecision ? "Promotion trace incomplete" : "Promotion decision required",
+                hasDecision
+                    ? $"Promotion evidence is incomplete. Missing: {string.Join(", ", missingFields)}."
+                    : $"Record the paper promotion decision before accepting the cockpit. Missing: {string.Join(", ", missingFields)}.",
+                hasDecision ? OperatorWorkItemToneDto.Critical : OperatorWorkItemToneDto.Warning,
                 promotion.SourceRunId ?? promotion.TargetRunId,
                 auditReference: promotion.AuditReference,
                 workItemId: BuildWorkItemId("promotion-trace-incomplete", promotion.SourceRunId ?? promotion.TargetRunId));
@@ -864,13 +892,60 @@ public sealed class TradingOperatorReadinessService
         !string.IsNullOrWhiteSpace(record.AuditReference);
 
     private static bool IsPromotionTraceComplete(TradingPromotionReadinessDto? promotion) =>
-        promotion is not null &&
-        !string.IsNullOrWhiteSpace(promotion.ApprovalStatus) &&
-        !string.IsNullOrWhiteSpace(promotion.ApprovedBy) &&
-        !string.IsNullOrWhiteSpace(promotion.Reason) &&
-        HasApprovalChecklist(promotion.ApprovalChecklist) &&
-        !string.IsNullOrWhiteSpace(promotion.SourceRunId) &&
-        !string.IsNullOrWhiteSpace(promotion.AuditReference);
+        GetMissingPromotionTraceFields(promotion).Count == 0;
+
+    private static IReadOnlyList<string> GetMissingPromotionTraceFields(TradingPromotionReadinessDto? promotion)
+    {
+        if (promotion is null)
+        {
+            return ["promotion"];
+        }
+
+        var missing = new List<string>();
+        if (string.IsNullOrWhiteSpace(promotion.ApprovalStatus))
+        {
+            missing.Add("decision");
+        }
+
+        if (string.IsNullOrWhiteSpace(promotion.ApprovedBy))
+        {
+            missing.Add("operator");
+        }
+
+        if (string.IsNullOrWhiteSpace(promotion.Reason))
+        {
+            missing.Add("rationale");
+        }
+
+        if (!HasApprovalChecklist(promotion.ApprovalChecklist))
+        {
+            missing.Add("checklist");
+        }
+
+        if (string.IsNullOrWhiteSpace(promotion.SourceRunId))
+        {
+            missing.Add("sourceRunId");
+        }
+
+        if (string.Equals(promotion.ApprovalStatus, PromotionDecisionKinds.Approved, StringComparison.OrdinalIgnoreCase) &&
+            string.IsNullOrWhiteSpace(promotion.TargetRunId))
+        {
+            missing.Add("targetRunId");
+        }
+
+        if (string.Equals(promotion.ApprovalStatus, PromotionDecisionKinds.Rejected, StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(promotion.TargetRunId))
+        {
+            missing.Add("targetRunId must be empty for rejected decisions");
+        }
+
+        if (string.IsNullOrWhiteSpace(promotion.AuditReference))
+        {
+            missing.Add("auditReference");
+        }
+
+        return missing;
+    }
 
     private static bool HasApprovalChecklist(IReadOnlyList<string>? approvalChecklist)
         => approvalChecklist is { Count: > 0 } &&
@@ -942,7 +1017,29 @@ public sealed class TradingOperatorReadinessService
         gates.Add(BuildReportPackGate(reportPack));
         gates.Add(BuildReconciliationGate(reconciliationGate));
         gates.Add(BuildBrokerageSyncGate(brokerageStatus));
-        return gates;
+        return gates.Select(AttachExplainability).ToArray();
+    }
+
+    private static TradingAcceptanceGateDto AttachExplainability(TradingAcceptanceGateDto gate)
+    {
+        var requiredNextAction = gate.RequiredNextAction;
+        if (string.IsNullOrWhiteSpace(requiredNextAction))
+        {
+            requiredNextAction = gate.Status switch
+            {
+                TradingAcceptanceGateStatusDto.Ready => "No immediate action required.",
+                TradingAcceptanceGateStatusDto.ReviewRequired => "Review the gate evidence and resolve outstanding operator actions.",
+                TradingAcceptanceGateStatusDto.Blocked => "Resolve blocking evidence before accepting cockpit readiness.",
+                _ => "Collect gate evidence and re-evaluate readiness."
+            };
+        }
+
+        return gate with
+        {
+            Reason = string.IsNullOrWhiteSpace(gate.Reason) ? gate.Detail : gate.Reason,
+            LastEvidenceAt = gate.LastEvidenceAt ?? DateTimeOffset.UtcNow,
+            RequiredNextAction = requiredNextAction
+        };
     }
 
 
@@ -1226,8 +1323,12 @@ public sealed class TradingOperatorReadinessService
         return new TradingAcceptanceGateDto(
             GateId: "promotion",
             Label: "Promotion trace complete",
-            Status: TradingAcceptanceGateStatusDto.ReviewRequired,
-            Detail: "Promotion evidence must include decision, operator, rationale, checklist, lineage, and audit reference.",
+            Status: string.IsNullOrWhiteSpace(promotion.ApprovalStatus)
+                ? TradingAcceptanceGateStatusDto.ReviewRequired
+                : TradingAcceptanceGateStatusDto.Blocked,
+            Detail: string.IsNullOrWhiteSpace(promotion.ApprovalStatus)
+                ? $"Promotion decision is pending. Missing: {string.Join(", ", GetMissingPromotionTraceFields(promotion))}."
+                : $"Promotion evidence is incomplete. Missing: {string.Join(", ", GetMissingPromotionTraceFields(promotion))}.",
             RunId: promotion.SourceRunId ?? promotion.TargetRunId,
             AuditReference: promotion.AuditReference);
     }
@@ -1309,7 +1410,20 @@ public sealed class TradingOperatorReadinessService
 
     private static void AddReconciliationGateWorkItem(ICollection<OperatorWorkItemDto> workItems, ReconciliationGateEvaluation? evaluation, string? runId)
     {
-        if (evaluation is null || evaluation.Status == TradingAcceptanceGateStatusDto.Ready)
+        if (evaluation is null)
+        {
+            AddWorkItem(
+                workItems,
+                OperatorWorkItemKindDto.ReconciliationBreak,
+                "Reconciliation policy unavailable",
+                "Reconciliation policy evaluation is not available.",
+                OperatorWorkItemToneDto.Warning,
+                runId,
+                workItemId: BuildWorkItemId("reconciliation-policy", runId));
+            return;
+        }
+
+        if (evaluation.Status == TradingAcceptanceGateStatusDto.Ready)
         {
             return;
         }
@@ -1323,14 +1437,43 @@ public sealed class TradingOperatorReadinessService
             runId,
             workItemId: BuildWorkItemId("reconciliation-policy", runId));
     }
-    private static TradingAcceptanceGateStatusDto ResolveOverallStatus(IReadOnlyList<TradingAcceptanceGateDto> gates)
+    /// <summary>
+    /// Resolves the aggregate readiness status using deterministic precedence:
+    /// <c>Blocked</c> overrides all other signals, <c>ReviewRequired</c> overrides <c>Ready</c>, and
+    /// <c>Ready</c> is returned only when every gate reports ready.
+    /// This keeps stale replay/trust/promotion signals from being masked by otherwise-green gates.
+    /// </summary>
+    private static TradingAcceptanceGateStatusDto EvaluateOverallPosture(IReadOnlyList<TradingAcceptanceGateDto> gates)
     {
-        if (gates.Any(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked))
+        var canonicalGateOrder = new[]
+        {
+            "replay",
+            "reconciliation",
+            "audit-controls",
+            "promotion",
+            "dk1-trust",
+            "report-pack",
+            "session",
+            "brokerage-sync"
+        };
+
+        var ordered = canonicalGateOrder
+            .Select(gateId => gates.FirstOrDefault(gate => string.Equals(gate.GateId, gateId, StringComparison.OrdinalIgnoreCase)))
+            .Where(static gate => gate is not null)
+            .Cast<TradingAcceptanceGateDto>()
+            .ToArray();
+
+        if (ordered.Length == 0)
+        {
+            return TradingAcceptanceGateStatusDto.Unknown;
+        }
+
+        if (ordered.Any(static gate => gate.Status == TradingAcceptanceGateStatusDto.Blocked))
         {
             return TradingAcceptanceGateStatusDto.Blocked;
         }
 
-        return gates.All(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
+        return ordered.All(static gate => gate.Status == TradingAcceptanceGateStatusDto.Ready)
             ? TradingAcceptanceGateStatusDto.Ready
             : TradingAcceptanceGateStatusDto.ReviewRequired;
     }

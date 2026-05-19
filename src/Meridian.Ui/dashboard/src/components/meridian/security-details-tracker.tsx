@@ -12,9 +12,11 @@ import {
   buildLotsTrackerViewModel,
   parseLotNumber,
   type SecurityDetailFieldDef,
+  type SecurityDetailFieldViewModel,
   type LotsTrackerDraftFieldViewModel,
   type LotsTrackerRowViewModel,
-  type SecurityLot
+  type SecurityLot,
+  type SecurityDetailsServerStatus
 } from "./security-details-tracker.view-model";
 import type {
   OperatorOverridesDto,
@@ -111,7 +113,7 @@ export function SecurityDetailsPanel({
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [draftValue, setDraftValue] = useState<string>("");
-  const [serverStatus, setServerStatus] = useState<"idle" | "loading" | "synced" | "offline" | "saving" | "error">("idle");
+  const [serverStatus, setServerStatus] = useState<SecurityDetailsServerStatus>("idle");
   const [serverErrorText, setServerErrorText] = useState<string | null>(null);
   const [updatedBy, setUpdatedBy] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
@@ -153,8 +155,18 @@ export function SecurityDetailsPanel({
   }, [securityId, overridesService]);
 
   const vm = useMemo(
-    () => buildSecurityDetailsViewModel({ entry, identity, tradingParameters, overrides }),
-    [entry, identity, overrides, tradingParameters]
+    () => buildSecurityDetailsViewModel({
+      entry,
+      identity,
+      tradingParameters,
+      overrides,
+      editingKey,
+      serverStatus,
+      serverErrorText,
+      updatedBy,
+      updatedAt
+    }),
+    [editingKey, entry, identity, overrides, serverErrorText, serverStatus, tradingParameters, updatedAt, updatedBy]
   );
 
   const beginEdit = useCallback((field: SecurityDetailFieldDef, currentValue: string) => {
@@ -237,22 +249,31 @@ export function SecurityDetailsPanel({
           server when available and fall back to local storage when offline.
         </CardDescription>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <ServerStatusBadge status={serverStatus} />
-          {vm.hiddenOverrideCount > 0 && (
+          {vm.syncStatus ? (
+            <span
+              className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", vm.syncStatus.className)}
+              aria-label={vm.syncStatus.ariaLabel}
+            >
+              {vm.syncStatus.label}
+            </span>
+          ) : null}
+          {vm.hiddenOverridesLabel && vm.hiddenOverridesTitle && (
             <Badge
               variant="warning"
-              title={`${vm.hiddenOverrideCount} override${vm.hiddenOverrideCount === 1 ? "" : "s"} belong to fields hidden for this security type.`}
+              title={vm.hiddenOverridesTitle}
             >
-              {vm.hiddenOverrideCount} hidden override{vm.hiddenOverrideCount === 1 ? "" : "s"}
+              {vm.hiddenOverridesLabel}
             </Badge>
           )}
-          {updatedBy && updatedAt && (
+          {vm.updatedLabel && (
             <span className="font-mono">
-              last edit by {updatedBy} @ {updatedAt}
+              {vm.updatedLabel}
             </span>
           )}
-          {serverErrorText && (
-            <span role="alert" className="font-mono text-warning">{serverErrorText}</span>
+          {vm.serverError && (
+            <span role="alert" aria-label={vm.serverError.ariaLabel} className="font-mono text-warning">
+              {vm.serverError.text}
+            </span>
           )}
         </div>
       </CardHeader>
@@ -262,7 +283,6 @@ export function SecurityDetailsPanel({
             <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{group.title}</div>
             <dl className="grid gap-2 sm:grid-cols-2">
               {group.fields.map((field) => {
-                const isEditing = editingKey === field.key;
                 return (
                   <div
                     key={field.key}
@@ -278,9 +298,9 @@ export function SecurityDetailsPanel({
                       )}
                     </dt>
                     <dd className="min-w-0 break-words font-mono text-xs text-foreground">
-                      {isEditing ? (
+                      {field.isEditing ? (
                         <SecurityDetailFieldEditor
-                          field={field.def}
+                          field={field}
                           value={draftValue}
                           onChange={setDraftValue}
                           onSubmit={() => commitEdit(field.def)}
@@ -291,13 +311,15 @@ export function SecurityDetailsPanel({
                       )}
                     </dd>
                     <div className="flex shrink-0 items-center gap-1">
-                      {isEditing ? (
+                      {field.isEditing ? (
                         <>
                           <Button
                             type="button"
                             size="sm"
                             variant="ghost"
-                            aria-label={`Save ${field.label}`}
+                            aria-label={field.saveCommand.ariaLabel}
+                            disabled={field.saveCommand.disabled}
+                            disabledReason={field.saveCommand.disabledReason}
                             onClick={() => commitEdit(field.def)}
                           >
                             <Save className="h-3.5 w-3.5" />
@@ -306,7 +328,9 @@ export function SecurityDetailsPanel({
                             type="button"
                             size="sm"
                             variant="ghost"
-                            aria-label={`Cancel editing ${field.label}`}
+                            aria-label={field.cancelCommand.ariaLabel}
+                            disabled={field.cancelCommand.disabled}
+                            disabledReason={field.cancelCommand.disabledReason}
                             onClick={cancelEdit}
                           >
                             <X className="h-3.5 w-3.5" />
@@ -318,17 +342,21 @@ export function SecurityDetailsPanel({
                             type="button"
                             size="sm"
                             variant="ghost"
-                            aria-label={`Edit ${field.label}`}
+                            aria-label={field.editCommand.ariaLabel}
+                            disabled={field.editCommand.disabled}
+                            disabledReason={field.editCommand.disabledReason}
                             onClick={() => beginEdit(field.def, field.isOverridden ? field.overrideValue ?? "" : "")}
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                          {field.isOverridden && (
+                          {field.clearCommand && (
                             <Button
                               type="button"
                               size="sm"
                               variant="ghost"
-                              aria-label={`Clear override for ${field.label}`}
+                              aria-label={field.clearCommand.ariaLabel}
+                              disabled={field.clearCommand.disabled}
+                              disabledReason={field.clearCommand.disabledReason}
                               onClick={() => clearOverride(field.def)}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -348,31 +376,8 @@ export function SecurityDetailsPanel({
   );
 }
 
-type ServerStatus = "idle" | "loading" | "synced" | "offline" | "saving" | "error";
-
-function ServerStatusBadge({ status }: { status: ServerStatus }) {
-  if (status === "idle") return null;
-  const label = (
-    status === "loading" ? "Loading from server"
-    : status === "saving" ? "Saving"
-    : status === "synced" ? "Synced"
-    : status === "offline" ? "Offline (local only)"
-    : "Error"
-  );
-  const tone = (
-    status === "synced" ? "border-success/35 bg-success/10 text-success"
-    : status === "saving" || status === "loading" ? "border-primary/35 bg-primary/10 text-primary"
-    : "border-warning/35 bg-warning/10 text-warning"
-  );
-  return (
-    <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", tone)}>
-      {label}
-    </span>
-  );
-}
-
 interface SecurityDetailFieldEditorProps {
-  field: SecurityDetailFieldDef;
+  field: SecurityDetailFieldViewModel;
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
@@ -380,6 +385,8 @@ interface SecurityDetailFieldEditorProps {
 }
 
 function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel }: SecurityDetailFieldEditorProps) {
+  const def = field.def;
+  const editor = field.editor;
   const baseClass = "w-full rounded-md border border-border bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key === "Enter") {
@@ -390,36 +397,54 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
       onCancel();
     }
   };
-  if (field.kind === "select" && field.options) {
+  if (def.kind === "select" && def.options) {
     return (
-      <select
+      <span className="block space-y-1">
+        <select
+          id={editor.id}
+          className={baseClass}
+          value={value}
+          autoFocus
+          disabled={editor.disabled}
+          title={editor.disabledReason ?? undefined}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          aria-label={editor.ariaLabel}
+          aria-describedby={editor.describedBy}
+        >
+          <option value="">—</option>
+          {def.options.map((opt) => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+        <span id={editor.helperId} className="block text-[11px] leading-4 text-muted-foreground">
+          {editor.helperText}
+        </span>
+      </span>
+    );
+  }
+  const inputType = def.kind === "number" ? "number" : def.kind === "date" ? "date" : "text";
+  return (
+    <span className="block space-y-1">
+      <input
+        id={editor.id}
+        type={inputType}
         className={baseClass}
         value={value}
         autoFocus
+        disabled={editor.disabled}
+        title={editor.disabledReason ?? undefined}
+        placeholder={def.placeholder}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        aria-label={field.label}
-      >
-        <option value="">—</option>
-        {field.options.map((opt) => (
-          <option key={opt} value={opt}>{opt}</option>
-        ))}
-      </select>
-    );
-  }
-  const inputType = field.kind === "number" ? "number" : field.kind === "date" ? "date" : "text";
-  return (
-    <input
-      type={inputType}
-      className={baseClass}
-      value={value}
-      autoFocus
-      placeholder={field.placeholder}
-      onChange={(e) => onChange(e.target.value)}
-      onKeyDown={handleKeyDown}
-      aria-label={field.label}
-      step={field.kind === "number" ? "any" : undefined}
-    />
+        aria-label={editor.ariaLabel}
+        aria-describedby={editor.describedBy}
+        step={def.kind === "number" ? "any" : undefined}
+      />
+      <span id={editor.helperId} className="block text-[11px] leading-4 text-muted-foreground">
+        {editor.helperText}
+      </span>
+    </span>
   );
 }
 

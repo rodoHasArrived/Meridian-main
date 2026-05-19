@@ -40,6 +40,11 @@ import type {
   ProviderCredentialMutationResult,
   ProviderCredentialUpsertRequest,
   ProviderCredentialVerificationResult,
+  ProviderRoutePreviewRequest,
+  ProviderRoutePreviewResponse,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
@@ -94,6 +99,7 @@ import {
   EXPORT_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
+  PROVIDER_ROUTING_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   QUALITY_API_ENDPOINTS,
   QUANT_API_ENDPOINTS,
@@ -182,6 +188,7 @@ import {
   workstationWorkflowPresetPinEndpoint,
   workstationWorkflowPresetUsedEndpoint
 } from "@/lib/workstation-endpoints";
+import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
 
@@ -214,7 +221,7 @@ async function getJson<T>(path: string, options: ApiRequestOptions = {}): Promis
       return fixture;
     }
 
-    throw new Error(await buildRequestFailureMessage(path, response));
+    throw await buildApiError(path, response);
   }
 
   if (response.headers?.get?.(developmentFixtureHeader) === "true") {
@@ -251,7 +258,7 @@ async function postJson<T>(path: string, body?: unknown, options: ApiRequestOpti
   });
 
   if (!response.ok) {
-    throw new Error(await buildRequestFailureMessage(path, response));
+    throw await buildApiError(path, response);
   }
 
   return readJsonResponse<T>(path, response);
@@ -277,7 +284,7 @@ async function putJson<T>(path: string, body?: unknown, options: ApiRequestOptio
   });
 
   if (!response.ok) {
-    throw new Error(await buildRequestFailureMessage(path, response));
+    throw await buildApiError(path, response);
   }
 
   return readJsonResponse<T>(path, response);
@@ -295,7 +302,7 @@ async function patchJson<T>(path: string, body?: unknown, options: ApiRequestOpt
   });
 
   if (!response.ok) {
-    throw new Error(await buildRequestFailureMessage(path, response));
+    throw await buildApiError(path, response);
   }
 
   return readJsonResponse<T>(path, response);
@@ -311,7 +318,7 @@ async function deleteJson<T>(path: string, options: ApiRequestOptions = {}): Pro
   });
 
   if (!response.ok) {
-    throw new Error(await buildRequestFailureMessage(path, response));
+    throw await buildApiError(path, response);
   }
 
   return readJsonResponse<T>(path, response);
@@ -366,9 +373,8 @@ async function readResponseSuccessBody(response: Response): Promise<string> {
   }
 }
 
-async function buildRequestFailureMessage(path: string, response: Response): Promise<string> {
-  const detail = formatErrorDetail(await readResponseErrorBody(response));
-  return `Request failed for ${path} (${response.status})${detail ? ` - ${detail}` : ""}`;
+async function buildApiError(path: string, response: Response) {
+  return createApiErrorFromResponseBody(path, response.status, await readResponseErrorBody(response));
 }
 
 async function readResponseErrorBody(response: Response): Promise<string> {
@@ -377,57 +383,6 @@ async function readResponseErrorBody(response: Response): Promise<string> {
   } catch {
     return "";
   }
-}
-
-function formatErrorDetail(body: string): string {
-  const trimmed = body.trim();
-  if (!trimmed) {
-    return "";
-  }
-
-  try {
-    const parsed = JSON.parse(trimmed) as unknown;
-    if (isRecord(parsed)) {
-      const detail = readString(parsed.detail) ?? readString(parsed.message) ?? readString(parsed.title);
-      const validationErrors = formatValidationErrors(parsed.errors);
-      if (detail && validationErrors) {
-        return `${detail} ${validationErrors}`;
-      }
-      if (validationErrors) {
-        return validationErrors;
-      }
-      if (detail) {
-        return detail;
-      }
-    }
-  } catch {
-    // Plain-text error bodies are already useful operator diagnostics.
-  }
-
-  return trimmed;
-}
-
-function formatValidationErrors(value: unknown): string {
-  if (!isRecord(value)) {
-    return "";
-  }
-
-  return Object.entries(value)
-    .flatMap(([field, messages]) => formatValidationErrorField(field, messages))
-    .join("; ");
-}
-
-function formatValidationErrorField(field: string, messages: unknown): string[] {
-  const label = field.trim() || "request";
-  if (Array.isArray(messages)) {
-    return messages
-      .map(readString)
-      .filter((message): message is string => message !== null)
-      .map((message) => `${label}: ${message}`);
-  }
-
-  const message = readString(messages);
-  return message ? [`${label}: ${message}`] : [];
 }
 
 async function getDevelopmentSearchFallback(query: string, take: number, activeOnly: boolean) {
@@ -545,8 +500,8 @@ export function getReportingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<GovernanceWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.reporting, options);
 }
 
-export function runAnalysisExport(profileId: string) {
-  return postJson<ExportAnalysisResult>(EXPORT_API_ENDPOINTS.analysis, { profileId });
+export function runAnalysisExport(profileId: string, options: ApiRequestOptions = {}) {
+  return postJson<ExportAnalysisResult>(EXPORT_API_ENDPOINTS.analysis, { profileId }, options);
 }
 
 // --- Promotion workflow ---
@@ -926,6 +881,22 @@ export function previewBackfill(request: BackfillTriggerRequest) {
 
 export function setupProvider(request: import("@/types").ProviderSetupRequest) {
   return postJson<import("@/types").ProviderSetupResult>(PROVIDER_API_ENDPOINTS.configure, request);
+}
+
+export function getProviderRoutingConnections(options: ApiRequestOptions = {}) {
+  return getJson<ProviderRoutingConnection[]>(PROVIDER_ROUTING_API_ENDPOINTS.connections, options);
+}
+
+export function getProviderRoutingBindings(options: ApiRequestOptions = {}) {
+  return getJson<ProviderRoutingBinding[]>(PROVIDER_ROUTING_API_ENDPOINTS.bindings, options);
+}
+
+export function getProviderRoutingTrustSnapshots(options: ApiRequestOptions = {}) {
+  return getJson<ProviderRoutingTrustSnapshot[]>(PROVIDER_ROUTING_API_ENDPOINTS.trustSnapshots, options);
+}
+
+export function previewProviderRoute(request: ProviderRoutePreviewRequest, options: ApiRequestOptions = {}) {
+  return postJson<ProviderRoutePreviewResponse>(PROVIDER_ROUTING_API_ENDPOINTS.preview, request, options);
 }
 
 export function removeProvider(providerId: string) {

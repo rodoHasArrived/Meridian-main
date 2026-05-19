@@ -134,6 +134,12 @@ artifacts/*
 !artifacts/provider-validation/
 !artifacts/provider-validation/**
 .artifacts/validation/
+artifacts/**/*.log
+artifacts/**/*.tmp
+artifacts/install-smoke/
+artifacts/publish/
+!artifacts/provider-validation/
+!artifacts/provider-validation/**
 output/
 /data/
 /src/Meridian.Ui/data/
@@ -142,6 +148,7 @@ _logs/
 diagnostic-logs/
 /Meridian Design System (3)/uploads/
 .build-system/
+.artifacts/
 external/IBApi/
 external/IBApi-*.msi
 
@@ -208,6 +215,7 @@ vulnerable-packages.txt
 todo-scan-results.json
 .ai/
 .claude/worktrees/
+.tools/
 src/Meridian.Ui/dashboard/artifacts/automation/**/*.pid
 
 # DocFX generated output
@@ -227,6 +235,12 @@ docs/docfx/api/*.yml
 # that should be restored via `npm install`, not committed.
 
 node_modules/
+/src/Meridian.Ui/dashboard/node_modules/
+/src/Meridian.Ui/dashboard/dist/
+/src/Meridian.Ui/dashboard/coverage/
+/artifacts/publish/
+**/artifacts/bin/
+**/artifacts/obj/
 
 # ============================================
 # Python Dependencies (for Build System)
@@ -249,9 +263,11 @@ __pycache__/
 /src/Meridian.Ui/wwwroot/workstation
 /src/Meridian.Ui/wwwroot/workstation/assets
 /src/Meridian.Ui/dashboard/tsc-output.txt
+/src/Meridian.Ui/dashboard/artifacts/
 /src/Meridian.Ui/dashboard/artifacts/*.log
 /src/Meridian.Ui/dashboard/artifacts/*.tmp
 /src/Meridian.Ui/dashboard/artifacts/ui-cleanup-*.png
+/wwwroot/workstation/assets/.vite-temp/
 /wwwroot/workstation/.vite-temp/
 
 # Meridian SQLite adapter runtime artifacts

@@ -10,7 +10,7 @@ import {
   XCircle
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
@@ -44,6 +44,7 @@ import type {
 
 interface DataOperationsScreenProps {
   data: DataOperationsWorkspaceResponse | null;
+  onProviderSetupConfigured?: () => Promise<void> | void;
 }
 
 const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] = [
@@ -171,10 +172,14 @@ const exportColumns: DenseDataTableColumn<DataOperationsExportRow>[] = [
   }
 ];
 
-export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
+export function DataOperationsScreen({ data, onProviderSetupConfigured }: DataOperationsScreenProps) {
   const { pathname } = useLocation();
   const workspace = workspaceForPath(pathname);
-  const vm = useDataOperationsViewModel(data, pathname);
+  const providerSetupLifecycle = useMemo(
+    () => ({ onConfigured: onProviderSetupConfigured }),
+    [onProviderSetupConfigured]
+  );
+  const vm = useDataOperationsViewModel(data, pathname, undefined, providerSetupLifecycle);
 
   if (!data) {
     return <DataOperationsLoadingPanel state={vm.loadingState} />;
@@ -632,7 +637,7 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
             <div className="eyebrow-label">Data providers</div>
             <DialogTitle id={vm.providerSetupDialogState.titleId}>Configure provider</DialogTitle>
             <DialogDescription id={vm.providerSetupDialogState.descriptionId}>
-              Register a data or brokerage provider with Meridian. The backend will verify credentials on save.
+              Register a data or brokerage provider with Meridian and seed routing for selected capabilities.
             </DialogDescription>
           </DialogHeader>
           <DialogCloseButton
@@ -651,6 +656,31 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                 <div className="font-semibold text-success">{vm.providerSetupResult.providerName} configured</div>
                 <p className="mt-1 text-sm text-muted-foreground">{vm.providerSetupResult.message}</p>
               </div>
+            </div>
+            <div
+              className="mt-4 rounded-lg border border-border/70 bg-secondary/25 px-3 py-3"
+              role="region"
+              aria-label={vm.providerSetupDialogState.successMetadata.metadataAriaLabel}
+            >
+              <div className="eyebrow-label">Routing posture</div>
+              <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+                {vm.providerSetupDialogState.successMetadata.rows.map((row) => (
+                  <FieldTile key={row.id} field={row} />
+                ))}
+              </dl>
+              {vm.providerSetupDialogState.successMetadata.warnings.length > 0 ? (
+                <div
+                  className="mt-3 rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning"
+                  role="status"
+                  aria-label={vm.providerSetupDialogState.successMetadata.warningsAriaLabel}
+                >
+                  <ul className="grid gap-1">
+                    {vm.providerSetupDialogState.successMetadata.warnings.map((warning) => (
+                      <li key={warning}>{warning}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </div>
             <div
               className="mt-4 rounded-lg border border-border/70 bg-secondary/25 px-3 py-3"
@@ -796,12 +826,21 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
               {vm.providerSetupDialogState.statusLabel}
             </div>
 
-            {vm.providerSetupError && (
-              <div role="alert" className="mt-3 flex items-start gap-2 rounded-lg border border-danger/35 bg-danger/10 px-3 py-2.5 text-sm text-danger">
-                <XCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                <span>{vm.providerSetupError}</span>
-              </div>
-            )}
+        {vm.providerSetupError && (
+          <div role="alert" className="mt-3 flex items-start gap-2 rounded-lg border border-danger/35 bg-danger/10 px-3 py-2.5 text-sm text-danger">
+            <XCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <div className="min-w-0">
+              <div>{vm.providerSetupError.summary}</div>
+              {vm.providerSetupError.details.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-danger/90">
+                  {vm.providerSetupError.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          </div>
+        )}
 
             <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button
@@ -1009,7 +1048,16 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
                 : "border-danger/40 bg-danger/10 text-danger"
             )}
           >
-            {vm.feedbackText}
+            <div className="min-w-0">
+              <div>{vm.feedbackText}</div>
+              {vm.feedbackDetails.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                  {vm.feedbackDetails.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
           </div>
         )}
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>

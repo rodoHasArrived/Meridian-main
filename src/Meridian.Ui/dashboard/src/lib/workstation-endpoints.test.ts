@@ -10,6 +10,7 @@ import {
   QUANT_API_ENDPOINTS,
   RECONCILIATION_API_ENDPOINTS,
   REPLAY_API_ENDPOINTS,
+  PROVIDER_ROUTING_API_ENDPOINTS,
   SECURITY_MASTER_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
   STRATEGY_DESIGNER_API_ENDPOINTS,
@@ -126,6 +127,7 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationOperatorInboxEndpoint("  fund account/1  ")).toBe(
       "/api/workstation/operator/inbox?fundAccountId=fund+account%2F1"
     );
+    expect(workstationOperatorInboxEndpoint("")).toBe("/api/workstation/operator/inbox");
   });
 
   it("builds workflow preset endpoints from the shared preset root", () => {
@@ -280,6 +282,9 @@ describe("workstation API endpoint catalog", () => {
     expect(reconciliationBreakQueueEndpoint({ status: "Open", fundAccountId: "fund / 1" })).toBe(
       "/api/workstation/reconciliation/break-queue?status=Open&fundAccountId=fund+%2F+1"
     );
+    expect(reconciliationBreakQueueEndpoint({ fundAccountId: " fund / 1 " })).toBe(
+      "/api/workstation/reconciliation/break-queue?fundAccountId=fund+%2F+1"
+    );
     expect(reconciliationBreakEndpoint("break / 1")).toBe("/api/workstation/reconciliation/break-queue/break%20%2F%201");
     expect(reconciliationBreakAuditEndpoint("break / 1")).toBe(
       "/api/workstation/reconciliation/break-queue/break%20%2F%201/audit"
@@ -302,6 +307,12 @@ describe("workstation API endpoint catalog", () => {
     expect(backfillCheckpointResumeEndpoint("job / 1")).toBe("/api/backfill/checkpoints/job%20%2F%201/resume");
     expect(PROVIDER_API_ENDPOINTS.configure).toBe("/api/providers/configure");
     expect(PROVIDER_API_ENDPOINTS.status).toBe("/api/providers/status");
+    expect(PROVIDER_ROUTING_API_ENDPOINTS).toMatchObject({
+      connections: "/api/provider-routing/connections",
+      bindings: "/api/provider-routing/bindings",
+      trustSnapshots: "/api/provider-routing/trust-snapshots",
+      preview: "/api/provider-routing/preview"
+    });
     expect(providerRemoveEndpoint("provider / 1")).toBe("/api/providers/provider%20%2F%201/remove");
     expect(providerTestEndpoint("provider / 1")).toBe("/api/providers/provider%20%2F%201/test");
     expect(SYMBOL_API_ENDPOINTS.symbols).toBe("/api/symbols");
@@ -344,5 +355,23 @@ describe("workstation API endpoint catalog", () => {
     expect(() => workstationRunLedgerEndpoint("   ")).toThrow("runId is required");
     expect(() => marketDataQuoteEndpoint("")).toThrow("symbol is required");
     expect(() => reconciliationBreakEndpoint("\t")).toThrow("breakId is required");
+  });
+});
+
+describe("execution control route contract parity", () => {
+  const CONTRACT_EXECUTION_MANUAL_OVERRIDES = "/api/execution/controls/manual-overrides" as const;
+  const CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR_TEMPLATE =
+    "/api/execution/controls/manual-overrides/{overrideId}/clear" as const;
+
+  it("keeps frontend helper constants aligned with backend contracts", () => {
+    expect(
+      EXECUTION_API_ENDPOINTS.manualOverrides,
+      "frontend helper diverged from backend contract: manual override create route"
+    ).toBe(CONTRACT_EXECUTION_MANUAL_OVERRIDES);
+
+    expect(
+      executionManualOverrideClearEndpoint("override-1"),
+      "frontend helper diverged from backend contract: manual override clear route template"
+    ).toBe(CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR_TEMPLATE.replace("{overrideId}", "override-1"));
   });
 });

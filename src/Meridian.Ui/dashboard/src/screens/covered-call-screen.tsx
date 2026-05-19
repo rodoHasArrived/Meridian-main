@@ -180,7 +180,14 @@ export function CoveredCallScreen() {
             <AlertCircle className="h-5 w-5 flex-shrink-0 text-danger" aria-hidden="true" />
             <div className="flex-1">
               <div className="font-semibold text-danger">Backtest issue</div>
-              <p className="mt-1 text-foreground">{vm.errorBanner}</p>
+              <p className="mt-1 text-foreground">{vm.errorBanner.summary}</p>
+              {vm.errorBanner.details.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-danger">
+                  {vm.errorBanner.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
             <Button type="button" variant="ghost" onClick={vm.dismissError} aria-label="Dismiss error">
               <CircleX className="h-4 w-4" aria-hidden="true" />
@@ -409,7 +416,16 @@ function ChainPreviewTable({ vm }: { vm: CoveredCallScreenViewModel }) {
           aria-label={panel.detailEmptyAriaLabel}
         >
           <div className="head">{panel.detailEmptyTitle}</div>
-          <div className="body">{panel.detailEmptyText}</div>
+          <div className="body">
+            <div>{panel.detailEmptyText}</div>
+            {panel.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc pl-5 text-xs text-muted-foreground">
+                {panel.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
         </section>
       )}
     </div>
@@ -727,7 +743,7 @@ function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
   const description = vm.historyLoading
     ? "Loading previous covered-call runs from the strategy engine."
     : vm.historyError
-      ? `Failed to load history: ${vm.historyError}`
+      ? `Failed to load history: ${vm.historyError.summary}`
       : "Most recent first. Select a row to reload its results from the cached run store.";
 
   return (
@@ -752,7 +768,14 @@ function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
             role="alert"
             className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger"
           >
-            {vm.historyStatusText}
+            <div>{vm.historyStatusText}</div>
+            {vm.historyError.details.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {vm.historyError.details.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         ) : (
           <DenseDataTable

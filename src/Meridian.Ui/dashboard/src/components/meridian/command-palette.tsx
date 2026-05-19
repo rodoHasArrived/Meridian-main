@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   buildCommandPaletteViewModel,
   resolveCommandPaletteKeyCommand,
@@ -196,7 +197,7 @@ export function CommandPalette({
           spellCheck={false}
           placeholder={viewModel.searchPlaceholder}
           aria-label={viewModel.searchInputLabel}
-          aria-describedby="command-palette-filter-count"
+          aria-describedby={viewModel.searchDescribedBy}
           className="mt-3 h-10 w-full rounded-md border border-border/80 bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/35"
           onChange={(event) => setQuery(event.target.value)}
         />
@@ -208,10 +209,51 @@ export function CommandPalette({
             </div>
           </div>
           {viewModel.emptyState ? (
-            <div className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm">
-              <div className="font-semibold">{viewModel.emptyState.title}</div>
-              <div className="mt-1 text-muted-foreground">{viewModel.emptyState.detail}</div>
-            </div>
+            <section
+              id={viewModel.emptyState.id}
+              aria-labelledby={viewModel.emptyState.titleId}
+              className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="inline-flex rounded-sm border border-border/70 bg-background/70 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                    {viewModel.emptyState.statusLabel}
+                  </div>
+                  <div
+                    id={viewModel.emptyState.titleId}
+                    className="mt-2 font-semibold"
+                  >
+                    {viewModel.emptyState.title}
+                  </div>
+                  <div
+                    id={viewModel.emptyState.detailId}
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
+                    className="mt-1 text-muted-foreground"
+                  >
+                    {viewModel.emptyState.detail}
+                  </div>
+                </div>
+                {viewModel.emptyState.canClearSearch && viewModel.emptyState.actionLabel ? (
+                  <Button
+                    id={viewModel.emptyState.actionId ?? undefined}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    aria-label={viewModel.emptyState.actionAriaLabel ?? viewModel.emptyState.actionLabel}
+                    onClick={() => {
+                      setQuery("");
+                      searchInputRef.current?.focus();
+                    }}
+                  >
+                    <X className="h-3.5 w-3.5" aria-hidden="true" />
+                    {viewModel.emptyState.actionLabel}
+                  </Button>
+                ) : null}
+              </div>
+            </section>
           ) : null}
           {viewModel.commandGroups.map((group) => (
             <div key={group.kind} className="command-palette-group">

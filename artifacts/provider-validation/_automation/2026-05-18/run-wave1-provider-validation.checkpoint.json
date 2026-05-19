@@ -1,0 +1,99 @@
+{
+  "checkpointConventionVersion": 1,
+  "workflow": "run-wave1-provider-validation",
+  "runId": "4b4227ba13cb4d42bab4c9147a6f1929",
+  "inputHash": "52a40923d150c8d2de86c01c64b13aa0067f7dfd472840278b284d54cc022bfe",
+  "inputSnapshot": {
+    "configuration": "Release",
+    "dateStamp": "2026-05-18",
+    "outputRoot": "artifacts/provider-validation/_automation",
+    "operatorSignoffPath": "",
+    "steps": [
+      "Meridian.Tests build",
+      "Alpaca core provider confidence",
+      "Robinhood supported surface",
+      "Yahoo historical-only core provider",
+      "Checkpoint reliability and gap handling",
+      "Parquet sink and conversion"
+    ]
+  },
+  "metadata": {},
+  "steps": {
+    "meridian-tests-build": {
+      "state": "succeeded",
+      "description": "Meridian.Tests build",
+      "timestampUtc": "2026-05-18T23:02:41.6456683Z",
+      "inputHash": "52a40923d150c8d2de86c01c64b13aa0067f7dfd472840278b284d54cc022bfe",
+      "artifactPointers": [
+        "artifacts/provider-validation/_automation/2026-05-18/meridian-tests-build.log"
+      ]
+    },
+    "alpaca-core-provider-confidence": {
+      "state": "failed",
+      "timestampUtc": "2026-05-19T07:31:28.1207132Z",
+      "inputHash": "52a40923d150c8d2de86c01c64b13aa0067f7dfd472840278b284d54cc022bfe",
+      "error": "Step failed with exit code 1.",
+      "artifactPointers": []
+    },
+    "robinhood-supported-surface": {
+      "state": "failed",
+      "timestampUtc": "2026-05-19T07:31:50.2383644Z",
+      "inputHash": "52a40923d150c8d2de86c01c64b13aa0067f7dfd472840278b284d54cc022bfe",
+      "error": "Step failed with exit code 1.",
+      "artifactPointers": []
+    },
+    "yahoo-historical-only-core-provider": {
+      "state": "succeeded",
+      "description": "Yahoo historical-only core provider",
+      "timestampUtc": "2026-05-18T23:03:33.1720596Z",
+      "inputHash": "52a40923d150c8d2de86c01c64b13aa0067f7dfd472840278b284d54cc022bfe",
+      "artifactPointers": [
+        "artifacts/provider-validation/_automation/2026-05-18/yahoo-historical-only-core-provider.log"
+      ]
+    },
+    "checkpoint-reliability-and-gap-handling": {
+      "state": "succeeded",
+      "description": "Checkpoint reliability and gap handling",
+      "timestampUtc": "2026-05-19T07:27:28.7640409Z",
+      "inputHash": "52a40923d150c8d2de86c01c64b13aa0067f7dfd472840278b284d54cc022bfe",
+      "artifactPointers": [
+        "artifacts/provider-validation/_automation/2026-05-18/checkpoint-reliability-and-gap-handling.log"
+      ]
+    },
+    "parquet-sink-and-conversion": {
+      "state": "succeeded",
+      "description": "Parquet sink and conversion",
+      "timestampUtc": "2026-05-18T23:03:51.8528656Z",
+      "inputHash": "52a40923d150c8d2de86c01c64b13aa0067f7dfd472840278b284d54cc022bfe",
+      "artifactPointers": [
+        "artifacts/provider-validation/_automation/2026-05-18/parquet-sink-and-conversion.log"
+      ]
+    },
+    "write-wave1-summary-json": {
+      "state": "succeeded",
+      "description": "Write wave1-validation-summary.json",
+      "timestampUtc": "2026-05-19T07:31:50.5862029Z",
+      "inputHash": "52a40923d150c8d2de86c01c64b13aa0067f7dfd472840278b284d54cc022bfe",
+      "artifactPointers": [
+        "C:\\Dev\\Meridian-main\\artifacts\\provider-validation\\_automation\\2026-05-18\\wave1-validation-summary.json"
+      ]
+    },
+    "write-wave1-summary-md": {
+      "state": "succeeded",
+      "description": "Write wave1-validation-summary.md",
+      "timestampUtc": "2026-05-19T07:31:50.7088222Z",
+      "inputHash": "52a40923d150c8d2de86c01c64b13aa0067f7dfd472840278b284d54cc022bfe",
+      "artifactPointers": [
+        "C:\\Dev\\Meridian-main\\artifacts\\provider-validation\\_automation\\2026-05-18\\wave1-validation-summary.md"
+      ]
+    },
+    "generate-dk1-packet": {
+      "state": "failed",
+      "timestampUtc": "2026-05-19T07:31:52.3074349Z",
+      "inputHash": "52a40923d150c8d2de86c01c64b13aa0067f7dfd472840278b284d54cc022bfe",
+      "error": "Checkpoint input hash mismatch for 'generate-dk1-pilot-parity-packet'. Existing: b678327372d76d75f88b1d89ad392dcd54c0679b66ca2012bcd92aaf6744b49e, current: 19aa3517827a51bfbc0963d62c159fbab6c876115a4f53d2f20979db4c492088. Re-run with -AllowCheckpointInputMismatch to override.",
+      "artifactPointers": []
+    }
+  },
+  "generatedAtUtc": "2026-05-19T07:31:52.3231133Z"
+}

@@ -1,4 +1,4 @@
-import { Activity, ArrowRight, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, ShieldCheck, Trash2, User } from "lucide-react";
+import { Activity, ArrowRight, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, ShieldCheck, Trash2, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,9 @@ import type {
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -40,7 +43,12 @@ interface SettingsScreenProps {
   reporting?: GovernanceWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
   providerConnections?: ProviderConnectionRow[] | null;
+  providerRoutingConnections?: ProviderRoutingConnection[] | null;
+  providerRoutingBindings?: ProviderRoutingBinding[] | null;
+  providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
+  providerRoutingRefreshing?: boolean;
   onRefresh?: () => Promise<void> | void;
+  onProviderRoutingRefresh?: () => Promise<void> | void;
   loading?: boolean;
   error?: string | null;
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
@@ -181,7 +189,12 @@ export function SettingsScreen({
   reporting = null,
   brokerageConnection = null,
   providerConnections = null,
+  providerRoutingConnections = null,
+  providerRoutingBindings = null,
+  providerRoutingTrustSnapshots = null,
+  providerRoutingRefreshing = false,
   onRefresh,
+  onProviderRoutingRefresh,
   loading = false,
   error = null,
   workspaceErrors = {}
@@ -197,6 +210,10 @@ export function SettingsScreen({
     reporting,
     brokerageConnection,
     providerConnections,
+    providerRoutingConnections,
+    providerRoutingBindings,
+    providerRoutingTrustSnapshots,
+    providerRoutingRefreshing,
     loading,
     error,
     workspaceErrors
@@ -374,12 +391,33 @@ export function SettingsScreen({
               </CardTitle>
               <CardDescription className="mt-2">{vm.providerConnectionCenter.description}</CardDescription>
             </div>
-            <Badge
-              variant={vm.providerConnectionCenter.statusVariant}
-              dot={vm.providerConnectionCenter.statusVariant === "success"}
-            >
-              {vm.providerConnectionCenter.statusLabel}
-            </Badge>
+            <div className="flex flex-wrap items-center gap-2">
+              {onProviderRoutingRefresh ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void onProviderRoutingRefresh()}
+                  disabled={vm.providerConnectionCenter.refreshAction.disabled}
+                  disabledReason={vm.providerConnectionCenter.refreshAction.disabledReason}
+                  aria-label={vm.providerConnectionCenter.refreshAction.ariaLabel}
+                >
+                  <RefreshCcw
+                    className={cn(
+                      "h-3.5 w-3.5",
+                      vm.providerConnectionCenter.refreshAction.busy && "animate-spin"
+                    )}
+                    aria-hidden="true"
+                  />
+                  {vm.providerConnectionCenter.refreshAction.label}
+                </Button>
+              ) : null}
+              <Badge
+                variant={vm.providerConnectionCenter.statusVariant}
+                dot={vm.providerConnectionCenter.statusVariant === "success"}
+              >
+                {vm.providerConnectionCenter.statusLabel}
+              </Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="grid gap-4 xl:grid-cols-2">
@@ -423,6 +461,9 @@ export function SettingsScreen({
                         <SettingsFieldRow label="Masked key" value={row.maskedKeyPreviewLabel} tone="muted" />
                         <SettingsFieldRow label="Last good heartbeat" value={row.lastHeartbeatLabel} tone="muted" />
                         <SettingsFieldRow label="Failover" value={row.fallbackLabel} tone={row.fallbackLabel === "Fallback active" ? "warning" : "muted"} />
+                        <SettingsFieldRow label="Routing bindings" value={row.routingBindingsLabel} tone="muted" />
+                        <SettingsFieldRow label="Trust score" value={row.trustScoreLabel} tone={row.healthTone} />
+                        <SettingsFieldRow label="Production gate" value={row.productionStateLabel} tone={row.productionStateLabel === "Production ready" ? "success" : "warning"} />
                         <SettingsFieldRow label="Affected workflows" value={row.affectedWorkflowsLabel} tone="default" />
                       </dl>
                     </article>
@@ -606,7 +647,16 @@ export function SettingsScreen({
                 {alpacaForm.clearLabel}
               </Button>
               {alpacaForm.actionMessage ? (
-                <span role={alpacaForm.statusRole} className={alpacaForm.statusClassName}>{alpacaForm.actionMessage}</span>
+                <div aria-live={alpacaForm.statusRole === "alert" ? "assertive" : "polite"} className={alpacaForm.statusClassName}>
+                  <div>{alpacaForm.actionMessage}</div>
+                  {alpacaForm.statusDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {alpacaForm.statusDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
               ) : null}
             </div>
           </form>

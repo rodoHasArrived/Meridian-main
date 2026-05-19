@@ -1,6 +1,6 @@
 # Meridian Current Direction And Status
 
-**Last Reviewed:** 2026-05-18
+**Last Reviewed:** 2026-05-19
 **Role:** Single planning entry point for current direction, project status, and document roles.
 
 Use this file before reading individual roadmap or plan documents. It consolidates the active interpretation of Meridian's many planning files without replacing their detailed implementation notes.
@@ -43,11 +43,44 @@ Wave status labels and target dates are canonical in [`../status/PROGRAM_STATE.m
 
 Current acceleration evidence: `PilotAcceptanceHarnessTests` is the canonical executable harness
 for the golden path from trusted data through governed report pack. A passing run writes
-`artifacts/pilot-acceptance/latest/pilot-readiness.json` with eight stage gates, blockers, evidence
+`artifacts/pilot-acceptance/latest/pilot-readiness.json` and
+`artifacts/pilot-acceptance/latest/pilot-readiness.md` with eight stage gates, blockers, evidence
 IDs, ledger references, and validation text. `.github/workflows/golden-path-validation.yml` now
 turns that harness into a repeatable acceptance lane and uploads the generated readiness dashboard
 as `pilot-acceptance-evidence`. This advances support evidence for W2-W4; it does not by itself
 close operator acceptance, live readiness, broad WPF scope, mobile, W5, or W6.
+
+Release/distribution hygiene evidence as of 2026-05-19 is narrower than roadmap completion: publish
+output now belongs under ignored `artifacts/publish/` paths, the publish script has a
+`-SizeOptimized` mode for local size and low-disk investigations, and
+`build/scripts/publish/measure-size.ps1` reports common generated-output roots. Treat this as
+developer/release tooling support, not a Wave 2-4 product-readiness claim.
+
+The newer May 19 governance/accounting evidence is also support evidence, not closure: ledger
+`posting_kind` guards, report-pack validation/lifecycle metadata, retained evidence-vault manifest
+lookup, reconciliation case storage/audit hardening, account-sync history/readiness DTOs, and the
+active Security Master validation-gate/snapshot slice all reinforce W3/W4 continuity. They do not
+close durable casework, report publication controls, Evidence Vault, close workflow, or
+live-readiness.
+
+The latest May 19 browser-workstation support evidence is likewise support evidence, not a wave
+exit. Provider setup now feeds visible provider-routing connection, binding, credential-source,
+environment, warning, and trust-snapshot refresh state into Data and Settings. Strategy Designer
+backend actions now mark GET endpoints as browser-openable and POST validation/preview/backtest
+commands as reference-only, and Reporting export commands carry abort signals so superseded profile
+exports cannot publish stale status under the wrong selection. These reduce operator confusion and
+late-response races, but they do not close W2 cockpit acceptance, W3 continuity, W4 report-pack
+lifecycle, Backtest Studio, or live-readiness gates.
+
+W2/W3/W4 claim discipline: every new roadmap or status claim for these waves must either map to a
+`pilot-readiness.*` stage gate that turns green in the latest harness output or name the blocker in
+that stage gate's `blockers` list. The current stage mapping is:
+
+| Wave | Pilot-readiness stage gate(s) that can support a claim | If not green, record blocker there |
+| --- | --- | --- |
+| W2 paper-trading cockpit | `TrustedData`, `PaperPromotion`, `PaperSession` | Trading cockpit, promotion, replay, stale-session, or DK1 trust blockers belong on the affected stage. |
+| W3 shared run / portfolio / ledger continuity | `TrustedData`, `ResearchRun`, `RunComparison`, `PaperPromotion`, `PortfolioLedgerReview`, `Reconciliation` | Run continuity, portfolio, ledger, brokerage/account, reconciliation, or evidence-packet gaps belong on the affected stage. |
+| W4 governance and fund operations | `TrustedData`, `PortfolioLedgerReview`, `Reconciliation`, `GovernedReportPack` | Casework, approval/sign-off, provenance, report-pack lifecycle, or governed-output gaps belong on the affected stage. |
 
 ## Active Planning Set
 

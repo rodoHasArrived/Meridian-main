@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ApiError } from "@/lib/api-errors";
 import {
   COVERED_CALL_CHAIN_DETAIL_PANEL_ID,
   buildCoveredCallFormFieldGroups,
@@ -626,6 +627,7 @@ describe("buildChainPreviewPanelViewModel", () => {
     })).toMatchObject({
       description: "Loading chain preview...",
       emptyText: "Loading chain preview...",
+      errorDetails: [],
       selectedDetail: null
     });
 
@@ -643,11 +645,15 @@ describe("buildChainPreviewPanelViewModel", () => {
     expect(buildChainPreviewPanelViewModel({
       status: "error",
       data: null,
-      error: "HTTP 503",
+      error: {
+        summary: "HTTP 503",
+        details: ["Endpoint returned 503 for /api/covered-call/preview."]
+      },
       selectedIndex: 0
     })).toMatchObject({
       description: "Error: HTTP 503",
       emptyText: "Chain preview failed: HTTP 503",
+      errorDetails: ["Endpoint returned 503 for /api/covered-call/preview."],
       detailEmptyTitle: "Chain preview failed"
     });
   });
@@ -846,6 +852,32 @@ describe("useCoveredCallScreenViewModel", () => {
     expect(result.current.historyError).toBeNull();
   });
 
+  it("loadHistory keeps structured backend details when history fails", async () => {
+    const services = makeServices({
+      listRuns: vi.fn(async () => {
+        throw new ApiError({
+          path: "/api/covered-call/runs?limit=50",
+          status: 503,
+          title: "History store unavailable",
+          detail: "Covered-call run history is temporarily offline."
+        });
+      })
+    });
+    const { result } = renderHook(() => useCoveredCallScreenViewModel({ services, pollIntervalMs: 1000000, chainPreviewDebounceMs: 100000 }));
+
+    await act(async () => {
+      await result.current.loadHistory();
+    });
+
+    expect(result.current.historyError).toEqual({
+      summary: "Covered-call run history is temporarily offline.",
+      details: [
+        "Endpoint returned 503 for /api/covered-call/runs?limit=50.",
+        "History store unavailable"
+      ]
+    });
+  });
+
   it("openRun fetches result and switches to results stage", async () => {
     const services = makeServices();
     const { result } = renderHook(() => useCoveredCallScreenViewModel({ services, pollIntervalMs: 1000000, chainPreviewDebounceMs: 100000 }));
@@ -872,7 +904,41 @@ describe("useCoveredCallScreenViewModel", () => {
       await result.current.openRun("expired-run");
     });
 
-    expect(result.current.errorBanner).toContain("expired");
+    expect(result.current.errorBanner?.summary).toContain("expired");
     expect(result.current.stage).toBe("configure");
+  });
+
+  it("cancelRun keeps structured backend details when the cancel request fails", async () => {
+    const services = makeServices({
+      cancelRun: vi.fn(async () => {
+        throw new ApiError({
+          path: "/api/covered-call/runs/abc/cancel",
+          status: 409,
+          title: "Cancellation blocked",
+          detail: "The run already completed before cancellation reached the engine."
+        });
+      })
+    });
+    const { result } = renderHook(() => useCoveredCallScreenViewModel({ services, pollIntervalMs: 1000000, chainPreviewDebounceMs: 100000 }));
+
+    act(() => result.current.setField("minStrike", "500"));
+    await act(async () => {
+      await result.current.startRun();
+    });
+
+    await act(async () => {
+      await result.current.cancelRun();
+    });
+    await act(async () => {
+      await result.current.cancelRun();
+    });
+
+    expect(result.current.errorBanner).toEqual({
+      summary: "The run already completed before cancellation reached the engine.",
+      details: [
+        "Endpoint returned 409 for /api/covered-call/runs/abc/cancel.",
+        "Cancellation blocked"
+      ]
+    });
   });
 });

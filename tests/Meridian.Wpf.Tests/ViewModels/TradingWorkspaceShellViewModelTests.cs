@@ -243,6 +243,43 @@ public sealed class TradingWorkspaceShellViewModelTests
         actionId.Should().Be("FundReconciliation");
     }
 
+
+    [Fact]
+    public void ResolveOperatorWorkItemActionId_WithMalformedRouteAndMissingPageTag_FallsBackToKindDestination()
+    {
+        var workItem = new OperatorWorkItemDto(
+            WorkItemId: "reconciliation-break-malformed-route",
+            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+            Label: "Review reconciliation",
+            Detail: "Route payload is malformed.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: new DateTimeOffset(2026, 4, 27, 17, 10, 0, TimeSpan.Zero),
+            TargetRoute: "not-a-valid-route",
+            TargetPageTag: null);
+
+        var actionId = TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(workItem);
+
+        actionId.Should().Be("FundReconciliation");
+    }
+
+    [Fact]
+    public void ResolveOperatorWorkItemActionId_WithMissingRouteAndWorkspaceShellPageTag_UsesSafeFallback()
+    {
+        var workItem = new OperatorWorkItemDto(
+            WorkItemId: "unknown-kind-no-route",
+            Kind: (OperatorWorkItemKindDto)999,
+            Label: "Unknown",
+            Detail: "No routing metadata supplied.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: new DateTimeOffset(2026, 4, 27, 17, 11, 0, TimeSpan.Zero),
+            TargetRoute: null,
+            TargetPageTag: "TradingShell");
+
+        var actionId = TradingWorkspaceShellPresentationService.ResolveOperatorWorkItemActionId(workItem);
+
+        actionId.Should().Be("NotificationCenter");
+    }
+
     [Fact]
     public void ExecuteCommandAction_WithNoActiveRun_RaisesAccountPortfolioRequest()
     {

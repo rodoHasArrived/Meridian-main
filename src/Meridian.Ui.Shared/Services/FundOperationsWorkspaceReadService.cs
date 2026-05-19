@@ -3,8 +3,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Export;
@@ -59,6 +61,8 @@ public sealed class FundOperationsWorkspaceReadService
     private readonly NavAttributionService _navAttributionService;
     private readonly ReportGenerationService _reportGenerationService;
     private readonly IGovernanceReportPackRepository? _reportPackRepository;
+    private readonly ReportPackValidationService _reportPackValidationService;
+    private readonly ISecurityValidationGateService? _securityValidationGate;
 
     public FundOperationsWorkspaceReadService(
         IFundAccountService fundAccountService,
@@ -68,7 +72,9 @@ public sealed class FundOperationsWorkspaceReadService
         ReportGenerationService reportGenerationService,
         ISecurityReferenceLookup? securityReferenceLookup = null,
         IReconciliationRunService? strategyReconciliationService = null,
-        IGovernanceReportPackRepository? reportPackRepository = null)
+        IGovernanceReportPackRepository? reportPackRepository = null,
+        ReportPackValidationService? reportPackValidationService = null,
+        ISecurityValidationGateService? securityValidationGate = null)
     {
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _strategyRepository = strategyRepository ?? throw new ArgumentNullException(nameof(strategyRepository));
@@ -78,6 +84,8 @@ public sealed class FundOperationsWorkspaceReadService
         _securityReferenceLookup = securityReferenceLookup;
         _strategyReconciliationService = strategyReconciliationService;
         _reportPackRepository = reportPackRepository;
+        _reportPackValidationService = reportPackValidationService ?? new ReportPackValidationService();
+        _securityValidationGate = securityValidationGate;
     }
 
     public async Task<FundOperationsWorkspaceDto> GetWorkspaceAsync(
@@ -265,6 +273,30 @@ public sealed class FundOperationsWorkspaceReadService
         var securityMissingCount = report.TrialBalance.Count(static row =>
             !string.IsNullOrWhiteSpace(row.Symbol)
             && string.Equals(row.LookupQuality, "missing", StringComparison.OrdinalIgnoreCase));
+        var auditActor = request.AuditActor.Trim();
+        var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
+            ? Guid.NewGuid().ToString("N")
+            : request.CorrelationId.Trim();
+        var securityValidationResults = await ValidateReportPackSecuritiesAsync(
+            report,
+            auditActor,
+            ct).ConfigureAwait(false);
+        var validationIssues = _reportPackValidationService.Validate(new ReportPackValidationContext(
+            ReportId: report.ReportId,
+            AsOf: asOf,
+            Report: report,
+            Ledger: ledger,
+            Reconciliation: reconciliation,
+            RunCount: runs.Count,
+            SecurityMissingCount: securityMissingCount,
+            Formats: formats,
+            SecurityValidationResults: securityValidationResults));
+        var status = _reportPackValidationService.ResolveStatus(validationIssues);
+        var lifecycleEvents = _reportPackValidationService.BuildGenerationLifecycle(
+            auditActor,
+            correlationId,
+            report.GeneratedAt,
+            status);
         var provenance = new FundReportPackProvenanceDto(
             RelatedRunIds: runs.Select(static run => run.RunId).ToArray(),
             JournalEntryCount: ledger.JournalEntryCount,
@@ -292,10 +324,8 @@ public sealed class FundOperationsWorkspaceReadService
             AsOf: asOf,
             GeneratedAt: report.GeneratedAt,
             TotalNetAssets: report.TotalNetAssets,
-            AuditActor: request.AuditActor.Trim(),
-            CorrelationId: string.IsNullOrWhiteSpace(request.CorrelationId)
-                ? Guid.NewGuid().ToString("N")
-                : request.CorrelationId.Trim(),
+            AuditActor: auditActor,
+            CorrelationId: correlationId,
             DecisionRationale: string.IsNullOrWhiteSpace(request.DecisionRationale)
                 ? null
                 : request.DecisionRationale.Trim(),
@@ -303,7 +333,12 @@ public sealed class FundOperationsWorkspaceReadService
             Artifacts: [],
             Warnings: BuildReportPackWarnings(report, reconciliation, runs.Count, securityMissingCount),
             ContractName: GovernanceReportPackContract.ContractName,
-            SchemaVersion: schemaVersion);
+            SchemaVersion: schemaVersion)
+        {
+            Status = status,
+            ValidationIssues = validationIssues,
+            LifecycleEvents = lifecycleEvents
+        };
 
         return await repository
             .SaveAsync(snapshot, BuildReportPackArtifacts(report, formats, ct), ct)
@@ -328,6 +363,42 @@ public sealed class FundOperationsWorkspaceReadService
         var repository = _reportPackRepository
             ?? throw new InvalidOperationException("Governance report-pack repository has not been configured.");
         return repository.GetAsync(reportId, ct);
+    }
+
+    private async Task<IReadOnlyList<SecurityValidationGateResultDto>> ValidateReportPackSecuritiesAsync(
+        ReportPack report,
+        string auditActor,
+        CancellationToken ct)
+    {
+        if (_securityValidationGate is null)
+        {
+            return [];
+        }
+
+        var symbols = report.TrialBalance
+            .Select(static row => row.Symbol)
+            .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Select(static symbol => symbol!.Trim().ToUpperInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static symbol => symbol, StringComparer.Ordinal)
+            .ToArray();
+
+        var results = new List<SecurityValidationGateResultDto>(symbols.Length);
+        foreach (var symbol in symbols)
+        {
+            ct.ThrowIfCancellationRequested();
+            results.Add(await _securityValidationGate
+                .ValidateSymbolAsync(
+                    symbol,
+                    SecurityValidationWorkflowDto.ReportPackEvidence,
+                    workflowReference: report.ReportId.ToString("N"),
+                    actor: auditActor,
+                    persistSnapshot: true,
+                    ct)
+                .ConfigureAwait(false));
+        }
+
+        return results;
     }
 
     private async Task<IReadOnlyList<StrategyRunEntry>> LoadRunsAsync(

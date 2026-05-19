@@ -1,4 +1,10 @@
-import { normalizeWorkspacePath, WORKSPACES, workflowTargetPath, workspacePath } from "@/lib/workspace";
+import {
+  normalizeWorkspacePath,
+  WORKSPACES,
+  WORKSTATION_ROUTE_CATALOG,
+  workflowTargetPath,
+  workspacePath
+} from "@/lib/workspace";
 import {
   appendOperatingScopeToRoute,
   buildOperatingScopeFromSearch,
@@ -54,8 +60,16 @@ export interface CommandPaletteGroup {
 }
 
 export interface CommandPaletteEmptyState {
+  id: string;
+  titleId: string;
+  detailId: string;
+  actionId: string | null;
   title: string;
   detail: string;
+  statusLabel: string;
+  actionLabel: string | null;
+  actionAriaLabel: string | null;
+  canClearSearch: boolean;
 }
 
 export interface CommandPaletteWorkflowData {
@@ -99,6 +113,7 @@ export interface CommandPaletteViewModel {
   query: string;
   searchInputLabel: string;
   searchPlaceholder: string;
+  searchDescribedBy: string;
   filteredItems: CommandPaletteItem[];
   commandGroups: CommandPaletteGroup[];
   filteredItemCountLabel: string;
@@ -114,85 +129,90 @@ const COMMAND_KIND_LABELS: Record<CommandPaletteItemKind, string> = {
 };
 
 const COMMAND_KIND_ORDER: CommandPaletteItemKind[] = ["focus", "workspace", "route", "preset", "workflow"];
+const COMMAND_PALETTE_FILTER_COUNT_ID = "command-palette-filter-count";
+const COMMAND_PALETTE_EMPTY_STATE_ID = "command-palette-empty-state";
+const COMMAND_PALETTE_EMPTY_STATE_TITLE_ID = "command-palette-empty-state-title";
+const COMMAND_PALETTE_EMPTY_STATE_DETAIL_ID = "command-palette-empty-state-detail";
+const COMMAND_PALETTE_CLEAR_SEARCH_ID = "command-palette-clear-search";
 
 const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
   {
     id: "trading-readiness",
     label: "Readiness console",
     description: "Review paper cockpit blockers, operator work items, and promotion evidence.",
-    route: "/trading/readiness"
+    route: WORKSTATION_ROUTE_CATALOG.tradingReadiness
   },
   {
     id: "portfolio-brokerage-sync",
     label: "Brokerage sync",
     description: "Review household brokerage account sync posture and recovery actions.",
-    route: "/portfolio/brokerage-sync"
+    route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync
   },
   {
     id: "accounting-reconciliation",
     label: "Reconciliation breaks",
     description: "Work position breaks, sign-off detail, and reconciliation recovery.",
-    route: "/accounting/reconciliation"
+    route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
   },
   {
     id: "accounting-security-master",
     label: "Security Master",
     description: "Review reference-data coverage, identifier conflicts, and trusted instruments.",
-    route: "/accounting/security-master"
+    route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster
   },
   {
     id: "reporting-report-packs",
     label: "Report packs",
     description: "Open approval-ready report packet review and governed outputs.",
-    route: "/reporting/report-packs"
+    route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
   },
   {
     id: "reporting-evidence",
     label: "Evidence workbench",
     description: "Inspect packet completeness, stale evidence, and lineage.",
-    route: "/reporting/evidence"
+    route: WORKSTATION_ROUTE_CATALOG.reportingEvidence
   },
   {
     id: "strategy-quant-lab",
     label: "Quant Lab",
     description: "Run scripts with parameter hints, templates, plots, and metrics.",
-    route: "/strategy/quant-lab"
+    route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab
   },
   {
     id: "strategy-covered-call",
     label: "Covered call backtest",
     description: "Configure covered-call chain preview, run backtests, and review payoff evidence.",
-    route: "/strategy/covered-call"
+    route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall
   },
   {
     id: "data-watchlist",
     label: "Watchlist",
     description: "Add symbols and starter packs before validating live quotes.",
-    route: "/data/watchlist"
+    route: WORKSTATION_ROUTE_CATALOG.dataWatchlist
   },
   {
     id: "data-quotes",
     label: "Live quotes",
     description: "Inspect quotes, trades, depth, charts, and staged tickets.",
-    route: "/data/quotes"
+    route: WORKSTATION_ROUTE_CATALOG.dataQuotes
   },
   {
     id: "data-alerts",
     label: "Price alerts",
     description: "Create local quote-threshold alerts and review alert trigger state.",
-    route: "/data/alerts"
+    route: WORKSTATION_ROUTE_CATALOG.dataAlerts
   },
   {
     id: "data-backfills",
     label: "Backfill queues",
     description: "Preview, trigger, and review historical data backfill jobs.",
-    route: "/data/backfills"
+    route: WORKSTATION_ROUTE_CATALOG.dataBackfills
   },
   {
     id: "settings-integrations",
     label: "Alpaca provider setup",
     description: "Repair paper credentials, endpoint acknowledgements, and broker connection readiness.",
-    route: "/settings#alpaca-provider-setup"
+    route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup
   }
 ];
 
@@ -226,13 +246,14 @@ export function buildCommandPaletteViewModel(
   const normalizedQuery = query.trim();
   const filteredItems = filterCommandItems(items, normalizedQuery);
   const commandGroups = buildCommandPaletteGroups(filteredItems);
+  const hasWorkflowBackend = Boolean(
+    workflowData.workflowLibrary || workflowData.workflowPresets || workflowData.workflowError
+  );
+  const emptyState = buildCommandPaletteEmptyState(items.length, filteredItems.length, normalizedQuery, hasWorkflowBackend);
 
   const activeWorkspace = workspaceItems.find((item) => item.active);
   const activeRoute = routeItems.find((item) => item.active);
   const activeWorkspaceLabel = activeWorkspace ? `Current: ${activeWorkspace.label}` : "No active workspace";
-  const hasWorkflowBackend = Boolean(
-    workflowData.workflowLibrary || workflowData.workflowPresets || workflowData.workflowError
-  );
 
   return {
     title: hasWorkflowBackend ? "Open workflow command" : "Open workstation command",
@@ -277,24 +298,55 @@ export function buildCommandPaletteViewModel(
     searchPlaceholder: hasWorkflowBackend
       ? "Search workflows, routes, presets, or workspaces"
       : "Search routes or workspaces",
+    searchDescribedBy: emptyState
+      ? `${COMMAND_PALETTE_FILTER_COUNT_ID} ${emptyState.detailId}`
+      : COMMAND_PALETTE_FILTER_COUNT_ID,
     filteredItems,
     commandGroups,
     filteredItemCountLabel: buildFilteredItemCountLabel(filteredItems.length, items.length, normalizedQuery),
-    emptyState:
-      items.length === 0
-        ? {
-            title: hasWorkflowBackend ? "No workflow commands available" : "No workstation commands available",
-            detail: hasWorkflowBackend
-              ? "Workflow and workspace metadata did not load; retry the shell bootstrap before navigating."
-              : "Workspace metadata did not load; retry the shell bootstrap before navigating."
-          }
-        : normalizedQuery && filteredItems.length === 0
-          ? {
-              title: "No matching commands",
-              detail: "Try a workspace name, route, workflow title, or status label."
-            }
-        : null
+    emptyState
   };
+}
+
+function buildCommandPaletteEmptyState(
+  totalCount: number,
+  filteredCount: number,
+  normalizedQuery: string,
+  hasWorkflowBackend: boolean
+): CommandPaletteEmptyState | null {
+  if (totalCount === 0) {
+    return {
+      id: COMMAND_PALETTE_EMPTY_STATE_ID,
+      titleId: COMMAND_PALETTE_EMPTY_STATE_TITLE_ID,
+      detailId: COMMAND_PALETTE_EMPTY_STATE_DETAIL_ID,
+      actionId: null,
+      title: hasWorkflowBackend ? "No workflow commands available" : "No workstation commands available",
+      detail: hasWorkflowBackend
+        ? "Workflow and workspace metadata did not load; retry the shell bootstrap before navigating."
+        : "Workspace metadata did not load; retry the shell bootstrap before navigating.",
+      statusLabel: "Unavailable",
+      actionLabel: null,
+      actionAriaLabel: null,
+      canClearSearch: false
+    };
+  }
+
+  if (normalizedQuery && filteredCount === 0) {
+    return {
+      id: COMMAND_PALETTE_EMPTY_STATE_ID,
+      titleId: COMMAND_PALETTE_EMPTY_STATE_TITLE_ID,
+      detailId: COMMAND_PALETTE_EMPTY_STATE_DETAIL_ID,
+      actionId: COMMAND_PALETTE_CLEAR_SEARCH_ID,
+      title: "No matching commands",
+      detail: `No commands match "${normalizedQuery}". Clear the search to return to all workstation commands.`,
+      statusLabel: "Empty",
+      actionLabel: "Clear search",
+      actionAriaLabel: `Clear command palette search for ${normalizedQuery}`,
+      canClearSearch: true
+    };
+  }
+
+  return null;
 }
 
 export function buildCommandPaletteGroups(items: CommandPaletteItem[]): CommandPaletteGroup[] {

@@ -37,6 +37,32 @@ This sprint closes that gap with four explicit acceptance gates:
 3. risk auditability
 4. promotion traceability
 
+## Sprint Completion Scoreboard (2026-05-18)
+
+This section turns the reliability sprint into an execution checklist so Wave 2 can be closed with
+evidence instead of feature-count claims.
+
+| Gate | Current Status | Evidence In Repo | Remaining Work To Mark Done |
+| --- | --- | --- | --- |
+| Replay confidence | **Completed (implementation); awaiting fresh dated packet per release** | Shared readiness models stale replay evidence and work-item IDs (`paper-replay-stale-{normalizedSessionId}`; lower-cased with non-alphanumerics collapsed to `-`), replay audits persist compared counts and mismatch reason, and the Wave 2 evidence runbook now defines `verify -> stale -> re-verify` capture steps. | Generate and archive the current-release date-stamped evidence packet from the runbook sequence. |
+| Session persistence | **Completed** | Session metadata, fills, order history, and ledger continuity persistence are in service seams; readiness reads those seams; automated continuity flow now covers `create -> restart/restore -> verify -> close` in one test. | Keep this coverage green in Wave 2 acceptance runs. |
+| Risk auditability | **Completed (implementation); awaiting fresh dated packet per release** | Readiness keeps `audit-controls` in review when actor/scope/rationale are missing, projects an execution-control work item, and focused readiness tests fail when explainability fields are missing. | Capture one dated operator evidence snapshot in the same packet used for release gating. |
+| Promotion traceability | **Completed (implementation); awaiting fresh dated packet per release** | Durable promotion history is persisted and replayed after restart; readiness gates require operator/rationale/lineage/audit-reference completeness; API-level readiness tests enforce review-required posture when trace is incomplete. | Include approve/reject trace evidence in the dated release packet and verify audit-reference continuity. |
+
+### Definition of Done for This Sprint
+
+Wave 2 cockpit reliability is complete only when all of the following are true in the same
+date-stamped evidence slice:
+
+1. `ReadyForPaperOperation=true` is produced only when all acceptance gates pass and no critical
+   operator work items remain.
+2. The operator-inbox and trading-readiness lanes agree on blocker severity for replay, controls,
+   promotion trace, reconciliation, and DK1 trust-gate posture.
+3. Restart continuity is proven by automated tests and one operator runbook packet generated from a
+   fresh local run.
+4. The pass packet is attached to the current delivery status docs without widening claims into
+   live-readiness language.
+
 ## Scope
 
 ### In Scope
@@ -445,3 +471,20 @@ Declare this matrix complete only when **every row is green** under:
 2. account-scoped brokerage sync update scenarios.
 
 Fixture-seeded success alone is not sufficient for Wave 2 exit.
+
+
+## Canonical gate-evaluation acceptance criteria (2026-05-19 update)
+
+1. `GET /api/workstation/trading/readiness` and `GET /api/workstation/trading` must return the same readiness projection (`overallStatus`, `acceptanceGates`, `workItems`) for the same request scope.
+2. Overall posture is computed through one canonical gate flow in precedence order: replay verification, reconciliation, acceptance controls/promotion/trust/report-pack/session, then brokerage-sync.
+3. Every `acceptanceGates[]` row must expose explicit explainability fields: `status`, `reason`, `lastEvidenceAt`, and `requiredNextAction`.
+4. Replay stale evidence must demote replay to `ReviewRequired` and emit a `paper-replay-stale-*` work item until replay verification is rerun.
+5. `fundAccountId` scoped calls must preserve brokerage-sync + operator-inbox account context and not alter unrelated gate semantics.
+
+## Operator sign-off sequence
+
+1. Resolve `Blocked` acceptance gates.
+2. Resolve or acknowledge `ReviewRequired` replay/reconciliation/brokerage items.
+3. Confirm promotion trace and audit-control explainability are complete.
+4. Confirm DK1 trust-gate sign-off packet binding is valid for the current packet.
+5. Record operator sign-off evidence and rerun readiness + operator-inbox probes for final packet capture.

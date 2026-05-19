@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.Accounts;
 using Meridian.Contracts.FundStructure;
@@ -364,5 +365,183 @@ public sealed class FundAccountServiceTests
 
         if (shouldFail) await Assert.ThrowsAsync<AccountStatusPolicyException>(action);
         else Assert.NotNull(await action());
+    }
+
+    [Fact]
+    public async Task SyncHistory_PersistsAndDedupesByAccountCapabilityAndCorrelation()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "meridian-fund-account-tests", $"{Guid.NewGuid():N}.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        try
+        {
+            var svc = new InMemoryFundAccountService(path);
+            var account = await svc.CreateAccountAsync(MakeBankRequest() with
+            {
+                Institution = "Meridian Bank",
+                LedgerReference = "CASH-OPS"
+            });
+
+            var first = await svc.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
+                AccountId: account.AccountId,
+                Capability: "bank-balances",
+                Status: AccountSyncStatusDto.Failed,
+                ProviderLinkStatus: AccountProviderLinkStatusDto.SyncFailed,
+                ProviderId: "bank-provider",
+                ExternalAccountId: "BA-1",
+                CorrelationId: "sync-1",
+                FailureKind: AccountSyncFailureKindDto.ProviderUnavailable,
+                FailureMessage: "Provider unavailable."));
+            var second = await svc.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
+                AccountId: account.AccountId,
+                Capability: "bank-balances",
+                Status: AccountSyncStatusDto.Succeeded,
+                ProviderLinkStatus: AccountProviderLinkStatusDto.Verified,
+                ProviderId: "bank-provider",
+                ExternalAccountId: "BA-1",
+                CorrelationId: "sync-1",
+                RawEvidencePath: "artifacts/account-sync/bank/raw.json"));
+
+            second.SyncHistoryId.Should().Be(first.SyncHistoryId);
+
+            var restored = new InMemoryFundAccountService(path);
+            var history = await restored.GetSyncHistoryAsync(account.AccountId);
+
+            history.Should().ContainSingle();
+            history[0].Status.Should().Be(AccountSyncStatusDto.Succeeded);
+            history[0].RawEvidencePath.Should().Be("artifacts/account-sync/bank/raw.json");
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Readiness_FlagsStaleSyncMissingLedgerAndSecurityMasterCoverage()
+    {
+        var svc = CreateService();
+        var account = await svc.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(),
+            AccountTypeDto.Brokerage,
+            "BRK-READY",
+            "Readiness Brokerage",
+            "USD",
+            DateTimeOffset.UtcNow.AddDays(-1),
+            "tests",
+            Institution: "alpaca"));
+
+        await svc.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
+            AccountId: account.AccountId,
+            Capability: "brokerage-sync",
+            Status: AccountSyncStatusDto.Succeeded,
+            ProviderLinkStatus: AccountProviderLinkStatusDto.Verified,
+            ProviderId: "alpaca",
+            ExternalAccountId: "PA-READY",
+            AttemptedAt: DateTimeOffset.UtcNow.AddHours(-2),
+            CompletedAt: DateTimeOffset.UtcNow.AddHours(-2),
+            FreshUntil: DateTimeOffset.UtcNow.AddMinutes(-5),
+            SecurityMissingCount: 2,
+            ProjectionEvidencePath: "artifacts/account-sync/projection.json"));
+
+        var readiness = await svc.GetReadinessAsync(account.AccountId);
+
+        readiness.Should().NotBeNull();
+        readiness!.IsReady.Should().BeFalse();
+        readiness.ProviderLinkStatus.Should().Be(AccountProviderLinkStatusDto.Verified);
+        readiness.Issues.Select(static issue => issue.Code).Should().Contain([
+            "account.sync.stale",
+            "account.ledger_mapping.missing",
+            "account.security_master.coverage_missing"
+        ]);
+        readiness.Issues.Single(issue => issue.Code == "account.security_master.coverage_missing")
+            .EvidenceLink.Should().Be("artifacts/account-sync/projection.json");
+    }
+
+    [Fact]
+    public async Task Readiness_FlagsFailedSyncWithStructuredFailure()
+    {
+        var svc = CreateService();
+        var account = await svc.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(),
+            AccountTypeDto.Brokerage,
+            "BRK-FAILED",
+            "Failed Brokerage",
+            "USD",
+            DateTimeOffset.UtcNow.AddDays(-1),
+            "tests",
+            Institution: "alpaca",
+            LedgerReference: "BROKERAGE-CASH"));
+
+        await svc.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
+            AccountId: account.AccountId,
+            Capability: "brokerage-sync",
+            Status: AccountSyncStatusDto.Failed,
+            ProviderLinkStatus: AccountProviderLinkStatusDto.Expired,
+            ProviderId: "alpaca",
+            ExternalAccountId: "PA-FAILED",
+            FailureKind: AccountSyncFailureKindDto.CredentialMissing,
+            FailureMessage: "Credentials are missing.",
+            RawEvidencePath: "artifacts/account-sync/failed.json"));
+
+        var readiness = await svc.GetReadinessAsync(account.AccountId);
+
+        readiness.Should().NotBeNull();
+        readiness!.IsReady.Should().BeFalse();
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "account.sync.failed"
+            && issue.Severity == AccountReadinessSeverityDto.Critical
+            && issue.EvidenceLink == "artifacts/account-sync/failed.json");
+    }
+
+    [Fact]
+    public async Task Readiness_FlagsOpenReconciliationBreaks()
+    {
+        var svc = CreateService();
+        var account = await svc.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(),
+            AccountTypeDto.Brokerage,
+            "BRK-RECON",
+            "Reconciliation Brokerage",
+            "USD",
+            DateTimeOffset.UtcNow.AddDays(-1),
+            "tests",
+            Institution: "alpaca",
+            LedgerReference: "BROKERAGE-CASH"));
+        var asOf = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        await svc.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            account.AccountId,
+            asOf,
+            "USD",
+            CashBalance: 100m,
+            Source: "manual",
+            RecordedBy: "tests"));
+        await svc.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            account.AccountId,
+            asOf,
+            "USD",
+            CashBalance: 125m,
+            Source: "brokerage-sync:alpaca",
+            RecordedBy: "tests",
+            ExternalReference: "PA-RECON"));
+        await svc.RecordSyncHistoryAsync(new RecordAccountSyncHistoryRequest(
+            AccountId: account.AccountId,
+            Capability: "brokerage-sync",
+            Status: AccountSyncStatusDto.Succeeded,
+            ProviderLinkStatus: AccountProviderLinkStatusDto.Verified,
+            ProviderId: "alpaca",
+            ExternalAccountId: "PA-RECON",
+            FreshUntil: DateTimeOffset.UtcNow.AddHours(1)));
+        await svc.ReconcileAccountAsync(new ReconcileAccountRequest(account.AccountId, asOf, "tests"));
+
+        var readiness = await svc.GetReadinessAsync(account.AccountId);
+
+        readiness.Should().NotBeNull();
+        readiness!.Issues.Should().Contain(issue =>
+            issue.Code == "account.reconciliation.breaks_open"
+            && issue.Severity == AccountReadinessSeverityDto.Warning);
     }
 }

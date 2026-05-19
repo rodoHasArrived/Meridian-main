@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-05-18
+**Reviewed:** 2026-05-19
 
 Meridian lives at `C:\Dev\Meridian-main`. The repository is organized around
 source projects, tests, automation, docs, design-system assets, and generated
@@ -62,15 +62,16 @@ artifacts.
 | `docs/docfx/api/` | Generated documentation | DocFX API metadata output; regenerate before publishing docs |
 | `wwwroot/workstation/` | Generated/build output currently tracked | Host-served web workstation bundle; review before replacing or deleting |
 | `src/Meridian.Ui/wwwroot/workstation/` | Generated/build output | Vite build output for the browser workstation |
-| `artifacts/`, `bin/`, `obj/`, `TestResults/`, `coverage/`, `node_modules/` | Generated/build output | Local outputs that should not be committed |
+| `.artifacts/`, `artifacts/`, `.tools/`, `bin/`, `obj/`, `TestResults/`, `coverage/`, `node_modules/`, `src/Meridian.Ui/dashboard/artifacts/` | Generated/build output | Local outputs, publish products, caches, and restored dependencies that should not be committed |
 
 ## Cleanup Classification Rules
 
 - Safe to delete: ignored `bin/`, `obj/`, `node_modules/`, `TestResults/`,
-  `coverage/`, local logs, local publish output, and local smoke artifacts.
+  `coverage/`, local logs, local publish output, dashboard automation artifacts,
+  `.artifacts/`, `.tools/` tool caches, and local smoke artifacts.
 - Safe to consolidate: duplicate generated indexes, stale one-off reports, and
   documentation that repeats command lists already covered by `docs/HELP.md`.
 - Needs review: tracked generated API metadata, tracked workstation bundles,
-  tracked screenshots, archived code, and agent/skill prompt copies.
+  archived code, and agent/skill prompt copies.
 - Should retain: active source, tests, CI workflows, canonical docs, design-system
   assets, and archive material with traceability value.

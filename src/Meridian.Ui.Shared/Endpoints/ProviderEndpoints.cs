@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Application.Config;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared;
@@ -192,74 +193,20 @@ public static class ProviderEndpoints
         .WithDescription("Updates automatic failover settings including timeout and enable/disable.")
         .Produces(200);
 
-        group.MapPost(UiApiRoutes.ProviderConfigure, async (ConfigStore store, ProviderSetupRequest req) =>
+        group.MapPost(UiApiRoutes.ProviderConfigure, async (
+            HttpContext context,
+            ProviderSetupRequest req,
+            ProviderSetupService setupService) =>
         {
-            var displayName = req.DisplayName?.Trim();
-            if (string.IsNullOrWhiteSpace(displayName))
+            if (!HasProviderSetupPermission(context, req))
             {
-                return Results.BadRequest(new ProviderSetupResult(
-                    Success: false,
-                    ProviderId: null,
-                    ProviderName: string.Empty,
-                    Message: "Provider display name is required.",
-                    Error: "Provider display name is required."));
+                return EndpointHelpers.Forbidden();
             }
 
-            if (!TryResolveProviderKind(req.Kind, out var sourceKind, out var normalizedKind, out var providerError))
-            {
-                return Results.BadRequest(new ProviderSetupResult(
-                    Success: false,
-                    ProviderId: null,
-                    ProviderName: displayName,
-                    Message: providerError,
-                    Error: providerError));
-            }
-
-            var sourceType = ResolveSourceType(req.Capabilities);
-            var cfg = store.Load();
-            var dataSources = cfg.DataSources ?? new DataSourcesConfig();
-            var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
-            var providerId = BuildProviderId(normalizedKind, sources);
-            var source = new DataSourceConfig(
-                Id: providerId,
-                Name: displayName,
-                Provider: sourceKind,
-                Enabled: true,
-                Type: sourceType,
-                Priority: sources.Count == 0 ? 10 : Math.Max(10, sources.Count * 10 + 10),
-                Alpaca: sourceKind == DataSourceKind.Alpaca
-                    ? new AlpacaOptions(
-                        KeyId: req.ApiKey?.Trim() ?? string.Empty,
-                        SecretKey: req.ApiSecret?.Trim() ?? string.Empty)
-                    : null,
-                Polygon: sourceKind == DataSourceKind.Polygon
-                    ? new PolygonOptions(ApiKey: req.ApiKey?.Trim())
-                    : null,
-                IB: sourceKind == DataSourceKind.IB
-                    ? BuildInteractiveBrokersOptions(req.Endpoint)
-                    : null,
-                Description: $"Configured from the provider setup form for {displayName}.",
-                Tags: NormalizeCapabilities(req.Capabilities));
-
-            sources.Add(source);
-
-            var next = cfg with
-            {
-                DataSources = dataSources with
-                {
-                    Sources = sources.ToArray(),
-                    DefaultRealTimeSourceId = dataSources.DefaultRealTimeSourceId ?? (sourceType is DataSourceType.RealTime or DataSourceType.Both ? providerId : null),
-                    DefaultHistoricalSourceId = dataSources.DefaultHistoricalSourceId ?? (sourceType is DataSourceType.Historical or DataSourceType.Both ? providerId : null)
-                }
-            };
-            await store.SaveAsync(next).ConfigureAwait(false);
-
-            return Results.Json(new ProviderSetupResult(
-                Success: true,
-                ProviderId: providerId,
-                ProviderName: displayName,
-                Message: $"{displayName} was configured.",
-                Error: null), jsonOptions);
+            var result = await setupService.ConfigureAsync(req, context.RequestAborted).ConfigureAwait(false);
+            return result.Success
+                ? Results.Json(result, jsonOptions)
+                : Results.BadRequest(result);
         })
         .WithName("ConfigureProvider")
         .WithDescription("Creates a provider data-source configuration from the browser provider setup form.")
@@ -590,115 +537,35 @@ public static class ProviderEndpoints
         IsSimulated: true
     );
 
-    private static bool TryResolveProviderKind(
-        string? kind,
-        out DataSourceKind sourceKind,
-        out string normalizedKind,
-        out string error)
+    private static bool HasProviderSetupPermission(HttpContext context, ProviderSetupRequest request)
     {
-        normalizedKind = NormalizeProviderKind(kind);
-        error = string.Empty;
-        sourceKind = normalizedKind switch
-        {
-            "alpaca" => DataSourceKind.Alpaca,
-            "polygon" => DataSourceKind.Polygon,
-            "yahoo" or "yahoofinance" => DataSourceKind.Yahoo,
-            "interactivebrokers" or "ib" => DataSourceKind.IB,
-            "synthetic" or "custom" => DataSourceKind.Synthetic,
-            _ => default
-        };
-
-        if (sourceKind != default || normalizedKind is "ib" or "interactivebrokers")
+        if (!TryGetCurrentPermissions(context, out var permissions))
         {
             return true;
         }
 
-        error = $"Provider '{kind}' is not yet supported by the local data-source configuration model.";
+        var required = UserPermission.ManageProviders;
+        if (HasSubmittedCredentials(request))
+        {
+            required |= UserPermission.ManageCredentials;
+        }
+
+        return (permissions & required) == required;
+    }
+
+    private static bool TryGetCurrentPermissions(HttpContext context, out UserPermission permissions)
+    {
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserPermissionsKey, out var value) &&
+            value is UserPermission current)
+        {
+            permissions = current;
+            return true;
+        }
+
+        permissions = default;
         return false;
     }
 
-    private static string NormalizeProviderKind(string? kind)
-    {
-        var normalized = (kind ?? string.Empty).Trim().ToLowerInvariant();
-        return normalized.Replace("-", string.Empty).Replace("_", string.Empty).Replace(" ", string.Empty);
-    }
-
-    private static DataSourceType ResolveSourceType(IReadOnlyList<string>? capabilities)
-    {
-        var normalized = NormalizeCapabilities(capabilities);
-        var hasStreaming = normalized.Any(c => string.Equals(c, "streaming", StringComparison.OrdinalIgnoreCase));
-        var hasBackfill = normalized.Any(c => string.Equals(c, "backfill", StringComparison.OrdinalIgnoreCase));
-        return (hasStreaming, hasBackfill) switch
-        {
-            (true, true) => DataSourceType.Both,
-            (false, true) => DataSourceType.Historical,
-            _ => DataSourceType.RealTime
-        };
-    }
-
-    private static string[] NormalizeCapabilities(IReadOnlyList<string>? capabilities)
-    {
-        return capabilities?
-            .Where(capability => !string.IsNullOrWhiteSpace(capability))
-            .Select(capability => capability.Trim().ToLowerInvariant())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(capability => capability, StringComparer.OrdinalIgnoreCase)
-            .ToArray() ?? Array.Empty<string>();
-    }
-
-    private static string BuildProviderId(string normalizedKind, IReadOnlyList<DataSourceConfig> sources)
-    {
-        var baseId = string.IsNullOrWhiteSpace(normalizedKind) ? "provider" : normalizedKind;
-        if (!sources.Any(s => string.Equals(s.Id, baseId, StringComparison.OrdinalIgnoreCase)))
-        {
-            return baseId;
-        }
-
-        var suffix = 2;
-        string candidate;
-        do
-        {
-            candidate = $"{baseId}-{suffix++}";
-        }
-        while (sources.Any(s => string.Equals(s.Id, candidate, StringComparison.OrdinalIgnoreCase)));
-
-        return candidate;
-    }
-
-    private static IBOptions BuildInteractiveBrokersOptions(string? endpoint)
-    {
-        var host = "127.0.0.1";
-        var port = 7497;
-        if (Uri.TryCreate(endpoint, UriKind.Absolute, out var uri))
-        {
-            host = uri.Host;
-            port = uri.Port > 0 ? uri.Port : port;
-        }
-        else if (!string.IsNullOrWhiteSpace(endpoint))
-        {
-            var parts = endpoint.Split(':', 2, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            host = parts[0];
-            if (parts.Length == 2 && int.TryParse(parts[1], out var parsedPort))
-            {
-                port = parsedPort;
-            }
-        }
-
-        return new IBOptions(Host: host, Port: port);
-    }
-
-    private sealed record ProviderSetupRequest(
-        string? Kind,
-        string? DisplayName,
-        string? ApiKey,
-        string? ApiSecret,
-        string? Endpoint,
-        string[]? Capabilities);
-
-    private sealed record ProviderSetupResult(
-        bool Success,
-        string? ProviderId,
-        string ProviderName,
-        string Message,
-        string? Error);
+    private static bool HasSubmittedCredentials(ProviderSetupRequest request)
+        => !string.IsNullOrWhiteSpace(request.ApiKey) || !string.IsNullOrWhiteSpace(request.ApiSecret);
 }

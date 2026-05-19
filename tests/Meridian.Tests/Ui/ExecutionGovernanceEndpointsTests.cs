@@ -58,7 +58,7 @@ public sealed class ExecutionGovernanceEndpointsTests
         auditEntries.Should().NotBeNull();
         auditEntries!.Should().Contain(entry =>
             entry.Action == "CircuitBreakerOpened" &&
-            entry.Actor == "ops");
+            entry.Actor == "ops-user");
     }
 
     [Fact]
@@ -120,12 +120,12 @@ public sealed class ExecutionGovernanceEndpointsTests
         auditEntries.Should().NotBeNull();
         auditEntries!.Should().Contain(entry =>
             entry.Action == "ManualOverrideCreated" &&
-            entry.Actor == "ops" &&
+            entry.Actor == "ops-user" &&
             entry.RunId == "run-123" &&
             entry.CorrelationId == "corr-override-create");
         auditEntries.Should().Contain(entry =>
             entry.Action == "ManualOverrideCleared" &&
-            entry.Actor == "ops" &&
+            entry.Actor == "ops-user" &&
             entry.RunId == "run-123" &&
             entry.CorrelationId == "corr-override-clear");
     }
@@ -194,6 +194,8 @@ public sealed class ExecutionGovernanceEndpointsTests
                 config.MaxPositionSize = 100m;
             });
         });
+
+        await app.Services.GetRequiredService<AlpacaBrokerageGateway>().ConnectAsync();
 
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
@@ -273,6 +275,8 @@ public sealed class ExecutionGovernanceEndpointsTests
                 config.MaxPositionSize = 100m;
             });
         });
+
+        await app.Services.GetRequiredService<RobinhoodBrokerageGateway>().ConnectAsync();
 
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");

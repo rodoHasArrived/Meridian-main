@@ -136,6 +136,124 @@ public sealed record AccountReconciliationResultDto(
     decimal? Variance,
     string Reason);
 
+/// <summary>Provider account-link posture for account-scoped sync and readiness.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<AccountProviderLinkStatusDto>))]
+public enum AccountProviderLinkStatusDto
+{
+    NotLinked = 0,
+    Linked = 1,
+    Verified = 2,
+    Degraded = 3,
+    Revoked = 4,
+    Expired = 5,
+    Unauthorized = 6,
+    Unsupported = 7,
+    SyncPending = 8,
+    SyncFailed = 9
+}
+
+/// <summary>Outcome for one account-scoped sync attempt.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<AccountSyncStatusDto>))]
+public enum AccountSyncStatusDto
+{
+    Pending = 0,
+    Succeeded = 1,
+    Degraded = 2,
+    Failed = 3,
+    Cancelled = 4
+}
+
+/// <summary>Structured failure class for account sync retries and readiness.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<AccountSyncFailureKindDto>))]
+public enum AccountSyncFailureKindDto
+{
+    None = 0,
+    CredentialMissing = 1,
+    Unauthorized = 2,
+    ProviderUnavailable = 3,
+    RateLimited = 4,
+    Timeout = 5,
+    Cancelled = 6,
+    ValidationFailed = 7,
+    Unsupported = 8,
+    Duplicate = 9,
+    Unknown = 99
+}
+
+/// <summary>Operator severity for account readiness issues.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<AccountReadinessSeverityDto>))]
+public enum AccountReadinessSeverityDto
+{
+    Info = 0,
+    Warning = 1,
+    Critical = 2
+}
+
+/// <summary>Durable history entry for one provider/account sync attempt.</summary>
+public sealed record AccountSyncHistoryEntryDto(
+    Guid SyncHistoryId,
+    Guid AccountId,
+    string Capability,
+    AccountSyncStatusDto Status,
+    AccountProviderLinkStatusDto ProviderLinkStatus,
+    string? ProviderId,
+    string? ExternalAccountId,
+    DateTimeOffset AttemptedAt,
+    DateTimeOffset? CompletedAt,
+    DateTimeOffset? FreshUntil,
+    AccountSyncFailureKindDto FailureKind,
+    string? FailureMessage,
+    string? CorrelationId,
+    string? RequestedBy,
+    string? RawEvidencePath,
+    string? ProjectionEvidencePath,
+    int SecurityMissingCount,
+    IReadOnlyList<string> Warnings);
+
+/// <summary>Request to append or upsert an account-scoped sync history entry.</summary>
+public sealed record RecordAccountSyncHistoryRequest(
+    Guid AccountId,
+    string Capability,
+    AccountSyncStatusDto Status,
+    AccountProviderLinkStatusDto ProviderLinkStatus = AccountProviderLinkStatusDto.Linked,
+    string? ProviderId = null,
+    string? ExternalAccountId = null,
+    DateTimeOffset? AttemptedAt = null,
+    DateTimeOffset? CompletedAt = null,
+    DateTimeOffset? FreshUntil = null,
+    AccountSyncFailureKindDto FailureKind = AccountSyncFailureKindDto.None,
+    string? FailureMessage = null,
+    string? CorrelationId = null,
+    string? RequestedBy = null,
+    string? RawEvidencePath = null,
+    string? ProjectionEvidencePath = null,
+    int SecurityMissingCount = 0,
+    IReadOnlyList<string>? Warnings = null);
+
+/// <summary>One account readiness issue derived from account metadata, sync history, and reconciliation state.</summary>
+public sealed record AccountReadinessIssueDto(
+    string Code,
+    AccountReadinessSeverityDto Severity,
+    string Title,
+    string Message,
+    Guid AccountId,
+    string? ProviderId = null,
+    string? ExternalAccountId = null,
+    string? Capability = null,
+    string? SuggestedAction = null,
+    string? EvidenceLink = null);
+
+/// <summary>Account-scoped production readiness snapshot for provider, ledger, sync, and reconciliation checks.</summary>
+public sealed record AccountReadinessSnapshotDto(
+    Guid AccountId,
+    DateTimeOffset EvaluatedAt,
+    AccountProviderLinkStatusDto ProviderLinkStatus,
+    AccountSyncStatusDto? LatestSyncStatus,
+    DateTimeOffset? LastSuccessfulSyncAt,
+    DateTimeOffset? FreshUntil,
+    bool IsReady,
+    IReadOnlyList<AccountReadinessIssueDto> Issues);
+
 /// <summary>Polymorphic envelope for account-type specific details.</summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
 [JsonDerivedType(typeof(CustodianAccountDetailsEnvelopeDto), "custodian")]

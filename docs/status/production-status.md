@@ -1,10 +1,24 @@
 # Meridian - Production Status
 
 **Version:** 1.7.7
-**Last Updated:** 2026-05-15
+**Last Updated:** 2026-05-19
 **Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Waves 2-4 productization remain active while the browser workstation is the active operator UI lane and retained WPF orientation/routing plus release-evidence automation continue to support compatibility; current UFL/reference-data, browser Security Master lot-detail/conflict state, Live Quotes trade-detail selection and quick-trade readiness handoffs, Portfolio dense-table detail selection and brokerage-sync next actions, hash-aware provider-setup command routing, query-string route focus for subject/symbol handoffs, Watchlist empty/no-quote copy, provider-setup validation handoff, Data backfill dense-table queue selection, Trading loading-state and Recent Fills detail support, Reporting report-pack profile actions, Accounting reconciliation dense-table detail queue with keyboard selection and no-host break-queue fixtures, Strategy run/promotion detail state, Quant Lab view-model, Quant Notebook helpers, Overview Today panel, local Price Alerts, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail state, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, shared UI persistence, and WPF Data shell module deltas are support evidence, not readiness exits
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
+Readiness claim wording in this document must follow [`readiness-claim-language-policy.md`](readiness-claim-language-policy.md).
+
+2026-05-19 current-state note: the latest repo evidence adds ledger `posting_kind` guards,
+report-pack validation/lifecycle metadata, evidence-vault manifest lookup, reconciliation case
+storage/audit hardening, account-sync history/readiness DTOs, and an in-flight Security Master
+validation-gate/snapshot slice. These are support evidence for Waves 3-4 and do not change the
+canonical `In Progress` posture for W2-W4.
+
+2026-05-19 browser-workstation note: provider setup and Settings refresh now surface
+provider-routing connection, binding, credential-source, environment, warning, and trust-snapshot
+state; Strategy Designer route actions now separate browser-openable GET evidence from
+reference-only POST validation, preview, and run-backtest actions; and Reporting export commands now
+abort superseded profile exports. These improve operator safety and route semantics, but they are
+not cockpit acceptance, Backtest Studio, governed report-pack lifecycle, or live-readiness exits.
 
 ---
 
@@ -114,6 +128,15 @@ Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE
 | Promotion decision visibility + audit rationale | `Scenario_RiskTriggeredPromotionRejection_DecisionRemainsVisibleWithBlockingRationale` verifies blocked promotion evaluations expose policy reasons (`BlockingReasons`) and rejected decisions keep explicit operator rationale in the decision payload. | Evaluation omits blocking rationale for an ineligible run, or rejection response does not carry an explicit reason suitable for operator audit/review. |
 
 Operator-readiness language for Wave 2 should stay “in progress” until the full cockpit-hardened gate above is continuously passing.
+
+### Wave 2 operator sign-off sequence (canonical readiness flow)
+
+1. Query `GET /api/workstation/trading/readiness` and `GET /api/workstation/trading` and confirm the embedded readiness projection is identical for `overallStatus`, `acceptanceGates`, and `workItems`.
+2. Verify canonical gate precedence is respected: replay, reconciliation, acceptance controls/promotion/trust/report-pack/session, brokerage-sync.
+3. For each acceptance gate verify explainability fields are populated: `status`, `reason`, `lastEvidenceAt`, and `requiredNextAction`.
+4. Validate account-scoped behavior by rerunning readiness and operator inbox with `fundAccountId=<account-guid>`.
+5. If replay evidence is stale, rerun replay verification and capture the recovered gate/audit reference before final operator acceptance.
+
 
 ### Wave 3: Shared run / portfolio / ledger continuity
 

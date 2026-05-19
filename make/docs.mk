@@ -4,7 +4,7 @@
 
 .PHONY: docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
         gen-interfaces gen-structure gen-providers gen-workflows gen-workflow-manifest \
-        update-claude-md docs-all check-workflow-docs-parity
+        update-claude-md docs-all check-workflow-docs-parity check-status-delivery-claims
 
 docs: gen-context verify-adrs gen-workflow-manifest ## Generate all documentation from code
 	@echo "$(GREEN)Documentation generated and verified$(NC)"
@@ -86,3 +86,7 @@ docs-all: gen-context gen-interfaces gen-structure gen-providers gen-workflows v
 check-workflow-docs-parity: ## Validate docs workflow command parity and generate remediation report
 	@python3 scripts/check_workflow_docs_parity.py --report artifacts/docs/workflow-docs-parity-report.md
 	@echo "$(GREEN)Workflow docs parity check complete$(NC)"
+
+check-status-delivery-claims: ## Validate status docs reference latest pass packet and avoid live-readiness claims
+	@python3 scripts/check_status_delivery_claims.py
+	@echo "$(GREEN)Status delivery-claim validation complete$(NC)"

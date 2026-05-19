@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
+import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
@@ -26,6 +28,7 @@ export type BackfillPhase = "idle" | "previewing" | "running";
 export interface BackfillTriggerState {
   validationError: string | null;
   feedbackText: string | null;
+  feedbackDetails: string[];
   feedbackTone: "warning" | "danger" | null;
   canPreview: boolean;
   canRun: boolean;
@@ -112,6 +115,10 @@ export interface BackfillTriggerServices {
   preview: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
   run: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
   getProgress: () => Promise<BackfillProgressResponse>;
+}
+
+export interface ProviderSetupLifecycleServices {
+  onConfigured?: () => Promise<void> | void;
 }
 
 export interface DataOperationsEmptyState {
@@ -357,6 +364,7 @@ export interface ProviderSetupDialogState {
     title: string;
     ariaLabel: string;
   };
+  successMetadata: ProviderSetupSuccessMetadataState;
   successActions: ProviderSetupNextActionState[];
 }
 
@@ -373,6 +381,13 @@ export interface ProviderSetupNextActionState {
   href: string;
   ariaLabel: string;
   variant: "default" | "outline";
+}
+
+export interface ProviderSetupSuccessMetadataState {
+  rows: DataOperationsDetailField[];
+  warnings: string[];
+  metadataAriaLabel: string;
+  warningsAriaLabel: string;
 }
 
 export interface ProviderSetupKindOptionState {
@@ -535,6 +550,7 @@ const defaultBackfillServices: BackfillTriggerServices = {
   run: (request) => workstationApi.triggerBackfill(request),
   getProgress: () => workstationApi.getBackfillProgress()
 };
+const defaultProviderSetupLifecycle: ProviderSetupLifecycleServices = {};
 
 const defaultBackfillForm: BackfillFormState = {
   provider: "",
@@ -568,7 +584,8 @@ export const DATA_PROVIDER_DETAIL_PANEL_ID = "data-provider-detail-panel";
 export function useDataOperationsViewModel(
   data: DataOperationsWorkspaceResponse | null,
   pathname: string,
-  services: BackfillTriggerServices = defaultBackfillServices
+  services: BackfillTriggerServices = defaultBackfillServices,
+  providerSetupLifecycle: ProviderSetupLifecycleServices = defaultProviderSetupLifecycle
 ) {
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [selectedBackfillId, setSelectedBackfillId] = useState<string | null>(null);
@@ -577,7 +594,7 @@ export function useDataOperationsViewModel(
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
   const [preview, setPreview] = useState<BackfillTriggerResult | null>(null);
   const [result, setResult] = useState<BackfillTriggerResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
   const backfillCommandRevisionRef = useRef(0);
@@ -587,7 +604,7 @@ export function useDataOperationsViewModel(
   const [providerForm, setProviderForm] = useState<ProviderSetupFormState>(defaultProviderSetupForm);
   const [providerPhase, setProviderPhase] = useState<ProviderSetupPhase>("idle");
   const [providerSetupResult, setProviderSetupResult] = useState<ProviderSetupResult | null>(null);
-  const [providerSetupError, setProviderSetupError] = useState<string | null>(null);
+  const [providerSetupError, setProviderSetupError] = useState<ApiErrorDisplay | null>(null);
   const providerSetupCommandRevisionRef = useRef(0);
   const configuredBackfillProviders = useMemo(
     () => data?.providers ?? [],
@@ -714,7 +731,7 @@ export function useDataOperationsViewModel(
   const previewBackfill = useCallback(async () => {
     const validationError = validateBackfillForm(form, configuredBackfillProviders);
     if (validationError) {
-      setError(validationError);
+      setError(buildDataOperationsErrorState(validationError));
       return;
     }
 
@@ -735,7 +752,7 @@ export function useDataOperationsViewModel(
         return;
       }
       setPreview(null);
-      setError(err instanceof Error ? err.message : "Backfill preview failed.");
+      setError(buildDataOperationsErrorState(err, "Backfill preview failed."));
     } finally {
       if (isCurrentBackfillCommand(commandRevision)) {
         setBusy(false);
@@ -747,12 +764,12 @@ export function useDataOperationsViewModel(
   const runBackfill = useCallback(async () => {
     const validationError = validateBackfillForm(form, configuredBackfillProviders);
     if (validationError) {
-      setError(validationError);
+      setError(buildDataOperationsErrorState(validationError));
       return;
     }
 
     if (!preview) {
-      setError("Preview the request before running the backfill.");
+      setError(buildDataOperationsErrorState("Preview the request before running the backfill."));
       return;
     }
 
@@ -772,7 +789,7 @@ export function useDataOperationsViewModel(
       if (!isCurrentBackfillCommand(commandRevision)) {
         return;
       }
-      setError(err instanceof Error ? err.message : "Backfill run failed.");
+      setError(buildDataOperationsErrorState(err, "Backfill run failed."));
     } finally {
       if (isCurrentBackfillCommand(commandRevision)) {
         setBusy(false);
@@ -835,7 +852,7 @@ export function useDataOperationsViewModel(
   const submitProviderSetup = useCallback(async () => {
     const validationError = validateProviderSetupForm(providerForm);
     if (validationError) {
-      setProviderSetupError(validationError);
+      setProviderSetupError(buildDataOperationsErrorState(validationError));
       return;
     }
 
@@ -860,23 +877,29 @@ export function useDataOperationsViewModel(
       }
       setProviderSetupResult(response);
       setProviderPhase(response.success ? "success" : "error");
+      if (response.success && providerSetupLifecycle.onConfigured) {
+        try {
+          void Promise.resolve(providerSetupLifecycle.onConfigured()).catch(() => undefined);
+        } catch {
+          // Provider setup remains successful even if a follow-up refresh cannot start.
+        }
+      }
     } catch (err) {
       if (!isCurrentProviderSetupCommand(commandRevision)) {
         return;
       }
-      const message = err instanceof Error ? err.message : "Provider setup failed.";
-      setProviderSetupError(message);
+      setProviderSetupError(buildDataOperationsErrorState(err, "Provider setup failed."));
       setProviderPhase("error");
     } finally {
       if (isCurrentProviderSetupCommand(commandRevision)) {
         setProviderForm(clearProviderSetupCredentials);
       }
     }
-  }, [isCurrentProviderSetupCommand, nextProviderSetupCommandRevision, providerForm]);
+  }, [isCurrentProviderSetupCommand, nextProviderSetupCommandRevision, providerForm, providerSetupLifecycle]);
 
   const providerSetupDialogState = useMemo(
-    () => buildProviderSetupDialogState(providerPhase, providerForm),
-    [providerPhase, providerForm]
+    () => buildProviderSetupDialogState(providerPhase, providerForm, providerSetupResult),
+    [providerPhase, providerForm, providerSetupResult]
   );
 
   return {
@@ -956,14 +979,14 @@ export function buildDataOperationsLoadingState(
       {
         id: "settings",
         label: "Check provider setup",
-        href: "/settings#alpaca-provider-setup",
+        href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
         ariaLabel: "Open Alpaca paper provider setup while Data workspace loads",
         variant: "default"
       },
       {
         id: "quotes",
         label: "Open live quotes",
-        href: "/data/quotes",
+        href: WORKSTATION_ROUTE_CATALOG.dataQuotes,
         ariaLabel: "Open live quotes while Data workspace loads",
         variant: "outline"
       }
@@ -1054,7 +1077,7 @@ export function buildRouteFocusCardState({
     ],
     action: {
       label: "Open Security Master",
-      href: "/accounting/security-master",
+      href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
       ariaLabel: "Open Security Master in Accounting"
     }
   };
@@ -1454,15 +1477,16 @@ export function buildBackfillTriggerState({
   form: BackfillFormState;
   busy: boolean;
   phase: BackfillPhase;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   preview: BackfillTriggerResult | null;
   result: BackfillTriggerResult | null;
   configuredProviders?: DataOperationsProviderRecord[];
 }): BackfillTriggerState {
   const validationError = validateBackfillForm(form, configuredProviders);
-  const feedbackText = error;
+  const feedbackText = error?.summary ?? null;
+  const feedbackDetails = error?.details ?? [];
   const feedbackTone = error
-    ? error === validationError
+    ? feedbackText === validationError
       ? "warning"
       : "danger"
     : null;
@@ -1470,6 +1494,7 @@ export function buildBackfillTriggerState({
   return {
     validationError,
     feedbackText,
+    feedbackDetails,
     feedbackTone,
     canPreview: !busy && validationError === null,
     canRun: !busy && preview !== null && validationError === null,
@@ -1508,7 +1533,7 @@ export function buildBackfillDialogState({
   phase: BackfillPhase;
   validationError: string | null;
   preview: BackfillTriggerResult | null;
-  error?: string | null;
+  error?: ApiErrorDisplay | null;
   result?: BackfillTriggerResult | null;
   configuredProviders?: DataOperationsProviderRecord[];
 }): BackfillDialogState {
@@ -1739,7 +1764,7 @@ export function buildBackfillFormStatusLabel({
   phase: BackfillPhase;
   validationError: string | null;
   preview: BackfillTriggerResult | null;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   result: BackfillTriggerResult | null;
 }): string {
   if (phase === "previewing") {
@@ -1755,7 +1780,7 @@ export function buildBackfillFormStatusLabel({
   }
 
   if (error) {
-    return error;
+    return error.summary;
   }
 
   if (result?.success) {
@@ -1786,7 +1811,7 @@ function resolveBackfillFormStatusTone({
 }: {
   phase: BackfillPhase;
   validationError: string | null;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   preview: BackfillTriggerResult | null;
   result: BackfillTriggerResult | null;
 }): BackfillDialogState["formStatusTone"] {
@@ -2045,7 +2070,7 @@ function buildBackfillStatusAnnouncement({
   result
 }: {
   phase: BackfillPhase;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   preview: BackfillTriggerResult | null;
   result: BackfillTriggerResult | null;
 }): string {
@@ -2058,7 +2083,7 @@ function buildBackfillStatusAnnouncement({
   }
 
   if (error) {
-    return `Backfill request failed: ${error}`;
+    return `Backfill request failed: ${error.summary}`;
   }
 
   if (result) {
@@ -2114,7 +2139,8 @@ export function clearProviderSetupCredentials(form: ProviderSetupFormState): Pro
 
 export function buildProviderSetupDialogState(
   phase: ProviderSetupPhase,
-  form: ProviderSetupFormState
+  form: ProviderSetupFormState,
+  result: ProviderSetupResult | null = null
 ): ProviderSetupDialogState {
   const submitting = phase === "submitting";
   const validationError = phase === "submitting" ? null : validateProviderSetupForm(form);
@@ -2182,8 +2208,18 @@ export function buildProviderSetupDialogState(
       title: "Next validation",
       ariaLabel: "Provider setup next validation"
     },
+    successMetadata: buildProviderSetupSuccessMetadata(result),
     successActions: buildProviderSetupSuccessActions(form)
   };
+}
+
+function buildDataOperationsErrorState(error: unknown, fallback?: string): ApiErrorDisplay {
+  if (typeof error === "string") {
+    const summary = error.trim() || (fallback ?? "Request failed.");
+    return { summary, details: [] };
+  }
+
+  return describeApiError(error, fallback ?? "Request failed.");
 }
 
 function buildProviderSetupStatusLabel(phase: ProviderSetupPhase, validationError: string | null): string {
@@ -2192,6 +2228,45 @@ function buildProviderSetupStatusLabel(phase: ProviderSetupPhase, validationErro
   if (phase === "error") return "Provider setup encountered an error.";
   if (validationError) return validationError;
   return "Provider setup is ready to submit.";
+}
+
+export function buildProviderSetupSuccessMetadata(result: ProviderSetupResult | null): ProviderSetupSuccessMetadataState {
+  const rows: DataOperationsDetailField[] = [];
+  const bindingIds = normalizeProviderSetupStringArray(result?.bindingIds);
+  const warnings = normalizeProviderSetupStringArray(result?.warnings);
+  const connectionId = normalizeProviderSetupString(result?.connectionId) ?? normalizeProviderSetupString(result?.providerId);
+
+  if (connectionId) {
+    rows.push({ id: "connection-id", label: "Connection", value: connectionId });
+  }
+
+  if (bindingIds.length > 0) {
+    rows.push({ id: "binding-ids", label: "Bindings", value: bindingIds.join(", ") });
+  } else if (result?.success) {
+    rows.push({ id: "binding-ids", label: "Bindings", value: "No routing binding returned" });
+  }
+
+  const credentialState = normalizeProviderSetupString(result?.credentialState);
+  if (credentialState) {
+    rows.push({ id: "credential-state", label: "Credential", value: formatProviderSetupCredentialState(credentialState) });
+  }
+
+  const credentialSource = normalizeProviderSetupString(result?.credentialSource);
+  if (credentialSource) {
+    rows.push({ id: "credential-source", label: "Source", value: formatProviderSetupCredentialSource(credentialSource) });
+  }
+
+  const environment = normalizeProviderSetupString(result?.environment);
+  if (environment) {
+    rows.push({ id: "environment", label: "Environment", value: environment.toUpperCase() });
+  }
+
+  return {
+    rows,
+    warnings,
+    metadataAriaLabel: "Provider setup routing and credential posture",
+    warningsAriaLabel: "Provider setup warnings"
+  };
 }
 
 export function buildProviderSetupSummary(
@@ -2222,6 +2297,47 @@ export function buildProviderSetupSummary(
       ? `${providerLabel} can be configured without pasting a secret.`
       : null
   };
+}
+
+function normalizeProviderSetupString(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function normalizeProviderSetupStringArray(values: readonly unknown[] | null | undefined): string[] {
+  return (values ?? [])
+    .map(normalizeProviderSetupString)
+    .filter((value): value is string => value !== null);
+}
+
+function formatProviderSetupCredentialState(value: string): string {
+  switch (value) {
+    case "NotRequired":
+      return "Not required";
+    case "NotVerified":
+      return "Not verified";
+    default:
+      return splitProviderSetupPascalCase(value);
+  }
+}
+
+function formatProviderSetupCredentialSource(value: string): string {
+  switch (value) {
+    case "ExternalVaultReference":
+      return "External vault reference";
+    case "LocalEncryptedStore":
+      return "Local encrypted store";
+    case "NotRequired":
+      return "Not required";
+    default:
+      return splitProviderSetupPascalCase(value);
+  }
+}
+
+function splitProviderSetupPascalCase(value: string): string {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/_/g, " ")
+    .trim() || value;
 }
 
 function isValidEndpointUrl(value: string): boolean {
@@ -2270,7 +2386,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "live-quotes",
       label: "Validate live quotes",
-      href: "/data/quotes?symbol=AAPL",
+      href: workstationRouteWithQuery("dataQuotes", { symbol: "AAPL" }),
       ariaLabel: `Validate live quotes after configuring ${providerLabel}`,
       variant: "default"
     });
@@ -2280,7 +2396,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "backfill",
       label: "Preview a backfill",
-      href: "/data/backfills",
+      href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
       ariaLabel: `Preview a historical backfill after configuring ${providerLabel}`,
       variant: actions.length === 0 ? "default" : "outline"
     });
@@ -2290,7 +2406,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "readiness",
       label: "Check Trading readiness",
-      href: "/trading/readiness",
+      href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
       ariaLabel: `Check Trading readiness after configuring ${providerLabel}`,
       variant: actions.length === 0 ? "default" : "outline"
     });
@@ -2300,7 +2416,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "security-master",
       label: "Review Security Master",
-      href: "/accounting/security-master",
+      href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
       ariaLabel: `Review Security Master coverage after configuring ${providerLabel}`,
       variant: actions.length === 0 ? "default" : "outline"
     });

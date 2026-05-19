@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as coveredCallApi from "@/lib/api/covered-call";
+import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type {
   CoveredCallBacktestRequest,
   CoveredCallChainPreview,
@@ -79,7 +81,7 @@ export interface CoveredCallFormFieldGroupViewModel {
 export interface CoveredCallChainPreviewState {
   status: "idle" | "loading" | "ready" | "error";
   data: CoveredCallChainPreview | null;
-  error: string | null;
+  error: ApiErrorDisplay | null;
   selectedIndex: number;
 }
 
@@ -118,6 +120,7 @@ export interface CoveredCallChainPreviewPanelViewModel {
   tableLabel: string;
   tableCaption: string;
   emptyText: string;
+  errorDetails: string[];
   detailPanelId: string;
   detailEmptyTitle: string;
   detailEmptyText: string;
@@ -908,21 +911,21 @@ export function buildCoveredCallResultsActionPanel(
             id: "live-quote",
             label: "Validate live quote",
             description: `Open ${symbol} quote, order book, trades, and chart evidence.`,
-            href: `/data/quotes?symbol=${quoteSymbol}`,
+            href: workstationRouteWithQuery("dataQuotes", { symbol: quoteSymbol }),
             ariaLabel: `Validate live quote evidence for ${symbol}`
           },
           {
             id: "strategy-designer",
             label: "Refine payoff",
             description: "Compare the covered-call shape against editable option-leg structures.",
-            href: "/strategy/designer",
+            href: WORKSTATION_ROUTE_CATALOG.strategyDesigner,
             ariaLabel: "Open Strategy Designer to refine covered-call payoff"
           },
           {
             id: "report-pack",
             label: "Package evidence",
             description: "Move selected run evidence toward report-pack preview or export review.",
-            href: "/reporting/report-packs",
+            href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
             ariaLabel: "Open report packs to package covered-call run evidence"
           }
         ]
@@ -1176,6 +1179,7 @@ export function buildChainPreviewPanelViewModel(
       ...base,
       description: "Loading chain preview...",
       emptyText: "Loading chain preview...",
+      errorDetails: [],
       detailEmptyTitle: "Chain preview loading",
       detailEmptyText: "Candidate detail will appear after the option-chain preview finishes.",
       detailEmptyAriaLabel: "Covered-call candidate detail loading",
@@ -1186,11 +1190,12 @@ export function buildChainPreviewPanelViewModel(
   }
 
   if (chainPreview.status === "error") {
-    const errorText = chainPreview.error ?? "Unknown error";
+    const errorText = chainPreview.error?.summary ?? "Unknown error";
     return {
       ...base,
       description: `Error: ${errorText}`,
       emptyText: `Chain preview failed: ${errorText}`,
+      errorDetails: chainPreview.error?.details ?? [],
       detailEmptyTitle: "Chain preview failed",
       detailEmptyText: errorText,
       detailEmptyAriaLabel: "Covered-call candidate detail unavailable",
@@ -1209,6 +1214,7 @@ export function buildChainPreviewPanelViewModel(
         ? "No option candidates matched the current filters."
         : "Set an underlying and a positive min strike to preview the chain.",
       emptyText: readyEmpty ? "No candidates match the current filters." : "No candidates yet.",
+      errorDetails: [],
       detailEmptyTitle: readyEmpty ? "No candidate selected" : "Candidate detail",
       detailEmptyText: readyEmpty
         ? "Adjust strike, delta, DTE, liquidity, or spread filters to find covered-call candidates."
@@ -1228,6 +1234,7 @@ export function buildChainPreviewPanelViewModel(
     ...base,
     description: `${formatCount(data.filtersPassed)} of ${formatCount(data.totalContractsScanned)} candidates pass filters.`,
     emptyText: "No candidates match the current filters.",
+    errorDetails: [],
     detailEmptyTitle: "No candidate selected",
     detailEmptyText: "Select a candidate row to inspect strike, liquidity, and filter evidence.",
     detailEmptyAriaLabel: "Covered-call candidate detail empty",
@@ -1432,12 +1439,12 @@ export interface CoveredCallScreenState {
   historyRows: CoveredCallHistoryRowViewModel[];
   historyLoading: boolean;
   historyLoaded: boolean;
-  historyError: string | null;
+  historyError: ApiErrorDisplay | null;
   historyTableLabel: string;
   historyCaption: string;
   historyEmptyText: string;
   historyStatusText: string;
-  errorBanner: string | null;
+  errorBanner: ApiErrorDisplay | null;
 }
 
 export interface CoveredCallScreenViewModel extends CoveredCallScreenState {
@@ -1506,8 +1513,8 @@ export function useCoveredCallScreenViewModel(
   const [history, setHistory] = useState<CoveredCallRunSummary[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
-  const [historyError, setHistoryError] = useState<string | null>(null);
-  const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const [historyError, setHistoryError] = useState<ApiErrorDisplay | null>(null);
+  const [errorBanner, setErrorBanner] = useState<ApiErrorDisplay | null>(null);
   const [pendingCancelRunId, setPendingCancelRunId] = useState<string | null>(null);
 
   const setField = useCallback(<K extends keyof CoveredCallFormState>(key: K, value: CoveredCallFormState[K]) => {
@@ -1575,7 +1582,7 @@ export function useCoveredCallScreenViewModel(
       setChainPreview({
         status: "error",
         data: null,
-        error: (error as Error).message,
+        error: describeApiError(error, "Covered-call chain preview failed."),
         selectedIndex: 0
       });
     }
@@ -1653,10 +1660,10 @@ export function useCoveredCallScreenViewModel(
             setRun((prev) => ({ ...prev, result, selectedPositionIndex: 0, selectedTradeIndex: 0, isStarting: false, isCancelling: false }));
             setStage("results");
           } catch (resultErr) {
-            setErrorBanner(`Result fetch failed: ${(resultErr as Error).message}`);
+            setErrorBanner(describeApiError(resultErr, "Covered-call result failed to load."));
           }
         } else if (status.phase === "Failed" && status.failureMessage) {
-          setErrorBanner(status.failureMessage);
+          setErrorBanner({ summary: status.failureMessage, details: [] });
         }
       } else {
         pollTimerRef.current = window.setTimeout(() => {
@@ -1665,7 +1672,7 @@ export function useCoveredCallScreenViewModel(
       }
     } catch (error) {
       if ((error as Error).name === "AbortError") return;
-      setErrorBanner(`Status poll failed: ${(error as Error).message}`);
+      setErrorBanner(describeApiError(error, "Covered-call status polling failed."));
       stopPolling();
     }
   }, [pollIntervalMs, services, stopPolling]);
@@ -1676,7 +1683,7 @@ export function useCoveredCallScreenViewModel(
     const errors = validateForm(form);
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) {
-      setErrorBanner("Fix the highlighted form fields before running.");
+      setErrorBanner({ summary: "Fix the highlighted form fields before running.", details: [] });
       return;
     }
 
@@ -1706,7 +1713,7 @@ export function useCoveredCallScreenViewModel(
         void pollOnce(handle.runId);
       }, pollIntervalMs);
     } catch (error) {
-      setErrorBanner((error as Error).message);
+      setErrorBanner(describeApiError(error, "Covered-call backtest request failed."));
       setRun({ runId: null, status: null, result: null, selectedPositionIndex: 0, selectedTradeIndex: 0, isStarting: false, isCancelling: false });
       setStage("configure");
     }
@@ -1725,7 +1732,7 @@ export function useCoveredCallScreenViewModel(
       const status = await services.cancelRun(runId);
       setRun((prev) => ({ ...prev, status, isCancelling: false }));
     } catch (error) {
-      setErrorBanner(`Cancel failed: ${(error as Error).message}`);
+      setErrorBanner(describeApiError(error, "Covered-call cancel request failed."));
       setRun((prev) => ({ ...prev, isCancelling: false }));
     }
   }, [pendingCancelRunId, run.isCancelling, run.runId, services]);
@@ -1737,7 +1744,7 @@ export function useCoveredCallScreenViewModel(
       const items = await services.listRuns(50);
       setHistory(items);
     } catch (error) {
-      setHistoryError((error as Error).message);
+      setHistoryError(describeApiError(error, "Previous covered-call runs failed to load."));
     } finally {
       setHistoryLoaded(true);
       setHistoryLoading(false);
@@ -1768,7 +1775,7 @@ export function useCoveredCallScreenViewModel(
       });
       setStage("results");
     } catch (error) {
-      setErrorBanner(`Could not load run ${runId}: ${(error as Error).message}`);
+      setErrorBanner(describeApiError(error, `Could not load covered-call run ${runId}.`));
     }
   }, [services, stopPolling]);
 
@@ -1847,7 +1854,7 @@ export function useCoveredCallScreenViewModel(
     historyStatusText: historyLoading
       ? "Loading previous covered-call runs."
       : historyError
-        ? `Previous covered-call runs failed to load: ${historyError}`
+        ? `Previous covered-call runs failed to load: ${historyError.summary}`
         : historyRows.length === 0
           ? "No previous covered-call runs are available."
           : `${historyRows.length} previous covered-call runs loaded.`,

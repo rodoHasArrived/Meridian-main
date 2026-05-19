@@ -26,6 +26,40 @@ vi.mock("@/lib/api", async () => {
 });
 
 const mockedUseWorkstationData = vi.mocked(useWorkstationData);
+type WorkstationDataSnapshot = ReturnType<typeof useWorkstationData>;
+
+function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
+  mockedUseWorkstationData.mockReturnValue({
+    session: null,
+    overview: null,
+    research: null,
+    trading: null,
+    portfolio: null,
+    dataOperations: null,
+    governance: null,
+    reporting: null,
+    brokerageConnection: null,
+    providerConnections: null,
+    providerRoutingConnections: null,
+    providerRoutingBindings: null,
+    providerRoutingTrustSnapshots: null,
+    providerRoutingRefreshing: false,
+    brokeragePortfolio: null,
+    workflowLibrary: null,
+    workflowPresets: null,
+    workflowError: null,
+    usingDevelopmentFixtures: false,
+    loading: false,
+    error: null,
+    workspaceErrors: {},
+    refresh: vi.fn(),
+    refreshTrading: vi.fn(),
+    refreshPortfolio: vi.fn(),
+    refreshProviderRouting: vi.fn(),
+    upsertWorkflowPreset: vi.fn(),
+    ...overrides
+  });
+}
 
 const portfolio: PortfolioWorkspaceResponse = {
   metrics: [],
@@ -83,7 +117,7 @@ describe("App", () => {
   beforeEach(() => {
     document.title = "Meridian";
     window.localStorage.clear();
-    mockedUseWorkstationData.mockReturnValue({
+    mockWorkstationData({
       session: {
         displayName: "Ops Desk",
         role: "Operator",
@@ -162,7 +196,7 @@ describe("App", () => {
   });
 
   it("renders route-aware workflow continuity without relying on memorized navigation", () => {
-    mockedUseWorkstationData.mockReturnValue({
+    mockWorkstationData({
       session: {
         displayName: "Ops Desk",
         role: "Operator",
@@ -221,7 +255,7 @@ describe("App", () => {
   });
 
   it("keeps linked portfolio-aware context reachable from the compact decision brief", () => {
-    mockedUseWorkstationData.mockReturnValue({
+    mockWorkstationData({
       session: {
         displayName: "Ops Desk",
         role: "Operator",
@@ -373,7 +407,7 @@ describe("App", () => {
 
   it("renders and clears the global operating scope across the workstation shell", async () => {
     const user = userEvent.setup();
-    mockedUseWorkstationData.mockReturnValue({
+    mockWorkstationData({
       session: {
         displayName: "Ops Desk",
         role: "Operator",
@@ -439,7 +473,7 @@ describe("App", () => {
 
   it("keeps ranked operator focus out of the dock list while preserving command palette actions", async () => {
     const user = userEvent.setup();
-    mockedUseWorkstationData.mockReturnValue({
+    mockWorkstationData({
       session: {
         displayName: "Ops Desk",
         role: "Operator",
@@ -571,7 +605,7 @@ describe("App", () => {
   it("keeps a stored operating symbol available in the shell and command palette", async () => {
     const user = userEvent.setup();
     window.localStorage.setItem("meridian.workstation.operatingContext.v1", JSON.stringify({ symbol: "msft" }));
-    mockedUseWorkstationData.mockReturnValue({
+    mockWorkstationData({
       session: {
         displayName: "Ops Desk",
         role: "Operator",
@@ -633,7 +667,7 @@ describe("App", () => {
   });
 
   it("redirects the legacy Data Security Master route into Accounting", async () => {
-    mockedUseWorkstationData.mockReturnValue({
+    mockWorkstationData({
       session: {
         displayName: "Ops Desk",
         role: "Operator",
@@ -692,7 +726,7 @@ describe("App", () => {
   });
 
   it("announces and focuses hash-targeted workflow links", async () => {
-    mockedUseWorkstationData.mockReturnValue({
+    mockWorkstationData({
       session: {
         displayName: "Ops Desk",
         role: "Operator",
@@ -771,7 +805,7 @@ describe("App", () => {
     const user = userEvent.setup();
     const refresh = vi.fn();
 
-    mockedUseWorkstationData.mockReturnValue({
+    mockWorkstationData({
       session: {
         displayName: "Ops Desk",
         role: "Operator",
@@ -817,7 +851,7 @@ describe("App", () => {
     const user = userEvent.setup();
     const refresh = vi.fn();
 
-    mockedUseWorkstationData.mockReturnValue({
+    mockWorkstationData({
       session: {
         displayName: "Ops Desk",
         role: "Operator",
@@ -867,7 +901,7 @@ describe("App", () => {
   });
 
   it("renders the Portfolio route from the fetched portfolio workspace payload", async () => {
-    mockedUseWorkstationData.mockReturnValue({
+    mockWorkstationData({
       session: {
         displayName: "Ops Desk",
         role: "Operator",

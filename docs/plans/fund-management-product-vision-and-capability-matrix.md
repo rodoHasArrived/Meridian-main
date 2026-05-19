@@ -22,6 +22,13 @@
 > browser-first seven-workspace model. WPF shell evidence remains valuable
 > retained desktop support, but it should not define new feature acceptance
 > unless a roadmap item explicitly targets desktop compatibility.
+>
+> Browser safety refresh (2026-05-19): Data provider setup and Settings refresh now expose
+> provider-routing connection, binding, credential-source, environment, warning, and trust-snapshot
+> posture; Strategy Designer separates browser-openable GET backend actions from reference-only POST
+> validation/preview/backtest mutations; and Reporting exports abort superseded profile runs. These
+> are support evidence for the browser-first operating model, not completion of report-pack,
+> Backtest Studio, casework, or live-readiness gates.
 
 ## 1. Product Vision
 
@@ -92,7 +99,7 @@ Status legend:
 | ------------ | -------- | --------------- | -------------- | ------- |
 | Market-data ingestion and storage | Cross-cutting platform | Implemented baseline | Phase 0 | Existing platform foundation |
 | Replay, export, diagnostics, observability | Cross-cutting platform | Implemented baseline | Phase 0 | Needed to support all later workflows |
-| Browser-first workspace shell (`Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Settings`) plus retained WPF compatibility shells | Cross-cutting platform | Implemented baseline | Phase 1 | The browser workstation now carries the visible seven-workspace model, shared workflow commands/presets, Overview portfolio-at-a-glance, dedicated Portfolio/Reporting/Data/Accounting task panels, live quotes/watchlists, Quant Lab with view-model-owned plot rendering, Evidence Workbench, Settings provider setup with next-validation handoffs, and menu-linked screenshot-route coverage. WPF shell/navigation evidence remains retained support with compatibility workspace groupings, context strips, command/search metadata, briefing heroes, feature-owned Data shell registration, deep-page chrome, and route-aware operator-inbox attention cues; workflow acceptance remains active Wave 2-4 work. |
+| Browser-first workspace shell (`Data`, `Strategy`, `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Settings`) plus retained WPF compatibility shells | Cross-cutting platform | Implemented baseline | Phase 1 | The browser workstation now carries the visible seven-workspace model, shared workflow commands/presets, Overview portfolio-at-a-glance, dedicated Portfolio/Reporting/Data/Accounting task panels, live quotes/watchlists, Quant Lab with view-model-owned plot rendering, Evidence Workbench, Settings provider setup with next-validation handoffs and provider-routing refresh posture, Strategy Designer route-action safety for GET versus POST backend actions, abort-backed Reporting export state, and menu-linked screenshot-route coverage. WPF shell/navigation evidence remains retained support with compatibility workspace groupings, context strips, command/search metadata, briefing heroes, feature-owned Data shell registration, deep-page chrome, and route-aware operator-inbox attention cues; workflow acceptance remains active Wave 2-4 work. |
 | Shared run model across backtest, paper, and live history | Front office | In progress | Phase 1 | First WPF run browser/detail/portfolio/ledger/cash-flow flow exists; StrategyRuns now shows visible-versus-recorded run scope and recovers filters that hide retained runs; BatchBacktest now distinguishes idle, validation-blocked, running, failed, cancelled, and populated sweep-result states; RunCashFlow now explains selected-run, missing-run, no-event, and loaded retained cash-flow evidence states |
 | Strategy research and backtesting | Front office | Implemented baseline | Phase 1 | Needs stronger shared-run UX and comparison flows |
 | Portfolio construction and implementation | Front office | In progress | Phase 2 | Needs stronger operator workflow, approvals, and cockpit UX |
