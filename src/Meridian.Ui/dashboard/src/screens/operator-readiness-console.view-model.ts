@@ -334,7 +334,7 @@ export function buildOperatorReadinessConsoleState({
     workItems: prioritizedWorkItems
   }), "cockpit-gates");
   const workItemRows = withRowPresentation(buildWorkItemRows(prioritizedWorkItems), "work-items");
-  const selectedWorkItemDetail = buildSelectedWorkItemDetail(workItemRows, selectedWorkItemId ?? null);
+  const selectedWorkItemDetail = buildSelectedWorkItemDetail(workItemRows, prioritizedWorkItems, selectedWorkItemId ?? null);
   const nextAction = buildNextAction({
     checkpointGates,
     workItemRows,
@@ -1079,17 +1079,32 @@ function prioritizeWorkItems(workItems: OperatorWorkItem[]): OperatorWorkItem[] 
 function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): ReadinessConsoleRowBase {
   const action = includeAction ? buildWorkItemAction(item) : null;
   const createdAtLabel = formatReadinessUtcMinute(item.createdAt, "Timestamp unavailable");
+  const signoffSummary = buildSignoffSummary(item);
 
   return {
     id: item.workItemId,
     label: item.label,
     value: item.tone,
     detail: item.detail,
-    meta: [item.workspace, item.targetPageTag, item.runId, item.auditReference].filter(Boolean).join(" - ") || item.kind,
+    meta: [item.workspace, item.targetPageTag, item.runId, item.auditReference, signoffSummary].filter(Boolean).join(" - ") || item.kind,
     createdAtLabel,
     level: levelFromTone(item.tone),
     action
   };
+}
+
+function buildSignoffSummary(item: OperatorWorkItem): string | null {
+  const role = item.requiredSignoffRole?.trim();
+  const status = item.signoffStatus?.trim();
+  if (!role && !status) {
+    return null;
+  }
+
+  if (role && status) {
+    return `${role} sign-off ${status}`;
+  }
+
+  return role ? `${role} sign-off` : `Sign-off ${status}`;
 }
 
 function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction | null {
@@ -1225,6 +1240,7 @@ function buildWorkItemsEmptyAction(nextAction: ReadinessConsoleNextAction): Read
 
 function buildSelectedWorkItemDetail(
   rows: ReadinessConsoleRow[],
+  workItems: OperatorWorkItem[],
   selectedWorkItemId: string | null
 ): ReadinessConsoleSelectedWorkItemDetail | null {
   if (rows.length === 0) {
@@ -1233,6 +1249,7 @@ function buildSelectedWorkItemDetail(
 
   const selectedRow = rows.find((row) => row.id === selectedWorkItemId) ?? rows[0];
   const actionRoute = selectedRow.action?.route ?? "No route action";
+  const selectedWorkItem = workItems.find((item) => item.workItemId === selectedRow.id) ?? null;
 
   return {
     id: selectedRow.id,
@@ -1247,6 +1264,9 @@ function buildSelectedWorkItemDetail(
       { label: "Work item ID", value: selectedRow.id },
       { label: "Attention", value: formatLevelText(selectedRow.level) },
       ...(selectedRow.createdAtLabel ? [{ label: "Created", value: selectedRow.createdAtLabel }] : []),
+      ...(selectedWorkItem?.requiredSignoffRole ? [{ label: "Required sign-off role", value: selectedWorkItem.requiredSignoffRole }] : []),
+      ...(selectedWorkItem?.signoffStatus ? [{ label: "Sign-off status", value: selectedWorkItem.signoffStatus }] : []),
+      ...(selectedWorkItem?.toleranceProfileId ? [{ label: "Tolerance profile", value: selectedWorkItem.toleranceProfileId }] : []),
       { label: "Route", value: actionRoute },
       { label: "Evidence", value: selectedRow.meta }
     ],

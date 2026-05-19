@@ -704,8 +704,11 @@ describe("operator readiness console view model", () => {
       action: expect.objectContaining({ route: "/accounting/reconciliation" })
     }));
     expect(state.selectedWorkItemDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Required sign-off role", value: "Fund Controller" },
+      { label: "Sign-off status", value: "Pending" },
+      { label: "Tolerance profile", value: "month-end-25bp" },
       { label: "Route", value: "/accounting/reconciliation" },
-      { label: "Evidence", value: "Accounting - FundReconciliation - period-p02" }
+      { label: "Evidence", value: "Accounting - FundReconciliation - period-p02 - Fund Controller sign-off Pending" }
     ]));
     expect(state.nextAction).toEqual(expect.objectContaining({
       title: "SoftClosed sign-off required",
