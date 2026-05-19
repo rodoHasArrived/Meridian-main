@@ -18,6 +18,7 @@ import {
   buildProviderRow,
   buildProviderSection,
   buildProviderSetupDialogState,
+  buildProviderSetupSuccessMetadata,
   buildProviderSetupSuccessActions,
   buildRouteFocusCardState,
   buildSelectedExportDetail,
@@ -681,6 +682,37 @@ describe("data-operations-screen view model", () => {
         variant: "default"
       }
     ]);
+  });
+
+  it("derives safe provider setup routing and credential metadata from setup results", () => {
+    const metadata = buildProviderSetupSuccessMetadata({
+      success: true,
+      providerId: "provider-alpaca-paper",
+      providerName: "Alpaca paper",
+      message: "Alpaca paper was configured.",
+      error: null,
+      connectionId: "provider-alpaca-paper",
+      bindingIds: ["provider-alpaca-paper-RealtimeMarketData", "provider-alpaca-paper-HistoricalBars"],
+      credentialState: "Configured",
+      credentialSource: "ExternalVaultReference",
+      credentialReference: "vault:alpaca/paper",
+      environment: "paper",
+      warnings: ["Credential verification still needs to run."]
+    });
+
+    expect(metadata.rows).toEqual([
+      { id: "connection-id", label: "Connection", value: "provider-alpaca-paper" },
+      {
+        id: "binding-ids",
+        label: "Bindings",
+        value: "provider-alpaca-paper-RealtimeMarketData, provider-alpaca-paper-HistoricalBars"
+      },
+      { id: "credential-state", label: "Credential", value: "Configured" },
+      { id: "credential-source", label: "Source", value: "External vault reference" },
+      { id: "environment", label: "Environment", value: "PAPER" }
+    ]);
+    expect(metadata.warnings).toEqual(["Credential verification still needs to run."]);
+    expect(metadata.rows.map((row) => row.value).join(" ")).not.toContain("vault:alpaca/paper");
   });
 
   it("ignores stale provider setup responses after a newer submission settles", async () => {

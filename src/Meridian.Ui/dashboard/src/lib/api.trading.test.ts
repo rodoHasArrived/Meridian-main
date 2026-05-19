@@ -19,6 +19,9 @@ import {
   getPortfolioAggregate,
   getPortfolioExposure,
   getPortfolioSymbolExposure,
+  getProviderRoutingBindings,
+  getProviderRoutingConnections,
+  getProviderRoutingTrustSnapshots,
   getReportingWorkspace,
   getReplayStatus,
   getReconciliationBreakAudit,
@@ -47,6 +50,7 @@ import {
   markWorkflowPresetUsed,
   pinWorkflowPreset,
   pauseReplay,
+  previewProviderRoute,
   runReconciliation,
   runAnalysisExport,
   resetDevelopmentFixtureUsage,
@@ -524,5 +528,31 @@ describe("trading endpoint wiring", () => {
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/aggregate", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/exposure", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/symbols/AAPL/exposure", expect.anything());
+  });
+
+  it("wires provider-routing endpoint group", async () => {
+    await getProviderRoutingConnections();
+    await getProviderRoutingBindings();
+    await getProviderRoutingTrustSnapshots();
+    await previewProviderRoute({
+      capability: "RealtimeMarketData",
+      symbol: "AAPL",
+      requireProductionReady: false
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith("/api/provider-routing/connections", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/provider-routing/bindings", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/provider-routing/trust-snapshots", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/provider-routing/preview",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          capability: "RealtimeMarketData",
+          symbol: "AAPL",
+          requireProductionReady: false
+        })
+      })
+    );
   });
 });

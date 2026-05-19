@@ -40,6 +40,11 @@ import type {
   ProviderCredentialMutationResult,
   ProviderCredentialUpsertRequest,
   ProviderCredentialVerificationResult,
+  ProviderRoutePreviewRequest,
+  ProviderRoutePreviewResponse,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
@@ -94,6 +99,7 @@ import {
   EXPORT_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
+  PROVIDER_ROUTING_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   QUALITY_API_ENDPOINTS,
   QUANT_API_ENDPOINTS,
@@ -926,6 +932,22 @@ export function previewBackfill(request: BackfillTriggerRequest) {
 
 export function setupProvider(request: import("@/types").ProviderSetupRequest) {
   return postJson<import("@/types").ProviderSetupResult>(PROVIDER_API_ENDPOINTS.configure, request);
+}
+
+export function getProviderRoutingConnections(options: ApiRequestOptions = {}) {
+  return getJson<ProviderRoutingConnection[]>(PROVIDER_ROUTING_API_ENDPOINTS.connections, options);
+}
+
+export function getProviderRoutingBindings(options: ApiRequestOptions = {}) {
+  return getJson<ProviderRoutingBinding[]>(PROVIDER_ROUTING_API_ENDPOINTS.bindings, options);
+}
+
+export function getProviderRoutingTrustSnapshots(options: ApiRequestOptions = {}) {
+  return getJson<ProviderRoutingTrustSnapshot[]>(PROVIDER_ROUTING_API_ENDPOINTS.trustSnapshots, options);
+}
+
+export function previewProviderRoute(request: ProviderRoutePreviewRequest, options: ApiRequestOptions = {}) {
+  return postJson<ProviderRoutePreviewResponse>(PROVIDER_ROUTING_API_ENDPOINTS.preview, request, options);
 }
 
 export function removeProvider(providerId: string) {

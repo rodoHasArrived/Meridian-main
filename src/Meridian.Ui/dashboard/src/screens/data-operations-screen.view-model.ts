@@ -357,6 +357,7 @@ export interface ProviderSetupDialogState {
     title: string;
     ariaLabel: string;
   };
+  successMetadata: ProviderSetupSuccessMetadataState;
   successActions: ProviderSetupNextActionState[];
 }
 
@@ -373,6 +374,13 @@ export interface ProviderSetupNextActionState {
   href: string;
   ariaLabel: string;
   variant: "default" | "outline";
+}
+
+export interface ProviderSetupSuccessMetadataState {
+  rows: DataOperationsDetailField[];
+  warnings: string[];
+  metadataAriaLabel: string;
+  warningsAriaLabel: string;
 }
 
 export interface ProviderSetupKindOptionState {
@@ -875,8 +883,8 @@ export function useDataOperationsViewModel(
   }, [isCurrentProviderSetupCommand, nextProviderSetupCommandRevision, providerForm]);
 
   const providerSetupDialogState = useMemo(
-    () => buildProviderSetupDialogState(providerPhase, providerForm),
-    [providerPhase, providerForm]
+    () => buildProviderSetupDialogState(providerPhase, providerForm, providerSetupResult),
+    [providerPhase, providerForm, providerSetupResult]
   );
 
   return {
@@ -2114,7 +2122,8 @@ export function clearProviderSetupCredentials(form: ProviderSetupFormState): Pro
 
 export function buildProviderSetupDialogState(
   phase: ProviderSetupPhase,
-  form: ProviderSetupFormState
+  form: ProviderSetupFormState,
+  result: ProviderSetupResult | null = null
 ): ProviderSetupDialogState {
   const submitting = phase === "submitting";
   const validationError = phase === "submitting" ? null : validateProviderSetupForm(form);
@@ -2182,6 +2191,7 @@ export function buildProviderSetupDialogState(
       title: "Next validation",
       ariaLabel: "Provider setup next validation"
     },
+    successMetadata: buildProviderSetupSuccessMetadata(result),
     successActions: buildProviderSetupSuccessActions(form)
   };
 }
@@ -2192,6 +2202,45 @@ function buildProviderSetupStatusLabel(phase: ProviderSetupPhase, validationErro
   if (phase === "error") return "Provider setup encountered an error.";
   if (validationError) return validationError;
   return "Provider setup is ready to submit.";
+}
+
+export function buildProviderSetupSuccessMetadata(result: ProviderSetupResult | null): ProviderSetupSuccessMetadataState {
+  const rows: DataOperationsDetailField[] = [];
+  const bindingIds = normalizeProviderSetupStringArray(result?.bindingIds);
+  const warnings = normalizeProviderSetupStringArray(result?.warnings);
+  const connectionId = normalizeProviderSetupString(result?.connectionId) ?? normalizeProviderSetupString(result?.providerId);
+
+  if (connectionId) {
+    rows.push({ id: "connection-id", label: "Connection", value: connectionId });
+  }
+
+  if (bindingIds.length > 0) {
+    rows.push({ id: "binding-ids", label: "Bindings", value: bindingIds.join(", ") });
+  } else if (result?.success) {
+    rows.push({ id: "binding-ids", label: "Bindings", value: "No routing binding returned" });
+  }
+
+  const credentialState = normalizeProviderSetupString(result?.credentialState);
+  if (credentialState) {
+    rows.push({ id: "credential-state", label: "Credential", value: formatProviderSetupCredentialState(credentialState) });
+  }
+
+  const credentialSource = normalizeProviderSetupString(result?.credentialSource);
+  if (credentialSource) {
+    rows.push({ id: "credential-source", label: "Source", value: formatProviderSetupCredentialSource(credentialSource) });
+  }
+
+  const environment = normalizeProviderSetupString(result?.environment);
+  if (environment) {
+    rows.push({ id: "environment", label: "Environment", value: environment.toUpperCase() });
+  }
+
+  return {
+    rows,
+    warnings,
+    metadataAriaLabel: "Provider setup routing and credential posture",
+    warningsAriaLabel: "Provider setup warnings"
+  };
 }
 
 export function buildProviderSetupSummary(
@@ -2222,6 +2271,47 @@ export function buildProviderSetupSummary(
       ? `${providerLabel} can be configured without pasting a secret.`
       : null
   };
+}
+
+function normalizeProviderSetupString(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function normalizeProviderSetupStringArray(values: readonly unknown[] | null | undefined): string[] {
+  return (values ?? [])
+    .map(normalizeProviderSetupString)
+    .filter((value): value is string => value !== null);
+}
+
+function formatProviderSetupCredentialState(value: string): string {
+  switch (value) {
+    case "NotRequired":
+      return "Not required";
+    case "NotVerified":
+      return "Not verified";
+    default:
+      return splitProviderSetupPascalCase(value);
+  }
+}
+
+function formatProviderSetupCredentialSource(value: string): string {
+  switch (value) {
+    case "ExternalVaultReference":
+      return "External vault reference";
+    case "LocalEncryptedStore":
+      return "Local encrypted store";
+    case "NotRequired":
+      return "Not required";
+    default:
+      return splitProviderSetupPascalCase(value);
+  }
+}
+
+function splitProviderSetupPascalCase(value: string): string {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/_/g, " ")
+    .trim() || value;
 }
 
 function isValidEndpointUrl(value: string): boolean {

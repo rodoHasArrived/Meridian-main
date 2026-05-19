@@ -10,6 +10,7 @@ import {
   QUANT_API_ENDPOINTS,
   RECONCILIATION_API_ENDPOINTS,
   REPLAY_API_ENDPOINTS,
+  PROVIDER_ROUTING_API_ENDPOINTS,
   SECURITY_MASTER_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
   STRATEGY_DESIGNER_API_ENDPOINTS,
@@ -302,6 +303,12 @@ describe("workstation API endpoint catalog", () => {
     expect(backfillCheckpointResumeEndpoint("job / 1")).toBe("/api/backfill/checkpoints/job%20%2F%201/resume");
     expect(PROVIDER_API_ENDPOINTS.configure).toBe("/api/providers/configure");
     expect(PROVIDER_API_ENDPOINTS.status).toBe("/api/providers/status");
+    expect(PROVIDER_ROUTING_API_ENDPOINTS).toMatchObject({
+      connections: "/api/provider-routing/connections",
+      bindings: "/api/provider-routing/bindings",
+      trustSnapshots: "/api/provider-routing/trust-snapshots",
+      preview: "/api/provider-routing/preview"
+    });
     expect(providerRemoveEndpoint("provider / 1")).toBe("/api/providers/provider%20%2F%201/remove");
     expect(providerTestEndpoint("provider / 1")).toBe("/api/providers/provider%20%2F%201/test");
     expect(SYMBOL_API_ENDPOINTS.symbols).toBe("/api/symbols");

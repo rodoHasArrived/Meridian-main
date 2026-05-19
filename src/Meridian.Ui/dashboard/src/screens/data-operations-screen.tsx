@@ -632,7 +632,7 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
             <div className="eyebrow-label">Data providers</div>
             <DialogTitle id={vm.providerSetupDialogState.titleId}>Configure provider</DialogTitle>
             <DialogDescription id={vm.providerSetupDialogState.descriptionId}>
-              Register a data or brokerage provider with Meridian. The backend will verify credentials on save.
+              Register a data or brokerage provider with Meridian and seed routing for selected capabilities.
             </DialogDescription>
           </DialogHeader>
           <DialogCloseButton
@@ -651,6 +651,31 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                 <div className="font-semibold text-success">{vm.providerSetupResult.providerName} configured</div>
                 <p className="mt-1 text-sm text-muted-foreground">{vm.providerSetupResult.message}</p>
               </div>
+            </div>
+            <div
+              className="mt-4 rounded-lg border border-border/70 bg-secondary/25 px-3 py-3"
+              role="region"
+              aria-label={vm.providerSetupDialogState.successMetadata.metadataAriaLabel}
+            >
+              <div className="eyebrow-label">Routing posture</div>
+              <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+                {vm.providerSetupDialogState.successMetadata.rows.map((row) => (
+                  <FieldTile key={row.id} field={row} />
+                ))}
+              </dl>
+              {vm.providerSetupDialogState.successMetadata.warnings.length > 0 ? (
+                <div
+                  className="mt-3 rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning"
+                  role="status"
+                  aria-label={vm.providerSetupDialogState.successMetadata.warningsAriaLabel}
+                >
+                  <ul className="grid gap-1">
+                    {vm.providerSetupDialogState.successMetadata.warnings.map((warning) => (
+                      <li key={warning}>{warning}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </div>
             <div
               className="mt-4 rounded-lg border border-border/70 bg-secondary/25 px-3 py-3"

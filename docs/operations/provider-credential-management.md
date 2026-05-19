@@ -22,7 +22,9 @@ When a permission context is attached, setup requires `ManageProviders`, and req
 credentials also require `ManageCredentials`. Local/test hosts without a permission context retain
 the previous optional setup behavior. Successful setup creates a redacted legacy data-source entry
 and seeds provider-routing connections and capability bindings so routing previews can inspect the
-new provider immediately.
+new provider immediately. The browser Data lane setup dialog displays the returned connection id,
+binding ids, credential state/source, environment, and warnings after save; it does not display
+submitted credential values or vault references.
 
 ## Local Encrypted Store
 

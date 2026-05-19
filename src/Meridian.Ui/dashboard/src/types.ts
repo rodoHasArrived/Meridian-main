@@ -1434,6 +1434,7 @@ export interface ProviderSetupRequest {
   apiSecret: string | null;
   endpoint: string | null;
   capabilities: string[];
+  environment?: string | null;
 }
 
 export interface ProviderSetupResult {
@@ -1442,6 +1443,109 @@ export interface ProviderSetupResult {
   providerName: string;
   message: string;
   error: string | null;
+  connectionId?: string | null;
+  bindingIds?: string[] | null;
+  credentialState?: ProviderCredentialState | null;
+  credentialSource?: ProviderCredentialSource | null;
+  credentialReference?: string | null;
+  environment?: string | null;
+  warnings?: string[] | null;
+}
+
+export interface ProviderRouteScope {
+  workspace?: string | null;
+  fundProfileId?: string | null;
+  entityId?: string | null;
+  sleeveId?: string | null;
+  vehicleId?: string | null;
+  accountId?: string | null;
+}
+
+export interface ProviderRoutingConnection {
+  connectionId: string;
+  providerFamilyId: string;
+  displayName: string;
+  connectionType: string;
+  connectionMode: string;
+  enabled: boolean;
+  credentialReference: string | null;
+  institutionId: string | null;
+  externalAccountId: string | null;
+  scope: ProviderRouteScope | null;
+  tags: string[];
+  description: string | null;
+  productionReady: boolean;
+}
+
+export interface ProviderRoutingBinding {
+  bindingId: string;
+  capability: string;
+  connectionId: string;
+  target: ProviderRouteScope | null;
+  priority: number;
+  enabled: boolean;
+  failoverConnectionIds: string[];
+  safetyModeOverride: string | null;
+  notes: string | null;
+}
+
+export interface ProviderRoutingTrustSnapshot {
+  connectionId: string;
+  providerFamilyId: string;
+  score: number;
+  isHealthy: boolean;
+  healthStatus: string;
+  isProductionReady: boolean;
+  isCertificationFresh: boolean;
+  signals: string[];
+  decision?: unknown;
+}
+
+export interface ProviderRoutePreviewRequest {
+  capability: string;
+  workspace?: string | null;
+  fundProfileId?: string | null;
+  entityId?: string | null;
+  sleeveId?: string | null;
+  vehicleId?: string | null;
+  accountId?: string | null;
+  securityId?: string | null;
+  symbol?: string | null;
+  market?: string | null;
+  assetClass?: string | null;
+  requireProductionReady?: boolean;
+}
+
+export interface ProviderRoutePreviewCandidate {
+  connectionId: string;
+  providerFamilyId: string;
+  isHealthy: boolean;
+  scopeRank: number;
+  priority: number;
+  reasonCodes: string[];
+  fallbackConnectionIds: string[];
+  policyGate: string | null;
+  compositeScore: number;
+  healthScore: number;
+  latencyScore: number;
+  dataQualityScore: number;
+  coverageScore: number;
+  policyGateScore: number;
+}
+
+export interface ProviderRoutePreviewResponse {
+  capability: string;
+  isRoutable: boolean;
+  selectedConnectionId: string | null;
+  selectedProviderFamilyId: string | null;
+  safetyMode: string;
+  requiresManualApproval: boolean;
+  reasonCodes: string[];
+  skippedCandidates: string[];
+  fallbackConnectionIds: string[];
+  policyGate: string | null;
+  candidates: ProviderRoutePreviewCandidate[];
+  rankedAlternatives?: ProviderRoutePreviewCandidate[] | null;
 }
 
 // --- Backfill mutation types ---
