@@ -108,6 +108,34 @@ describe("command palette view model", () => {
     });
   });
 
+  it("preserves institutional operating scope in ranked focus commands", () => {
+    const model = buildCommandPaletteViewModel(
+      "/portfolio?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15",
+      undefined,
+      {
+        operatorFocusItems: [
+          {
+            id: "work-item:brokerage-sync",
+            label: "Brokerage sync failed",
+            detail: "Account sync failed after the last provider heartbeat.",
+            route: "/settings#alpaca-provider-setup",
+            workspaceLabel: "Settings",
+            actionLabel: "Fix provider setup",
+            tone: "blocked",
+            ariaLabel: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
+          }
+        ]
+      }
+    );
+
+    expect(model.items[0]).toMatchObject({
+      kind: "focus",
+      route: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup",
+      routeLabel: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup",
+      description: "Settings: Account sync failed after the last provider heartbeat. Account: fund-1 / Provider: Alpaca."
+    });
+  });
+
   it("does not mark hash-targeted setup commands active from other Settings panels", () => {
     const model = buildCommandPaletteViewModel("/settings");
 

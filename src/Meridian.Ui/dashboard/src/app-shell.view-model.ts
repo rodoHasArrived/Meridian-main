@@ -461,9 +461,9 @@ export function buildWorkflowContinuityViewModel(
   const nextStep = steps[nextIndex] ?? activeStep;
   const stepStatuses = steps.map((step) => buildWorkflowContinuityStepStatus(step.id, statusContext));
   const attentionCount = stepStatuses.filter((status) => status.tone === "blocked" || status.tone === "review").length;
-  const operatorFocus = buildOperatorFocusViewModel(statusContext);
-  const evidenceTimeline = buildEvidenceTimelineViewModel(statusContext);
-  const linkedContext = buildLinkedContextViewModel(statusContext, subjectSymbol);
+  const operatorFocus = buildOperatorFocusViewModel(statusContext, operatingScope);
+  const evidenceTimeline = buildEvidenceTimelineViewModel(statusContext, operatingScope);
+  const linkedContext = buildLinkedContextViewModel(statusContext, subjectSymbol, operatingScope);
   const contextValue = subjectSymbol
     ? `${activeWorkspace.label} / ${subjectSymbol}`
     : operatingScope.hasScope
@@ -1347,7 +1347,10 @@ function formatDecisionEvidenceLabel(item: AppShellEvidenceTimelineItem | null):
   return item ? `Latest evidence: ${item.workspaceLabel} ${item.timestampLabel}` : null;
 }
 
-function buildOperatorFocusViewModel(context: WorkflowContinuityStatusContext): OperatorFocusViewModel {
+function buildOperatorFocusViewModel(
+  context: WorkflowContinuityStatusContext,
+  operatingScope: AppShellOperatingScopeState
+): OperatorFocusViewModel {
   if (context.loading) {
     return {
       summary: "Loading cross-workspace operator posture.",
@@ -1368,7 +1371,7 @@ function buildOperatorFocusViewModel(context: WorkflowContinuityStatusContext): 
     ...buildStrategyFocusItems(context)
   ]).sort(compareOperatorFocusCandidates);
 
-  const visibleItems = candidates.slice(0, OPERATOR_FOCUS_VISIBLE_LIMIT).map(toOperatorFocusItem);
+  const visibleItems = candidates.slice(0, OPERATOR_FOCUS_VISIBLE_LIMIT).map((candidate) => toOperatorFocusItem(candidate, operatingScope));
   const blockedCount = candidates.filter((item) => item.tone === "blocked").length;
   const reviewCount = candidates.filter((item) => item.tone === "review").length;
   const overflowCount = Math.max(0, candidates.length - visibleItems.length);
@@ -1380,7 +1383,7 @@ function buildOperatorFocusViewModel(context: WorkflowContinuityStatusContext): 
     emptyText: "Loaded workspaces have no ranked blockers.",
     overflowLabel: overflowCount > 0 ? `+${overflowCount} more focus ${overflowCount === 1 ? "item" : "items"}` : null,
     items: visibleItems,
-    commandItems: candidates.map(toOperatorFocusItem)
+    commandItems: candidates.map((candidate) => toOperatorFocusItem(candidate, operatingScope))
   };
 }
 
@@ -1867,14 +1870,21 @@ function operatorFocusTonePriority(tone: AppShellWorkflowContinuityStatusTone): 
   }
 }
 
-function toOperatorFocusItem(candidate: OperatorFocusCandidate): AppShellOperatorFocusItem {
-  const { sourcePriority: _sourcePriority, sourceIndex: _sourceIndex, ...item } = candidate;
-  return item;
+function toOperatorFocusItem(
+  candidate: OperatorFocusCandidate,
+  operatingScope: AppShellOperatingScopeState
+): AppShellOperatorFocusItem {
+  const { sourcePriority: _sourcePriority, sourceIndex: _sourceIndex, route, ...item } = candidate;
+  return {
+    ...item,
+    route: appendOperatingScopeToRoute(route, operatingScope)
+  };
 }
 
 function buildLinkedContextViewModel(
   context: WorkflowContinuityStatusContext,
-  subjectSymbol: string | null
+  subjectSymbol: string | null,
+  operatingScope: AppShellOperatingScopeState
 ): LinkedContextViewModel {
   if (context.loading) {
     return {
@@ -1909,7 +1919,7 @@ function buildLinkedContextViewModel(
     buildPortfolioLinkedContextItem(context, symbol),
     buildAccountingLinkedContextItem(context, symbol),
     buildReportingLinkedContextItem(context, symbol)
-  ]);
+  ]).map((item) => materializeScopedLinkedContextItem(item, operatingScope));
   const blockedCount = items.filter((item) => item.tone === "blocked").length;
   const reviewCount = items.filter((item) => item.tone === "review").length;
   const pendingCount = items.filter((item) => item.tone === "pending").length;
@@ -2266,7 +2276,10 @@ function isSameSymbol(value: string | null | undefined, symbol: string): boolean
   return normalizeSubjectSymbol(value ?? null) === symbol;
 }
 
-function buildEvidenceTimelineViewModel(context: WorkflowContinuityStatusContext): EvidenceTimelineViewModel {
+function buildEvidenceTimelineViewModel(
+  context: WorkflowContinuityStatusContext,
+  operatingScope: AppShellOperatingScopeState
+): EvidenceTimelineViewModel {
   if (context.loading) {
     return {
       summary: "Loading cross-workspace evidence timeline.",
@@ -2285,7 +2298,9 @@ function buildEvidenceTimelineViewModel(context: WorkflowContinuityStatusContext
     ...buildAccountingEvidenceTimelineItems(context)
   ]).sort(compareEvidenceTimelineCandidates);
 
-  const visibleItems = candidates.slice(0, EVIDENCE_TIMELINE_VISIBLE_LIMIT).map(toEvidenceTimelineItem);
+  const visibleItems = candidates
+    .slice(0, EVIDENCE_TIMELINE_VISIBLE_LIMIT)
+    .map((candidate) => toEvidenceTimelineItem(candidate, operatingScope));
   const overflowCount = Math.max(0, candidates.length - visibleItems.length);
   const workspaceCount = new Set(candidates.map((item) => item.workspaceLabel)).size;
   const latest = visibleItems[0] ?? null;
@@ -2663,14 +2678,31 @@ function compareEvidenceTimelineCandidates(left: EvidenceTimelineCandidate, righ
     || left.label.localeCompare(right.label);
 }
 
-function toEvidenceTimelineItem(candidate: EvidenceTimelineCandidate): AppShellEvidenceTimelineItem {
+function toEvidenceTimelineItem(
+  candidate: EvidenceTimelineCandidate,
+  operatingScope: AppShellOperatingScopeState
+): AppShellEvidenceTimelineItem {
   const {
     occurredAtMs: _occurredAtMs,
     sourcePriority: _sourcePriority,
     sourceIndex: _sourceIndex,
+    route,
     ...item
   } = candidate;
-  return item;
+  return {
+    ...item,
+    route: appendOperatingScopeToRoute(route, operatingScope)
+  };
+}
+
+function materializeScopedLinkedContextItem(
+  item: AppShellLinkedContextItem,
+  operatingScope: AppShellOperatingScopeState
+): AppShellLinkedContextItem {
+  return {
+    ...item,
+    route: appendOperatingScopeToRoute(item.route, operatingScope)
+  };
 }
 
 function formatCount(count: number, singular: string, plural = `${singular}s`): string {

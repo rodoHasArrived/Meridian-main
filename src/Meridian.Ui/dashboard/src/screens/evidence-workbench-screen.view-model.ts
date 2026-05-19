@@ -8,6 +8,11 @@ import {
 import { describeApiError } from "@/lib/api-errors";
 import type { ApiRequestOptions } from "@/lib/api";
 import {
+  appendOperatingScopeToRoute,
+  buildOperatingScopeFromSearch,
+  type AppShellOperatingScopeState
+} from "@/app-shell.view-model";
+import {
   evidenceWorkbenchPath,
   normalizeLocalWorkstationRoute,
   WORKSTATION_ROUTE_CATALOG,
@@ -276,6 +281,7 @@ export function useEvidenceWorkbenchViewModel(
   const [validateBusy, setValidateBusy] = useState(false);
   const [validationResult, setValidationResult] = useState<EvidenceCompleteness | null>(null);
   const [reloadRevision, setReloadRevision] = useState(0);
+  const operatingScope = useMemo(() => buildOperatingScopeFromSearch(search), [search]);
   const requestRevisionRef = useRef(0);
   const validateCommandRevisionRef = useRef(0);
   const exportCommandRevisionRef = useRef(0);
@@ -419,6 +425,7 @@ export function useEvidenceWorkbenchViewModel(
   return buildEvidenceWorkbenchViewModel({
     selectedSubjectKind,
     selectedSubjectId,
+    operatingScope,
     loading,
     error,
     subjects,
@@ -436,6 +443,7 @@ export function useEvidenceWorkbenchViewModel(
 export function buildEvidenceWorkbenchViewModel(input: {
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
+  operatingScope?: AppShellOperatingScopeState | null;
   loading: boolean;
   error: EvidenceWorkbenchErrorState | null;
   subjects: EvidenceSubject[];
@@ -448,10 +456,11 @@ export function buildEvidenceWorkbenchViewModel(input: {
   exportManifest: () => Promise<void>;
   validatePacket: () => Promise<void>;
 }): EvidenceWorkbenchViewModel {
+  const operatingScope = input.operatingScope ?? buildOperatingScopeFromSearch("");
   const completeness = input.validationResult ?? input.packet?.completeness ?? null;
   const hasSelection = Boolean(input.selectedSubjectKind && input.selectedSubjectId);
   const subject = input.packet?.subject ?? null;
-  const sourceWorkflowHref = resolveSourceWorkflowHref(subject);
+  const sourceWorkflowHref = resolveSourceWorkflowHref(subject, operatingScope);
   const subjectLabel = subject?.label ?? "selected evidence subject";
   const reloadCommand = buildReloadCommand(
     input.loading,
@@ -474,6 +483,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     subject,
     selectedSubjectKind: input.selectedSubjectKind,
     selectedSubjectId: input.selectedSubjectId,
+    operatingScope,
     exportBusy: input.exportBusy,
     validateBusy: input.validateBusy
   });
@@ -531,7 +541,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     validateBusy: input.validateBusy,
     validationResult: input.validationResult,
     openSubjectHref: (subject) =>
-      evidenceWorkbenchPath(subject.subjectKind, subject.subjectId),
+      appendOperatingScopeToRoute(evidenceWorkbenchPath(subject.subjectKind, subject.subjectId), operatingScope),
     reloadEvidence: input.reloadEvidence ?? noopReloadEvidence,
     exportManifest: input.exportManifest,
     validatePacket: input.validatePacket
@@ -750,6 +760,7 @@ export function buildEvidencePacketActions(input: {
   subject: EvidenceSubject | null;
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
+  operatingScope: AppShellOperatingScopeState;
   exportBusy: boolean;
   validateBusy: boolean;
 }): EvidencePacketActionViewModel[] {
@@ -758,8 +769,8 @@ export function buildEvidencePacketActions(input: {
     const subjectKind = input.subject?.subjectKind ?? input.selectedSubjectKind;
     const subjectId = input.subject?.subjectId ?? input.selectedSubjectId;
     const href = action.targetPageTag === "EvidenceWorkbench" && subjectKind && subjectId
-      ? evidenceWorkbenchPath(subjectKind, subjectId)
-      : workflowTargetPath(action.targetPageTag, input.subject?.workspace);
+      ? appendOperatingScopeToRoute(evidenceWorkbenchPath(subjectKind, subjectId), input.operatingScope)
+      : appendOperatingScopeToRoute(workflowTargetPath(action.targetPageTag, input.subject?.workspace), input.operatingScope);
     const subjectLabel = input.subject?.label ?? "selected evidence subject";
     const command = buildActionCommand(control, subjectLabel, input.exportBusy, input.validateBusy, Boolean(subjectKind && subjectId));
 
@@ -1015,13 +1026,16 @@ function slugifyId(value: string) {
     .replace(/^-+|-+$/g, "") || "group";
 }
 
-function resolveSourceWorkflowHref(subject: EvidenceSubject | null) {
+function resolveSourceWorkflowHref(
+  subject: EvidenceSubject | null,
+  operatingScope: AppShellOperatingScopeState
+) {
   const directRoute = normalizeLocalWorkstationRoute(subject?.route);
   if (directRoute) {
-    return directRoute;
+    return appendOperatingScopeToRoute(directRoute, operatingScope);
   }
 
-  return subject ? workflowTargetPath(subject.pageTag, subject.workspace) : null;
+  return subject ? appendOperatingScopeToRoute(workflowTargetPath(subject.pageTag, subject.workspace), operatingScope) : null;
 }
 
 function formatDate(value: string) {

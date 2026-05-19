@@ -243,6 +243,114 @@ describe("app shell view model", () => {
     ]);
   });
 
+  it("keeps institutional operating scope in cross-workspace focus, evidence, and linked-context handoffs", () => {
+    const state = buildAppShellViewState({
+      pathname: "/portfolio",
+      search: "?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: {
+        ...sessionPayload,
+        trading: {
+          readiness: {
+            acceptanceGates: [
+              {
+                gateId: "replay-gate",
+                label: "Replay audit",
+                status: "Blocked",
+                detail: "Replay evidence is stale for the active paper session."
+              }
+            ],
+            workItems: [
+              {
+                workItemId: "brokerage-sync",
+                kind: "BrokerageSync",
+                label: "Brokerage sync failed",
+                detail: "Account sync failed after the last provider heartbeat.",
+                tone: "Critical",
+                createdAt: "2026-05-14T20:00:00Z",
+                runId: "run-9",
+                fundAccountId: "fund-1",
+                auditReference: "audit-1",
+                workspace: "portfolio",
+                targetRoute: "/portfolio/brokerage-sync",
+                targetPageTag: "BrokerageSync"
+              }
+            ],
+            controls: {
+              circuitBreakerOpen: false
+            },
+            replay: null,
+            brokerageSync: null
+          }
+        },
+        dataOperations: {
+          providers: [
+            {
+              provider: "Alpaca",
+              status: "Healthy",
+              capability: "quotes",
+              latency: "95ms",
+              note: "Streaming quote path is healthy."
+            }
+          ],
+          backfills: [],
+          exports: []
+        },
+        portfolio: {
+          positions: [
+            {
+              symbol: "MSFT",
+              side: "Long",
+              quantity: "10",
+              averagePrice: "410.00",
+              markPrice: "415.00",
+              dayPnl: "+$50",
+              unrealizedPnl: "+$50",
+              exposure: "$4,150"
+            }
+          ],
+          risk: {
+            state: "Healthy",
+            summary: "Exposure is inside guardrails."
+          }
+        },
+        governance: {
+          breakQueue: [],
+          reconciliationQueue: []
+        },
+        reporting: {
+          reporting: {
+            reportPackTargets: ["monthly-board-pack"]
+          }
+        }
+      } as unknown as AppShellWorkspacePayload
+    });
+
+    expect(state.workflowContinuity.operatorFocusItems.find((item) => item.label === "Brokerage sync failed")).toMatchObject({
+      route: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup"
+    });
+    expect(state.workflowContinuity.operatorFocusCommandItems.find((item) => item.label === "Replay audit")).toMatchObject({
+      route: "/trading/readiness?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"
+    });
+    expect(state.workflowContinuity.decisionBrief).toMatchObject({
+      actionHref: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup"
+    });
+    expect(state.workflowContinuity.linkedContextItems.find((item) => item.label === "Trading cockpit")).toMatchObject({
+      route: "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"
+    });
+    expect(state.workflowContinuity.linkedContextItems.find((item) => item.label === "Quote evidence")).toMatchObject({
+      route: "/data/quotes?symbol=MSFT&provider=Alpaca&from=2026-05-01&to=2026-05-15"
+    });
+    expect(state.workflowContinuity.linkedContextItems.find((item) => item.label === "Evidence packet")).toMatchObject({
+      route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&from=2026-05-01&to=2026-05-15"
+    });
+    expect(state.workflowContinuity.evidenceTimelineItems[0]).toMatchObject({
+      route: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup"
+    });
+  });
+
   it("builds portfolio-aware linked context for the active operating symbol", () => {
     const state = buildAppShellViewState({
       pathname: "/portfolio",

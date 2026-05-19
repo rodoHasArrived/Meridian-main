@@ -237,7 +237,7 @@ export function buildCommandPaletteViewModel(
     ...(operatingContextScope ?? {}),
     symbol: operatingContextScope?.symbol ?? operatingContextSymbol
   });
-  const focusItems = buildFocusItems(workflowData.operatorFocusItems ?? [], pathname);
+  const focusItems = buildFocusItems(workflowData.operatorFocusItems ?? [], pathname, operatingScope);
   const workspaceItems = buildWorkspaceItems(workspaces, activeKey, operatingScope);
   const routeItems = buildRouteItems(pathname, operatingScope);
   const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname, operatingScope);
@@ -435,9 +435,18 @@ function buildWorkspaceItems(
   });
 }
 
-function buildFocusItems(actions: CommandPaletteFocusAction[], pathname: string): CommandPaletteItem[] {
+function buildFocusItems(
+  actions: CommandPaletteFocusAction[],
+  pathname: string,
+  operatingScope: AppShellOperatingScopeState
+): CommandPaletteItem[] {
   return actions.map<CommandPaletteItem>((action) => {
-    const active = isActiveRoute(pathname, action.route);
+    const route = materializeCommandRoute(action.route, operatingScope);
+    const active = isActiveRoute(pathname, route);
+    const carriedScopeSummary = summarizeOperatingScopeForRoute(action.route, operatingScope);
+    const description = carriedScopeSummary && route !== action.route
+      ? `${action.workspaceLabel}: ${action.detail} ${carriedScopeSummary}.`
+      : `${action.workspaceLabel}: ${action.detail}`;
     const tone = commandStatusToneFromFocus(action.tone);
     const statusLabel = active
       ? `Current ${formatFocusTone(action.tone).toLowerCase()}`
@@ -447,9 +456,9 @@ function buildFocusItems(actions: CommandPaletteFocusAction[], pathname: string)
       id: `focus:${action.id}`,
       kind: "focus",
       label: action.label,
-      description: `${action.workspaceLabel}: ${action.detail}`,
-      route: action.route,
-      routeLabel: action.route,
+      description,
+      route,
+      routeLabel: route,
       statusLabel,
       statusTone: tone,
       statusVisible: true,
