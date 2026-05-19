@@ -114,6 +114,10 @@ export interface BackfillTriggerServices {
   getProgress: () => Promise<BackfillProgressResponse>;
 }
 
+export interface ProviderSetupLifecycleServices {
+  onConfigured?: () => Promise<void> | void;
+}
+
 export interface DataOperationsEmptyState {
   title: string;
   description: string;
@@ -543,6 +547,7 @@ const defaultBackfillServices: BackfillTriggerServices = {
   run: (request) => workstationApi.triggerBackfill(request),
   getProgress: () => workstationApi.getBackfillProgress()
 };
+const defaultProviderSetupLifecycle: ProviderSetupLifecycleServices = {};
 
 const defaultBackfillForm: BackfillFormState = {
   provider: "",
@@ -576,7 +581,8 @@ export const DATA_PROVIDER_DETAIL_PANEL_ID = "data-provider-detail-panel";
 export function useDataOperationsViewModel(
   data: DataOperationsWorkspaceResponse | null,
   pathname: string,
-  services: BackfillTriggerServices = defaultBackfillServices
+  services: BackfillTriggerServices = defaultBackfillServices,
+  providerSetupLifecycle: ProviderSetupLifecycleServices = defaultProviderSetupLifecycle
 ) {
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [selectedBackfillId, setSelectedBackfillId] = useState<string | null>(null);
@@ -868,6 +874,13 @@ export function useDataOperationsViewModel(
       }
       setProviderSetupResult(response);
       setProviderPhase(response.success ? "success" : "error");
+      if (response.success && providerSetupLifecycle.onConfigured) {
+        try {
+          void Promise.resolve(providerSetupLifecycle.onConfigured()).catch(() => undefined);
+        } catch {
+          // Provider setup remains successful even if a follow-up refresh cannot start.
+        }
+      }
     } catch (err) {
       if (!isCurrentProviderSetupCommand(commandRevision)) {
         return;
@@ -880,7 +893,7 @@ export function useDataOperationsViewModel(
         setProviderForm(clearProviderSetupCredentials);
       }
     }
-  }, [isCurrentProviderSetupCommand, nextProviderSetupCommandRevision, providerForm]);
+  }, [isCurrentProviderSetupCommand, nextProviderSetupCommandRevision, providerForm, providerSetupLifecycle]);
 
   const providerSetupDialogState = useMemo(
     () => buildProviderSetupDialogState(providerPhase, providerForm, providerSetupResult),

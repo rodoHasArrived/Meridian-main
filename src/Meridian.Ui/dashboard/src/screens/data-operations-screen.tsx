@@ -10,7 +10,7 @@ import {
   XCircle
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
@@ -44,6 +44,7 @@ import type {
 
 interface DataOperationsScreenProps {
   data: DataOperationsWorkspaceResponse | null;
+  onProviderSetupConfigured?: () => Promise<void> | void;
 }
 
 const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] = [
@@ -171,10 +172,14 @@ const exportColumns: DenseDataTableColumn<DataOperationsExportRow>[] = [
   }
 ];
 
-export function DataOperationsScreen({ data }: DataOperationsScreenProps) {
+export function DataOperationsScreen({ data, onProviderSetupConfigured }: DataOperationsScreenProps) {
   const { pathname } = useLocation();
   const workspace = workspaceForPath(pathname);
-  const vm = useDataOperationsViewModel(data, pathname);
+  const providerSetupLifecycle = useMemo(
+    () => ({ onConfigured: onProviderSetupConfigured }),
+    [onProviderSetupConfigured]
+  );
+  const vm = useDataOperationsViewModel(data, pathname, undefined, providerSetupLifecycle);
 
   if (!data) {
     return <DataOperationsLoadingPanel state={vm.loadingState} />;

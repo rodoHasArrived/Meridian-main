@@ -25,6 +25,9 @@ import type {
   GovernanceWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -766,6 +769,9 @@ export interface SettingsProviderConnectionRow {
   maskedKeyPreviewLabel: string;
   lastHeartbeatLabel: string;
   fallbackLabel: string;
+  routingBindingsLabel: string;
+  trustScoreLabel: string;
+  productionStateLabel: string;
   affectedWorkflowsLabel: string;
   affectedWorkflows: string[];
   recommendedAction: string;
@@ -787,6 +793,14 @@ export interface SettingsProviderConnectionCenter {
   description: string;
   statusLabel: string;
   statusVariant: "default" | "success" | "warning" | "danger" | "outline";
+  routingSummaryLabel: string;
+  refreshAction: {
+    label: string;
+    ariaLabel: string;
+    busy: boolean;
+    disabled: boolean;
+    disabledReason: string | null;
+  };
   groups: SettingsProviderConnectionGroup[];
 }
 
@@ -842,6 +856,10 @@ export interface SettingsScreenPayload {
   reporting?: GovernanceWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
   providerConnections?: ProviderConnectionRow[] | null;
+  providerRoutingConnections?: ProviderRoutingConnection[] | null;
+  providerRoutingBindings?: ProviderRoutingBinding[] | null;
+  providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
+  providerRoutingRefreshing?: boolean;
   loading?: boolean;
   error?: string | null;
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
@@ -1633,18 +1651,52 @@ function labelizeWorkspaceKey(workspace: WorkspaceKey): string {
   return workspace.charAt(0).toUpperCase() + workspace.slice(1);
 }
 
+interface ProviderRoutingRowContext {
+  connection: ProviderRoutingConnection | null;
+  bindings: ProviderRoutingBinding[];
+  trustSnapshot: ProviderRoutingTrustSnapshot | null;
+}
+
 function buildProviderConnectionCenter(
-  connections: ProviderConnectionRow[] | null | undefined
+  connections: ProviderConnectionRow[] | null | undefined,
+  routingConnections: ProviderRoutingConnection[] | null | undefined,
+  routingBindings: ProviderRoutingBinding[] | null | undefined,
+  trustSnapshots: ProviderRoutingTrustSnapshot[] | null | undefined,
+  refreshing: boolean
 ): SettingsProviderConnectionCenter {
-  const rows = (connections ?? []).map(buildProviderConnectionRow);
+  const routingConnectionRows = routingConnections ?? [];
+  const bindingRows = routingBindings ?? [];
+  const trustRows = trustSnapshots ?? [];
+  const matchedRoutingConnectionIds = new Set<string>();
+
+  const rows = [
+    ...(connections ?? []).map((row) => {
+      const connection = findRoutingConnectionForProviderRow(row, routingConnectionRows);
+      if (connection) {
+        matchedRoutingConnectionIds.add(normalizeProviderRoutingId(connection.connectionId));
+      }
+      return buildProviderConnectionRow(row, buildProviderRoutingRowContext(connection, bindingRows, trustRows));
+    }),
+    ...routingConnectionRows
+      .filter((connection) => !matchedRoutingConnectionIds.has(normalizeProviderRoutingId(connection.connectionId)))
+      .map((connection) => buildProviderRoutingConnectionRow(
+        connection,
+        buildProviderRoutingRowContext(connection, bindingRows, trustRows)
+      ))
+  ];
   const brokerageRows = rows.filter((row) => row.capabilityLabel.includes("Brokerage"));
   const dataRows = rows.filter((row) => !row.capabilityLabel.includes("Brokerage"));
   const blockedCount = rows.filter((row) => row.healthTone === "danger").length;
   const warningCount = rows.filter((row) => row.healthTone === "warning").length;
   const verifiedCount = rows.filter((row) => row.credentialLabel === "Verified" || row.credentialLabel === "Not required").length;
+  const routingSummaryLabel = routingConnectionRows.length === 0
+    ? "Routing catalog unavailable"
+    : `${formatCount(routingConnectionRows.length, "routing connection")} · ${formatCount(bindingRows.length, "binding")} · ${formatCount(trustRows.length, "trust snapshot")}`;
 
   const statusLabel = rows.length === 0
     ? "Unavailable"
+    : refreshing
+      ? "Refreshing"
     : blockedCount > 0
       ? `${blockedCount} blocked`
       : warningCount > 0
@@ -1655,9 +1707,17 @@ function buildProviderConnectionCenter(
     title: "Provider Connection Center",
     description: rows.length === 0
       ? "Provider connection evidence has not loaded for this Settings session."
-      : `${verifiedCount}/${rows.length} providers are verified or credential-free; repair actions route to the affected provider row.`,
+      : `${verifiedCount}/${rows.length} providers are verified or credential-free; ${routingSummaryLabel}.`,
     statusLabel,
     statusVariant: rows.length === 0 ? "warning" : blockedCount > 0 ? "danger" : warningCount > 0 ? "warning" : "success",
+    routingSummaryLabel,
+    refreshAction: {
+      label: refreshing ? "Refreshing..." : "Refresh routing",
+      ariaLabel: refreshing ? "Provider routing refresh in progress" : "Refresh Provider Connection Center routing data",
+      busy: refreshing,
+      disabled: refreshing,
+      disabledReason: refreshing ? "Provider routing refresh is already in progress." : null
+    },
     groups: [
       {
         id: "brokerage",
@@ -1677,10 +1737,18 @@ function buildProviderConnectionCenter(
   };
 }
 
-function buildProviderConnectionRow(row: ProviderConnectionRow): SettingsProviderConnectionRow {
+function buildProviderConnectionRow(
+  row: ProviderConnectionRow,
+  routingContext: ProviderRoutingRowContext
+): SettingsProviderConnectionRow {
   const healthTone = providerHealthTone(row.health);
   const credentialTone = providerCredentialTone(row.credentialState);
-  const workflows = row.affectedWorkflows.length > 0 ? row.affectedWorkflows : ["Workflow impact not declared"];
+  const routingCapabilityLabels = buildProviderRoutingCapabilityLabels(routingContext.bindings);
+  const workflows = row.affectedWorkflows.length > 0
+    ? row.affectedWorkflows
+    : routingCapabilityLabels.length > 0
+      ? routingCapabilityLabels
+      : ["Workflow impact not declared"];
   return {
     providerId: row.providerId,
     rowAnchorId: row.providerId === "alpaca" ? "alpaca-provider-setup" : `provider-${row.providerId}-connection`,
@@ -1695,7 +1763,10 @@ function buildProviderConnectionRow(row: ProviderConnectionRow): SettingsProvide
     environmentLabel: row.environment ? row.environment.toUpperCase() : "Not set",
     maskedKeyPreviewLabel: row.maskedKeyPreview ?? "Masked after save",
     lastHeartbeatLabel: formatSettingsUtcMinute(row.lastSuccessfulAt ?? row.lastVerifiedAt),
-    fallbackLabel: row.fallbackActive ? "Fallback active" : "Primary route",
+    fallbackLabel: row.fallbackActive ? "Fallback active" : providerRoutingFallbackLabel(routingContext.bindings),
+    routingBindingsLabel: providerRoutingBindingsLabel(routingContext.bindings),
+    trustScoreLabel: providerRoutingTrustScoreLabel(routingContext.trustSnapshot),
+    productionStateLabel: providerRoutingProductionStateLabel(routingContext.connection),
     affectedWorkflowsLabel: workflows.join(", "),
     affectedWorkflows: workflows,
     recommendedAction: row.recommendedAction,
@@ -1703,6 +1774,253 @@ function buildProviderConnectionRow(row: ProviderConnectionRow): SettingsProvide
     actionLabel: row.providerId === "alpaca" ? "Manage Alpaca" : "Open provider row",
     actionAriaLabel: `Open ${row.displayName} provider connection row`
   };
+}
+
+function buildProviderRoutingConnectionRow(
+  connection: ProviderRoutingConnection,
+  routingContext: ProviderRoutingRowContext
+): SettingsProviderConnectionRow {
+  const routingCapabilityLabels = buildProviderRoutingCapabilityLabels(routingContext.bindings);
+  const credentialConfigured = Boolean(connection.credentialReference?.trim());
+  const healthTone = providerRoutingHealthTone(connection, routingContext.trustSnapshot);
+  const credentialTone: SettingsProviderConnectionRow["credentialTone"] = credentialConfigured
+    ? connection.productionReady ? "success" : "warning"
+    : "success";
+  const workflows = routingCapabilityLabels.length > 0 ? routingCapabilityLabels : ["Routing capability not bound"];
+
+  return {
+    providerId: connection.connectionId,
+    rowAnchorId: `provider-${connection.connectionId}-connection`,
+    displayName: connection.displayName,
+    capabilityLabel: providerRoutingCapabilityLabel(routingContext.bindings, connection),
+    credentialLabel: credentialConfigured ? "Configured" : "Not required",
+    credentialTone,
+    verificationLabel: connection.productionReady ? "Certified" : "Certification pending",
+    healthLabel: providerRoutingHealthLabel(connection, routingContext.trustSnapshot),
+    healthTone,
+    sourceLabel: credentialConfigured ? "Vault reference" : "Not required",
+    environmentLabel: credentialReferenceEnvironmentLabel(connection.credentialReference),
+    maskedKeyPreviewLabel: "Hidden by routing API",
+    lastHeartbeatLabel: "Live routing snapshot",
+    fallbackLabel: providerRoutingFallbackLabel(routingContext.bindings),
+    routingBindingsLabel: providerRoutingBindingsLabel(routingContext.bindings),
+    trustScoreLabel: providerRoutingTrustScoreLabel(routingContext.trustSnapshot),
+    productionStateLabel: providerRoutingProductionStateLabel(connection),
+    affectedWorkflowsLabel: workflows.join(", "),
+    affectedWorkflows: workflows,
+    recommendedAction: providerRoutingRecommendedAction(connection, routingContext),
+    actionHref: `/settings#provider-${connection.connectionId}-connection`,
+    actionLabel: "Open provider row",
+    actionAriaLabel: `Open ${connection.displayName} provider connection row`
+  };
+}
+
+function buildProviderRoutingRowContext(
+  connection: ProviderRoutingConnection | null,
+  bindings: ProviderRoutingBinding[],
+  trustSnapshots: ProviderRoutingTrustSnapshot[]
+): ProviderRoutingRowContext {
+  if (!connection) {
+    return { connection: null, bindings: [], trustSnapshot: null };
+  }
+
+  return {
+    connection,
+    bindings: bindings.filter((binding) =>
+      normalizeProviderRoutingId(binding.connectionId) === normalizeProviderRoutingId(connection.connectionId)),
+    trustSnapshot: trustSnapshots.find((snapshot) =>
+      normalizeProviderRoutingId(snapshot.connectionId) === normalizeProviderRoutingId(connection.connectionId)) ?? null
+  };
+}
+
+function findRoutingConnectionForProviderRow(
+  row: ProviderConnectionRow,
+  routingConnections: ProviderRoutingConnection[]
+): ProviderRoutingConnection | null {
+  const providerId = normalizeProviderRoutingId(row.providerId);
+  const displayName = normalizeProviderRoutingId(row.displayName);
+  return routingConnections.find((connection) =>
+    normalizeProviderRoutingId(connection.connectionId) === providerId ||
+    normalizeProviderRoutingId(connection.providerFamilyId) === providerId ||
+    normalizeProviderRoutingId(connection.displayName) === displayName) ?? null;
+}
+
+function normalizeProviderRoutingId(value: string | null | undefined): string {
+  return (value ?? "").trim().toLowerCase();
+}
+
+function buildProviderRoutingCapabilityLabels(bindings: ProviderRoutingBinding[]): string[] {
+  return bindings
+    .map((binding) => formatProviderRoutingCapability(binding.capability))
+    .filter((value, index, values) => values.indexOf(value) === index);
+}
+
+function providerRoutingCapabilityLabel(
+  bindings: ProviderRoutingBinding[],
+  connection: ProviderRoutingConnection
+): string {
+  if (bindings.some((binding) => providerRoutingCapabilityGroup(binding.capability) === "brokerage")) {
+    return "Brokerage";
+  }
+
+  const labels = buildProviderRoutingCapabilityLabels(bindings);
+  if (labels.length > 0) {
+    return labels.slice(0, 2).join(" + ");
+  }
+
+  return connection.connectionType.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
+function providerRoutingBindingsLabel(bindings: ProviderRoutingBinding[]): string {
+  const labels = buildProviderRoutingCapabilityLabels(bindings);
+  return labels.length > 0 ? labels.join(", ") : "No routing binding loaded";
+}
+
+function providerRoutingFallbackLabel(bindings: ProviderRoutingBinding[]): string {
+  const fallbackCount = bindings.reduce((count, binding) => count + (binding.failoverConnectionIds?.length ?? 0), 0);
+  return fallbackCount > 0 ? `${formatCount(fallbackCount, "failover route")}` : "Primary route";
+}
+
+function providerRoutingTrustScoreLabel(snapshot: ProviderRoutingTrustSnapshot | null): string {
+  if (!snapshot) {
+    return "No trust snapshot";
+  }
+
+  return `${formatProviderRoutingScore(snapshot.score)} · ${snapshot.healthStatus}`;
+}
+
+function providerRoutingProductionStateLabel(connection: ProviderRoutingConnection | null): string {
+  if (!connection) {
+    return "Not in routing catalog";
+  }
+
+  return connection.productionReady ? "Production ready" : "Certification needed";
+}
+
+function providerRoutingHealthLabel(
+  connection: ProviderRoutingConnection,
+  snapshot: ProviderRoutingTrustSnapshot | null
+): string {
+  if (!connection.enabled) {
+    return "Disabled";
+  }
+
+  if (snapshot?.healthStatus?.trim()) {
+    return snapshot.healthStatus.trim();
+  }
+
+  return connection.productionReady ? "Routable" : "Certification needed";
+}
+
+function providerRoutingHealthTone(
+  connection: ProviderRoutingConnection,
+  snapshot: ProviderRoutingTrustSnapshot | null
+): SettingsProviderConnectionRow["healthTone"] {
+  if (!connection.enabled) {
+    return "danger";
+  }
+
+  if (!connection.productionReady) {
+    return "warning";
+  }
+
+  if (!snapshot) {
+    return "warning";
+  }
+
+  if (snapshot.isHealthy) {
+    return "success";
+  }
+
+  const status = snapshot.healthStatus.toLowerCase();
+  return status.includes("blocked") || status.includes("degraded") ? "danger" : "warning";
+}
+
+function providerRoutingRecommendedAction(
+  connection: ProviderRoutingConnection,
+  routingContext: ProviderRoutingRowContext
+): string {
+  if (!connection.enabled) {
+    return "Enable the routing connection before selecting it for provider workflows.";
+  }
+
+  if (routingContext.bindings.length === 0) {
+    return "Add a provider-routing binding before selecting this connection.";
+  }
+
+  if (!connection.productionReady) {
+    return "Run provider certification before production routing.";
+  }
+
+  if (routingContext.trustSnapshot && !routingContext.trustSnapshot.isHealthy) {
+    return "Inspect provider health before routing new workflow traffic.";
+  }
+
+  return "Provider routing is ready for supported capabilities.";
+}
+
+function credentialReferenceEnvironmentLabel(reference: string | null | undefined): string {
+  const value = reference?.trim();
+  if (!value) {
+    return "Not set";
+  }
+
+  const parts = value.split("/");
+  const environment = parts.length > 1 ? parts[parts.length - 1]?.trim() : "";
+  return environment ? environment.toUpperCase() : "Configured";
+}
+
+function formatProviderRoutingCapability(capability: string): string {
+  switch (capability) {
+    case "RealtimeMarketData":
+      return "Realtime";
+    case "HistoricalBars":
+      return "Historical bars";
+    case "ReferenceData":
+      return "Reference data";
+    case "SecurityMasterSeed":
+      return "Security Master";
+    case "OrderExecution":
+      return "Order routing";
+    case "ExecutionHistory":
+      return "Execution history";
+    case "AccountBalances":
+      return "Balances";
+    case "AccountPositions":
+      return "Positions";
+    case "ReconciliationFeed":
+      return "Reconciliation";
+    case "CashTransactions":
+      return "Cash activity";
+    case "BankStatements":
+      return "Statements";
+    default:
+      return capability.replace(/([a-z])([A-Z])/g, "$1 $2");
+  }
+}
+
+function providerRoutingCapabilityGroup(capability: string): "brokerage" | "data" {
+  switch (capability) {
+    case "OrderExecution":
+    case "ExecutionHistory":
+    case "AccountBalances":
+    case "AccountPositions":
+    case "ReconciliationFeed":
+    case "CashTransactions":
+    case "BankStatements":
+      return "brokerage";
+    default:
+      return "data";
+  }
+}
+
+function formatProviderRoutingScore(score: number): string {
+  const percentage = score <= 1 ? score * 100 : score;
+  return `${Math.round(Math.max(0, Math.min(100, percentage)))}%`;
+}
+
+function formatCount(value: number, singular: string): string {
+  return `${value} ${singular}${value === 1 ? "" : "s"}`;
 }
 
 function providerCapabilityLabel(value: ProviderConnectionRow["capability"]): string {
@@ -1832,7 +2150,13 @@ export function buildSettingsScreenViewModel(
     : "System overview unavailable.";
   const diagnosticSection = buildDiagnosticEndpointSection(payload);
   const backendCapabilitySection = buildBackendCapabilitySection(payload);
-  const providerConnectionCenter = buildProviderConnectionCenter(payload.providerConnections ?? null);
+  const providerConnectionCenter = buildProviderConnectionCenter(
+    payload.providerConnections ?? null,
+    payload.providerRoutingConnections ?? null,
+    payload.providerRoutingBindings ?? null,
+    payload.providerRoutingTrustSnapshots ?? null,
+    payload.providerRoutingRefreshing === true
+  );
   const alpacaConnectionPanel = buildAlpacaConnectionPanel(payload.brokerageConnection ?? null);
 
   return {

@@ -198,8 +198,12 @@ describe("DataOperationsScreen", () => {
       environment: "paper",
       warnings: ["Credential verification still needs to run."]
     });
+    const refreshProviderRouting = vi.fn();
 
-    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+    renderWithRouter(
+      <DataOperationsScreen data={data} onProviderSetupConfigured={refreshProviderRouting} />,
+      { initialEntries: ["/data"] }
+    );
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
 
@@ -243,6 +247,7 @@ describe("DataOperationsScreen", () => {
       .toHaveAttribute("href", "/data/backfills");
     expect(screen.getByRole("link", { name: "Check Trading readiness after configuring Alpaca" }))
       .toHaveAttribute("href", "/trading/readiness");
+    await waitFor(() => expect(refreshProviderRouting).toHaveBeenCalledTimes(1));
 
     await user.click(screen.getByRole("button", { name: "Configure another" }));
 

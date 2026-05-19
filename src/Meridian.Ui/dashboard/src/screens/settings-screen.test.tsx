@@ -7,6 +7,9 @@ import type {
   BrokerageConnectionStatus,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
   SessionInfo,
   SystemOverviewResponse
 } from "@/types";
@@ -113,6 +116,51 @@ const providerConnections: ProviderConnectionRow[] = [
   }
 ];
 
+const providerRoutingConnections: ProviderRoutingConnection[] = [
+  {
+    connectionId: "provider-reference",
+    providerFamilyId: "polygon",
+    displayName: "Reference data route",
+    connectionType: "DataVendor",
+    connectionMode: "ReadOnly",
+    enabled: true,
+    credentialReference: "vault:polygon/default",
+    institutionId: null,
+    externalAccountId: null,
+    scope: null,
+    tags: ["reference"],
+    description: null,
+    productionReady: true
+  }
+];
+
+const providerRoutingBindings: ProviderRoutingBinding[] = [
+  {
+    bindingId: "provider-reference-ReferenceData",
+    capability: "ReferenceData",
+    connectionId: "provider-reference",
+    target: null,
+    priority: 100,
+    enabled: true,
+    failoverConnectionIds: [],
+    safetyModeOverride: null,
+    notes: null
+  }
+];
+
+const providerRoutingTrustSnapshots: ProviderRoutingTrustSnapshot[] = [
+  {
+    connectionId: "provider-reference",
+    providerFamilyId: "polygon",
+    score: 97,
+    isHealthy: true,
+    healthStatus: "Healthy",
+    isProductionReady: true,
+    isCertificationFresh: true,
+    signals: []
+  }
+];
+
 const portfolio: PortfolioWorkspaceResponse = {
   metrics: [],
   positions: [],
@@ -203,6 +251,10 @@ describe("SettingsScreen", () => {
         overview={overview}
         brokerageConnection={alpacaConnection}
         providerConnections={providerConnections}
+        providerRoutingConnections={providerRoutingConnections}
+        providerRoutingBindings={providerRoutingBindings}
+        providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+        onProviderRoutingRefresh={vi.fn()}
       />
     );
 
@@ -211,6 +263,10 @@ describe("SettingsScreen", () => {
     expect(screen.getByText("Data providers")).toBeInTheDocument();
     expect(screen.getByText("Alpaca")).toBeInTheDocument();
     expect(screen.getByText("Polygon.io")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Refresh Provider Connection Center routing data" })).toBeInTheDocument();
+    expect(screen.getByText("Reference data")).toBeInTheDocument();
+    expect(screen.getByText("97% · Healthy")).toBeInTheDocument();
+    expect(screen.getByText("Production ready")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Alpaca provider connection row" })).toHaveAttribute(
       "href",
       "/settings#alpaca-provider-setup"
@@ -220,6 +276,7 @@ describe("SettingsScreen", () => {
       "/settings#provider-polygon-connection"
     );
     expect(center).not.toHaveTextContent("endpoint-secret");
+    expect(center).not.toHaveTextContent("vault:polygon/default");
   });
 
   it("updates recent-event detail with keyboard row selection", async () => {

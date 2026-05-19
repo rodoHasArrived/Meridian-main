@@ -6,7 +6,15 @@ import {
   buildSettingsScreenViewModel,
   useAlpacaConnectionFormViewModel
 } from "@/screens/settings-screen.view-model";
-import type { BrokerageConnectionStatus, ProviderConnectionRow, SessionInfo, SystemOverviewResponse } from "@/types";
+import type {
+  BrokerageConnectionStatus,
+  ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
+  SessionInfo,
+  SystemOverviewResponse
+} from "@/types";
 
 const session: SessionInfo = {
   displayName: "Andrew Rowden",
@@ -93,6 +101,87 @@ const providerConnections: ProviderConnectionRow[] = [
   }
 ];
 
+const providerRoutingConnections: ProviderRoutingConnection[] = [
+  {
+    connectionId: "provider-alpaca-paper",
+    providerFamilyId: "alpaca",
+    displayName: "Alpaca paper route",
+    connectionType: "DataVendor",
+    connectionMode: "ReadOnly",
+    enabled: true,
+    credentialReference: "vault:alpaca/paper",
+    institutionId: null,
+    externalAccountId: null,
+    scope: null,
+    tags: ["streaming"],
+    description: null,
+    productionReady: false
+  },
+  {
+    connectionId: "provider-reference",
+    providerFamilyId: "polygon",
+    displayName: "Reference data route",
+    connectionType: "DataVendor",
+    connectionMode: "ReadOnly",
+    enabled: true,
+    credentialReference: "vault:polygon/default",
+    institutionId: null,
+    externalAccountId: null,
+    scope: null,
+    tags: ["reference"],
+    description: null,
+    productionReady: true
+  }
+];
+
+const providerRoutingBindings: ProviderRoutingBinding[] = [
+  {
+    bindingId: "provider-alpaca-paper-RealtimeMarketData",
+    capability: "RealtimeMarketData",
+    connectionId: "provider-alpaca-paper",
+    target: null,
+    priority: 100,
+    enabled: true,
+    failoverConnectionIds: [],
+    safetyModeOverride: null,
+    notes: null
+  },
+  {
+    bindingId: "provider-reference-ReferenceData",
+    capability: "ReferenceData",
+    connectionId: "provider-reference",
+    target: null,
+    priority: 100,
+    enabled: true,
+    failoverConnectionIds: ["provider-alpaca-paper"],
+    safetyModeOverride: null,
+    notes: null
+  }
+];
+
+const providerRoutingTrustSnapshots: ProviderRoutingTrustSnapshot[] = [
+  {
+    connectionId: "provider-alpaca-paper",
+    providerFamilyId: "alpaca",
+    score: 84,
+    isHealthy: true,
+    healthStatus: "Healthy",
+    isProductionReady: false,
+    isCertificationFresh: false,
+    signals: []
+  },
+  {
+    connectionId: "provider-reference",
+    providerFamilyId: "polygon",
+    score: 97,
+    isHealthy: true,
+    healthStatus: "Healthy",
+    isProductionReady: true,
+    isCertificationFresh: true,
+    signals: []
+  }
+];
+
 describe("buildSettingsScreenViewModel", () => {
   it("builds session items from session data", () => {
     const vm = buildSettingsScreenViewModel(session, null);
@@ -158,6 +247,49 @@ describe("buildSettingsScreenViewModel", () => {
       fallbackLabel: "Fallback active",
       actionHref: "/settings#provider-polygon-connection"
     });
+  });
+
+  it("merges provider-routing connections, bindings, and trust snapshots into the connection center", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      providerConnections: [],
+      providerRoutingConnections,
+      providerRoutingBindings,
+      providerRoutingTrustSnapshots,
+      providerRoutingRefreshing: true
+    });
+
+    expect(vm.providerConnectionCenter.statusLabel).toBe("Refreshing");
+    expect(vm.providerConnectionCenter.refreshAction).toMatchObject({
+      label: "Refreshing...",
+      busy: true,
+      disabled: true
+    });
+    expect(vm.providerConnectionCenter.routingSummaryLabel).toBe("2 routing connections · 2 bindings · 2 trust snapshots");
+
+    const dataRows = vm.providerConnectionCenter.groups.find((group) => group.id === "data")?.rows ?? [];
+    expect(dataRows).toHaveLength(2);
+    expect(dataRows[0]).toMatchObject({
+      providerId: "provider-alpaca-paper",
+      displayName: "Alpaca paper route",
+      credentialLabel: "Configured",
+      sourceLabel: "Vault reference",
+      environmentLabel: "PAPER",
+      maskedKeyPreviewLabel: "Hidden by routing API",
+      routingBindingsLabel: "Realtime",
+      trustScoreLabel: "84% · Healthy",
+      productionStateLabel: "Certification needed",
+      recommendedAction: "Run provider certification before production routing."
+    });
+    expect(dataRows[1]).toMatchObject({
+      providerId: "provider-reference",
+      routingBindingsLabel: "Reference data",
+      fallbackLabel: "1 failover route",
+      trustScoreLabel: "97% · Healthy",
+      productionStateLabel: "Production ready"
+    });
+    expect(dataRows.map((row) => row.sourceLabel).join(" ")).not.toContain("vault:polygon/default");
   });
 
   it("returns success tone for healthy system", () => {
