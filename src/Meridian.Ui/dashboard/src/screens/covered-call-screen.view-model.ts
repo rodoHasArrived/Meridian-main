@@ -1655,10 +1655,10 @@ export function useCoveredCallScreenViewModel(
             setRun((prev) => ({ ...prev, result, selectedPositionIndex: 0, selectedTradeIndex: 0, isStarting: false, isCancelling: false }));
             setStage("results");
           } catch (resultErr) {
-            setErrorBanner(`Result fetch failed: ${(resultErr as Error).message}`);
+            setErrorBanner(describeApiError(resultErr, "Covered-call result failed to load."));
           }
         } else if (status.phase === "Failed" && status.failureMessage) {
-          setErrorBanner(status.failureMessage);
+          setErrorBanner({ summary: status.failureMessage, details: [] });
         }
       } else {
         pollTimerRef.current = window.setTimeout(() => {
@@ -1667,7 +1667,7 @@ export function useCoveredCallScreenViewModel(
       }
     } catch (error) {
       if ((error as Error).name === "AbortError") return;
-      setErrorBanner(`Status poll failed: ${(error as Error).message}`);
+      setErrorBanner(describeApiError(error, "Covered-call status polling failed."));
       stopPolling();
     }
   }, [pollIntervalMs, services, stopPolling]);
@@ -1678,7 +1678,7 @@ export function useCoveredCallScreenViewModel(
     const errors = validateForm(form);
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) {
-      setErrorBanner("Fix the highlighted form fields before running.");
+      setErrorBanner({ summary: "Fix the highlighted form fields before running.", details: [] });
       return;
     }
 
