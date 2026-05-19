@@ -346,12 +346,20 @@ describe("GovernanceScreen", () => {
   it("recovers calibration summary failures through the visible retry command", async () => {
     const user = userEvent.setup();
     vi.mocked(api.getReconciliationCalibrationSummary)
-      .mockRejectedValueOnce(new Error("Calibration API offline"))
+      .mockRejectedValueOnce(new ApiError({
+        path: "/api/reconciliation/calibration-summary",
+        status: 503,
+        title: "Provider unavailable",
+        detail: "Calibration API offline"
+      }))
       .mockResolvedValueOnce(calibrationSummary);
 
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Calibration API offline");
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Calibration API offline");
+    expect(alert).toHaveTextContent("Endpoint returned 503 for /api/reconciliation/calibration-summary.");
+    expect(alert).toHaveTextContent("Provider unavailable");
     const retry = screen.getByRole("button", { name: "Retry calibration summary load" });
 
     await user.click(retry);
@@ -434,6 +442,30 @@ describe("GovernanceScreen", () => {
 
     expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
     expect(screen.queryByRole("table", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
+  });
+
+  it("renders structured trial-balance api-errors with endpoint and validation detail", async () => {
+    vi.mocked(api.getRunTrialBalance).mockRejectedValueOnce(new ApiError({
+      path: "/api/workstation/runs/run-42/trial-balance",
+      status: 422,
+      title: "Validation failed",
+      detail: "Fund account is required.",
+      validationIssues: [
+        {
+          field: "fundAccountId",
+          label: "Fund account",
+          messages: ["Select a fund account before loading governance evidence."]
+        }
+      ]
+    }));
+
+    await renderGovernanceScreen(data, "/accounting");
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Fund account is required.");
+    expect(alert).toHaveTextContent("Endpoint returned 422 for /api/workstation/runs/run-42/trial-balance.");
+    expect(alert).toHaveTextContent("Validation failed");
+    expect(alert).toHaveTextContent("Fund account: Select a fund account before loading governance evidence.");
   });
 
   it("runs ledger reporting export through the POST mutation instead of a GET link", async () => {
@@ -918,7 +950,7 @@ describe("GovernanceScreen", () => {
     await renderGovernanceScreen(data, "/accounting/security-master");
 
     const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("Identifier conflicts failed to load: Conflict API offline");
+    expect(alert).toHaveTextContent("Conflict API offline");
     expect(within(alert).getByText("Endpoint returned 503 for /api/workstation/security-master/conflicts.")).toBeInTheDocument();
     const retry = screen.getByRole("button", { name: "Retry loading Security Master identifier conflicts" });
     expect(retry).toHaveTextContent("Retry conflicts");
@@ -932,6 +964,7 @@ describe("GovernanceScreen", () => {
   it("announces Security Master conflict resolution failures with structured details", async () => {
     const user = userEvent.setup();
 
+    vi.mocked(api.getSecurityConflicts).mockResolvedValueOnce([securityConflict]);
     vi.mocked(api.resolveSecurityConflict).mockRejectedValueOnce(
       new ApiError({
         path: "/api/workstation/security-master/conflicts/conflict-1/resolve",
@@ -954,7 +987,7 @@ describe("GovernanceScreen", () => {
     }));
 
     const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("Conflict resolution failed: Resolution requires a newer conflict snapshot.");
+    expect(alert).toHaveTextContent("Resolution requires a newer conflict snapshot.");
     expect(within(alert).getByText("Endpoint returned 409 for /api/workstation/security-master/conflicts/conflict-1/resolve.")).toBeInTheDocument();
     expect(within(alert).getByText("resolution: Choose a resolution that matches the active provider record.")).toBeInTheDocument();
   });

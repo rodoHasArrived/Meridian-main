@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type { ApiRequestOptions } from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
 import { workflowTargetPath } from "@/lib/workspace";
 import type {
   OrderBookLevelDto,
@@ -29,6 +30,7 @@ export interface QuickTicketForm {
 export interface QuickTicketState extends QuickTicketForm {
   phase: QuickTicketPhase;
   message: string | null;
+  details: string[];
   orderId: string | null;
   validationVisible?: boolean;
   acknowledged: boolean;
@@ -39,6 +41,7 @@ export interface QuickTicketStatusViewModel {
   role: "status" | "alert";
   tone: "default" | "success" | "danger";
   message: string;
+  details: string[];
   showSuccessIcon: boolean;
   showErrorIcon: boolean;
   actions: QuickTicketStatusActionViewModel[];
@@ -387,6 +390,7 @@ export const initialQuickTicketState: QuickTicketState = {
   limitPrice: "",
   phase: "idle",
   message: null,
+  details: [],
   orderId: null,
   validationVisible: false,
   acknowledged: false
@@ -787,6 +791,7 @@ export function useQuickTradeTicket(
       limitPrice: priceLabel,
       phase: "seeded",
       message: buildQuickTicketSeededMessage(symbolLabel, side, priceLabel),
+      details: [],
       orderId: null,
       validationVisible: false,
       acknowledged: false
@@ -799,6 +804,7 @@ export function useQuickTradeTicket(
       [field]: value,
       phase: resetQuickTicketFeedbackPhase(current.phase),
       message: shouldClearQuickTicketFeedbackMessage(current.phase) ? null : current.message,
+      details: shouldClearQuickTicketFeedbackMessage(current.phase) ? [] : current.details,
       validationVisible: true,
       acknowledged: false
     }));
@@ -809,7 +815,8 @@ export function useQuickTradeTicket(
       ...current,
       acknowledged: value,
       phase: value ? "idle" : resetQuickTicketFeedbackPhase(current.phase),
-      message: value || shouldClearQuickTicketFeedbackMessage(current.phase) ? null : current.message
+      message: value || shouldClearQuickTicketFeedbackMessage(current.phase) ? null : current.message,
+      details: value || shouldClearQuickTicketFeedbackMessage(current.phase) ? [] : current.details
     }));
   }, []);
 
@@ -826,6 +833,7 @@ export function useQuickTradeTicket(
         ...current,
         phase: "error",
         message: validation,
+        details: [],
         orderId: null,
         validationVisible: true
       }));
@@ -837,6 +845,7 @@ export function useQuickTradeTicket(
         ...current,
         phase: "error",
         message: "Review and acknowledge the ticket before submitting.",
+        details: [],
         orderId: null,
         validationVisible: false
       }));
@@ -852,7 +861,7 @@ export function useQuickTradeTicket(
       }
     };
 
-    setTicket((current) => ({ ...current, phase: "submitting", message: null, orderId: null }));
+    setTicket((current) => ({ ...current, phase: "submitting", message: null, details: [], orderId: null }));
     try {
       const result = await api.submitOrder(request);
       if (result.success) {
@@ -860,6 +869,7 @@ export function useQuickTradeTicket(
           ...current,
           phase: "submitted",
           message: result.orderId ? `Order ${result.orderId} accepted.` : "Order accepted.",
+          details: [],
           orderId: result.orderId,
           validationVisible: false,
           acknowledged: false
@@ -869,16 +879,19 @@ export function useQuickTradeTicket(
           ...current,
           phase: "error",
           message: result.reason ?? "Order rejected.",
+          details: [],
           orderId: null,
           validationVisible: false,
           acknowledged: false
         }));
       }
     } catch (error) {
+      const display = describeApiError(error, "Order submission failed.");
       applyCurrentSubmission((current) => ({
         ...current,
         phase: "error",
-        message: error instanceof Error && error.message ? error.message : "Order submission failed.",
+        message: display.summary,
+        details: display.details,
         orderId: null,
         validationVisible: false,
         acknowledged: false
@@ -1627,6 +1640,7 @@ function buildQuickTicketStatus(
       role: "status",
       tone: "success",
       message: ticket.message,
+      details: [],
       showSuccessIcon: true,
       showErrorIcon: false,
       actions: [buildQuickTicketReadinessAction("accepted", activeSymbol, ticket.orderId)]
@@ -1639,6 +1653,7 @@ function buildQuickTicketStatus(
       role: "alert",
       tone: "danger",
       message: ticket.message,
+      details: ticket.details,
       showSuccessIcon: false,
       showErrorIcon: true,
       actions: isQuickTicketSubmissionFailure(ticket, surfaceValidation)
@@ -1653,6 +1668,7 @@ function buildQuickTicketStatus(
       role: "alert",
       tone: "danger",
       message: validation,
+      details: [],
       showSuccessIcon: false,
       showErrorIcon: true,
       actions: []
@@ -1665,6 +1681,7 @@ function buildQuickTicketStatus(
       role: "status",
       tone: "success",
       message: ticket.message,
+      details: [],
       showSuccessIcon: true,
       showErrorIcon: false,
       actions: []
@@ -1676,6 +1693,7 @@ function buildQuickTicketStatus(
     role: "status",
     tone: "default",
     message: buildQuickTicketGuidance(ticket, validation),
+    details: [],
     showSuccessIcon: false,
     showErrorIcon: false,
     actions: []

@@ -617,11 +617,20 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
             role={status.role}
             aria-live="polite"
             aria-atomic="true"
-            className={`flex min-h-[1.25rem] items-center gap-1.5 text-xs ${statusToneClass}`}
+            className={`flex min-h-[1.25rem] items-start gap-1.5 text-xs ${statusToneClass}`}
           >
             {status.showSuccessIcon ? <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> : null}
             {status.showErrorIcon ? <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" /> : null}
-            <span>{status.message}</span>
+            <div className="min-w-0">
+              <div>{status.message}</div>
+              {status.details.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-[11px] leading-5">
+                  {status.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
           </div>
           {status.actions.length > 0 ? (
             <div className="flex flex-wrap gap-2" aria-label="Quick trade next actions">

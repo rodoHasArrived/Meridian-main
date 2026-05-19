@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as coveredCallApi from "@/lib/api/covered-call";
+import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type {
   CoveredCallBacktestRequest,
@@ -1433,12 +1434,12 @@ export interface CoveredCallScreenState {
   historyRows: CoveredCallHistoryRowViewModel[];
   historyLoading: boolean;
   historyLoaded: boolean;
-  historyError: string | null;
+  historyError: ApiErrorDisplay | null;
   historyTableLabel: string;
   historyCaption: string;
   historyEmptyText: string;
   historyStatusText: string;
-  errorBanner: string | null;
+  errorBanner: ApiErrorDisplay | null;
 }
 
 export interface CoveredCallScreenViewModel extends CoveredCallScreenState {
@@ -1507,8 +1508,8 @@ export function useCoveredCallScreenViewModel(
   const [history, setHistory] = useState<CoveredCallRunSummary[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
-  const [historyError, setHistoryError] = useState<string | null>(null);
-  const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const [historyError, setHistoryError] = useState<ApiErrorDisplay | null>(null);
+  const [errorBanner, setErrorBanner] = useState<ApiErrorDisplay | null>(null);
   const [pendingCancelRunId, setPendingCancelRunId] = useState<string | null>(null);
 
   const setField = useCallback(<K extends keyof CoveredCallFormState>(key: K, value: CoveredCallFormState[K]) => {
@@ -1707,7 +1708,7 @@ export function useCoveredCallScreenViewModel(
         void pollOnce(handle.runId);
       }, pollIntervalMs);
     } catch (error) {
-      setErrorBanner((error as Error).message);
+      setErrorBanner(describeApiError(error, "Covered-call backtest request failed."));
       setRun({ runId: null, status: null, result: null, selectedPositionIndex: 0, selectedTradeIndex: 0, isStarting: false, isCancelling: false });
       setStage("configure");
     }
@@ -1726,7 +1727,7 @@ export function useCoveredCallScreenViewModel(
       const status = await services.cancelRun(runId);
       setRun((prev) => ({ ...prev, status, isCancelling: false }));
     } catch (error) {
-      setErrorBanner(`Cancel failed: ${(error as Error).message}`);
+      setErrorBanner(describeApiError(error, "Covered-call cancel request failed."));
       setRun((prev) => ({ ...prev, isCancelling: false }));
     }
   }, [pendingCancelRunId, run.isCancelling, run.runId, services]);
@@ -1738,7 +1739,7 @@ export function useCoveredCallScreenViewModel(
       const items = await services.listRuns(50);
       setHistory(items);
     } catch (error) {
-      setHistoryError((error as Error).message);
+      setHistoryError(describeApiError(error, "Previous covered-call runs failed to load."));
     } finally {
       setHistoryLoaded(true);
       setHistoryLoading(false);
@@ -1769,7 +1770,7 @@ export function useCoveredCallScreenViewModel(
       });
       setStage("results");
     } catch (error) {
-      setErrorBanner(`Could not load run ${runId}: ${(error as Error).message}`);
+      setErrorBanner(describeApiError(error, `Could not load covered-call run ${runId}.`));
     }
   }, [services, stopPolling]);
 
@@ -1848,7 +1849,7 @@ export function useCoveredCallScreenViewModel(
     historyStatusText: historyLoading
       ? "Loading previous covered-call runs."
       : historyError
-        ? `Previous covered-call runs failed to load: ${historyError}`
+        ? `Previous covered-call runs failed to load: ${historyError.summary}`
         : historyRows.length === 0
           ? "No previous covered-call runs are available."
           : `${historyRows.length} previous covered-call runs loaded.`,

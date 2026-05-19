@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ApiError, describeApiError } from "@/lib/api-errors";
 import { ApiError } from "@/lib/api-errors";
 import {
   buildCalibrationSummaryViewState,
@@ -702,7 +703,7 @@ describe("governance-screen view model", () => {
       runId: "run-42",
       rows: trialBalanceLines,
       loading: false,
-      errorText: null
+      error: null
     });
 
     expect(state).toMatchObject({
@@ -752,7 +753,7 @@ describe("governance-screen view model", () => {
       rows: trialBalanceLines,
       selectedRowId: "Primary-Financing payable-Liability-acct-financing",
       loading: false,
-      errorText: null
+      error: null
     });
     expect(selectedFinancing.selectedDetail).toMatchObject({
       title: "Financing payable",
@@ -810,7 +811,7 @@ describe("governance-screen view model", () => {
         }
       ],
       loading: false,
-      errorText: null
+      error: null
     });
 
     expect(state.selectedBasis).toBe("Gaap");
@@ -847,7 +848,7 @@ describe("governance-screen view model", () => {
       runId: "run-42",
       rows: [],
       loading: true,
-      errorText: null
+      error: null
     })).toMatchObject({
       state: "loading",
       loadingText: "Loading trial balance for run-42.",
@@ -858,7 +859,7 @@ describe("governance-screen view model", () => {
       runId: "run-42",
       rows: [],
       loading: false,
-      errorText: null
+      error: null
     })).toMatchObject({
       state: "empty",
       emptyTitle: "No trial balance lines",
@@ -869,7 +870,7 @@ describe("governance-screen view model", () => {
       runId: "run-42",
       rows: trialBalanceLines,
       loading: false,
-      errorText: "Ledger unavailable."
+      error: "Ledger unavailable."
     })).toMatchObject({
       state: "error",
       errorText: "Ledger unavailable.",
@@ -963,6 +964,7 @@ describe("governance-screen view model", () => {
       selectedRowId: "ca-split-1",
       hasRows: true,
       errorText: null,
+      errorDetails: [],
       loadingText: null
     });
     expect(state.rows[1]).toMatchObject({
@@ -1000,8 +1002,51 @@ describe("governance-screen view model", () => {
 
     expect(buildCorporateActionsViewState("sec-1", [], null, false, "Corporate API offline")).toMatchObject({
       errorText: "Corporate API offline",
+      errorDetails: [],
       statusAnnouncement: "Corporate actions error: Corporate API offline"
     });
+  });
+
+  it("preserves structured Governance api-errors in trial balance, calibration, and corporate actions views", () => {
+    const apiError = new ApiError({
+      path: "/api/workstation/governance/trial-balance",
+      status: 422,
+      title: "Validation failed",
+      detail: "Fund account is required.",
+      validationIssues: [
+        {
+          field: "fundAccountId",
+          label: "Fund account",
+          messages: ["Select a fund account before loading governance evidence."]
+        }
+      ]
+    });
+
+    const displayError = describeApiError(apiError, "Trial balance failed to load.");
+
+    const trialBalanceState = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: [],
+      loading: false,
+      error: displayError
+    });
+    expect(trialBalanceState).toMatchObject({
+      state: "error",
+      errorText: "Fund account is required."
+    });
+    expect(trialBalanceState.errorDetails).toEqual([
+      "Endpoint returned 422 for /api/workstation/governance/trial-balance.",
+      "Validation failed",
+      "Fund account: Select a fund account before loading governance evidence."
+    ]);
+
+    const calibrationState = buildCalibrationSummaryViewState(null, false, displayError);
+    expect(calibrationState.errorText).toBe("Fund account is required.");
+    expect(calibrationState.errorDetails).toEqual(trialBalanceState.errorDetails);
+
+    const corporateActionsState = buildCorporateActionsViewState("sec-1", [], null, false, displayError);
+    expect(corporateActionsState.errorText).toBe("Fund account is required.");
+    expect(corporateActionsState.errorDetails).toEqual(trialBalanceState.errorDetails);
   });
 
   it("derives cash-flow and factor schedule rows with selected detail state", () => {
@@ -1202,6 +1247,29 @@ describe("governance-screen view model", () => {
     });
   });
 
+  it("preserves structured Security Master search errors with operator details", () => {
+    const failed = buildSecuritySearchState({
+      query: "AAPL",
+      searching: false,
+      results: [],
+      searchError: describeApiError(new ApiError({
+        path: "/api/security-master/search",
+        status: 503,
+        title: "Provider unavailable",
+        detail: "Search feed is offline."
+      }), "Security search failed."),
+      identityLoading: false,
+      identityError: null
+    });
+
+    expect(failed.searchErrorText).toBe("Security search failed: Search feed is offline.");
+    expect(failed.searchErrorDetails).toEqual([
+      "Endpoint returned 503 for /api/security-master/search.",
+      "Provider unavailable"
+    ]);
+    expect(failed.statusAnnouncement).toBe("Security search failed: Search feed is offline.");
+  });
+
   it("derives Security Master master-detail page summary from selected state", () => {
     const state = buildSecurityMasterPageViewState({
       query: "AAPL",
@@ -1255,7 +1323,7 @@ describe("governance-screen view model", () => {
 
     const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
 
-    await waitFor(() => expect(result.current.conflictsErrorText).toBe("Identifier conflicts failed to load: Conflict API offline"));
+    await waitFor(() => expect(result.current.conflictsErrorText).toBe("Conflict API offline"));
     expect(result.current.conflictsErrorDetails).toEqual([
       "Endpoint returned 503 for /api/workstation/security-master/conflicts."
     ]);

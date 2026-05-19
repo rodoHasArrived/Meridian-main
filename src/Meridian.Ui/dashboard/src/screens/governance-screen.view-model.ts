@@ -4209,14 +4209,6 @@ function replaceBreakQueueItem(
   return current.map((item) => (item.breakId === updated.breakId ? updated : item));
 }
 
-function toErrorMessage(err: unknown, fallback: string): string {
-  if (err instanceof Error && err.message.trim()) {
-    return err.message;
-  }
-
-  return fallback;
-}
-
 function normalizeApiErrorDisplay(error: string | ApiErrorDisplay | null): ApiErrorDisplay | null {
   if (!error) {
     return null;

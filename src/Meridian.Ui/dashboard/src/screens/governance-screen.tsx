@@ -687,6 +687,13 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                   <p className="mt-2 text-sm leading-6">
                     {reconciliation.trialBalanceView.errorText ?? reconciliation.trialBalanceView.loadingText ?? reconciliation.trialBalanceView.emptyDetail}
                   </p>
+                  {reconciliation.trialBalanceView.errorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.trialBalanceView.errorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
               {reconciliation.trialBalanceView.loadingText && reconciliation.trialBalanceView.hasRows ? (
