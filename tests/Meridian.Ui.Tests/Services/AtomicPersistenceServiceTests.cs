@@ -93,11 +93,70 @@ public sealed class AtomicPersistenceServiceTests : IDisposable
         Directory.GetFiles(Path.GetDirectoryName(archivePath)!, "*.tmp").Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task LoadPresetsAsync_CorruptedFile_FallsBackAndLogsFailure()
+    {
+        var presetDirectory = Path.Combine(_tempDir, "corrupted-presets");
+        Directory.CreateDirectory(presetDirectory);
+        await File.WriteAllTextAsync(Path.Combine(presetDirectory, "export_presets.json"), "{not valid json");
+
+        var service = new TestExportPresetService(presetDirectory);
+
+        await service.LoadPresetsAsync();
+
+        service.Presets.Should().NotBeEmpty();
+        service.LoadFailures.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task SavePresetsAsync_WriteFailure_ReturnsFalseAndRaisesFailureEvent()
+    {
+        var presetDirectory = Path.Combine(_tempDir, "save-failure-presets");
+        var service = new TestExportPresetService(presetDirectory)
+        {
+            ForceWriteFailure = true
+        };
+
+        Exception? raisedException = null;
+        service.SaveFailed += (_, ex) => raisedException = ex;
+
+        _ = await service.CreatePresetAsync("Fails to save", format: ExportPresetFormat.Jsonl);
+
+        raisedException.Should().NotBeNull();
+        service.SaveFailures.Should().ContainSingle();
+    }
+
     private sealed class TestExportPresetService : ExportPresetServiceBase
     {
+        public bool ForceWriteFailure { get; set; }
+        public List<Exception> LoadFailures { get; } = new();
+        public List<Exception> SaveFailures { get; } = new();
+
         public TestExportPresetService(string presetsDirectoryPath)
             : base(presetsDirectoryPath)
         {
+        }
+
+        protected override Task WritePresetsFileAsync(string json, CancellationToken cancellationToken)
+        {
+            if (ForceWriteFailure)
+            {
+                throw new IOException("Forced write failure for test coverage.");
+            }
+
+            return base.WritePresetsFileAsync(json, cancellationToken);
+        }
+
+        protected override void LogLoadFailure(Exception exception)
+        {
+            LoadFailures.Add(exception);
+            base.LogLoadFailure(exception);
+        }
+
+        protected override void LogSaveFailure(Exception exception)
+        {
+            SaveFailures.Add(exception);
+            base.LogSaveFailure(exception);
         }
     }
 }

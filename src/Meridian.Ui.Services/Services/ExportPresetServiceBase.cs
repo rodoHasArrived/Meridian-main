@@ -21,6 +21,12 @@ public class ExportPresetServiceBase
     /// </summary>
     public event EventHandler? PresetsChanged;
 
+
+    /// <summary>
+    /// Event raised when a save operation fails.
+    /// </summary>
+    public event EventHandler<Exception>? SaveFailed;
+
     /// <summary>
     /// Gets all available export presets.
     /// </summary>
@@ -75,7 +81,7 @@ public class ExportPresetServiceBase
             if (_presets.Count == 0)
             {
                 _presets.AddRange(GetBuiltInPresets());
-                await SavePresetsAsync(cancellationToken);
+                _ = await SavePresetsAsync(cancellationToken);
             }
 
             EnsureBuiltInPresets();
@@ -84,8 +90,9 @@ public class ExportPresetServiceBase
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogLoadFailure(ex);
 
             if (_presets.Count == 0)
             {
@@ -97,7 +104,7 @@ public class ExportPresetServiceBase
     /// <summary>
     /// Saves presets to storage.
     /// </summary>
-    public async Task SavePresetsAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> SavePresetsAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -105,14 +112,18 @@ public class ExportPresetServiceBase
         {
             var options = DesktopJsonOptions.PrettyPrint;
             var json = JsonSerializer.Serialize(_presets, options);
-            await AtomicFileWriter.WriteAsync(_presetsFilePath, json, cancellationToken).ConfigureAwait(false);
+            await WritePresetsFileAsync(json, cancellationToken).ConfigureAwait(false);
+            return true;
         }
         catch (OperationCanceledException)
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogSaveFailure(ex);
+            SaveFailed?.Invoke(this, ex);
+            return false;
         }
     }
 
@@ -139,8 +150,10 @@ public class ExportPresetServiceBase
         };
 
         _presets.Add(preset);
-        await SavePresetsAsync(cancellationToken);
-        PresetsChanged?.Invoke(this, EventArgs.Empty);
+        if (await SavePresetsAsync(cancellationToken))
+        {
+            PresetsChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         return preset;
     }
@@ -156,7 +169,11 @@ public class ExportPresetServiceBase
 
         preset.UpdatedAt = DateTime.UtcNow;
         _presets[index] = preset;
-        await SavePresetsAsync(cancellationToken);
+        if (!await SavePresetsAsync(cancellationToken))
+        {
+            return false;
+        }
+
         PresetsChanged?.Invoke(this, EventArgs.Empty);
 
         return true;
@@ -172,7 +189,11 @@ public class ExportPresetServiceBase
             return false;
 
         _presets.Remove(preset);
-        await SavePresetsAsync(cancellationToken);
+        if (!await SavePresetsAsync(cancellationToken))
+        {
+            return false;
+        }
+
         PresetsChanged?.Invoke(this, EventArgs.Empty);
 
         return true;
@@ -230,8 +251,10 @@ public class ExportPresetServiceBase
         };
 
         _presets.Add(duplicate);
-        await SavePresetsAsync(cancellationToken);
-        PresetsChanged?.Invoke(this, EventArgs.Empty);
+        if (await SavePresetsAsync(cancellationToken))
+        {
+            PresetsChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         return duplicate;
     }
@@ -246,7 +269,7 @@ public class ExportPresetServiceBase
         {
             preset.LastUsedAt = DateTime.UtcNow;
             preset.UseCount++;
-            await SavePresetsAsync(cancellationToken);
+            _ = await SavePresetsAsync(cancellationToken);
         }
     }
 
@@ -299,8 +322,10 @@ public class ExportPresetServiceBase
             importedCount++;
         }
 
-        await SavePresetsAsync(cancellationToken);
-        PresetsChanged?.Invoke(this, EventArgs.Empty);
+        if (await SavePresetsAsync(cancellationToken))
+        {
+            PresetsChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         return importedCount;
     }
@@ -500,4 +525,12 @@ public class ExportPresetServiceBase
         };
     }
 
+    protected virtual Task WritePresetsFileAsync(string json, CancellationToken cancellationToken)
+        => AtomicFileWriter.WriteAsync(_presetsFilePath, json, cancellationToken);
+
+    protected virtual void LogLoadFailure(Exception exception)
+        => LoggingService.Instance.LogWarning($"Failed to load export presets from '{_presetsFilePath}'. Using built-in fallbacks.", exception);
+
+    protected virtual void LogSaveFailure(Exception exception)
+        => LoggingService.Instance.LogWarning($"Failed to save export presets to '{_presetsFilePath}'.", exception);
 }
