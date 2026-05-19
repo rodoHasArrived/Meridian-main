@@ -233,6 +233,12 @@ public sealed record TradingTrustGateReadinessDto(
     public TradingTrustGateContractReadinessDto? TrustRationaleContract { get; init; }
 
     public TradingTrustGateContractReadinessDto? BaselineThresholdContract { get; init; }
+
+    public string? CalibrationVersion { get; init; }
+
+    public DateTimeOffset? CalibrationValidatedAt { get; init; }
+
+    public string? PromotionPosture { get; init; }
 }
 
 public sealed record TradingReportPackReadinessDto(
