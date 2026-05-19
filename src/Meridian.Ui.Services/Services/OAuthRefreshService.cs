@@ -171,7 +171,7 @@ public sealed class OAuthRefreshService : IDisposable
         }
         catch (Exception ex)
         {
-            if (ct.IsCancellationRequested && ex is OperationCanceledException)
+            if (ex is OperationCanceledException)
             {
                 throw;
             }
@@ -317,7 +317,7 @@ public sealed class OAuthRefreshService : IDisposable
                 }
                 catch (Exception ex)
                 {
-                    if (ct.IsCancellationRequested && ex is OperationCanceledException)
+                    if (ex is OperationCanceledException)
                     {
                         throw;
                     }
