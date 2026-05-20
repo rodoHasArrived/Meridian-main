@@ -315,6 +315,39 @@ public sealed class OrderManagementSystemTests : IDisposable
             entry.BrokerName == "robinhood" &&
             entry.Symbol == "AAPL");
     }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WhenBrokerRoutingGateRejects_DoesNotSubmitToGateway()
+    {
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("alpaca");
+        var config = new BrokerageConfiguration
+        {
+            Gateway = "alpaca",
+            LiveExecutionEnabled = true,
+            BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["alpaca"] = new() { ProductionOrderRoutingEnabled = false }
+            }
+        };
+
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            brokerageConfiguration: config);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("Production order routing is disabled");
+        await gateway.DidNotReceive().SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
 }
 
 // ---------------------------------------------------------------------------

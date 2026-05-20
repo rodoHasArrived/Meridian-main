@@ -23,6 +23,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly Meridian.Execution.Models.IPortfolioState? _portfolioState;
     private readonly PaperSessionPersistenceService? _sessionPersistence;
+    private readonly BrokerageConfiguration? _brokerageConfiguration;
     private readonly ILogger<OrderManagementSystem> _logger;
     private readonly Channel<ExecutionReport> _executionChannel;
     private readonly ConcurrentDictionary<string, string> _orderSessionIds = new(StringComparer.OrdinalIgnoreCase);
@@ -36,7 +37,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         ExecutionOperatorControlService? operatorControls = null,
         ExecutionAuditTrailService? auditTrail = null,
         Meridian.Execution.Models.IPortfolioState? portfolioState = null,
-        PaperSessionPersistenceService? sessionPersistence = null)
+        PaperSessionPersistenceService? sessionPersistence = null,
+        BrokerageConfiguration? brokerageConfiguration = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -46,6 +48,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         _auditTrail = auditTrail;
         _portfolioState = portfolioState;
         _sessionPersistence = sessionPersistence;
+        _brokerageConfiguration = brokerageConfiguration;
         // Use custom EventPipelinePolicy for execution reports: high capacity with backpressure
         var executionPolicy = new EventPipelinePolicy(
             Capacity: 1000,
@@ -73,6 +76,31 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         request.Metadata?.TryGetValue("correlationId", out correlationId);
         request.Metadata?.TryGetValue("runId", out runId);
         request.Metadata?.TryGetValue("sessionId", out sessionId);
+
+        var placementGate = BrokerageOrderPlacementGate.Evaluate(_brokerageConfiguration);
+        if (!placementGate.IsAllowed)
+        {
+            var rejectedState = CreateRejectedState(orderId, request, placementGate.RejectReason);
+            _orders[orderId] = rejectedState;
+            await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
+            await RecordOrderRejectionAsync(
+                orderId,
+                request,
+                actor,
+                brokerName,
+                runId,
+                correlationId,
+                placementGate.RejectReason,
+                ct).ConfigureAwait(false);
+
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                ErrorMessage = placementGate.RejectReason,
+                OrderState = rejectedState
+            };
+        }
 
         // Operator controls gate — rejects orders when circuit breaker is open (unless bypassed)
         if (_operatorControls is not null)
@@ -476,6 +504,42 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
     private string? ResolveSessionId(string orderId) =>
         _orderSessionIds.TryGetValue(orderId, out var sessionId) ? sessionId : null;
+
+    private async Task RecordOrderRejectionAsync(
+        string orderId,
+        OrderRequest request,
+        string? actor,
+        string brokerName,
+        string? runId,
+        string? correlationId,
+        string? message,
+        CancellationToken ct)
+    {
+        _logger.LogWarning(
+            "Order {OrderId} for {Symbol} rejected by brokerage placement gate: {Reason}",
+            orderId,
+            request.Symbol,
+            message);
+
+        if (_auditTrail is null)
+        {
+            return;
+        }
+
+        await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+            AuditId: Guid.NewGuid().ToString("N"),
+            Category: "Order",
+            Action: "OrderRejected",
+            Outcome: "Rejected",
+            OccurredAt: DateTimeOffset.UtcNow,
+            Actor: actor,
+            BrokerName: brokerName,
+            OrderId: orderId,
+            RunId: runId,
+            Symbol: request.Symbol,
+            CorrelationId: correlationId,
+            Message: message), ct).ConfigureAwait(false);
+    }
 }
 
 /// <summary>Placeholder attribute for ADR traceability.</summary>

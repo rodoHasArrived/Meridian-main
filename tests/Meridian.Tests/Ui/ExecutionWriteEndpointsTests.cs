@@ -295,6 +295,39 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
+    public async Task ClosePositionByKey_WithBrokerSuppliedAccountMetadata_StripsServerOwnedRoutingKeys()
+    {
+        var position = CreateRobinhoodOptionPosition("opt-close") with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["asset_class"] = "option",
+                ["option_instrument_url"] = "https://api.robinhood.com/options/instruments/opt-close/",
+                ["broker_account_id"] = "attacker-controlled-account",
+                ["account_id"] = "attacker-ledger-account",
+                ["manualOverrideId"] = "forged-override"
+            }
+        };
+        var gateway = new RecordingBrokerageGateway(position);
+
+        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest("opt-close", Quantity: 1m)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var request = gateway.SubmittedRequests.Should().ContainSingle().Subject;
+        request.Metadata.Should().NotBeNull();
+        request.Metadata!.Should().NotContainKey("broker_account_id");
+        request.Metadata.Should().NotContainKey("account_id");
+        request.Metadata.Should().NotContainKey("manualOverrideId");
+        request.Metadata["asset_class"].Should().Be("option");
+        request.Metadata["option_instrument_url"].Should().Be("https://api.robinhood.com/options/instruments/opt-close/");
+    }
+
+    [Fact]
     public async Task UpsizePositionByKey_WithBrokerOptionPosition_UsesOpenPositionEffect()
     {
         var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
@@ -501,6 +534,13 @@ public sealed class ExecutionWriteEndpointsTests
             services.AddSingleton(new BrokerageConfiguration
             {
                 Gateway = "alpaca",
+                LiveExecutionEnabled = true,
+                ReadOnlyPhaseEnabled = true,
+                PaperTradingPhaseEnabled = true,
+                ProductionRoutingPhaseEnabled = true,
+                ReadOnlyVerificationPassed = true,
+                PaperLifecycleTestsPassed = true,
+                ReplayEvidencePassed = true,
                 BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["alpaca"] = new() { ProductionOrderRoutingEnabled = true }
@@ -848,7 +888,8 @@ public sealed class ExecutionWriteEndpointsTests
         services.AddSingleton<IOrderManager>(sp =>
             new OrderManagementSystem(
                 sp.GetRequiredService<IExecutionGateway>(),
-                NullLogger<OrderManagementSystem>.Instance));
+                NullLogger<OrderManagementSystem>.Instance,
+                brokerageConfiguration: sp.GetService<BrokerageConfiguration>()));
     }
 
     private static void RegisterSessionServices(IServiceCollection services, string rootPath)

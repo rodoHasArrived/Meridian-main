@@ -143,13 +143,15 @@ public static class ExecutionEndpoints
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
-            if (!TryValidateBrokerOrderPlacementGate(context, out var blockingMessage))
+            var gateDecision = BrokerageOrderPlacementGate.Evaluate(
+                context.RequestServices.GetService<BrokerageConfiguration>());
+            if (!gateDecision.IsAllowed)
             {
                 var blocked = new OrderResult
                 {
                     Success = false,
                     OrderId = request.ClientOrderId ?? "blocked",
-                    ErrorMessage = blockingMessage ?? "Broker order routing is disabled by validation gates."
+                    ErrorMessage = gateDecision.RejectReason ?? "Broker order routing is disabled by validation gates."
                 };
                 return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
             }
@@ -996,18 +998,20 @@ public static class ExecutionEndpoints
             return Results.Unauthorized();
         }
 
-        if (!TryValidateBrokerOrderPlacementGate(context, out var blockingMessage))
+        var gateDecision = BrokerageOrderPlacementGate.Evaluate(
+            context.RequestServices.GetService<BrokerageConfiguration>());
+        if (!gateDecision.IsAllowed)
         {
             var blocked = new TradingActionResult(
                 ActionId: actionId,
                 Status: "Rejected",
-                Message: blockingMessage ?? "Broker order routing is disabled by validation gates.",
+                Message: gateDecision.RejectReason ?? "Broker order routing is disabled by validation gates.",
                 OccurredAt: DateTimeOffset.UtcNow);
             return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
         }
 
         var metadata = MergeMetadata(
-            position.Metadata,
+            RemoveServerOwnedExecutionMetadata(position.Metadata),
             ("actor", actor),
             ("correlationId", actionId),
             ("positionKey", position.PositionKey),
@@ -1144,59 +1148,6 @@ public static class ExecutionEndpoints
 
     private static string GenerateActionId() => $"act-{Guid.NewGuid():N}";
 
-    private static bool TryValidateBrokerOrderPlacementGate(HttpContext context, out string? blockingMessage)
-    {
-        blockingMessage = null;
-        var config = context.RequestServices.GetService<BrokerageConfiguration>();
-        if (config is null)
-        {
-            return true;
-        }
-
-        var gatewayId = string.IsNullOrWhiteSpace(config.Gateway)
-            ? "paper"
-            : config.Gateway.Trim().ToLowerInvariant();
-
-        if (!config.BrokerFlows.TryGetValue(gatewayId, out var flow))
-        {
-            flow = new BrokerFlowFlags();
-        }
-
-        if (string.Equals(gatewayId, "paper", StringComparison.Ordinal))
-        {
-            if (!flow.PaperOrderFlowEnabled)
-            {
-                blockingMessage = "Paper order flow is disabled for broker 'paper'.";
-                return false;
-            }
-
-            return true;
-        }
-
-        if (!flow.ProductionOrderRoutingEnabled)
-        {
-            blockingMessage = $"Production order routing is disabled for broker '{gatewayId}'.";
-            return false;
-        }
-
-        if (config.ValidationGates.RequireValidationArtifactsForOrderPlacement)
-        {
-            if (!File.Exists(config.ValidationGates.ValidationArtifactPath))
-            {
-                blockingMessage = $"Order placement is gated until validation artifact is present: {config.ValidationGates.ValidationArtifactPath}.";
-                return false;
-            }
-
-            if (!File.Exists(config.ValidationGates.SignoffArtifactPath))
-            {
-                blockingMessage = $"Order placement is gated until signoff artifact is present: {config.ValidationGates.SignoffArtifactPath}.";
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     private static IResult? TryRejectOrderRoutingForPhaseGate(IServiceProvider services)
     {
         var configuration = services.GetService<BrokerageConfiguration>();
@@ -1303,6 +1254,30 @@ public static class ExecutionEndpoints
                metadata.ContainsKey("manual_override_id") ||
                metadata.ContainsKey("executionControlOverrideId") ||
                metadata.ContainsKey("execution_control_override_id");
+    }
+
+    private static IReadOnlyDictionary<string, string>? RemoveServerOwnedExecutionMetadata(
+        IReadOnlyDictionary<string, string>? metadata)
+    {
+        if (metadata is null)
+        {
+            return null;
+        }
+
+        var sanitized = new Dictionary<string, string>(metadata, StringComparer.OrdinalIgnoreCase);
+        sanitized.Remove("broker_account_id");
+        sanitized.Remove("brokerAccountId");
+        sanitized.Remove("account_id");
+        sanitized.Remove("accountId");
+        sanitized.Remove("alpaca:broker_account_id");
+        sanitized.Remove("asset_class");
+        sanitized.Remove("assetClass");
+        sanitized.Remove("alpaca:asset_class");
+        sanitized.Remove("manualOverrideId");
+        sanitized.Remove("manual_override_id");
+        sanitized.Remove("executionControlOverrideId");
+        sanitized.Remove("execution_control_override_id");
+        return sanitized;
     }
 
     private static Dictionary<string, string> MergeMetadata(
