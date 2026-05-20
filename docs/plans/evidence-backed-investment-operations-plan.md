@@ -1,5 +1,13 @@
 # Evidence-Backed Investment Operations Plan
 
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **evidence backed investment operations plan** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the evidence backed investment operations plan workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Date:** 2026-05-18
 **Status:** Active product-positioning and roadmap filter, refreshed against current browser-workstation support evidence
 **Audience:** Product, roadmap, architecture, web dashboard, governance, and fund-operations contributors

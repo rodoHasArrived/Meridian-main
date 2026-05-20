@@ -1,6 +1,14 @@
 # Meridian Current Direction And Status
 
 **Last Reviewed:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **current direction and status** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the current direction and status workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Role:** Single planning entry point for current direction, project status, and document roles.
 
 Use this file before reading individual roadmap or plan documents. It consolidates the active interpretation of Meridian's many planning files without replacing their detailed implementation notes.

@@ -1,7 +1,15 @@
 # Assembly-Level Performance Roadmap
 
 **Version:** 1.0
-**Last Updated:** 2026-04-08
+**Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **assembly performance roadmap** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the assembly performance roadmap workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Audience:** Core contributors, performance engineers
 **Source Evaluation:** [`docs/evaluations/assembly-performance-opportunities.md`](../evaluations/assembly-performance-opportunities.md)
 
@@ -358,4 +366,4 @@ Before merging any optimized path:
 
 ---
 
-_Last Updated: 2026-04-08_
+_Last Updated: 2026-05-20_

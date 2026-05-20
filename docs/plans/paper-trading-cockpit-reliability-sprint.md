@@ -1,6 +1,14 @@
 # Paper Trading Cockpit Reliability Sprint
 
-**Last Reviewed:** 2026-05-18
+**Last Reviewed:** 2026-05-20
+
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **paper trading cockpit reliability sprint** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the paper trading cockpit reliability sprint workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
 
 Planning review note 2026-05-18: this remains the Wave 2 cockpit reliability contract. The active
 operator UI proof path is the browser workstation, with retained WPF/API surfaces consuming the

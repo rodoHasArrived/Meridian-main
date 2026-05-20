@@ -1,5 +1,13 @@
 # Approach B+ v2 Implementation Plan
 
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **approach b plus v2 implementation plan** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the approach b plus v2 implementation plan workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 ## Objective
 
 Implement **Approach B+ v2** as a governed documentation system where:
