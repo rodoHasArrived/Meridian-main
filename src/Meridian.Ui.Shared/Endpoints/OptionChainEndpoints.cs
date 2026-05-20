@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.Options;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Options;
 using Microsoft.AspNetCore.Builder;
@@ -17,15 +18,28 @@ public static class OptionChainEndpoints
 
         group.MapPost(UiApiRoutes.ReferenceDataOptionChainImport, async (
             OptionChainSnapshot snapshot,
+            HttpContext context,
             [FromServices] IOptionChainImportService importService,
             CancellationToken ct) =>
         {
+            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
+            {
+                return Results.Forbid();
+            }
+
+            if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
+            {
+                return Results.Forbid();
+            }
+
             var imported = await importService.ImportSnapshotAsync(snapshot, ct).ConfigureAwait(false);
             return Results.Json(imported, jsonOptions);
         })
         .WithName("ImportOptionChainSnapshot")
         .Accepts<OptionChainSnapshot>("application/json")
-        .Produces<OptionChainSnapshotDto>(StatusCodes.Status200OK);
+        .Produces<OptionChainSnapshotDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.ReferenceDataOptionChainSnapshot, async (
             [FromQuery] string underlyingSymbol,
