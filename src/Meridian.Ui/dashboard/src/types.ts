@@ -345,6 +345,154 @@ export interface WorkflowPresetSaveRequest {
   isPinned: boolean;
 }
 
+export type OperationsWorkflowStatus =
+  | "NotStarted"
+  | "CollectingBrokerData"
+  | "SecurityMasterValidation"
+  | "LedgerPostingDraft"
+  | "ReconciliationActive"
+  | "ApprovalPending"
+  | "ReadyForClose"
+  | "Closed"
+  | "Blocked";
+
+export type OperationsGateStatus = "NotStarted" | "InProgress" | "Passed" | "ReviewRequired" | "Blocked";
+export type OperationsGateKey = "BrokerIngest" | "SecurityMaster" | "LedgerPosting" | "Reconciliation" | "Approval";
+export type OperationsBrokerIntakeState = "Pending" | "Imported" | "Normalized" | "MatchedToInternalRun" | "Complete";
+export type OperationsSecurityMasterState = "Pending" | "ResolvedAllInstruments" | "OverridesRequested" | "OverridesApproved" | "Complete";
+export type OperationsLedgerPostingState = "Pending" | "Drafted" | "Validated" | "Posted" | "Complete";
+export type OperationsReconciliationState = "Pending" | "AutoMatched" | "ExceptionsOpen" | "InReview" | "Cleared" | "Complete";
+export type OperationsApprovalState = "Pending" | "Submitted" | "ReviewerAssigned" | "Approved" | "Rejected";
+
+export interface OperationsEvidenceLink {
+  evidenceId: string;
+  label: string;
+  route: string | null;
+  source: string | null;
+  capturedAtUtc: string | null;
+}
+
+export interface OperationsWorkflowBlocker {
+  code: string;
+  message: string;
+  gate: OperationsGateKey | null;
+  severity: string;
+  evidenceLinks: OperationsEvidenceLink[];
+}
+
+export interface OperationsNextAction {
+  code: string;
+  label: string;
+  route: string | null;
+  gate: OperationsGateKey | null;
+}
+
+export interface OperationsGate {
+  gateKey: OperationsGateKey;
+  displayName: string;
+  status: OperationsGateStatus;
+  isRequired: boolean;
+  description: string;
+  blockers: OperationsWorkflowBlocker[];
+  nextActions: OperationsNextAction[];
+  completedAtUtc: string | null;
+  completedBy: string | null;
+}
+
+export interface OperationsContinuityWorkflowSummary {
+  workflowId: string;
+  fundAccountId: string;
+  periodId: string;
+  securityMasterSnapshotId: string | null;
+  brokerSource: string;
+  status: OperationsWorkflowStatus;
+  version: number;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  gates: OperationsGate[];
+  nextActions: OperationsNextAction[];
+}
+
+export interface OperationsTimelineEntry {
+  auditId: string;
+  occurredAtUtc: string;
+  workflowId: string;
+  fundAccountId: string;
+  periodId: string;
+  eventType: string;
+  fromState: OperationsWorkflowStatus;
+  toState: OperationsWorkflowStatus;
+  gate: OperationsGateKey | null;
+  fromGateStatus: OperationsGateStatus | null;
+  toGateStatus: OperationsGateStatus | null;
+  actor: string;
+  rationale: string | null;
+  correlationId: string | null;
+  references: OperationsEvidenceLink[];
+  previousHash: string | null;
+  currentHash: string;
+}
+
+export interface OperationsBreakCase {
+  breakId: string;
+  checkId: string;
+  category: string;
+  severity: string;
+  status: string;
+  owner: string | null;
+  dueDate: string | null;
+  expectedSource: string | null;
+  actualSource: string | null;
+  expectedAmount: number | null;
+  actualAmount: number | null;
+  variance: number | null;
+  securityId: string | null;
+  symbol: string | null;
+  suggestedAction: string | null;
+  evidenceLinks: OperationsEvidenceLink[];
+}
+
+export interface OperationsApproval {
+  approvalId: string;
+  status: OperationsApprovalState;
+  operator: string | null;
+  reviewer: string | null;
+  rationale: string | null;
+  submittedAtUtc: string | null;
+  decidedAtUtc: string | null;
+  evidenceLinks: OperationsEvidenceLink[];
+}
+
+export interface OperationsLedgerPreview {
+  previewId: string;
+  status: string;
+  ledgerBatchId: string | null;
+  generatedAtUtc: string | null;
+  evidenceLinks: OperationsEvidenceLink[];
+}
+
+export interface OperationsReportPackReadiness {
+  isReady: boolean;
+  reportPackId: string | null;
+  blockingReason: string | null;
+  evidenceLinks: OperationsEvidenceLink[];
+}
+
+export interface OperationsContinuityWorkflow extends OperationsContinuityWorkflowSummary {
+  brokerIntakeState: OperationsBrokerIntakeState;
+  securityMasterState: OperationsSecurityMasterState;
+  ledgerPostingState: OperationsLedgerPostingState;
+  reconciliationState: OperationsReconciliationState;
+  approvalState: OperationsApprovalState;
+  timeline: OperationsTimelineEntry[];
+  breakCases: OperationsBreakCase[];
+  ledgerPreview: OperationsLedgerPreview | null;
+  approvals: OperationsApproval[];
+  reportPackReadiness: OperationsReportPackReadiness;
+  evidenceLinks: OperationsEvidenceLink[];
+  blockers: OperationsWorkflowBlocker[];
+}
+
 export type EvidenceStatus = "Unknown" | "Ready" | "ReviewRequired" | "Blocked" | "Stale" | "Missing";
 
 export interface EvidenceSubject {

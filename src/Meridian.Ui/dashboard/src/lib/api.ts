@@ -31,6 +31,8 @@ import type {
   MetricSnapshot,
   NetSymbolPosition,
   OperatorInbox,
+  OperationsContinuityWorkflow,
+  OperationsContinuityWorkflowSummary,
   OrderResult,
   OrderSubmitRequest,
   PaperSessionSummary,
@@ -161,6 +163,8 @@ import {
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
   workstationOperatorInboxEndpoint,
+  workstationOperationsContinuityDetailEndpoint,
+  workstationOperationsContinuityEndpoint,
   workstationRunAttributionEndpoint,
   workstationRunCompareEndpoint,
   workstationRunContinuityEndpoint,
@@ -433,6 +437,17 @@ export function getWorkflowLibrary(options: ApiRequestOptions = {}) {
 
 export function getWorkflowPresets(options: ApiRequestOptions = {}) {
   return getJson<WorkflowPresetLibrary>(WORKSTATION_API_ENDPOINTS.workflowPresets, options);
+}
+
+export function getOperationsContinuityWorkflows(
+  filters: { fundAccountId?: string; periodId?: string; status?: string } = {},
+  options: ApiRequestOptions = {}
+) {
+  return getJson<OperationsContinuityWorkflowSummary[]>(workstationOperationsContinuityEndpoint(filters), options);
+}
+
+export function getOperationsContinuityWorkflow(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsContinuityWorkflow>(workstationOperationsContinuityDetailEndpoint(workflowId), options);
 }
 
 export function getEvidenceSubjects(options: ApiRequestOptions = {}) {

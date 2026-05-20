@@ -5,6 +5,7 @@ using Meridian.Application.DirectLending;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Store;
 using Meridian.Infrastructure.Adapters.Polygon;
@@ -120,6 +121,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(ILedgerJournalStore));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(ITransactionalLedgerJournalStore));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(LedgerMigrationRunner));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(ILedgerBookService));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(PostgresOperationsContinuityStore));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IOperationsContinuityRepository));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IOperationsWorkflowAuditStore));

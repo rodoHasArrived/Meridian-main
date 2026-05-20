@@ -1,0 +1,363 @@
+import { AlertTriangle, ArrowRight, GitBranch, ListChecks, RefreshCcw, ShieldCheck, Workflow } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { cn } from "@/lib/utils";
+import {
+  useOperationsContinuityScreenViewModel,
+  type OperationsContinuityBlockerRow,
+  type OperationsContinuityGateRow,
+  type OperationsContinuityTimelineRow,
+  type OperationsContinuityTone,
+  type OperationsContinuityWorkflowRow
+} from "@/screens/operations-continuity-screen.view-model";
+
+const toneBadge: Record<OperationsContinuityTone, "success" | "warning" | "danger" | "outline"> = {
+  ready: "success",
+  review: "warning",
+  blocked: "danger",
+  neutral: "outline"
+};
+
+const tonePanel: Record<OperationsContinuityTone, string> = {
+  ready: "border-success/35 bg-success/10",
+  review: "border-warning/35 bg-warning/10",
+  blocked: "border-danger/35 bg-danger/10",
+  neutral: "border-border/70 bg-secondary/25"
+};
+
+const workflowColumns: DenseDataTableColumn<OperationsContinuityWorkflowRow>[] = [
+  {
+    id: "workflow",
+    label: "Workflow",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.title}</span>
+        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.subtitle}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+  },
+  {
+    id: "gates",
+    label: "Gates",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block font-medium text-foreground">{row.gatesLabel}</span>
+        <span className="block text-muted-foreground">{row.blockersLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "updated",
+    label: "Updated",
+    render: (row) => <span className="font-mono text-xs text-muted-foreground">{row.updatedLabel}</span>
+  }
+];
+
+const gateColumns: DenseDataTableColumn<OperationsContinuityGateRow>[] = [
+  {
+    id: "gate",
+    label: "Gate",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.label}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+  },
+  {
+    id: "required",
+    label: "Scope",
+    render: (row) => <span className="text-xs text-foreground/80">{row.requiredLabel}</span>
+  },
+  {
+    id: "completed",
+    label: "Completion",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.blockerCountLabel}</span>
+        <span className="block text-muted-foreground">{row.completedLabel}</span>
+      </span>
+    )
+  }
+];
+
+const blockerColumns: DenseDataTableColumn<OperationsContinuityBlockerRow>[] = [
+  {
+    id: "code",
+    label: "Blocker",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-mono text-xs font-semibold text-foreground">{row.code}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.message}</span>
+      </span>
+    )
+  },
+  {
+    id: "gate",
+    label: "Gate",
+    render: (row) => <span className="text-xs text-foreground/80">{row.gateLabel}</span>
+  },
+  {
+    id: "severity",
+    label: "Severity",
+    render: (row) => <Badge variant={toneBadge[row.severityTone]}>{row.severityLabel}</Badge>
+  },
+  {
+    id: "evidence",
+    label: "Evidence",
+    render: (row) => <span className="text-xs text-muted-foreground">{row.evidenceLabel}</span>
+  }
+];
+
+const timelineColumns: DenseDataTableColumn<OperationsContinuityTimelineRow>[] = [
+  {
+    id: "event",
+    label: "Event",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.title}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
+      </span>
+    )
+  },
+  {
+    id: "actor",
+    label: "Actor",
+    render: (row) => <span className="font-mono text-xs text-foreground/80">{row.actorLabel}</span>
+  },
+  {
+    id: "state",
+    label: "State",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.stateLabel}</span>
+        <span className="block font-mono text-muted-foreground">{row.hashLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "time",
+    label: "Time",
+    render: (row) => <span className="font-mono text-xs text-muted-foreground">{row.timestampLabel}</span>
+  }
+];
+
+export function OperationsContinuityScreen() {
+  const vm = useOperationsContinuityScreenViewModel();
+
+  return (
+    <div className="space-y-6">
+      <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
+
+      <section
+        role="region"
+        aria-label="Operations continuity control strip"
+        className="panel-surface-strong flex flex-wrap items-start justify-between gap-4 px-4 py-4"
+      >
+        <div className="min-w-0">
+          <div className="eyebrow-label">Accounting operations</div>
+          <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
+            {vm.title}
+          </h2>
+          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{vm.subtitle}</p>
+          {vm.errorText ? (
+            <p role="alert" className="mt-3 inline-flex items-center gap-2 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+              <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+              {vm.errorText}
+            </p>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Badge variant="outline">{vm.workflowsSummaryLabel}</Badge>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void vm.refresh()}
+            busy={vm.reloadBusy}
+            busyLabel={vm.reloadLabel}
+            disabled={vm.reloadDisabled}
+            disabledReason={vm.reloadDisabledReason}
+            aria-label={vm.reloadAriaLabel}
+          >
+            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+            {vm.reloadLabel}
+          </Button>
+        </div>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[1fr_0.75fr]">
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Workflow className="h-5 w-5 text-primary" aria-hidden="true" />
+              Workflows
+            </CardTitle>
+            <CardDescription>Select a workflow to inspect close-lane gates, blockers, next action, and timeline.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={workflowColumns}
+              rows={vm.workflows}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              getRowSelectAriaLabel={(row) => `Open ${row.ariaLabel}`}
+              getRowAriaExpanded={(row) => vm.selectedWorkflowId === row.id}
+              onRowSelect={(row) => vm.selectWorkflow(row.id)}
+              selectedRowId={vm.selectedWorkflowId}
+              emptyText={vm.workflowsEmptyText}
+              ariaLabel={vm.workflowsTableLabel}
+            />
+          </CardContent>
+        </Card>
+
+        <Card className={cn("border", tonePanel[vm.nextAction.statusTone])}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <ArrowRight className="h-5 w-5 text-primary" aria-hidden="true" />
+                  Next action
+                </CardTitle>
+                <CardDescription>{vm.nextAction.detail}</CardDescription>
+              </div>
+              <Badge variant={toneBadge[vm.nextAction.statusTone]}>
+                {vm.nextAction.disabled ? "Unavailable" : "Ready"}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="font-semibold text-foreground">{vm.nextAction.title}</p>
+              {vm.nextAction.disabledReason ? (
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.nextAction.disabledReason}</p>
+              ) : null}
+            </div>
+            {vm.nextAction.href ? (
+              <Button asChild disabled={vm.nextAction.disabled} disabledReason={vm.nextAction.disabledReason}>
+                <Link to={vm.nextAction.href} aria-label={vm.nextAction.ariaLabel}>
+                  {vm.nextAction.label}
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </Button>
+            ) : (
+              <Button type="button" disabled disabledReason={vm.nextAction.disabledReason}>
+                {vm.nextAction.label}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      {vm.selectedDetail ? (
+        <section className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+          <Card className={cn("panel-surface border", tonePanel[vm.selectedDetail.statusTone])}>
+            <CardHeader>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
+                    {vm.selectedDetail.title}
+                  </CardTitle>
+                  <CardDescription>{vm.selectedDetail.subtitle}</CardDescription>
+                </div>
+                <Badge variant={toneBadge[vm.selectedDetail.statusTone]}>{vm.selectedDetail.statusLabel}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-3 sm:grid-cols-2">
+                {vm.selectedDetail.metadata.map((item) => (
+                  <div key={item.label} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+                    <dt className="text-[11px] font-medium uppercase text-muted-foreground">{item.label}</dt>
+                    <dd className="mt-1 break-words font-mono text-xs text-foreground">{item.value}</dd>
+                  </div>
+                ))}
+              </dl>
+              {vm.detailErrorText ? (
+                <p role="alert" className="mt-3 inline-flex items-center gap-2 text-sm text-danger">
+                  <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                  {vm.detailErrorText}
+                </p>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <Card className="panel-surface">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+                {vm.gatesLabel}
+              </CardTitle>
+              <CardDescription>Server-derived checkpoints for the selected close workflow.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DenseDataTable
+                columns={gateColumns}
+                rows={vm.gates}
+                getRowId={(row) => row.id}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                emptyText={vm.gatesEmptyText}
+                ariaLabel="Operations continuity gates"
+              />
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
+      <section className="grid gap-4 xl:grid-cols-2">
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-primary" aria-hidden="true" />
+              {vm.blockersLabel}
+            </CardTitle>
+            <CardDescription>Open gate and workflow blockers that explain why the next action may be disabled or routed.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={blockerColumns}
+              rows={vm.blockers}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.blockersEmptyText}
+              ariaLabel="Operations continuity blockers"
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GitBranch className="h-5 w-5 text-primary" aria-hidden="true" />
+              {vm.timelineLabel}
+            </CardTitle>
+            <CardDescription>Append-only workflow events from the shared audit timeline.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={timelineColumns}
+              rows={vm.timeline}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.timelineEmptyText}
+              ariaLabel="Operations continuity timeline"
+            />
+          </CardContent>
+        </Card>
+      </section>
+    </div>
+  );
+}

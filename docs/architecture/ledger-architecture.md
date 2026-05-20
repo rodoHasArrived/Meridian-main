@@ -169,7 +169,10 @@ the service commits the journal append, workflow audit append, and workflow snap
 that single commit seam. Production hosts enable the PostgreSQL path with
 `MERIDIAN_LEDGER_CONNECTION_STRING`; `LedgerStartup` runs ledger migrations and registers
 `PostgresOperationsContinuityStore` for workflow snapshots, audit timeline reads, and transactional
-ledger-post commits. When the transactional store is not registered, the workstation file-backed
+ledger-post commits. The live integration fixture `OperationsContinuityPostgresRoundTripTests` can
+use either `MERIDIAN_LEDGER_CONNECTION_STRING` or Testcontainers PostgreSQL to prove the workflow
+snapshot, audit hash chain, and durable journal append round-trip through one migrated schema. When
+the transactional store is not registered, the workstation file-backed
 mode keeps the split persistence path: await `ILedgerJournalStore.AppendAsync`, append audit, then
 save the workflow snapshot. If no ledger store or transactional commit store is registered, or the
 candidate is missing or invalid, the command returns a structured validation failure and does not

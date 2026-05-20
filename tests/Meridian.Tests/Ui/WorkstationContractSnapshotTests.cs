@@ -24,7 +24,7 @@ public sealed class WorkstationContractSnapshotTests
     {
         var descriptor = BuildDescriptor();
         var actualHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(descriptor)));
-        var approvedHash = "C99F3953127AEAE32B9E3260D2554A7FF92776B5AA7CA00D44488E53E13A320";
+        var approvedHash = "C99F3953127AEAE32B9E3260D2554A7FF92776B5A73F07D9D11E7D2218C2B695";
         Assert.Equal(approvedHash, actualHash);
     }
 

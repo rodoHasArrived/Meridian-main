@@ -12,6 +12,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   workflowSummary: "/api/workstation/workflow-summary",
   workflowLibrary: "/api/workstation/workflows",
   workflowPresets: "/api/workstation/workflows/presets",
+  operationsContinuity: "/api/workstation/operations/continuity",
   runHistory: "/api/workstation/runs/history",
   runTimeline: "/api/workstation/runs/timeline",
   runSweeps: "/api/workstation/runs/sweeps",
@@ -219,6 +220,30 @@ export function workstationWorkflowPresetPinEndpoint(presetId: string): string {
 
 export function workstationWorkflowPresetUsedEndpoint(presetId: string): string {
   return `${workstationWorkflowPresetEndpoint(presetId)}/used`;
+}
+
+export function workstationOperationsContinuityEndpoint(options: {
+  fundAccountId?: string;
+  periodId?: string;
+  status?: string;
+} = {}): string {
+  return `${WORKSTATION_API_ENDPOINTS.operationsContinuity}${queryString(options)}`;
+}
+
+export function workstationOperationsContinuityDetailEndpoint(workflowId: string): string {
+  return `${WORKSTATION_API_ENDPOINTS.operationsContinuity}/${pathSegment(workflowId, "workflowId")}`;
+}
+
+export function workstationOperationsContinuityTimelineEndpoint(workflowId: string): string {
+  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/timeline`;
+}
+
+export function workstationOperationsContinuityBreaksEndpoint(workflowId: string): string {
+  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/breaks`;
+}
+
+export function workstationOperationsContinuityLedgerPreviewEndpoint(workflowId: string): string {
+  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/ledger-preview`;
 }
 
 export function workstationRunLedgerEndpoint(runId: string): string {
