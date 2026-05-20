@@ -13,6 +13,7 @@ using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage;
+using Meridian.Storage.Ledger;
 using Meridian.Storage.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Promotions;
@@ -118,7 +119,12 @@ public static class WorkstationServiceCollectionExtensions
             var logger = sp.GetRequiredService<ILogger<FileOperationsWorkflowAuditStore>>();
             return new FileOperationsWorkflowAuditStore(ResolveWorkstationDataDirectory(sp), logger);
         });
-        services.TryAddSingleton<IOperationsContinuityWorkflowService, OperationsContinuityWorkflowService>();
+        services.TryAddSingleton<IOperationsContinuityWorkflowService>(sp =>
+            new OperationsContinuityWorkflowService(
+                sp.GetRequiredService<IOperationsContinuityRepository>(),
+                sp.GetRequiredService<IOperationsWorkflowAuditStore>(),
+                sp.GetRequiredService<IOperationsStatusDerivationService>(),
+                sp.GetService<ILedgerJournalStore>()));
 
         services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
         services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();

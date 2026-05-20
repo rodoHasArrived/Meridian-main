@@ -13,4 +13,5 @@ public interface IAccountManagementService
     Task<BankStatementBatchDto> IngestBankStatementAsync(IngestBankStatementRequest request, CancellationToken ct = default);
     Task<AccountReconciliationRunDto> ReconcileAccountAsync(ReconcileAccountRequest request, CancellationToken ct = default);
     Task<AccountSyncHistoryEntryDto> RecordSyncHistoryAsync(RecordAccountSyncHistoryRequest request, CancellationToken ct = default);
+    Task<MarginSnapshotDto> RecordMarginSnapshotAsync(RecordMarginSnapshotRequest request, CancellationToken ct = default);
 }

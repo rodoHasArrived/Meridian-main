@@ -1,6 +1,10 @@
 using FluentAssertions;
 using Meridian.Application.OperationsContinuity;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Application;
@@ -212,7 +216,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             LedgerBatchId: "ledger-batch-1",
             PostingKind: "period-close",
             PeriodOpen: true,
-            Rationale: "Posted validated accounting journals"));
+            Rationale: "Posted validated accounting journals",
+            JournalCandidate: CreateJournalCandidate()));
         var reconciled = await service.RunReconciliationAsync(workflowId, new OperationsReconciliationRunRequestDto(
             posted.Workflow!.Version,
             "ops-user",
@@ -364,6 +369,55 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         result.Success.Should().BeFalse();
         result.Blockers.Should().ContainSingle(blocker => blocker.Code == "LEDGER_POSTING_REQUIRED");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldAppendDurableJournalCandidateBeforeWorkflowPosting()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateJournalCandidate();
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-1",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeTrue();
+        journalStore.Appended.Should().ContainSingle();
+        journalStore.Appended[0].PeriodId.Should().Be(candidate.PeriodId);
+        journalStore.Appended[0].AggregateId.Should().Be(candidate.AggregateId);
+        journalStore.Appended[0].Entry.IsBalanced.Should().BeTrue();
+        result.Workflow!.LedgerPostingState.Should().Be(OperationsLedgerPostingStateDto.Complete);
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().Contain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectSuccessfulPostWhenJournalStoreIsMissing()
+    {
+        var service = CreateService(out _, out var auditStore, registerLedgerJournalStore: false);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-1",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: CreateJournalCandidate()));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("LEDGER_JOURNAL_STORE_UNAVAILABLE");
+        result.Blockers.Should().ContainSingle(blocker => blocker.Code == "LEDGER_JOURNAL_STORE_UNAVAILABLE");
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
     }
 
     [Fact]
@@ -586,12 +640,18 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
     private static OperationsContinuityWorkflowService CreateService(
         out InMemoryOperationsContinuityRepository repository,
-        out InMemoryOperationsWorkflowAuditStore auditStore)
+        out InMemoryOperationsWorkflowAuditStore auditStore,
+        RecordingLedgerJournalStore? ledgerJournalStore = null,
+        bool registerLedgerJournalStore = true)
     {
         var derivation = new OperationsStatusDerivationService();
         repository = new InMemoryOperationsContinuityRepository(derivation);
         auditStore = new InMemoryOperationsWorkflowAuditStore();
-        return new OperationsContinuityWorkflowService(repository, auditStore, derivation);
+        return new OperationsContinuityWorkflowService(
+            repository,
+            auditStore,
+            derivation,
+            registerLedgerJournalStore ? ledgerJournalStore ?? new RecordingLedgerJournalStore() : null);
     }
 
     private static async Task<OperationsContinuityWorkflowDto> CreateLedgerValidatedWorkflowAsync(
@@ -638,9 +698,40 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             LedgerBatchId: "ledger-batch-1",
             PostingKind: "period-close",
-            PeriodOpen: true));
+            PeriodOpen: true,
+            JournalCandidate: CreateJournalCandidate()));
         return posted.Workflow!;
     }
+
+    private static OperationsLedgerJournalCandidateDto CreateJournalCandidate() =>
+        new(
+            JournalEntryId: null,
+            AggregateId: Guid.NewGuid(),
+            PeriodId: Guid.NewGuid(),
+            Timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            Description: "Operations continuity month-end posting",
+            Lines:
+            [
+                new OperationsLedgerJournalLineDto(
+                    EntryId: null,
+                    AccountName: "Cash",
+                    AccountType: nameof(LedgerAccountType.Asset),
+                    Debit: 100m,
+                    Credit: 0m),
+                new OperationsLedgerJournalLineDto(
+                    EntryId: null,
+                    AccountName: "Interest income",
+                    AccountType: nameof(LedgerAccountType.Revenue),
+                    Debit: 0m,
+                    Credit: 100m)
+            ],
+            AccountingBasis: AccountingBasisKindDto.Primary,
+            AccountingPolicyId: "legacy-v1",
+            AccountingPolicyVersion: "legacy-v1",
+            PostingKind: LedgerPostingKindDto.Originating,
+            Metadata: new OperationsJournalEntryMetadataDto(
+                ActivityType: "operations-continuity",
+                LedgerBook: "fund-close"));
 
     private static OperationsWorkflowAuditDraft CreateAuditDraft(
         Guid workflowId,
@@ -662,4 +753,82 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "Monthly close evidence",
             "corr-1",
             []);
+
+    private sealed class RecordingLedgerJournalStore : ILedgerJournalStore
+    {
+        public List<LedgerJournalEntryWrite> Appended { get; } = [];
+
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!entry.Entry.IsBalanced)
+            {
+                throw new LedgerValidationException("Journal entry must be balanced.");
+            }
+
+            Appended.Add(entry);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
+        }
+
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerAccountingPeriod?>(null);
+        }
+
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+            Guid? ledgerBookId = null,
+            string? status = null,
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>([]);
+        }
+
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(period);
+        }
+
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerBookRecord?>(null);
+        }
+
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            FundStructureNodeKindDto? fundStructureNodeKind = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerBookRecord>>([]);
+        }
+
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(book);
+        }
+    }
 }

@@ -1,4 +1,7 @@
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 
 namespace Meridian.Application.OperationsContinuity;
 
@@ -99,15 +102,18 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     private readonly IOperationsContinuityRepository _repository;
     private readonly IOperationsWorkflowAuditStore _auditStore;
     private readonly IOperationsStatusDerivationService _statusDerivation;
+    private readonly ILedgerJournalStore? _ledgerJournalStore;
 
     public OperationsContinuityWorkflowService(
         IOperationsContinuityRepository repository,
         IOperationsWorkflowAuditStore auditStore,
-        IOperationsStatusDerivationService statusDerivation)
+        IOperationsStatusDerivationService statusDerivation,
+        ILedgerJournalStore? ledgerJournalStore = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _auditStore = auditStore ?? throw new ArgumentNullException(nameof(auditStore));
         _statusDerivation = statusDerivation ?? throw new ArgumentNullException(nameof(statusDerivation));
+        _ledgerJournalStore = ledgerJournalStore;
     }
 
     public async Task<OperationsTransitionResultDto> StartWorkflowAsync(
@@ -396,22 +402,127 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return await ApplyCommandAsync(
-            workflowId,
-            request.ExpectedVersion,
-            request.Actor,
-            request.Rationale,
-            request.CorrelationId,
-            request.EvidenceLinks,
-            eventType: "ledger-posted",
-            gate: OperationsGateKeyDto.LedgerPosting,
-            precondition: static workflow => workflow.GetPostLedgerEntriesTransitionBlocker(),
-            command: (workflow, evidence, now) =>
+        if (workflowId == Guid.Empty)
+        {
+            return Failure("VALIDATION_FAILED", "Workflow id is required.",
+            [
+                new OperationsWorkflowBlockerDto("WORKFLOW_ID_REQUIRED", "Workflow id is required.", null, "Error", [])
+            ]);
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Actor))
+        {
+            return Failure("VALIDATION_FAILED", "Actor is required for workflow transitions.",
+            [
+                new OperationsWorkflowBlockerDto(
+                    "ACTOR_REQUIRED",
+                    "Actor is required for workflow transitions.",
+                    OperationsGateKeyDto.LedgerPosting,
+                    "Error",
+                    [])
+            ]);
+        }
+
+        var workflow = await _repository.GetAsync(workflowId, ct).ConfigureAwait(false);
+        if (workflow is null)
+        {
+            return Failure("NOT_FOUND", "Workflow was not found.", []);
+        }
+
+        if (workflow.Version != request.ExpectedVersion)
+        {
+            return Failure(
+                "VERSION_MISMATCH",
+                $"Workflow version {workflow.Version} does not match expected version {request.ExpectedVersion}.",
+                [
+                    new OperationsWorkflowBlockerDto(
+                        "WORKFLOW_VERSION_MISMATCH",
+                        "Refresh the workflow before retrying the command.",
+                        null,
+                        "Error",
+                        [])
+                ]);
+        }
+
+        if (workflow.GetPostLedgerEntriesTransitionBlocker() is { } preconditionBlocker)
+        {
+            return Failure("INVALID_STATE_TRANSITION", preconditionBlocker.Message, [preconditionBlocker]);
+        }
+
+        var evidence = NormalizeEvidence(request.EvidenceLinks);
+        var requestBlockers = ValidateLedgerPostRequest(request, evidence);
+        if (requestBlockers.Count == 0)
+        {
+            if (_ledgerJournalStore is null)
             {
-                workflow.PostLedgerEntries(request, evidence, now);
-                return null;
-            },
-            ct: ct).ConfigureAwait(false);
+                return Failure(
+                    "LEDGER_JOURNAL_STORE_UNAVAILABLE",
+                    "Ledger posting requires a durable ledger journal store registration.",
+                    [
+                        new OperationsWorkflowBlockerDto(
+                            "LEDGER_JOURNAL_STORE_UNAVAILABLE",
+                            "Register ILedgerJournalStore before posting Operations Continuity ledger entries.",
+                            OperationsGateKeyDto.LedgerPosting,
+                            "Critical",
+                            evidence)
+                    ]);
+            }
+
+            if (!TryBuildJournalWrite(request, out var journalWrite, out var journalBlockers))
+            {
+                return Failure(
+                    "VALIDATION_FAILED",
+                    "Ledger journal candidate is invalid.",
+                    journalBlockers);
+            }
+
+            try
+            {
+                await _ledgerJournalStore.AppendAsync(journalWrite, ct).ConfigureAwait(false);
+            }
+            catch (LedgerValidationException ex)
+            {
+                return Failure(
+                    "LEDGER_JOURNAL_APPEND_REJECTED",
+                    "Ledger journal store rejected the posting candidate.",
+                    [
+                        new OperationsWorkflowBlockerDto(
+                            "LEDGER_JOURNAL_APPEND_REJECTED",
+                            ex.Message,
+                            OperationsGateKeyDto.LedgerPosting,
+                            "Critical",
+                            evidence)
+                    ]);
+            }
+        }
+
+        var fromStatus = _statusDerivation.Derive(workflow);
+        var fromGateStatus = workflow.LedgerPostingGate.Status;
+        var now = DateTimeOffset.UtcNow;
+        workflow.PostLedgerEntries(request, evidence, now);
+        var toStatus = _statusDerivation.Derive(workflow);
+        var toGateStatus = workflow.LedgerPostingGate.Status;
+        var audit = await _auditStore.AppendAsync(
+            new OperationsWorkflowAuditDraft(
+                workflow.WorkflowId,
+                workflow.FundAccountId,
+                workflow.PeriodId,
+                "ledger-posted",
+                fromStatus,
+                toStatus,
+                OperationsGateKeyDto.LedgerPosting,
+                fromGateStatus,
+                toGateStatus,
+                request.Actor.Trim(),
+                request.Rationale,
+                request.CorrelationId,
+                evidence),
+            ct).ConfigureAwait(false);
+
+        workflow.Touch(audit.OccurredAtUtc);
+        await _repository.SaveAsync(workflow, ct).ConfigureAwait(false);
+        var dto = await ToDtoAsync(workflow, ct).ConfigureAwait(false);
+        return Success(dto);
     }
 
     public async Task<OperationsTransitionResultDto> ValidateLedgerDraftAsync(
@@ -845,6 +956,241 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             .Where(static link => !string.IsNullOrWhiteSpace(link.EvidenceId))
             .Select(static link => link with { EvidenceId = link.EvidenceId.Trim() })
             .ToArray() ?? [];
+
+    private static IReadOnlyList<OperationsWorkflowBlockerDto> ValidateLedgerPostRequest(
+        OperationsLedgerPostRequestDto request,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
+    {
+        var blockers = new List<OperationsWorkflowBlockerDto>();
+        if (string.IsNullOrWhiteSpace(request.LedgerBatchId))
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_BATCH_ID_REQUIRED",
+                "Ledger posting must return a durable ledger batch id.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Critical",
+                evidenceLinks));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.PostingKind))
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_POSTING_KIND_REQUIRED",
+                "Ledger posting kind is required.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Error",
+                evidenceLinks));
+        }
+
+        if (!request.HasValidatedJournal)
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_VALIDATED_JOURNAL_REQUIRED",
+                "Ledger posting requires a validated journal draft.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Critical",
+                evidenceLinks));
+        }
+
+        if (!request.PeriodOpen)
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_PERIOD_CLOSED",
+                "Ledger posting into a closed or hard-closed period requires a governed adjustment path.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Critical",
+                evidenceLinks));
+        }
+
+        if (request.HasDuplicatePostingCandidate)
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_DUPLICATE_POSTING_CANDIDATE",
+                "Duplicate posting candidate detected for this source activity or generated accounting event.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Critical",
+                evidenceLinks));
+        }
+
+        return blockers;
+    }
+
+    private static bool TryBuildJournalWrite(
+        OperationsLedgerPostRequestDto request,
+        out LedgerJournalEntryWrite journalWrite,
+        out IReadOnlyList<OperationsWorkflowBlockerDto> blockers)
+    {
+        journalWrite = default!;
+        var candidate = request.JournalCandidate;
+        if (candidate is null)
+        {
+            blockers =
+            [
+                new OperationsWorkflowBlockerDto(
+                    "LEDGER_JOURNAL_CANDIDATE_REQUIRED",
+                    "Ledger posting requires a journal candidate that can be appended to the durable ledger journal store.",
+                    OperationsGateKeyDto.LedgerPosting,
+                    "Critical",
+                    NormalizeEvidence(request.EvidenceLinks))
+            ];
+            return false;
+        }
+
+        var validationBlockers = ValidateJournalCandidate(candidate, request.EvidenceLinks);
+        if (validationBlockers.Count > 0)
+        {
+            blockers = validationBlockers;
+            return false;
+        }
+
+        try
+        {
+            var journalEntryId = candidate.JournalEntryId.GetValueOrDefault();
+            if (journalEntryId == Guid.Empty)
+            {
+                journalEntryId = Guid.NewGuid();
+            }
+
+            var description = candidate.Description.Trim();
+            var lines = candidate.Lines
+                .Select(line =>
+                {
+                    _ = Enum.TryParse<LedgerAccountType>(line.AccountType, ignoreCase: true, out var accountType);
+                    return new LedgerEntry(
+                        line.EntryId.GetValueOrDefault() == Guid.Empty ? Guid.NewGuid() : line.EntryId.GetValueOrDefault(),
+                        journalEntryId,
+                        candidate.Timestamp,
+                        new LedgerAccount(
+                            line.AccountName.Trim(),
+                            accountType,
+                            NormalizeOptional(line.Symbol),
+                            NormalizeOptional(line.FinancialAccountId)),
+                        line.Debit,
+                        line.Credit,
+                        description);
+                })
+                .ToArray();
+
+            var entry = new JournalEntry(
+                journalEntryId,
+                candidate.Timestamp,
+                description,
+                lines,
+                ToJournalEntryMetadata(candidate.Metadata));
+
+            journalWrite = new LedgerJournalEntryWrite(
+                entry,
+                candidate.AggregateId,
+                candidate.PeriodId,
+                candidate.CommandId,
+                candidate.CorrelationId,
+                candidate.AccountingBasis,
+                NormalizePolicy(candidate.AccountingPolicyId),
+                NormalizePolicy(candidate.AccountingPolicyVersion),
+                NormalizeOptional(candidate.RuleId),
+                NormalizeOptional(candidate.RuleVersion),
+                candidate.SourceEventId,
+                candidate.SourceJournalEntryId,
+                candidate.PostingKind,
+                candidate.AdjustmentApproval);
+            blockers = [];
+            return true;
+        }
+        catch (LedgerValidationException ex)
+        {
+            blockers =
+            [
+                new OperationsWorkflowBlockerDto(
+                    "LEDGER_JOURNAL_CANDIDATE_INVALID",
+                    ex.Message,
+                    OperationsGateKeyDto.LedgerPosting,
+                    "Critical",
+                    NormalizeEvidence(request.EvidenceLinks))
+            ];
+            return false;
+        }
+    }
+
+    private static IReadOnlyList<OperationsWorkflowBlockerDto> ValidateJournalCandidate(
+        OperationsLedgerJournalCandidateDto candidate,
+        IReadOnlyList<OperationsEvidenceLinkDto>? evidenceLinks)
+    {
+        var evidence = NormalizeEvidence(evidenceLinks);
+        var blockers = new List<OperationsWorkflowBlockerDto>();
+        if (candidate.AggregateId == Guid.Empty)
+        {
+            blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_AGGREGATE_ID_REQUIRED", "Ledger journal candidate aggregate id is required.", evidence));
+        }
+
+        if (candidate.PeriodId == Guid.Empty)
+        {
+            blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_PERIOD_ID_REQUIRED", "Ledger journal candidate period id is required.", evidence));
+        }
+
+        if (candidate.Timestamp == default)
+        {
+            blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_TIMESTAMP_REQUIRED", "Ledger journal candidate timestamp is required.", evidence));
+        }
+
+        if (string.IsNullOrWhiteSpace(candidate.Description))
+        {
+            blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_DESCRIPTION_REQUIRED", "Ledger journal candidate description is required.", evidence));
+        }
+
+        if (candidate.Lines is null || candidate.Lines.Count == 0)
+        {
+            blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_LINES_REQUIRED", "Ledger journal candidate requires at least one debit or credit line.", evidence));
+        }
+
+        foreach (var line in candidate.Lines ?? [])
+        {
+            if (string.IsNullOrWhiteSpace(line.AccountName))
+            {
+                blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_ACCOUNT_NAME_REQUIRED", "Every ledger journal candidate line requires an account name.", evidence));
+            }
+
+            if (!Enum.TryParse<LedgerAccountType>(line.AccountType, ignoreCase: true, out _))
+            {
+                blockers.Add(CreateJournalCandidateBlocker(
+                    "LEDGER_JOURNAL_ACCOUNT_TYPE_INVALID",
+                    $"Ledger journal candidate account type '{line.AccountType}' is invalid.",
+                    evidence));
+            }
+        }
+
+        return blockers;
+    }
+
+    private static OperationsWorkflowBlockerDto CreateJournalCandidateBlocker(
+        string code,
+        string message,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks) =>
+        new(code, message, OperationsGateKeyDto.LedgerPosting, "Critical", evidenceLinks);
+
+    private static JournalEntryMetadata? ToJournalEntryMetadata(OperationsJournalEntryMetadataDto? metadata) =>
+        metadata is null
+            ? null
+            : new JournalEntryMetadata(
+                ActivityType: NormalizeOptional(metadata.ActivityType),
+                Symbol: NormalizeOptional(metadata.Symbol),
+                SecurityId: metadata.SecurityId,
+                OrderId: metadata.OrderId,
+                FillId: metadata.FillId,
+                ProjectId: NormalizeOptional(metadata.ProjectId),
+                LedgerBook: NormalizeOptional(metadata.LedgerBook),
+                LedgerView: null,
+                ScenarioId: NormalizeOptional(metadata.ScenarioId),
+                StrategyId: NormalizeOptional(metadata.StrategyId),
+                FinancialAccountId: NormalizeOptional(metadata.FinancialAccountId),
+                CounterpartyAccountId: NormalizeOptional(metadata.CounterpartyAccountId),
+                Institution: NormalizeOptional(metadata.Institution),
+                Tags: metadata.Tags);
+
+    private static string NormalizePolicy(string value) =>
+        string.IsNullOrWhiteSpace(value) ? "legacy-v1" : value.Trim();
+
+    private static string? NormalizeOptional(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static IReadOnlyList<OperationsEvidenceLinkDto> EnsureReportPackEvidence(
         string? reportPackId,

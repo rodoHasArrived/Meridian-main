@@ -60,7 +60,8 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         List<BankStatementLineDto> BankLines,
         List<AccountReconciliationRunDto> ReconciliationRuns,
         List<AccountReconciliationResultDto> ReconciliationResults,
-        List<AccountSyncHistoryEntryDto> SyncHistory)
+        List<AccountSyncHistoryEntryDto> SyncHistory,
+        List<MarginSnapshotDto> MarginSnapshots)
     {
         public StoredAccount WithSummary(AccountSummaryDto summary) =>
             this with { Summary = summary };
@@ -114,7 +115,8 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
                 BankLines: [],
                 ReconciliationRuns: [],
                 ReconciliationResults: [],
-                SyncHistory: []);
+                SyncHistory: [],
+                MarginSnapshots: []);
             snapshot = CaptureSnapshotLocked();
         }
 
@@ -861,12 +863,144 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         }
     }
 
+    public async Task<MarginSnapshotDto> RecordMarginSnapshotAsync(
+        RecordMarginSnapshotRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
+        var currency = RequireText(request.Currency, nameof(request.Currency)).ToUpperInvariant();
+        var correlationId = NormalizeOptional(request.CorrelationId);
+        var requirements = (request.Requirements ?? Array.Empty<MarginRequirementDto>())
+            .Select(static requirement => requirement with
+            {
+                SecurityId = NormalizeOptional(requirement.SecurityId),
+                Symbol = NormalizeOptional(requirement.Symbol),
+                CollateralClass = NormalizeOptional(requirement.CollateralClass),
+                EvidencePath = NormalizeOptional(requirement.EvidencePath)
+            })
+            .ToArray();
+        var warnings = (request.Warnings ?? Array.Empty<string>())
+            .Where(static warning => !string.IsNullOrWhiteSpace(warning))
+            .Select(static warning => warning.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        MarginSnapshotDto snapshot;
+        (long Version, string Json)? persistedSnapshot;
+        lock (_gate)
+        {
+            if (!_accounts.TryGetValue(request.AccountId, out var stored))
+            {
+                throw new InvalidOperationException($"Account {request.AccountId} not found.");
+            }
+
+            var existingIndex = string.IsNullOrWhiteSpace(correlationId)
+                ? -1
+                : stored.MarginSnapshots.FindIndex(existing =>
+                    existing.AccountId == request.AccountId
+                    && string.Equals(existing.CorrelationId, correlationId, StringComparison.OrdinalIgnoreCase));
+
+            snapshot = new MarginSnapshotDto(
+                existingIndex >= 0 ? stored.MarginSnapshots[existingIndex].MarginSnapshotId : Guid.NewGuid(),
+                request.AccountId,
+                request.EffectiveAt,
+                request.RecordedAt ?? DateTimeOffset.UtcNow,
+                currency,
+                request.MarginType,
+                request.MarginCallStatus,
+                request.InitialMargin,
+                request.MaintenanceMargin,
+                request.ExcessLiquidity,
+                request.BuyingPower,
+                request.SpecialMemorandumAccount,
+                request.LoanBalance,
+                request.DebitBalance,
+                request.CreditBalance,
+                request.CollateralValue,
+                request.MarginableSecuritiesValue,
+                request.NonMarginableSecuritiesValue,
+                request.MarginUtilization,
+                Math.Max(0, request.MissingRequirementCount),
+                Math.Max(0, request.MissingCollateralClassificationCount),
+                Math.Max(0, request.ConcentrationLimitBreachCount),
+                request.IsLiveAccount,
+                request.ApprovedForLiveMargin,
+                requirements,
+                warnings,
+                NormalizeOptional(request.ProviderId),
+                NormalizeOptional(request.ExternalAccountId),
+                request.FreshUntil,
+                NormalizeOptional(request.AgreementEvidencePath),
+                NormalizeOptional(request.SnapshotEvidencePath),
+                correlationId);
+
+            if (existingIndex >= 0)
+            {
+                stored.MarginSnapshots[existingIndex] = snapshot;
+            }
+            else
+            {
+                stored.MarginSnapshots.Add(snapshot);
+            }
+
+            persistedSnapshot = CaptureSnapshotLocked();
+        }
+
+        await PersistSnapshotAsync(persistedSnapshot, ct).ConfigureAwait(false);
+        return snapshot;
+    }
+
+    public Task<IReadOnlyList<MarginSnapshotDto>> GetMarginSnapshotsAsync(
+        Guid accountId,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_gate)
+        {
+            if (!_accounts.TryGetValue(accountId, out var stored))
+            {
+                return Task.FromResult<IReadOnlyList<MarginSnapshotDto>>([]);
+            }
+
+            var results = stored.MarginSnapshots
+                .OrderByDescending(static snapshot => snapshot.EffectiveAt)
+                .ThenByDescending(static snapshot => snapshot.RecordedAt)
+                .ToArray();
+            return Task.FromResult<IReadOnlyList<MarginSnapshotDto>>(results);
+        }
+    }
+
+    public Task<MarginSnapshotDto?> GetLatestMarginSnapshotAsync(
+        Guid accountId,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_gate)
+        {
+            if (!_accounts.TryGetValue(accountId, out var stored))
+            {
+                return Task.FromResult<MarginSnapshotDto?>(null);
+            }
+
+            var latest = stored.MarginSnapshots
+                .OrderByDescending(static snapshot => snapshot.EffectiveAt)
+                .ThenByDescending(static snapshot => snapshot.RecordedAt)
+                .FirstOrDefault();
+            return Task.FromResult(latest);
+        }
+    }
+
     private static AccountReadinessSnapshotDto BuildReadinessSnapshot(StoredAccount stored, DateTimeOffset now)
     {
         var account = stored.Summary;
         var latestSync = stored.SyncHistory
             .OrderByDescending(static entry => entry.AttemptedAt)
             .ThenByDescending(static entry => entry.CompletedAt)
+            .FirstOrDefault();
+        var latestMargin = stored.MarginSnapshots
+            .OrderByDescending(static entry => entry.EffectiveAt)
+            .ThenByDescending(static entry => entry.RecordedAt)
             .FirstOrDefault();
         var lastSuccessfulSync = stored.SyncHistory
             .Where(static entry => entry.Status is AccountSyncStatusDto.Succeeded or AccountSyncStatusDto.Degraded)
@@ -962,6 +1096,11 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             }
         }
 
+        if (RequiresMarginReadiness(account, latestSync, latestMargin))
+        {
+            AddMarginReadinessIssues(account, latestSync, latestMargin, now, issues);
+        }
+
         if (string.IsNullOrWhiteSpace(account.LedgerReference))
         {
             issues.Add(new AccountReadinessIssueDto(
@@ -1002,6 +1141,185 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             Issues: issues);
     }
 
+    private static bool RequiresMarginReadiness(
+        AccountSummaryDto account,
+        AccountSyncHistoryEntryDto? latestSync,
+        MarginSnapshotDto? latestMargin)
+        => account.AccountType == AccountTypeDto.Margin
+           || latestMargin is not null
+           || string.Equals(latestSync?.Capability, "margin-sync", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(latestSync?.Capability, "brokerage-margin", StringComparison.OrdinalIgnoreCase);
+
+    private static void AddMarginReadinessIssues(
+        AccountSummaryDto account,
+        AccountSyncHistoryEntryDto? latestSync,
+        MarginSnapshotDto? latestMargin,
+        DateTimeOffset now,
+        List<AccountReadinessIssueDto> issues)
+    {
+        if (latestMargin is null)
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.margin.snapshot.missing",
+                AccountReadinessSeverityDto.Critical,
+                "Margin snapshot missing",
+                "Margin account does not have an effective-dated margin snapshot.",
+                account.AccountId,
+                latestSync?.ProviderId,
+                latestSync?.ExternalAccountId,
+                latestSync?.Capability,
+                "Import or sync margin requirements before accepting account readiness.",
+                ResolveEvidenceLink(latestSync)));
+            return;
+        }
+
+        var evidenceLink = ResolveMarginEvidenceLink(latestMargin) ?? ResolveEvidenceLink(latestSync);
+        if (latestMargin.MarginType == MarginModelTypeDto.Unsupported)
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.margin.model.unsupported",
+                AccountReadinessSeverityDto.Critical,
+                "Unsupported margin model",
+                "Latest margin snapshot uses an unsupported margin model.",
+                account.AccountId,
+                latestMargin.ProviderId,
+                latestMargin.ExternalAccountId,
+                "margin",
+                "Map the provider margin model to a supported Reg T, portfolio margin, or house margin policy.",
+                evidenceLink));
+        }
+
+        if (latestMargin.FreshUntil is { } freshUntil && freshUntil < now)
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.margin.snapshot.stale",
+                AccountReadinessSeverityDto.Warning,
+                "Margin snapshot is stale",
+                $"Latest margin snapshot was fresh until {freshUntil:O}.",
+                account.AccountId,
+                latestMargin.ProviderId,
+                latestMargin.ExternalAccountId,
+                "margin",
+                "Refresh margin state before relying on buying power, excess liquidity, or margin-call status.",
+                evidenceLink));
+        }
+
+        if (latestMargin.MissingRequirementCount > 0 || (latestMargin.Requirements.Count == 0 && latestMargin.MaintenanceMargin.GetValueOrDefault() > 0m))
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.margin.requirements.missing",
+                AccountReadinessSeverityDto.Critical,
+                "Margin requirement data missing",
+                latestMargin.MissingRequirementCount > 0
+                    ? $"{latestMargin.MissingRequirementCount} position-level margin requirement(s) are missing."
+                    : "Account-level maintenance margin exists without position-level margin requirements.",
+                account.AccountId,
+                latestMargin.ProviderId,
+                latestMargin.ExternalAccountId,
+                "margin",
+                "Sync or import provider position-level margin requirements before accepting readiness.",
+                evidenceLink));
+        }
+
+        if (latestMargin.ExcessLiquidity is < 0m)
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.margin.excess_liquidity.negative",
+                AccountReadinessSeverityDto.Critical,
+                "Negative excess liquidity",
+                $"Excess liquidity is {latestMargin.ExcessLiquidity.Value} {latestMargin.Currency}.",
+                account.AccountId,
+                latestMargin.ProviderId,
+                latestMargin.ExternalAccountId,
+                "margin",
+                "Review margin utilization and provider margin-call state before trading.",
+                evidenceLink));
+        }
+
+        if (latestMargin.MarginCallStatus is MarginCallStatusDto.Active or MarginCallStatusDto.Potential)
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                latestMargin.MarginCallStatus == MarginCallStatusDto.Active
+                    ? "account.margin.call.active"
+                    : "account.margin.call.potential",
+                latestMargin.MarginCallStatus == MarginCallStatusDto.Active
+                    ? AccountReadinessSeverityDto.Critical
+                    : AccountReadinessSeverityDto.Warning,
+                latestMargin.MarginCallStatus == MarginCallStatusDto.Active
+                    ? "Margin call active"
+                    : "Potential margin call",
+                $"Latest margin snapshot reports {latestMargin.MarginCallStatus} margin-call status.",
+                account.AccountId,
+                latestMargin.ProviderId,
+                latestMargin.ExternalAccountId,
+                "margin",
+                "Resolve or approve the margin exception before accepting account readiness.",
+                evidenceLink));
+        }
+
+        if (latestMargin.MissingCollateralClassificationCount > 0)
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.margin.collateral_classification.missing",
+                AccountReadinessSeverityDto.Warning,
+                "Collateral classification missing",
+                $"{latestMargin.MissingCollateralClassificationCount} collateral or position classification(s) are missing.",
+                account.AccountId,
+                latestMargin.ProviderId,
+                latestMargin.ExternalAccountId,
+                "margin",
+                "Classify collateral eligibility and haircuts before relying on margin availability.",
+                evidenceLink));
+        }
+
+        if (latestMargin.ConcentrationLimitBreachCount > 0)
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.margin.concentration_limit.breached",
+                AccountReadinessSeverityDto.Warning,
+                $"{latestMargin.ConcentrationLimitBreachCount} concentration limit breach(es)",
+                "Latest margin snapshot reports concentration-limit pressure.",
+                account.AccountId,
+                latestMargin.ProviderId,
+                latestMargin.ExternalAccountId,
+                "margin",
+                "Review concentration limits and margin exception approval before accepting readiness.",
+                evidenceLink));
+        }
+
+        if (latestMargin.IsLiveAccount && !latestMargin.ApprovedForLiveMargin)
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.margin.live_approval.missing",
+                AccountReadinessSeverityDto.Critical,
+                "Live margin approval missing",
+                "Live margin account has not been explicitly approved for governed live-account use.",
+                account.AccountId,
+                latestMargin.ProviderId,
+                latestMargin.ExternalAccountId,
+                "margin",
+                "Capture governance approval before using this live margin account for trading or posting.",
+                evidenceLink));
+        }
+
+        if (!string.IsNullOrWhiteSpace(latestSync?.ProviderId)
+            && !string.IsNullOrWhiteSpace(latestMargin.ProviderId)
+            && !string.Equals(latestSync.ProviderId, latestMargin.ProviderId, StringComparison.OrdinalIgnoreCase))
+        {
+            issues.Add(new AccountReadinessIssueDto(
+                "account.margin.provider_mismatch",
+                AccountReadinessSeverityDto.Warning,
+                "Margin provider mismatch",
+                $"Latest sync provider is {latestSync.ProviderId}, but latest margin snapshot provider is {latestMargin.ProviderId}.",
+                account.AccountId,
+                latestMargin.ProviderId,
+                latestMargin.ExternalAccountId,
+                "margin",
+                "Verify provider account mapping before accepting margin readiness.",
+                evidenceLink));
+        }
+    }
+
     private static AccountProviderLinkStatusDto InferProviderLinkStatus(AccountSummaryDto account)
     {
         if (!string.IsNullOrWhiteSpace(account.Institution))
@@ -1019,6 +1337,9 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
 
     private static string? ResolveEvidenceLink(AccountSyncHistoryEntryDto? latestSync)
         => NormalizeOptional(latestSync?.RawEvidencePath) ?? NormalizeOptional(latestSync?.ProjectionEvidencePath);
+
+    private static string? ResolveMarginEvidenceLink(MarginSnapshotDto? latestMargin)
+        => NormalizeOptional(latestMargin?.SnapshotEvidencePath) ?? NormalizeOptional(latestMargin?.AgreementEvidencePath);
 
     private static string RequireText(string? value, string parameterName)
     {
@@ -1114,7 +1435,8 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             BankLines = account.BankLines ?? [],
             ReconciliationRuns = account.ReconciliationRuns ?? [],
             ReconciliationResults = account.ReconciliationResults ?? [],
-            SyncHistory = account.SyncHistory ?? []
+            SyncHistory = account.SyncHistory ?? [],
+            MarginSnapshots = account.MarginSnapshots ?? []
         };
 
     public Task<IReadOnlyList<AccountSummaryDto>> ListAccountsAsync(AccountTypeDto? accountType, bool? isActive, string? currency, CancellationToken ct = default)

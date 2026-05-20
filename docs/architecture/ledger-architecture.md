@@ -160,6 +160,15 @@ hash. Broker import is intentionally separate from normalization. Ledger draftin
 separate from posting: validation can mark a journal preview ready, but reconciliation requires the
 explicit `ledger/post` command with a durable ledger batch reference.
 
+For successful postings, `OperationsLedgerPostRequestDto` now carries an
+`OperationsLedgerJournalCandidateDto`. The application service converts that candidate into a
+`LedgerJournalEntryWrite` and awaits `ILedgerJournalStore.AppendAsync` before the ledger posting
+gate is marked passed or the workflow audit event is written. If the store is not registered, or the
+candidate is missing or invalid, the command returns a structured validation failure and does not
+advance the workflow. Requests that fail posting posture checks such as closed period, duplicate
+candidate, missing batch id, or missing posting kind still update the workflow to a blocked ledger
+gate with an audit event and do not append a journal candidate.
+
 The command path now covers start, broker import, broker normalization, Security Master resolution,
 governed Security Master override approval, ledger draft, ledger validation, ledger posting,
 reconciliation run, break resolution, approval submit, approval approve/reject, close, and governed
@@ -244,7 +253,7 @@ Ledger data is exposed through the workstation endpoints under `/api/workstation
 | `POST /api/workstation/operations/continuity/{workflowId}/security-master/overrides/{overrideId}/approve` | Requires override approver, rationale, policy, expiration, and audit metadata |
 | `POST /api/workstation/operations/continuity/{workflowId}/ledger/draft` | Creates a ledger journal preview without committing it |
 | `POST /api/workstation/operations/continuity/{workflowId}/ledger/validate` | Validates balanced journal draft and period posture |
-| `POST /api/workstation/operations/continuity/{workflowId}/ledger/post` | Marks validated journal entries as posted with a durable batch reference before reconciliation |
+| `POST /api/workstation/operations/continuity/{workflowId}/ledger/post` | Appends a supplied journal candidate through `ILedgerJournalStore`, then marks the validated ledger gate posted with a durable batch reference before reconciliation |
 | `POST /api/workstation/operations/continuity/{workflowId}/reconciliation/run` | Runs expected-vs-actual reconciliation after ledger posting |
 | `POST /api/workstation/operations/continuity/{workflowId}/reconciliation/breaks/{breakId}/resolve` | Resolves or dismisses a break with rationale and evidence |
 | `POST /api/workstation/operations/continuity/{workflowId}/approval/submit` | Submits a clean workflow for reviewer approval with report-pack evidence |

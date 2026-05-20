@@ -13,6 +13,8 @@ using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
@@ -24,6 +26,7 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -313,7 +316,13 @@ public sealed class WorkstationEndpointsTests
         var validated = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/validate",
             new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "spoofed-user", true, true));
         var posted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/post",
-            new OperationsLedgerPostRequestDto(validated.Workflow!.Version, "spoofed-user", "ledger-batch-1", "period-close", true));
+            new OperationsLedgerPostRequestDto(
+                validated.Workflow!.Version,
+                "spoofed-user",
+                "ledger-batch-1",
+                "period-close",
+                true,
+                JournalCandidate: CreateOperationsLedgerJournalCandidate()));
         var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
             new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: []));
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
@@ -4267,8 +4276,37 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
         services.AddSingleton<IOperationsContinuityRepository, InMemoryOperationsContinuityRepository>();
         services.AddSingleton<IOperationsWorkflowAuditStore, InMemoryOperationsWorkflowAuditStore>();
+        services.AddSingleton<ILedgerJournalStore, RecordingLedgerJournalStore>();
         services.AddSingleton<IOperationsContinuityWorkflowService, OperationsContinuityWorkflowService>();
     }
+
+    private static OperationsLedgerJournalCandidateDto CreateOperationsLedgerJournalCandidate() =>
+        new(
+            JournalEntryId: null,
+            AggregateId: Guid.NewGuid(),
+            PeriodId: Guid.NewGuid(),
+            Timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            Description: "Operations continuity endpoint posting",
+            Lines:
+            [
+                new OperationsLedgerJournalLineDto(
+                    EntryId: null,
+                    AccountName: "Cash",
+                    AccountType: nameof(LedgerAccountType.Asset),
+                    Debit: 100m,
+                    Credit: 0m),
+                new OperationsLedgerJournalLineDto(
+                    EntryId: null,
+                    AccountName: "Interest income",
+                    AccountType: nameof(LedgerAccountType.Revenue),
+                    Debit: 0m,
+                    Credit: 100m)
+            ],
+            AccountingBasis: AccountingBasisKindDto.Primary,
+            AccountingPolicyId: "legacy-v1",
+            AccountingPolicyVersion: "legacy-v1",
+            PostingKind: LedgerPostingKindDto.Originating,
+            Metadata: new OperationsJournalEntryMetadataDto(ActivityType: "operations-continuity"));
 
     private static void RegisterPromotionServices(IServiceCollection services, string promotionRoot)
     {
@@ -5856,6 +5894,84 @@ public sealed class WorkstationEndpointsTests
 
         public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
             => Task.CompletedTask;
+    }
+
+    private sealed class RecordingLedgerJournalStore : ILedgerJournalStore
+    {
+        public List<LedgerJournalEntryWrite> Appended { get; } = [];
+
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!entry.Entry.IsBalanced)
+            {
+                throw new LedgerValidationException("Journal entry must be balanced.");
+            }
+
+            Appended.Add(entry);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
+        }
+
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerAccountingPeriod?>(null);
+        }
+
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+            Guid? ledgerBookId = null,
+            string? status = null,
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>([]);
+        }
+
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(period);
+        }
+
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerBookRecord?>(null);
+        }
+
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            FundStructureNodeKindDto? fundStructureNodeKind = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerBookRecord>>([]);
+        }
+
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(book);
+        }
     }
 
     private sealed class StubSecurityMasterIngestStatusService : ISecurityMasterIngestStatusService

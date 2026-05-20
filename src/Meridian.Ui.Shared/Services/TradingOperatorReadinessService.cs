@@ -1561,6 +1561,7 @@ public sealed class TradingOperatorReadinessService
             "replay",
             "reconciliation",
             "audit-controls",
+            "risk-rules",
             "promotion",
             "dk1-trust",
             "report-pack",

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Contracts.Workstation;
 
@@ -184,7 +185,52 @@ public sealed record OperationsLedgerPostRequestDto(
     bool HasDuplicatePostingCandidate = false,
     string? Rationale = null,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    OperationsLedgerJournalCandidateDto? JournalCandidate = null);
+
+public sealed record OperationsLedgerJournalCandidateDto(
+    Guid? JournalEntryId,
+    Guid AggregateId,
+    Guid PeriodId,
+    DateTimeOffset Timestamp,
+    string Description,
+    IReadOnlyList<OperationsLedgerJournalLineDto> Lines,
+    Guid? CommandId = null,
+    Guid? CorrelationId = null,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1",
+    string? RuleId = null,
+    string? RuleVersion = null,
+    Guid? SourceEventId = null,
+    Guid? SourceJournalEntryId = null,
+    LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
+    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
+    OperationsJournalEntryMetadataDto? Metadata = null);
+
+public sealed record OperationsLedgerJournalLineDto(
+    Guid? EntryId,
+    string AccountName,
+    string AccountType,
+    decimal Debit,
+    decimal Credit,
+    string? Symbol = null,
+    string? FinancialAccountId = null);
+
+public sealed record OperationsJournalEntryMetadataDto(
+    string? ActivityType = null,
+    string? Symbol = null,
+    Guid? SecurityId = null,
+    Guid? OrderId = null,
+    Guid? FillId = null,
+    string? ProjectId = null,
+    string? LedgerBook = null,
+    string? ScenarioId = null,
+    string? StrategyId = null,
+    string? FinancialAccountId = null,
+    string? CounterpartyAccountId = null,
+    string? Institution = null,
+    IReadOnlyDictionary<string, string>? Tags = null);
 
 public sealed record OperationsReconciliationRunRequestDto(
     long ExpectedVersion,

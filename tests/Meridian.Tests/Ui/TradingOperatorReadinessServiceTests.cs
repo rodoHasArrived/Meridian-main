@@ -1,3 +1,4 @@
+using System.Reflection;
 using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
@@ -328,6 +329,31 @@ public sealed class TradingOperatorReadinessServiceTests
         readiness.ReadyForPaperOperation.Should().BeFalse();
     }
 
+    [Fact]
+    public void EvaluateOverallPosture_WithBlockedRiskRuleGate_ShouldBlockReadiness()
+    {
+        var gates = new[]
+        {
+            ReadyGate("replay"),
+            ReadyGate("reconciliation"),
+            ReadyGate("audit-controls"),
+            ReadyGate("promotion"),
+            ReadyGate("dk1-trust"),
+            ReadyGate("report-pack"),
+            ReadyGate("session"),
+            ReadyGate("brokerage-sync"),
+            new TradingAcceptanceGateDto(
+                GateId: "risk-rules",
+                Label: "Risk rules healthy",
+                Status: TradingAcceptanceGateStatusDto.Blocked,
+                Detail: "PositionLimit: Symbol limit breached.")
+        };
+
+        var status = InvokeEvaluateOverallPosture(gates);
+
+        status.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
+    }
+
 
     [Fact]
     public async Task GetAsync_WithReplayCoverageDrift_ShouldDowngradeReplayGateAndEmitSingleStaleReplayWorkItem()
@@ -429,6 +455,22 @@ public sealed class TradingOperatorReadinessServiceTests
         return new ExecutionAuditTrailService(
             new ExecutionAuditTrailOptions(root),
             NullLogger<ExecutionAuditTrailService>.Instance);
+    }
+
+    private static TradingAcceptanceGateDto ReadyGate(string gateId) => new(
+        GateId: gateId,
+        Label: gateId,
+        Status: TradingAcceptanceGateStatusDto.Ready,
+        Detail: "Ready.");
+
+    private static TradingAcceptanceGateStatusDto InvokeEvaluateOverallPosture(
+        IReadOnlyList<TradingAcceptanceGateDto> gates)
+    {
+        var method = typeof(TradingOperatorReadinessService).GetMethod(
+            "EvaluateOverallPosture",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        method.Should().NotBeNull();
+        return (TradingAcceptanceGateStatusDto)method!.Invoke(null, [gates])!;
     }
 
     private static OrderState CreateExecutionOrderState(string orderId, string symbol, decimal quantity) => new()
