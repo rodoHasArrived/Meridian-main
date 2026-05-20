@@ -37,7 +37,9 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
 
         module_ids.append(module_id)
         module_path = module.get("path")
-        if module_path:
+        if not module_path:
+            errors.append(f"source-modules.yml module '{module_id}' missing required 'path'.")
+        else:
             resolved = repo_root / module_path
             if not resolved.exists():
                 errors.append(
