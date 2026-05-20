@@ -365,6 +365,19 @@ foreach ($step in $steps) {
 
 $failedResults = @($results | Where-Object status -eq "failed")
 
+$jsonPath = Join-Path $summaryDir "wave1-validation-summary.json"
+$mdPath = Join-Path $summaryDir "wave1-validation-summary.md"
+
+$evidenceSchema = [ordered]@{
+    version = "1.0"
+    generatedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
+    summaryJsonPath = $jsonPath.Substring($repoRoot.Length + 1).Replace('\', '/')
+    summaryMarkdownPath = $mdPath.Substring($repoRoot.Length + 1).Replace('\', '/')
+    packetJsonPath = (Join-Path $summaryDir "dk1-pilot-parity-packet.json").Substring($repoRoot.Length + 1).Replace('\', '/')
+    packetMarkdownPath = (Join-Path $summaryDir "dk1-pilot-parity-packet.md").Substring($repoRoot.Length + 1).Replace('\', '/')
+    signoffMetadataPath = if ([string]::IsNullOrWhiteSpace($OperatorSignoffPath)) { "" } else { [System.IO.Path]::GetFullPath($OperatorSignoffPath).Substring($repoRoot.Length + 1).Replace('\', '/') }
+}
+
 $summary = [ordered]@{
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
     dateStamp = $DateStamp
@@ -376,11 +389,10 @@ $summary = [ordered]@{
     pilotReplaySampleSet = $pilotReplaySampleSet
     crossCuttingClosures = $crossCuttingClosures
     deferredProviders = $deferredProviders
+    evidenceSchema = $evidenceSchema
     steps = $results
 }
 
-$jsonPath = Join-Path $summaryDir "wave1-validation-summary.json"
-$mdPath = Join-Path $summaryDir "wave1-validation-summary.md"
 if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId "write-wave1-summary-json") {
     Start-MeridianCheckpointStep -Context $checkpoint -StepId "write-wave1-summary-json" -Description "Write wave1-validation-summary.json"
     $summary | ConvertTo-Json -Depth 6 | Set-Content -Path $jsonPath
@@ -394,6 +406,14 @@ $md = @(
     "- Configuration: $Configuration",
     "- Scope: $($summary.scope)",
     "- Overall result: $($summary.result)",
+    "",
+    "## Evidence Schema",
+    "",
+    "- Summary JSON: ``$($evidenceSchema.summaryJsonPath)``",
+    "- Summary Markdown: ``$($evidenceSchema.summaryMarkdownPath)``",
+    "- DK1 packet JSON: ``$($evidenceSchema.packetJsonPath)``",
+    "- DK1 packet Markdown: ``$($evidenceSchema.packetMarkdownPath)``",
+    "- Sign-off metadata: ``$([string]::IsNullOrWhiteSpace($evidenceSchema.signoffMetadataPath) ? "(not supplied)" : $evidenceSchema.signoffMetadataPath)``",
     "",
     "## Active Provider Set",
     "",
