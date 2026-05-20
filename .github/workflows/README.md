@@ -9,6 +9,17 @@ automation outside the current build/test/publish scope.
 
 ## Active Workflows
 
+## Canonical lane mapping
+
+| Lane | Workflow alignment |
+| --- | --- |
+| `bootstrap` | Local-only lane (`make bootstrap`); no dedicated hosted workflow. |
+| `verify-fast` | `CI` (`ci.yml`) and browser workstation job names reference this lane. |
+| `verify-full` | Local-only broad lane (`make verify-full`) used before PR when needed. |
+| `verify-docs` | `CI` source-doc determinism job plus local docs checks. |
+| `verify-desktop` | `Windows Desktop Build` (`windows-desktop-build.yml`). |
+| `verify-release` | `Publish Smoke` (`publish-smoke.yml`). |
+
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
 | CI | `ci.yml` | Pull requests, pushes to `main`, manual | Restores `Meridian.sln`, verifies formatting, builds the focused `Meridian.WebWorkstation.slnf` lane, runs non-integration .NET tests, then tests and builds `src/Meridian.Ui/dashboard`. | .NET TRX results on failure |

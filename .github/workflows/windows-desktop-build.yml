@@ -24,7 +24,7 @@ env:
 
 jobs:
   desktop:
-    name: Build and Test WPF
+    name: verify-desktop (build/test WPF)
     runs-on: windows-latest
     timeout-minutes: 55
 
