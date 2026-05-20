@@ -1,17 +1,17 @@
 # Storage Organization Design: Improvements & Best Practices
 
-This document outlines storage organization improvements for the Meridian, covering naming conventions, date partitioning, policies, capacity limits, and perpetual data management strategies.
+This document captures the Meridian storage architecture as it exists today, plus near-term roadmap items that are already tracked in-repo. It aligns storage guidance with the current evidence-backed investment-operations direction (trusted data capture, archival integrity, reconciliation readiness, and governed exports).
 
 
 > **Document status:** Living architecture reference — reflects the implemented storage layer.
 >
-> **Last updated:** 2026-03-14
+> **Last updated:** 2026-05-20
 >
 > **Audience:** Platform engineers, storage/infrastructure owners, and data operations.
 
-> ## Primary Mission: Data Collection & Archival
+> ## Primary Mission: Evidence-Backed Data Collection & Archival
 >
-> The Meridian is designed as a **collection and archival system**. Its primary purpose is:
+> Meridian storage is designed as a **collection and archival subsystem** that supports the broader fund-management platform. Its primary storage mission is:
 >
 > 1. **Reliable Data Collection**: Capture market data from multiple sources with minimal gaps
 > 2. **Long-Term Archival**: Store data securely with integrity verification for years or indefinitely
@@ -38,6 +38,8 @@ This document outlines storage organization improvements for the Meridian, cover
 1. [Executive Summary](#executive-summary)
 2. [Naming Convention Improvements](#naming-convention-improvements)
 3. [Date Partitioning Strategies](#date-partitioning-strategies)
+
+> **Repository alignment note:** Sections that say **Implemented** reflect current behavior in `src/Meridian.Storage/` and related services. Sections that say **Roadmap** are intentional future work and should not be interpreted as already available runtime behavior.
 4. [Storage Policies](#storage-policies)
 5. [Capacity Limits & Quotas](#capacity-limits--quotas)
 6. [Perpetual Data Management](#perpetual-data-management)
@@ -134,7 +136,7 @@ Storage sinks describe the destinations the pipeline writes to. `StorageSinkRegi
 
 ### 1. Hierarchical Taxonomy Structure
 
-**Proposed Directory Hierarchy:**
+**Implemented + Recommended Directory Hierarchy:**
 ```
 {root}/
 ├── _catalog/                    # Metadata & indices
@@ -161,7 +163,7 @@ Storage sinks describe the destinations the pipeline writes to. `StorageSinkRegi
 
 ### 2. Enhanced Naming Patterns
 
-**Add new naming conventions:**
+**Implemented naming conventions:**
 
 ```csharp
 enum FileNamingConvention
@@ -180,9 +182,9 @@ enum FileNamingConvention
 }
 ```
 
-### 3. Symbol Naming Standardization
+### 3. Symbol Naming Standardization (Roadmap)
 
-**Implement canonical symbol registry:**
+**Candidate canonical symbol registry shape:**
 
 ```json
 {
@@ -206,9 +208,9 @@ enum FileNamingConvention
 - Automatic alias resolution during queries
 - Cross-reference with industry identifiers (ISIN, FIGI, SEDOL)
 
-### 4. File Naming Metadata Encoding
+### 4. File Naming Metadata Encoding (Implemented Pattern)
 
-**Embed queryable metadata in filenames:**
+**Queryable metadata-oriented filename pattern:**
 
 ```
 Format: {symbol}_{type}_{date}_{source}_{checksum}.jsonl.gz
@@ -246,9 +248,7 @@ Example: AAPL_Trade_2024-01-15_alpaca_a3f2b1.jsonl.gz
 
 ### 1. Multi-Dimensional Partitioning
 
-**Current:** Single partition dimension (date OR symbol OR type)
-
-**Proposed:** Composite partitioning with configurable priority
+**Implemented:** Composite partitioning with configurable priority via `PartitionStrategy`
 
 ```csharp
 record PartitionStrategy(
@@ -281,7 +281,7 @@ enum PartitionDimension
 }
 ```
 
-### 2. Adaptive Partitioning by Volume
+### 2. Adaptive Partitioning by Volume (Roadmap)
 
 **Auto-adjust partition granularity based on data volume:**
 
@@ -300,7 +300,7 @@ ELSE IF events_per_day > 50,000 THEN use Daily partitions
 ELSE IF events_per_month < 10,000 THEN use Monthly partitions
 ```
 
-### 3. Trading Calendar Awareness
+### 3. Trading Calendar Awareness (Roadmap)
 
 **Align partitions with market calendars:**
 
@@ -322,7 +322,7 @@ AAPL/Trade/
 └── 2024-01-15_after.jsonl.gz    # 16:00-20:00 ET
 ```
 
-### 4. Rolling Window Partitions
+### 4. Rolling Window Partitions (Roadmap)
 
 **For real-time analytics, maintain rolling windows:**
 
