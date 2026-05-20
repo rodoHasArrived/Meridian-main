@@ -7,7 +7,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import yaml
+try:
+    import yaml
+except ImportError:  # pragma: no cover - optional for fixture-only mode
+    yaml = None
 
 
 # ---------------------------------------------------------------------------
@@ -21,6 +24,8 @@ CANONICAL = {
     "evidence_posture": {"none", "draft", "partial", "verified", "audited"},
     "completion_term": {"done", "complete", "completed", "closed", "shipped"},
 }
+REQUIRED_FIELDS = {"id", "name", "status", "health", "priority", "evidence_posture", "completion_term", "owner", "last_updated"}
+ALLOWED_FIELDS = REQUIRED_FIELDS | {"summary", "exit_criteria", "links", "created_at", "notes", "extensions"}
 
 
 def _check(node: Any, path: str = "$") -> list[str]:
@@ -41,6 +46,13 @@ def _check(node: Any, path: str = "$") -> list[str]:
 def validate_file(path: Path) -> int:
     data = json.loads(path.read_text(encoding="utf-8"))
     errors = _check(data)
+    if isinstance(data, dict):
+        missing = sorted(field for field in REQUIRED_FIELDS if field not in data)
+        unexpected = sorted(field for field in data if field not in ALLOWED_FIELDS)
+        for field in missing:
+            errors.append(f"$.{field}: missing required field")
+        for field in unexpected:
+            errors.append(f"$.{field}: unexpected field")
     if errors:
         print(f"{path} failed enum validation:")
         for e in errors:
@@ -58,6 +70,8 @@ ALLOWED_TRANSITIONS = {"added", "moved", "split", "merged", "deprecated", "archi
 
 
 def _load_yaml(path: Path) -> Any:
+    if yaml is None:
+        raise RuntimeError("PyYAML is required for source YAML validation mode.")
     with path.open("r", encoding="utf-8") as handle:
         return yaml.safe_load(handle) or {}
 
@@ -167,7 +181,32 @@ def main() -> int:
         help="Path to README coverage YAML.",
     )
     parser.add_argument("--repo-root", default=".", help="Repository root for path resolution.")
+    parser.add_argument(
+        "--fixtures-dir",
+        help="Validate canonical source-doc JSON fixtures from this directory (valid-*/invalid-* expectation by filename).",
+    )
     args = parser.parse_args()
+
+    if args.fixtures_dir:
+        fixtures_dir = Path(args.fixtures_dir)
+        if not fixtures_dir.exists():
+            print(f"Error: fixtures directory not found: {fixtures_dir}", file=sys.stderr)
+            return 2
+        exit_code = 0
+        for json_file in sorted(fixtures_dir.glob("*.json")):
+            rc = validate_file(json_file)
+            should_fail = json_file.name.startswith("invalid-")
+            if should_fail and rc == 0:
+                print(f"{json_file} expected failure but passed")
+                exit_code = 1
+            elif not should_fail and rc != 0:
+                print(f"{json_file} expected pass but failed")
+                exit_code = 1
+            elif should_fail:
+                print(f"{json_file} correctly failed")
+            else:
+                print(f"{json_file} correctly passed")
+        return exit_code
 
     errors = validate(Path(args.modules), Path(args.coverage), Path(args.repo_root))
     if errors:

@@ -48,3 +48,11 @@ Each transition record must include roadmap linkage fields:
 - unique module IDs (`source-modules.yml`)
 - stale README path detection after moves/renames (`source-readme-coverage.yml` transitions)
 
+## Schema evolution and compatibility
+
+Source-doc schema validation is intentionally strict for registry and renderer safety.
+
+- **Major version bump** is required for breaking schema changes (required-field removals/renames, enum contractions, or semantic redefinitions).
+- **Minor-compatible updates** in the same major schema may add optional fields only when explicitly documented, or via controlled `extensions` keys (`x-*` naming).
+- **Migration path trigger**: when stricter validation introduces new "missing required field" or "unexpected field" failures for existing source-doc entries, include a same-PR migration plan and data backfill/update before adopting the validator rule in CI.
+- **Behavior alignment**: validator behavior should mirror schema posture—required structural fields must exist, and untracked fields must fail fast.

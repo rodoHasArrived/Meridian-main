@@ -1,1 +1,1 @@
-{"name":"Doc A","status":"completed","health":"yellow","priority":"medium","evidence_posture":"partial","completion_term":"closed"}
+{"id":"DOC-001","name":"Doc A","owner":{"team":"Docs","accountable":"docs@meridian"},"status":"completed","health":"yellow","priority":"medium","evidence_posture":"partial","completion_term":"closed","exit_criteria":["Published"],"links":["https://example.invalid/source/DOC-001"],"created_at":"2026-05-01T00:00:00Z","last_updated":"2026-05-20T00:00:00Z"}
