@@ -1,6 +1,6 @@
 # Kernel Readiness Dashboard (DK Program)
 
-**Last Updated:** 2026-04-27
+**Last Updated:** 2026-05-20
 **Program Scope:** Delivery Kernel waves DK1-DK2 mapped to Waves 2-4 in [`ROADMAP.md`](ROADMAP.md)  
 **Purpose:** single hand-authored status dashboard for subsystem kernel readiness, gate progression, implementation commitments, and rollback posture.
 
@@ -22,6 +22,7 @@
 - **Cadence:** weekly subsystem review (Mon), cross-subsystem interop review (Wed), operator-readiness review (Fri)
 - **Current operating window:** 2026-04-20 through 2026-06-26
 - **Status publication rule:** update this dashboard at least once per week; release-governance decisions reference this file plus `provider-validation-matrix.md`, and must pass `python3 scripts/check_program_state_consistency.py` before publication.
+- **Current sync note (2026-05-20):** Wave 1 provider evidence posture was refreshed in [`provider-validation-matrix.md`](./provider-validation-matrix.md) (focused Robinhood polling hardening and capability-claim parity/data-shape audit); the signed DK1 exit evidence baseline remains the packet-bound 2026-04-27 artifact set until a newly generated packet and matching sign-off replace it.
 
 ---
 
