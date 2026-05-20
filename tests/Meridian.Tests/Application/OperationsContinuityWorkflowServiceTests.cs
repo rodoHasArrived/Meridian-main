@@ -377,7 +377,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
         var journalStore = new RecordingLedgerJournalStore();
         var service = CreateService(out _, out var auditStore, journalStore);
         var workflow = await CreateLedgerValidatedWorkflowAsync(service);
-        var candidate = CreateJournalCandidate();
+        var candidate = CreateJournalCandidate(workflow.FundAccountId, workflow.PeriodId);
 
         var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
             workflow.Version,
@@ -389,8 +389,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         result.Success.Should().BeTrue();
         journalStore.Appended.Should().ContainSingle();
-        journalStore.Appended[0].PeriodId.Should().Be(candidate.PeriodId);
-        journalStore.Appended[0].AggregateId.Should().Be(candidate.AggregateId);
+        journalStore.Appended[0].PeriodId.Should().Be(workflow.PeriodId);
+        journalStore.Appended[0].AggregateId.Should().Be(workflow.FundAccountId);
         journalStore.Appended[0].Entry.IsBalanced.Should().BeTrue();
         result.Workflow!.LedgerPostingState.Should().Be(OperationsLedgerPostingStateDto.Complete);
 
@@ -410,11 +410,37 @@ public sealed class OperationsContinuityWorkflowServiceTests
             LedgerBatchId: "ledger-batch-1",
             PostingKind: "period-close",
             PeriodOpen: true,
-            JournalCandidate: CreateJournalCandidate()));
+            JournalCandidate: CreateJournalCandidate(workflow.FundAccountId, workflow.PeriodId)));
 
         result.Success.Should().BeFalse();
         result.ErrorCode.Should().Be("LEDGER_JOURNAL_STORE_UNAVAILABLE");
         result.Blockers.Should().ContainSingle(blocker => blocker.Code == "LEDGER_JOURNAL_STORE_UNAVAILABLE");
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectJournalCandidateWhenAggregateOrPeriodMismatchWorkflow()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateJournalCandidate(Guid.NewGuid(), Guid.NewGuid());
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-1",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_JOURNAL_AGGREGATE_ID_MISMATCH");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_JOURNAL_PERIOD_ID_MISMATCH");
+        journalStore.Appended.Should().BeEmpty();
 
         var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
         timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
@@ -699,15 +725,15 @@ public sealed class OperationsContinuityWorkflowServiceTests
             LedgerBatchId: "ledger-batch-1",
             PostingKind: "period-close",
             PeriodOpen: true,
-            JournalCandidate: CreateJournalCandidate()));
+            JournalCandidate: CreateJournalCandidate(workflow.FundAccountId, workflow.PeriodId)));
         return posted.Workflow!;
     }
 
-    private static OperationsLedgerJournalCandidateDto CreateJournalCandidate() =>
+    private static OperationsLedgerJournalCandidateDto CreateJournalCandidate(Guid aggregateId, Guid periodId) =>
         new(
             JournalEntryId: null,
-            AggregateId: Guid.NewGuid(),
-            PeriodId: Guid.NewGuid(),
+            AggregateId: aggregateId,
+            PeriodId: periodId,
             Timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             Description: "Operations continuity month-end posting",
             Lines:
