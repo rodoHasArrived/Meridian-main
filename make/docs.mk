@@ -4,7 +4,7 @@
 
 .PHONY: verify-docs docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
         gen-interfaces gen-structure gen-providers gen-workflows gen-workflow-manifest \
-        update-claude-md docs-all check-workflow-docs-parity check-status-delivery-claims
+        update-claude-md docs-all check-workflow-docs-parity check-status-delivery-claims generate-icons generate-diagrams
 
 docs: gen-context verify-adrs gen-workflow-manifest ## Generate all documentation from code
 	@echo "$(GREEN)Documentation generated and verified$(NC)"
@@ -80,6 +80,12 @@ update-claude-md: gen-structure ## Update CLAUDE.md repository structure
 		--claude-md CLAUDE.md \
 		--structure-source docs/generated/repository-structure.md
 	@echo "$(GREEN)Updated CLAUDE.md$(NC)"
+
+generate-icons: ## Generate documentation icon assets via npm script
+	@npm run generate-icons
+
+generate-diagrams: ## Generate documentation diagrams via npm script
+	@npm run generate-diagrams
 
 docs-lint: ## Validate documented make/pwsh command snippets resolve to real targets/scripts
 	@python3 build/scripts/docs/lint-command-snippets.py
