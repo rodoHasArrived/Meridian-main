@@ -21,7 +21,7 @@ jobs:
   scope-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
       - name: Enforce phase scope
@@ -43,9 +43,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: scope-gate
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6.2.0
         with:
           python-version: '3.12'
       - name: Install renderer dependencies
