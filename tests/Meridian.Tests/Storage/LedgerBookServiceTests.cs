@@ -364,6 +364,36 @@ public sealed class LedgerBookServiceTests
     }
 
     [Fact]
+    public async Task LedgerEndpoints_CreateBook_WhenUserLacksLedgerMutationPermission_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerBooks,
+            new CreateLedgerBookRequest(
+                "alpha-fund",
+                Guid.Parse("59f045cb-f681-4b0c-943d-44c946f78214"),
+                FundStructureNodeKindDto.Fund,
+                "Alpha Fund",
+                "USD"),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task LedgerEndpoints_ListBooks_WhenUserLacksLedgerReadPermission_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync(UiApiRoutes.LedgerBooks);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task LedgerEndpoints_ListBooksAndPeriods_FilterByAccountingBasis()
     {
         await using var app = await CreateAppAsync();
@@ -478,7 +508,8 @@ public sealed class LedgerBookServiceTests
         return payload!;
     }
 
-    private static async Task<WebApplication> CreateAppAsync()
+    private static async Task<WebApplication> CreateAppAsync(
+        UserPermission permissions = UserPermission.ViewTrades | UserPermission.ManageDirectLending)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -500,7 +531,7 @@ public sealed class LedgerBookServiceTests
         {
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "fund-controller";
             context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Accounting;
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Accounting);
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             await next();
         });
         app.UseRateLimiter();

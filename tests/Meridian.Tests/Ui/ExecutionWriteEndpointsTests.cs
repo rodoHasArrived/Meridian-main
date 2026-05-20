@@ -864,6 +864,41 @@ public sealed class ExecutionWriteEndpointsTests
         approveResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task PromotionApprove_WhenActorMissing_ReturnsUnauthorized()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterPromotionServices(services),
+            currentUserPermissions: UserPermission.ManageStrategies,
+            currentUser: null);
+        var client = app.GetTestClient();
+
+        var approveResponse = await client.PostAsync(
+            "/api/promotion/approve",
+            JsonContent(new PromotionApprovalRequest(
+                RunId: "run-backtest-01",
+                ApprovedBy: "forged-actor",
+                ApprovalReason: "Attempted approval without a trusted session actor.",
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper))));
+
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task PromotionEvaluate_WhenUserLacksStrategyReadPermission_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterPromotionServices(services),
+            currentUserPermissions: UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        var evaluateResponse = await client.GetAsync("/api/promotion/evaluate/run-backtest-01");
+        var historyResponse = await client.GetAsync("/api/promotion/history");
+
+        evaluateResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     // ------------------------------------------------------------------ //
     //  Helpers                                                            //
     // ------------------------------------------------------------------ //
