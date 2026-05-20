@@ -98,3 +98,14 @@ Retained WPF shell:
 ```powershell
 pwsh ./scripts/dev/run-desktop.ps1
 ```
+
+## AI/TODO governance checks
+
+Use these deterministic remediation commands when CI reports policy drift:
+
+```bash
+python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json
+python3 build/scripts/docs/validate-todo-registry.py --scan-json docs/status/todo-scan-results.json --registry docs/source/todo-registry.json --enforce-prefix docs/source/
+python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
+```
+

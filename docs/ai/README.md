@@ -138,3 +138,14 @@ tool-specific rule file to carry shared Meridian policy.
 ---
 
 _Last Updated: 2026-05-20_
+
+## Drift failure remediation
+
+1. Run TODO scan and validation:
+   - `python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json`
+   - `python3 build/scripts/docs/validate-todo-registry.py --scan-json docs/status/todo-scan-results.json --registry docs/source/todo-registry.json --enforce-prefix docs/source/`
+2. For missing IDs, add a new entry in `docs/source/todo-registry.json` and update the TODO comment with `TODO-ID` and `OWNER` metadata.
+3. Run AI contract drift check:
+   - `python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json`
+4. If drift exists, copy canonical policy content into each mirror path and rerun checks.
+
