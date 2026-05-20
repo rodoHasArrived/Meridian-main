@@ -1,0 +1,15 @@
+lifecycle_transition_contract:
+  allowed_transitions:
+  - added
+  - moved
+  - split
+  - merged
+  - deprecated
+  - archived
+  required_roadmap_fields:
+  - roadmap.id
+  - roadmap.url
+  - roadmap.status
+readme_coverage:
+  modules: []
+schema_version: 1

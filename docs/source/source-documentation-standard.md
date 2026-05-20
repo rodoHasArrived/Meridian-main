@@ -48,3 +48,30 @@ Each transition record must include roadmap linkage fields:
 - unique module IDs (`source-modules.yml`)
 - stale README path detection after moves/renames (`source-readme-coverage.yml` transitions)
 
+
+## Deterministic Rendering Rules
+
+`tools/source_docs/render_source_docs.py` is the canonical renderer for `docs/source/data/*.yml`.
+
+Normalization policy:
+
+- Unicode normalization: **NFC** on all string keys/values.
+- Newline policy: **LF (`\n`)** for all generated files.
+- Date formatting: strict **`YYYY-MM-DD`** when an ISO date is detected.
+- Key ordering: lexicographic order after normalized key comparison.
+- Output ordering: source files are rendered in sorted filename order.
+
+Generated outputs are written to:
+
+- `docs/generated/source/*.json`
+- `docs/generated/source/*.normalized.yml`
+- `docs/generated/source/diagrams/*.mmd`
+- `docs/generated/source/render-manifest.json`
+
+Run reproducibility gate locally:
+
+```bash
+python3 -m pip install -r tools/source_docs/requirements-render.txt
+python3 tools/source_docs/render_source_docs.py
+python3 tools/source_docs/check_source_determinism.py
+```

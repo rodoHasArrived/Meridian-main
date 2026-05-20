@@ -5,6 +5,7 @@ on:
     paths:
       - 'docs/**'
       - 'tools/roadmap/**'
+      - 'tools/source_docs/**'
       - '.github/workflows/roadmap-source-docs.yml'
   workflow_dispatch:
     inputs:
@@ -38,18 +39,23 @@ jobs:
             --base-ref "$BASE_REF" \
             --head-ref "$HEAD_REF"
 
-  schema:
+  schema-and-render:
     runs-on: ubuntu-latest
     needs: scope-gate
     steps:
       - uses: actions/checkout@v4
-      - name: Schema validation placeholder
-        run: echo "Run roadmap schema validation here"
-
-  render:
-    runs-on: ubuntu-latest
-    needs: [scope-gate, schema]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Render docs placeholder
-        run: echo "Run roadmap render pipeline here"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install renderer dependencies
+        run: python3 -m pip install -r tools/source_docs/requirements-render.txt
+      - name: Validate source docs
+        run: python3 tools/source_docs/validate_source_readmes.py
+      - name: Render source docs
+        run: python3 tools/source_docs/render_source_docs.py
+      - name: Determinism parity check
+        run: python3 tools/source_docs/check_source_determinism.py
+      - name: Drift gate (generated output must be committed)
+        run: |
+          git diff -- docs/generated/source --exit-code

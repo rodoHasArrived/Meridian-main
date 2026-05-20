@@ -124,3 +124,28 @@ jobs:
 
       - name: Build dashboard bundle
         run: npm --prefix src/Meridian.Ui/dashboard run build
+
+  source-doc-determinism:
+    name: Source Docs Determinism
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install renderer dependencies
+        run: python3 -m pip install -r tools/source_docs/requirements-render.txt
+
+      - name: Render + determinism gate
+        run: |
+          python3 tools/source_docs/render_source_docs.py
+          python3 tools/source_docs/check_source_determinism.py
+          git diff -- docs/generated/source --exit-code
