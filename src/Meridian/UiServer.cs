@@ -245,6 +245,7 @@ public sealed class UiServer : IAsyncDisposable
             appBuildStopwatch.ElapsedMilliseconds);
 
         var readinessStopwatch = Stopwatch.StartNew();
+        LedgerStartup.EnsureDatabaseReady(_app.Services, _logger);
         SecurityMasterStartup.EnsureDatabaseReady(_app.Services, _logger);
         DirectLendingStartup.EnsureDatabaseReady(_app.Services, _logger);
         readinessStopwatch.Stop();

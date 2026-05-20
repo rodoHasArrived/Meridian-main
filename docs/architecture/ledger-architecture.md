@@ -149,9 +149,10 @@ The implemented continuity slice provides:
 | Component | Responsibility |
 |-----------|----------------|
 | `OperationsContinuityWorkflowService` | Command-driven workflow transitions, optimistic version checks, audit writes, DTO projection |
-| `IOperationsContinuityRepository` | Workflow snapshot persistence; the workstation host registers a file-backed implementation under the workstation data root |
+| `IOperationsContinuityRepository` | Workflow snapshot persistence; file-backed by default, or PostgreSQL-backed through `PostgresOperationsContinuityStore` when `MERIDIAN_LEDGER_CONNECTION_STRING` is configured |
 | `IOperationsWorkflowAuditStore` | Append-only audit timeline with previous/current SHA-256 hash chaining |
-| `IOperationsContinuityTransactionalCommitStore` | Optional strict-atomicity commit seam for successful ledger posting: append journal, append workflow audit, and save workflow snapshot in one persistence boundary |
+| `PostgresOperationsContinuityStore` | PostgreSQL implementation of `IOperationsContinuityRepository`, `IOperationsWorkflowAuditStore`, and `IOperationsContinuityTransactionalCommitStore`; successful ledger posts share the ledger journal transaction |
+| `IOperationsContinuityTransactionalCommitStore` | Strict-atomicity commit seam for successful ledger posting: append journal, append workflow audit, and save workflow snapshot in one persistence boundary |
 | `OperationsStatusDerivationService` | Deterministic server-side overall status derivation from gate/sub-state posture |
 | `Meridian.Contracts.Workstation` operations DTOs | Shared browser/WPF read and command contracts |
 
@@ -165,13 +166,16 @@ For successful postings, `OperationsLedgerPostRequestDto` now carries an
 `OperationsLedgerJournalCandidateDto`. The application service converts that candidate into a
 `LedgerJournalEntryWrite`. When an `IOperationsContinuityTransactionalCommitStore` is registered,
 the service commits the journal append, workflow audit append, and workflow snapshot save through
-that single commit seam. When it is not registered, the workstation file-backed mode keeps the
-legacy split persistence path: await `ILedgerJournalStore.AppendAsync`, append audit, then save the
-workflow snapshot. If no ledger store or transactional commit store is registered, or the candidate
-is missing or invalid, the command returns a structured validation failure and does not advance the
-workflow. Requests that fail posting posture checks such as closed period, duplicate candidate,
-missing batch id, or missing posting kind still update the workflow to a blocked ledger gate with an
-audit event and do not append a journal candidate.
+that single commit seam. Production hosts enable the PostgreSQL path with
+`MERIDIAN_LEDGER_CONNECTION_STRING`; `LedgerStartup` runs ledger migrations and registers
+`PostgresOperationsContinuityStore` for workflow snapshots, audit timeline reads, and transactional
+ledger-post commits. When the transactional store is not registered, the workstation file-backed
+mode keeps the split persistence path: await `ILedgerJournalStore.AppendAsync`, append audit, then
+save the workflow snapshot. If no ledger store or transactional commit store is registered, or the
+candidate is missing or invalid, the command returns a structured validation failure and does not
+advance the workflow. Requests that fail posting posture checks such as closed period, duplicate
+candidate, missing batch id, or missing posting kind still update the workflow to a blocked ledger
+gate with an audit event and do not append a journal candidate.
 
 The command path now covers start, broker import, broker normalization, Security Master resolution,
 governed Security Master override approval, ledger draft, ledger validation, ledger posting,
@@ -257,7 +261,7 @@ Ledger data is exposed through the workstation endpoints under `/api/workstation
 | `POST /api/workstation/operations/continuity/{workflowId}/security-master/overrides/{overrideId}/approve` | Requires override approver, rationale, policy, expiration, and audit metadata |
 | `POST /api/workstation/operations/continuity/{workflowId}/ledger/draft` | Creates a ledger journal preview without committing it |
 | `POST /api/workstation/operations/continuity/{workflowId}/ledger/validate` | Validates balanced journal draft and period posture |
-| `POST /api/workstation/operations/continuity/{workflowId}/ledger/post` | Appends a supplied journal candidate through `ILedgerJournalStore`, then marks the validated ledger gate posted with a durable batch reference before reconciliation |
+| `POST /api/workstation/operations/continuity/{workflowId}/ledger/post` | Appends a supplied journal candidate through the ledger journal store, then marks the validated ledger gate posted with a durable batch reference; with PostgreSQL Operations Continuity enabled, the journal append, audit append, and workflow snapshot save share one transaction |
 | `POST /api/workstation/operations/continuity/{workflowId}/reconciliation/run` | Runs expected-vs-actual reconciliation after ledger posting |
 | `POST /api/workstation/operations/continuity/{workflowId}/reconciliation/breaks/{breakId}/resolve` | Resolves or dismisses a break with rationale and evidence |
 | `POST /api/workstation/operations/continuity/{workflowId}/approval/submit` | Submits a clean workflow for reviewer approval with report-pack evidence |
@@ -277,6 +281,7 @@ These endpoints are implemented in `WorkstationEndpoints.cs` and map to route co
 | Service | Lifetime | Notes |
 |---------|----------|-------|
 | `ProjectLedgerBook` | Singleton | Keyed ledger namespace for the host process |
+| `PostgresOperationsContinuityStore` | Singleton when `MERIDIAN_LEDGER_CONNECTION_STRING` is set | PostgreSQL workflow snapshot/audit store and transactional ledger-post commit store |
 
 `LedgerReadService` is registered separately by UI host startup (it depends on `Meridian.Strategies` types that are not available to `Meridian.Application`):
 
