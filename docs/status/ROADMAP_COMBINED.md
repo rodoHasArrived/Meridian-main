@@ -38,6 +38,14 @@ DTOs, and an in-flight Security Master validation-gate/snapshot slice. These sho
 support evidence; durable close casework, report publication controls, full Evidence Vault, and
 live-readiness remain open.
 
+2026-05-19 late follow-up: the operations-continuity close lane now has shared contracts,
+application services, hash-chained audit history, optional transactional ledger/audit/workflow
+commit support, and workstation API routes for broker import/normalization, Security Master
+resolution/override approval, ledger draft/validate/post, reconciliation, approval, close, and
+governed reopen. Treat this as partial close-workflow support evidence only; external statement
+acceptance, generalized durable casework, report publication controls, browser/operator acceptance,
+and live-readiness remain open.
+
 2026-05-19 browser-workstation evidence also adds support rather than a readiness exit:
 provider-setup results and Settings refresh now expose provider-routing connection, binding,
 credential-source, environment, warning, and trust-snapshot posture; Strategy Designer backend
@@ -130,6 +138,12 @@ The new brokerage/account-sync support should be used the same way: it gives the
 ### 3. Wave 4: Productize governance and fund-operations on top of the delivered Security Master baseline
 
 Security Master is already the delivered baseline, and Fund Accounts now has an initial stateful operator brief for fund context, account queues, provider route evidence, shared-data gaps, balance-evidence snapshot posture, and ready-for-reconciliation posture. Reconciliation breaks now carry seeded exception route, tolerance profile, tolerance band, required sign-off role, and sign-off status metadata, with `/api/workstation/reconciliation/calibration-summary` rolling those items into profile-level Ready/ReviewRequired/Blocked posture; browser Accounting also projects a shared dense-table detail queue with keyboard-selectable expanded rows, fixture-backed no-host break-queue coverage, and no-run guidance so operators can inspect loaded reconciliation rows without JSX-local state. The latest support evidence adds UFL/reference-data projections across the expanded asset-class set plus browser search-result selection, identity drill-ins, details/lots tracking, and server-side operator overrides. The opportunity is turning those support surfaces into deeper account/entity, multi-ledger, cash-flow, calibrated reconciliation, and reporting workflows.
+
+The new operations-continuity workflow gives that Wave 4 path a shared account-period close-lane
+API with explicit broker, Security Master, ledger, reconciliation, approval, close, and reopen
+gates. The next step is proving that seam as an operator-owned browser workflow with external
+statement/custodian inputs, durable casework, governed publication controls, and calibration
+sign-off rather than treating endpoint coverage as completion.
 
 ### 4. DK1 / Wave 1: Keep the closed provider-confidence and checkpoint-evidence gate synchronized
 

@@ -90,6 +90,17 @@ evidence, and override approval workflows. Treat all of this as continuity and g
 evidence, not as completion of durable close casework, report publication, Evidence Vault, or
 live-readiness gates.
 
+2026-05-19 operations-continuity follow-up: the account-period close lane is now more concrete
+than earlier roadmap wording implied. Shared operations DTOs, the `OperationsContinuityWorkflow`
+aggregate/service, hash-chained audit timeline, file-backed workstation repository registration,
+optional transactional commit seam, and `/api/workstation/operations/continuity*` endpoints cover
+broker import/normalization, Security Master resolution and governed override approval, ledger
+draft/validate/post, reconciliation, approval, close, and governed reopen with trusted actor
+handling and permission-gated mutations. This is significant W3/W4 support evidence for close
+workflow orchestration, but it remains below a Wave 4 exit until browser/operator acceptance,
+external statement/custodian intake, durable generalized casework, report publication controls, and
+operator-approved calibration are proven.
+
 2026-05-19 browser-workstation follow-up: the active dashboard now has more operator-safety
 evidence without changing wave status. Provider setup seeds visible provider-routing connection and
 binding metadata, credential source, environment, and warnings, and Settings refreshes
@@ -223,7 +234,7 @@ For implementation detail and evidence, use:
 - **DK1 execution:** preserve the signed 2026-04-27 provider-trust packet and rerun packet-bound review whenever provider evidence, trust rationale, or threshold calibration changes
 - **Wave 2:** turn the current paper-trading cockpit from "visible" into "dependable," with acceptance evidence tied to DK1 trust signals
 - **Wave 3:** make run history, brokerage/account posture, portfolio, ledger, cash-flow, and reconciliation behave like one cross-workspace model under the shared compatibility matrix
-- **Wave 4:** deepen governance and fund-operations workflows on top of the delivered Security Master baseline, including the new reconciliation calibration-summary rollups, then prove them through DK2 promotion/export/reconciliation gates
+- **Wave 4:** deepen governance and fund-operations workflows on top of the delivered Security Master baseline, including the new reconciliation calibration-summary rollups and operations-continuity close-lane API, then prove them through DK2 promotion/export/reconciliation gates
 - **Wave 5:** unify native and Lean workflows into one Backtest Studio once the shared model is stable enough to support it cleanly
 - **Wave 6:** expand into controlled live integration readiness only after trust and paper-workflow gates are materially closed
 - **Optional:** pursue advanced research, simulation, scale-out, and performance tracks only after the core workstation product is coherent and trustworthy
@@ -302,6 +313,7 @@ Across Waves 2-4, keep web-dashboard workflow consolidation, validation coverage
 - add account/entity and strategy-structure workflows on top of the existing governance baseline
 - add multi-ledger, cash-flow, reconciliation, and reporting slices on top of shared DTOs, read services, and export seams
 - connect external brokerage account state to fund-account review, cash movement, performance, household rollup, and reconciliation workflows through shared projections
+- use the operations-continuity workflow as the shared account-period close-lane seam for broker intake, Security Master resolution, ledger posting, reconciliation, approval, close, and governed reopen while keeping full close acceptance open
 - keep the Fund Accounts operator brief tied to shared account, provider-routing, retained balance-history, and `FundStructureSharedDataAccessDto` evidence while broader account/entity casework remains open
 - deepen governance workflows without creating separate reporting or accounting stacks
 - enforce the governance architecture guard: Security Master remains the sole instrument source, and governance DTO/service additions with instrument metadata must carry Security Master identity/provenance references

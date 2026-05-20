@@ -32,6 +32,13 @@ run-backtest commands; and Reporting export actions now abort superseded profile
 the right direction for an explainable workstation, but report-pack lifecycle, Backtest Studio, and
 live-readiness acceptance remain open.
 
+Current operations-continuity evidence narrows the close path without completing it: the shared
+account-period workflow now models broker import/normalization, Security Master resolution and
+override approval, ledger draft/validate/post, reconciliation, approval, close, governed reopen,
+and hash-chained audit timeline inspection through workstation API routes. The target close
+workflow still needs browser/operator acceptance, external statement/custodian intake, durable
+generalized casework, report publication controls, and operator-approved calibration.
+
 For the release-level scenario that ties those workspaces together, use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md).
 For the product-category filter and documentation archive rule, use [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md).
 For the consolidated current planning interpretation, use [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md).
@@ -75,7 +82,7 @@ Portfolio is where operators inspect account posture, positions, exposure, attri
 
 ### Accounting
 
-Accounting is where operators review ledger outcomes, cash-flow questions, trial-balance posture, reconciliation breaks, browser reconciliation detail-queue state, calibration-summary posture, and sign-off casework.
+Accounting is where operators review ledger outcomes, cash-flow questions, trial-balance posture, reconciliation breaks, browser reconciliation detail-queue state, calibration-summary posture, operations-continuity close gates, and sign-off casework.
 
 ### Reporting
 
@@ -136,7 +143,7 @@ Current WPF evidence now includes RunCashFlow empty-state guidance for selected-
 
 ### Wave 4: Governance and fund-operations productization on top of the delivered Security Master baseline
 
-Deepen governance and fund-operations workflows on top of the delivered Security Master baseline using shared contracts, read models, and export seams.
+Deepen governance and fund-operations workflows on top of the delivered Security Master baseline using shared contracts, read models, operations-continuity close-lane APIs, and export seams.
 
 Waves 1-4 define **core operator-readiness**.
 

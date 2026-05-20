@@ -728,7 +728,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             null,
             "bank",
             "ops-user"));
-        var workflow = start.Workflow.Should().NotBeNull().Subject;
+        start.Workflow.Should().NotBeNull();
+        var workflow = start.Workflow!;
 
         var act = () => service.ImportBrokerDataAsync(
             workflow.WorkflowId,

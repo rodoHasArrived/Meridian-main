@@ -142,10 +142,13 @@ reconciliation casework, report-pack, cockpit, or live-readiness gates.
 
 Current governance support also includes ledger `posting_kind` preservation and closed-period
 posting guards, structured report-pack validation/lifecycle metadata, hardened reconciliation case
-storage/audit/status transitions, account-sync history/readiness DTOs, and a Security Master
-validation-gate/snapshot slice in the active worktree. These are Wave 3/Wave 4 support evidence, not
-approval of live trading, report publication, full close workflow readiness, or Evidence Vault
-completion.
+storage/audit/status transitions, account-sync history/readiness DTOs, a Security Master
+validation-gate/snapshot slice, and a shared operations-continuity workflow for account-period close
+lanes. The continuity API covers broker import/normalization, Security Master resolution and
+override approval, ledger draft/validate/post, reconciliation, approval, close, reopen, hash-chained
+timeline reads, trusted-actor mutation handling, and optional transactional commit of journal,
+audit, and workflow snapshot writes. These are Wave 3/Wave 4 support evidence, not approval of live
+trading, report publication, full close workflow readiness, or Evidence Vault completion.
 
 Current browser workflow hardening also includes provider-routing visibility after provider setup:
 the Data setup dialog reports created connection, binding, credential-source, environment, and
