@@ -250,6 +250,27 @@ public static class OperationsWorkflowContractMatrix
         "REPORT_PACK_NOT_READY",
         "APPROVAL_REQUIRED"
     };
+
+[JsonConverter(typeof(JsonStringEnumConverter<OperationsIssueCodeDto>))]
+public enum OperationsIssueCodeDto : byte
+{
+    Unknown = 0,
+    WorkflowAlreadyExists = 1,
+    VersionMismatch = 2,
+    BrokerSourceMissing = 3,
+    BrokerImportFailed = 4,
+    SecurityCoverageMissing = 5,
+    SecurityAccountingClassificationMissing = 6,
+    LedgerPreviewUnavailable = 7,
+    LedgerDraftUnbalanced = 8,
+    LedgerPostingValidationFailed = 9,
+    ReconciliationBreaksOpen = 10,
+    ReconciliationCriticalBreaksOpen = 11,
+    ApprovalReviewerMissing = 12,
+    ApprovalRejected = 13,
+    ReportPackMissing = 14,
+    ReportPackNotReady = 15,
+    GovernanceApprovalRequired = 16
 }
 
 public sealed record OperationsStartWorkflowRequestDto(
@@ -267,7 +288,8 @@ public sealed record OperationsTransitionRequestDto(
     string Actor,
     string? Rationale = null,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    IReadOnlyList<string>? EvidenceReferenceIds = null);
 
 public sealed record OperationsSecurityMasterOverrideApprovalRequestDto(
     long ExpectedVersion,
@@ -457,7 +479,8 @@ public sealed record OperationsTransitionResultDto(
     string? ErrorMessage,
     OperationsContinuityWorkflowDto? Workflow,
     IReadOnlyList<OperationsWorkflowBlockerDto> Blockers,
-    IReadOnlyList<OperationsNextActionDto> NextActions);
+    IReadOnlyList<OperationsNextActionDto> NextActions,
+    long? NewVersion = null);
 
 public sealed record OperationsContinuityWorkflowSummaryDto(
     Guid WorkflowId,
@@ -592,7 +615,8 @@ public sealed record OperationsWorkflowBlockerDto(
     string Message,
     OperationsGateKeyDto? Gate,
     string Severity,
-    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    OperationsIssueCodeDto? IssueCode = null);
 
 public sealed record OperationsNextActionDto(
     string Code,
