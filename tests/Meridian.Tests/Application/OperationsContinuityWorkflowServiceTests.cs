@@ -1,4 +1,5 @@
 using FluentAssertions;
+using System.Text.Json;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
@@ -11,6 +12,47 @@ namespace Meridian.Tests.Application;
 
 public sealed class OperationsContinuityWorkflowServiceTests
 {
+    [Fact]
+    public void OperationsContinuityContractMatrix_ShouldContainAllRequiredStatusesAndCodes_AndBeSerializable()
+    {
+        OperationsWorkflowContractMatrix.OverallStatuses.Should().BeEquivalentTo(Enum.GetValues<OperationsWorkflowStatusDto>());
+        OperationsWorkflowContractMatrix.GateStatuses.Should().BeEquivalentTo(Enum.GetValues<OperationsGateStatusDto>());
+        OperationsWorkflowContractMatrix.BrokerSubStates.Should().BeEquivalentTo(Enum.GetValues<OperationsBrokerIntakeStateDto>());
+        OperationsWorkflowContractMatrix.SecurityMasterSubStates.Should().BeEquivalentTo(Enum.GetValues<OperationsSecurityMasterStateDto>());
+        OperationsWorkflowContractMatrix.LedgerSubStates.Should().BeEquivalentTo(Enum.GetValues<OperationsLedgerPostingStateDto>());
+        OperationsWorkflowContractMatrix.ReconciliationSubStates.Should().BeEquivalentTo(Enum.GetValues<OperationsReconciliationStateDto>());
+        OperationsWorkflowContractMatrix.ApprovalSubStates.Should().BeEquivalentTo(Enum.GetValues<OperationsApprovalStateDto>());
+
+        OperationsWorkflowContractMatrix.BlockerCodes.Should().OnlyContain(code => !code.StartsWith("UI_", StringComparison.Ordinal));
+        OperationsWorkflowContractMatrix.IssueCodes.Should().OnlyContain(code => !code.StartsWith("UI_", StringComparison.Ordinal));
+        OperationsWorkflowContractMatrix.IssueCodes.Should().OnlyContain(code => OperationsWorkflowContractMatrix.BlockerCodes.Contains(code));
+
+        var sampleBlocker = new OperationsWorkflowBlockerDto(
+            OperationsWorkflowContractMatrix.BlockerCodes.First(),
+            "contract-check",
+            OperationsGateKeyDto.BrokerIngest,
+            "Error",
+            []);
+        var sampleResult = new OperationsTransitionResultDto(
+            true,
+            null,
+            null,
+            null,
+            [sampleBlocker],
+            []);
+
+        var workflowStatusJson = JsonSerializer.Serialize(OperationsWorkflowStatusDto.ReadyForClose);
+        var gateStatusJson = JsonSerializer.Serialize(OperationsGateStatusDto.ReviewRequired);
+        var blockerJson = JsonSerializer.Serialize(sampleBlocker);
+        var transitionJson = JsonSerializer.Serialize(sampleResult);
+
+        workflowStatusJson.Should().Contain("ReadyForClose");
+        gateStatusJson.Should().Contain("ReviewRequired");
+        blockerJson.Should().Contain(sampleBlocker.Code);
+        transitionJson.Should().Contain("Blockers");
+        JsonSerializer.Deserialize<OperationsTransitionResultDto>(transitionJson).Should().NotBeNull();
+    }
+
     [Fact]
     public async Task StartWorkflowAsync_ShouldCreateInitialGatesAndAuditEvent()
     {
