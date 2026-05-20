@@ -58,8 +58,9 @@ The checker inventories root assistant entrypoints, Codex and Claude configurati
 Skills-compatible packages, Copilot instructions, agents, skills, prompts, AI workflow files,
 `docs/ai/`, MCP prompt/resource/tool surfaces, optional IDE/provider assistant entrypoints for
 Cursor, Windsurf, Continue, Cline, Roo, and Gemini if they are introduced, and stale canonical
-GitHub documentation links. Its Markdown and JSON reports are safe to share because they use a
-portable repository identity instead of local absolute paths.
+GitHub documentation links. It also flags active AI docs that still point at retired GitHub
+Actions workflow paths. Its Markdown and JSON reports are safe to share because they use a portable
+repository identity instead of local absolute paths.
 
 ### Tier 2: Navigation and Routing
 
@@ -136,4 +137,4 @@ tool-specific rule file to carry shared Meridian policy.
 
 ---
 
-_Last Updated: 2026-05-19_
+_Last Updated: 2026-05-20_

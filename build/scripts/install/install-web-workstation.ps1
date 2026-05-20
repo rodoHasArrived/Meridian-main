@@ -917,6 +917,73 @@ function New-DefaultConfig {
     Set-Content -LiteralPath $ConfigPath -Value $config -Encoding UTF8
 }
 
+function Repair-InvalidWorkstationConfig {
+    param(
+        [Parameter(Mandatory)][string]$ConfigPath
+    )
+
+    $config = Read-JsonFile -Path $ConfigPath
+    if ($null -eq $config) {
+        return [pscustomobject]@{
+            changed = $false
+            reason = "config-unreadable"
+        }
+    }
+
+    $dataSource = [string]$config.dataSource
+    if ([string]::IsNullOrWhiteSpace($dataSource)) {
+        return [pscustomobject]@{
+            changed = $false
+            reason = "data-source-missing"
+        }
+    }
+
+    $providerSectionMap = @{
+        "ALPACA" = "alpaca"
+        "IB" = "ib"
+        "IBCLIENTPORTAL" = "ibClientPortal"
+        "POLYGON" = "polygon"
+    }
+
+    $providerSectionName = $providerSectionMap[$dataSource.ToUpperInvariant()]
+    if ([string]::IsNullOrWhiteSpace($providerSectionName)) {
+        return [pscustomobject]@{
+            changed = $false
+            reason = "data-source-does-not-require-provider-settings"
+            dataSource = $dataSource
+        }
+    }
+
+    if ($null -ne $config.$providerSectionName) {
+        return [pscustomobject]@{
+            changed = $false
+            reason = "provider-settings-present"
+            dataSource = $dataSource
+            providerSection = $providerSectionName
+        }
+    }
+
+    if ($null -eq $config.synthetic) {
+        if ($config.PSObject.Properties.Name -contains "synthetic") {
+            $config.synthetic = [ordered]@{ enabled = $true }
+        }
+        else {
+            $config | Add-Member -NotePropertyName "synthetic" -NotePropertyValue ([ordered]@{ enabled = $true })
+        }
+    }
+
+    $config.dataSource = "Synthetic"
+    Write-JsonFile -Path $ConfigPath -InputObject $config
+
+    return [pscustomobject]@{
+        changed = $true
+        reason = "provider-settings-missing"
+        originalDataSource = $dataSource
+        repairedDataSource = "Synthetic"
+        providerSection = $providerSectionName
+    }
+}
+
 function New-LauncherScript {
     param(
         [Parameter(Mandatory)][string]$LauncherPath,
@@ -1244,12 +1311,11 @@ if (Test-Path -LiteralPath $installParentPath) {
 }
 
 $legacyInstallRootPaths = @($legacyInstallCandidates | ForEach-Object { $_.path })
-$legacyAppDataCandidates = if ($legacyInstallRootPaths.Count -gt 0) {
-    Get-LegacyAppDataCandidates -ActiveAppDataRootPath $appDataRootPath -LegacyInstallRoots $legacyInstallRootPaths
-}
-else {
-    @()
-}
+$legacyAppDataCandidates = @(
+    if ($legacyInstallRootPaths.Count -gt 0) {
+        Get-LegacyAppDataCandidates -ActiveAppDataRootPath $appDataRootPath -LegacyInstallRoots $legacyInstallRootPaths
+    }
+)
 $desktopShortcutRecord = if ($desktopShortcutPath) { Get-ShortcutRecord -ShortcutPath $desktopShortcutPath } else { $null }
 $startMenuShortcutRecord = Get-ShortcutRecord -ShortcutPath $startMenuShortcutPath
 $startMenuStopShortcutRecord = Get-ShortcutRecord -ShortcutPath $startMenuStopShortcutPath
@@ -1373,6 +1439,19 @@ Invoke-Step -Name "Back up Meridian app data" -Action {
 
 Invoke-Step -Name "Create default app configuration if needed" -Action {
     New-DefaultConfig -ConfigPath $configPath
+}
+
+Invoke-Step -Name "Repair invalid workstation configuration if needed" -Action {
+    $script:configRepair = Repair-InvalidWorkstationConfig -ConfigPath $configPath
+    if ($script:configRepair.changed) {
+        Write-Warn ("Repaired invalid workstation DataSource from {0} to {1} because {2} settings were missing." -f
+            $script:configRepair.originalDataSource,
+            $script:configRepair.repairedDataSource,
+            $script:configRepair.providerSection)
+    }
+    else {
+        Write-Info "No workstation configuration repair was required ($($script:configRepair.reason))."
+    }
 }
 
 if (-not $SkipNpmInstall -and -not (Test-Path -LiteralPath $dashboardNodeModules)) {
@@ -1646,6 +1725,7 @@ $installManifest = [ordered]@{
     actions = [ordered]@{
         hostCopySkipped = $hostCopySkipped
         bundleCopySkipped = $bundleCopySkipped
+        configRepair = $script:configRepair
         runtimeStateCleanup = $script:runtimeStateCleanup
         stoppedTrackedHost = $script:stopResult
         legacyArchiveRoot = $legacyArchiveRunRoot

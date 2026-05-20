@@ -128,6 +128,9 @@ Factor paydowns are calculated at par. A factor reduction from `1.00` to `0.97` 
 generates a `3,000` principal expectation regardless of carrying or sale price. Factor-based
 securities are treated as schedule-dependent when the Security Master terms explicitly require a
 factor schedule, carry a current factor below `1.00`, or report current face below original face.
+The supported factor-based fixed-income family now includes bonds, mortgage-backed securities,
+asset-backed securities, and loan/amortizing-loan instruments, so MBS/ABS principal reductions use
+the same par-based expectation path rather than falling into the unsupported-instrument posture.
 The reconciliation issue set flags missing schedules, missing coupon/day-count/payment terms,
 missing accounting classification, missing actual cash, amount mismatches, and principal/income
 classification mismatches.

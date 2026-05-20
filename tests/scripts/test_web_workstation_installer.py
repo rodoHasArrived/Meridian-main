@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -217,6 +218,17 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
                     }
                 ),
             )
+            self._write_file(
+                app_data_root / "appsettings.json",
+                json.dumps(
+                    {
+                        "DataRoot": "data",
+                        "DataSource": "IB",
+                        "ib": None,
+                        "dataSources": {"sources": None},
+                    }
+                ),
+            )
             self._write_file(legacy_app_data_root / "appsettings.json", "{\"DataRoot\":\"data\"}")
             self._write_file(legacy_app_data_root / "data" / "seed.txt", "legacy data")
             self._write_file(
@@ -279,12 +291,12 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             self.assertFalse((app_data_root / "service" / "web-workstation-runtime.json").exists())
             self.assertFalse(legacy_install_root.exists())
             self.assertFalse(legacy_app_data_root.exists())
-            self.assertFalse((desktop_root / "Meridian Web Workstation Test.lnk").exists())
-            self.assertFalse((start_menu_root / "Meridian Web Workstation Test.lnk").exists())
-            self.assertFalse((start_menu_root / "Stop Meridian Web Workstation Test.lnk").exists())
-            self.assertTrue((desktop_root / "Meridian Web Workstation.lnk").exists())
-            self.assertTrue((start_menu_root / "Meridian Web Workstation.lnk").exists())
-            self.assertTrue((start_menu_root / "Stop Meridian Web Workstation.lnk").exists())
+            self.assertTrue(self._wait_for_path_state(desktop_root / "Meridian Web Workstation Test.lnk", exists=False))
+            self.assertTrue(self._wait_for_path_state(start_menu_root / "Meridian Web Workstation Test.lnk", exists=False))
+            self.assertTrue(self._wait_for_path_state(start_menu_root / "Stop Meridian Web Workstation Test.lnk", exists=False))
+            self.assertTrue(self._wait_for_path_state(desktop_root / "Meridian Web Workstation.lnk", exists=True))
+            self.assertTrue(self._wait_for_path_state(start_menu_root / "Meridian Web Workstation.lnk", exists=True))
+            self.assertTrue(self._wait_for_path_state(start_menu_root / "Stop Meridian Web Workstation.lnk", exists=True))
 
             install_manifest = json.loads(
                 (app_data_root / "service" / "web-workstation-install-manifest.json").read_text(encoding="utf-8")
@@ -292,18 +304,28 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
             archived_installs = install_manifest["actions"]["archivedLegacyInstallRoots"]
             archived_app_data = install_manifest["actions"]["archivedLegacyAppDataRoots"]
             removed_shortcuts = install_manifest["actions"]["legacyShortcutsRemoved"]
+            config_repair = install_manifest["actions"]["configRepair"]
             runtime_cleanup = install_manifest["actions"]["runtimeStateCleanup"]
             self.assertEqual(len(archived_installs), 1)
             self.assertEqual(len(archived_app_data), 1)
             self.assertEqual(len(removed_shortcuts), 3)
+            self.assertTrue(config_repair["changed"])
+            self.assertEqual("IB", config_repair["originalDataSource"])
+            self.assertEqual("Synthetic", config_repair["repairedDataSource"])
             self.assertTrue(runtime_cleanup["removed"])
             self.assertTrue(Path(archived_installs[0]["destinationPath"]).exists())
             self.assertTrue(Path(archived_app_data[0]["destinationPath"]).exists())
+            repaired_config = json.loads((app_data_root / "appsettings.json").read_text(encoding="utf-8"))
+            repaired_data_source = repaired_config.get("dataSource") or repaired_config.get("DataSource")
+            synthetic_config = repaired_config.get("synthetic") or repaired_config.get("Synthetic")
+            self.assertEqual("Synthetic", repaired_data_source)
+            self.assertTrue(synthetic_config["enabled"])
             self.assertEqual(
                 install_manifest["discovery"]["legacyAppDataCandidates"][0]["classification"],
                 "old-app-data",
             )
             self.assertIn("Archived installs: 1", result.stdout)
+            self.assertIn("Repair invalid workstation configuration if needed", result.stdout)
             self.assertIn("Clear stale Meridian runtime state", result.stdout)
 
     def test_script_contains_host_asset_shortcut_and_launcher_contracts(self) -> None:
@@ -321,6 +343,8 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         self.assertIn("web-workstation-install-manifest.json", script)
         self.assertIn("archive\\old-installs", script)
         self.assertIn("Back up Meridian app data", script)
+        self.assertIn("Repair-InvalidWorkstationConfig", script)
+        self.assertIn("configRepair", script)
         self.assertIn("Clear stale Meridian runtime state", script)
         self.assertIn("runtimeStateCleanup", script)
         self.assertIn("SkipLegacyInstallCleanup", script)
@@ -463,6 +487,16 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         result = subprocess.run(command, capture_output=True, text=True)
         if result.returncode != 0:
             raise AssertionError(result.stderr or result.stdout)
+
+    @staticmethod
+    def _wait_for_path_state(path: Path, *, exists: bool, timeout_seconds: float = 5.0) -> bool:
+        deadline = time.time() + timeout_seconds
+        while time.time() < deadline:
+            if path.exists() == exists:
+                return True
+            time.sleep(0.1)
+
+        return path.exists() == exists
 
 
 if __name__ == "__main__":

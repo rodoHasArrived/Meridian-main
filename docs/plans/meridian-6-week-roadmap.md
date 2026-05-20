@@ -1,6 +1,6 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-05-19
+**Last Updated:** 2026-05-20
 **Horizon:** 2026-05-18 through 2026-06-28
 **Status:** Short-horizon execution slice derived from the canonical roadmap and current DK readiness dashboard
 
@@ -74,6 +74,12 @@ This plan starts from the current repo state:
   profile-switch requests. Use these to reduce operator confusion and stale async state without
   claiming cockpit acceptance, Backtest Studio, governed report-pack lifecycle, or live-readiness
   completion
+- current security/release hardening also includes fail-closed brokerage order placement behind
+  validation/sign-off artifacts, ledger and promotion endpoint authorization checks, execution
+  metadata sanitization, CI security scanning hardening, web-workstation installer config repair
+  for preserved provider settings, and browser session/role/disabled-field recovery text. Use
+  these as support evidence for operator trust and release hygiene; do not count them as W2/W3/W4
+  exit criteria until the corresponding pilot-readiness stages and browser/operator scenarios pass
 - buyer-facing demo paths, role-based views, readiness dashboards, close workflow previews, and evidence packet actions should be planned for the web dashboard after shared contracts exist; retained WPF coverage should stay limited to support and regression validation
 - the web Research run library already has a support slice for retained-run review, two-run compare/diff readiness, selected run-detail inspection, promotion-history decision detail, command-error alerts, component/view-model coverage, and refreshed built assets; the gated Quant Lab browser surface adds execution/parameter/template and plot-rendering support evidence, with plot geometry and accessibility state now extracted into a reusable view-model module, but strategy-aware launch/preflight, persisted sweep grouping, and Backtest Studio unification remain open
 - the retained WPF workstation shell is already organized around compatibility workspace groupings
@@ -89,7 +95,7 @@ This plan starts from the current repo state:
 - the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay consistency/freshness, controls, recent risk/control audit evidence, missing-field explainability warnings, promotion, DK1 trust-gate packet/sign-off projection, brokerage-sync, acceptance-gate/overall-readiness posture, and stable operator work items, plus an initial `/api/workstation/operator/inbox` aggregation contract for readiness, actionable latest-run review-packet, and reconciliation work items that the WPF main shell consumes through route-aware queue-button navigation, Account Portfolio routing for brokerage-sync blockers, run review-packet routing, and active-account `fundAccountId` propagation; `PromotionApprovalChecklist` defines required review items for paper and live promotion approvals, and the run review packet now emits stable route-aware work items for cross-workspace blockers
 - shared `StrategyRun`, portfolio, and ledger read services already exist and feed workstation surfaces; the Ledger-compatible CLI journal report path is useful local accounting support evidence, but broader shared ledger continuity and governance reporting remain Wave 3/Wave 4 work
 - promotion endpoints and workstation promotion surfaces are already in code
-- Security Master is already the authoritative instrument-definition baseline across workstation and governance surfaces, with current support evidence from browser search-result selection, identity drill-ins, details/lots/operator overrides, and UFL/reference-data projections for bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit
+- Security Master is already the authoritative instrument-definition baseline across workstation and governance surfaces, with current support evidence from browser search-result selection, identity drill-ins, details/lots/operator overrides, UFL/reference-data projections for bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit, plus factor-schedule accounting treatment for MBS, ABS, loan, and amortizing-loan instruments
 - governance already has concrete seams for reconciliation, cash-flow summaries, reporting profiles, and direct-lending foundations
 - the closed Wave 1 trust gate remains the first release gate for every downstream claim
 - DK1 provider-trust status is ready for Wave 2 handoff: the 2026-04-27 parity packet is signed by Data Operations, Provider Reliability, and Trading with valid packet binding, all pilot samples ready, validated evidence documents, and validated explainability/calibration contracts. Future provider-evidence changes still require a fresh date-stamped packet and matching `packetReview` sign-off; promotion handoff is early in progress through cockpit audit-feedback hardening, export is early in progress through governed report-pack schema/version checks, and reconciliation DK2 is now early in progress through a file-backed break queue with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, and calibration-summary profile rollups

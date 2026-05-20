@@ -216,7 +216,15 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         assetClass.Equals("Bond", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("CertificateOfDeposit", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("CommercialPaper", StringComparison.OrdinalIgnoreCase) ||
-        assetClass.Equals("TreasuryBill", StringComparison.OrdinalIgnoreCase);
+        assetClass.Equals("TreasuryBill", StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals("MortgageBacked", StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals("MortgageBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals("Mbs", StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals("AssetBacked", StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals("AssetBackedSecurity", StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals("Abs", StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals("Loan", StringComparison.OrdinalIgnoreCase) ||
+        assetClass.Equals("AmortizingLoan", StringComparison.OrdinalIgnoreCase);
 
     private static bool RequiresFactorSchedule(SecurityMasterAccountingSecurity security)
     {

@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import {
@@ -714,16 +715,22 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                   value={vm.providerForm.kind}
                   aria-label={vm.providerSetupDialogState.providerKindField.ariaLabel}
                   disabled={vm.providerSetupDialogState.providerKindField.disabled}
-                  title={vm.providerSetupDialogState.providerKindField.disabledReason ?? undefined}
+                  aria-describedby={joinDescribedByIds(
+                    `${vm.providerSetupDialogState.providerKindField.id}-description`,
+                    `${vm.providerSetupDialogState.providerKindField.id}-disabled-reason`
+                  )}
                   onChange={(e) => vm.updateProviderForm("kind", e.target.value)}
                 >
                   {vm.providerSetupDialogState.providerKindField.options.map((p) => (
                     <option key={p.value} value={p.value}>{p.label}</option>
                   ))}
                 </select>
-                <span className="text-xs text-muted-foreground">
-                  {vm.providerSetupDialogState.providerKindField.description}
-                </span>
+                <FieldSupportText
+                  helpId={`${vm.providerSetupDialogState.providerKindField.id}-description`}
+                  helpText={vm.providerSetupDialogState.providerKindField.description}
+                  disabledReason={vm.providerSetupDialogState.providerKindField.disabledReason}
+                  disabledReasonId={`${vm.providerSetupDialogState.providerKindField.id}-disabled-reason`}
+                />
               </label>
 
               <div
@@ -762,8 +769,12 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                   value={vm.providerSetupDialogState.displayNameField.value}
                   aria-label={vm.providerSetupDialogState.displayNameField.ariaLabel}
                   disabled={vm.providerSetupDialogState.displayNameField.disabled}
-                  title={vm.providerSetupDialogState.displayNameField.disabledReason ?? undefined}
+                  aria-describedby={joinDescribedByIds(`${vm.providerSetupDialogState.displayNameField.id}-disabled-reason`)}
                   onChange={(e) => vm.updateProviderForm(vm.providerSetupDialogState.displayNameField.field, e.target.value)}
+                />
+                <FieldSupportText
+                  disabledReason={vm.providerSetupDialogState.displayNameField.disabledReason}
+                  disabledReasonId={`${vm.providerSetupDialogState.displayNameField.id}-disabled-reason`}
                 />
               </label>
 
@@ -779,8 +790,12 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                     aria-label={field.ariaLabel}
                     placeholder={field.placeholder ?? undefined}
                     disabled={field.disabled}
-                    title={field.disabledReason ?? undefined}
+                    aria-describedby={joinDescribedByIds(`${field.id}-disabled-reason`)}
                     onChange={(e) => vm.updateProviderForm(field.field, e.target.value)}
+                  />
+                  <FieldSupportText
+                    disabledReason={field.disabledReason}
+                    disabledReasonId={`${field.id}-disabled-reason`}
                   />
                 </label>
               ))}
@@ -803,13 +818,17 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                         className="mt-0.5 shrink-0 accent-[hsl(var(--primary))]"
                         checked={cap.selected}
                         disabled={cap.disabled}
-                        title={cap.disabledReason ?? undefined}
+                        aria-describedby={joinDescribedByIds(`${cap.id}-description`, `${cap.id}-disabled-reason`)}
                         onChange={() => vm.toggleProviderCapability(cap.id)}
                         aria-label={cap.label}
                       />
                       <div className="min-w-0">
                         <div className="text-sm font-medium">{cap.label}</div>
-                        <div className="text-xs text-muted-foreground">{cap.description}</div>
+                        <div id={`${cap.id}-description`} className="text-xs text-muted-foreground">{cap.description}</div>
+                        <FieldSupportText
+                          disabledReason={cap.disabledReason}
+                          disabledReasonId={`${cap.id}-disabled-reason`}
+                        />
                       </div>
                     </label>
                   ))}
@@ -940,7 +959,10 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
               value={vm.form.provider}
               aria-label={vm.dialogState.providerField.ariaLabel}
               disabled={vm.dialogState.providerField.disabled}
-              title={vm.dialogState.providerField.disabledReason ?? undefined}
+              aria-describedby={joinDescribedByIds(
+                `${vm.dialogState.providerField.id}-detail`,
+                `${vm.dialogState.providerField.id}-disabled-reason`
+              )}
               onChange={(event) => vm.updateBackfillForm("provider", event.target.value)}
             >
               {vm.dialogState.providerOptions.map((provider) => (
@@ -949,7 +971,12 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
                 </option>
               ))}
             </select>
-            <span className="text-xs leading-5 text-muted-foreground">{vm.dialogState.selectedProviderDetail}</span>
+            <FieldSupportText
+              helpId={`${vm.dialogState.providerField.id}-detail`}
+              helpText={vm.dialogState.selectedProviderDetail}
+              disabledReason={vm.dialogState.providerField.disabledReason}
+              disabledReasonId={`${vm.dialogState.providerField.id}-disabled-reason`}
+            />
             <div className="flex flex-wrap gap-2" aria-label="Backfill provider options">
               {vm.dialogState.providerOptions.map((provider) => (
                 <button
@@ -980,14 +1007,18 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
               placeholder={vm.dialogState.symbolsField.placeholder}
               value={vm.form.symbols}
               aria-label={vm.dialogState.symbolsField.ariaLabel}
-              aria-describedby={vm.dialogState.symbolsField.describedBy}
               aria-invalid={vm.validationError !== null}
               disabled={vm.dialogState.symbolsField.disabled}
-              title={vm.dialogState.symbolsField.disabledReason ?? undefined}
+              aria-describedby={joinDescribedByIds(vm.dialogState.symbolsField.describedBy, `${vm.dialogState.symbolsField.id}-disabled-reason`)}
               data-dialog-autofocus={vm.dialogState.symbolsField.autoFocus ? "" : undefined}
               onChange={(event) => vm.updateBackfillForm("symbols", event.target.value)}
             />
-            <span id="backfill-symbols-help" className="text-xs text-muted-foreground">{vm.symbolsHelpText}</span>
+            <FieldSupportText
+              helpId="backfill-symbols-help"
+              helpText={vm.symbolsHelpText}
+              disabledReason={vm.dialogState.symbolsField.disabledReason}
+              disabledReasonId={`${vm.dialogState.symbolsField.id}-disabled-reason`}
+            />
           </label>
           <div className="grid gap-3 md:grid-cols-2">
             <label htmlFor={vm.dialogState.fromField.id} className="grid gap-1 text-sm">
@@ -999,8 +1030,12 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
                 value={vm.form.from}
                 aria-label={vm.dialogState.fromField.ariaLabel}
                 disabled={vm.dialogState.fromField.disabled}
-                title={vm.dialogState.fromField.disabledReason ?? undefined}
+                aria-describedby={joinDescribedByIds(`${vm.dialogState.fromField.id}-disabled-reason`)}
                 onChange={(event) => vm.updateBackfillForm("from", event.target.value)}
+              />
+              <FieldSupportText
+                disabledReason={vm.dialogState.fromField.disabledReason}
+                disabledReasonId={`${vm.dialogState.fromField.id}-disabled-reason`}
               />
             </label>
             <label htmlFor={vm.dialogState.toField.id} className="grid gap-1 text-sm">
@@ -1012,8 +1047,12 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
                 value={vm.form.to}
                 aria-label={vm.dialogState.toField.ariaLabel}
                 disabled={vm.dialogState.toField.disabled}
-                title={vm.dialogState.toField.disabledReason ?? undefined}
+                aria-describedby={joinDescribedByIds(`${vm.dialogState.toField.id}-disabled-reason`)}
                 onChange={(event) => vm.updateBackfillForm("to", event.target.value)}
+              />
+              <FieldSupportText
+                disabledReason={vm.dialogState.toField.disabledReason}
+                disabledReasonId={`${vm.dialogState.toField.id}-disabled-reason`}
               />
             </label>
           </div>

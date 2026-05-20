@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
@@ -21,8 +22,9 @@ public sealed class DiagnosticBundleService
 
     private static readonly string[] SensitiveKeys =
     [
-        "password", "secret", "key", "token", "apikey", "api_key",
-        "connectionstring", "credential", "auth"
+        "password", "secret", "key", "token", "apikey", "api_key", "api-key",
+        "connectionstring", "connection_string", "credential", "auth", "authorization",
+        "clientsecret", "client_secret", "refresh", "session", "accountkey"
     ];
 
     public DiagnosticBundleService(
@@ -43,17 +45,26 @@ public sealed class DiagnosticBundleService
         CancellationToken ct = default)
     {
         var bundleId = $"diag_{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}".Substring(0, 40);
+        var operationId = Guid.NewGuid().ToString("N");
+        var startedAt = DateTimeOffset.UtcNow;
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var tempDir = Path.Combine(Path.GetTempPath(), bundleId);
         var zipPath = Path.Combine(Path.GetTempPath(), $"{bundleId}.zip");
 
         try
         {
+            _log.Information(
+                "Diagnostic bundle generation started for {OperationName} with {CorrelationId}",
+                "diagnostic-bundle.generate",
+                operationId);
+
             Directory.CreateDirectory(tempDir);
 
             var manifest = new DiagnosticManifest
             {
                 BundleId = bundleId,
-                GeneratedAt = DateTimeOffset.UtcNow,
+                CorrelationId = operationId,
+                GeneratedAt = startedAt,
                 MachineName = Environment.MachineName,
                 OsVersion = Environment.OSVersion.ToString(),
                 DotNetVersion = Environment.Version.ToString(),
@@ -105,6 +116,16 @@ public sealed class DiagnosticBundleService
 
             var zipInfo = new FileInfo(zipPath);
 
+            stopwatch.Stop();
+            manifest.DurationMs = stopwatch.Elapsed.TotalMilliseconds;
+            _log.Information(
+                "Diagnostic bundle generation completed for {OperationName} with {CorrelationId} in {ElapsedMs} ms; files={FileCount}; sizeBytes={SizeBytes}",
+                "diagnostic-bundle.generate",
+                operationId,
+                stopwatch.ElapsedMilliseconds,
+                manifest.FilesCollected.Count,
+                zipInfo.Length);
+
             return new DiagnosticBundleResult
             {
                 Success = true,
@@ -117,7 +138,13 @@ public sealed class DiagnosticBundleService
         }
         catch (Exception ex)
         {
-            _log.Error(ex, "Failed to generate diagnostic bundle");
+            stopwatch.Stop();
+            _log.Error(
+                ex,
+                "Diagnostic bundle generation failed for {OperationName} with {CorrelationId} after {ElapsedMs} ms",
+                "diagnostic-bundle.generate",
+                operationId,
+                stopwatch.ElapsedMilliseconds);
             return new DiagnosticBundleResult
             {
                 Success = false,
@@ -216,7 +243,11 @@ public sealed class DiagnosticBundleService
         const string sampleConfigPath = "config/appsettings.sample.json";
         if (File.Exists(sampleConfigPath))
         {
-            File.Copy(sampleConfigPath, Path.Combine(tempDir, "appsettings.sample.json"));
+            var sampleConfig = await File.ReadAllTextAsync(sampleConfigPath, ct);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "appsettings.sample.json"),
+                SanitizeDiagnosticText(sampleConfig),
+                ct);
             manifest.FilesCollected.Add("appsettings.sample.json");
         }
     }
@@ -324,7 +355,11 @@ public sealed class DiagnosticBundleService
 
     private async Task CollectEnvironmentVariablesAsync(string tempDir, DiagnosticManifest manifest, CancellationToken ct)
     {
-        string[] relevantPrefixes = ["MDC_", "DOTNET_", "ASPNET", "ALPACA", "POLYGON", "PATH"];
+        string[] relevantPrefixes =
+        [
+            "MDC_", "DOTNET_", "ASPNET", "ALPACA", "POLYGON", "TIINGO", "FINNHUB",
+            "FRED", "NASDAQ", "ALPHAVANTAGE", "IB", "ROBINHOOD", "PATH"
+        ];
 
         var envVars = Environment.GetEnvironmentVariables()
             .Cast<System.Collections.DictionaryEntry>()
@@ -342,9 +377,9 @@ public sealed class DiagnosticBundleService
     }
 
     private static string SanitizeEnvValue(string key, string value) =>
-        IsSensitiveKey(key) ? "[REDACTED]" :
+        IsSensitiveKey(key) || SensitiveValueMasker.IsSensitiveEnvVar(key) ? "[REDACTED]" :
         key.Equals("PATH", StringComparison.OrdinalIgnoreCase) ? "[PATH variable - omitted for brevity]" :
-        value;
+        SanitizeDiagnosticText(value);
 
     private static async Task ListDirectoryAsync(string path, StringBuilder sb, string indent, int maxDepth, CancellationToken ct = default)
     {
@@ -356,7 +391,7 @@ public sealed class DiagnosticBundleService
             foreach (var dir in Directory.GetDirectories(path))
             {
                 ct.ThrowIfCancellationRequested();
-                var dirName = Path.GetFileName(dir);
+                var dirName = SanitizeDiagnosticText(Path.GetFileName(dir));
                 if (dirName.StartsWith("."))
                     continue;
 
@@ -368,7 +403,7 @@ public sealed class DiagnosticBundleService
             foreach (var file in Directory.GetFiles(path))
             {
                 ct.ThrowIfCancellationRequested();
-                var fileName = Path.GetFileName(file);
+                var fileName = SanitizeDiagnosticText(Path.GetFileName(file));
                 var fileInfo = new FileInfo(file);
                 sb.AppendLine($"{indent}{fileName} ({FormatSize(fileInfo.Length)})");
             }
@@ -393,28 +428,61 @@ public sealed class DiagnosticBundleService
     {
         return new
         {
-            dataRoot = config.DataRoot,
+            dataRoot = SanitizeDiagnosticText(config.DataRoot),
             compress = config.Compress ?? false,
             dataSource = config.DataSource.ToString(),
             alpaca = config.Alpaca != null ? new
             {
                 keyId = "[REDACTED]",
                 secretKey = "[REDACTED]",
-                feed = config.Alpaca.Feed,
+                feed = SanitizeDiagnosticText(config.Alpaca.Feed),
                 useSandbox = config.Alpaca.UseSandbox
             } : null,
             storage = config.Storage,
             symbolCount = config.Symbols?.Length ?? 0,
-            backfillEnabled = config.Backfill?.Enabled ?? false
+            backfillEnabled = config.Backfill?.Enabled ?? false,
+            backfillProvider = SanitizeDiagnosticText(config.Backfill?.Provider),
+            backfillProviderCount = CountConfiguredBackfillProviders(config.Backfill?.Providers),
+            providerRegistry = config.ProviderRegistry
         };
     }
 
-    private static string SanitizeLogContent(string content)
+    private static int CountConfiguredBackfillProviders(BackfillProvidersConfig? providers)
     {
+        if (providers is null)
+            return 0;
+
+        var count = 0;
+        if (providers.Alpaca is not null) count++;
+        if (providers.Yahoo is not null) count++;
+        if (providers.Nasdaq is not null) count++;
+        if (providers.Stooq is not null) count++;
+        if (providers.OpenFigi is not null) count++;
+        if (providers.Tiingo is not null) count++;
+        if (providers.Polygon is not null) count++;
+        if (providers.AlphaVantage is not null) count++;
+        if (providers.Finnhub is not null) count++;
+        if (providers.Fred is not null) count++;
+        if (providers.Synthetic is not null) count++;
+        if (providers.Robinhood is not null) count++;
+        return count;
+    }
+
+    private static string SanitizeLogContent(string content) => SanitizeDiagnosticText(content);
+
+    private static string SanitizeDiagnosticText(string? content)
+    {
+        if (string.IsNullOrEmpty(content))
+            return string.Empty;
+
         // Remove potential sensitive data patterns
         var patterns = new[]
         {
-            (@"(password|secret|key|token|apikey)[\s:=]+[^\s\]]+", "$1=[REDACTED]"),
+            (@"(?<key>password|secret|secretKey|key|apiKey|api_key|api-key|token|accessToken|refreshToken|clientSecret|connectionString|authorization|credential)\s*[:=]\s*(?<value>[^\s,;}\]]+)", "${key}=[REDACTED]"),
+            (@"""(?<key>password|secret|secretKey|key|apiKey|api_key|api-key|token|accessToken|refreshToken|clientSecret|connectionString|authorization|credential)""\s*:\s*""(?<value>[^""]*)""", "\"${key}\":\"[REDACTED]\""),
+            (@"(?<key>accountNumber|account_number|accountNo|account_no|acctNumber|acct_number)\s*[:=]\s*(?<value>[A-Za-z0-9\-]{4,})", "${key}=[REDACTED]"),
+            (@"""(?<key>accountNumber|account_number|accountNo|account_no|acctNumber|acct_number)""\s*:\s*""(?<value>[^""]*)""", "\"${key}\":\"[REDACTED]\""),
+            (@"(?<separator>[?&])(?<key>api_key|apikey|access_token|token|secret|accountNumber|account_number)=[^&\s]+", "${separator}${key}=[REDACTED]"),
             (@"Bearer\s+[A-Za-z0-9\-_]+", "Bearer [REDACTED]"),
             (@"Basic\s+[A-Za-z0-9+/=]+", "Basic [REDACTED]")
         };
@@ -422,9 +490,9 @@ public sealed class DiagnosticBundleService
         var result = content;
         foreach (var (pattern, replacement) in patterns)
         {
-            result = System.Text.RegularExpressions.Regex.Replace(
+            result = Regex.Replace(
                 result, pattern, replacement,
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         }
 
         return result;
@@ -469,7 +537,9 @@ public sealed class DiagnosticBundleResult
 internal sealed class DiagnosticManifest
 {
     public string? BundleId { get; set; }
+    public string? CorrelationId { get; set; }
     public DateTimeOffset GeneratedAt { get; set; }
+    public double DurationMs { get; set; }
     public string? MachineName { get; set; }
     public string? OsVersion { get; set; }
     public string? DotNetVersion { get; set; }

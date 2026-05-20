@@ -19,6 +19,7 @@ import {
   getWorkflowLibrary,
   getWorkflowPresets
 } from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
@@ -484,7 +485,7 @@ export function useWorkstationData() {
 }
 
 function formatRequestError(reason: unknown, fallback: string): string {
-  return reason instanceof Error && reason.message.trim() ? reason.message : fallback;
+  return describeApiError(reason, fallback).summary;
 }
 
 function appendWorkspaceError(errors: WorkspaceErrorMap, key: WorkspaceKey, message: string) {

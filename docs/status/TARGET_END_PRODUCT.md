@@ -1,6 +1,6 @@
 # Meridian - Target End Product
 
-**Last Updated:** 2026-05-19
+**Last Updated:** 2026-05-20
 **Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, signed DK1 parity-packet evidence with packet-bound sign-off validation, cockpit readiness projection, the active browser workstation lane, the web Research run-library, Quant Notebook helpers, and gated Quant Lab support slices, shared workflow command-palette commands with hash-aware provider-setup routing, browser Portfolio/Reporting/Settings/Data task panels plus Portfolio brokerage-sync next actions, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, the browser Evidence Workbench and shared evidence packet/graph APIs, live quote/order-book/watchlist/Price Alerts market-context routes with selectable recent-trade detail inspection and Watchlist no-quote/empty-state copy, Overview Today panel, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, browser Security Master search-result selection, identity drill-ins, details/lots/operator-override support, UFL/reference-data projection endpoints, paper-first Alpaca connection verification plus provider-setup next-validation handoffs, read-only Robinhood brokerage aggregation support, stable route-aware run review-packet work items surfaced through operator inbox when actionable, seeded reconciliation exception-route/tolerance/sign-off metadata plus calibration-summary rollups, crash-safe shared UI persistence, retained WPF shell support evidence including the Data shell feature module, workflow automation hardening, scheduled/manual WPF screenshot evidence capture, simplified browser rail/header chrome, and demo-data fixture semantics with seeded market-data demo paths
 
 ---
@@ -38,6 +38,15 @@ override approval, ledger draft/validate/post, reconciliation, approval, close, 
 and hash-chained audit timeline inspection through workstation API routes. The target close
 workflow still needs browser/operator acceptance, external statement/custodian intake, durable
 generalized casework, report publication controls, and operator-approved calibration.
+
+Current May 20 support evidence narrows the safety and operability path without completing it:
+order placement now has fail-closed validation/sign-off gates, ledger and promotion writes require
+explicit endpoint authorization, execution metadata is sanitized before exposure, the web
+workstation installer can repair invalid provider configs during upgrade, and browser forms now
+surface expired-session, forbidden-role, and disabled-field states in accessible text. Security
+Master accounting also recognizes MBS, ABS, loan, and amortizing-loan instruments as
+factor-schedule fixed-income support evidence. The target product still needs accepted cockpit,
+close, report-pack, Evidence Vault, provenance, and live-readiness workflows.
 
 For the release-level scenario that ties those workspaces together, use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md).
 For the product-category filter and documentation archive rule, use [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md).

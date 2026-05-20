@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
@@ -119,6 +120,7 @@ function AlpacaCredentialField({
   onValueChange: (value: string) => void;
   leadingIcon: ReactNode;
 }) {
+  const disabledReasonId = `${field.id}-disabled-reason`;
   return (
     <label htmlFor={field.id} className="grid gap-1 text-xs font-medium text-muted-foreground">
       {field.label}
@@ -132,17 +134,16 @@ function AlpacaCredentialField({
         leadingIcon={leadingIcon}
         disabled={field.disabled}
         error={field.error}
-        aria-describedby={field.describedBy}
+        aria-describedby={joinDescribedByIds(field.describedBy, field.disabledReason ? disabledReasonId : undefined)}
       />
-      <span
-        id={field.helpId}
-        className={cn(
-          "text-[11px] leading-4",
-          field.error ? "text-danger" : field.disabledReason ? "text-warning" : "text-muted-foreground"
-        )}
-      >
-        {field.helpText}
-      </span>
+      <FieldSupportText
+        helpId={field.helpId}
+        helpText={field.helpText}
+        helpClassName={cn("text-[11px] leading-4", field.error ? "text-danger" : "text-muted-foreground")}
+        disabledReason={field.disabledReason}
+        disabledReasonId={field.disabledReason ? disabledReasonId : undefined}
+        disabledReasonClassName="text-[11px] leading-4"
+      />
     </label>
   );
 }
@@ -542,7 +543,7 @@ export function SettingsScreen({
                         disabled={option.disabled}
                         onChange={() => alpacaForm.setEnvironment(option.value)}
                         aria-label={option.ariaLabel}
-                        aria-describedby={cn(
+                        aria-describedby={joinDescribedByIds(
                           option.descriptionId,
                           alpacaForm.fieldHelpIds.environment,
                           option.disabledReasonId,
@@ -566,14 +567,14 @@ export function SettingsScreen({
                     </label>
                   ))}
                 </div>
-                <span id={alpacaForm.fieldHelpIds.environment} className="text-[11px] leading-4 text-muted-foreground">
-                  {alpacaForm.environmentHelpText}
-                </span>
-                {alpacaForm.environmentOptions[0]?.disabledReason && alpacaForm.environmentOptions[0]?.disabledReasonId ? (
-                  <span id={alpacaForm.environmentOptions[0].disabledReasonId} className="text-[11px] leading-4 text-warning">
-                    {alpacaForm.environmentOptions[0].disabledReason}
-                  </span>
-                ) : null}
+                <FieldSupportText
+                  helpId={alpacaForm.fieldHelpIds.environment}
+                  helpText={alpacaForm.environmentHelpText}
+                  helpClassName="text-[11px] leading-4"
+                  disabledReason={alpacaForm.environmentOptions[0]?.disabledReason}
+                  disabledReasonId={alpacaForm.environmentOptions[0]?.disabledReasonId ?? undefined}
+                  disabledReasonClassName="text-[11px] leading-4"
+                />
               </fieldset>
             </div>
             {alpacaForm.liveAcknowledgement.visible ? (
@@ -592,7 +593,7 @@ export function SettingsScreen({
                   required={alpacaForm.liveAcknowledgement.required}
                   onChange={(event) => alpacaForm.setLiveAcknowledged(event.target.checked)}
                   aria-label={alpacaForm.liveAcknowledgement.ariaLabel}
-                  aria-describedby={cn(
+                  aria-describedby={joinDescribedByIds(
                     alpacaForm.liveAcknowledgement.descriptionId,
                     alpacaForm.liveAcknowledgement.disabledReasonId,
                     alpacaForm.formPanelId
@@ -604,14 +605,11 @@ export function SettingsScreen({
                   <span id={alpacaForm.liveAcknowledgement.descriptionId} className="mt-1 block text-xs leading-5 text-muted-foreground">
                     {alpacaForm.liveAcknowledgement.detail}
                   </span>
-                  {alpacaForm.liveAcknowledgement.disabledReason && alpacaForm.liveAcknowledgement.disabledReasonId ? (
-                    <span
-                      id={alpacaForm.liveAcknowledgement.disabledReasonId}
-                      className="mt-1 block text-xs leading-5 text-warning"
-                    >
-                      {alpacaForm.liveAcknowledgement.disabledReason}
-                    </span>
-                  ) : null}
+                  <FieldSupportText
+                    disabledReason={alpacaForm.liveAcknowledgement.disabledReason}
+                    disabledReasonId={alpacaForm.liveAcknowledgement.disabledReasonId ?? undefined}
+                    disabledReasonClassName="mt-1 block"
+                  />
                 </span>
               </label>
             ) : null}

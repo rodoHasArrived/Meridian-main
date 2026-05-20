@@ -137,6 +137,7 @@ public partial class MainWindow : Window
 
         // Start status bar update loop
         _ = _viewModel.StartAsync();
+        _viewModel.ShowStartupExperience();
 
         // Register clipboard watcher using this window's HWND (must be called after Loaded)
         var hwnd = new WindowInteropHelper(this).Handle;

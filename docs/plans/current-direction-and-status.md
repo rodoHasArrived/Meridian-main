@@ -1,6 +1,6 @@
 # Meridian Current Direction And Status
 
-**Last Reviewed:** 2026-05-19
+**Last Reviewed:** 2026-05-20
 **Role:** Single planning entry point for current direction, project status, and document roles.
 
 Use this file before reading individual roadmap or plan documents. It consolidates the active interpretation of Meridian's many planning files without replacing their detailed implementation notes.
@@ -71,6 +71,14 @@ commands as reference-only, and Reporting export commands carry abort signals so
 exports cannot publish stale status under the wrong selection. These reduce operator confusion and
 late-response races, but they do not close W2 cockpit acceptance, W3 continuity, W4 report-pack
 lifecycle, Backtest Studio, or live-readiness gates.
+
+May 20 hardening evidence remains support evidence: brokerage order placement fails closed without
+required validation/sign-off artifacts, ledger and promotion write routes have explicit
+authorization checks, execution metadata is sanitized before endpoint/audit exposure, CodeQL and
+gitleaks hardening are in CI, the web-workstation installer repairs invalid preserved provider
+configs while archiving legacy installs, and browser workstation forms now expose expired-session,
+forbidden-role, and disabled-field states in accessible recovery text. These strengthen the active
+path but do not change canonical wave status.
 
 W2/W3/W4 claim discipline: every new roadmap or status claim for these waves must either map to a
 `pilot-readiness.*` stage gate that turns green in the latest harness output or name the blocker in

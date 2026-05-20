@@ -32,43 +32,123 @@
             <RowDefinition Height="28" />
         </Grid.RowDefinitions>
 
-        <!-- Fixture/Offline Mode Banner (P0: Hard visual distinction for non-live modes) -->
-        <Border x:Name="FixtureModeBanner"
-                Grid.Row="0"
-                Visibility="{Binding FixtureModeBannerVisibility}"
-                Padding="8,6"
-                CornerRadius="0"
-                Background="{Binding FixtureModeBannerBackground}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0"
-                           Text="&#xE7BA;"
-                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           FontSize="16"
-                           Foreground="White"
-                           VerticalAlignment="Center"
-                           Margin="0,0,8,0" />
-                <TextBlock x:Name="FixtureModeText"
-                           Grid.Column="1"
-                           Text="{Binding FixtureModeText}"
-                           Foreground="White"
-                           FontWeight="SemiBold"
-                           FontSize="12"
-                           VerticalAlignment="Center" />
-                <TextBlock Grid.Column="2"
-                           Text="&#xE8BB;"
-                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           FontSize="14"
-                           Foreground="White"
-                           Opacity="0.7"
-                           VerticalAlignment="Center"
-                           Margin="8,0,0,0" />
-            </Grid>
-        </Border>
+        <StackPanel Grid.Row="0">
+            <!-- Fixture/Offline Mode Banner (P0: Hard visual distinction for non-live modes) -->
+            <Border x:Name="FixtureModeBanner"
+                    Visibility="{Binding FixtureModeBannerVisibility}"
+                    Padding="8,6"
+                    CornerRadius="0"
+                    Background="{Binding FixtureModeBannerBackground}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Text="&#xE7BA;"
+                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="16"
+                               Foreground="White"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0" />
+                    <TextBlock x:Name="FixtureModeText"
+                               Grid.Column="1"
+                               Text="{Binding FixtureModeText}"
+                               Foreground="White"
+                               FontWeight="SemiBold"
+                               FontSize="12"
+                               VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="2"
+                               Text="&#xE8BB;"
+                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="14"
+                               Foreground="White"
+                               Opacity="0.7"
+                               VerticalAlignment="Center"
+                               Margin="8,0,0,0" />
+                </Grid>
+            </Border>
+
+            <Border x:Name="StartupExperienceBanner"
+                    Visibility="{Binding StartupBannerVisibility}"
+                    Padding="18,14"
+                    Background="{StaticResource PremiumPanelBrush}"
+                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    AutomationProperties.Name="Startup briefing">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Width="52"
+                            Height="52"
+                            CornerRadius="16"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderThickness="1"
+                            Margin="0,0,14,0">
+                        <TextBlock Text="{StaticResource IconHome}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="26"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Meridian Workstation"
+                                       FontFamily="{StaticResource MeridianDisplayFontFamily}"
+                                       FontSize="22"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       VerticalAlignment="Center" />
+                            <Border Margin="12,0,0,0"
+                                    Padding="10,4"
+                                    CornerRadius="999"
+                                    Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                    BorderBrush="{StaticResource InfoColorBrush}"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Center">
+                                <TextBlock Text="{Binding StartupBannerStatusText}"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource InfoColorBrush}" />
+                            </Border>
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding StartupBannerMessage}"
+                                   Margin="0,6,0,0"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding StartupBannerDetail}"
+                                   Margin="0,6,0,0"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="16,0,0,0">
+                        <Button Content="Open Welcome"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding NavigateCommand}"
+                                CommandParameter="Welcome"
+                                Margin="0,0,8,0" />
+                        <Button Content="Dismiss"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Command="{Binding DismissStartupBannerCommand}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </StackPanel>
 
         <Frame x:Name="RootFrame"
                Grid.Row="1"

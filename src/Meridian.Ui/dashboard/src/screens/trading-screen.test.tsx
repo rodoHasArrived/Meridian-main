@@ -770,7 +770,7 @@ describe("TradingScreen", () => {
     expect(creatingButton).toHaveAttribute("title", "Paper session creation is in progress.");
     expect(screen.getByRole("button", { name: "Cancel" })).toHaveAttribute("title", "Paper session creation is in progress.");
     expect(screen.getByLabelText("Strategy ID")).toBeDisabled();
-    expect(screen.getByLabelText("Strategy ID")).toHaveAttribute("title", "Paper session creation is in progress.");
+    expect(screen.getByLabelText("Strategy ID")).toHaveAccessibleDescription("Paper session creation is in progress.");
     expect(screen.getByLabelText("Initial cash ($)")).toBeDisabled();
     expect(screen.getByLabelText("Initial cash ($)")).not.toHaveAttribute("aria-invalid");
     expect(screen.getByLabelText("Initial cash ($)")).toHaveAccessibleDescription("Paper session creation is in progress.");

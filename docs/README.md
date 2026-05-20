@@ -1,6 +1,6 @@
 # Meridian Documentation
 
-**Last Reviewed:** 2026-05-18
+**Last Reviewed:** 2026-05-20
 **Scope:** Active hand-authored documentation plus generated status and reference entry points
 
 This index is the main entry point for the active `docs/` tree. It is organized around Meridian's current direction: an evidence-backed investment operations platform where browser-first operator workflows prove trusted data, research, paper validation, portfolio/accounting review, reconciliation, approvals, and governed reporting outcomes end-to-end.

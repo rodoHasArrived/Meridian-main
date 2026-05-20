@@ -485,7 +485,8 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByLabelText("Backfill start date")).toBeDisabled();
     expect(screen.getByLabelText("Backfill end date")).toBeDisabled();
     expect(screen.getByRole("textbox", { name: "Backfill symbols" }))
-      .toHaveAttribute("title", "Backfill request is running; wait for the current request to finish before editing.");
+      .toHaveAccessibleDescription("Backfill request is running; wait for the current request to finish before editing.");
+    expect(screen.getByText("Backfill request is running; wait for the current request to finish before editing.")).toBeInTheDocument();
 
     await act(async () => {
       resolvePreview(mockPreview);

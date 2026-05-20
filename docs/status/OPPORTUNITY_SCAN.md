@@ -1,6 +1,6 @@
 # Meridian - Opportunity Scan
 
-**Last Updated:** 2026-05-19
+**Last Updated:** 2026-05-20
 **Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, signed DK1 pilot sample-set/parity-packet evidence, packet-bound sign-off validation, cockpit readiness projection, the active browser workstation lane, the web Research run-library, Quant Notebook helpers, and Quant Lab support slices, shared workflow command-palette commands with hash-aware provider-setup routing, browser Portfolio dense-table detail selection and brokerage-sync next actions plus Portfolio/Reporting/Settings/Data task panels, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, browser Evidence Workbench and shared evidence packet/graph APIs, live quote/order-book/watchlist/Price Alerts market-context routes with selectable recent-trade detail inspection, Watchlist no-quote/empty-state copy, and quick-trade readiness handoffs, Overview Today panel, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, provider-setup validation handoffs, seeded no-host quote-demo fixtures, simplified browser rail/header chrome, browser Security Master search-result selection and details/lots/operator-override support with identity drill-ins, lot-detail, and conflict refresh state, UFL/reference-data projection endpoints, read-only/paper-first brokerage connection evidence, crash-safe shared UI persistence, retained WPF shell support evidence including the Data shell feature module, desktop workflow automation hardening, and scheduled/manual WPF screenshot evidence capture
 
 This document turns the current repository state into the next opportunity order. It is intentionally narrower than a full roadmap refresh: it identifies the best next opportunities, why they matter now, what they unlock, and where they belong in the active delivery sequence.
@@ -30,6 +30,14 @@ Master resolution and override approval, ledger draft/validate/post, reconciliat
 close, reopen, hash-chained timeline reads, trusted-actor mutations, and optional transactional
 journal/audit/workflow commits. This raises the priority of browser/operator close acceptance and
 external statement/custodian integration, but it is not a Wave 4 exit by itself.
+
+2026-05-20 hardening note: the latest support evidence reduces risk around already-prioritized
+opportunities rather than creating a new opportunity lane. Brokerage order placement is
+fail-closed behind validation/sign-off artifacts, ledger/promotion writes now have explicit
+authorization checks, execution metadata is sanitized, the installer repairs invalid preserved
+provider configs while archiving old installs, and the browser surfaces session/role API recovery
+and field-level disabled reasons. Keep the opportunity order focused on cockpit acceptance,
+shared continuity, close/report acceptance, and governed evidence.
 
 ---
 

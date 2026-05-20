@@ -1,7 +1,7 @@
 # Meridian - Production Status
 
-**Version:** 1.7.7
-**Last Updated:** 2026-05-19
+**Version:** 1.7.8
+**Last Updated:** 2026-05-20
 **Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Waves 2-4 productization remain active while the browser workstation is the active operator UI lane and retained WPF orientation/routing plus release-evidence automation continue to support compatibility; current UFL/reference-data, browser Security Master lot-detail/conflict state, Live Quotes trade-detail selection and quick-trade readiness handoffs, Portfolio dense-table detail selection and brokerage-sync next actions, hash-aware provider-setup command routing, query-string route focus for subject/symbol handoffs, Watchlist empty/no-quote copy, provider-setup validation handoff, Data backfill dense-table queue selection, Trading loading-state and Recent Fills detail support, Reporting report-pack profile actions, Accounting reconciliation dense-table detail queue with keyboard selection and no-host break-queue fixtures, Strategy run/promotion detail state, Quant Lab view-model, Quant Notebook helpers, Overview Today panel, local Price Alerts, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail state, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, shared UI persistence, and WPF Data shell module deltas are support evidence, not readiness exits
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
@@ -26,6 +26,15 @@ state; Strategy Designer route actions now separate browser-openable GET evidenc
 reference-only POST validation, preview, and run-backtest actions; and Reporting export commands now
 abort superseded profile exports. These improve operator safety and route semantics, but they are
 not cockpit acceptance, Backtest Studio, governed report-pack lifecycle, or live-readiness exits.
+
+2026-05-20 hardening note: brokerage order placement now fails closed when required validation or
+sign-off artifacts are missing, ledger and promotion endpoints enforce role authorization,
+execution metadata is sanitized before it reaches endpoint/audit payloads, CodeQL/gitleaks
+hardening is present in CI, and the web-workstation installer can archive superseded installs while
+repairing preserved configs that reference missing provider sections. Browser UX hardening now
+surfaces expired-session and forbidden-role API failures explicitly and exposes disabled form
+reasons through accessible field support text. These reduce operational risk, but W2-W4 remain
+`In Progress`.
 
 ---
 

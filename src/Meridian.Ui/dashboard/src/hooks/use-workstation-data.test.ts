@@ -3,6 +3,7 @@ import { createElement, StrictMode, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import * as api from "@/lib/api";
+import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
@@ -156,6 +157,43 @@ describe("useWorkstationData", () => {
     });
 
     expect(result.current.session).toBeNull();
+  });
+
+  it("surfaces an expired session as a session recovery state", async () => {
+    const { result } = renderHook(() => useWorkstationData());
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      rejectRequest("session", 0, createApiErrorFromResponseBody(
+        "/api/workstation/session",
+        401,
+        JSON.stringify({
+          title: "Unauthorized",
+          detail: "The workstation session token expired."
+        })
+      ));
+      resolveRequest<SystemOverviewResponse>("overview", 0, { marker: "overview" } as unknown as SystemOverviewResponse);
+      resolveRequest<ResearchWorkspaceResponse>("research", 0, { marker: "research" } as unknown as ResearchWorkspaceResponse);
+      resolveRequest<TradingWorkspaceResponse>("trading", 0, { marker: "trading" } as unknown as TradingWorkspaceResponse);
+      resolveRequest<PortfolioWorkspaceResponse>("portfolio", 0, { marker: "portfolio" } as unknown as PortfolioWorkspaceResponse);
+      resolveRequest<DataOperationsWorkspaceResponse>("dataOperations", 0, { marker: "data" } as unknown as DataOperationsWorkspaceResponse);
+      resolveRequest<GovernanceWorkspaceResponse>("governance", 0, { marker: "accounting" } as unknown as GovernanceWorkspaceResponse);
+      resolveRequest<GovernanceWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as GovernanceWorkspaceResponse);
+      resolveRequest<BrokerageConnectionStatus>("brokerageConnection", 0, { marker: "brokerage" } as unknown as BrokerageConnectionStatus);
+      resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
+      resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
+      resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
+      resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
+      resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", 0, { marker: "brokerage portfolio" } as unknown as BrokerageHouseholdPortfolio);
+      resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "workflows" } as unknown as WorkflowLibrary);
+      resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, { generatedAt: "2026-01-01T00:00:00Z", presets: [] });
+      await flushAsync();
+    });
+
+    expect(result.current.error).toBe("Session expired or Meridian sign-in is required.");
+    expect(result.current.session).toBeNull();
+    expect(result.current.overview).toEqual({ marker: "overview" });
   });
 
   it("keeps the active StrictMode refresh live after the dev remount cycle", async () => {

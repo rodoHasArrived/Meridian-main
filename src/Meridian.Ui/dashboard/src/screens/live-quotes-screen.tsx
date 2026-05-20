@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { HistoricalChartCard } from "@/components/meridian/historical-chart";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Input } from "@/components/ui/input";
@@ -484,6 +485,11 @@ interface QuickTradeCardProps {
 function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
   const { fields, ticket, reviewAcknowledgement, submitCommand, status } = vm;
   const statusToneClass = quickTicketStatusClass[status.tone];
+  const sideDisabledReasonId = `${fields.side.id}-disabled-reason`;
+  const typeDisabledReasonId = `${fields.type.id}-disabled-reason`;
+  const quantityDisabledReasonId = `${fields.quantity.id}-disabled-reason`;
+  const limitPriceDisabledReasonId = `${fields.limitPrice.id}-disabled-reason`;
+  const acknowledgementDisabledReasonId = `${reviewAcknowledgement.id}-disabled-reason`;
   return (
     <Card>
       <CardHeader>
@@ -506,13 +512,16 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
                 onChange={(event) => vm.updateField("side", event.target.value as "Buy" | "Sell")}
                 className={vm.sideToneClass}
                 aria-label={fields.side.ariaLabel}
-                aria-describedby={fields.side.describedBy}
+                aria-describedby={joinDescribedByIds(fields.side.describedBy, sideDisabledReasonId)}
                 disabled={fields.side.disabled}
-                title={fields.side.disabledReason ?? undefined}
               >
                 <option value="Buy">Buy</option>
                 <option value="Sell">Sell</option>
               </Select>
+              <FieldSupportText
+                disabledReason={fields.side.disabledReason}
+                disabledReasonId={sideDisabledReasonId}
+              />
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor={fields.type.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.type.label}</label>
@@ -521,13 +530,16 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
                 value={ticket.type}
                 onChange={(event) => vm.updateField("type", event.target.value as "Market" | "Limit")}
                 aria-label={fields.type.ariaLabel}
-                aria-describedby={fields.type.describedBy}
+                aria-describedby={joinDescribedByIds(fields.type.describedBy, typeDisabledReasonId)}
                 disabled={fields.type.disabled}
-                title={fields.type.disabledReason ?? undefined}
               >
                 <option value="Limit">Limit</option>
                 <option value="Market">Market</option>
               </Select>
+              <FieldSupportText
+                disabledReason={fields.type.disabledReason}
+                disabledReasonId={typeDisabledReasonId}
+              />
             </div>
           </div>
 
@@ -547,9 +559,12 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
                 spellCheck={false}
                 error={vm.quantityInvalid}
                 aria-label={fields.quantity.ariaLabel}
-                aria-describedby={fields.quantity.describedBy}
+                aria-describedby={joinDescribedByIds(fields.quantity.describedBy, quantityDisabledReasonId)}
                 disabled={fields.quantity.disabled}
-                title={fields.quantity.disabledReason ?? undefined}
+              />
+              <FieldSupportText
+                disabledReason={fields.quantity.disabledReason}
+                disabledReasonId={quantityDisabledReasonId}
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -570,8 +585,11 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
                 spellCheck={false}
                 error={vm.priceInvalid}
                 aria-label={fields.limitPrice.ariaLabel}
-                aria-describedby={fields.limitPrice.describedBy}
-                title={fields.limitPrice.disabledReason ?? undefined}
+                aria-describedby={joinDescribedByIds(fields.limitPrice.describedBy, limitPriceDisabledReasonId)}
+              />
+              <FieldSupportText
+                disabledReason={fields.limitPrice.disabledReason}
+                disabledReasonId={limitPriceDisabledReasonId}
               />
             </div>
           </div>
@@ -579,7 +597,6 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
           <label
             htmlFor={reviewAcknowledgement.id}
             className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
-            title={reviewAcknowledgement.disabledReason ?? undefined}
           >
             <input
               id={reviewAcknowledgement.id}
@@ -587,7 +604,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
               checked={reviewAcknowledgement.checked}
               disabled={reviewAcknowledgement.disabled}
               onChange={(event) => vm.setReviewAcknowledged(event.target.checked)}
-              aria-describedby={`${reviewAcknowledgement.id}-description ${status.id}`}
+              aria-describedby={joinDescribedByIds(`${reviewAcknowledgement.id}-description`, acknowledgementDisabledReasonId, status.id)}
               className="mt-1 h-4 w-4 accent-primary"
             />
             <span className="min-w-0">
@@ -595,6 +612,11 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
               <span id={`${reviewAcknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
                 {reviewAcknowledgement.description}
               </span>
+              <FieldSupportText
+                disabledReason={reviewAcknowledgement.disabledReason}
+                disabledReasonId={acknowledgementDisabledReasonId}
+                disabledReasonClassName="mt-1 block"
+              />
             </span>
           </label>
 

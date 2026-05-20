@@ -159,6 +159,13 @@ and backtest commands. Reporting export commands now pass abort signals and supp
 same-profile or profile-switch export results. Treat these as operator-safety support evidence, not
 completion of provider governance, Backtest Studio, or governed report-pack lifecycle gates.
 
+Current May 20 hardening adds fail-closed brokerage order-placement gates, ledger/promotion
+endpoint authorization checks, execution metadata sanitization, web-workstation installer repair
+for preserved configs that point at missing provider sections, browser session/role API recovery
+messages, and accessible disabled-field support text. Security Master accounting support also now
+treats MBS, ABS, loan, and amortizing-loan instruments as factor-schedule fixed-income families.
+Treat these as risk-reduction and operator-trust support evidence, not W2-W4 readiness exits.
+
 ### MCP server (minimal) — `src/Meridian.Mcp`
 
 A lightweight [Model Context Protocol](https://modelcontextprotocol.io/) server. Loads tools, prompts, and resources from the assembly and communicates over stdio. Intended for repo-navigation and code-review AI tooling. All diagnostic output goes to stderr; stdout is reserved for the MCP protocol.

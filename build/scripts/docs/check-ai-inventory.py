@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from collections import Counter
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
@@ -57,6 +58,17 @@ AI_WORKFLOW_FILES = (
     ".github/workflows/prompt-generation.yml",
     ".github/workflows/reusable-ai-analysis.yml",
     ".github/workflows/skill-evals.yml",
+)
+AI_WORKFLOW_REFERENCE_FILES = (
+    AI_CONTRACT,
+    PROMPTS_README,
+    GITHUB_PROMPTS_README,
+    COPILOT_GUIDE,
+    "docs/ai/copilot/ai-sync-workflow.md",
+    "docs/prompts/automation-prompts.md",
+)
+WORKFLOW_REFERENCE_PATTERN = re.compile(
+    r"(?:\.\./)*\.github/workflows/(?P<workflow>[A-Za-z0-9_.-]+\.ya?ml)"
 )
 OPTIONAL_ASSISTANT_SURFACE_PATTERNS = (
     ("cursor", (".cursorrules", ".cursor/**/*.md", ".cursor/**/*.mdc")),
@@ -493,6 +505,7 @@ def check_catalog_drift(root: Path, inventory: Sequence[InventoryItem]) -> list[
     findings.extend(check_legacy_canonical_links(root, inventory))
     findings.extend(check_compact_assistant_guides(root))
     findings.extend(check_ui_platform_policy(root))
+    findings.extend(check_missing_workflow_references(root))
 
     return sorted(findings, key=lambda finding: (finding.severity, finding.expected_doc, finding.path))
 
@@ -521,6 +534,39 @@ def check_ui_platform_policy(root: Path) -> list[Finding]:
                 message=f"{doc_path} is missing UI platform policy markers: {', '.join(missing_markers)}",
             )
         )
+
+    return findings
+
+
+def check_missing_workflow_references(root: Path) -> list[Finding]:
+    findings: list[Finding] = []
+
+    for doc_path in AI_WORKFLOW_REFERENCE_FILES:
+        path = root / doc_path
+        if not path.is_file():
+            continue
+
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for match in WORKFLOW_REFERENCE_PATTERN.finditer(text):
+            workflow_name = match.group("workflow")
+            workflow_path = f".github/workflows/{workflow_name}"
+            if (root / workflow_path).is_file():
+                continue
+
+            findings.append(
+                Finding(
+                    severity="drift",
+                    surface="ai-automation-workflows",
+                    kind="missing-workflow-reference",
+                    name=workflow_name,
+                    path=doc_path,
+                    expected_doc=doc_path,
+                    message=(
+                        f"{doc_path} references {workflow_path}, but that workflow is not active; "
+                        "point users to an active workflow, local script, or archive note instead."
+                    ),
+                )
+            )
 
     return findings
 

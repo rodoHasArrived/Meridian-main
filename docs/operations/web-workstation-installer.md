@@ -30,6 +30,9 @@ Each installer run is upgrade-aware:
 - backs up the current `%LOCALAPPDATA%\Meridian` state to
   `%LOCALAPPDATA%\Meridian\backups\install-<timestamp>\`
 - preserves the active config and resolved data root instead of recreating them
+- repairs an invalid provider-specific `DataSource` back to `Synthetic` when the preserved config
+  still points at `IB`, `IBClientPortal`, `Alpaca`, or `Polygon` but the matching provider settings
+  are missing
 - clears stale `%LOCALAPPDATA%\Meridian\service\web-workstation-runtime.json` state when the
   tracked PID is no longer running
 - archives superseded side-by-side install roots under
