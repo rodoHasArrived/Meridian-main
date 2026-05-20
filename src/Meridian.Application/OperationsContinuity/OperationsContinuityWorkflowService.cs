@@ -167,22 +167,31 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             now);
 
         var evidence = NormalizeEvidence(request.EvidenceLinks);
-        var audit = await _auditStore.AppendAsync(
-            new OperationsWorkflowAuditDraft(
-                workflow.WorkflowId,
-                workflow.FundAccountId,
-                workflow.PeriodId,
-                "workflow-started",
-                OperationsWorkflowStatusDto.NotStarted,
-                _statusDerivation.Derive(workflow),
-                OperationsGateKeyDto.BrokerIngest,
-                OperationsGateStatusDto.NotStarted,
-                OperationsGateStatusDto.InProgress,
-                request.Actor.Trim(),
-                request.Rationale,
-                request.CorrelationId,
-                evidence),
-            ct: ct).ConfigureAwait(false);
+        var auditDraft = new OperationsWorkflowAuditDraft(
+            workflow.WorkflowId,
+            workflow.FundAccountId,
+            workflow.PeriodId,
+            "workflow-started",
+            OperationsWorkflowStatusDto.NotStarted,
+            _statusDerivation.Derive(workflow),
+            OperationsGateKeyDto.BrokerIngest,
+            OperationsGateStatusDto.NotStarted,
+            OperationsGateStatusDto.InProgress,
+            request.Actor.Trim(),
+            request.Rationale,
+            request.CorrelationId,
+            evidence);
+
+        if (_auditStore is IOperationsContinuityWorkflowStartCommitStore startCommitStore)
+        {
+            var startCommit = await startCommitStore
+                .CommitWorkflowStartAsync(workflow, auditDraft, ct)
+                .ConfigureAwait(false);
+            var committedDto = await ToDtoAsync(startCommit.Workflow, ct).ConfigureAwait(false);
+            return Success(committedDto);
+        }
+
+        var audit = await _auditStore.AppendAsync(auditDraft, ct: ct).ConfigureAwait(false);
 
         workflow.Touch(audit.OccurredAtUtc);
         await _repository.SaveAsync(workflow, ct).ConfigureAwait(false);

@@ -74,6 +74,28 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task StartWorkflowAsync_ShouldNotPersistWorkflowWhenAuditAppendFails()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        var auditStore = new ThrowingAuditStore("workflow-started");
+        var service = new OperationsContinuityWorkflowService(repository, auditStore, derivation);
+
+        var act = () => service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "bank",
+            "ops-user"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Simulated audit append failure.");
+
+        var workflows = await repository.ListAsync();
+        workflows.Should().BeEmpty();
+    }
+
+    [Fact]
     public void Derive_ShouldReturnBlockedWhenAnyGateIsBlocked()
     {
         var derivation = new OperationsStatusDerivationService();

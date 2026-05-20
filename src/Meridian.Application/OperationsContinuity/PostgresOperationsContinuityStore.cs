@@ -10,6 +10,7 @@ namespace Meridian.Application.OperationsContinuity;
 public sealed class PostgresOperationsContinuityStore :
     IOperationsContinuityRepository,
     IOperationsWorkflowAuditStore,
+    IOperationsContinuityWorkflowStartCommitStore,
     IOperationsContinuityTransactionalCommitStore
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
@@ -138,6 +139,26 @@ public sealed class PostgresOperationsContinuityStore :
         }
 
         return results;
+    }
+
+    public async Task<OperationsContinuityTransactionalCommitResult> CommitWorkflowStartAsync(
+        OperationsContinuityWorkflow workflow,
+        OperationsWorkflowAuditDraft auditDraft,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(workflow);
+        ArgumentNullException.ThrowIfNull(auditDraft);
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+
+        await UpsertWorkflowAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
+        var audit = await AppendAuditAsync(connection, transaction, auditDraft, ct).ConfigureAwait(false);
+        workflow.Touch(audit.OccurredAtUtc);
+        await UpsertWorkflowAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return new OperationsContinuityTransactionalCommitResult(workflow, audit);
     }
 
     public async Task<OperationsContinuityTransactionalCommitResult> CommitLedgerPostingAsync(

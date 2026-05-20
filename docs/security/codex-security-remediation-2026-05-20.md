@@ -244,3 +244,4 @@ Source scan: `codex-security-findings-2026-05-20T01-02-51.761Z.csv`.
 
 Several informational and medium rows are correctness/build-quality hardening rather than immediately exploitable vulnerabilities, including CI workflow behavior, devcontainer/codex configuration posture, launcher escaping, response-shape mismatches, and compile or documentation automation issues. They remain important for institutional release readiness but were not mixed into the execution-control fix to keep this change reviewable.
 
+

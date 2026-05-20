@@ -34,6 +34,14 @@ public interface IOperationsContinuityTransactionalCommitStore
         CancellationToken ct = default);
 }
 
+public interface IOperationsContinuityWorkflowStartCommitStore
+{
+    Task<OperationsContinuityTransactionalCommitResult> CommitWorkflowStartAsync(
+        OperationsContinuityWorkflow workflow,
+        OperationsWorkflowAuditDraft auditDraft,
+        CancellationToken ct = default);
+}
+
 public sealed record OperationsContinuityTransactionalCommitResult(
     OperationsContinuityWorkflow Workflow,
     OperationsWorkflowAuditDto Audit);

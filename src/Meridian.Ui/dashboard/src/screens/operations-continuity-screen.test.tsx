@@ -136,7 +136,7 @@ describe("OperationsContinuityScreen", () => {
 
     expect(await screen.findByRole("heading", { name: "Gates" })).toBeInTheDocument();
     expect(screen.getByText("Ledger posting requires a balanced and validated journal draft.")).toBeInTheDocument();
-    expect(screen.getByText("Ledger Draft Blocked")).toBeInTheDocument();
+    expect(await screen.findByText("Ledger Draft Blocked")).toBeInTheDocument();
 
     const nextAction = screen.getByRole("link", { name: "Open operations continuity next action: Resolve Ledger Posting blockers" });
     expect(nextAction).toHaveAttribute("href", "/accounting");

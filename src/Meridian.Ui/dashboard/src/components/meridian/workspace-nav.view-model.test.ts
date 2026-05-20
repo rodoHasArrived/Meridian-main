@@ -55,12 +55,19 @@ describe("workspace nav view model", () => {
     const accounting = model.items.find((item) => item.key === "accounting");
 
     expect(accounting?.subItems.map((item) => item.route)).toEqual([
+      "/accounting/operations-continuity",
       "/accounting",
       "/accounting/reconciliation",
       "/accounting/security-master",
       "/accounting/approvals"
     ]);
     expect(accounting?.subItems[0]).toMatchObject({
+      label: "Continuity",
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Continuity"
+    });
+    expect(accounting?.subItems[1]).toMatchObject({
       label: "Ledger",
       active: true,
       ariaCurrent: "page",
