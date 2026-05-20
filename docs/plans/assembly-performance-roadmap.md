@@ -1,7 +1,7 @@
 # Assembly-Level Performance Roadmap
 
 **Version:** 1.0
-**Last Updated:** 2026-04-08
+**Last Updated:** 2026-05-20
 **Audience:** Core contributors, performance engineers
 **Source Evaluation:** [`docs/evaluations/assembly-performance-opportunities.md`](../evaluations/assembly-performance-opportunities.md)
 
@@ -358,4 +358,4 @@ Before merging any optimized path:
 
 ---
 
-_Last Updated: 2026-04-08_
+_Last Updated: 2026-05-20_

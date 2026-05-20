@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, operations, and stakeholders
-**Last Updated:** 2026-05-19
+**Last Updated:** 2026-05-20
 **Status:** Active planning document; subordinate to the canonical wave model in [`../status/ROADMAP.md`](../status/ROADMAP.md)
 
 > Current-state refresh (2026-04-27): keep this matrix as a broad product-vision view, not a

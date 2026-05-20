@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, Research, Architecture, Backtesting, API, Web, and WPF contributors
-**Last Updated:** 2026-04-08
+**Last Updated:** 2026-05-20
 **Status:** Active blueprint aligned to Wave 5
 
 ---

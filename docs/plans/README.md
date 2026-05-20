@@ -1,6 +1,6 @@
 # Plans
 
-**Last Reviewed:** 2026-05-19
+**Last Reviewed:** 2026-05-20
 
 This directory contains current Meridian execution plans, blueprints, and target-state packages. Start with [current-direction-and-status.md](current-direction-and-status.md) for the consolidated planning interpretation. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); the remaining files here are subordinate implementation plans, optional-track designs, or asset-package specifications.
 

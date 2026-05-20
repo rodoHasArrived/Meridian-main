@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, and Platform contributors
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-05-20
 **Status:** Active blueprint — the active operator UI implementation lane is now the web dashboard in `src/Meridian.Ui/dashboard/`, with WPF retained for compatibility, support fixes, and shared-contract regression evidence. The WPF shell/navigation baseline remains implemented support evidence; signed DK1 trust-gate state and risk/control audit explainability now project into the trading readiness lane and retained WPF Trading desk briefing hero with stale replay count detail plus warning/critical shared-work-item blockers. The web Research run library now provides the first browser support slice for retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, and refreshed built workstation assets. Workflow validation and cockpit/shared-model/governance hardening remain in progress.
 
 ---

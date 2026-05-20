@@ -1,7 +1,7 @@
 # L3 Inference & Queue-Aware Execution Backtesting: Implementation Plan
 
 **Version:** 1.2
-**Last Updated:** 2026-03-17
+**Last Updated:** 2026-05-20
 **Audience:** Quantitative researchers, execution analysts, core contributors
 
 ---

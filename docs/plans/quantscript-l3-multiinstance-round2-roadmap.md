@@ -1,7 +1,7 @@
 # QuantScript, L3 Inference & Multi-Instance: Round 2 Feature Roadmap (Ideas #19–#30)
 
 **Version:** 1.1
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-05-20
 **Audience:** Quantitative researchers, core contributors, platform engineers, institutional operators
 **Related Plans:**
 - QuantScript v1 blueprint: [`archive/docs/plans/quant-script-environment-blueprint.md`](../../archive/docs/plans/quant-script-environment-blueprint.md)
@@ -2244,4 +2244,4 @@ paths that will be created when implementing the corresponding feature.
 
 ---
 
-_Last Updated: 2026-04-08_
+_Last Updated: 2026-05-20_

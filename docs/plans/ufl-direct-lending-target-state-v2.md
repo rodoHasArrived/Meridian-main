@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-04-23
+**Last Updated:** 2026-05-20
 **Status:** active
 **Reviewed:** 2026-04-23
 

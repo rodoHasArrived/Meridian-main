@@ -2,7 +2,7 @@
 
 **Owner:** Core Team  
 **Audience:** Research, Backtesting, Ledger, Risk, Workstation API, Web, and WPF contributors  
-**Last Updated:** 2026-04-09  
+**Last Updated:** 2026-05-20  
 **Status:** Proposed blueprint
 
 ---

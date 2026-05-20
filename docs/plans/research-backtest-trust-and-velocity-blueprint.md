@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Research, Desktop, Backtesting, API, and Architecture contributors
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-05-20
 **Status:** Active focused blueprint for the next Research implementation slice; the active web dashboard now has a Research run-library first cut with pair selection, compare/diff command readiness, promotion-history loading, operator-visible command errors, and built workstation assets, while request-level batch sweeps, WPF Batch Backtest ViewModel coverage, BatchBacktest results empty guidance, and StrategyRuns filter-aware run-scope recovery remain retained support evidence. Real strategy selection, persisted sweep grouping, and stage-aware shared orchestration remain open.
 
 > Companion to:

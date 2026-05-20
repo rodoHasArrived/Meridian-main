@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-05-20
 **Status:** Active execution roadmap aligned to Wave 4 governance and fund-operations productization
 
 > **UI lane refresh (2026-05-18):** Browser workstation references in this

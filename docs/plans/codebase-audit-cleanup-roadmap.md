@@ -1,6 +1,6 @@
 # Codebase Audit and Cleanup Roadmap
 
-**Last Updated:** 2026-04-28
+**Last Updated:** 2026-05-20
 **Status:** Active cleanup backlog
 **Purpose:** Current cleanup and maintainability roadmap grounded in the repository as it exists today
 

@@ -1,6 +1,6 @@
 # Meridian Wave Implementation Checklists
 
-**Last Reviewed:** 2026-05-19  
+**Last Reviewed:** 2026-05-20  
 **Purpose:** Plain-language, implementation-ready checklists for what must be finished before each wave can be marked complete.
 
 Use this together with:

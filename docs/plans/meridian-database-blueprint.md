@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Platform, storage, workstation, strategy, governance, and API contributors
-**Last Updated:** 2026-03-24
+**Last Updated:** 2026-05-20
 **Status:** Proposed blueprint grounded in current repository architecture
 
 ## Scope

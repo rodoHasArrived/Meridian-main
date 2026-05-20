@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-05-12
+**Last Updated:** 2026-05-20
 **Status:** Active execution roadmap aligned to Wave 5 Backtest Studio unification
 
 > **UI lane refresh (2026-05-12):** References in this roadmap to

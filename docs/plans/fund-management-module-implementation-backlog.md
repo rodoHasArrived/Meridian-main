@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, and delivery leads
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-05-20
 **Status:** Active implementation backlog
 
 > **UI lane refresh (2026-05-18):** The browser workstation is the active

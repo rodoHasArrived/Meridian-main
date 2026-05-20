@@ -1,6 +1,6 @@
 # Meridian Pilot Workflow
 
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-05-20
 **Status:** Golden-path productization filter for the active Waves 2-4 operator-readiness path
 
 ---

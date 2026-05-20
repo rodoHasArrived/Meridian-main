@@ -1,6 +1,6 @@
 # Brokerage Portfolio Sync Blueprint
 
-**Last Updated:** 2026-05-07
+**Last Updated:** 2026-05-20
 
 ## Summary
 

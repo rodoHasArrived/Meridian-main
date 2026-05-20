@@ -1,6 +1,6 @@
 # Paper Trading Cockpit Reliability Sprint
 
-**Last Reviewed:** 2026-05-18
+**Last Reviewed:** 2026-05-20
 
 Planning review note 2026-05-18: this remains the Wave 2 cockpit reliability contract. The active
 operator UI proof path is the browser workstation, with retained WPF/API surfaces consuming the

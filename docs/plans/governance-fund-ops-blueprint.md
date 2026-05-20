@@ -1,6 +1,6 @@
 # Governance and Fund Operations Blueprint
 
-**Last Updated:** 2026-05-19
+**Last Updated:** 2026-05-20
 
 This blueprint is subordinate to
 [`current-direction-and-status.md`](current-direction-and-status.md) and

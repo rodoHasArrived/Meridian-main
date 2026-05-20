@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, reviewers, and product stakeholders
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-05-20
 **Status:** Active execution roadmap
 
 ## Scope
