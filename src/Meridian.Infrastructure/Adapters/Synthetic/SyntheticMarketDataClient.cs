@@ -146,7 +146,15 @@ public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearch
         {
             var now = DateTimeOffset.UtcNow;
             var anchor = ComputeAnchor(profile, now, seq);
-            await ApplyStreamingScenarioAsync(ct).ConfigureAwait(false);
+            try
+            {
+                await ApplyStreamingScenarioAsync(ct).ConfigureAwait(false);
+            }
+            catch (TimeoutException)
+            {
+                await DelayAsync(delay, ct).ConfigureAwait(false);
+                continue;
+            }
             var price = ApplyDegradation(Round4(anchor * (1m + Noise(profile.Symbol, now.Millisecond, (int)seq, 0.0008m))));
             var size = 25L * (1 + (long)(PositiveNoise(profile.Symbol, now.Second, (int)seq + 11, 40m)));
             var trade = new Trade(
@@ -177,7 +185,15 @@ public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearch
             var anchor = ComputeAnchor(profile, now, seq);
             var tick = Math.Max(0.0001m, anchor * 0.00005m);
             var spread = Math.Max(0.01m, Round4(anchor * (0.00008m + PositiveNoise(profile.Symbol, now.Second, (int)seq, 0.00006m))));
-            await ApplyStreamingScenarioAsync(ct).ConfigureAwait(false);
+            try
+            {
+                await ApplyStreamingScenarioAsync(ct).ConfigureAwait(false);
+            }
+            catch (TimeoutException)
+            {
+                await DelayAsync(delay, ct).ConfigureAwait(false);
+                continue;
+            }
             var bestBid = ApplyDegradation(Round4(anchor - spread / 2m));
             var bestAsk = ApplyDegradation(Round4(anchor + spread / 2m));
             var bids = new List<OrderBookLevel>(levels);
