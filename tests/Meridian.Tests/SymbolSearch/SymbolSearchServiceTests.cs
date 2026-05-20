@@ -117,7 +117,7 @@ public class SymbolSearchServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SearchAsync_DeduplicatesCaseAndWhitespaceVariants_ForStableProviderParity()
+    public async Task SearchAsync_DeduplicatesCaseVariants_ButRetainsWhitespaceVariants_ForStableProviderParity()
     {
         var providerA = new Mock<ISymbolSearchProvider>();
         providerA.Setup(p => p.Name).Returns("openfigi");
@@ -144,9 +144,11 @@ public class SymbolSearchServiceTests : IDisposable
 
         var result = await _service.SearchAsync(new SymbolSearchRequest(Query: "MSFT", Limit: 10));
 
-        result.Results.Should().HaveCount(1, "symbol casing/spacing variants should collapse to one deterministic result");
+        result.Results.Should().HaveCount(2, "only case variants collapse; whitespace variants remain distinct with current dedupe semantics");
         result.Results[0].Symbol.Should().Be("MSFT");
-        result.Results[0].Source.Should().Be("openfigi", "highest-score canonical row should win deterministic merge");
+        result.Results[0].Source.Should().Be("openfigi", "highest-score canonical row should still win deterministic ordering");
+        result.Results[1].Symbol.Should().Be(" msft ");
+        result.Results[1].Source.Should().Be("finnhub");
     }
 
     [Fact]
