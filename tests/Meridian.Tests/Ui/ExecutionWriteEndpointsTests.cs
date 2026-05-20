@@ -406,6 +406,57 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
+    public async Task SubmitOrder_WithClientAssetClassRoutingMetadata_Returns403AndDoesNotSubmit()
+    {
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
+        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionOrderSubmit,
+            JsonContent(new ExecutionOrderRequest
+            {
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Market,
+                Quantity = 1m,
+                Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["asset_class"] = "treasury"
+                }
+            }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var result = await ReadAsync<OrderResult>(response);
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("server-side");
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WhenActorMissing_ReturnsUnauthorizedAndDoesNotSubmit()
+    {
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
+        await using var app = await CreateAppAsync(
+            services => RegisterBrokerageOms(services, gateway),
+            currentUser: null);
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionOrderSubmit,
+            JsonContent(new ExecutionOrderRequest
+            {
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Market,
+                Quantity = 1m
+            }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task UpdateExecutionCircuitBreaker_WhenUserLacksManageOrders_ReturnsForbidden()
     {
         await using var app = await CreateAppAsync(
@@ -416,6 +467,26 @@ public sealed class ExecutionWriteEndpointsTests
         var response = await client.PostAsync(
             "/api/execution/controls/circuit-breaker",
             JsonContent(new UpdateExecutionCircuitBreakerRequest(true, "test")));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task CreateExecutionSession_WhenUserLacksExecuteTrades_ReturnsForbidden()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(CreateExecutionSession_WhenUserLacksExecuteTrades_ReturnsForbidden));
+        await using var app = await CreateAppAsync(
+            services => RegisterSessionServices(services, artifacts.RootPath),
+            currentUserPermissions: UserPermission.ViewTrades);
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionSessionCreate,
+            JsonContent(new CreatePaperSessionRequest(
+                StrategyId: "strat-session",
+                StrategyName: "Session Strategy",
+                InitialCash: 125_000m,
+                Symbols: ["AAPL"])));
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -829,7 +900,7 @@ public sealed class ExecutionWriteEndpointsTests
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection>? configureServices = null,
         UserPermission currentUserPermissions = UserPermission.ExecuteTrades | UserPermission.ManageOrders | UserPermission.ManageStrategies,
-        string currentUser = "ops-user")
+        string? currentUser = "ops-user")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -841,7 +912,11 @@ public sealed class ExecutionWriteEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = currentUser;
+            if (!string.IsNullOrWhiteSpace(currentUser))
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = currentUser;
+            }
+
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
             await next();
         });

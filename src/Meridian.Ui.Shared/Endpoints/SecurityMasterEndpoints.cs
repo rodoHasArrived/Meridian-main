@@ -27,6 +27,7 @@ public static class SecurityMasterEndpoints
             return;
 
         var group = app.MapGroup(string.Empty).WithTags("SecurityMaster");
+        group.AddEndpointFilter(RequireViewSecurityMasterPermission);
 
         /// <summary>
         /// Retrieves a security detail by its internal UUID. Returns full economic definition including terms, identifiers, and status.
@@ -588,25 +589,37 @@ public static class SecurityMasterEndpoints
         return ValueTask.FromResult<object?>(EndpointHelpers.Forbidden());
     }
 
+    private static ValueTask<object?> RequireViewSecurityMasterPermission(
+        EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next)
+    {
+        if (!EndpointAuthorization.TryGetPermissions(context.HttpContext, out _))
+        {
+            return ValueTask.FromResult<object?>(Results.Unauthorized());
+        }
+
+        if (EndpointAuthorization.HasAnyPermission(
+                context.HttpContext,
+                UserPermission.ViewSecurityMaster,
+                UserPermission.ModifySecurityMaster))
+        {
+            return next(context);
+        }
+
+        return ValueTask.FromResult<object?>(EndpointHelpers.Forbidden());
+    }
+
     private static bool HasModifySecurityMasterPermission(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.ModifySecurityMaster);
 
     private static string ResolveActor(HttpContext context)
     {
-        if (context.User.Identity?.IsAuthenticated == true &&
-            !string.IsNullOrWhiteSpace(context.User.Identity.Name))
-        {
-            return context.User.Identity.Name!;
-        }
-
-        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserKey, out var currentUser) &&
-            currentUser is string username &&
-            !string.IsNullOrWhiteSpace(username))
+        if (EndpointAuthorization.TryResolveActor(context, out var username))
         {
             return username;
         }
 
-        return "operator";
+        throw new BadHttpRequestException("Authenticated actor is required for Security Master mutations.", StatusCodes.Status401Unauthorized);
     }
 
     private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(

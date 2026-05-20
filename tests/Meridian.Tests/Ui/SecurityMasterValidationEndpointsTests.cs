@@ -67,7 +67,24 @@ public sealed class SecurityMasterValidationEndpointsTests
             && issue.Severity == SecurityValidationSeverityDto.Critical);
     }
 
-    private static async Task<WebApplication> CreateAppAsync(ISecurityValidationService validationService)
+    [Fact]
+    public async Task MapSecurityMasterEndpoints_ValidationRoute_ReturnsForbidden_WhenUserLacksSecurityMasterReadPermission()
+    {
+        var securityId = Guid.NewGuid();
+        var validationService = Substitute.For<ISecurityValidationService>();
+
+        await using var app = await CreateAppAsync(validationService, UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync($"/api/security-master/{securityId}/validation");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await validationService.DidNotReceiveWithAnyArgs().ValidateSecurityAsync(default, default);
+    }
+
+    private static async Task<WebApplication> CreateAppAsync(
+        ISecurityValidationService validationService,
+        UserPermission permissions = UserPermission.ModifySecurityMaster)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -85,7 +102,7 @@ public sealed class SecurityMasterValidationEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ModifySecurityMaster;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             await next();
         });
         app.MapSecurityMasterEndpoints(new JsonSerializerOptions

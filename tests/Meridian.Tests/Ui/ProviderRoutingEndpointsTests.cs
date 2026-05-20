@@ -206,7 +206,7 @@ public sealed class ProviderRoutingEndpointsTests
     }
 
     [Fact]
-    public async Task ConfigureProvider_WithNoPermissionContext_PreservesOptionalLocalSetupMode()
+    public async Task ConfigureProvider_WithNoPermissionContext_ReturnsForbidden()
     {
         await using var app = await CreateAppAsync(permissions: null);
 
@@ -218,10 +218,11 @@ public sealed class ProviderRoutingEndpointsTests
             capabilities = new[] { "backfill" }
         }));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    private static async Task<WebApplication> CreateAppAsync(UserPermission? permissions = null)
+    private static async Task<WebApplication> CreateAppAsync(
+        UserPermission? permissions = UserPermission.ManageProviders | UserPermission.ManageCredentials)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-routing-endpoints", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);

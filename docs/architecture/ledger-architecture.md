@@ -151,6 +151,7 @@ The implemented continuity slice provides:
 | `OperationsContinuityWorkflowService` | Command-driven workflow transitions, optimistic version checks, audit writes, DTO projection |
 | `IOperationsContinuityRepository` | Workflow snapshot persistence; the workstation host registers a file-backed implementation under the workstation data root |
 | `IOperationsWorkflowAuditStore` | Append-only audit timeline with previous/current SHA-256 hash chaining |
+| `IOperationsContinuityTransactionalCommitStore` | Optional strict-atomicity commit seam for successful ledger posting: append journal, append workflow audit, and save workflow snapshot in one persistence boundary |
 | `OperationsStatusDerivationService` | Deterministic server-side overall status derivation from gate/sub-state posture |
 | `Meridian.Contracts.Workstation` operations DTOs | Shared browser/WPF read and command contracts |
 
@@ -162,12 +163,15 @@ explicit `ledger/post` command with a durable ledger batch reference.
 
 For successful postings, `OperationsLedgerPostRequestDto` now carries an
 `OperationsLedgerJournalCandidateDto`. The application service converts that candidate into a
-`LedgerJournalEntryWrite` and awaits `ILedgerJournalStore.AppendAsync` before the ledger posting
-gate is marked passed or the workflow audit event is written. If the store is not registered, or the
-candidate is missing or invalid, the command returns a structured validation failure and does not
-advance the workflow. Requests that fail posting posture checks such as closed period, duplicate
-candidate, missing batch id, or missing posting kind still update the workflow to a blocked ledger
-gate with an audit event and do not append a journal candidate.
+`LedgerJournalEntryWrite`. When an `IOperationsContinuityTransactionalCommitStore` is registered,
+the service commits the journal append, workflow audit append, and workflow snapshot save through
+that single commit seam. When it is not registered, the workstation file-backed mode keeps the
+legacy split persistence path: await `ILedgerJournalStore.AppendAsync`, append audit, then save the
+workflow snapshot. If no ledger store or transactional commit store is registered, or the candidate
+is missing or invalid, the command returns a structured validation failure and does not advance the
+workflow. Requests that fail posting posture checks such as closed period, duplicate candidate,
+missing batch id, or missing posting kind still update the workflow to a blocked ledger gate with an
+audit event and do not append a journal candidate.
 
 The command path now covers start, broker import, broker normalization, Security Master resolution,
 governed Security Master override approval, ledger draft, ledger validation, ledger posting,

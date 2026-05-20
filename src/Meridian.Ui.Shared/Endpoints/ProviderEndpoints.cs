@@ -212,6 +212,7 @@ public static class ProviderEndpoints
         .WithDescription("Creates a provider data-source configuration from the browser provider setup form.")
         .Produces<ProviderSetupResult>(200)
         .Produces<ProviderSetupResult>(400)
+        .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Provider comparison view
@@ -541,7 +542,7 @@ public static class ProviderEndpoints
     {
         if (!TryGetCurrentPermissions(context, out var permissions))
         {
-            return true;
+            return false;
         }
 
         var required = UserPermission.ManageProviders;

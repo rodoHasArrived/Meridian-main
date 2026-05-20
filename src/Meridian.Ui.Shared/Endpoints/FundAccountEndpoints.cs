@@ -176,7 +176,11 @@ public static class FundAccountEndpoints
             if (service is null)
                 return ServiceUnavailable();
 
-            var deactivatedBy = context.Request.Query["deactivatedBy"].FirstOrDefault() ?? "system";
+            if (!EndpointAuthorization.TryResolveActor(context, out var deactivatedBy))
+            {
+                return Results.Unauthorized();
+            }
+
             var result = await service.DeactivateAccountAsync(accountId, deactivatedBy, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
