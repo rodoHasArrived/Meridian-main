@@ -1,7 +1,7 @@
 # Provider Integration Status Board
 
 **Run Date:** 2026-05-19  
-**Source snapshots:** `docs/status/provider-validation-matrix.md` (Last Updated 2026-04-27), `docs/status/kernel-readiness-dashboard.md` (Last Updated 2026-04-27)  
+**Source snapshots:** `docs/status/provider-validation-matrix.md` plus current broker inventory/runbook docs, `docs/status/kernel-readiness-dashboard.md` (Last Updated 2026-04-27)
 **Purpose:** single status document that shows each broker/provider phase, blockers, latest evidence timestamp, and refresh ownership/cadence for active integrations.
 
 ## How to read this board
@@ -21,6 +21,7 @@
 | Robinhood | Paper (bounded) | Unofficial API posture plus required manual broker-session/runtime evidence (`auth-session`, `quote-polling`, `order-submit-cancel`, `throttling-reconnect`) must be regenerated/attached for the review run | 2026-04-27 (latest signed Wave 1 packet set); bounded scenario packet noted as not retained in current repo | Robinhood bounded row in provider validation matrix; DK readiness board inherits Wave 1 packet date |
 | Yahoo Finance (historical/fallback) | Read-only | No execution lane; keep scoped to historical/fallback provider role unless roadmap explicitly expands scope | 2026-04-27 | Yahoo historical/fallback row in provider validation matrix; DK readiness board links same Wave 1 evidence window |
 | Interactive Brokers | Read-only (deferred from active Wave 1 gate) | Deferred-provider status in active gate; no current Wave 1 closure claim | 2026-04-27 snapshot date for current gate posture | Deferred-provider note in provider validation matrix |
+| Tradier | Not operator-enabled; mapper/test support only | Canonical equity/options/order/error mapping and focused reconciliation tests exist, but no registered Tradier credential flow, transport client, readiness projection, or execution gateway is available | 2026-05-19 | `docs/operations/tradier-provider-endpoint-catalog.md`; `tests/Meridian.Tests/Execution/TradierExecutionReconciliationTests.cs`; `src/Meridian.Infrastructure/Adapters/Tradier/TradierCanonicalMappers.cs` |
 | Polygon | Read-only (deferred from active Wave 1 gate) | Deferred-provider status in active gate; no current Wave 1 closure claim | 2026-04-27 snapshot date for current gate posture | Deferred-provider note in provider validation matrix |
 | NYSE | Read-only (deferred from active Wave 1 gate) | Deferred-provider status in active gate; no current Wave 1 closure claim | 2026-04-27 snapshot date for current gate posture | Deferred-provider note in provider validation matrix |
 | StockSharp | Read-only (deferred from active Wave 1 gate) | Deferred-provider status in active gate; no current Wave 1 closure claim | 2026-04-27 snapshot date for current gate posture | Deferred-provider note in provider validation matrix |

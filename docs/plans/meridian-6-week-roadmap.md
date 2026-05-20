@@ -1,6 +1,6 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-05-19
 **Horizon:** 2026-05-18 through 2026-06-28
 **Status:** Short-horizon execution slice derived from the canonical roadmap and current DK readiness dashboard
 
@@ -60,6 +60,12 @@ This plan starts from the current repo state:
   account-sync history/readiness DTOs, and an in-flight Security Master validation-gate/snapshot
   service. Use these to strengthen W3/W4 acceptance evidence without claiming durable close, report
   publication, full Evidence Vault, or live-readiness completion
+- current operations-continuity support adds shared account-period close-lane contracts and
+  workstation routes for broker import/normalization, Security Master resolution and override
+  approval, ledger draft/validate/post, reconciliation, approval, close, governed reopen, and
+  hash-chained timeline inspection, with optional transactional journal/audit/workflow commit
+  support. Use this to define the next browser/operator close workflow slice without claiming full
+  close readiness, external statement/custodian acceptance, or governed publication controls
 - current browser-workstation operator-safety support now also includes provider setup feedback
   that exposes provider-routing connection and binding metadata, credential source, environment,
   warnings, and Settings trust-snapshot refresh posture; Strategy Designer backend action metadata
@@ -177,6 +183,10 @@ The six-week horizon remains the execution target, but detailed pre-work is requ
 
 - Security Master remains the delivered baseline while account/entity, reconciliation, cash-flow, multi-ledger, and reporting-adjacent workflows deepen on top of it
 - the next governance slice is defined in terms of shared DTOs, read models, export seams, account/provider-routing evidence, brokerage account posture, report-pack task state, reconciliation break-queue state, calibration-summary rollups, seeded exception-route/tolerance/sign-off metadata, browser dense-table detail-queue selection, keyboard-expanded detail, no-host break-queue fixture, and empty-state projection, and operator surfaces rather than a parallel governance stack
+- the operations-continuity workflow should become the concrete close-lane backbone for this window:
+  broker intake, Security Master resolution, ledger posting, reconciliation, approval, close, and
+  reopen are now shared API states that need browser/operator acceptance, external input adapters,
+  and report publication controls
 - accounting-led and Evidence OS commercial slices should start as shared acceptance definitions for accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, instrument passport projections, proof/certificate projections, strategy-to-ledger lineage, report-line provenance, break explanation summaries, report restatement tracking, controls-policy summaries, evidence SLA freshness, decision memory, no-orphan-evidence validation, and evidence packet readiness; current asset-class reference-data projections are useful inputs, not completion of the instrument passport or confidence-score modules
 
 ---
@@ -233,7 +243,7 @@ Priorities:
 
 - keep Security Master authoritative while extending its use across governance workflows
 - define the next concrete slices for account/entity, multi-ledger, cash-flow, calibrated reconciliation, and reporting work
-- keep Books Before Broker, Transaction Lab, insurance accounting, Close the Books, broker statement reconciliation, shadow books, Evidence Vault, Report Factory, report-line provenance, instrument passports, decision memory, and controls as roadmap targets unless a slice has shared contracts, retained evidence, and browser-visible workflow support
+- keep Books Before Broker, Transaction Lab, insurance accounting, broker statement reconciliation, shadow books, Evidence Vault, Report Factory, report-line provenance, instrument passports, decision memory, and controls as roadmap targets unless a slice has shared contracts, retained evidence, and browser-visible workflow support; treat Close the Books as partially seeded by the operations-continuity API while browser/operator acceptance and external statement intake remain open
 - treat the Fund Accounts operator brief as Wave 4 support evidence only while it remains a projection of shared account, provider-routing, retained balance-history, and shared-data-access state
 - keep governance work grounded in shared DTOs, read models, and export seams rather than a separate subsystem
 

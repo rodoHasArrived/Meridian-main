@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, operations, and stakeholders
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-05-19
 **Status:** Active planning document; subordinate to the canonical wave model in [`../status/ROADMAP.md`](../status/ROADMAP.md)
 
 > Current-state refresh (2026-04-27): keep this matrix as a broad product-vision view, not a
@@ -29,6 +29,12 @@
 > validation/preview/backtest mutations; and Reporting exports abort superseded profile runs. These
 > are support evidence for the browser-first operating model, not completion of report-pack,
 > Backtest Studio, casework, or live-readiness gates.
+>
+> Operations continuity refresh (2026-05-19): shared account-period close workflow contracts,
+> services, audit timeline, optional transactional commit support, and workstation endpoints now
+> seed the Close the Books path. This moves close orchestration from planned-only to in progress,
+> while browser/operator acceptance, external statement intake, durable casework depth, report
+> publication, and calibration sign-off remain open.
 
 ## 1. Product Vision
 
@@ -111,6 +117,7 @@ Status legend:
 | Trial balance and account-summary analysis | Back office | In progress | Phase 3 | Fund Operations workspace and report-pack services expose trial-balance slices; broader account-summary UX remains open |
 | Cash-flow modeling and liquidity views | Middle office / Back office | In progress | Phase 3 | Cash-flow projection and governance cash-flow query seams exist; richer liquidity operator workflows remain open |
 | Reconciliation engine and break queues | Middle office / Back office | In progress | Phase 4 | Run-scoped reconciliation, a file-backed break queue, calibration-summary rollups, and browser Accounting dense-table detail-queue selection, keyboard-expanded detail, no-host break-queue fixture coverage, and empty-state projection exist with seeded exception-route, tolerance, and sign-off metadata; position, cash, custodian, external-statement matching, and operator-approved calibration remain |
+| Operations continuity and close workflow | Back office | In progress | Phase 4 | Shared operations-continuity DTOs, service, hash-chained audit timeline, optional transactional ledger/audit/workflow commit support, and `/api/workstation/operations/continuity*` routes now cover broker import/normalization, Security Master resolution and override approval, ledger draft/validate/post, reconciliation, approval, close, and governed reopen; browser close UX, external statement/custodian intake, SLA/casework depth, and close package publication remain open |
 | NAV, attribution, and governance exception workflows | Middle office / Back office | In progress | Phase 4 | Shared portfolio, ledger, reconciliation, and governance exception seams exist; generalized durable casework remains open |
 | Investor, board, compliance, and fund-ops reporting | Back office | In progress | Phase 5 | Governed report-pack schema/version checks, manifest/provenance artifacts, history, and retrieval are present; publication controls and richer templates remain open |
 | Compliance and policy monitoring | Middle office / Back office | Future | Phase 5 | Rule evaluation, mandate monitoring, attestations |
@@ -221,6 +228,7 @@ The current repository already supports parts of the target vision:
 - Security Master has contracts, services, storage, migrations, F# domain anchors, WPF drill-ins, conflict handling, corporate actions, trading parameters, and shared coverage/provenance propagation
 - fund-structure, account/entity, ledger-group, cash-flow, and governed report-pack seams are in code, with focused tests around fund structure, report-pack schema/version behavior, and Fund Operations projections
 - reconciliation now includes a file-backed break queue with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, calibration-summary profile rollups, browser Accounting dense-table detail-queue selection, keyboard-expanded detail, no-host break-queue fixture coverage, and empty-detail projection, while broader external-account/custodian matching and operator-approved calibrated casework remain open
+- operations-continuity workflow services and workstation routes now provide the first account-period close-lane backbone, while browser/operator close acceptance, external statement/custodian intake, and publication controls remain open
 - export infrastructure already supports JSONL, Parquet, Arrow, XLSX, and CSV
 
 The main gap is operator-readiness and workflow cohesion, not a total absence of technical foundation.
