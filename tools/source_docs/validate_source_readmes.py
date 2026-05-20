@@ -54,7 +54,7 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
     for duplicate in sorted(duplicates):
         errors.append(f"source-modules.yml duplicate module id: {duplicate}")
 
-    coverage_modules = _as_list(coverage_doc.get("readme_coverage", {}).get("modules"))
+    coverage_modules = [m for m in _as_list((coverage_doc.get("readme_coverage") or {}).get("modules")) if isinstance(m, dict)]
     moved_to_paths: set[str] = set()
     moved_from_paths: set[str] = set()
 
