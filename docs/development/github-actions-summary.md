@@ -13,7 +13,7 @@ validation outputs as the source of truth:
 
 | Workflow | File | Trigger | Purpose |
 | --- | --- | --- | --- |
-| CI | `.github/workflows/ci.yml` | Pull requests, pushes to `main`, manual | Restore solution, format check, focused web-workstation Release build, non-integration .NET tests, dashboard tests, dashboard build |
+| CI | `.github/workflows/ci.yml` | Pull requests, pushes to `main`, manual | Restore solution, format check, warning-suppression inventory validation, focused web-workstation Release build with warning-count reporting, non-integration .NET tests, dashboard tests, dashboard build |
 | Windows Desktop Build | `.github/workflows/windows-desktop-build.yml` | Pull requests, pushes to `main`, manual | Full Windows WPF build, WPF tests, desktop publish smoke |
 | Publish Smoke | `.github/workflows/publish-smoke.yml` | Manual | Standalone Windows publish artifact for `collector`, `desktop`, or `web-workstation` |
 | Maintenance | `.github/workflows/maintenance.yml` | Workflow/docs/tooling changes, weekly, manual | Workflow hygiene checks and Action YAML linting |

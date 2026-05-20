@@ -122,10 +122,44 @@ pwsh ./scripts/dev/run-desktop.ps1
 
 ## AI/TODO governance checks
 
-Use these deterministic remediation commands when CI reports policy drift:
+Use these deterministic remediation commands when CI reports policy drift.
+
+### Required AI quality gates
+
+```bash
+make ai-verify
+make ai-arch-check
+python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
+```
+
+### Advisory AI tooling
+
+```bash
+make ai-audit
+make ai-audit-code
+make ai-audit-docs
+make ai-audit-tests
+make ai-audit-ai-docs
+make ai-report
+make ai-docs-freshness
+make ai-docs-drift
+make ai-docs-sync-report
+make ai-arch-check-summary
+make ai-arch-check-json
+```
+
+### Maintenance/reporting AI tooling
+
+```bash
+make ai-maintenance-light
+make ai-maintenance-full
+make ai-docs-archive
+make ai-docs-archive-execute
+```
+
+### TODO registry checks
 
 ```bash
 python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json
 python3 build/scripts/docs/validate-todo-registry.py --scan-json docs/status/todo-scan-results.json --registry docs/source/todo-registry.json --enforce-prefix docs/source/
-python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
 ```
