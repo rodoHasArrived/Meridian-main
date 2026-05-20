@@ -1,4 +1,5 @@
 using FluentAssertions;
+using System.Text.Json;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Banking;
 using Meridian.Backtesting.Sdk;
@@ -234,6 +235,51 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WithRealSecurityMasterAccountingAdapter_ShouldBuildInputsFromResolvedPositions()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-real-sm-accounting"));
+
+        var securityId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            securityId,
+            "AAPL fixed income test security",
+            "Bond",
+            "USD",
+            SecurityStatusDto.Active,
+            "AAPL",
+            SubType: "CorporateBond"));
+
+        var securityMasterQuery = new StubSecurityMasterQueryService();
+        securityMasterQuery.Register(CreateEconomicDefinition(
+            securityId,
+            "AAPL",
+            accountingClassification: "AvailableForSale",
+            currentFactor: 0.97m));
+
+        var service = CreateService(
+            store,
+            new InMemoryReconciliationRunRepository(),
+            lookup,
+            bankTransactionSource: null,
+            securityValidationGate: null,
+            securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
+            securityMasterAccountingEventSourceAdapter: new SecurityMasterAccountingEventSourceAdapter(securityMasterQuery));
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-real-sm-accounting"));
+
+        detail.Should().NotBeNull();
+        detail!.ExpectedAccountingEvents.Should().NotBeNullOrEmpty();
+        detail.ExpectedAccountingEvents!.Should().Contain(item =>
+            item.SecurityId == securityId &&
+            item.Symbol == "AAPL" &&
+            item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
+        detail.Summary.SecurityMasterAccountingIssueCount.Should().BeGreaterThan(0);
+        detail.SecurityMasterAccountingIssues.Should().Contain(issue => issue.Code == "FACTOR_SCHEDULE_MISSING");
+    }
+
+    [Fact]
     public async Task RunAsync_WithClassificationEdgeCases_ShouldPreservePrimaryIdentifierAndSubtypeValues()
     {
         var store = new StrategyRunStore();
@@ -438,6 +484,50 @@ public sealed class ReconciliationRunServiceTests
         }
     }
 
+    private sealed class StubSecurityMasterQueryService : ISecurityMasterQueryService
+    {
+        private readonly Dictionary<Guid, SecurityEconomicDefinitionRecord> _definitions = [];
+
+        public void Register(SecurityEconomicDefinitionRecord definition)
+        {
+            _definitions[definition.SecurityId] = definition;
+        }
+
+        public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default) =>
+            Task.FromResult<SecurityDetailDto?>(null);
+
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(
+            SecurityIdentifierKind identifierKind,
+            string identifierValue,
+            string? provider,
+            CancellationToken ct = default) =>
+            Task.FromResult<SecurityDetailDto?>(null);
+
+        public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<SecuritySummaryDto>>([]);
+
+        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>([]);
+
+        public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default)
+        {
+            _definitions.TryGetValue(securityId, out var definition);
+            return Task.FromResult<SecurityEconomicDefinitionRecord?>(definition);
+        }
+
+        public Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default) =>
+            Task.FromResult<TradingParametersDto?>(null);
+
+        public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<CorporateActionDto>>([]);
+
+        public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default) =>
+            Task.FromResult<PreferredEquityTermsDto?>(null);
+
+        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default) =>
+            Task.FromResult<ConvertibleEquityTermsDto?>(null);
+    }
+
     private sealed class SymbolSecurityValidationGate(string blockedSymbol) : ISecurityValidationGateService
     {
         public Task<SecurityValidationGateResultDto> ValidateSymbolAsync(
@@ -490,6 +580,83 @@ public sealed class ReconciliationRunServiceTests
             string? symbol = null,
             CancellationToken ct = default)
             => ValidateSymbolAsync(symbol ?? securityId.ToString(), workflow, workflowReference, actor, persistSnapshot, ct);
+    }
+
+    private static SecurityEconomicDefinitionRecord CreateEconomicDefinition(
+        Guid securityId,
+        string symbol,
+        string? accountingClassification,
+        decimal? currentFactor = null)
+    {
+        var commonTerms = JsonSerializer.SerializeToElement(new
+        {
+            accountingClassification
+        });
+        var classification = JsonSerializer.SerializeToElement(new
+        {
+            assetClass = "FixedIncome",
+            assetFamily = "FixedIncome",
+            subType = "CorporateBond",
+            typeName = "CorporateBond"
+        });
+        var economicTerms = JsonSerializer.SerializeToElement(new
+        {
+            maturity = new
+            {
+                effectiveDate = "2026-03-01",
+                issueDate = "2026-03-01",
+                maturityDate = "2031-03-01"
+            },
+            coupon = new
+            {
+                couponType = "Fixed",
+                couponRate = 0.06m,
+                paymentFrequency = "SemiAnnual",
+                dayCount = "ACT/365"
+            },
+            accrual = new
+            {
+                accrualStartDate = "2026-03-01",
+                dayCount = "ACT/365"
+            },
+            structuredProduct = currentFactor is null
+                ? null
+                : new
+                {
+                    factor = currentFactor,
+                    factorDate = "2026-03-21",
+                    notionalBalance = 100_000m
+                }
+        });
+
+        return new SecurityEconomicDefinitionRecord(
+            securityId,
+            "FixedIncome",
+            "FixedIncome",
+            "CorporateBond",
+            "CorporateBond",
+            IssuerType: null,
+            RiskCountry: null,
+            SecurityStatusDto.Active,
+            $"{symbol} fixed income test security",
+            "USD",
+            classification,
+            commonTerms,
+            economicTerms,
+            JsonSerializer.SerializeToElement(new { source = "test" }),
+            Version: 1,
+            EffectiveFrom: new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero),
+            EffectiveTo: null,
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Ticker,
+                    symbol,
+                    IsPrimary: true,
+                    new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero))
+            ],
+            LegacyAssetClass: null,
+            LegacyAssetSpecificTerms: null);
     }
 
     // -----------------------------------------------------------------------

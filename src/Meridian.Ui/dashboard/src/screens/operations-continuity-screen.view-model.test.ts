@@ -2,6 +2,7 @@ import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildOperationsContinuityScreenViewModel,
+  OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID,
   useOperationsContinuityScreenViewModel
 } from "@/screens/operations-continuity-screen.view-model";
 import type {
@@ -131,8 +132,17 @@ describe("Operations Continuity view model", () => {
       title: "2026-05 close",
       statusLabel: "Ledger Posting Draft",
       gatesLabel: "1/2 gates passed",
-      blockersLabel: "1 blocker"
+      blockersLabel: "1 blocker",
+      detailPanelId: OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID,
+      expanded: true,
+      rowClassName: "bg-warning/5"
     });
+    expect(vm.selectedDetail).toMatchObject({
+      id: OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID,
+      ariaLabel: "Operations continuity detail for 2026-05 close workflow",
+      description: "Selected close-lane evidence, gate progress, Security Master snapshot, and blocker count."
+    });
+    expect(vm.workflowsTableCaption).toContain("Select a row to inspect close-lane gates");
     expect(vm.selectedDetail?.metadata).toContainEqual({ label: "Break cases", value: "0" });
     expect(vm.gates.map((gate) => gate.label)).toEqual(["Broker intake", "Ledger posting"]);
     expect(vm.blockers[0]).toMatchObject({
@@ -217,6 +227,25 @@ describe("Operations Continuity view model", () => {
       href: "/accounting",
       disabled: false
     });
+  });
+
+  it("uses loading copy for empty evidence tables while data is still loading", () => {
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [],
+      selectedWorkflowId: null,
+      detail: null,
+      loading: true,
+      detailLoading: true,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.workflowsEmptyText).toBe("Loading operations continuity workflows...");
+    expect(vm.gatesEmptyText).toBe("Loading selected workflow gates...");
+    expect(vm.blockersEmptyText).toBe("Loading selected workflow blockers...");
+    expect(vm.timelineEmptyText).toBe("Loading workflow timeline.");
   });
 
   it("aborts in-flight list requests when the hook unmounts", () => {

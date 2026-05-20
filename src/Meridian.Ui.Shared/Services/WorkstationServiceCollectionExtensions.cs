@@ -134,7 +134,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IExternalStatementSource, NullExternalStatementSource>();
         services.TryAddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
         services.TryAddSingleton<ISecurityMasterAccountingEventService, SecurityMasterAccountingEventService>();
-        services.TryAddSingleton<ISecurityMasterAccountingEventSourceAdapter, NullSecurityMasterAccountingEventSourceAdapter>();
+        services.TryAddSingleton<ISecurityMasterAccountingEventSourceAdapter>(sp =>
+            new SecurityMasterAccountingEventSourceAdapter(sp.GetService<ContractSecurityMasterQueryService>()));
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();

@@ -47,7 +47,11 @@ public sealed class TradingOperatorReadinessServiceTests
         first.ReportPack!.Status.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
         first.EvidenceCompleteness.Should().NotBeNull();
         first.EvidenceCompleteness!.BlockingGateIds.Should().Contain(["session", "replay"]);
-        first.EvidenceCompleteness.ReviewGateIds.Should().Contain("report-pack");
+        first.EvidenceCompleteness.ReviewGateIds.Should().Contain(["risk-rules", "report-pack"]);
+        first.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "risk-rules" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            gate.Detail.Contains("unavailable", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

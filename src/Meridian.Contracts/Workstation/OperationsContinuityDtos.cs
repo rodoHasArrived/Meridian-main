@@ -238,7 +238,11 @@ public sealed record OperationsReconciliationRunRequestDto(
     string? Rationale = null,
     string? CorrelationId = null,
     IReadOnlyList<OperationsBreakCaseDto>? BreakCases = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    int? SecurityCoverageIssueCount = null,
+    int? SecurityAccountingIssueCount = null,
+    int? ExpectedAccountingEventCount = null,
+    int? ExpectedJournalPreviewCount = null);
 
 public sealed record OperationsResolveBreakCaseRequestDto(
     long ExpectedVersion,

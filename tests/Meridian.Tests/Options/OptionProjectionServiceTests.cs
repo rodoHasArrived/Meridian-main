@@ -3,11 +3,66 @@ using Meridian.Application.Options;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Storage.SecurityMaster;
+using NSubstitute;
 
 namespace Meridian.Tests.Options;
 
 public sealed class OptionProjectionServiceTests
 {
+    [Fact]
+    public async Task GetContractAsync_NormalizesContractSymbol_BeforeStoreLookup()
+    {
+        var expiry = new DateOnly(2026, 12, 19);
+        var store = Substitute.For<IOptionReferenceProjectionStore>();
+        store.GetContractAsync("TST-20261219-C-100", Arg.Any<CancellationToken>())
+            .Returns(CreateProjection("TST-20261219-C-100", "TST-20261219", "TST", "Call", 100m, expiry));
+        var service = new OptionProjectionService(store);
+
+        var result = await service.GetContractAsync("  tst-20261219-c-100  ");
+
+        result.Should().NotBeNull();
+        await store.Received(1).GetContractAsync("TST-20261219-C-100", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetSeriesAsync_NormalizesOptionChainId_BeforeStoreLookup()
+    {
+        var expiry = new DateOnly(2026, 12, 19);
+        var store = Substitute.For<IOptionReferenceProjectionStore>();
+        store.GetSeriesContractsAsync("TST-20261219", expiry, Arg.Any<CancellationToken>())
+            .Returns([CreateProjection("TST-20261219-C-100", "TST-20261219", "TST", "Call", 100m, expiry)]);
+        var service = new OptionProjectionService(store);
+
+        var result = await service.GetSeriesAsync("  tst-20261219  ", expiry);
+
+        result.Should().NotBeNull();
+        result!.OptionChainId.Should().Be("TST-20261219");
+        await store.Received(1).GetSeriesContractsAsync("TST-20261219", expiry, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ImportSnapshotAsync_ReturnsNormalizedUnderlyingAndHydratedSeries()
+    {
+        var expiry = new DateOnly(2026, 12, 19);
+        var snapshot = new OptionChainSnapshot(
+            DateTimeOffset.Parse("2026-05-20T14:00:00Z"),
+            "  tst  ",
+            101m,
+            expiry,
+            [100m],
+            [CreateQuote("tst-20261219-c-100", "tst", OptionRight.Call, 100m, expiry)],
+            []);
+        var store = new InMemoryOptionReferenceProjectionStore([]);
+        var service = new OptionProjectionService(store);
+
+        var imported = await service.ImportSnapshotAsync(snapshot);
+
+        imported.OptionChainId.Should().Be("TST-20261219");
+        imported.UnderlyingSymbol.Should().Be("TST");
+        imported.Series.Should().ContainSingle();
+        imported.Series[0].Contracts.Should().ContainSingle(c => c.ContractSymbol == "TST-20261219-C-100");
+    }
+
     [Fact]
     public async Task GetUnderlyingLinkageAsync_ReturnsNull_WhenUnderlyingSymbolMissing()
     {
@@ -83,6 +138,22 @@ public sealed class OptionProjectionServiceTests
             "Active",
             DateTimeOffset.UtcNow,
             1);
+
+    private static OptionQuote CreateQuote(
+        string symbol,
+        string underlying,
+        OptionRight right,
+        decimal strike,
+        DateOnly expiry)
+        => new(
+            DateTimeOffset.Parse("2026-05-20T14:00:00Z"),
+            symbol,
+            new OptionContractSpec(underlying, strike, expiry, right),
+            1m,
+            10,
+            1.25m,
+            12,
+            101m);
 
     private sealed class InMemoryOptionReferenceProjectionStore : IOptionReferenceProjectionStore
     {

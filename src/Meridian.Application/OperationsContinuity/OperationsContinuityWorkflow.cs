@@ -663,6 +663,12 @@ public sealed class OperationsContinuityWorkflow
             !IsClosedBreakStatus(item.Status) &&
             !string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase));
         ApplyReconciliationPosture(openCriticalBreaks, openNonCriticalBreaks, evidenceLinks, now, request.Actor);
+        ApplySecurityMasterIssuePosture(
+            request.SecurityCoverageIssueCount,
+            request.SecurityAccountingIssueCount,
+            evidenceLinks,
+            now,
+            request.Actor);
     }
 
     public OperationsWorkflowBlockerDto? ResolveBreakCase(
@@ -1016,39 +1022,12 @@ public sealed class OperationsContinuityWorkflow
                 NextActionsForGate(OperationsGateKeyDto.BrokerIngest, OperationsGateStatusDto.Blocked));
         }
 
-        if (request.SecurityCoverageIssueCount.HasValue || request.SecurityAccountingIssueCount.HasValue)
-        {
-            var securityBlockers = new List<OperationsWorkflowBlockerDto>();
-            if (request.SecurityCoverageIssueCount.GetValueOrDefault() > 0)
-            {
-                var issueCount = request.SecurityCoverageIssueCount.GetValueOrDefault();
-                securityBlockers.Add(new OperationsWorkflowBlockerDto(
-                    "SM_RECON_SECURITY_UNRESOLVED",
-                    $"{issueCount} Security Master coverage issue(s) remain open.",
-                    OperationsGateKeyDto.SecurityMaster,
-                    "Critical",
-                    evidenceLinks));
-            }
-
-            if (request.SecurityAccountingIssueCount.GetValueOrDefault() > 0)
-            {
-                var issueCount = request.SecurityAccountingIssueCount.GetValueOrDefault();
-                securityBlockers.Add(new OperationsWorkflowBlockerDto(
-                    "SM_ACCOUNTING_TERMS_INCOMPLETE",
-                    $"{issueCount} Security Master accounting issue(s) remain open.",
-                    OperationsGateKeyDto.SecurityMaster,
-                    "Critical",
-                    evidenceLinks));
-            }
-
-            if (securityBlockers.Count > 0)
-            {
-                SecurityMasterGate = SecurityMasterGate.WithStatus(
-                    OperationsGateStatusDto.Blocked,
-                    securityBlockers,
-                    NextActionsForGate(OperationsGateKeyDto.SecurityMaster, OperationsGateStatusDto.Blocked));
-            }
-        }
+        ApplySecurityMasterIssuePosture(
+            request.SecurityCoverageIssueCount,
+            request.SecurityAccountingIssueCount,
+            evidenceLinks,
+            now,
+            request.Actor);
 
         if (request.LedgerPreviewAvailable == true)
         {
@@ -1135,6 +1114,66 @@ public sealed class OperationsContinuityWorkflow
             NextActionsForGate(OperationsGateKeyDto.Reconciliation, status),
             completedAtUtc: status == OperationsGateStatusDto.Passed ? now : null,
             completedBy: status == OperationsGateStatusDto.Passed ? actor : null);
+    }
+
+    private void ApplySecurityMasterIssuePosture(
+        int? securityCoverageIssueCount,
+        int? securityAccountingIssueCount,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        DateTimeOffset now,
+        string actor)
+    {
+        if (!securityCoverageIssueCount.HasValue && !securityAccountingIssueCount.HasValue)
+        {
+            return;
+        }
+
+        var securityBlockers = new List<OperationsWorkflowBlockerDto>();
+        if (securityCoverageIssueCount.GetValueOrDefault() > 0)
+        {
+            var issueCount = securityCoverageIssueCount.GetValueOrDefault();
+            securityBlockers.Add(new OperationsWorkflowBlockerDto(
+                "SM_RECON_SECURITY_UNRESOLVED",
+                $"{issueCount} Security Master coverage issue(s) remain open.",
+                OperationsGateKeyDto.SecurityMaster,
+                "Critical",
+                evidenceLinks));
+        }
+
+        if (securityAccountingIssueCount.GetValueOrDefault() > 0)
+        {
+            var issueCount = securityAccountingIssueCount.GetValueOrDefault();
+            securityBlockers.Add(new OperationsWorkflowBlockerDto(
+                "SM_ACCOUNTING_TERMS_INCOMPLETE",
+                $"{issueCount} Security Master accounting issue(s) remain open.",
+                OperationsGateKeyDto.SecurityMaster,
+                "Critical",
+                evidenceLinks));
+        }
+
+        if (securityBlockers.Count > 0)
+        {
+            SecurityMasterGate = SecurityMasterGate.WithStatus(
+                OperationsGateStatusDto.Blocked,
+                securityBlockers,
+                NextActionsForGate(OperationsGateKeyDto.SecurityMaster, OperationsGateStatusDto.Blocked),
+                completedAtUtc: null,
+                completedBy: null);
+            return;
+        }
+
+        if (SecurityMasterGate.Status == OperationsGateStatusDto.Blocked &&
+            SecurityMasterGate.Blockers.Any(static blocker =>
+                blocker.Code is "SM_RECON_SECURITY_UNRESOLVED" or "SM_ACCOUNTING_TERMS_INCOMPLETE"))
+        {
+            SecurityMasterState = OperationsSecurityMasterStateDto.Complete;
+            SecurityMasterGate = SecurityMasterGate.WithStatus(
+                OperationsGateStatusDto.Passed,
+                blockers: [],
+                nextActions: [],
+                completedAtUtc: now,
+                completedBy: actor);
+        }
     }
 
     private static List<OperationsWorkflowBlockerDto> BuildSecurityMasterBlockers(

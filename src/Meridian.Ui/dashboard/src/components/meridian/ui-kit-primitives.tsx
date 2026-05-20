@@ -208,6 +208,7 @@ export interface EntitySummaryField {
 }
 
 export function EntitySummary({
+  id,
   eyebrow,
   title,
   subtitle,
@@ -217,6 +218,7 @@ export function EntitySummary({
   actions,
   ariaLabel
 }: {
+  id?: string;
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -227,7 +229,7 @@ export function EntitySummary({
   ariaLabel: string;
 }) {
   return (
-    <section className="entity-summary" role="region" aria-label={ariaLabel}>
+    <section id={id} className="entity-summary" role="region" aria-label={ariaLabel}>
       <div className="entity-summary-head">
         <div className="min-w-0">
           <div className="eyebrow-label">{eyebrow}</div>

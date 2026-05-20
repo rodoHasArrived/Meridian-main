@@ -19,6 +19,9 @@ import type {
 } from "@/types";
 
 export type OperationsContinuityTone = "ready" | "review" | "blocked" | "neutral";
+export type OperationsContinuityRowClassName = "bg-success/5" | "bg-warning/5" | "bg-danger/5" | undefined;
+
+export const OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID = "operations-continuity-workflow-detail";
 
 export interface OperationsContinuityWorkflowRow {
   id: string;
@@ -29,6 +32,9 @@ export interface OperationsContinuityWorkflowRow {
   gatesLabel: string;
   blockersLabel: string;
   updatedLabel: string;
+  detailPanelId: string;
+  expanded: boolean;
+  rowClassName: OperationsContinuityRowClassName;
   ariaLabel: string;
 }
 
@@ -79,8 +85,11 @@ export interface OperationsContinuityNextActionViewModel {
 }
 
 export interface OperationsContinuityDetailPanel {
+  id: string;
+  ariaLabel: string;
   title: string;
   subtitle: string;
+  description: string;
   statusLabel: string;
   statusTone: OperationsContinuityTone;
   metadata: { label: string; value: string }[];
@@ -101,6 +110,7 @@ export interface OperationsContinuityScreenViewModel {
   workflowsSummaryLabel: string;
   workflowsEmptyText: string;
   workflowsTableLabel: string;
+  workflowsTableCaption: string;
   workflows: OperationsContinuityWorkflowRow[];
   selectedWorkflowId: string | null;
   selectWorkflow: (workflowId: string) => void;
@@ -307,7 +317,7 @@ export function buildOperationsContinuityScreenViewModel({
   const blockers = buildBlockerRows(effectiveDetail?.blockers ?? collectGateBlockers(gateSource));
   const timeline = buildTimelineRows(effectiveDetail?.timeline ?? []);
   const gates = gateSource.map(mapGateRow);
-  const rows = workflows.map(mapWorkflowRow);
+  const rows = workflows.map((workflow) => mapWorkflowRow(workflow, selectedSummary?.workflowId ?? null));
   const selectedDetail = selectedSummary
     ? buildDetailPanel(selectedSummary, effectiveDetail, blockers.length)
     : null;
@@ -325,18 +335,23 @@ export function buildOperationsContinuityScreenViewModel({
     reloadDisabled: loading,
     reloadDisabledReason: loading ? "Operations continuity workflows are already refreshing." : null,
     workflowsSummaryLabel: `${rows.length} workflow${rows.length === 1 ? "" : "s"}`,
-    workflowsEmptyText: "No operations continuity workflows are available for this workstation context.",
+    workflowsEmptyText: loading
+      ? "Loading operations continuity workflows..."
+      : error
+        ? "Operations continuity workflows could not be loaded."
+        : "No operations continuity workflows are available for this workstation context.",
     workflowsTableLabel: "Operations continuity workflows",
+    workflowsTableCaption: "Operations continuity workflows. Select a row to inspect close-lane gates, blockers, next action, and timeline.",
     workflows: rows,
     selectedWorkflowId: selectedSummary?.workflowId ?? null,
     selectWorkflow,
     selectedDetail,
     nextAction,
     gatesLabel: "Gates",
-    gatesEmptyText: "Open a workflow to inspect gate posture.",
+    gatesEmptyText: detailLoading ? "Loading selected workflow gates..." : "Open a workflow to inspect gate posture.",
     gates,
     blockersLabel: "Blockers",
-    blockersEmptyText: "No blockers are surfaced for the selected workflow.",
+    blockersEmptyText: detailLoading ? "Loading selected workflow blockers..." : "No blockers are surfaced for the selected workflow.",
     blockers,
     timelineLabel: "Timeline",
     timelineEmptyText: detailLoading ? "Loading workflow timeline." : "Open workflow detail to inspect the hash-chained timeline.",
@@ -351,8 +366,11 @@ function buildDetailPanel(
   blockerCount: number
 ): OperationsContinuityDetailPanel {
   return {
+    id: OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID,
+    ariaLabel: `Operations continuity detail for ${summary.periodId} close workflow`,
     title: `${summary.periodId} close workflow`,
     subtitle: `Fund ${summary.fundAccountId} from ${summary.brokerSource || "broker source pending"}.`,
+    description: "Selected close-lane evidence, gate progress, Security Master snapshot, and blocker count.",
     statusLabel: statusLabel(summary.status),
     statusTone: statusTone(summary.status),
     metadata: [
@@ -426,20 +444,40 @@ function selectHighestValueAction(
   return allActions.find((entry) => entry.action.label.trim())?.action ?? null;
 }
 
-function mapWorkflowRow(workflow: OperationsContinuityWorkflowSummary): OperationsContinuityWorkflowRow {
+function mapWorkflowRow(
+  workflow: OperationsContinuityWorkflowSummary,
+  selectedWorkflowId: string | null
+): OperationsContinuityWorkflowRow {
   const blockerCount = collectGateBlockers(workflow.gates).length;
   const passedGateCount = workflow.gates.filter((gate) => gate.status === "Passed").length;
+  const tone = statusTone(workflow.status);
   return {
     id: workflow.workflowId,
     title: `${workflow.periodId} close`,
     subtitle: `${workflow.brokerSource || "Broker source pending"} / ${workflow.fundAccountId}`,
     statusLabel: statusLabel(workflow.status),
-    statusTone: statusTone(workflow.status),
+    statusTone: tone,
     gatesLabel: `${passedGateCount}/${workflow.gates.length} gates passed`,
     blockersLabel: blockerCount === 0 ? "No blockers" : `${blockerCount} blocker${blockerCount === 1 ? "" : "s"}`,
     updatedLabel: formatDate(workflow.updatedAtUtc),
+    detailPanelId: OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID,
+    expanded: workflow.workflowId === selectedWorkflowId,
+    rowClassName: workflowRowClassName(tone),
     ariaLabel: `${workflow.periodId} operations continuity workflow, ${statusLabel(workflow.status)}, ${passedGateCount} of ${workflow.gates.length} gates passed`
   };
+}
+
+function workflowRowClassName(tone: OperationsContinuityTone): OperationsContinuityRowClassName {
+  switch (tone) {
+    case "ready":
+      return "bg-success/5";
+    case "review":
+      return "bg-warning/5";
+    case "blocked":
+      return "bg-danger/5";
+    default:
+      return undefined;
+  }
 }
 
 function mapGateRow(gate: OperationsGate): OperationsContinuityGateRow {

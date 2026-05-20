@@ -7,6 +7,7 @@ import {
   getOperationsContinuityWorkflows
 } from "@/lib/api";
 import { OperationsContinuityScreen } from "@/screens/operations-continuity-screen";
+import { OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID } from "@/screens/operations-continuity-screen.view-model";
 import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
@@ -133,6 +134,12 @@ describe("OperationsContinuityScreen", () => {
     expect(await screen.findByRole("heading", { name: "Operations continuity" })).toBeInTheDocument();
     const workflows = await screen.findByRole("table", { name: "Operations continuity workflows" });
     expect(within(workflows).getByText("2026-05 close")).toBeInTheDocument();
+    const workflowRow = within(workflows).getByRole("row", { name: /open 2026-05 operations continuity workflow/i });
+    expect(workflowRow).toHaveAttribute("aria-controls", OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID);
+    expect(workflowRow).toHaveAttribute("aria-expanded", "true");
+    expect(workflowRow).toHaveClass("bg-warning/5");
+    expect(screen.getByRole("region", { name: "Operations continuity detail for 2026-05 close workflow" }))
+      .toHaveAttribute("id", OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID);
 
     expect(await screen.findByRole("heading", { name: "Gates" })).toBeInTheDocument();
     expect(screen.getByText("Ledger posting requires a balanced and validated journal draft.")).toBeInTheDocument();
@@ -163,12 +170,25 @@ describe("OperationsContinuityScreen", () => {
     renderScreen();
 
     const secondRow = await screen.findByRole("row", { name: /2026-04 operations continuity workflow/i });
+    expect(secondRow).toHaveAttribute("aria-controls", OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID);
+    expect(secondRow).toHaveAttribute("aria-expanded", "false");
     await user.click(secondRow);
 
     await waitFor(() => {
       expect(getOperationsContinuityWorkflow).toHaveBeenLastCalledWith(second.workflowId, expect.objectContaining({ signal: expect.any(AbortSignal) }));
       expect(screen.getByText("2026-04 close workflow")).toBeInTheDocument();
+      expect(secondRow).toHaveAttribute("aria-expanded", "true");
     });
+  });
+
+  it("renders loading copy instead of an empty-workflows message during initial load", () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockReturnValue(new Promise<OperationsContinuityWorkflowSummary[]>(() => undefined));
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(detail);
+
+    renderScreen();
+
+    expect(screen.getByText("Loading operations continuity workflows...")).toBeInTheDocument();
+    expect(screen.queryByText("No operations continuity workflows are available for this workstation context.")).not.toBeInTheDocument();
   });
 });
 

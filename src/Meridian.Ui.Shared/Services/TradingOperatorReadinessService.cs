@@ -1042,11 +1042,7 @@ public sealed class TradingOperatorReadinessService
             BuildAuditControlGate(controls, auditEntries)
         };
 
-        if (riskRuleStatuses.Count > 0)
-        {
-            gates.Add(BuildRiskRuleGate(riskRuleStatuses));
-        }
-
+        gates.Add(BuildRiskRuleGate(riskRuleStatuses));
         gates.Add(BuildPromotionGate(promotion));
         gates.Add(BuildTrustGateAcceptance(trustGate));
         gates.Add(BuildReportPackGate(reportPack));

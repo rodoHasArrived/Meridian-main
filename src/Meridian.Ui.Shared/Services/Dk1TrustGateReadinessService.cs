@@ -24,6 +24,7 @@ public sealed class Dk1TrustGateReadinessService
 
     private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(30);
     private const string EvidenceBundleFileName = "provider-validation-evidence-bundle.json";
+    private const int MaxAutomationSearchFiles = 2_048;
 
     private readonly Dk1TrustGateReadinessOptions _options;
     private readonly ILogger<Dk1TrustGateReadinessService> _logger;
@@ -50,22 +51,12 @@ public sealed class Dk1TrustGateReadinessService
     {
         ct.ThrowIfCancellationRequested();
         var now = DateTimeOffset.UtcNow;
-        TradingTrustGateReadinessDto? cachedReadiness = null;
-        PacketCacheState cachedPacketState = PacketCacheState.Empty;
-
         lock (_cacheLock)
         {
             if (_cachedReadiness is not null && now - _cachedAtUtc <= CacheDuration)
             {
-                cachedReadiness = _cachedReadiness;
-                cachedPacketState = _cachedPacketState;
+                return _cachedReadiness;
             }
-        }
-
-        if (cachedReadiness is not null &&
-            PacketStateMatches(cachedPacketState, ResolveCurrentPacketState()))
-        {
-            return cachedReadiness;
         }
 
         var snapshot = await BuildCurrentAsync(ct).ConfigureAwait(false);
@@ -143,18 +134,6 @@ public sealed class Dk1TrustGateReadinessService
         }
     }
 
-    private PacketCacheState ResolveCurrentPacketState()
-    {
-        var automationRoot = ResolveAutomationRoot();
-        if (automationRoot is null)
-        {
-            return PacketCacheState.Empty;
-        }
-
-        var packetPath = FindLatestPacketPath(automationRoot);
-        return BuildPacketCacheState(packetPath);
-    }
-
     private PacketCacheState BuildPacketCacheState(string? packetPath)
     {
         if (string.IsNullOrWhiteSpace(packetPath))
@@ -180,13 +159,6 @@ public sealed class Dk1TrustGateReadinessService
             _logger.LogDebug(ex, "Unable to inspect DK1 packet metadata for cache state at {PacketPath}.", packetPath);
             return new PacketCacheState(packetPath, null, null);
         }
-    }
-
-    private static bool PacketStateMatches(PacketCacheState cachedState, PacketCacheState currentState)
-    {
-        return string.Equals(cachedState.PacketPath, currentState.PacketPath, StringComparison.OrdinalIgnoreCase)
-               && cachedState.LastWriteTicksUtc == currentState.LastWriteTicksUtc
-               && cachedState.Length == currentState.Length;
     }
 
     private TradingTrustGateReadinessDto BuildReadinessFromPacket(string packetPath, string automationRoot, JsonElement root)
@@ -282,8 +254,7 @@ public sealed class Dk1TrustGateReadinessService
 
     private static JsonElement? TryGetLatestEvidenceBundle(string automationRoot)
     {
-        var bundlePath = Directory
-            .EnumerateFiles(automationRoot, EvidenceBundleFileName, SearchOption.AllDirectories)
+        var bundlePath = EnumerateBoundedFiles(automationRoot, EvidenceBundleFileName)
             .Select(path => new FileInfo(path))
             .OrderByDescending(file => file.LastWriteTimeUtc)
             .Select(file => file.FullName)
@@ -367,12 +338,31 @@ public sealed class Dk1TrustGateReadinessService
 
     private static string? FindLatestPacketPath(string automationRoot)
     {
-        return Directory
-            .EnumerateFiles(automationRoot, "dk1-pilot-parity-packet.json", SearchOption.AllDirectories)
+        return EnumerateBoundedFiles(automationRoot, "dk1-pilot-parity-packet.json")
             .Select(path => new FileInfo(path))
             .OrderByDescending(file => file.LastWriteTimeUtc)
             .Select(file => file.FullName)
             .FirstOrDefault();
+    }
+
+    private static IEnumerable<string> EnumerateBoundedFiles(string root, string searchPattern)
+    {
+        if (string.IsNullOrWhiteSpace(root) || string.IsNullOrWhiteSpace(searchPattern))
+        {
+            return [];
+        }
+
+        try
+        {
+            return Directory
+                .EnumerateFiles(root, searchPattern, SearchOption.AllDirectories)
+                .Take(MaxAutomationSearchFiles)
+                .ToArray();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException)
+        {
+            return [];
+        }
     }
 
     private static string? BuildDisplayPacketPath(string? packetPath, string automationRoot)

@@ -1,9 +1,9 @@
-import { AlertTriangle, ArrowRight, GitBranch, ListChecks, RefreshCcw, ShieldCheck, Workflow } from "lucide-react";
+import { AlertTriangle, ArrowRight, GitBranch, ListChecks, RefreshCcw, Workflow } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import {
   useOperationsContinuityScreenViewModel,
@@ -215,11 +215,14 @@ export function OperationsContinuityScreen() {
               getRowId={(row) => row.id}
               getRowAriaLabel={(row) => row.ariaLabel}
               getRowSelectAriaLabel={(row) => `Open ${row.ariaLabel}`}
-              getRowAriaExpanded={(row) => vm.selectedWorkflowId === row.id}
+              getRowAriaControls={(row) => row.detailPanelId}
+              getRowAriaExpanded={(row) => row.expanded}
+              getRowClassName={(row) => row.rowClassName}
               onRowSelect={(row) => vm.selectWorkflow(row.id)}
               selectedRowId={vm.selectedWorkflowId}
               emptyText={vm.workflowsEmptyText}
               ariaLabel={vm.workflowsTableLabel}
+              caption={vm.workflowsTableCaption}
             />
           </CardContent>
         </Card>
@@ -264,36 +267,26 @@ export function OperationsContinuityScreen() {
 
       {vm.selectedDetail ? (
         <section className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
-          <Card className={cn("panel-surface border", tonePanel[vm.selectedDetail.statusTone])}>
-            <CardHeader>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
-                    {vm.selectedDetail.title}
-                  </CardTitle>
-                  <CardDescription>{vm.selectedDetail.subtitle}</CardDescription>
-                </div>
-                <Badge variant={toneBadge[vm.selectedDetail.statusTone]}>{vm.selectedDetail.statusLabel}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <dl className="grid gap-3 sm:grid-cols-2">
-                {vm.selectedDetail.metadata.map((item) => (
-                  <div key={item.label} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-                    <dt className="text-[11px] font-medium uppercase text-muted-foreground">{item.label}</dt>
-                    <dd className="mt-1 break-words font-mono text-xs text-foreground">{item.value}</dd>
-                  </div>
-                ))}
-              </dl>
+          <div className={cn("rounded-lg border", tonePanel[vm.selectedDetail.statusTone])}>
+            <EntitySummary
+              id={vm.selectedDetail.id}
+              eyebrow="Selected workflow"
+              title={vm.selectedDetail.title}
+              subtitle={vm.selectedDetail.subtitle}
+              description={vm.selectedDetail.description}
+              ariaLabel={vm.selectedDetail.ariaLabel}
+              status={<Badge variant={toneBadge[vm.selectedDetail.statusTone]}>{vm.selectedDetail.statusLabel}</Badge>}
+              fields={vm.selectedDetail.metadata}
+            />
+            <div className="px-4 pb-4">
               {vm.detailErrorText ? (
                 <p role="alert" className="mt-3 inline-flex items-center gap-2 text-sm text-danger">
                   <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                   {vm.detailErrorText}
                 </p>
               ) : null}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           <Card className="panel-surface">
             <CardHeader>

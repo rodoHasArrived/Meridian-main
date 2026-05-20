@@ -941,7 +941,7 @@ public sealed class WorkstationEndpointsTests
         readiness.TrustGate.OperatorSignoff.SignedOwners.Should().BeEmpty();
         readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
         readiness.ReadyForPaperOperation.Should().BeFalse();
-        readiness.AcceptanceGates.Should().HaveCount(8);
+        readiness.AcceptanceGates.Should().HaveCount(9);
         readiness.AcceptanceGates.Should().ContainSingle(gate =>
             gate.GateId == "session" &&
             gate.Status == TradingAcceptanceGateStatusDto.Ready &&
@@ -953,6 +953,9 @@ public sealed class WorkstationEndpointsTests
         readiness.AcceptanceGates.Should().ContainSingle(gate =>
             gate.GateId == "audit-controls" &&
             gate.Status == TradingAcceptanceGateStatusDto.Ready);
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "risk-rules" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired);
         readiness.AcceptanceGates.Should().ContainSingle(gate =>
             gate.GateId == "promotion" &&
             gate.Status == TradingAcceptanceGateStatusDto.Ready &&
@@ -977,8 +980,8 @@ public sealed class WorkstationEndpointsTests
             gate.Status == TradingAcceptanceGateStatusDto.Ready);
         readiness.EvidenceCompleteness.Should().NotBeNull();
         readiness.EvidenceCompleteness!.ReadyGateCount.Should().Be(6);
-        readiness.EvidenceCompleteness.TotalGateCount.Should().Be(8);
-        readiness.EvidenceCompleteness.ReviewGateIds.Should().BeEquivalentTo(["dk1-trust", "reconciliation"]);
+        readiness.EvidenceCompleteness.TotalGateCount.Should().Be(9);
+        readiness.EvidenceCompleteness.ReviewGateIds.Should().BeEquivalentTo(["risk-rules", "dk1-trust", "reconciliation"]);
         readiness.WorkItems.Should().ContainSingle(item =>
             item.Kind == OperatorWorkItemKindDto.ProviderTrustGate &&
             item.Tone == OperatorWorkItemToneDto.Warning &&
@@ -2498,6 +2501,30 @@ public sealed class WorkstationEndpointsTests
         readiness.PacketPath.Should().BeNull();
         readiness.Detail.Should().Be("No DK1 pilot parity packet was found under the configured automation root.");
         readiness.Detail.Should().NotContain(NormalizePathForAssertion(automationRoot));
+    }
+
+    [Fact]
+    public async Task Dk1TrustGateReadinessService_CacheHit_ShouldNotRescanAutomationRoot()
+    {
+        var automationRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "dk1-cache-hit",
+            Guid.NewGuid().ToString("N"));
+        WriteReadyDk1Packet(automationRoot);
+
+        var service = new Dk1TrustGateReadinessService(
+            new Dk1TrustGateReadinessOptions(automationRoot),
+            NullLogger<Dk1TrustGateReadinessService>.Instance);
+
+        var first = await service.GetCurrentAsync();
+        Directory.Delete(automationRoot, recursive: true);
+
+        var second = await service.GetCurrentAsync();
+
+        second.Status.Should().Be(first.Status);
+        second.PacketPath.Should().Be(first.PacketPath);
+        second.Detail.Should().Be(first.Detail);
     }
 
     [Fact]
