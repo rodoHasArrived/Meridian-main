@@ -67,11 +67,12 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
                     f"Invalid transition type '{transition_type}'. Allowed: {sorted(ALLOWED_TRANSITIONS)}"
                 )
 
-            roadmap = transition.get("roadmap", {})
+            roadmap = transition.get("roadmap") or {}
+            module_id = module.get("id", "<unknown>")
             for field in ("id", "url", "status"):
                 if not roadmap.get(field):
                     errors.append(
-                        f"Transition '{transition_type}' for module '{module.get('id', '<unknown>')}' missing roadmap.{field}"
+                        f"Transition '{transition_type}' for module '{module_id}' missing roadmap.{field}"
                     )
 
             if transition_type == "moved":
