@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
@@ -436,6 +437,13 @@ public sealed class LedgerBookServiceTests
                 sp.GetRequiredService<IOperatorInboxService>()));
 
         var app = builder.Build();
+        app.Use((context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "fund-controller";
+            context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Accounting;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Accounting);
+            return next();
+        });
         app.UseRateLimiter();
         app.MapLedgerEndpoints(ServerJsonOptions);
         app.MapWorkstationEndpoints(ServerJsonOptions);

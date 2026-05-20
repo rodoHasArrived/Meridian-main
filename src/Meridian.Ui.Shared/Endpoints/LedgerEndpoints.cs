@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Ledger;
 using Meridian.Storage.Ledger;
 using Microsoft.AspNetCore.Builder;
@@ -137,6 +138,11 @@ public static class LedgerEndpoints
             CloseLedgerPeriodRequest request,
             HttpContext context) =>
         {
+            if (!TryGetLedgerCloseActor(context, out var actor))
+            {
+                return Results.Forbid();
+            }
+
             var service = ResolveService(context);
             if (service is null)
             {
@@ -146,7 +152,13 @@ public static class LedgerEndpoints
             try
             {
                 var result = await service
-                    .ClosePeriodAsync(periodId, request, context.RequestAborted)
+                    .ClosePeriodAsync(
+                        periodId,
+                        request with
+                        {
+                            ClosedBy = actor
+                        },
+                        context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -176,4 +188,27 @@ public static class LedgerEndpoints
             LedgerBookValidationException or LedgerPeriodTransitionException => Results.BadRequest(new { error = exception.Message }),
             _ => Results.Problem(exception.Message)
         };
+
+    private static bool TryGetLedgerCloseActor(HttpContext context, out string actor)
+    {
+        actor = string.Empty;
+        if (context.Items[LoginSessionMiddleware.CurrentUserKey] is not string username ||
+            string.IsNullOrWhiteSpace(username))
+        {
+            return false;
+        }
+
+        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is not UserRole role)
+        {
+            return false;
+        }
+
+        if (role is not UserRole.Admin and not UserRole.Accounting)
+        {
+            return false;
+        }
+
+        actor = username.Trim();
+        return true;
+    }
 }
