@@ -573,6 +573,36 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
+    public async Task ClosePositionAction_WhenProductionRoutingDisabled_Returns403AndDoesNotSubmit()
+    {
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterBrokerageOms(services, gateway);
+            services.AddSingleton(new BrokerageConfiguration
+            {
+                Gateway = "robinhood",
+                BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["robinhood"] = new() { ProductionOrderRoutingEnabled = false }
+                }
+            });
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest("opt-close", Quantity: 1m)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Rejected");
+        result.Message.Should().Contain("Production order routing is disabled");
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+
+    [Fact]
     public async Task PaperSessionLifecycleEndpoints_PreserveSymbolsAndExposeReplayContinuityAudit()
     {
         using var artifacts = TestArtifactDirectory.Create(nameof(PaperSessionLifecycleEndpoints_PreserveSymbolsAndExposeReplayContinuityAudit));

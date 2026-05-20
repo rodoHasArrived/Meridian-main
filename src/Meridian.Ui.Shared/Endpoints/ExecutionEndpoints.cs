@@ -991,6 +991,33 @@ public static class ExecutionEndpoints
             return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
         }
 
+        if (!TryValidateBrokerOrderPlacementGate(context, out var blockingMessage))
+        {
+            var actionId = GenerateActionId();
+            var message = blockingMessage ?? "Broker order routing is disabled by validation gates.";
+            var auditEntry = await RecordOperatorAuditAsync(
+                context,
+                actionId,
+                action: actionName,
+                outcome: "Rejected",
+                message: message,
+                symbol: position.Symbol,
+                metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["positionKey"] = position.PositionKey,
+                    ["reason"] = "GateBlocked",
+                    ["source"] = positionSource
+                }).ConfigureAwait(false);
+
+            var blocked = new TradingActionResult(
+                ActionId: actionId,
+                Status: "Rejected",
+                Message: message,
+                OccurredAt: DateTimeOffset.UtcNow,
+                AuditId: auditEntry?.AuditId);
+            return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+        }
+
         var logger = GetLogger(context.RequestServices);
         var actionId = GenerateActionId();
         if (!TryResolveActor(context, out var actor))
