@@ -250,6 +250,7 @@ public static class OperationsWorkflowContractMatrix
         "REPORT_PACK_NOT_READY",
         "APPROVAL_REQUIRED"
     };
+}
 
 [JsonConverter(typeof(JsonStringEnumConverter<OperationsIssueCodeDto>))]
 public enum OperationsIssueCodeDto : byte
