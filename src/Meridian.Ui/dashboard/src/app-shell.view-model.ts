@@ -8,6 +8,7 @@ import {
   workspaceForPath,
   workspacePath
 } from "@/lib/workspace";
+import packageJson from "../package.json";
 import type {
   DataOperationsBackfillRecord,
   DataOperationsProviderRecord,
@@ -58,8 +59,25 @@ export interface AppShellViewState {
   statusPanel: ShellStatusPanel | null;
   canRenderRoutes: boolean;
   routeFocus: AppShellRouteFocusState;
+  trustStrip: AppShellTrustStripState;
   workflowContinuity: AppShellWorkflowContinuityViewModel;
   commandPaletteTrigger: AppShellCommandPaletteTriggerState;
+}
+
+export type AppShellTrustStripTone = "ready" | "review" | "blocked" | "pending";
+
+export interface AppShellTrustStripItem {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: AppShellTrustStripTone;
+  ariaLabel: string;
+}
+
+export interface AppShellTrustStripState {
+  ariaLabel: string;
+  items: AppShellTrustStripItem[];
 }
 
 export interface AppShellWorkflowContinuityStep {
@@ -284,6 +302,7 @@ export interface BuildAppShellViewStateOptions {
   error: string | null;
   workflowError?: string | null;
   workspaceErrors: WorkspaceErrorMap;
+  usingDevelopmentFixtures?: boolean;
   payload: AppShellWorkspacePayload;
 }
 
@@ -312,6 +331,7 @@ export function buildAppShellViewState({
   error,
   workflowError = null,
   workspaceErrors,
+  usingDevelopmentFixtures = false,
   payload
 }: BuildAppShellViewStateOptions): AppShellViewState {
   const activeWorkspace = getWorkspaceForPath(pathname);
@@ -329,6 +349,13 @@ export function buildAppShellViewState({
     }),
     canRenderRoutes: !loading && !bootstrapFailed,
     routeFocus: buildRouteFocusState(pathname, search, hash, activeWorkspace),
+    trustStrip: buildTrustStripState({
+      loading,
+      bootstrapFailed,
+      usingDevelopmentFixtures,
+      workspaceErrors,
+      payload
+    }),
     workflowContinuity: buildWorkflowContinuityViewModel(
       pathname,
       search,
@@ -346,6 +373,145 @@ export function buildAppShellViewState({
     ),
     commandPaletteTrigger: buildCommandPaletteTriggerState(commandPaletteOpen)
   };
+}
+
+function buildTrustStripState({
+  loading,
+  bootstrapFailed,
+  usingDevelopmentFixtures,
+  workspaceErrors,
+  payload
+}: {
+  loading: boolean;
+  bootstrapFailed: boolean;
+  usingDevelopmentFixtures: boolean;
+  workspaceErrors: WorkspaceErrorMap;
+  payload: AppShellWorkspacePayload;
+}): AppShellTrustStripState {
+  const session = payload.session;
+  const providerPosture = buildProviderTrustStripItem(payload.dataOperations);
+  const failedWorkspaceCount = Object.keys(workspaceErrors).length;
+
+  const environmentValue = loading
+    ? "Loading"
+    : session?.environment
+      ? titleCase(session.environment)
+      : "Unknown";
+  const environmentTone: AppShellTrustStripTone = session?.environment === "live"
+    ? "blocked"
+    : session?.environment === "paper"
+      ? "ready"
+      : loading
+        ? "pending"
+        : "review";
+
+  const dataSourceValue = usingDevelopmentFixtures
+    ? "Demo fixtures"
+    : bootstrapFailed
+      ? "Unavailable"
+      : failedWorkspaceCount > 0
+        ? "Partial host"
+        : "Local host";
+  const dataSourceTone: AppShellTrustStripTone = usingDevelopmentFixtures
+    ? "pending"
+    : bootstrapFailed
+      ? "blocked"
+      : failedWorkspaceCount > 0
+        ? "review"
+        : "ready";
+  const dataSourceDetail = usingDevelopmentFixtures
+    ? "No-host fixture payloads are visible; do not treat this as live operational readiness."
+    : bootstrapFailed
+      ? "No workstation payloads loaded from the local API host."
+      : failedWorkspaceCount > 0
+        ? `${formatCount(failedWorkspaceCount, "workspace slice")} failed during bootstrap.`
+        : "Workspace payloads are coming from the local API host.";
+
+  return {
+    ariaLabel: "Workstation build, mode, data source, and provider posture",
+    items: [
+      {
+        id: "build",
+        label: "Build",
+        value: `v${packageJson.version}`,
+        detail: "Browser workstation bundle version.",
+        tone: "ready",
+        ariaLabel: `Build ${packageJson.version}. Browser workstation bundle version.`
+      },
+      {
+        id: "mode",
+        label: "Mode",
+        value: environmentValue,
+        detail: session
+          ? `Session ${session.displayName} is operating in ${environmentValue.toLowerCase()} mode.`
+          : "Session environment is not loaded yet.",
+        tone: environmentTone,
+        ariaLabel: `Mode ${environmentValue}. ${session ? `Session ${session.displayName} is operating in ${environmentValue.toLowerCase()} mode.` : "Session environment is not loaded yet."}`
+      },
+      {
+        id: "source",
+        label: "Source",
+        value: dataSourceValue,
+        detail: dataSourceDetail,
+        tone: dataSourceTone,
+        ariaLabel: `Data source ${dataSourceValue}. ${dataSourceDetail}`
+      },
+      providerPosture
+    ]
+  };
+}
+
+function buildProviderTrustStripItem(dataOperations: DataOperationsWorkspaceResponse | null): AppShellTrustStripItem {
+  if (!dataOperations) {
+    return {
+      id: "providers",
+      label: "Providers",
+      value: "Pending",
+      detail: "Provider posture has not loaded yet.",
+      tone: "pending",
+      ariaLabel: "Providers Pending. Provider posture has not loaded yet."
+    };
+  }
+
+  const providers = dataOperations.providers ?? [];
+  if (providers.length === 0) {
+    return {
+      id: "providers",
+      label: "Providers",
+      value: "No providers",
+      detail: "No provider posture rows are available in the current workstation payload.",
+      tone: "review",
+      ariaLabel: "Providers No providers. No provider posture rows are available in the current workstation payload."
+    };
+  }
+
+  const degraded = providers.filter((provider) => provider.status === "Degraded").length;
+  const warning = providers.filter((provider) => provider.status === "Warning").length;
+  const healthy = providers.filter((provider) => provider.status === "Healthy").length;
+  const value = degraded > 0
+    ? `${degraded} degraded`
+    : warning > 0
+      ? `${warning} warning`
+      : `${healthy}/${providers.length} healthy`;
+  const detail = degraded > 0
+    ? `${formatCount(degraded, "provider")} degraded; open Data provider posture before trading decisions.`
+    : warning > 0
+      ? `${formatCount(warning, "provider")} warning; review provider trust before relying on fresh data.`
+      : `${formatCount(healthy, "provider")} healthy in the loaded data posture.`;
+  const tone: AppShellTrustStripTone = degraded > 0 ? "blocked" : warning > 0 ? "review" : "ready";
+
+  return {
+    id: "providers",
+    label: "Providers",
+    value,
+    detail,
+    tone,
+    ariaLabel: `Providers ${value}. ${detail}`
+  };
+}
+
+function titleCase(value: string): string {
+  return value.length > 0 ? `${value.charAt(0).toUpperCase()}${value.slice(1).toLowerCase()}` : value;
 }
 
 export function buildCommandPaletteTriggerState(open: boolean): AppShellCommandPaletteTriggerState {

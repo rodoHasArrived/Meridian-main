@@ -110,6 +110,7 @@ Log anomalies and periodic summaries such as events/sec, dropped count, queue de
 Support bundles may include:
 
 - Manifest with bundle ID, correlation ID, generation time, elapsed time, runtime version, OS version, and files collected.
+- `runtime-summary.json` with operation name, correlation ID, redaction policy, log-directory presence, safe process/runtime counters, and high-level metrics.
 - Sanitized configuration summary.
 - Sanitized recent logs.
 - Metrics snapshot.

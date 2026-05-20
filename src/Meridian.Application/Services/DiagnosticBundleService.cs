@@ -340,7 +340,17 @@ public sealed class DiagnosticBundleService
             return;
         }
 
-        var metrics = _metricsProvider();
+        var metrics = TryCollectMetricsSnapshot();
+        if (metrics is null)
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "metrics.txt"),
+                "Metrics snapshot unavailable",
+                ct);
+            manifest.FilesCollected.Add("metrics.txt");
+            return;
+        }
+
         var json = JsonSerializer.Serialize(metrics, new JsonSerializerOptions
         {
             WriteIndented = true,

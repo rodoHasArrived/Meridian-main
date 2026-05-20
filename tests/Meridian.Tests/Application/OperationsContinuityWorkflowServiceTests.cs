@@ -204,6 +204,49 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task StartWorkflowAsync_ShouldRedactSensitiveAuditAndEvidenceFields()
+    {
+        var service = CreateService(out _, out var auditStore);
+
+        var result = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "ops-user",
+            Rationale: "Open close lane with api_key=do-not-store and Bearer raw-token-value",
+            CorrelationId: "token=raw-correlation-token",
+            EvidenceLinks:
+            [
+                new OperationsEvidenceLinkDto(
+                    "statement?secret=raw-evidence-secret",
+                    "Uploaded with password:raw-label-secret",
+                    "https://operator:raw-route-secret@example.invalid/statement?api_key=raw-query-secret",
+                    "credential=raw-source-secret",
+                    DateTimeOffset.UtcNow)
+            ]));
+
+        result.Success.Should().BeTrue();
+
+        var timeline = await auditStore.GetTimelineAsync(result.Workflow!.WorkflowId);
+        var audit = timeline.Single();
+        audit.Rationale.Should().Contain("api_key=[redacted]");
+        audit.Rationale.Should().Contain("Bearer [redacted]");
+        audit.Rationale.Should().NotContain("do-not-store");
+        audit.Rationale.Should().NotContain("raw-token-value");
+        audit.CorrelationId.Should().Be("token=[redacted]");
+        audit.References.Should().ContainSingle();
+        audit.References[0].EvidenceId.Should().Be("statement?secret=[redacted]");
+        audit.References[0].Label.Should().Be("Uploaded with password:[redacted]");
+        audit.References[0].Route.Should().Be("https://[redacted]@example.invalid/statement?api_key=[redacted]");
+        audit.References[0].Source.Should().Be("credential=[redacted]");
+
+        result.Workflow.EvidenceLinks.Should().ContainSingle(link =>
+            link.EvidenceId == "statement?secret=[redacted]" &&
+            link.Route == "https://[redacted]@example.invalid/statement?api_key=[redacted]");
+    }
+
+    [Fact]
     public async Task WorkflowCommands_ShouldAdvanceThroughApprovalAndClose()
     {
         var service = CreateService(out _, out var auditStore);

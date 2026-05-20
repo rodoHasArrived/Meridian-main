@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -101,6 +102,18 @@ public interface IOperationsContinuityWorkflowService
 
 public sealed class OperationsContinuityWorkflowService : IOperationsContinuityWorkflowService
 {
+    private static readonly Regex SensitiveAssignmentPattern = new(
+        @"\b(?<key>api[_-]?key|secret|token|password|passphrase|client[_-]?secret|private[_-]?key|credential)\s*(?<separator>[:=])\s*(?<value>[^&;\s,]+)",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+    private static readonly Regex BearerTokenPattern = new(
+        @"\bbearer\s+[A-Za-z0-9._~+/=-]+",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+    private static readonly Regex BasicAuthUriPattern = new(
+        @"(?<scheme>https?://)(?<user>[^/@\s:]+):(?<password>[^/@\s]+)@",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
     private static readonly JsonSerializerOptions WorkflowCloneJsonOptions = new(JsonSerializerDefaults.Web)
     {
         Converters = { new JsonStringEnumConverter() }
@@ -178,8 +191,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             OperationsGateStatusDto.NotStarted,
             OperationsGateStatusDto.InProgress,
             request.Actor.Trim(),
-            request.Rationale,
-            request.CorrelationId,
+            RedactSensitiveText(request.Rationale),
+            RedactSensitiveText(request.CorrelationId),
             evidence);
 
         if (_auditStore is IOperationsContinuityWorkflowStartCommitStore startCommitStore)
@@ -279,8 +292,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 fromGate,
                 workflowForCommit.BrokerIngestGate.Status,
                 request.Actor.Trim(),
-                request.Rationale,
-                request.CorrelationId,
+                RedactSensitiveText(request.Rationale),
+                RedactSensitiveText(request.CorrelationId),
                 evidence),
             ct: ct).ConfigureAwait(false);
 
@@ -541,8 +554,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             fromGateStatus,
             toGateStatus,
             request.Actor.Trim(),
-            request.Rationale,
-            request.CorrelationId,
+            RedactSensitiveText(request.Rationale),
+            RedactSensitiveText(request.CorrelationId),
             evidence);
 
         if (journalWrite is not null && _transactionalCommitStore is not null)
@@ -882,8 +895,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 fromGateStatus,
                 toGateStatus,
                 actor.Trim(),
-                rationale,
-                correlationId,
+                RedactSensitiveText(rationale),
+                RedactSensitiveText(correlationId),
                 evidence),
             ct).ConfigureAwait(false);
 
@@ -1049,8 +1062,29 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         IReadOnlyList<OperationsEvidenceLinkDto>? evidenceLinks) =>
         evidenceLinks?
             .Where(static link => !string.IsNullOrWhiteSpace(link.EvidenceId))
-            .Select(static link => link with { EvidenceId = link.EvidenceId.Trim() })
+            .Select(static link => link with
+            {
+                // Evidence ids are the durable lineage key for report packs, incidents, and audit joins.
+                EvidenceId = link.EvidenceId.Trim(),
+                Label = RedactSensitiveText(link.Label) ?? string.Empty,
+                Route = RedactSensitiveText(link.Route),
+                Source = RedactSensitiveText(link.Source)
+            })
             .ToArray() ?? [];
+
+    private static string? RedactSensitiveText(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return value;
+        }
+
+        var redacted = SensitiveAssignmentPattern.Replace(
+            value,
+            match => $"{match.Groups["key"].Value}{match.Groups["separator"].Value}[redacted]");
+        redacted = BearerTokenPattern.Replace(redacted, "Bearer [redacted]");
+        return BasicAuthUriPattern.Replace(redacted, "${scheme}[redacted]@");
+    }
 
     private static IReadOnlyList<OperationsWorkflowBlockerDto> ValidateLedgerPostRequest(
         OperationsLedgerPostRequestDto request,
