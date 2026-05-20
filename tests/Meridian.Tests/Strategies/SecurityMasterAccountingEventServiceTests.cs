@@ -70,6 +70,39 @@ public sealed class SecurityMasterAccountingEventServiceTests
     }
 
     [Fact]
+    public void Generate_FactorBasedSecurityWithoutSchedule_ShouldReturnMissingFactorScheduleIssue()
+    {
+        var service = new SecurityMasterAccountingEventService();
+        var request = CreateRequest(security: new SecurityMasterAccountingSecurity(
+            BondSecurityId,
+            "BOND1",
+            "Bond",
+            "USD",
+            new SecurityFixedIncomeTerms(
+                CouponRate: 0.06m,
+                CouponType: "Fixed",
+                DayCountConvention: "ACT/365",
+                PaymentFrequencyPerYear: 2,
+                IssueDate: new DateOnly(2025, 1, 1),
+                NextCouponDate: new DateOnly(2026, 1, 31),
+                MaturityDate: new DateOnly(2030, 1, 1),
+                AccrualStartDate: new DateOnly(2026, 1, 1),
+                CurrentFactor: 0.97m,
+                OriginalFace: 100_000m,
+                CurrentFace: 97_000m,
+                RequiresFactorSchedule: true),
+            new SecurityAccountingRule("AvailableForSale", "GAAP")));
+
+        var result = service.Generate(request);
+
+        result.Issues.Should().ContainSingle(issue =>
+            issue.Code == "FACTOR_SCHEDULE_MISSING" &&
+            issue.Severity == ReconciliationBreakSeverity.High);
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+    }
+
+    [Fact]
     public void Generate_MissingTerms_ShouldReturnStructuredPostureIssues()
     {
         var service = new SecurityMasterAccountingEventService();

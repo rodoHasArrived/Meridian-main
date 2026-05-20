@@ -5,7 +5,7 @@ import {
   type ApiRequestOptions
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
-import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { normalizeLocalWorkstationRoute } from "@/lib/workspace";
 import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
@@ -413,14 +413,17 @@ function selectHighestValueAction(
     return null;
   }
 
+  const gateStatusByKey = new Map(gates.map((gate) => [gate.gateKey, gate.status]));
   const allActions = [
-    ...(workflow.nextActions ?? []),
+    ...(workflow.nextActions ?? []).map((action) => ({
+      action,
+      gateStatus: action.gate ? (gateStatusByKey.get(action.gate) ?? "NotStarted") : "NotStarted" as OperationsGateStatus
+    })),
     ...gates.flatMap((gate) => gate.nextActions.map((action) => ({ action, gateStatus: gate.status })))
-      .sort((left, right) => gateStatusPriority(right.gateStatus) - gateStatusPriority(left.gateStatus))
-      .map((entry) => entry.action)
   ];
 
-  return allActions.find((action) => action.label.trim()) ?? null;
+  allActions.sort((left, right) => gateStatusPriority(right.gateStatus) - gateStatusPriority(left.gateStatus));
+  return allActions.find((entry) => entry.action.label.trim())?.action ?? null;
 }
 
 function mapWorkflowRow(workflow: OperationsContinuityWorkflowSummary): OperationsContinuityWorkflowRow {

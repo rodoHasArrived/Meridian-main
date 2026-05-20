@@ -150,8 +150,19 @@ public sealed record ReconciliationSecurityCoverageIssueDto(
 public enum ExpectedAccountingEventKindDto : byte
 {
     AccrueInterestIncome = 0,
-    ReceiveCashInterest = 1,
-    RecognizePrincipalPaydown = 2
+    ReversePriorAccrual = 1,
+    RecognizeCouponIncome = 2,
+    ReceiveCashInterest = 3,
+    AmortizePremium = 4,
+    AccreteDiscount = 5,
+    RecognizePrincipalPaydown = 6,
+    ReduceCostBasisForFactorPaydown = 7,
+    RecognizeRealizedGainLoss = 8,
+    RecordMaturityProceeds = 9,
+    RecordCallProceeds = 10,
+    RecordDividendReceivable = 11,
+    RecordDividendIncome = 12,
+    RecordFxRemeasurement = 13
 }
 
 /// <summary>

@@ -133,6 +133,7 @@ describe("today-panel view model", () => {
     const vm = buildTodayPanelViewModel(trading, null);
 
     expect(vm.movers.map((m) => m.symbol)).toEqual(["TSLA", "MSFT", "AAPL"]);
+    expect(vm.movers.map((m) => m.sideBadgeVariant)).toEqual(["warning", "outline", "outline"]);
     expect(vm.movers[0].dayPnlTone).toBe("danger");
     expect(vm.movers[0].rowClassName).toBe("bg-danger/5");
     expect(vm.movers[1].dayPnlTone).toBe("success");
@@ -161,6 +162,10 @@ describe("today-panel view model", () => {
 
     expect(vm.orders).toHaveLength(5);
     expect(vm.orders[0].priceLabel).toBe("Market");
+    expect(vm.orders[0].sideBadgeVariant).toBe("success");
+    expect(vm.orders[0].statusBadgeVariant).toBe("success");
+    expect(vm.orders[0].statusAriaLabel).toBe("Order status Working");
+    expect(vm.orders[0].rowClassName).toBe("bg-success/5");
     expect(vm.orders[1].priceLabel).toBe("100.01");
     expect(vm.ordersTotal).toBe(7);
     expect(vm.ordersMoreLabel).toBe("+2 more in trading cockpit");
@@ -185,6 +190,11 @@ describe("today-panel view model", () => {
     const vm = buildTodayPanelViewModel(trading, null);
 
     expect(vm.fills).toHaveLength(5);
+    expect(vm.fills[0].sideBadgeVariant).toBe("success");
+    expect(vm.fills[0].statusLabel).toBe("Filled");
+    expect(vm.fills[0].statusBadgeVariant).toBe("success");
+    expect(vm.fills[0].statusAriaLabel).toBe("Fill FL-1 completed");
+    expect(vm.fills[0].rowClassName).toBe("bg-success/5");
     expect(vm.fillsTotal).toBe(6);
     expect(vm.fillsMoreLabel).toBe("+1 more in trading cockpit");
     expect(vm.fillsTableLabel).toBe("5 recent fills");
@@ -209,6 +219,46 @@ describe("today-panel view model", () => {
     expect(vm.orders).toEqual([]);
     expect(vm.fills).toEqual([]);
     expect(vm.brokerageLabel).toBe("Interactive Brokers · DU1009034 · paper");
+  });
+
+  it("surfaces partial and pending order states as VM-owned row tone metadata", () => {
+    const trading = makeTrading({
+      openOrders: [
+        {
+          orderId: "OR-PARTIAL",
+          symbol: "AAPL",
+          side: "Sell",
+          type: "Limit",
+          quantity: "10",
+          limitPrice: "190.00",
+          status: "Partially Filled",
+          submittedAt: "09:45:00 ET"
+        },
+        {
+          orderId: "OR-PENDING",
+          symbol: "MSFT",
+          side: "Buy",
+          type: "Market",
+          quantity: "5",
+          limitPrice: "—",
+          status: "Pending Routing",
+          submittedAt: "09:46:00 ET"
+        }
+      ]
+    });
+
+    const vm = buildTodayPanelViewModel(trading, null);
+
+    expect(vm.orders[0]).toMatchObject({
+      sideBadgeVariant: "warning",
+      statusBadgeVariant: "warning",
+      rowClassName: "bg-warning/5"
+    });
+    expect(vm.orders[1]).toMatchObject({
+      sideBadgeVariant: "success",
+      statusBadgeVariant: "outline",
+      rowClassName: undefined
+    });
   });
 });
 

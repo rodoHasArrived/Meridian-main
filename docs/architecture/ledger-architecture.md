@@ -108,7 +108,9 @@ not just an identity lookup. The first production slice lives in
 Security Master terms, accounting rules, positions, optional factor schedules, and optional actual
 cash activity.
 
-The current supported event set is intentionally narrow:
+The shared DTO enum reserves the broader expected-event vocabulary needed for accrual reversal,
+premium/discount, maturity, call, dividend, and FX events. The current generated event set is still
+intentionally narrow:
 
 | Security Master input | Expected event | Journal preview |
 |-----------------------|----------------|-----------------|
@@ -123,10 +125,12 @@ operator-approved workflow. Previews are balanced before they are exposed to rec
 consumers.
 
 Factor paydowns are calculated at par. A factor reduction from `1.00` to `0.97` on `100,000` par
-generates a `3,000` principal expectation regardless of carrying or sale price. The reconciliation
-issue set flags missing schedules, missing coupon/day-count/payment terms, missing accounting
-classification, missing actual cash, amount mismatches, and principal/income classification
-mismatches.
+generates a `3,000` principal expectation regardless of carrying or sale price. Factor-based
+securities are treated as schedule-dependent when the Security Master terms explicitly require a
+factor schedule, carry a current factor below `1.00`, or report current face below original face.
+The reconciliation issue set flags missing schedules, missing coupon/day-count/payment terms,
+missing accounting classification, missing actual cash, amount mismatches, and principal/income
+classification mismatches.
 
 `ReconciliationRunService` integrates the accounting-event result through an optional
 `ISecurityMasterAccountingEventSourceAdapter`. Existing runs continue to reconcile portfolio,

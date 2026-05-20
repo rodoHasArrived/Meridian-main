@@ -181,6 +181,44 @@ describe("Operations Continuity view model", () => {
     expect(vm.nextAction.disabledReason).toBe("The server did not provide a local workstation route for this action.");
   });
 
+  it("prefers blocked gate actions over earlier lower-priority workflow actions", () => {
+    const prioritizedSummary = {
+      ...summary,
+      nextActions: [
+        {
+          code: "CONTINUE_BROKERINGEST",
+          label: "Continue Broker Ingest",
+          route: "/workstation/accounting",
+          gate: "BrokerIngest" as const
+        },
+        {
+          code: "RESOLVE_LEDGERPOSTING_BLOCKERS",
+          label: "Resolve Ledger Posting blockers",
+          route: "/workstation/accounting",
+          gate: "LedgerPosting" as const
+        }
+      ]
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [prioritizedSummary],
+      selectedWorkflowId: workflowId,
+      detail: null,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.nextAction).toMatchObject({
+      title: "Resolve Ledger Posting blockers",
+      href: "/accounting",
+      disabled: false
+    });
+  });
+
   it("aborts in-flight list requests when the hook unmounts", () => {
     let capturedSignal: AbortSignal | undefined;
     const services = {

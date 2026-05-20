@@ -8,6 +8,7 @@ using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Domain.Collectors;
 using Meridian.Execution;
@@ -305,8 +306,9 @@ public sealed class UiServer : IAsyncDisposable
             if (!IsLoopbackRequest(context))
                 return Results.StatusCode(StatusCodes.Status403Forbidden);
 
-            if (!IsAuthorizedLifecycleRequest(context))
-                return Results.Unauthorized();
+            var authorizationFailure = ValidateLifecycleAuthorization(context);
+            if (authorizationFailure is not null)
+                return authorizationFailure;
 
             return Results.Ok(new
             {
@@ -326,8 +328,9 @@ public sealed class UiServer : IAsyncDisposable
             if (!IsLoopbackRequest(context))
                 return Results.StatusCode(StatusCodes.Status403Forbidden);
 
-            if (!IsAuthorizedLifecycleRequest(context))
-                return Results.Unauthorized();
+            var authorizationFailure = ValidateLifecycleAuthorization(context);
+            if (authorizationFailure is not null)
+                return authorizationFailure;
 
             await _lifecycle.RequestShutdownAsync(
                 "http-local-shutdown",
@@ -343,9 +346,22 @@ public sealed class UiServer : IAsyncDisposable
         });
     }
 
-    private bool IsAuthorizedLifecycleRequest(HttpContext context)
-        => context.Items.ContainsKey(LoginSessionMiddleware.CurrentUserKey)
-            || IsValidLocalShutdownToken(context);
+    private IResult? ValidateLifecycleAuthorization(HttpContext context)
+    {
+        if (IsValidLocalShutdownToken(context))
+        {
+            return null;
+        }
+
+        if (!EndpointAuthorization.TryGetPermissions(context, out _))
+        {
+            return Results.Unauthorized();
+        }
+
+        return EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance)
+            ? null
+            : Results.StatusCode(StatusCodes.Status403Forbidden);
+    }
 
     private bool IsValidLocalShutdownToken(HttpContext context)
     {

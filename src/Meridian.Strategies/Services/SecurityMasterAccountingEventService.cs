@@ -48,7 +48,8 @@ public sealed record SecurityFixedIncomeTerms(
     DateOnly? AccrualStartDate = null,
     decimal? CurrentFactor = null,
     decimal? OriginalFace = null,
-    decimal? CurrentFace = null);
+    decimal? CurrentFace = null,
+    bool RequiresFactorSchedule = false);
 
 public sealed record SecurityAccountingRule(
     string AccountingClassification,
@@ -172,6 +173,18 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
             }
 
             GenerateFixedCouponEvents(request, security, position, events, accruals, previews);
+            if (RequiresFactorSchedule(security) && !HasFactorScheduleForPeriod(request, security.SecurityId))
+            {
+                issues.Add(CreateIssue(
+                    "FACTOR_SCHEDULE_MISSING",
+                    "security-master",
+                    security.Symbol,
+                    position.AccountId,
+                    $"Security '{security.Symbol}' is factor-based and requires a factor schedule before expected principal paydowns can be generated.",
+                    ReconciliationBreakSeverity.High));
+                continue;
+            }
+
             GenerateFactorPaydownEvents(request, security, position, events, previews);
         }
 
@@ -204,6 +217,37 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         assetClass.Equals("CertificateOfDeposit", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("CommercialPaper", StringComparison.OrdinalIgnoreCase) ||
         assetClass.Equals("TreasuryBill", StringComparison.OrdinalIgnoreCase);
+
+    private static bool RequiresFactorSchedule(SecurityMasterAccountingSecurity security)
+    {
+        var terms = security.FixedIncomeTerms;
+        if (terms is null)
+        {
+            return false;
+        }
+
+        if (terms.RequiresFactorSchedule)
+        {
+            return true;
+        }
+
+        if (terms.CurrentFactor is decimal currentFactor && currentFactor < 1m)
+        {
+            return true;
+        }
+
+        return terms.OriginalFace is decimal originalFace &&
+            terms.CurrentFace is decimal currentFace &&
+            originalFace > 0m &&
+            currentFace < originalFace;
+    }
+
+    private static bool HasFactorScheduleForPeriod(SecurityMasterAccountingEventRequest request, Guid securityId) =>
+        (request.FactorSchedule ?? Array.Empty<SecurityFactorScheduleEntry>())
+            .Any(entry =>
+                entry.SecurityId == securityId &&
+                entry.AsOfDate >= request.PeriodStart &&
+                entry.AsOfDate <= request.PeriodEnd);
 
     private static IReadOnlyList<SecurityMasterAccountingIssueDto> ValidateFixedIncomeCoverage(
         SecurityMasterAccountingSecurity security,

@@ -569,6 +569,10 @@ function WorkflowContinuityDock({
           <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </Button>
+
+      <LinkedContextPanel viewModel={viewModel} />
+      <OperatorFocusPanel viewModel={viewModel} />
+      <EvidenceTimelinePanel viewModel={viewModel} />
     </section>
   );
 }
@@ -604,6 +608,149 @@ function DecisionBriefPanel({
           <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </Button>
+    </section>
+  );
+}
+
+function OperatorFocusPanel({
+  viewModel
+}: {
+  viewModel: AppShellWorkflowContinuityViewModel;
+}) {
+  return (
+    <section className="workflow-continuity-focus" aria-label={viewModel.operatorFocusLabel}>
+      <div className="workflow-continuity-focus-head">
+        <span className="eyebrow-label">{viewModel.operatorFocusLabel}</span>
+        <p className="workflow-continuity-focus-summary">{viewModel.operatorFocusSummary}</p>
+      </div>
+      {viewModel.operatorFocusItems.length > 0 ? (
+        <ul className="workflow-continuity-focus-list" aria-label={viewModel.operatorFocusItemsLabel}>
+          {viewModel.operatorFocusItems.map((item) => (
+            <li key={item.id}>
+              <Link
+                to={item.route}
+                aria-label={item.ariaLabel}
+                className={cn(
+                  "workflow-continuity-focus-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  `workflow-continuity-focus-item-${item.tone}`
+                )}
+              >
+                <span className="workflow-continuity-focus-route">{item.workspaceLabel}</span>
+                <span className="workflow-continuity-focus-copy">
+                  <span className="workflow-continuity-focus-title">{item.label}</span>
+                  <span className="workflow-continuity-focus-detail">{item.detail}</span>
+                  <span className="workflow-continuity-focus-action">{item.actionLabel}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="workflow-continuity-focus-empty">{viewModel.operatorFocusEmptyText}</p>
+      )}
+      {viewModel.operatorFocusOverflowLabel ? (
+        <span className="workflow-continuity-focus-overflow">{viewModel.operatorFocusOverflowLabel}</span>
+      ) : null}
+    </section>
+  );
+}
+
+function LinkedContextPanel({
+  viewModel
+}: {
+  viewModel: AppShellWorkflowContinuityViewModel;
+}) {
+  return (
+    <section className="workflow-continuity-linked" aria-label={viewModel.linkedContextLabel}>
+      <div className="workflow-continuity-linked-head">
+        <span className="eyebrow-label">{viewModel.linkedContextLabel}</span>
+        <p className="workflow-continuity-linked-summary">{viewModel.linkedContextSummary}</p>
+        <span className={cn(
+          "workflow-continuity-linked-posture",
+          `workflow-continuity-linked-posture-${viewModel.linkedContextPostureTone}`
+        )}>
+          {viewModel.linkedContextPostureLabel}
+        </span>
+        {viewModel.linkedContextPrimaryActionHref && viewModel.linkedContextPrimaryActionLabel ? (
+          <Button asChild variant="outline" size="sm" className="workflow-continuity-linked-primary">
+            <Link
+              to={viewModel.linkedContextPrimaryActionHref}
+              aria-label={viewModel.linkedContextPrimaryActionAriaLabel ?? viewModel.linkedContextPrimaryActionLabel}
+            >
+              <span>{viewModel.linkedContextPrimaryActionLabel}</span>
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
+          </Button>
+        ) : null}
+      </div>
+      {viewModel.linkedContextItems.length > 0 ? (
+        <ul className="workflow-continuity-linked-list" aria-label={viewModel.linkedContextItemsLabel}>
+          {viewModel.linkedContextItems.map((item) => (
+            <li key={item.id}>
+              <Link
+                to={item.route}
+                aria-label={item.ariaLabel}
+                className={cn(
+                  "workflow-continuity-linked-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  `workflow-continuity-linked-item-${item.tone}`
+                )}
+              >
+                <span className="workflow-continuity-linked-route">{item.workspaceLabel}</span>
+                <span className="workflow-continuity-linked-copy">
+                  <span>{item.label}</span>
+                  <span>{item.detail}</span>
+                </span>
+                <span className="workflow-continuity-linked-status">{item.statusLabel}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="workflow-continuity-linked-empty">{viewModel.linkedContextEmptyText}</p>
+      )}
+    </section>
+  );
+}
+
+function EvidenceTimelinePanel({
+  viewModel
+}: {
+  viewModel: AppShellWorkflowContinuityViewModel;
+}) {
+  return (
+    <section className="workflow-continuity-evidence" aria-label={viewModel.evidenceTimelineLabel}>
+      <div className="workflow-continuity-evidence-head">
+        <span className="eyebrow-label">{viewModel.evidenceTimelineLabel}</span>
+        <p className="workflow-continuity-evidence-summary">{viewModel.evidenceTimelineSummary}</p>
+      </div>
+      {viewModel.evidenceTimelineItems.length > 0 ? (
+        <ul className="workflow-continuity-evidence-list" aria-label={viewModel.evidenceTimelineItemsLabel}>
+          {viewModel.evidenceTimelineItems.map((item) => (
+            <li key={item.id}>
+              <Link
+                to={item.route}
+                aria-label={item.ariaLabel}
+                className={cn(
+                  "workflow-continuity-evidence-item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  `workflow-continuity-evidence-item-${item.tone}`
+                )}
+              >
+                <span className="workflow-continuity-evidence-route">{item.workspaceLabel}</span>
+                <span className="workflow-continuity-evidence-copy">
+                  <span>{item.label}</span>
+                  <span>{item.detail}</span>
+                </span>
+                <time dateTime={item.timestampIso}>{item.timestampLabel}</time>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="workflow-continuity-evidence-empty">{viewModel.evidenceTimelineEmptyText}</p>
+      )}
+      {viewModel.evidenceTimelineOverflowLabel ? (
+        <span className="workflow-continuity-evidence-overflow">{viewModel.evidenceTimelineOverflowLabel}</span>
+      ) : null}
     </section>
   );
 }

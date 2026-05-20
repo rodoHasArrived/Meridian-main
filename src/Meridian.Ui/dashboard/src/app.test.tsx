@@ -254,7 +254,7 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "Clear MSFT operating context" })).toBeInTheDocument();
   });
 
-  it("keeps linked portfolio-aware context reachable from the compact decision brief", () => {
+  it("surfaces linked portfolio-aware context from the continuity dock", () => {
     mockWorkstationData({
       session: {
         displayName: "Ops Desk",
@@ -401,8 +401,15 @@ describe("App", () => {
       "href",
       "/data/quotes?symbol=MSFT"
     );
-    expect(screen.queryByRole("region", { name: "Linked context" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Data: Quote evidence\./ })).not.toBeInTheDocument();
+    const linkedContext = screen.getByRole("region", { name: "Linked context" });
+    expect(within(linkedContext).getByText("MSFT context is clear across 5 workspaces.")).toBeInTheDocument();
+    expect(within(linkedContext).getByText("Ready")).toBeInTheDocument();
+    expect(within(linkedContext).getByRole("link", {
+      name: "Data: Quote evidence. Live quote, alert, and historical evidence routes retain MSFT. Trusted. active subject."
+    })).toHaveAttribute("href", "/data/quotes?symbol=MSFT");
+    expect(within(linkedContext).getByRole("link", {
+      name: "Reporting: Evidence packet. 1 report target can carry MSFT context into governed review. Packet ready. active subject."
+    })).toHaveAttribute("href", "/reporting/evidence?symbol=MSFT");
   });
 
   it("renders and clears the global operating scope across the workstation shell", async () => {
@@ -471,7 +478,7 @@ describe("App", () => {
     expect(screen.queryByLabelText("Operating scope")).not.toBeInTheDocument();
   });
 
-  it("keeps ranked operator focus out of the dock list while preserving command palette actions", async () => {
+  it("surfaces ranked operator focus and evidence while preserving command palette actions", async () => {
     const user = userEvent.setup();
     mockWorkstationData({
       session: {
@@ -576,16 +583,23 @@ describe("App", () => {
     expect(screen.getAllByRole("link", {
       name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
     }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);
+    const operatorFocus = screen.getByRole("region", { name: "Operator focus" });
+    expect(within(operatorFocus).getByText("4 focus items across workspaces: 2 blocked and 2 review.")).toBeInTheDocument();
+    expect(within(operatorFocus).getByText("+1 more focus item")).toBeInTheDocument();
+    expect(within(operatorFocus).getByRole("link", {
+      name: "Trading: Replay audit. Replay evidence is stale for the active paper session. Open readiness."
+    })).toHaveAttribute("href", "/trading/readiness?symbol=MSFT");
+    expect(within(operatorFocus).getByRole("link", {
+      name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Open report packs."
+    })).toHaveAttribute("href", "/reporting/report-packs?symbol=MSFT");
     expect(screen.queryByRole("link", {
       name: "Data: Alpaca provider warning. Review paper provider posture. Open provider trust."
     })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "Operator focus" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "Evidence timeline" })).not.toBeInTheDocument();
-    expect(screen.queryByText("+1 more focus item")).not.toBeInTheDocument();
-    expect(screen.queryByText("Replay evidence is stale for the active paper session.")).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", {
+    const evidenceTimeline = screen.getByRole("region", { name: "Evidence timeline" });
+    expect(within(evidenceTimeline).getByText("2 evidence events across 2 workspaces. Latest: Reporting at 2026-05-14 21:00 UTC.")).toBeInTheDocument();
+    expect(within(evidenceTimeline).getByRole("link", {
       name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Audit: audit-2. 2026-05-14 21:00 UTC. Open evidence."
-    })).not.toBeInTheDocument();
+    })).toHaveAttribute("href", "/reporting/report-packs?symbol=MSFT");
 
     await user.keyboard("{Control>}k{/Control}");
     expect(screen.getByRole("dialog", { name: "Open workstation command" })).toBeInTheDocument();
@@ -597,9 +611,9 @@ describe("App", () => {
     expect(screen.getByRole("link", {
       name: "Data: Alpaca provider warning. Review paper provider posture. Open provider trust."
     })).toHaveAttribute("href", "/data/providers?symbol=MSFT");
-    expect(screen.getByRole("link", {
+    expect(screen.getAllByRole("link", {
       name: "Trading: Replay audit. Replay evidence is stale for the active paper session. Open readiness."
-    })).toHaveAttribute("href", "/trading/readiness?symbol=MSFT");
+    }).some((link) => link.getAttribute("href") === "/trading/readiness?symbol=MSFT")).toBe(true);
   });
 
   it("keeps a stored operating symbol available in the shell and command palette", async () => {
