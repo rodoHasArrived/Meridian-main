@@ -66,7 +66,7 @@ jobs:
       - name: Run desktop workflow
         shell: pwsh
         run: >
-          pwsh -File scripts/dev/run-desktop-workflow.ps1
+          scripts/dev/run-desktop-workflow.ps1
           -Workflow ${{ inputs.workflow }}
 
       - name: Upload run artifacts

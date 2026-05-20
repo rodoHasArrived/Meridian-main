@@ -67,7 +67,7 @@ jobs:
       - name: Generate desktop user manual
         shell: pwsh
         run: >
-          pwsh -File scripts/dev/generate-desktop-user-manual.ps1
+          scripts/dev/generate-desktop-user-manual.ps1
           -OutputPath "${{ inputs.output_path }}"
           -ScreenshotRoot "${{ inputs.screenshot_root }}"
 

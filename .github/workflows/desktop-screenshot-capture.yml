@@ -63,7 +63,7 @@ jobs:
       - name: Capture desktop screenshots
         shell: pwsh
         run: >
-          pwsh -File scripts/dev/capture-desktop-screenshots.ps1
+          scripts/dev/capture-desktop-screenshots.ps1
           -OutputDir "${{ inputs.output_dir }}"
 
       - name: Commit and push results
