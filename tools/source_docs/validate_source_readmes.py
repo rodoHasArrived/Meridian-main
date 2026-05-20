@@ -2,12 +2,57 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 from typing import Any
 
 import yaml
 
+
+# ---------------------------------------------------------------------------
+# Canonical enum validation (shared with tools/roadmap/validate_roadmap.py)
+# ---------------------------------------------------------------------------
+
+CANONICAL = {
+    "status": {"not_started", "in_progress", "blocked", "completed", "cancelled"},
+    "health": {"green", "yellow", "red", "unknown"},
+    "priority": {"low", "medium", "high", "critical"},
+    "evidence_posture": {"none", "draft", "partial", "verified", "audited"},
+    "completion_term": {"done", "complete", "completed", "closed", "shipped"},
+}
+
+
+def _check(node: Any, path: str = "$") -> list[str]:
+    errors: list[str] = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            child_path = f"{path}.{key}"
+            if key in CANONICAL and value not in CANONICAL[key]:
+                allowed = ", ".join(sorted(CANONICAL[key]))
+                errors.append(f"{child_path}: invalid '{value}' for {key}; allowed: [{allowed}]")
+            errors.extend(_check(value, child_path))
+    elif isinstance(node, list):
+        for i, item in enumerate(node):
+            errors.extend(_check(item, f"{path}[{i}]"))
+    return errors
+
+
+def validate_file(path: Path) -> int:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    errors = _check(data)
+    if errors:
+        print(f"{path} failed enum validation:")
+        for e in errors:
+            print(f"  - {e}")
+        return 1
+    print(f"{path} passed enum validation")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# Source README coverage / lifecycle-transition validation
+# ---------------------------------------------------------------------------
 
 ALLOWED_TRANSITIONS = {"added", "moved", "split", "merged", "deprecated", "archived"}
 
@@ -56,7 +101,11 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
     for duplicate in sorted(duplicates):
         errors.append(f"source-modules.yml duplicate module id: {duplicate}")
 
-    coverage_modules = [m for m in _as_list((coverage_doc.get("readme_coverage") or {}).get("modules")) if isinstance(m, dict)]
+    coverage_modules = [
+        m
+        for m in _as_list((coverage_doc.get("readme_coverage") or {}).get("modules"))
+        if isinstance(m, dict)
+    ]
     moved_to_paths: set[str] = set()
     moved_from_paths: set[str] = set()
 
@@ -104,7 +153,9 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate source README coverage and module metadata.")
+    parser = argparse.ArgumentParser(
+        description="Validate source README coverage and module metadata."
+    )
     parser.add_argument(
         "--modules",
         default="docs/source/data/source-modules.yml",
