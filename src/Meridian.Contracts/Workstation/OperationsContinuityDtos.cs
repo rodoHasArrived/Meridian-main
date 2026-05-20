@@ -97,6 +97,159 @@ public enum OperationsApprovalStateDto : byte
     Rejected = 4
 }
 
+/// <summary>
+/// Single source-of-truth contract matrix for Operations Continuity workflow status/state/code surfaces.
+/// </summary>
+public static class OperationsWorkflowContractMatrix
+{
+    public static IReadOnlyList<OperationsWorkflowStatusDto> OverallStatuses { get; } =
+    [
+        OperationsWorkflowStatusDto.NotStarted,
+        OperationsWorkflowStatusDto.CollectingBrokerData,
+        OperationsWorkflowStatusDto.SecurityMasterValidation,
+        OperationsWorkflowStatusDto.LedgerPostingDraft,
+        OperationsWorkflowStatusDto.ReconciliationActive,
+        OperationsWorkflowStatusDto.ApprovalPending,
+        OperationsWorkflowStatusDto.ReadyForClose,
+        OperationsWorkflowStatusDto.Closed,
+        OperationsWorkflowStatusDto.Blocked
+    ];
+
+    public static IReadOnlyList<OperationsGateStatusDto> GateStatuses { get; } =
+    [
+        OperationsGateStatusDto.NotStarted,
+        OperationsGateStatusDto.InProgress,
+        OperationsGateStatusDto.Passed,
+        OperationsGateStatusDto.ReviewRequired,
+        OperationsGateStatusDto.Blocked
+    ];
+
+    public static IReadOnlyList<OperationsBrokerIntakeStateDto> BrokerSubStates { get; } =
+    [
+        OperationsBrokerIntakeStateDto.Pending,
+        OperationsBrokerIntakeStateDto.Imported,
+        OperationsBrokerIntakeStateDto.Normalized,
+        OperationsBrokerIntakeStateDto.MatchedToInternalRun,
+        OperationsBrokerIntakeStateDto.Complete
+    ];
+
+    public static IReadOnlyList<OperationsSecurityMasterStateDto> SecurityMasterSubStates { get; } =
+    [
+        OperationsSecurityMasterStateDto.Pending,
+        OperationsSecurityMasterStateDto.ResolvedAllInstruments,
+        OperationsSecurityMasterStateDto.OverridesRequested,
+        OperationsSecurityMasterStateDto.OverridesApproved,
+        OperationsSecurityMasterStateDto.Complete
+    ];
+
+    public static IReadOnlyList<OperationsLedgerPostingStateDto> LedgerSubStates { get; } =
+    [
+        OperationsLedgerPostingStateDto.Pending,
+        OperationsLedgerPostingStateDto.Drafted,
+        OperationsLedgerPostingStateDto.Validated,
+        OperationsLedgerPostingStateDto.Posted,
+        OperationsLedgerPostingStateDto.Complete
+    ];
+
+    public static IReadOnlyList<OperationsReconciliationStateDto> ReconciliationSubStates { get; } =
+    [
+        OperationsReconciliationStateDto.Pending,
+        OperationsReconciliationStateDto.AutoMatched,
+        OperationsReconciliationStateDto.ExceptionsOpen,
+        OperationsReconciliationStateDto.InReview,
+        OperationsReconciliationStateDto.Cleared,
+        OperationsReconciliationStateDto.Complete
+    ];
+
+    public static IReadOnlyList<OperationsApprovalStateDto> ApprovalSubStates { get; } =
+    [
+        OperationsApprovalStateDto.Pending,
+        OperationsApprovalStateDto.Submitted,
+        OperationsApprovalStateDto.ReviewerAssigned,
+        OperationsApprovalStateDto.Approved,
+        OperationsApprovalStateDto.Rejected
+    ];
+
+    public static IReadOnlySet<string> BlockerCodes { get; } = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "ACTOR_REQUIRED",
+        "APPROVAL_DECISION_REQUIRED",
+        "APPROVAL_METADATA_REQUIRED",
+        "APPROVAL_REQUIRED",
+        "APPROVAL_SUBMISSION_METADATA_REQUIRED",
+        "APPROVAL_SUBMISSION_REQUIRED",
+        "BROKER_IMPORT_ALREADY_RECORDED",
+        "BROKER_IMPORT_GATE_NOT_READY",
+        "BROKER_IMPORT_REQUIRED",
+        "BROKER_INTAKE_REQUIRED",
+        "BROKER_NORMALIZATION_REQUIRED",
+        "BROKER_PROVIDER_ACCOUNT_UNLINKED",
+        "BROKER_SYNC_STALE",
+        "FUND_ACCOUNT_REQUIRED",
+        "LEDGER_BATCH_ID_REQUIRED",
+        "LEDGER_DRAFT_IMBALANCED",
+        "LEDGER_DRAFT_REQUIRED",
+        "LEDGER_DUPLICATE_POSTING_CANDIDATE",
+        "LEDGER_IDEMPOTENCY_KEY_MISSING",
+        "LEDGER_JOURNAL_ACCOUNT_NAME_REQUIRED",
+        "LEDGER_JOURNAL_ACCOUNT_TYPE_INVALID",
+        "LEDGER_JOURNAL_AGGREGATE_ID_REQUIRED",
+        "LEDGER_JOURNAL_APPEND_REJECTED",
+        "LEDGER_JOURNAL_CANDIDATE_INVALID",
+        "LEDGER_JOURNAL_CANDIDATE_REQUIRED",
+        "LEDGER_JOURNAL_DESCRIPTION_REQUIRED",
+        "LEDGER_JOURNAL_LINES_REQUIRED",
+        "LEDGER_JOURNAL_PERIOD_ID_REQUIRED",
+        "LEDGER_JOURNAL_STORE_UNAVAILABLE",
+        "LEDGER_JOURNAL_TIMESTAMP_REQUIRED",
+        "LEDGER_PERIOD_CLOSED",
+        "LEDGER_POSTING_KIND_REQUIRED",
+        "LEDGER_POSTING_REQUIRED",
+        "LEDGER_PREVIEW_ID_REQUIRED",
+        "LEDGER_SECURITY_MASTER_PROVENANCE_MISSING",
+        "LEDGER_VALIDATED_JOURNAL_REQUIRED",
+        "LEDGER_VALIDATION_REQUIRED",
+        "OPERATIONS_CONTINUITY_WORKFLOW_ALREADY_EXISTS",
+        "OPERATIONS_GATES_NOT_PASSED",
+        "OPERATIONS_PREREQUISITE_GATES_NOT_PASSED",
+        "PERIOD_REQUIRED",
+        "RECONCILIATION_BREAK_NOT_FOUND",
+        "RECONCILIATION_BREAK_RATIONALE_REQUIRED",
+        "RECONCILIATION_CRITICAL_BREAKS_OPEN",
+        "RECONCILIATION_RUN_REQUIRED",
+        "REJECTION_METADATA_REQUIRED",
+        "REOPEN_GOVERNANCE_METADATA_REQUIRED",
+        "REPORT_PACK_NOT_READY",
+        "REPORT_PACK_REQUIRED",
+        "SECURITY_MASTER_RESOLUTION_REQUIRED",
+        "SM_ACCOUNTING_TERMS_INCOMPLETE",
+        "SM_INSTRUMENT_UNRESOLVED",
+        "SM_OVERRIDE_APPROVAL_METADATA_REQUIRED",
+        "SM_OVERRIDE_APPROVAL_REQUIRED",
+        "SM_OVERRIDE_ID_MISMATCH",
+        "SM_OVERRIDE_REQUEST_REQUIRED",
+        "SM_RECON_SECURITY_UNRESOLVED",
+        "WORKFLOW_CLOSED",
+        "WORKFLOW_ID_REQUIRED",
+        "WORKFLOW_NOT_CLOSED",
+        "WORKFLOW_VERSION_MISMATCH"
+    };
+
+    public static IReadOnlySet<string> IssueCodes { get; } = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "BROKER_PROVIDER_ACCOUNT_UNLINKED",
+        "BROKER_SYNC_STALE",
+        "SM_INSTRUMENT_UNRESOLVED",
+        "SM_ACCOUNTING_TERMS_INCOMPLETE",
+        "SM_RECON_SECURITY_UNRESOLVED",
+        "LEDGER_SECURITY_MASTER_PROVENANCE_MISSING",
+        "LEDGER_DRAFT_IMBALANCED",
+        "LEDGER_PERIOD_CLOSED",
+        "LEDGER_DUPLICATE_POSTING_CANDIDATE",
+        "RECONCILIATION_CRITICAL_BREAKS_OPEN",
+        "REPORT_PACK_NOT_READY",
+        "APPROVAL_REQUIRED"
+    };
 
 [JsonConverter(typeof(JsonStringEnumConverter<OperationsIssueCodeDto>))]
 public enum OperationsIssueCodeDto : byte
