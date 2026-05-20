@@ -44,6 +44,11 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     // Gap tracking for reconnection-aware backfill
     private DateTimeOffset _lastDisconnectTime;
     private DateTimeOffset _lastConnectTime;
+    private DateTimeOffset? _lastMessageReceivedAt;
+    private DateTimeOffset? _lastReconnectAttemptAt;
+    private string? _lastError;
+    private volatile ProviderConnectionLifecycleState _lifecycleState = ProviderConnectionLifecycleState.Configured;
+    private volatile bool _isDisconnecting;
 
     /// <summary>
     /// Event raised when connection is lost (heartbeat timeout or WebSocket close).
@@ -71,6 +76,11 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     public event Action<WebSocketState>? StateChanged;
 
     /// <summary>
+    /// Event raised when the provider lifecycle phase changes.
+    /// </summary>
+    public event Action<WebSocketConnectionDiagnostics>? DiagnosticsChanged;
+
+    /// <summary>
     /// Gets whether the WebSocket is currently connected and open.
     /// </summary>
     public bool IsConnected => _webSocket?.State == WebSocketState.Open;
@@ -84,6 +94,35 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     /// Gets whether a reconnection is currently in progress.
     /// </summary>
     public bool IsReconnecting => _isReconnecting;
+
+    /// <summary>
+    /// Gets the current provider lifecycle phase.
+    /// </summary>
+    public ProviderConnectionLifecycleState LifecycleState => _lifecycleState;
+
+    /// <summary>
+    /// Gets a safe diagnostics snapshot for logs, health surfaces, and tests.
+    /// </summary>
+    public WebSocketConnectionDiagnostics GetDiagnosticsSnapshot()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var lastActivity = _lastMessageReceivedAt ?? _lastConnectTime;
+
+        return new WebSocketConnectionDiagnostics(
+            ProviderName: _providerName,
+            LifecycleState: _lifecycleState,
+            WebSocketState: State,
+            IsConnected: IsConnected,
+            IsReconnecting: _isReconnecting,
+            ReconnectAttempts: _reconnectAttempts,
+            LastConnectedAt: _lastConnectTime == default ? null : _lastConnectTime,
+            LastDisconnectedAt: _lastDisconnectTime == default ? null : _lastDisconnectTime,
+            LastMessageReceivedAt: _lastMessageReceivedAt,
+            LastReconnectAttemptAt: _lastReconnectAttemptAt,
+            LastError: _lastError,
+            ConnectionAge: IsConnected && _lastConnectTime != default ? now - _lastConnectTime : null,
+            IdleDuration: lastActivity == default ? null : now - lastActivity);
+    }
 
     /// <summary>
     /// Creates a new WebSocket connection manager.
@@ -139,6 +178,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
             }
 
             _log.Information("Connecting to {Provider} WebSocket at {Uri}", _providerName, uri);
+            SetLifecycleState(ProviderConnectionLifecycleState.Connecting);
 
             await _resiliencePipeline.ExecuteAsync(async token =>
             {
@@ -153,10 +193,15 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                     await _webSocket.ConnectAsync(uri, token).ConfigureAwait(false);
                     _log.Information("Successfully connected to {Provider} WebSocket", _providerName);
                     _reconnectAttempts = 0;
+                    _lastConnectTime = DateTimeOffset.UtcNow;
+                    _lastError = null;
+                    SetLifecycleState(ProviderConnectionLifecycleState.Connected);
                     StateChanged?.Invoke(WebSocketState.Open);
                 }
                 catch (Exception ex)
                 {
+                    _lastError = ex.Message;
+                    SetLifecycleState(ProviderConnectionLifecycleState.Failed);
                     _log.Warning(ex, "Connection attempt to {Provider} WebSocket failed. Will retry per policy.", _providerName);
                     CleanupFailedConnection();
                     throw;
@@ -257,72 +302,90 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     /// <param name="ct">Cancellation token.</param>
     public async Task DisconnectAsync(CancellationToken ct = default)
     {
+        if (_isDisconnecting)
+        {
+            _log.Debug("{Provider} disconnect already in progress", _providerName);
+            return;
+        }
+
         _log.Information("Disconnecting from {Provider} WebSocket", _providerName);
+        _isDisconnecting = true;
+        SetLifecycleState(ProviderConnectionLifecycleState.Disconnecting);
 
-        // Dispose heartbeat first to prevent reconnection attempts
-        if (_heartbeat != null)
+        try
         {
-            _heartbeat.ConnectionLost -= OnConnectionLostAsync;
-            await _heartbeat.DisposeAsync();
-            _heartbeat = null;
-        }
-
-        // Cancel receive loop
-        if (_connectionCts != null)
-        {
-            try
-            { _connectionCts.Cancel(); }
-            catch (Exception ex)
+            // Dispose heartbeat first to prevent reconnection attempts
+            if (_heartbeat != null)
             {
-                _log.Debug(ex, "CancellationTokenSource.Cancel failed during {Provider} disconnect", _providerName);
+                _heartbeat.ConnectionLost -= OnConnectionLostAsync;
+                await _heartbeat.DisposeAsync();
+                _heartbeat = null;
             }
-        }
 
-        // Close WebSocket gracefully
-        if (_webSocket != null)
-        {
-            try
+            // Cancel receive loop
+            if (_connectionCts != null)
             {
-                if (_webSocket.State is WebSocketState.Open or WebSocketState.CloseReceived)
+                try
+                { _connectionCts.Cancel(); }
+                catch (Exception ex)
                 {
-                    await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnecting", ct)
-                        .ConfigureAwait(false);
+                    _log.Debug(ex, "CancellationTokenSource.Cancel failed during {Provider} disconnect", _providerName);
                 }
             }
-            catch (Exception ex)
-            {
-                _log.Warning(ex, "Error during {Provider} WebSocket close", _providerName);
-            }
-            finally
-            {
-                _webSocket.Dispose();
-                _webSocket = null;
-            }
-        }
 
-        // Wait for receive loop to complete
-        if (_receiveTask != null)
+            // Close WebSocket gracefully
+            if (_webSocket != null)
+            {
+                try
+                {
+                    if (_webSocket.State is WebSocketState.Open or WebSocketState.CloseReceived)
+                    {
+                        await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnecting", ct)
+                            .ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _log.Warning(ex, "Error during {Provider} WebSocket close", _providerName);
+                }
+                finally
+                {
+                    _webSocket.Dispose();
+                    _webSocket = null;
+                }
+            }
+
+            // Wait for receive loop to complete
+            if (_receiveTask != null)
+            {
+                try
+                { await _receiveTask.WaitAsync(ct).ConfigureAwait(false); }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    _log.Warning("{Provider} receive loop did not finish before disconnect timeout", _providerName);
+                }
+                catch (Exception ex)
+                {
+                    _log.Debug(ex, "Receive loop completion error during {Provider} disconnect", _providerName);
+                }
+                _receiveTask = null;
+            }
+
+            _receiveLoopCts?.Dispose();
+            _receiveLoopCts = null;
+            _connectionCts?.Dispose();
+            _connectionCts = null;
+
+            _lastDisconnectTime = DateTimeOffset.UtcNow;
+            SetLifecycleState(ProviderConnectionLifecycleState.Disconnected);
+
+            StateChanged?.Invoke(WebSocketState.Closed);
+            _log.Information("Disconnected from {Provider} WebSocket", _providerName);
+        }
+        finally
         {
-            try
-            { await _receiveTask.WaitAsync(ct).ConfigureAwait(false); }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                _log.Warning("{Provider} receive loop did not finish before disconnect timeout", _providerName);
-            }
-            catch (Exception ex)
-            {
-                _log.Debug(ex, "Receive loop completion error during {Provider} disconnect", _providerName);
-            }
-            _receiveTask = null;
+            _isDisconnecting = false;
         }
-
-        _receiveLoopCts?.Dispose();
-        _receiveLoopCts = null;
-        _connectionCts?.Dispose();
-        _connectionCts = null;
-
-        StateChanged?.Invoke(WebSocketState.Closed);
-        _log.Information("Disconnected from {Provider} WebSocket", _providerName);
     }
 
     /// <summary>
@@ -353,6 +416,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         try
         {
             _isReconnecting = true;
+            SetLifecycleState(ProviderConnectionLifecycleState.Reconnecting);
             _log.Warning("{Provider} WebSocket connection lost, initiating automatic reconnection", _providerName);
 
             // Clean up existing connection
@@ -362,6 +426,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
             while (_reconnectAttempts < _config.MaxReconnectAttempts && !ct.IsCancellationRequested)
             {
                 _reconnectAttempts++;
+                _lastReconnectAttemptAt = DateTimeOffset.UtcNow;
                 var delay = CalculateReconnectDelay(_reconnectAttempts);
 
                 _log.Information("{Provider} reconnection attempt {Attempt}/{Max} in {Delay}ms",
@@ -411,12 +476,14 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                 }
                 catch (Exception ex)
                 {
+                    _lastError = ex.Message;
                     _log.Warning(ex, "{Provider} reconnection attempt {Attempt} failed", _providerName, _reconnectAttempts);
                 }
             }
 
             _log.Error("{Provider} failed to reconnect after {Attempts} attempts. Manual intervention may be required.",
                 _providerName, _reconnectAttempts);
+            SetLifecycleState(ProviderConnectionLifecycleState.Failed);
             return false;
         }
         finally
@@ -469,6 +536,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                     {
                         _log.Information("{Provider} WebSocket closed by server", _providerName);
                         StateChanged?.Invoke(WebSocketState.CloseReceived);
+                        await RaiseConnectionLostIfActiveAsync().ConfigureAwait(false);
                         return;
                     }
 
@@ -499,6 +567,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                 {
                     // Record activity for heartbeat monitoring
                     _heartbeat?.RecordPongReceived();
+                    _lastMessageReceivedAt = DateTimeOffset.UtcNow;
 
                     try
                     {
@@ -506,6 +575,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                     }
                     catch (Exception ex)
                     {
+                        _lastError = ex.Message;
                         _log.Warning(ex, "{Provider} error processing message", _providerName);
                     }
                 }
@@ -517,21 +587,47 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         }
         catch (WebSocketException ex)
         {
+            _lastError = ex.Message;
             _log.Error(ex, "{Provider} WebSocket error in receive loop", _providerName);
             StateChanged?.Invoke(WebSocketState.Aborted);
+            await RaiseConnectionLostIfActiveAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
+            _lastError = ex.Message;
             _log.Error(ex, "{Provider} unexpected error in receive loop", _providerName);
+            await RaiseConnectionLostIfActiveAsync().ConfigureAwait(false);
         }
     }
 
     private async Task OnConnectionLostAsync()
     {
+        if (_isDisconnecting)
+            return;
+
         if (ConnectionLost != null)
         {
             await ConnectionLost.Invoke();
         }
+    }
+
+    private async Task RaiseConnectionLostIfActiveAsync()
+    {
+        if (_isDisconnecting)
+            return;
+
+        SetLifecycleState(ProviderConnectionLifecycleState.Degraded);
+        await OnConnectionLostAsync().ConfigureAwait(false);
+    }
+
+    private void SetLifecycleState(ProviderConnectionLifecycleState state)
+    {
+        if (_lifecycleState == state)
+            return;
+
+        _lifecycleState = state;
+        _log.Information("{Provider} WebSocket lifecycle state changed to {LifecycleState}", _providerName, state);
+        DiagnosticsChanged?.Invoke(GetDiagnosticsSnapshot());
     }
 
     private async Task CleanupConnectionAsync(CancellationToken ct = default)
@@ -623,6 +719,42 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     }
 
 }
+
+/// <summary>
+/// Shared lifecycle states for provider connection supervision.
+/// </summary>
+public enum ProviderConnectionLifecycleState
+{
+    NotConfigured = 0,
+    Configured = 1,
+    Connecting = 2,
+    Connected = 3,
+    Degraded = 4,
+    Reconnecting = 5,
+    Disconnecting = 6,
+    Disconnected = 7,
+    Failed = 8,
+    Disabled = 9
+}
+
+/// <summary>
+/// Safe provider WebSocket diagnostics snapshot. It intentionally excludes URIs,
+/// credentials, headers, account IDs, and payload data.
+/// </summary>
+public sealed record WebSocketConnectionDiagnostics(
+    string ProviderName,
+    ProviderConnectionLifecycleState LifecycleState,
+    WebSocketState WebSocketState,
+    bool IsConnected,
+    bool IsReconnecting,
+    int ReconnectAttempts,
+    DateTimeOffset? LastConnectedAt,
+    DateTimeOffset? LastDisconnectedAt,
+    DateTimeOffset? LastMessageReceivedAt,
+    DateTimeOffset? LastReconnectAttemptAt,
+    string? LastError,
+    TimeSpan? ConnectionAge,
+    TimeSpan? IdleDuration);
 
 /// <summary>
 /// Represents a gap in data caused by a WebSocket disconnection and reconnection.

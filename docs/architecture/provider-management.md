@@ -1,6 +1,6 @@
 # Provider Management Architecture
 
-**Version:** 3.3 | **Last Updated:** 2026-05-19
+**Version:** 3.4 | **Last Updated:** 2026-05-20
 
 This document describes the provider management architecture used by Meridian. It covers provider contracts, discovery, lifecycle management, failover, health monitoring, degradation scoring, and data quality operations.
 
@@ -290,6 +290,41 @@ A composite `IMarketDataClient` that wraps multiple provider clients and delegat
 **Location:** `src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs`
 
 Singleton that holds the runtime `StreamingFailoverService` instance, allowing API endpoint handlers to query failover state without direct project references.
+
+---
+
+## Streaming Lifecycle Diagnostics
+
+`WebSocketConnectionManager` owns the shared raw-WebSocket lifecycle used by streaming providers that derive from `WebSocketProviderBase`.
+It now exposes a secret-safe `WebSocketConnectionDiagnostics` snapshot for health surfaces, logs, and tests.
+
+The snapshot includes:
+
+- Provider name
+- Lifecycle state: `Configured`, `Connecting`, `Connected`, `Degraded`, `Reconnecting`, `Disconnecting`, `Disconnected`, or `Failed`
+- Current `ClientWebSocket` state
+- Reconnect attempt count and latest reconnect attempt timestamp
+- Last connected, disconnected, and message timestamps
+- Current connection age and idle duration
+- Last error message
+
+The diagnostics record intentionally excludes endpoint URIs, headers, credentials, account IDs, and payload data. Provider-specific code should use this snapshot for operator status and diagnostic exports instead of logging connection internals directly.
+
+---
+
+## Provider Boundary Data Validation
+
+Streaming adapters should validate normalized provider messages before they enter collectors or the event pipeline. `ProviderDataQualityValidator` provides the shared boundary validator for common market-data invariants:
+
+- Required symbol and timestamp
+- Timestamp not beyond the configured future-skew window
+- Non-negative trade prices and sizes
+- Non-negative quote prices and sizes
+- No crossed BBO quotes unless a provider-specific adapter has documented and explicitly handled that condition
+
+Validation failures return `ProviderDataQualityIssue` records with severity, provider name, field path, entity context, message, and suggested recovery. Adapters must not silently discard invalid provider data; they should reject or flag it with structured log context and avoid high-frequency per-tick success logging.
+
+Alpaca streaming now applies this validator to trade and quote messages after provider-specific JSON parsing and before forwarding to `TradeDataCollector` or `QuoteCollector`.
 
 ---
 
@@ -638,6 +673,7 @@ export TIINGO__TOKEN=your-token
    - Implement `IProviderModule` for custom DI registration.
 
 5. **Close the loop on data quality**
+   - Validate streaming adapter inputs with `ProviderDataQualityValidator` before collector ingress.
    - Use `DataGapAnalyzer` to detect missing data periods.
    - Trigger `DataGapRepair` for automated gap filling.
    - Score quality with `DataQualityMonitor` and emit metrics.
@@ -686,3 +722,9 @@ export TIINGO__TOKEN=your-token
   `/api/provider-routing/trust-snapshots`, and `/api/provider-routing/preview` endpoint mappings.
 - Seeded provider-routing connections and bindings from setup so configured providers are visible
   to route previews and trust snapshots immediately.
+
+## Migration Notes (v3.3 -> v3.4)
+
+- Added secret-safe `WebSocketConnectionDiagnostics` and explicit streaming lifecycle states to `WebSocketConnectionManager`.
+- Added `ProviderDataQualityValidator` for provider-boundary trade and quote checks.
+- Routed Alpaca streaming trade and quote messages through the boundary validator before collector ingress.

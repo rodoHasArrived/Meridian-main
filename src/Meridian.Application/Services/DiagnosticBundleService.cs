@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -70,6 +71,11 @@ public sealed class DiagnosticBundleService
                 DotNetVersion = Environment.Version.ToString(),
                 Options = options
             };
+
+            if (options.IncludeRuntimeSummary)
+            {
+                await CollectRuntimeSummaryAsync(tempDir, manifest, ct);
+            }
 
             // Collect diagnostic data
             if (options.IncludeSystemInfo)
@@ -213,6 +219,77 @@ public sealed class DiagnosticBundleService
         manifest.FilesCollected.Add("system-info.txt");
     }
 
+    private async Task CollectRuntimeSummaryAsync(string tempDir, DiagnosticManifest manifest, CancellationToken ct)
+    {
+        using var process = Process.GetCurrentProcess();
+        var logsDir = Path.Combine(_dataRoot, "_logs");
+        var recentLogCount = Directory.Exists(logsDir)
+            ? Directory.GetFiles(logsDir, "*.log", SearchOption.TopDirectoryOnly).Length
+            : 0;
+
+        var metrics = TryCollectMetricsSnapshot();
+        var metricsSummary = metrics is { } snapshot
+            ? new
+            {
+                available = true,
+                published = snapshot.Published,
+                dropped = snapshot.Dropped,
+                dropRate = snapshot.DropRate,
+                eventsPerSecond = snapshot.EventsPerSecond,
+                averageLatencyUs = snapshot.AverageLatencyUs,
+                maxLatencyUs = snapshot.MaxLatencyUs
+            }
+            : new
+            {
+                available = false,
+                published = 0L,
+                dropped = 0L,
+                dropRate = 0.0,
+                eventsPerSecond = 0.0,
+                averageLatencyUs = 0.0,
+                maxLatencyUs = 0.0
+            };
+
+        var summary = new
+        {
+            schemaVersion = "1.0",
+            operationName = "diagnostic-bundle.generate",
+            correlationId = manifest.CorrelationId,
+            generatedAt = DateTimeOffset.UtcNow,
+            componentName = nameof(DiagnosticBundleService),
+            diagnostics = new
+            {
+                redactionPolicy = "secrets, tokens, account identifiers, auth headers, connection strings, and query credentials are redacted",
+                logDirectory = SanitizeDiagnosticText(logsDir),
+                logDirectoryExists = Directory.Exists(logsDir),
+                recentLogFileCount = recentLogCount,
+                dataRoot = SanitizeDiagnosticText(_dataRoot)
+            },
+            process = new
+            {
+                processId = Environment.ProcessId,
+                startTimeUtc = TryGetProcessStartTimeUtc(process),
+                workingSetMb = Environment.WorkingSet / 1024 / 1024,
+                privateMemoryMb = process.PrivateMemorySize64 / 1024 / 1024,
+                threadCount = process.Threads.Count,
+                gcHeapMb = GC.GetTotalMemory(forceFullCollection: false) / 1024 / 1024,
+                gen0Collections = GC.CollectionCount(0),
+                gen1Collections = GC.CollectionCount(1),
+                gen2Collections = GC.CollectionCount(2)
+            },
+            metrics = metricsSummary
+        };
+
+        var json = JsonSerializer.Serialize(summary, new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
+
+        await File.WriteAllTextAsync(Path.Combine(tempDir, "runtime-summary.json"), json, ct);
+        manifest.FilesCollected.Add("runtime-summary.json");
+    }
+
     private async Task CollectConfigurationAsync(string tempDir, DiagnosticManifest manifest, CancellationToken ct)
     {
         // Collect sanitized configuration
@@ -325,7 +402,7 @@ public sealed class DiagnosticBundleService
     {
         var info = new StringBuilder();
         info.AppendLine("=== STORAGE INFORMATION ===");
-        info.AppendLine($"Data Root: {_dataRoot}");
+        info.AppendLine($"Data Root: {SanitizeDiagnosticText(_dataRoot)}");
         info.AppendLine($"Data Root Exists: {Directory.Exists(_dataRoot)}");
         info.AppendLine();
 
@@ -470,6 +547,37 @@ public sealed class DiagnosticBundleService
 
     private static string SanitizeLogContent(string content) => SanitizeDiagnosticText(content);
 
+    private MetricsSnapshot? TryCollectMetricsSnapshot()
+    {
+        if (_metricsProvider is null)
+            return null;
+
+        try
+        {
+            return _metricsProvider();
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(
+                ex,
+                "Failed to collect metrics snapshot for {OperationName}; continuing diagnostic bundle generation without runtime metrics",
+                "diagnostic-bundle.generate");
+            return null;
+        }
+    }
+
+    private static DateTimeOffset? TryGetProcessStartTimeUtc(Process process)
+    {
+        try
+        {
+            return process.StartTime.ToUniversalTime();
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            return null;
+        }
+    }
+
     private static string SanitizeDiagnosticText(string? content)
     {
         if (string.IsNullOrEmpty(content))
@@ -509,6 +617,7 @@ public sealed class DiagnosticBundleService
 /// Options for diagnostic bundle generation.
 /// </summary>
 public sealed record DiagnosticBundleOptions(
+    bool IncludeRuntimeSummary = true,
     bool IncludeSystemInfo = true,
     bool IncludeConfiguration = true,
     bool IncludeMetrics = true,

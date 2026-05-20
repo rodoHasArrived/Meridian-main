@@ -17,7 +17,7 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
     [Fact]
     public async Task GenerateAsync_RedactsSecretsAndAccountNumbersAcrossBundle()
     {
-        var dataRoot = Path.Combine(_tempRoot, "data");
+        var dataRoot = Path.Combine(_tempRoot, "accountNumber=ACCT-654321-data");
         var logsRoot = Path.Combine(dataRoot, "_logs");
         Directory.CreateDirectory(logsRoot);
         Directory.CreateDirectory(Path.Combine(dataRoot, "statements"));
@@ -63,6 +63,7 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
         bundleText.Should().NotContain("env-session-token");
         bundleText.Should().NotContain("ACCT-778899");
         bundleText.Should().NotContain("ACCT-123456");
+        bundleText.Should().NotContain("ACCT-654321");
         bundleText.Should().Contain("[REDACTED]");
 
         using var archive = ZipFile.OpenRead(result.ZipPath!);
@@ -77,7 +78,17 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
         manifestDocument.RootElement.GetProperty("filesCollected").EnumerateArray()
             .Select(item => item.GetString())
             .Should()
-            .Contain(["config-sanitized.json", "metrics.json", "environment.txt", "storage-info.txt"]);
+            .Contain(["runtime-summary.json", "config-sanitized.json", "metrics.json", "environment.txt", "storage-info.txt"]);
+
+        var runtimeSummaryEntry = archive.GetEntry("runtime-summary.json");
+        runtimeSummaryEntry.Should().NotBeNull();
+        using var runtimeSummaryStream = runtimeSummaryEntry!.Open();
+        using var runtimeSummaryDocument = await JsonDocument.ParseAsync(runtimeSummaryStream);
+
+        runtimeSummaryDocument.RootElement.GetProperty("operationName").GetString().Should().Be("diagnostic-bundle.generate");
+        runtimeSummaryDocument.RootElement.GetProperty("correlationId").GetString().Should().NotBeNullOrWhiteSpace();
+        runtimeSummaryDocument.RootElement.GetProperty("diagnostics").GetProperty("logDirectoryExists").GetBoolean().Should().BeTrue();
+        runtimeSummaryDocument.RootElement.GetProperty("metrics").GetProperty("available").GetBoolean().Should().BeTrue();
     }
 
     public void Dispose()
