@@ -701,6 +701,7 @@ public static class ExecutionEndpoints
         .WithName("ClosePositionByKey")
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
+        .Produces(403)
         .Produces(503);
 
         group.MapPost("/positions/actions/upsize", async (ExecutionPositionActionRequest request, HttpContext context) =>
@@ -744,6 +745,7 @@ public static class ExecutionEndpoints
         .WithName("UpsizePositionByKey")
         .Produces<TradingActionResult>(200)
         .Produces<TradingActionResult>(400)
+        .Produces(403)
         .Produces(503);
 
         group.MapPost("/positions/{symbol}/close", async (string symbol, HttpContext context) =>
@@ -894,11 +896,28 @@ public static class ExecutionEndpoints
 
         if (!TryValidateBrokerOrderPlacementGate(context, out var blockingMessage))
         {
+            var actionId = GenerateActionId();
+            var message = blockingMessage ?? "Broker order routing is disabled by validation gates.";
+            var auditEntry = await RecordOperatorAuditAsync(
+                context,
+                actionId,
+                action: actionName,
+                outcome: "Rejected",
+                message: message,
+                symbol: position.Symbol,
+                metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["positionKey"] = position.PositionKey,
+                    ["reason"] = "GateBlocked",
+                    ["source"] = positionSource
+                }).ConfigureAwait(false);
+
             var blocked = new TradingActionResult(
-                ActionId: GenerateActionId(),
+                ActionId: actionId,
                 Status: "Rejected",
-                Message: blockingMessage ?? "Broker order routing is disabled by validation gates.",
-                OccurredAt: DateTimeOffset.UtcNow);
+                Message: message,
+                OccurredAt: DateTimeOffset.UtcNow,
+                AuditId: auditEntry?.AuditId);
             return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
         }
 
