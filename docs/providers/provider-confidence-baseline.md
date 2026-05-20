@@ -61,6 +61,24 @@ Use this with:
 - Quote confidence is polling-path confidence, not websocket confidence.
 - `RobinhoodMarketDataClientTests` now include offline coverage for provider-boundary quote validation, redacted unauthorized-token diagnostics, lifecycle diagnostics, and polling degradation handling. This strengthens CI confidence for malformed/crossed quote rejection without turning Robinhood into a websocket or fully live-validated provider.
 
+
+## Brokerage Readiness/Inbox Compatibility (Deterministic Offline Coverage)
+
+**Validated claims**
+
+- Brokerage-sync degradation semantics for `ibkr` and `robinhood` are deterministically covered by `BrokeragePortfolioSyncServiceTests.Scenario_BrokerageSyncDegradedSecurityCoverage_ProjectsProviderSpecificReadinessClaims`.
+- Operator inbox projection compatibility for brokerage sync failures across both adapters is covered by `WorkstationEndpointsTests.MapWorkstationEndpoints_OperatorInbox_WithFundAccountId_ShouldProjectDegradedBrokerageSyncForIbkrAndRobinhoodAsWarning`.
+- These tests confirm provider ID and external account propagation into readiness/inbox DTOs so Wave 2 routing metadata stays actionable under degraded/failing brokerage states.
+
+**Deferred non-critical gaps**
+
+- Live-session failover drills for Interactive Brokers (TWS/Gateway disconnect-reconnect under real credentials) remain deferred because they require vendor runtime prerequisites not available in CI.  
+  **Rationale:** does not block offline correctness of readiness/inbox projections or provider capability claim boundaries.  
+  **Target sprint:** `Wave 2 reliability sprint` (see `docs/plans/paper-trading-cockpit-reliability-sprint.md`).
+- Robinhood authenticated runtime throttling regression packet refresh remains deferred to scheduled operator evidence runs.  
+  **Rationale:** CI already covers deterministic polling degradation semantics; runtime packet refresh is governance evidence, not a code-path blocker.  
+  **Target sprint:** `Wave 2 reliability sprint` (same plan reference).
+
 ## Yahoo
 
 **Offline / CI evidence**
