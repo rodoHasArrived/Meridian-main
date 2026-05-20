@@ -26,6 +26,15 @@ For the unified per-broker phase/blocker/evidence view, see [`provider-integrati
 | Execution/readiness parity slice (IBKR-focused contract stability) | `IBBrokerageGatewayTests.ConnectAsync_AfterReconnect_RehydratesSessionAndAllowsOrderLifecycleToContinue`, `IBBrokerageGatewayTests.GetPositionsAsync_MapsPositionCallbacks`, `TradingOperatorReadinessServiceTests.GetAsync_AfterRestart_ShouldPreserveReplayParityAndExecutionAuditEvidence` | Use run-date replay/session artifacts only when validating with a live broker gateway; CI closes the canonical projection stability contract for auth/session refresh, position snapshots, and replay-readiness reconstruction | ✅ | n/a |
 
 
+## Deferred provider inventory (outside active Wave 1 gate)
+
+| Provider | Owner | Deferral reason | Revisit sprint |
+| --- | --- | --- | --- |
+| Polygon | Data Operations & Provider Reliability | Wave 1 scope is intentionally limited to Alpaca, Robinhood, and Yahoo closure plus shared reliability slices; Polygon evidence is not required for the active DK1 packet. | Sprint 2026.13 (June 2026 planning window) |
+| Interactive Brokers | Shared Platform Interop | IBKR remains outside the active Wave 1 provider confidence claim while contract-compatibility and replay-readiness evidence stabilize around the closed execution/readiness parity slice. | Sprint 2026.14 (late June 2026 integration planning) |
+| NYSE | Market Structure & Reference Data | Exchange-direct NYSE adapter work is deferred to preserve focus on current Wave 1 provider closure and paper-trading cockpit reliability gates. | Sprint 2026.15 (July 2026 roadmap revalidation) |
+| StockSharp | Shared Platform Interop | StockSharp adapter promotion is deferred pending post-Wave-1 prioritization and governance capacity after DK1 sign-off maintenance. | Sprint 2026.15 (July 2026 roadmap revalidation) |
+
 ## 2026-05-20 focused Robinhood polling hardening
 
 Focused validation on 2026-05-20 added offline coverage for the Robinhood quote-polling boundary:
@@ -106,7 +115,7 @@ If any check fails, promotion enablement is blocked and operator surfaces must s
 
 - Robinhood remains polling-oriented and unofficial. Do not describe it as websocket-validated.
 - Yahoo is active only as a historical and fallback provider row for Wave 1.
-- `Polygon`, `Interactive Brokers`, `NYSE`, and `StockSharp` are deferred from the active Wave 1 gate.
+- Deferred providers are tracked in the **Deferred provider inventory** table above; every deferred row must retain explicit owner, rationale, and revisit sprint.
 
 
 ## Unified automation and promotion posture
