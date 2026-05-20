@@ -3,6 +3,14 @@
 **Owner:** Core Team
 **Audience:** Research, Desktop, Backtesting, API, and Architecture contributors
 **Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **research backtest trust and velocity blueprint** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the research backtest trust and velocity blueprint workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Active focused blueprint for the next Research implementation slice; the active web dashboard now has a Research run-library first cut with pair selection, compare/diff command readiness, promotion-history loading, operator-visible command errors, and built workstation assets, while request-level batch sweeps, WPF Batch Backtest ViewModel coverage, BatchBacktest results empty guidance, and StrategyRuns filter-aware run-scope recovery remain retained support evidence. Real strategy selection, persisted sweep grouping, and stage-aware shared orchestration remain open.
 
 > Companion to:

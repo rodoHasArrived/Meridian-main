@@ -3,6 +3,14 @@
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
 **Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **backtest studio unification pr sequenced roadmap** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the backtest studio unification pr sequenced roadmap workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Active execution roadmap aligned to Wave 5 Backtest Studio unification
 
 > **UI lane refresh (2026-05-12):** References in this roadmap to

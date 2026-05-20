@@ -2,6 +2,14 @@
 
 **Last Updated:** 2026-05-20
 
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **governance fund ops blueprint** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the governance fund ops blueprint workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 This blueprint is subordinate to
 [`current-direction-and-status.md`](current-direction-and-status.md) and
 [`evidence-backed-investment-operations-plan.md`](evidence-backed-investment-operations-plan.md)

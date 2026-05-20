@@ -1,5 +1,13 @@
 # Web UI Development Pivot
 
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **web ui development pivot** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the web ui development pivot workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Date:** 2026-05-18
 **Status:** Active direction
 

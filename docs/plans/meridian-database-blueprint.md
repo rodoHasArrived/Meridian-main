@@ -3,6 +3,14 @@
 **Owner:** Core Team
 **Audience:** Platform, storage, workstation, strategy, governance, and API contributors
 **Last Updated:** 2026-05-20
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **meridian database blueprint** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the meridian database blueprint workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 **Status:** Proposed blueprint grounded in current repository architecture
 
 ## Scope

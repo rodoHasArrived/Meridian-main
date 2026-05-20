@@ -2,6 +2,14 @@
 
 **Last Reviewed:** 2026-05-20
 
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **README** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the README workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 This directory contains current Meridian execution plans, blueprints, and target-state packages. Start with [current-direction-and-status.md](current-direction-and-status.md) for the consolidated planning interpretation. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); the remaining files here are subordinate implementation plans, optional-track designs, or asset-package specifications.
 
 Active planning direction:
