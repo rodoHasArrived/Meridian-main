@@ -173,3 +173,15 @@ Before adding support for a new assistant, IDE, model provider, or automation:
 ---
 
 _Last Updated: 2026-05-20_
+
+## Machine-checkable synchronization contract
+
+Canonical policy file: `docs/ai/contract-policy.json`.
+
+Path-specific mirrors that must stay byte-identical to the canonical policy:
+
+- `docs/ai/copilot/contract-policy.mirror.json`
+- `docs/ai/claude/contract-policy.mirror.json`
+
+CI runs `build/scripts/docs/check-ai-contract-drift.py` and fails if any mirror drifts from the canonical policy file.
+
