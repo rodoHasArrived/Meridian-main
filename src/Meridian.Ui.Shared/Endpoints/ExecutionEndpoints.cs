@@ -124,6 +124,16 @@ public static class ExecutionEndpoints
 
         group.MapPost("/orders/submit", async (OrderRequest request, HttpContext context) =>
         {
+            if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (ContainsRestrictedBrokerRoutingMetadata(request.Metadata))
+            {
+                return Results.BadRequest(new OrderResult(false, null, "Order metadata contains restricted broker routing fields."));
+            }
+
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
@@ -148,6 +158,7 @@ public static class ExecutionEndpoints
         .WithName("SubmitOrder")
         .Produces<OrderResult>(201)
         .Produces<OrderResult>(400)
+        .Produces(403)
         .Produces(503);
 
         group.MapPost("/orders/{orderId}/cancel", async (string orderId, HttpContext context) =>
@@ -1046,6 +1057,23 @@ public static class ExecutionEndpoints
         }
 
         return false;
+    }
+
+    private static bool ContainsRestrictedBrokerRoutingMetadata(IReadOnlyDictionary<string, string>? metadata)
+    {
+        if (metadata is null || metadata.Count == 0)
+        {
+            return false;
+        }
+
+        return metadata.Keys.Any(static key => key.Equals("asset_class", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("assetClass", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("alpaca:asset_class", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("broker_account_id", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("brokerAccountId", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("account_id", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("accountId", StringComparison.OrdinalIgnoreCase)
+            || key.Equals("alpaca:broker_account_id", StringComparison.OrdinalIgnoreCase));
     }
 
     private static Dictionary<string, string> MergeMetadata(
