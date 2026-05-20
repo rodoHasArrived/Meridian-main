@@ -259,7 +259,7 @@ public sealed class ReconciliationRunServiceTests
 
         detail.Should().NotBeNull();
         detail!.ExpectedAccountingEvents.Should().Contain(item => item.EventKind == ExpectedAccountingEventKindDto.AccrueInterestIncome);
-        detail.ExpectedAccountingEvents.Should().Contain(item => item.EventKind == ExpectedAccountingEventKindDto.ReceiveCouponCash);
+        detail.ExpectedAccountingEvents.Should().Contain(item => item.EventKind == ExpectedAccountingEventKindDto.ReceiveCashInterest);
     }
 
     [Fact]
@@ -287,7 +287,7 @@ public sealed class ReconciliationRunServiceTests
 
         detail.Should().NotBeNull();
         detail!.ExpectedAccountingEvents.Should().Contain(item =>
-            item.EventKind == ExpectedAccountingEventKindDto.ReceivePrincipalCash &&
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown &&
             item.ExpectedPrincipalAmount == 1_000m);
     }
 
