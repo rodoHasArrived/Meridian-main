@@ -366,12 +366,24 @@ foreach ($step in $steps) {
 $failedResults = @($results | Where-Object status -eq "failed")
 
 $summary = [ordered]@{
+    schemaVersion = "provider-validation-evidence/v1"
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
     dateStamp = $DateStamp
+    runId = "wave1-provider-validation-$DateStamp"
     configuration = $Configuration
     repoRoot = $repoRoot
     scope = "Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof"
     result = if ($failedResults.Count -eq 0) { "passed" } else { "failed" }
+    readinessImpact = [ordered]@{
+        trustDecisionTarget = "GET /api/workstation/trading/readiness and GET /api/workstation/operator/inbox"
+        promotionRecommendation = if ($failedResults.Count -eq 0) { "eligible-with-operator-signoff" } else { "blocked" }
+        summary = if ($failedResults.Count -eq 0) { "No blocking provider-validation failures detected." } else { "One or more provider-validation lanes failed; keep trust posture degraded until remediated." }
+    }
+    calibration = [ordered]@{
+        kernelVersion = "dk1-baseline-v1"
+        sourceDocument = "docs/status/dk1-baseline-trust-thresholds.md"
+    }
+    testRunIds = @($results | ForEach-Object { ($_.name.ToLowerInvariant() -replace '[^a-z0-9]+', '-').Trim('-') })
     activeProviderRows = $activeProviderRows
     pilotReplaySampleSet = $pilotReplaySampleSet
     crossCuttingClosures = $crossCuttingClosures
@@ -394,6 +406,10 @@ $md = @(
     "- Configuration: $Configuration",
     "- Scope: $($summary.scope)",
     "- Overall result: $($summary.result)",
+    "- Schema version: $($summary.schemaVersion)",
+    "- Run ID: $($summary.runId)",
+    "- Calibration kernel version: $($summary.calibration.kernelVersion)",
+    "- Promotion recommendation: $($summary.readinessImpact.promotionRecommendation)",
     "",
     "## Active Provider Set",
     "",
