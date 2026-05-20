@@ -69,6 +69,15 @@ describe("app shell view model", () => {
       linkedContextEmptyText: "Portfolio-aware context links will appear after workstation payloads load.",
       linkedContextItems: []
     });
+    expect(state.workflowContinuity.disclosure).toMatchObject({
+      label: "Supporting workflow evidence",
+      summary: "Supporting context is collapsed while the workstation recovers. Expand sections for diagnostics and handoffs."
+    });
+    expect(state.workflowContinuity.disclosure.panels.map((panel) => [panel.id, panel.defaultExpanded])).toEqual([
+      ["linked-context", false],
+      ["operator-focus", false],
+      ["evidence-timeline", false]
+    ]);
     expect(state.statusPanel).toMatchObject({
       id: "workstation-shell-status-loading",
       titleId: "workstation-shell-status-loading-title",
@@ -658,6 +667,20 @@ describe("app shell view model", () => {
 
     expect(state.workflowContinuity.operatorFocusSummary)
       .toBe("4 focus items across workspaces: 2 blocked and 2 review.");
+    expect(state.workflowContinuity.disclosure.panels).toContainEqual({
+      id: "operator-focus",
+      label: "Operator focus",
+      summary: "3 focus items",
+      ariaLabel: "Expand operator focus. 3 focus items loaded.",
+      defaultExpanded: true
+    });
+    expect(state.workflowContinuity.disclosure.panels).toContainEqual({
+      id: "evidence-timeline",
+      label: "Evidence timeline",
+      summary: "2 evidence events",
+      ariaLabel: "Expand evidence timeline. 2 evidence events loaded.",
+      defaultExpanded: true
+    });
     expect(state.workflowContinuity.operatorFocusOverflowLabel).toBe("+1 more focus item");
     expect(state.workflowContinuity.operatorFocusItems.map((item) => [
       item.label,

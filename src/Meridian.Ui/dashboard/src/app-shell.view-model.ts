@@ -145,6 +145,7 @@ export interface AppShellWorkflowContinuityViewModel {
   nextActionHref: string;
   decisionBrief: AppShellDecisionBrief;
   steps: AppShellWorkflowContinuityStep[];
+  disclosure: AppShellWorkflowContinuityDisclosureState;
   operatorFocusLabel: string;
   operatorFocusSummary: string;
   operatorFocusEmptyText: string;
@@ -168,6 +169,22 @@ export interface AppShellWorkflowContinuityViewModel {
   linkedContextEmptyText: string;
   linkedContextItemsLabel: string;
   linkedContextItems: AppShellLinkedContextItem[];
+}
+
+export type AppShellWorkflowContinuityDisclosurePanelId = "linked-context" | "operator-focus" | "evidence-timeline";
+
+export interface AppShellWorkflowContinuityDisclosurePanel {
+  id: AppShellWorkflowContinuityDisclosurePanelId;
+  label: string;
+  summary: string;
+  ariaLabel: string;
+  defaultExpanded: boolean;
+}
+
+export interface AppShellWorkflowContinuityDisclosureState {
+  label: string;
+  summary: string;
+  panels: AppShellWorkflowContinuityDisclosurePanel[];
 }
 
 export interface AppShellOperatorFocusItem {
@@ -464,6 +481,7 @@ export function buildWorkflowContinuityViewModel(
   const operatorFocus = buildOperatorFocusViewModel(statusContext, operatingScope);
   const evidenceTimeline = buildEvidenceTimelineViewModel(statusContext, operatingScope);
   const linkedContext = buildLinkedContextViewModel(statusContext, subjectSymbol, operatingScope);
+  const disclosure = buildWorkflowContinuityDisclosureState(statusContext, operatorFocus, evidenceTimeline, linkedContext);
   const contextValue = subjectSymbol
     ? `${activeWorkspace.label} / ${subjectSymbol}`
     : operatingScope.hasScope
@@ -508,6 +526,7 @@ export function buildWorkflowContinuityViewModel(
     nextActionAriaLabel,
     nextActionHref,
     decisionBrief,
+    disclosure,
     operatorFocusLabel: "Operator focus",
     operatorFocusSummary: operatorFocus.summary,
     operatorFocusEmptyText: operatorFocus.emptyText,
@@ -1385,6 +1404,60 @@ function buildOperatorFocusViewModel(
     items: visibleItems,
     commandItems: candidates.map((candidate) => toOperatorFocusItem(candidate, operatingScope))
   };
+}
+
+function buildWorkflowContinuityDisclosureState(
+  statusContext: WorkflowContinuityStatusContext,
+  operatorFocus: OperatorFocusViewModel,
+  evidenceTimeline: EvidenceTimelineViewModel,
+  linkedContext: LinkedContextViewModel
+): AppShellWorkflowContinuityDisclosureState {
+  const degraded = statusContext.loading || Boolean(statusContext.error) || Boolean(statusContext.workflowError)
+    || Object.keys(statusContext.workspaceErrors).length > 0;
+  const defaultExpanded = !degraded;
+  const linkedCount = linkedContext.items.length;
+  const focusCount = operatorFocus.items.length;
+  const evidenceCount = evidenceTimeline.items.length;
+
+  return {
+    label: "Supporting workflow evidence",
+    summary: degraded
+      ? "Supporting context is collapsed while the workstation recovers. Expand sections for diagnostics and handoffs."
+      : "Expand supporting context when you need linked routes, ranked focus items, or recent evidence.",
+    panels: [
+      {
+        id: "linked-context",
+        label: "Linked context",
+        summary: linkedCount === 0 ? linkedContext.emptyText : summarizeDisclosureCount(linkedCount, "linked route"),
+        ariaLabel: linkedCount === 0
+          ? "Expand linked context. No linked routes are loaded."
+          : `Expand linked context. ${summarizeDisclosureCount(linkedCount, "linked route")} loaded.`,
+        defaultExpanded
+      },
+      {
+        id: "operator-focus",
+        label: "Operator focus",
+        summary: focusCount === 0 ? operatorFocus.emptyText : summarizeDisclosureCount(focusCount, "focus item"),
+        ariaLabel: focusCount === 0
+          ? "Expand operator focus. No focus items are loaded."
+          : `Expand operator focus. ${summarizeDisclosureCount(focusCount, "focus item")} loaded.`,
+        defaultExpanded
+      },
+      {
+        id: "evidence-timeline",
+        label: "Evidence timeline",
+        summary: evidenceCount === 0 ? evidenceTimeline.emptyText : summarizeDisclosureCount(evidenceCount, "evidence event"),
+        ariaLabel: evidenceCount === 0
+          ? "Expand evidence timeline. No evidence events are loaded."
+          : `Expand evidence timeline. ${summarizeDisclosureCount(evidenceCount, "evidence event")} loaded.`,
+        defaultExpanded
+      }
+    ]
+  };
+}
+
+function summarizeDisclosureCount(count: number, singular: string): string {
+  return formatCount(count, singular);
 }
 
 function buildWorkspaceErrorFocusItems(context: WorkflowContinuityStatusContext): OperatorFocusCandidate[] {

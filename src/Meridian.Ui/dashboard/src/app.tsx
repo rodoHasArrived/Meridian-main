@@ -3,6 +3,7 @@ import {
   ArrowRight,
   AlertTriangle,
   Bell,
+  ChevronDown,
   GitBranch,
   LoaderCircle,
   Menu,
@@ -20,6 +21,7 @@ import {
   removeOperatingScopeFromSearch,
   resolveAppShellCommandPaletteShortcut,
   type AppShellWorkflowContinuityViewModel,
+  type AppShellWorkflowContinuityDisclosurePanel,
   type AppShellOperatingScopeInput,
   type ShellStatusPanel
 } from "@/app-shell.view-model";
@@ -570,10 +572,50 @@ function WorkflowContinuityDock({
         </Link>
       </Button>
 
-      <LinkedContextPanel viewModel={viewModel} />
-      <OperatorFocusPanel viewModel={viewModel} />
-      <EvidenceTimelinePanel viewModel={viewModel} />
+      <div
+        className="workflow-continuity-support"
+        role="group"
+        aria-label={viewModel.disclosure.label}
+      >
+        <p className="workflow-continuity-support-summary">{viewModel.disclosure.summary}</p>
+        {viewModel.disclosure.panels.map((panel) => (
+          <WorkflowContinuityDisclosurePanel
+            key={panel.id}
+            panel={panel}
+            viewModel={viewModel}
+          />
+        ))}
+      </div>
     </section>
+  );
+}
+
+function WorkflowContinuityDisclosurePanel({
+  panel,
+  viewModel
+}: {
+  panel: AppShellWorkflowContinuityDisclosurePanel;
+  viewModel: AppShellWorkflowContinuityViewModel;
+}) {
+  return (
+    <details className="workflow-continuity-disclosure" open={panel.defaultExpanded}>
+      <summary aria-label={panel.ariaLabel}>
+        <span className="workflow-continuity-disclosure-copy">
+          <span>{panel.label}</span>
+          <span>{panel.summary}</span>
+        </span>
+        <ChevronDown className="workflow-continuity-disclosure-icon h-3.5 w-3.5" aria-hidden="true" />
+      </summary>
+      <div className="workflow-continuity-disclosure-body">
+        {panel.id === "linked-context" ? (
+          <LinkedContextPanel viewModel={viewModel} />
+        ) : panel.id === "operator-focus" ? (
+          <OperatorFocusPanel viewModel={viewModel} />
+        ) : (
+          <EvidenceTimelinePanel viewModel={viewModel} />
+        )}
+      </div>
+    </details>
   );
 }
 

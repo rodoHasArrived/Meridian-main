@@ -791,6 +791,91 @@
     padding: 0.625rem 1rem;
   }
 
+  .workflow-continuity-support {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.625rem;
+    min-width: 0;
+  }
+
+  .workflow-continuity-support-summary {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: 0.6875rem;
+    line-height: 1.4;
+  }
+
+  .workflow-continuity-disclosure {
+    min-width: 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: rgba(8, 16, 26, 0.52);
+  }
+
+  .workflow-continuity-disclosure[open] {
+    background: rgba(10, 22, 34, 0.72);
+  }
+
+  .workflow-continuity-disclosure summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    min-height: 3.25rem;
+    padding: 0.625rem 0.75rem;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .workflow-continuity-disclosure summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .workflow-continuity-disclosure summary:focus-visible {
+    outline: 2px solid rgba(42, 178, 212, 0.45);
+    outline-offset: 2px;
+  }
+
+  .workflow-continuity-disclosure-copy {
+    display: grid;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+
+  .workflow-continuity-disclosure-copy span:first-child {
+    overflow: hidden;
+    color: #f6fbff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .workflow-continuity-disclosure-copy span:last-child {
+    overflow: hidden;
+    color: var(--fg-muted);
+    font-size: 0.625rem;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .workflow-continuity-disclosure-icon {
+    color: var(--fg-muted);
+    transition: transform 160ms ease;
+  }
+
+  .workflow-continuity-disclosure[open] .workflow-continuity-disclosure-icon {
+    transform: rotate(180deg);
+  }
+
+  .workflow-continuity-disclosure-body {
+    padding: 0 0.625rem 0.625rem;
+  }
+
   .workflow-continuity-context {
     min-width: 0;
     display: grid;
@@ -2359,6 +2444,10 @@
   .workflow-continuity-dock {
     grid-template-columns: minmax(0, 1fr);
     padding: 0.625rem 0.75rem;
+  }
+
+  .workflow-continuity-support {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .workflow-continuity-decision,
