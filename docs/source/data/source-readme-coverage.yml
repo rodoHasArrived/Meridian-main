@@ -1,7 +1,101 @@
 schema_version: 1
 
 readme_coverage:
-  modules: []
+  modules:
+    - module_id: meridian-host
+      module_path: src/Meridian
+      readme_path: src/Meridian/README.md
+      exists: true
+      lifecycle_state: active
+      transition:
+        type: added
+        recorded_on: 2026-05-20
+        roadmap:
+          id: W2-paper-trading-cockpit
+          url: docs/plans/paper-trading-cockpit-reliability-sprint.md
+          status: in-progress
+
+    - module_id: meridian-application
+      module_path: src/Meridian.Application
+      readme_path: src/Meridian.Application/README.md
+      exists: true
+      lifecycle_state: active
+      transition:
+        type: added
+        recorded_on: 2026-05-20
+        roadmap:
+          id: W3-research-to-paper-continuity
+          url: docs/plans/waves-2-4-operator-readiness-addendum.md
+          status: planned
+
+    - module_id: meridian-contracts
+      module_path: src/Meridian.Contracts
+      readme_path: src/Meridian.Contracts/README.md
+      exists: true
+      lifecycle_state: active
+      transition:
+        type: added
+        recorded_on: 2026-05-20
+        roadmap:
+          id: W3-research-to-paper-continuity
+          url: docs/plans/waves-2-4-operator-readiness-addendum.md
+          status: planned
+
+    - module_id: meridian-ui-services
+      module_path: src/Meridian.Ui.Services
+      readme_path: src/Meridian.Ui.Services/README.md
+      exists: true
+      lifecycle_state: active
+      transition:
+        type: added
+        recorded_on: 2026-05-20
+        roadmap:
+          id: W2-paper-trading-cockpit
+          url: docs/plans/paper-trading-cockpit-reliability-sprint.md
+          status: in-progress
+
+    - module_id: meridian-ui-shared
+      module_path: src/Meridian.Ui.Shared
+      readme_path: src/Meridian.Ui.Shared/README.md
+      exists: true
+      lifecycle_state: active
+      transition:
+        type: added
+        recorded_on: 2026-05-20
+        roadmap:
+          id: W2-paper-trading-cockpit
+          url: docs/plans/paper-trading-cockpit-reliability-sprint.md
+          status: in-progress
+
+    - module_id: meridian-ui-dashboard
+      module_path: src/Meridian.Ui/dashboard
+      readme_path: src/Meridian.Ui/dashboard/README.md
+      exists: true
+      lifecycle_state: active
+      transition:
+        type: moved
+        recorded_on: 2026-05-20
+        from_path: src/Meridian.Wpf
+        to_path: src/Meridian.Ui/dashboard
+        roadmap:
+          id: W2-paper-trading-cockpit
+          url: docs/plans/web-ui-development-pivot.md
+          status: in-progress
+        notes: Browser workstation is the active operator UI lane.
+
+    - module_id: meridian-wpf-retained
+      module_path: src/Meridian.Wpf
+      readme_path: src/Meridian.Wpf/README.md
+      exists: true
+      lifecycle_state: retained_support
+      transition:
+        type: deprecated
+        recorded_on: 2026-05-20
+        roadmap:
+          id: W4-governance-productization
+          url: docs/plans/current-direction-and-status.md
+          status: in-progress
+        notes: New product UI work is paused; retained for compatibility and regression support.
 
 lifecycle_transition_contract:
   allowed_transitions:
