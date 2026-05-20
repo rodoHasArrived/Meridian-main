@@ -5,7 +5,7 @@
 
 This index is the main entry point for the active `docs/` tree. It is organized around Meridian's current direction: an evidence-backed investment operations platform where browser-first operator workflows prove trusted data, research, paper validation, portfolio/accounting review, reconciliation, approvals, and governed reporting outcomes end-to-end.
 
-Current local project path: `C:\Dev\Meridian-main`.
+Current local project path: `D:\Meridian-main`.
 
 ## Platform At A Glance
 
@@ -148,7 +148,7 @@ These commands are currently reflected in the repo's code and build scripts:
 
 See [developer/build-test-run.md](developer/build-test-run.md) and
 [developer/publish-standalone-exe.md](developer/publish-standalone-exe.md) for
-short current command paths from `C:\Dev\Meridian-main`.
+short current command paths from `D:\Meridian-main`.
 
 ## Reference
 

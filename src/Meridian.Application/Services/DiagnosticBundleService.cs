@@ -2,7 +2,6 @@ using System.IO.Compression;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
@@ -20,13 +19,6 @@ public sealed class DiagnosticBundleService
     private readonly string _dataRoot;
     private readonly Func<MetricsSnapshot>? _metricsProvider;
     private readonly Func<AppConfig>? _configProvider;
-
-    private static readonly string[] SensitiveKeys =
-    [
-        "password", "secret", "key", "token", "apikey", "api_key", "api-key",
-        "connectionstring", "connection_string", "credential", "auth", "authorization",
-        "clientsecret", "client_secret", "refresh", "session", "accountkey"
-    ];
 
     public DiagnosticBundleService(
         string dataRoot,
@@ -260,10 +252,10 @@ public sealed class DiagnosticBundleService
             diagnostics = new
             {
                 redactionPolicy = "secrets, tokens, account identifiers, auth headers, connection strings, and query credentials are redacted",
-                logDirectory = SanitizeDiagnosticText(logsDir),
+                logDirectory = RuntimeDiagnosticRedactor.SanitizeText(logsDir),
                 logDirectoryExists = Directory.Exists(logsDir),
                 recentLogFileCount = recentLogCount,
-                dataRoot = SanitizeDiagnosticText(_dataRoot)
+                dataRoot = RuntimeDiagnosticRedactor.SanitizeText(_dataRoot)
             },
             process = new
             {
@@ -323,7 +315,7 @@ public sealed class DiagnosticBundleService
             var sampleConfig = await File.ReadAllTextAsync(sampleConfigPath, ct);
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "appsettings.sample.json"),
-                SanitizeDiagnosticText(sampleConfig),
+                RuntimeDiagnosticRedactor.SanitizeText(sampleConfig),
                 ct);
             manifest.FilesCollected.Add("appsettings.sample.json");
         }
@@ -368,7 +360,7 @@ public sealed class DiagnosticBundleService
         {
             await File.WriteAllTextAsync(
                 Path.Combine(tempDir, "logs-info.txt"),
-                $"Logs directory not found: {logsDir}",
+                $"Logs directory not found: {RuntimeDiagnosticRedactor.SanitizeText(logsDir)}",
                 ct);
             return;
         }
@@ -412,7 +404,7 @@ public sealed class DiagnosticBundleService
     {
         var info = new StringBuilder();
         info.AppendLine("=== STORAGE INFORMATION ===");
-        info.AppendLine($"Data Root: {SanitizeDiagnosticText(_dataRoot)}");
+        info.AppendLine($"Data Root: {RuntimeDiagnosticRedactor.SanitizeText(_dataRoot)}");
         info.AppendLine($"Data Root Exists: {Directory.Exists(_dataRoot)}");
         info.AppendLine();
 
@@ -452,7 +444,7 @@ public sealed class DiagnosticBundleService
             .Cast<System.Collections.DictionaryEntry>()
             .Select(e => (Key: e.Key.ToString() ?? "", Value: e.Value?.ToString() ?? ""))
             .Where(e => relevantPrefixes.Any(p => e.Key.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
-            .Select(e => $"{e.Key}={SanitizeEnvValue(e.Key, e.Value)}");
+            .Select(e => $"{e.Key}={RuntimeDiagnosticRedactor.SanitizeEnvValue(e.Key, e.Value)}");
 
         var content = $"""
             === ENVIRONMENT VARIABLES (Meridian/DOTNET related) ===
@@ -462,11 +454,6 @@ public sealed class DiagnosticBundleService
         await File.WriteAllTextAsync(Path.Combine(tempDir, "environment.txt"), content, ct);
         manifest.FilesCollected.Add("environment.txt");
     }
-
-    private static string SanitizeEnvValue(string key, string value) =>
-        IsSensitiveKey(key) || SensitiveValueMasker.IsSensitiveEnvVar(key) ? "[REDACTED]" :
-        key.Equals("PATH", StringComparison.OrdinalIgnoreCase) ? "[PATH variable - omitted for brevity]" :
-        SanitizeDiagnosticText(value);
 
     private static async Task ListDirectoryAsync(string path, StringBuilder sb, string indent, int maxDepth, CancellationToken ct = default)
     {
@@ -478,7 +465,7 @@ public sealed class DiagnosticBundleService
             foreach (var dir in Directory.GetDirectories(path))
             {
                 ct.ThrowIfCancellationRequested();
-                var dirName = SanitizeDiagnosticText(Path.GetFileName(dir));
+                var dirName = RuntimeDiagnosticRedactor.SanitizeText(Path.GetFileName(dir));
                 if (dirName.StartsWith("."))
                     continue;
 
@@ -490,7 +477,7 @@ public sealed class DiagnosticBundleService
             foreach (var file in Directory.GetFiles(path))
             {
                 ct.ThrowIfCancellationRequested();
-                var fileName = SanitizeDiagnosticText(Path.GetFileName(file));
+                var fileName = RuntimeDiagnosticRedactor.SanitizeText(Path.GetFileName(file));
                 var fileInfo = new FileInfo(file);
                 sb.AppendLine($"{indent}{fileName} ({FormatSize(fileInfo.Length)})");
             }
@@ -515,24 +502,101 @@ public sealed class DiagnosticBundleService
     {
         return new
         {
-            dataRoot = SanitizeDiagnosticText(config.DataRoot),
+            dataRoot = RuntimeDiagnosticRedactor.SanitizeText(config.DataRoot),
             compress = config.Compress ?? false,
             dataSource = config.DataSource.ToString(),
             alpaca = config.Alpaca != null ? new
             {
                 keyId = "[REDACTED]",
                 secretKey = "[REDACTED]",
-                feed = SanitizeDiagnosticText(config.Alpaca.Feed),
+                feed = RuntimeDiagnosticRedactor.SanitizeText(config.Alpaca.Feed),
                 useSandbox = config.Alpaca.UseSandbox
+            } : null,
+            polygon = config.Polygon != null ? new
+            {
+                apiKey = RedactedWhenPresent(config.Polygon.ApiKey),
+                useDelayed = config.Polygon.UseDelayed,
+                feed = RuntimeDiagnosticRedactor.SanitizeText(config.Polygon.Feed),
+                subscribeTrades = config.Polygon.SubscribeTrades,
+                subscribeQuotes = config.Polygon.SubscribeQuotes,
+                subscribeAggregates = config.Polygon.SubscribeAggregates
             } : null,
             storage = config.Storage,
             symbolCount = config.Symbols?.Length ?? 0,
             backfillEnabled = config.Backfill?.Enabled ?? false,
-            backfillProvider = SanitizeDiagnosticText(config.Backfill?.Provider),
+            backfillProvider = RuntimeDiagnosticRedactor.SanitizeText(config.Backfill?.Provider),
             backfillProviderCount = CountConfiguredBackfillProviders(config.Backfill?.Providers),
-            providerRegistry = config.ProviderRegistry
+            dataSources = SanitizeDataSources(config.DataSources),
+            providerRegistry = config.ProviderRegistry,
+            providerConnections = SanitizeProviderConnections(config.ProviderConnections)
         };
     }
+
+    private static object? SanitizeDataSources(DataSourcesConfig? dataSources)
+    {
+        if (dataSources is null)
+            return null;
+
+        return new
+        {
+            sourceCount = dataSources.Sources?.Length ?? 0,
+            defaultRealTimeSourceId = RuntimeDiagnosticRedactor.SanitizeText(dataSources.DefaultRealTimeSourceId),
+            defaultHistoricalSourceId = RuntimeDiagnosticRedactor.SanitizeText(dataSources.DefaultHistoricalSourceId),
+            enableFailover = dataSources.EnableFailover,
+            failoverTimeoutSeconds = dataSources.FailoverTimeoutSeconds,
+            healthCheckIntervalSeconds = dataSources.HealthCheckIntervalSeconds,
+            autoRecover = dataSources.AutoRecover,
+            sources = dataSources.Sources?.Select(source => new
+            {
+                id = RuntimeDiagnosticRedactor.SanitizeText(source.Id),
+                name = RuntimeDiagnosticRedactor.SanitizeText(source.Name),
+                provider = source.Provider.ToString(),
+                enabled = source.Enabled,
+                type = source.Type.ToString(),
+                priority = source.Priority,
+                symbolCount = source.Symbols?.Length ?? 0,
+                hasAlpacaCredentials = HasValue(source.Alpaca?.KeyId) || HasValue(source.Alpaca?.SecretKey),
+                hasPolygonApiKey = HasValue(source.Polygon?.ApiKey),
+                ibConfigured = source.IB is not null
+            }).ToArray()
+        };
+    }
+
+    private static object? SanitizeProviderConnections(ProviderConnectionsConfig? providerConnections)
+    {
+        if (providerConnections is null)
+            return null;
+
+        return new
+        {
+            connectionCount = providerConnections.Connections?.Length ?? 0,
+            bindingCount = providerConnections.Bindings?.Length ?? 0,
+            policyCount = providerConnections.Policies?.Length ?? 0,
+            presetCount = providerConnections.Presets?.Length ?? 0,
+            certificationCount = providerConnections.Certifications?.Length ?? 0,
+            connections = providerConnections.Connections?.Select(connection => new
+            {
+                connectionId = RuntimeDiagnosticRedactor.SanitizeText(connection.ConnectionId),
+                providerFamilyId = RuntimeDiagnosticRedactor.SanitizeText(connection.ProviderFamilyId),
+                displayName = RuntimeDiagnosticRedactor.SanitizeText(connection.DisplayName),
+                connectionType = connection.ConnectionType.ToString(),
+                connectionMode = connection.ConnectionMode.ToString(),
+                enabled = connection.Enabled,
+                hasCredentialReference = HasValue(connection.CredentialReference),
+                institutionId = RuntimeDiagnosticRedactor.SanitizeText(connection.InstitutionId),
+                externalAccountId = RedactedWhenPresent(connection.ExternalAccountId),
+                hasScope = connection.Scope is not null && !connection.Scope.IsGlobal,
+                tagCount = connection.Tags?.Length ?? 0,
+                productionReady = connection.ProductionReady
+            }).ToArray()
+        };
+    }
+
+    private static string? RedactedWhenPresent(string? value) =>
+        HasValue(value) ? "[REDACTED]" : null;
+
+    private static bool HasValue(string? value) =>
+        !string.IsNullOrWhiteSpace(value);
 
     private static int CountConfiguredBackfillProviders(BackfillProvidersConfig? providers)
     {
@@ -555,7 +619,7 @@ public sealed class DiagnosticBundleService
         return count;
     }
 
-    private static string SanitizeLogContent(string content) => SanitizeDiagnosticText(content);
+    private static string SanitizeLogContent(string content) => RuntimeDiagnosticRedactor.SanitizeText(content);
 
     private MetricsSnapshot? TryCollectMetricsSnapshot()
     {
@@ -588,39 +652,6 @@ public sealed class DiagnosticBundleService
         }
     }
 
-    private static string SanitizeDiagnosticText(string? content)
-    {
-        if (string.IsNullOrEmpty(content))
-            return string.Empty;
-
-        // Remove potential sensitive data patterns
-        var patterns = new[]
-        {
-            (@"(?<key>password|secret|secretKey|key|apiKey|api_key|api-key|token|accessToken|refreshToken|clientSecret|connectionString|authorization|credential)\s*[:=]\s*(?<value>[^\s,;}\]]+)", "${key}=[REDACTED]"),
-            (@"""(?<key>password|secret|secretKey|key|apiKey|api_key|api-key|token|accessToken|refreshToken|clientSecret|connectionString|authorization|credential)""\s*:\s*""(?<value>[^""]*)""", "\"${key}\":\"[REDACTED]\""),
-            (@"(?<key>accountNumber|account_number|accountNo|account_no|acctNumber|acct_number)\s*[:=]\s*(?<value>[A-Za-z0-9\-]{4,})", "${key}=[REDACTED]"),
-            (@"""(?<key>accountNumber|account_number|accountNo|account_no|acctNumber|acct_number)""\s*:\s*""(?<value>[^""]*)""", "\"${key}\":\"[REDACTED]\""),
-            (@"(?<separator>[?&])(?<key>api_key|apikey|access_token|token|secret|accountNumber|account_number)=[^&\s]+", "${separator}${key}=[REDACTED]"),
-            (@"Bearer\s+[A-Za-z0-9\-_]+", "Bearer [REDACTED]"),
-            (@"Basic\s+[A-Za-z0-9+/=]+", "Basic [REDACTED]")
-        };
-
-        var result = content;
-        foreach (var (pattern, replacement) in patterns)
-        {
-            result = Regex.Replace(
-                result, pattern, replacement,
-                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-        }
-
-        return result;
-    }
-
-    private static bool IsSensitiveKey(string key)
-    {
-        return SensitiveKeys.Any(s =>
-            key.IndexOf(s, StringComparison.OrdinalIgnoreCase) >= 0);
-    }
 }
 
 /// <summary>

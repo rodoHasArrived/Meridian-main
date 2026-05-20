@@ -84,6 +84,11 @@ export const STRATEGY_DESIGNER_API_ENDPOINTS = {
   runBacktest: "/api/workstation/strategy/designer/run-backtest"
 } as const;
 
+export const STRATEGY_ENGINE_API_ENDPOINTS = {
+  definitions: "/api/workstation/strategy/engine/definitions",
+  validateRun: "/api/workstation/strategy/engine/validate-run"
+} as const;
+
 export const SECURITY_MASTER_API_ENDPOINTS = {
   base: "/api/security-master",
   workstationSecurities: "/api/workstation/security-master/securities",

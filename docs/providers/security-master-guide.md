@@ -20,6 +20,7 @@ Security Master is the event-sourced golden record for all financial instruments
 - **Corporate actions** — Immutable record of dividends, splits, mergers, and other adjustments
 - **Trading parameters** — Lot size, tick size, and trading status for order routing and fill models
 - **Structured validation** — Read-only validation reports surface severity, issue code, affected fields, suggested action, and evidence links before downstream workflows rely on a record
+- **Trust snapshot projections** — Workstation trust snapshots now bundle validation posture, identifier/provider-mapping coverage, and schema-compatibility context beside the selected security
 - **Full-text search** — Query by display name, issuer, or identifier with filtering by asset class and status
 
 ---
@@ -127,6 +128,8 @@ Validation currently checks common record shape, effective-date windows, identif
 POST /api/security-master/resolve
 ```
 Resolves by ISIN, CUSIP, Ticker, FIGI, SEDOL, LEI, RIC, Bloomberg ID, or custom identifier.
+The request can also carry `asOfUtc` so effective-dated identifiers resolve against a historical or
+forward-looking point in time instead of always using the current clock.
 
 ### Search Securities
 ```
@@ -163,6 +166,16 @@ Adds or updates an external identifier (provider symbol mapping).
 GET /api/security-master/{securityId}/trading-parameters
 ```
 Returns lot size, tick size, and trading status for order routing and fill models.
+
+### Get Workstation Trust Snapshot
+```
+GET /api/workstation/security-master/securities/{securityId}/trust-snapshot
+```
+Returns the selected-security workstation projection used by retained desktop governance workflows. In addition to trust posture, history, and downstream impact, the snapshot now includes:
+
+- `validationReport` — read-only blocking/advisory Security Master validation issues
+- `identifierSummary` — active identifiers, aliases, and provider-mapping coverage
+- `schemaCompatibility` — legacy asset-specific schema version plus normalized economic-terms schema version
 
 ### Get Corporate Actions
 ```

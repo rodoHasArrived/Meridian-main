@@ -1,6 +1,6 @@
 # Provider Management Architecture
 
-**Version:** 3.4 | **Last Updated:** 2026-05-20
+**Version:** 3.5 | **Last Updated:** 2026-05-20
 
 This document describes the provider management architecture used by Meridian. It covers provider contracts, discovery, lifecycle management, failover, health monitoring, degradation scoring, and data quality operations.
 
@@ -310,6 +310,28 @@ The snapshot includes:
 - Last error message
 
 The diagnostics record intentionally excludes endpoint URIs, headers, credentials, account IDs, and payload data. Provider-specific code should use this snapshot for operator status and diagnostic exports instead of logging connection internals directly.
+
+---
+
+## Subscription Recovery Diagnostics
+
+`SubscriptionManager` is the shared subscription ledger used by streaming provider bases and provider test doubles.
+It records enough metadata for reconnect, failover, and diagnostic flows to explain active subscription posture without logging payloads or secrets.
+
+Tracked subscription fields include:
+
+- Subscription ID
+- Normalized symbol and subscription kind
+- Created timestamp
+- Status: `Active`, `Recovering`, or `Failed`
+- Last accepted message timestamp
+- Last subscription-specific error
+- Recovery attempt count
+- Optional source of request, such as a watchlist, strategy run, or workspace flow
+
+Existing providers can keep using `Subscribe(...)` when they need independent subscription IDs for separate callers. Reconnect and failover code should prefer `SubscribeOrGetExisting(...)` when duplicate upstream subscriptions are unsafe. `ValidateSubscriptionRequest(...)` returns normalized fields, duplicate detection, the existing subscription ID when present, and a non-secret failure reason for missing symbol/kind inputs.
+
+`GetSnapshot()` now includes total, failed, and recovering subscription counts for health surfaces. `GetStaleSubscriptions(...)` identifies active streams whose last accepted message is older than the caller's threshold so provider diagnostics can distinguish connected-but-stale streams from fully failed connections.
 
 ---
 
@@ -730,3 +752,9 @@ export TIINGO__TOKEN=your-token
 - Added `ProviderDataQualityValidator` for provider-boundary trade and quote checks.
 - Routed Alpaca streaming trade and quote messages through the boundary validator before collector ingress.
 - Hardened `FailoverAwareMarketDataClient` so duplicate per-symbol trade/depth subscription requests return the existing subscription ID instead of creating duplicate upstream provider subscriptions.
+
+## Migration Notes (v3.4 -> v3.5)
+
+- Extended `SubscriptionManager` with subscription status, last-message timestamps, last-error text, recovery-attempt counts, and optional request-source metadata.
+- Added `ValidateSubscriptionRequest(...)`, `SubscribeOrGetExisting(...)`, `RecordMessageReceived(...)`, `RecordSubscriptionError(...)`, `RecordRecoveryAttempt(...)`, and `GetStaleSubscriptions(...)` for reconnect/failover-safe subscription supervision.
+- Kept the existing `Subscribe(...)` behavior intact for providers that intentionally maintain separate per-caller subscription IDs.

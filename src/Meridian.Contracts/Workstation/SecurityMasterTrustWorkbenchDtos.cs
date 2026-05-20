@@ -58,7 +58,12 @@ public sealed record SecurityMasterTrustSnapshotDto(
     IReadOnlyList<SecurityMasterRecommendedActionDto> RecommendedActions,
     IReadOnlyList<SecurityMasterEventEnvelope> History,
     IReadOnlyList<CorporateActionDto> CorporateActions,
-    DateTimeOffset RetrievedAtUtc);
+    DateTimeOffset RetrievedAtUtc)
+{
+    public SecurityValidationReportDto? ValidationReport { get; init; }
+    public SecurityMasterIdentifierSummaryDto? IdentifierSummary { get; init; }
+    public SecurityMasterSchemaCompatibilityDto? SchemaCompatibility { get; init; }
+}
 
 public sealed record SecurityMasterEconomicDefinitionDrillInDto(
     Guid SecurityId,
@@ -117,6 +122,40 @@ public sealed record SecurityMasterConflictAssessmentDto(
     string ImpactDetail,
     bool IsBulkEligible,
     string? BulkIneligibilityReason = null);
+
+public sealed record SecurityMasterIdentifierSummaryDto(
+    string? PrimaryIdentifierKind,
+    string? PrimaryIdentifierValue,
+    int ActiveIdentifierCount,
+    int ActiveAliasCount,
+    int ProviderMappingCount,
+    int DistinctProviderCount,
+    bool HasPrimaryIdentifier,
+    bool HasProviderMappings,
+    string Summary,
+    IReadOnlyList<SecurityMasterProviderSymbolMappingDto> ProviderMappings);
+
+public sealed record SecurityMasterProviderSymbolMappingDto(
+    string MappingSource,
+    string MappingKind,
+    string Value,
+    string NormalizedValue,
+    string? Provider,
+    string? NormalizedProvider,
+    bool IsPrimary,
+    bool IsEnabled,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset? ValidTo,
+    bool IsActive);
+
+public sealed record SecurityMasterSchemaCompatibilityDto(
+    string AssetClass,
+    int LegacyAssetSpecificTermsSchemaVersion,
+    int EconomicTermsSchemaVersion,
+    bool HasLegacyAssetSpecificTerms,
+    bool HasEconomicTerms,
+    bool HasClassificationPayload,
+    string Summary);
 
 public sealed record SecurityMasterDownstreamImpactDto(
     string? FundProfileId,

@@ -5,6 +5,7 @@ using FluentAssertions;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Services;
+using Meridian.ProviderSdk;
 using Xunit;
 
 namespace Meridian.Tests.Application.Services;
@@ -61,6 +62,13 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
         bundleText.Should().NotContain("query-secret");
         bundleText.Should().NotContain("env-secret-value");
         bundleText.Should().NotContain("env-session-token");
+        bundleText.Should().NotContain("config-polygon-secret");
+        bundleText.Should().NotContain("top-level-polygon-secret");
+        bundleText.Should().NotContain("source-polygon-secret");
+        bundleText.Should().NotContain("source-alpaca-key");
+        bundleText.Should().NotContain("source-alpaca-secret");
+        bundleText.Should().NotContain("vault://prod/alpaca-secret");
+        bundleText.Should().NotContain("brokerage-account-9999");
         bundleText.Should().NotContain("ACCT-778899");
         bundleText.Should().NotContain("ACCT-123456");
         bundleText.Should().NotContain("ACCT-654321");
@@ -118,11 +126,43 @@ public sealed class DiagnosticBundleServiceTests : IDisposable
             SecretKey: "config-secret-key",
             Feed: "iex",
             UseSandbox: true),
+        Polygon: new PolygonOptions(ApiKey: "top-level-polygon-secret"),
         Backfill: new BackfillConfig(
             Enabled: true,
             Provider: "polygon",
             Providers: new BackfillProvidersConfig(
-                Polygon: new PolygonConfig(ApiKey: "config-polygon-secret"))));
+                Polygon: new PolygonConfig(ApiKey: "config-polygon-secret"))),
+        DataSources: new DataSourcesConfig(
+            Sources:
+            [
+                new DataSourceConfig(
+                    Id: "source-polygon",
+                    Name: "Polygon primary",
+                    Provider: DataSourceKind.Polygon,
+                    Polygon: new PolygonOptions(ApiKey: "source-polygon-secret")),
+                new DataSourceConfig(
+                    Id: "source-alpaca",
+                    Name: "Alpaca fallback",
+                    Provider: DataSourceKind.Alpaca,
+                    Alpaca: new AlpacaOptions(
+                        KeyId: "source-alpaca-key",
+                        SecretKey: "source-alpaca-secret"))
+            ],
+            DefaultRealTimeSourceId: "source-alpaca",
+            DefaultHistoricalSourceId: "source-polygon"),
+        ProviderConnections: new ProviderConnectionsConfig(
+            Connections:
+            [
+                new ProviderConnectionConfig(
+                    ConnectionId: "alpaca-prod",
+                    ProviderFamilyId: "alpaca",
+                    DisplayName: "Alpaca production",
+                    ConnectionType: ProviderConnectionType.Brokerage,
+                    ConnectionMode: ProviderConnectionMode.ReadOnly,
+                    CredentialReference: "vault://prod/alpaca-secret",
+                    ExternalAccountId: "brokerage-account-9999",
+                    Scope: new ProviderConnectionScope(Workspace: "Trading"))
+            ]));
 
     private static MetricsSnapshot CreateMetricsSnapshot() => new(
         Published: 10,

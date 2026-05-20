@@ -859,10 +859,11 @@ describe("data-operations-screen view model", () => {
 
       expect(result.current.providerPhase).toBe("error");
       expect(result.current.providerSetupError).toEqual({
-        summary: "Paper trading credentials were rejected by the provider.",
+        summary: "Permission denied for this Meridian role.",
         details: [
           "Endpoint returned 403 for /api/providers/configure.",
           "Credential verification failed",
+          "Paper trading credentials were rejected by the provider.",
           "apiKey: Verify the configured key against the selected environment."
         ]
       });

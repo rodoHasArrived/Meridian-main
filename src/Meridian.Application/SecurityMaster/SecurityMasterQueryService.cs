@@ -22,9 +22,9 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
     public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
         => _store.GetDetailAsync(securityId, ct);
 
-    public async Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default)
+    public async Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
     {
-        var asOf = DateTimeOffset.UtcNow;
+        var asOf = asOfUtc ?? DateTimeOffset.UtcNow;
         var projection = await TryGetProjectionByIdentifierAsync(identifierKind, identifierValue, provider, asOf, ct)
             .ConfigureAwait(false);
 

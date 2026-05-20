@@ -73,6 +73,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<StrategyDesignStoreOptions>(),
                 sp.GetRequiredService<ILogger<JsonlStrategyDesignRepository>>()));
         services.TryAddSingleton<StrategyDesignService>();
+        services.TryAddSingleton<StrategyEngineRegistry>();
+        services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
         services.TryAddSingleton<LedgerReadService>();

@@ -1,6 +1,6 @@
 # Provider Validation Matrix
 
-**Last Updated:** 2026-05-19
+**Last Updated:** 2026-05-20
 **Scope:** Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
 
 This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence, with bounded runtime evidence regenerated and attached from the validation run when a provider scenario cannot be closed from checked-in tests. The current signed DK1 evidence is the 2026-04-27 packet set under `artifacts/provider-validation/_automation/2026-04-27/`; future date-stamped packets are current only for the run that produced them and need matching packet-bound sign-off before they can replace that evidence. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.
@@ -24,6 +24,21 @@ For the unified per-broker phase/blocker/evidence view, see [`provider-integrati
 | TradeStation execution evidence reconciliation slice | `PaperSessionPersistenceServiceTests.TradeStationExecutionSlice_CreateUpdateCancelAndFillReconciliation_ProducesDeterministicCanonicalEvidence`, `PaperSessionPersistenceServiceTests.TradeStationExecutionSlice_DelayedOutOfOrderEvents_RemainsIdempotentAndDeterministic` | Not required; this row is repo-closed evidence for create/update/cancel plus delayed/out-of-order fill reconciliation determinism into canonical execution evidence | ✅ | n/a |
 | Parquet L2 flush behavior | `ParquetStorageSinkTests`, `ParquetConversionServiceTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
 | Execution/readiness parity slice (IBKR-focused contract stability) | `IBBrokerageGatewayTests.ConnectAsync_AfterReconnect_RehydratesSessionAndAllowsOrderLifecycleToContinue`, `IBBrokerageGatewayTests.GetPositionsAsync_MapsPositionCallbacks`, `TradingOperatorReadinessServiceTests.GetAsync_AfterRestart_ShouldPreserveReplayParityAndExecutionAuditEvidence` | Use run-date replay/session artifacts only when validating with a live broker gateway; CI closes the canonical projection stability contract for auth/session refresh, position snapshots, and replay-readiness reconstruction | ✅ | n/a |
+
+
+## 2026-05-20 focused Robinhood polling hardening
+
+Focused validation on 2026-05-20 added offline coverage for the Robinhood quote-polling boundary:
+crossed/invalid quotes are rejected before collector publication, unauthorized-token failures surface
+through redacted diagnostics, and the polling adapter tracks lifecycle state, last successful API call,
+last message time, consecutive poll failures, and data-quality rejection counts. This improves the
+repo-closed part of the Robinhood row while preserving its bounded runtime status.
+
+Evidence anchors for this run date:
+
+- `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs`
+- `tests/Meridian.Tests/Infrastructure/Providers/RobinhoodMarketDataClientTests.cs`
+- `docs/providers/provider-confidence-baseline.md`
 
 
 ## 2026-05-19 focused execution-provider validation artifacts

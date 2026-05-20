@@ -81,7 +81,8 @@ public static class SecurityMasterEndpoints
                     request.IdentifierKind,
                     request.IdentifierValue,
                     request.Provider,
-                    ct)
+                    ct,
+                    request.AsOfUtc)
                 .ConfigureAwait(false);
 
             if (detail is null)

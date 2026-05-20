@@ -309,8 +309,10 @@ public sealed class WorkstationEndpointsTests
 
         var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
             new OperationsTransitionRequestDto(start.Workflow.Version, "spoofed-user"));
+        var normalized = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/normalize",
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "spoofed-user"));
         var security = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/security-master/resolve",
-            new OperationsSecurityMasterResolveRequestDto(import.Workflow!.Version, "spoofed-user"));
+            new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "spoofed-user"));
         var draft = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/draft",
             new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "spoofed-user", "ledger-preview-1", true));
         var validated = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/validate",
@@ -3458,6 +3460,245 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldReturnValidationIdentifierAndSchemaProjections()
+    {
+        var securityId = Guid.Parse("67676767-6767-6767-6767-676767676767");
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Acme Funding 2031-A1", "ACME31"),
+            new SecurityDetailDto(
+                SecurityId: securityId,
+                AssetClass: "Bond",
+                Status: SecurityStatusDto.Active,
+                DisplayName: "Acme Funding 2031-A1",
+                Currency: "USD",
+                CommonTerms: JsonSerializer.SerializeToElement(new
+                {
+                    issuerName = "Acme Funding Trust",
+                    countryOfRisk = "US",
+                    primaryListingMic = "OTCM",
+                    settlementCycleDays = 2
+                }),
+                AssetSpecificTerms: JsonSerializer.SerializeToElement(new
+                {
+                    schemaVersion = 1,
+                    maturity = "2031-12-15",
+                    couponType = "Fixed",
+                    couponRate = 5.125,
+                    issueDate = "2026-01-15",
+                    subclass = "AssetBacked"
+                }),
+                Identifiers:
+                [
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.Cusip,
+                        "000000AA1",
+                        true,
+                        new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero)),
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.ProviderSymbol,
+                        "ACME31 TRACE",
+                        false,
+                        new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero),
+                        null,
+                        "TRACE")
+                ],
+                Aliases:
+                [
+                    new SecurityAliasDto(
+                        AliasId: Guid.Parse("11111111-aaaa-4444-bbbb-111111111111"),
+                        SecurityId: securityId,
+                        AliasKind: "Ticker",
+                        AliasValue: "ACME31",
+                        Provider: "Bloomberg",
+                        Scope: SecurityAliasScope.Operations,
+                        Reason: "desk alias",
+                        CreatedBy: "ops",
+                        CreatedAt: new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero),
+                        ValidFrom: new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero),
+                        ValidTo: null,
+                        IsEnabled: true)
+                ],
+                Version: 7,
+                EffectiveFrom: new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero),
+                EffectiveTo: null));
+        queryService.RegisterEconomicDefinition(
+            securityId,
+            new SecurityEconomicDefinitionRecord(
+                SecurityId: securityId,
+                AssetClass: "FixedIncome",
+                AssetFamily: "StructuredCredit",
+                SubType: "AssetBackedSecurity",
+                TypeName: "ABS PassThrough",
+                IssuerType: "Trust",
+                RiskCountry: "US",
+                Status: SecurityStatusDto.Active,
+                DisplayName: "Acme Funding 2031-A1",
+                Currency: "USD",
+                Classification: JsonSerializer.SerializeToElement(new
+                {
+                    assetClass = "FixedIncome",
+                    assetFamily = "StructuredCredit",
+                    subType = "AssetBackedSecurity"
+                }),
+                CommonTerms: JsonSerializer.SerializeToElement(new
+                {
+                    issuerName = "Acme Funding Trust",
+                    countryOfRisk = "US"
+                }),
+                EconomicTerms: JsonSerializer.SerializeToElement(new
+                {
+                    schemaVersion = 2,
+                    maturity = new
+                    {
+                        issueDate = "2026-01-15",
+                        maturityDate = "2031-12-15"
+                    },
+                    coupon = new
+                    {
+                        couponType = "Fixed",
+                        couponRate = 5.125
+                    },
+                    structuredProduct = new
+                    {
+                        factor = 0.9825,
+                        factorDate = "2026-05-01",
+                        collateralType = "AutoLoan"
+                    }
+                }),
+                Provenance: JsonSerializer.SerializeToElement(new
+                {
+                    sourceSystem = "golden-edm",
+                    sourceRecordId = "ABS-2031-A1",
+                    asOf = "2026-05-20T10:00:00Z",
+                    updatedBy = "workflow.bot",
+                    reason = "governed merge"
+                }),
+                Version: 7,
+                EffectiveFrom: new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero),
+                EffectiveTo: null,
+                Identifiers:
+                [
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.Cusip,
+                        "000000AA1",
+                        true,
+                        new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero))
+                ],
+                LegacyAssetClass: "Bond",
+                LegacyAssetSpecificTerms: JsonSerializer.SerializeToElement(new
+                {
+                    schemaVersion = 1,
+                    maturity = "2031-12-15"
+                })));
+        queryService.RegisterTradingParameters(securityId, CreateTradingParameters(securityId));
+
+        var validationService = new StubSecurityValidationService();
+        validationService.RegisterReport(
+            securityId,
+            new SecurityValidationReportDto(
+                SecurityId: securityId,
+                Scope: "Security",
+                EvaluatedAtUtc: new DateTimeOffset(2026, 5, 20, 10, 5, 0, TimeSpan.Zero),
+                HasBlockingIssues: true,
+                CriticalIssueCount: 0,
+                ErrorIssueCount: 1,
+                Issues:
+                [
+                    new SecurityValidationIssueDto(
+                        SecurityValidationSeverityDto.Error,
+                        "SM_IDENTIFIER_DUPLICATE_ACTIVE",
+                        "Duplicate active identifier exists on the record",
+                        "Provider mapping must be reviewed before downstream use.",
+                        ["identifiers.ProviderSymbol"],
+                        "Expire the duplicate provider symbol and confirm the winning map.",
+                        [])
+                ]));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(
+                services,
+                queryService,
+                new StubSecurityMasterConflictService([]),
+                validationService);
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var snapshot = await response.Content.ReadFromJsonAsync<SecurityMasterTrustSnapshotDto>(ServerJsonOptions);
+
+        snapshot.Should().NotBeNull();
+        snapshot!.TrustPosture.Tone.Should().Be(SecurityMasterTrustTone.Blocked);
+        snapshot.ValidationReport.Should().NotBeNull();
+        snapshot.ValidationReport!.HasBlockingIssues.Should().BeTrue();
+        snapshot.ValidationReport.ErrorIssueCount.Should().Be(1);
+        snapshot.IdentifierSummary.Should().NotBeNull();
+        snapshot.IdentifierSummary!.ProviderMappingCount.Should().Be(2);
+        snapshot.IdentifierSummary.DistinctProviderCount.Should().Be(2);
+        snapshot.IdentifierSummary.HasProviderMappings.Should().BeTrue();
+        snapshot.SchemaCompatibility.Should().NotBeNull();
+        snapshot.SchemaCompatibility!.LegacyAssetSpecificTermsSchemaVersion.Should().Be(1);
+        snapshot.SchemaCompatibility.EconomicTermsSchemaVersion.Should().Be(2);
+        snapshot.SchemaCompatibility.HasLegacyAssetSpecificTerms.Should().BeTrue();
+        snapshot.SchemaCompatibility.HasEconomicTerms.Should().BeTrue();
+        snapshot.RecommendedActions.Should().Contain(action =>
+            action.Kind == SecurityMasterRecommendedActionKind.EditSelectedSecurity &&
+            action.Detail.Contains("blocking validation issue", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldNotRunReconciliationDuringReadOnlyImpactQuery()
+    {
+        var securityId = Guid.Parse("78787878-7878-7878-7878-787878787878");
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Apple Inc.", "AAPL"),
+            CreateSecurityDetail(securityId, "Apple Inc.", "AAPL"));
+        queryService.RegisterEconomicDefinition(
+            securityId,
+            CreateEconomicDefinitionRecord(
+                securityId,
+                "Apple Inc.",
+                "AAPL",
+                JsonSerializer.SerializeToElement(new { sourceSystem = "golden-edm" })));
+        queryService.RegisterTradingParameters(securityId, CreateTradingParameters(securityId));
+
+        var reconciliationService = new RecordingReconciliationRunService();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(services, queryService, new StubSecurityMasterConflictService([]));
+            services.RemoveAll<IReconciliationRunService>();
+            services.AddSingleton<IReconciliationRunService>(reconciliationService);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "sm-readonly-impact",
+            strategyId: "security-impact",
+            strategyName: "Security impact",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 5, 20, 8, 0, 0, TimeSpan.Zero),
+            fundProfileId: "fund-alpha"));
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot?fundProfileId=fund-alpha");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var snapshot = await response.Content.ReadFromJsonAsync<SecurityMasterTrustSnapshotDto>(ServerJsonOptions);
+
+        snapshot.Should().NotBeNull();
+        snapshot!.DownstreamImpact.Severity.Should().Be(SecurityMasterImpactSeverity.Unknown);
+        snapshot.DownstreamImpact.ReconciliationExposureSummary.Should().Contain("not been materialized");
+        snapshot.DownstreamImpact.Summary.Should().Contain("not been materialized");
+        reconciliationService.GetLatestForRunCallCount.Should().Be(1);
+        reconciliationService.RunAsyncCallCount.Should().Be(0);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldReturnOnlySelectedSecurityChallengers()
     {
         var selectedSecurityId = Guid.Parse("77777777-7777-7777-7777-777777777777");
@@ -4567,10 +4808,12 @@ public sealed class WorkstationEndpointsTests
     private static void RegisterSecurityMasterWorkbenchServices(
         IServiceCollection services,
         StubSecurityMasterQueryService queryService,
-        StubSecurityMasterConflictService conflictService)
+        StubSecurityMasterConflictService conflictService,
+        StubSecurityValidationService? validationService = null)
     {
         services.AddSingleton<ISecurityMasterQueryService>(queryService);
         services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(queryService);
+        services.AddSingleton<ISecurityValidationService>(validationService ?? new StubSecurityValidationService());
         services.AddSingleton<ISecurityMasterConflictService>(conflictService);
         services.AddSingleton<ISecurityMasterIngestStatusService>(new StubSecurityMasterIngestStatusService());
         RegisterRunReadServices(services);
@@ -4686,6 +4929,69 @@ public sealed class WorkstationEndpointsTests
 
     private static JsonElement CreateEmptyJson()
         => JsonDocument.Parse("{}").RootElement.Clone();
+
+    private sealed class StubSecurityValidationService : ISecurityValidationService
+    {
+        private readonly Dictionary<Guid, SecurityValidationReportDto> _reports = new();
+
+        public void RegisterReport(Guid securityId, SecurityValidationReportDto report)
+            => _reports[securityId] = report;
+
+        public Task<SecurityValidationReportDto> ValidateSecurityAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult(
+                _reports.TryGetValue(securityId, out var report)
+                    ? report
+                    : CreateReport(securityId, hasBlockingIssues: false, errorIssueCount: 0, issues: []));
+
+        public Task<SecurityValidationReportDto> ValidateUniverseAsync(CancellationToken ct = default)
+            => Task.FromResult(CreateReport(null, hasBlockingIssues: false, errorIssueCount: 0, issues: []));
+
+        public SecurityValidationReportDto ValidateRecord(
+            SecurityProjectionRecord record,
+            IReadOnlyList<SecurityProjectionRecord> universe,
+            DateTimeOffset? evaluatedAtUtc = null)
+            => _reports.TryGetValue(record.SecurityId, out var report)
+                ? report
+                : CreateReport(record.SecurityId, hasBlockingIssues: false, errorIssueCount: 0, issues: []);
+
+        private static SecurityValidationReportDto CreateReport(
+            Guid? securityId,
+            bool hasBlockingIssues,
+            int errorIssueCount,
+            IReadOnlyList<SecurityValidationIssueDto> issues)
+            => new(
+                SecurityId: securityId,
+                Scope: securityId.HasValue ? "Security" : "Universe",
+                EvaluatedAtUtc: new DateTimeOffset(2026, 5, 20, 10, 0, 0, TimeSpan.Zero),
+                HasBlockingIssues: hasBlockingIssues,
+                CriticalIssueCount: 0,
+                ErrorIssueCount: errorIssueCount,
+                Issues: issues);
+    }
+
+    private sealed class RecordingReconciliationRunService : IReconciliationRunService
+    {
+        public int RunAsyncCallCount { get; private set; }
+        public int GetLatestForRunCallCount { get; private set; }
+
+        public Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
+        {
+            RunAsyncCallCount++;
+            return Task.FromResult<ReconciliationRunDetail?>(null);
+        }
+
+        public Task<ReconciliationRunDetail?> GetByIdAsync(string reconciliationRunId, CancellationToken ct = default)
+            => Task.FromResult<ReconciliationRunDetail?>(null);
+
+        public Task<ReconciliationRunDetail?> GetLatestForRunAsync(string runId, CancellationToken ct = default)
+        {
+            GetLatestForRunCallCount++;
+            return Task.FromResult<ReconciliationRunDetail?>(null);
+        }
+
+        public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<ReconciliationRunSummary>>([]);
+    }
 
     private static KernelObservabilityService CreateRecoveredKernelObservability()
     {
@@ -5818,7 +6124,7 @@ public sealed class WorkstationEndpointsTests
             return Task.FromResult<SecurityDetailDto?>(detail);
         }
 
-        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default)
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
         {
             var detail = _details.Values.FirstOrDefault(item =>
                 item.Identifiers.Any(id =>

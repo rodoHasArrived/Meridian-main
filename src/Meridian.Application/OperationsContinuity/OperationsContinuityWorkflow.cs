@@ -152,6 +152,16 @@ public sealed class OperationsContinuityWorkflow
                 []);
         }
 
+        if (BrokerIntakeState is OperationsBrokerIntakeStateDto.Imported)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "BROKER_NORMALIZATION_REQUIRED",
+                "Imported broker, custodian, or bank activity must be normalized before Security Master resolution.",
+                OperationsGateKeyDto.BrokerIngest,
+                "Error",
+                []);
+        }
+
         return null;
     }
 

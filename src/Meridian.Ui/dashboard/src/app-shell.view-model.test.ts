@@ -162,8 +162,8 @@ describe("app shell view model", () => {
           value: "Demo fixtures",
           tone: "pending",
           detail: "No-host fixture payloads are visible; do not treat this as live operational readiness.",
-          href: null,
-          actionLabel: null
+          href: "/settings#backend-capability-coverage",
+          actionLabel: "Open diagnostics"
         },
         {
           id: "providers",

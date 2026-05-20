@@ -6,6 +6,7 @@ using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
+using Meridian.Contracts.StrategyEngine;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Collectors;
@@ -78,6 +79,7 @@ public static partial class WorkstationEndpoints
         .Produces<ResearchBriefingDto>(200);
 
         MapStrategyDesignerEndpoints(group, jsonOptions);
+        MapStrategyEngineEndpoints(group, jsonOptions);
 
         group.MapGet("/workflow-summary", async (
             bool? hasOperatingContext,
@@ -5582,6 +5584,55 @@ public static partial class WorkstationEndpoints
             _ => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
         };
     }
+
+    private static void MapStrategyEngineEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        group.MapGet("/strategy/engine/definitions", (HttpContext context) =>
+        {
+            var registry = context.RequestServices.GetService<StrategyEngineRegistry>();
+            return registry is null
+                ? StrategyEngineUnavailable(jsonOptions)
+                : Results.Json(registry.GetDefinitions(), jsonOptions);
+        })
+        .WithName("GetStrategyEngineDefinitions")
+        .Produces<IReadOnlyList<StrategyEngineDefinition>>(200)
+        .Produces(501);
+
+        group.MapPost("/strategy/engine/validate-run", (
+            StrategyEngineValidateRunRequest? request,
+            HttpContext context) =>
+        {
+            if (request?.RunRequest is null)
+            {
+                return Results.BadRequest(new { error = "A strategy run request is required." });
+            }
+
+            var validation = context.RequestServices.GetService<StrategyEngineValidationService>();
+            if (validation is null)
+            {
+                return StrategyEngineUnavailable(jsonOptions);
+            }
+
+            var result = validation.Validate(request.RunRequest, request.DataAvailability ?? []);
+            return result.IsValid
+                ? Results.Json(result, jsonOptions)
+                : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        })
+        .WithName("ValidateStrategyEngineRun")
+        .Produces<StrategyEngineValidationResult>(200)
+        .Produces<StrategyEngineValidationResult>(400)
+        .Produces(501);
+    }
+
+    private static IResult StrategyEngineUnavailable(JsonSerializerOptions jsonOptions)
+        => Results.Json(
+            new { error = "Strategy Engine services are not registered." },
+            jsonOptions,
+            statusCode: StatusCodes.Status501NotImplemented);
+
+    private sealed record StrategyEngineValidateRunRequest(
+        StrategyEngineRunRequest RunRequest,
+        IReadOnlyList<StrategyEngineDataAvailability>? DataAvailability);
 
     private static async Task<IResult> GetRunContinuityResultAsync(string runId, HttpContext context, JsonSerializerOptions jsonOptions)
     {

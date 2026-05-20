@@ -48,7 +48,7 @@ describe("ProviderCredentialSetup", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /polygon\.io/i }));
-    await user.type(screen.getByLabelText(/api key/i), "demo-key");
+    await user.type(screen.getByLabelText(/api key/i, { selector: "input" }), "demo-key");
     await user.click(screen.getByRole("button", { name: /test connection/i }));
 
     const alert = await screen.findByRole("alert");
@@ -104,7 +104,7 @@ describe("ProviderCredentialSetup", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /polygon\.io/i }));
-    await user.type(screen.getByLabelText(/api key/i), "demo-key");
+    await user.type(screen.getByLabelText(/api key/i, { selector: "input" }), "demo-key");
     await user.click(screen.getByRole("button", { name: /save credentials/i }));
 
     const alert = await screen.findByRole("alert");

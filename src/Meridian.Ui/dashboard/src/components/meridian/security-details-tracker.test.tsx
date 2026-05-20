@@ -174,7 +174,10 @@ describe("SecurityDetailsPanel", () => {
 
     const issuerEditor = screen.getByLabelText("Issuer override value");
     expect(issuerEditor).toHaveAttribute("id", "security-detail-sec-1-issuer-editor");
-    expect(issuerEditor).toHaveAttribute("aria-describedby", "security-detail-sec-1-issuer-editor-help");
+    expect(issuerEditor).toHaveAttribute(
+      "aria-describedby",
+      "security-detail-sec-1-issuer-editor-help security-detail-sec-1-issuer-editor-disabled-reason"
+    );
     expect(screen.getByText("Enter a value to override the server field, or leave it blank to clear the override.")).toHaveAttribute(
       "id",
       "security-detail-sec-1-issuer-editor-help"

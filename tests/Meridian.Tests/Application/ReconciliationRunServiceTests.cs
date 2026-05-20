@@ -500,7 +500,8 @@ public sealed class ReconciliationRunServiceTests
             SecurityIdentifierKind identifierKind,
             string identifierValue,
             string? provider,
-            CancellationToken ct = default) =>
+            CancellationToken ct = default,
+            DateTimeOffset? asOfUtc = null) =>
             Task.FromResult<SecurityDetailDto?>(null);
 
         public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default) =>

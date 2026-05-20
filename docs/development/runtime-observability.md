@@ -44,7 +44,7 @@ Never log or export:
 - Account numbers or custodian account identifiers.
 - Full raw provider payloads, market-data payloads, portfolio holdings, order details, or statement rows unless explicitly redacted and debug-gated.
 
-Diagnostic bundles must sanitize logs, configuration summaries, environment variables, query strings, and storage listings before writing ZIP contents. If a diagnostic feature cannot safely redact a field, omit the field and include a non-sensitive count or status instead.
+Diagnostic bundles and live diagnostics endpoints must sanitize logs, configuration summaries, environment variables, query strings, tracked error messages, stack traces, contexts, and storage listings before exporting support data. If a diagnostic feature cannot safely redact a field, omit the field and include a non-sensitive count or status instead.
 
 ## Performance Rules
 
@@ -105,6 +105,17 @@ Event pipeline diagnostics should prefer counters and summaries:
 
 Log anomalies and periodic summaries such as events/sec, dropped count, queue depth, and max latency. Do not log individual high-frequency payloads.
 
+The live host exposes a low-cost queue and throughput snapshot at `GET /api/diagnostics/metrics`.
+Use the `eventPipeline` block for current queue depth, peak queue depth, utilization, drops, and
+flush age. It also reports recovered, rejected, and deduplicated counts plus whether WAL,
+validation, and deduplication are enabled for the live pipeline. Use the `marketDataMetrics` block
+for aggregate published/dropped counts, events/sec, message-type counters, and latency summaries.
+When the dual-path trade/quote fast path is registered, use the `eventPipelineHotPath` block for
+ring-buffer depth plus hot-path published, consumed, fallback, and dropped counts so operators can
+distinguish slow-path backpressure from hot-path saturation without enabling verbose logging.
+These fields are counts and timings only; do not add raw provider payloads, account identifiers,
+order details, or portfolio values to this endpoint.
+
 ## Diagnostic Bundles
 
 Support bundles may include:
@@ -118,6 +129,9 @@ Support bundles may include:
 - Redacted Meridian/provider-related environment variables.
 
 Bundles must exclude secrets and account numbers. Use status, counts, and masked summaries instead of raw sensitive data.
+When `IEventMetrics` is registered, `metrics.json` and `runtime-summary.json` must include the
+same aggregate event counters used by `/api/diagnostics/metrics` so support bundles can explain
+pipeline throughput without requiring a live repro.
 
 ## Validation Expectations
 

@@ -32,7 +32,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 ## Current Direction
 
 - Meridian is a .NET 10 fund-management and trading-platform codebase.
-- The authoritative local checkout path for this workspace is `C:\Dev\Meridian-main`.
+- The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - Position new roadmap and docs work around evidence-backed investment operations: trusted data, research, paper validation, books, reconciliation, approvals, and governed reports.
 - New operator UI development is paused for `src/Meridian.Wpf/` unless needed for shared contracts, regression fixes, or retained desktop support.
 - `src/Meridian.Ui/dashboard/` and the built `src/Meridian.Ui/wwwroot/workstation/` assets are the active web-based operator UI delivery lane.

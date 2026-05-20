@@ -259,8 +259,12 @@ public sealed class OperationsContinuityWorkflowServiceTests
         var workflowId = start.Workflow!.WorkflowId;
 
         var import = await service.ImportBrokerDataAsync(workflowId, new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
-        var security = await service.ResolveSecurityMasterMappingsAsync(workflowId, new OperationsSecurityMasterResolveRequestDto(
+        var normalized = await service.NormalizeBrokerTransactionsAsync(workflowId, new OperationsTransitionRequestDto(
             import.Workflow!.Version,
+            "ops-user",
+            "Normalized imported broker activity"));
+        var security = await service.ResolveSecurityMasterMappingsAsync(workflowId, new OperationsSecurityMasterResolveRequestDto(
+            normalized.Workflow!.Version,
             "ops-user",
             "Resolved all instruments"));
         var draft = await service.BuildLedgerDraftAsync(workflowId, new OperationsLedgerDraftRequestDto(
@@ -322,6 +326,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
         timeline.Select(entry => entry.EventType).Should().ContainInOrder(
             "workflow-started",
             "broker-imported",
+            "broker-transactions-normalized",
             "security-master-resolved",
             "ledger-draft-built",
             "ledger-draft-validated",
@@ -452,6 +457,37 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task ResolveSecurityMasterMappingsAsync_ShouldRejectBeforeBrokerNormalizationWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "ops-user"));
+        var import = await service.ImportBrokerDataAsync(
+            start.Workflow!.WorkflowId,
+            new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
+        var timelineBefore = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
+
+        var result = await service.ResolveSecurityMasterMappingsAsync(
+            start.Workflow.WorkflowId,
+            new OperationsSecurityMasterResolveRequestDto(
+                import.Workflow!.Version,
+                "ops-user",
+                "Attempted resolution before normalization"));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "BROKER_NORMALIZATION_REQUIRED" &&
+            blocker.Gate == OperationsGateKeyDto.BrokerIngest);
+        var timelineAfter = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
     public async Task ApproveSecurityMasterOverrideAsync_ShouldPermitLedgerDraftWithGovernedMetadata()
     {
         var service = CreateService(out _, out var auditStore);
@@ -462,8 +498,11 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "custodian",
             "ops-user"));
         var import = await service.ImportBrokerDataAsync(start.Workflow!.WorkflowId, new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
+        var normalized = await service.NormalizeBrokerTransactionsAsync(
+            start.Workflow.WorkflowId,
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user", "Normalized imported rows"));
         var security = await service.ResolveSecurityMasterMappingsAsync(start.Workflow.WorkflowId, new OperationsSecurityMasterResolveRequestDto(
-            import.Workflow!.Version,
+            normalized.Workflow!.Version,
             "ops-user",
             OverrideRequestCount: 1));
         security.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
@@ -500,8 +539,11 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "custodian",
             "ops-user"));
         var import = await service.ImportBrokerDataAsync(start.Workflow!.WorkflowId, new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
+        var normalized = await service.NormalizeBrokerTransactionsAsync(
+            start.Workflow.WorkflowId,
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user", "Normalized imported rows"));
         var security = await service.ResolveSecurityMasterMappingsAsync(start.Workflow.WorkflowId, new OperationsSecurityMasterResolveRequestDto(
-            import.Workflow!.Version,
+            normalized.Workflow!.Version,
             "ops-user",
             OverrideRequestCount: 1));
 
@@ -1010,7 +1052,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "custodian",
             "ops-user"));
         var import = await service.ImportBrokerDataAsync(start.Workflow!.WorkflowId, new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
-        var security = await service.ResolveSecurityMasterMappingsAsync(start.Workflow.WorkflowId, new OperationsSecurityMasterResolveRequestDto(import.Workflow!.Version, "ops-user"));
+        var normalized = await service.NormalizeBrokerTransactionsAsync(start.Workflow.WorkflowId, new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user"));
+        var security = await service.ResolveSecurityMasterMappingsAsync(start.Workflow.WorkflowId, new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "ops-user"));
         var draft = await service.BuildLedgerDraftAsync(start.Workflow.WorkflowId, new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "ops-user", "ledger-preview-1", true));
         var validated = await service.ValidateLedgerDraftAsync(start.Workflow.WorkflowId, new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "ops-user", true, true));
         return validated.Workflow!;

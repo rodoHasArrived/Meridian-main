@@ -2234,7 +2234,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         ReplaceCollection(CompanyCoverageFields,
         [
             new SecurityMasterPresentationField("Trust posture", $"{snapshot.TrustPosture.Tone} • {snapshot.TrustPosture.TrustScore}/100"),
+            new SecurityMasterPresentationField("Validation", BuildValidationSummaryText(snapshot)),
+            new SecurityMasterPresentationField("Identifier coverage", BuildIdentifierCoverageSummaryText(snapshot)),
             new SecurityMasterPresentationField("Trading readiness", snapshot.TrustPosture.TradingParametersStatus),
+            new SecurityMasterPresentationField("Schema compatibility", BuildSchemaCompatibilitySummaryText(snapshot)),
             new SecurityMasterPresentationField("Corporate actions", snapshot.TrustPosture.CorporateActionReadiness),
             new SecurityMasterPresentationField("Downstream scope", snapshot.DownstreamImpact.IsScoped
                 ? $"Scoped to {snapshot.DownstreamImpact.FundProfileId}"
@@ -2257,6 +2260,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         ReplaceCollection(PrintChecklistItems,
         [
             new SecurityMasterChecklistItem("Canonical identifiers attested", "Data operations", snapshot.TrustPosture.HasOpenConflicts ? "Review" : "Ready"),
+            new SecurityMasterChecklistItem("Validation blockers cleared", "Security master", snapshot.ValidationReport?.HasBlockingIssues == true ? "Review" : "Ready"),
             new SecurityMasterChecklistItem("Trading parameters complete", "Trading operations", snapshot.TrustPosture.TradingParametersComplete ? "Ready" : "Review"),
             new SecurityMasterChecklistItem("Corporate actions reviewed", "Fund operations", snapshot.TrustPosture.CorporateActionsTrusted ? "Ready" : "Review"),
             new SecurityMasterChecklistItem("Distribution lane confirmed", "Reporting", snapshot.DownstreamImpact.Severity is SecurityMasterImpactSeverity.None or SecurityMasterImpactSeverity.Low ? "Ready" : "Draft")
@@ -2265,10 +2269,44 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         ReplaceCollection(PrintEvidenceItems,
         [
             new SecurityMasterEvidenceItem("Winning source", GoldenCopySourceText, FirstNonEmpty(snapshot.EconomicDefinition.WinningSourceReason, "Golden copy rationale")),
+            new SecurityMasterEvidenceItem("Validation summary", BuildValidationSummaryText(snapshot), "Validation report"),
+            new SecurityMasterEvidenceItem("Identifier coverage", BuildIdentifierCoverageSummaryText(snapshot), "Identifier resolution"),
+            new SecurityMasterEvidenceItem("Schema compatibility", BuildSchemaCompatibilitySummaryText(snapshot), "Snapshot projection"),
             new SecurityMasterEvidenceItem("Latest audit event", LatestHistoryEventText, "History stream"),
             new SecurityMasterEvidenceItem("Downstream scope", snapshot.DownstreamImpact.Summary, PrintDistributionText)
         ]);
     }
+
+    private static string BuildValidationSummaryText(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var report = snapshot.ValidationReport;
+        if (report is null)
+        {
+            return "Validation report unavailable.";
+        }
+
+        if (report.Issues.Count == 0)
+        {
+            return "No validation issues detected.";
+        }
+
+        var blockingCount = report.CriticalIssueCount + report.ErrorIssueCount;
+        var advisoryCount = Math.Max(0, report.Issues.Count - blockingCount);
+        if (blockingCount > 0 && advisoryCount > 0)
+        {
+            return $"{blockingCount} blocking issue(s) • {advisoryCount} advisory issue(s)";
+        }
+
+        return blockingCount > 0
+            ? $"{blockingCount} blocking issue(s)"
+            : $"{advisoryCount} advisory issue(s)";
+    }
+
+    private static string BuildIdentifierCoverageSummaryText(SecurityMasterTrustSnapshotDto snapshot)
+        => snapshot.IdentifierSummary?.Summary ?? "Identifier summary unavailable.";
+
+    private static string BuildSchemaCompatibilitySummaryText(SecurityMasterTrustSnapshotDto snapshot)
+        => snapshot.SchemaCompatibility?.Summary ?? "Schema compatibility unavailable.";
 
     private static void ReplaceCollection<T>(ObservableCollection<T> collection, IEnumerable<T> values)
     {
