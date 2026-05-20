@@ -48,3 +48,12 @@ Each transition record must include roadmap linkage fields:
 - unique module IDs (`source-modules.yml`)
 - stale README path detection after moves/renames (`source-readme-coverage.yml` transitions)
 
+## TODO ID Registry Contract
+
+All persistent TODO/FIXME/HACK/NOTE annotations in source and governance docs must include machine-readable metadata:
+
+- `TODO-ID: <REGISTERED_ID>`
+- `OWNER: <owner-alias>`
+
+`TODO-ID` values must exist in `docs/source/todo-registry.json`. CI rejects entries without registered IDs or ownership metadata.
+
