@@ -649,6 +649,36 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task RunReconciliationAsync_ZeroSecurityIssueCounts_ShouldNotAutoPassSecurityMasterGate()
+    {
+        var service = CreateService(out _, out _);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+
+        var initiallyBlocked = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            "Ran reconciliation with security-accounting issues",
+            BreakCases: [],
+            SecurityAccountingIssueCount: 1));
+        initiallyBlocked.Success.Should().BeTrue();
+
+        var stillBlocked = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            initiallyBlocked.Workflow!.Version,
+            "ops-user",
+            "Attempt to clear Security Master gate with caller-supplied zero counts",
+            BreakCases: [],
+            SecurityCoverageIssueCount: 0,
+            SecurityAccountingIssueCount: 0));
+
+        stillBlocked.Success.Should().BeTrue();
+        stillBlocked.Workflow!.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.SecurityMaster)
+            .Status.Should().Be(OperationsGateStatusDto.Blocked);
+        stillBlocked.Workflow.Blockers.Should().Contain(blocker =>
+            blocker.Code == "SM_ACCOUNTING_TERMS_INCOMPLETE" &&
+            blocker.Gate == OperationsGateKeyDto.SecurityMaster);
+    }
+
+    [Fact]
     public async Task ApproveWorkflowAsync_ShouldRequireApprovalMetadata()
     {
         var service = CreateService(out _, out _);

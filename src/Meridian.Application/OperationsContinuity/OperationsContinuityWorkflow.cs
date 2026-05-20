@@ -1162,18 +1162,8 @@ public sealed class OperationsContinuityWorkflow
             return;
         }
 
-        if (SecurityMasterGate.Status == OperationsGateStatusDto.Blocked &&
-            SecurityMasterGate.Blockers.Any(static blocker =>
-                blocker.Code is "SM_RECON_SECURITY_UNRESOLVED" or "SM_ACCOUNTING_TERMS_INCOMPLETE"))
-        {
-            SecurityMasterState = OperationsSecurityMasterStateDto.Complete;
-            SecurityMasterGate = SecurityMasterGate.WithStatus(
-                OperationsGateStatusDto.Passed,
-                blockers: [],
-                nextActions: [],
-                completedAtUtc: now,
-                completedBy: actor);
-        }
+        // A zero-count signal from posture/reconciliation requests is caller-supplied metadata.
+        // Do not auto-pass/clear Security Master based only on those request values.
     }
 
     private static List<OperationsWorkflowBlockerDto> BuildSecurityMasterBlockers(
