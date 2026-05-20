@@ -946,7 +946,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "report-pack-1"));
 
         close.Success.Should().BeFalse();
-        close.Blockers.Should().Contain(blocker => blocker.Code == "RECONCILIATION_CRITICAL_BREAKS_OPEN");
+        close.Blockers.Should().Contain(blocker => blocker.Code == "OPERATIONS_GATES_NOT_PASSED");
     }
 
     [Fact]
