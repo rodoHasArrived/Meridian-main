@@ -661,6 +661,12 @@ public sealed class OperationsContinuityWorkflowServiceTests
             BreakCases: [],
             SecurityAccountingIssueCount: 1));
         initiallyBlocked.Success.Should().BeTrue();
+        initiallyBlocked.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Blocked);
+        initiallyBlocked.Workflow.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.SecurityMaster)
+            .Status.Should().Be(OperationsGateStatusDto.Blocked);
+        initiallyBlocked.Workflow.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "SM_ACCOUNTING_TERMS_INCOMPLETE" &&
+            blocker.Gate == OperationsGateKeyDto.SecurityMaster);
 
         var stillBlocked = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
             initiallyBlocked.Workflow!.Version,
