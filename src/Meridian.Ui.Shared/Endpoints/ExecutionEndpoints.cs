@@ -136,7 +136,7 @@ public static class ExecutionEndpoints
                     new OrderResult
                     {
                         Success = false,
-                        OrderId = request.ClientOrderId ?? string.Empty,
+                        OrderId = string.Empty,
                         ErrorMessage = "Order metadata contains restricted broker routing fields that require ManageOrders permission.",
                     },
                     jsonOptions,

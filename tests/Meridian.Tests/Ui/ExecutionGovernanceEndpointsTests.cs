@@ -327,7 +327,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton<IOrderManager>(sp => new OrderManagementSystem(
                 sp.GetRequiredService<IExecutionGateway>(),
                 NullLogger<OrderManagementSystem>.Instance));
-        }, permissions: UserPermission.ManageOrders);
+        }, permissions: UserPermission.None);
 
         var client = app.GetTestClient();
         var response = await client.PostAsync("/api/execution/orders/submit", JsonContent(new
