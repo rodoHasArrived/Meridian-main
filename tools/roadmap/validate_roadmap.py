@@ -103,21 +103,21 @@ def _parse_sequence(lines: list[str], idx: int, base_indent: int) -> tuple[list[
 
         content = raw.lstrip(" ")[2:].strip()
         if content == "":
-            item, idx = _parse_block(lines, idx + 1)
-            items.append(item)
+            sequence_item, idx = _parse_block(lines, idx + 1)
+            items.append(sequence_item)
             continue
 
         if ":" in content:
             key, value = content.split(":", 1)
             key = key.strip()
             value = value.strip()
-            item: dict[str, Any] = {}
+            mapping_item: dict[str, Any] = {}
             if value:
-                item[key] = _parse_yaml_value(value)
+                mapping_item[key] = _parse_yaml_value(value)
                 idx += 1
             else:
                 nested, idx = _parse_block(lines, idx + 1)
-                item[key] = nested
+                mapping_item[key] = nested
             while idx < len(lines):
                 child = lines[idx]
                 child_stripped = child.strip()
@@ -133,12 +133,12 @@ def _parse_sequence(lines: list[str], idx: int, base_indent: int) -> tuple[list[
                 child_key = child_key.strip()
                 child_value = child_value.strip()
                 if child_value:
-                    item[child_key] = _parse_yaml_value(child_value)
+                    mapping_item[child_key] = _parse_yaml_value(child_value)
                     idx += 1
                 else:
                     nested, idx = _parse_block(lines, idx + 1)
-                    item[child_key] = nested
-            items.append(item)
+                    mapping_item[child_key] = nested
+            items.append(mapping_item)
             continue
 
         items.append(_parse_yaml_value(content))
