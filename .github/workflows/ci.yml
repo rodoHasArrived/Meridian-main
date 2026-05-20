@@ -72,6 +72,15 @@ jobs:
           python3 scripts/check_status_delivery_claims.py
           python3 -m unittest tests/scripts/test_check_status_delivery_claims.py
 
+      - name: Validate TODO registry contract
+        run: |
+          python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json
+          python3 build/scripts/docs/validate-todo-registry.py --scan-json docs/status/todo-scan-results.json --registry docs/source/todo-registry.json --enforce-prefix docs/source/
+
+      - name: Validate AI contract drift
+        run: |
+          python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
+
       - name: Upload .NET test results
         if: failure()
         uses: actions/upload-artifact@v7.0.1
@@ -124,3 +133,28 @@ jobs:
 
       - name: Build dashboard bundle
         run: npm --prefix src/Meridian.Ui/dashboard run build
+
+  source-doc-determinism:
+    name: Source Docs Determinism
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install renderer dependencies
+        run: python3 -m pip install -r tools/source_docs/requirements-render.txt
+
+      - name: Render + determinism gate
+        run: |
+          python3 tools/source_docs/render_source_docs.py
+          python3 tools/source_docs/check_source_determinism.py
+          git diff -- docs/generated/source --exit-code

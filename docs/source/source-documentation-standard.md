@@ -12,6 +12,35 @@ Every source module must be represented in:
 - `docs/source/data/source-readme-coverage.yml`
 - The owning `src/**/README.md` file(s)
 
+## README Template Contract (Mandatory)
+
+Every README referenced by `docs/source/data/source-readme-coverage.yml` must include the following contract exactly.
+
+### 1) Front matter keys (YAML)
+
+A YAML front matter block must exist at the top of the file, delimited by `---` and containing:
+
+- `module_id`
+- `owner`
+- `status`
+- `last_verified`
+
+### 2) Required section headings (exact `##` headings)
+
+The README body must include all of the following headings exactly:
+
+- `## Module Purpose`
+- `## Ownership and Runtime`
+- `## Dependencies and Integrations`
+- `## Operational Notes`
+
+### 3) Generated block markers (exact strings)
+
+The README body must include the generated overview block markers exactly as shown below and in this order:
+
+- `<!-- GENERATED:MODULE_OVERVIEW BEGIN -->`
+- `<!-- GENERATED:MODULE_OVERVIEW END -->`
+
 ## Lifecycle Transition Contract
 
 `docs/source/data/source-readme-coverage.yml` must declare transition records using these values:
@@ -56,3 +85,30 @@ Source-doc schema validation is intentionally strict for registry and renderer s
 - **Minor-compatible updates** in the same major schema may add optional fields only when explicitly documented, or via controlled `extensions` keys (`x-*` naming).
 - **Migration path trigger**: when stricter validation introduces new "missing required field" or "unexpected field" failures for existing source-doc entries, include a same-PR migration plan and data backfill/update before adopting the validator rule in CI.
 - **Behavior alignment**: validator behavior should mirror schema posture—required structural fields must exist, and untracked fields must fail fast.
+
+## Deterministic Rendering Rules
+
+`tools/source_docs/render_source_docs.py` is the canonical renderer for `docs/source/data/*.yml`.
+
+Normalization policy:
+
+- Unicode normalization: **NFC** on all string keys/values.
+- Newline policy: **LF (`\n`)** for all generated files.
+- Date formatting: strict **`YYYY-MM-DD`** when an ISO date is detected.
+- Key ordering: lexicographic order after normalized key comparison.
+- Output ordering: source files are rendered in sorted filename order.
+
+Generated outputs are written to:
+
+- `docs/generated/source/*.json`
+- `docs/generated/source/*.normalized.yml`
+- `docs/generated/source/diagrams/*.mmd`
+- `docs/generated/source/render-manifest.json`
+
+Run reproducibility gate locally:
+
+```bash
+python3 -m pip install -r tools/source_docs/requirements-render.txt
+python3 tools/source_docs/render_source_docs.py
+python3 tools/source_docs/check_source_determinism.py
+```
