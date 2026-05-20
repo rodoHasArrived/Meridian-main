@@ -72,6 +72,11 @@ jobs:
           python3 scripts/check_status_delivery_claims.py
           python3 -m unittest tests/scripts/test_check_status_delivery_claims.py
 
+      - name: Validate provider-validation script tests
+        run: |
+          python3 -m unittest tests/scripts/test_generate_dk1_pilot_parity_packet.py
+          python3 -m unittest tests/scripts/test_prepare_dk1_operator_signoff.py
+
       - name: Validate TODO registry contract
         run: |
           python3 build/scripts/docs/scan-todos.py --json-output docs/status/todo-scan-results.json
