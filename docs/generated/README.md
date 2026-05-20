@@ -11,6 +11,7 @@ This folder contains documentation that is **auto-generated** from code annotati
 | `provider-registry.md` | Provider attributes | Registered data providers and capabilities |
 | `adr-index.md` | `docs/adr/` folder | Architecture Decision Record index |
 | `workflows-overview.md` | `.github/workflows/` | CI/CD workflow summary |
+| `source/` | `docs/source/data/*.yml` via `tools/source_docs/render_source_docs.py` | Deterministic source-doc JSON/YAML/diagram outputs plus hash manifest |
 
 ## How generation works
 
