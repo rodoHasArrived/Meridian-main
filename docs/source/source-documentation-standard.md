@@ -12,6 +12,35 @@ Every source module must be represented in:
 - `docs/source/data/source-readme-coverage.yml`
 - The owning `src/**/README.md` file(s)
 
+## README Template Contract (Mandatory)
+
+Every README referenced by `docs/source/data/source-readme-coverage.yml` must include the following contract exactly.
+
+### 1) Front matter keys (YAML)
+
+A YAML front matter block must exist at the top of the file, delimited by `---` and containing:
+
+- `module_id`
+- `owner`
+- `status`
+- `last_verified`
+
+### 2) Required section headings (exact `##` headings)
+
+The README body must include all of the following headings exactly:
+
+- `## Module Purpose`
+- `## Ownership and Runtime`
+- `## Dependencies and Integrations`
+- `## Operational Notes`
+
+### 3) Generated block markers (exact strings)
+
+The README body must include the generated overview block markers exactly as shown below and in this order:
+
+- `<!-- GENERATED:MODULE_OVERVIEW BEGIN -->`
+- `<!-- GENERATED:MODULE_OVERVIEW END -->`
+
 ## Lifecycle Transition Contract
 
 `docs/source/data/source-readme-coverage.yml` must declare transition records using these values:
