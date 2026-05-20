@@ -108,7 +108,7 @@ Evidence-backed narrative, client-facing commentary drafting, and evidence-aware
 | **IB Simulation Client** | ✅ | `IBSimulationClient` for testing without live connection |
 | **NoOp Client** | ✅ | `NoOpMarketDataClient` for dry-run / test harness scenarios |
 
-Provider validation matrix and evidence guidance now live in `docs/status/provider-validation-matrix.md` and `docs/providers/provider-confidence-baseline.md`, with `scripts/dev/run-wave1-provider-validation.ps1` as the offline gate runner and `artifacts/provider-validation/` treated as generated run output rather than retained source.
+Provider validation matrix and evidence guidance now live in `docs/status/provider-validation-matrix.md` and `docs/providers/provider-confidence-baseline.md`, with `scripts/dev/run-wave1-provider-validation.ps1` as the offline gate runner and `artifacts/provider-validation/` treated as generated run output rather than retained source. Track implementation-state and ownership gaps in [`provider-capability-matrix.md`](provider-capability-matrix.md) during routine status reviews.
 
 ### Remaining work to reach full provider coverage
 
