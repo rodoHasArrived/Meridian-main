@@ -1,0 +1,7 @@
+name: Café
+release_date: 2026-05-20
+map:
+  z_key: z
+  a_key: a
+  é_key: decomposed
+  é_key: composed

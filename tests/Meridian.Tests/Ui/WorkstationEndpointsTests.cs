@@ -341,6 +341,46 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityRoutes_ShouldReturnConsistentValidationShapeForMissingBody()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+        var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "spoofed-user"));
+        var workflowId = start.Workflow!.WorkflowId;
+
+        var endpoints = new[]
+        {
+            "/api/workstation/operations/continuity",
+            $"/api/workstation/operations/continuity/{workflowId}/broker/import",
+            $"/api/workstation/operations/continuity/{workflowId}/broker/normalize",
+            $"/api/workstation/operations/continuity/{workflowId}/security-master/resolve",
+            $"/api/workstation/operations/continuity/{workflowId}/ledger/draft",
+            $"/api/workstation/operations/continuity/{workflowId}/ledger/validate",
+            $"/api/workstation/operations/continuity/{workflowId}/ledger/post",
+            $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
+            $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
+            $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
+            $"/api/workstation/operations/continuity/{workflowId}/approval/approve",
+            $"/api/workstation/operations/continuity/{workflowId}/approval/reject",
+            $"/api/workstation/operations/continuity/{workflowId}/close",
+            $"/api/workstation/operations/continuity/{workflowId}/reopen"
+        };
+
+        foreach (var endpoint in endpoints)
+        {
+            var response = await client.PostAsync(endpoint, content: null);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            using var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+            json.RootElement.GetProperty("errors").GetProperty("request")[0].GetString().Should().NotBeNullOrWhiteSpace();
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_DataOperationsProviderMetrics_ShouldExposeDk1TrustRationale()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-metrics", Guid.NewGuid().ToString("N"));
