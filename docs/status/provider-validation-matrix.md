@@ -17,14 +17,29 @@ For the unified per-broker phase/blocker/evidence view, see [`provider-integrati
 
 | Scope | Offline / CI evidence | Manual / runtime evidence | Status | Bounded by |
 | --- | --- | --- | --- | --- |
-| Alpaca core provider confidence | `AlpacaBrokerageGatewayTests`, `AlpacaCorporateActionProviderTests`, `AlpacaCredentialAndReconnectTests`, `AlpacaMessageParsingTests`, `AlpacaQuotePipelineGoldenTests`, `AlpacaQuoteRoutingTests`, `ExecutionGovernanceEndpointsTests.AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam` | Not required for the active Wave 1 claim | ✅ | n/a |
+| Alpaca core provider confidence | `AlpacaBrokerageGatewayTests`, `AlpacaCorporateActionProviderTests`, `AlpacaCredentialAndReconnectTests`, `AlpacaHistoricalDataProviderTests` (capability surface, deterministic throttling counter, degraded response posture), `AlpacaMessageParsingTests`, `AlpacaQuotePipelineGoldenTests`, `AlpacaQuoteRoutingTests`, `ProviderFactoryCredentialContextTests` (APCA alias + DI/factory credential path), `ExecutionGovernanceEndpointsTests.AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam` | Not required for the active Wave 1 claim; DK1 packet-bound operator sign-off fields (`status`, `signedOwners`, `missingOwners`, `validForDk1Exit`) remain required when regenerating runtime evidence | ✅ | n/a |
 | Robinhood supported surface | `RobinhoodBrokerageGatewayTests`, `RobinhoodMarketDataClientTests`, `RobinhoodHistoricalDataProviderTests`, `RobinhoodSymbolSearchProviderTests`, `ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam` | Bounded broker-session scenarios (`auth-session`, `quote-polling`, `order-submit-cancel`, `throttling-reconnect`) must be regenerated or attached for the review run; the old `artifacts/provider-validation/robinhood/2026-04-09/` packet is not retained in the current repo | ⚠️ | Unofficial API plus manual broker-session and runtime requirements |
-| Yahoo historical and fallback confidence | `YahooFinanceHistoricalDataProviderTests`, `YahooFinanceIntradayContractTests` | Not required for the active Wave 1 claim; existing live Yahoo integration suites are optional developer reference only | ✅ | n/a |
+| Yahoo historical and fallback confidence | `YahooFinanceHistoricalDataProviderTests`, `YahooFinanceIntradayContractTests` | Not required for the active Wave 1 claim; DK1 packet-bound operator sign-off fields (`status`, `signedOwners`, `missingOwners`, `validForDk1Exit`) remain required when regenerating runtime evidence; existing live Yahoo integration suites are optional developer reference only | ✅ | n/a |
 | Checkpoint reliability | `BackfillStatusStoreTests`, `ParallelBackfillServiceTests`, `GapBackfillServiceTests`, `CheckpointEndpointTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
 | TradeStation execution evidence reconciliation slice | `PaperSessionPersistenceServiceTests.TradeStationExecutionSlice_CreateUpdateCancelAndFillReconciliation_ProducesDeterministicCanonicalEvidence`, `PaperSessionPersistenceServiceTests.TradeStationExecutionSlice_DelayedOutOfOrderEvents_RemainsIdempotentAndDeterministic` | Not required; this row is repo-closed evidence for create/update/cancel plus delayed/out-of-order fill reconciliation determinism into canonical execution evidence | ✅ | n/a |
 | Parquet L2 flush behavior | `ParquetStorageSinkTests`, `ParquetConversionServiceTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
 | Execution/readiness parity slice (IBKR-focused contract stability) | `IBBrokerageGatewayTests.ConnectAsync_AfterReconnect_RehydratesSessionAndAllowsOrderLifecycleToContinue`, `IBBrokerageGatewayTests.GetPositionsAsync_MapsPositionCallbacks`, `TradingOperatorReadinessServiceTests.GetAsync_AfterRestart_ShouldPreserveReplayParityAndExecutionAuditEvidence` | Use run-date replay/session artifacts only when validating with a live broker gateway; CI closes the canonical projection stability contract for auth/session refresh, position snapshots, and replay-readiness reconstruction | ✅ | n/a |
 
+
+## Readiness/Inbox regression evidence index (provider-impacting changes)
+
+Use this compact index when a provider change can affect trading-readiness posture, operator-inbox projection, or endpoint dependency assumptions.
+Each run must link the provider packet set to readiness/inbox verification results and operator sign-off state before promotion review.
+
+| Evidence lane | Required artifact(s) | Verification outcome to record | Operator sign-off status |
+| --- | --- | --- | --- |
+| Provider validation baseline | `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json` | Record `status` plus provider-row pass/bounded deltas for the changed adapter(s). | Mark `pending` until packet + endpoint checks are attached. |
+| DK1 parity packet | `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json` | Record packet `status` (`ready-for-operator-review` or blocked) and any trust-gate blockers tied to provider changes. | Mark `review-ready` only when packet status is ready and blockers are explained. |
+| Trading readiness projection compatibility | `GET /api/workstation/trading/readiness` snapshot (or endpoint test evidence) + contract packet (`artifacts/contract-review/<yyyy-mm-dd>/contract-review-packet.json`) | Confirm projection compatibility for shared readiness fields (`OverallStatus`, `SnapshotVersion`, `AcceptanceGates`, `EvidenceCompleteness`) and note pass/fail. | Mark `pending` if compatibility is unresolved or endpoint assumptions drift. |
+| Operator inbox dependency assumptions | `GET /api/workstation/operator/inbox` snapshot (or endpoint test evidence) + linked readiness work-item mapping evidence | Confirm inbox blockers/severity/routing remain aligned with readiness acceptance gates for affected provider/account scopes. | Mark `pending` if inbox/readiness alignment is incomplete. |
+| DK1 operator approval | `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json` | Record `validForDk1Exit`, `signedOwners`, and missing owners tied to the same run-date packet set. | Mark `signed` only when `validForDk1Exit=true` and required owners are present. |
+
+Regression index rule: a provider-impacting change is promotion-eligible only when all five rows are linked to the same run date and no row remains in `pending` status.
 
 ## 2026-05-20 focused Robinhood polling hardening
 
@@ -106,7 +121,7 @@ If any check fails, promotion enablement is blocked and operator surfaces must s
 
 - Robinhood remains polling-oriented and unofficial. Do not describe it as websocket-validated.
 - Yahoo is active only as a historical and fallback provider row for Wave 1.
-- `Polygon`, `Interactive Brokers`, `NYSE`, and `StockSharp` are deferred from the active Wave 1 gate.
+- Deferred providers are tracked in the **Deferred provider inventory** table above; every deferred row must retain explicit owner, rationale, and revisit sprint.
 
 
 ## Unified automation and promotion posture

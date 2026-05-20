@@ -98,6 +98,7 @@ These documents define current direction and should be read in this order:
 | --- | --- |
 | [`../status/ROADMAP.md`](../status/ROADMAP.md) | Authoritative roadmap narrative, wave order, and conservative completion claims. |
 | [`../status/PROGRAM_STATE.md`](../status/PROGRAM_STATE.md) | Canonical wave status table and target dates. |
+| [`../status/provider-capability-matrix.md`](../status/provider-capability-matrix.md) | Provider capability/state ownership matrix used in recurring status review; non-`complete` rows require both an owner and a target sprint. |
 | [`README.md`](README.md) | Active plan index and role classification for every plan file in `docs/plans/`. |
 | [`evidence-backed-investment-operations-plan.md`](evidence-backed-investment-operations-plan.md) | Product-category filter and archive rule for the evidence-backed investment-operations direction. |
 | [`meridian-6-week-roadmap.md`](meridian-6-week-roadmap.md) | Short-horizon execution slice for W2-W4 plus trust-gate maintenance. |
