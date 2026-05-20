@@ -2,12 +2,16 @@
 # Documentation
 # =============================================================================
 
-.PHONY: docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
+.PHONY: verify-docs docs gen-context verify-adrs verify-contracts verify-tooling-metadata \
         gen-interfaces gen-structure gen-providers gen-workflows gen-workflow-manifest \
         update-claude-md docs-all check-workflow-docs-parity check-status-delivery-claims
 
 docs: gen-context verify-adrs gen-workflow-manifest ## Generate all documentation from code
 	@echo "$(GREEN)Documentation generated and verified$(NC)"
+
+verify-docs: docs-lint check-workflow-docs-parity check-status-delivery-claims ## Canonical lane: docs command, workflow, and status-claim validation
+	@python3 build/scripts/docs/check-known-lanes.py
+	@echo "$(GREEN)Documentation lane verification complete$(NC)"
 
 gen-context: ## Generate project-context.md from code annotations
 	@echo "$(BLUE)Generating project context from code...$(NC)"

@@ -202,10 +202,28 @@ Manual fallback:
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true
 ```
 
+
+### Canonical validation lanes
+
+| Lane | Use when | Maps to |
+| --- | --- | --- |
+| `bootstrap` | Setting up a fresh or repaired local dev environment. | `make setup-dev` |
+| `verify-fast` | Pre-commit or tight-loop validation for most code changes. | `make pre-pr` |
+| `verify-full` | Pre-PR broad validation and coverage collection. | `make pre-pr-full` |
+| `verify-docs` | Changing docs, workflow docs, AI/TODO governance references, or lane vocabulary. | `make docs-lint`, `make check-workflow-docs-parity`, `make check-status-delivery-claims`, `python3 build/scripts/docs/check-known-lanes.py` |
+| `verify-desktop` | Touching retained WPF desktop shell, routing, or shared contracts that need desktop confidence. | `make desktop-build`, `make desktop-test` |
+| `verify-release` | Validating publish outputs or release packaging paths. | `make publish` |
+
 ### Makefile shortcuts
 
 ```bash
 make help           # List all task targets
+make bootstrap      # Canonical lane: local bootstrap
+make verify-fast    # Canonical lane: fast validation
+make verify-full    # Canonical lane: full validation + coverage
+make verify-docs    # Canonical lane: docs/workflow/lane checks
+make verify-desktop # Canonical lane: retained desktop validation
+make verify-release # Canonical lane: publish validation
 make build-quick    # Shared restore-once, sequential Debug build
 npm run ui:dashboard:test   # Web workstation Vitest suite
 npm run ui:dashboard:build  # Web workstation production build

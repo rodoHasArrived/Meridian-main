@@ -6,6 +6,17 @@
 
 Use the narrowest command that covers your change.
 
+## Canonical lane matrix
+
+| Lane | Use when | Maps to |
+| --- | --- | --- |
+| `bootstrap` | Initial setup, machine drift recovery, or local environment refresh. | `make setup-dev` |
+| `verify-fast` | Most day-to-day validation before pushing commits. | `make pre-pr` |
+| `verify-full` | Broad confidence checks before requesting review. | `make pre-pr-full` |
+| `verify-docs` | Docs/workflow-doc updates and lane-vocabulary drift checks. | `make docs-lint`, `make check-workflow-docs-parity`, `make check-status-delivery-claims`, `python3 build/scripts/docs/check-known-lanes.py` |
+| `verify-desktop` | Retained desktop shell changes or shared-contract checks needing WPF confidence. | `make desktop-build`, `make desktop-test` |
+| `verify-release` | Publish smoke and release packaging validation work. | `make publish` |
+
 ## Build
 
 ```powershell
