@@ -1,5 +1,13 @@
 # Covered Call Writing — Slice 1 (Backtest UI) Blueprint
 
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **covered call writing slice 1 blueprint** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the covered call writing slice 1 blueprint workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 > **Depth Mode:** full
 > **Pipeline stage:** Blueprint (from prioritized idea → code-ready design)
 > **Branch:** `claude/covered-call-writing-L9kAs`

@@ -14,6 +14,8 @@ import type {
   HistoricalBarsResponse,
   OrderBookResponse,
   OperatorInbox,
+  OperationsContinuityWorkflow,
+  OperationsContinuityWorkflowSummary,
   OperatorOverridesDto,
   PaperSessionDetail,
   PaperSessionReplayVerification,
@@ -1711,6 +1713,184 @@ const fixtureSymbolStatistics: SymbolStatistics = {
   totalEventsLast24h: fixtureSymbolRecords.reduce((total, symbol) => total + symbol.eventCount, 0)
 };
 
+const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
+  workflowId: "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+  fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+  periodId: "2026-05",
+  securityMasterSnapshotId: "9f2f0d07-f8d3-4d6e-a2f1-3116286de3d4",
+  brokerSource: "alpaca-paper",
+  status: "LedgerPostingDraft",
+  version: 4,
+  createdAtUtc: "2026-05-08T14:00:00Z",
+  updatedAtUtc: "2026-05-08T15:10:00Z",
+  brokerIntakeState: "Complete",
+  securityMasterState: "Complete",
+  ledgerPostingState: "Drafted",
+  reconciliationState: "Pending",
+  approvalState: "Pending",
+  gates: [
+    {
+      gateKey: "BrokerIngest",
+      displayName: "Broker intake",
+      status: "Passed",
+      isRequired: true,
+      description: "Broker activity has been imported and normalized.",
+      blockers: [],
+      nextActions: [],
+      completedAtUtc: "2026-05-08T14:20:00Z",
+      completedBy: "ops-user"
+    },
+    {
+      gateKey: "SecurityMaster",
+      displayName: "Security Master",
+      status: "Passed",
+      isRequired: true,
+      description: "External instruments are mapped to canonical Security Master records.",
+      blockers: [],
+      nextActions: [],
+      completedAtUtc: "2026-05-08T14:40:00Z",
+      completedBy: "ops-user"
+    },
+    {
+      gateKey: "LedgerPosting",
+      displayName: "Ledger posting",
+      status: "Blocked",
+      isRequired: true,
+      description: "Balanced journal preview must be validated before posting.",
+      blockers: [
+        {
+          code: "LEDGER_VALIDATION_REQUIRED",
+          message: "Ledger posting requires a balanced and validated journal draft.",
+          gate: "LedgerPosting",
+          severity: "Critical",
+          evidenceLinks: []
+        }
+      ],
+      nextActions: [
+        {
+          code: "RESOLVE_LEDGERPOSTING_BLOCKERS",
+          label: "Resolve Ledger Posting blockers",
+          route: "/workstation/accounting",
+          gate: "LedgerPosting"
+        }
+      ],
+      completedAtUtc: null,
+      completedBy: null
+    },
+    {
+      gateKey: "Reconciliation",
+      displayName: "Reconciliation",
+      status: "NotStarted",
+      isRequired: true,
+      description: "Expected broker activity must match posted ledger entries.",
+      blockers: [],
+      nextActions: [],
+      completedAtUtc: null,
+      completedBy: null
+    },
+    {
+      gateKey: "Approval",
+      displayName: "Approval",
+      status: "NotStarted",
+      isRequired: true,
+      description: "Operations lead approval closes the workflow.",
+      blockers: [],
+      nextActions: [],
+      completedAtUtc: null,
+      completedBy: null
+    }
+  ],
+  timeline: [
+    {
+      auditId: "cdb9449e-7402-48b7-9acf-8568b7363e16",
+      occurredAtUtc: "2026-05-08T14:00:00Z",
+      workflowId: "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      periodId: "2026-05",
+      eventType: "workflow-started",
+      fromState: "NotStarted",
+      toState: "CollectingBrokerData",
+      gate: "BrokerIngest",
+      fromGateStatus: "NotStarted",
+      toGateStatus: "InProgress",
+      actor: "ops-user",
+      rationale: "Open monthly close lane.",
+      correlationId: "dev-continuity",
+      references: [],
+      previousHash: null,
+      currentHash: "devhash-started"
+    },
+    {
+      auditId: "2fb7a2f4-6301-4958-b3d1-76ca78390ad8",
+      occurredAtUtc: "2026-05-08T15:10:00Z",
+      workflowId: "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      periodId: "2026-05",
+      eventType: "ledger-draft-blocked",
+      fromState: "LedgerPostingDraft",
+      toState: "Blocked",
+      gate: "LedgerPosting",
+      fromGateStatus: "InProgress",
+      toGateStatus: "Blocked",
+      actor: "ops-user",
+      rationale: "Journal validation is still required.",
+      correlationId: "dev-continuity",
+      references: [],
+      previousHash: "devhash-started",
+      currentHash: "devhash-ledger"
+    }
+  ],
+  breakCases: [],
+  ledgerPreview: {
+    previewId: "ledger-preview-dev",
+    status: "Drafted",
+    ledgerBatchId: null,
+    generatedAtUtc: "2026-05-08T15:00:00Z",
+    evidenceLinks: []
+  },
+  approvals: [],
+  reportPackReadiness: {
+    isReady: false,
+    reportPackId: null,
+    blockingReason: "Close workflow has unresolved ledger blockers.",
+    evidenceLinks: []
+  },
+  evidenceLinks: [],
+  blockers: [
+    {
+      code: "LEDGER_VALIDATION_REQUIRED",
+      message: "Ledger posting requires a balanced and validated journal draft.",
+      gate: "LedgerPosting",
+      severity: "Critical",
+      evidenceLinks: []
+    }
+  ],
+  nextActions: [
+    {
+      code: "RESOLVE_LEDGERPOSTING_BLOCKERS",
+      label: "Resolve Ledger Posting blockers",
+      route: "/workstation/accounting",
+      gate: "LedgerPosting"
+    }
+  ]
+};
+
+const fixtureOperationsContinuityWorkflows: OperationsContinuityWorkflowSummary[] = [
+  {
+    workflowId: fixtureOperationsContinuityWorkflow.workflowId,
+    fundAccountId: fixtureOperationsContinuityWorkflow.fundAccountId,
+    periodId: fixtureOperationsContinuityWorkflow.periodId,
+    securityMasterSnapshotId: fixtureOperationsContinuityWorkflow.securityMasterSnapshotId,
+    brokerSource: fixtureOperationsContinuityWorkflow.brokerSource,
+    status: fixtureOperationsContinuityWorkflow.status,
+    version: fixtureOperationsContinuityWorkflow.version,
+    createdAtUtc: fixtureOperationsContinuityWorkflow.createdAtUtc,
+    updatedAtUtc: fixtureOperationsContinuityWorkflow.updatedAtUtc,
+    gates: fixtureOperationsContinuityWorkflow.gates,
+    nextActions: fixtureOperationsContinuityWorkflow.nextActions
+  }
+];
+
 const fixtures = {
   [WORKSTATION_API_ENDPOINTS.systemStatus]: fixtureSystemOverview,
   [WORKSTATION_API_ENDPOINTS.session]: fixtureSession,
@@ -1722,6 +1902,7 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.operatorInbox]: fixtureOperatorInbox,
   [WORKSTATION_API_ENDPOINTS.workflowLibrary]: fixtureWorkflowLibrary,
   [WORKSTATION_API_ENDPOINTS.workflowPresets]: fixtureWorkflowPresetLibrary,
+  [WORKSTATION_API_ENDPOINTS.operationsContinuity]: fixtureOperationsContinuityWorkflows,
   [EXECUTION_API_ENDPOINTS.sessions]: fixturePaperSessionSummaries,
   [EXECUTION_API_ENDPOINTS.audit]: fixtureExecutionAudit,
   [EXECUTION_API_ENDPOINTS.controls]: fixtureExecutionControls,
@@ -1827,7 +2008,8 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
   },
   { pattern: apiRoutePattern(STRATEGY_DESIGNER_API_ENDPOINTS.drafts, "/[^/]+"), resolve: () => fixtureStrategyDesignerDocument },
   { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+"), resolve: () => fixturePaperSessionDetail },
-  { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+/replay"), resolve: () => fixturePaperSessionReplayVerification }
+  { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+/replay"), resolve: () => fixturePaperSessionReplayVerification },
+  { pattern: apiRoutePattern(WORKSTATION_API_ENDPOINTS.operationsContinuity, "/[^/]+"), resolve: () => fixtureOperationsContinuityWorkflow }
 ];
 
 export function resolveDevFixture<T>(path: string): T | undefined {

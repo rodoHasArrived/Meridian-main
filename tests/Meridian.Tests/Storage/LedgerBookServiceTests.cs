@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
@@ -103,7 +104,11 @@ public sealed class LedgerBookServiceTests
             new DateOnly(2026, 5, 1),
             new DateOnly(2026, 5, 31)));
 
-        var act = () => store.AppendAsync(BuildBalancedEntry(period.PeriodId, revenue: 1_200m, expense: 300m));
+        var act = () => store.AppendAsync(BuildBalancedEntry(
+            period.PeriodId,
+            revenue: 1_200m,
+            expense: 300m,
+            timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z")));
 
         await act.Should().ThrowAsync<LedgerValidationException>()
             .WithMessage("*basis 'Primary'*basis 'Gaap'*");
@@ -140,11 +145,20 @@ public sealed class LedgerBookServiceTests
             "2026-P01",
             new DateOnly(2026, 1, 1),
             new DateOnly(2026, 1, 31),
-            "HardClosed",
+            "Open",
             DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
-            DateTimeOffset.Parse("2026-02-01T00:00:00Z"),
+            null,
             0), expectedVersion: 0);
-        await store.AppendAsync(BuildBalancedEntry(previous.PeriodId, revenue: 800m, expense: 300m));
+        await store.AppendAsync(BuildBalancedEntry(
+            previous.PeriodId,
+            revenue: 800m,
+            expense: 300m,
+            timestamp: DateTimeOffset.Parse("2026-01-31T21:00:00Z")));
+        await store.SavePeriodAsync(previous with
+        {
+            Status = "HardClosed",
+            ClosedAt = DateTimeOffset.Parse("2026-02-01T00:00:00Z")
+        }, expectedVersion: previous.Version);
 
         var current = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
             book.LedgerBookId,
@@ -226,6 +240,52 @@ public sealed class LedgerBookServiceTests
     }
 
     [Fact]
+    public async Task AppendAsync_AfterSoftClose_AllowsOnlyAdjustmentPostingKind()
+    {
+        var store = new InMemoryLedgerJournalStore();
+        var service = new PostgresLedgerBookService(store);
+        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
+            "alpha-fund",
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            "Alpha Fund",
+            "USD"));
+        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
+            book.LedgerBookId,
+            2026,
+            6,
+            "2026-P06",
+            new DateOnly(2026, 6, 1),
+            new DateOnly(2026, 6, 30)));
+
+        await service.ClosePeriodAsync(
+            period.PeriodId,
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, "fund-controller"));
+
+        var originating = BuildBalancedEntry(
+            period.PeriodId,
+            revenue: 400m,
+            expense: 100m,
+            timestamp: DateTimeOffset.Parse("2026-06-30T21:00:00Z"));
+        var adjustment = BuildBalancedEntry(
+            period.PeriodId,
+            revenue: 200m,
+            expense: 50m,
+            timestamp: DateTimeOffset.Parse("2026-06-30T21:00:00Z")) with
+        {
+            PostingKind = LedgerPostingKindDto.Adjustment,
+            AdjustmentApproval = BuildApprovedAdjustmentApproval()
+        };
+
+        var originatingAct = () => store.AppendAsync(originating);
+        var adjustmentAct = () => store.AppendAsync(adjustment);
+
+        await originatingAct.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*soft-closed*Adjustment*");
+        await adjustmentAct.Should().NotThrowAsync();
+    }
+
+    [Fact]
     public async Task CreateBookAsync_WhenCanceled_PropagatesCancellation()
     {
         var service = new PostgresLedgerBookService(new InMemoryLedgerJournalStore());
@@ -301,6 +361,36 @@ public sealed class LedgerBookServiceTests
             item.TargetPageTag == "FundReconciliation" &&
             item.RequiredSignoffRole == "Fund Controller" &&
             item.ToleranceProfileId == "close-tolerance-v1");
+    }
+
+    [Fact]
+    public async Task LedgerEndpoints_CreateBook_WhenUserLacksLedgerMutationPermission_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerBooks,
+            new CreateLedgerBookRequest(
+                "alpha-fund",
+                Guid.Parse("59f045cb-f681-4b0c-943d-44c946f78214"),
+                FundStructureNodeKindDto.Fund,
+                "Alpha Fund",
+                "USD"),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task LedgerEndpoints_ListBooks_WhenUserLacksLedgerReadPermission_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync(UiApiRoutes.LedgerBooks);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -418,7 +508,8 @@ public sealed class LedgerBookServiceTests
         return payload!;
     }
 
-    private static async Task<WebApplication> CreateAppAsync()
+    private static async Task<WebApplication> CreateAppAsync(
+        UserPermission permissions = UserPermission.ViewTrades | UserPermission.ManageDirectLending)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -436,6 +527,13 @@ public sealed class LedgerBookServiceTests
                 sp.GetRequiredService<IOperatorInboxService>()));
 
         var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "fund-controller";
+            context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Accounting;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            await next();
+        });
         app.UseRateLimiter();
         app.MapLedgerEndpoints(ServerJsonOptions);
         app.MapWorkstationEndpoints(ServerJsonOptions);
@@ -444,17 +542,21 @@ public sealed class LedgerBookServiceTests
         return app;
     }
 
-    private static LedgerJournalEntryWrite BuildBalancedEntry(Guid periodId, decimal revenue, decimal expense)
+    private static LedgerJournalEntryWrite BuildBalancedEntry(
+        Guid periodId,
+        decimal revenue,
+        decimal expense,
+        DateTimeOffset? timestamp = null)
     {
         var journalEntryId = Guid.NewGuid();
-        var timestamp = DateTimeOffset.Parse("2026-02-28T21:00:00Z");
+        var occurredAt = timestamp ?? DateTimeOffset.Parse("2026-02-28T21:00:00Z");
         const string description = "Month-end revenue and expense posting";
         var lines = new[]
         {
             new LedgerEntry(
                 Guid.NewGuid(),
                 journalEntryId,
-                timestamp,
+                occurredAt,
                 new LedgerAccount("Cash", LedgerAccountType.Asset),
                 debit: revenue,
                 credit: 0m,
@@ -462,7 +564,7 @@ public sealed class LedgerBookServiceTests
             new LedgerEntry(
                 Guid.NewGuid(),
                 journalEntryId,
-                timestamp,
+                occurredAt,
                 new LedgerAccount("Management fees", LedgerAccountType.Revenue),
                 debit: 0m,
                 credit: revenue,
@@ -470,7 +572,7 @@ public sealed class LedgerBookServiceTests
             new LedgerEntry(
                 Guid.NewGuid(),
                 journalEntryId,
-                timestamp,
+                occurredAt,
                 new LedgerAccount("Operating expense", LedgerAccountType.Expense),
                 debit: expense,
                 credit: 0m,
@@ -478,7 +580,7 @@ public sealed class LedgerBookServiceTests
             new LedgerEntry(
                 Guid.NewGuid(),
                 journalEntryId,
-                timestamp,
+                occurredAt,
                 new LedgerAccount("Cash", LedgerAccountType.Asset),
                 debit: 0m,
                 credit: expense,
@@ -486,10 +588,21 @@ public sealed class LedgerBookServiceTests
         };
 
         return new LedgerJournalEntryWrite(
-            new JournalEntry(journalEntryId, timestamp, description, lines),
+            new JournalEntry(journalEntryId, occurredAt, description, lines),
             AggregateId: Guid.NewGuid(),
             PeriodId: periodId);
     }
+
+    private static LedgerAdjustmentApprovalMetadataDto BuildApprovedAdjustmentApproval() =>
+        new(
+            ApprovalId: "approval-ledger-adjustment-1",
+            Status: LedgerAdjustmentApprovalStatusDto.Approved,
+            ApprovedBy: "fund-controller",
+            ApprovedAt: DateTimeOffset.Parse("2026-06-30T22:00:00Z"),
+            ReasonCode: "month-end-true-up",
+            GovernanceCaseId: "case-ledger-close-1",
+            EvidenceLink: "evidence://ledger/adjustment/approval-1",
+            Notes: "Controller approved soft-close true-up.");
 
     private static string ReadMigration(string fileName)
     {
@@ -529,6 +642,8 @@ public sealed class LedgerBookServiceTests
                 throw new LedgerValidationException($"Accounting period '{entry.PeriodId}' was not found.");
             }
 
+            LedgerPeriodPostingGuard.Validate(entry, period);
+
             if (period.LedgerBookId is { } ledgerBookId &&
                 _books.TryGetValue(ledgerBookId, out var book) &&
                 book.AccountingBasis != entry.AccountingBasis)
@@ -557,7 +672,9 @@ public sealed class LedgerBookServiceTests
                 entry.RuleId,
                 entry.RuleVersion,
                 entry.SourceEventId,
-                entry.SourceJournalEntryId));
+                entry.SourceJournalEntryId,
+                entry.PostingKind,
+                entry.AdjustmentApproval));
             return Task.CompletedTask;
         }
 

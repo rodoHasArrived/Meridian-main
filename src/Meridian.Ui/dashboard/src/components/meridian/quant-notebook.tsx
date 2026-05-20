@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, Code2, Database, FileText, Play, PlayCircle,
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldSupportText } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -67,8 +68,6 @@ interface QuantNotebookProps {
 }
 
 export function QuantNotebook({ vm, studyChips }: QuantNotebookProps) {
-  const anyRunning = vm.cells.some((c) => c.state === "running");
-
   return (
     <Card className="border-border/70 bg-background/35">
       <CardHeader className="pb-3">
@@ -82,11 +81,14 @@ export function QuantNotebook({ vm, studyChips }: QuantNotebookProps) {
               size="sm"
               variant="secondary"
               onClick={() => void vm.runAll()}
-              disabled={anyRunning}
-              aria-label="Run all cells"
+              disabled={vm.runAllCommand.disabled}
+              disabledReason={vm.runAllCommand.disabledReason}
+              busy={vm.runAllCommand.busy}
+              busyLabel={vm.runAllCommand.label}
+              aria-label={vm.runAllCommand.ariaLabel}
             >
               <Play className="mr-1.5 h-3.5 w-3.5" />
-              Run all
+              {vm.runAllCommand.label}
             </Button>
             <Button
               size="sm"
@@ -203,20 +205,25 @@ function DataFetchPanel({ vm }: { vm: QuantNotebookViewModel }) {
           <label htmlFor={panel.fields.interval.id} className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             {panel.fields.interval.label}
           </label>
-          <Select
-            id={panel.fields.interval.id}
-            value={context.interval ?? "daily"}
-            onChange={(e) => vm.setContext({ interval: e.target.value as "daily" | "hourly" | "minute" })}
-            aria-label={panel.fields.interval.ariaLabel}
-            aria-describedby={panel.fields.interval.describedBy}
-            disabled={panel.fields.interval.disabled}
-            title={panel.fields.interval.disabledReason ?? undefined}
-          >
+            <Select
+              id={panel.fields.interval.id}
+              value={context.interval ?? "daily"}
+              onChange={(e) => vm.setContext({ interval: e.target.value as "daily" | "hourly" | "minute" })}
+              aria-label={panel.fields.interval.ariaLabel}
+              aria-describedby={panel.fields.interval.describedBy ?? undefined}
+              disabled={panel.fields.interval.disabled}
+            >
             <option value="daily">Daily</option>
             <option value="hourly">Hourly</option>
             <option value="minute">Minute</option>
           </Select>
-          <span id={panel.fields.interval.helpId} className="sr-only">{panel.fields.interval.helpText}</span>
+          <FieldSupportText
+            helpId={panel.fields.interval.helpId}
+            helpText={panel.fields.interval.helpText}
+            helpClassName="sr-only"
+            disabledReason={panel.fields.interval.disabledReason}
+            disabledReasonId={panel.fields.interval.disabledReasonId}
+          />
         </div>
         <Button
           size="sm"
@@ -282,12 +289,17 @@ function DataContextInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={field.ariaLabel}
-        aria-describedby={field.describedBy}
+        aria-describedby={field.describedBy ?? undefined}
         error={field.error}
         disabled={field.disabled}
-        title={field.disabledReason ?? undefined}
       />
-      <span id={field.helpId} className="sr-only">{field.helpText}</span>
+      <FieldSupportText
+        helpId={field.helpId}
+        helpText={field.helpText}
+        helpClassName="sr-only"
+        disabledReason={field.disabledReason}
+        disabledReasonId={field.disabledReasonId}
+      />
     </div>
   );
 }
@@ -390,15 +402,17 @@ function NotebookCellItem({
               )}
               value={cell.source}
               onChange={(e) => onSourceChange(e.target.value)}
-              placeholder={
-                isMarkdown
-                  ? `## Section ${cell.ordinal.toString()}\n\nNarrative, hypothesis, or analysis notes.`
-                  : `// Cell ${cell.ordinal.toString()}\n// Use Data.Prices(symbol), Backtest.WithSymbols(...), or any C# expression`
-              }
-              disabled={isRunning}
-              aria-label={`Cell ${cell.ordinal.toString()} source`}
+              placeholder={cell.sourceField.placeholder}
+              disabled={cell.sourceField.disabled}
+              aria-label={cell.sourceField.label}
+              aria-describedby={cell.sourceField.describedBy ?? undefined}
               rows={4}
-              spellCheck={isMarkdown}
+              spellCheck={cell.sourceField.spellCheck}
+            />
+            <FieldSupportText
+              disabledReason={cell.sourceField.disabledReason}
+              disabledReasonId={cell.sourceField.disabledReasonId}
+              disabledReasonClassName="mt-1"
             />
           </div>
 
@@ -479,8 +493,9 @@ function CellHeader({
             size="sm"
             variant="ghost"
             onClick={onRun}
-            disabled={isRunning}
-            aria-label={`Run cell ${cell.ordinal.toString()}`}
+            disabled={cell.runCommand.disabled}
+            disabledReason={cell.runCommand.disabledReason}
+            aria-label={cell.runCommand.ariaLabel}
             className="h-6 px-1.5"
           >
             <Play className="h-3 w-3" />

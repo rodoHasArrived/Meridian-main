@@ -43,7 +43,7 @@ public sealed class FutureProjectionService : IFutureReferenceService
     {
         var all = await GetByRootSymbolAsync(rootSymbol, ct).ConfigureAwait(false);
         return all
-            .Where(r => r.LifecycleStat != FutureLifecycleStat.Retired)
+            .Where(r => r.LifecycleStat is not FutureLifecycleStat.Expired and not FutureLifecycleStat.Retired)
             .OrderBy(r => r.ExpiryDate)
             .ToArray();
     }

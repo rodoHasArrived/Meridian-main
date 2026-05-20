@@ -19,6 +19,7 @@ import {
   REPLAY_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
   STRATEGY_DESIGNER_API_ENDPOINTS,
+  STRATEGY_ENGINE_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   executionAuditEndpoint,
   executionSessionEndpoint,
@@ -358,6 +359,11 @@ describe("Vite Meridian API proxy", () => {
     });
     expect(mutationResult).toBeUndefined();
     expect(runBacktestResponse.writableEnded).toBe(false);
+  });
+
+  it("exposes Strategy Engine endpoints through the typed catalog", () => {
+    expect(STRATEGY_ENGINE_API_ENDPOINTS.definitions).toBe("/api/workstation/strategy/engine/definitions");
+    expect(STRATEGY_ENGINE_API_ENDPOINTS.validateRun).toBe("/api/workstation/strategy/engine/validate-run");
   });
 
   it("serves Covered Call preview fixtures for no-host strategy demos without opening run mutations", async () => {

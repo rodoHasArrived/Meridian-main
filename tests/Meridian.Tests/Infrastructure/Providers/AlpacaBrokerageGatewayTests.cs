@@ -823,6 +823,94 @@ public sealed class AlpacaBrokerageGatewayTests
             path.StartsWith("/v2/account/activities?direction=desc&page_size=100&after=", StringComparison.Ordinal));
     }
 
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_OptionsLifecycle_MapsPartialFillAndLegRejectStatuses()
+    {
+        var handler = new CapturingStubHandler(
+            _ => { },
+            request =>
+            {
+                var uri = request.RequestUri!;
+                if (uri.AbsolutePath == "/v2/account")
+                {
+                    return BuildAccountResponse();
+                }
+
+                if (uri.AbsolutePath == "/v2/orders")
+                {
+                    return BuildJson(new object[]
+                    {
+                        new
+                        {
+                            id = "ord-mleg-partial",
+                            client_order_id = "client-mleg-partial",
+                            symbol = "AAPL",
+                            side = "buy",
+                            type = "limit",
+                            qty = "2",
+                            filled_qty = "1",
+                            limit_price = "1.25",
+                            status = "partially_filled",
+                            created_at = "2026-04-25T14:30:00Z"
+                        },
+                        new
+                        {
+                            id = "ord-mleg-reject",
+                            client_order_id = "client-mleg-reject",
+                            symbol = "AAPL",
+                            side = "buy",
+                            type = "limit",
+                            qty = "1",
+                            filled_qty = "0",
+                            limit_price = "0.95",
+                            status = "rejected",
+                            created_at = "2026-04-25T14:31:00Z"
+                        }
+                    });
+                }
+
+                if (uri.AbsolutePath == "/v2/account/activities")
+                {
+                    return BuildJson(new object[]
+                    {
+                        new
+                        {
+                            id = "fill-partial-leg-1",
+                            activity_type = "FILL",
+                            transaction_time = "2026-04-25T14:35:00Z",
+                            symbol = "AAPL260116C00190000",
+                            qty = "1",
+                            price = "1.20",
+                            side = "buy",
+                            order_id = "ord-mleg-partial",
+                            commission = "0",
+                            exchange = "XNAS"
+                        }
+                    });
+                }
+
+                return BuildJson(new { });
+            });
+
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var activity = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync(
+            "TEST123",
+            new DateTimeOffset(2026, 4, 25, 0, 0, 0, TimeSpan.Zero),
+            cts.Token);
+
+        activity.Orders.Should().Contain(order => order.OrderId == "ord-mleg-partial" && order.Status == OrderStatus.PartiallyFilled);
+        activity.Orders.Should().Contain(order => order.OrderId == "ord-mleg-reject" && order.Status == OrderStatus.Rejected);
+        activity.Fills.Should().ContainSingle(fill =>
+            fill.FillId == "fill-partial-leg-1" &&
+            fill.OrderId == "ord-mleg-partial" &&
+            fill.Symbol == "AAPL260116C00190000" &&
+            fill.Quantity == 1m &&
+            fill.Price == 1.20m);
+    }
+
     // ── Stub infrastructure ───────────────────────────────────────────────
 
     private sealed class ConstantStubHandler : HttpMessageHandler

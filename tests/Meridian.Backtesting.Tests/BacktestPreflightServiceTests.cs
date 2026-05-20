@@ -1,8 +1,10 @@
 using FluentAssertions;
 using Meridian.Application.Backtesting;
+using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Backtesting;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Domain.Events;
 using Meridian.Storage;
@@ -30,6 +32,13 @@ public sealed class BacktestPreflightServiceTests : IDisposable
     [Fact]
     public async Task RunAsync_ValidRequest_ReturnsReadyReport()
     {
+        foreach (var symbol in new[] { "AAPL", "MSFT" })
+        {
+            File.WriteAllText(Path.Combine(_dataRoot, $"{symbol}_bars_2024-01-03.jsonl"), "{}\n");
+            File.WriteAllText(Path.Combine(_dataRoot, $"{symbol}_quotes_2024-01-03.jsonl"), "{}\n");
+            File.WriteAllText(Path.Combine(_dataRoot, $"{symbol}_trades_2024-01-03.jsonl"), "{}\n");
+        }
+
         var sut = new BacktestPreflightService();
 
         var report = await sut.RunAsync(new BacktestPreflightRequestDto(
@@ -119,6 +128,33 @@ public sealed class BacktestPreflightServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RunAsync_SecurityMasterBlockingIssue_FailsPreflight()
+    {
+        var gate = new StubSecurityValidationGate(new SecurityValidationIssueDto(
+            SecurityValidationSeverityDto.Error,
+            "SM_IDENTIFIER_MISSING",
+            "Active identifier is missing",
+            "Security Master records must have at least one active identifier.",
+            ["identifiers"],
+            "Attach a canonical identifier.",
+            []));
+        var sut = new BacktestPreflightService(gate);
+
+        var report = await sut.RunAsync(new BacktestPreflightRequestDto(
+            From: new DateOnly(2024, 1, 1),
+            To: new DateOnly(2024, 1, 31),
+            DataRoot: _dataRoot,
+            Symbols: ["AAPL"]));
+
+        report.IsReadyToRun.Should().BeFalse();
+        report.Checks.Should().Contain(check =>
+            check.Name == "Security Master Validation"
+            && check.Status == BacktestPreflightCheckStatusDto.Failed
+            && check.Details!["blockedSymbols"] == "AAPL"
+            && check.Details["issueCodes"] == "SM_IDENTIFIER_MISSING");
+    }
+
+    [Fact]
     public async Task Engine_RunAsync_PreflightFailure_ThrowsInvalidOperationException()
     {
         var catalog = new StorageCatalogService(_dataRoot, new StorageOptions());
@@ -154,6 +190,46 @@ public sealed class BacktestPreflightServiceTests : IDisposable
                 TotalDurationMs: 1,
                 CheckedAt: DateTimeOffset.UtcNow,
                 SummaryMessage: "forced"));
+    }
+
+    private sealed class StubSecurityValidationGate(SecurityValidationIssueDto issue) : ISecurityValidationGateService
+    {
+        public Task<SecurityValidationGateResultDto> ValidateSymbolAsync(
+            string symbol,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            CancellationToken ct = default)
+        {
+            var report = new SecurityValidationReportDto(
+                SecurityId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Scope: "Security",
+                EvaluatedAtUtc: DateTimeOffset.UtcNow,
+                HasBlockingIssues: issue.Severity is SecurityValidationSeverityDto.Error or SecurityValidationSeverityDto.Critical,
+                CriticalIssueCount: issue.Severity == SecurityValidationSeverityDto.Critical ? 1 : 0,
+                ErrorIssueCount: issue.Severity == SecurityValidationSeverityDto.Error ? 1 : 0,
+                Issues: [issue]);
+
+            return Task.FromResult(new SecurityValidationGateResultDto(
+                workflow,
+                symbol.Trim().ToUpperInvariant(),
+                report.SecurityId,
+                IsResolved: true,
+                IsBlocked: report.HasBlockingIssues,
+                Report: report,
+                Snapshot: null));
+        }
+
+        public Task<SecurityValidationGateResultDto> ValidateSecurityAsync(
+            Guid securityId,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            string? symbol = null,
+            CancellationToken ct = default)
+            => ValidateSymbolAsync(symbol ?? securityId.ToString(), workflow, workflowReference, actor, persistSnapshot, ct);
     }
 
     private sealed class LocalNoOpStrategy : IBacktestStrategy

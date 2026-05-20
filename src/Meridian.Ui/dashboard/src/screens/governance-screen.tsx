@@ -1,5 +1,6 @@
 import { AlertCircle, BookCheck, CheckCircle2, Landmark, Network, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useMemo } from "react";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,7 @@ import type {
   CalibrationSummaryViewModel,
   CorporateActionsViewState,
   CorporateActionRowViewModel,
+  ReconciliationBreakRowViewModel,
   ReconciliationQueuePanelViewState,
   ReconciliationQueueRunRowViewModel,
   ReconciliationQueueRunTone,
@@ -134,6 +136,38 @@ const reconciliationQueueColumns: DenseDataTableColumn<ReconciliationQueueRunRow
     )
   },
   { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedLabel}</span> }
+];
+
+const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowViewModel>[] = [
+  {
+    id: "break",
+    label: "Break",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.strategyName}</span>
+        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.breakId}</span>
+      </span>
+    )
+  },
+  { id: "category", label: "Category", render: (row) => <span className="font-mono text-muted-foreground">{row.category}</span> },
+  {
+    id: "variance",
+    label: "Variance",
+    align: "right",
+    render: (row) => (
+      <span
+        className={cn(
+          "font-mono tabular-nums",
+          row.varianceTone === "success" ? "text-success" : row.varianceTone === "danger" ? "text-danger" : "text-foreground"
+        )}
+      >
+        {row.varianceLabel}
+      </span>
+    )
+  },
+  { id: "owner", label: "Owner", render: (row) => <span className="font-mono text-muted-foreground">{row.ownerLabel}</span> },
+  { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedAtLabel}</span> },
+  { id: "status", label: "Status", render: (row) => <Badge variant={row.statusBadgeVariant}>{row.status}</Badge> }
 ];
 
 const trialBalanceColumns: DenseDataTableColumn<GovernanceTrialBalanceRowViewModel>[] = [
@@ -254,14 +288,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const selectedSecurityEntry = securityMaster.selectedSecurityId
     ? securityMaster.results?.find((entry) => entry.securityId === securityMaster.selectedSecurityId) ?? null
     : null;
-  const identifierColumns: DenseDataTableColumn<NonNullable<typeof identity>["identifiers"][number]>[] = [
+  const identifierColumns = useMemo<DenseDataTableColumn<NonNullable<typeof identity>["identifiers"][number]>[]>(() => [
     { id: "kind", label: "Kind", render: (identifier) => <span className="font-mono">{identifier.kind}</span> },
     { id: "value", label: "Value", render: (identifier) => <span className="font-mono text-foreground">{identifier.value}</span> },
     { id: "provider", label: "Provider", render: (identifier) => identifier.providerLabel },
     { id: "state", label: "State", render: (identifier) => <Badge variant={identifier.primaryBadgeVariant}>{identifier.primaryLabel}</Badge> },
     { id: "range", label: "Valid range", render: (identifier) => <span className="font-mono text-muted-foreground">{identifier.validRangeLabel}</span> }
-  ];
-  const aliasColumns: DenseDataTableColumn<NonNullable<typeof identity>["aliases"][number]>[] = [
+  ], []);
+  const aliasColumns = useMemo<DenseDataTableColumn<NonNullable<typeof identity>["aliases"][number]>[]>(() => [
     { id: "kind", label: "Kind", render: (alias) => <span className="font-mono">{alias.aliasKind}</span> },
     {
       id: "alias",
@@ -277,8 +311,8 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
     { id: "scope", label: "Scope", render: (alias) => alias.scope },
     { id: "state", label: "State", render: (alias) => <Badge variant={alias.enabledBadgeVariant}>{alias.enabledLabel}</Badge> },
     { id: "range", label: "Valid range", render: (alias) => <span className="font-mono text-muted-foreground">{alias.validRangeLabel}</span> }
-  ];
-  const securityResultColumns: DenseDataTableColumn<SecuritySearchResultRowViewModel>[] = [
+  ], []);
+  const securityResultColumns = useMemo<DenseDataTableColumn<SecuritySearchResultRowViewModel>[]>(() => [
     {
       id: "name",
       label: "Name",
@@ -293,6 +327,59 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
     { id: "primaryId", label: "Primary ID", render: (row) => <span className="font-mono text-muted-foreground">{row.primaryIdentifierLabel}</span> },
     { id: "currency", label: "Currency", render: (row) => <span className="font-mono text-muted-foreground">{row.economicDefinition.currency}</span> },
     { id: "status", label: "Status", render: (row) => <Badge variant={row.statusTone === "success" ? "success" : "warning"}>{row.status}</Badge> }
+  ], []);
+  const activeResolveBreak = resolveDialog.active
+    ? reconciliation.rows.find((item) => item.breakId === resolveDialog.active?.breakId) ?? null
+    : null;
+  const reconciliationBreakTableColumns: DenseDataTableColumn<ReconciliationBreakRowViewModel>[] = [
+    ...reconciliationBreakColumns,
+    {
+      id: "actions",
+      label: "Actions",
+      render: (item) => (
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!item.canAssign}
+            disabledReason={item.assignDisabledReason}
+            aria-label={item.assignAriaLabel}
+            onClick={() => {
+              reconciliation.selectBreak(item.breakId);
+              void reconciliation.assignBreak(item.breakId);
+            }}
+          >
+            {item.assignLabel}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!item.canResolve || resolveDialog.isOpenFor(item.breakId)}
+            disabledReason={resolveDialog.getActionDisabledReason(item.breakId, "resolve", item.resolveDisabledReason)}
+            aria-label={item.resolveAriaLabel}
+            onClick={() => {
+              reconciliation.selectBreak(item.breakId);
+              resolveDialog.open(item.breakId, "Resolved");
+            }}
+          >
+            {item.resolveLabel}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={!item.canDismiss || resolveDialog.isOpenFor(item.breakId)}
+            disabledReason={resolveDialog.getActionDisabledReason(item.breakId, "dismiss", item.dismissDisabledReason)}
+            aria-label={item.dismissAriaLabel}
+            onClick={() => {
+              reconciliation.selectBreak(item.breakId);
+              resolveDialog.open(item.breakId, "Dismissed");
+            }}
+          >
+            {item.dismissLabel}
+          </Button>
+        </div>
+      )
+    }
   ];
 
   if (!data) {
@@ -600,6 +687,13 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                   <p className="mt-2 text-sm leading-6">
                     {reconciliation.trialBalanceView.errorText ?? reconciliation.trialBalanceView.loadingText ?? reconciliation.trialBalanceView.emptyDetail}
                   </p>
+                  {reconciliation.trialBalanceView.errorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.trialBalanceView.errorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
               {reconciliation.trialBalanceView.loadingText && reconciliation.trialBalanceView.hasRows ? (
@@ -609,7 +703,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               ) : null}
               {reconciliation.trialBalanceView.errorText && reconciliation.trialBalanceView.hasRows ? (
                 <div role="alert" className="mt-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {reconciliation.trialBalanceView.errorText}
+                  <div>{reconciliation.trialBalanceView.errorText}</div>
+                  {reconciliation.trialBalanceView.errorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.trialBalanceView.errorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               ) : null}
             </CardContent>
@@ -872,7 +973,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               )}
               {securityMaster.searchErrorText && (
                 <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {securityMaster.searchErrorText}
+                  <div>{securityMaster.searchErrorText}</div>
+                  {securityMaster.searchErrorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {securityMaster.searchErrorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
 
@@ -901,7 +1009,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                 )}
                 {securityMaster.identityErrorText && (
                   <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                    {securityMaster.identityErrorText}
+                    <div>{securityMaster.identityErrorText}</div>
+                    {securityMaster.identityErrorDetails.length > 0 ? (
+                      <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                        {securityMaster.identityErrorDetails.map((detail) => (
+                          <li key={detail}>{detail}</li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </div>
                 )}
                 {identity && (
@@ -993,6 +1108,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                   disabled={securityMaster.conflictRefreshCommand.disabled}
                   disabledReason={securityMaster.conflictRefreshCommand.disabledReason}
                   aria-label={securityMaster.conflictRefreshCommand.ariaLabel}
+                  aria-describedby={securityMaster.conflictRefreshCommand.feedbackText ? securityMaster.conflictRefreshCommand.feedbackId : undefined}
                   onClick={() => void securityMaster.refreshConflicts()}
                   className="shrink-0"
                 >
@@ -1002,15 +1118,38 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               </div>
             </CardHeader>
             <CardContent>
+              {securityMaster.conflictRefreshCommand.feedbackText && (
+                <p
+                  id={securityMaster.conflictRefreshCommand.feedbackId}
+                  role="status"
+                  className="mb-3 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning"
+                >
+                  {securityMaster.conflictRefreshCommand.feedbackText}
+                </p>
+              )}
               {securityMaster.conflictsLoading && <p role="status" className="text-sm text-muted-foreground">Loading conflicts…</p>}
               {securityMaster.conflictsErrorText && (
                 <div role="alert" className="mb-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {securityMaster.conflictsErrorText}
+                  <div>{securityMaster.conflictsErrorText}</div>
+                  {securityMaster.conflictsErrorDetails.length > 0 && (
+                    <ul className="mt-2 list-disc pl-5">
+                      {securityMaster.conflictsErrorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
               {securityMaster.conflictActionErrorText && (
                 <div role="alert" className="mb-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {securityMaster.conflictActionErrorText}
+                  <div>{securityMaster.conflictActionErrorText}</div>
+                  {securityMaster.conflictActionErrorDetails.length > 0 && (
+                    <ul className="mt-2 list-disc pl-5">
+                      {securityMaster.conflictActionErrorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
               {!securityMaster.conflictsLoading && securityMaster.conflicts !== null && !securityMaster.hasConflicts && (
@@ -1148,84 +1287,90 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
               )}
               {reconciliation.errorText && (
                 <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {reconciliation.errorText}
+                  <div>{reconciliation.errorText}</div>
+                  {reconciliation.errorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.errorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
               {reconciliation.actionErrorText && (
                 <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {reconciliation.actionErrorText}
+                  <div>{reconciliation.actionErrorText}</div>
+                  {reconciliation.actionErrorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliation.actionErrorDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
-              {!reconciliation.loadingText && !reconciliation.hasBreaks && (
-                <p className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
-                  {reconciliation.emptyText}
-                </p>
-              )}
-              {reconciliation.rows.map((item) => (
-                <div key={item.breakId} className="rounded-lg border border-border/70 p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="font-semibold">{item.strategyName} · {item.category}</div>
-                      <div className="mt-0.5 text-xs text-muted-foreground">{item.reason}</div>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      {typeof item.variance === "number" && item.variance !== 0 && (
-                        <span className={cn("font-mono text-xs font-semibold", item.variance > 0 ? "text-success" : "text-danger")}>
-                          {item.variance > 0 ? "+" : ""}{item.variance.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 })}
-                        </span>
-                      )}
-                      <Badge variant={item.status === "Resolved" ? "success" : item.status === "InReview" ? "warning" : item.status === "Dismissed" ? "outline" : "danger"}>
-                        {item.status}
-                      </Badge>
-                    </div>
-                  </div>
-                  {item.explainabilitySummary && (
-                    <div className="mt-2 rounded-md border border-border/50 bg-secondary/20 px-3 py-2 text-xs leading-5 text-muted-foreground">
-                      <span className="font-medium text-foreground">Analysis: </span>
-                      {item.explainabilitySummary}
-                    </div>
-                  )}
-                  {item.recommendedAction && (
-                    <div className="mt-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs leading-5">
-                      <span className="font-medium text-primary">Recommended: </span>
-                      <span className="text-foreground">{item.recommendedAction}</span>
-                    </div>
-                  )}
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={!item.canAssign}
-                      disabledReason={item.assignDisabledReason}
-                      aria-label={item.assignAriaLabel}
-                      onClick={() => void reconciliation.assignBreak(item.breakId)}
-                    >
-                      {item.assignLabel}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={!item.canResolve || resolveDialog.isOpenFor(item.breakId)}
-                      disabledReason={resolveDialog.getActionDisabledReason(item.breakId, "resolve", item.resolveDisabledReason)}
-                      aria-label={item.resolveAriaLabel}
-                      onClick={() => resolveDialog.open(item.breakId, "Resolved")}
-                    >
-                      {item.resolveLabel}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      disabled={!item.canDismiss || resolveDialog.isOpenFor(item.breakId)}
-                      disabledReason={resolveDialog.getActionDisabledReason(item.breakId, "dismiss", item.dismissDisabledReason)}
-                      aria-label={item.dismissAriaLabel}
-                      onClick={() => resolveDialog.open(item.breakId, "Dismissed")}
-                    >
-                      {item.dismissLabel}
-                    </Button>
-                  </div>
-                  {resolveDialog.active?.breakId === item.breakId && (
+              <DenseDataTable
+                columns={reconciliationBreakTableColumns}
+                rows={reconciliation.rows}
+                getRowId={(item) => item.breakId}
+                getRowAriaLabel={(item) => item.rowAriaLabel}
+                getRowSelectAriaLabel={(item) => item.rowSelectAriaLabel}
+                getRowAriaControls={(item) => item.detailPanelId}
+                getRowAriaExpanded={(item) => item.isExpanded}
+                onRowSelect={(item) => reconciliation.selectBreak(item.breakId)}
+                selectedRowId={reconciliation.selectedBreakId}
+                emptyText={reconciliation.emptyText}
+                ariaLabel={reconciliation.tableLabel}
+                caption={reconciliation.tableCaption}
+              />
+              <div id={reconciliation.detailPanelId} aria-live="polite">
+                {reconciliation.selectedDetail ? (
+                  <EntitySummary
+                    eyebrow={reconciliation.selectedDetail.eyebrow}
+                    title={reconciliation.selectedDetail.title}
+                    subtitle={reconciliation.selectedDetail.subtitle}
+                    description={reconciliation.selectedDetail.description}
+                    ariaLabel={reconciliation.selectedDetail.ariaLabel}
+                    fields={reconciliation.selectedDetail.fields}
+                    status={<Badge variant={reconciliation.selectedDetail.statusBadgeVariant}>{reconciliation.selectedDetail.statusLabel}</Badge>}
+                  />
+                ) : (
+                  <section
+                    role="region"
+                    aria-label={reconciliation.detailEmptyAriaLabel}
+                    className="rounded-lg border border-border/70 bg-secondary/20 px-4 py-3 text-sm text-muted-foreground"
+                  >
+                    <div className="eyebrow-label">{reconciliation.detailEmptyTitle}</div>
+                    <p className="mt-1">{reconciliation.detailEmptyText}</p>
+                  </section>
+                )}
+              </div>
+              {reconciliation.selectedDetail?.analysisText ? (
+                <div className="rounded-md border border-border/50 bg-secondary/20 px-3 py-2 text-xs leading-5 text-muted-foreground">
+                  <span className="font-medium text-foreground">Analysis: </span>
+                  {reconciliation.selectedDetail.analysisText}
+                </div>
+              ) : null}
+              {reconciliation.selectedDetail?.recommendedActionText ? (
+                <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs leading-5">
+                  <span className="font-medium text-primary">Recommended: </span>
+                  <span className="text-foreground">{reconciliation.selectedDetail.recommendedActionText}</span>
+                </div>
+              ) : null}
+              {reconciliation.selectedDetail?.routingActionHref && reconciliation.selectedDetail.routingActionLabel ? (
+                <Button asChild variant="secondary" className="w-fit">
+                  <Link
+                    to={reconciliation.selectedDetail.routingActionHref}
+                    aria-label={reconciliation.selectedDetail.routingActionAriaLabel ?? reconciliation.selectedDetail.routingActionLabel}
+                  >
+                    <Network className="h-4 w-4" aria-hidden="true" />
+                    {reconciliation.selectedDetail.routingActionLabel}
+                  </Link>
+                </Button>
+              ) : null}
+              {activeResolveBreak && resolveDialog.active ? (
                     <form
-                      className="mt-3 space-y-2 rounded-lg border border-border/50 bg-secondary/20 p-3"
+                      className="space-y-2 rounded-lg border border-border/50 bg-secondary/20 p-3"
                       aria-label={resolveDialog.active.formAriaLabel}
                       onSubmit={(e) => {
                         e.preventDefault();
@@ -1264,9 +1409,7 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                         </Button>
                       </div>
                     </form>
-                  )}
-                </div>
-              ))}
+              ) : null}
             </CardContent>
           </Card>
 
@@ -1309,7 +1452,14 @@ function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewModel }
         {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
         {view.errorText && (
           <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            {view.errorText}
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         )}
         {!view.loadingText && !view.errorText && (
@@ -1408,7 +1558,14 @@ function CorporateActionsPanel({
         {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
         {view.errorText && (
           <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            {view.errorText}
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         )}
         {!view.loadingText && !view.errorText && (
@@ -1539,7 +1696,14 @@ function TradingParametersPanel({ view }: { view: TradingParametersViewState }) 
         {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
         {view.errorText && (
           <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            {view.errorText}
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         )}
         {!view.loadingText && !view.errorText && view.fields.length === 0 && (

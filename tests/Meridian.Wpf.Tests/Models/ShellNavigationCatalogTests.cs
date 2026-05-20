@@ -122,6 +122,15 @@ public sealed class ShellNavigationCatalogTests
     }
 
     [Fact]
+    public void DataShell_ShouldUseFeatureOwnedWorkspaceShellPage()
+    {
+        var dataShell = ShellNavigationCatalog.GetPage("DataShell");
+
+        dataShell.Should().NotBeNull();
+        dataShell!.PageType.Should().Be(typeof(Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellPage));
+    }
+
+    [Fact]
     public void ResolveDefaultPanes_TradingWorkbenchPreset_UsesPresetPanes()
     {
         var panes = ShellNavigationCatalog.ResolveDefaultPanes(new WorkspaceShellState(

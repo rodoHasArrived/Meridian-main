@@ -132,6 +132,13 @@ export function WatchlistScreen() {
                 <FeedbackIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 <span>{vm.submitFeedback.message}</span>
               </span>
+              {vm.submitFeedback.details && vm.submitFeedback.details.length > 0 ? (
+                <ul className="w-full list-disc space-y-1 pl-5 text-xs leading-5">
+                  {vm.submitFeedback.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
               {vm.submitFeedback.providerSetupHandoff ? (
                 <Button asChild variant="outline" size="sm">
                   <Link to={vm.submitFeedback.providerSetupHandoff.href} aria-label={vm.submitFeedback.providerSetupHandoff.ariaLabel}>
@@ -229,15 +236,31 @@ export function WatchlistScreen() {
           ) : (
             <>
               {vm.loadError ? (
-                <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {vm.loadError}
-                </p>
+                <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                  <div>{vm.loadError.summary}</div>
+                  {vm.loadError.details.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {vm.loadError.details.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
               ) : null}
               <div
                 role={vm.quoteStatusTone === "danger" ? "alert" : "status"}
                 className={`flex flex-col gap-3 rounded-md border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between ${quoteStatusClass[vm.quoteStatusTone]}`}
               >
-                <span>{vm.quoteStatusLabel}</span>
+                <div className="min-w-0">
+                  <div>{vm.quoteStatusLabel}</div>
+                  {vm.quoteStatusDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {vm.quoteStatusDetails.map((detail) => (
+                        <li key={detail}>{detail}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
                 {vm.quoteProviderSetupHandoff ? (
                   <Button asChild variant="outline" size="sm" className="w-fit bg-background/40">
                     <Link to={vm.quoteProviderSetupHandoff.href} aria-label={vm.quoteProviderSetupHandoff.ariaLabel}>

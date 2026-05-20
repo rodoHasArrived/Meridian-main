@@ -1,36 +1,16 @@
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using Meridian.Application.Composition;
-using Meridian.Application.FundStructure;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
-using Meridian.Application.SecurityMaster;
-using Meridian.Application.Services;
 using Meridian.Application.UI;
-using Meridian.Backtesting;
-using Meridian.Backtesting.Engine;
-using Meridian.Backtesting.Sdk;
-using Meridian.Contracts.SecurityMaster;
-using Meridian.Contracts.Services;
-using Meridian.Storage;
-using Meridian.Storage.Services;
-using Meridian.Contracts.Workstation;
-using Meridian.Strategies.Interfaces;
-using Meridian.Strategies.Promotions;
-using Meridian.Strategies.Services;
-using Meridian.Strategies.Storage;
-using Meridian.Ui.Shared;
-using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
-using Meridian.Ui.Shared.Services.CoveredCall;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
+using ApplicationStatusEndpointHandlers = Meridian.Application.UI.StatusEndpointHandlers;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -48,35 +28,7 @@ public static class UiEndpoints
     /// <param name="configPath">Optional path to configuration file.</param>
     public static IServiceCollection AddUiSharedServices(this IServiceCollection services, string? configPath = null)
     {
-        // Use the centralized composition root (registers core services)
-        var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
-        services.AddMarketDataServices(options);
-
-        // Register user profile registry (multi-user RBAC) and session-based auth service
-        services.AddSingleton<UserProfileRegistry>();
-        services.AddSingleton<LoginSessionService>();
-
-        // Replace core BackfillCoordinator with UI-extended version that includes PreviewAsync
-        // The Ui.Shared.Services.BackfillCoordinator wraps the core and adds preview functionality
-        services.AddSingleton<Meridian.Ui.Shared.Services.BackfillCoordinator>(sp =>
-        {
-            var configStore = sp.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
-            return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore);
-        });
-
-        RegisterStrategyWorkstationServices(services);
-        services.AddEvidenceWorkflowFabric();
-
-        services.AddMutationRateLimiter();
-        services.AddMemoryCache();
-        services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
-        services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
-
-        // Register LeanAutoExportService as a background hosted service
-        services.AddSingleton<LeanAutoExportService>();
-        services.AddHostedService(sp => sp.GetRequiredService<LeanAutoExportService>());
-
-        return services;
+        return services.AddUiSharedServicesCore(configPath, statusHandlers: null);
     }
 
     /// <summary>
@@ -86,155 +38,28 @@ public static class UiEndpoints
     /// <param name="services">The service collection.</param>
     /// <param name="statusHandlers">Status endpoint handlers to register.</param>
     /// <param name="configPath">Optional path to configuration file.</param>
-    public static IServiceCollection AddUiSharedServices(this IServiceCollection services, StatusEndpointHandlers statusHandlers, string? configPath = null)
+    public static IServiceCollection AddUiSharedServices(this IServiceCollection services, ApplicationStatusEndpointHandlers statusHandlers, string? configPath = null)
     {
-        // Use the centralized composition root (registers core services)
+        ArgumentNullException.ThrowIfNull(statusHandlers);
+        return services.AddUiSharedServicesCore(configPath, statusHandlers);
+    }
+
+    private static IServiceCollection AddUiSharedServicesCore(
+        this IServiceCollection services,
+        string? configPath,
+        ApplicationStatusEndpointHandlers? statusHandlers)
+    {
         var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         services.AddMarketDataServices(options);
-
-        // Register user profile registry (multi-user RBAC) and session-based auth service
-        services.AddSingleton<UserProfileRegistry>();
-        services.AddSingleton<LoginSessionService>();
-
-        // Replace core BackfillCoordinator with UI-extended version that includes PreviewAsync
-        services.AddSingleton<Meridian.Ui.Shared.Services.BackfillCoordinator>(sp =>
+        services.AddWorkstationSharedServices();
+        if (statusHandlers is not null)
         {
-            var configStore = sp.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
-            return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore);
-        });
+            services.AddSingleton(statusHandlers);
+        }
 
-        RegisterStrategyWorkstationServices(services);
-        services.AddEvidenceWorkflowFabric();
-
-        services.AddSingleton(statusHandlers);
         services.AddMutationRateLimiter();
-        services.AddMemoryCache();
-        services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
-        services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
-
-        // Register LeanAutoExportService as a background hosted service
-        services.AddSingleton<LeanAutoExportService>();
-        services.AddHostedService(sp => sp.GetRequiredService<LeanAutoExportService>());
-
+        services.AddLeanAutoExportHostedService();
         return services;
-    }
-
-    /// <summary>
-    /// Registers the strategy read-model services used by workstation bootstrap endpoints.
-    /// These are registered with TryAdd so richer implementations can override them later.
-    /// </summary>
-    private static void RegisterStrategyWorkstationServices(IServiceCollection services)
-    {
-        services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
-        services.TryAddSingleton(PromotionRecordStoreOptions.Default);
-        services.TryAddSingleton<IPromotionRecordStore>(sp =>
-            new JsonlPromotionRecordStore(
-                sp.GetRequiredService<PromotionRecordStoreOptions>(),
-                sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
-        services.TryAddSingleton(StrategyDesignStoreOptions.Default);
-        services.TryAddSingleton<IStrategyDesignRepository>(sp =>
-            new JsonlStrategyDesignRepository(
-                sp.GetRequiredService<StrategyDesignStoreOptions>(),
-                sp.GetRequiredService<ILogger<JsonlStrategyDesignRepository>>()));
-        services.TryAddSingleton<StrategyDesignService>();
-        services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
-        services.TryAddSingleton<PortfolioReadService>();
-        services.TryAddSingleton<LedgerReadService>();
-        services.TryAddSingleton<StrategyRunReadService>();
-        services.TryAddSingleton<CashFlowProjectionService>();
-        services.TryAddSingleton<StrategyRunContinuityService>();
-        services.TryAddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
-        services.TryAddSingleton<BrokerageConnectionService>();
-        services.TryAddSingleton<AlpacaBrokerageConnectionService>();
-        services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
-        services.TryAddSingleton<BrokeragePortfolioSyncService>();
-        services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
-        services.TryAddSingleton<Dk1TrustGateReadinessService>();
-        services.TryAddSingleton<TradingOperatorReadinessService>();
-        services.TryAddSingleton<StrategyRunReviewPacketService>();
-        services.TryAddSingleton<BacktestToLivePromoter>();
-        services.TryAddSingleton<PromotionService>();
-        services.TryAddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();
-        services.TryAddSingleton<NavAttributionService>();
-        services.TryAddSingleton<ReportGenerationService>();
-        services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
-        {
-            var logger = sp.GetRequiredService<ILogger<FileGovernanceReportPackRepository>>();
-            var dataDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Meridian",
-                "workstation");
-            return new FileGovernanceReportPackRepository(dataDir, logger);
-        });
-        services.TryAddSingleton<FundOperationsWorkspaceReadService>();
-
-        // Reconciliation services — required by /api/workstation/reconciliation/* endpoints.
-        // InMemoryReconciliationRunRepository is the default; a persistent implementation can
-        // override it by registering before AddUiSharedServices is called (TryAdd semantics).
-        services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
-        services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
-        services.TryAddSingleton<IStrategyPortfolioReconciliationSourceAdapter, StrategyPortfolioReconciliationSourceAdapter>();
-        services.TryAddSingleton<IInternalCashReconciliationSourceAdapter, BankInternalCashReconciliationSourceAdapter>();
-        services.TryAddSingleton<IExternalStatementSource, NullExternalStatementSource>();
-        services.TryAddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
-        services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
-        {
-            var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileReconciliationBreakQueueRepository>>();
-            var dataDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Meridian",
-                "workstation");
-            return new FileReconciliationBreakQueueRepository(dataDir, logger);
-        });
-        services.TryAddSingleton<ReconciliationProjectionService>();
-        services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
-
-        RegisterCoveredCallServices(services);
-    }
-
-    /// <summary>
-    /// Registers covered-call backtest services (slice 1: backtest UI). Includes the
-    /// engine factory delegate, chain-provider factory, and the hosted backtest service.
-    /// </summary>
-    private static void RegisterCoveredCallServices(IServiceCollection services)
-    {
-        // CoveredCallBacktestOptions binds to "Strategies:CoveredCall" from IConfiguration when
-        // one is present in DI. Defaults from the type itself apply when the section is absent.
-        services.AddOptions<CoveredCallBacktestOptions>()
-            .BindConfiguration(CoveredCallBacktestOptions.SectionName);
-
-        services.TryAddSingleton<ICoveredCallChainProviderFactory, CoveredCallChainProviderFactory>();
-
-        // BacktestEngine factory — mirrors the WPF App.xaml.cs pattern: one engine per
-        // BacktestRequest because the catalog service is bound to request.DataRoot.
-        services.TryAddSingleton<Func<BacktestRequest, BacktestEngine>>(sp =>
-        {
-            BacktestEngine CreateEngine(BacktestRequest request)
-            {
-                var storageOptions = new StorageOptions { RootPath = request.DataRoot };
-                var catalogService = new StorageCatalogService(request.DataRoot, storageOptions);
-                return new BacktestEngine(
-                    sp.GetRequiredService<ILogger<BacktestEngine>>(),
-                    catalogService,
-                    sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
-                    sp.GetService<ICorporateActionAdjustmentService>(),
-                    sp.GetService<IBacktestPreflightService>());
-            }
-
-            return CreateEngine;
-        });
-
-        // Register the concrete type so AddHostedService<T> doesn't need a cast. The interface
-        // is then served by the same instance.
-        services.TryAddSingleton<CoveredCallBacktestService>(sp => new CoveredCallBacktestService(
-            engineFactory: sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>(),
-            chainFactory: sp.GetRequiredService<ICoveredCallChainProviderFactory>(),
-            runRepository: sp.GetRequiredService<IStrategyRepository>(),
-            options: sp.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<CoveredCallBacktestOptions>>(),
-            resultCache: sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
-            loggerFactory: sp.GetRequiredService<ILoggerFactory>()));
-        services.TryAddSingleton<ICoveredCallBacktestService>(sp => sp.GetRequiredService<CoveredCallBacktestService>());
-        services.AddHostedService(sp => sp.GetRequiredService<CoveredCallBacktestService>());
     }
 
 
@@ -268,12 +93,31 @@ public static class UiEndpoints
     /// Maps all UI API endpoints with custom JSON serializer options.
     /// </summary>
     public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null)
+        => app.MapUiEndpointGroups(
+            jsonOptions,
+            jsonOptionsIndented,
+            statusHandlers: null,
+            mapCanonicalizationEndpoints: false,
+            mapCppTraderEndpoints: true);
+
+    private static WebApplication MapUiEndpointGroups(
+        this WebApplication app,
+        JsonSerializerOptions jsonOptions,
+        JsonSerializerOptions? jsonOptionsIndented,
+        ApplicationStatusEndpointHandlers? statusHandlers,
+        bool mapCanonicalizationEndpoints,
+        bool mapCppTraderEndpoints)
     {
         jsonOptionsIndented ??= new JsonSerializerOptions
         {
             PropertyNamingPolicy = jsonOptions.PropertyNamingPolicy,
             WriteIndented = true
         };
+
+        if (statusHandlers is not null)
+        {
+            app.MapStatusEndpoints(statusHandlers, jsonOptions);
+        }
 
         // Map all endpoint groups
         app.MapConfigEndpoints(jsonOptions);
@@ -288,7 +132,9 @@ public static class UiEndpoints
         // Data ingestion and operator onboarding endpoints
         app.MapDemoModeEndpoints(jsonOptions);
         app.MapBackfillValidationEndpoints(jsonOptions);
+        app.MapProviderConnectionEndpoints(jsonOptions);
         app.MapProviderCredentialEndpoints(jsonOptions);
+        app.MapProviderRoutingEndpoints(jsonOptions);
 
         app.MapStorageEndpoints(jsonOptions);
         app.MapStorageQualityEndpoints(jsonOptions);
@@ -310,10 +156,17 @@ public static class UiEndpoints
         app.MapLeanEndpoints(jsonOptions);
         app.MapMessagingEndpoints(jsonOptions);
         app.MapProviderExtendedEndpoints(jsonOptions);
-        app.MapCppTraderEndpoints();
+        if (mapCppTraderEndpoints)
+        {
+            app.MapCppTraderEndpoints();
+        }
+
         app.MapIndexEndpoints(jsonOptions);
 
-        // Canonicalization parity dashboard (Phase 2) endpoints are mapped elsewhere to avoid duplicate registrations.
+        if (mapCanonicalizationEndpoints)
+        {
+            app.MapCanonicalizationEndpoints(jsonOptions);
+        }
 
         // Trading calendar endpoints
         app.MapCalendarEndpoints(jsonOptions);
@@ -389,6 +242,7 @@ public static class UiEndpoints
 
         // Paper trading cockpit endpoints
         app.MapExecutionEndpoints(jsonOptions);
+        app.MapRiskEndpoints(jsonOptions);
 
         // Promotion workflow endpoints (Backtest → Paper → Live)
         app.MapPromotionEndpoints(jsonOptions);
@@ -410,7 +264,7 @@ public static class UiEndpoints
     /// Maps all UI API endpoints including status endpoints.
     /// Use this when StatusEndpointHandlers has been registered in DI.
     /// </summary>
-    public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, StatusEndpointHandlers statusHandlers)
+    public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers)
     {
         var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         var jsonOptionsIndented = new JsonSerializerOptions
@@ -419,138 +273,12 @@ public static class UiEndpoints
             WriteIndented = true
         };
 
-        // Map status endpoints using shared handlers
-        app.MapStatusEndpoints(statusHandlers, jsonOptions);
-
-        // Map all other endpoint groups
-        app.MapConfigEndpoints(jsonOptions);
-        app.MapBackfillEndpoints(jsonOptions, jsonOptionsIndented);
-        app.MapProviderEndpoints(jsonOptions);
-        app.MapFailoverEndpoints(jsonOptions);
-        app.MapIBEndpoints(jsonOptions);
-        app.MapSymbolMappingEndpoints(jsonOptions);
-        app.MapLiveDataEndpoints(jsonOptions);
-        app.MapSymbolEndpoints(jsonOptions);
-
-        // Data ingestion and operator onboarding endpoints
-        app.MapDemoModeEndpoints(jsonOptions);
-        app.MapBackfillValidationEndpoints(jsonOptions);
-        app.MapProviderCredentialEndpoints(jsonOptions);
-
-        app.MapStorageEndpoints(jsonOptions);
-        app.MapStorageQualityEndpoints(jsonOptions);
-        app.MapCatalogEndpoints(jsonOptions);
-
-        // Phase 3B endpoint groups
-        app.MapHealthEndpoints(jsonOptions);
-        app.MapDiagnosticsEndpoints(jsonOptions);
-        app.MapBackfillScheduleEndpoints(jsonOptions);
-        app.MapAdminEndpoints(jsonOptions);
-        app.MapMaintenanceScheduleEndpoints(jsonOptions);
-        app.MapAnalyticsEndpoints(jsonOptions);
-        app.MapReplayEndpoints(jsonOptions);
-        app.MapExportEndpoints(jsonOptions);
-        app.MapSubscriptionEndpoints(jsonOptions);
-        app.MapSamplingEndpoints(jsonOptions);
-        app.MapAlignmentEndpoints(jsonOptions);
-        app.MapCronEndpoints(jsonOptions);
-        app.MapLeanEndpoints(jsonOptions);
-        app.MapMessagingEndpoints(jsonOptions);
-        app.MapProviderExtendedEndpoints(jsonOptions);
-        app.MapIndexEndpoints(jsonOptions);
-
-        // Canonicalization parity dashboard (Phase 2)
-        app.MapCanonicalizationEndpoints(jsonOptions);
-
-        // Trading calendar endpoints
-        app.MapCalendarEndpoints(jsonOptions);
-
-        // Historical data query endpoints (Phase 9A.1)
-        app.MapHistoricalEndpoints(jsonOptions);
-
-        // Checkpoint and ingestion job endpoints (P0)
-        app.MapCheckpointEndpoints(jsonOptions);
-
-        // Options / Derivatives endpoints
-        app.MapOptionsEndpoints(jsonOptions);
-
-        // Direct lending endpoints
-        app.MapDirectLendingEndpoints(jsonOptions);
-
-        // Fund accounts (custodian and bank) endpoints
-        app.MapFundAccountEndpoints(jsonOptions);
-        app.MapLedgerEndpoints(jsonOptions);
-
-        // Organization-rooted governance structure endpoints
-        app.MapFundStructureEndpoints(jsonOptions);
-        app.MapEnvironmentDesignerEndpoints(jsonOptions);
-        // Security Master endpoints
-        app.MapSecurityMasterEndpoints(jsonOptions);
-        app.MapBondReferenceEndpoints(jsonOptions);
-        app.MapOptionReferenceEndpoints(jsonOptions);
-        app.MapOptionChainEndpoints(jsonOptions);
-        app.MapEquityReferenceEndpoints(jsonOptions);
-        app.MapFutureReferenceEndpoints(jsonOptions);
-        app.MapFxSpotReferenceEndpoints(jsonOptions);
-        app.MapSwapReferenceEndpoints(jsonOptions);
-        app.MapCommodityReferenceEndpoints(jsonOptions);
-        app.MapCryptoReferenceEndpoints(jsonOptions);
-        app.MapDepositReferenceEndpoints(jsonOptions);
-        app.MapMoneyMarketFundReferenceEndpoints(jsonOptions);
-        app.MapCertificateOfDepositReferenceEndpoints(jsonOptions);
-        app.MapEdgarReferenceDataEndpoints(jsonOptions);
-
-        // Credential management endpoints
-        app.MapCredentialEndpoints(jsonOptions);
-
-        // Read-only brokerage OAuth connection endpoints
-        app.MapBrokerageConnectionEndpoints(jsonOptions);
-
-        // Map quality drops endpoints (C3/#16 - DroppedEventAuditTrail exposure)
-        var auditTrail = app.Services.GetService<DroppedEventAuditTrail>();
-        app.MapQualityDropsEndpoints(auditTrail, jsonOptions);
-
-        // Map data quality monitoring endpoints (C3 - quality metrics exposure)
-        var qualityService = app.Services.GetService<DataQualityMonitoringService>();
-        if (qualityService is not null)
-        {
-            app.MapDataQualityEndpoints(qualityService);
-        }
-
-        // Map SLA monitoring endpoints
-        var slaMonitor = app.Services.GetService<DataFreshnessSlaMonitor>();
-        if (slaMonitor is not null)
-        {
-            app.MapSlaEndpoints(slaMonitor);
-        }
-
-        // Resilience: circuit breaker dashboard, cost estimation, compliance report
-        app.MapResilienceEndpoints(jsonOptions);
-
-        // Authentication endpoints (login page, login API, logout API)
-        app.MapAuthEndpoints();
-
-        // React workstation shell and bootstrap data
-        app.MapWorkstationEndpoints(jsonOptions);
-        app.MapEvidenceEndpoints(jsonOptions);
-
-        // Paper trading cockpit endpoints
-        app.MapExecutionEndpoints(jsonOptions);
-
-        // Promotion workflow endpoints (Backtest → Paper → Live)
-        app.MapPromotionEndpoints(jsonOptions);
-
-        // Strategy lifecycle control endpoints (pause/stop/status)
-        app.MapStrategyLifecycleEndpoints(jsonOptions);
-
-        // Covered-call strategy backtest endpoints (slice 1)
-        app.MapCoveredCallEndpoints(jsonOptions);
-
-        // Quant Lab (gated by host configuration "QuantLab:Enabled" — endpoints respond
-        // 503 when the engine is not registered, so it is safe to map unconditionally).
-        app.MapQuantLabEndpoints(jsonOptions);
-
-        return app;
+        return app.MapUiEndpointGroups(
+            jsonOptions,
+            jsonOptionsIndented,
+            statusHandlers,
+            mapCanonicalizationEndpoints: true,
+            mapCppTraderEndpoints: false);
     }
 
     /// <summary>

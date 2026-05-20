@@ -8,13 +8,14 @@ import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/comp
 import {
   useCoveredCallScreenViewModel,
   type CoveredCallChainPreviewRowViewModel,
-  type CoveredCallFormState,
+  type CoveredCallFormFieldViewModel,
   type CoveredCallHistoryRowViewModel,
   type CoveredCallScreenViewModel,
   type CoveredCallStage,
   type CoveredCallTradeTimelineRowViewModel
 } from "@/screens/covered-call-screen.view-model";
-import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
   {
@@ -179,7 +180,14 @@ export function CoveredCallScreen() {
             <AlertCircle className="h-5 w-5 flex-shrink-0 text-danger" aria-hidden="true" />
             <div className="flex-1">
               <div className="font-semibold text-danger">Backtest issue</div>
-              <p className="mt-1 text-foreground">{vm.errorBanner}</p>
+              <p className="mt-1 text-foreground">{vm.errorBanner.summary}</p>
+              {vm.errorBanner.details.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-danger">
+                  {vm.errorBanner.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
             <Button type="button" variant="ghost" onClick={vm.dismissError} aria-label="Dismiss error">
               <CircleX className="h-4 w-4" aria-hidden="true" />
@@ -272,41 +280,13 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
           <CardDescription>Conservative defaults follow the strategy's documented values.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <NumberField vm={vm} field="underlyingSymbol" label="Underlying" type="text" />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="from" label="From" type="date" />
-            <NumberField vm={vm} field="to" label="To" type="date" />
-          </div>
-          <NumberField vm={vm} field="minStrike" label="Min strike" type="number" step="0.01" required />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="overwriteRatio" label="Overwrite ratio" type="number" step="0.01" />
-            <NumberField vm={vm} field="maxDelta" label="Max delta" type="number" step="0.01" />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="minDte" label="Min DTE" type="number" />
-            <NumberField vm={vm} field="maxDte" label="Max DTE" type="number" />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="minIvPercentile" label="Min IV percentile" type="number" />
-            <NumberField vm={vm} field="maxSpreadPct" label="Max spread %" type="number" step="0.01" />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="minOpenInterest" label="Min open interest" type="number" />
-            <NumberField vm={vm} field="minVolume" label="Min volume" type="number" />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="takeProfitCapture" label="Take-profit capture" type="number" step="0.01" />
-            <NumberField vm={vm} field="rollDelta" label="Roll delta" type="number" step="0.01" />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="exDivWindowDays" label="Ex-div window (days)" type="number" />
-            <NumberField vm={vm} field="riskFreeRate" label="Risk-free rate" type="number" step="0.001" />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <NumberField vm={vm} field="initialCash" label="Initial cash" type="number" />
-            <NumberField vm={vm} field="initialUnderlyingShares" label="Underlying shares" type="number" />
-          </div>
-          <NumberField vm={vm} field="label" label="Run label (optional)" type="text" />
+          {vm.formFieldGroups.map((group) => (
+            <div key={group.id} className={group.columns === 2 ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
+              {group.fields.map((field) => (
+                <CoveredCallFormField key={field.key} vm={vm} field={field} />
+              ))}
+            </div>
+          ))}
 
           <div className="flex items-center gap-2 pt-2">
             <Button
@@ -348,40 +328,50 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
   );
 }
 
-interface NumberFieldProps {
+interface CoveredCallFormFieldProps {
   vm: CoveredCallScreenViewModel;
-  field: keyof CoveredCallFormState;
-  label: string;
-  type: "text" | "number" | "date";
-  step?: string;
-  required?: boolean;
+  field: CoveredCallFormFieldViewModel;
 }
 
-function NumberField({ vm, field, label, type, step, required }: NumberFieldProps) {
-  const error = vm.formErrors[field];
-  const inputId = `cc-${String(field)}`;
-  const errorId = `${inputId}-error`;
+function CoveredCallFormField({ vm, field }: CoveredCallFormFieldProps) {
   return (
     <div className="space-y-1">
-      <label htmlFor={inputId} className="text-xs font-medium text-foreground">
-        {label}
-        {required ? <span className="ml-0.5 text-danger" aria-hidden="true">*</span> : null}
+      <label htmlFor={field.id} className="text-xs font-medium text-foreground">
+        {field.label}
+        {field.required ? <span className="ml-0.5 text-danger" aria-hidden="true">*</span> : null}
       </label>
-      <input
-        id={inputId}
-        type={type}
-        step={step}
-        value={vm.form[field]}
-        onChange={(e) => vm.setField(field, e.target.value as CoveredCallFormState[typeof field])}
-        className={`w-full rounded-md border bg-background/60 px-2 py-1.5 font-mono text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
-          error ? "border-danger" : "border-border/70"
-        }`}
-        aria-invalid={error ? "true" : undefined}
-        aria-describedby={error ? errorId : undefined}
-      />
-      {error ? (
-        <p id={errorId} className="text-xs text-danger">
-          {error}
+      {field.type === "select" ? (
+        <Select
+          id={field.id}
+          value={vm.form[field.key]}
+          onChange={(e) => vm.setField(field.key, e.target.value)}
+          error={field.invalid}
+          aria-describedby={field.describedBy}
+        >
+          {field.options.map((option) => (
+            <option key={option.value} value={option.value} title={option.description}>
+              {option.label}
+            </option>
+          ))}
+        </Select>
+      ) : (
+        <Input
+          id={field.id}
+          type={field.type}
+          step={field.step}
+          value={vm.form[field.key]}
+          onChange={(e) => vm.setField(field.key, e.target.value)}
+          error={field.invalid}
+          aria-describedby={field.describedBy}
+          className="font-mono text-xs"
+        />
+      )}
+      <p id={`${field.id}-help`} className="text-xs text-muted-foreground">
+        {field.helperText}
+      </p>
+      {field.error ? (
+        <p id={field.errorId} className="text-xs text-danger">
+          {field.error}
         </p>
       ) : null}
     </div>
@@ -426,7 +416,16 @@ function ChainPreviewTable({ vm }: { vm: CoveredCallScreenViewModel }) {
           aria-label={panel.detailEmptyAriaLabel}
         >
           <div className="head">{panel.detailEmptyTitle}</div>
-          <div className="body">{panel.detailEmptyText}</div>
+          <div className="body">
+            <div>{panel.detailEmptyText}</div>
+            {panel.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc pl-5 text-xs text-muted-foreground">
+                {panel.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
         </section>
       )}
     </div>
@@ -681,63 +680,55 @@ function PositionTimeline({ vm }: { vm: CoveredCallScreenViewModel }) {
 }
 
 function PayoffDiagramPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
-  const openPositions = vm.run.result?.openPositionsAtEnd ?? [];
-  const pos = openPositions[vm.run.selectedPositionIndex];
+  const panel = vm.payoffPanel;
 
-  if (!pos) {
+  if (!panel.chart) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Payoff diagram</CardTitle>
-          <CardDescription>Short-call payoff diagram for any open position at end of run.</CardDescription>
+          <CardTitle className="text-base">{panel.title}</CardTitle>
+          <CardDescription>{panel.description}</CardDescription>
         </CardHeader>
         <CardContent className="py-10 text-center text-sm text-muted-foreground">
-          No open positions at end of run.
+          {panel.emptyText}
         </CardContent>
       </Card>
     );
   }
 
-  // Slice 1 renders the short-call leg only; the backend does not yet thread the underlying
-  // cost basis through CoveredCallOpenPositionDto, so plotting a combined covered curve would
-  // require a fabricated basis. We surface that explicitly in the description.
-  const inputs = {
-    strike: pos.strike,
-    entryCredit: pos.entryCredit,
-    contracts: pos.contracts,
-    multiplier: pos.multiplier
-  };
-  const spotMin = pos.strike * 0.75;
-  const spotMax = pos.strike * 1.25;
-  const samples = buildShortCallPayoffCurve(inputs, spotMin, spotMax, 80);
-  const breakEven = shortCallBreakEven(inputs);
-  const width = 320;
-  const height = 180;
-  const allPayoffs = samples.map((p) => p.payoff);
-  const yMin = Math.min(...allPayoffs);
-  const yMax = Math.max(...allPayoffs);
-  const xScale = (s: number) => ((s - spotMin) / Math.max(spotMax - spotMin, 1e-6)) * width;
-  const yScale = (v: number) => height - ((v - yMin) / Math.max(yMax - yMin, 1e-6)) * height;
-  const path = samples
-    .map((p, i) => `${i === 0 ? "M" : "L"}${xScale(p.spot).toFixed(1)},${yScale(p.payoff).toFixed(1)}`)
-    .join(" ");
-
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Payoff diagram (short call leg)</CardTitle>
-        <CardDescription>
-          {pos.contracts} × {pos.strike.toFixed(2)} call expiring {pos.expiration} · short-call break-even ≈ ${breakEven.toFixed(2)}
-        </CardDescription>
+        <CardTitle className="text-base">{panel.title}</CardTitle>
+        <CardDescription>{panel.description}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Short call payoff diagram" className="h-44 w-full">
-          <line x1={0} y1={yScale(0)} x2={width} y2={yScale(0)} stroke="currentColor" strokeOpacity={0.25} />
-          <line x1={xScale(pos.strike)} y1={0} x2={xScale(pos.strike)} y2={height} stroke="currentColor" strokeOpacity={0.25} strokeDasharray="3 3" />
-          <path d={path} fill="none" stroke="hsl(var(--primary))" strokeWidth={1.8} />
+      <CardContent className="space-y-3">
+        {panel.positionOptions.length > 1 ? (
+          <div className="flex flex-wrap gap-2" aria-label={panel.selectorAriaLabel}>
+            {panel.positionOptions.map((option) => (
+              <Button
+                key={option.id}
+                type="button"
+                variant={option.buttonVariant}
+                size="sm"
+                onClick={() => vm.selectOpenPosition(option.index)}
+                aria-pressed={option.selected}
+                aria-label={option.ariaLabel}
+                className="h-auto flex-col items-start gap-0.5 px-3 py-2 text-left"
+              >
+                <span className="font-mono">{option.label}</span>
+                <span className="text-[11px] font-normal text-muted-foreground">{option.description}</span>
+              </Button>
+            ))}
+          </div>
+        ) : null}
+        <svg viewBox={panel.chart.viewBox} role="img" aria-label={panel.chart.ariaLabel} className="h-44 w-full">
+          <line {...panel.chart.zeroLine} stroke="currentColor" strokeOpacity={0.25} />
+          <line {...panel.chart.strikeLine} stroke="currentColor" strokeOpacity={0.25} strokeDasharray="3 3" />
+          <path d={panel.chart.path} fill="none" stroke="hsl(var(--primary))" strokeWidth={1.8} />
         </svg>
         <p className="mt-2 text-xs text-muted-foreground">
-          Covered-call net curve requires the underlying cost basis which is not yet threaded through the API — see slice 1.5.
+          {panel.note}
         </p>
       </CardContent>
     </Card>
@@ -752,7 +743,7 @@ function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
   const description = vm.historyLoading
     ? "Loading previous covered-call runs from the strategy engine."
     : vm.historyError
-      ? `Failed to load history: ${vm.historyError}`
+      ? `Failed to load history: ${vm.historyError.summary}`
       : "Most recent first. Select a row to reload its results from the cached run store.";
 
   return (
@@ -777,7 +768,14 @@ function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
             role="alert"
             className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger"
           >
-            {vm.historyStatusText}
+            <div>{vm.historyStatusText}</div>
+            {vm.historyError.details.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {vm.historyError.details.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         ) : (
           <DenseDataTable

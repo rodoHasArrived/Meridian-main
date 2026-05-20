@@ -67,7 +67,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     }
 
     [Fact]
-    public void RolePermissions_TradeDesk_CanExecuteTradesButCannotManageUsers()
+    public void RolePermissions_TradeDesk_CanExecuteTradesButCannotManageCredentialsOrUsers()
     {
         var perms = RolePermissions.For(UserRole.TradeDesk);
 

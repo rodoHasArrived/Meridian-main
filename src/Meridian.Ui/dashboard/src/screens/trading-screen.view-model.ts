@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
-import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type {
   ExecutionAuditEntry,
   ExecutionControlSnapshot,
@@ -733,7 +733,7 @@ function buildTradingReadinessWorkItemAction(item: OperatorWorkItem): TradingRea
 
   return {
     label: "Fix provider setup",
-    href: "/settings#alpaca-provider-setup",
+    href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
     ariaLabel: `Open provider setup for ${item.label}`,
     detail: "Review provider credentials and connection status in Settings."
   };
@@ -1744,7 +1744,7 @@ export function buildPaperSessionState({
       min: 1000,
       step: 1000
     },
-    formRequirementText: validationError ?? "Strategy ID is optional. Initial cash must be at least $1,000.",
+    formRequirementText: busyReason ?? validationError ?? "Strategy ID is optional. Initial cash must be at least $1,000.",
     toggleCreateButtonLabel: showCreateForm ? "Close form" : "New session",
     toggleCreateButtonAriaLabel: showCreateForm ? "Close paper session creation form" : "Open paper session creation form",
     toggleCreateButtonDisabledReason: isBusy && !showCreateForm ? busyReason : null,

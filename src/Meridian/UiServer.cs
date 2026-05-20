@@ -1,12 +1,17 @@
+using System.Diagnostics;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using Meridian.Application.Composition;
+using Meridian.Application.Composition.Startup;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
-using Meridian.Application.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
+using Meridian.Contracts.Auth;
+using Meridian.Contracts.Configuration;
 using Meridian.Domain.Collectors;
 using Meridian.Execution;
-using Meridian.Execution.Adapters;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -18,9 +23,7 @@ using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
-using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
-using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -40,21 +43,39 @@ namespace Meridian;
 [ImplementsAdr("ADR-004", "Large file decomposition - endpoints extracted to dedicated modules")]
 public sealed class UiServer : IAsyncDisposable
 {
+    public const string LocalShutdownTokenHeader = "X-Meridian-Shutdown-Token";
+
     private readonly WebApplication _app;
     private readonly ILogger<UiServer> _logger;
+    private readonly IApplicationLifecycleCoordinator _lifecycle;
+    private readonly bool _ownsLifecycle;
+    private readonly string _configPath;
+    private readonly int _port;
 
     /// <summary>
     /// Creates a new UiServer using the centralized ServiceCompositionRoot.
     /// </summary>
     /// <param name="configPath">Path to the configuration file.</param>
     /// <param name="port">HTTP port to listen on.</param>
-    public UiServer(string configPath, int port = 8080)
+    /// <param name="lifecycle">Optional process lifecycle coordinator used by local shutdown endpoints.</param>
+    public UiServer(
+        string configPath,
+        int port = 8080,
+        IApplicationLifecycleCoordinator? lifecycle = null)
     {
+        var serverBuildStopwatch = Stopwatch.StartNew();
+        _configPath = configPath;
+        _port = port;
+        _lifecycle = lifecycle ?? ApplicationLifecycleCoordinator.Create(Serilog.Log.Logger);
+        _ownsLifecycle = lifecycle is null;
+
         var contentRootPath = Directory.GetCurrentDirectory();
+        var serviceRegistrationStopwatch = Stopwatch.StartNew();
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
             ContentRootPath = contentRootPath
         });
+        var resolvedDataRoot = ResolvePersistentDataRoot(configPath);
 
         // Minimize logging from ASP.NET Core
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
@@ -69,21 +90,10 @@ public sealed class UiServer : IAsyncDisposable
         // Use centralized service composition root
         var compositionOptions = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         builder.Services.AddMarketDataServices(compositionOptions);
+        builder.Services.AddSingleton(_lifecycle);
 
-        // Register the Ui.Shared ConfigStore wrapper so endpoint lambdas can resolve it from DI.
-        // The wrapper delegates to the core ConfigStore already registered by AddMarketDataServices.
-        builder.Services.AddSingleton<Meridian.Ui.Shared.Services.ConfigStore>(sp =>
-        {
-            var core = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>();
-            return new Meridian.Ui.Shared.Services.ConfigStore(core.ConfigPath);
-        });
-
-        // Register the Ui.Shared BackfillCoordinator so endpoint lambdas can resolve it from DI.
-        builder.Services.AddSingleton<Meridian.Ui.Shared.Services.BackfillCoordinator>(sp =>
-        {
-            var configStore = sp.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
-            return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore);
-        });
+        builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
+        builder.Services.AddWorkstationSharedServices();
 
         builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
         {
@@ -97,59 +107,22 @@ public sealed class UiServer : IAsyncDisposable
                 () => null);
         });
 
-        // Register session-based authentication service
-        builder.Services.AddSingleton<Meridian.Ui.Shared.UserProfileRegistry>();
-        builder.Services.AddSingleton<LoginSessionService>();
-        builder.Services.AddSingleton<IStrategyRepository, StrategyRunStore>();
-        builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(contentRootPath, "data", "strategies", "designer")));
-        builder.Services.AddSingleton<IStrategyDesignRepository, JsonlStrategyDesignRepository>();
-        builder.Services.AddSingleton<StrategyDesignService>();
-        builder.Services.AddSingleton(PromotionRecordStoreOptions.Default);
-        builder.Services.AddSingleton<IPromotionRecordStore, JsonlPromotionRecordStore>();
-        builder.Services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
-        builder.Services.AddSingleton<PortfolioReadService>();
-        builder.Services.AddSingleton<LedgerReadService>();
-        builder.Services.AddSingleton<StrategyRunReadService>();
-        builder.Services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
-        builder.Services.AddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
-        builder.Services.AddSingleton<IStrategyPortfolioReconciliationSourceAdapter, StrategyPortfolioReconciliationSourceAdapter>();
-        builder.Services.AddSingleton<IInternalCashReconciliationSourceAdapter, BankInternalCashReconciliationSourceAdapter>();
-        builder.Services.AddSingleton<IExternalStatementSource, NullExternalStatementSource>();
-        builder.Services.AddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
-        builder.Services.AddSingleton<ReconciliationProjectionService>();
-        builder.Services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
-        builder.Services.AddSingleton<IReconciliationGovernanceAuditStore>(_ => new JsonlReconciliationGovernanceAuditStore(Path.Combine("artifacts", "reconciliation", "governance-audit.jsonl")));
+        builder.Services.AddSingleton<IReconciliationGovernanceAuditStore>(_ =>
+            new JsonlReconciliationGovernanceAuditStore(Path.Combine(resolvedDataRoot, "reconciliation", "governance-audit.jsonl")));
         builder.Services.AddSingleton<ReconciliationGovernanceService>();
-        builder.Services.AddSingleton<CashFlowProjectionService>();
-        builder.Services.AddSingleton<StrategyRunContinuityService>();
-        builder.Services.AddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
-        builder.Services.AddSingleton<BrokerageConnectionService>();
-        builder.Services.AddSingleton<AlpacaBrokerageConnectionService>();
-        builder.Services.AddSingleton(BrokeragePortfolioSyncOptions.Default);
-        builder.Services.AddSingleton<BrokeragePortfolioSyncService>();
-        builder.Services.AddSingleton(Dk1TrustGateReadinessOptions.Default);
-        builder.Services.AddSingleton<Dk1TrustGateReadinessService>();
-        builder.Services.AddSingleton<TradingOperatorReadinessService>();
-        builder.Services.AddSingleton<StrategyRunReviewPacketService>();
-        builder.Services.AddWorkflowLibrary();
-        builder.Services.AddEvidenceWorkflowFabric();
-        builder.Services.AddSingleton<WorkstationWorkflowSummaryService>();
-        builder.Services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
         // Durable promotion-record store is required by PromotionService; without it
         // /api/promotion/approve and /api/promotion/reject fail DI resolution at runtime.
         builder.Services.AddSingleton<IPromotionRecordStore>(sp =>
             new JsonlPromotionRecordStore(
-                Path.Combine(contentRootPath, "data", "promotions"),
+                Path.Combine(resolvedDataRoot, "strategies", "promotions"),
                 sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
-        builder.Services.AddSingleton<Meridian.Strategies.Services.PromotionService>();
-        builder.Services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchQueryService, Meridian.Application.SecurityMaster.SecurityMasterWorkbenchQueryService>();
-        builder.Services.AddSingleton(ExecutionAuditTrailOptions.Default);
+        builder.Services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(resolvedDataRoot, "execution", "audit")));
         builder.Services.AddSingleton<ExecutionAuditTrailService>();
-        builder.Services.AddSingleton(ExecutionOperatorControlOptions.Default);
+        builder.Services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(resolvedDataRoot, "execution", "controls")));
         builder.Services.AddSingleton<ExecutionOperatorControlService>();
         builder.Services.AddSingleton<IPaperSessionStore>(sp =>
             new JsonlFilePaperSessionStore(
-                Path.Combine(AppContext.BaseDirectory, "data", "execution", "sessions"),
+                Path.Combine(resolvedDataRoot, "execution", "sessions"),
                 sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
@@ -261,11 +234,23 @@ public sealed class UiServer : IAsyncDisposable
                 return ["General"];
             });
         });
+        serviceRegistrationStopwatch.Stop();
 
+        var appBuildStopwatch = Stopwatch.StartNew();
         _app = builder.Build();
+        appBuildStopwatch.Stop();
         _logger = _app.Services.GetRequiredService<ILoggerFactory>().CreateLogger<UiServer>();
+        _logger.LogInformation(
+            "UiServer service graph built (ServiceRegistrationMs={ServiceRegistrationMs}, AppBuildMs={AppBuildMs})",
+            serviceRegistrationStopwatch.ElapsedMilliseconds,
+            appBuildStopwatch.ElapsedMilliseconds);
+
+        var readinessStopwatch = Stopwatch.StartNew();
+        LedgerStartup.EnsureDatabaseReady(_app.Services, _logger);
         SecurityMasterStartup.EnsureDatabaseReady(_app.Services, _logger);
         DirectLendingStartup.EnsureDatabaseReady(_app.Services, _logger);
+        readinessStopwatch.Stop();
+        _logger.LogInformation("UiServer readiness checks completed in {ElapsedMs} ms", readinessStopwatch.ElapsedMilliseconds);
 
         // Wire Polly circuit breaker callbacks to CircuitBreakerStatusService
         ServiceCompositionRoot.InitializeCircuitBreakerCallbackRouter(_app.Services);
@@ -282,7 +267,14 @@ public sealed class UiServer : IAsyncDisposable
             options.DocumentTitle = "Meridian - API Documentation";
         });
 
+        var routeStopwatch = Stopwatch.StartNew();
         ConfigureRoutes();
+        routeStopwatch.Stop();
+        serverBuildStopwatch.Stop();
+        _logger.LogInformation(
+            "UiServer configured routes in {RouteMapMs} ms; constructor completed in {ElapsedMs} ms",
+            routeStopwatch.ElapsedMilliseconds,
+            serverBuildStopwatch.ElapsedMilliseconds);
     }
 
     private void ConfigureRoutes()
@@ -301,24 +293,141 @@ public sealed class UiServer : IAsyncDisposable
         // Archive Maintenance API (not included in MapUiEndpoints)
         _app.MapArchiveMaintenanceEndpoints();
 
+        MapLifecycleEndpoints();
+
         _app.MapUiEndpointsWithStatus(statusHandlers);
 
     }
 
+    private void MapLifecycleEndpoints()
+    {
+        _app.MapGet("/api/system/lifecycle", (HttpContext context) =>
+        {
+            if (!IsLoopbackRequest(context))
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+            var authorizationFailure = ValidateLifecycleAuthorization(context);
+            if (authorizationFailure is not null)
+                return authorizationFailure;
+
+            return Results.Ok(new
+            {
+                processId = Environment.ProcessId,
+                processName = Process.GetCurrentProcess().ProcessName,
+                startedAtUtc = _lifecycle.StartedAtUtc,
+                uptimeSeconds = Math.Round((DateTimeOffset.UtcNow - _lifecycle.StartedAtUtc).TotalSeconds, 3),
+                port = _port,
+                configPath = _configPath,
+                shutdownRequested = _lifecycle.IsShutdownRequested,
+                shutdownReason = _lifecycle.ShutdownReason
+            });
+        });
+
+        _app.MapPost("/api/system/shutdown", async (HttpContext context) =>
+        {
+            if (!IsLoopbackRequest(context))
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+            var authorizationFailure = ValidateLifecycleAuthorization(context);
+            if (authorizationFailure is not null)
+                return authorizationFailure;
+
+            await _lifecycle.RequestShutdownAsync(
+                "http-local-shutdown",
+                "Local lifecycle endpoint requested shutdown",
+                context.RequestAborted);
+
+            return Results.Json(new
+            {
+                accepted = true,
+                processId = Environment.ProcessId,
+                shutdownRequested = _lifecycle.IsShutdownRequested
+            }, statusCode: StatusCodes.Status202Accepted);
+        });
+    }
+
+    private IResult? ValidateLifecycleAuthorization(HttpContext context)
+    {
+        if (IsValidLocalShutdownToken(context))
+        {
+            return null;
+        }
+
+        if (!EndpointAuthorization.TryGetPermissions(context, out _))
+        {
+            return Results.Unauthorized();
+        }
+
+        return EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance)
+            ? null
+            : Results.StatusCode(StatusCodes.Status403Forbidden);
+    }
+
+    private bool IsValidLocalShutdownToken(HttpContext context)
+    {
+        if (string.IsNullOrWhiteSpace(_lifecycle.LocalShutdownToken))
+            return false;
+
+        var supplied = context.Request.Headers[LocalShutdownTokenHeader].FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(supplied))
+            return false;
+
+        var expectedBytes = Encoding.UTF8.GetBytes(_lifecycle.LocalShutdownToken);
+        var suppliedBytes = Encoding.UTF8.GetBytes(supplied);
+        return suppliedBytes.Length == expectedBytes.Length
+            && CryptographicOperations.FixedTimeEquals(suppliedBytes, expectedBytes);
+    }
+
+    private static bool IsLoopbackRequest(HttpContext context)
+    {
+        var remoteIp = context.Connection.RemoteIpAddress;
+        return remoteIp is null || IPAddress.IsLoopback(remoteIp);
+    }
+
+    internal static string ResolvePersistentDataRoot(string configPath)
+    {
+        if (File.Exists(configPath))
+        {
+            try
+            {
+                var json = File.ReadAllText(configPath);
+                var configuredDataRoot = MeridianPathDefaults.ResolveConfiguredDataRootFromJson(json, null);
+                return MeridianPathDefaults.ResolveDataRoot(configPath, configuredDataRoot);
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+        }
+
+        return MeridianPathDefaults.ResolveDataRoot(configPath, null);
+    }
+
     public async Task StartAsync(CancellationToken ct = default)
     {
+        var stopwatch = Stopwatch.StartNew();
         await _app.StartAsync(ct);
-        _logger.LogInformation("UiServer started on {Urls}", string.Join(", ", _app.Urls));
+        _logger.LogInformation(
+            "UiServer started on {Urls} in {ElapsedMs} ms",
+            string.Join(", ", _app.Urls),
+            stopwatch.ElapsedMilliseconds);
     }
 
     public async Task StopAsync(CancellationToken ct = default)
     {
+        var stopwatch = Stopwatch.StartNew();
         await _app.StopAsync(ct);
-        _logger.LogInformation("UiServer stopped");
+        _logger.LogInformation("UiServer stopped in {ElapsedMs} ms", stopwatch.ElapsedMilliseconds);
     }
 
     public async ValueTask DisposeAsync()
     {
         await _app.DisposeAsync();
+        if (_ownsLifecycle)
+        {
+            _lifecycle.Dispose();
+        }
     }
 }

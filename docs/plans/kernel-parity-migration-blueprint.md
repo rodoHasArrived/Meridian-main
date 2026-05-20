@@ -1,5 +1,13 @@
 # Kernel Migration Parity Blueprint
 
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **kernel parity migration blueprint** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the kernel parity migration blueprint workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
 ## Summary
 Establish a fixture-driven C# ↔ F# parity program that blocks kernel regressions during migration by comparing score/severity/reason outputs at each subsystem boundary, while allowing auditable expected divergences for intentional improvements.
 

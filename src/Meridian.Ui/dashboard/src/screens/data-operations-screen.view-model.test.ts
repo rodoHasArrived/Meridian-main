@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import * as workstationApi from "@/lib/api";
+import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
@@ -18,6 +19,7 @@ import {
   buildProviderRow,
   buildProviderSection,
   buildProviderSetupDialogState,
+  buildProviderSetupSuccessMetadata,
   buildProviderSetupSuccessActions,
   buildRouteFocusCardState,
   buildSelectedExportDetail,
@@ -88,6 +90,19 @@ const providers: DataOperationsProviderRecord[] = [
     gateImpact: "No gate impact"
   }
 ];
+
+const alpacaProvider: DataOperationsProviderRecord = {
+  provider: "Alpaca",
+  status: "Healthy",
+  capability: "Historical bars",
+  latency: "24ms p50",
+  note: "Configured with paper API keys.",
+  trustScore: "97%",
+  signalSource: "Provider heartbeat",
+  reasonCode: "TRUST_OK",
+  recommendedAction: "Keep provider active.",
+  gateImpact: "No gate impact"
+};
 
 const exports: DataOperationsExportRecord[] = [
   {
@@ -178,12 +193,14 @@ describe("data-operations-screen view model", () => {
       to: "2024-01-31"
     });
 
-    expect(validateBackfillForm({ provider: "polygon", symbols: "", from: "", to: "" }))
+    expect(validateBackfillForm({ provider: "polygon", symbols: "", from: "", to: "" }, providers))
       .toBe("Enter at least one symbol before previewing a backfill.");
-    expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "2024-02-31", to: "" }))
+    expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "2024-02-31", to: "" }, providers))
       .toBe("Use YYYY-MM-DD for the From date.");
-    expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "2024-02-01", to: "2024-01-01" }))
+    expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "2024-02-01", to: "2024-01-01" }, providers))
       .toBe("From date must be before or equal to To date.");
+    expect(validateBackfillForm({ provider: "polygon", symbols: "AAPL", from: "", to: "" }, []))
+      .toBe("Configure a provider before previewing a backfill.");
   });
 
   it("derives command enablement, feedback, and async labels", () => {
@@ -193,7 +210,8 @@ describe("data-operations-screen view model", () => {
       phase: "idle",
       error: null,
       preview: null,
-      result: null
+      result: null,
+      configuredProviders: providers
     });
 
     expect(empty.canPreview).toBe(false);
@@ -205,7 +223,8 @@ describe("data-operations-screen view model", () => {
       phase: "idle",
       error: null,
       preview,
-      result: null
+      result: null,
+      configuredProviders: providers
     });
 
     expect(readyWithPreview.canPreview).toBe(true);
@@ -218,7 +237,8 @@ describe("data-operations-screen view model", () => {
       phase: "running",
       error: null,
       preview,
-      result: null
+      result: null,
+      configuredProviders: providers
     });
 
     expect(running.runButtonLabel).toBe("Running...");
@@ -244,7 +264,8 @@ describe("data-operations-screen view model", () => {
       busy: false,
       phase: "idle",
       validationError: "Enter at least one symbol before previewing a backfill.",
-      preview: null
+      preview: null,
+      configuredProviders: providers
     });
 
     expect(dialog.titleId).toBe("backfill-dialog-title");
@@ -253,12 +274,12 @@ describe("data-operations-screen view model", () => {
     expect(dialog.closeButtonLabel).toBe("Close backfill dialog");
     expect(dialog.closeButtonDisabledReason).toBeNull();
     expect(dialog.summaryItems).toEqual([
-      { id: "provider", label: "Provider", value: "Polygon.io", tone: "default" },
+      { id: "provider", label: "Provider", value: "Polygon", tone: "default" },
       { id: "symbols", label: "Symbols", value: "None yet", tone: "warning" },
       { id: "range", label: "Range", value: "Full available history", tone: "default" }
     ]);
-    expect(dialog.providerOptions.map((provider) => provider.value)).toContain("yahoo");
-    expect(dialog.selectedProviderDetail).toContain("paid Polygon plans");
+    expect(dialog.providerOptions.map((provider) => provider.value)).toEqual(["polygon"]);
+    expect(dialog.selectedProviderDetail).toContain("Polygon is configured for Streaming equities");
     expect(dialog.symbolsField).toMatchObject({
       id: "backfill-symbols",
       ariaLabel: "Backfill symbols",
@@ -279,20 +300,18 @@ describe("data-operations-screen view model", () => {
     expect(dialog.formStatusTone).toBe("warning");
   });
 
-  it("derives guided provider options for credential-free backfill", () => {
-    const options = buildBackfillProviderOptions("yahoo");
+  it("derives provider options from configured providers only", () => {
+    const options = buildBackfillProviderOptions("alpaca", [alpacaProvider]);
     expect(options[0]).toMatchObject({
-      value: "yahoo",
-      label: "Yahoo Finance",
-      badge: "No key"
+      value: "alpaca",
+      label: "Alpaca",
+      badge: "Configured"
     });
+    expect(options.map((option) => option.value)).not.toContain("yahoo");
 
-    const custom = buildBackfillProviderOptions("internal-feed");
-    expect(custom.at(-1)).toMatchObject({
-      value: "internal-feed",
-      label: "internal-feed",
-      badge: "Custom"
-    });
+    expect(buildBackfillProviderOptions("internal-feed", [alpacaProvider]).map((option) => option.value))
+      .toEqual(["alpaca"]);
+    expect(buildBackfillProviderOptions("alpaca", [])).toEqual([]);
   });
 
   it("ignores stale backfill preview responses after a newer preview settles", async () => {
@@ -314,7 +333,15 @@ describe("data-operations-screen view model", () => {
       getProgress: async () => idleProgress
     };
 
-    const { result } = renderHook(() => useDataOperationsViewModel(null, "/data/backfills", services));
+    const workspace: DataOperationsWorkspaceResponse = {
+      metrics: [],
+      providers,
+      backfills: [],
+      exports: []
+    };
+    const { result } = renderHook(() => useDataOperationsViewModel(workspace, "/data/backfills", services));
+
+    await waitFor(() => expect(result.current.form.provider).toBe("polygon"));
 
     act(() => {
       result.current.updateBackfillForm("symbols", "AAPL MSFT");
@@ -346,6 +373,58 @@ describe("data-operations-screen view model", () => {
     expect(result.current.preview?.barsWritten).toBe(25);
     expect(result.current.phase).toBe("idle");
     expect(result.current.busy).toBe(false);
+  });
+
+  it("surfaces structured preview errors with operator-visible detail lines", async () => {
+    const idleProgress: BackfillProgressResponse = {
+      active: false,
+      provider: null,
+      symbols: [],
+      message: null
+    };
+    const services = {
+      preview: async () => {
+        throw createApiErrorFromResponseBody(
+          "/api/backfill/preview",
+          400,
+          JSON.stringify({
+            title: "Backfill validation failed",
+            detail: "Provider rejected the requested date window.",
+            errors: {
+              symbols: ["At least one supported symbol is required."]
+            }
+          })
+        );
+      },
+      run: async (request: BackfillTriggerRequest) => ({ ...preview, symbols: request.symbols }),
+      getProgress: async () => idleProgress
+    };
+    const workspace: DataOperationsWorkspaceResponse = {
+      metrics: [],
+      providers,
+      backfills: [],
+      exports: []
+    };
+    const { result } = renderHook(() => useDataOperationsViewModel(workspace, "/data/backfills", services));
+
+    await waitFor(() => expect(result.current.form.provider).toBe("polygon"));
+
+    act(() => {
+      result.current.updateBackfillForm("symbols", "AAPL");
+    });
+
+    await act(async () => {
+      await result.current.previewBackfill();
+    });
+
+    expect(result.current.error).toEqual({
+      summary: "Provider rejected the requested date window.",
+      details: [
+        "Endpoint returned 400 for /api/backfill/preview.",
+        "Backfill validation failed",
+        "symbols: At least one supported symbol is required."
+      ]
+    });
   });
 
   it("derives backfill preview and completion result cards", () => {
@@ -397,6 +476,7 @@ describe("data-operations-screen view model", () => {
     expect(providerSection.selectedDetail?.title).toBe("Polygon");
     expect(providerSection.selectedDetail?.id).toBe(DATA_PROVIDER_DETAIL_PANEL_ID);
     expect(providerSection.rows[0].statusTone).toBe("success");
+    expect(providerSection.rows[0].rowClassName).toBe("bg-success/5");
     expect(providerSection.rows[0].rowId).toBe("provider-row-polygon");
     expect(providerSection.rows[0].selected).toBe(true);
     expect(providerSection.rows[0].expanded).toBe(true);
@@ -420,6 +500,8 @@ describe("data-operations-screen view model", () => {
     expect(backfillSection.rows[1].selected).toBe(true);
     expect(backfillSection.rows[1].expanded).toBe(true);
     expect(backfillSection.rows[0].expanded).toBe(false);
+    expect(backfillSection.rows[0].rowClassName).toBe("bg-paper/5");
+    expect(backfillSection.rows[1].rowClassName).toBe("bg-warning/5");
     expect(backfillSection.rows[1].rowId).toBe("backfill-row-bf-1044");
     expect(backfillSection.rows[1].detailPanelId).toBe(DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(backfillSection.rows[0].detailPanelId).toBe(DATA_BACKFILL_DETAIL_PANEL_ID);
@@ -434,6 +516,7 @@ describe("data-operations-screen view model", () => {
     expect(exportSection.selectedRowId).toBe("export-row-ex-2201");
     expect(exportSection.rows[0].summaryText).toBe("research pack · 124k · 4m ago");
     expect(exportSection.rows[0].statusVariant).toBe("success");
+    expect(exportSection.rows[0].rowClassName).toBe("bg-success/5");
     expect(exportSection.rows[0].selected).toBe(true);
     expect(exportSection.rows[0].expanded).toBe(true);
     expect(exportSection.rows[0].detailPanelId).toBe(DATA_EXPORT_DETAIL_PANEL_ID);
@@ -508,6 +591,7 @@ describe("data-operations-screen view model", () => {
     expect(providerSection.rows[1].selected).toBe(true);
     expect(providerSection.rows[1].expanded).toBe(true);
     expect(providerSection.rows[1].statusTone).toBe("danger");
+    expect(providerSection.rows[1].rowClassName).toBe("bg-danger/5");
     expect(providerSection.rows[1].ariaLabel).toContain("Selected provider Databento");
 
     const detail = buildSelectedProviderDetail(providerRecords, "provider-row-databento");
@@ -653,6 +737,37 @@ describe("data-operations-screen view model", () => {
     ]);
   });
 
+  it("derives safe provider setup routing and credential metadata from setup results", () => {
+    const metadata = buildProviderSetupSuccessMetadata({
+      success: true,
+      providerId: "provider-alpaca-paper",
+      providerName: "Alpaca paper",
+      message: "Alpaca paper was configured.",
+      error: null,
+      connectionId: "provider-alpaca-paper",
+      bindingIds: ["provider-alpaca-paper-RealtimeMarketData", "provider-alpaca-paper-HistoricalBars"],
+      credentialState: "Configured",
+      credentialSource: "ExternalVaultReference",
+      credentialReference: "vault:alpaca/paper",
+      environment: "paper",
+      warnings: ["Credential verification still needs to run."]
+    });
+
+    expect(metadata.rows).toEqual([
+      { id: "connection-id", label: "Connection", value: "provider-alpaca-paper" },
+      {
+        id: "binding-ids",
+        label: "Bindings",
+        value: "provider-alpaca-paper-RealtimeMarketData, provider-alpaca-paper-HistoricalBars"
+      },
+      { id: "credential-state", label: "Credential", value: "Configured" },
+      { id: "credential-source", label: "Source", value: "External vault reference" },
+      { id: "environment", label: "Environment", value: "PAPER" }
+    ]);
+    expect(metadata.warnings).toEqual(["Credential verification still needs to run."]);
+    expect(metadata.rows.map((row) => row.value).join(" ")).not.toContain("vault:alpaca/paper");
+  });
+
   it("ignores stale provider setup responses after a newer submission settles", async () => {
     const setupRequests: Array<{
       resolve: (value: Awaited<ReturnType<typeof workstationApi.setupProvider>>) => void;
@@ -709,6 +824,51 @@ describe("data-operations-screen view model", () => {
       expect(result.current.providerPhase).toBe("success");
       expect(result.current.providerSetupResult?.providerName).toBe("Alpaca paper");
       expect(result.current.providerSetupError).toBeNull();
+    } finally {
+      setupProvider.mockRestore();
+    }
+  });
+
+  it("surfaces structured provider setup errors without exposing secrets", async () => {
+    const setupProvider = vi.spyOn(workstationApi, "setupProvider").mockRejectedValue(
+      createApiErrorFromResponseBody(
+        "/api/providers/configure",
+        403,
+        JSON.stringify({
+          title: "Credential verification failed",
+          detail: "Paper trading credentials were rejected by the provider.",
+          errors: {
+            apiKey: ["Verify the configured key against the selected environment."]
+          }
+        })
+      )
+    );
+
+    try {
+      const { result } = renderHook(() => useDataOperationsViewModel(null, "/data"));
+
+      act(() => {
+        result.current.updateProviderForm("kind", "alpaca");
+        result.current.updateProviderForm("apiKey", "key-123");
+        result.current.updateProviderForm("apiSecret", "secret-456");
+      });
+
+      await act(async () => {
+        await result.current.submitProviderSetup();
+      });
+
+      expect(result.current.providerPhase).toBe("error");
+      expect(result.current.providerSetupError).toEqual({
+        summary: "Permission denied for this Meridian role.",
+        details: [
+          "Endpoint returned 403 for /api/providers/configure.",
+          "Credential verification failed",
+          "Paper trading credentials were rejected by the provider.",
+          "apiKey: Verify the configured key against the selected environment."
+        ]
+      });
+      expect(result.current.providerSetupError?.details.join(" ")).not.toContain("secret-456");
+      expect(result.current.providerSetupError?.details.join(" ")).not.toContain("key-123");
     } finally {
       setupProvider.mockRestore();
     }
@@ -774,8 +934,10 @@ describe("data-operations-screen view model", () => {
     ]);
 
     expect(exportSection.rows[0].statusVariant).toBe("paper");
+    expect(exportSection.rows[0].rowClassName).toBe("bg-paper/5");
     expect(exportSection.rows[0].actionText).toBe("Wait for the package writer to finish before handoff.");
     expect(exportSection.rows[1].statusVariant).toBe("warning");
+    expect(exportSection.rows[1].rowClassName).toBe("bg-warning/5");
     expect(exportSection.rows[1].actionText).toBe("Review export profile and target before report-pack use.");
   });
 
@@ -793,6 +955,7 @@ describe("data-operations-screen view model", () => {
     });
 
     expect(row.statusTone).toBe("danger");
+    expect(row.rowClassName).toBe("bg-danger/5");
     expect(row.trustFields).toContainEqual({
       id: "latency",
       label: "Latency",

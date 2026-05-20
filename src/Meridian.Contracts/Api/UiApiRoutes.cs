@@ -75,6 +75,9 @@ public static class UiApiRoutes
     public const string ProviderStatus = "/api/providers/status";
     public const string ProviderMetrics = "/api/providers/metrics";
     public const string ProviderConfigure = "/api/providers/configure";
+    public const string ProviderConnections = "/api/providers/connections";
+    public const string ProviderCredentialMutation = "/api/providers/{providerId}/credentials";
+    public const string ProviderCredentialVerify = "/api/providers/{providerId}/verify";
     public const string ProviderCatalog = "/api/providers/catalog";
     public const string ProviderCatalogById = "/api/providers/catalog/{providerId}";
     public const string ProviderById = "/api/providers/{providerName}";
@@ -302,6 +305,7 @@ public static class UiApiRoutes
 
     // Security Master endpoints
     public const string SecurityMasterById = "/api/security-master/{securityId:guid}";
+    public const string SecurityMasterValidation = "/api/security-master/{securityId:guid}/validation";
     public const string SecurityMasterResolve = "/api/security-master/resolve";
     public const string SecurityMasterSearch = "/api/security-master/search";
     public const string SecurityMasterHistory = "/api/security-master/{securityId:guid}/history";
@@ -530,6 +534,26 @@ public static class UiApiRoutes
     public const string WorkstationEvidenceSubjectValidate = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/validate";
     public const string WorkstationEvidenceSubjectExportManifest = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/export-manifest";
     public const string WorkstationEvidenceTemplates = "/api/workstation/evidence/templates";
+    public const string OperationsContinuity = "/api/workstation/operations/continuity";
+    public const string OperationsContinuityById = "/api/workstation/operations/continuity/{workflowId:guid}";
+    public const string OperationsContinuityTimeline = "/api/workstation/operations/continuity/{workflowId:guid}/timeline";
+    public const string OperationsContinuityBreaks = "/api/workstation/operations/continuity/{workflowId:guid}/breaks";
+    public const string OperationsContinuityLedgerPreview = "/api/workstation/operations/continuity/{workflowId:guid}/ledger-preview";
+    public const string OperationsContinuityBrokerImport = "/api/workstation/operations/continuity/{workflowId:guid}/broker/import";
+    public const string OperationsContinuityBrokerNormalize = "/api/workstation/operations/continuity/{workflowId:guid}/broker/normalize";
+    public const string OperationsContinuityPostureRefresh = "/api/workstation/operations/continuity/{workflowId:guid}/posture/refresh";
+    public const string OperationsContinuitySecurityMasterResolve = "/api/workstation/operations/continuity/{workflowId:guid}/security-master/resolve";
+    public const string OperationsContinuitySecurityMasterOverrideApprove = "/api/workstation/operations/continuity/{workflowId:guid}/security-master/overrides/{overrideId}/approve";
+    public const string OperationsContinuityLedgerDraft = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/draft";
+    public const string OperationsContinuityLedgerValidate = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/validate";
+    public const string OperationsContinuityLedgerPost = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/post";
+    public const string OperationsContinuityReconciliationRun = "/api/workstation/operations/continuity/{workflowId:guid}/reconciliation/run";
+    public const string OperationsContinuityReconciliationBreakResolve = "/api/workstation/operations/continuity/{workflowId:guid}/reconciliation/breaks/{breakId}/resolve";
+    public const string OperationsContinuityApprovalSubmit = "/api/workstation/operations/continuity/{workflowId:guid}/approval/submit";
+    public const string OperationsContinuityApprovalApprove = "/api/workstation/operations/continuity/{workflowId:guid}/approval/approve";
+    public const string OperationsContinuityApprovalReject = "/api/workstation/operations/continuity/{workflowId:guid}/approval/reject";
+    public const string OperationsContinuityClose = "/api/workstation/operations/continuity/{workflowId:guid}/close";
+    public const string OperationsContinuityReopen = "/api/workstation/operations/continuity/{workflowId:guid}/reopen";
     public const string RunsCompare = "/api/workstation/runs/compare";
     public const string RunsDiff = "/api/workstation/runs/diff";
     public const string RunsEquityCurve = "/api/workstation/runs/{runId}/equity-curve";

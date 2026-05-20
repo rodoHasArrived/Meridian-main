@@ -94,6 +94,7 @@ describe("DataOperationsScreen", () => {
     expect(providerRow).toHaveAttribute("aria-selected", "true");
     expect(providerRow).toHaveAttribute("aria-expanded", "true");
     expect(providerRow).toHaveAttribute("aria-controls", DATA_PROVIDER_DETAIL_PANEL_ID);
+    expect(providerRow).toHaveClass("bg-success/5");
     const providerDetail = screen.getByRole("region", { name: /provider detail for Polygon/i });
     expect(providerDetail).toBeInTheDocument();
     expect(within(providerDetail).getByText("Trust score")).toBeInTheDocument();
@@ -103,6 +104,7 @@ describe("DataOperationsScreen", () => {
     expect(within(providerDetail).getByText("Gate: No gate impact")).toBeInTheDocument();
     const runningBackfill = screen.getByRole("row", { name: "Inspect backfill BF-1042" });
     expect(runningBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
+    expect(runningBackfill).toHaveClass("bg-paper/5");
     const backfillDetail = screen.getByRole("region", { name: /backfill detail for BF-1042/i });
     expect(backfillDetail).toHaveAttribute("id", DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(within(backfillDetail).getByText("US equities / 30d")).toBeInTheDocument();
@@ -113,6 +115,7 @@ describe("DataOperationsScreen", () => {
     expect(exportRow).toHaveAttribute("aria-selected", "true");
     expect(exportRow).toHaveAttribute("aria-expanded", "true");
     expect(exportRow).toHaveAttribute("aria-controls", DATA_EXPORT_DETAIL_PANEL_ID);
+    expect(exportRow).toHaveClass("bg-success/5");
     const exportDetail = screen.getByRole("region", { name: /export detail for EX-2201/i });
     expect(exportDetail).toHaveAttribute("id", DATA_EXPORT_DETAIL_PANEL_ID);
     expect(within(exportDetail).getByText("python-pandas")).toBeInTheDocument();
@@ -166,6 +169,7 @@ describe("DataOperationsScreen", () => {
 
     expect(polygonProvider).toHaveAttribute("aria-selected", "true");
     expect(databentoProvider).toHaveAttribute("aria-expanded", "false");
+    expect(databentoProvider).toHaveClass("bg-danger/5");
 
     databentoProvider.focus();
     await user.keyboard("{Enter}");
@@ -185,10 +189,21 @@ describe("DataOperationsScreen", () => {
       providerId: "provider-alpaca",
       providerName: "Alpaca paper",
       message: "Provider configured.",
-      error: null
+      error: null,
+      connectionId: "provider-alpaca",
+      bindingIds: ["provider-alpaca-RealtimeMarketData", "provider-alpaca-HistoricalBars"],
+      credentialState: "Configured",
+      credentialSource: "ExternalVaultReference",
+      credentialReference: "vault:alpaca/paper",
+      environment: "paper",
+      warnings: ["Credential verification still needs to run."]
     });
+    const refreshProviderRouting = vi.fn();
 
-    renderWithRouter(<DataOperationsScreen data={data} />, { initialEntries: ["/data"] });
+    renderWithRouter(
+      <DataOperationsScreen data={data} onProviderSetupConfigured={refreshProviderRouting} />,
+      { initialEntries: ["/data"] }
+    );
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
 
@@ -213,6 +228,17 @@ describe("DataOperationsScreen", () => {
     })));
 
     expect(await screen.findByText("Alpaca paper configured")).toBeInTheDocument();
+    const posture = screen.getByRole("region", { name: "Provider setup routing and credential posture" });
+    expect(posture).toHaveTextContent("provider-alpaca");
+    expect(posture).toHaveTextContent("provider-alpaca-RealtimeMarketData");
+    expect(posture).toHaveTextContent("Configured");
+    expect(posture).toHaveTextContent("External vault reference");
+    expect(posture).toHaveTextContent("PAPER");
+    expect(screen.getByRole("status", { name: "Provider setup warnings" }))
+      .toHaveTextContent("Credential verification still needs to run.");
+    expect(screen.queryByText("key-123")).not.toBeInTheDocument();
+    expect(screen.queryByText("secret-456")).not.toBeInTheDocument();
+    expect(screen.queryByText("vault:alpaca/paper")).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Provider setup next validation" }))
       .toHaveTextContent("Next validation");
     expect(screen.getByRole("link", { name: "Validate live quotes after configuring Alpaca" }))
@@ -221,6 +247,7 @@ describe("DataOperationsScreen", () => {
       .toHaveAttribute("href", "/data/backfills");
     expect(screen.getByRole("link", { name: "Check Trading readiness after configuring Alpaca" }))
       .toHaveAttribute("href", "/trading/readiness");
+    await waitFor(() => expect(refreshProviderRouting).toHaveBeenCalledTimes(1));
 
     await user.click(screen.getByRole("button", { name: "Configure another" }));
 
@@ -290,6 +317,7 @@ describe("DataOperationsScreen", () => {
     expect(runningBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(reviewBackfill).toHaveAttribute("aria-controls", DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(reviewBackfill).toHaveAttribute("aria-expanded", "false");
+    expect(reviewBackfill).toHaveClass("bg-warning/5");
 
     await user.click(reviewBackfill);
 
@@ -341,6 +369,7 @@ describe("DataOperationsScreen", () => {
     expect(readyExport).toHaveAttribute("aria-selected", "true");
     expect(attentionExport).toHaveAttribute("aria-expanded", "false");
     expect(attentionExport).toHaveAttribute("aria-controls", DATA_EXPORT_DETAIL_PANEL_ID);
+    expect(attentionExport).toHaveClass("bg-warning/5");
 
     attentionExport.focus();
     await user.keyboard("{Enter}");
@@ -364,9 +393,9 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByRole("heading", { name: "Trigger backfill" })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole("textbox", { name: "Backfill symbols" })).toHaveFocus());
     expect(screen.getByRole("group", { name: "Backfill request form" })).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Backfill provider" })).toHaveValue("yahoo");
-    expect(screen.getByRole("button", { name: /Yahoo Finance No key/i })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText(/Credential-free daily and intraday historical bars/i)).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Backfill provider" })).toHaveValue("polygon");
+    expect(screen.getByRole("button", { name: /Polygon Configured/i })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText(/Polygon is configured for Streaming equities/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Close backfill dialog" })).toBeInTheDocument();
     expect(screen.getByText("Enter at least one symbol before previewing a backfill.")).toBeInTheDocument();
   });
@@ -456,7 +485,8 @@ describe("DataOperationsScreen", () => {
     expect(screen.getByLabelText("Backfill start date")).toBeDisabled();
     expect(screen.getByLabelText("Backfill end date")).toBeDisabled();
     expect(screen.getByRole("textbox", { name: "Backfill symbols" }))
-      .toHaveAttribute("title", "Backfill request is running; wait for the current request to finish before editing.");
+      .toHaveAccessibleDescription("Separate symbols with spaces or commas. At least one symbol is required. Previewing the backfill request. Backfill request is running; wait for the current request to finish before editing.");
+    expect(screen.getAllByText("Backfill request is running; wait for the current request to finish before editing.").length).toBeGreaterThan(0);
 
     await act(async () => {
       resolvePreview(mockPreview);

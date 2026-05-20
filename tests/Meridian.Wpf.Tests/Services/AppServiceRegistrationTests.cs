@@ -51,6 +51,8 @@ public sealed class AppServiceRegistrationTests
             ResolveRequired<TradingWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<DataWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<GovernanceWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
+            serviceProvider.GetRequiredService<IDataWorkspaceShellSnapshotService>().Should().BeOfType<DataWorkspaceShellSnapshotService>();
+            serviceProvider.GetRequiredService<IDataWorkspaceShellPresentationService>().Should().BeOfType<DataWorkspaceShellPresentationService>();
             serviceProvider.GetRequiredService<IFundAccountService>().Should().BeOfType<InMemoryFundAccountService>();
             serviceProvider.GetRequiredService<FundAccountReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<CashFinancingReadService>().Should().NotBeNull();

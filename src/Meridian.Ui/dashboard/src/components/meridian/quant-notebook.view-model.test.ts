@@ -126,6 +126,7 @@ describe("quant-notebook pure helpers", () => {
     });
     expect(empty.statusTone).toBe("idle");
     expect(empty.fields.symbol.error).toBe(false);
+    expect(empty.fields.symbol.describedBy).toBe("quant-notebook-context-symbol-help");
 
     const loading = buildDataContextPanel({ symbol: "AAPL" }, null, "loading", null);
 
@@ -136,6 +137,8 @@ describe("quant-notebook pure helpers", () => {
       busy: true
     });
     expect(loading.fields.from.disabledReason).toBe("Data fetch is in progress; wait before editing the start date.");
+    expect(loading.fields.from.disabledReasonId).toBe("quant-notebook-context-from-disabled-reason");
+    expect(loading.fields.from.describedBy).toBe("quant-notebook-context-from-help quant-notebook-context-from-disabled-reason");
 
     const error = buildDataContextPanel({}, null, "error", "Symbol is required.");
 
@@ -188,6 +191,29 @@ describe("useQuantNotebookViewModel", () => {
 
     expect(result.current.cells).toHaveLength(1);
     expect(result.current.cells[0].state).toBe("idle");
+    expect(result.current.runAllCommand).toMatchObject({
+      label: "Run all",
+      ariaLabel: "Run all notebook cells",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
+    expect(result.current.cells[0].runCommand).toMatchObject({
+      label: "Run",
+      ariaLabel: "Run cell 1",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    });
+    expect(result.current.cells[0].sourceField).toMatchObject({
+      label: "Cell 1 source",
+      placeholder: "// Cell 1\n// Use Data.Prices(symbol), Backtest.WithSymbols(...), or any C# expression",
+      disabled: false,
+      disabledReason: null,
+      disabledReasonId: "quant-notebook-cell-1-source-disabled-reason",
+      describedBy: null,
+      spellCheck: false
+    });
     expect(result.current.dataResult).toBeNull();
     expect(result.current.dataFetchState).toBe("idle");
   });
@@ -332,6 +358,55 @@ describe("useQuantNotebookViewModel", () => {
     expect(result.current.cells[0].state).toBe("done");
     expect(result.current.cells[0].output).toHaveLength(1);
     expect(result.current.cells[0].output[0].text).toBe("mock output");
+  });
+
+  it("keeps run commands disabled with reasons while a cell is running", async () => {
+    const { result } = renderHook(() => useQuantNotebookViewModel());
+    const cellId = result.current.cells[0].id;
+    let resolveExecution: ((value: CellExecuteResult) => void) | undefined;
+
+    vi.mocked(api.executeCell).mockReturnValueOnce(
+      new Promise<CellExecuteResult>((resolve) => {
+        resolveExecution = resolve;
+      })
+    );
+
+    await act(async () => {
+      void result.current.runCell(cellId);
+    });
+
+    expect(result.current.runAllCommand).toMatchObject({
+      label: "Running...",
+      ariaLabel: "Notebook cells are running",
+      disabled: true,
+      disabledReason: "Wait for running cells to finish before running all notebook cells.",
+      busy: true
+    });
+    expect(result.current.cells[0].runCommand).toMatchObject({
+      label: "Running...",
+      ariaLabel: "Cell 1 is running",
+      disabled: true,
+      disabledReason: "Wait for cell 1 to finish running before rerunning it.",
+      busy: true
+    });
+    expect(result.current.cells[0].sourceField).toMatchObject({
+      label: "Cell 1 source",
+      disabled: true,
+      disabledReason: "Cell 1 is running; wait before editing the source.",
+      disabledReasonId: "quant-notebook-cell-1-source-disabled-reason",
+      describedBy: "quant-notebook-cell-1-source-disabled-reason",
+      spellCheck: false
+    });
+
+    await act(async () => {
+      resolveExecution?.({
+        cellId,
+        success: true,
+        output: [],
+        elapsedMs: 1,
+        errorMessage: null
+      });
+    });
   });
 
   it("runCell surfaces errors as cell error state", async () => {

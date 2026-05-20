@@ -1,4 +1,4 @@
-import { Database, Eye, FlaskConical, GitBranch, PlayCircle, Save, Search, ShieldCheck, Sparkles, Workflow } from "lucide-react";
+import { ArrowRightLeft, CircleDot, Database, Eye, FlaskConical, GitBranch, Layers, Network, PlayCircle, Save, Search, ShieldCheck, Sparkles, Workflow } from "lucide-react";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import {
   type ParticipationViewModel,
   type PayoffChartViewModel,
   type StrategyBuilderCellDetailViewModel,
+  type StrategyBuilderCellKind,
   type StrategyBuilderCellViewModel,
   type StrategyBuilderFieldCatalogItem,
   type StrategyBuilderTemplate,
@@ -20,6 +21,29 @@ import {
   type StrategyDesignerViewModel,
   type StrategyLegDetailFieldViewModel
 } from "@/screens/strategy-designer-screen.view-model";
+
+function cellKindBadgeVariant(kind: StrategyBuilderCellKind): "default" | "outline" | "success" | "warning" | "danger" | "research" {
+  switch (kind) {
+    case "governance":       return "warning";
+    case "code":             return "research";
+    case "state":            return "default";
+    case "concurrent":       return "success";
+    case "universe-builder": return "success";
+    case "trade":            return "danger";
+    case "options-payoff":   return "warning";
+    default:                 return "outline";
+  }
+}
+
+function CellKindIcon({ kind }: { kind: StrategyBuilderCellKind }) {
+  switch (kind) {
+    case "state":            return <CircleDot className="h-3 w-3 text-muted-foreground" aria-hidden="true" />;
+    case "concurrent":       return <Network className="h-3 w-3 text-muted-foreground" aria-hidden="true" />;
+    case "universe-builder": return <Layers className="h-3 w-3 text-muted-foreground" aria-hidden="true" />;
+    case "trade":            return <ArrowRightLeft className="h-3 w-3 text-muted-foreground" aria-hidden="true" />;
+    default:                 return null;
+  }
+}
 
 export function StrategyDesignerScreen() {
   const vm = useStrategyDesignerViewModel();
@@ -197,7 +221,11 @@ function CellCanvasPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
       render: (row) => (
         <div className="min-w-0">
           <div className="font-medium text-foreground">{row.label}</div>
-          <div className="mt-1 font-mono text-xs text-muted-foreground">{row.cellId}</div>
+          <div className="mt-1 flex items-center gap-1.5">
+            <CellKindIcon kind={row.kind} />
+            <Badge variant={cellKindBadgeVariant(row.kind)}>{row.kind}</Badge>
+            <span className="font-mono text-xs text-muted-foreground">{row.cellId}</span>
+          </div>
         </div>
       )
     },
@@ -212,13 +240,14 @@ function CellCanvasPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
       render: (row) => (
         <div className="flex flex-wrap gap-1">
           {row.fieldChips.map((field) => (
-            <Badge
-              key={field.fieldId}
-              variant={field.isEnabled ? "outline" : "warning"}
-              title={field.disabledReason ?? undefined}
-            >
-              {field.fieldId}
-            </Badge>
+            <div key={field.fieldId} className="flex flex-col gap-1">
+              <Badge variant={field.isEnabled ? "outline" : "warning"}>
+                {field.fieldId}
+              </Badge>
+              {field.disabledReason ? (
+                <span className="text-[10px] leading-4 text-warning">{field.disabledReason}</span>
+              ) : null}
+            </div>
           ))}
         </div>
       )
@@ -413,12 +442,34 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          {vm.backtest.routeActions.map((action) => (
-            <a key={action.id} href={action.href} className="inline-flex items-center gap-1 rounded-md border border-border/70 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+          {vm.backtest.routeActions.map((action) => action.isBrowserNavigable ? (
+            <a
+              key={action.id}
+              href={action.href}
+              aria-label={action.ariaLabel}
+              className="inline-flex items-center gap-1 rounded-md border border-border/70 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+            >
               <Eye className="h-3.5 w-3.5" aria-hidden="true" />
               <span>{action.method}</span>
               <span>{action.label}</span>
+              <span className="rounded-sm border border-border/60 px-1 py-0.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                {action.interactionLabel}
+              </span>
             </a>
+          ) : (
+            <div
+              key={action.id}
+              role="group"
+              aria-label={action.ariaLabel}
+              className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-secondary/20 px-2.5 py-1.5 text-xs text-muted-foreground"
+            >
+              <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>{action.method}</span>
+              <span>{action.label}</span>
+              <span className="rounded-sm border border-border/60 px-1 py-0.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                {action.interactionLabel}
+              </span>
+            </div>
           ))}
         </div>
         <div className="space-y-2" role="list" aria-label="Strategy Builder run trace">
@@ -496,20 +547,41 @@ function OptionsPayoffPanel({ vm }: { vm: StrategyDesignerViewModel }) {
           >
             {vm.clearCanvasCommand.label}
           </Button>
-          <label className="ml-auto flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-            <span>{vm.spotPriceField.label}</span>
+          <div className="ml-auto grid min-w-[11rem] gap-1">
+            <label
+              htmlFor={vm.spotPriceField.id}
+              className="text-xs uppercase tracking-[0.14em] text-muted-foreground"
+            >
+              {vm.spotPriceField.label}
+            </label>
             <Input
+              id={vm.spotPriceField.id}
               type="number"
               step={vm.spotPriceField.step}
               min={vm.spotPriceField.min}
               inputMode={vm.spotPriceField.inputMode}
               value={vm.spotPriceField.value}
+              error={vm.spotPriceField.invalid}
               onChange={(event) => vm.updateSpotPriceDraft(event.target.value)}
               onBlur={(event) => vm.commitSpotPriceDraft(event.target.value)}
-              className="w-28"
+              className="w-full"
               aria-label={vm.spotPriceField.ariaLabel}
+              aria-describedby={vm.spotPriceField.describedBy}
+              aria-errormessage={vm.spotPriceField.feedbackMessage ? vm.spotPriceField.feedbackId : undefined}
             />
-          </label>
+            <p id={vm.spotPriceField.helperId} className="text-xs normal-case leading-5 tracking-normal text-muted-foreground">
+              {vm.spotPriceField.helperText}
+            </p>
+            {vm.spotPriceField.feedbackMessage ? (
+              <p
+                id={vm.spotPriceField.feedbackId}
+                role="status"
+                className="text-xs normal-case leading-5 tracking-normal text-warning"
+              >
+                {vm.spotPriceField.feedbackMessage}
+              </p>
+            ) : null}
+          </div>
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           <PayoffCard payoff={vm.payoff} legCount={vm.legs.length} />

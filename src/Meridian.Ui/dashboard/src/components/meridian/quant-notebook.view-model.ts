@@ -98,10 +98,22 @@ export function markDownstreamStale(
 // ── View model hook ────────────────────────────────────────────────────────────
 
 export interface QuantNotebookCellViewModel extends NotebookCell {
+  runCommand: QuantNotebookCommandViewModel;
+  sourceField: QuantNotebookCellSourceFieldViewModel;
   deleteConfirmationPending: boolean;
   deleteLabel: string;
   deleteAriaLabel: string;
   deleteDisabledReason: string | null;
+}
+
+export interface QuantNotebookCellSourceFieldViewModel {
+  label: string;
+  placeholder: string;
+  disabled: boolean;
+  disabledReason: string | null;
+  disabledReasonId: string;
+  describedBy: string | null;
+  spellCheck: boolean;
 }
 
 export interface QuantNotebookCommandViewModel {
@@ -122,6 +134,7 @@ export interface QuantNotebookDataContextFieldViewModel {
   error: boolean;
   disabled: boolean;
   disabledReason: string | null;
+  disabledReasonId: string;
 }
 
 export interface QuantNotebookDataResultRowViewModel {
@@ -169,6 +182,7 @@ export interface QuantNotebookViewModel {
   fetchError: string | null;
   dataContextPanel: QuantNotebookDataContextPanelViewModel;
   snippets: CellSnippet[];
+  runAllCommand: QuantNotebookCommandViewModel;
   clearOutputsLabel: string;
   clearOutputsAriaLabel: string;
   clearOutputsDisabledReason: string | null;
@@ -463,6 +477,13 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
 
   const hasRunningCell = cells.some((cell) => cell.state === "running");
   const hasClearableOutput = cells.some((cell) => cell.kind !== "markdown" && cell.output.length > 0);
+  const runAllCommand: QuantNotebookCommandViewModel = {
+    label: hasRunningCell ? "Running..." : "Run all",
+    ariaLabel: hasRunningCell ? "Notebook cells are running" : "Run all notebook cells",
+    disabled: hasRunningCell,
+    disabledReason: hasRunningCell ? "Wait for running cells to finish before running all notebook cells." : null,
+    busy: hasRunningCell
+  };
   const clearOutputsDisabledReason = hasRunningCell
     ? "Wait for running cells to finish before clearing outputs."
     : hasClearableOutput
@@ -480,6 +501,14 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
         const isRunning = cell.state === "running";
         return {
           ...cell,
+          runCommand: {
+            label: isRunning ? "Running..." : "Run",
+            ariaLabel: isRunning ? `Cell ${cell.ordinal.toString()} is running` : `Run cell ${cell.ordinal.toString()}`,
+            disabled: isRunning,
+            disabledReason: isRunning ? `Wait for cell ${cell.ordinal.toString()} to finish running before rerunning it.` : null,
+            busy: isRunning
+          },
+          sourceField: buildCellSourceField(cell, isRunning),
           deleteConfirmationPending,
           deleteLabel: deleteConfirmationPending ? "Confirm" : "Delete",
           deleteAriaLabel: deleteConfirmationPending
@@ -499,6 +528,7 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
     fetchError,
     dataContextPanel,
     snippets: builtInSnippets,
+    runAllCommand,
     clearOutputsLabel: clearOutputsConfirmationPending ? "Confirm clear" : "Clear",
     clearOutputsAriaLabel: clearOutputsConfirmationPending
       ? "Confirm clear all notebook outputs. This removes displayed execution results."
@@ -517,6 +547,28 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
     setContext,
     fetchData,
     dismissDataResult
+  };
+}
+
+function buildCellSourceField(
+  cell: NotebookCell,
+  disabled: boolean
+): QuantNotebookCellSourceFieldViewModel {
+  const ordinal = cell.ordinal.toString();
+  const isMarkdown = cell.kind === "markdown";
+  const disabledReason = disabled ? `Cell ${ordinal} is running; wait before editing the source.` : null;
+  const disabledReasonId = `quant-notebook-cell-${ordinal}-source-disabled-reason`;
+
+  return {
+    label: `Cell ${ordinal} source`,
+    placeholder: isMarkdown
+      ? `## Section ${ordinal}\n\nNarrative, hypothesis, or analysis notes.`
+      : `// Cell ${ordinal}\n// Use Data.Prices(symbol), Backtest.WithSymbols(...), or any C# expression`,
+    disabled,
+    disabledReason,
+    disabledReasonId,
+    describedBy: disabledReason ? disabledReasonId : null,
+    spellCheck: isMarkdown
   };
 }
 
@@ -614,16 +666,18 @@ function buildDataContextField({
   disabledReason: string | null;
 }): QuantNotebookDataContextFieldViewModel {
   const helpId = `${id}-help`;
+  const disabledReasonId = `${id}-disabled-reason`;
   return {
     id,
     label,
     ariaLabel: label,
-    describedBy: helpId,
+    describedBy: disabledReason ? `${helpId} ${disabledReasonId}` : helpId,
     helpId,
     helpText,
     error,
     disabled,
-    disabledReason
+    disabledReason,
+    disabledReasonId
   };
 }
 

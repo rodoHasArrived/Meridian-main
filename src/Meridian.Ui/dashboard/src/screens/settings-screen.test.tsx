@@ -1,9 +1,19 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiError } from "@/lib/api-errors";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
-import type { BrokerageConnectionStatus, PortfolioWorkspaceResponse, SessionInfo, SystemOverviewResponse } from "@/types";
+import type {
+  BrokerageConnectionStatus,
+  PortfolioWorkspaceResponse,
+  ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
+  SessionInfo,
+  SystemOverviewResponse
+} from "@/types";
 
 const apiMocks = vi.hoisted(() => ({
   connectAlpacaConnection: vi.fn(),
@@ -64,6 +74,94 @@ const alpacaConnection: BrokerageConnectionStatus = {
   maskedKeyId: "********1234"
 };
 
+const providerConnections: ProviderConnectionRow[] = [
+  {
+    providerId: "alpaca",
+    displayName: "Alpaca",
+    capability: "DataAndBrokerage",
+    credentialState: "Verified",
+    credentialSource: "LocalEncryptedStore",
+    verificationState: "Verified",
+    health: "Healthy",
+    fallbackActive: false,
+    lastVerifiedAt: "2026-05-07T11:50:00Z",
+    lastSuccessfulAt: "2026-05-07T11:50:00Z",
+    lastFailureAt: null,
+    lastError: null,
+    maskedKeyPreview: "********1234",
+    environment: "paper",
+    externalAccountId: "PA123",
+    affectedWorkflows: ["Trading readiness", "Portfolio brokerage sync"],
+    recommendedAction: "No credential repair action required.",
+    actionHref: "/settings#alpaca-provider-setup"
+  },
+  {
+    providerId: "polygon",
+    displayName: "Polygon.io",
+    capability: "Data",
+    credentialState: "Missing",
+    credentialSource: "None",
+    verificationState: "NotVerified",
+    health: "Warning",
+    fallbackActive: true,
+    lastVerifiedAt: null,
+    lastSuccessfulAt: null,
+    lastFailureAt: "2026-05-07T11:45:00Z",
+    lastError: "Provider credential missing.",
+    maskedKeyPreview: null,
+    environment: null,
+    externalAccountId: null,
+    affectedWorkflows: ["Historical backfill"],
+    recommendedAction: "Add the Polygon API key before routing data repair through Polygon.",
+    actionHref: "/settings#provider-polygon-connection"
+  }
+];
+
+const providerRoutingConnections: ProviderRoutingConnection[] = [
+  {
+    connectionId: "provider-reference",
+    providerFamilyId: "polygon",
+    displayName: "Reference data route",
+    connectionType: "DataVendor",
+    connectionMode: "ReadOnly",
+    enabled: true,
+    credentialReference: "vault:polygon/default",
+    institutionId: null,
+    externalAccountId: null,
+    scope: null,
+    tags: ["reference"],
+    description: null,
+    productionReady: true
+  }
+];
+
+const providerRoutingBindings: ProviderRoutingBinding[] = [
+  {
+    bindingId: "provider-reference-ReferenceData",
+    capability: "ReferenceData",
+    connectionId: "provider-reference",
+    target: null,
+    priority: 100,
+    enabled: true,
+    failoverConnectionIds: [],
+    safetyModeOverride: null,
+    notes: null
+  }
+];
+
+const providerRoutingTrustSnapshots: ProviderRoutingTrustSnapshot[] = [
+  {
+    connectionId: "provider-reference",
+    providerFamilyId: "polygon",
+    score: 97,
+    isHealthy: true,
+    healthStatus: "Healthy",
+    isProductionReady: true,
+    isCertificationFresh: true,
+    signals: []
+  }
+];
+
 const portfolio: PortfolioWorkspaceResponse = {
   metrics: [],
   positions: [],
@@ -117,6 +215,69 @@ describe("SettingsScreen", () => {
     expect(within(eventRow).getByText("Provider health")).toBeInTheDocument();
     expect(within(eventDetail).getByText("Brokerage sync delayed.")).toBeInTheDocument();
     expect(within(eventDetail).getByText("Provider health / evt-1")).toBeInTheDocument();
+  });
+
+  it("renders profile authentication posture with authority handoffs", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+      />
+    );
+
+    const profileRegion = screen.getByRole("region", { name: "Profile and authentication posture" });
+    expect(profileRegion).toHaveTextContent("Profile and access posture");
+    expect(profileRegion).toHaveTextContent("Access ready");
+    expect(profileRegion).toHaveTextContent("Andrew Rowden");
+    expect(profileRegion).toHaveTextContent("Fund Manager");
+    expect(profileRegion).toHaveTextContent("42 commands issued");
+    expect(profileRegion).toHaveTextContent("Brokerage verified");
+    expect(within(profileRegion).getByRole("list", {
+      name: "Profile authentication and authorization readiness steps"
+    })).toBeInTheDocument();
+    expect(within(profileRegion).getByRole("link", {
+      name: "Open Trading readiness from verified profile authentication posture"
+    })).toHaveAttribute("href", "/trading/readiness");
+    expect(within(profileRegion).getByRole("link", {
+      name: "Open Settings diagnostic endpoints from profile authentication posture"
+    })).toHaveAttribute("href", "/settings#diagnostic-endpoints");
+    expect(document.querySelector("#diagnostic-endpoints")).toBeInTheDocument();
+  });
+
+  it("renders provider connection center with continuity repair links", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+        providerConnections={providerConnections}
+        providerRoutingConnections={providerRoutingConnections}
+        providerRoutingBindings={providerRoutingBindings}
+        providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+        onProviderRoutingRefresh={vi.fn()}
+      />
+    );
+
+    const center = screen.getByText("Provider Connection Center").closest("div");
+    expect(screen.getByText("Brokerage capable")).toBeInTheDocument();
+    expect(screen.getByText("Data providers")).toBeInTheDocument();
+    expect(screen.getByText("Alpaca")).toBeInTheDocument();
+    expect(screen.getByText("Polygon.io")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Refresh Provider Connection Center routing data" })).toBeInTheDocument();
+    expect(screen.getByText("Reference data")).toBeInTheDocument();
+    expect(screen.getByText("97% · Healthy")).toBeInTheDocument();
+    expect(screen.getByText("Production ready")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Alpaca provider connection row" })).toHaveAttribute(
+      "href",
+      "/settings#alpaca-provider-setup"
+    );
+    expect(screen.getByRole("link", { name: "Open Polygon.io provider connection row" })).toHaveAttribute(
+      "href",
+      "/settings#provider-polygon-connection"
+    );
+    expect(center).not.toHaveTextContent("endpoint-secret");
+    expect(center).not.toHaveTextContent("vault:polygon/default");
   });
 
   it("updates recent-event detail with keyboard row selection", async () => {
@@ -288,17 +449,17 @@ describe("SettingsScreen", () => {
     await user.click(screen.getByRole("button", { name: /connect and test/i }));
 
     expect(screen.getByLabelText(/Key ID/)).toBeDisabled();
-    expect(screen.getByLabelText(/Key ID/)).toHaveAttribute("title", busyReason);
+    expect(screen.getByLabelText(/Key ID/)).toHaveAccessibleDescription(new RegExp(`${busyReason}.*Testing Alpaca credentials`, "s"));
     expect(screen.getByLabelText(/Secret key/)).toBeDisabled();
-    expect(screen.getByLabelText(/Secret key/)).toHaveAttribute("title", busyReason);
+    expect(screen.getByLabelText(/Secret key/)).toHaveAccessibleDescription(new RegExp(`${busyReason}.*Testing Alpaca credentials`, "s"));
     expect(screen.getByRole("radio", { name: "Use Alpaca paper endpoint for workstation validation" })).toHaveAttribute(
-      "title",
-      busyReason
+      "aria-describedby",
+      expect.stringContaining("alpaca-environment-disabled-reason")
     );
     expect(screen.getByRole("radio", { name: "Use Alpaca live endpoint for production brokerage verification" })).toBeDisabled();
-    expect(screen.getByRole("checkbox", { name: "Acknowledge live Alpaca endpoint before testing credentials" })).toHaveAttribute(
-      "title",
-      busyReason
+    expect(screen.getAllByText(busyReason).length).toBeGreaterThanOrEqual(4);
+    expect(screen.getByRole("checkbox", { name: "Acknowledge live Alpaca endpoint before testing credentials" })).toHaveAccessibleDescription(
+      new RegExp(`${busyReason}.*Testing Alpaca credentials`, "s")
     );
 
     resolveConnect({ ...alpacaConnection, environment: "live" });
@@ -325,6 +486,77 @@ describe("SettingsScreen", () => {
     await user.click(screen.getByRole("button", { name: /confirm clear/i }));
 
     expect(apiMocks.revokeAlpacaConnection).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders structured Alpaca clear failure details", async () => {
+    const user = userEvent.setup();
+    apiMocks.revokeAlpacaConnection.mockRejectedValueOnce(
+      new ApiError({
+        path: "/api/brokerage-connections/alpaca",
+        status: 409,
+        detail: "Credential revocation is blocked.",
+        validationIssues: [
+          {
+            field: "providerState",
+            label: "providerState",
+            messages: ["Provider still has an active verification job."]
+          }
+        ]
+      })
+    );
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /clear/i }));
+    await user.click(screen.getByRole("button", { name: /confirm clear/i }));
+
+    const setupPanel = document.querySelector("#alpaca-provider-setup");
+    expect(setupPanel).not.toBeNull();
+    expect(await within(setupPanel as HTMLElement).findByText("Endpoint returned 409 for /api/brokerage-connections/alpaca.")).toBeInTheDocument();
+    expect(within(setupPanel as HTMLElement).getAllByText("Credential revocation is blocked.").length).toBeGreaterThan(0);
+    expect(within(setupPanel as HTMLElement).getByText("providerState: Provider still has an active verification job.")).toBeInTheDocument();
+  });
+
+  it("renders structured Alpaca validation details when credential verification fails", async () => {
+    const user = userEvent.setup();
+    apiMocks.connectAlpacaConnection.mockRejectedValueOnce(
+      new ApiError({
+        path: "/api/brokerage-connections/alpaca/connect",
+        status: 422,
+        detail: "One or more validation errors occurred.",
+        validationIssues: [
+          {
+            field: "secretKey",
+            label: "secretKey",
+            messages: ["Secret key must include the paper account scope."]
+          }
+        ]
+      })
+    );
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+      />
+    );
+
+    await user.type(screen.getByPlaceholderText("ALPACA_KEY_ID"), "AK-PAPER");
+    await user.type(screen.getByPlaceholderText("ALPACA_SECRET_KEY"), "secret");
+    await user.click(screen.getByRole("button", { name: /connect and test/i }));
+
+    const setupPanel = document.querySelector("#alpaca-provider-setup");
+    expect(setupPanel).not.toBeNull();
+    expect(await within(setupPanel as HTMLElement).findByText("Endpoint returned 422 for /api/brokerage-connections/alpaca/connect.")).toBeInTheDocument();
+    expect(within(setupPanel as HTMLElement).getAllByText("One or more validation errors occurred.").length).toBeGreaterThan(0);
+    expect(within(setupPanel as HTMLElement).getByText("secretKey: Secret key must include the paper account scope.")).toBeInTheDocument();
   });
 
   it("renders backend capability groups with mapped API links", () => {

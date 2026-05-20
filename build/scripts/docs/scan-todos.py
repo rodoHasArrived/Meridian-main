@@ -27,6 +27,7 @@ SKIP_DIRS = {
     ".vs",
     ".idea",
     ".vscode",
+    ".tools",
     "packages",
     "__pycache__",
     ".pytest_cache",

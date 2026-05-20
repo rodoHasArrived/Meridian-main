@@ -554,9 +554,9 @@ public sealed record CredentialConfig
         // In production, replace with AWS Secrets Manager or Azure Key Vault provider.
         try
         {
-            return SecretProvider
-                .GetSecretAsync(VaultPath, key, CancellationToken.None)
-                .ConfigureAwait(false)
+            // Run on the thread pool to avoid sync-context deadlocks in callers
+            // that are themselves on a captured SynchronizationContext (e.g. ASP.NET startup).
+            return Task.Run(() => SecretProvider.GetSecretAsync(VaultPath, key, CancellationToken.None))
                 .GetAwaiter()
                 .GetResult();
         }

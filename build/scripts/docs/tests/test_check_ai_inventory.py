@@ -67,6 +67,9 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / ".codex" / "config.toml")
             write(root / ".codex" / "environments" / "environment.toml")
             write(root / ".codex" / "skills" / "meridian-test" / "SKILL.md")
+            write(root / ".agents" / "skills" / "meridian-portable" / "SKILL.md")
+            write(root / ".agents" / "skills" / "meridian-portable" / "agents" / "openai.yaml")
+            write(root / ".agents" / "skills" / "_shared" / "project-context.md")
             write(root / ".claude" / "settings.json")
             write(root / ".claude" / "settings.local.json")
             write(root / ".claude" / "agents" / "meridian-test.md")
@@ -78,6 +81,7 @@ class CheckAiInventoryTests(unittest.TestCase):
 
             inventory = check_ai_inventory.collect_inventory(root)
             pairs = {(item.kind, item.name) for item in inventory}
+            surface_pairs = {(item.surface, item.kind, item.name) for item in inventory}
 
             self.assertIn(("entrypoint", "AGENTS.md"), pairs)
             self.assertIn(("entrypoint", "CLAUDE.md"), pairs)
@@ -92,6 +96,33 @@ class CheckAiInventoryTests(unittest.TestCase):
             self.assertIn(("path-instruction", "sample.instructions.md"), pairs)
             self.assertIn(("mcp-tool", "SampleTools.cs"), pairs)
             self.assertIn(("ai-doc", "README.md"), pairs)
+            self.assertIn(("agent-skills-compatible-hosts", "skill", "meridian-portable"), surface_pairs)
+            self.assertIn(("agent-skills-compatible-hosts", "openai-metadata", "meridian-portable"), surface_pairs)
+            self.assertIn(("agent-skills-compatible-hosts", "shared-context", "project-context.md"), surface_pairs)
+
+    def test_collect_inventory_discovers_optional_assistant_surfaces(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write(root / ".cursor" / "rules" / "meridian.mdc")
+            write(root / ".windsurfrules")
+            write(root / ".continue" / "config.yaml")
+            write(root / ".clinerules")
+            write(root / ".roo" / "rules" / "meridian.md")
+            write(root / "GEMINI.md")
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            paths = {
+                item.path
+                for item in inventory
+                if item.kind == "optional-assistant-surface"
+            }
+
+            self.assertIn(".cursor/rules/meridian.mdc", paths)
+            self.assertIn(".windsurfrules", paths)
+            self.assertIn(".continue/config.yaml", paths)
+            self.assertIn(".clinerules", paths)
+            self.assertIn(".roo/rules/meridian.md", paths)
+            self.assertIn("GEMINI.md", paths)
 
     def test_check_catalog_drift_reports_missing_agent_index_entry(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -113,6 +144,106 @@ class CheckAiInventoryTests(unittest.TestCase):
 
             self.assertTrue(any(finding.name == "new-agent.md" for finding in findings))
             self.assertTrue(any(finding.expected_doc == "docs/ai/agents/README.md" for finding in findings))
+
+    def test_check_catalog_drift_reports_missing_agent_skills_index_entry(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write(root / ".agents" / "skills" / "new-skill" / "SKILL.md")
+            write_required_docs(
+                root,
+                "\n".join(
+                    [
+                        "Root assistant compatibility AGENTS.md CLAUDE.md",
+                        "Codex .codex/config.toml .codex/environments/ .codex/skills OpenAI/Codex",
+                        "Agent Skills-compatible hosts .agents/skills open-agent-skills-v1",
+                        "GitHub Copilot .github/agents .github/prompts .github/instructions",
+                        "Reusable prompt templates .github/prompts/ docs/ai/prompts/README.md",
+                        "Shared AI documentation docs/ai/ .codex/skills/_shared/project-context.md",
+                    ]
+                ),
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(any(finding.name == "new-skill" for finding in findings))
+            self.assertTrue(any(finding.expected_doc == "docs/ai/skills/README.md" for finding in findings))
+
+    def test_check_catalog_drift_reports_undocumented_optional_assistant_surface(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write(root / ".cursor" / "rules" / "meridian.mdc")
+            write_required_docs(root, "Shared AI documentation docs/ai/")
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "optional-assistant-surface"
+                    and finding.path == ".cursor/rules/meridian.mdc"
+                    and finding.expected_doc == "docs/ai/assistant-workflow-contract.md"
+                    for finding in findings
+                )
+            )
+
+    def test_check_catalog_drift_reports_missing_workflow_reference(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/ .codex/skills/_shared/project-context.md")
+            write(
+                root / "docs" / "prompts" / "automation-prompts.md",
+                "Use `.github/workflows/prompt-generation.yml` to regenerate prompts.\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "missing-workflow-reference"
+                    and finding.name == "prompt-generation.yml"
+                    and finding.path == "docs/prompts/automation-prompts.md"
+                    for finding in findings
+                )
+            )
+
+    def test_check_catalog_drift_allows_existing_workflow_reference(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_required_docs(root, "Shared AI documentation docs/ai/ .codex/skills/_shared/project-context.md")
+            write(root / ".github" / "workflows" / "ci.yml")
+            write(
+                root / "docs" / "prompts" / "automation-prompts.md",
+                "Use `.github/workflows/ci.yml` for the active CI workflow.\n",
+            )
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertFalse(any(finding.kind == "missing-workflow-reference" for finding in findings))
+
+    def test_check_catalog_drift_passes_when_optional_assistant_surface_is_documented(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write(root / ".cursor" / "rules" / "meridian.mdc")
+            indexed = "\n".join(
+                [
+                    "Root assistant compatibility AGENTS.md CLAUDE.md",
+                    "Codex .codex/config.toml .codex/environments/ .codex/skills OpenAI/Codex",
+                    "Claude / Claude Code .claude/settings.json .claude/settings.local.json .claude/agents .claude/skills",
+                    "GitHub Copilot .github/agents .github/prompts .github/instructions",
+                    "Reusable prompt templates .github/prompts/ docs/ai/prompts/README.md",
+                    "Shared AI documentation docs/ai/ .codex/skills/_shared/project-context.md",
+                    ".cursor/rules/meridian.mdc",
+                ]
+            )
+            write_required_docs(root, indexed)
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertEqual([], findings)
 
     def test_check_catalog_drift_passes_when_indexes_reference_assets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,6 +1,6 @@
 # Contract Compatibility Matrix
 
-Last reviewed: 2026-04-29
+Last reviewed: 2026-05-19
 Scope: workstation contracts and shared service/ledger interfaces consumed by workstation APIs.
 
 This matrix defines compatibility commitments for:
@@ -77,13 +77,50 @@ Any pull request touching scoped surfaces must pass:
 
 1. **Standard PR gates:** existing build/test/format gates in `.github/workflows/pr-checks.yml`.
 2. **Contract review packet:** `scripts/generate_contract_review_packet.py` for the same base/head range. The packet summarizes tracked surfaces, change category, migration-note status, and reviewer checklist items for the weekly interop cadence.
-3. **Contract compatibility gate:** `scripts/check_contract_compatibility_gate.py` from the `contract-compatibility` PR job and the release workflow. The gate flags public type/member/route removals, shared `UiApiRoutes` constant removals or value changes, plus scoped record constructor parameter and enum-member removals.
+3. **Contract compatibility gate:** `scripts/check_contract_compatibility_gate.py` from the `contract-compatibility` PR job and the release workflow. The gate flags public type/member/route removals, shared `UiApiRoutes` constant removals or value changes, scoped record constructor parameter and enum-member removals, and **new v1 required DTO fields** (non-nullable additions without null/default compatibility).
 4. **Contract regression tests (required when contract code changes):**
    - targeted workstation contract serialization/deserialization tests,
    - strategy service interface compatibility tests,
    - ledger read/write snapshot compatibility tests,
    - workstation endpoint request/response shape tests.
 5. **Migration-note gate (required for breaking changes):** matrix doc update + PR migration note declaration.
+
+## Workstation Dashboard Compatibility Protocol (Readiness + Operator Inbox + Routing Metadata)
+
+The browser workstation dashboard consumes shared workstation DTO/enum payloads from:
+
+- `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs`
+- `src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs`
+- `src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs`
+- `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`
+
+### Changes that require coordinated backend + UI updates
+
+1. Any additive or breaking change to:
+   - `TradingOperatorReadinessDto`,
+   - `TradingAcceptanceGateDto`,
+   - `OperatorWorkItemDto`,
+   - `OperatorInboxDto`,
+   - routing metadata fields (`targetRoute`, `targetPageTag`, `workspace`, `scope`), or
+   - enum-like string fields consumed by dashboard decision logic (`overallStatus`, gate status, work-item kind/tone).
+2. Any endpoint payload projection change for:
+   - `GET /api/workstation/trading/readiness`
+   - `GET /api/workstation/operator/inbox`
+   - workflow/routing metadata responses used by the dashboard shell.
+
+### Required test slice before merge
+
+Run the narrowest contract-focused checks:
+
+- `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints_TradingReadiness|FullyQualifiedName~MapWorkstationEndpoints_OperatorInbox|FullyQualifiedName~WorkstationContractSnapshotTests"`
+- `npm --prefix src/Meridian.Ui/dashboard run test -- operator-readiness-console.view-model.test.ts trading-screen.view-model.test.ts`
+
+### Approval rule
+
+- If `WorkstationContractSnapshotTests` fingerprint changes, reviewers must treat it as explicit contract drift and require:
+  - a paired dashboard update (or explicit no-op rationale),
+  - updated/additional compatibility tests for the changed assumption, and
+  - PR note confirming contract drift was reviewed by both backend and dashboard owners.
 
 ## Weekly Interop Review Cadence
 
@@ -99,6 +136,9 @@ changes, that requires a matrix migration-note entry and PR-body migration notes
 `--pr-body-file <path>` when evaluating a pull request so the packet can verify those notes. A ready
 packet is still a review input, not owner approval; record the owner decision and any follow-up in
 the weekly interop notes and, when readiness status changes, in `kernel-readiness-dashboard.md`.
+For v1 contract deltas, include the compatibility-gate output in the packet attachment and explicitly
+confirm these assertions in the interop note: **(a)** no route removal/rename, **(b)** no required-field
+regression for existing DTOs, and **(c)** additive-only enum/field evolution.
 Pull request checks also upload a `contract-review-packet` artifact and append the Markdown packet
 to the contract-compatibility job summary so reviewers can inspect tracked surfaces and blocking
 findings even when the compatibility gate fails.
@@ -123,6 +163,11 @@ Use this section for every potential contract-breaking change. Entries must be a
 - 2026-04-27: Added `scripts/generate_contract_review_packet.py` as the repeatable weekly shared-interop review artifact for tracked contract changes. No runtime contract break introduced.
 - 2026-04-29: Updated `StrategyRunContinuityStatus` with additive `HasFills` coverage and tightened continuity warning-code expectations for run-centered readiness consumers. Older clients that do not read `HasFills` should continue defaulting to `false`/missing-field handling and can ignore unknown warning codes; consumers that branch on continuity warnings should treat new codes as additive and map unknown values to their existing generic warning UX.
 - 2026-04-29: Merge/release cadence now explicitly depends on passing both `scripts/check_contract_compatibility_gate.py --base <base> --head <head>` and the same-range `scripts/generate_contract_review_packet.py` review packet before owner sign-off.
+- 2026-05-19: Extended execution shared DTOs in `Meridian.Execution.Sdk` with additive option-contract identity, multi-leg echo fields, and normalized execution diagnostics (`ExecutionReport.OptionContract`, `ExecutionReport.Legs`, `ExecutionReport.Diagnostics`, plus optional `OptionContract` on `OrderRequest`/`OrderLeg`). This is additive-only for JSON/object consumers; existing callers can ignore the new nullable fields while readiness/inbox surfaces may begin consuming `Diagnostics.Category`, `Severity`, and `RecommendedAction` for operational triage.
+- 2026-05-19: Added Interactive Brokers canonical payload mapping and provider enum translation coverage for account, position, order, execution, and instrument-facing payload fields consumed by shared API/read-model surfaces. The translation table now centrally maps provider `order status`, `order type`, `time-in-force`, `side`, and `asset-type` values; unknown provider enum values are handled via deterministic fallback defaults (accepted/market/day/buy/equity) to prevent shared-contract breakage while preserving the original provider value in `ib.unknown.*` metadata when mutable metadata is available. Compatibility assumption: existing consumers must continue treating unknown/extra metadata keys as additive and should not hard-fail when new provider values appear.
+- 2026-05-19: Added TradeStation payload mapping modules for canonical brokerage account/position/order/fill DTOs plus deterministic enum translation (unknown status -> `PendingNew`, unsupported side/type -> explicit failure). Added strict readiness projection validation for required shared fields (`OverallStatus`, `SnapshotVersion`, `AcceptanceGates`, and `EvidenceCompleteness`) so incomplete trading-readiness payloads fail fast instead of projecting partial operator posture. Changes are additive; no route removal, DTO member removal, or enum-member removal was introduced.
+- 2026-05-19: Extended compatibility-gate coverage with regression tests so v1 compatibility workflows now fail when DTO deltas introduce new required fields; the shared interop packet must now explicitly attest no route removals/renames, no required-field regressions, and additive-only field/enum changes.
+- 2026-05-19: Documented v2 deprecation-window policy hook: any planned v2-only required-field or route-shape break must be pre-registered in this matrix with a dated migration note and at least a two-minor-release (or 60-day) coexistence window unless a release-manager emergency waiver is recorded.
 
 ## Pull Request Author Checklist
 

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Text.Json;
 using Meridian.Application.Logging;
+using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Serilog;
@@ -104,23 +105,24 @@ public sealed class HistoricalDataQueryService
         foreach (var dir in Directory.GetDirectories(_dataRoot))
         {
             var dirName = Path.GetFileName(dir);
-            if (!dirName.StartsWith("_") && !dirName.StartsWith("."))
+            if (IsLikelySymbolName(dirName) &&
+                Directory.GetFiles(dir, "*.jsonl*", SearchOption.AllDirectories).Length > 0)
             {
-                symbols.Add(dirName);
+                symbols.Add(dirName.ToUpperInvariant());
             }
         }
 
         // Also search for files with symbol in name (Flat convention)
-        foreach (var file in Directory.GetFiles(_dataRoot, "*.jsonl*", SearchOption.AllDirectories))
+        foreach (var file in Directory.GetFiles(_dataRoot, "*.jsonl*", SearchOption.TopDirectoryOnly))
         {
             var fileName = Path.GetFileNameWithoutExtension(file);
             if (fileName.EndsWith(".jsonl"))
                 fileName = Path.GetFileNameWithoutExtension(fileName);
 
             var parts = fileName.Split('_');
-            if (parts.Length > 0 && !string.IsNullOrWhiteSpace(parts[0]))
+            if (parts.Length > 0 && IsLikelySymbolName(parts[0]))
             {
-                symbols.Add(parts[0]);
+                symbols.Add(parts[0].ToUpperInvariant());
             }
         }
 
@@ -623,11 +625,82 @@ public sealed class HistoricalDataQueryService
         {
             SourceFile = Path.GetFileName(filePath),
             LineNumber = lineNumber,
-            Timestamp = root.TryGetProperty("timestamp", out var ts) ? ts.GetDateTimeOffset() : default,
-            Symbol = root.TryGetProperty("symbol", out var sym) ? sym.GetString() : null,
-            EventType = root.TryGetProperty("type", out var type) ? type.GetString() : null,
+            Timestamp = ReadRecordTimestamp(root),
+            Symbol = ReadRecordSymbol(root),
+            EventType = ReadEventType(root),
             RawJson = line
         };
+    }
+
+    private static DateTimeOffset ReadRecordTimestamp(JsonElement root)
+    {
+        if (root.TryGetProperty("timestamp", out var ts) && TryReadTimestamp(ts, out var timestamp))
+        {
+            return timestamp;
+        }
+
+        if (root.TryGetProperty("payload", out var payload) &&
+            payload.ValueKind == JsonValueKind.Object &&
+            payload.TryGetProperty("timestamp", out var payloadTs) &&
+            TryReadTimestamp(payloadTs, out timestamp))
+        {
+            return timestamp;
+        }
+
+        return default;
+    }
+
+    private static string? ReadRecordSymbol(JsonElement root)
+    {
+        if (root.TryGetProperty("symbol", out var sym) && sym.ValueKind == JsonValueKind.String)
+        {
+            return sym.GetString();
+        }
+
+        if (root.TryGetProperty("payload", out var payload) &&
+            payload.ValueKind == JsonValueKind.Object &&
+            payload.TryGetProperty("symbol", out var payloadSym) &&
+            payloadSym.ValueKind == JsonValueKind.String)
+        {
+            return payloadSym.GetString();
+        }
+
+        return null;
+    }
+
+    private static string? ReadEventType(JsonElement root)
+    {
+        if (root.TryGetProperty("type", out var type))
+        {
+            if (type.ValueKind == JsonValueKind.String)
+            {
+                return type.GetString();
+            }
+
+            if (type.ValueKind == JsonValueKind.Number && type.TryGetInt32(out var numericType))
+            {
+                if (numericType is >= byte.MinValue and <= byte.MaxValue)
+                {
+                    var eventType = (MarketEventType)numericType;
+                    if (Enum.IsDefined(eventType))
+                    {
+                        return eventType.ToString();
+                    }
+                }
+
+                return numericType.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+
+        if (root.TryGetProperty("payload", out var payload) &&
+            payload.ValueKind == JsonValueKind.Object &&
+            payload.TryGetProperty("kind", out var kind) &&
+            kind.ValueKind == JsonValueKind.String)
+        {
+            return kind.GetString();
+        }
+
+        return null;
     }
 
     private static bool MatchesQuery(HistoricalDataRecord record, HistoricalDataQuery query)
@@ -686,6 +759,24 @@ public sealed class HistoricalDataQueryService
         }
 
         return null;
+    }
+
+    private static bool IsLikelySymbolName(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length > 20)
+        {
+            return false;
+        }
+
+        foreach (var ch in value)
+        {
+            if (!char.IsUpper(ch) && !char.IsDigit(ch) && ch != '.' && ch != '-')
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 

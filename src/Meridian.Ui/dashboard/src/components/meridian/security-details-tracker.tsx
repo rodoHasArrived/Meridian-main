@@ -3,6 +3,8 @@ import { Briefcase, ClipboardList, Pencil, Plus, Save, Trash2, X } from "lucide-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
+import { Input } from "@/components/ui/input";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getOperatorOverrides as defaultGetOperatorOverrides, patchOperatorOverrides as defaultPatchOperatorOverrides } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -11,8 +13,11 @@ import {
   buildLotsTrackerViewModel,
   parseLotNumber,
   type SecurityDetailFieldDef,
+  type SecurityDetailFieldViewModel,
+  type LotsTrackerDraftFieldViewModel,
   type LotsTrackerRowViewModel,
-  type SecurityLot
+  type SecurityLot,
+  type SecurityDetailsServerStatus
 } from "./security-details-tracker.view-model";
 import type {
   OperatorOverridesDto,
@@ -109,7 +114,7 @@ export function SecurityDetailsPanel({
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [draftValue, setDraftValue] = useState<string>("");
-  const [serverStatus, setServerStatus] = useState<"idle" | "loading" | "synced" | "offline" | "saving" | "error">("idle");
+  const [serverStatus, setServerStatus] = useState<SecurityDetailsServerStatus>("idle");
   const [serverErrorText, setServerErrorText] = useState<string | null>(null);
   const [updatedBy, setUpdatedBy] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
@@ -151,8 +156,18 @@ export function SecurityDetailsPanel({
   }, [securityId, overridesService]);
 
   const vm = useMemo(
-    () => buildSecurityDetailsViewModel({ entry, identity, tradingParameters, overrides }),
-    [entry, identity, overrides, tradingParameters]
+    () => buildSecurityDetailsViewModel({
+      entry,
+      identity,
+      tradingParameters,
+      overrides,
+      editingKey,
+      serverStatus,
+      serverErrorText,
+      updatedBy,
+      updatedAt
+    }),
+    [editingKey, entry, identity, overrides, serverErrorText, serverStatus, tradingParameters, updatedAt, updatedBy]
   );
 
   const beginEdit = useCallback((field: SecurityDetailFieldDef, currentValue: string) => {
@@ -235,22 +250,31 @@ export function SecurityDetailsPanel({
           server when available and fall back to local storage when offline.
         </CardDescription>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <ServerStatusBadge status={serverStatus} />
-          {vm.hiddenOverrideCount > 0 && (
+          {vm.syncStatus ? (
+            <span
+              className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", vm.syncStatus.className)}
+              aria-label={vm.syncStatus.ariaLabel}
+            >
+              {vm.syncStatus.label}
+            </span>
+          ) : null}
+          {vm.hiddenOverridesLabel && vm.hiddenOverridesTitle && (
             <Badge
               variant="warning"
-              title={`${vm.hiddenOverrideCount} override${vm.hiddenOverrideCount === 1 ? "" : "s"} belong to fields hidden for this security type.`}
+              title={vm.hiddenOverridesTitle}
             >
-              {vm.hiddenOverrideCount} hidden override{vm.hiddenOverrideCount === 1 ? "" : "s"}
+              {vm.hiddenOverridesLabel}
             </Badge>
           )}
-          {updatedBy && updatedAt && (
+          {vm.updatedLabel && (
             <span className="font-mono">
-              last edit by {updatedBy} @ {updatedAt}
+              {vm.updatedLabel}
             </span>
           )}
-          {serverErrorText && (
-            <span role="alert" className="font-mono text-warning">{serverErrorText}</span>
+          {vm.serverError && (
+            <span role="alert" aria-label={vm.serverError.ariaLabel} className="font-mono text-warning">
+              {vm.serverError.text}
+            </span>
           )}
         </div>
       </CardHeader>
@@ -260,7 +284,6 @@ export function SecurityDetailsPanel({
             <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{group.title}</div>
             <dl className="grid gap-2 sm:grid-cols-2">
               {group.fields.map((field) => {
-                const isEditing = editingKey === field.key;
                 return (
                   <div
                     key={field.key}
@@ -276,9 +299,9 @@ export function SecurityDetailsPanel({
                       )}
                     </dt>
                     <dd className="min-w-0 break-words font-mono text-xs text-foreground">
-                      {isEditing ? (
+                      {field.isEditing ? (
                         <SecurityDetailFieldEditor
-                          field={field.def}
+                          field={field}
                           value={draftValue}
                           onChange={setDraftValue}
                           onSubmit={() => commitEdit(field.def)}
@@ -289,13 +312,15 @@ export function SecurityDetailsPanel({
                       )}
                     </dd>
                     <div className="flex shrink-0 items-center gap-1">
-                      {isEditing ? (
+                      {field.isEditing ? (
                         <>
                           <Button
                             type="button"
                             size="sm"
                             variant="ghost"
-                            aria-label={`Save ${field.label}`}
+                            aria-label={field.saveCommand.ariaLabel}
+                            disabled={field.saveCommand.disabled}
+                            disabledReason={field.saveCommand.disabledReason}
                             onClick={() => commitEdit(field.def)}
                           >
                             <Save className="h-3.5 w-3.5" />
@@ -304,7 +329,9 @@ export function SecurityDetailsPanel({
                             type="button"
                             size="sm"
                             variant="ghost"
-                            aria-label={`Cancel editing ${field.label}`}
+                            aria-label={field.cancelCommand.ariaLabel}
+                            disabled={field.cancelCommand.disabled}
+                            disabledReason={field.cancelCommand.disabledReason}
                             onClick={cancelEdit}
                           >
                             <X className="h-3.5 w-3.5" />
@@ -316,17 +343,21 @@ export function SecurityDetailsPanel({
                             type="button"
                             size="sm"
                             variant="ghost"
-                            aria-label={`Edit ${field.label}`}
+                            aria-label={field.editCommand.ariaLabel}
+                            disabled={field.editCommand.disabled}
+                            disabledReason={field.editCommand.disabledReason}
                             onClick={() => beginEdit(field.def, field.isOverridden ? field.overrideValue ?? "" : "")}
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                          {field.isOverridden && (
+                          {field.clearCommand && (
                             <Button
                               type="button"
                               size="sm"
                               variant="ghost"
-                              aria-label={`Clear override for ${field.label}`}
+                              aria-label={field.clearCommand.ariaLabel}
+                              disabled={field.clearCommand.disabled}
+                              disabledReason={field.clearCommand.disabledReason}
                               onClick={() => clearOverride(field.def)}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -346,31 +377,8 @@ export function SecurityDetailsPanel({
   );
 }
 
-type ServerStatus = "idle" | "loading" | "synced" | "offline" | "saving" | "error";
-
-function ServerStatusBadge({ status }: { status: ServerStatus }) {
-  if (status === "idle") return null;
-  const label = (
-    status === "loading" ? "Loading from server"
-    : status === "saving" ? "Saving"
-    : status === "synced" ? "Synced"
-    : status === "offline" ? "Offline (local only)"
-    : "Error"
-  );
-  const tone = (
-    status === "synced" ? "border-success/35 bg-success/10 text-success"
-    : status === "saving" || status === "loading" ? "border-primary/35 bg-primary/10 text-primary"
-    : "border-warning/35 bg-warning/10 text-warning"
-  );
-  return (
-    <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]", tone)}>
-      {label}
-    </span>
-  );
-}
-
 interface SecurityDetailFieldEditorProps {
-  field: SecurityDetailFieldDef;
+  field: SecurityDetailFieldViewModel;
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
@@ -378,6 +386,9 @@ interface SecurityDetailFieldEditorProps {
 }
 
 function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel }: SecurityDetailFieldEditorProps) {
+  const def = field.def;
+  const editor = field.editor;
+  const disabledReasonId = `${editor.id}-disabled-reason`;
   const baseClass = "w-full rounded-md border border-border bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key === "Enter") {
@@ -388,36 +399,62 @@ function SecurityDetailFieldEditor({ field, value, onChange, onSubmit, onCancel 
       onCancel();
     }
   };
-  if (field.kind === "select" && field.options) {
+  if (def.kind === "select" && def.options) {
     return (
-      <select
+      <span className="block space-y-1">
+        <select
+          id={editor.id}
+          className={baseClass}
+          value={value}
+          autoFocus
+          disabled={editor.disabled}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          aria-label={editor.ariaLabel}
+          aria-describedby={joinDescribedByIds(editor.describedBy, disabledReasonId)}
+        >
+          <option value="">—</option>
+          {def.options.map((opt) => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+        <FieldSupportText
+          helpId={editor.helperId}
+          helpText={editor.helperText}
+          helpClassName="block text-[11px] leading-4"
+          disabledReason={editor.disabledReason}
+          disabledReasonId={disabledReasonId}
+          disabledReasonClassName="block"
+        />
+      </span>
+    );
+  }
+  const inputType = def.kind === "number" ? "number" : def.kind === "date" ? "date" : "text";
+  return (
+    <span className="block space-y-1">
+      <input
+        id={editor.id}
+        type={inputType}
         className={baseClass}
         value={value}
         autoFocus
+        disabled={editor.disabled}
+        placeholder={def.placeholder}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        aria-label={field.label}
-      >
-        <option value="">—</option>
-        {field.options.map((opt) => (
-          <option key={opt} value={opt}>{opt}</option>
-        ))}
-      </select>
-    );
-  }
-  const inputType = field.kind === "number" ? "number" : field.kind === "date" ? "date" : "text";
-  return (
-    <input
-      type={inputType}
-      className={baseClass}
-      value={value}
-      autoFocus
-      placeholder={field.placeholder}
-      onChange={(e) => onChange(e.target.value)}
-      onKeyDown={handleKeyDown}
-      aria-label={field.label}
-      step={field.kind === "number" ? "any" : undefined}
-    />
+        aria-label={editor.ariaLabel}
+        aria-describedby={joinDescribedByIds(editor.describedBy, disabledReasonId)}
+        step={def.kind === "number" ? "any" : undefined}
+      />
+      <FieldSupportText
+        helpId={editor.helperId}
+        helpText={editor.helperText}
+        helpClassName="block text-[11px] leading-4"
+        disabledReason={editor.disabledReason}
+        disabledReasonId={disabledReasonId}
+        disabledReasonClassName="block"
+      />
+    </span>
   );
 }
 
@@ -571,8 +608,6 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
     return null;
   }
 
-  const inputClass = "w-full rounded-md border border-border bg-background px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
-  const labelClass = "text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground";
   const lotColumns: DenseDataTableColumn<LotsTrackerRowViewModel>[] = [
     {
       id: "trade-date",
@@ -639,80 +674,65 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-2 sm:grid-cols-6">
-          <div className="sm:col-span-1">
-            <label htmlFor="lot-date" className={labelClass}>Trade date</label>
-            <input
-              id="lot-date"
-              type="date"
-              className={inputClass}
-              value={draftDate}
-              onChange={(e) => {
-                setDraftDate(e.target.value);
-                setPendingRemoveLotId(null);
-              }}
-            />
-          </div>
-          <div className="sm:col-span-1">
-            <label htmlFor="lot-qty" className={labelClass}>Quantity</label>
-            <input
-              id="lot-qty"
-              type="number"
-              step="any"
-              className={inputClass}
-              value={draftQty}
-              onChange={(e) => {
-                setDraftQty(e.target.value);
-                setPendingRemoveLotId(null);
-              }}
-              placeholder="100"
-            />
-          </div>
-          <div className="sm:col-span-1">
-            <label htmlFor="lot-price" className={labelClass}>Price</label>
-            <input
-              id="lot-price"
-              type="number"
-              step="any"
-              className={inputClass}
-              value={draftPrice}
-              onChange={(e) => {
-                setDraftPrice(e.target.value);
-                setPendingRemoveLotId(null);
-              }}
-              placeholder="0.00"
-            />
-          </div>
-          <div className="sm:col-span-1">
-            <label htmlFor="lot-fees" className={labelClass}>Fees</label>
-            <input
-              id="lot-fees"
-              type="number"
-              step="any"
-              className={inputClass}
-              value={draftFees}
-              onChange={(e) => {
-                setDraftFees(e.target.value);
-                setPendingRemoveLotId(null);
-              }}
-              placeholder="0.00"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label htmlFor="lot-note" className={labelClass}>Note</label>
-            <input
-              id="lot-note"
-              type="text"
-              className={inputClass}
-              value={draftNote}
-              onChange={(e) => {
-                setDraftNote(e.target.value);
-                setPendingRemoveLotId(null);
-              }}
-              placeholder="Broker, strategy, etc."
-            />
-          </div>
+        <div role="group" aria-label={vm.formLabel} className="grid gap-2 sm:grid-cols-6">
+          <LotDraftField
+            field={vm.draftFields.tradeDate}
+            value={draftDate}
+            className="sm:col-span-1"
+            onChange={(value) => {
+              setDraftDate(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
+          <LotDraftField
+            field={vm.draftFields.quantity}
+            value={draftQty}
+            className="sm:col-span-1"
+            onChange={(value) => {
+              setDraftQty(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
+          <LotDraftField
+            field={vm.draftFields.price}
+            value={draftPrice}
+            className="sm:col-span-1"
+            onChange={(value) => {
+              setDraftPrice(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
+          <LotDraftField
+            field={vm.draftFields.fees}
+            value={draftFees}
+            className="sm:col-span-1"
+            onChange={(value) => {
+              setDraftFees(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
+          <LotDraftField
+            field={vm.draftFields.note}
+            value={draftNote}
+            className="sm:col-span-2"
+            onChange={(value) => {
+              setDraftNote(value);
+              setPendingRemoveLotId(null);
+            }}
+          />
         </div>
+        <p
+          id={vm.draftStatus.id}
+          role={vm.draftStatus.role}
+          className={cn(
+            "rounded-md border px-3 py-2 text-xs leading-5",
+            vm.draftStatus.tone === "success"
+              ? "border-success/30 bg-success/10 text-success"
+              : "border-warning/30 bg-warning/10 text-warning"
+          )}
+        >
+          {vm.draftStatus.text}
+        </p>
         <div>
           <Button
             type="button"
@@ -720,6 +740,7 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
             onClick={addLot}
             disabled={vm.addCommand.disabled}
             disabledReason={vm.addCommand.disabledReason}
+            aria-describedby={vm.draftStatus.id}
             aria-label={vm.addCommand.ariaLabel}
           >
             <Plus className="mr-1 h-3.5 w-3.5" />
@@ -773,6 +794,46 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function LotDraftField({
+  field,
+  value,
+  onChange,
+  className
+}: {
+  field: LotsTrackerDraftFieldViewModel;
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+}) {
+  return (
+    <div className={cn("min-w-0 space-y-1", className)}>
+      <label htmlFor={field.id} className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        {field.label}
+      </label>
+      <Input
+        id={field.id}
+        type={field.type}
+        step={field.step}
+        value={value}
+        placeholder={field.placeholder}
+        error={field.invalid}
+        aria-describedby={field.describedBy}
+        aria-errormessage={field.errorText ? field.errorId : undefined}
+        className="min-h-8 px-2 py-1 text-xs"
+        onChange={(event) => onChange(event.target.value)}
+      />
+      <p id={field.helperId} className="text-[11px] leading-4 text-muted-foreground">
+        {field.helperText}
+      </p>
+      {field.errorText ? (
+        <p id={field.errorId} className="text-[11px] leading-4 text-danger">
+          {field.errorText}
+        </p>
+      ) : null}
+    </div>
   );
 }
 

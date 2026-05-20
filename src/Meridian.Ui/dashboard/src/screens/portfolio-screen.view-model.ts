@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdAccount,
   BrokerageHouseholdPortfolio,
   BrokerageHouseholdPosition,
+  GovernanceCashFlowSummary,
   GovernanceWorkspaceResponse,
   MetricSnapshot,
   PortfolioWorkspaceResponse,
@@ -97,6 +98,7 @@ export interface PortfolioBrokerageAccountRow {
   warningCount: string;
   hasWarning: boolean;
   warningText: string;
+  rowClassName: string;
   isSelected: boolean;
   expanded: boolean;
   detailPanelId: string;
@@ -117,6 +119,7 @@ export interface PortfolioBrokeragePositionRow {
   pnlTone: "success" | "danger" | "default";
   assetClass: string;
   securityCoverage: string;
+  rowClassName: string;
   isSelected: boolean;
   detailPanelId: string;
   expanded: boolean;
@@ -318,7 +321,7 @@ export function buildPortfolioScreenViewModel({
   selectedRunId = null,
   selectedBrokeragePositionId = null,
   selectedBrokerageAccountKey = "all",
-  pathname = "/portfolio",
+  pathname = WORKSTATION_ROUTE_CATALOG.portfolio,
   selectPosition = () => {},
   selectRun = () => {},
   selectBrokeragePosition = () => {},
@@ -481,7 +484,7 @@ export function buildPortfolioScreenViewModel({
   const cashVarianceLabel = cashFlow !== null ? formatCurrency(cashFlow.netVariance) : null;
 
   return {
-    metricsFromTrading: portfolio != null || trading !== null,
+    metricsFromTrading: portfolio == null && trading !== null,
     metricCards: portfolio?.metrics ?? trading?.metrics ?? [],
     positionSourceLabel: portfolio ? "Portfolio workspace" : trading ? "Trading workspace" : "Unavailable",
     fallbackStats,
@@ -501,6 +504,7 @@ export function buildPortfolioScreenViewModel({
       openPositionCount: positions.length,
       totalExposure,
       totalUnrealizedPnl,
+      cashFlow,
       cashVarianceLabel,
       selectedRunId: selectedRunRow?.id ?? null,
       selectedRunName: selectedRunRow?.strategyName ?? null
@@ -640,7 +644,7 @@ function buildBrokerageSetupAction({
 
   return {
     label: "Open provider setup",
-    href: "/settings#alpaca-provider-setup",
+    href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
     ariaLabel: `Open ${providerLabel} provider setup from Portfolio brokerage panel`,
     detail: connectionNeedsSetup
       ? `Verify ${providerLabel} credentials before accepting brokerage portfolio state.`
@@ -776,7 +780,7 @@ export function usePortfolioScreenViewModel({
   governance,
   brokerageConnection,
   brokeragePortfolio,
-  pathname = "/portfolio"
+  pathname = WORKSTATION_ROUTE_CATALOG.portfolio
 }: {
   portfolio?: PortfolioWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
@@ -922,6 +926,7 @@ function toBrokerageAccountRow(
     warningCount: formatCountLabel(warningCount, "warning"),
     hasWarning: warningCount > 0,
     warningText: warningCount > 0 ? account.warnings.join(" ") : "No account sync warnings.",
+    rowClassName: brokerageAccountRowClassName(account.health, warningCount),
     isSelected,
     expanded: isSelected,
     detailPanelId: "portfolio-brokerage-account-detail",
@@ -943,6 +948,23 @@ function brokerageAccountHealthBadgeVariant(
 function brokerageAccountStatusTone(health: string): PortfolioBrokerageAccountDetail["statusTone"] {
   const variant = brokerageAccountHealthBadgeVariant(health);
   return variant === "outline" ? "default" : variant;
+}
+
+function brokerageAccountRowClassName(health: string, warningCount: number): string {
+  if (warningCount > 0) {
+    return "bg-warning/5";
+  }
+
+  const variant = brokerageAccountHealthBadgeVariant(health);
+  if (variant === "danger") {
+    return "bg-danger/5";
+  }
+
+  if (variant === "warning") {
+    return "bg-warning/5";
+  }
+
+  return "bg-background/50";
 }
 
 function buildSelectedBrokerageAccountDetail(
@@ -1062,6 +1084,7 @@ function toBrokeragePositionRow(
     pnlTone: pnlTone(pnl),
     assetClass: position.assetClass,
     securityCoverage: position.security ? "Covered" : "Missing",
+    rowClassName: position.security ? "bg-background/50" : "bg-warning/5",
     isSelected: id === selectedId,
     detailPanelId: "portfolio-brokerage-position-detail",
     expanded: id === selectedId,
@@ -1253,6 +1276,7 @@ function buildWorkflowTaskPanel({
   openPositionCount,
   totalExposure,
   totalUnrealizedPnl,
+  cashFlow,
   cashVarianceLabel,
   selectedRunId,
   selectedRunName
@@ -1263,25 +1287,27 @@ function buildWorkflowTaskPanel({
   openPositionCount: number;
   totalExposure: number;
   totalUnrealizedPnl: number;
+  cashFlow: GovernanceCashFlowSummary | null;
   cashVarianceLabel: string | null;
   selectedRunId: string | null;
   selectedRunName: string | null;
 }): PortfolioWorkflowTaskPanel | null {
   const normalizedPathname = normalizePathname(pathname);
-  if (normalizedPathname === "/portfolio") {
+  if (normalizedPathname === WORKSTATION_ROUTE_CATALOG.portfolio) {
     return buildPortfolioReadinessTaskPanel({
       risk,
       brokerage,
       openPositionCount,
       totalExposure,
       totalUnrealizedPnl,
+      cashFlow,
       cashVarianceLabel,
       selectedRunId,
       selectedRunName
     });
   }
 
-  if (normalizedPathname !== "/portfolio/brokerage-sync") {
+  if (normalizedPathname !== WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync) {
     return null;
   }
 
@@ -1362,6 +1388,7 @@ function buildPortfolioReadinessTaskPanel({
   openPositionCount,
   totalExposure,
   totalUnrealizedPnl,
+  cashFlow,
   cashVarianceLabel,
   selectedRunId,
   selectedRunName
@@ -1371,6 +1398,7 @@ function buildPortfolioReadinessTaskPanel({
   openPositionCount: number;
   totalExposure: number;
   totalUnrealizedPnl: number;
+  cashFlow: GovernanceCashFlowSummary | null;
   cashVarianceLabel: string | null;
   selectedRunId: string | null;
   selectedRunName: string | null;
@@ -1378,7 +1406,7 @@ function buildPortfolioReadinessTaskPanel({
   const hasPosture = risk !== null || brokerage !== null || openPositionCount > 0;
   const connected = brokerage?.connection === "Connected";
   const feedsHealthy = brokerage?.orderIngress === "healthy" && brokerage?.fillFeed === "healthy";
-  const hasCashVariance = Boolean(cashVarianceLabel && cashVarianceLabel !== "$0");
+  const hasCashVariance = cashFlow !== null && cashFlow.netVariance !== 0;
   const needsReview = !connected || !feedsHealthy || hasCashVariance || !hasPosture;
   const statusTone: PortfolioWorkflowTaskPanel["statusTone"] = !hasPosture
     ? "danger"
@@ -1467,7 +1495,7 @@ function buildPortfolioReadinessActions({
     actions.push({
       id: "provider-setup",
       label: "Repair provider setup",
-      href: "/settings#alpaca-provider-setup",
+      href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       ariaLabel: "Repair Alpaca provider setup from Portfolio readiness",
       detail: "Verify credentials and connection posture before accepting portfolio state.",
       detailId: portfolioWorkflowTaskActionDetailId("readiness", "provider-setup"),
@@ -1478,7 +1506,7 @@ function buildPortfolioReadinessActions({
   actions.push({
     id: "brokerage-sync",
     label: "Review brokerage sync",
-    href: "/portfolio/brokerage-sync",
+    href: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
     ariaLabel: "Open brokerage sync review from Portfolio readiness",
     detail: "Inspect account sync, execution feed health, exposure, and brokerage evidence.",
     detailId: portfolioWorkflowTaskActionDetailId("readiness", "brokerage-sync"),
@@ -1488,7 +1516,7 @@ function buildPortfolioReadinessActions({
   actions.push({
     id: "trading-readiness",
     label: "Inspect readiness",
-    href: "/trading/readiness",
+    href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
     ariaLabel: "Open Trading readiness from Portfolio readiness",
     detail: "Check paper-session, replay, execution-control, and readiness evidence.",
     detailId: portfolioWorkflowTaskActionDetailId("readiness", "trading-readiness"),
@@ -1531,7 +1559,7 @@ function buildWorkflowTaskActions({
     actions.push({
       id: "provider-setup",
       label: "Repair provider setup",
-      href: "/settings#alpaca-provider-setup",
+      href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
       ariaLabel: `Repair ${providerSetupTarget} from brokerage sync review`,
       detail: "Verify credentials and connection posture before accepting brokerage-sync state.",
       detailId: portfolioWorkflowTaskActionDetailId("brokerage-sync", "provider-setup"),
@@ -1542,7 +1570,7 @@ function buildWorkflowTaskActions({
   actions.push({
     id: "trading-readiness",
     label: "Inspect readiness",
-    href: "/trading/readiness",
+    href: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
     ariaLabel: "Open Trading readiness from brokerage sync review",
     detail: "Check paper-session, replay, execution-control, and readiness evidence.",
     detailId: portfolioWorkflowTaskActionDetailId("brokerage-sync", "trading-readiness"),
@@ -1552,7 +1580,7 @@ function buildWorkflowTaskActions({
   actions.push({
     id: "trading-cockpit",
     label: "Open Trading cockpit",
-    href: "/trading",
+    href: WORKSTATION_ROUTE_CATALOG.trading,
     ariaLabel: "Open Trading cockpit from brokerage sync review",
     detail: "Review active positions, orders, and paper execution controls.",
     detailId: portfolioWorkflowTaskActionDetailId("brokerage-sync", "trading-cockpit"),

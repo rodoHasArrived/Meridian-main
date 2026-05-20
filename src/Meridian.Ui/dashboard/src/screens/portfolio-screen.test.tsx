@@ -337,6 +337,7 @@ describe("PortfolioScreen", () => {
     const msftRow = screen.getByRole("row", { name: /inspect msft brokerage live position/i });
     expect(msftRow).toHaveAttribute("aria-controls", "portfolio-brokerage-position-detail");
     expect(msftRow).toHaveAttribute("aria-expanded", "false");
+    expect(msftRow).toHaveClass("bg-warning/5");
     await user.click(msftRow);
 
     const updatedDetail = screen.getByRole("complementary", { name: /msft brokerage position detail/i });
@@ -412,6 +413,7 @@ describe("PortfolioScreen", () => {
     expect(within(warningSummary).getByText("Roth IRA account sync stale.")).toBeInTheDocument();
     expect(within(accountDetail).getByText(/positions table is showing all alpaca paper brokerage accounts/i)).toBeInTheDocument();
     expect(within(accountDetail).getAllByText("2 warnings").length).toBeGreaterThan(0);
+    expect(screen.getByRole("row", { name: /filter brokerage positions to roth ira account/i })).toHaveClass("bg-warning/5");
   });
 
   it("renders the brokerage account filter as a keyboard-operable button group", async () => {

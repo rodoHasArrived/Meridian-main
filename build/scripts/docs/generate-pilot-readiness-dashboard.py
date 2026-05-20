@@ -48,6 +48,17 @@ EXPECTED_STAGE_SEQUENCE = [
     "GovernedReportPack",
 ]
 
+EXPECTED_WAVE_CLAIMS_BY_STAGE = {
+    "TrustedData": ["W2", "W3", "W4"],
+    "ResearchRun": ["W3"],
+    "RunComparison": ["W3"],
+    "PaperPromotion": ["W2", "W3"],
+    "PaperSession": ["W2"],
+    "PortfolioLedgerReview": ["W3", "W4"],
+    "Reconciliation": ["W3", "W4"],
+    "GovernedReportPack": ["W4"],
+}
+
 REQUIRED_LEDGER_ARTIFACT_ROUTES = {
     "ledger-journal": "/ledger/journal",
     "ledger-trial-balance": "/ledger/trial-balance",
@@ -208,6 +219,10 @@ def load_pilot_acceptance_artifact_from_payload(
             "status": str(gate.get("status", "")),
             "evidence_ids": [str(item) for item in gate.get("evidenceIds", [])],
             "blockers": [str(item) for item in gate.get("blockers", [])],
+            "wave_claims": [
+                str(item)
+                for item in gate.get("waveClaims", gate.get("wave_claims", []))
+            ],
             "validation": str(gate.get("validation", "")),
         }
         for gate in artifact.get("stageGates", [])
@@ -248,6 +263,10 @@ def load_pilot_acceptance_artifact_from_payload(
         consistency_issues.append(
             "Top-level readiness counts do not match the stage gate details."
         )
+    wave_claim_issues = wave_claim_consistency_issues(stage_gates)
+    if wave_claim_issues:
+        all_stages_ready = False
+        consistency_issues.extend(wave_claim_issues)
     if artifact.get("allStagesReady", False) is True and not all_stages_ready:
         consistency_issues.append(
             "Top-level allStagesReady=true is inconsistent with the stage gate details."
@@ -308,6 +327,29 @@ def load_pilot_acceptance_artifact_from_payload(
             "report_pack_id": artifact.get("reportPackId"),
         },
     }
+
+
+def wave_claim_consistency_issues(stage_gates: Sequence[dict[str, Any]]) -> list[str]:
+    issues: list[str] = []
+    for gate in stage_gates:
+        stage = str(gate.get("stage", ""))
+        expected_claims = EXPECTED_WAVE_CLAIMS_BY_STAGE.get(stage)
+        if expected_claims is None:
+            continue
+
+        actual_claims = [str(claim) for claim in gate.get("wave_claims", [])]
+        if actual_claims != expected_claims:
+            actual_text = ", ".join(actual_claims) if actual_claims else "none"
+            issues.append(
+                f"{stage} W2-W4 claims are {actual_text}; expected {', '.join(expected_claims)}."
+            )
+
+        if actual_claims and gate.get("status") != "Ready" and not gate.get("blockers", []):
+            issues.append(
+                f"{stage} carries W2-W4 claims but records no blocker for its non-ready status."
+            )
+
+    return issues
 
 
 def load_ledger_artifact_refs(artifact: dict[str, Any]) -> list[dict[str, Any]]:
@@ -468,13 +510,15 @@ def render_pilot_acceptance_artifact_section(payload: dict[str, Any]) -> str:
         [
             "### Stage Gates",
             "",
-            "| Stage | Status | Evidence | Validation |",
-            "| --- | --- | --- | --- |",
+            "| Stage | W2-W4 claims | Status | Evidence | Validation |",
+            "| --- | --- | --- | --- | --- |",
         ]
     )
     for gate in artifact.get("stage_gates", []):
+        wave_claims = gate.get("wave_claims", [])
+        wave_claim_text = ", ".join(wave_claims) if wave_claims else "-"
         lines.append(
-            f"| {gate.get('label', gate.get('stage', ''))} | {gate.get('status', '')} | "
+            f"| {gate.get('label', gate.get('stage', ''))} | {wave_claim_text} | {gate.get('status', '')} | "
             f"{_format_evidence_ids(gate.get('evidence_ids', []))} | {gate.get('validation', '')} |"
         )
 

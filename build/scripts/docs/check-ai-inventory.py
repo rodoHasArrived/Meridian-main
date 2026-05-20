@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from collections import Counter
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
@@ -58,6 +59,36 @@ AI_WORKFLOW_FILES = (
     ".github/workflows/reusable-ai-analysis.yml",
     ".github/workflows/skill-evals.yml",
 )
+AI_WORKFLOW_REFERENCE_FILES = (
+    AI_CONTRACT,
+    PROMPTS_README,
+    GITHUB_PROMPTS_README,
+    COPILOT_GUIDE,
+    "docs/ai/copilot/ai-sync-workflow.md",
+    "docs/prompts/automation-prompts.md",
+)
+WORKFLOW_REFERENCE_PATTERN = re.compile(
+    r"(?:\.\./)*\.github/workflows/(?P<workflow>[A-Za-z0-9_.-]+\.ya?ml)"
+)
+OPTIONAL_ASSISTANT_SURFACE_PATTERNS = (
+    ("cursor", (".cursorrules", ".cursor/**/*.md", ".cursor/**/*.mdc")),
+    ("windsurf", (".windsurfrules", ".windsurf/**/*.md", ".windsurf/**/*.mdc")),
+    (
+        "continue",
+        (
+            ".continue/**/*.json",
+            ".continue/**/*.yaml",
+            ".continue/**/*.yml",
+            ".continue/**/*.md",
+        ),
+    ),
+    ("cline", (".clinerules", ".cline/**/*.md", ".cline/**/*.mdc")),
+    ("roo", (".roomodes", ".roo/**/*.json", ".roo/**/*.md", ".roo/**/*.mdc")),
+    (
+        "gemini",
+        ("GEMINI.md", ".gemini/**/*.json", ".gemini/**/*.toml", ".gemini/**/*.md"),
+    ),
+)
 
 SYSTEM_CHECKS = (
     (
@@ -71,6 +102,12 @@ SYSTEM_CHECKS = (
         (".codex/config.toml", ".codex/skills"),
         AI_CONTRACT,
         ("Codex", ".codex/skills", "OpenAI/Codex"),
+    ),
+    (
+        "agent-skills-compatible-hosts",
+        (".agents/skills",),
+        AI_CONTRACT,
+        ("Agent Skills-compatible hosts", ".agents/skills", "open-agent-skills-v1"),
     ),
     (
         "claude",
@@ -143,6 +180,30 @@ def sorted_files(root: Path, pattern: str) -> list[Path]:
     return sorted(path for path in root.glob(pattern) if path.is_file())
 
 
+def collect_optional_assistant_surfaces(root: Path) -> list[InventoryItem]:
+    items: list[InventoryItem] = []
+    seen_paths: set[str] = set()
+
+    for surface, patterns in OPTIONAL_ASSISTANT_SURFACE_PATTERNS:
+        for pattern in patterns:
+            for path in sorted_files(root, pattern):
+                rel_path = repo_relative(root, path)
+                if rel_path in seen_paths:
+                    continue
+                seen_paths.add(rel_path)
+                items.append(
+                    InventoryItem(
+                        surface=surface,
+                        kind="optional-assistant-surface",
+                        name=path.name,
+                        path=rel_path,
+                        expected_docs=(DOC_AI_README, AI_CONTRACT),
+                    )
+                )
+
+    return items
+
+
 def path_exists(root: Path, rel_path: str) -> bool:
     return (root / rel_path).exists()
 
@@ -211,6 +272,40 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
     for path in sorted_files(root, ".codex/skills/*/agents/openai.yaml"):
         name = path.parents[1].name
         items.append(InventoryItem(surface="codex", kind="openai-metadata", name=name, path=repo_relative(root, path)))
+
+    for path in sorted_files(root, ".agents/skills/*/SKILL.md"):
+        name = path.parent.name
+        items.append(
+            InventoryItem(
+                surface="agent-skills-compatible-hosts",
+                kind="skill",
+                name=name,
+                path=repo_relative(root, path),
+                expected_docs=(SKILLS_README,),
+            )
+        )
+
+    for path in sorted_files(root, ".agents/skills/*/agents/openai.yaml"):
+        name = path.parents[1].name
+        items.append(
+            InventoryItem(
+                surface="agent-skills-compatible-hosts",
+                kind="openai-metadata",
+                name=name,
+                path=repo_relative(root, path),
+            )
+        )
+
+    for path in sorted_files(root, ".agents/skills/_shared/*.md"):
+        items.append(
+            InventoryItem(
+                surface="agent-skills-compatible-hosts",
+                kind="shared-context",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT,),
+            )
+        )
 
     for rel_path in (".claude/settings.json", ".claude/settings.local.json"):
         path = root / rel_path
@@ -333,6 +428,8 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
     for path in sorted_files(root, "docs/ai/**/*.md"):
         items.append(InventoryItem(surface="docs-ai", kind="ai-doc", name=path.name, path=repo_relative(root, path)))
 
+    items.extend(collect_optional_assistant_surfaces(root))
+
     return sorted(items, key=lambda item: (item.surface, item.kind, item.path))
 
 
@@ -408,6 +505,7 @@ def check_catalog_drift(root: Path, inventory: Sequence[InventoryItem]) -> list[
     findings.extend(check_legacy_canonical_links(root, inventory))
     findings.extend(check_compact_assistant_guides(root))
     findings.extend(check_ui_platform_policy(root))
+    findings.extend(check_missing_workflow_references(root))
 
     return sorted(findings, key=lambda finding: (finding.severity, finding.expected_doc, finding.path))
 
@@ -436,6 +534,39 @@ def check_ui_platform_policy(root: Path) -> list[Finding]:
                 message=f"{doc_path} is missing UI platform policy markers: {', '.join(missing_markers)}",
             )
         )
+
+    return findings
+
+
+def check_missing_workflow_references(root: Path) -> list[Finding]:
+    findings: list[Finding] = []
+
+    for doc_path in AI_WORKFLOW_REFERENCE_FILES:
+        path = root / doc_path
+        if not path.is_file():
+            continue
+
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for match in WORKFLOW_REFERENCE_PATTERN.finditer(text):
+            workflow_name = match.group("workflow")
+            workflow_path = f".github/workflows/{workflow_name}"
+            if (root / workflow_path).is_file():
+                continue
+
+            findings.append(
+                Finding(
+                    severity="drift",
+                    surface="ai-automation-workflows",
+                    kind="missing-workflow-reference",
+                    name=workflow_name,
+                    path=doc_path,
+                    expected_doc=doc_path,
+                    message=(
+                        f"{doc_path} references {workflow_path}, but that workflow is not active; "
+                        "point users to an active workflow, local script, or archive note instead."
+                    ),
+                )
+            )
 
     return findings
 

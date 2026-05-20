@@ -1,5 +1,6 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import { GovernanceScreen } from "@/screens/governance-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
@@ -97,7 +98,10 @@ const data: GovernanceWorkspaceResponse = {
       reviewedAt: null,
       resolvedBy: null,
       resolvedAt: null,
-      resolutionNote: null
+      resolutionNote: null,
+      routingTarget: "FundTrialBalance",
+      routingDetail: "Open the accounting trial balance for evidence review.",
+      recommendedAction: "Review cash ledger entries before resolving."
     }
   ],
   cashFlow: {
@@ -342,12 +346,20 @@ describe("GovernanceScreen", () => {
   it("recovers calibration summary failures through the visible retry command", async () => {
     const user = userEvent.setup();
     vi.mocked(api.getReconciliationCalibrationSummary)
-      .mockRejectedValueOnce(new Error("Calibration API offline"))
+      .mockRejectedValueOnce(new ApiError({
+        path: "/api/reconciliation/calibration-summary",
+        status: 503,
+        title: "Provider unavailable",
+        detail: "Calibration API offline"
+      }))
       .mockResolvedValueOnce(calibrationSummary);
 
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Calibration API offline");
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Calibration API offline");
+    expect(alert).toHaveTextContent("Endpoint returned 503 for /api/reconciliation/calibration-summary.");
+    expect(alert).toHaveTextContent("Provider unavailable");
     const retry = screen.getByRole("button", { name: "Retry calibration summary load" });
 
     await user.click(retry);
@@ -360,7 +372,12 @@ describe("GovernanceScreen", () => {
 
   it("updates reconciliation detail queue selection with accessible expanded state", async () => {
     const user = userEvent.setup();
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+
     await renderGovernanceScreen(data, "/accounting/reconciliation");
+
+    expect(screen.getByRole("link", { name: "Open routing target for reconciliation break run-42:cash" })).toHaveAttribute("href", "/accounting");
+    expect(screen.getByText("Review cash ledger entries before resolving.")).toBeInTheDocument();
 
     const nextRun = screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" });
     expect(nextRun).not.toHaveAttribute("aria-selected");
@@ -425,6 +442,30 @@ describe("GovernanceScreen", () => {
 
     expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
     expect(screen.queryByRole("table", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
+  });
+
+  it("renders structured trial-balance api-errors with endpoint and validation detail", async () => {
+    vi.mocked(api.getRunTrialBalance).mockRejectedValueOnce(new ApiError({
+      path: "/api/workstation/runs/run-42/trial-balance",
+      status: 422,
+      title: "Validation failed",
+      detail: "Fund account is required.",
+      validationIssues: [
+        {
+          field: "fundAccountId",
+          label: "Fund account",
+          messages: ["Select a fund account before loading governance evidence."]
+        }
+      ]
+    }));
+
+    await renderGovernanceScreen(data, "/accounting");
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Fund account is required.");
+    expect(alert).toHaveTextContent("Endpoint returned 422 for /api/workstation/runs/run-42/trial-balance.");
+    expect(alert).toHaveTextContent("Validation failed");
+    expect(alert).toHaveTextContent("Fund account: Select a fund account before loading governance evidence.");
   });
 
   it("runs ledger reporting export through the POST mutation instead of a GET link", async () => {
@@ -879,23 +920,38 @@ describe("GovernanceScreen", () => {
       name: `Dismiss identifier conflict conflict-1 on identifiers.CUSIP. Disabled: ${disabledReason}`
     })).toHaveAttribute("title", disabledReason);
     expect(screen.getByText("Resolving identifier conflict conflict-1.")).toHaveAttribute("role", "status");
+    const refreshDisabledReason = "Wait until identifier conflict conflict-1 finishes resolving before refreshing the conflict queue.";
+    const refreshButton = screen.getByRole("button", {
+      name: "Refresh disabled while identifier conflict conflict-1 is resolving"
+    });
+    expect(refreshButton).toBeDisabled();
+    expect(refreshButton).toHaveAttribute("aria-describedby", "security-conflict-refresh-feedback");
+    expect(refreshButton).toHaveAttribute("title", refreshDisabledReason);
+    expect(screen.getByText(refreshDisabledReason)).toHaveAttribute("role", "status");
 
     finishResolve();
 
     await waitFor(() => {
       expect(screen.queryByRole("button", { name: /Disabled: Resolution is already in progress/ })).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Refresh Security Master identifier conflicts" })).toBeEnabled();
     });
   });
 
   it("recovers Security Master conflict loading failures with a retry command", async () => {
     const user = userEvent.setup();
     vi.mocked(api.getSecurityConflicts)
-      .mockRejectedValueOnce(new Error("Conflict API offline"))
+      .mockRejectedValueOnce(new ApiError({
+        path: "/api/workstation/security-master/conflicts",
+        status: 503,
+        detail: "Conflict API offline"
+      }))
       .mockResolvedValueOnce([securityConflict]);
 
     await renderGovernanceScreen(data, "/accounting/security-master");
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Conflict API offline");
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Conflict API offline");
+    expect(within(alert).getByText("Endpoint returned 503 for /api/workstation/security-master/conflicts.")).toBeInTheDocument();
     const retry = screen.getByRole("button", { name: "Retry loading Security Master identifier conflicts" });
     expect(retry).toHaveTextContent("Retry conflicts");
 
@@ -903,6 +959,37 @@ describe("GovernanceScreen", () => {
 
     expect(await screen.findByRole("group", { name: /Identifier conflict conflict-1/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Refresh Security Master identifier conflicts" })).toHaveTextContent("Refresh conflicts");
+  });
+
+  it("announces Security Master conflict resolution failures with structured details", async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(api.getSecurityConflicts).mockResolvedValueOnce([securityConflict]);
+    vi.mocked(api.resolveSecurityConflict).mockRejectedValueOnce(
+      new ApiError({
+        path: "/api/workstation/security-master/conflicts/conflict-1/resolve",
+        status: 409,
+        detail: "Resolution requires a newer conflict snapshot.",
+        validationIssues: [
+          {
+            field: "resolution",
+            label: "resolution",
+            messages: ["Choose a resolution that matches the active provider record."]
+          }
+        ]
+      })
+    );
+
+    await renderGovernanceScreen(data, "/accounting/security-master");
+
+    await user.click(await screen.findByRole("button", {
+      name: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Bloomberg value sec-1"
+    }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Resolution requires a newer conflict snapshot.");
+    expect(within(alert).getByText("Endpoint returned 409 for /api/workstation/security-master/conflicts/conflict-1/resolve.")).toBeInTheDocument();
+    expect(within(alert).getByText("resolution: Choose a resolution that matches the active provider record.")).toBeInTheDocument();
   });
 
   it("renders reconciliation detail on deep-link routes and updates selection", async () => {
@@ -948,7 +1035,8 @@ describe("GovernanceScreen", () => {
       assignedTo: "ops.gov",
       reviewedBy: "ops.gov"
     });
-    expect(await screen.findByText("InReview")).toBeInTheDocument();
+    const detail = await screen.findByRole("region", { name: "Reconciliation break detail for run-42:cash" });
+    expect(within(detail).getByText("InReview")).toBeInTheDocument();
   });
 
   it("surfaces view-model disabled reasons for reconciliation queue actions", async () => {
@@ -993,11 +1081,53 @@ describe("GovernanceScreen", () => {
       .toHaveAttribute("title", "Enter an operator rationale before confirming this queue action.");
   });
 
+  it("selects a reconciliation break before opening its queue action", async () => {
+    const user = userEvent.setup();
+    const feeBreak = {
+      ...data.breakQueue[0],
+      breakId: "run-57:fees",
+      runId: "run-57",
+      strategyName: "Intraday Vol Carry",
+      category: "FeeMismatch",
+      variance: -125,
+      reason: "Fee accrual differs from broker statement."
+    };
+
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce([
+      data.breakQueue[0],
+      feeBreak
+    ]);
+
+    await renderGovernanceScreen(data, "/accounting/reconciliation");
+
+    expect(await screen.findByRole("region", { name: "Reconciliation break detail for run-42:cash" }))
+      .toHaveTextContent("Paper Index Mean Reversion - AmountMismatch");
+
+    await user.click(screen.getByRole("button", { name: "Resolve reconciliation break run-57:fees" }));
+
+    expect(screen.getByRole("region", { name: "Reconciliation break detail for run-57:fees" }))
+      .toHaveTextContent("Intraday Vol Carry - FeeMismatch");
+    expect(screen.getByRole("textbox", { name: "Resolve rationale" })).toBeInTheDocument();
+  });
+
   it("announces reconciliation break action failures", async () => {
     const user = userEvent.setup();
 
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
-    vi.mocked(api.resolveReconciliationBreak).mockRejectedValueOnce(new Error("Ledger write rejected"));
+    vi.mocked(api.resolveReconciliationBreak).mockRejectedValueOnce(
+      new ApiError({
+        path: "/api/workstation/reconciliation/break-queue/run-42:cash/resolve",
+        status: 409,
+        detail: "Ledger write rejected",
+        validationIssues: [
+          {
+            field: "operatorRationale",
+            label: "operatorRationale",
+            messages: ["Operator rationale must cite the balancing ledger entry."]
+          }
+        ]
+      })
+    );
 
     await renderGovernanceScreen(data, "/accounting/reconciliation");
 
@@ -1008,6 +1138,9 @@ describe("GovernanceScreen", () => {
     await user.type(rationaleInput, "Reviewed cash mismatch");
     await user.click(screen.getByRole("button", { name: /confirm resolve/i }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Break action failed: Ledger write rejected");
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Break action failed: Ledger write rejected");
+    expect(within(alert).getByText("Endpoint returned 409 for /api/workstation/reconciliation/break-queue/run-42:cash/resolve.")).toBeInTheDocument();
+    expect(within(alert).getByText("operatorRationale: Operator rationale must cite the balancing ledger entry.")).toBeInTheDocument();
   });
 });

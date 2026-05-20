@@ -119,18 +119,21 @@ describe("ResearchScreen", () => {
     expect(firstStudy).toHaveAttribute("aria-controls", "plottool-selected-study-detail");
     expect(firstStudy).toHaveAttribute("aria-expanded", "true");
     expect(secondStudy).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByLabelText("Selected: Mean Reversion FX")).toBeInTheDocument();
 
     await user.click(secondStudy);
 
     expect(secondStudy).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: "Selected PlotTool study detail for Index Momentum" })).toBeInTheDocument();
     expect(screen.getByText("Completed study retained in the PlotTool workstation. Completed backtest run.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Selected: Index Momentum")).toBeInTheDocument();
 
     firstStudy.focus();
     await user.keyboard("{Enter}");
 
     expect(firstStudy).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: "Selected PlotTool study detail for Mean Reversion FX" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Selected: Mean Reversion FX")).toBeInTheDocument();
   });
 
   it("switches to the PlotTool statistics view", async () => {
@@ -455,7 +458,7 @@ describe("ResearchScreen", () => {
     expect(aaplRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: "Selected position diff detail for AAPL" }))
       .toHaveTextContent("Base quantity");
-    expect(screen.getByText("Qty +100")).toBeInTheDocument();
+    expect(screen.getAllByText("Qty +100").length).toBeGreaterThan(0);
 
     await user.click(msftRow);
     expect(msftRow).toHaveAttribute("aria-expanded", "true");
@@ -504,10 +507,10 @@ describe("ResearchScreen", () => {
     await user.click(screen.getByRole("button", { name: /diff 2 runs/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("No position changes returned for this diff.")).toBeInTheDocument();
+      expect(screen.getAllByText("No position changes returned for this diff.").length).toBeGreaterThan(0);
     });
     expect(screen.getByRole("row", { name: "Inspect lookback parameter diff" }))
-      .toHaveTextContent("Unavailable -> Unavailable");
+      .toHaveTextContent(/lookback\s*Unavailable\s*Unavailable/);
   });
 
   it("loads and displays promotion history when history button is clicked", async () => {

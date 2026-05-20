@@ -18,6 +18,22 @@ function makeCell(overrides: Partial<QuantNotebookCellViewModel> = {}): QuantNot
     statusText: "Done in 5ms",
     collapsed: false,
     output: [{ kind: "console", text: "hello" }],
+    runCommand: {
+      label: "Run",
+      ariaLabel: "Run cell 1",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    },
+    sourceField: {
+      label: "Cell 1 source",
+      placeholder: "// Cell 1\n// Use Data.Prices(symbol), Backtest.WithSymbols(...), or any C# expression",
+      disabled: false,
+      disabledReason: null,
+      disabledReasonId: "quant-notebook-cell-1-source-disabled-reason",
+      describedBy: null,
+      spellCheck: false
+    },
     deleteConfirmationPending: false,
     deleteLabel: "Delete",
     deleteAriaLabel: "Delete cell 1. Press again to confirm.",
@@ -35,6 +51,13 @@ function makeVm(overrides: Partial<QuantNotebookViewModel> = {}): QuantNotebookV
     fetchError: null,
     dataContextPanel: buildDataContextPanel({}, null, "idle", null),
     snippets: [],
+    runAllCommand: {
+      label: "Run all",
+      ariaLabel: "Run all notebook cells",
+      disabled: false,
+      disabledReason: null,
+      busy: false
+    },
     clearOutputsLabel: "Clear",
     clearOutputsAriaLabel: "Clear all notebook outputs. Press again to confirm.",
     clearOutputsDisabledReason: null,
@@ -77,6 +100,93 @@ describe("QuantNotebook", () => {
     expect(clearButton).toHaveAttribute("title", "Run a cell before clearing outputs.");
   });
 
+  it("renders run-all disabled reason from the view model while a cell is running", () => {
+    render(
+      <QuantNotebook
+        vm={makeVm({
+          cells: [makeCell({ state: "running", statusText: "Running..." })],
+          runAllCommand: {
+            label: "Running...",
+            ariaLabel: "Notebook cells are running",
+            disabled: true,
+            disabledReason: "Wait for running cells to finish before running all notebook cells.",
+            busy: true
+          }
+        })}
+      />
+    );
+
+    const runAllButton = screen.getByRole("button", { name: "Notebook cells are running" });
+    expect(runAllButton).toBeDisabled();
+    expect(runAllButton).toHaveAttribute(
+      "title",
+      "Wait for running cells to finish before running all notebook cells."
+    );
+    expect(runAllButton).toHaveAttribute("aria-busy", "true");
+  });
+
+  it("renders per-cell run disabled reason from the view model", () => {
+    render(
+      <QuantNotebook
+        vm={makeVm({
+          cells: [
+            makeCell({
+              state: "running",
+              statusText: "Running...",
+              runCommand: {
+                label: "Running...",
+                ariaLabel: "Cell 1 is running",
+                disabled: true,
+                disabledReason: "Wait for cell 1 to finish running before rerunning it.",
+                busy: true
+              },
+              deleteDisabledReason: "Wait for cell 1 to finish running before deleting it."
+            })
+          ]
+        })}
+      />
+    );
+
+    const runCellButton = screen.getByRole("button", { name: "Cell 1 is running" });
+    expect(runCellButton).toBeDisabled();
+    expect(runCellButton).toHaveAttribute("title", "Wait for cell 1 to finish running before rerunning it.");
+  });
+
+  it("renders cell source semantics from the view model", () => {
+    render(
+      <QuantNotebook
+        vm={makeVm({
+          cells: [
+            makeCell({
+              kind: "markdown",
+              source: "",
+              sourceField: {
+                label: "Cell 1 source",
+                placeholder: "## Section 1\n\nNarrative, hypothesis, or analysis notes.",
+                disabled: true,
+                disabledReason: "Cell 1 is running; wait before editing the source.",
+                disabledReasonId: "quant-notebook-cell-1-source-disabled-reason",
+                describedBy: "quant-notebook-cell-1-source-disabled-reason",
+                spellCheck: true
+              }
+            })
+          ]
+        })}
+      />
+    );
+
+    const source = screen.getByLabelText("Cell 1 source");
+    expect(source).toHaveAttribute("placeholder", "## Section 1\n\nNarrative, hypothesis, or analysis notes.");
+    expect(source).toBeDisabled();
+    expect(source).toHaveAttribute("aria-describedby", "quant-notebook-cell-1-source-disabled-reason");
+    expect(screen.getByText("Cell 1 is running; wait before editing the source.")).toHaveAttribute(
+      "id",
+      "quant-notebook-cell-1-source-disabled-reason"
+    );
+    expect(source).toHaveAccessibleDescription("Cell 1 is running; wait before editing the source.");
+    expect(source).toHaveAttribute("spellcheck", "true");
+  });
+
   it("uses the confirmation label and action for armed clear-output state", async () => {
     const user = userEvent.setup();
     const clearOutputs = vi.fn();
@@ -107,6 +217,40 @@ describe("QuantNotebook", () => {
     expect(screen.getByLabelText("Symbol")).toHaveAttribute("id", "quant-notebook-context-symbol");
     expect(screen.getByLabelText("From date")).toHaveAttribute("type", "date");
     expect(screen.getByText("Enter a symbol and fetch bars before running context-aware cells.")).toBeInTheDocument();
+  });
+
+  it("renders data-context loading locks as visible linked field feedback", () => {
+    render(
+      <QuantNotebook
+        vm={makeVm({
+          context: { symbol: "AAPL" },
+          dataFetchState: "loading",
+          dataContextPanel: buildDataContextPanel({ symbol: "AAPL" }, null, "loading", null)
+        })}
+      />
+    );
+
+    const symbol = screen.getByLabelText("Symbol");
+    expect(symbol).toBeDisabled();
+    expect(symbol).toHaveAttribute(
+      "aria-describedby",
+      "quant-notebook-context-symbol-help quant-notebook-context-symbol-disabled-reason"
+    );
+    expect(screen.getByText("Data fetch is in progress; wait before editing the symbol.")).toHaveAttribute(
+      "id",
+      "quant-notebook-context-symbol-disabled-reason"
+    );
+
+    const interval = screen.getByLabelText("Interval");
+    expect(interval).toBeDisabled();
+    expect(interval).toHaveAttribute(
+      "aria-describedby",
+      "quant-notebook-context-interval-help quant-notebook-context-interval-disabled-reason"
+    );
+    expect(screen.getByText("Data fetch is in progress; wait before editing the interval.")).toHaveAttribute(
+      "id",
+      "quant-notebook-context-interval-disabled-reason"
+    );
   });
 
   it("renders data fetch errors as an alert linked to the panel status", () => {

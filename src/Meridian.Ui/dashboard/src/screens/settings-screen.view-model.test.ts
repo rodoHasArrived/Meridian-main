@@ -1,12 +1,21 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ApiError } from "@/lib/api-errors";
 import {
   buildAlpacaConnectionCommandState,
   buildSettingsRecentEventsSelectionViewModel,
   buildSettingsScreenViewModel,
   useAlpacaConnectionFormViewModel
 } from "@/screens/settings-screen.view-model";
-import type { BrokerageConnectionStatus, SessionInfo, SystemOverviewResponse } from "@/types";
+import type {
+  BrokerageConnectionStatus,
+  ProviderConnectionRow,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
+  SessionInfo,
+  SystemOverviewResponse
+} from "@/types";
 
 const session: SessionInfo = {
   displayName: "Andrew Rowden",
@@ -50,6 +59,130 @@ const alpacaConnection: BrokerageConnectionStatus = {
   maskedKeyId: "********1234"
 };
 
+const providerConnections: ProviderConnectionRow[] = [
+  {
+    providerId: "alpaca",
+    displayName: "Alpaca",
+    capability: "DataAndBrokerage",
+    credentialState: "Verified",
+    credentialSource: "LocalEncryptedStore",
+    verificationState: "Verified",
+    health: "Healthy",
+    fallbackActive: false,
+    lastVerifiedAt: "2026-05-07T11:50:00Z",
+    lastSuccessfulAt: "2026-05-07T11:50:00Z",
+    lastFailureAt: null,
+    lastError: null,
+    maskedKeyPreview: "********1234",
+    environment: "paper",
+    externalAccountId: "PA123",
+    affectedWorkflows: ["Trading readiness", "Portfolio brokerage sync"],
+    recommendedAction: "No credential repair action required.",
+    actionHref: "/settings#alpaca-provider-setup"
+  },
+  {
+    providerId: "polygon",
+    displayName: "Polygon.io",
+    capability: "Data",
+    credentialState: "Missing",
+    credentialSource: "None",
+    verificationState: "NotVerified",
+    health: "Warning",
+    fallbackActive: true,
+    lastVerifiedAt: null,
+    lastSuccessfulAt: null,
+    lastFailureAt: "2026-05-07T11:45:00Z",
+    lastError: "Provider credential missing.",
+    maskedKeyPreview: null,
+    environment: null,
+    externalAccountId: null,
+    affectedWorkflows: ["Historical backfill"],
+    recommendedAction: "Add the Polygon API key before routing data repair through Polygon.",
+    actionHref: "/settings#provider-polygon-connection"
+  }
+];
+
+const providerRoutingConnections: ProviderRoutingConnection[] = [
+  {
+    connectionId: "provider-alpaca-paper",
+    providerFamilyId: "alpaca",
+    displayName: "Alpaca paper route",
+    connectionType: "DataVendor",
+    connectionMode: "ReadOnly",
+    enabled: true,
+    credentialReference: "vault:alpaca/paper",
+    institutionId: null,
+    externalAccountId: null,
+    scope: null,
+    tags: ["streaming"],
+    description: null,
+    productionReady: false
+  },
+  {
+    connectionId: "provider-reference",
+    providerFamilyId: "polygon",
+    displayName: "Reference data route",
+    connectionType: "DataVendor",
+    connectionMode: "ReadOnly",
+    enabled: true,
+    credentialReference: "vault:polygon/default",
+    institutionId: null,
+    externalAccountId: null,
+    scope: null,
+    tags: ["reference"],
+    description: null,
+    productionReady: true
+  }
+];
+
+const providerRoutingBindings: ProviderRoutingBinding[] = [
+  {
+    bindingId: "provider-alpaca-paper-RealtimeMarketData",
+    capability: "RealtimeMarketData",
+    connectionId: "provider-alpaca-paper",
+    target: null,
+    priority: 100,
+    enabled: true,
+    failoverConnectionIds: [],
+    safetyModeOverride: null,
+    notes: null
+  },
+  {
+    bindingId: "provider-reference-ReferenceData",
+    capability: "ReferenceData",
+    connectionId: "provider-reference",
+    target: null,
+    priority: 100,
+    enabled: true,
+    failoverConnectionIds: ["provider-alpaca-paper"],
+    safetyModeOverride: null,
+    notes: null
+  }
+];
+
+const providerRoutingTrustSnapshots: ProviderRoutingTrustSnapshot[] = [
+  {
+    connectionId: "provider-alpaca-paper",
+    providerFamilyId: "alpaca",
+    score: 84,
+    isHealthy: true,
+    healthStatus: "Healthy",
+    isProductionReady: false,
+    isCertificationFresh: false,
+    signals: []
+  },
+  {
+    connectionId: "provider-reference",
+    providerFamilyId: "polygon",
+    score: 97,
+    isHealthy: true,
+    healthStatus: "Healthy",
+    isProductionReady: true,
+    isCertificationFresh: true,
+    signals: []
+  }
+];
+
 describe("buildSettingsScreenViewModel", () => {
   it("builds session items from session data", () => {
     const vm = buildSettingsScreenViewModel(session, null);
@@ -85,6 +218,79 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.systemItems.some((i) => i.label === "Active runs" && i.value === "2")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Symbols monitored" && i.value === "120")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Last heartbeat" && i.value === "May 1, 00:00 UTC")).toBe(true);
+  });
+
+  it("builds provider connection center rows with exact repair anchors", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      providerConnections,
+      brokerageConnection: alpacaConnection
+    });
+
+    expect(vm.providerConnectionCenter.statusLabel).toBe("1 need review");
+    expect(vm.providerConnectionCenter.statusVariant).toBe("warning");
+    const brokerageRows = vm.providerConnectionCenter.groups.find((group) => group.id === "brokerage")?.rows ?? [];
+    const dataRows = vm.providerConnectionCenter.groups.find((group) => group.id === "data")?.rows ?? [];
+
+    expect(brokerageRows).toHaveLength(1);
+    expect(brokerageRows[0]).toMatchObject({
+      providerId: "alpaca",
+      capabilityLabel: "Data + Brokerage",
+      credentialLabel: "Verified",
+      sourceLabel: "Encrypted local store",
+      actionHref: "/settings#alpaca-provider-setup"
+    });
+    expect(dataRows).toHaveLength(1);
+    expect(dataRows[0]).toMatchObject({
+      providerId: "polygon",
+      credentialLabel: "Missing",
+      fallbackLabel: "Fallback active",
+      actionHref: "/settings#provider-polygon-connection"
+    });
+  });
+
+  it("merges provider-routing connections, bindings, and trust snapshots into the connection center", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      providerConnections: [],
+      providerRoutingConnections,
+      providerRoutingBindings,
+      providerRoutingTrustSnapshots,
+      providerRoutingRefreshing: true
+    });
+
+    expect(vm.providerConnectionCenter.statusLabel).toBe("Refreshing");
+    expect(vm.providerConnectionCenter.refreshAction).toMatchObject({
+      label: "Refreshing...",
+      busy: true,
+      disabled: true
+    });
+    expect(vm.providerConnectionCenter.routingSummaryLabel).toBe("2 routing connections · 2 bindings · 2 trust snapshots");
+
+    const dataRows = vm.providerConnectionCenter.groups.find((group) => group.id === "data")?.rows ?? [];
+    expect(dataRows).toHaveLength(2);
+    expect(dataRows[0]).toMatchObject({
+      providerId: "provider-alpaca-paper",
+      displayName: "Alpaca paper route",
+      credentialLabel: "Configured",
+      sourceLabel: "Vault reference",
+      environmentLabel: "PAPER",
+      maskedKeyPreviewLabel: "Hidden by routing API",
+      routingBindingsLabel: "Realtime",
+      trustScoreLabel: "84% · Healthy",
+      productionStateLabel: "Certification needed",
+      recommendedAction: "Run provider certification before production routing."
+    });
+    expect(dataRows[1]).toMatchObject({
+      providerId: "provider-reference",
+      routingBindingsLabel: "Reference data",
+      fallbackLabel: "1 failover route",
+      trustScoreLabel: "97% · Healthy",
+      productionStateLabel: "Production ready"
+    });
+    expect(dataRows.map((row) => row.sourceLabel).join(" ")).not.toContain("vault:polygon/default");
   });
 
   it("returns success tone for healthy system", () => {
@@ -272,6 +478,74 @@ describe("buildSettingsScreenViewModel", () => {
     });
   });
 
+  it("builds profile authentication posture from session and brokerage authority", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      brokerageConnection: alpacaConnection
+    });
+
+    expect(vm.profileAuthenticationPanel).toMatchObject({
+      regionLabel: "Profile and authentication posture",
+      title: "Profile and access posture",
+      statusLabel: "Access ready",
+      statusTone: "success",
+      avatarInitials: "AR",
+      operatorName: "Andrew Rowden",
+      roleLabel: "Fund Manager",
+      environmentLabel: "PAPER",
+      workspaceLabel: "Settings",
+      commandCountLabel: "42 commands issued",
+      authorityLabel: "Brokerage verified",
+      authorityDetail: "Alpaca account PA123 is verified for readiness handoffs.",
+      notice: null
+    });
+    expect(vm.profileAuthenticationPanel.facts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "operator", value: "Andrew Rowden", tone: "default" }),
+      expect.objectContaining({ id: "environment", value: "PAPER", tone: "success" }),
+      expect.objectContaining({ id: "brokerage", value: "Brokerage verified", tone: "success" })
+    ]));
+    expect(vm.profileAuthenticationPanel.steps).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "brokerage-authority",
+        statusLabel: "Verified",
+        actionHref: "/trading/readiness",
+        actionAriaLabel: "Open Trading readiness from verified profile authentication posture"
+      }),
+      expect.objectContaining({
+        id: "audit-diagnostics",
+        statusLabel: "Review",
+        actionHref: "/settings#diagnostic-endpoints"
+      })
+    ]));
+  });
+
+  it("warns when profile authentication posture is operating in live mode", () => {
+    const liveSession: SessionInfo = { ...session, environment: "live" };
+    const vm = buildSettingsScreenViewModel({
+      session: liveSession,
+      overview,
+      brokerageConnection: { ...alpacaConnection, environment: "live" }
+    });
+
+    expect(vm.profileAuthenticationPanel).toMatchObject({
+      statusLabel: "Live authority active",
+      statusTone: "warning",
+      environmentLabel: "LIVE",
+      notice: {
+        title: "Live environment controls active",
+        tone: "warning",
+        role: "status"
+      }
+    });
+    expect(vm.profileAuthenticationPanel.summary).toContain("LIVE mode");
+    expect(vm.profileAuthenticationPanel.steps.find((step) => step.id === "environment-authority")).toMatchObject({
+      statusLabel: "LIVE",
+      tone: "warning",
+      detail: "Live mode requires explicit brokerage and readiness evidence before sensitive actions."
+    });
+  });
+
   it("marks invalid Alpaca credentials as a degraded connection state", () => {
     const vm = buildSettingsScreenViewModel({
       session,
@@ -310,6 +584,7 @@ describe("buildSettingsScreenViewModel", () => {
         busyAction: null,
         submitted: false,
         actionMessage: null,
+        actionDetails: [],
         actionTone: "default"
       }
     });
@@ -364,6 +639,7 @@ describe("buildSettingsScreenViewModel", () => {
         busyAction: null,
         submitted: true,
         actionMessage: null,
+        actionDetails: [],
         actionTone: "default"
       }
     });
@@ -385,6 +661,7 @@ describe("buildSettingsScreenViewModel", () => {
         id: "alpaca-environment-paper",
         value: "paper",
         badgeLabel: "Default",
+        endpointLabel: "https://paper-api.alpaca.markets/v2",
         isSelected: true,
         disabled: false,
         tone: "paper"
@@ -393,6 +670,7 @@ describe("buildSettingsScreenViewModel", () => {
         id: "alpaca-environment-live",
         value: "live",
         badgeLabel: "Real money",
+        endpointLabel: "https://api.alpaca.markets/v2",
         isSelected: false,
         disabled: false,
         tone: "live"
@@ -415,6 +693,7 @@ describe("buildSettingsScreenViewModel", () => {
         busyAction: "connect",
         submitted: true,
         actionMessage: null,
+        actionDetails: [],
         actionTone: "default"
       }
     });
@@ -429,25 +708,30 @@ describe("buildSettingsScreenViewModel", () => {
     expect(busyState.submitDisabledReason).toContain("already running");
     expect(busyState.keyIdField).toMatchObject({
       disabled: true,
+      helpText: "Alpaca credential request is already running.",
       disabledReason: "Alpaca credential request is already running."
     });
     expect(busyState.secretKeyField).toMatchObject({
       disabled: true,
+      helpText: "Alpaca credential request is already running.",
       disabledReason: "Alpaca credential request is already running."
     });
     expect(busyState.liveAcknowledgement.disabledReason).toBe("Alpaca credential request is already running.");
+    expect(busyState.liveAcknowledgement.disabledReasonId).toBe("alpaca-live-acknowledgement-disabled-reason");
     expect(busyState.environmentOptions).toEqual([
       expect.objectContaining({
         value: "paper",
         isSelected: false,
         disabled: true,
-        disabledReason: "Alpaca credential request is already running."
+        disabledReason: "Alpaca credential request is already running.",
+        disabledReasonId: "alpaca-environment-disabled-reason"
       }),
       expect.objectContaining({
         value: "live",
         isSelected: true,
         disabled: true,
-        disabledReason: "Alpaca credential request is already running."
+        disabledReason: "Alpaca credential request is already running.",
+        disabledReasonId: "alpaca-environment-disabled-reason"
       })
     ]);
 
@@ -462,6 +746,7 @@ describe("buildSettingsScreenViewModel", () => {
         busyAction: null,
         submitted: false,
         actionMessage: null,
+        actionDetails: [],
         actionTone: "default"
       }
     });
@@ -486,6 +771,7 @@ describe("buildSettingsScreenViewModel", () => {
         busyAction: null,
         submitted: false,
         actionMessage: null,
+        actionDetails: [],
         actionTone: "default"
       }
     });
@@ -516,6 +802,7 @@ describe("buildSettingsScreenViewModel", () => {
         busyAction: null,
         submitted: false,
         actionMessage: null,
+        actionDetails: [],
         actionTone: "default"
       }
     });
@@ -844,6 +1131,43 @@ describe("buildSettingsScreenViewModel", () => {
     unmount();
 
     expect(options.signal?.aborted).toBe(true);
+  });
+
+  it("surfaces structured Alpaca connection errors", async () => {
+    const connectConnection = vi.fn().mockRejectedValue(
+      new ApiError({
+        path: "/api/brokerage-connections/alpaca/connect",
+        status: 422,
+        detail: "One or more validation errors occurred.",
+        validationIssues: [
+          {
+            field: "secretKey",
+            label: "secretKey",
+            messages: ["Secret key must include the paper account scope."]
+          }
+        ]
+      })
+    );
+    const { result } = renderHook(() => useAlpacaConnectionFormViewModel({
+      canClear: false,
+      connectConnection
+    }));
+
+    act(() => {
+      result.current.setKeyId("paper-key");
+      result.current.setSecretKey("paper-secret");
+    });
+
+    await act(async () => {
+      await result.current.connect({ preventDefault: vi.fn() } as never);
+    });
+
+    expect(result.current.actionMessage).toBe("One or more validation errors occurred.");
+    expect(result.current.statusDetails).toEqual([
+      "Endpoint returned 422 for /api/brokerage-connections/alpaca/connect.",
+      "secretKey: Secret key must include the paper account scope."
+    ]);
+    expect(result.current.statusRole).toBe("alert");
   });
 });
 

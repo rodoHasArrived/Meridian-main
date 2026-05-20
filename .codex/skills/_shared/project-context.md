@@ -10,6 +10,7 @@ repeating the same facts in every `SKILL.md`.
 ## Platform Snapshot
 
 - Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery.
+- The authoritative local checkout path for this workspace is `C:\Dev\Meridian-main`.
 - The repo already includes strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
 - The current delivery focus is productization: turn those foundations into one evidence-backed
@@ -34,6 +35,11 @@ repeating the same facts in every `SKILL.md`.
 Use these together before changing AI guidance, routing, or workflow-oriented skills:
 
 - `README.md`
+- `docs/architecture/project-structure.md`
+- `docs/architecture/module-map.md`
+- `docs/architecture/mvvm-guidelines.md`
+- `docs/developer/build-test-run.md`
+- `docs/prompts/repo-maintenance-prompts.md`
 - `docs/status/ROADMAP.md`
 - `docs/status/FEATURE_INVENTORY.md`
 - `docs/status/IMPROVEMENTS.md`
@@ -107,6 +113,9 @@ Prefer the narrowest validation command that matches the files being changed.
 - Desktop-retained artifacts such as workspace state, watchlists, credentials, activity logs,
   collection sessions, symbol mappings, schema dictionaries, and catalog metadata should stay under
   the resolved external config and data roots so upgrades do not depend on the install directory.
+- Provider credentials saved by browser workstation flows use the shared encrypted
+  `IProviderCredentialStore` under the resolved data root; environment variables are read-only
+  legacy fallback and new flows must not write provider secrets to user-level env vars.
 - Wizard review/save flows should use `AppConfigJsonOptions` plus `ConfigStore` so previewed JSON
   and persisted config share the same serializer and resolved config path.
 - Paper-session order history is lifecycle-sensitive metadata; await the durable append before

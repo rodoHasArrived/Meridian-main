@@ -148,6 +148,8 @@ describe("QuantLabScreen", () => {
 
     await waitFor(() => expect(runSpy).toHaveBeenCalledTimes(1));
     expect(await screen.findByRole("heading", { name: /Run succeeded/i })).toBeInTheDocument();
+    const metricsTable = screen.getByRole("table", { name: "Quant Lab metrics" });
+    expect(metricsTable).toHaveTextContent(/Metrics emitted by the Quant Lab script run/i);
     expect(screen.getByText("answer")).toBeInTheDocument();
     expect(screen.getByText("42")).toBeInTheDocument();
     const consoleBlock = screen.getByText(/Hello from the Quant Lab\./, { selector: "pre" });

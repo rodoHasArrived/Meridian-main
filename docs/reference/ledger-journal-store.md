@@ -14,9 +14,18 @@ Use `Meridian.Storage.Ledger.LedgerJournalStoreOptions`:
 | `SchemaName` | `ledger` | Schema that owns journal and period tables. |
 | `EnablePeriodLocking` | `true` | Adds `FOR UPDATE` when period records are saved inside serializable transactions. |
 
+Production composition also recognizes these environment variables:
+
+| Variable | Purpose |
+| --- | --- |
+| `MERIDIAN_LEDGER_CONNECTION_STRING` | Enables PostgreSQL ledger journal persistence and PostgreSQL-backed Operations Continuity workflow/audit storage. |
+| `MERIDIAN_LEDGER_SCHEMA` | Overrides the schema used by ledger and Operations Continuity tables; defaults to `ledger`. |
+| `MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING` | Enables or disables explicit period row locking; defaults to `true`. |
+
 `LedgerStoreExtensions.AddLedgerJournalStore(string connStr)` registers
-`ILedgerJournalStore`, `PostgresLedgerJournalStore`, `ILedgerBookService`,
-`PostgresLedgerBookService`, and a default options instance with the provided connection string.
+`ILedgerJournalStore`, `ITransactionalLedgerJournalStore`, `PostgresLedgerJournalStore`,
+`LedgerMigrationRunner`, `ILedgerBookService`, `PostgresLedgerBookService`, and a default options
+instance with the provided connection string.
 
 ## Migrations
 
@@ -30,6 +39,9 @@ assembly:
 | `V_ledger_003__ledger_books.sql` | `ledger_books`, `accounting_periods.ledger_book_id` |
 | `V_ledger_004__accounting_basis_policies.sql` | `accounting_policies`, basis and policy columns on `ledger_books` |
 | `V_ledger_005__journal_basis_lineage.sql` | basis, policy, rule, source-event, and source-journal lineage on `journal_entries` and `journal_legs` |
+| `V_ledger_006__journal_posting_kind.sql` | posting kind lineage and indexes on journal entries and legs |
+| `V_ledger_007__journal_adjustment_approval_metadata.sql` | governed adjustment approval metadata on journal entries and legs |
+| `V_ledger_008__operations_continuity.sql` | Operations Continuity workflow snapshots and hash-chained audit events |
 
 `journal_entries` and `journal_legs` both carry `aggregate_id`, `period_id`, `command_id`,
 `correlation_id`, `accounting_basis`, `accounting_policy_id`, `accounting_policy_version`,
@@ -40,6 +52,13 @@ assembly:
 `optimistic_version` for period updates and carries nullable `ledger_book_id` for compatibility
 with periods created before book scoping. `period_close_events` records the close audit event and
 the period version produced by that save.
+
+`operations_continuity_workflows` stores one JSON snapshot per workflow plus query columns for fund
+account, period, derived status, and version. `operations_continuity_audit` stores the append-only
+workflow audit timeline with `previous_hash` and `current_hash` uniqueness guards. When
+`PostgresOperationsContinuityStore` handles `ledger/post`, it opens one serializable transaction,
+appends the ledger journal candidate through `ITransactionalLedgerJournalStore`, appends the
+workflow audit event, touches the workflow version, and saves the workflow snapshot before commit.
 
 Basis-aware books use `Primary`, `Gaap`, `Cash`, `Tax`, or `Statutory` as the configured accounting
 basis. Existing books migrate as `Primary` with the `legacy-v1` policy. New books are unique by

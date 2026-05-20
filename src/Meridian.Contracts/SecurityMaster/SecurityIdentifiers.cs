@@ -45,7 +45,9 @@ public sealed record SecurityIdentifierDto(
     bool IsPrimary,
     DateTimeOffset ValidFrom,
     DateTimeOffset? ValidTo = null,
-    string? Provider = null);
+    string? Provider = null,
+    string? NormalizedValue = null,
+    string? NormalizedProvider = null);
 
 public sealed record SecurityAliasDto(
     Guid AliasId,

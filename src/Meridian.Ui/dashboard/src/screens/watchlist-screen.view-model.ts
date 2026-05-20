@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ApiRequestOptions } from "@/lib/api";
+import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type { MetricSnapshot, QuotesSnapshotItem, SymbolRecord, SymbolStatistics } from "@/types";
 
 export type WatchlistBadgeVariant = "default" | "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research";
@@ -46,6 +48,7 @@ export interface WatchlistApi {
 export interface WatchlistSubmitFeedback {
   tone: "success" | "warning" | "danger";
   message: string;
+  details?: string[];
   providerSetupHandoff?: WatchlistProviderSetupHandoff;
   nextActionHandoff?: WatchlistRouteHandoff;
 }
@@ -181,7 +184,7 @@ export interface WatchlistScreenViewModel {
   submitting: boolean;
   submitError: string | null;
   submitFeedback: WatchlistSubmitFeedback | null;
-  loadError: string | null;
+  loadError: ApiErrorDisplay | null;
   stats: MetricSnapshot[];
   rows: WatchlistRowViewModel[];
   sort: WatchlistSortState;
@@ -210,6 +213,7 @@ export interface WatchlistScreenViewModel {
   toolbarItems: Array<{ id: string; label: string; value: string; active?: boolean }>;
   quoteStatusLabel: string;
   quoteStatusTone: WatchlistQuoteStatusTone;
+  quoteStatusDetails: string[];
   quoteProviderSetupHandoff: WatchlistProviderSetupHandoff | null;
   quoteRefreshCommand: WatchlistQuoteRefreshCommandState;
   starterPackGroupLabel: string;
@@ -240,14 +244,14 @@ export const WATCHLIST_STARTER_PACKS: Array<{ id: string; label: string; symbols
 export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenViewModel {
   const [symbols, setSymbols] = useState<SymbolRecord[] | null>(null);
   const [stats, setStats] = useState<SymbolStatistics | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<ApiErrorDisplay | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [pendingSymbol, setPendingSymbol] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitFeedback, setSubmitFeedback] = useState<WatchlistSubmitFeedback | null>(null);
   const [removing, setRemoving] = useState<Record<string, boolean>>({});
   const [quotes, setQuotes] = useState<Record<string, QuotesSnapshotItem>>({});
-  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [quoteError, setQuoteError] = useState<ApiErrorDisplay | null>(null);
   const [quoteFetchedAt, setQuoteFetchedAt] = useState<number | null>(null);
   const [quoteRefreshing, setQuoteRefreshing] = useState(false);
   const [activeStarterPackId, setActiveStarterPackId] = useState<string | null>(null);
@@ -294,7 +298,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         setSymbols(symbolResult.value);
         setLoadError(null);
       } else if (!isAbortError(symbolResult.reason)) {
-        setLoadError(messageFromError(symbolResult.reason, "Failed to load symbols"));
+        setLoadError(buildWatchlistErrorDisplay(symbolResult.reason, "Failed to load symbols"));
       }
 
       if (statsResult.status === "fulfilled") {
@@ -371,7 +375,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
 
       setSubmitFeedback({
         tone: "danger",
-        message: messageFromError(error, "Failed to add symbol"),
+        ...buildWatchlistFeedbackDisplay(error, "Failed to add symbol"),
         providerSetupHandoff: buildProviderSetupHandoff("symbol-add-exception")
       });
     } finally {
@@ -413,7 +417,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
 
       setSubmitFeedback({
         tone: "danger",
-        message: messageFromError(error, `Failed to add ${pack.label} starter pack.`),
+        ...buildWatchlistFeedbackDisplay(error, `Failed to add ${pack.label} starter pack.`),
         providerSetupHandoff: buildProviderSetupHandoff("starter-pack-exception")
       });
     } finally {
@@ -447,7 +451,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         return;
       }
 
-      setLoadError(messageFromError(error, `Failed to remove ${symbol}`));
+      setLoadError(buildWatchlistErrorDisplay(error, `Failed to remove ${symbol}`));
     } finally {
       if (mountedRef.current) {
         setRemoving((current) => {
@@ -502,7 +506,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     } catch (error) {
       if (mountedRef.current && currentQuoteSymbolsKeyRef.current === requestKey) {
         if (!isAbortError(error)) {
-          setQuoteError(messageFromError(error, "Failed to load live quotes"));
+          setQuoteError(describeApiError(error, "Failed to load live quotes"));
         }
       }
     } finally {
@@ -654,6 +658,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     toolbarItems: buildToolbarItems(stats, rows.length, listState),
     quoteStatusLabel: quoteStatus.label,
     quoteStatusTone: quoteStatus.tone,
+    quoteStatusDetails: quoteStatus.details,
     quoteProviderSetupHandoff: quoteError ? buildProviderSetupHandoff("live-quotes") : null,
     quoteRefreshCommand: buildQuoteRefreshCommand(listState, rows.length, quoteRefreshing),
     starterPackGroupLabel: "Watchlist starter packs",
@@ -750,7 +755,7 @@ export function buildWatchlistRows(
         lastTone,
         changeTone,
         isRemoving,
-        quoteHref: `/data/quotes?symbol=${encodeURIComponent(record.symbol)}`,
+        quoteHref: workstationRouteWithQuery("dataQuotes", { symbol: record.symbol }),
         quoteAriaLabel: `View live quotes for ${record.symbol}`,
         inspectLabel: "Inspect",
         inspectAriaLabel: `Inspect ${record.symbol} watchlist detail`,
@@ -1023,7 +1028,7 @@ export function buildStarterPackFeedback(
 
 export function buildProviderSetupHandoff(reason: string): WatchlistProviderSetupHandoff {
   return {
-    href: "/settings#alpaca-provider-setup",
+    href: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup,
     label: "Fix provider setup",
     ariaLabel: `Open provider setup from watchlist ${reason}`,
     detail: "Review provider credentials and connection status in Settings."
@@ -1037,7 +1042,7 @@ export function buildLiveQuoteHandoff(symbols: readonly string[], reason: string
   }
 
   return {
-    href: `/data/quotes?symbol=${encodeURIComponent(symbol)}`,
+    href: workstationRouteWithQuery("dataQuotes", { symbol }),
     label: "Review live quote",
     ariaLabel: `Open live quotes for ${symbol} from watchlist ${reason}`,
     detail: `Review the ${symbol} live quote, chart, and quick-trade ticket.`
@@ -1094,7 +1099,7 @@ export function buildListRetryCommand(refreshing: boolean): WatchlistListRetryCo
   };
 }
 
-function buildListState(symbols: SymbolRecord[] | null, loadError: string | null): WatchlistListState {
+function buildListState(symbols: SymbolRecord[] | null, loadError: ApiErrorDisplay | null): WatchlistListState {
   if (loadError && symbols === null) {
     return "error";
   }
@@ -1115,13 +1120,13 @@ function buildListDescription(
   visibleCount: number,
   totalCount: number,
   hideStale: boolean,
-  loadError: string | null
+  loadError: ApiErrorDisplay | null
 ): string {
   switch (state) {
     case "loading":
       return "Loading symbols…";
     case "error":
-      return loadError ?? "Symbol watchlist failed to load.";
+      return loadError?.summary ?? "Symbol watchlist failed to load.";
     case "empty":
       return "No symbols configured. Add one above to start collecting live data.";
     case "ready": {
@@ -1216,16 +1221,16 @@ export function buildQuoteStatus({
   rowCount: number;
   quoteCount: number;
   staleCount: number;
-  quoteError: string | null;
+  quoteError: ApiErrorDisplay | null;
   quoteFetchedAt: number | null;
   now?: number;
-}): { label: string; tone: WatchlistQuoteStatusTone } {
+}): { label: string; tone: WatchlistQuoteStatusTone; details: string[] } {
   if (listState === "empty") {
-    return { label: "Live prices are idle until symbols are added.", tone: "default" };
+    return { label: "Live prices are idle until symbols are added.", tone: "default", details: [] };
   }
 
   if (quoteError) {
-    return { label: `Live prices unavailable: ${quoteError}`, tone: "danger" };
+    return { label: `Live prices unavailable: ${quoteError.summary}`, tone: "danger", details: quoteError.details };
   }
 
   if (quoteFetchedAt) {
@@ -1237,11 +1242,12 @@ export function buildQuoteStatus({
 
     return {
       label: `${coverageLabel}${staleLabel}; updated ${updatedLabel}.`,
-      tone: quoteCount === rowCount && staleCount === 0 ? "default" : "warning"
+      tone: quoteCount === rowCount && staleCount === 0 ? "default" : "warning",
+      details: []
     };
   }
 
-  return { label: "Live prices waiting for first tick.", tone: "warning" };
+  return { label: "Live prices waiting for first tick.", tone: "warning", details: [] };
 }
 
 export function buildQuoteRefreshCommand(
@@ -1300,6 +1306,21 @@ export function buildQuoteRefreshCommand(
   };
 }
 
+function buildWatchlistErrorDisplay(error: unknown, fallback: string): ApiErrorDisplay {
+  return describeApiError(error, fallback);
+}
+
+function buildWatchlistFeedbackDisplay(
+  error: unknown,
+  fallback: string
+): Pick<WatchlistSubmitFeedback, "message" | "details"> {
+  const display = describeApiError(error, fallback);
+  return {
+    message: display.summary,
+    details: display.details
+  };
+}
+
 function statusVariant(status: SymbolRecord["status"]): WatchlistBadgeVariant {
   switch (status) {
     case "Active":
@@ -1319,10 +1340,6 @@ function normalizeSymbol(value: string): string {
 
 function formatCount(value: number): string {
   return value.toLocaleString();
-}
-
-function messageFromError(error: unknown, fallback: string): string {
-  return error instanceof Error && error.message ? error.message : fallback;
 }
 
 function isAbortError(error: unknown): boolean {

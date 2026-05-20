@@ -9,7 +9,48 @@ namespace Meridian.Infrastructure.Shared;
 /// <param name="Symbol">Symbol being subscribed to.</param>
 /// <param name="Kind">Type of subscription (e.g., "trades", "quotes", "depth").</param>
 /// <param name="CreatedAt">When the subscription was created.</param>
-public sealed record Subscription(int Id, string Symbol, string Kind, DateTimeOffset CreatedAt);
+/// <param name="Status">Current lifecycle state of the subscription.</param>
+/// <param name="LastMessageAt">Most recent message accepted for this subscription.</param>
+/// <param name="LastError">Most recent subscription-specific failure, if any.</param>
+/// <param name="RecoveryAttempts">Number of recovery attempts after reconnect/failover.</param>
+/// <param name="SourceOfRequest">Optional caller/workflow that requested the subscription.</param>
+public sealed record Subscription(
+    int Id,
+    string Symbol,
+    string Kind,
+    DateTimeOffset CreatedAt,
+    SubscriptionStatus Status = SubscriptionStatus.Active,
+    DateTimeOffset? LastMessageAt = null,
+    string? LastError = null,
+    int RecoveryAttempts = 0,
+    string? SourceOfRequest = null);
+
+public enum SubscriptionStatus
+{
+    Pending = 0,
+    Active = 1,
+    Recovering = 2,
+    Failed = 3
+}
+
+public sealed record SubscriptionRequestValidation(
+    bool IsValid,
+    bool IsDuplicate,
+    string? NormalizedSymbol,
+    string? NormalizedKind,
+    int? ExistingSubscriptionId,
+    string? FailureReason)
+{
+    public static SubscriptionRequestValidation Invalid(string failureReason)
+        => new(false, false, null, null, null, failureReason);
+
+    public static SubscriptionRequestValidation Valid(
+        string normalizedSymbol,
+        string normalizedKind,
+        bool isDuplicate,
+        int? existingSubscriptionId)
+        => new(true, isDuplicate, normalizedSymbol, normalizedKind, existingSubscriptionId, null);
+}
 
 /// <summary>
 /// Thread-safe subscription manager that provides centralized subscription tracking
@@ -68,30 +109,59 @@ public sealed class SubscriptionManager : IDisposable
     /// <param name="symbol">Symbol to subscribe to.</param>
     /// <param name="kind">Type of subscription (e.g., "trades", "quotes").</param>
     /// <returns>Subscription ID or -1 if symbol is invalid.</returns>
-    public int Subscribe(string symbol, string kind)
+    public int Subscribe(string symbol, string kind, string? sourceOfRequest = null)
     {
-        if (string.IsNullOrWhiteSpace(symbol))
-            return -1;
-
-        var trimmedSymbol = symbol.Trim();
-        if (trimmedSymbol.Length == 0)
+        var validation = ValidateSubscriptionRequest(symbol, kind);
+        if (!validation.IsValid)
             return -1;
 
         lock (_gate)
         {
-            var id = Interlocked.Increment(ref _nextId);
-            var subscription = new Subscription(id, trimmedSymbol, kind, DateTimeOffset.UtcNow);
+            return AddSubscriptionCore(validation.NormalizedSymbol!, validation.NormalizedKind!, sourceOfRequest);
+        }
+    }
 
-            _subscriptions[id] = subscription;
+    /// <summary>
+    /// Creates a subscription only when the normalized symbol/kind is not already active.
+    /// Useful during reconnect and failover recovery where duplicate upstream
+    /// provider subscriptions are unsafe.
+    /// </summary>
+    public int SubscribeOrGetExisting(string symbol, string kind, string? sourceOfRequest = null)
+    {
+        var validation = ValidateSubscriptionRequest(symbol, kind);
+        if (!validation.IsValid)
+            return -1;
 
-            if (!_symbolsByKind.TryGetValue(kind, out var symbols))
-            {
-                symbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                _symbolsByKind[kind] = symbols;
-            }
-            symbols.Add(trimmedSymbol);
+        lock (_gate)
+        {
+            var existing = FindExistingSubscription(validation.NormalizedSymbol!, validation.NormalizedKind!);
+            if (existing is not null)
+                return existing.Id;
 
-            return id;
+            return AddSubscriptionCore(validation.NormalizedSymbol!, validation.NormalizedKind!, sourceOfRequest);
+        }
+    }
+
+    public SubscriptionRequestValidation ValidateSubscriptionRequest(string symbol, string kind)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+            return SubscriptionRequestValidation.Invalid("Symbol is required.");
+
+        if (string.IsNullOrWhiteSpace(kind))
+            return SubscriptionRequestValidation.Invalid("Subscription kind is required.");
+
+        var normalizedSymbol = symbol.Trim();
+        var normalizedKind = kind.Trim();
+
+        lock (_gate)
+        {
+            var existing = FindExistingSubscription(normalizedSymbol, normalizedKind);
+
+            return SubscriptionRequestValidation.Valid(
+                normalizedSymbol,
+                normalizedKind,
+                existing is not null,
+                existing?.Id);
         }
     }
 
@@ -162,6 +232,16 @@ public sealed class SubscriptionManager : IDisposable
         }
     }
 
+    public Subscription? GetSubscription(int subscriptionId)
+    {
+        lock (_gate)
+        {
+            return _subscriptions.TryGetValue(subscriptionId, out var subscription)
+                ? subscription
+                : null;
+        }
+    }
+
     /// <summary>
     /// Checks if a symbol has any active subscriptions of the given kind.
     /// </summary>
@@ -194,6 +274,73 @@ public sealed class SubscriptionManager : IDisposable
         }
     }
 
+    public bool RecordMessageReceived(int subscriptionId, DateTimeOffset? receivedAt = null)
+    {
+        lock (_gate)
+        {
+            if (!_subscriptions.TryGetValue(subscriptionId, out var subscription))
+                return false;
+
+            _subscriptions[subscriptionId] = subscription with
+            {
+                Status = SubscriptionStatus.Active,
+                LastMessageAt = receivedAt ?? DateTimeOffset.UtcNow,
+                LastError = null
+            };
+            return true;
+        }
+    }
+
+    public bool RecordSubscriptionError(int subscriptionId, string error)
+    {
+        lock (_gate)
+        {
+            if (!_subscriptions.TryGetValue(subscriptionId, out var subscription))
+                return false;
+
+            _subscriptions[subscriptionId] = subscription with
+            {
+                Status = SubscriptionStatus.Failed,
+                LastError = string.IsNullOrWhiteSpace(error) ? "Subscription failed." : error.Trim()
+            };
+            return true;
+        }
+    }
+
+    public bool RecordRecoveryAttempt(int subscriptionId, string? lastError = null)
+    {
+        lock (_gate)
+        {
+            if (!_subscriptions.TryGetValue(subscriptionId, out var subscription))
+                return false;
+
+            _subscriptions[subscriptionId] = subscription with
+            {
+                Status = SubscriptionStatus.Recovering,
+                RecoveryAttempts = subscription.RecoveryAttempts + 1,
+                LastError = NormalizeOptional(lastError) ?? subscription.LastError
+            };
+            return true;
+        }
+    }
+
+    public IReadOnlyList<Subscription> GetStaleSubscriptions(
+        TimeSpan staleThreshold,
+        DateTimeOffset? now = null)
+    {
+        var referenceTime = now ?? DateTimeOffset.UtcNow;
+
+        lock (_gate)
+        {
+            return _subscriptions.Values
+                .Where(subscription =>
+                    subscription.Status == SubscriptionStatus.Active &&
+                    subscription.LastMessageAt is DateTimeOffset lastMessageAt &&
+                    referenceTime - lastMessageAt > staleThreshold)
+                .ToList();
+        }
+    }
+
     /// <summary>
     /// Clears all subscriptions. Useful for reconnection scenarios.
     /// </summary>
@@ -219,6 +366,8 @@ public sealed class SubscriptionManager : IDisposable
         {
             return new SubscriptionSnapshot(
                 TotalSubscriptions: _subscriptions.Count,
+                FailedSubscriptions: _subscriptions.Values.Count(s => s.Status == SubscriptionStatus.Failed),
+                RecoveringSubscriptions: _subscriptions.Values.Count(s => s.Status == SubscriptionStatus.Recovering),
                 SymbolsByKind: _symbolsByKind.ToDictionary(
                     kv => kv.Key,
                     kv => kv.Value.ToArray() as IReadOnlyList<string>),
@@ -239,6 +388,36 @@ public sealed class SubscriptionManager : IDisposable
             _symbolsByKind.Clear();
         }
     }
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private int AddSubscriptionCore(string normalizedSymbol, string normalizedKind, string? sourceOfRequest)
+    {
+        var id = Interlocked.Increment(ref _nextId);
+        var subscription = new Subscription(
+            id,
+            normalizedSymbol,
+            normalizedKind,
+            DateTimeOffset.UtcNow,
+            SourceOfRequest: NormalizeOptional(sourceOfRequest));
+
+        _subscriptions[id] = subscription;
+
+        if (!_symbolsByKind.TryGetValue(normalizedKind, out var symbols))
+        {
+            symbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            _symbolsByKind[normalizedKind] = symbols;
+        }
+        symbols.Add(normalizedSymbol);
+
+        return id;
+    }
+
+    private Subscription? FindExistingSubscription(string normalizedSymbol, string normalizedKind)
+        => _subscriptions.Values.FirstOrDefault(s =>
+            s.Symbol.Equals(normalizedSymbol, StringComparison.OrdinalIgnoreCase) &&
+            s.Kind.Equals(normalizedKind, StringComparison.OrdinalIgnoreCase));
 }
 
 /// <summary>
@@ -246,5 +425,7 @@ public sealed class SubscriptionManager : IDisposable
 /// </summary>
 public sealed record SubscriptionSnapshot(
     int TotalSubscriptions,
+    int FailedSubscriptions,
+    int RecoveringSubscriptions,
     IReadOnlyDictionary<string, IReadOnlyList<string>> SymbolsByKind,
     IReadOnlyList<Subscription> Subscriptions);

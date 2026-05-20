@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getOperatorInbox, type ApiRequestOptions } from "@/lib/api";
-import { normalizeLocalWorkstationRoute, workflowTargetPath } from "@/lib/workspace";
+import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   DataOperationsProviderRecord,
@@ -207,8 +207,8 @@ const defaultServices: OperatorReadinessConsoleServices = {
   getOperatorInbox: (fundAccountId?: string, options?: ApiRequestOptions) => getOperatorInbox(fundAccountId, options)
 };
 
-const REPORT_PACKS_ROUTE = "/reporting/report-packs";
-const PROVIDER_SETUP_ROUTE = "/settings#alpaca-provider-setup";
+const REPORT_PACKS_ROUTE = WORKSTATION_ROUTE_CATALOG.reportingReportPacks;
+const PROVIDER_SETUP_ROUTE = WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup;
 
 export function useOperatorReadinessConsoleViewModel(
   payload: Omit<BuildOperatorReadinessConsoleStateOptions, "operatorInbox" | "inboxLoading" | "inboxError">,
@@ -334,7 +334,7 @@ export function buildOperatorReadinessConsoleState({
     workItems: prioritizedWorkItems
   }), "cockpit-gates");
   const workItemRows = withRowPresentation(buildWorkItemRows(prioritizedWorkItems), "work-items");
-  const selectedWorkItemDetail = buildSelectedWorkItemDetail(workItemRows, selectedWorkItemId ?? null);
+  const selectedWorkItemDetail = buildSelectedWorkItemDetail(workItemRows, prioritizedWorkItems, selectedWorkItemId ?? null);
   const nextAction = buildNextAction({
     checkpointGates,
     workItemRows,
@@ -869,7 +869,7 @@ function buildCockpitGateRows({
       gate: gateById.get("session"),
       action: {
         label: "Open Trading cockpit",
-        route: "/trading",
+        route: WORKSTATION_ROUTE_CATALOG.trading,
         ariaLabel: "Open Trading cockpit for paper session readiness",
         variant: "outline"
       }
@@ -886,7 +886,7 @@ function buildCockpitGateRows({
       gate: gateById.get("replay"),
       action: {
         label: "Open replay evidence",
-        route: "/trading/readiness",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
         ariaLabel: "Open replay evidence for paper readiness",
         variant: replay?.isConsistent ? "outline" : "secondary"
       }
@@ -905,7 +905,7 @@ function buildCockpitGateRows({
       gate: gateById.get("audit-controls"),
       action: {
         label: "Open execution controls",
-        route: "/trading/readiness",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
         ariaLabel: "Open execution-control evidence for paper readiness",
         variant: controls?.circuitBreakerOpen ? "secondary" : "outline"
       }
@@ -922,7 +922,7 @@ function buildCockpitGateRows({
       gate: gateById.get("promotion"),
       action: {
         label: "Open promotion review",
-        route: "/trading/readiness",
+        route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
         ariaLabel: "Open promotion review trace for paper readiness",
         variant: promotion?.requiresReview ? "secondary" : "outline"
       }
@@ -938,7 +938,7 @@ function buildCockpitGateRows({
       fallbackLevel: brokerageRow?.level ?? "review",
       action: {
         label: "Open brokerage sync",
-        route: "/portfolio/brokerage-sync",
+        route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
         ariaLabel: "Open brokerage sync for paper readiness",
         variant: brokerageRow?.level === "blocked" ? "secondary" : "outline"
       }
@@ -954,7 +954,7 @@ function buildCockpitGateRows({
       fallbackLevel: reconciliationRows.some((row) => row.level === "blocked") ? "blocked" : reconciliationRows.length > 0 ? "review" : "ready",
       action: {
         label: "Open break queue",
-        route: "/accounting/reconciliation",
+        route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
         ariaLabel: "Open reconciliation break queue for paper readiness",
         variant: reconciliationRows.some((row) => row.level === "blocked") ? "secondary" : "outline"
       }
@@ -990,7 +990,7 @@ function buildCockpitGateRows({
         ? buildWorkItemAction(workItems[0])
         : {
             label: "Open Trading cockpit",
-            route: "/trading",
+            route: WORKSTATION_ROUTE_CATALOG.trading,
             ariaLabel: "Open Trading cockpit after operator work items settle",
             variant: "outline"
           }
@@ -1079,17 +1079,32 @@ function prioritizeWorkItems(workItems: OperatorWorkItem[]): OperatorWorkItem[] 
 function buildWorkItemRow(item: OperatorWorkItem, includeAction: boolean): ReadinessConsoleRowBase {
   const action = includeAction ? buildWorkItemAction(item) : null;
   const createdAtLabel = formatReadinessUtcMinute(item.createdAt, "Timestamp unavailable");
+  const signoffSummary = buildSignoffSummary(item);
 
   return {
     id: item.workItemId,
     label: item.label,
     value: item.tone,
     detail: item.detail,
-    meta: [item.workspace, item.targetPageTag, item.runId, item.auditReference].filter(Boolean).join(" - ") || item.kind,
+    meta: [item.workspace, item.targetPageTag, item.runId, item.auditReference, signoffSummary].filter(Boolean).join(" - ") || item.kind,
     createdAtLabel,
     level: levelFromTone(item.tone),
     action
   };
+}
+
+function buildSignoffSummary(item: OperatorWorkItem): string | null {
+  const role = item.requiredSignoffRole?.trim();
+  const status = item.signoffStatus?.trim();
+  if (!role && !status) {
+    return null;
+  }
+
+  if (role && status) {
+    return `${role} sign-off ${status}`;
+  }
+
+  return role ? `${role} sign-off` : `Sign-off ${status}`;
 }
 
 function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction | null {
@@ -1098,7 +1113,7 @@ function buildWorkItemAction(item: OperatorWorkItem): ReadinessConsoleRowAction 
     : normalizeLocalWorkstationRoute(item.targetRoute)
       ?? routeFromWorkItemTarget(item)
       ?? fallbackRouteForWorkItemKind(item.kind);
-  const route = item.kind === "ReportPackApproval" && normalizedRoute === "/reporting"
+  const route = item.kind === "ReportPackApproval" && normalizedRoute === WORKSTATION_ROUTE_CATALOG.reporting
     ? REPORT_PACKS_ROUTE
     : normalizedRoute;
   if (!route) {
@@ -1122,28 +1137,30 @@ function routeFromWorkItemTarget(item: OperatorWorkItem): string | null {
   return workflowTargetPath(item.targetPageTag, item.workspace);
 }
 
-function fallbackRouteForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
+function fallbackRouteForWorkItemKind(kind: string): string {
   switch (kind) {
     case "PaperReplay":
     case "PromotionReview":
     case "ExecutionControl":
-      return "/trading/readiness";
+      return WORKSTATION_ROUTE_CATALOG.tradingReadiness;
     case "BrokerageSync":
       return PROVIDER_SETUP_ROUTE;
     case "SecurityMasterCoverage":
-      return "/accounting/security-master";
+      return WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster;
     case "ReconciliationBreak":
-      return "/accounting/reconciliation";
+      return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
     case "LedgerPeriodClose":
-      return "/accounting/reconciliation";
+      return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
     case "ReportPackApproval":
       return REPORT_PACKS_ROUTE;
     case "ProviderTrustGate":
-      return "/data";
+      return WORKSTATION_ROUTE_CATALOG.data;
+    default:
+      return WORKSTATION_ROUTE_CATALOG.tradingReadiness;
   }
 }
 
-function actionLabelForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
+function actionLabelForWorkItemKind(kind: string): string {
   switch (kind) {
     case "PaperReplay":
       return "Open replay evidence";
@@ -1163,6 +1180,8 @@ function actionLabelForWorkItemKind(kind: OperatorWorkItem["kind"]): string {
       return "Open provider trust";
     case "ExecutionControl":
       return "Open execution controls";
+    default:
+      return "Open operator item";
   }
 }
 
@@ -1212,10 +1231,10 @@ function buildWorkItemsEmptyText(
 }
 
 function buildWorkItemsEmptyAction(nextAction: ReadinessConsoleNextAction): ReadinessConsoleRowAction {
-  const nextActionRoute = nextAction.route ?? "/trading/readiness";
+  const nextActionRoute = nextAction.route ?? WORKSTATION_ROUTE_CATALOG.tradingReadiness;
   return {
     label: nextAction.level === "ready" ? "Open Trading cockpit" : nextAction.label,
-    route: nextAction.level === "ready" ? "/trading" : nextActionRoute,
+    route: nextAction.level === "ready" ? WORKSTATION_ROUTE_CATALOG.trading : nextActionRoute,
     ariaLabel: nextAction.level === "ready"
       ? "Open Trading cockpit from empty operator inbox"
       : `${nextAction.actionAriaLabel} from empty operator inbox`,
@@ -1225,6 +1244,7 @@ function buildWorkItemsEmptyAction(nextAction: ReadinessConsoleNextAction): Read
 
 function buildSelectedWorkItemDetail(
   rows: ReadinessConsoleRow[],
+  workItems: OperatorWorkItem[],
   selectedWorkItemId: string | null
 ): ReadinessConsoleSelectedWorkItemDetail | null {
   if (rows.length === 0) {
@@ -1233,6 +1253,7 @@ function buildSelectedWorkItemDetail(
 
   const selectedRow = rows.find((row) => row.id === selectedWorkItemId) ?? rows[0];
   const actionRoute = selectedRow.action?.route ?? "No route action";
+  const selectedWorkItem = workItems.find((item) => item.workItemId === selectedRow.id) ?? null;
 
   return {
     id: selectedRow.id,
@@ -1247,6 +1268,9 @@ function buildSelectedWorkItemDetail(
       { label: "Work item ID", value: selectedRow.id },
       { label: "Attention", value: formatLevelText(selectedRow.level) },
       ...(selectedRow.createdAtLabel ? [{ label: "Created", value: selectedRow.createdAtLabel }] : []),
+      ...(selectedWorkItem?.requiredSignoffRole ? [{ label: "Required sign-off role", value: selectedWorkItem.requiredSignoffRole }] : []),
+      ...(selectedWorkItem?.signoffStatus ? [{ label: "Sign-off status", value: selectedWorkItem.signoffStatus }] : []),
+      ...(selectedWorkItem?.toleranceProfileId ? [{ label: "Tolerance profile", value: selectedWorkItem.toleranceProfileId }] : []),
       { label: "Route", value: actionRoute },
       { label: "Evidence", value: selectedRow.meta }
     ],
@@ -1301,7 +1325,7 @@ function buildNextAction({
       .filter((row) => row.level === "blocked" || row.level === "review")
       .map((row, index) => nextActionCandidateFromRow(row, {
         label: row.action?.label ?? "Review item",
-        route: row.action?.route ?? "/trading/readiness",
+        route: row.action?.route ?? WORKSTATION_ROUTE_CATALOG.tradingReadiness,
         sourcePriority: 0,
         index
       })),
@@ -1315,13 +1339,13 @@ function buildNextAction({
       })),
     ...reconciliationRows.map((row, index) => nextActionCandidateFromRow(row, {
       label: "Open break queue",
-      route: "/accounting/reconciliation",
+      route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
       sourcePriority: 2,
       index
     })),
     ...promotionRows.map((row, index) => nextActionCandidateFromRow(row, {
       label: "Open promotion review",
-      route: "/trading/readiness",
+      route: WORKSTATION_ROUTE_CATALOG.tradingReadiness,
       sourcePriority: 3,
       index
     })),
@@ -1329,7 +1353,7 @@ function buildNextAction({
       .filter((row) => row.level === "blocked" || row.level === "review")
       .map((row, index) => nextActionCandidateFromRow(row, {
         label: "Open provider trust",
-        route: "/data",
+        route: WORKSTATION_ROUTE_CATALOG.data,
         sourcePriority: 4,
         index
       })),
@@ -1345,7 +1369,7 @@ function buildNextAction({
       .filter((row) => row.level === "blocked" || row.level === "review")
       .map((row, index) => nextActionCandidateFromRow(row, {
         label: "Open Trading cockpit",
-        route: "/trading",
+        route: WORKSTATION_ROUTE_CATALOG.trading,
         sourcePriority: 6,
         index
       }))
@@ -1368,7 +1392,7 @@ function buildNextAction({
     detail: "The visible readiness queue is settled. Continue monitoring the paper cockpit and latest workstation evidence.",
     meta: "Operator inbox and readiness evidence are clear",
     label: "Open Trading cockpit",
-    route: "/trading",
+    route: WORKSTATION_ROUTE_CATALOG.trading,
     level: "ready" as ReadinessConsoleLevel,
     disabledReason: null,
     sourcePriority: 99,

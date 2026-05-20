@@ -574,13 +574,18 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
+            var kind = Enum.Parse<SecurityIdentifierKind>(reader.GetString(0), ignoreCase: true);
+            var value = reader.GetString(1);
+            var provider = reader.IsDBNull(5) ? null : reader.GetString(5);
             results.Add(new SecurityIdentifierDto(
-                Enum.Parse<SecurityIdentifierKind>(reader.GetString(0), ignoreCase: true),
-                reader.GetString(1),
+                kind,
+                value,
                 reader.GetBoolean(2),
                 new DateTimeOffset(reader.GetDateTime(3), TimeSpan.Zero),
                 reader.IsDBNull(4) ? null : new DateTimeOffset(reader.GetDateTime(4), TimeSpan.Zero),
-                reader.IsDBNull(5) ? null : reader.GetString(5)));
+                provider,
+                SecurityIdentifierNormalizer.NormalizeValue(kind, value),
+                SecurityIdentifierNormalizer.NormalizeProvider(provider)));
         }
 
         return results;

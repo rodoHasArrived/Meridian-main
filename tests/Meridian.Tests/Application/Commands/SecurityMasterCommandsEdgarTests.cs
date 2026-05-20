@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Commands;
+using Meridian.Application.ResultTypes;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Serilog.Core;
@@ -51,6 +52,60 @@ public sealed class SecurityMasterCommandsEdgarTests
         finally
         {
             Console.SetOut(originalOut);
+        }
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_FileIngestWithoutPath_ReturnsRequiredFieldBeforeConfiguration()
+    {
+        var command = new SecurityMasterCommands(
+            importService: null,
+            log: Logger.None);
+
+        var originalError = Console.Error;
+        try
+        {
+            using var writer = new StringWriter();
+            Console.SetError(writer);
+
+            var result = await command.ExecuteAsync(["--security-master-ingest"]);
+
+            result.Error.Should().Be(ErrorCode.RequiredFieldMissing);
+            writer.ToString().Should().Contain("Usage: --security-master-ingest <file.csv|file.json>");
+        }
+        finally
+        {
+            Console.SetError(originalError);
+        }
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_FileIngestUnsupportedExtension_ReturnsValidationBeforeConfiguration()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-security-master-cli-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var filePath = Path.Combine(root, "securities.txt");
+        await File.WriteAllTextAsync(filePath, "Ticker,Name,AssetClass\nSPY,SPDR S&P 500 ETF,Equity\n");
+
+        var command = new SecurityMasterCommands(
+            importService: null,
+            log: Logger.None);
+
+        var originalError = Console.Error;
+        try
+        {
+            using var writer = new StringWriter();
+            Console.SetError(writer);
+
+            var result = await command.ExecuteAsync(["--security-master-ingest", filePath]);
+
+            result.Error.Should().Be(ErrorCode.ValidationFailed);
+            writer.ToString().Should().Contain("Unsupported file format: .txt");
+        }
+        finally
+        {
+            Console.SetError(originalError);
+            Directory.Delete(root, recursive: true);
         }
     }
 

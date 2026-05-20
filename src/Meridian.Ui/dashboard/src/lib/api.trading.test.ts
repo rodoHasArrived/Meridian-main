@@ -19,6 +19,9 @@ import {
   getPortfolioAggregate,
   getPortfolioExposure,
   getPortfolioSymbolExposure,
+  getProviderRoutingBindings,
+  getProviderRoutingConnections,
+  getProviderRoutingTrustSnapshots,
   getReportingWorkspace,
   getReplayStatus,
   getReconciliationBreakAudit,
@@ -47,6 +50,7 @@ import {
   markWorkflowPresetUsed,
   pinWorkflowPreset,
   pauseReplay,
+  previewProviderRoute,
   runReconciliation,
   runAnalysisExport,
   resetDevelopmentFixtureUsage,
@@ -149,6 +153,23 @@ describe("trading endpoint wiring", () => {
         body: JSON.stringify({ positionKey: "paper:AAPL" })
       })
     );
+  });
+
+
+
+  it("keeps API methods aligned to contract-manual override paths", async () => {
+    const CONTRACT_EXECUTION_CONTROLS = "/api/execution/controls" as const;
+    const CONTRACT_EXECUTION_MANUAL_OVERRIDES = "/api/execution/controls/manual-overrides" as const;
+    const CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR =
+      "/api/execution/controls/manual-overrides/ovr-contract/clear" as const;
+
+    await getExecutionControls();
+    await createExecutionManualOverride({ kind: "BypassOrderControls", reason: "contract-check" });
+    await clearExecutionManualOverride("ovr-contract");
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, CONTRACT_EXECUTION_CONTROLS, expect.anything());
+    expect(fetchMock).toHaveBeenNthCalledWith(2, CONTRACT_EXECUTION_MANUAL_OVERRIDES, expect.objectContaining({ method: "POST" }));
+    expect(fetchMock).toHaveBeenNthCalledWith(3, CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR, expect.objectContaining({ method: "POST" }));
   });
 
   it("uses dev fixtures for workstation bootstrap GETs when the API host is missing", async () => {
@@ -387,12 +408,14 @@ describe("trading endpoint wiring", () => {
   });
 
   it("wires analysis export as a POST mutation", async () => {
-    await runAnalysisExport("audit-pack");
+    const controller = new AbortController();
+    await runAnalysisExport("audit-pack", { signal: controller.signal });
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/export/analysis",
       expect.objectContaining({
         method: "POST",
+        signal: controller.signal,
         body: JSON.stringify({ profileId: "audit-pack" })
       })
     );
@@ -507,5 +530,31 @@ describe("trading endpoint wiring", () => {
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/aggregate", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/exposure", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/symbols/AAPL/exposure", expect.anything());
+  });
+
+  it("wires provider-routing endpoint group", async () => {
+    await getProviderRoutingConnections();
+    await getProviderRoutingBindings();
+    await getProviderRoutingTrustSnapshots();
+    await previewProviderRoute({
+      capability: "RealtimeMarketData",
+      symbol: "AAPL",
+      requireProductionReady: false
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith("/api/provider-routing/connections", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/provider-routing/bindings", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/provider-routing/trust-snapshots", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/provider-routing/preview",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          capability: "RealtimeMarketData",
+          symbol: "AAPL",
+          requireProductionReady: false
+        })
+      })
+    );
   });
 });

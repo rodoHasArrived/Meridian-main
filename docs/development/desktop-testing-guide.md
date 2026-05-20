@@ -426,13 +426,13 @@ public void ServiceName_Scenario_ExpectedBehavior()
 Desktop tests run in CI via GitHub Actions:
 
 - **Windows runners**: Run full WPF test suite
-- **Linux/macOS runners**: Skip WPF tests, run integration tests
-- **Reusable solution lanes**: Use `Category!=Integration|FullyQualifiedName!~Integration`
+- **Linux runners**: Build the WPF project as a CI-compatible stub during solution validation
+- **Desktop lane filter**: Use `Category!=Integration&FullyQualifiedName!~Integration`
   so untagged WPF xUnit tests still run while known integration suites stay excluded.
   New integration suites should use both `[Trait("Category", "Integration")]` and an
   `Integration` test class name.
 
-See `.github/workflows/desktop-builds.yml` for CI configuration.
+See `.github/workflows/windows-desktop-build.yml` for CI configuration.
 
 ## Additional Resources
 

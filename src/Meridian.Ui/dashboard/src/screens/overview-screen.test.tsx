@@ -213,4 +213,51 @@ describe("OverviewScreen", () => {
     });
     expect(tradingLink).toHaveAttribute("href", "/trading");
   });
+
+  it("renders Today movers, orders, and fills as dense evidence tables", () => {
+    renderWithRouter(
+      <OverviewScreen
+        data={overview}
+        session={session}
+        trading={{
+          ...tradingWorkspace,
+          positions: [
+            { symbol: "AAPL", side: "Long", quantity: "100", averagePrice: "188", markPrice: "190", dayPnl: "+$200", unrealizedPnl: "+$250", exposure: "$19,000" },
+            { symbol: "MSFT", side: "Short", quantity: "25", averagePrice: "410", markPrice: "405", dayPnl: "-$125", unrealizedPnl: "+$100", exposure: "-$10,125" }
+          ],
+          openOrders: [
+            { orderId: "ord-1", symbol: "AAPL", side: "Buy", type: "Limit", quantity: "10", limitPrice: "190.50", status: "Working", submittedAt: "2026-04-28T18:10:00Z" }
+          ],
+          fills: [
+            { fillId: "fill-1", orderId: "ord-0", symbol: "MSFT", side: "Sell", quantity: "5", price: "405.25", venue: "NASDAQ", timestamp: "2026-04-28T18:12:00Z" }
+          ]
+        }}
+      />
+    );
+
+    const moversTable = screen.getByRole("table", { name: "2 top movers" });
+    expect(within(moversTable).getByRole("row", {
+      name: "AAPL Long 100 shares, mark 190, day P&L +$200"
+    })).toBeInTheDocument();
+    expect(within(moversTable).getByText("Day P&L")).toBeInTheDocument();
+
+    const ordersTable = screen.getByRole("table", { name: "1 open order" });
+    const orderRow = within(ordersTable).getByRole("row", {
+      name: "Buy 10 AAPL limit at 190.50, Working, submitted 2026-04-28T18:10:00Z"
+    });
+    expect(orderRow).toBeInTheDocument();
+    expect(orderRow).toHaveClass("bg-success/5");
+    expect(within(orderRow).getByLabelText("Order status Working")).toHaveTextContent("Working");
+    expect(within(ordersTable).getByText("Submitted")).toBeInTheDocument();
+
+    const fillsTable = screen.getByRole("table", { name: "1 recent fill" });
+    const fillRow = within(fillsTable).getByRole("row", {
+      name: "Sell 5 MSFT at 405.25 on NASDAQ, 2026-04-28T18:12:00Z"
+    });
+    expect(fillRow).toBeInTheDocument();
+    expect(fillRow).toHaveClass("bg-success/5");
+    expect(within(fillRow).getByLabelText("Fill fill-1 completed")).toHaveTextContent("Filled");
+    expect(within(fillsTable).getByText("Venue")).toBeInTheDocument();
+    expect(within(fillsTable).getByText("Status")).toBeInTheDocument();
+  });
 });
