@@ -1,6 +1,6 @@
 schema_version: 1
 modules:
-  - module_id: meridian-host
+  - id: meridian-host
     name: Meridian Host
     layer: host
     priority_tier: priority
@@ -10,7 +10,7 @@ modules:
     architecture_boundary: composition-root-and-runtime-host
     roadmap_anchor: W2-paper-trading-cockpit
 
-  - module_id: meridian-application
+  - id: meridian-application
     name: Meridian Application
     layer: application
     priority_tier: priority
@@ -20,7 +20,7 @@ modules:
     architecture_boundary: orchestrators-commands-and-use-cases
     roadmap_anchor: W3-research-to-paper-continuity
 
-  - module_id: meridian-contracts
+  - id: meridian-contracts
     name: Meridian Contracts
     layer: contracts
     priority_tier: priority
@@ -30,7 +30,7 @@ modules:
     architecture_boundary: shared-dtos-and-transport-contracts
     roadmap_anchor: W3-research-to-paper-continuity
 
-  - module_id: meridian-ui-services
+  - id: meridian-ui-services
     name: Meridian UI Services
     layer: ui_services
     priority_tier: priority
@@ -40,7 +40,7 @@ modules:
     architecture_boundary: api-services-and-workstation-endpoints
     roadmap_anchor: W2-paper-trading-cockpit
 
-  - module_id: meridian-ui-shared
+  - id: meridian-ui-shared
     name: Meridian UI Shared
     layer: ui_shared
     priority_tier: priority
@@ -50,7 +50,7 @@ modules:
     architecture_boundary: shared-ui-read-models-and-contract-shims
     roadmap_anchor: W2-paper-trading-cockpit
 
-  - module_id: meridian-ui-dashboard
+  - id: meridian-ui-dashboard
     name: Meridian UI Dashboard
     layer: ui_dashboard
     priority_tier: priority
@@ -60,7 +60,7 @@ modules:
     architecture_boundary: browser-operator-workstation
     roadmap_anchor: W2-paper-trading-cockpit
 
-  - module_id: meridian-wpf-retained
+  - id: meridian-wpf-retained
     name: Meridian WPF (Retained Scope)
     layer: wpf_retained
     priority_tier: priority
