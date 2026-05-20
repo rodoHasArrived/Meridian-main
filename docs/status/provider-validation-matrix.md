@@ -121,7 +121,7 @@ If any check fails, promotion enablement is blocked and operator surfaces must s
 
 - Robinhood remains polling-oriented and unofficial. Do not describe it as websocket-validated.
 - Yahoo is active only as a historical and fallback provider row for Wave 1.
-- `Polygon`, `Interactive Brokers`, `NYSE`, and `StockSharp` are deferred from the active Wave 1 gate.
+- Deferred providers are tracked in the **Deferred provider inventory** table above; every deferred row must retain explicit owner, rationale, and revisit sprint.
 
 
 ## Unified automation and promotion posture
