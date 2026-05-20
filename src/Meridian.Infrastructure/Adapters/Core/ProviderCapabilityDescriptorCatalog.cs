@@ -21,13 +21,13 @@ public static class ProviderCapabilityDescriptorCatalog
 {
     public static IReadOnlyList<ProviderCapabilityDescriptor> Descriptors { get; } =
     [
-        new("alpaca", typeof(AlpacaMarketDataClient), typeof(AlpacaHistoricalDataProvider), typeof(AlpacaSymbolSearchProviderRefactored), typeof(AlpacaCorporateActionProvider), typeof(AlpacaOptionsChainProvider), typeof(AlpacaBrokerageGateway)),
-        new("synthetic", historical: typeof(SyntheticHistoricalDataProvider), search: typeof(SyntheticSymbolSearchProvider)),
+        new("alpaca", typeof(AlpacaMarketDataClient), typeof(AlpacaHistoricalDataProvider), typeof(AlpacaSymbolSearchProviderRefactored), typeof(AlpacaCorporateActionProvider), typeof(AlpacaOptionsChainProvider), typeof(AlpacaBrokerageAdapter)),
+        new("synthetic", historical: typeof(SyntheticHistoricalDataProvider)),
         new("ib", historical: typeof(IBHistoricalDataProvider)),
         new("yahoo", historical: typeof(YahooFinanceHistoricalDataProvider)),
-        new("polygon", historical: typeof(PolygonHistoricalDataProvider), search: typeof(PolygonSymbolSearchProvider), corporateActions: typeof(PolygonCorporateActionProvider)),
+        new("polygon", historical: typeof(PolygonHistoricalDataProvider), search: typeof(PolygonSymbolSearchProvider), corporateActions: typeof(PolygonCorporateActionFetcher)),
         new("tiingo", historical: typeof(TiingoHistoricalDataProvider)),
-        new("finnhub", historical: typeof(FinnhubHistoricalDataProvider), search: typeof(FinnhubSymbolSearchProvider)),
+        new("finnhub", historical: typeof(FinnhubHistoricalDataProvider), search: typeof(FinnhubSymbolSearchProviderRefactored)),
         new("stooq", historical: typeof(StooqHistoricalDataProvider)),
         new("alphavantage", historical: typeof(AlphaVantageHistoricalDataProvider)),
         new("fred", historical: typeof(FredHistoricalDataProvider)),
