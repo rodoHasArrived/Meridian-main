@@ -892,6 +892,16 @@ public static class ExecutionEndpoints
             return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
         }
 
+        if (!TryValidateBrokerOrderPlacementGate(context, out var blockingMessage))
+        {
+            var blocked = new TradingActionResult(
+                ActionId: GenerateActionId(),
+                Status: "Rejected",
+                Message: blockingMessage ?? "Broker order routing is disabled by validation gates.",
+                OccurredAt: DateTimeOffset.UtcNow);
+            return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+        }
+
         var logger = GetLogger(context.RequestServices);
         var actionId = GenerateActionId();
         var actor = ResolveActor(context);
