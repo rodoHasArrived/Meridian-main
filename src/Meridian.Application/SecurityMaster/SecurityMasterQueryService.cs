@@ -24,13 +24,9 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
 
     public async Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default)
     {
-        var projection = await _store.GetByIdentifierAsync(
-            identifierKind,
-            identifierValue,
-            provider,
-            DateTimeOffset.UtcNow,
-            includeInactive: true,
-            ct).ConfigureAwait(false);
+        var asOf = DateTimeOffset.UtcNow;
+        var projection = await TryGetProjectionByIdentifierAsync(identifierKind, identifierValue, provider, asOf, ct)
+            .ConfigureAwait(false);
 
         return projection is null ? null : SecurityMasterMapping.ToDetail(projection);
     }
@@ -162,4 +158,114 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
             ConversionEndDate: ReadDateOnly(convertibleTermsEl, "conversionEndDate"),
             Version: projection.Version);
     }
+
+    private async Task<SecurityProjectionRecord?> TryGetProjectionByIdentifierAsync(
+        SecurityIdentifierKind identifierKind,
+        string identifierValue,
+        string? provider,
+        DateTimeOffset asOf,
+        CancellationToken ct)
+    {
+        var providerCandidates = BuildLookupCandidates(provider, SecurityIdentifierNormalizer.NormalizeProvider);
+        foreach (var valueCandidate in BuildLookupCandidates(identifierValue, value => SecurityIdentifierNormalizer.NormalizeValue(identifierKind, value)).Where(static candidate => candidate is not null))
+        {
+            foreach (var providerCandidate in providerCandidates)
+            {
+                var exactProjection = await _store.GetByIdentifierAsync(
+                        identifierKind,
+                        valueCandidate!,
+                        providerCandidate,
+                        asOf,
+                        includeInactive: true,
+                        ct)
+                    .ConfigureAwait(false);
+
+                if (exactProjection is not null)
+                {
+                    return exactProjection;
+                }
+            }
+        }
+
+        var normalizedValue = SecurityIdentifierNormalizer.NormalizeValue(identifierKind, identifierValue);
+        if (normalizedValue.Length == 0)
+        {
+            return null;
+        }
+
+        var normalizedProvider = SecurityIdentifierNormalizer.NormalizeProvider(provider);
+        var universe = await _store.LoadAllAsync(ct).ConfigureAwait(false);
+        return universe.FirstOrDefault(candidate => MatchesIdentifier(candidate, identifierKind, normalizedValue, normalizedProvider, asOf));
+    }
+
+    private static IReadOnlyList<string?> BuildLookupCandidates(string? value, Func<string?, string> normalize)
+    {
+        var results = new List<string?>(2);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        static void AddCandidate(List<string?> target, HashSet<string> seenValues, string? candidate)
+        {
+            if (candidate is null)
+            {
+                if (!seenValues.Contains("<null>"))
+                {
+                    target.Add(null);
+                    seenValues.Add("<null>");
+                }
+
+                return;
+            }
+
+            if (candidate.Length == 0 || !seenValues.Add(candidate))
+            {
+                return;
+            }
+
+            target.Add(candidate);
+        }
+
+        AddCandidate(results, seen, string.IsNullOrWhiteSpace(value) ? null : value.Trim());
+        AddCandidate(results, seen, normalize(value));
+        return results;
+    }
+
+    private static bool MatchesIdentifier(
+        SecurityProjectionRecord candidate,
+        SecurityIdentifierKind identifierKind,
+        string normalizedValue,
+        string normalizedProvider,
+        DateTimeOffset asOf)
+    {
+        if (candidate.Identifiers.Any(identifier =>
+                identifier.Kind == identifierKind
+                && identifier.ValidFrom <= asOf
+                && (!identifier.ValidTo.HasValue || identifier.ValidTo.Value > asOf)
+                && SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier).Equals(normalizedValue, StringComparison.Ordinal)
+                && ProviderMatches(identifier.Provider, identifier.NormalizedProvider, normalizedProvider)))
+        {
+            return true;
+        }
+
+        if (candidate.Aliases.Any(alias =>
+                string.Equals(alias.AliasKind, identifierKind.ToString(), StringComparison.OrdinalIgnoreCase)
+                && alias.ValidFrom <= asOf
+                && (!alias.ValidTo.HasValue || alias.ValidTo.Value > asOf)
+                && alias.IsEnabled
+                && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, alias.AliasValue).Equals(normalizedValue, StringComparison.Ordinal)
+                && ProviderMatches(alias.Provider, normalizedProvider)))
+        {
+            return true;
+        }
+
+        return string.Equals(candidate.PrimaryIdentifierKind, identifierKind.ToString(), StringComparison.OrdinalIgnoreCase)
+               && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, candidate.PrimaryIdentifierValue).Equals(normalizedValue, StringComparison.Ordinal);
+    }
+
+    private static bool ProviderMatches(string? provider, string normalizedProvider)
+        => normalizedProvider.Length == 0
+           || SecurityIdentifierNormalizer.NormalizeProvider(provider).Equals(normalizedProvider, StringComparison.Ordinal);
+
+    private static bool ProviderMatches(string? provider, string? normalizedProvider, string expectedNormalizedProvider)
+        => expectedNormalizedProvider.Length == 0
+           || SecurityIdentifierNormalizer.NormalizeProvider(normalizedProvider ?? provider).Equals(expectedNormalizedProvider, StringComparison.Ordinal);
 }

@@ -44,6 +44,7 @@ Full usage instructions are in [`.github/prompts/README.md`](https://github.com/
 |--------|---------|
 | `code-review.prompt.yml` | Code review using the 6-lens framework |
 | `optimize-performance.prompt.yml` | Identify and fix performance bottlenecks |
+| `runtime-observability-diagnostics.prompt.yml` | Harden runtime logs, metrics, tracing, health state, and diagnostics |
 | `configure-deployment.prompt.yml` | Configure deployment (Docker, K8s, systemd) |
 | `wpf-debug-improve.prompt.yml` | Debug and improve WPF desktop UI |
 | `wpf-design-system-screen-impact.prompt.yml` | Identify and update the WPF screens needed for a design-system target page |

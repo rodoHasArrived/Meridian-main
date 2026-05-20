@@ -190,8 +190,35 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             .Select(ch => invalid.Contains(ch) || ch is '/' or '\\' or ':' ? '-' : char.ToLowerInvariant(ch))
             .ToArray();
         var sanitized = new string(chars);
-        return string.IsNullOrWhiteSpace(sanitized) ? "unknown" : sanitized;
+        return string.IsNullOrWhiteSpace(sanitized) || IsReservedPathSegment(sanitized)
+            ? "unknown"
+            : sanitized;
     }
+
+    private static string? ValidatePathSegment(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var segment = value.Trim();
+        if (IsReservedPathSegment(segment)
+            || !string.Equals(Path.GetFileName(segment), segment, StringComparison.Ordinal)
+            || segment.Contains('/')
+            || segment.Contains('\\')
+            || segment.Contains(':')
+            || segment.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+        {
+            return null;
+        }
+
+        return segment;
+    }
+
+    private static bool IsReservedPathSegment(string value)
+        => string.Equals(value, ".", StringComparison.Ordinal)
+           || string.Equals(value, "..", StringComparison.Ordinal);
 
     private static string? ValidateManifestFileName(string value)
     {
@@ -256,23 +283,36 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         string subjectId,
         string fileName)
     {
+        var safeSubjectKind = ValidatePathSegment(subjectKind);
+        var safeSubjectId = ValidatePathSegment(subjectId);
         var safeFileName = ValidateManifestFileName(fileName);
-        if (safeFileName is null)
+        if (safeSubjectKind is null || safeSubjectId is null || safeFileName is null)
         {
             return null;
         }
 
-        var directory = Path.GetFullPath(Path.Combine(
-            _rootDirectory,
-            SanitizePathSegment(subjectKind),
-            SanitizePathSegment(subjectId)));
-        var filePath = Path.GetFullPath(Path.Combine(directory, safeFileName));
-        var directoryPrefix = directory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-            + Path.DirectorySeparatorChar;
+        try
+        {
+            var directory = Path.GetFullPath(Path.Combine(
+                _rootDirectory,
+                safeSubjectKind,
+                safeSubjectId));
+            var filePath = Path.GetFullPath(Path.Combine(directory, safeFileName));
+            var directoryPrefix = directory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                + Path.DirectorySeparatorChar;
 
-        return filePath.StartsWith(directoryPrefix, PathComparison)
-            ? filePath
-            : null;
+            return filePath.StartsWith(directoryPrefix, PathComparison) && IsUnderRoot(filePath, _rootDirectory)
+                ? filePath
+                : null;
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+        catch (NotSupportedException)
+        {
+            return null;
+        }
     }
 
     private string? ResolveVaultManifestPath(EvidenceVaultIdentityDto identity, string expectedVaultId)

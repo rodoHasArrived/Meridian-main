@@ -27,6 +27,7 @@ automation guidance is not scattered across the repo.
 - `optimize-performance`
 - `project-context`
 - `provider-implementation-guide`
+- `runtime-observability-diagnostics`
 - `simulate-user-panel*`
 - `troubleshoot-issue`
 - `workflow-results-code-quality`

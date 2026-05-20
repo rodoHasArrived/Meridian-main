@@ -1229,7 +1229,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var identifiers = new HashSet<string>(StringComparer.Ordinal);
         foreach (var identifier in detail.Identifiers)
         {
-            identifiers.Add(NormalizeComparableString(identifier.Value));
+            identifiers.Add(NormalizeComparableString(SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier)));
         }
 
         foreach (var alias in detail.Aliases.Where(static alias => alias.IsEnabled))

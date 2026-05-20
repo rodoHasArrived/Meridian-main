@@ -254,6 +254,30 @@ public sealed class SecurityValidationService : ISecurityValidationService
                     [$"identifiers.{identifier.Kind}"],
                     "Set the provider name on the ProviderSymbol identifier."));
             }
+
+            if (!SecurityIdentifierNormalizer.TryValidateFormat(identifier.Kind, identifier.Value, out var formatMessage))
+            {
+                issues.Add(SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_IDENTIFIER_FORMAT_INVALID",
+                    "Identifier format is invalid",
+                    $"{identifier.Kind} '{identifier.Value}' is invalid. {formatMessage}",
+                    [$"identifiers.{identifier.Kind}"],
+                    "Correct the identifier value or move the raw vendor token into an alias/provider-mapping field."));
+            }
+
+            var normalizedValue = SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier);
+            if (RequiresCanonicalNormalizationWarning(identifier.Kind)
+                && !string.Equals(identifier.Value, normalizedValue, StringComparison.Ordinal))
+            {
+                issues.Add(SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Warning,
+                    "SM_IDENTIFIER_NORMALIZATION_RECOMMENDED",
+                    "Identifier should use its canonical normalized form",
+                    $"{identifier.Kind} '{identifier.Value}' normalizes to '{normalizedValue}'.",
+                    [$"identifiers.{identifier.Kind}"],
+                    "Preserve the raw vendor string in provenance or aliases, but store the canonical comparable code on the active identifier."));
+            }
         }
 
         issues.AddRange(ValidateCrossRecordDuplicates(record, universe, activeIdentifiers, evaluatedAtUtc));
@@ -505,14 +529,23 @@ public sealed class SecurityValidationService : ISecurityValidationService
 
     private static string IdentifierKey(SecurityIdentifierDto identifier, bool includeProvider)
     {
-        var normalizedValue = identifier.Value.Trim().ToUpperInvariant();
+        var normalizedValue = SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier);
         if (!includeProvider)
         {
             return $"{identifier.Kind}|{normalizedValue}";
         }
 
-        return $"{identifier.Kind}|{normalizedValue}|{identifier.Provider?.Trim().ToUpperInvariant() ?? string.Empty}";
+        return $"{identifier.Kind}|{normalizedValue}|{SecurityIdentifierNormalizer.GetOrComputeNormalizedProvider(identifier)}";
     }
+
+    private static bool RequiresCanonicalNormalizationWarning(SecurityIdentifierKind kind)
+        => kind is SecurityIdentifierKind.Isin
+            or SecurityIdentifierKind.Cusip
+            or SecurityIdentifierKind.Sedol
+            or SecurityIdentifierKind.Lei
+            or SecurityIdentifierKind.Wkn
+            or SecurityIdentifierKind.Valoren
+            or SecurityIdentifierKind.Cik;
 
     private static SecurityValidationReportDto BuildReport(
         Guid? securityId,

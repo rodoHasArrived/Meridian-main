@@ -77,6 +77,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [GitHub Actions Summary](github-actions-summary.md) | get the short reference for the repo's core workflows |
 | [GitHub Actions Testing Checklist](github-actions-testing.md) | validate workflow changes before or after editing GitHub Actions |
 | [Build Observability System](build-observability.md) | capture structured build telemetry, metrics, and diagnostics |
+| [Runtime Observability And Diagnostics](runtime-observability.md) | apply runtime logging, redaction, correlation, provider-health, and diagnostic-bundle standards |
 | [OTLP Trace Visualization](otlp-trace-visualization.md) | inspect Meridian traces and metrics in a local telemetry UI |
 | [Git Hooks](git-hooks.md) | install the repo-managed local quality gate before committing |
 

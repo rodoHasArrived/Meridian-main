@@ -103,6 +103,8 @@ public sealed class DiagnosticBundleService
             }
 
             // Write manifest
+            stopwatch.Stop();
+            manifest.DurationMs = stopwatch.Elapsed.TotalMilliseconds;
             var manifestJson = JsonSerializer.Serialize(manifest, new JsonSerializerOptions
             {
                 WriteIndented = true,
@@ -116,8 +118,6 @@ public sealed class DiagnosticBundleService
 
             var zipInfo = new FileInfo(zipPath);
 
-            stopwatch.Stop();
-            manifest.DurationMs = stopwatch.Elapsed.TotalMilliseconds;
             _log.Information(
                 "Diagnostic bundle generation completed for {OperationName} with {CorrelationId} in {ElapsedMs} ms; files={FileCount}; sizeBytes={SizeBytes}",
                 "diagnostic-bundle.generate",

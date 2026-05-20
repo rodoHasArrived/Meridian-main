@@ -222,6 +222,44 @@ public sealed class SecurityValidationServiceTests
         }
     }
 
+    [Fact]
+    public void Scenario_InvalidCusip_ProducesStructuredIdentifierFormatIssue()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "03783310X", isPrimary: true)]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_IDENTIFIER_FORMAT_INVALID"
+            && issue.Severity == SecurityValidationSeverityDto.Error
+            && issue.Message.Contains("CUSIP", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Scenario_NonCanonicalIsinFormatting_ProducesNormalizationWarning()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [CreateIdentifier(SecurityIdentifierKind.Isin, "us-0378331005", isPrimary: true)]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_IDENTIFIER_NORMALIZATION_RECOMMENDED"
+            && issue.Severity == SecurityValidationSeverityDto.Warning
+            && issue.Message.Contains("US0378331005", StringComparison.Ordinal));
+    }
+
     private static SecurityProjectionRecord CreateProjection(
         Guid securityId,
         string assetClass,

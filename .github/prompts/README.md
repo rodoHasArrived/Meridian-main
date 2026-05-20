@@ -14,6 +14,7 @@ This directory contains reusable prompt templates for AI assistants (Claude, Cop
 | [explain-architecture.prompt.yml](explain-architecture.prompt.yml) | In-depth architecture explanation | Understanding system design |
 | [troubleshoot-issue.prompt.yml](troubleshoot-issue.prompt.yml) | Diagnose and resolve an issue | Debugging problems |
 | [optimize-performance.prompt.yml](optimize-performance.prompt.yml) | Performance optimization guidance | Improving hot paths |
+| [runtime-observability-diagnostics.prompt.yml](runtime-observability-diagnostics.prompt.yml) | Runtime observability and diagnostics hardening | Improving logs, metrics, tracing, health state, and diagnostic bundles |
 | [configure-deployment.prompt.yml](configure-deployment.prompt.yml) | Deployment configuration help | Setting up environments |
 | [add-export-format.prompt.yml](add-export-format.prompt.yml) | Export format implementation | Adding new export types |
 | [wpf-debug-improve.prompt.yml](wpf-debug-improve.prompt.yml) | WPF debugging and improvement guide | Fixing or completing WPF UI work |
@@ -83,6 +84,7 @@ messages:
 - **Architecture questions**: `explain-architecture.prompt.yml`
 - **Debug issues**: `troubleshoot-issue.prompt.yml`
 - **Performance problems**: `optimize-performance.prompt.yml`
+- **Runtime diagnostics gaps**: `runtime-observability-diagnostics.prompt.yml`
 
 ### DevOps
 
