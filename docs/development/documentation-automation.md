@@ -450,6 +450,23 @@ Documentation rules are defined in `build/rules/doc-rules.yaml`. See [Adding Cus
 
 All generated files include an "auto-generated" notice and should not be edited manually.
 
+## Canonical Workflow Inventory Source Of Truth
+
+Use the workflow-manifest artifacts below as the only authoritative workflow inventory.
+Do not hard-code explicit numeric workflow totals in docs under
+`README.md`, `docs/developer/`, or `docs/development/`.
+
+1. `docs/status/workflow-manifest.json` — canonical declared workflow inventory.
+2. `docs/generated/workflow-command-reference.md` — generated human-readable workflow command reference.
+3. `docs/status/workflow-validation-summary.json` — generated machine-readable validation summary, including `workflowCount`.
+4. `docs/status/workflow-drift-report.md` — generated drift surface for missing declared targets/scripts.
+
+When workflow inventory changes:
+
+- Update `docs/status/workflow-manifest.json`.
+- Run `python3 build/scripts/docs/generate-workflow-manifest.py`.
+- Reference generated artifacts in docs instead of restating workflow counts manually.
+
 ## Troubleshooting
 
 ### Workflow skipped all jobs
