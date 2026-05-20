@@ -132,12 +132,18 @@ The reconciliation issue set flags missing schedules, missing coupon/day-count/p
 missing accounting classification, missing actual cash, amount mismatches, and principal/income
 classification mismatches.
 
-`ReconciliationRunService` integrates the accounting-event result through an optional
-`ISecurityMasterAccountingEventSourceAdapter`. Existing runs continue to reconcile portfolio,
-ledger, bank, and statement inputs when no adapter is available. When an adapter supplies Security
-Master accounting inputs, the run detail carries expected accounting events, accrual calculations,
-balanced journal previews, and structured Security Master accounting issues alongside the existing
-matches, breaks, coverage issues, and classification map.
+`ReconciliationRunService` integrates the accounting-event result through
+`ISecurityMasterAccountingEventSourceAdapter`. The workstation service graph registers
+`SecurityMasterAccountingEventSourceAdapter`, which builds accounting-event inputs from resolved
+portfolio positions first and falls back to resolved ledger trial-balance lines when positions are
+not available. The adapter loads the current Security Master economic definition for each resolved
+security id, maps coupon/accrual/maturity/factor terms into `SecurityMasterAccountingSecurity`, and
+preserves the fund-account scope as the accounting-event account id. Existing runs continue to
+reconcile portfolio, ledger, bank, and statement inputs when no Security Master query service or no
+resolved economic definitions are available. When the adapter supplies Security Master accounting
+inputs, the run detail carries expected accounting events, accrual calculations, balanced journal
+previews, and structured Security Master accounting issues alongside the existing matches, breaks,
+coverage issues, and classification map.
 
 ## Operations continuity workflow
 
@@ -166,6 +172,12 @@ hash. Broker import is intentionally separate from normalization. Ledger draftin
 separate from posting: validation can mark a journal preview ready, but reconciliation requires the
 explicit `ledger/post` command with a durable ledger batch reference.
 
+The reconciliation command can carry Security Master coverage issue counts, Security Master
+accounting issue counts, expected-event counts, and journal-preview counts directly from
+reconciliation output. `OperationsContinuityWorkflow` applies those counts to the Security Master
+gate during the reconciliation transition, so unresolved Security Master coverage or
+accounting-term problems block the close lane without requiring UI-side status derivation.
+
 For successful postings, `OperationsLedgerPostRequestDto` now carries an
 `OperationsLedgerJournalCandidateDto`. The application service converts that candidate into a
 `LedgerJournalEntryWrite`. When an `IOperationsContinuityTransactionalCommitStore` is registered,
@@ -191,6 +203,9 @@ governed Security Master override approval, ledger draft, ledger validation, led
 reconciliation run, break resolution, approval submit, approval approve/reject, close, and governed
 reopen. Posting is blocked without Security Master resolution or approved override, a validated
 journal draft, an open period posture, a posting kind, and a non-duplicate posting candidate.
+Once a workflow is closed, mutation commands are rejected before command-specific preconditions are
+evaluated; only the governed reopen command can transition the workflow back into active
+reconciliation.
 
 ---
 

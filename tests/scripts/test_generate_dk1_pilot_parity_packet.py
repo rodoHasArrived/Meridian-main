@@ -90,7 +90,11 @@ class GenerateDk1PilotParityPacketTests(unittest.TestCase):
                 text=True,
             )
 
-            packets = sorted(temp_path.glob("dk1-pilot-parity-packet*.json"))
+            packets = [
+                path
+                for path in sorted(temp_path.glob("dk1-pilot-parity-packet*.json"))
+                if ".checkpoint" not in path.name
+            ]
             self.assertEqual(
                 1,
                 len(packets),

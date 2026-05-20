@@ -481,6 +481,12 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 ]);
         }
 
+        if (workflow.IsClosed)
+        {
+            var blocker = CreateClosedWorkflowBlocker(OperationsGateKeyDto.LedgerPosting);
+            return Failure("INVALID_STATE_TRANSITION", blocker.Message, [blocker]);
+        }
+
         if (workflow.GetPostLedgerEntriesTransitionBlocker() is { } preconditionBlocker)
         {
             return Failure("INVALID_STATE_TRANSITION", preconditionBlocker.Message, [preconditionBlocker]);
@@ -689,6 +695,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 workflow.Reopen(request, evidence, now);
                 return null;
             },
+            allowClosedWorkflow: true,
             ct: ct).ConfigureAwait(false);
     }
 
@@ -800,6 +807,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         OperationsGateKeyDto? gate,
         Func<OperationsContinuityWorkflow, OperationsWorkflowBlockerDto?>? precondition = null,
         Func<OperationsContinuityWorkflow, IReadOnlyList<OperationsEvidenceLinkDto>, DateTimeOffset, OperationsWorkflowBlockerDto?>? command = null,
+        bool allowClosedWorkflow = false,
         CancellationToken ct = default)
     {
         if (workflowId == Guid.Empty)
@@ -837,6 +845,12 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                         "Error",
                         [])
                 ]);
+        }
+
+        if (workflow.IsClosed && !allowClosedWorkflow)
+        {
+            var blocker = CreateClosedWorkflowBlocker(gate);
+            return Failure("INVALID_STATE_TRANSITION", blocker.Message, [blocker]);
         }
 
         if (precondition?.Invoke(workflow) is { } preconditionBlocker)
@@ -1324,6 +1338,14 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
 
     private static OperationsTransitionResultDto Success(OperationsContinuityWorkflowDto workflow) =>
         new(true, null, null, workflow, workflow.Blockers, workflow.NextActions);
+
+    private static OperationsWorkflowBlockerDto CreateClosedWorkflowBlocker(OperationsGateKeyDto? gate) =>
+        new(
+            "WORKFLOW_CLOSED",
+            "Closed operations continuity workflows are immutable; reopen the workflow through the governed reopen command before applying further transitions.",
+            gate,
+            "Critical",
+            []);
 
     private static OperationsTransitionResultDto Failure(
         string errorCode,

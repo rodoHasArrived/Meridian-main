@@ -1056,7 +1056,6 @@ public sealed class WorkstationEndpointsTests
             });
 
         var client = app.GetTestClient();
-        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops.workflow");
 
         var approveResponse = await client.PostAsync(
             UiApiRoutes.PromotionApprove,
@@ -1070,7 +1069,7 @@ public sealed class WorkstationEndpointsTests
         var approval = await ReadAsync<PromotionDecisionResult>(approveResponse);
         approval.Success.Should().BeTrue();
         approval.NewRunId.Should().NotBeNullOrWhiteSpace();
-        approval.ApprovedBy.Should().Be("ops.workflow");
+        approval.ApprovedBy.Should().Be("ops-user");
 
         var wrongSessionResponse = await client.PostAsync(
             UiApiRoutes.ExecutionSessionCreate,
@@ -1147,7 +1146,7 @@ public sealed class WorkstationEndpointsTests
         readyReadiness.Promotion.Should().NotBeNull();
         readyReadiness.Promotion!.SourceRunId.Should().Be("run-api-backtest");
         readyReadiness.Promotion.TargetRunId.Should().Be(approval.NewRunId);
-        readyReadiness.Promotion.ApprovedBy.Should().Be("ops.workflow");
+        readyReadiness.Promotion.ApprovedBy.Should().Be("ops-user");
         readyReadiness.Promotion.AuditReference.Should().Be(approval.AuditReference);
         readyReadiness.AcceptanceGates.Should().ContainSingle(gate =>
             gate.GateId == "promotion" &&
@@ -1617,6 +1616,7 @@ public sealed class WorkstationEndpointsTests
                 "session",
                 "replay",
                 "audit-controls",
+                "risk-rules",
                 "promotion",
                 "dk1-trust",
                 "report-pack",

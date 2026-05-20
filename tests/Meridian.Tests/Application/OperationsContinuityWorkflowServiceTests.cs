@@ -726,6 +726,55 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task RefreshGatePostureAsync_ShouldRejectClosedWorkflowWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var closed = await CreateClosedWorkflowAsync(service);
+        var timelineBefore = await auditStore.GetTimelineAsync(closed.WorkflowId);
+
+        var result = await service.RefreshGatePostureAsync(closed.WorkflowId, new OperationsGatePostureRequestDto(
+            closed.Version,
+            "ops-user",
+            ReportPackReady: false,
+            Rationale: "Attempt to mutate a closed workflow"));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "WORKFLOW_CLOSED" &&
+            blocker.Gate == null);
+
+        var timelineAfter = await auditStore.GetTimelineAsync(closed.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectClosedWorkflowBeforeLedgerPreconditions()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var closed = await CreateClosedWorkflowAsync(service);
+        var timelineBefore = await auditStore.GetTimelineAsync(closed.WorkflowId);
+
+        var result = await service.PostLedgerEntriesAsync(closed.WorkflowId, new OperationsLedgerPostRequestDto(
+            closed.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-after-close",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            Rationale: "Attempt to post after close",
+            JournalCandidate: CreateJournalCandidate()));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "WORKFLOW_CLOSED" &&
+            blocker.Gate == OperationsGateKeyDto.LedgerPosting);
+
+        var timelineAfter = await auditStore.GetTimelineAsync(closed.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
     public async Task ImportBrokerDataAsync_ShouldRejectRepeatedImportWithoutAppendingAudit()
     {
         var service = CreateService(out _, out var auditStore);
@@ -873,6 +922,24 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "Submit for approval",
             "report-pack-1"));
         return submitted.Workflow!;
+    }
+
+    private static async Task<OperationsContinuityWorkflowDto> CreateClosedWorkflowAsync(
+        OperationsContinuityWorkflowService service)
+    {
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
+            workflow.Version,
+            "ops-user",
+            "reviewer",
+            "Approved close",
+            "report-pack-1"));
+        var closed = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
+            approved.Workflow!.Version,
+            "ops-user",
+            "Close workflow",
+            "report-pack-1"));
+        return closed.Workflow!;
     }
 
     private static async Task<OperationsContinuityWorkflowDto> CreateLedgerPostedWorkflowAsync(

@@ -1242,18 +1242,7 @@ public static class ExecutionEndpoints
             return false;
         }
 
-        return metadata.ContainsKey("broker_account_id") ||
-               metadata.ContainsKey("brokerAccountId") ||
-               metadata.ContainsKey("account_id") ||
-               metadata.ContainsKey("accountId") ||
-               metadata.ContainsKey("alpaca:broker_account_id") ||
-               metadata.ContainsKey("asset_class") ||
-               metadata.ContainsKey("assetClass") ||
-               metadata.ContainsKey("alpaca:asset_class") ||
-               metadata.ContainsKey("manualOverrideId") ||
-               metadata.ContainsKey("manual_override_id") ||
-               metadata.ContainsKey("executionControlOverrideId") ||
-               metadata.ContainsKey("execution_control_override_id");
+        return ExecutionOrderMetadataPolicy.ContainsClientRejectedServerOwnedKey(metadata);
     }
 
     private static IReadOnlyDictionary<string, string>? RemoveServerOwnedExecutionMetadata(
@@ -1264,20 +1253,7 @@ public static class ExecutionEndpoints
             return null;
         }
 
-        var sanitized = new Dictionary<string, string>(metadata, StringComparer.OrdinalIgnoreCase);
-        sanitized.Remove("broker_account_id");
-        sanitized.Remove("brokerAccountId");
-        sanitized.Remove("account_id");
-        sanitized.Remove("accountId");
-        sanitized.Remove("alpaca:broker_account_id");
-        sanitized.Remove("asset_class");
-        sanitized.Remove("assetClass");
-        sanitized.Remove("alpaca:asset_class");
-        sanitized.Remove("manualOverrideId");
-        sanitized.Remove("manual_override_id");
-        sanitized.Remove("executionControlOverrideId");
-        sanitized.Remove("execution_control_override_id");
-        return sanitized;
+        return ExecutionOrderMetadataPolicy.RemoveClientRejectedServerOwnedKeys(metadata);
     }
 
     private static Dictionary<string, string> MergeMetadata(

@@ -150,7 +150,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         var couponType = ReadString(coupon, "couponType");
         var currentFactor = ReadDecimal(structuredProduct, "factor");
         var originalFace = ReadDecimal(structuredProduct, "notionalBalance");
-        var currentFace = originalFace is decimal face && currentFactor is decimal factor
+        decimal? currentFace = originalFace is decimal face && currentFactor is decimal factor
             ? decimal.Round(face * factor, 6, MidpointRounding.AwayFromZero)
             : null;
 

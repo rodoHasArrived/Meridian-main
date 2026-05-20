@@ -82,6 +82,9 @@ repeated local automation does not fill the disk before age-based cleanup can ru
 window with `--isolation-retention-days <days>`, the count guard with
 `--isolation-retain-latest <count>`, and the size guard with
 `--isolation-max-root-size-mb <mb>`, or set all three to `0` for a run that must skip cleanup.
+Retention skips symlink, junction, and other reparse-point artifact roots or child directories before
+recursive deletion. It also verifies resolved Python build roots remain inside the repository so a
+count-based or size-based cleanup cannot follow a linked artifact route to an external target.
 
 `build/scripts/publish/publish.ps1` keeps the default `./dist` publish behavior unchanged. When
 automation points `-OutputDir` under `artifacts/publish/<run-name>`, the script prunes sibling

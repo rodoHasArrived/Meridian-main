@@ -55,7 +55,11 @@ public sealed class Dk1TrustGateReadinessService
         {
             if (_cachedReadiness is not null && now - _cachedAtUtc <= CacheDuration)
             {
-                return _cachedReadiness;
+                if (_cachedPacketState != PacketCacheState.Empty &&
+                    PacketStateMatchesCachedPath(_cachedPacketState))
+                {
+                    return _cachedReadiness;
+                }
             }
         }
 
@@ -69,6 +73,22 @@ public sealed class Dk1TrustGateReadinessService
         }
 
         return snapshot.Readiness;
+    }
+
+    private bool PacketStateMatchesCachedPath(PacketCacheState cachedState)
+    {
+        if (string.IsNullOrWhiteSpace(cachedState.PacketPath))
+        {
+            return false;
+        }
+
+        var currentState = BuildPacketCacheState(cachedState.PacketPath);
+        if (currentState.LastWriteTicksUtc is null && currentState.Length is null)
+        {
+            return true;
+        }
+
+        return currentState == cachedState;
     }
 
     public static TradingTrustGateReadinessDto CreateUnavailable(string detail) =>

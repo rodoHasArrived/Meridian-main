@@ -484,7 +484,7 @@ public sealed class ReconciliationRunServiceTests
         }
     }
 
-    private sealed class StubSecurityMasterQueryService : ISecurityMasterQueryService
+    private sealed class StubSecurityMasterQueryService : Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
     {
         private readonly Dictionary<Guid, SecurityEconomicDefinitionRecord> _definitions = [];
 
