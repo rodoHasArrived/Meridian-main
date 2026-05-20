@@ -1166,15 +1166,6 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             }
         }
 
-        if (!Enum.TryParse<LedgerPostingKindDto>(request.PostingKind, ignoreCase: true, out var requestPostingKind))
-        {
-            blockers.Add(CreateJournalCandidateBlocker("LEDGER_POSTING_KIND_INVALID", $"Posting kind '{request.PostingKind}' is invalid.", evidence));
-        }
-        else if (candidate.PostingKind != requestPostingKind)
-        {
-            blockers.Add(CreateJournalCandidateBlocker("LEDGER_JOURNAL_POSTING_KIND_MISMATCH", "Ledger journal candidate posting kind must match the requested posting kind.", evidence));
-        }
-
         return blockers;
     }
 
