@@ -92,7 +92,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
     /// Minimum length for a valid Polygon API key.
     /// Polygon API keys are typically 32 characters, but we accept 20+ for flexibility.
     /// </summary>
-    private const int MinApiKeyLength = 20;
+    private const int MinApiKeyLength = PolygonApiKeyLimits.MinLength;
 
     /// <summary>
     /// Gets whether the client has a valid API key configured.
@@ -138,8 +138,8 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         depth: false) with
     {
         SupportedMarkets = new[] { "US" },
-        MaxRequestsPerWindow = 5,
-        RateLimitWindow = TimeSpan.FromMinutes(1),
+        MaxRequestsPerWindow = PolygonRateLimits.MaxRequestsPerWindowFree,
+        RateLimitWindow = PolygonRateLimits.Window,
         MinRequestDelay = TimeSpan.FromMilliseconds(12000)
     };
 
@@ -168,12 +168,10 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
     /// <inheritdoc/>
     protected override Uri BuildWebSocketUri()
     {
-        var endpoint = _options.UseDelayed
-            ? $"wss://delayed.polygon.io/{_options.Feed}"
-            : $"wss://socket.polygon.io/{_options.Feed}";
+        var endpoint = PolygonEndpoints.WssUri(_options.Feed, _options.UseDelayed);
 
         Log.Information("Polygon WebSocket endpoint: {Endpoint} (Delayed: {UseDelayed})", endpoint, _options.UseDelayed);
-        return new Uri(endpoint);
+        return endpoint;
     }
 
     /// <inheritdoc/>
