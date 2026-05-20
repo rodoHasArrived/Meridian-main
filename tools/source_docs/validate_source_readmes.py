@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,26 @@ CANONICAL = {
     "completion_term": {"done", "complete", "completed", "closed", "shipped"},
 }
 
+REQUIRED_FRONT_MATTER_KEYS = ("module_id", "owner", "status", "last_verified")
+REQUIRED_HEADINGS = (
+    "Module Purpose",
+    "Ownership and Runtime",
+    "Dependencies and Integrations",
+    "Operational Notes",
+)
+GENERATED_BLOCK_BEGIN = "<!-- GENERATED:MODULE_OVERVIEW BEGIN -->"
+GENERATED_BLOCK_END = "<!-- GENERATED:MODULE_OVERVIEW END -->"
+
+# ---------------------------------------------------------------------------
+# Source README coverage / lifecycle-transition validation
+# ---------------------------------------------------------------------------
+
+ALLOWED_TRANSITIONS = {"added", "moved", "split", "merged", "deprecated", "archived"}
+
+
+class ReadmeContractError(ValueError):
+    pass
+
 
 def _check(node: Any, path: str = "$") -> list[str]:
     errors: list[str] = []
@@ -34,27 +55,60 @@ def _check(node: Any, path: str = "$") -> list[str]:
             errors.extend(_check(value, child_path))
     elif isinstance(node, list):
         for i, item in enumerate(node):
-            errors.extend(_check(item, f"{path}[{i}]"))
+            errors.extend(_check(item, f"{path}[{i}]") )
     return errors
 
 
-def validate_file(path: Path) -> int:
-    data = json.loads(path.read_text(encoding="utf-8"))
-    errors = _check(data)
-    if errors:
-        print(f"{path} failed enum validation:")
-        for e in errors:
-            print(f"  - {e}")
-        return 1
-    print(f"{path} passed enum validation")
-    return 0
+def _extract_front_matter(text: str) -> tuple[dict[str, Any], str]:
+    if not text.startswith("---\n"):
+        raise ReadmeContractError("front matter block is missing")
+
+    closing = text.find("\n---\n", 4)
+    if closing == -1:
+        raise ReadmeContractError("front matter closing marker '---' is missing")
+
+    raw_front_matter = text[4:closing]
+    remainder = text[closing + len("\n---\n") :]
+    front_matter = yaml.safe_load(raw_front_matter) or {}
+    if not isinstance(front_matter, dict):
+        raise ReadmeContractError("front matter must be a YAML mapping")
+    return front_matter, remainder
 
 
-# ---------------------------------------------------------------------------
-# Source README coverage / lifecycle-transition validation
-# ---------------------------------------------------------------------------
+def validate_readme_contract(readme_path: Path, expected_module_id: str) -> list[str]:
+    errors: list[str] = []
+    text = readme_path.read_text(encoding="utf-8")
 
-ALLOWED_TRANSITIONS = {"added", "moved", "split", "merged", "deprecated", "archived"}
+    try:
+        front_matter, body = _extract_front_matter(text)
+    except ReadmeContractError as ex:
+        return [str(ex)]
+
+    for key in REQUIRED_FRONT_MATTER_KEYS:
+        if not front_matter.get(key):
+            errors.append(f"missing front matter key '{key}'")
+
+    module_id_value = front_matter.get("module_id")
+    if module_id_value and module_id_value != expected_module_id:
+        errors.append(
+            f"front matter key 'module_id' value '{module_id_value}' does not match coverage module id '{expected_module_id}'"
+        )
+
+    headings = set(re.findall(r"^##\s+(.+?)\s*$", body, flags=re.MULTILINE))
+    for heading in REQUIRED_HEADINGS:
+        if heading not in headings:
+            errors.append(f"missing required heading '## {heading}'")
+
+    begin_index = body.find(GENERATED_BLOCK_BEGIN)
+    end_index = body.find(GENERATED_BLOCK_END)
+    if begin_index == -1:
+        errors.append(f"missing generated block begin marker '{GENERATED_BLOCK_BEGIN}'")
+    if end_index == -1:
+        errors.append(f"missing generated block end marker '{GENERATED_BLOCK_END}'")
+    if begin_index != -1 and end_index != -1 and begin_index > end_index:
+        errors.append("generated block markers are reversed (begin marker appears after end marker)")
+
+    return errors
 
 
 def _load_yaml(path: Path) -> Any:
@@ -141,6 +195,7 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
                     errors.append("Moved transition missing to_path.")
 
     for module in coverage_modules:
+        module_id = str(module.get("id", "<unknown>"))
         readme_path = module.get("readme_path")
         if readme_path and not (repo_root / readme_path).exists():
             errors.append(f"README path does not exist: {readme_path}")
@@ -148,6 +203,12 @@ def validate(modules_path: Path, coverage_path: Path, repo_root: Path) -> list[s
             errors.append(
                 f"Stale README path '{readme_path}' referenced after move/rename; update to current path."
             )
+        if readme_path and (repo_root / readme_path).exists():
+            readme_errors = validate_readme_contract(repo_root / readme_path, module_id)
+            for element_error in readme_errors:
+                errors.append(
+                    f"README contract violation [module={module_id}] [path={readme_path}] [missing={element_error}]"
+                )
 
     return errors
 
